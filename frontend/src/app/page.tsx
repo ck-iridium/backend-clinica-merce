@@ -29,9 +29,9 @@ export default function LandingPage() {
           <p className="text-lg text-stone-600 mb-10 mx-auto max-w-xl">
             Tratamientos personalizados con tecnología de vanguardia para realzar tu belleza natural.
           </p>
-          <button className="bg-[#d9777f] hover:bg-[#c6646b] text-white font-bold py-4 px-10 rounded-full shadow-xl transform transition hover:scale-105 active:scale-95">
+          <Link href="/reservar" className="inline-block bg-[#d9777f] hover:bg-[#c6646b] text-white font-bold py-4 px-10 rounded-full shadow-xl transform transition hover:scale-105 active:scale-95">
             Reservar Cita Online
-          </button>
+          </Link>
         </div>
       </section>
 

@@ -7,6 +7,16 @@ def get_client(db: Session, client_id: str):
     return db.query(models.Client).filter(models.Client.id == client_id).first()
 
 def create_client(db: Session, client: schemas.ClientCreate):
+    if client.email:
+        existing = db.query(models.Client).filter(models.Client.email == client.email).first()
+        if existing:
+            existing.name = client.name
+            if client.phone:
+                existing.phone = client.phone
+            db.commit()
+            db.refresh(existing)
+            return existing
+
     db_client = models.Client(**client.model_dump())
     db.add(db_client)
     db.commit()
