@@ -15,7 +15,7 @@ app = FastAPI(
 # Configuración CORS para el Frontend (Next.js)
 origins = [
     "http://localhost:3000",
-    # Añade aquí la URL de Vercel asignada cuando despliegues el frontend
+    "https://backend-clinica-merce.vercel.app",
 ]
 
 app.add_middleware(
