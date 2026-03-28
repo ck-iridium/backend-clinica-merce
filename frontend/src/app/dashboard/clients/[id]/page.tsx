@@ -3,6 +3,9 @@ import { useState, useEffect } from 'react';
 
 export default function ClientProfilePage({ params }: { params: { id: string } }) {
   const [client, setClient] = useState<any>(null);
+  const [appointments, setAppointments] = useState<any[]>([]);
+  const [vouchers, setVouchers] = useState<any[]>([]);
+  const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<any>({});
@@ -14,12 +17,21 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
 
   const fetchClient = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/${params.id}`);
-      if (res.ok) {
-        const data = await res.json();
+      const [cRes, aRes, vRes, sRes] = await Promise.all([
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/${params.id}`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/vouchers/`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/`)
+      ]);
+      
+      if (cRes.ok) {
+        const data = await cRes.json();
         setClient(data);
         setFormData(data);
       }
+      if (aRes.ok) setAppointments((await aRes.json()).filter((a:any) => a.client_id === params.id && a.status === 'completed').sort((a:any, b:any) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime()));
+      if (vRes.ok) setVouchers((await vRes.json()).filter((v:any) => v.client_id === params.id));
+      if (sRes.ok) setServices(await sRes.json());
     } catch (err) {
       console.error("Error fetching client", err);
     } finally {
@@ -116,9 +128,9 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
               <h1 className="text-4xl font-extrabold text-stone-900 mb-2">{client.name}</h1>
               <p className="text-stone-500 text-lg">{client.email} {client.phone && `• ${client.phone}`}</p>
               <div className="mt-6 flex flex-wrap gap-4">
-                <button className="bg-[#d9777f] text-white px-6 py-2.5 rounded-xl font-bold hover:bg-[#c6646b] shadow-md transition-all active:scale-95 border border-transparent">
+                <a href={`/dashboard/calendar?client_id=${params.id}`} className="bg-[#d9777f] text-white px-6 py-2.5 rounded-xl font-bold hover:bg-[#c6646b] shadow-md transition-all active:scale-95 border border-transparent inline-block text-center cursor-pointer">
                   Reservar Cita
-                </button>
+                </a>
                 <button onClick={() => setIsEditing(true)} className="bg-stone-50 text-stone-600 px-6 py-2.5 rounded-xl font-bold hover:bg-stone-100 border border-stone-200 transition-all active:scale-95 shadow-sm">
                   Editar Ficha
                 </button>
@@ -155,15 +167,87 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
         </div>
 
         {/* Treatment History */}
-        <div className="md:col-span-2 bg-white p-8 rounded-[2rem] shadow-sm border border-stone-100">
-          <h3 className="text-xl font-bold text-stone-800 mb-6 border-b border-stone-50 pb-4">Historial de Tratamientos</h3>
-          <div className="text-center py-16 bg-stone-50/50 rounded-2xl border border-stone-100 border-dashed">
-            <span className="text-stone-300 text-5xl mb-4 block inline-block transform -rotate-6">📅</span>
-            <p className="text-stone-500 font-medium text-lg">Cero tratamientos finalizados.</p>
-            <p className="text-stone-400 text-sm mt-1">El paciente es nuevo en la plataforma.</p>
-            <button className="mt-6 text-[#d9777f] font-bold text-sm bg-white px-5 py-2.5 rounded-xl border border-stone-200 shadow-sm hover:border-[#f3c7cb] transition-colors">
-              + Añadir Tratamiento Manual
-            </button>
+        {/* Right Column: Vouchers & History */}
+        <div className="md:col-span-2 space-y-8">
+          
+          {/* Vouchers */}
+          <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-stone-100">
+            <h3 className="text-xl font-bold text-stone-800 mb-6 border-b border-stone-50 pb-4 flex justify-between items-center">
+              <span>🎟️ Bonos Adquiridos</span>
+              <a href="/dashboard/vouchers" className="text-sm font-semibold text-[#d9777f] bg-[#fdf2f3] px-3 py-1 rounded-lg hover:bg-[#f3c7cb] transition-colors">Vender Bono</a>
+            </h3>
+            {vouchers.length === 0 ? (
+              <p className="text-stone-400 text-sm italic">Este paciente no tiene bonos en su cuenta.</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {vouchers.map(v => {
+                  const service = services.find(s => s.id === v.service_id);
+                  const isExpired = new Date(v.expiration_date) < new Date();
+                  const isEmpty = v.used_sessions >= v.total_sessions;
+                  const isActive = !isExpired && !isEmpty;
+                  
+                  return (
+                    <div key={v.id} className={`p-4 rounded-xl border ${isActive ? 'bg-[#fdf2f3] border-[#f3c7cb]' : 'bg-stone-50 border-stone-100 opacity-60'}`}>
+                      <div className="flex justify-between items-start mb-2">
+                        <p className="font-extrabold text-stone-700 text-sm leading-tight">{service?.name || 'Servicio...'}</p>
+                        <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-stone-200 text-stone-500'}`}>
+                          {isActive ? 'Activo' : 'Cerrado'}
+                        </span>
+                      </div>
+                      <p className="text-xs font-semibold text-stone-500 mb-2">Caduca: {new Date(v.expiration_date).toLocaleDateString()}</p>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 bg-white h-2 rounded-full overflow-hidden border border-stone-200">
+                           <div className="bg-[#d9777f] h-full" style={{ width: `${(v.used_sessions / v.total_sessions) * 100}%`}}></div>
+                        </div>
+                        <span className="text-xs font-bold text-stone-700">{v.used_sessions}/{v.total_sessions}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Treatment History */}
+          <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-stone-100">
+            <h3 className="text-xl font-bold text-stone-800 mb-6 border-b border-stone-50 pb-4">Historial de Tratamientos Finalizados</h3>
+            
+            {appointments.length === 0 ? (
+              <div className="text-center py-10 bg-stone-50/50 rounded-2xl border border-stone-100 border-dashed">
+                <span className="text-stone-300 text-5xl mb-4 block inline-block transform -rotate-6">📅</span>
+                <p className="text-stone-500 font-medium text-lg">Cero tratamientos finalizados.</p>
+                <p className="text-stone-400 text-sm mt-1">Acude a la agenda para marcar citas como completadas.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {appointments.map(a => {
+                  const s = services.find(x => x.id === a.service_id);
+                  const dateInfo = new Date(a.start_time);
+                  return (
+                    <div key={a.id} className="flex items-center gap-4 p-4 rounded-2xl bg-stone-50 border border-stone-100 hover:shadow-sm transition-all hover:bg-white group cursor-default">
+                      <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500 font-bold border border-emerald-100 shrink-0 group-hover:scale-105 transition-transform">
+                        ✓
+                      </div>
+                      <div>
+                        <p className="font-bold text-stone-800">{s?.name || 'Tratamiento Desconocido'}</p>
+                        <p className="text-xs font-semibold text-stone-500 flex items-center gap-1.5">
+                          <span className="text-[#d9777f]">📅</span> {dateInfo.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}
+                        </p>
+                      </div>
+                      <div className="ml-auto text-xs font-bold text-stone-400 bg-white px-3 py-1.5 rounded-lg border border-stone-200 uppercase tracking-widest hidden sm:block">
+                        Finalizado
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+            
+            <div className="mt-6 text-center">
+              <a href={`/dashboard/calendar?client_id=${params.id}`} className="inline-block text-[#d9777f] font-bold text-sm bg-white px-5 py-2.5 rounded-xl border border-stone-200 shadow-sm hover:border-[#f3c7cb] transition-colors cursor-pointer">
+                + Ir a la Agenda
+              </a>
+            </div>
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 "use client"
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 const getMonday = (d: Date) => {
   const date = new Date(d);
@@ -9,6 +10,8 @@ const getMonday = (d: Date) => {
 };
 
 export default function CalendarPage() {
+  const searchParams = useSearchParams();
+  const initialClientId = searchParams.get('client_id');
   const [currentWeek, setCurrentWeek] = useState(() => getMonday(new Date()));
   const [appointments, setAppointments] = useState<any[]>([]);
   const [clients, setClients] = useState<any[]>([]);
@@ -21,6 +24,7 @@ export default function CalendarPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedAppt, setSelectedAppt] = useState<any>(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const getStatusColors = (status: string) => {
     switch (status) {
@@ -32,7 +36,7 @@ export default function CalendarPage() {
     }
   };
 
-  const [selectedClientId, setSelectedClientId] = useState('');
+  const [selectedClientId, setSelectedClientId] = useState(initialClientId || '');
   const [selectedServiceId, setSelectedServiceId] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -133,7 +137,7 @@ export default function CalendarPage() {
   };
 
   const handleDeleteAppointment = async () => {
-    if (!selectedAppt || !confirm("¿Seguro que deseas ELIMINAR definitivamente esta cita de la base de datos?")) return;
+    if (!selectedAppt) return;
     setUpdatingStatus(true);
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/${selectedAppt.id}`, {
@@ -142,6 +146,7 @@ export default function CalendarPage() {
       if (res.ok) {
         await fetchData();
         setShowEditModal(false);
+        setConfirmDelete(false);
       } else {
         alert("Error eliminando cita.");
       }
@@ -291,7 +296,7 @@ export default function CalendarPage() {
                         return (
                           <div 
                             key={appt.id} 
-                            onClick={(e) => { e.stopPropagation(); setSelectedAppt(appt); setShowEditModal(true); }}
+                            onClick={(e) => { e.stopPropagation(); setSelectedAppt(appt); setShowEditModal(true); setConfirmDelete(false); }}
                             className={`absolute w-[92%] left-[4%] ml-auto mr-auto border-l-[4px] rounded-r-lg shadow-sm px-2 py-1 z-20 overflow-hidden hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer flex flex-col justify-start ${colors}`}
                             style={{ top: `${topOffset}px`, height: `${heightPx}px` }}
                           >
@@ -405,10 +410,21 @@ export default function CalendarPage() {
               </button>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-stone-100 flex justify-center">
-              <button onClick={handleDeleteAppointment} disabled={updatingStatus} className="text-xs font-bold text-stone-400 hover:text-red-500 uppercase tracking-widest transition-colors flex items-center gap-1">
-                🗑 Eliminar Cita del Sistema
-              </button>
+            <div className="mt-8 pt-6 border-t border-stone-100 flex justify-center flex-col items-center">
+              {!confirmDelete ? (
+                <button onClick={() => setConfirmDelete(true)} disabled={updatingStatus} className="text-xs font-bold text-stone-400 hover:text-red-500 uppercase tracking-widest transition-colors flex items-center gap-1">
+                  🗑 Eliminar Cita del Sistema
+                </button>
+              ) : (
+                <div className="flex gap-3 mt-2">
+                  <button onClick={handleDeleteAppointment} disabled={updatingStatus} className="text-xs font-bold bg-red-50 text-red-600 px-4 py-2 rounded-lg hover:bg-red-100 uppercase tracking-widest transition-colors">
+                    ⚠️ Sí, Borrar definitivamente
+                  </button>
+                  <button onClick={() => setConfirmDelete(false)} disabled={updatingStatus} className="text-xs font-bold bg-stone-100 text-stone-500 px-4 py-2 rounded-lg hover:bg-stone-200 uppercase tracking-widest transition-colors">
+                    Cancelar
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
