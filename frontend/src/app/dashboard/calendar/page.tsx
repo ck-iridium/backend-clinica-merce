@@ -18,6 +18,20 @@ export default function CalendarPage() {
   const [showModal, setShowModal] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{ date: Date, hour: number } | null>(null);
 
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedAppt, setSelectedAppt] = useState<any>(null);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+
+  const getStatusColors = (status: string) => {
+    switch (status) {
+      case 'completed': return 'bg-emerald-50 border-emerald-400';
+      case 'cancelled': return 'bg-red-50 border-red-500 opacity-70';
+      case 'no_show': return 'bg-stone-100 border-stone-400 grayscale opacity-60';
+      case 'pending':
+      default: return 'bg-[#fdf2f3] border-[#d9777f]';
+    }
+  };
+
   const [selectedClientId, setSelectedClientId] = useState('');
   const [selectedServiceId, setSelectedServiceId] = useState('');
   const [saving, setSaving] = useState(false);
@@ -93,6 +107,48 @@ export default function CalendarPage() {
       }
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleStatusChange = async (newStatus: string) => {
+    if (!selectedAppt) return;
+    setUpdatingStatus(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/${selectedAppt.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (res.ok) {
+        await fetchData();
+        setShowEditModal(false);
+      } else {
+        alert("Error actualizando estado.");
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const handleDeleteAppointment = async () => {
+    if (!selectedAppt || !confirm("¿Seguro que deseas ELIMINAR definitivamente esta cita de la base de datos?")) return;
+    setUpdatingStatus(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/${selectedAppt.id}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        await fetchData();
+        setShowEditModal(false);
+      } else {
+        alert("Error eliminando cita.");
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setUpdatingStatus(false);
     }
   };
 
@@ -230,16 +286,18 @@ export default function CalendarPage() {
                         
                         const client = clientMap.get(appt.client_id) || { name: 'Paciente Desconocido' };
                         const service = serviceMap.get(appt.service_id) || { name: 'Servicio Borrado...', duration_minutes: durationMin };
+                        const colors = getStatusColors(appt.status);
 
                         return (
                           <div 
                             key={appt.id} 
-                            className="absolute w-[92%] left-[4%] ml-auto mr-auto bg-[#fdf2f3] border-l-[4px] border-[#d9777f] rounded-r-lg shadow-sm px-2 py-1 z-20 overflow-hidden hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer flex flex-col justify-start"
+                            onClick={(e) => { e.stopPropagation(); setSelectedAppt(appt); setShowEditModal(true); }}
+                            className={`absolute w-[92%] left-[4%] ml-auto mr-auto border-l-[4px] rounded-r-lg shadow-sm px-2 py-1 z-20 overflow-hidden hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer flex flex-col justify-start ${colors}`}
                             style={{ top: `${topOffset}px`, height: `${heightPx}px` }}
                           >
-                            <div className="font-extrabold text-[10px] sm:text-xs text-stone-800 truncate leading-tight mb-0.5">{client.name}</div>
+                            <div className={`font-extrabold text-[10px] sm:text-xs truncate leading-tight mb-0.5 ${appt.status === 'cancelled' || appt.status === 'no_show' ? 'text-current line-through' : 'text-stone-800'}`}>{client.name}</div>
                             {heightPx >= 36 && (
-                              <div className="text-[9px] text-[#b35e65] font-semibold truncate leading-tight">{service.name}</div>
+                              <div className={`text-[9px] font-semibold truncate leading-tight ${appt.status === 'completed' ? 'text-emerald-700' : (appt.status === 'pending' ? 'text-[#b35e65]' : 'text-current opacity-80')}`}>{service.name}</div>
                             )}
                           </div>
                         );
@@ -300,6 +358,58 @@ export default function CalendarPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Appointment Modal */}
+      {showEditModal && selectedAppt && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 backdrop-blur-sm p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowEditModal(false); }}
+        >
+          <div className="bg-white rounded-[2rem] shadow-2xl p-8 max-w-sm w-full relative animate-in zoom-in-95 duration-200">
+            <button onClick={() => setShowEditModal(false)} className="absolute top-6 right-6 w-8 h-8 rounded-full bg-stone-100 text-stone-500 font-bold hover:bg-stone-200 flex items-center justify-center transition-colors">✕</button>
+            
+            <div className="mb-6">
+              <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1">Paciente</p>
+              <h3 className="text-xl font-extrabold text-stone-800">{clientMap.get(selectedAppt.client_id)?.name || 'Desconocido'}</h3>
+            </div>
+            
+            <div className="mb-8">
+              <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1">Tratamiento</p>
+              <p className="text-lg font-bold text-[#d9777f] flex items-center gap-2">✨ {serviceMap.get(selectedAppt.service_id)?.name || 'Borrador...'}</p>
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-2 border-b border-stone-100 pb-2">Estado de la Cita</p>
+              
+              <button onClick={() => handleStatusChange('pending')} disabled={updatingStatus || selectedAppt.status === 'pending'} className={`w-full py-3 px-4 rounded-xl font-bold flex items-center justify-between transition-all ${selectedAppt.status === 'pending' ? 'bg-[#fdf2f3] text-[#d9777f] border-2 border-[#d9777f]' : 'bg-stone-50 text-stone-600 border-2 border-transparent hover:bg-stone-100'}`}>
+                <span>⏳ Pendiente</span>
+                {selectedAppt.status === 'pending' && <span>✓</span>}
+              </button>
+
+              <button onClick={() => handleStatusChange('completed')} disabled={updatingStatus || selectedAppt.status === 'completed'} className={`w-full py-3 px-4 rounded-xl font-bold flex items-center justify-between transition-all ${selectedAppt.status === 'completed' ? 'bg-emerald-50 text-emerald-600 border-2 border-emerald-400' : 'bg-stone-50 text-stone-600 border-2 border-transparent hover:bg-emerald-50 hover:text-emerald-700'}`}>
+                <span>✅ Realizada</span>
+                {selectedAppt.status === 'completed' && <span>✓</span>}
+              </button>
+
+              <button onClick={() => handleStatusChange('no_show')} disabled={updatingStatus || selectedAppt.status === 'no_show'} className={`w-full py-3 px-4 rounded-xl font-bold flex items-center justify-between transition-all ${selectedAppt.status === 'no_show' ? 'bg-stone-100 text-stone-600 border-2 border-stone-400' : 'bg-stone-50 text-stone-600 border-2 border-transparent hover:bg-stone-200'}`}>
+                <span>👻 No Asistió</span>
+                {selectedAppt.status === 'no_show' && <span>✓</span>}
+              </button>
+
+              <button onClick={() => handleStatusChange('cancelled')} disabled={updatingStatus || selectedAppt.status === 'cancelled'} className={`w-full py-3 px-4 rounded-xl font-bold flex items-center justify-between transition-all ${selectedAppt.status === 'cancelled' ? 'bg-red-50 text-red-600 border-2 border-red-500' : 'bg-stone-50 text-stone-600 border-2 border-transparent hover:bg-red-50 hover:text-red-600'}`}>
+                <span>❌ Cancelada</span>
+                {selectedAppt.status === 'cancelled' && <span>✓</span>}
+              </button>
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-stone-100 flex justify-center">
+              <button onClick={handleDeleteAppointment} disabled={updatingStatus} className="text-xs font-bold text-stone-400 hover:text-red-500 uppercase tracking-widest transition-colors flex items-center gap-1">
+                🗑 Eliminar Cita del Sistema
+              </button>
+            </div>
           </div>
         </div>
       )}

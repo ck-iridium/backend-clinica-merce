@@ -22,8 +22,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <Link href="/dashboard/services" className="block px-4 py-3 rounded-xl hover:bg-[#fdf2f3] hover:text-[#d9777f] text-stone-600 font-medium transition-colors">
             Servicios
           </Link>
-          <Link href="#" className="block px-4 py-3 rounded-xl hover:bg-[#fdf2f3] hover:text-[#d9777f] text-stone-400 font-medium transition-colors cursor-not-allowed">
-            Bonos (Pronto)
+          <Link href="/dashboard/vouchers" className="block px-4 py-3 rounded-xl hover:bg-[#fdf2f3] hover:text-[#d9777f] text-stone-600 font-medium transition-colors">
+            Bonos
           </Link>
           <Link href="/dashboard/calendar" className="block px-4 py-3 rounded-xl hover:bg-[#fdf2f3] hover:text-[#d9777f] text-stone-600 font-medium transition-colors">
             Agenda
