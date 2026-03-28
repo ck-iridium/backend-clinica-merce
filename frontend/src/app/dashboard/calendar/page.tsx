@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 const getMonday = (d: Date) => {
@@ -9,7 +9,7 @@ const getMonday = (d: Date) => {
   return new Date(date.setDate(diff));
 };
 
-export default function CalendarPage() {
+function CalendarContent() {
   const searchParams = useSearchParams();
   const initialClientId = searchParams.get('client_id');
   const [currentWeek, setCurrentWeek] = useState(() => getMonday(new Date()));
@@ -430,5 +430,13 @@ export default function CalendarPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function CalendarPage() {
+  return (
+    <Suspense fallback={<div className="text-center py-32"><div className="inline-block w-8 h-8 border-4 border-[#f3c7cb] border-t-[#d9777f] rounded-full animate-spin mb-4"></div><p className="text-stone-500 font-medium">Cargando calendario...</p></div>}>
+      <CalendarContent />
+    </Suspense>
   );
 }
