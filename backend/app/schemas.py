@@ -80,6 +80,14 @@ class AppointmentBase(BaseModel):
 class AppointmentCreate(AppointmentBase):
     pass
 
+class AppointmentUpdate(BaseModel):
+    client_id: Optional[str] = None
+    service_id: Optional[str] = None
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
+    status: Optional[str] = None
+    notes: Optional[str] = None
+
 class AppointmentResponse(AppointmentBase):
     id: str
     
@@ -97,6 +105,14 @@ class VoucherBase(BaseModel):
 
 class VoucherCreate(VoucherBase):
     pass
+
+class VoucherUpdate(BaseModel):
+    client_id: Optional[str] = None
+    service_id: Optional[str] = None
+    total_sessions: Optional[int] = None
+    used_sessions: Optional[int] = None
+    purchase_date: Optional[date] = None
+    expiration_date: Optional[date] = None
 
 class VoucherResponse(VoucherBase):
     id: str

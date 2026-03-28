@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from . import models, schemas
 import uuid
+from datetime import date
 
 # Clients
 def get_client(db: Session, client_id: str):
@@ -68,6 +69,37 @@ def create_appointment(db: Session, appointment: schemas.AppointmentCreate):
     db.refresh(db_appointment)
     return db_appointment
 
+def update_appointment(db: Session, appointment_id: str, appointment: schemas.AppointmentUpdate):
+    db_appointment = db.query(models.Appointment).filter(models.Appointment.id == appointment_id).first()
+    if db_appointment:
+        old_status = db_appointment.status
+        update_data = appointment.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(db_appointment, key, value)
+            
+        # Lógica mágica: Si se enmarca como completada, descontar 1 del bono activo si lo hay
+        if old_status != "completed" and db_appointment.status == "completed":
+            active_voucher = db.query(models.Voucher).filter(
+                models.Voucher.client_id == db_appointment.client_id,
+                models.Voucher.service_id == db_appointment.service_id,
+                models.Voucher.used_sessions < models.Voucher.total_sessions,
+                models.Voucher.expiration_date >= date.today()
+            ).first()
+            if active_voucher:
+                active_voucher.used_sessions += 1
+                db.add(active_voucher)
+                
+        db.commit()
+        db.refresh(db_appointment)
+    return db_appointment
+
+def delete_appointment(db: Session, appointment_id: str):
+    db_appointment = db.query(models.Appointment).filter(models.Appointment.id == appointment_id).first()
+    if db_appointment:
+        db.delete(db_appointment)
+        db.commit()
+    return db_appointment
+
 # Vouchers
 def get_vouchers(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Voucher).offset(skip).limit(limit).all()
@@ -77,6 +109,23 @@ def create_voucher(db: Session, voucher: schemas.VoucherCreate):
     db.add(db_voucher)
     db.commit()
     db.refresh(db_voucher)
+    return db_voucher
+
+def update_voucher(db: Session, voucher_id: str, voucher: schemas.VoucherUpdate):
+    db_voucher = db.query(models.Voucher).filter(models.Voucher.id == voucher_id).first()
+    if db_voucher:
+        update_data = voucher.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(db_voucher, key, value)
+        db.commit()
+        db.refresh(db_voucher)
+    return db_voucher
+
+def delete_voucher(db: Session, voucher_id: str):
+    db_voucher = db.query(models.Voucher).filter(models.Voucher.id == voucher_id).first()
+    if db_voucher:
+        db.delete(db_voucher)
+        db.commit()
     return db_voucher
 
 # Invoices
