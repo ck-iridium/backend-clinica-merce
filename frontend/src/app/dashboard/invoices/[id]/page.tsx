@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -10,6 +10,29 @@ export default function InvoicePreviewPage() {
   const [client, setClient] = useState<any>(null);
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  // Estados interactivos del Cuño/Firma y Persistencia
+  const SELLO_KEY = `sello_pos_${id}`;
+
+  const savedSello = typeof window !== 'undefined' 
+    ? JSON.parse(localStorage.getItem(SELLO_KEY) || 'null') 
+    : null;
+
+  const [selloPos, setSelloPos] = useState<{ x: number; y: number }>(
+    savedSello ? { x: savedSello.x, y: savedSello.y } : { x: -100, y: -50 }
+  );
+
+  const [sigRot, setSigRot] = useState<number>(
+    savedSello ? savedSello.rot : 0
+  );
+  
+  const dragRef = useRef({ dragging: false, startX: 0, startY: 0, origX: 0, origY: 0 });
+
+  const saveSello = useCallback((pos: { x: number; y: number }, rot: number) => {
+      if (typeof window !== 'undefined') {
+          localStorage.setItem(SELLO_KEY, JSON.stringify({ x: pos.x, y: pos.y, rot }));
+      }
+  }, [SELLO_KEY]);
 
   useEffect(() => {
     fetchData();
@@ -54,6 +77,33 @@ export default function InvoicePreviewPage() {
   const handlePrint = () => {
     window.print();
   };
+
+  const onSelloMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    dragRef.current = { dragging: true, startX: e.clientX, startY: e.clientY, origX: selloPos.x, origY: selloPos.y };
+
+    const onMove = (ev: MouseEvent) => {
+        if (!dragRef.current.dragging) return;
+        const newPos = {
+            x: dragRef.current.origX + (ev.clientX - dragRef.current.startX),
+            y: dragRef.current.origY + (ev.clientY - dragRef.current.startY),
+        };
+        setSelloPos(newPos);
+    };
+
+    const onUp = () => {
+        dragRef.current.dragging = false;
+        setSelloPos(prev => { 
+            saveSello(prev, sigRot); 
+            return prev; 
+        });
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+    };
+
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  }, [selloPos.x, selloPos.y, sigRot, saveSello]);
 
   if (loading) {
     return (
@@ -234,11 +284,42 @@ export default function InvoicePreviewPage() {
                        Los bonos y tratamientos adquiridos están sujetos a su periodo de vigencia. El abono se ha registrado correctamente en nuestra contabilidad interna.
                      </p>
                    </div>
-                   <div className="text-right flex flex-col items-end">
-                     {settings?.signature_b64 && (
-                        <img src={settings.signature_b64} alt="Sello y Firma" className="h-16 object-contain mix-blend-multiply opacity-80 mb-2" />
+                   <div className="text-right flex flex-col items-end relative min-w-[200px] min-h-[100px]">
+                     {settings?.signature_b64 ? (
+                        <div 
+                          className="z-50 group flex flex-col items-center justify-center p-2 rounded-xl transition-shadow hover:shadow-[0_0_20px_rgba(217,119,127,0.3)] print:shadow-none print:p-0 print:m-0"
+                          style={{
+                               position: 'absolute',
+                               left: selloPos.x,
+                               top: selloPos.y,
+                               transform: `rotate(${sigRot}deg)`,
+                               cursor: 'grab',
+                               userSelect: 'none'
+                          }}
+                          onMouseDown={onSelloMouseDown}
+                        >
+                           <img 
+                             src={settings.signature_b64} 
+                             alt="Sello y Firma" 
+                             draggable={false}
+                             style={{ pointerEvents: 'none', mixBlendMode: 'multiply' }}
+                             className="h-20 w-auto object-contain opacity-80 select-none drop-shadow-sm" 
+                           />
+                           
+                           {/* Panel de Opciones Flotante (Se oculta al imprimir) */}
+                           <div 
+                             className="absolute -top-12 left-1/2 -translate-x-1/2 bg-stone-900 border border-stone-700 text-white rounded-xl p-1.5 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity print:hidden shadow-xl"
+                             onMouseDown={(e) => e.stopPropagation()} // Prevenir arrastre al hacer clic en los botones
+                           >
+                              <button title="Rotar Izquierda" onClick={() => { const r = sigRot - 5; setSigRot(r); saveSello(selloPos, r); }} onMouseDown={e => e.stopPropagation()} className="w-8 h-8 rounded-lg hover:bg-stone-700 flex items-center justify-center font-bold text-stone-300 hover:text-white transition-colors">↺</button>
+                              <span className="text-[10px] font-mono font-bold w-10 text-center">{sigRot}º</span>
+                              <button title="Rotar Derecha" onClick={() => { const r = sigRot + 5; setSigRot(r); saveSello(selloPos, r); }} onMouseDown={e => e.stopPropagation()} className="w-8 h-8 rounded-lg hover:bg-stone-700 flex items-center justify-center font-bold text-stone-300 hover:text-white transition-colors">↻</button>
+                           </div>
+                        </div>
+                     ) : (
+                        <div className="h-24 w-40"></div>
                      )}
-                     <p className="text-xs text-stone-400 italic">Gracias por su confianza.</p>
+                     <p className="text-xs text-stone-400 italic mt-2">Gracias por su confianza.</p>
                      <p className="text-sm font-extrabold text-stone-800 mt-1">{settings?.clinic_name || 'Clínica Mercè'}</p>
                    </div>
                 </div>
