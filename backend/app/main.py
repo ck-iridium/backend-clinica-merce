@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base
-from .routers import clients, services, appointments, vouchers, invoices, users
+from .routers import clients, services, appointments, vouchers, invoices, settings, users
 
 # Crear las tablas en la base de datos (Nota: en producción mejor usar Alembic)
 Base.metadata.create_all(bind=engine)
@@ -33,6 +33,7 @@ app.include_router(services.router)
 app.include_router(appointments.router)
 app.include_router(vouchers.router)
 app.include_router(invoices.router)
+app.include_router(settings.router)
 
 @app.get("/")
 def read_root():

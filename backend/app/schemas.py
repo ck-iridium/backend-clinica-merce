@@ -68,6 +68,28 @@ class ServiceResponse(ServiceBase):
     class Config:
         from_attributes = True
 
+# --- SETTINGS ---
+class ClinicSettingsBase(BaseModel):
+    clinic_name: str
+    clinic_nif: str
+    clinic_address: str
+    clinic_phone: str
+    clinic_email: str
+    logo_app_b64: Optional[str] = None
+    logo_pdf_b64: Optional[str] = None
+    signature_b64: Optional[str] = None
+    invoice_prefix: str
+    invoice_next_number: int
+
+class ClinicSettingsUpdate(ClinicSettingsBase):
+    pass
+
+class ClinicSettingsResponse(ClinicSettingsBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
 # --- Appointments ---
 class AppointmentBase(BaseModel):
     client_id: str
@@ -100,6 +122,7 @@ class VoucherBase(BaseModel):
     service_id: str
     total_sessions: int
     used_sessions: int = 0
+    total_price: float
     purchase_date: date
     expiration_date: date
 
@@ -111,6 +134,7 @@ class VoucherUpdate(BaseModel):
     service_id: Optional[str] = None
     total_sessions: Optional[int] = None
     used_sessions: Optional[int] = None
+    total_price: Optional[float] = None
     purchase_date: Optional[date] = None
     expiration_date: Optional[date] = None
 
@@ -124,11 +148,19 @@ class VoucherResponse(VoucherBase):
 class InvoiceBase(BaseModel):
     client_id: str
     amount: float
+    concept: str
     date: date
     status: str = "pending"
 
 class InvoiceCreate(InvoiceBase):
     pass
+
+class InvoiceUpdate(BaseModel):
+    client_id: Optional[str] = None
+    amount: Optional[float] = None
+    concept: Optional[str] = None
+    date: Optional[date] = None
+    status: Optional[str] = None
 
 class InvoiceResponse(InvoiceBase):
     id: str

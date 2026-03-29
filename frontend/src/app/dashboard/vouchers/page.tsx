@@ -13,6 +13,7 @@ export default function VouchersPage() {
   const [selectedServiceId, setSelectedServiceId] = useState('');
   const [totalSessions, setTotalSessions] = useState(5);
   const [expirationMonths, setExpirationMonths] = useState(12);
+  const [totalPrice, setTotalPrice] = useState<number | ''>('');
 
   const [saving, setSaving] = useState(false);
 
@@ -57,6 +58,7 @@ export default function VouchersPage() {
           service_id: selectedServiceId,
           total_sessions: totalSessions,
           used_sessions: 0,
+          total_price: Number(totalPrice),
           purchase_date: purDate.toISOString().split('T')[0],
           expiration_date: expDate.toISOString().split('T')[0]
         })
@@ -66,6 +68,7 @@ export default function VouchersPage() {
         setShowModal(false);
         setSelectedClientId('');
         setSelectedServiceId('');
+        setTotalPrice('');
         fetchData();
       } else {
         alert("Error creando el bono.");
@@ -187,15 +190,27 @@ export default function VouchersPage() {
                 </select>
               </div>
 
+              {selectedServiceId && totalSessions > 0 && (
+                <p className="text-xs text-stone-500 bg-stone-50 p-3 rounded-xl border border-stone-100 italic flex items-center gap-2">
+                  <span>💡</span> Precio de {totalSessions} sesiones sueltas: 
+                  <span className="line-through font-bold">{services.find(s => s.id === selectedServiceId)?.price * totalSessions}€</span>
+                </p>
+              )}
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[10px] uppercase tracking-widest font-bold text-stone-400 mb-2">Total Sesiones</label>
                   <input required type="number" min="1" value={totalSessions} onChange={e => setTotalSessions(Number(e.target.value))} className="w-full px-5 py-4 rounded-xl border border-stone-200 font-extrabold text-stone-700 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50" />
                 </div>
                 <div>
-                  <label className="block text-[10px] uppercase tracking-widest font-bold text-stone-400 mb-2">Validez (Meses)</label>
-                  <input required type="number" min="1" value={expirationMonths} onChange={e => setExpirationMonths(Number(e.target.value))} className="w-full px-5 py-4 rounded-xl border border-stone-200 font-extrabold text-stone-700 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50" />
+                  <label className="block text-[10px] uppercase tracking-widest font-bold text-[#d9777f] mb-2">Precio Final Rebajado (€) *</label>
+                  <input required type="number" step="0.01" min="0" value={totalPrice} onChange={e => setTotalPrice(e.target.value ? Number(e.target.value) : '')} className="w-full px-5 py-4 rounded-xl border border-[#f3c7cb] font-extrabold text-[#d9777f] focus:ring-2 focus:ring-[#d9777f] outline-none bg-[#fdf2f3] placeholder:text-[#f3c7cb]" placeholder="0.00" />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] uppercase tracking-widest font-bold text-stone-400 mb-2">Validez (Meses)</label>
+                <input required type="number" min="1" value={expirationMonths} onChange={e => setExpirationMonths(Number(e.target.value))} className="w-full px-5 py-4 rounded-xl border border-stone-200 font-extrabold text-stone-700 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50" />
               </div>
 
               <div className="flex gap-3 pt-6 border-t border-stone-100">

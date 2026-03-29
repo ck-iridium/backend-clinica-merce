@@ -1,7 +1,48 @@
 from sqlalchemy.orm import Session
+from datetime import datetime, date
 from . import models, schemas
 import uuid
-from datetime import date
+
+# --- SETTINGS ---
+def get_clinic_settings(db: Session):
+    settings = db.query(models.ClinicSettings).first()
+    if not settings:
+        settings = models.ClinicSettings(id=1)
+        db.add(settings)
+        db.commit()
+        db.refresh(settings)
+    return settings
+
+def update_clinic_settings(db: Session, update_data: schemas.ClinicSettingsUpdate):
+    settings = get_clinic_settings(db)
+    for key, value in update_data.model_dump(exclude_unset=True).items():
+        setattr(settings, key, value)
+    db.commit()
+    db.refresh(settings)
+    return settings
+
+def generate_invoice_id(db: Session, target_date=None) -> str:
+    if not target_date:
+        target_date = datetime.now()
+    if isinstance(target_date, str):
+        try:
+            target_date = datetime.strptime(target_date, "%Y-%m-%d") # simplified handle
+        except ValueError:
+            target_date = datetime.now()
+            
+    settings = get_clinic_settings(db)
+    prefix = settings.invoice_prefix.replace("{YYYY}", str(target_date.year)).replace("{YY}", str(target_date.year)[-2:]).replace("{MM}", f"{target_date.month:02d}")
+    
+    # Extract padding length (e.g. if we want to support generic 4 zeros)
+    next_numStr = f"{settings.invoice_next_number:04d}"
+    
+    # Fallback si el usuario no pone ceros en NextNumber es un bug, asumimos siempre 4 digitos
+    new_id = f"{prefix}{next_numStr}"
+    
+    settings.invoice_next_number += 1
+    db.add(settings)
+    # no db.commit() yet, commit happens inside the outer function to ensure atomicity
+    return new_id
 
 # Clients
 def get_client(db: Session, client_id: str):
@@ -107,6 +148,21 @@ def get_vouchers(db: Session, skip: int = 0, limit: int = 100):
 def create_voucher(db: Session, voucher: schemas.VoucherCreate):
     db_voucher = models.Voucher(**voucher.model_dump())
     db.add(db_voucher)
+    
+    # Generar factura pagada automáticamente
+    service = db.query(models.Service).filter(models.Service.id == voucher.service_id).first()
+    concept_str = f"Bono {voucher.total_sessions}x {service.name}" if service else "Bono Tratamiento Especial"
+    
+    db_invoice = models.Invoice(
+        id=generate_invoice_id(db, voucher.purchase_date),
+        client_id=voucher.client_id,
+        amount=voucher.total_price,
+        concept=concept_str,
+        date=voucher.purchase_date,
+        status="paid"
+    )
+    db.add(db_invoice)
+    
     db.commit()
     db.refresh(db_voucher)
     return db_voucher
@@ -129,12 +185,34 @@ def delete_voucher(db: Session, voucher_id: str):
     return db_voucher
 
 # Invoices
+def get_invoice(db: Session, invoice_id: str):
+    return db.query(models.Invoice).filter(models.Invoice.id == invoice_id).first()
+
 def get_invoices(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Invoice).offset(skip).limit(limit).all()
 
 def create_invoice(db: Session, invoice: schemas.InvoiceCreate):
-    db_invoice = models.Invoice(**invoice.model_dump())
+    invoice_dict = invoice.model_dump()
+    invoice_dict["id"] = generate_invoice_id(db, invoice.date)
+    db_invoice = models.Invoice(**invoice_dict)
     db.add(db_invoice)
     db.commit()
     db.refresh(db_invoice)
+    return db_invoice
+
+def update_invoice(db: Session, invoice_id: str, invoice: schemas.InvoiceUpdate):
+    db_invoice = db.query(models.Invoice).filter(models.Invoice.id == invoice_id).first()
+    if db_invoice:
+        update_data = invoice.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(db_invoice, key, value)
+        db.commit()
+        db.refresh(db_invoice)
+    return db_invoice
+
+def delete_invoice(db: Session, invoice_id: str):
+    db_invoice = db.query(models.Invoice).filter(models.Invoice.id == invoice_id).first()
+    if db_invoice:
+        db.delete(db_invoice)
+        db.commit()
     return db_invoice

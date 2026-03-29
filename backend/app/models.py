@@ -59,17 +59,40 @@ class Voucher(Base):
     service_id = Column(String(36), ForeignKey("services.id"), nullable=False)
     total_sessions = Column(Integer, nullable=False)
     used_sessions = Column(Integer, default=0)
+    total_price = Column(Numeric(10, 2), nullable=False)
     purchase_date = Column(Date, nullable=False)
     expiration_date = Column(Date, nullable=False)
 
     client = relationship("Client", back_populates="vouchers")
     service = relationship("Service")
 
+class ClinicSettings(Base):
+    __tablename__ = "clinic_settings"
+
+    id = Column(Integer, primary_key=True, default=1) # Singleton
+
+    # Company Details
+    clinic_name = Column(String, default="Clínica Mercè")
+    clinic_nif = Column(String, default="")
+    clinic_address = Column(String, default="")
+    clinic_phone = Column(String, default="")
+    clinic_email = Column(String, default="")
+
+    # Base64 Images
+    logo_app_b64 = Column(Text, nullable=True)
+    logo_pdf_b64 = Column(Text, nullable=True)
+    signature_b64 = Column(Text, nullable=True)
+
+    # Numeration
+    invoice_prefix = Column(String, default="FA-{YY}-")
+    invoice_next_number = Column(Integer, default=1)
+
 class Invoice(Base):
     __tablename__ = "invoices"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     client_id = Column(String(36), ForeignKey("clients.id"), nullable=False)
     amount = Column(Numeric(10, 2), nullable=False)
+    concept = Column(String, nullable=False)
     date = Column(Date, nullable=False)
     status = Column(String, default="pending") # pending, paid
     
