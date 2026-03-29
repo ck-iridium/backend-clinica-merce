@@ -212,12 +212,12 @@ export default function InvoicePreviewPage() {
                 <div className="flex justify-end mb-8">
                   <div className="w-[250px]">
                      <div className="flex justify-between py-2 text-sm text-stone-500">
-                       <span>Subtotal</span>
-                       <span>{Number(invoice.amount).toFixed(2)} €</span>
+                       <span>Base Imponible</span>
+                       <span>{(Number(invoice.amount) / (1 + (invoice.tax_rate || 21)/100)).toFixed(2)} €</span>
                      </div>
                      <div className="flex justify-between py-2 text-sm text-stone-500 border-b border-stone-200 mb-2">
-                       <span>IVA (Exento Ley)</span>
-                       <span>0.00 €</span>
+                       <span>IVA ({invoice.tax_rate || 21}%)</span>
+                       <span>{(Number(invoice.amount) - (Number(invoice.amount) / (1 + (invoice.tax_rate || 21)/100))).toFixed(2)} €</span>
                      </div>
                      <div className="flex justify-between items-end pt-2">
                        <span className="font-extrabold text-stone-800">TOTAL</span>

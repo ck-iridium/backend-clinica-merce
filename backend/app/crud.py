@@ -153,13 +153,17 @@ def create_voucher(db: Session, voucher: schemas.VoucherCreate):
     service = db.query(models.Service).filter(models.Service.id == voucher.service_id).first()
     concept_str = f"Bono {voucher.total_sessions}x {service.name}" if service else "Bono Tratamiento Especial"
     
+    
+    settings = get_clinic_settings(db)
+    
     db_invoice = models.Invoice(
         id=generate_invoice_id(db, voucher.purchase_date),
         client_id=voucher.client_id,
         amount=voucher.total_price,
         concept=concept_str,
         date=voucher.purchase_date,
-        status="paid"
+        status="paid",
+        tax_rate=settings.default_tax_rate
     )
     db.add(db_invoice)
     
@@ -194,6 +198,11 @@ def get_invoices(db: Session, skip: int = 0, limit: int = 100):
 def create_invoice(db: Session, invoice: schemas.InvoiceCreate):
     invoice_dict = invoice.model_dump()
     invoice_dict["id"] = generate_invoice_id(db, invoice.date)
+    
+    if "tax_rate" not in invoice_dict or invoice_dict["tax_rate"] is None or invoice_dict["tax_rate"] == 21.0:
+        settings = get_clinic_settings(db)
+        invoice_dict["tax_rate"] = settings.default_tax_rate
+        
     db_invoice = models.Invoice(**invoice_dict)
     db.add(db_invoice)
     db.commit()

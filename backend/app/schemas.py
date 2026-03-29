@@ -84,6 +84,7 @@ class ClinicSettingsBase(BaseModel):
     signature_b64: Optional[str] = None
     invoice_prefix: str
     invoice_next_number: int
+    default_tax_rate: float = 21.0
 
 class ClinicSettingsUpdate(ClinicSettingsBase):
     pass
@@ -155,6 +156,7 @@ class InvoiceBase(BaseModel):
     concept: str
     date: date
     status: str = "pending"
+    tax_rate: float = 21.0
 
 class InvoiceCreate(InvoiceBase):
     pass

@@ -254,10 +254,18 @@ export default function SettingsPage() {
                 </div>
                 <p className="text-[10px] text-stone-400 mt-2">Usa &#123;YY&#125; para año, &#123;YYYY&#125; para año completo, &#123;MM&#125; para mes.</p>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-stone-500 mb-2">Siguiente Nº Factura</label>
-                <input type="number" min="1" value={settings.invoice_next_number} onChange={e => setSettings({...settings, invoice_next_number: parseInt(e.target.value)})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] font-mono font-bold" />
-                <p className="text-[10px] text-emerald-500 mt-2 italic font-medium">Ejemplo final auto-generado: <span className="font-bold">{settings.invoice_prefix.replace('{YY}', new Date().getFullYear().toString().slice(-2)).replace('{YYYY}', new Date().getFullYear().toString()).replace('{MM}', (new Date().getMonth()+1).toString().padStart(2,'0'))}{String(settings.invoice_next_number).padStart(4, '0')}</span></p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-stone-500 mb-2">Sig. Nº Factura</label>
+                  <input type="number" min="1" value={settings.invoice_next_number} onChange={e => setSettings({...settings, invoice_next_number: parseInt(e.target.value)})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] font-mono font-bold" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-stone-500 mb-2">IVA por defecto (%)</label>
+                  <input type="number" min="0" step="0.5" value={settings.default_tax_rate || 21} onChange={e => setSettings({...settings, default_tax_rate: parseFloat(e.target.value)})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] font-mono font-bold" />
+                </div>
+              </div>
+              <div className="md:col-span-2 mt-2">
+                <p className="text-[10px] text-emerald-500 italic font-medium">Ejemplo final auto-generado: <span className="font-bold">{settings.invoice_prefix.replace('{YY}', new Date().getFullYear().toString().slice(-2)).replace('{YYYY}', new Date().getFullYear().toString()).replace('{MM}', (new Date().getMonth()+1).toString().padStart(2,'0'))}{String(settings.invoice_next_number).padStart(4, '0')}</span></p>
               </div>
            </div>
         </div>

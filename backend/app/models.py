@@ -88,6 +88,7 @@ class ClinicSettings(Base):
     # Numeration
     invoice_prefix = Column(String, default="FA-{YY}-")
     invoice_next_number = Column(Integer, default=1)
+    default_tax_rate = Column(Numeric(5, 2), default=21.0)
 
 class Invoice(Base):
     __tablename__ = "invoices"
@@ -97,5 +98,6 @@ class Invoice(Base):
     concept = Column(String, nullable=False)
     date = Column(Date, nullable=False)
     status = Column(String, default="pending") # pending, paid
+    tax_rate = Column(Numeric(5, 2), default=21.0)
     
     client = relationship("Client")
