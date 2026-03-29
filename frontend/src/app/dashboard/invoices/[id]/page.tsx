@@ -143,7 +143,7 @@ export default function InvoicePreviewPage() {
             <div className="p-[20mm] relative z-10 w-full h-full flex flex-col">
                 
                 {/* CABECERA: Logo y Datos Clínica */}
-                <div className="flex justify-between items-start mb-16 border-b border-stone-200 pb-8">
+                <div className="flex justify-between items-start mb-8 border-b border-stone-200 pb-4">
                   <div className="flex flex-col">
                     {/* Imagen de Logo */}
                     {settings?.logo_pdf_b64 ? (
@@ -161,7 +161,7 @@ export default function InvoicePreviewPage() {
                   <div className="text-right flex flex-col items-end">
                     <h1 className="text-4xl font-extrabold text-stone-200 tracking-tighter mb-4">FACTURA</h1>
                     <div className="text-xs text-stone-500 font-medium grid grid-cols-2 gap-x-4 gap-y-1 text-right w-full max-w-[200px]">
-                      <span className="text-stone-400">Nº Documento:</span> <span className="text-stone-800 font-bold uppercase">{invoice.id.substring(0,6)}</span>
+                      <span className="text-stone-400">Nº Documento:</span> <span className="text-stone-800 font-bold uppercase">{invoice.id}</span>
                       <span className="text-stone-400">Fecha Emisión:</span> <span className="text-stone-800 font-bold">{new Date(invoice.date).toLocaleDateString()}</span>
                       <span className="text-stone-400">Estado:</span> 
                       <span className={`font-bold ${invoice.status === 'paid' ? 'text-emerald-500' : 'text-orange-500'}`}>
@@ -172,17 +172,26 @@ export default function InvoicePreviewPage() {
                 </div>
 
                 {/* DATOS DEL PACIENTE */}
-                <div className="mb-12">
-                   <p className="text-[10px] font-bold text-[#d4af37] uppercase tracking-widest mb-2">Facturar o Cobrar A:</p>
-                   <div className="bg-stone-50/50 p-6 border-l-4 border-[#d4af37]">
-                     <p className="text-xl font-extrabold text-stone-800 mb-1">{client?.name || 'Cliente sin nombre'}</p>
-                     <p className="text-sm text-stone-500 font-medium">{client?.email}</p>
-                     <p className="text-sm text-stone-500 font-medium">{client?.phone}</p>
+                <div className="mb-6">
+                   <p className="text-[10px] font-bold text-[#d4af37] uppercase tracking-widest mb-3 border-b border-stone-100 pb-2">Facturar o Cobrar A:</p>
+                   <div className="pl-2">
+                     <p className="text-base font-bold text-stone-800 mb-1">{client?.name || 'Cliente sin nombre'}</p>
+                     
+                     {/* Datos de contacto */}
+                     {client?.phone && <p className="text-xs text-stone-500 font-medium mb-2">{client.phone}</p>}
+                     
+                     {/* Campos Fiscales Condicionales (Para Factura Completa) */}
+                     {client?.dni && (
+                       <p className="text-xs text-stone-600"><strong>NIF/CIF:</strong> {client.dni}</p>
+                     )}
+                     {client?.address && (
+                       <p className="text-xs text-stone-600"><strong>Dirección:</strong> {client.address}</p>
+                     )}
                    </div>
                 </div>
 
                 {/* TABLA DE CONCEPTOS */}
-                <div className="mb-12 flex-1">
+                <div className="mb-6 flex-1">
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="border-b-2 border-stone-800 text-xs uppercase tracking-widest text-stone-800">
@@ -200,7 +209,7 @@ export default function InvoicePreviewPage() {
                 </div>
 
                 {/* TOTALES */}
-                <div className="flex justify-end mb-16">
+                <div className="flex justify-end mb-8">
                   <div className="w-[250px]">
                      <div className="flex justify-between py-2 text-sm text-stone-500">
                        <span>Subtotal</span>
@@ -218,10 +227,10 @@ export default function InvoicePreviewPage() {
                 </div>
 
                 {/* PIE DE PÁGINA (Footer) */}
-                <div className="mt-auto border-t border-stone-200 pt-8 flex justify-between items-end">
+                <div className="mt-auto border-t border-stone-200 pt-4 flex justify-between items-end">
                    <div className="max-w-[300px]">
                      <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Instrucciones</p>
-                     <p className="text-xs text-stone-500 text-justify">
+                     <p className="text-xs text-stone-500 text-left">
                        Los bonos y tratamientos adquiridos están sujetos a su periodo de vigencia. El abono se ha registrado correctamente en nuestra contabilidad interna.
                      </p>
                    </div>

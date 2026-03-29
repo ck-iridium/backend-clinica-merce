@@ -51,7 +51,9 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
           email: formData.email,
           phone: formData.phone === '' ? null : formData.phone,
           allergies: formData.allergies === '' ? null : formData.allergies,
-          medical_history: formData.medical_history === '' ? null : formData.medical_history
+          medical_history: formData.medical_history === '' ? null : formData.medical_history,
+          dni: formData.dni === '' ? null : formData.dni,
+          address: formData.address === '' ? null : formData.address
         })
       });
       if (res.ok) {
@@ -109,6 +111,14 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
                   <label className="block text-xs font-semibold text-stone-500 uppercase tracking-widest mb-1">Alergias</label>
                   <input type="text" value={formData.allergies || ''} onChange={e => setFormData({...formData, allergies: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none" placeholder="Sin alergias" />
                 </div>
+                <div>
+                  <label className="block text-xs font-semibold text-stone-500 uppercase tracking-widest mb-1">DNI / NIF</label>
+                  <input type="text" value={formData.dni || ''} onChange={e => setFormData({...formData, dni: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none" placeholder="Opcional" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-semibold text-stone-500 uppercase tracking-widest mb-1">Dirección Fiscal</label>
+                  <input type="text" value={formData.address || ''} onChange={e => setFormData({...formData, address: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none" placeholder="Opcional" />
+                </div>
                 <div className="md:col-span-2">
                   <label className="block text-xs font-semibold text-stone-500 uppercase tracking-widest mb-1">Historial y Observaciones</label>
                   <textarea value={formData.medical_history || ''} onChange={e => setFormData({...formData, medical_history: e.target.value})} rows={3} className="w-full px-4 py-2 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none" placeholder="Añadir notas médicas..."></textarea>
@@ -127,6 +137,12 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
             <>
               <h1 className="text-4xl font-extrabold text-stone-900 mb-2">{client.name}</h1>
               <p className="text-stone-500 text-lg">{client.email} {client.phone && `• ${client.phone}`}</p>
+              
+              <div className="mt-2 text-sm text-stone-400 font-medium">
+                {client.dni && <span className="mr-4">DNI: <span className="text-stone-600">{client.dni}</span></span>}
+                {client.address && <span>Dir: <span className="text-stone-600">{client.address}</span></span>}
+              </div>
+
               <div className="mt-6 flex flex-wrap gap-4">
                 <a href={`/dashboard/calendar?client_id=${params.id}`} className="bg-[#d9777f] text-white px-6 py-2.5 rounded-xl font-bold hover:bg-[#c6646b] shadow-md transition-all active:scale-95 border border-transparent inline-block text-center cursor-pointer">
                   Reservar Cita

@@ -7,6 +7,8 @@ interface Client {
   email: string;
   phone: string | null;
   allergies: string | null;
+  dni?: string | null;
+  address?: string | null;
 }
 
 export default function ClientsPage() {
@@ -15,7 +17,7 @@ export default function ClientsPage() {
   const [showForm, setShowForm] = useState(false);
   
   // Validation and Data States
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', allergies: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', allergies: '', dni: '', address: '' });
   const [errors, setErrors] = useState({ name: '', email: '' });
   const [saving, setSaving] = useState(false);
 
@@ -69,7 +71,7 @@ export default function ClientsPage() {
       
       await fetchClients(); // Recargar datos
       setShowForm(false);
-      setFormData({ name: '', email: '', phone: '', allergies: '' });
+      setFormData({ name: '', email: '', phone: '', allergies: '', dni: '', address: '' });
     } catch (err) {
       alert("No se pudo guardar la ficha. Verifica tu conexión a Render.");
     } finally {
@@ -133,6 +135,26 @@ export default function ClientsPage() {
                 />
               </div>
               <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">DNI / NIF</label>
+                <input 
+                  type="text" 
+                  value={formData.dni} 
+                  onChange={e => setFormData({...formData, dni: e.target.value})} 
+                  className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d9777f] transition-colors" 
+                  placeholder="00000000X (Opcional)" 
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Dirección Fiscal Completa</label>
+                <input 
+                  type="text" 
+                  value={formData.address} 
+                  onChange={e => setFormData({...formData, address: e.target.value})} 
+                  className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d9777f] transition-colors" 
+                  placeholder="Calle Ejemplar 123, Madrid (Opcional)" 
+                />
+              </div>
+              <div className="md:col-span-2">
                 <label className="block text-sm font-semibold text-stone-700 mb-2">Alergias / Notas críticas</label>
                 <input 
                   type="text" 

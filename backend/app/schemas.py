@@ -24,6 +24,8 @@ class ClientBase(BaseModel):
     email: EmailStr
     medical_history: Optional[str] = None
     allergies: Optional[str] = None
+    dni: Optional[str] = None
+    address: Optional[str] = None
 
 class ClientCreate(ClientBase):
     user_id: Optional[str] = None
@@ -34,6 +36,8 @@ class ClientUpdate(BaseModel):
     email: Optional[EmailStr] = None
     medical_history: Optional[str] = None
     allergies: Optional[str] = None
+    dni: Optional[str] = None
+    address: Optional[str] = None
 
 class ClientResponse(ClientBase):
     id: str
