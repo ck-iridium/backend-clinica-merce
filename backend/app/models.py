@@ -30,6 +30,19 @@ class Client(Base):
     user = relationship("User")
     appointments = relationship("Appointment", back_populates="client")
     vouchers = relationship("Voucher", back_populates="client")
+    consents = relationship("Consent", back_populates="client")
+
+class Consent(Base):
+    __tablename__ = "consents"
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    client_id = Column(String(36), ForeignKey("clients.id"), nullable=False)
+    document_type = Column(String, nullable=False)
+    document_title = Column(String, nullable=False)
+    document_body = Column(Text, nullable=False)
+    signature_b64 = Column(Text, nullable=False)
+    signed_at = Column(DateTime, default=datetime.utcnow)
+    
+    client = relationship("Client", back_populates="consents")
 
 class Service(Base):
     __tablename__ = "services"

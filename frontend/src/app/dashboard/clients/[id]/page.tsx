@@ -1,5 +1,6 @@
 "use client"
 import { useState, useEffect } from 'react';
+import { SignaturePadModal } from '@/components/SignaturePadModal';
 
 export default function ClientProfilePage({ params }: { params: { id: string } }) {
   const [client, setClient] = useState<any>(null);
@@ -10,6 +11,8 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<any>({});
   const [saving, setSaving] = useState(false);
+  const [consents, setConsents] = useState<any[]>([]);
+  const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
 
   useEffect(() => {
     fetchClient();
@@ -17,11 +20,12 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
 
   const fetchClient = async () => {
     try {
-      const [cRes, aRes, vRes, sRes] = await Promise.all([
+      const [cRes, aRes, vRes, sRes, conRes] = await Promise.all([
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/${params.id}`),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/`),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/vouchers/`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/`)
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/${params.id}/consents`)
       ]);
       
       if (cRes.ok) {
@@ -32,6 +36,7 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
       if (aRes.ok) setAppointments((await aRes.json()).filter((a:any) => a.client_id === params.id && a.status === 'completed').sort((a:any, b:any) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime()));
       if (vRes.ok) setVouchers((await vRes.json()).filter((v:any) => v.client_id === params.id));
       if (sRes.ok) setServices(await sRes.json());
+      if (conRes.ok) setConsents(await conRes.json());
     } catch (err) {
       console.error("Error fetching client", err);
     } finally {
@@ -67,6 +72,44 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
       alert("Error de conexión fallida.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSaveSignature = async (signatureB64: string, docType: string) => {
+    try {
+      const docTitles: any = {
+        'rgpd_general': 'Tratamiento de Datos Personales (Ley General RGPD)',
+        'laser_hair_removal': 'Consentimiento: Depilación Láser',
+        'botulinum_toxin': 'Consentimiento: Toxina Botulínica',
+        'facial_fillers': 'Consentimiento: Rellenos Faciales'
+      };
+      const title = docTitles[docType] || 'Consentimiento Médico';
+
+      const fakeBody = `DECLARACIÓN DEL PACIENTE: Don/Doña ${client.name} manifiesto que he sido debidamente informado/a y he comprendido la naturaleza y propósito del tratamiento seleccionado, así como las posibles complicaciones, riesgos generales e infrecuentes asociados al mismo. Adicionalmente, presto mi consentimiento EXPRESO, de acuerdo a la Ley Orgánica 3/2018 (LOPDGDD) y el Reglamento (UE) 2016/679 (RGPD), para el uso, tratamiento y archivo de mis datos personales, historial clínico y fotografías con fines de diagnóstico y evolución médica, a favor de Clínica Mercè. Con la firma del presente documento, asumo que he tenido la oportunidad de aclarar dudas y realizo la aceptación del tratamiento propuesto de forma libre y voluntaria.`;
+
+      const payload = {
+        client_id: params.id,
+        document_type: docType,
+        document_title: title,
+        document_body: fakeBody,
+        signature_b64: signatureB64
+      };
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/${params.id}/consents`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        const newConsent = await res.json();
+        setConsents([newConsent, ...consents]);
+        setIsSignatureModalOpen(false);
+      } else {
+        alert("Error al guardar el documento legal");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error al guardar el documento legal");
     }
   };
 
@@ -224,6 +267,49 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
             )}
           </div>
 
+          {/* Documentos Legales y RGPD */}
+          <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-stone-100">
+            <h3 className="text-xl font-bold text-stone-800 mb-6 border-b border-stone-50 pb-4 flex items-center justify-between">
+              <span>📄 Documentos Legales y Firmas</span>
+              <button 
+                onClick={() => setIsSignatureModalOpen(true)}
+                className="text-sm font-semibold text-emerald-700 bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-100 hover:bg-emerald-100 transition-colors shadow-sm"
+              >
+                + Nuevo Consentimiento
+              </button>
+            </h3>
+            
+            {consents.length === 0 ? (
+              <div className="text-center py-8">
+                <span className="text-stone-300 text-4xl mb-4 block">⚖️</span>
+                <p className="text-stone-500 font-medium">No hay documentos firmados.</p>
+                <p className="text-stone-400 text-sm mt-1">El paciente no ha firmado todavía el consentimiento RGPD básico.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {consents.map(c => (
+                  <div key={c.id} className="flex flex-col sm:flex-row gap-4 items-start sm:items-center p-4 rounded-xl border border-stone-100 bg-stone-50 hover:bg-stone-100 transition-colors">
+                    <div className="w-10 h-10 rounded-lg bg-stone-200 flex items-center justify-center text-stone-500 font-bold shrink-0">
+                      📝
+                    </div>
+                    <div className="flex-1">
+                       <p className="font-bold text-stone-800 text-sm">{c.document_title}</p>
+                       <p className="text-xs text-stone-500 font-medium mt-0.5">
+                         Firmado el: {new Date(c.signed_at).toLocaleString('es-ES', { dateStyle: 'long', timeStyle: 'short' })}
+                       </p>
+                    </div>
+                    <a
+                      href={`/dashboard/clients/${params.id}/consents/${c.id}`}
+                      className="w-full sm:w-auto text-center px-4 py-2 bg-white border border-stone-200 text-stone-600 font-bold text-xs rounded-lg shadow-sm hover:border-[#d9777f] hover:text-[#d9777f] transition-colors"
+                    >
+                      Ver / Imprimir
+                    </a>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Treatment History */}
           <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-stone-100">
             <h3 className="text-xl font-bold text-stone-800 mb-6 border-b border-stone-50 pb-4">Historial de Tratamientos Finalizados</h3>
@@ -268,6 +354,13 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
         </div>
       </div>
 
+      {/* --- Modal de Firma --- */}
+      <SignaturePadModal 
+        isOpen={isSignatureModalOpen}
+        onClose={() => setIsSignatureModalOpen(false)}
+        onSave={handleSaveSignature}
+        clientName={client.name}
+      />
     </div>
   );
 }

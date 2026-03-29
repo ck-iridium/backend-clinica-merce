@@ -89,6 +89,24 @@ class ClinicSettingsBase(BaseModel):
 class ClinicSettingsUpdate(ClinicSettingsBase):
     pass
 
+# --- Consents ---
+class ConsentBase(BaseModel):
+    client_id: str
+    document_type: str
+    document_title: str
+    document_body: str
+    signature_b64: str
+
+class ConsentCreate(ConsentBase):
+    pass
+
+class ConsentResponse(ConsentBase):
+    id: str
+    signed_at: datetime
+    
+    class Config:
+        from_attributes = True
+
 class ClinicSettingsResponse(ClinicSettingsBase):
     id: int
 

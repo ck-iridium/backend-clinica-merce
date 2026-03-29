@@ -15,9 +15,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const logoUrl = settings?.logo_app_b64 || null;
 
   return (
-    <div className="min-h-screen bg-stone-50 md:flex flex-col md:flex-row font-sans text-stone-900 overflow-hidden">
+    <div className="min-h-screen bg-stone-50 md:flex flex-col md:flex-row font-sans text-stone-900 overflow-hidden print:bg-white print:overflow-visible text-base">
       {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-white border-r border-stone-200 flex-shrink-0 z-10 shadow-sm md:h-screen md:sticky top-0 overflow-y-auto">
+      <aside className="w-full md:w-64 bg-white border-r border-stone-200 flex-shrink-0 z-10 shadow-sm md:h-screen md:sticky top-0 overflow-y-auto print:hidden">
         <div className="p-6 border-b border-stone-100 bg-[#fdf2f3]/50">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#d9777f] to-[#b35e65] mb-3 flex items-center justify-center text-white font-bold text-xl shadow-md overflow-hidden">
             {logoUrl ? <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" /> : clinicName.charAt(0)}
