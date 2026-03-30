@@ -109,7 +109,7 @@ export default function BookingPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
-      if (!clientRes.ok) throw new Error("Error procesando los datos del paciente");
+      if (!clientRes.ok) throw new Error("Error procesando los datos del cliente");
       const clientObj = await clientRes.json();
 
       // 2. Create Appointment
@@ -341,7 +341,7 @@ export default function BookingPage() {
                         <li className="flex items-center gap-3">
                           <span className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-lg">👤</span>
                           <div>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400">Paciente</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400">Cliente</p>
                             <p className="font-extrabold text-stone-800">{formData.name}</p>
                           </div>
                         </li>

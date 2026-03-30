@@ -139,7 +139,7 @@ export default function InvoicePreviewPage() {
           <div className="bg-white p-6 rounded-[2rem] border border-stone-100 shadow-sm">
             <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-4">Información del Cliente</p>
             <div className="flex flex-col gap-1 mb-4">
-              <span className="font-extrabold text-stone-800 text-lg leading-tight">{client?.name || 'Paciente Borrado'}</span>
+              <span className="font-extrabold text-stone-800 text-lg leading-tight">{client?.name || 'Cliente Borrado'}</span>
               <span className="text-sm font-medium text-stone-500">{client?.email || 'Sin email'}</span>
               <span className="text-sm font-medium text-stone-500">{client?.phone || 'Sin teléfono'}</span>
             </div>

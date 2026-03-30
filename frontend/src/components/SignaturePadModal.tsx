@@ -143,7 +143,7 @@ export function SignaturePadModal({ isOpen, onClose, onSave, clientName }: Signa
           {/* Canvas Wrapper */}
           <div>
             <div className="flex justify-between items-end mb-2">
-              <label className="block text-sm font-bold text-[#d9777f] uppercase tracking-widest">Firma del Paciente:</label>
+              <label className="block text-sm font-bold text-[#d9777f] uppercase tracking-widest">Firma del Cliente:</label>
               <button 
                 onClick={clearCanvas}
                 className="text-[10px] uppercase font-bold text-stone-400 bg-stone-100 hover:bg-stone-200 hover:text-stone-600 px-3 py-1 rounded-full transition-colors"

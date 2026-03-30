@@ -14,6 +14,13 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
   const [consents, setConsents] = useState<any[]>([]);
   const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
 
+  // Pay Debt Modal State
+  const [showPayModal, setShowPayModal] = useState(false);
+  const [payVoucherId, setPayVoucherId] = useState('');
+  const [payAmount, setPayAmount] = useState<number | ''>('');
+  const [paying, setPaying] = useState(false);
+  const [currentDebt, setCurrentDebt] = useState(0);
+
   useEffect(() => {
     fetchClient();
   }, [params.id]);
@@ -113,6 +120,37 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
     }
   };
 
+  const handleOpenPayModal = (v: any) => {
+    setPayVoucherId(v.id);
+    const debt = v.total_price - v.amount_paid;
+    setCurrentDebt(debt);
+    setPayAmount(debt); // Autocomplete with exact remaining amount
+    setShowPayModal(true);
+  };
+
+  const handlePayDebt = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPaying(true);
+    try {
+      const v = vouchers.find(x => x.id === payVoucherId);
+      if (!v) return;
+      const newAmountPaid = Number(v.amount_paid) + Number(payAmount);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vouchers/${payVoucherId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount_paid: newAmountPaid })
+      });
+      if (res.ok) {
+        setShowPayModal(false);
+        fetchClient(); // refresh specific client data
+      } else {
+        alert("Error al registrar el pago");
+      }
+    } finally {
+      setPaying(false);
+    }
+  };
+
   if (loading) return (
     <div className="p-20 text-center">
       <div className="inline-block w-8 h-8 border-4 border-[#f3c7cb] border-t-[#d9777f] rounded-full animate-spin mb-4"></div>
@@ -120,7 +158,7 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
     </div>
   );
   
-  if (!client) return <div className="p-10 text-stone-500 text-center font-bold text-xl">Paciente no encontrado</div>;
+  if (!client) return <div className="p-10 text-stone-500 text-center font-bold text-xl">Cliente no encontrado</div>;
 
   return (
     <div className="animate-in fade-in duration-500">
@@ -202,6 +240,25 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
         {/* Alerts & Medical Info */}
         <div className="md:col-span-1 bg-white p-8 rounded-[2rem] shadow-sm border border-stone-100">
+          {(() => {
+            const activeVouchersWithDebt = vouchers.filter(v => v.payment_status === 'partial' || v.payment_status === 'pending');
+            const totalDebt = activeVouchersWithDebt.reduce((sum, v) => sum + (v.total_price - v.amount_paid), 0);
+            if (totalDebt > 0) return (
+              <div className="mb-8">
+                <h3 className="text-lg font-bold text-stone-800 mb-4 flex items-center gap-2">
+                  <span className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 shadow-sm border border-rose-100">💰</span>
+                  Deuda Pendiente
+                </h3>
+                <div className="p-5 bg-rose-50 border border-rose-200 rounded-2xl flex flex-col items-center justify-center shadow-inner">
+                  <span className="text-xs uppercase font-extrabold text-rose-500 tracking-widest mb-1">Monto a abonar</span>
+                  <span className="text-4xl font-extrabold text-rose-600">{totalDebt}€</span>
+                  <p className="text-xs text-rose-400 font-medium text-center mt-2 leading-tight">El cliente mantiene bonos asignados sin haber completado el pago.</p>
+                </div>
+              </div>
+            );
+            return null;
+          })()}
+
           <h3 className="text-lg font-bold text-stone-800 mb-4 flex items-center gap-2">
             <span className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-red-500 shadow-sm border border-red-100">⚠️</span>
             Alertas Médicas
@@ -236,7 +293,7 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
               <a href="/dashboard/vouchers" className="text-sm font-semibold text-[#d9777f] bg-[#fdf2f3] px-3 py-1 rounded-lg hover:bg-[#f3c7cb] transition-colors">Vender Bono</a>
             </h3>
             {vouchers.length === 0 ? (
-              <p className="text-stone-400 text-sm italic">Este paciente no tiene bonos en su cuenta.</p>
+              <p className="text-stone-400 text-sm italic">Este cliente no tiene bonos en su cuenta.</p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {vouchers.map(v => {
@@ -246,19 +303,41 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
                   const isActive = !isExpired && !isEmpty;
                   
                   return (
-                    <div key={v.id} className={`p-4 rounded-xl border ${isActive ? 'bg-[#fdf2f3] border-[#f3c7cb]' : 'bg-stone-50 border-stone-100 opacity-60'}`}>
-                      <div className="flex justify-between items-start mb-2">
-                        <p className="font-extrabold text-stone-700 text-sm leading-tight">{service?.name || 'Servicio...'}</p>
-                        <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-stone-200 text-stone-500'}`}>
-                          {isActive ? 'Activo' : 'Cerrado'}
-                        </span>
-                      </div>
-                      <p className="text-xs font-semibold text-stone-500 mb-2">Caduca: {new Date(v.expiration_date).toLocaleDateString()}</p>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-white h-2 rounded-full overflow-hidden border border-stone-200">
-                           <div className="bg-[#d9777f] h-full" style={{ width: `${(v.used_sessions / v.total_sessions) * 100}%`}}></div>
+                    <div key={v.id} className={`p-4 rounded-xl border flex flex-col justify-between ${isActive ? 'bg-[#fdf2f3] border-[#f3c7cb]' : 'bg-stone-50 border-stone-100 opacity-60'}`}>
+                      <div>
+                        <div className="flex justify-between items-start mb-2 gap-2">
+                          <p className="font-extrabold text-stone-700 text-sm leading-tight">{service?.name || 'Servicio...'}</p>
+                          <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-stone-200 text-stone-500'}`}>
+                            {isActive ? 'Activo' : 'Cerrado'}
+                          </span>
                         </div>
-                        <span className="text-xs font-bold text-stone-700">{v.used_sessions}/{v.total_sessions}</span>
+                        <p className="text-xs font-semibold text-stone-500 mb-4">⏳ Vence: {new Date(v.expiration_date).toLocaleDateString()}</p>
+                      </div>
+
+                      <div>
+                        {/* Financial Area */}
+                        {(v.payment_status === 'partial' || v.payment_status === 'pending') ? (
+                          <div className="mb-4 bg-white/60 p-2.5 rounded-lg border border-rose-100 flex items-center justify-between">
+                            <div>
+                               <span className="text-[10px] uppercase font-bold text-rose-400 block mb-0.5">Deuda</span>
+                               <span className="text-sm font-extrabold text-rose-600">{v.total_price - v.amount_paid}€</span>
+                            </div>
+                            <button onClick={() => handleOpenPayModal(v)} className="bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold px-3 py-1.5 rounded-md text-xs transition-colors shadow-sm focus:outline-none">
+                              Cobrar
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="mb-4 bg-emerald-50/50 p-2 rounded-lg border border-emerald-100 flex items-center justify-center">
+                            <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">✓ Pagado Totalmente</span>
+                          </div>
+                        )}
+
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 bg-white h-2 rounded-full overflow-hidden border border-stone-200">
+                             <div className="bg-[#d9777f] h-full" style={{ width: `${(v.used_sessions / v.total_sessions) * 100}%`}}></div>
+                          </div>
+                          <span className="text-xs font-bold text-stone-700">{v.used_sessions}/{v.total_sessions}</span>
+                        </div>
                       </div>
                     </div>
                   );
@@ -283,7 +362,7 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
               <div className="text-center py-8">
                 <span className="text-stone-300 text-4xl mb-4 block">⚖️</span>
                 <p className="text-stone-500 font-medium">No hay documentos firmados.</p>
-                <p className="text-stone-400 text-sm mt-1">El paciente no ha firmado todavía el consentimiento RGPD básico.</p>
+                <p className="text-stone-400 text-sm mt-1">El cliente no ha firmado todavía el consentimiento RGPD básico.</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -361,6 +440,45 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
         onSave={handleSaveSignature}
         clientName={client.name}
       />
+
+      {/* --- Modal de Saldar Deuda --- */}
+      {showPayModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/40 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-white rounded-[2rem] w-full max-w-sm shadow-2xl p-6">
+            <h2 className="text-xl font-extrabold text-stone-800 mb-6 flex justify-between">
+              Añadir Pago
+              <button onClick={() => setShowPayModal(false)} className="text-stone-400">✕</button>
+            </h2>
+
+            <form onSubmit={handlePayDebt}>
+              <p className="text-sm text-stone-500 mb-4 bg-stone-50 p-3 rounded-lg border border-stone-100">
+                La deuda actual de este bono es de <strong className="text-rose-500">{currentDebt}€</strong>.
+              </p>
+              
+              <div>
+                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Monto abonado HOY (€)</label>
+                <input 
+                  required 
+                  type="number" 
+                  step="0.01" 
+                  max={currentDebt}
+                  value={payAmount} 
+                  onChange={e => setPayAmount(Number(e.target.value))} 
+                  className="w-full p-4 bg-white border border-stone-200 border-l-4 border-l-[#d9777f] rounded-xl font-extrabold text-stone-800 outline-none text-xl" 
+                />
+                <p className="text-[10px] text-stone-400 mt-1">Este importe cerrará parcialmente o totalmente la deuda, actualizando la factura pendiente.</p>
+              </div>
+
+              <div className="mt-8 flex gap-3">
+                 <button type="button" onClick={() => setShowPayModal(false)} className="flex-1 py-3 text-stone-600 font-bold border border-stone-200 rounded-xl hover:bg-stone-50">Cancelar</button>
+                 <button type="submit" disabled={paying} className="flex-1 py-3 text-white bg-[#d9777f] font-bold rounded-xl hover:bg-[#c6646b] shadow-md flex justify-center items-center">
+                   {paying ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : 'Confirmar Cobro'}
+                 </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

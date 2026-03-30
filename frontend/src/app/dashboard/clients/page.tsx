@@ -84,13 +84,13 @@ export default function ClientsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-stone-800">Directorio de Pacientes</h1>
+          <h1 className="text-3xl font-extrabold text-stone-800">Directorio de Clientes</h1>
           <p className="text-stone-500 mt-1 font-medium">Gestión de fichas médicas e historiales</p>
         </div>
         <button 
           onClick={() => setShowForm(!showForm)}
           className={`px-6 py-3 rounded-xl font-bold transition-all active:scale-95 shadow-md ${showForm ? 'bg-stone-200 text-stone-700 hover:bg-stone-300' : 'bg-[#d9777f] text-white hover:bg-[#c6646b] hover:shadow-lg'}`}>
-          {showForm ? 'Descartar' : '+ Añadir Paciente'}
+          {showForm ? 'Descartar' : '+ Añadir Cliente'}
         </button>
       </div>
 
@@ -167,7 +167,7 @@ export default function ClientsPage() {
             </div>
             <div className="flex justify-end pt-4">
               <button disabled={saving} type="submit" className="bg-stone-900 hover:bg-[#d9777f] disabled:opacity-50 disabled:cursor-not-allowed text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95">
-                {saving ? 'Registrando...' : 'Registrar Paciente'}
+                {saving ? 'Registrando...' : 'Registrar Cliente'}
               </button>
             </div>
           </form>
@@ -180,7 +180,7 @@ export default function ClientsPage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-stone-50/80 border-b border-stone-100 text-stone-400 text-xs font-bold tracking-widest uppercase">
-                <th className="px-8 py-5">Paciente</th>
+                <th className="px-8 py-5">Cliente</th>
                 <th className="px-8 py-5">Contacto</th>
                 <th className="px-8 py-5">Alertas Médicas</th>
                 <th className="px-8 py-5 text-center">Acciones</th>
@@ -194,7 +194,7 @@ export default function ClientsPage() {
                   </td>
                 </tr>
               ) : clients.length === 0 ? (
-                <tr><td colSpan={4} className="text-center py-16 text-stone-400 font-medium">Aún no hay pacientes registrados en el sistema. Usa el botón superior para añadir uno.</td></tr>
+                <tr><td colSpan={4} className="text-center py-16 text-stone-400 font-medium">Aún no hay clientes registrados en el sistema. Usa el botón superior para añadir uno.</td></tr>
               ) : (
                 clients.map((client) => (
                   <tr key={client.id} className="hover:bg-[#fdf2f3] group transition-colors">

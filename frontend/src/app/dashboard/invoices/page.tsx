@@ -27,7 +27,7 @@ export default function InvoicesPage() {
     }
   };
 
-  const getClientName = (id: string) => clients.find(c => c.id === id)?.name || 'Paciente Borrado';
+  const getClientName = (id: string) => clients.find(c => c.id === id)?.name || 'Cliente Borrado';
   
   const handleToggleStatus = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === 'paid' ? 'pending' : 'paid';
@@ -81,7 +81,7 @@ export default function InvoicesPage() {
               <thead>
                 <tr className="bg-stone-50 border-b border-stone-100 text-[10px] uppercase tracking-widest text-stone-400">
                   <th className="p-5 font-bold">Fecha</th>
-                  <th className="p-5 font-bold">Paciente</th>
+                  <th className="p-5 font-bold">Cliente</th>
                   <th className="p-5 font-bold">Concepto</th>
                   <th className="p-5 font-bold text-center">Estado</th>
                   <th className="p-5 font-bold text-right">Importe</th>

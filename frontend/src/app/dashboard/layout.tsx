@@ -30,7 +30,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             Inicio
           </Link>
           <Link href="/dashboard/clients" className="block px-4 py-3 rounded-xl hover:bg-[#fdf2f3] hover:text-[#d9777f] text-stone-600 font-medium transition-colors">
-            Pacientes
+            Clientes
           </Link>
           <Link href="/dashboard/services" className="block px-4 py-3 rounded-xl hover:bg-[#fdf2f3] hover:text-[#d9777f] text-stone-600 font-medium transition-colors">
             Servicios

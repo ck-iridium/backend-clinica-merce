@@ -289,7 +289,7 @@ function CalendarContent() {
                         
                         const heightPx = Math.max((durationMin / 60) * 80, 30); // at least 30px so text is visibly readable
                         
-                        const client = clientMap.get(appt.client_id) || { name: 'Paciente Desconocido' };
+                        const client = clientMap.get(appt.client_id) || { name: 'Cliente Desconocido' };
                         const service = serviceMap.get(appt.service_id) || { name: 'Servicio Borrado...', duration_minutes: durationMin };
                         const colors = getStatusColors(appt.status);
 
@@ -331,9 +331,9 @@ function CalendarContent() {
             
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">Paciente *</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Cliente *</label>
                 <select required value={selectedClientId} onChange={e => setSelectedClientId(e.target.value)} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50 shadow-inner appearance-none">
-                  <option value="">-- Elige un paciente --</option>
+                  <option value="">-- Elige un cliente --</option>
                   {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
@@ -377,7 +377,7 @@ function CalendarContent() {
             <button onClick={() => setShowEditModal(false)} className="absolute top-6 right-6 w-8 h-8 rounded-full bg-stone-100 text-stone-500 font-bold hover:bg-stone-200 flex items-center justify-center transition-colors">✕</button>
             
             <div className="mb-6">
-              <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1">Paciente</p>
+              <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1">Cliente</p>
               <h3 className="text-xl font-extrabold text-stone-800">{clientMap.get(selectedAppt.client_id)?.name || 'Desconocido'}</h3>
             </div>
             

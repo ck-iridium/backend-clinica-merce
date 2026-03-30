@@ -54,6 +54,20 @@ class Service(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+    # Relationships
+    voucher_templates = relationship("VoucherTemplate", back_populates="service")
+
+class VoucherTemplate(Base):
+    __tablename__ = "voucher_templates"
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = Column(String, nullable=False)
+    service_id = Column(String(36), ForeignKey("services.id"), nullable=False)
+    total_sessions = Column(Integer, nullable=False)
+    price = Column(Numeric(10, 2), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    service = relationship("Service", back_populates="voucher_templates")
+
 class Appointment(Base):
     __tablename__ = "appointments"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -75,6 +89,8 @@ class Voucher(Base):
     total_sessions = Column(Integer, nullable=False)
     used_sessions = Column(Integer, default=0)
     total_price = Column(Numeric(10, 2), nullable=False)
+    amount_paid = Column(Numeric(10, 2), default=0.0)
+    payment_status = Column(String, default="pending") # pending, partial, paid
     purchase_date = Column(Date, nullable=False)
     expiration_date = Column(Date, nullable=False)
 

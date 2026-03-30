@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from datetime import datetime, date
 from . import models, schemas
 import uuid
@@ -79,6 +79,9 @@ def get_clients(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Client).offset(skip).limit(limit).all()
 
 # Services
+def get_service(db: Session, service_id: str):
+    return db.query(models.Service).filter(models.Service.id == service_id).first()
+
 def get_services(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Service).offset(skip).limit(limit).all()
 
@@ -146,13 +149,22 @@ def get_vouchers(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Voucher).offset(skip).limit(limit).all()
 
 def create_voucher(db: Session, voucher: schemas.VoucherCreate):
-    db_voucher = models.Voucher(**voucher.model_dump())
+    v_dict = voucher.model_dump()
+    
+    # Calculate payment status based on paid vs total
+    if v_dict["amount_paid"] >= v_dict["total_price"]:
+        v_dict["payment_status"] = "paid"
+    elif v_dict["amount_paid"] > 0:
+        v_dict["payment_status"] = "partial"
+    else:
+        v_dict["payment_status"] = "pending"
+        
+    db_voucher = models.Voucher(**v_dict)
     db.add(db_voucher)
     
     # Generar factura pagada automáticamente
     service = db.query(models.Service).filter(models.Service.id == voucher.service_id).first()
     concept_str = f"Bono {voucher.total_sessions}x {service.name}" if service else "Bono Tratamiento Especial"
-    
     
     settings = get_clinic_settings(db)
     
@@ -162,7 +174,7 @@ def create_voucher(db: Session, voucher: schemas.VoucherCreate):
         amount=voucher.total_price,
         concept=concept_str,
         date=voucher.purchase_date,
-        status="paid",
+        status="paid" if v_dict["payment_status"] == "paid" else "pending",
         tax_rate=settings.default_tax_rate
     )
     db.add(db_invoice)
@@ -177,6 +189,28 @@ def update_voucher(db: Session, voucher_id: str, voucher: schemas.VoucherUpdate)
         update_data = voucher.model_dump(exclude_unset=True)
         for key, value in update_data.items():
             setattr(db_voucher, key, value)
+            
+        # Re-calc payment status
+        paid = db_voucher.amount_paid
+        total = db_voucher.total_price
+        if paid >= total:
+            db_voucher.payment_status = "paid"
+            
+            # Auto-saldar factura asociada pendiente
+            invoice = db.query(models.Invoice).filter(
+                models.Invoice.client_id == db_voucher.client_id,
+                models.Invoice.amount == total,
+                models.Invoice.date == db_voucher.purchase_date,
+                models.Invoice.status == "pending"
+            ).first()
+            if invoice:
+                invoice.status = "paid"
+                
+        elif paid > 0:
+            db_voucher.payment_status = "partial"
+        else:
+            db_voucher.payment_status = "pending"
+            
         db.commit()
         db.refresh(db_voucher)
     return db_voucher
@@ -239,3 +273,24 @@ def create_consent(db: Session, consent: schemas.ConsentCreate):
     db.commit()
     db.refresh(db_consent)
     return db_consent
+
+# Voucher Templates
+def get_voucher_templates(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.VoucherTemplate).options(joinedload(models.VoucherTemplate.service)).offset(skip).limit(limit).all()
+
+def get_voucher_template(db: Session, template_id: str):
+    return db.query(models.VoucherTemplate).filter(models.VoucherTemplate.id == template_id).first()
+
+def create_voucher_template(db: Session, template: schemas.VoucherTemplateCreate):
+    db_template = models.VoucherTemplate(**template.model_dump())
+    db.add(db_template)
+    db.commit()
+    db.refresh(db_template)
+    return db_template
+
+def delete_voucher_template(db: Session, template_id: str):
+    db_template = db.query(models.VoucherTemplate).filter(models.VoucherTemplate.id == template_id).first()
+    if db_template:
+        db.delete(db_template)
+        db.commit()
+    return db_template

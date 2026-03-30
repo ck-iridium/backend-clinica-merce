@@ -120,7 +120,7 @@ export default function ConsentPreviewPage() {
              {/* BLOQUE DE IDENTIFICACIÓN PACIENTE */}
              <div className="bg-stone-50 border border-stone-200 p-6 rounded-2xl mb-8 flex flex-col gap-2">
                 <h3 className="text-xs font-bold text-stone-400 uppercase tracking-widest border-b border-stone-200 pb-2 mb-2">
-                  Datos del Paciente
+                  Datos del Cliente
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
                    <div>
@@ -170,11 +170,11 @@ export default function ConsentPreviewPage() {
 
              <div className="text-right flex flex-col items-center border border-stone-300 rounded-2xl p-4 bg-stone-50/50 min-w-[250px]">
                 <p className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-4 w-full text-left border-b border-stone-200 pb-2">
-                  Firma del Paciente
+                  Firma del Cliente
                 </p>
                 <img 
                    src={consent.signature_b64} 
-                   alt="Firma del Paciente" 
+                   alt="Firma del Cliente" 
                    className="h-24 object-contain mix-blend-multiply drop-shadow-sm mb-4" 
                 />
                 <div className="w-full text-left">
