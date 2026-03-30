@@ -1,5 +1,7 @@
 from sqlalchemy.orm import Session, joinedload
-from datetime import datetime, date
+from sqlalchemy import or_
+from datetime import datetime, date, timedelta
+from typing import List
 from . import models, schemas
 import uuid
 
@@ -294,3 +296,129 @@ def delete_voucher_template(db: Session, template_id: str):
         db.delete(db_template)
         db.commit()
     return db_template
+
+
+# ──────────────────────────────────────────────────────────────
+# PUBLIC BOOKING ENGINE
+# ──────────────────────────────────────────────────────────────
+
+# Clinic working blocks: 09:30-14:00 and 16:00-19:00
+_SCHEDULE_BLOCKS = [
+    (9, 30, 14, 0),   # morning: 09:30 → 14:00
+    (16, 0, 19, 0),   # afternoon: 16:00 → 19:00
+]
+_SLOT_STEP_MINUTES = 30
+
+
+def find_or_create_client(db: Session, name: str, email: str | None, phone: str | None):
+    """Look up an existing client by email OR phone. Create a new one if not found."""
+    is_new = False
+    client = None
+
+    # Build query filters
+    conditions = []
+    if email:
+        conditions.append(models.Client.email == email.strip().lower())
+    if phone:
+        phone_clean = phone.strip()
+        conditions.append(models.Client.phone == phone_clean)
+
+    if conditions:
+        client = db.query(models.Client).filter(or_(*conditions)).first()
+
+    if not client:
+        is_new = True
+        client = models.Client(
+            id=str(uuid.uuid4()),
+            name=name,
+            email=email.strip().lower() if email else f"web_{str(uuid.uuid4())[:8]}@web.local",
+            phone=phone.strip() if phone else None,
+        )
+        db.add(client)
+        db.flush()  # get the id without committing yet
+
+    return client, is_new
+
+
+def get_availability_slots(db: Session, target_date: date, service_id: str) -> List[str]:
+    """Return available time slots (HH:MM strings) for a given date and service."""
+    # 0. Weekend guard: clinic is closed Saturday (5) and Sunday (6)
+    if target_date.weekday() in (5, 6):
+        return []
+
+    # 1. Get service duration
+    service = db.query(models.Service).filter(models.Service.id == service_id).first()
+    if not service:
+        return []
+    duration = timedelta(minutes=int(service.duration_minutes))
+
+    # 2. Fetch existing appointments for that day (excluding cancelled)
+    day_start = datetime(target_date.year, target_date.month, target_date.day, 0, 0, 0)
+    day_end   = datetime(target_date.year, target_date.month, target_date.day, 23, 59, 59)
+    existing = db.query(models.Appointment).filter(
+        models.Appointment.start_time >= day_start,
+        models.Appointment.start_time <= day_end,
+        models.Appointment.status != "cancelled",
+    ).all()
+
+    # 3. Generate candidate slots across both schedule blocks
+    available = []
+    step = timedelta(minutes=_SLOT_STEP_MINUTES)
+
+    for (sh, sm, eh, em) in _SCHEDULE_BLOCKS:
+        block_start = datetime(target_date.year, target_date.month, target_date.day, sh, sm)
+        block_end   = datetime(target_date.year, target_date.month, target_date.day, eh, em)
+        slot = block_start
+
+        while slot + duration <= block_end:  # slot must finish inside the block
+            slot_end = slot + duration
+
+            # 4. Overlap check: max(slot_start, appt_start) < min(slot_end, appt_end)
+            overlaps = False
+            for appt in existing:
+                if max(slot, appt.start_time) < min(slot_end, appt.end_time):
+                    overlaps = True
+                    break
+
+            if not overlaps:
+                available.append(slot.strftime("%H:%M"))
+
+            slot += step
+
+    return available
+
+
+def create_public_appointment(
+    db: Session,
+    booking: schemas.PublicBookingRequest,
+):
+    """Idempotent public booking: find-or-create client, then create appointment."""
+    # 1. Resolve client
+    client, is_new = find_or_create_client(
+        db,
+        name=booking.client_name,
+        email=booking.client_email,
+        phone=booking.client_phone,
+    )
+
+    # 2. Calculate end_time using service duration
+    service = db.query(models.Service).filter(models.Service.id == booking.service_id).first()
+    if not service:
+        raise ValueError(f"Service {booking.service_id} not found")
+    end_time = booking.start_time + timedelta(minutes=int(service.duration_minutes))
+
+    # 3. Create appointment with 'web_pending' status
+    appt = models.Appointment(
+        id=str(uuid.uuid4()),
+        client_id=client.id,
+        service_id=booking.service_id,
+        start_time=booking.start_time,
+        end_time=end_time,
+        status="web_pending",
+        notes=booking.notes,
+    )
+    db.add(appt)
+    db.commit()
+    db.refresh(appt)
+
+    return appt, client, is_new

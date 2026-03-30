@@ -27,6 +27,8 @@ export default function BookingPage() {
   const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
 
   useEffect(() => {
     const fetchBaseData = async () => {
@@ -49,91 +51,43 @@ export default function BookingPage() {
     fetchBaseData();
   }, []);
 
-  // Compute available slots based on selected date and service duration (Mathematical blocking against Agenda)
-  const getAvailableSlots = () => {
-    if (!selectedService) return [];
-    
-    // We generate slots every 30 mins from 09:00 to 19:30
-    const slots = [];
-    let currentSlot = new Date(selectedDate);
-    currentSlot.setHours(9, 0, 0, 0);
-    
-    const endOfDay = new Date(selectedDate);
-    endOfDay.setHours(20, 0, 0, 0); // Close at 20:00
-
-    const durMs = selectedService.duration_minutes * 60000;
-
-    while (currentSlot.getTime() + durMs <= endOfDay.getTime()) {
-      const slotStart = currentSlot.getTime();
-      const slotEnd = slotStart + durMs;
-      
-      // Check collision with any existing appointment on Merce's calendar
-      let hasCollision = false;
-      for (const appt of appointments) {
-        let tStringStart = appt.start_time;
-        let tStringEnd = appt.end_time;
-        if (tStringStart.endsWith('Z')) tStringStart = tStringStart.slice(0, -1);
-        if (tStringEnd.endsWith('Z')) tStringEnd = tStringEnd.slice(0, -1);
-
-        const aStart = new Date(tStringStart).getTime();
-        const aEnd = new Date(tStringEnd).getTime();
-
-        // Overlap condition: start of one is before end of other, and end of one is after start of other
-        if (slotStart < aEnd && slotEnd > aStart) {
-          hasCollision = true;
-          break;
-        }
-      }
-      
-      // Check if day is Sunday
-      if (currentSlot.getDay() !== 0) {
-        slots.push({
-          timeLabel: `${currentSlot.getHours().toString().padStart(2,'0')}:${currentSlot.getMinutes().toString().padStart(2,'0')}`,
-          available: !hasCollision,
-          datetime: new Date(currentSlot)
-        });
-      }
-
-      currentSlot = new Date(currentSlot.getTime() + 30 * 60000); // Advance 30 mins
-    }
-    return slots;
-  };
+  // Fetch availability from backend whenever date or service changes
+  useEffect(() => {
+    if (!selectedService || !selectedDate) return;
+    const dow = selectedDate.getDay();
+    if (dow === 0 || dow === 6) { setAvailableSlots([]); return; } // weekend: skip fetch
+    setLoadingSlots(true);
+    setSelectedTime('');
+    const dateStr = selectedDate.toLocaleDateString('en-CA'); // YYYY-MM-DD in local tz
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/availability?date=${dateStr}&service_id=${selectedService.id}`)
+      .then(r => r.json())
+      .then(data => setAvailableSlots(data.available_slots ?? []))
+      .catch(() => setAvailableSlots([]))
+      .finally(() => setLoadingSlots(false));
+  }, [selectedDate, selectedService]);
 
   const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
-      // 1. Create or Find Client (Backend handles idempotent logic by email)
-      const clientRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-      if (!clientRes.ok) throw new Error("Error procesando los datos del cliente");
-      const clientObj = await clientRes.json();
-
-      // 2. Create Appointment
       const [hourStr, minStr] = selectedTime.split(':');
       const startD = new Date(selectedDate);
       startD.setHours(parseInt(hourStr), parseInt(minStr), 0, 0);
-      const endD = new Date(startD.getTime() + selectedService.duration_minutes * 60000);
 
-      const apptRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/public`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          client_id: clientObj.id,
+          client_name: formData.name,
+          client_email: formData.email,
+          client_phone: formData.phone,
           service_id: selectedService.id,
           start_time: formatLocalISO(startD),
-          end_time: formatLocalISO(endD),
-          status: 'pending' // pending confirmation physically/Merce
         })
       });
 
-      if (!apptRes.ok) throw new Error("Error creando cita en el backend");
-      
-      setStep(4); // Success!
-
+      if (!res.ok) throw new Error("Error al confirmar la reserva");
+      setStep(4);
     } catch (err) {
       alert("Oops, ha ocurrido un error. Inténtalo de nuevo o llama a la clínica.");
       console.error(err);
@@ -230,7 +184,7 @@ export default function BookingPage() {
                         />
                         <p className="text-xs text-stone-400 font-medium mt-4 bg-white p-4 rounded-xl border border-stone-100 flex items-center gap-2">
                           <span className="text-base text-[#d4af37]">ℹ️</span> 
-                          Cerramos Domingos. Solo mostramos fechas y horas disponibles que coincidan con la duración de tu tratamiento.
+                          Cerramos sábados y domingos. Solo mostramos horas que quepan enteras dentro del horario: mañanas de 09:30 a 14:00 y tardes de 16:00 a 19:00.
                         </p>
                       </div>
                       
@@ -242,38 +196,39 @@ export default function BookingPage() {
                     {/* Time Slots Math Calculated */}
                     <div className="w-full md:w-1/2">
                       <label className="block text-sm font-extrabold uppercase tracking-widest text-stone-400 mb-4 px-2">Horas Disponibles</label>
-                      {selectedDate.getDay() === 0 ? (
+                      {selectedDate.getDay() === 0 || selectedDate.getDay() === 6 ? (
                         <div className="p-8 bg-red-50 text-red-600 rounded-[2rem] font-medium text-center border border-red-100 shadow-inner">
                           <div className="text-4xl mb-4">🚪</div>
-                          Lo sentimos, la clínica está cerrada los domingos. Por favor, elige otro día en el calendario.
+                          Lo sentimos, la clínica está cerrada los sábados y domingos. Por favor, elige un día entre lunes y viernes.
+                        </div>
+                      ) : loadingSlots ? (
+                        <div className="p-8 text-center text-stone-400 font-bold">
+                          <div className="inline-block w-8 h-8 border-4 border-[#f3c7cb] border-t-[#d9777f] rounded-full animate-spin mb-3"></div>
+                          <p className="text-sm tracking-widest uppercase">Consultando agenda...</p>
+                        </div>
+                      ) : availableSlots.length === 0 ? (
+                        <div className="p-8 bg-stone-50 text-stone-500 rounded-[2rem] text-center font-medium border border-stone-100 shadow-inner">
+                          <div className="text-3xl mb-4 grayscale opacity-50">🗓</div>
+                          Lamentablemente no quedan huecos libres para este día con la duración requerida. Prueba otro día.
                         </div>
                       ) : (
                         <div className="grid grid-cols-3 gap-3 max-h-[360px] overflow-y-auto pr-2 pb-2 custom-scrollbar">
-                          {getAvailableSlots().map((slot, i) => (
+                          {availableSlots.map((slot, i) => (
                             <button
                               key={i}
-                              disabled={!slot.available}
-                              onClick={() => setSelectedTime(slot.timeLabel)}
-                              className={`py-4 rounded-xl font-bold text-sm transition-all border-2 
-                                ${!slot.available 
-                                  ? 'bg-stone-50 border-stone-100 text-stone-300 cursor-not-allowed opacity-50 block w-full text-center hover:scale-100' 
-                                  : selectedTime === slot.timeLabel 
-                                    ? 'bg-[#d9777f] border-[#d9777f] text-white shadow-lg scale-105 block w-full text-center' 
-                                    : 'bg-white border-stone-200 text-stone-600 hover:border-[#d9777f] hover:text-[#d9777f] hover:shadow-md block w-full text-center'
+                              onClick={() => setSelectedTime(slot)}
+                              className={`py-4 rounded-xl font-bold text-sm transition-all border-2 block w-full text-center
+                                ${ selectedTime === slot
+                                  ? 'bg-[#d9777f] border-[#d9777f] text-white shadow-lg scale-105'
+                                  : 'bg-white border-stone-200 text-stone-600 hover:border-[#d9777f] hover:text-[#d9777f] hover:shadow-md'
                                 }`}
                             >
-                              {slot.timeLabel}
+                              {slot}
                             </button>
                           ))}
-                          
-                          {getAvailableSlots().every(s => !s.available) && (
-                            <div className="col-span-3 p-8 bg-stone-50 text-stone-500 rounded-[2rem] text-center font-medium mt-2 border border-stone-100 shadow-inner">
-                              <div className="text-3xl mb-4 grayscale opacity-50">🗓</div>
-                              Lamentablemente no quedan huecos libres para este día con la duración requerida. Prueba otro día.
-                            </div>
-                          )}
                         </div>
                       )}
+
 
                       {/* Floating next button when time is selected */}
                       {selectedTime && (

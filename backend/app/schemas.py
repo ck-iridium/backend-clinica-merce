@@ -213,3 +213,28 @@ class InvoiceResponse(InvoiceBase):
     
     class Config:
         from_attributes = True
+
+
+# --- Public Booking (Landing) ---
+class PublicBookingRequest(BaseModel):
+    # Client identification (used to find-or-create)
+    client_name: str
+    client_email: Optional[str] = None
+    client_phone: Optional[str] = None
+    # Appointment details
+    service_id: str
+    start_time: datetime
+    notes: Optional[str] = None
+
+class PublicBookingResponse(BaseModel):
+    appointment_id: str
+    client_id: str
+    is_new_client: bool
+    start_time: datetime
+    end_time: datetime
+    status: str
+
+class AvailabilityResponse(BaseModel):
+    date: str
+    service_id: str
+    available_slots: List[str]  # e.g. ["09:30", "10:00", "16:30"]
