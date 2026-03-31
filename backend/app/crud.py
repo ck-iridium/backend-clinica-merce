@@ -13,7 +13,7 @@ def get_clinic_settings(db: Session):
     except Exception:
         # Si hay un error de esquema (columnas faltantes), intentamos corregir al vuelo
         db.rollback()
-        from .main import run_auto_migrations
+        from .utils.migrations import run_auto_migrations
         run_auto_migrations()
         settings = db.query(models.ClinicSettings).first()
 
