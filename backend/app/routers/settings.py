@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 from .. import crud, schemas, models, database
 from typing import Dict, Any
@@ -38,8 +39,10 @@ def export_database(db: Session = Depends(database.get_db)):
 
 @router.post("/backup/restore")
 async def restore_database(backup_data: Dict[str, Any], db: Session = Depends(database.get_db)):
-    # Very dangerous, wipe all and insert
     try:
+        # Desactivar temporalmente las claves foráneas (Postgres)
+        db.execute(text("SET session_replication_role = 'replica';"))
+        
         db.query(models.Invoice).delete()
         db.query(models.Appointment).delete()
         db.query(models.Voucher).delete()
@@ -73,6 +76,9 @@ async def restore_database(backup_data: Dict[str, Any], db: Session = Depends(da
         for v in backup_data.get("vouchers", []): db.add(models.Voucher(**parse_dates(v)))
         for i in backup_data.get("invoices", []): db.add(models.Invoice(**parse_dates(i)))
         db.commit()
+        
+        # Volver al modo normal
+        db.execute(text("SET session_replication_role = 'origin';"))
         
         return {"ok": True, "message": "Database restored and repopulated"}
     except Exception as e:
