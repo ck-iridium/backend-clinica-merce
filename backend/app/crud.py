@@ -461,3 +461,31 @@ def delete_time_block(db: Session, block_id: str):
         db.delete(db_block)
         db.commit()
     return db_block
+
+def create_direct_sale(db: Session, sale: schemas.DirectSaleRequest):
+    # 1. Fetch service to get original name/concept
+    service = db.query(models.Service).filter(models.Service.id == sale.service_id).first()
+    if not service:
+        raise ValueError("Servicio no encontrado")
+    
+    # 2. Get global settings for tax rate
+    settings = get_clinic_settings(db)
+    
+    # 3. Create invoice with status 'paid'
+    today = date.today()
+    invoice_id = generate_invoice_id(db, today)
+    
+    db_invoice = models.Invoice(
+        id=invoice_id,
+        client_id=sale.client_id,
+        amount=sale.final_price,
+        concept=f"Venta Directa: {service.name} ({sale.payment_method})",
+        date=today,
+        status="paid",
+        tax_rate=settings.default_tax_rate
+    )
+    db.add(db_invoice)
+    db.commit()
+    db.refresh(db_invoice)
+    
+    return db_invoice

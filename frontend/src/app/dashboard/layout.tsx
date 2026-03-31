@@ -26,6 +26,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <p className="text-xs font-semibold text-[#d9777f] uppercase tracking-wider">Panel Administrativo</p>
         </div>
         <nav className="p-4 space-y-1.5">
+          <Link href="/dashboard/pos" className="block px-4 py-3 rounded-xl hover:bg-stone-800 hover:text-white bg-stone-100 text-stone-800 font-bold transition-all mb-2 flex items-center gap-2 shadow-sm border border-stone-200">
+            <span className="text-lg">🏷️</span> Venta Rápida
+          </Link>
           <Link href="/dashboard" className="block px-4 py-3 rounded-xl hover:bg-[#fdf2f3] hover:text-[#d9777f] text-stone-600 font-medium transition-colors">
             Inicio
           </Link>

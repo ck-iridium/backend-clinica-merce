@@ -257,3 +257,11 @@ class TimeBlockResponse(TimeBlockBase):
     id: str
     class Config:
         from_attributes = True
+
+# --- Direct Sale (POS) ---
+class DirectSaleRequest(BaseModel):
+    client_id: str
+    service_id: str
+    final_price: float
+    payment_method: str  # e.g. "Efectivo", "Tarjeta"
+

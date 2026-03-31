@@ -36,3 +36,10 @@ def delete_invoice(invoice_id: str, db: Session = Depends(database.get_db)):
     if db_invoice is None:
         raise HTTPException(status_code=404, detail="Invoice not found")
     return {"ok": True}
+
+@router.post("/direct-sale", response_model=schemas.InvoiceResponse)
+def create_direct_sale(sale: schemas.DirectSaleRequest, db: Session = Depends(database.get_db)):
+    try:
+        return crud.create_direct_sale(db=db, sale=sale)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
