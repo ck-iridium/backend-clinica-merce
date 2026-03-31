@@ -128,6 +128,7 @@ class Invoice(Base):
     date = Column(Date, nullable=False)
     status = Column(String, default="pending") # pending, paid
     tax_rate = Column(Numeric(5, 2), default=21.0)
+    is_simplified = Column(Boolean, default=False)
     
     client = relationship("Client")
 

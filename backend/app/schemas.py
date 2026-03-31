@@ -197,6 +197,7 @@ class InvoiceBase(BaseModel):
     date: date
     status: str = "pending"
     tax_rate: float = 21.0
+    is_simplified: bool = False
 
 class InvoiceCreate(InvoiceBase):
     pass
@@ -264,4 +265,5 @@ class DirectSaleRequest(BaseModel):
     service_id: str
     final_price: float
     payment_method: str  # e.g. "Efectivo", "Tarjeta"
+    is_simplified: bool = False
 

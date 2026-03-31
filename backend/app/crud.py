@@ -463,26 +463,44 @@ def delete_time_block(db: Session, block_id: str):
     return db_block
 
 def create_direct_sale(db: Session, sale: schemas.DirectSaleRequest):
-    # 1. Fetch service to get original name/concept
+    # 1. Handle Simplified Mode (Ticket)
+    effective_client_id = sale.client_id
+    if sale.is_simplified:
+        # Search or create "Cliente de Contado"
+        anon_client = db.query(models.Client).filter(models.Client.email == "contado@clinica-mercedes.com").first()
+        if not anon_client:
+            anon_client = models.Client(
+                id=str(uuid.uuid4()),
+                name="Cliente de Contado",
+                email="contado@clinica-mercedes.com",
+                phone="000000000"
+            )
+            db.add(anon_client)
+            db.commit()
+            db.refresh(anon_client)
+        effective_client_id = anon_client.id
+
+    # 2. Fetch service to get original name/concept
     service = db.query(models.Service).filter(models.Service.id == sale.service_id).first()
     if not service:
         raise ValueError("Servicio no encontrado")
     
-    # 2. Get global settings for tax rate
+    # 3. Get global settings for tax rate
     settings = get_clinic_settings(db)
     
-    # 3. Create invoice with status 'paid'
+    # 4. Create invoice with status 'paid'
     today = date.today()
     invoice_id = generate_invoice_id(db, today)
     
     db_invoice = models.Invoice(
         id=invoice_id,
-        client_id=sale.client_id,
+        client_id=effective_client_id,
         amount=sale.final_price,
         concept=f"Venta Directa: {service.name} ({sale.payment_method})",
         date=today,
         status="paid",
-        tax_rate=settings.default_tax_rate
+        tax_rate=settings.default_tax_rate,
+        is_simplified=sale.is_simplified
     )
     db.add(db_invoice)
     db.commit()

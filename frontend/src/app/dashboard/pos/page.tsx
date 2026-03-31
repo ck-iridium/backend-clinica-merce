@@ -14,6 +14,7 @@ export default function POSPage() {
   const [selectedServiceId, setSelectedServiceId] = useState('');
   const [finalPrice, setFinalPrice] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState('Tarjeta');
+  const [isSimplified, setIsSimplified] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastInvoice, setLastInvoice] = useState<any>(null);
 
@@ -55,7 +56,8 @@ export default function POSPage() {
 
   const handleProcessSale = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedClientId || !selectedServiceId || !finalPrice) return;
+    if (!isSimplified && !selectedClientId) return;
+    if (!selectedServiceId || !finalPrice) return;
 
     setIsProcessing(true);
     try {
@@ -63,10 +65,11 @@ export default function POSPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          client_id: selectedClientId,
+          client_id: isSimplified ? 'simplified' : selectedClientId, // Backend handles 'simplified' via flag
           service_id: selectedServiceId,
           final_price: Number(finalPrice),
-          payment_method: paymentMethod
+          payment_method: paymentMethod,
+          is_simplified: isSimplified
         })
       });
 
@@ -90,6 +93,7 @@ export default function POSPage() {
     setSearchTerm('');
     setFinalPrice('');
     setPaymentMethod('Tarjeta');
+    setIsSimplified(false);
   };
 
   if (loading) return (
@@ -136,19 +140,29 @@ export default function POSPage() {
           
           {/* SECCIÓN 1: CLIENTE Y SERVICIO */}
           <div className="bg-white rounded-[2rem] p-8 shadow-xl border border-stone-100 space-y-6">
-            <h3 className="text-xs font-black text-[#d9777f] uppercase tracking-[0.2em] mb-2">1. Identificación</h3>
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-xs font-black text-[#d9777f] uppercase tracking-[0.2em]">1. Identificación</h3>
+              <button 
+                onClick={() => { setIsSimplified(!isSimplified); if (!isSimplified) { setSelectedClientId(''); setSearchTerm(''); } }}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all border-2 ${isSimplified ? 'bg-stone-800 border-stone-800 text-white' : 'bg-white border-stone-100 text-stone-400 hover:border-stone-200'}`}
+              >
+                <span className="text-[10px] font-black uppercase tracking-tighter">{isSimplified ? 'Modo Ticket ✅' : 'Factura Nomminal'}</span>
+                <div className={`w-3 h-3 rounded-full ${isSimplified ? 'bg-emerald-400 animate-pulse' : 'bg-stone-200'}`}></div>
+              </button>
+            </div>
             
             {/* Buscador de Cliente */}
-            <div className="relative">
-              <label className="block text-sm font-bold text-stone-700 mb-2">Buscar Cliente</label>
+            <div className={`relative transition-opacity duration-300 ${isSimplified ? 'opacity-30 pointer-events-none grayscale' : 'opacity-100'}`}>
+              <label className="block text-sm font-bold text-stone-700 mb-2">{isSimplified ? 'Venta al Portador' : 'Buscar Cliente'}</label>
               <input 
                 type="text"
-                placeholder="Nombre, email o teléfono..."
+                placeholder={isSimplified ? "Identificación no necesaria" : "Nombre, email o teléfono..."}
+                disabled={isSimplified}
                 value={searchTerm}
                 onChange={e => { setSearchTerm(e.target.value); setSelectedClientId(''); }}
                 className="w-full px-5 py-4 rounded-2xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50 transition-all font-medium"
               />
-              {searchTerm && !selectedClientId && filteredClients.length > 0 && (
+              {searchTerm && !selectedClientId && filteredClients.length > 0 && !isSimplified && (
                 <div className="absolute z-20 w-full mt-2 bg-white border border-stone-200 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2">
                   {filteredClients.map(c => (
                     <button 
@@ -214,12 +228,12 @@ export default function POSPage() {
             <div className="pt-6">
               <button 
                 onClick={handleProcessSale}
-                disabled={!selectedClientId || !selectedServiceId || isProcessing}
+                disabled={(!isSimplified && !selectedClientId) || !selectedServiceId || isProcessing}
                 className="w-full bg-white text-stone-900 px-8 py-5 rounded-[1.5rem] font-black text-xl hover:bg-stone-100 transition-all disabled:opacity-30 active:scale-95 shadow-xl"
               >
                 {isProcessing ? 'Procesando...' : 'Confirmar y Cobrar'}
               </button>
-              {!selectedClientId && searchTerm && <p className="text-[10px] text-white/40 mt-3 text-center">Debes seleccionar un cliente de la lista</p>}
+              {!isSimplified && !selectedClientId && searchTerm && <p className="text-[10px] text-white/40 mt-3 text-center">Debes seleccionar un cliente de la lista</p>}
             </div>
           </div>
 

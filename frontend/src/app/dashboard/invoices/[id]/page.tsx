@@ -126,7 +126,7 @@ export default function InvoicePreviewPage() {
         </button>
         <div>
            <h1 className="text-2xl font-extrabold text-stone-800">Visor de Folio</h1>
-           <p className="text-stone-500 text-sm font-medium">#{invoice.id}</p>
+           <p className="text-stone-500 text-sm font-medium">#{invoice.id} {invoice.is_simplified && '(Ticket Simplificado)'}</p>
         </div>
       </div>
 
@@ -209,7 +209,7 @@ export default function InvoicePreviewPage() {
                   </div>
                   
                   <div className="text-right flex flex-col items-end">
-                    <h1 className="text-4xl font-extrabold text-stone-200 tracking-tighter mb-4">FACTURA</h1>
+                    <h1 className="text-4xl font-extrabold text-stone-200 tracking-tighter mb-4">{invoice.is_simplified ? 'FACTURA SIMPLIFICADA' : 'FACTURA'}</h1>
                     <div className="text-xs text-stone-500 font-medium grid grid-cols-2 gap-x-4 gap-y-1 text-right w-full max-w-[200px]">
                       <span className="text-stone-400">Nº Documento:</span> <span className="text-stone-800 font-bold uppercase">{invoice.id}</span>
                       <span className="text-stone-400">Fecha Emisión:</span> <span className="text-stone-800 font-bold">{new Date(invoice.date).toLocaleDateString()}</span>
@@ -221,24 +221,26 @@ export default function InvoicePreviewPage() {
                   </div>
                 </div>
 
-                {/* DATOS DEL PACIENTE */}
-                <div className="mb-6">
-                   <p className="text-[10px] font-bold text-[#d4af37] uppercase tracking-widest mb-3 border-b border-stone-100 pb-2">Facturar o Cobrar A:</p>
-                   <div className="pl-2">
-                     <p className="text-base font-bold text-stone-800 mb-1">{client?.name || 'Cliente sin nombre'}</p>
-                     
-                     {/* Datos de contacto */}
-                     {client?.phone && <p className="text-xs text-stone-500 font-medium mb-2">{client.phone}</p>}
-                     
-                     {/* Campos Fiscales Condicionales (Para Factura Completa) */}
-                     {client?.dni && (
-                       <p className="text-xs text-stone-600"><strong>NIF/CIF:</strong> {client.dni}</p>
-                     )}
-                     {client?.address && (
-                       <p className="text-xs text-stone-600"><strong>Dirección:</strong> {client.address}</p>
-                     )}
-                   </div>
-                </div>
+                {/* DATOS DEL PACIENTE (Ocultos en Factura Simplificada) */}
+                {!invoice.is_simplified && (
+                  <div className="mb-6">
+                    <p className="text-[10px] font-bold text-[#d4af37] uppercase tracking-widest mb-3 border-b border-stone-100 pb-2">Facturar o Cobrar A:</p>
+                    <div className="pl-2">
+                      <p className="text-base font-bold text-stone-800 mb-1">{client?.name || 'Cliente sin nombre'}</p>
+                      
+                      {/* Datos de contacto */}
+                      {client?.phone && <p className="text-xs text-stone-500 font-medium mb-2">{client.phone}</p>}
+                      
+                      {/* Campos Fiscales Condicionales (Para Factura Completa) */}
+                      {client?.dni && (
+                        <p className="text-xs text-stone-600"><strong>NIF/CIF:</strong> {client.dni}</p>
+                      )}
+                      {client?.address && (
+                        <p className="text-xs text-stone-600"><strong>Dirección:</strong> {client.address}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* TABLA DE CONCEPTOS */}
                 <div className="mb-6 flex-1">
