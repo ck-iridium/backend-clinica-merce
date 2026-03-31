@@ -28,9 +28,12 @@ def send_email(to_email: str, subject: str, body_html: str):
 
         msg.attach(MIMEText(body_html, 'html'))
 
-        server = smtplib.SMTP(settings.smtp_host, settings.smtp_port or 587, timeout=5)
-        if settings.smtp_use_tls:
-            server.starttls()
+        if settings.smtp_port == 465:
+            server = smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port, timeout=5)
+        else:
+            server = smtplib.SMTP(settings.smtp_host, settings.smtp_port or 587, timeout=5)
+            if settings.smtp_use_tls:
+                server.starttls()
         
         server.login(settings.smtp_user, settings.smtp_password)
         server.send_message(msg)
@@ -87,25 +90,28 @@ def send_appointment_notification(appointment_id: str, type: str):
             send_email(client.email, subject_client, body_client)
 
             # 2. Email a la Clínica (Aviso interno)
-            if settings.clinic_email:
+            # Prioridad: clinic_email > smtp_user (Gmail de Merce)
+            target_clinic_email = settings.clinic_email or settings.smtp_user
+            
+            if target_clinic_email:
                 subject_clinic = f"Nueva Cita Web Pendiente: {client.name}"
                 body_clinic = f"""
                 <html>
                 <body style="font-family: sans-serif;">
-                    <h2>Nueva reserva desde la Web</h2>
-                    <p>El cliente <strong>{client.name}</strong> ha solicitado una cita:</p>
+                    <h2 style="color: #d9777f;">Nueva reserva desde la Web</h2>
+                    <p>Merce, tienes una nueva solicitud de cita:</p>
                     <ul>
+                        <li><strong>Cliente:</strong> {client.name}</li>
                         <li><strong>Servicio:</strong> {service.name}</li>
                         <li><strong>Fecha:</strong> {date_str}</li>
                         <li><strong>Hora:</strong> {time_str}</li>
                         <li><strong>Teléfono:</strong> {client.phone}</li>
-                        <li><strong>Email:</strong> {client.email}</li>
                     </ul>
-                    <p>Accede al panel para confirmarla.</p>
+                    <p>Recuerda revisarla en tu panel de control.</p>
                 </body>
                 </html>
                 """
-                send_email(settings.clinic_email, subject_clinic, body_clinic)
+                send_email(target_clinic_email, subject_clinic, body_clinic)
 
         elif type == 'confirmation':
             subject = f"Cita Confirmada - Merce Estética"
