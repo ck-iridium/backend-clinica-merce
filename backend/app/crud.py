@@ -104,11 +104,57 @@ def update_service(db: Session, service_id: str, service: schemas.ServiceUpdate)
         db.refresh(db_service)
     return db_service
 
+    return db_service
+
 # Appointments
+def check_appointment_collision(db: Session, start_time: datetime, end_time: datetime, ignore_id: str = None):
+    """
+    Returns True if there's a collision with existing appointments or time blocks,
+    or if the appointment exceeds the 19:00 strict closing time.
+    """
+    # 1. Closing Time Check (Strict 19:00)
+    # We assume 'start_time' and 'end_time' are naive datetimes representing LOCAL TIME.
+    if end_time.hour >= 19 and end_time.minute > 0:
+        return "La cita excede el horario de cierre (19:00)."
+    if end_time.hour > 19:
+        return "La cita excede el horario de cierre (19:00)."
+    
+    # 2. Collision with other Appointments
+    query = db.query(models.Appointment).filter(
+        models.Appointment.status != "cancelled",
+        models.Appointment.start_time < end_time,
+        models.Appointment.end_time > start_time
+    )
+    if ignore_id:
+        query = query.filter(models.Appointment.id != ignore_id)
+    
+    if query.first():
+        return "El horario ya está ocupado por otra cita."
+        
+    # 3. Collision with Time Blocks
+    block_query = db.query(models.TimeBlock).filter(
+        models.TimeBlock.start_time < end_time,
+        models.TimeBlock.end_time > start_time
+    )
+    if block_query.first():
+        return "El horario está bloqueado manualmente."
+
+    return None
+
 def get_appointments(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Appointment).offset(skip).limit(limit).all()
 
 def create_appointment(db: Session, appointment: schemas.AppointmentCreate):
+    # Calculate end_time if not provided (should be provided by frontend, but safety first)
+    if not appointment.end_time:
+        service = get_service(db, appointment.service_id)
+        if service:
+            appointment.end_time = appointment.start_time + timedelta(minutes=service.duration_minutes)
+    
+    collision_msg = check_appointment_collision(db, appointment.start_time, appointment.end_time)
+    if collision_msg:
+        raise ValueError(collision_msg)
+
     db_appointment = models.Appointment(**appointment.model_dump())
     db.add(db_appointment)
     db.commit()
@@ -120,6 +166,22 @@ def update_appointment(db: Session, appointment_id: str, appointment: schemas.Ap
     if db_appointment:
         old_status = db_appointment.status
         update_data = appointment.model_dump(exclude_unset=True)
+        
+        # Check for collision if time is changing
+        new_start = update_data.get("start_time", db_appointment.start_time)
+        new_end = update_data.get("end_time", db_appointment.end_time)
+        
+        # If we only have start_time update but not end_time (unlikely in our app, but anyway)
+        if "start_time" in update_data and "end_time" not in update_data:
+             service = get_service(db, db_appointment.service_id)
+             if service:
+                 new_end = new_start + timedelta(minutes=service.duration_minutes)
+
+        if "start_time" in update_data or "end_time" in update_data:
+            collision_msg = check_appointment_collision(db, new_start, new_end, ignore_id=appointment_id)
+            if collision_msg:
+                raise ValueError(collision_msg)
+
         for key, value in update_data.items():
             setattr(db_appointment, key, value)
             
@@ -307,7 +369,7 @@ _SCHEDULE_BLOCKS = [
     (9, 30, 14, 0),   # morning: 09:30 → 14:00
     (16, 0, 19, 0),   # afternoon: 16:00 → 19:00
 ]
-_SLOT_STEP_MINUTES = 30
+_SLOT_STEP_MINUTES = 15
 
 
 def find_or_create_client(db: Session, name: str, email: str | None, phone: str | None):
@@ -421,6 +483,11 @@ def create_public_appointment(
     if not service:
         raise ValueError(f"Service {booking.service_id} not found")
     end_time = booking.start_time + timedelta(minutes=int(service.duration_minutes))
+
+    # 2b. Collision check for PUBLIC BOOKING
+    collision_msg = check_appointment_collision(db, booking.start_time, end_time)
+    if collision_msg:
+        raise ValueError(collision_msg)
 
     # 3. Create appointment with 'web_pending' status
     appt = models.Appointment(

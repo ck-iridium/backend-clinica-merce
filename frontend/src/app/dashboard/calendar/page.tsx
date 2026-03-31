@@ -21,6 +21,7 @@ function CalendarContent() {
 
   const [showModal, setShowModal] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{ date: Date, hour: number } | null>(null);
+  const [selectedMinutes, setSelectedMinutes] = useState(0);
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedAppt, setSelectedAppt] = useState<any>(null);
@@ -92,6 +93,8 @@ function CalendarContent() {
 
   const handleSlotClick = (date: Date, hour: number) => {
     setSelectedSlot({ date, hour });
+    setSelectedMinutes(0); // Default to hour-start
+    setModalType('appointment');
     setShowModal(true);
   };
 
@@ -109,7 +112,7 @@ function CalendarContent() {
     const service = services.find(s => s.id === selectedServiceId);
     
     const start_time = new Date(selectedSlot.date);
-    start_time.setHours(selectedSlot.hour, 0, 0, 0);
+    start_time.setHours(selectedSlot.hour, selectedMinutes, 0, 0);
     
     const end_time = new Date(start_time.getTime() + service.duration_minutes * 60000);
 
@@ -134,7 +137,8 @@ function CalendarContent() {
         setSelectedServiceId('');
         setAppointmentNotes('');
       } else {
-        alert("Error reservando la cita");
+        const errorData = await res.json();
+        alert(errorData.detail || "Error reservando la cita");
       }
     } finally {
       setSaving(false);
@@ -192,7 +196,7 @@ function CalendarContent() {
 
     setSaving(true);
     const start_time = new Date(selectedSlot.date);
-    start_time.setHours(selectedSlot.hour, 0, 0, 0);
+    start_time.setHours(selectedSlot.hour, selectedMinutes, 0, 0);
     const end_time = new Date(start_time.getTime() + blockDuration * 60000);
 
     try {
@@ -258,7 +262,7 @@ function CalendarContent() {
     return d;
   });
 
-  const hours = Array.from({ length: 12 }).map((_, i) => i + 9); // 09:00 to 20:00
+  const hours = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18]; // 09:00 to 19:00 (19:00 is the end line)
 
   const clientMap = new Map(clients.map(c => [c.id, c]));
   const serviceMap = new Map(services.map(s => [s.id, s]));
@@ -361,15 +365,50 @@ function CalendarContent() {
                     <div key={`col-${dIdx}`} className="border-r border-stone-100 relative last:border-r-0 group">
                       
                       {/* Clickable Empty Slots for Creation */}
-                      {hours.map((h, i) => (
-                        <div 
-                          key={`slot-${dIdx}-${h}`} 
-                          onClick={() => { setSelectedSlot({ date: day, hour: h }); setModalType('appointment'); setShowModal(true); }}
-                          className="absolute w-full hover:bg-gradient-to-b hover:from-white hover:to-[#fdf2f3] cursor-pointer transition-all z-0 border-b border-transparent hover:border-stone-100"
-                          style={{ top: `${i * 80}px`, height: '80px' }}>
-                          <span className="opacity-0 group-hover:opacity-100 text-[#d9777f] font-bold text-xs absolute top-2 left-2 transition-opacity">+</span>
-                        </div>
-                      ))}
+                      {hours.map((h, i) => {
+                        const isLunch = h === 14 || h === 15;
+                        return (
+                          <div 
+                            key={`slot-${dIdx}-${h}`} 
+                            onClick={() => { 
+                              if (isLunch) return;
+                              setSelectedSlot({ date: day, hour: h }); 
+                              setSelectedMinutes(h === 9 ? 30 : 0); 
+                              setModalType('appointment'); 
+                              setShowModal(true); 
+                            }}
+                            className={`absolute w-full border-b border-transparent transition-all z-0 ${
+                              isLunch 
+                              ? 'bg-stone-50 cursor-not-allowed flex items-center justify-center' 
+                              : 'hover:bg-gradient-to-b hover:from-white hover:to-[#fdf2f3] cursor-pointer hover:border-stone-100'
+                            }`}
+                            style={{ 
+                              top: `${i * 80}px`, 
+                              height: '80px',
+                              backgroundImage: isLunch ? 'repeating-linear-gradient(45deg, #fafaf9, #fafaf9 10px, #f5f5f4 10px, #f5f5f4 20px)' : 'none'
+                            }}>
+                            {isLunch ? (
+                              <span className="text-[10px] font-bold text-stone-300 uppercase tracking-widest text-center select-none">
+                                CERRADO
+                              </span>
+                            ) : (
+                              <span className="opacity-0 group-hover:opacity-100 text-[#d9777f] font-bold text-xs absolute top-2 left-2 transition-opacity">+</span>
+                            )}
+                            
+                            {/* Visual Block for Morning Start (09:00-09:30) */}
+                            {h === 9 && (
+                               <div 
+                                 className="absolute top-0 w-full h-[40px] pointer-events-none"
+                                 style={{ backgroundImage: 'repeating-linear-gradient(45deg, #fafaf9, #fafaf9 10px, #f5f5f4 10px, #f5f5f4 20px)' }}
+                               >
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                      <span className="text-[9px] font-bold text-stone-300 uppercase tracking-tighter opacity-50">CERRADO</span>
+                                  </div>
+                               </div>
+                            )}
+                          </div>
+                        );
+                      })}
 
                       {/* Render Time Blocks (Grey Striped) */}
                       {dayBlocks.map(block => {
@@ -538,9 +577,60 @@ function CalendarContent() {
             {modalType === 'appointment' ? (
               <>
                 <h2 className="text-2xl font-extrabold text-stone-800 mb-2">Asignar Cita</h2>
-                <p className="text-[#d9777f] font-bold mb-6 flex items-center gap-2">
-                  📅 {selectedSlot && `${selectedSlot.date.toLocaleDateString('es-ES')} a las ${selectedSlot.hour.toString().padStart(2, '0')}:00 h`}
+                <p className="text-[#d9777f] font-bold mb-3 flex items-center gap-2">
+                  📅 {selectedSlot && `${selectedSlot.date.toLocaleDateString('es-ES')} a las ${selectedSlot.hour.toString().padStart(2, '0')}:${selectedMinutes.toString().padStart(2, '0')} h`}
                 </p>
+                
+                {/* Selector de Minutos Manual para precisión */}
+                <div className="flex gap-2 mb-6 p-1 bg-stone-50 border border-stone-100 rounded-xl w-fit">
+                   {(selectedSlot?.hour === 9 ? [30, 45] : [0, 15, 30, 45]).map(m => (
+                      <button 
+                        key={m}
+                        type="button"
+                        onClick={() => setSelectedMinutes(m)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${selectedMinutes === m ? 'bg-stone-800 text-white shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}
+                      >
+                         :{m.toString().padStart(2, '0')}
+                      </button>
+                   ))}
+                </div>
+
+                {(() => {
+                  if (!selectedSlot) return null;
+                  const start_time = new Date(selectedSlot.date);
+                  start_time.setHours(selectedSlot.hour, selectedMinutes, 0, 0);
+                  
+                  // Calculate Gap: Close at 19:00 or next appointment
+                  const closingTime = new Date(selectedSlot.date);
+                  closingTime.setHours(19, 0, 0, 0);
+
+                  const dayAppts = getAppointmentsForDay(selectedSlot.date);
+                  const dayBlocks = getBlocksForDay(selectedSlot.date);
+
+                  const nextEvent = [...dayAppts, ...dayBlocks]
+                    .map(e => ({ ...e, start: new Date(e.start_time.endsWith('Z') ? e.start_time.slice(0, -1) : e.start_time) }))
+                    .filter(e => e.start > start_time)
+                    .sort((a, b) => a.start.getTime() - b.start.getTime())[0];
+
+                  const limitDate = nextEvent ? (nextEvent.start < closingTime ? nextEvent.start : closingTime) : closingTime;
+                  const gapMinutes = Math.floor((limitDate.getTime() - start_time.getTime()) / 60000);
+
+                  const availableServices = services.filter(s => s.duration_minutes <= gapMinutes);
+
+                  return (
+                    <div className="mb-4">
+                       <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Hueco Disponible</p>
+                       <p className="text-xs font-bold text-stone-600 flex items-center gap-1">
+                          ⏱ {gapMinutes} minutos libres {nextEvent && `(hasta la siguiente cita)`}
+                       </p>
+                       {availableServices.length === 0 && (
+                          <div className="mt-2 p-3 bg-red-50 border border-red-100 rounded-xl text-[11px] text-red-600 font-bold">
+                             ⚠️ No hay tratamientos que quepan en este hueco. Libera espacio o elige otra hora.
+                          </div>
+                       )}
+                    </div>
+                  );
+                })()}
                 
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div>
@@ -557,7 +647,26 @@ function CalendarContent() {
                     <label className="block text-sm font-semibold text-stone-700 mb-2">Tratamiento a realizar *</label>
                     <select required value={selectedServiceId} onChange={e => setSelectedServiceId(e.target.value)} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50 shadow-inner appearance-none">
                       <option value="">-- Selecciona el servicio --</option>
-                      {services.map(s => <option key={s.id} value={s.id}>{s.name} ({s.duration_minutes} min)</option>)}
+                      {(() => {
+                        const start_time = new Date(selectedSlot!.date);
+                        start_time.setHours(selectedSlot!.hour, selectedMinutes, 0, 0);
+                        const closingTime = new Date(selectedSlot!.date);
+                        closingTime.setHours(19, 0, 0, 0);
+                        const dayAppts = getAppointmentsForDay(selectedSlot!.date);
+                        const dayBlocks = getBlocksForDay(selectedSlot!.date);
+                        const nextEvent = [...dayAppts, ...dayBlocks]
+                          .map(e => ({ ...e, start: new Date(e.start_time.endsWith('Z') ? e.start_time.slice(0, -1) : e.start_time) }))
+                          .filter(e => e.start > start_time)
+                          .sort((a, b) => a.start.getTime() - b.start.getTime())[0];
+                        const limitDate = nextEvent ? (nextEvent.start < closingTime ? nextEvent.start : closingTime) : closingTime;
+                        const gapMinutes = Math.floor((limitDate.getTime() - start_time.getTime()) / 60000);
+                        
+                        return services.map(s => (
+                          <option key={s.id} value={s.id} disabled={s.duration_minutes > gapMinutes}>
+                            {s.name} ({s.duration_minutes} min) {s.duration_minutes > gapMinutes ? '⚠️ EXCEDIDO' : ''}
+                          </option>
+                        ));
+                      })()}
                     </select>
                     {selectedServiceId && (
                       <div className="mt-3 p-4 bg-yellow-50 border border-yellow-100 rounded-xl">
