@@ -26,11 +26,17 @@ function CalendarContent() {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
+  // Tooltip control for hover (Step 2)
+  const [hoveredAppt, setHoveredAppt] = useState<any>(null);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+
   const getStatusColors = (status: string) => {
     switch (status) {
       case 'completed': return 'bg-emerald-50 border-emerald-400';
       case 'cancelled': return 'bg-red-50 border-red-500 opacity-70';
       case 'no_show': return 'bg-stone-100 border-stone-400 grayscale opacity-60';
+      case 'web_pending': return 'bg-orange-50 border-orange-400';
+      case 'confirmed': return 'bg-[#fdf2f3] border-[#d9777f]';
       case 'pending':
       default: return 'bg-[#fdf2f3] border-[#d9777f]';
     }
@@ -38,7 +44,16 @@ function CalendarContent() {
 
   const [selectedClientId, setSelectedClientId] = useState(initialClientId || '');
   const [selectedServiceId, setSelectedServiceId] = useState('');
+  const [appointmentNotes, setAppointmentNotes] = useState('');
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (selectedAppt) {
+      setEditNotes(selectedAppt.notes || '');
+    }
+  }, [selectedAppt]);
+
+  const [editNotes, setEditNotes] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -97,7 +112,8 @@ function CalendarContent() {
           service_id: selectedServiceId,
           start_time: formatLocalISO(start_time),
           end_time: formatLocalISO(end_time),
-          status: 'pending'
+          status: 'pending',
+          notes: appointmentNotes
         })
       });
 
@@ -106,6 +122,7 @@ function CalendarContent() {
         setShowModal(false);
         setSelectedClientId('');
         setSelectedServiceId('');
+        setAppointmentNotes('');
       } else {
         alert("Error reservando la cita");
       }
@@ -128,6 +145,29 @@ function CalendarContent() {
         setShowEditModal(false);
       } else {
         alert("Error actualizando estado.");
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const handleUpdateNotes = async () => {
+    if (!selectedAppt) return;
+    setUpdatingStatus(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/${selectedAppt.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: editNotes })
+      });
+      if (res.ok) {
+        await fetchData();
+        // Update local object to sync the "Guardar" button visibility
+        setSelectedAppt({ ...selectedAppt, notes: editNotes });
+      } else {
+        alert("Error guardando nota.");
       }
     } catch (e) {
       console.error(e);
@@ -297,10 +337,21 @@ function CalendarContent() {
                           <div 
                             key={appt.id} 
                             onClick={(e) => { e.stopPropagation(); setSelectedAppt(appt); setShowEditModal(true); setConfirmDelete(false); }}
+                            onMouseEnter={(e) => {
+                              setHoveredAppt(appt);
+                              setTooltipPos({ x: e.clientX, y: e.clientY });
+                            }}
+                            onMouseMove={(e) => {
+                              setTooltipPos({ x: e.clientX, y: e.clientY });
+                            }}
+                            onMouseLeave={() => setHoveredAppt(null)}
                             className={`absolute w-[92%] left-[4%] ml-auto mr-auto border-l-[4px] rounded-r-lg shadow-sm px-2 py-1 z-20 overflow-hidden hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer flex flex-col justify-start ${colors}`}
                             style={{ top: `${topOffset}px`, height: `${heightPx}px` }}
                           >
-                            <div className={`font-extrabold text-[10px] sm:text-xs truncate leading-tight mb-0.5 ${appt.status === 'cancelled' || appt.status === 'no_show' ? 'text-current line-through' : 'text-stone-800'}`}>{client.name}</div>
+                            <div className={`font-extrabold text-[10px] sm:text-xs truncate leading-tight mb-0.5 ${appt.status === 'cancelled' || appt.status === 'no_show' ? 'text-current line-through' : 'text-stone-800'}`}>
+                              {appt.status === 'web_pending' && <span className="text-orange-600 mr-1">[WEB]</span>}
+                              {client.name}
+                            </div>
                             {heightPx >= 36 && (
                               <div className={`text-[9px] font-semibold truncate leading-tight ${appt.status === 'completed' ? 'text-emerald-700' : (appt.status === 'pending' ? 'text-[#b35e65]' : 'text-current opacity-80')}`}>{service.name}</div>
                             )}
@@ -310,6 +361,56 @@ function CalendarContent() {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* STEP 2: TOOLTIP HOVER (Conditional Render) */}
+      {hoveredAppt && (
+        <div 
+          className="fixed z-[100] pointer-events-none animate-in fade-in zoom-in-95 duration-200"
+          style={{ 
+            left: tooltipPos.x + 15 > window.innerWidth - 220 ? tooltipPos.x - 220 : tooltipPos.x + 15, 
+            top: tooltipPos.y + 15
+          }}
+        >
+          <div className="bg-white/95 backdrop-blur-md border border-stone-100 shadow-2xl rounded-2xl p-4 w-[220px] ring-1 ring-black/5">
+            <div className="flex flex-col gap-2">
+              <div>
+                <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">Cliente</p>
+                <p className="font-extrabold text-stone-800 text-sm truncate">{clientMap.get(hoveredAppt.client_id)?.name || 'Desconocido'}</p>
+              </div>
+              
+              <div>
+                <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">Servicio</p>
+                <p className="font-bold text-[#d9777f] text-[11px] truncate">{serviceMap.get(hoveredAppt.service_id)?.name || 'Borrador...'}</p>
+              </div>
+
+              <div className="flex justify-between items-center bg-stone-50 p-2 rounded-lg border border-stone-100 mt-1">
+                <p className="text-[8px] font-bold text-stone-400 uppercase tracking-widest">Estado</p>
+                <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase
+                  ${hoveredAppt.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 
+                    hoveredAppt.status === 'cancelled' ? 'bg-red-100 text-red-700' : 
+                    hoveredAppt.status === 'web_pending' ? 'bg-orange-100 text-orange-700' :
+                    hoveredAppt.status === 'confirmed' ? 'bg-[#fdf2f3] text-[#d9777f]' :
+                    'bg-slate-100 text-slate-700'
+                  }`}>
+                  {hoveredAppt.status === 'completed' ? 'Realizada' : 
+                   hoveredAppt.status === 'cancelled' ? 'Cancelada' : 
+                   hoveredAppt.status === 'web_pending' ? 'Pendiente Confirmación' :
+                   hoveredAppt.status === 'confirmed' ? 'Confirmada' :
+                   hoveredAppt.status === 'no_show' ? 'No Asistió' :
+                   'Pendiente'}
+                </span>
+              </div>
+
+              <div className="mt-1">
+                <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">Notas</p>
+                <p className="text-[10px] text-stone-500 italic leading-snug line-clamp-2">
+                  {hoveredAppt.notes || 'Sin observaciones...'}
+                </p>
               </div>
             </div>
           </div>
@@ -354,6 +455,16 @@ function CalendarContent() {
                 )}
               </div>
 
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Notas / Observaciones</label>
+                <textarea 
+                  value={appointmentNotes} 
+                  onChange={e => setAppointmentNotes(e.target.value)} 
+                  placeholder="Ej: El cliente prefiere zona tranquila, alergia a X..."
+                  className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50 shadow-inner min-h-[100px] resize-none text-sm"
+                />
+              </div>
+
               <div className="flex gap-3 mt-6 pt-4 border-t border-stone-100">
                 <button disabled={saving} type="submit" className="flex-1 bg-stone-900 hover:bg-[#d9777f] text-white px-6 py-4 rounded-xl font-bold transition-all disabled:opacity-50 active:scale-95 shadow-lg shadow-stone-900/10">
                   {saving ? 'Registrando...' : 'Confirmar Reserva'}
@@ -385,6 +496,38 @@ function CalendarContent() {
               <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1">Tratamiento</p>
               <p className="text-lg font-bold text-[#d9777f] flex items-center gap-2">✨ {serviceMap.get(selectedAppt.service_id)?.name || 'Borrador...'}</p>
             </div>
+
+            <div className="mb-6">
+              <label className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Notas / Observaciones</label>
+              <textarea 
+                value={editNotes} 
+                onChange={e => setEditNotes(e.target.value)} 
+                className="w-full px-4 py-3 rounded-xl border border-stone-100 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50 min-h-[80px] resize-none text-sm placeholder:italic"
+                placeholder="Añadir notas del tratamiento..."
+              />
+              {editNotes !== (selectedAppt.notes || '') && (
+                <button 
+                  onClick={() => handleUpdateNotes()}
+                  disabled={updatingStatus}
+                  className="mt-2 w-full bg-stone-800 text-white text-[10px] font-bold uppercase py-2 rounded-lg hover:bg-stone-900 transition-all"
+                >
+                  Guardar Nota 💾
+                </button>
+              )}
+            </div>
+
+            {selectedAppt.status === 'web_pending' && (
+              <div className="mb-6">
+                <button 
+                  onClick={() => handleStatusChange('confirmed')}
+                  disabled={updatingStatus}
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-orange-200 transition-all active:scale-95 flex items-center justify-center gap-2"
+                >
+                  Confirmar Cita Web ✨
+                </button>
+                <p className="text-[10px] text-orange-400 font-bold uppercase tracking-widest mt-2 text-center">Nueva reserva desde internet</p>
+              </div>
+            )}
 
             <div className="space-y-3">
               <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-2 border-b border-stone-100 pb-2">Estado de la Cita</p>
