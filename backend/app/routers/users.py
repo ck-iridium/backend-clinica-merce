@@ -2,6 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .. import database, models
 from pydantic import BaseModel
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 router = APIRouter(
     prefix="/users",
@@ -15,7 +18,7 @@ class LoginRequest(BaseModel):
 @router.post("/login")
 def login(request: LoginRequest, db: Session = Depends(database.get_db)):
     user = db.query(models.User).filter(models.User.email == request.email).first()
-    if not user or user.hashed_password != request.password:
+    if not user or not pwd_context.verify(request.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Credenciales incorrectas")
     return {"id": user.id, "email": user.email, "role": user.role}
 

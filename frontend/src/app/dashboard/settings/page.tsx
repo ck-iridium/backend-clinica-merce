@@ -6,6 +6,12 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   
+  // Backup Restore Modal State
+  const [showBackupModal, setShowBackupModal] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [confirmCode, setConfirmCode] = useState('');
+  const [restoring, setRestoring] = useState(false);
+  
   // File inputs refs
   const logoAppRef = useRef<HTMLInputElement>(null);
   const logoPdfRef = useRef<HTMLInputElement>(null);
@@ -69,18 +75,24 @@ export default function SettingsPage() {
   };
 
   const handleRestoreClick = () => {
-    const confirmation = prompt("⚠️ PELIGRO CRÍTICO ⚠️\nEsta acción borrará toda la información actual de la clínica (Facturas, Clientes, Citas) y la sustituirá por la del archivo.\nEscribe la palabra 'CONFIRMAR' en mayúsculas para proceder.");
-    if (confirmation === 'CONFIRMAR') {
-      backupInputRef.current?.click();
-    }
+    // Immediate activation of file selector to avoid browser block
+    backupInputRef.current?.click();
   };
-
-  const handleRestoreUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  
+  const onFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
+    setPendingFile(file);
+    setConfirmCode('');
+    setShowBackupModal(true);
+  };
+  
+  const executeRestore = async () => {
+    if (confirmCode !== 'CONFIRMAR' || !pendingFile) return;
+    
+    setRestoring(true);
     try {
-      const text = await file.text();
+      const text = await pendingFile.text();
       const payload = JSON.parse(text);
       
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/backup/restore`, {
@@ -99,6 +111,8 @@ export default function SettingsPage() {
     } catch (err) {
       console.error(err);
       alert("El archivo no es válido");
+    } finally {
+      setRestoring(false);
     }
   };
 
@@ -284,7 +298,7 @@ export default function SettingsPage() {
                 📥 Exportar Respaldo (.json)
               </button>
 
-              <input type="file" accept=".json" ref={backupInputRef} className="hidden" onChange={handleRestoreUpload} />
+              <input type="file" accept=".json" ref={backupInputRef} className="hidden" onChange={onFileSelect} />
               
               <button type="button" onClick={handleRestoreClick} className="border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 shadow-sm transition-colors">
                 ⚠️ Restaurar Respaldo Local
@@ -293,6 +307,57 @@ export default function SettingsPage() {
         </div>
 
       </form>
+
+      {/* MODAL DE ALERTA ROJA: RESTAURACIÓN CRÍTICA */}
+      {showBackupModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-red-900/40 backdrop-blur-md p-4 animate-in fade-in duration-300">
+           <div className="bg-red-50 rounded-[2.5rem] shadow-2xl p-10 max-w-md w-full text-center border-4 border-red-500 relative">
+              
+              <button 
+                onClick={() => setShowBackupModal(false)}
+                className="absolute top-6 right-6 text-red-300 hover:text-red-500 font-bold text-xl transition-all"
+              >✕</button>
+
+              <div className="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 animate-pulse">⚠️</div>
+              
+              <h2 className="text-2xl font-black text-red-700 uppercase tracking-tighter mb-4">PELIGRO CRÍTICO</h2>
+              
+              <p className="text-red-600/80 text-sm font-medium mb-8 leading-relaxed">
+                Estás a punto de **SOBRESCRIBIR TODA LA BASE DE DATOS**. <br/>
+                <span className="font-bold underline">Esta acción es irreversible y destruirá</span> las facturas, clientes y citas actuales para sustituirlas por las del archivo: <br/>
+                <span className="text-red-900 block mt-2 font-mono text-[11px] bg-red-100/50 p-2 rounded-lg truncate">{pendingFile?.name}</span>
+              </p>
+
+              <div className="space-y-4">
+                 <div>
+                    <label className="block text-[10px] font-bold text-red-400 uppercase tracking-widest mb-2 text-left px-2">Código de Seguridad</label>
+                    <input 
+                      type="text" 
+                      value={confirmCode}
+                      onChange={e => setConfirmCode(e.target.value)}
+                      placeholder="Escribe CONFIRMAR"
+                      className="w-full p-4 bg-white border-2 border-red-200 rounded-2xl focus:border-red-500 outline-none text-center font-black tracking-[0.2em] text-red-600 shadow-inner"
+                    />
+                 </div>
+
+                 <button 
+                   onClick={executeRestore}
+                   disabled={confirmCode !== 'CONFIRMAR' || restoring}
+                   className="w-full bg-red-600 hover:bg-red-700 text-white py-5 rounded-2xl font-black shadow-xl shadow-red-200 active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:grayscale"
+                 >
+                   {restoring ? 'RESTAURANDO...' : 'SÍ, BORRAR Y RESTAURAR'}
+                 </button>
+
+                 <button 
+                   onClick={() => setShowBackupModal(false)}
+                   className="text-xs font-bold text-red-300 hover:text-red-500 transition-colors uppercase tracking-widest"
+                 >
+                   Cancelar y Volver
+                 </button>
+              </div>
+           </div>
+        </div>
+      )}
     </div>
   );
 }

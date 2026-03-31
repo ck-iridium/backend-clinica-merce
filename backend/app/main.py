@@ -7,6 +7,36 @@ from .routers import clients, services, appointments, vouchers, invoices, settin
 # Crear las tablas en la base de datos (Nota: en producción mejor usar Alembic)
 Base.metadata.create_all(bind=engine)
 
+def seed_admin_user():
+    from .database import SessionLocal
+    from .models import User
+    from .routers.users import pwd_context
+    
+    db = SessionLocal()
+    try:
+        admin_email = "merce@clinicamerce.com"
+        user = db.query(User).filter(User.email == admin_email).first()
+        if not user:
+            # Importante: Hashear la contraseña antes de guardar
+            hashed_pw = pwd_context.hash("merce123")
+            new_user = User(
+                email=admin_email,
+                hashed_password=hashed_pw,
+                role="admin"
+            )
+            db.add(new_user)
+            db.commit()
+            print(f"✅ Usuario semilla '{admin_email}' creado.")
+        else:
+            print(f"ℹ️ Usuario '{admin_email}' ya existe.")
+    except Exception as e:
+        print(f"❌ Error en semilla: {e}")
+    finally:
+        db.close()
+
+# Ejecutar semilla
+seed_admin_user()
+
 app = FastAPI(
     title="Clínica Médica API",
     description="Backend API para la gestión de Clínica de Estética",
