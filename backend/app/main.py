@@ -34,8 +34,40 @@ def seed_admin_user():
     finally:
         db.close()
 
-# Ejecutar semilla
+def run_auto_migrations():
+    from .database import SessionLocal
+    from sqlalchemy import text
+    db = SessionLocal()
+    try:
+        # Migraciones manuales para añadir columnas faltantes sin afectar datos existentes
+        migrations = [
+            "ALTER TABLE clinic_settings ADD COLUMN smtp_host VARCHAR",
+            "ALTER TABLE clinic_settings ADD COLUMN smtp_port INTEGER",
+            "ALTER TABLE clinic_settings ADD COLUMN smtp_user VARCHAR",
+            "ALTER TABLE clinic_settings ADD COLUMN smtp_password VARCHAR",
+            "ALTER TABLE clinic_settings ADD COLUMN smtp_from_email VARCHAR",
+            "ALTER TABLE clinic_settings ADD COLUMN smtp_use_tls BOOLEAN DEFAULT 1",
+            "ALTER TABLE services ADD COLUMN is_active BOOLEAN DEFAULT 1"
+        ]
+        
+        for m in migrations:
+            try:
+                db.execute(text(m))
+                db.commit()
+            except Exception as e:
+                db.rollback()
+                # Ignorar errores si la columna ya existe
+                if "already exists" in str(e).lower() or "duplicate column" in str(e).lower():
+                    continue
+                print(f"⚠️ Nota de migración: {e}")
+    except Exception as e:
+        print(f"❌ Error en auto-migración: {e}")
+    finally:
+        db.close()
+
+# Ejecutar procesos de inicio
 seed_admin_user()
+run_auto_migrations()
 
 app = FastAPI(
     title="Clínica Médica API",
