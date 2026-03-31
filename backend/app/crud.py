@@ -8,7 +8,15 @@ import uuid
 
 # --- SETTINGS ---
 def get_clinic_settings(db: Session):
-    settings = db.query(models.ClinicSettings).first()
+    try:
+        settings = db.query(models.ClinicSettings).first()
+    except Exception:
+        # Si hay un error de esquema (columnas faltantes), intentamos corregir al vuelo
+        db.rollback()
+        from .main import run_auto_migrations
+        run_auto_migrations()
+        settings = db.query(models.ClinicSettings).first()
+
     if not settings:
         # Create default singleton settings if not exists
         settings = models.ClinicSettings(

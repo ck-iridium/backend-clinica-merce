@@ -105,7 +105,10 @@ app.include_router(time_blocks.router)
 
 @app.get("/")
 def read_root():
-    return {"message": "Bienvenido a la API de la Clínica Estética. Visita /docs para probar los endpoints."}
+    return {
+        "message": "Bienvenido a la API de la Clínica Estética. Visita /docs para probar los endpoints.",
+        "deployed_at": "2026-03-31T21:49:00Z"
+    }
 
 @app.get("/force-seed-merce")
 def force_seed():
