@@ -40,8 +40,14 @@ def export_database(db: Session = Depends(database.get_db)):
 @router.post("/backup/restore")
 async def restore_database(backup_data: Dict[str, Any], db: Session = Depends(database.get_db)):
     try:
-        # Desactivar temporalmente las claves foráneas (Postgres)
-        db.execute(text("SET session_replication_role = 'replica';"))
+        # Detectar el tipo de base de datos
+        is_sqlite = db.bind.dialect.name == "sqlite"
+        
+        # Desactivar temporalmente las claves foráneas
+        if is_sqlite:
+            db.execute(text("PRAGMA foreign_keys = OFF;"))
+        else:
+            db.execute(text("SET session_replication_role = 'replica';"))
         
         db.query(models.Invoice).delete()
         db.query(models.Appointment).delete()
@@ -78,7 +84,10 @@ async def restore_database(backup_data: Dict[str, Any], db: Session = Depends(da
         db.commit()
         
         # Volver al modo normal
-        db.execute(text("SET session_replication_role = 'origin';"))
+        if is_sqlite:
+            db.execute(text("PRAGMA foreign_keys = ON;"))
+        else:
+            db.execute(text("SET session_replication_role = 'origin';"))
         
         return {"ok": True, "message": "Database restored and repopulated"}
     except Exception as e:
