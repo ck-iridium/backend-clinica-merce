@@ -48,7 +48,13 @@ def send_email_resend(to_email: str, subject: str, body_html: str):
         return False
 
 def send_email(to_email: str, subject: str, body_html: str):
-    """Mailer Robusto: Intenta SMTP y si falla, Plan B (Resend)"""
+    """Mailer Robusto: Prioriza Resend si hay API KEY, si no, usa SMTP"""
+    
+    # 1. Prioridad: Si hay API KEY en el entorno, usamos Resend directamente (salta el bloqueo de Render)
+    if os.getenv("RESEND_API_KEY"):
+        logger.info("Usando Plan B (Resend API) por defecto según configuración de entorno.")
+        return send_email_resend(to_email, subject, body_html)
+
     from ..database import SessionLocal
     import smtplib # Importar aquí para asegurar disponibilidad
     db = SessionLocal()
@@ -58,10 +64,10 @@ def send_email(to_email: str, subject: str, body_html: str):
             logger.error("No hay ajustes en la DB. Abortando envío.")
             return False
 
-        # Si no hay SMTP configurado, intentamos directamente el Plan B
+        # Si no hay SMTP configurado y no hubo Resend Key arriba
         if not settings.smtp_host or not settings.smtp_user:
-            logger.warning("SMTP no configurado (host/user vacío). Intentando Plan B (Resend)...")
-            return send_email_resend(to_email, subject, body_html)
+            logger.warning("Ni SMTP ni Resend API KEY están disponibles. Abortando.")
+            return False
 
         try:
             msg = MIMEMultipart()
