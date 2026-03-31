@@ -4,8 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base
 from .routers import clients, services, appointments, vouchers, invoices, settings, users, voucher_templates, time_blocks
 
-# Reinicio total de Tablas (Solo para esta iteración de limpieza en producción)
-Base.metadata.drop_all(bind=engine)
+# Crear las tablas en la base de datos (Nota: en producción mejor usar Alembic)
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
