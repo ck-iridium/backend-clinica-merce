@@ -238,3 +238,22 @@ class AvailabilityResponse(BaseModel):
     date: str
     service_id: str
     available_slots: List[str]  # e.g. ["09:30", "10:00", "16:30"]
+
+# --- Time Blocks ---
+class TimeBlockBase(BaseModel):
+    start_time: datetime
+    end_time: datetime
+    reason: Optional[str] = None
+
+class TimeBlockCreate(TimeBlockBase):
+    pass
+
+class TimeBlockUpdate(ModelMetaclass if 'ModelMetaclass' in globals() else BaseModel): # Standard Pydantic update pattern
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
+    reason: Optional[str] = None
+
+class TimeBlockResponse(TimeBlockBase):
+    id: str
+    class Config:
+        from_attributes = True

@@ -130,3 +130,11 @@ class Invoice(Base):
     tax_rate = Column(Numeric(5, 2), default=21.0)
     
     client = relationship("Client")
+
+class TimeBlock(Base):
+    __tablename__ = "time_blocks"
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    start_time = Column(DateTime, nullable=False)
+    end_time = Column(DateTime, nullable=False)
+    reason = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)

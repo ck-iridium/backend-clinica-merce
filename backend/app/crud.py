@@ -355,10 +355,16 @@ def get_availability_slots(db: Session, target_date: date, service_id: str) -> L
     # 2. Fetch existing appointments for that day (excluding cancelled)
     day_start = datetime(target_date.year, target_date.month, target_date.day, 0, 0, 0)
     day_end   = datetime(target_date.year, target_date.month, target_date.day, 23, 59, 59)
-    existing = db.query(models.Appointment).filter(
+    existing_appts = db.query(models.Appointment).filter(
         models.Appointment.start_time >= day_start,
         models.Appointment.start_time <= day_end,
         models.Appointment.status != "cancelled",
+    ).all()
+
+    # 2b. Fetch existing time blocks for that day
+    existing_blocks = db.query(models.TimeBlock).filter(
+        models.TimeBlock.start_time >= day_start,
+        models.TimeBlock.start_time <= day_end,
     ).all()
 
     # 3. Generate candidate slots across both schedule blocks
@@ -375,10 +381,19 @@ def get_availability_slots(db: Session, target_date: date, service_id: str) -> L
 
             # 4. Overlap check: max(slot_start, appt_start) < min(slot_end, appt_end)
             overlaps = False
-            for appt in existing:
+            
+            # Check appointments
+            for appt in existing_appts:
                 if max(slot, appt.start_time) < min(slot_end, appt.end_time):
                     overlaps = True
                     break
+            
+            # Check time blocks
+            if not overlaps:
+                for block in existing_blocks:
+                    if max(slot, block.start_time) < min(slot_end, block.end_time):
+                        overlaps = True
+                        break
 
             if not overlaps:
                 available.append(slot.strftime("%H:%M"))
@@ -422,3 +437,27 @@ def create_public_appointment(
     db.refresh(appt)
 
     return appt, client, is_new
+
+# --- Time Blocks CRUD ---
+
+def get_time_blocks(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.TimeBlock).offset(skip).limit(limit).all()
+
+def create_time_block(db: Session, block_in: schemas.TimeBlockCreate):
+    db_block = models.TimeBlock(
+        id=str(uuid.uuid4()),
+        start_time=block_in.start_time,
+        end_time=block_in.end_time,
+        reason=block_in.reason
+    )
+    db.add(db_block)
+    db.commit()
+    db.refresh(db_block)
+    return db_block
+
+def delete_time_block(db: Session, block_id: str):
+    db_block = db.query(models.TimeBlock).filter(models.TimeBlock.id == block_id).first()
+    if db_block:
+        db.delete(db_block)
+        db.commit()
+    return db_block

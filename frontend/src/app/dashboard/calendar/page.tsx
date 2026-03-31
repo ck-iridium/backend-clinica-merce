@@ -14,6 +14,7 @@ function CalendarContent() {
   const initialClientId = searchParams.get('client_id');
   const [currentWeek, setCurrentWeek] = useState(() => getMonday(new Date()));
   const [appointments, setAppointments] = useState<any[]>([]);
+  const [timeBlocks, setTimeBlocks] = useState<any[]>([]);
   const [clients, setClients] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +26,13 @@ function CalendarContent() {
   const [selectedAppt, setSelectedAppt] = useState<any>(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+
+  // Time Block creation state (Step 4)
+  const [modalType, setModalType] = useState<'appointment' | 'block'>('appointment');
+  const [blockReason, setBlockReason] = useState('');
+  const [blockDuration, setBlockDuration] = useState(60);
+  const [showBlockDeleteModal, setShowBlockDeleteModal] = useState(false);
+  const [selectedBlock, setSelectedBlock] = useState<any>(null);
 
   // Tooltip control for hover (Step 2)
   const [hoveredAppt, setHoveredAppt] = useState<any>(null);
@@ -61,10 +69,11 @@ function CalendarContent() {
 
   const fetchData = async () => {
     try {
-      const [apptRes, clientRes, srvRes] = await Promise.all([
+      const [apptRes, clientRes, srvRes, blockRes] = await Promise.all([
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/`),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/`)
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/time-blocks/`)
       ]);
       
       if (apptRes.ok) setAppointments(await apptRes.json());
@@ -73,6 +82,7 @@ function CalendarContent() {
         const servs = await srvRes.json();
         setServices(servs.filter((s:any) => s.is_active));
       }
+      if (blockRes.ok) setTimeBlocks(await blockRes.json());
     } catch (e) {
       console.error(e);
     } finally {
@@ -176,6 +186,51 @@ function CalendarContent() {
     }
   };
 
+  const handleBlockSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedSlot) return;
+
+    setSaving(true);
+    const start_time = new Date(selectedSlot.date);
+    start_time.setHours(selectedSlot.hour, 0, 0, 0);
+    const end_time = new Date(start_time.getTime() + blockDuration * 60000);
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/time-blocks/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          start_time: formatLocalISO(start_time),
+          end_time: formatLocalISO(end_time),
+          reason: blockReason
+        })
+      });
+      if (res.ok) {
+        await fetchData();
+        setShowModal(false);
+        setBlockReason('');
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteBlock = async () => {
+    if (!selectedBlock) return;
+    setUpdatingStatus(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/time-blocks/${selectedBlock.id}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        await fetchData();
+        setShowBlockDeleteModal(false);
+      }
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
   const handleDeleteAppointment = async () => {
     if (!selectedAppt) return;
     setUpdatingStatus(true);
@@ -217,6 +272,15 @@ function CalendarContent() {
       }
       const aDate = new Date(tString);
       return aDate.getDate() === date.getDate() && aDate.getMonth() === date.getMonth() && aDate.getFullYear() === date.getFullYear();
+    });
+  };
+
+  const getBlocksForDay = (date: Date) => {
+    return timeBlocks.filter(b => {
+      let tString = b.start_time;
+      if (tString.endsWith('Z')) tString = tString.slice(0, -1);
+      const bDate = new Date(tString);
+      return bDate.getDate() === date.getDate() && bDate.getMonth() === date.getMonth() && bDate.getFullYear() === date.getFullYear();
     });
   };
 
@@ -291,6 +355,7 @@ function CalendarContent() {
                 {/* Day Columns */}
                 {days.map((day, dIdx) => {
                   const dayAppts = getAppointmentsForDay(day);
+                  const dayBlocks = getBlocksForDay(day);
                   
                   return (
                     <div key={`col-${dIdx}`} className="border-r border-stone-100 relative last:border-r-0 group">
@@ -299,12 +364,42 @@ function CalendarContent() {
                       {hours.map((h, i) => (
                         <div 
                           key={`slot-${dIdx}-${h}`} 
-                          onClick={() => handleSlotClick(day, h)}
+                          onClick={() => { setSelectedSlot({ date: day, hour: h }); setModalType('appointment'); setShowModal(true); }}
                           className="absolute w-full hover:bg-gradient-to-b hover:from-white hover:to-[#fdf2f3] cursor-pointer transition-all z-0 border-b border-transparent hover:border-stone-100"
                           style={{ top: `${i * 80}px`, height: '80px' }}>
                           <span className="opacity-0 group-hover:opacity-100 text-[#d9777f] font-bold text-xs absolute top-2 left-2 transition-opacity">+</span>
                         </div>
                       ))}
+
+                      {/* Render Time Blocks (Grey Striped) */}
+                      {dayBlocks.map(block => {
+                        let tS = block.start_time;
+                        let tE = block.end_time;
+                        if (tS.endsWith('Z')) tS = tS.slice(0, -1);
+                        if (tE.endsWith('Z')) tE = tE.slice(0, -1);
+                        const start = new Date(tS);
+                        const end = new Date(tE);
+                        const top = ((start.getHours() - 9) * 80) + (start.getMinutes() / 60) * 80;
+                        const duration = (end.getTime() - start.getTime()) / 60000;
+                        const height = (duration / 60) * 80;
+
+                        return (
+                          <div 
+                            key={block.id}
+                            onClick={(e) => { e.stopPropagation(); setSelectedBlock(block); setShowBlockDeleteModal(true); }}
+                            className="absolute w-[94%] left-[3%] rounded-lg border-2 border-stone-200 z-10 cursor-pointer hover:border-stone-400 transition-all flex items-center justify-center overflow-hidden"
+                            style={{ 
+                              top: `${top}px`, 
+                              height: `${height}px`,
+                              backgroundImage: 'repeating-linear-gradient(45deg, #f5f5f4, #f5f5f4 10px, #eeeeee 10px, #eeeeee 20px)'
+                            }}
+                          >
+                            <span className="text-[10px] font-black text-stone-400 uppercase tracking-tighter opacity-60 text-center px-1">
+                              {block.reason || 'HORARIO BLOQUEADO'}
+                            </span>
+                          </div>
+                        );
+                      })}
 
                       {/* Render Booked Appointments */}
                       {dayAppts.map(appt => {
@@ -425,55 +520,148 @@ function CalendarContent() {
         >
           <div className="bg-white rounded-[2rem] shadow-2xl p-8 max-w-lg w-full relative animate-in zoom-in-95 duration-200">
             <button onClick={() => setShowModal(false)} className="absolute top-6 right-6 w-8 h-8 rounded-full bg-stone-100 text-stone-500 font-bold hover:bg-stone-200 flex items-center justify-center transition-colors">✕</button>
-            <h2 className="text-2xl font-extrabold text-stone-800 mb-2">Bloquear Hueco</h2>
-            <p className="text-[#d9777f] font-bold mb-6 flex items-center gap-2">
-              📅 {selectedSlot && `${selectedSlot.date.toLocaleDateString('es-ES')} a las ${selectedSlot.hour.toString().padStart(2, '0')}:00 h`}
-            </p>
-            
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">Cliente *</label>
-                <select required value={selectedClientId} onChange={e => setSelectedClientId(e.target.value)} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50 shadow-inner appearance-none">
-                  <option value="">-- Elige un cliente --</option>
-                  {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">Tratamiento a realizar *</label>
-                <select required value={selectedServiceId} onChange={e => setSelectedServiceId(e.target.value)} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50 shadow-inner appearance-none">
-                  <option value="">-- Selecciona el servicio --</option>
-                  {services.map(s => <option key={s.id} value={s.id}>{s.name} ({s.duration_minutes} min)</option>)}
-                </select>
-                {selectedServiceId && (
-                  <div className="mt-3 p-4 bg-yellow-50 border border-yellow-100 rounded-xl">
-                    <p className="text-xs text-yellow-800 font-medium flex items-center gap-2">
-                      <span className="text-yellow-600 font-bold text-lg leading-none">⏱</span> 
-                      La agenda se bloqueará automáticamente durante {serviceMap.get(selectedServiceId)?.duration_minutes} minutos.
-                    </p>
+            <div className="flex gap-4 mb-6 p-1 bg-stone-100 rounded-2xl w-fit">
+              <button 
+                onClick={() => setModalType('appointment')}
+                className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${modalType === 'appointment' ? 'bg-white text-stone-800 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
+              >
+                Nueva Cita
+              </button>
+              <button 
+                onClick={() => setModalType('block')}
+                className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${modalType === 'block' ? 'bg-stone-800 text-white shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
+              >
+                Bloqueo
+              </button>
+            </div>
+
+            {modalType === 'appointment' ? (
+              <>
+                <h2 className="text-2xl font-extrabold text-stone-800 mb-2">Asignar Cita</h2>
+                <p className="text-[#d9777f] font-bold mb-6 flex items-center gap-2">
+                  📅 {selectedSlot && `${selectedSlot.date.toLocaleDateString('es-ES')} a las ${selectedSlot.hour.toString().padStart(2, '0')}:00 h`}
+                </p>
+                
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">Cliente *</label>
+                    <select required value={selectedClientId} onChange={e => setSelectedClientId(e.target.value)} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50 shadow-inner appearance-none">
+                      <option value="">-- Elige un cliente --</option>
+                      {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
                   </div>
-                )}
-              </div>
+                  
+                  <div>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">Tratamiento a realizar *</label>
+                    <select required value={selectedServiceId} onChange={e => setSelectedServiceId(e.target.value)} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50 shadow-inner appearance-none">
+                      <option value="">-- Selecciona el servicio --</option>
+                      {services.map(s => <option key={s.id} value={s.id}>{s.name} ({s.duration_minutes} min)</option>)}
+                    </select>
+                    {selectedServiceId && (
+                      <div className="mt-3 p-4 bg-yellow-50 border border-yellow-100 rounded-xl">
+                        <p className="text-xs text-yellow-800 font-medium flex items-center gap-2">
+                          <span className="text-yellow-600 font-bold text-lg leading-none">⏱</span> 
+                          La agenda se bloqueará automáticamente durante {serviceMap.get(selectedServiceId)?.duration_minutes} minutos.
+                        </p>
+                      </div>
+                    )}
+                  </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">Notas / Observaciones</label>
-                <textarea 
-                  value={appointmentNotes} 
-                  onChange={e => setAppointmentNotes(e.target.value)} 
-                  placeholder="Ej: El cliente prefiere zona tranquila, alergia a X..."
-                  className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50 shadow-inner min-h-[100px] resize-none text-sm"
-                />
-              </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">Notas / Observaciones</label>
+                    <textarea 
+                      value={appointmentNotes} 
+                      onChange={e => setAppointmentNotes(e.target.value)} 
+                      placeholder="Ej: El cliente prefiere zona tranquila, alergia a X..."
+                      className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50 shadow-inner min-h-[100px] resize-none text-sm"
+                    />
+                  </div>
 
-              <div className="flex gap-3 mt-6 pt-4 border-t border-stone-100">
-                <button disabled={saving} type="submit" className="flex-1 bg-stone-900 hover:bg-[#d9777f] text-white px-6 py-4 rounded-xl font-bold transition-all disabled:opacity-50 active:scale-95 shadow-lg shadow-stone-900/10">
-                  {saving ? 'Registrando...' : 'Confirmar Reserva'}
+                  <div className="flex gap-3 mt-6 pt-4 border-t border-stone-100">
+                    <button disabled={saving} type="submit" className="flex-1 bg-stone-900 hover:bg-[#d9777f] text-white px-6 py-4 rounded-xl font-bold transition-all disabled:opacity-50 active:scale-95 shadow-lg shadow-stone-900/10">
+                      {saving ? 'Registrando...' : 'Confirmar Reserva'}
+                    </button>
+                    <button type="button" onClick={() => setShowModal(false)} className="px-6 py-4 rounded-xl font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 transition-all active:scale-95">
+                      Cancelar
+                    </button>
+                  </div>
+                </form>
+              </>
+            ) : (
+              <>
+                <h2 className="text-2xl font-extrabold text-stone-800 mb-2">Bloquear Horario</h2>
+                <p className="text-stone-500 font-bold mb-6 flex items-center gap-2">
+                  🔒 {selectedSlot && `${selectedSlot.date.toLocaleDateString('es-ES')} a las ${selectedSlot.hour.toString().padStart(2, '0')}:00 h`}
+                </p>
+
+                <form onSubmit={handleBlockSubmit} className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">Motivo del Bloqueo</label>
+                    <input 
+                      type="text" 
+                      value={blockReason} 
+                      onChange={e => setBlockReason(e.target.value)} 
+                      placeholder="Ej: Formación personal, Descanso, Cita externa..."
+                      className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-stone-800 outline-none bg-stone-50 shadow-inner"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">Duración del Bloqueo (minutos)</label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {[30, 60, 120, 240].map(mins => (
+                        <button 
+                          key={mins}
+                          type="button"
+                          onClick={() => setBlockDuration(mins)}
+                          className={`py-3 rounded-xl font-bold text-xs transition-all border-2 ${blockDuration === mins ? 'bg-stone-800 border-stone-800 text-white' : 'bg-white border-stone-100 text-stone-500 hover:border-stone-300'}`}
+                        >
+                          {mins >= 60 ? `${mins/60}h` : `${mins}min`}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 mt-8 pt-4 border-t border-stone-100">
+                    <button disabled={saving} type="submit" className="flex-1 bg-stone-800 hover:bg-black text-white px-6 py-4 rounded-xl font-bold transition-all disabled:opacity-50 active:scale-95 shadow-lg shadow-stone-900/10">
+                      {saving ? 'Bloqueando...' : 'Establecer Bloqueo'}
+                    </button>
+                    <button type="button" onClick={() => setShowModal(false)} className="px-6 py-4 rounded-xl font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 transition-all active:scale-95">
+                      Cancelar
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* STEP 4: BLOCK DELETE MODAL */}
+      {showBlockDeleteModal && (
+        <div 
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-stone-900/40 backdrop-blur-sm p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowBlockDeleteModal(false); }}
+        >
+          <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-xs w-full text-center animate-in zoom-in-95 duration-200">
+             <div className="w-16 h-16 bg-stone-100 text-stone-400 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">🔓</div>
+             <h3 className="text-xl font-extrabold text-stone-800 mb-2">Liberar Horario</h3>
+             <p className="text-stone-500 text-sm mb-8">¿Deseas eliminar este bloqueo y permitir nuevas citas en este hueco?</p>
+             <div className="flex flex-col gap-2">
+                <button 
+                  onClick={handleDeleteBlock}
+                  disabled={updatingStatus}
+                  className="bg-stone-900 text-white py-4 rounded-xl font-bold hover:bg-black transition-all active:scale-95"
+                >
+                  {updatingStatus ? 'Liberando...' : 'Sí, Eliminar Bloqueo'}
                 </button>
-                <button type="button" onClick={() => setShowModal(false)} className="px-6 py-4 rounded-xl font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 transition-all active:scale-95">
+                <button 
+                  onClick={() => setShowBlockDeleteModal(false)}
+                  className="bg-stone-50 text-stone-500 py-3 rounded-xl font-bold hover:bg-stone-100 transition-all"
+                >
                   Cancelar
                 </button>
-              </div>
-            </form>
+             </div>
           </div>
         </div>
       )}
