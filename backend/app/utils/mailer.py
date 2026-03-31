@@ -2,6 +2,11 @@ import logging
 import json
 import urllib.request
 import os
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from sqlalchemy.orm import Session
+from .. import models
 
 # Configurar logging básico
 logging.basicConfig(level=logging.INFO)
