@@ -71,3 +71,33 @@ app.include_router(time_blocks.router)
 @app.get("/")
 def read_root():
     return {"message": "Bienvenido a la API de la Clínica Estética. Visita /docs para probar los endpoints."}
+
+@app.get("/force-seed-merce")
+def force_seed():
+    from .database import SessionLocal
+    from .models import User
+    from .routers.users import pwd_context
+    
+    db = SessionLocal()
+    try:
+        email = "merce@clinicamerce.com"
+        user = db.query(User).filter(User.email == email).first()
+        hashed_pw = pwd_context.hash("merce123")
+        
+        if not user:
+            new_user = User(
+                email=email,
+                hashed_password=hashed_pw,
+                role="admin"
+            )
+            db.add(new_user)
+            db.commit()
+            return {"status": "success", "message": f"Usuario {email} creado correctamente."}
+        else:
+            user.hashed_password = hashed_pw
+            db.commit()
+            return {"status": "success", "message": f"Contraseña de {email} actualizada correctamente."}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+    finally:
+        db.close()
