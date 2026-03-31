@@ -416,7 +416,9 @@ export default function VouchersPage() {
                   className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl font-semibold text-stone-800 focus:outline-none focus:border-[#d9777f] focus:ring-1 focus:ring-[#d9777f]"
                 >
                   <option value="">Selecciona cliente...</option>
-                  {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  {clients
+                    .filter(c => c.email !== 'contado@clinica-mercedes.com')
+                    .map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
 

@@ -49,9 +49,11 @@ export default function POSPage() {
   };
 
   const filteredClients = clients.filter(c => 
-    c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    c.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.phone?.includes(searchTerm)
+    c.email !== 'contado@clinica-mercedes.com' && (
+      c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      c.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.phone?.includes(searchTerm)
+    )
   ).slice(0, 5);
 
   const handleProcessSale = async (e: React.FormEvent) => {

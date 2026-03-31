@@ -10,6 +10,7 @@ export default function InvoicePreviewPage() {
   const [client, setClient] = useState<any>(null);
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   // Estados interactivos del Cuño/Firma y Persistencia
   const SELLO_KEY = `sello_pos_${id}`;
@@ -68,6 +69,7 @@ export default function InvoicePreviewPage() {
       });
       if (res.ok) {
         setInvoice({ ...invoice, status: newStatus });
+        setShowConfirmModal(false);
       }
     } catch (e) {
       console.error(e);
@@ -155,7 +157,7 @@ export default function InvoicePreviewPage() {
             <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-4">Control de Estado</p>
             
             <button 
-              onClick={() => handleToggleStatus(invoice.status)}
+              onClick={() => setShowConfirmModal(true)}
               className={`w-full p-4 rounded-xl flex items-center justify-between text-left transition-all font-bold text-sm mb-6 ${
                 invoice.status === 'paid' 
                 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm'
@@ -332,6 +334,34 @@ export default function InvoicePreviewPage() {
         </div>
 
       </div>
+
+      {/* MODAL DE CONFIRMACION DE CAMBIO DE ESTADO */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-900/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+           <div className="bg-white rounded-[2rem] shadow-2xl p-8 max-w-sm w-full text-center border border-stone-100">
+              <div className="w-16 h-16 bg-[#fdf2f3] text-[#d9777f] rounded-full flex items-center justify-center text-3xl mx-auto mb-4">⚖️</div>
+              <h3 className="text-xl font-extrabold text-stone-800 mb-2">Confirmar Acción</h3>
+              <p className="text-stone-500 text-sm mb-8">
+                ¿Estás seguro de que deseas cambiar el estado de esta factura? <br/>
+                <span className="font-bold text-stone-600">Esto afectará directamente a los reportes de contabilidad.</span>
+              </p>
+              <div className="flex flex-col gap-3">
+                 <button 
+                   onClick={() => handleToggleStatus(invoice.status)}
+                   className="bg-stone-900 text-white py-4 rounded-xl font-bold hover:bg-[#d9777f] transition-all active:scale-95 shadow-lg"
+                 >
+                   Sí, Cambiar Estado
+                 </button>
+                 <button 
+                   onClick={() => setShowConfirmModal(false)}
+                   className="bg-stone-100 text-stone-500 py-3 rounded-xl font-bold hover:bg-stone-200 transition-all"
+                 >
+                   Cancelar
+                 </button>
+              </div>
+           </div>
+        </div>
+      )}
     </div>
   );
 }

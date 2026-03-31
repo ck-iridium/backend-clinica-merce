@@ -547,7 +547,9 @@ function CalendarContent() {
                     <label className="block text-sm font-semibold text-stone-700 mb-2">Cliente *</label>
                     <select required value={selectedClientId} onChange={e => setSelectedClientId(e.target.value)} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50 shadow-inner appearance-none">
                       <option value="">-- Elige un cliente --</option>
-                      {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      {clients
+                        .filter(c => c.email !== 'contado@clinica-mercedes.com')
+                        .map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
                   </div>
                   

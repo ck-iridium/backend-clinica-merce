@@ -106,16 +106,15 @@ export default function InvoicesPage() {
                       {inv.concept}
                     </td>
                     <td className="p-5 text-center">
-                      <button 
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleToggleStatus(inv.id, inv.status); }}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-transform hover:scale-105 ${
+                      <div 
+                        className={`inline-block px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest ${
                           inv.status === 'paid' 
-                            ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' 
-                            : 'bg-orange-50 text-orange-600 hover:bg-orange-100'
+                            ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
+                            : 'bg-orange-50 text-orange-600 border border-orange-100'
                         }`}
                       >
                         {inv.status === 'paid' ? 'Pagada ✓' : 'Pendiente ⏳'}
-                      </button>
+                      </div>
                     </td>
                     <td className="p-5 font-extrabold text-stone-800 text-right">
                       {Number(inv.amount).toFixed(2)} €

@@ -196,7 +196,9 @@ export default function ClientsPage() {
               ) : clients.length === 0 ? (
                 <tr><td colSpan={4} className="text-center py-16 text-stone-400 font-medium">Aún no hay clientes registrados en el sistema. Usa el botón superior para añadir uno.</td></tr>
               ) : (
-                clients.map((client) => (
+                clients
+                  .filter(c => c.email !== 'contado@clinica-mercedes.com')
+                  .map((client) => (
                   <tr key={client.id} className="hover:bg-[#fdf2f3] group transition-colors">
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-4">
