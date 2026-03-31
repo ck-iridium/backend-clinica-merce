@@ -135,6 +135,11 @@ def check_appointment_collision(db: Session, start_time: datetime, end_time: dat
     if end_time.hour > 19:
         return "La cita excede el horario de cierre (19:00)."
     
+    # 1b. Weekend Restriction (Saturdays & Sundays)
+    # weekday() returns 0 for Monday, 5 for Saturday, 6 for Sunday
+    if start_time.weekday() in [5, 6]:
+        return "La clínica está cerrada los fines de semana (Sábados y Domingos)."
+
     # 2. Collision with other Appointments
     query = db.query(models.Appointment).filter(
         models.Appointment.status != "cancelled",
@@ -177,7 +182,7 @@ def create_appointment(db: Session, appointment: schemas.AppointmentCreate):
     db.refresh(db_appointment)
     return db_appointment
 
-def update_appointment(db: Session, appointment_id: str, appointment: schemas.AppointmentUpdate):
+def update_appointment(db: Session, appointment_id: str, appointment: schemas.AppointmentUpdate, background_tasks: any = None):
     db_appointment = db.query(models.Appointment).filter(models.Appointment.id == appointment_id).first()
     if db_appointment:
         old_status = db_appointment.status
@@ -218,7 +223,10 @@ def update_appointment(db: Session, appointment_id: str, appointment: schemas.Ap
 
         # Triggers de Email
         if old_status == 'web_pending' and db_appointment.status == 'confirmed':
-            mailer.send_appointment_notification(db, db_appointment, 'confirmation')
+            if background_tasks:
+                background_tasks.add_task(mailer.send_appointment_notification, db, db_appointment, 'confirmation')
+            else:
+                mailer.send_appointment_notification(db, db_appointment, 'confirmation')
 
     return db_appointment
 
@@ -489,6 +497,7 @@ def get_availability_slots(db: Session, target_date: date, service_id: str) -> L
 def create_public_appointment(
     db: Session,
     booking: schemas.PublicBookingRequest,
+    background_tasks: any = None
 ):
     """Idempotent public booking: find-or-create client, then create appointment."""
     # 1. Resolve client
@@ -524,8 +533,11 @@ def create_public_appointment(
     db.commit()
     db.refresh(appt)
 
-    # Email de notificación
-    mailer.send_appointment_notification(db, appt, 'new_web_booking')
+    # Email de notificación (en segundo plano si es posible)
+    if background_tasks:
+        background_tasks.add_task(mailer.send_appointment_notification, db, appt, 'new_web_booking')
+    else:
+        mailer.send_appointment_notification(db, appt, 'new_web_booking')
 
     return appt, client, is_new
 

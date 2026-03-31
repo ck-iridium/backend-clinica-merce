@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import date as DateType
@@ -35,7 +35,7 @@ def get_availability(
 
 
 @router.post("/public", response_model=schemas.PublicBookingResponse, status_code=201)
-def public_booking(booking: schemas.PublicBookingRequest, db: Session = Depends(database.get_db)):
+def public_booking(booking: schemas.PublicBookingRequest, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
     """
     Landing page booking endpoint.
     - Finds or creates the client (deduplication by email / phone).
@@ -47,7 +47,7 @@ def public_booking(booking: schemas.PublicBookingRequest, db: Session = Depends(
             detail="Provide at least one of: client_email, client_phone"
         )
     try:
-        appt, client, is_new = crud.create_public_appointment(db, booking)
+        appt, client, is_new = crud.create_public_appointment(db, booking, background_tasks=background_tasks)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
@@ -75,9 +75,9 @@ def read_appointments(skip: int = 0, limit: int = 100, db: Session = Depends(dat
     return crud.get_appointments(db, skip=skip, limit=limit)
 
 @router.patch("/{appointment_id}", response_model=schemas.AppointmentResponse)
-def update_appointment(appointment_id: str, appointment_update: schemas.AppointmentUpdate, db: Session = Depends(database.get_db)):
+def update_appointment(appointment_id: str, appointment_update: schemas.AppointmentUpdate, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
     try:
-        db_appointment = crud.update_appointment(db, appointment_id=appointment_id, appointment=appointment_update)
+        db_appointment = crud.update_appointment(db, appointment_id=appointment_id, appointment=appointment_update, background_tasks=background_tasks)
         if db_appointment is None:
             raise HTTPException(status_code=404, detail="Appointment not found")
         return db_appointment

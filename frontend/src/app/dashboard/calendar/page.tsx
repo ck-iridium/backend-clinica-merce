@@ -295,7 +295,7 @@ function CalendarContent() {
     }
   };
 
-  const days = Array.from({ length: 6 }).map((_, i) => {
+  const days = Array.from({ length: 5 }).map((_, i) => {
     const d = new Date(currentWeek);
     d.setDate(d.getDate() + i);
     return d;
@@ -362,7 +362,7 @@ function CalendarContent() {
         <div className="bg-white rounded-[2rem] shadow-xl shadow-stone-100/50 border border-stone-100 overflow-x-auto relative">
           <div className="min-w-[800px]">
             {/* Header row */}
-            <div className="grid grid-cols-7 border-b border-stone-100 bg-stone-50/80">
+            <div className="grid grid-cols-6 border-b border-stone-100 bg-stone-50/80">
               <div className="p-4 border-r border-stone-100 text-stone-400 font-bold text-xs uppercase tracking-widest text-center flex items-end justify-center">
                 Hora
               </div>
@@ -385,7 +385,7 @@ function CalendarContent() {
                 <div key={`hl-${h}`} className="absolute w-full border-t border-stone-50" style={{ top: `${i * 80}px`, height: '80px', pointerEvents: 'none' }}></div>
               ))}
 
-              <div className="grid grid-cols-7 absolute top-0 w-full h-full">
+              <div className="grid grid-cols-6 absolute top-0 w-full h-full">
                 {/* Time Scale Column */}
                 <div className="border-r border-stone-100 bg-stone-50/20 relative z-10 pointer-events-none">
                   {hours.map((h, i) => (

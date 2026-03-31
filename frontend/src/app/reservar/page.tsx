@@ -177,6 +177,11 @@ export default function BookingPage() {
                           value={selectedDate.toISOString().split('T')[0]}
                           onChange={(e) => {
                             const nd = new Date(e.target.value);
+                            const day = nd.getDay();
+                            if (day === 0 || day === 6) {
+                              alert("Lamentablemente la clínica está cerrada los fines de semana. Por favor, elige un día de lunes a viernes.");
+                              return;
+                            }
                             if (!isNaN(nd.getTime())) setSelectedDate(nd);
                             setSelectedTime(''); // reset time block
                           }}

@@ -26,7 +26,7 @@ def send_email(db: Session, to_email: str, subject: str, body_html: str):
 
         msg.attach(MIMEText(body_html, 'html'))
 
-        server = smtplib.SMTP(settings.smtp_host, settings.smtp_port or 587)
+        server = smtplib.SMTP(settings.smtp_host, settings.smtp_port or 587, timeout=10)
         if settings.smtp_use_tls:
             server.starttls()
         
