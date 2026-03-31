@@ -2,24 +2,20 @@ import logging
 import json
 import urllib.request
 import os
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from sqlalchemy.orm import Session
 from .. import models
 
-# Configurar logging básico
+# Configurar logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def get_smtp_settings(db: Session):
-    return db.query(models.ClinicSettings).first()
-
-def send_email_resend(to_email: str, subject: str, body_html: str):
-    """Plan B: Envío vía API de Resend (Puerto 443 HTTP)"""
+def send_email(to_email: str, subject: str, body_html: str):
+    """
+    Envía un correo electrónico usando exclusivamente la API de Resend (Puerto 443 HTTP).
+    Este método evita los bloqueos de puertos SMTP en servicios como Render.
+    """
     api_key = os.getenv("RESEND_API_KEY")
     if not api_key:
-        logger.error("No se puede usar Resend: RESEND_API_KEY no configurada en variables de entorno.")
+        logger.error("❌ ERROR: RESEND_API_KEY no configurada. El email no se enviará.")
         return False
 
     try:
@@ -28,93 +24,46 @@ def send_email_resend(to_email: str, subject: str, body_html: str):
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
+        
+        # El remitente debe ser un dominio verificado en Resend o el por defecto de su sandbox (onboarding@resend.dev)
         data = {
-            "from": "Clinica Merce <onboarding@resend.dev>", # Cambiar por dominio verificado en Resend
+            "from": "Clínica Merce <onboarding@resend.dev>",
             "to": [to_email],
             "subject": subject,
             "html": body_html
         }
 
-        req = urllib.request.Request(url, data=json.dumps(data).encode('utf-8'), headers=headers, method="POST")
-        with urllib.request.urlopen(req, timeout=10) as response:
+        req = urllib.request.Request(
+            url, 
+            data=json.dumps(data).encode('utf-8'), 
+            headers=headers, 
+            method="POST"
+        )
+        
+        with urllib.request.urlopen(req, timeout=8) as response:
             if response.status in [200, 201]:
-                logger.info("Email enviado vía Resend (API) correctamente a %s", to_email)
+                logger.info(f"✅ Email enviado con éxito a {to_email}")
                 return True
             else:
-                logger.error("Error en Resend API: Status %s", response.status)
+                logger.error(f"⚠️ Resend API devolvió status: {response.status}")
                 return False
+                
     except Exception as e:
-        logger.error("Fallo crítico en Plan B (Resend): %s", str(e))
+        # Silenciamos el error para que la aplicación no se bloquee ni la reserva falle
+        logger.error(f"❌ Fallo al enviar email vía Resend: {str(e)}")
         return False
-
-def send_email(to_email: str, subject: str, body_html: str):
-    """Mailer Robusto: Prioriza Resend si hay API KEY, si no, usa SMTP"""
-    
-    # 1. Prioridad: Si hay API KEY en el entorno, usamos Resend directamente (salta el bloqueo de Render)
-    if os.getenv("RESEND_API_KEY"):
-        logger.info("Usando Plan B (Resend API) por defecto según configuración de entorno.")
-        return send_email_resend(to_email, subject, body_html)
-
-    from ..database import SessionLocal
-    import smtplib # Importar aquí para asegurar disponibilidad
-    db = SessionLocal()
-    try:
-        settings = db.query(models.ClinicSettings).first()
-        if not settings:
-            logger.error("No hay ajustes en la DB. Abortando envío.")
-            return False
-
-        # Si no hay SMTP configurado y no hubo Resend Key arriba
-        if not settings.smtp_host or not settings.smtp_user:
-            logger.warning("Ni SMTP ni Resend API KEY están disponibles. Abortando.")
-            return False
-
-        try:
-            msg = MIMEMultipart()
-            msg['From'] = f"{settings.clinic_name} <{settings.smtp_from_email or settings.smtp_user}>"
-            msg['To'] = to_email
-            msg['Subject'] = subject
-            msg.attach(MIMEText(body_html, 'html'))
-
-            # Lógica de puerto
-            if settings.smtp_port == 465:
-                logger.info("Intentando conexión SMTP_SSL por puerto 465...")
-                server = smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port, timeout=5)
-            else:
-                port = settings.smtp_port or 587
-                logger.info("Intentando conexión SMTP por puerto %s...", port)
-                server = smtplib.SMTP(settings.smtp_host, port, timeout=5)
-                if settings.smtp_use_tls:
-                    server.starttls()
-            
-            server.login(settings.smtp_user, settings.smtp_password)
-            server.send_message(msg)
-            server.quit()
-            logger.info("Email enviado vía SMTP correctamente a %s", to_email)
-            return True
-
-        except (smtplib.SMTPException, ConnectionError, TimeoutError) as smtp_err:
-            logger.error("⚠️ Error de Red SMTP detectado (¿Puerto bloqueado?): %s", str(smtp_err))
-            logger.info("Iniciando Plan B (Resend) como respaldo...")
-            return send_email_resend(to_email, subject, body_html)
-
-    except Exception as e:
-        logger.error("Error inesperado en Mailer: %s", str(e))
-        return False
-    finally:
-        db.close()
 
 def send_appointment_notification(appointment_id: str, type: str):
     """
-    Envía notificaciones de cita. 
-    Types: 'new_web_booking' (Aviso a clínica + copia cliente), 'confirmation' (Confirmación al cliente)
+    Gestiona las notificaciones de citas (Cliente + Clínica).
+    Ejecutar siempre en segundo plano (BackgroundTasks).
     """
     from ..database import SessionLocal
     db = SessionLocal()
     try:
         appointment = db.query(models.Appointment).filter(models.Appointment.id == appointment_id).first()
         if not appointment:
-            logger.error(f"No se encontró la cita {appointment_id} para enviar notificación.")
+            logger.error(f"Cita {appointment_id} no encontrada.")
             return
 
         settings = db.query(models.ClinicSettings).first()
@@ -125,78 +74,39 @@ def send_appointment_notification(appointment_id: str, type: str):
         time_str = appointment.start_time.strftime("%H:%M")
         
         if type == 'new_web_booking':
-            # 1. Email al Cliente (Copia de cortesía)
+            # 1. Email al Cliente
             subject_client = f"Solicitud de Cita Recibida - {settings.clinic_name}"
             body_client = f"""
             <html>
-            <body style="font-family: sans-serif; color: #333;">
-                <h2 style="color: #d9777f;">¡Hola {client.name}!</h2>
-                <p>Hemos recibido tu solicitud de cita en <strong>Merce Estética</strong>.</p>
-                <p><strong>Detalles de la solicitud:</strong></p>
-                <ul>
-                    <li><strong>Tratamiento:</strong> {service.name}</li>
-                    <li><strong>Fecha:</strong> {date_str}</li>
-                    <li><strong>Hora:</strong> {time_str}</li>
-                </ul>
-                <p>Tu cita está pendiente de confirmación. En breve nos pondremos en contacto contigo o recibirás un email de confirmación final.</p>
-                <p>¡Gracias por confiar en nosotros!</p>
-                <hr>
-                <p style="font-size: 12px; color: #999;">Merce Estética - {settings.clinic_address}</p>
-            </body>
+                <body style="font-family: sans-serif; color: #333;">
+                    <h2 style="color: #d9777f;">¡Hola {client.name}!</h2>
+                    <p>Hemos recibido tu solicitud de cita en <strong>Merce Estética</strong>.</p>
+                    <p><strong>Detalles:</strong> {service.name} el {date_str} a las {time_str}.</p>
+                    <p>Tu cita está pendiente de confirmación manual.</p>
+                </body>
             </html>
             """
             send_email(client.email, subject_client, body_client)
 
-            # 2. Email a la Clínica (Aviso interno)
-            # Prioridad: Email de soporte Merce > clinic_email > smtp_user (Gmail de Merce)
-            clinic_support_email = "iridium_cop@hotmail.com"
-            target_clinic_email = settings.clinic_email or settings.smtp_user
-            
-            if target_clinic_email:
-                subject_clinic = f"Nueva Cita Web Pendiente: {client.name}"
-                body_clinic = f"""
-                <html>
-                <body style="font-family: sans-serif;">
-                    <h2 style="color: #d9777f;">Nueva reserva desde la Web</h2>
-                    <p>Merce, tienes una nueva solicitud de cita:</p>
-                    <ul>
-                        <li><strong>Cliente:</strong> {client.name}</li>
-                        <li><strong>Servicio:</strong> {service.name}</li>
-                        <li><strong>Fecha:</strong> {date_str}</li>
-                        <li><strong>Hora:</strong> {time_str}</li>
-                        <li><strong>Teléfono:</strong> {client.phone}</li>
-                    </ul>
-                    <p>Recuerda revisarla en tu panel de control.</p>
-                </body>
-                </html>
-                """
-                send_email(target_clinic_email, subject_clinic, body_clinic)
-            
-            # Siempre enviamos copia a Iridium para asegurar que Merce se entere
-            if clinic_support_email and clinic_support_email != target_clinic_email:
-                send_email(clinic_support_email, f"COPIA: {client.name} - Nueva Cita Web", body_clinic)
-
-        elif type == 'confirmation':
-            subject = f"Cita Confirmada - Merce Estética"
-            body = f"""
+            # 2. Email a la Clínica (Copia forzada a soporte Merce)
+            clinic_support = "iridium_cop@hotmail.com"
+            body_clinic = f"""
             <html>
-            <body style="font-family: sans-serif; color: #333;">
-                <h2 style="color: #d9777f;">¡Cita Confirmada!</h2>
-                <p>Hola {client.name}, te confirmamos que tu cita ha sido validada correctamente.</p>
-                <p><strong>Detalles de tu cita:</strong></p>
-                <div style="background: #fdf2f3; padding: 20px; border-radius: 10px; border: 1px solid #f3c7cb;">
-                    <p style="margin: 0;"><strong>Tratamiento:</strong> {service.name}</p>
-                    <p style="margin: 0;"><strong>Fecha:</strong> {date_str}</p>
-                    <p style="margin: 0;"><strong>Hora:</strong> {time_str}</p>
-                </div>
-                <p>Te esperamos en <strong>Merce Estética</strong>. Si necesitas cancelar o modificar la hora, por favor avísanos con antelación.</p>
-                <p>¡Muchas gracias!</p>
-                <br>
-                <p><strong>Merce</strong></p>
-                <p style="font-size: 12px; color: #999;">{settings.clinic_address} | {settings.clinic_phone}</p>
-            </body>
+                <body>
+                    <h2 style="color: #d9777f;">Nueva reserva desde la Web</h2>
+                    <p>Merce, tienes una solicitud nueva: <strong>{client.name}</strong> para <strong>{service.name}</strong> el {date_str} a las {time_str}.</p>
+                    <p>Teléfono: {client.phone}</p>
+                </body>
             </html>
             """
-            send_email(client.email, subject, body)
+            send_email(clinic_support, f"NUEVA CITA: {client.name}", body_clinic)
+
+        elif type == 'confirmation':
+            subject = "Cita Confirmada - Merce Estética"
+            body = f"Hola {client.name}, tu cita para {service.name} el día {date_str} a las {time_str} ha sido confirmada. ¡Te esperamos!"
+            send_email(client.email, subject, f"<html><body>{body}</body></html>")
+            
+    except Exception as e:
+        logger.error(f"Error en flujo de notificación: {str(e)}")
     finally:
         db.close()
