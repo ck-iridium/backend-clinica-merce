@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Usar SQLite por defecto para desarrollo local si no se define DATABASE_URL
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./clinica.db")
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./clinica_v2.db")
 
 # Ajuste necesario para SQLite en SQLAlchemy (check_same_thread)
 connect_args = {"check_same_thread": False} if SQLALCHEMY_DATABASE_URL.startswith("sqlite") else {}
