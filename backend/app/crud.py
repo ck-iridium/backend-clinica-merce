@@ -3,13 +3,21 @@ from sqlalchemy import or_
 from datetime import datetime, date, timedelta
 from typing import List
 from . import models, schemas
+from .utils import mailer
 import uuid
 
 # --- SETTINGS ---
 def get_clinic_settings(db: Session):
     settings = db.query(models.ClinicSettings).first()
     if not settings:
-        settings = models.ClinicSettings(id=1)
+        # Create default singleton settings if not exists
+        settings = models.ClinicSettings(
+            id=1,
+            clinic_name="Clínica Merce",
+            invoice_prefix="FA-{YY}-",
+            invoice_next_number=1,
+            default_tax_rate=21.0
+        )
         db.add(settings)
         db.commit()
         db.refresh(settings)
@@ -199,6 +207,11 @@ def update_appointment(db: Session, appointment_id: str, appointment: schemas.Ap
                 
         db.commit()
         db.refresh(db_appointment)
+
+        # Triggers de Email
+        if old_status == 'web_pending' and db_appointment.status == 'confirmed':
+            mailer.send_appointment_notification(db, db_appointment, 'confirmation')
+
     return db_appointment
 
 def delete_appointment(db: Session, appointment_id: str):
@@ -502,6 +515,9 @@ def create_public_appointment(
     db.add(appt)
     db.commit()
     db.refresh(appt)
+
+    # Email de notificación
+    mailer.send_appointment_notification(db, appt, 'new_web_booking')
 
     return appt, client, is_new
 

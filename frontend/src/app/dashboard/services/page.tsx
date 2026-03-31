@@ -6,6 +6,7 @@ export default function ServicesPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
   
   const defaultForm = { name: '', description: '', duration_minutes: 30, price: 0, is_active: true };
   const [formData, setFormData] = useState(defaultForm);
@@ -74,6 +75,10 @@ export default function ServicesPage() {
     }
   };
 
+  const filteredServices = showArchived 
+    ? services 
+    : services.filter(s => s.is_active);
+
   return (
     <div className="animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
@@ -81,11 +86,18 @@ export default function ServicesPage() {
           <h1 className="text-3xl font-extrabold text-stone-800">Catálogo de Servicios</h1>
           <p className="text-stone-500 mt-1 font-medium">Tratamientos, tiempos estimativos y tarifas base</p>
         </div>
-        <button 
-          onClick={() => showForm ? handleCancel() : setShowForm(true)}
-          className={`px-6 py-3 rounded-xl font-bold transition-all shadow-md active:scale-95 ${showForm ? 'bg-stone-200 text-stone-700' : 'bg-[#d4af37] hover:bg-[#b08e23] border border-transparent text-white'}`}>
-          {showForm ? 'Cancelar' : '+ Nuevo Servicio'}
-        </button>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setShowArchived(!showArchived)}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${showArchived ? 'bg-stone-800 text-white border-stone-800' : 'bg-white text-stone-500 border-stone-200 hover:border-stone-400'}`}>
+            {showArchived ? 'Ocultar Archivados' : 'Ver Archivados'}
+          </button>
+          <button 
+            onClick={() => showForm ? handleCancel() : setShowForm(true)}
+            className={`px-6 py-3 rounded-xl font-bold transition-all shadow-md active:scale-95 ${showForm ? 'bg-stone-200 text-stone-700' : 'bg-[#d4af37] hover:bg-[#b08e23] border border-transparent text-white'}`}>
+            {showForm ? 'Cancelar' : '+ Nuevo Servicio'}
+          </button>
+        </div>
       </div>
 
       {showForm && (
@@ -114,6 +126,23 @@ export default function ServicesPage() {
                 <label className="block text-sm font-semibold text-stone-700 mb-2">Precio Base (€) *</label>
                 <input required type="number" min="0" step="0.5" value={formData.price} onChange={e => setFormData({...formData, price: Number(e.target.value)})} className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" />
               </div>
+              <div className="md:col-span-2">
+                <label className="flex items-center gap-3 cursor-pointer group w-fit">
+                  <div className="relative">
+                    <input 
+                      type="checkbox" 
+                      checked={formData.is_active} 
+                      onChange={e => setFormData({...formData, is_active: e.target.checked})} 
+                      className="sr-only" 
+                    />
+                    <div className={`block w-14 h-8 rounded-full transition-colors ${formData.is_active ? 'bg-emerald-500' : 'bg-stone-300'}`}></div>
+                    <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${formData.is_active ? 'translate-x-6' : ''}`}></div>
+                  </div>
+                  <span className={`text-sm font-bold transition-colors ${formData.is_active ? 'text-emerald-700' : 'text-stone-500'}`}>
+                    {formData.is_active ? 'Servicio Activo (Visible en Agenda)' : 'Servicio Archivado (Oculto en Agenda)'}
+                  </span>
+                </label>
+              </div>
             </div>
             <div className="flex justify-end border-t border-stone-100 pt-6">
               <button disabled={saving} type="submit" className="bg-stone-900 hover:bg-[#d4af37] disabled:opacity-50 text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95">
@@ -127,18 +156,21 @@ export default function ServicesPage() {
       {/* Grid of Services */}
       {loading ? (
         <div className="text-center py-20"><div className="inline-block w-8 h-8 border-4 border-yellow-100 border-t-[#d4af37] rounded-full animate-spin"></div></div>
-      ) : services.length === 0 ? (
+      ) : filteredServices.length === 0 ? (
         <div className="text-center py-24 text-stone-400 bg-stone-50/50 rounded-[2rem] border border-stone-200 border-dashed">
-          No hay servicios técnicos configurados. Añade el primer tratamiento arriba.
+          {showArchived ? 'No hay servicios en el catálogo.' : 'No tienes servicios activos actualmente. Activa alguno o crea uno nuevo.'}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {services.map((svc) => (
-            <div key={svc.id} className="bg-white p-6 rounded-[2rem] shadow-sm border border-stone-100 hover:shadow-xl hover:shadow-yellow-50 hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden flex flex-col">
+          {filteredServices.map((svc) => (
+            <div key={svc.id} className={`bg-white p-6 rounded-[2rem] shadow-sm border transition-all duration-300 group relative overflow-hidden flex flex-col ${svc.is_active ? 'border-stone-100 hover:shadow-xl hover:shadow-yellow-50 hover:-translate-y-1' : 'opacity-60 grayscale-[0.3] border-dashed border-stone-300'}`}>
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-yellow-50 to-transparent rounded-bl-[4rem] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
               
               <div className="flex justify-between items-start mb-4 relative z-10">
-                <h3 className="text-xl font-bold text-stone-800 pr-4">{svc.name}</h3>
+                <div>
+                  {!svc.is_active && <span className="inline-block bg-stone-100 text-stone-500 text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full mb-1">Archivado</span>}
+                  <h3 className={`text-xl font-bold pr-4 ${svc.is_active ? 'text-stone-800' : 'text-stone-500'}`}>{svc.name}</h3>
+                </div>
                 <span className="bg-[#fcf8e5] text-[#b08e23] font-bold px-3 py-1.5 rounded-xl text-sm shrink-0 whitespace-nowrap shadow-sm border border-yellow-100">
                   {svc.price} €
                 </span>

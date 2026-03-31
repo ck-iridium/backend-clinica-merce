@@ -79,6 +79,15 @@ class ClinicSettingsBase(BaseModel):
     clinic_address: str
     clinic_phone: str
     clinic_email: str
+    
+    # SMTP Config
+    smtp_host: Optional[str] = None
+    smtp_port: Optional[int] = None
+    smtp_user: Optional[str] = None
+    smtp_password: Optional[str] = None
+    smtp_from_email: Optional[str] = None
+    smtp_use_tls: bool = True
+
     logo_app_b64: Optional[str] = None
     logo_pdf_b64: Optional[str] = None
     signature_b64: Optional[str] = None
@@ -86,8 +95,24 @@ class ClinicSettingsBase(BaseModel):
     invoice_next_number: int
     default_tax_rate: float = 21.0
 
-class ClinicSettingsUpdate(ClinicSettingsBase):
-    pass
+class ClinicSettingsUpdate(BaseModel):
+    clinic_name: Optional[str] = None
+    clinic_nif: Optional[str] = None
+    clinic_address: Optional[str] = None
+    clinic_phone: Optional[str] = None
+    clinic_email: Optional[str] = None
+    smtp_host: Optional[str] = None
+    smtp_port: Optional[int] = None
+    smtp_user: Optional[str] = None
+    smtp_password: Optional[str] = None
+    smtp_from_email: Optional[str] = None
+    smtp_use_tls: Optional[bool] = None
+    logo_app_b64: Optional[str] = None
+    logo_pdf_b64: Optional[str] = None
+    signature_b64: Optional[str] = None
+    invoice_prefix: Optional[str] = None
+    invoice_next_number: Optional[int] = None
+    default_tax_rate: Optional[float] = None
 
 # --- Consents ---
 class ConsentBase(BaseModel):

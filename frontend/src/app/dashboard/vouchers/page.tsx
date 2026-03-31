@@ -54,7 +54,10 @@ export default function VouchersPage() {
       if (vRes.ok) setVouchers(await vRes.json());
       if (tRes.ok) setTemplates(await tRes.json());
       if (cRes.ok) setClients(await cRes.json());
-      if (sRes.ok) setServices(await sRes.json());
+      if (sRes.ok) {
+        const allServices = await sRes.json();
+        setServices(allServices);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -205,8 +208,12 @@ export default function VouchersPage() {
 
   const isExpired = (expDate: string) => new Date(expDate) < new Date();
 
-  // Search filter for templates combo
-  const filteredTemplates = templates.filter(t => t.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  // Search filter for templates combo - ONLY SHOW ACTIVE SERVICES TEMPLATES
+  const filteredTemplates = templates.filter(t => {
+    const service = services.find(s => s.id === t.service_id);
+    const isServiceActive = service ? service.is_active : true;
+    return isServiceActive && t.name.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   if (loading) return (
     <div className="p-20 text-center">
@@ -546,7 +553,7 @@ export default function VouchersPage() {
                     className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-semibold"
                   >
                     <option value="">Seleccionar...</option>
-                    {services.map(s => <option key={s.id} value={s.id}>{s.name} ({s.price}€/sesión)</option>)}
+                    {services.filter(s => s.is_active).map(s => <option key={s.id} value={s.id}>{s.name} ({s.price}€/sesión)</option>)}
                   </select>
                 </div>
                 <div className="grid grid-cols-2 gap-4">

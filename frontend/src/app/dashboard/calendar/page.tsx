@@ -104,7 +104,18 @@ function CalendarContent() {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:00`;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const openWhatsApp = (clientName: string, phone: string, serviceName: string, startTime: string) => {
+    if (!phone) return;
+    const date = new Date(startTime.endsWith('Z') ? startTime.slice(0, -1) : startTime);
+    const dateStr = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+    const timeStr = date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    
+    const message = `Hola ${clientName}, soy Merce de Merce Estética. Te confirmo tu cita de ${serviceName} para el día ${dateStr} a las ${timeStr}. ¡Te espero!`;
+    const encoded = encodeURIComponent(message);
+    window.open(`https://wa.me/${phone.replace(/\s+/g, '')}?text=${encoded}`, '_blank');
+  };
+
+  const handleSubmit = async (e: React.FormEvent, shouldNotify: boolean = false) => {
     e.preventDefault();
     if (!selectedClientId || !selectedServiceId || !selectedSlot) return;
 
@@ -115,6 +126,7 @@ function CalendarContent() {
     start_time.setHours(selectedSlot.hour, selectedMinutes, 0, 0);
     
     const end_time = new Date(start_time.getTime() + service.duration_minutes * 60000);
+    const startISO = formatLocalISO(start_time);
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/`, {
@@ -123,7 +135,7 @@ function CalendarContent() {
         body: JSON.stringify({
           client_id: selectedClientId,
           service_id: selectedServiceId,
-          start_time: formatLocalISO(start_time),
+          start_time: startISO,
           end_time: formatLocalISO(end_time),
           status: 'pending',
           notes: appointmentNotes
@@ -131,8 +143,17 @@ function CalendarContent() {
       });
 
       if (res.ok) {
+        const newAppt = await res.json();
         await fetchData();
         setShowModal(false);
+        
+        if (shouldNotify) {
+          const client = clients.find(c => c.id === selectedClientId);
+          if (client && client.phone) {
+            openWhatsApp(client.name, client.phone, service.name, startISO);
+          }
+        }
+
         setSelectedClientId('');
         setSelectedServiceId('');
         setAppointmentNotes('');
@@ -155,8 +176,18 @@ function CalendarContent() {
         body: JSON.stringify({ status: newStatus })
       });
       if (res.ok) {
+        const updatedAppt = await res.json();
         await fetchData();
         setShowEditModal(false);
+
+        // If it was confirmed from web_pending, open WhatsApp
+        if (selectedAppt.status === 'web_pending' && newStatus === 'confirmed') {
+          const client = clientMap.get(selectedAppt.client_id);
+          const service = serviceMap.get(selectedAppt.service_id);
+          if (client && client.phone && service) {
+            openWhatsApp(client.name, client.phone, service.name, selectedAppt.start_time);
+          }
+        }
       } else {
         alert("Error actualizando estado.");
       }
@@ -697,11 +728,25 @@ function CalendarContent() {
                     />
                   </div>
 
-                  <div className="flex gap-3 mt-6 pt-4 border-t border-stone-100">
-                    <button disabled={saving} type="submit" className="flex-1 bg-stone-900 hover:bg-[#d9777f] text-white px-6 py-4 rounded-xl font-bold transition-all disabled:opacity-50 active:scale-95 shadow-lg shadow-stone-900/10">
-                      {saving ? 'Registrando...' : 'Confirmar Reserva'}
-                    </button>
-                    <button type="button" onClick={() => setShowModal(false)} className="px-6 py-4 rounded-xl font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 transition-all active:scale-95">
+                  <div className="flex flex-col gap-3 mt-6 pt-4 border-t border-stone-100">
+                    <div className="flex gap-3">
+                      <button 
+                        disabled={saving} 
+                        type="button"
+                        onClick={(e) => handleSubmit(e, true)}
+                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-4 rounded-xl font-bold transition-all disabled:opacity-50 active:scale-95 shadow-lg shadow-emerald-900/10 flex items-center justify-center gap-2"
+                      >
+                        {saving ? 'Registrando...' : '✓ Guardar y Notificar'}
+                      </button>
+                      <button 
+                        disabled={saving} 
+                        type="submit" 
+                        className="flex-1 bg-stone-900 hover:bg-[#d9777f] text-white px-6 py-4 rounded-xl font-bold transition-all disabled:opacity-50 active:scale-95 shadow-lg shadow-stone-900/10"
+                      >
+                        {saving ? 'Registrando...' : 'Solo Guardar'}
+                      </button>
+                    </div>
+                    <button type="button" onClick={() => setShowModal(false)} className="w-full py-4 rounded-xl font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 transition-all active:scale-95">
                       Cancelar
                     </button>
                   </div>

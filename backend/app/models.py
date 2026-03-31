@@ -103,11 +103,19 @@ class ClinicSettings(Base):
     id = Column(Integer, primary_key=True, default=1) # Singleton
 
     # Company Details
-    clinic_name = Column(String, default="Clínica Mercè")
+    clinic_name = Column(String, default="Clínica Merce")
     clinic_nif = Column(String, default="")
     clinic_address = Column(String, default="")
     clinic_phone = Column(String, default="")
     clinic_email = Column(String, default="")
+
+    # SMTP Configuration
+    smtp_host = Column(String, nullable=True)
+    smtp_port = Column(Integer, nullable=True)
+    smtp_user = Column(String, nullable=True)
+    smtp_password = Column(String, nullable=True)
+    smtp_from_email = Column(String, nullable=True)
+    smtp_use_tls = Column(Boolean, default=True)
 
     # Base64 Images
     logo_app_b64 = Column(Text, nullable=True)
