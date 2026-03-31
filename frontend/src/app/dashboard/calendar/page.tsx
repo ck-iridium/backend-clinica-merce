@@ -196,8 +196,16 @@ function CalendarContent() {
 
     setSaving(true);
     const start_time = new Date(selectedSlot.date);
-    start_time.setHours(selectedSlot.hour, selectedMinutes, 0, 0);
-    const end_time = new Date(start_time.getTime() + blockDuration * 60000);
+    
+    // Si es día completo (sentinel value -1), forzamos 09:00 a 19:00
+    if (blockDuration === -1) {
+      start_time.setHours(9, 0, 0, 0);
+    } else {
+      start_time.setHours(selectedSlot.hour, selectedMinutes, 0, 0);
+    }
+
+    const durationMins = blockDuration === -1 ? 600 : blockDuration;
+    const end_time = new Date(start_time.getTime() + durationMins * 60000);
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/time-blocks/`, {
@@ -421,12 +429,13 @@ function CalendarContent() {
                         const top = ((start.getHours() - 9) * 80) + (start.getMinutes() / 60) * 80;
                         const duration = (end.getTime() - start.getTime()) / 60000;
                         const height = (duration / 60) * 80;
+                        const isFullDay = duration >= 600;
 
                         return (
                           <div 
                             key={block.id}
                             onClick={(e) => { e.stopPropagation(); setSelectedBlock(block); setShowBlockDeleteModal(true); }}
-                            className="absolute w-[94%] left-[3%] rounded-lg border-2 border-stone-200 z-10 cursor-pointer hover:border-stone-400 transition-all flex items-center justify-center overflow-hidden"
+                            className={`absolute w-[94%] left-[3%] rounded-lg border-2 z-10 cursor-pointer hover:border-stone-400 transition-all flex items-center justify-center overflow-hidden ${isFullDay ? 'border-stone-800 border-[3px]' : 'border-stone-200'}`}
                             style={{ 
                               top: `${top}px`, 
                               height: `${height}px`,
@@ -719,15 +728,15 @@ function CalendarContent() {
                   
                   <div>
                     <label className="block text-sm font-semibold text-stone-700 mb-2">Duración del Bloqueo (minutos)</label>
-                    <div className="grid grid-cols-4 gap-2">
-                      {[30, 60, 120, 240].map(mins => (
+                    <div className="grid grid-cols-5 gap-2">
+                      {[30, 60, 120, 240, -1].map(mins => (
                         <button 
                           key={mins}
                           type="button"
                           onClick={() => setBlockDuration(mins)}
-                          className={`py-3 rounded-xl font-bold text-xs transition-all border-2 ${blockDuration === mins ? 'bg-stone-800 border-stone-800 text-white' : 'bg-white border-stone-100 text-stone-500 hover:border-stone-300'}`}
+                          className={`py-3 rounded-xl font-bold text-[10px] transition-all border-2 ${blockDuration === mins ? 'bg-stone-800 border-stone-800 text-white' : 'bg-white border-stone-100 text-stone-500 hover:border-stone-300'}`}
                         >
-                          {mins >= 60 ? `${mins/60}h` : `${mins}min`}
+                          {mins === -1 ? 'Día Completo' : (mins >= 60 ? `${mins/60}h` : `${mins}min`)}
                         </button>
                       ))}
                     </div>
