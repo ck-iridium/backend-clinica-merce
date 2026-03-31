@@ -224,9 +224,9 @@ def update_appointment(db: Session, appointment_id: str, appointment: schemas.Ap
         # Triggers de Email
         if old_status == 'web_pending' and db_appointment.status == 'confirmed':
             if background_tasks:
-                background_tasks.add_task(mailer.send_appointment_notification, db, db_appointment, 'confirmation')
+                background_tasks.add_task(mailer.send_appointment_notification, db_appointment.id, 'confirmation')
             else:
-                mailer.send_appointment_notification(db, db_appointment, 'confirmation')
+                mailer.send_appointment_notification(db_appointment.id, 'confirmation')
 
     return db_appointment
 
@@ -535,9 +535,9 @@ def create_public_appointment(
 
     # Email de notificación (en segundo plano si es posible)
     if background_tasks:
-        background_tasks.add_task(mailer.send_appointment_notification, db, appt, 'new_web_booking')
+        background_tasks.add_task(mailer.send_appointment_notification, appt.id, 'new_web_booking')
     else:
-        mailer.send_appointment_notification(db, appt, 'new_web_booking')
+        mailer.send_appointment_notification(appt.id, 'new_web_booking')
 
     return appt, client, is_new
 
