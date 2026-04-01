@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Clínica Mercè | Estética y Láser",
   description: "Tratamientos de estética avanzada y depilación láser.",
+  robots: "noindex, nofollow",
 };
 
 export default function RootLayout({
