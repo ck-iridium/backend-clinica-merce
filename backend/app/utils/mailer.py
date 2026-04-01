@@ -25,9 +25,9 @@ def send_email(to_email: str, subject: str, body_html: str):
             "Content-Type": "application/json"
         }
         
-        # El remitente debe ser un dominio verificado en Resend o el por defecto de su sandbox (onboarding@resend.dev)
+        # Remitente oficial configurado para el dominio verificado
         data = {
-            "from": "Clínica Merce <onboarding@resend.dev>",
+            "from": "Merce Estética <info@esteticamerce.com>",
             "to": [to_email],
             "subject": subject,
             "html": body_html
@@ -74,40 +74,40 @@ def send_appointment_notification(appointment_id: str, type: str):
         time_str = appointment.start_time.strftime("%H:%M")
         
         if type == 'new_web_booking':
-            # Flujo A: Aviso al Administrador de nueva reserva
-            admin_email = "iridium_cop@hotmail.com"
-            subject_admin = f"NUEVA CITA WEB: {client.name}"
-            body_admin = f"""
-            <html>
-                <body>
-                    <h2 style="color: #d9777f;">Nueva reserva desde la Web</h2>
-                    <p>Merce, tienes una solicitud nueva:</p>
-                    <ul>
-                        <li><strong>Cliente:</strong> {client.name}</li>
-                        <li><strong>Tratamiento:</strong> {service.name}</li>
-                        <li><strong>Fecha:</strong> {date_str}</li>
-                        <li><strong>Hora:</strong> {time_str}</li>
-                        <li><strong>Teléfono:</strong> {client.phone}</li>
-                    </ul>
-                    <p>Accede al panel de control para confirmarla.</p>
-                </body>
-            </html>
-            """
-            send_email(admin_email, subject_admin, body_admin)
+            # Flujo A: Aviso al Administrador de nueva reserva (Email dinámico desde Ajustes)
+            admin_email = settings.clinic_email
+            
+            if not admin_email:
+                logger.warning("⚠️ No se puede enviar aviso a admin: 'Email de la Clínica' no configurado en Ajustes.")
+            else:
+                subject_admin = f"NUEVA CITA WEB: {client.name}"
+                body_admin = f"""
+                <html>
+                    <body>
+                        <h2 style="color: #d9777f;">Nueva reserva desde la Web</h2>
+                        <p>Merce, tienes una solicitud nueva:</p>
+                        <ul>
+                            <li><strong>Cliente:</strong> {client.name}</li>
+                            <li><strong>Tratamiento:</strong> {service.name}</li>
+                            <li><strong>Fecha:</strong> {date_str}</li>
+                            <li><strong>Hora:</strong> {time_str}</li>
+                            <li><strong>Teléfono:</strong> {client.phone}</li>
+                        </ul>
+                        <p>Accede al panel de control para confirmarla.</p>
+                    </body>
+                </html>
+                """
+                send_email(admin_email, subject_admin, body_admin)
 
         elif type == 'confirmation':
-            # Flujo B: Notificación de que la cita ha sido confirmada
-            subject_client = "Cita Confirmada - Merce Estética"
-            body_client = f"Hola {client.name}, tu cita para {service.name} el día {date_str} a las {time_str} ha sido confirmada. ¡Te esperamos!"
-            
-            # --- NOTA IMPORTANTE (RESEND SANDBOX) ---
-            # Mientras el dominio no esté verificado en Resend ("onboarding@resend.dev"),
-            # la API solo permite enviar correos a la dirección con la que creaste tu cuenta de Resend.
-            # Cambia esta variable por tu correo o 'iridium_cop@hotmail.com' para probarlo.
-            # Cuando verifiques el dominio, cambia esto de nuevo a: client.email
-            test_client_email = "iridium_cop@hotmail.com" 
-            
-            send_email(test_client_email, subject_client, f"<html><body><p>{body_client}</p></body></html>")
+            # Flujo B: Notificación de confirmación al Email real del cliente
+            if not client.email:
+                logger.warning(f"⚠️ El cliente {client.name} no tiene email registrado. No se puede enviar confirmación.")
+            else:
+                subject_client = "Cita Confirmada - Merce Estética"
+                body_client = f"Hola {client.name}, tu cita para {service.name} el día {date_str} a las {time_str} ha sido confirmada. ¡Te esperamos!"
+                
+                send_email(client.email, subject_client, f"<html><body><p>{body_client}</p></body></html>")
             
     except Exception as e:
         logger.error(f"Error en flujo de notificación: {str(e)}")
