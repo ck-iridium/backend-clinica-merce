@@ -18,7 +18,7 @@ def send_email(to_email: str, subject: str, body_html: str):
         return False
 
     try:
-        url = "https://api.eu.resend.com/emails"
+        url = "https://api.resend.com/emails"
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
