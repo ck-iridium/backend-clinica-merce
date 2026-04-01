@@ -59,9 +59,9 @@ app = FastAPI(
 origins = [
     "http://localhost:3000",
     "https://backend-clinica-merce.vercel.app",
-    "https://backend-clinica-merce.vercel.app/",
     "https://clinica-merce.vercel.app",
-    "https://clinica-merce.vercel.app/",
+    "https://www.esteticamerce.com",
+    "https://esteticamerce.com",
 ]
 
 app.add_middleware(
