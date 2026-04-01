@@ -255,40 +255,6 @@ export default function SettingsPage() {
            </div>
         </div>
 
-        {/* Configuración SMTP */}
-        <div className="bg-white rounded-[2rem] border border-stone-100 p-8 shadow-sm">
-           <h3 className="text-[10px] font-bold text-[#d9777f] uppercase tracking-widest mb-6 border-b border-stone-100 pb-2 flex items-center gap-2">
-             <span>📧 Configuración de Email (SMTP)</span>
-           </h3>
-           <p className="text-xs text-stone-400 mb-6 italic">Configura tu servidor de correo para enviar confirmaciones automáticas a los clientes de Merce Estética.</p>
-           
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-stone-500 mb-2">Host SMTP</label>
-                <input type="text" placeholder="smtp.ejemplo.com" value={settings.smtp_host || ''} onChange={e => setSettings({...settings, smtp_host: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] focus:ring-1 focus:ring-[#d9777f]" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-stone-500 mb-2">Puerto</label>
-                <input type="number" placeholder="587" value={settings.smtp_port || ''} onChange={e => setSettings({...settings, smtp_port: parseInt(e.target.value)})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] focus:ring-1 focus:ring-[#d9777f]" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-stone-500 mb-2">Usuario SMTP</label>
-                <input type="text" value={settings.smtp_user || ''} onChange={e => setSettings({...settings, smtp_user: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] focus:ring-1 focus:ring-[#d9777f]" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-stone-500 mb-2">Contraseña SMTP</label>
-                <input type="password" autoComplete="new-password" value={settings.smtp_password || ''} onChange={e => setSettings({...settings, smtp_password: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] focus:ring-1 focus:ring-[#d9777f]" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-stone-500 mb-2">Email Remitente</label>
-                <input type="email" placeholder="hola@mercestetica.com" value={settings.smtp_from_email || ''} onChange={e => setSettings({...settings, smtp_from_email: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] focus:ring-1 focus:ring-[#d9777f]" />
-              </div>
-              <div className="flex items-center gap-3 pt-6">
-                <input type="checkbox" id="smtp_use_tls" checked={settings.smtp_use_tls} onChange={e => setSettings({...settings, smtp_use_tls: e.target.checked})} className="w-5 h-5 accent-[#d9777f]" />
-                <label htmlFor="smtp_use_tls" className="text-sm font-bold text-stone-700 cursor-pointer">Usar TLS (Seguridad)</label>
-              </div>
-           </div>
-        </div>
 
         {/* Numeración */}
         <div className="bg-white rounded-[2rem] border border-stone-100 p-8 shadow-sm">

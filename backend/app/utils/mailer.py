@@ -74,37 +74,40 @@ def send_appointment_notification(appointment_id: str, type: str):
         time_str = appointment.start_time.strftime("%H:%M")
         
         if type == 'new_web_booking':
-            # 1. Email al Cliente
-            subject_client = f"Solicitud de Cita Recibida - {settings.clinic_name}"
-            body_client = f"""
-            <html>
-                <body style="font-family: sans-serif; color: #333;">
-                    <h2 style="color: #d9777f;">¡Hola {client.name}!</h2>
-                    <p>Hemos recibido tu solicitud de cita en <strong>Merce Estética</strong>.</p>
-                    <p><strong>Detalles:</strong> {service.name} el {date_str} a las {time_str}.</p>
-                    <p>Tu cita está pendiente de confirmación manual.</p>
-                </body>
-            </html>
-            """
-            send_email(client.email, subject_client, body_client)
-
-            # 2. Email a la Clínica (Copia forzada a soporte Merce)
-            clinic_support = "iridium_cop@hotmail.com"
-            body_clinic = f"""
+            # Flujo A: Aviso al Administrador de nueva reserva
+            admin_email = "iridium_cop@hotmail.com"
+            subject_admin = f"NUEVA CITA WEB: {client.name}"
+            body_admin = f"""
             <html>
                 <body>
                     <h2 style="color: #d9777f;">Nueva reserva desde la Web</h2>
-                    <p>Merce, tienes una solicitud nueva: <strong>{client.name}</strong> para <strong>{service.name}</strong> el {date_str} a las {time_str}.</p>
-                    <p>Teléfono: {client.phone}</p>
+                    <p>Merce, tienes una solicitud nueva:</p>
+                    <ul>
+                        <li><strong>Cliente:</strong> {client.name}</li>
+                        <li><strong>Tratamiento:</strong> {service.name}</li>
+                        <li><strong>Fecha:</strong> {date_str}</li>
+                        <li><strong>Hora:</strong> {time_str}</li>
+                        <li><strong>Teléfono:</strong> {client.phone}</li>
+                    </ul>
+                    <p>Accede al panel de control para confirmarla.</p>
                 </body>
             </html>
             """
-            send_email(clinic_support, f"NUEVA CITA: {client.name}", body_clinic)
+            send_email(admin_email, subject_admin, body_admin)
 
         elif type == 'confirmation':
-            subject = "Cita Confirmada - Merce Estética"
-            body = f"Hola {client.name}, tu cita para {service.name} el día {date_str} a las {time_str} ha sido confirmada. ¡Te esperamos!"
-            send_email(client.email, subject, f"<html><body>{body}</body></html>")
+            # Flujo B: Notificación de que la cita ha sido confirmada
+            subject_client = "Cita Confirmada - Merce Estética"
+            body_client = f"Hola {client.name}, tu cita para {service.name} el día {date_str} a las {time_str} ha sido confirmada. ¡Te esperamos!"
+            
+            # --- NOTA IMPORTANTE (RESEND SANDBOX) ---
+            # Mientras el dominio no esté verificado en Resend ("onboarding@resend.dev"),
+            # la API solo permite enviar correos a la dirección con la que creaste tu cuenta de Resend.
+            # Cambia esta variable por tu correo o 'iridium_cop@hotmail.com' para probarlo.
+            # Cuando verifiques el dominio, cambia esto de nuevo a: client.email
+            test_client_email = "iridium_cop@hotmail.com" 
+            
+            send_email(test_client_email, subject_client, f"<html><body><p>{body_client}</p></body></html>")
             
     except Exception as e:
         logger.error(f"Error en flujo de notificación: {str(e)}")
