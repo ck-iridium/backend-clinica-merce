@@ -42,6 +42,13 @@ def run_auto_migrations_wrapper():
 seed_admin_user()
 run_auto_migrations_wrapper()
 
+# Verificación de API Key de Resend (Solo primeros 4 caracteres)
+resend_key = os.environ.get("RESEND_API_KEY", "").strip()
+if resend_key:
+    print(f"📧 Resend API Key cargada: {resend_key[:4]}...")
+else:
+    print("⚠️ ADVERTENCIA: RESEND_API_KEY no encontrada en el entorno.")
+
 app = FastAPI(
     title="Clínica Médica API",
     description="Backend API para la gestión de Clínica de Estética",

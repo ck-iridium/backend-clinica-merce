@@ -10,20 +10,12 @@ logger = logging.getLogger(__name__)
 
 def send_email(to_email: str, subject: str, body_html: str):
     """
-    Envía un correo electrónico usando la API de Resend (Modo Depuración).
+    Envía un correo electrónico usando la API de Resend.
     """
-    # 1. Limpieza de API Key (eliminamos espacios invisibles)
     api_key = os.environ.get("RESEND_API_KEY", "").strip()
     if not api_key:
-        logger.error("❌ ERROR: RESEND_API_KEY no encontrada o vacía.")
+        logger.error("❌ Fallo: RESEND_API_KEY no configurada.")
         return False
-
-    sender = "info@esteticamerce.com"
-    
-    # Debug: Mostrar remitente y destino
-    display_email = f"{to_email[:3]}***@{to_email.split('@')[-1]}" if '@' in to_email else to_email
-    logger.info(f"DEBUG: Enviando desde {sender}")
-    logger.info(f"📤 Intentando enviar email a: {display_email} vía Resend...")
 
     try:
         url = "https://api.resend.com/emails"
@@ -33,7 +25,7 @@ def send_email(to_email: str, subject: str, body_html: str):
         }
         
         data = {
-            "from": sender,
+            "from": "Merce Estética <info@esteticamerce.com>",
             "to": [to_email],
             "subject": subject,
             "html": body_html
@@ -51,17 +43,14 @@ def send_email(to_email: str, subject: str, body_html: str):
                 if response.status in [200, 201]:
                     logger.info(f"✅ Email enviado con éxito a {to_email}")
                     return True
-                else:
-                    logger.error(f"⚠️ Resend API devolvió status: {response.status}")
-                    return False
+                return False
         except urllib.error.HTTPError as http_err:
-            # Capturamos el error detallado del servidor
             error_body = http_err.read().decode('utf-8')
-            logger.error(f"❌ Error detallado de Resend (Status {http_err.code}): {error_body}")
+            logger.error(f"❌ Error Resend API ({http_err.code}): {error_body}")
             return False
             
     except Exception as e:
-        logger.error(f"❌ Fallo general en mailer: {str(e)}")
+        logger.error(f"❌ Fallo crítico en mailer: {str(e)}")
         return False
                 
     except Exception as e:
