@@ -10,13 +10,16 @@ logger = logging.getLogger(__name__)
 
 def send_email(to_email: str, subject: str, body_html: str):
     """
-    Envía un correo electrónico usando exclusivamente la API de Resend (Puerto 443 HTTP).
-    Este método evita los bloqueos de puertos SMTP en servicios como Render.
+    Envía un correo electrónico usando la API de Resend.
     """
-    api_key = os.getenv("RESEND_API_KEY")
+    api_key = os.environ.get("RESEND_API_KEY")
     if not api_key:
-        logger.error("❌ ERROR: RESEND_API_KEY no configurada. El email no se enviará.")
+        logger.error("❌ ERROR: RESEND_API_KEY no encontrada en el entorno.")
         return False
+
+    # Debug: Mostrar destino (anonimizado para seguridad)
+    display_email = f"{to_email[:3]}***@{to_email.split('@')[-1]}" if '@' in to_email else to_email
+    logger.info(f"📤 Intentando enviar email a: {display_email} vía Resend...")
 
     try:
         url = "https://api.resend.com/emails"
@@ -25,7 +28,6 @@ def send_email(to_email: str, subject: str, body_html: str):
             "Content-Type": "application/json"
         }
         
-        # Remitente oficial configurado para el dominio verificado
         data = {
             "from": "Merce Estética <info@esteticamerce.com>",
             "to": [to_email],
@@ -40,7 +42,7 @@ def send_email(to_email: str, subject: str, body_html: str):
             method="POST"
         )
         
-        with urllib.request.urlopen(req, timeout=8) as response:
+        with urllib.request.urlopen(req, timeout=10) as response:
             if response.status in [200, 201]:
                 logger.info(f"✅ Email enviado con éxito a {to_email}")
                 return True
