@@ -546,25 +546,30 @@ function CalendarContent() {
         <div 
           className="fixed z-[100] pointer-events-none animate-in fade-in zoom-in-95 duration-200"
           style={{ 
-            left: tooltipPos.x + 15 > window.innerWidth - 220 ? tooltipPos.x - 220 : tooltipPos.x + 15, 
-            top: tooltipPos.y + 15
+            left: tooltipPos.x + 15 > (typeof window !== 'undefined' ? window.innerWidth : 1200) - 280 ? tooltipPos.x - 295 : tooltipPos.x + 15, 
+            top: tooltipPos.y + 200 > (typeof window !== 'undefined' ? window.innerHeight : 800) ? tooltipPos.y - 210 : tooltipPos.y + 15
           }}
         >
-          <div className="bg-white/95 backdrop-blur-md border border-stone-100 shadow-2xl rounded-2xl p-4 w-[220px] ring-1 ring-black/5">
-            <div className="flex flex-col gap-2">
+          <div className="bg-white/95 backdrop-blur-md border border-stone-100 shadow-2xl rounded-2xl p-5 w-[280px] ring-1 ring-black/5 relative">
+            {/* Hora en la esquina superior derecha */}
+            <div className="absolute top-4 right-5 bg-[#fdf2f3] text-[#d9777f] px-2 py-0.5 rounded-md text-[11px] font-black tracking-tighter">
+              {new Date(hoveredAppt.start_time.endsWith('Z') ? hoveredAppt.start_time.slice(0, -1) : hoveredAppt.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </div>
+
+            <div className="flex flex-col gap-3">
               <div>
-                <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">Cliente</p>
-                <p className="font-extrabold text-stone-800 text-sm truncate">{clientMap.get(hoveredAppt.client_id)?.name || 'Desconocido'}</p>
+                <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">Cliente</p>
+                <p className="font-extrabold text-stone-800 text-[15px] truncate pr-16">{clientMap.get(hoveredAppt.client_id)?.name || 'Desconocido'}</p>
               </div>
               
               <div>
-                <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">Servicio</p>
-                <p className="font-bold text-[#d9777f] text-[11px] truncate">{serviceMap.get(hoveredAppt.service_id)?.name || 'Borrador...'}</p>
+                <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">Servicio / Tratamiento</p>
+                <p className="font-bold text-[#d9777f] text-[12px] leading-tight">{serviceMap.get(hoveredAppt.service_id)?.name || 'Borrador...'}</p>
               </div>
 
-              <div className="flex justify-between items-center bg-stone-50 p-2 rounded-lg border border-stone-100 mt-1">
+              <div className="flex justify-between items-center bg-stone-50 p-2.5 rounded-xl border border-stone-100 mt-1">
                 <p className="text-[8px] font-bold text-stone-400 uppercase tracking-widest">Estado</p>
-                <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase
+                <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-tight
                   ${hoveredAppt.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 
                     hoveredAppt.status === 'cancelled' ? 'bg-red-100 text-red-700' : 
                     hoveredAppt.status === 'web_pending' ? 'bg-orange-100 text-orange-700' :
@@ -573,7 +578,7 @@ function CalendarContent() {
                   }`}>
                   {hoveredAppt.status === 'completed' ? 'Realizada' : 
                    hoveredAppt.status === 'cancelled' ? 'Cancelada' : 
-                   hoveredAppt.status === 'web_pending' ? 'Pendiente Confirmación' :
+                   hoveredAppt.status === 'web_pending' ? 'Pte. Confirmar' :
                    hoveredAppt.status === 'confirmed' ? 'Confirmada' :
                    hoveredAppt.status === 'no_show' ? 'No Asistió' :
                    'Pendiente'}
@@ -581,8 +586,8 @@ function CalendarContent() {
               </div>
 
               <div className="mt-1">
-                <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">Notas</p>
-                <p className="text-[10px] text-stone-500 italic leading-snug line-clamp-2">
+                <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-1">Notas</p>
+                <p className="text-[11px] text-stone-500 italic leading-snug line-clamp-3">
                   {hoveredAppt.notes || 'Sin observaciones...'}
                 </p>
               </div>
