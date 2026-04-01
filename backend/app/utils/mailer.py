@@ -21,7 +21,8 @@ def send_email(to_email: str, subject: str, body_html: str):
         url = "https://api.resend.com/emails"
         headers = {
             "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "User-Agent": "python-urllib/3.10"
         }
         
         data = {
