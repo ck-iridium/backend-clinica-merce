@@ -59,6 +59,45 @@ def send_email(to_email: str, subject: str, body_html: str):
         logger.error(f"❌ Fallo al enviar email vía Resend: {str(e)}")
         return False
 
+def get_html_template(content_html, clinic_name):
+    """Plantilla base para correos corporativos de Merce Estética"""
+    return f"""
+    <html>
+    <body style="margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #fcfaf9;">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #fcfaf9;">
+            <tr>
+                <td align="center" style="padding: 40px 0;">
+                    <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(217, 119, 127, 0.08); border: 1px solid #f3e8e9;">
+                        <!-- Header -->
+                        <tr>
+                            <td align="center" style="padding: 40px 0; background-color: #fef8f8;">
+                                <h1 style="margin: 0; color: #d9777f; font-size: 28px; letter-spacing: -1px; font-weight: 800;">{clinic_name}</h1>
+                                <p style="margin: 5px 0 0 0; color: #b08d91; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px;">Belleza y Bienestar</p>
+                            </td>
+                        </tr>
+                        <!-- Content -->
+                        <tr>
+                            <td style="padding: 50px 40px;">
+                                {content_html}
+                            </td>
+                        </tr>
+                        <!-- Footer -->
+                        <tr>
+                            <td align="center" style="padding: 30px; background-color: #faf9f8; border-top: 1px solid #f3e8e9;">
+                                <p style="margin: 0; color: #948b8c; font-size: 12px; line-height: 1.6;">
+                                    Este es un mensaje automático de <b>{clinic_name}</b>.<br>
+                                    Cualquier duda, contáctanos por WhatsApp o teléfono.
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>
+    """
+
 def send_appointment_notification(appointment_id: str, type: str):
     """
     Gestiona las notificaciones de citas (Cliente + Clínica).
@@ -73,6 +112,7 @@ def send_appointment_notification(appointment_id: str, type: str):
             return
 
         settings = db.query(models.ClinicSettings).first()
+        clinic_name = settings.clinic_name
         service = appointment.service
         client = appointment.client
         
@@ -80,40 +120,48 @@ def send_appointment_notification(appointment_id: str, type: str):
         time_str = appointment.start_time.strftime("%H:%M")
         
         if type == 'new_web_booking':
-            # Flujo A: Aviso al Administrador de nueva reserva (Email dinámico desde Ajustes)
+            # Flujo A: Aviso al Administrador (Estilo Profesional)
             admin_email = settings.clinic_email
-            
-            if not admin_email:
-                logger.warning("⚠️ No se puede enviar aviso a admin: 'Email de la Clínica' no configurado en Ajustes.")
-            else:
-                subject_admin = f"NUEVA CITA WEB: {client.name}"
-                body_admin = f"""
-                <html>
-                    <body>
-                        <h2 style="color: #d9777f;">Nueva reserva desde la Web</h2>
-                        <p>Merce, tienes una solicitud nueva:</p>
-                        <ul>
-                            <li><strong>Cliente:</strong> {client.name}</li>
-                            <li><strong>Tratamiento:</strong> {service.name}</li>
-                            <li><strong>Fecha:</strong> {date_str}</li>
-                            <li><strong>Hora:</strong> {time_str}</li>
-                            <li><strong>Teléfono:</strong> {client.phone}</li>
-                        </ul>
-                        <p>Accede al panel de control para confirmarla.</p>
-                    </body>
-                </html>
+            if admin_email:
+                subject = f"🔔 Nueva Solicitud: {client.name}"
+                content = f"""
+                <h3 style="color: #444; margin-bottom: 20px;">Merce, ¡tienes una nueva solicitud web!</h3>
+                <div style="background-color: #fdf2f3; border-radius: 16px; padding: 25px; border: 1px solid #f9e1e3;">
+                    <p style="margin: 0 0 10px 0; color: #d9777f; font-weight: bold; font-size: 13px;">DETALLES DE LA CLIENTA</p>
+                    <p style="margin: 0; font-size: 18px; color: #5c4d4f; font-weight: 700;">{client.name}</p>
+                    <p style="margin: 5px 0 0 0; color: #887a7c; font-size: 14px;">Teléfono: <b>{client.phone}</b></p>
+                    
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #f3c7cb;">
+                        <p style="margin: 0; color: #5c4d4f; font-size: 15px;"><b>Tratamiento:</b> {service.name}</p>
+                        <p style="margin: 5px 0 0 0; color: #5c4d4f; font-size: 15px;"><b>Horario:</b> {date_str} a las {time_str}</p>
+                    </div>
+                </div>
+                <p style="margin-top: 30px; font-size: 14px; color: #887a7c; text-align: center;">Entra en la agenda para confirmar esta cita.</p>
                 """
-                send_email(admin_email, subject_admin, body_admin)
+                send_email(admin_email, subject, get_html_template(content, clinic_name))
 
         elif type == 'confirmation':
-            # Flujo B: Notificación de confirmación al Email real del cliente
-            if not client.email:
-                logger.warning(f"⚠️ El cliente {client.name} no tiene email registrado. No se puede enviar confirmación.")
-            else:
-                subject_client = "Cita Confirmada - Merce Estética"
-                body_client = f"Hola {client.name}, tu cita para {service.name} el día {date_str} a las {time_str} ha sido confirmada. ¡Te esperamos!"
+            # Flujo B: Confirmación al Cliente (Estilo Premium)
+            if client.email:
+                subject = f"✨ Tu cita en {clinic_name} está confirmada"
+                content = f"""
+                <h2 style="color: #5c4d4f; margin-bottom: 5px;">¡Hola, {client.name}!</h2>
+                <p style="color: #887a7c; font-size: 15px; line-height: 1.5; margin-bottom: 30px;">Nos alegra confirmarte que tu reserva ya ha sido procesada correctamente. ¡Estamos deseando verte!</p>
                 
-                send_email(client.email, subject_client, f"<html><body><p>{body_client}</p></body></html>")
+                <div style="background-color: #ffffff; border: 2px solid #fdf2f3; border-radius: 20px; padding: 30px; text-align: center;">
+                    <p style="margin: 0; color: #d9777f; font-weight: bold; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Detalles de la Cita</p>
+                    <p style="margin: 15px 0 5px 0; font-size: 22px; color: #5c4d4f; font-weight: 800;">{date_str}</p>
+                    <p style="margin: 0; font-size: 16px; color: #5c4d4f; font-weight: 600;">a las {time_str}</p>
+                    <div style="display: inline-block; background-color: #fdf2f3; color: #d9777f; padding: 8px 16px; border-radius: 10px; margin-top: 20px; font-weight: bold; font-size: 14px;">
+                        {service.name}
+                    </div>
+                </div>
+                
+                <div style="margin-top: 35px; text-align: center; border-top: 1px solid #f3e8e9; padding-top: 25px;">
+                    <p style="margin: 0; color: #a49697; font-size: 13px;">Si necesitas hacer algún cambio, llámanos lo antes posible.</p>
+                </div>
+                """
+                send_email(client.email, subject, get_html_template(content, clinic_name))
             
     except Exception as e:
         logger.error(f"Error en flujo de notificación: {str(e)}")
