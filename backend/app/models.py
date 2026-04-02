@@ -77,6 +77,7 @@ class Appointment(Base):
     end_time = Column(DateTime, nullable=False)
     status = Column(String, default="pending") # pending, confirmed, completed, cancelled
     notes = Column(Text, nullable=True)
+    reminder_sent = Column(Boolean, default=False)
     
     client = relationship("Client", back_populates="appointments")
     service = relationship("Service")

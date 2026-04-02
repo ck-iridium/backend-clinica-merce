@@ -141,7 +141,7 @@ def send_appointment_notification(appointment_id: str, type: str):
                 send_email(admin_email, subject, get_html_template(content, clinic_name))
 
         elif type == 'confirmation':
-            # Flujo B: Confirmación al Cliente (Estilo Premium)
+            # Flujo B: Confirmación al Cliente (Estilo Premium) con enlace de cancelación
             if client.email:
                 subject = f"✨ Tu cita en {clinic_name} está confirmada"
                 content = f"""
@@ -158,10 +158,62 @@ def send_appointment_notification(appointment_id: str, type: str):
                 </div>
                 
                 <div style="margin-top: 35px; text-align: center; border-top: 1px solid #f3e8e9; padding-top: 25px;">
-                    <p style="margin: 0; color: #a49697; font-size: 13px;">Si necesitas hacer algún cambio, llámanos lo antes posible.</p>
+                    <p style="margin: 0; color: #a49697; font-size: 13px; margin-bottom: 10px;">Si necesitas hacer algún cambio, llámanos lo antes posible o cancela tu cita online:</p>
+                    <a href="https://clinica-merce.vercel.app/reservar/cancelar?id={appointment.id}" style="display: inline-block; border: 1px solid #d9777f; color: #d9777f; text-decoration: none; padding: 8px 16px; font-weight: bold; border-radius: 8px; font-size: 13px;">Cancelar mi cita</a>
                 </div>
                 """
                 send_email(client.email, subject, get_html_template(content, clinic_name))
+        
+        elif type == 'reminder':
+            # Flujo C: Recordatorio 24h
+            if client.email:
+                subject = f"⏰ Recordatorio de cita mañana en {clinic_name}"
+                content = f"""
+                <h2 style="color: #5c4d4f; margin-bottom: 5px;">¡Hola, {client.name}!</h2>
+                <p style="color: #887a7c; font-size: 15px; line-height: 1.5; margin-bottom: 30px;">Te escribimos para recordarte que tienes una cita con nosotros el día de mañana.</p>
+                
+                <div style="background-color: #ffffff; border: 2px solid #fdf2f3; border-radius: 20px; padding: 30px; text-align: center;">
+                    <p style="margin: 0; color: #d9777f; font-weight: bold; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Detalles de la Cita</p>
+                    <p style="margin: 15px 0 5px 0; font-size: 22px; color: #5c4d4f; font-weight: 800;">{date_str}</p>
+                    <p style="margin: 0; font-size: 16px; color: #5c4d4f; font-weight: 600;">a las {time_str}</p>
+                    <div style="display: inline-block; background-color: #fdf2f3; color: #d9777f; padding: 8px 16px; border-radius: 10px; margin-top: 20px; font-weight: bold; font-size: 14px;">
+                        {service.name}
+                    </div>
+                </div>
+                
+                <div style="margin-top: 35px; text-align: center; border-top: 1px solid #f3e8e9; padding-top: 25px;">
+                    <p style="margin: 0; color: #a49697; font-size: 13px; margin-bottom: 10px;">Si por algún motivo no puedes asistir, te pedimos que la canceles para liberar el hueco:</p>
+                    <a href="https://clinica-merce.vercel.app/reservar/cancelar?id={appointment.id}" style="display: inline-block; border: 1px solid #d9777f; color: #d9777f; text-decoration: none; padding: 8px 16px; font-weight: bold; border-radius: 8px; font-size: 13px;">Cancelar mi cita</a>
+                </div>
+                """
+                send_email(client.email, subject, get_html_template(content, clinic_name))
+                
+        elif type == 'cancelled_by_client':
+            # Flujo D: Aviso de cancelación para Admin
+            admin_email = settings.clinic_email
+            if admin_email:
+                subject = f"❌ Cita Cancelada: {client.name}"
+                whatsapp_url = f"https://wa.me/{client.phone.replace(' ', '').replace('+', '')}?text=Hola%20{client.name.split(' ')[0]},%20he%20visto%20que%20has%20cancelado%20tu%20cita%20para%20{service.name}%20del%20día%20{date_str}.%20¿Te%20puedo%20ayudar%20a%20buscar%20otro%20hueco?"
+                
+                content = f"""
+                <h3 style="color: #444; margin-bottom: 20px;">Merce, una clienta ha cancelado su cita.</h3>
+                <div style="background-color: #fff9fa; border-radius: 16px; padding: 25px; border: 1px solid #fde7e9;">
+                    <p style="margin: 0 0 10px 0; color: #dc2626; font-weight: bold; font-size: 13px;">CITA CANCELADA AUTOMÁTICAMENTE</p>
+                    <p style="margin: 0; font-size: 18px; color: #5c4d4f; font-weight: 700;">{client.name}</p>
+                    <p style="margin: 5px 0 0 0; color: #887a7c; font-size: 14px;">Teléfono: <b>{client.phone}</b></p>
+                    
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #f3c7cb;">
+                        <p style="margin: 0; color: #5c4d4f; font-size: 15px;"><b>Tratamiento:</b> <del>{service.name}</del></p>
+                        <p style="margin: 5px 0 0 0; color: #5c4d4f; font-size: 15px;"><b>Horario que ha quedado libre:</b> {date_str} a las {time_str}</p>
+                    </div>
+                </div>
+                <p style="margin-top: 30px; font-size: 14px; color: #887a7c; text-align: center; margin-bottom: 15px;">¿Quieres enviarle un WhatsApp para reagendar?</p>
+                <div style="text-align: center;">
+                    <a href="{whatsapp_url}" style="display: inline-block; background-color: #25D366; color: white; text-decoration: none; padding: 12px 24px; font-weight: bold; border-radius: 10px; font-size: 15px;">📲 Hablar por WhatsApp</a>
+                </div>
+                """
+                send_email(admin_email, subject, get_html_template(content, clinic_name))
+
             
     except Exception as e:
         logger.error(f"Error en flujo de notificación: {str(e)}")

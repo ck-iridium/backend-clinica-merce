@@ -30,6 +30,23 @@ export default function BookingPage() {
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
 
+  // Parse check for rebooking query params on initial mount
+  useEffect(() => {
+     if (typeof window !== 'undefined') {
+        const query = new URLSearchParams(window.location.search);
+        const qName = query.get('name');
+        const qEmail = query.get('email');
+        const qPhone = query.get('phone');
+        if (qName || qEmail || qPhone) {
+           setFormData({
+              name: qName || '',
+              email: qEmail || '',
+              phone: qPhone || ''
+           });
+        }
+     }
+  }, []);
+
   useEffect(() => {
     const fetchBaseData = async () => {
       try {
@@ -39,7 +56,21 @@ export default function BookingPage() {
         ]);
         if (srvRes.ok) {
           const data = await srvRes.json();
-          setServices(data.filter((s:any) => s.is_active));
+          const activeSrvs = data.filter((s:any) => s.is_active);
+          setServices(activeSrvs);
+
+          // Check if we came from a rebook link with srvId
+          if (typeof window !== 'undefined') {
+              const qs = new URLSearchParams(window.location.search);
+              const srvId = qs.get('srvId');
+              if (srvId) {
+                  const targetSrv = activeSrvs.find((s:any) => s.id === srvId);
+                  if (targetSrv) {
+                      setSelectedService(targetSrv);
+                      setStep(2);
+                  }
+              }
+          }
         }
         if (apptRes.ok) setAppointments(await apptRes.json());
       } catch (e) {
