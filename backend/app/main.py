@@ -1,6 +1,9 @@
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from .database import engine, Base
 from .routers import clients, services, appointments, vouchers, invoices, settings, users, voucher_templates, time_blocks, automation
 
@@ -54,6 +57,11 @@ app = FastAPI(
     description="Backend API para la gestión de Clínica de Estética",
     version="1.0.0"
 )
+
+# Configurar Rate Limiter Global
+from .limiter import limiter
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Configuración CORS para el Frontend (Next.js)
 origins = [

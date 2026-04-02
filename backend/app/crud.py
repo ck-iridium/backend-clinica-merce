@@ -519,25 +519,25 @@ def create_public_appointment(
     if collision_msg:
         raise ValueError(collision_msg)
 
-    # 3. Create appointment with 'web_pending' status
+    # 3. Create appointment with 'pending_verification' status
     appt = models.Appointment(
         id=str(uuid.uuid4()),
         client_id=client.id,
         service_id=booking.service_id,
         start_time=booking.start_time,
         end_time=end_time,
-        status="web_pending",
+        status="pending_verification",
         notes=booking.notes,
     )
     db.add(appt)
     db.commit()
     db.refresh(appt)
 
-    # Email de notificación (en segundo plano si es posible)
+    # Email de Verificación Doble Opt-in (en segundo plano si es posible)
     if background_tasks:
-        background_tasks.add_task(mailer.send_appointment_notification, appt.id, 'new_web_booking')
+        background_tasks.add_task(mailer.send_appointment_notification, appt.id, 'verification_email')
     else:
-        mailer.send_appointment_notification(appt.id, 'new_web_booking')
+        mailer.send_appointment_notification(appt.id, 'verification_email')
 
     return appt, client, is_new
 

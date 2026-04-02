@@ -136,9 +136,36 @@ def send_appointment_notification(appointment_id: str, type: str):
                         <p style="margin: 5px 0 0 0; color: #5c4d4f; font-size: 15px;"><b>Horario:</b> {date_str} a las {time_str}</p>
                     </div>
                 </div>
-                <p style="margin-top: 30px; font-size: 14px; color: #887a7c; text-align: center;">Entra en la agenda para confirmar esta cita.</p>
+                <p style="margin-top: 30px; font-size: 14px; color: #887a7c; text-align: center;">Entra en la agenda para gestionar esta cita.</p>
                 """
                 send_email(admin_email, subject, get_html_template(content, clinic_name))
+                
+        elif type == 'verification_email':
+            if client.email:
+                subject = f"Confirma tu cita en {clinic_name}"
+                content = f"""
+                <h2 style="color: #5c4d4f; margin-bottom: 5px;">¡Casi listos, {client.name}!</h2>
+                <p style="color: #887a7c; font-size: 15px; line-height: 1.5; margin-bottom: 30px;">
+                    Para completar tu reserva y bloquear tu hueco en la agenda, por favor haz clic en el siguiente botón:
+                </p>
+                
+                <div style="background-color: #ffffff; border: 2px solid #fdf2f3; border-radius: 20px; padding: 30px; text-align: center;">
+                    <p style="margin: 0; color: #d9777f; font-weight: bold; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Detalles de la Cita</p>
+                    <p style="margin: 15px 0 5px 0; font-size: 22px; color: #5c4d4f; font-weight: 800;">{date_str}</p>
+                    <p style="margin: 0; font-size: 16px; color: #5c4d4f; font-weight: 600;">a las {time_str}</p>
+                    <div style="display: inline-block; background-color: #fdf2f3; color: #d9777f; padding: 8px 16px; border-radius: 10px; margin-top: 20px; font-weight: bold; font-size: 14px;">
+                        {service.name}
+                    </div>
+                </div>
+                
+                <div style="margin-top: 35px; text-align: center;">
+                    <a href="https://www.esteticamerce.com/reservar/verificar?id={appointment.id}" style="display: inline-block; background-color: #d9777f; color: #ffffff; text-decoration: none; padding: 14px 28px; font-weight: bold; border-radius: 12px; font-size: 16px; box-shadow: 0 4px 15px rgba(217,119,127,0.3);">
+                        Confirmar mi cita ahora
+                    </a>
+                    <p style="margin: 15px 0 0 0; color: #a49697; font-size: 12px;">Tienes 30 minutos para confirmar. Si no lo haces, el hueco quedará libre.</p>
+                </div>
+                """
+                send_email(client.email, subject, get_html_template(content, clinic_name))
 
         elif type == 'confirmation':
             # Flujo B: Confirmación al Cliente (Estilo Premium) con enlace de cancelación

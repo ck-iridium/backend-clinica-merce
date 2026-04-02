@@ -21,7 +21,8 @@ def run_auto_migrations():
             "ALTER TABLE clinic_settings ADD COLUMN smtp_password VARCHAR",
             "ALTER TABLE clinic_settings ADD COLUMN smtp_from_email VARCHAR",
             "ALTER TABLE clinic_settings ADD COLUMN smtp_use_tls BOOLEAN DEFAULT 1",
-            "ALTER TABLE services ADD COLUMN is_active BOOLEAN DEFAULT 1"
+            "ALTER TABLE services ADD COLUMN is_active BOOLEAN DEFAULT 1",
+            "ALTER TABLE appointments ADD COLUMN created_at DATETIME"
         ]
         
         for m in migrations:

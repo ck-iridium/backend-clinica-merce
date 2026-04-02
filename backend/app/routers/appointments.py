@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks, Request
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import date as DateType
 from .. import crud, schemas, database
+from ..limiter import limiter
+
 
 router = APIRouter(
     prefix="/appointments",
@@ -35,7 +37,8 @@ def get_availability(
 
 
 @router.post("/public", response_model=schemas.PublicBookingResponse, status_code=201)
-def public_booking(booking: schemas.PublicBookingRequest, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
+@limiter.limit("3/hour")
+def public_booking(request: Request, booking: schemas.PublicBookingRequest, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
     """
     Landing page booking endpoint.
     - Finds or creates the client (deduplication by email / phone).
