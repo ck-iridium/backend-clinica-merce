@@ -159,7 +159,7 @@ def send_appointment_notification(appointment_id: str, type: str):
                 
                 <div style="margin-top: 35px; text-align: center; border-top: 1px solid #f3e8e9; padding-top: 25px;">
                     <p style="margin: 0; color: #a49697; font-size: 13px; margin-bottom: 10px;">Si necesitas hacer algún cambio, llámanos lo antes posible o cancela tu cita online:</p>
-                    <a href="https://clinica-merce.vercel.app/reservar/cancelar?id={appointment.id}" style="display: inline-block; border: 1px solid #d9777f; color: #d9777f; text-decoration: none; padding: 8px 16px; font-weight: bold; border-radius: 8px; font-size: 13px;">Cancelar mi cita</a>
+                    <a href="https://www.esteticamerce.com/reservar/cancelar?id={appointment.id}" style="display: inline-block; border: 1px solid #d9777f; color: #d9777f; text-decoration: none; padding: 8px 16px; font-weight: bold; border-radius: 8px; font-size: 13px;">Cancelar mi cita</a>
                 </div>
                 """
                 send_email(client.email, subject, get_html_template(content, clinic_name))
@@ -183,7 +183,7 @@ def send_appointment_notification(appointment_id: str, type: str):
                 
                 <div style="margin-top: 35px; text-align: center; border-top: 1px solid #f3e8e9; padding-top: 25px;">
                     <p style="margin: 0; color: #a49697; font-size: 13px; margin-bottom: 10px;">Si por algún motivo no puedes asistir, te pedimos que la canceles para liberar el hueco:</p>
-                    <a href="https://clinica-merce.vercel.app/reservar/cancelar?id={appointment.id}" style="display: inline-block; border: 1px solid #d9777f; color: #d9777f; text-decoration: none; padding: 8px 16px; font-weight: bold; border-radius: 8px; font-size: 13px;">Cancelar mi cita</a>
+                    <a href="https://www.esteticamerce.com/reservar/cancelar?id={appointment.id}" style="display: inline-block; border: 1px solid #d9777f; color: #d9777f; text-decoration: none; padding: 8px 16px; font-weight: bold; border-radius: 8px; font-size: 13px;">Cancelar mi cita</a>
                 </div>
                 """
                 send_email(client.email, subject, get_html_template(content, clinic_name))
