@@ -74,11 +74,13 @@ class ServiceResponse(ServiceBase):
 
 # --- SETTINGS ---
 class ClinicSettingsBase(BaseModel):
-    clinic_name: str
-    clinic_nif: str
-    clinic_address: str
-    clinic_phone: str
-    clinic_email: str
+    clinic_name: Optional[str] = "Clínica Merce"
+    clinic_nif: Optional[str] = ""
+    clinic_address: Optional[str] = ""
+    clinic_phone: Optional[str] = ""
+    clinic_email: Optional[str] = ""
+    legal_name: str = ""
+    sanitary_register: Optional[str] = None
     
     # SMTP Config
     smtp_host: Optional[str] = None
@@ -94,6 +96,10 @@ class ClinicSettingsBase(BaseModel):
     invoice_prefix: str
     invoice_next_number: int
     default_tax_rate: float = 21.0
+    instagram_url: Optional[str] = None
+    maps_url: Optional[str] = None
+    whatsapp_number: Optional[str] = None
+    booking_margin_hours: float = 2.0
 
 class ClinicSettingsUpdate(BaseModel):
     clinic_name: Optional[str] = None
@@ -101,6 +107,8 @@ class ClinicSettingsUpdate(BaseModel):
     clinic_address: Optional[str] = None
     clinic_phone: Optional[str] = None
     clinic_email: Optional[str] = None
+    legal_name: Optional[str] = None
+    sanitary_register: Optional[str] = None
     smtp_host: Optional[str] = None
     smtp_port: Optional[int] = None
     smtp_user: Optional[str] = None
@@ -113,6 +121,10 @@ class ClinicSettingsUpdate(BaseModel):
     invoice_prefix: Optional[str] = None
     invoice_next_number: Optional[int] = None
     default_tax_rate: Optional[float] = None
+    instagram_url: Optional[str] = None
+    maps_url: Optional[str] = None
+    whatsapp_number: Optional[str] = None
+    booking_margin_hours: Optional[float] = None
 
 # --- Consents ---
 class ConsentBase(BaseModel):
@@ -146,6 +158,7 @@ class AppointmentBase(BaseModel):
     end_time: datetime
     status: str = "pending"
     notes: Optional[str] = None
+    reminder_sent: bool = False
 
 class AppointmentCreate(AppointmentBase):
     pass
@@ -160,6 +173,7 @@ class AppointmentUpdate(BaseModel):
 
 class AppointmentResponse(AppointmentBase):
     id: str
+    created_at: Optional[datetime] = None
     
     class Config:
         from_attributes = True

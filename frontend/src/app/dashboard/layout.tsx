@@ -3,7 +3,7 @@ import Link from 'next/link';
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   let settings = null;
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/settings/`, { 
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/settings/`, { 
       cache: 'no-store' 
     });
     if (res.ok) settings = await res.json();

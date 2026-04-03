@@ -6,6 +6,15 @@ from . import models, schemas
 from .utils import mailer
 import uuid
 
+def get_spain_now() -> datetime:
+    """Returns a naive datetime representing the current local time in Spain."""
+    try:
+        from zoneinfo import ZoneInfo
+        return datetime.now(ZoneInfo("Europe/Madrid")).replace(tzinfo=None)
+    except Exception:
+        # Fallback de emergencia a UTC+2 (Horario de verano aproximado)
+        return datetime.utcnow() + timedelta(hours=2)
+
 # --- SETTINGS ---
 def get_clinic_settings(db: Session):
     try:
@@ -139,6 +148,10 @@ def check_appointment_collision(db: Session, start_time: datetime, end_time: dat
     # weekday() returns 0 for Monday, 5 for Saturday, 6 for Sunday
     if start_time.weekday() in [5, 6]:
         return "La clínica está cerrada los fines de semana (Sábados y Domingos)."
+        
+    # 1c. Past Time Restriction
+    if start_time < get_spain_now():
+        return "No puedes reservar una cita en el pasado."
 
     # 2. Collision with other Appointments
     query = db.query(models.Appointment).filter(
@@ -437,6 +450,10 @@ def get_availability_slots(db: Session, target_date: date, service_id: str) -> L
     if target_date.weekday() in (5, 6):
         return []
 
+    # Get settings for margin calculation
+    settings = get_clinic_settings(db)
+    margin_hours = float(settings.booking_margin_hours) if settings.booking_margin_hours else 0.0
+
     # 1. Get service duration
     service = db.query(models.Service).filter(models.Service.id == service_id).first()
     if not service:
@@ -485,6 +502,14 @@ def get_availability_slots(db: Session, target_date: date, service_id: str) -> L
                     if max(slot, block.start_time) < min(slot_end, block.end_time):
                         overlaps = True
                         break
+
+            # Check Margin Constraint
+            if not overlaps:
+                now_spain = get_spain_now()
+                # If target date is today, check margin
+                if slot.date() == now_spain.date():
+                    if slot < now_spain + timedelta(hours=margin_hours):
+                        overlaps = True
 
             if not overlaps:
                 available.append(slot.strftime("%H:%M"))

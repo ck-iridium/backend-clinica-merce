@@ -22,7 +22,14 @@ def run_auto_migrations():
             "ALTER TABLE clinic_settings ADD COLUMN smtp_from_email VARCHAR",
             "ALTER TABLE clinic_settings ADD COLUMN smtp_use_tls BOOLEAN DEFAULT 1",
             "ALTER TABLE services ADD COLUMN is_active BOOLEAN DEFAULT 1",
-            "ALTER TABLE appointments ADD COLUMN created_at DATETIME"
+            "ALTER TABLE appointments ADD COLUMN created_at DATETIME",
+            "ALTER TABLE clinic_settings ADD COLUMN legal_name VARCHAR DEFAULT ''",
+            "ALTER TABLE clinic_settings ADD COLUMN sanitary_register VARCHAR",
+            "ALTER TABLE clinic_settings ADD COLUMN instagram_url VARCHAR",
+            "ALTER TABLE clinic_settings ADD COLUMN maps_url VARCHAR",
+            "ALTER TABLE clinic_settings ADD COLUMN whatsapp_number VARCHAR",
+            "ALTER TABLE appointments ADD COLUMN reminder_sent BOOLEAN DEFAULT 0",
+            "ALTER TABLE clinic_settings ADD COLUMN booking_margin_hours FLOAT DEFAULT 2.0"
         ]
         
         for m in migrations:

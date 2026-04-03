@@ -58,11 +58,14 @@ export default function VerificarPage() {
     const getGoogleCalendarUrl = () => {
         if (!appt || !appt.start_iso || !appt.end_iso) return '#';
         
-        const formatS = (isoString: string) => isoString.replace(/[-:]/g, '').split('.')[0] + 'Z';
-        const start = formatS(new Date(appt.start_iso).toISOString());
-        const end = formatS(new Date(appt.end_iso).toISOString());
+        const formatLocalAsMadrid = (isoString: string) => {
+            // Ejemplo: "2026-04-03T16:00:00" -> "20260403T160000" (Sin Z para que no asuma UTC)
+            return isoString.replace(/[-:]/g, '').split('.')[0];
+        };
+        const start = formatLocalAsMadrid(appt.start_iso);
+        const end = formatLocalAsMadrid(appt.end_iso);
         
-        return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=Cita+${encodeURIComponent(appt.service_name)}+en+Clínica+Merce&dates=${start}/${end}&details=Tratamiento+de+estética+en+Clínica+Merce`;
+        return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=Cita+${encodeURIComponent(appt.service_name)}+en+Clínica+Merce&dates=${start}/${end}&ctz=Europe/Madrid&details=Tratamiento+de+estética+en+Clínica+Merce`;
     };
 
     return (

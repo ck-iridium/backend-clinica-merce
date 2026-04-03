@@ -66,6 +66,9 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # Configuración CORS para el Frontend (Next.js)
 origins = [
     "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
     "https://backend-clinica-merce.vercel.app",
     "https://clinica-merce.vercel.app",
     "https://www.esteticamerce.com",

@@ -2,64 +2,101 @@ import logging
 import json
 import urllib.request
 import os
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from .. import models
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def send_email(to_email: str, subject: str, body_html: str):
+def send_email(to_email: str, subject: str, body_html: str, settings=None):
     """
-    Envía un correo electrónico usando la API de Resend.
+    Envía un correo electrónico usando la API de Resend o SMTP como fallback.
     """
     api_key = os.environ.get("RESEND_API_KEY", "").strip()
-    if not api_key:
-        logger.error("❌ Fallo: RESEND_API_KEY no configurada.")
-        return False
-
-    try:
-        url = "https://api.resend.com/emails"
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-            "User-Agent": "python-urllib/3.10"
-        }
-        
-        data = {
-            "from": "Merce Estética <info@esteticamerce.com>",
-            "to": [to_email],
-            "subject": subject,
-            "html": body_html
-        }
-
-        req = urllib.request.Request(
-            url, 
-            data=json.dumps(data).encode('utf-8'), 
-            headers=headers, 
-            method="POST"
-        )
-        
+    
+    if api_key:
         try:
-            with urllib.request.urlopen(req, timeout=12) as response:
-                if response.status in [200, 201]:
-                    logger.info(f"✅ Email enviado con éxito a {to_email}")
-                    return True
-                return False
-        except urllib.error.HTTPError as http_err:
-            error_body = http_err.read().decode('utf-8')
-            logger.error(f"❌ Error Resend API ({http_err.code}): {error_body}")
-            return False
+            url = "https://api.resend.com/emails"
+            headers = {
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+                "User-Agent": "python-urllib/3.10"
+            }
             
-    except Exception as e:
-        logger.error(f"❌ Fallo crítico en mailer: {str(e)}")
-        return False
-                
-    except Exception as e:
-        # Silenciamos el error para que la aplicación no se bloquee ni la reserva falle
-        logger.error(f"❌ Fallo al enviar email vía Resend: {str(e)}")
-        return False
+            data = {
+                "from": "Merce Estética <info@esteticamerce.com>",
+                "to": [to_email],
+                "subject": subject,
+                "html": body_html
+            }
 
-def get_html_template(content_html, clinic_name):
+            req = urllib.request.Request(
+                url, 
+                data=json.dumps(data).encode('utf-8'), 
+                headers=headers, 
+                method="POST"
+            )
+            
+            try:
+                with urllib.request.urlopen(req, timeout=12) as response:
+                    if response.status in [200, 201]:
+                        logger.info(f"✅ Email enviado con éxito a {to_email} vía Resend")
+                        return True
+                    return False
+            except urllib.error.HTTPError as http_err:
+                error_body = http_err.read().decode('utf-8')
+                logger.error(f"❌ Error Resend API ({http_err.code}): {error_body}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"❌ Fallo crítico en mailer (Resend): {str(e)}")
+            return False
+    else:
+        # Fallback a SMTP
+        if not settings:
+            try:
+                from ..database import SessionLocal
+                db = SessionLocal()
+                settings = db.query(models.ClinicSettings).first()
+                db.close()
+            except Exception:
+                pass
+                
+        smtp_host = os.environ.get("SMTP_HOST") or (settings.smtp_host if settings else None)
+        smtp_port = os.environ.get("SMTP_PORT") or (settings.smtp_port if settings else None)
+        smtp_user = os.environ.get("SMTP_USER") or (settings.smtp_user if settings else None)
+        smtp_password = os.environ.get("SMTP_PASSWORD") or (settings.smtp_password if settings else None)
+        smtp_from = os.environ.get("SMTP_FROM_EMAIL") or (settings.smtp_from_email if settings else None)
+
+        if not smtp_host or not smtp_user or not smtp_password:
+             logger.error("❌ Fallo: No hay configuración SMTP válida ni RESEND_API_KEY.")
+             return False
+             
+        try:
+            msg = MIMEMultipart("alternative")
+            msg['Subject'] = subject
+            msg['From'] = smtp_from or "info@esteticamerce.com"
+            msg['To'] = to_email
+            
+            part_html = MIMEText(body_html, 'html')
+            msg.attach(part_html)
+            
+            server = smtplib.SMTP(smtp_host, int(smtp_port))
+            server.starttls()
+            server.login(smtp_user, smtp_password)
+            server.sendmail(msg['From'], to_email, msg.as_string())
+            server.quit()
+            
+            logger.info(f"✅ Email enviado con éxito a {to_email} vía SMTP")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Fallo al enviar email vía SMTP: {str(e)}")
+            return False
+
+def get_html_template(content_html, clinic_name, clinic_phone):
     """Plantilla base para correos corporativos de Merce Estética"""
     return f"""
     <html>
@@ -86,7 +123,7 @@ def get_html_template(content_html, clinic_name):
                             <td align="center" style="padding: 30px; background-color: #faf9f8; border-top: 1px solid #f3e8e9;">
                                 <p style="margin: 0; color: #948b8c; font-size: 12px; line-height: 1.6;">
                                     Este es un mensaje automático de <b>{clinic_name}</b>.<br>
-                                    Cualquier duda, contáctanos por WhatsApp o teléfono.
+                                    Cualquier duda, contáctanos por teléfono en el <b>{clinic_phone}</b>.
                                 </p>
                             </td>
                         </tr>
@@ -112,6 +149,7 @@ def send_appointment_notification(appointment_id: str, type: str):
             return
 
         settings = db.query(models.ClinicSettings).first()
+        frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000").rstrip('/')
         clinic_name = settings.clinic_name
         service = appointment.service
         client = appointment.client
@@ -138,7 +176,7 @@ def send_appointment_notification(appointment_id: str, type: str):
                 </div>
                 <p style="margin-top: 30px; font-size: 14px; color: #887a7c; text-align: center;">Entra en la agenda para gestionar esta cita.</p>
                 """
-                send_email(admin_email, subject, get_html_template(content, clinic_name))
+                send_email(admin_email, subject, get_html_template(content, clinic_name, settings.clinic_phone), settings=settings)
                 
         elif type == 'verification_email':
             if client.email:
@@ -159,13 +197,15 @@ def send_appointment_notification(appointment_id: str, type: str):
                 </div>
                 
                 <div style="margin-top: 35px; text-align: center;">
-                    <a href="https://www.esteticamerce.com/reservar/verificar?id={appointment.id}" style="display: inline-block; background-color: #d9777f; color: #ffffff; text-decoration: none; padding: 14px 28px; font-weight: bold; border-radius: 12px; font-size: 16px; box-shadow: 0 4px 15px rgba(217,119,127,0.3);">
+                    <a href="{frontend_url}/reservar/verificar?id={appointment.id}" style="display: inline-block; background-color: #d9777f; color: #ffffff; text-decoration: none; padding: 14px 28px; font-weight: bold; border-radius: 12px; font-size: 16px; box-shadow: 0 4px 15px rgba(217,119,127,0.3);">
                         Confirmar mi cita ahora
                     </a>
                     <p style="margin: 15px 0 0 0; color: #a49697; font-size: 12px;">Tienes 30 minutos para confirmar. Si no lo haces, el hueco quedará libre.</p>
                 </div>
                 """
-                send_email(client.email, subject, get_html_template(content, clinic_name))
+                verify_url = f"{frontend_url}/reservar/verificar?id={appointment.id}"
+                print(f"\n[DEBUG] URL DE CONFIRMACION PARA {client.name}: {verify_url}\n")
+                send_email(client.email, subject, get_html_template(content, clinic_name, settings.clinic_phone), settings=settings)
 
         elif type == 'confirmation':
             # Flujo B: Confirmación al Cliente (Estilo Premium) con enlace de cancelación
@@ -186,10 +226,10 @@ def send_appointment_notification(appointment_id: str, type: str):
                 
                 <div style="margin-top: 35px; text-align: center; border-top: 1px solid #f3e8e9; padding-top: 25px;">
                     <p style="margin: 0; color: #a49697; font-size: 13px; margin-bottom: 10px;">Si necesitas hacer algún cambio, llámanos lo antes posible o cancela tu cita online:</p>
-                    <a href="https://www.esteticamerce.com/reservar/cancelar?id={appointment.id}" style="display: inline-block; border: 1px solid #d9777f; color: #d9777f; text-decoration: none; padding: 8px 16px; font-weight: bold; border-radius: 8px; font-size: 13px;">Cancelar mi cita</a>
+                    <a href="{frontend_url}/reservar/cancelar?id={appointment.id}" style="display: inline-block; border: 1px solid #d9777f; color: #d9777f; text-decoration: none; padding: 8px 16px; font-weight: bold; border-radius: 8px; font-size: 13px;">Cancelar mi cita</a>
                 </div>
                 """
-                send_email(client.email, subject, get_html_template(content, clinic_name))
+                send_email(client.email, subject, get_html_template(content, clinic_name, settings.clinic_phone), settings=settings)
         
         elif type == 'reminder':
             # Flujo C: Recordatorio 24h
@@ -210,10 +250,10 @@ def send_appointment_notification(appointment_id: str, type: str):
                 
                 <div style="margin-top: 35px; text-align: center; border-top: 1px solid #f3e8e9; padding-top: 25px;">
                     <p style="margin: 0; color: #a49697; font-size: 13px; margin-bottom: 10px;">Si por algún motivo no puedes asistir, te pedimos que la canceles para liberar el hueco:</p>
-                    <a href="https://www.esteticamerce.com/reservar/cancelar?id={appointment.id}" style="display: inline-block; border: 1px solid #d9777f; color: #d9777f; text-decoration: none; padding: 8px 16px; font-weight: bold; border-radius: 8px; font-size: 13px;">Cancelar mi cita</a>
+                    <a href="{frontend_url}/reservar/cancelar?id={appointment.id}" style="display: inline-block; border: 1px solid #d9777f; color: #d9777f; text-decoration: none; padding: 8px 16px; font-weight: bold; border-radius: 8px; font-size: 13px;">Cancelar mi cita</a>
                 </div>
                 """
-                send_email(client.email, subject, get_html_template(content, clinic_name))
+                send_email(client.email, subject, get_html_template(content, clinic_name, settings.clinic_phone), settings=settings)
                 
         elif type == 'cancelled_by_client':
             # Flujo D: Aviso de cancelación para Admin
@@ -239,7 +279,7 @@ def send_appointment_notification(appointment_id: str, type: str):
                     <a href="{whatsapp_url}" style="display: inline-block; background-color: #25D366; color: white; text-decoration: none; padding: 12px 24px; font-weight: bold; border-radius: 10px; font-size: 15px;">📲 Hablar por WhatsApp</a>
                 </div>
                 """
-                send_email(admin_email, subject, get_html_template(content, clinic_name))
+                send_email(admin_email, subject, get_html_template(content, clinic_name, settings.clinic_phone), settings=settings)
 
             
     except Exception as e:

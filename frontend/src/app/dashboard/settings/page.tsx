@@ -184,12 +184,20 @@ export default function SettingsPage() {
            </h3>
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs font-bold text-stone-500 mb-2">Nombre de Entidad</label>
+                <label className="block text-xs font-bold text-stone-500 mb-2">Nombre Comercial</label>
                 <input required type="text" value={settings.clinic_name} onChange={e => setSettings({...settings, clinic_name: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] focus:ring-1 focus:ring-[#d9777f] transition-all" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-stone-500 mb-2">Nombre Legal del Titular (DNI)</label>
+                <input type="text" value={settings.legal_name || ''} onChange={e => setSettings({...settings, legal_name: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] focus:ring-1 focus:ring-[#d9777f] transition-all" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-stone-500 mb-2">CIF/NIF</label>
                 <input type="text" value={settings.clinic_nif} onChange={e => setSettings({...settings, clinic_nif: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] focus:ring-1 focus:ring-[#d9777f] transition-all" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-stone-500 mb-2">Nº de Registro Sanitario</label>
+                <input type="text" value={settings.sanitary_register || ''} onChange={e => setSettings({...settings, sanitary_register: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] focus:ring-1 focus:ring-[#d9777f] transition-all" placeholder="Opcional" />
               </div>
               <div className="md:col-span-2">
                 <label className="block text-xs font-bold text-stone-500 mb-2">Dirección Completa</label>
@@ -202,6 +210,27 @@ export default function SettingsPage() {
               <div>
                 <label className="block text-xs font-bold text-stone-500 mb-2">Email</label>
                 <input type="email" value={settings.clinic_email} onChange={e => setSettings({...settings, clinic_email: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] focus:ring-1 focus:ring-[#d9777f] transition-all" />
+              </div>
+           </div>
+        </div>
+
+        {/* Enlaces y Redes Sociales */}
+        <div className="bg-white rounded-[2rem] border border-stone-100 p-8 shadow-sm">
+           <h3 className="text-[10px] font-bold text-[#d9777f] uppercase tracking-widest mb-6 border-b border-stone-100 pb-2 flex items-center gap-2">
+             <span>🔗 Enlaces y Redes Sociales</span>
+           </h3>
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-xs font-bold text-stone-500 mb-2">URL de Instagram</label>
+                <input type="text" value={settings.instagram_url || ''} onChange={e => setSettings({...settings, instagram_url: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] transition-all" placeholder="https://instagram.com/..." />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-stone-500 mb-2">Teléfono WhatsApp</label>
+                <input type="text" value={settings.whatsapp_number || ''} onChange={e => setSettings({...settings, whatsapp_number: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] transition-all" placeholder="600000000" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-stone-500 mb-2">URL de Google Maps</label>
+                <input type="text" value={settings.maps_url || ''} onChange={e => setSettings({...settings, maps_url: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] transition-all" placeholder="https://goo.gl/maps/..." />
               </div>
            </div>
         </div>
@@ -259,9 +288,14 @@ export default function SettingsPage() {
         {/* Numeración */}
         <div className="bg-white rounded-[2rem] border border-stone-100 p-8 shadow-sm">
            <h3 className="text-[10px] font-bold text-[#d9777f] uppercase tracking-widest mb-6 border-b border-stone-100 pb-2 flex items-center gap-2">
-             <span>🔢 Numeración y Secuencias</span>
+             <span>🔢 Agenda y Numeración</span>
            </h3>
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="md:col-span-2 p-4 bg-orange-50/50 border border-orange-100 rounded-xl mb-2">
+                <label className="block text-xs font-bold text-orange-700 mb-2">Margen de antelación para hoy (Horas)</label>
+                <input type="number" min="0" step="0.5" value={settings.booking_margin_hours ?? 2.0} onChange={e => setSettings({...settings, booking_margin_hours: parseFloat(e.target.value) || 0})} className="w-full md:w-1/2 p-4 bg-white border border-orange-200 rounded-xl focus:border-orange-400 font-mono font-bold text-orange-800" />
+                <p className="text-[10px] text-orange-600/80 mt-2">Ejemplo: Si pones 2, y un cliente entra a las 10:00 a reservar para hoy, solo le saldrán horas a partir de las 12:00.</p>
+              </div>
               <div>
                 <label className="block text-xs font-bold text-stone-500 mb-2">Prefijo de Factura</label>
                 <div className="relative">

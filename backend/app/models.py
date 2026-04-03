@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, Text, Boolean, Integer, Numeric, DateTime, Date, ForeignKey
+from sqlalchemy import Column, String, Text, Boolean, Integer, Numeric, DateTime, Date, ForeignKey, Float
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from .database import Base
@@ -110,6 +110,8 @@ class ClinicSettings(Base):
     clinic_address = Column(String, default="")
     clinic_phone = Column(String, default="")
     clinic_email = Column(String, default="")
+    legal_name = Column(String, default="")
+    sanitary_register = Column(String, nullable=True)
 
     # SMTP Configuration
     smtp_host = Column(String, nullable=True)
@@ -124,10 +126,16 @@ class ClinicSettings(Base):
     logo_pdf_b64 = Column(Text, nullable=True)
     signature_b64 = Column(Text, nullable=True)
 
+    # Enlaces y Redes Sociales
+    instagram_url = Column(String, nullable=True)
+    maps_url = Column(String, nullable=True)
+    whatsapp_number = Column(String, nullable=True)
+
     # Numeration
     invoice_prefix = Column(String, default="FA-{YY}-")
     invoice_next_number = Column(Integer, default=1)
     default_tax_rate = Column(Numeric(5, 2), default=21.0)
+    booking_margin_hours = Column(Float, default=2.0)
 
 class Invoice(Base):
     __tablename__ = "invoices"

@@ -15,10 +15,9 @@ export default function BookingPage() {
 
   const [selectedService, setSelectedService] = useState<any>(null);
 
-  // Initialize to tomorrow or next available day
+  // Initialize to TODAY (with Spanish timezone correction fallback)
   const [selectedDate, setSelectedDate] = useState<Date>(() => {
     const d = new Date();
-    d.setDate(d.getDate() + 1);
     d.setHours(0, 0, 0, 0);
     return d;
   });
@@ -30,6 +29,7 @@ export default function BookingPage() {
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [bookingError, setBookingError] = useState('');
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
   // Parse check for rebooking query params on initial mount
   useEffect(() => {
@@ -210,17 +210,21 @@ export default function BookingPage() {
                         </label>
                         <input
                           type="date"
-                          min={new Date().toISOString().split('T')[0]} // Prevents past dates
-                          value={selectedDate.toISOString().split('T')[0]}
+                          min={new Date().toLocaleDateString('en-CA')} // Prevents past dates in local TZ
+                          value={selectedDate.toLocaleDateString('en-CA')}
                           onChange={(e) => {
-                            const nd = new Date(e.target.value);
+                            const [y, m, d] = e.target.value.split('-').map(Number);
+                            const nd = new Date(y, m - 1, d); // Local time parsing
                             const day = nd.getDay();
+                            
                             if (day === 0 || day === 6) {
-                              alert("Lamentablemente la clínica está cerrada los fines de semana. Por favor, elige un día de lunes a viernes.");
+                              alert("La clínica está cerrada los fines de semana. Por favor, elige un día de lunes a viernes.");
                               return;
                             }
-                            if (!isNaN(nd.getTime())) setSelectedDate(nd);
-                            setSelectedTime(''); // reset time block
+                            if (!isNaN(nd.getTime())) {
+                              setSelectedDate(nd);
+                              setSelectedTime(''); // reset time block
+                            }
                           }}
                           className="w-full px-5 py-5 rounded-2xl border border-stone-200 bg-white text-stone-800 font-extrabold text-lg focus:ring-4 focus:ring-[#f3c7cb] focus:border-[#d9777f] focus:outline-none transition-all shadow-sm cursor-pointer"
                         />
@@ -251,7 +255,11 @@ export default function BookingPage() {
                       ) : availableSlots.length === 0 ? (
                         <div className="p-8 bg-stone-50 text-stone-500 rounded-[2rem] text-center font-medium border border-stone-100 shadow-inner">
                           <div className="text-3xl mb-4 grayscale opacity-50">🗓</div>
-                          Lamentablemente no quedan huecos libres para este día con la duración requerida. Prueba otro día.
+                          {selectedDate.toDateString() === new Date().toDateString() ? (
+                            <span>La agenda está cerrada por hoy o no hay margen suficiente de antelación para nuevas reservas en el mismo día. Por favor, selecciona un día futuro.</span>
+                          ) : (
+                            <span>Lamentablemente no quedan huecos libres para este día con la duración requerida. Prueba otro día.</span>
+                          )}
                         </div>
                       ) : (
                         <div className="grid grid-cols-3 gap-3 max-h-[360px] overflow-y-auto pr-2 pb-2 custom-scrollbar">
@@ -317,11 +325,25 @@ export default function BookingPage() {
                       <input required type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-4 focus:ring-[#f3c7cb] focus:border-[#d9777f] outline-none bg-stone-50 transition-all text-stone-800 font-bold" placeholder="600 000 000" />
                     </div>
 
+                    <div className="relative z-10 py-2">
+                      <label className="flex items-start gap-3 cursor-pointer group">
+                        <input 
+                          type="checkbox" 
+                          checked={privacyAccepted} 
+                          onChange={e => setPrivacyAccepted(e.target.checked)}
+                          className="mt-1 w-5 h-5 rounded border-stone-300 text-[#d9777f] focus:ring-[#f3c7cb] transition-all cursor-pointer" 
+                        />
+                        <span className="text-sm text-stone-500 font-medium leading-relaxed group-hover:text-stone-700 transition-colors">
+                          He leído y acepto la <Link href="/privacidad" target="_blank" className="text-[#d9777f] font-bold underline decoration-2 underline-offset-4 hover:text-[#b35e65]">Política de Privacidad</Link> de la clínica. *
+                        </span>
+                      </label>
+                    </div>
+
                     <div className="flex flex-col sm:flex-row justify-between items-center sm:items-end gap-6 pt-8 border-t border-stone-100 relative z-10">
                       <button type="button" onClick={() => setStep(2)} className="text-stone-400 font-bold text-sm hover:text-stone-600 transition-colors order-2 sm:order-1 px-4 py-2 hover:bg-stone-50 rounded-lg">
                         ← Cambiar día/hora
                       </button>
-                      <button disabled={saving} type="submit" className="w-full sm:w-auto bg-[#d9777f] text-white px-10 py-5 rounded-2xl font-extrabold hover:bg-[#b35e65] transition-all shadow-xl shadow-[#d9777f]/20 disabled:opacity-50 active:scale-95 order-1 sm:order-2 text-lg">
+                      <button disabled={saving || !privacyAccepted} type="submit" className="w-full sm:w-auto bg-[#d9777f] text-white px-10 py-5 rounded-2xl font-extrabold hover:bg-[#b35e65] transition-all shadow-xl shadow-[#d9777f]/20 disabled:opacity-30 disabled:grayscale active:scale-95 order-1 sm:order-2 text-lg">
                         {saving ? 'Procesando...' : 'Confirmar Reserva'}
                       </button>
                     </div>
