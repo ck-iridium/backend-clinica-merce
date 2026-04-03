@@ -7,8 +7,7 @@ export const metadata: Metadata = {
   robots: "noindex, nofollow",
 };
 
-import Footer from "@/components/Footer";
-import CookieBanner from "@/components/CookieBanner";
+import LayoutWrapper from "@/components/LayoutWrapper";
 
 export default function RootLayout({
   children,
@@ -21,8 +20,7 @@ export default function RootLayout({
         <main className="flex-grow">
           {children}
         </main>
-        <Footer />
-        <CookieBanner />
+        <LayoutWrapper />
       </body>
     </html>
   );
