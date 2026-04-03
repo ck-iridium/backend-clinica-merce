@@ -107,15 +107,19 @@ function CalendarContent() {
   const openWhatsApp = (clientName: string, phone: string, serviceName: string, startTime: string) => {
     if (!phone) return;
     const date = new Date(startTime.endsWith('Z') ? startTime.slice(0, -1) : startTime);
-    const dateStr = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
-    const timeStr = date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    const dateStr = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
     
-    const message = `Hola ${clientName}, soy Merce de Merce Estética. Te confirmo tu cita de ${serviceName} para el día ${dateStr} a las ${timeStr}. ¡Te espero!`;
+    const message = `¡Hola ${clientName}! Soy Merce de Estética Merce. Te escribo sobre tu cita para ${serviceName} el ${dateStr}.`;
     const encoded = encodeURIComponent(message);
-    window.open(`https://wa.me/${phone.replace(/\s+/g, '')}?text=${encoded}`, '_blank');
+    
+    // Ensure 34 prefix is handled if missing
+    let cleanPhone = phone.replace(/\s+/g, '').replace('+', '');
+    if (!cleanPhone.startsWith('34') && cleanPhone.length === 9) cleanPhone = '34' + cleanPhone;
+    
+    window.open(`https://wa.me/${cleanPhone}?text=${encoded}`, '_blank');
   };
 
-  const handleSubmit = async (e: React.FormEvent, shouldNotify: boolean = false) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedClientId || !selectedServiceId || !selectedSlot) return;
 
@@ -143,17 +147,9 @@ function CalendarContent() {
       });
 
       if (res.ok) {
-        const newAppt = await res.json();
         await fetchData();
         setShowModal(false);
         
-        if (shouldNotify) {
-          const client = clients.find(c => c.id === selectedClientId);
-          if (client && client.phone) {
-            openWhatsApp(client.name, client.phone, service.name, startISO);
-          }
-        }
-
         setSelectedClientId('');
         setSelectedServiceId('');
         setAppointmentNotes('');
@@ -176,18 +172,8 @@ function CalendarContent() {
         body: JSON.stringify({ status: newStatus })
       });
       if (res.ok) {
-        const updatedAppt = await res.json();
         await fetchData();
         setShowEditModal(false);
-
-        // If it was confirmed from web_pending, open WhatsApp
-        if (selectedAppt.status === 'web_pending' && newStatus === 'confirmed') {
-          const client = clientMap.get(selectedAppt.client_id);
-          const service = serviceMap.get(selectedAppt.service_id);
-          if (client && client.phone && service) {
-            openWhatsApp(client.name, client.phone, service.name, selectedAppt.start_time);
-          }
-        }
       } else {
         alert("Error actualizando estado.");
       }
@@ -734,23 +720,13 @@ function CalendarContent() {
                   </div>
 
                   <div className="flex flex-col gap-3 mt-6 pt-4 border-t border-stone-100">
-                    <div className="flex gap-3">
-                      <button 
-                        disabled={saving} 
-                        type="button"
-                        onClick={(e) => handleSubmit(e, true)}
-                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-4 rounded-xl font-bold transition-all disabled:opacity-50 active:scale-95 shadow-lg shadow-emerald-900/10 flex items-center justify-center gap-2"
-                      >
-                        {saving ? 'Registrando...' : '✓ Guardar y Notificar'}
-                      </button>
-                      <button 
-                        disabled={saving} 
-                        type="submit" 
-                        className="flex-1 bg-stone-900 hover:bg-[#d9777f] text-white px-6 py-4 rounded-xl font-bold transition-all disabled:opacity-50 active:scale-95 shadow-lg shadow-stone-900/10"
-                      >
-                        {saving ? 'Registrando...' : 'Solo Guardar'}
-                      </button>
-                    </div>
+                    <button 
+                      disabled={saving} 
+                      type="submit" 
+                      className="w-full bg-stone-900 hover:bg-[#d9777f] text-white px-6 py-4 rounded-xl font-bold transition-all disabled:opacity-50 active:scale-95 shadow-lg shadow-stone-900/10"
+                    >
+                      {saving ? 'Registrando...' : '✓ Guardar Cita'}
+                    </button>
                     <button type="button" onClick={() => setShowModal(false)} className="w-full py-4 rounded-xl font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 transition-all active:scale-95">
                       Cancelar
                     </button>
@@ -888,27 +864,49 @@ function CalendarContent() {
             )}
 
             <div className="space-y-3">
+            {/* WhatsApp Link Button */}
+            <div className="mb-8 font-sans">
+              <button 
+                onClick={() => {
+                  const client = clientMap.get(selectedAppt.client_id);
+                  const service = serviceMap.get(selectedAppt.service_id);
+                  if (client && service) {
+                    openWhatsApp(client.name, client.phone, service.name, selectedAppt.start_time);
+                  }
+                }}
+                className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-4 rounded-xl shadow-lg shadow-green-100 transition-all active:scale-95 flex items-center justify-center gap-2"
+              >
+                📲 Contactar por WhatsApp
+              </button>
+            </div>
+
+            <div className="space-y-3">
               <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-2 border-b border-stone-100 pb-2">Estado de la Cita</p>
               
-              <button onClick={() => handleStatusChange('pending')} disabled={updatingStatus || selectedAppt.status === 'pending'} className={`w-full py-3 px-4 rounded-xl font-bold flex items-center justify-between transition-all ${selectedAppt.status === 'pending' ? 'bg-[#fdf2f3] text-[#d9777f] border-2 border-[#d9777f]' : 'bg-stone-50 text-stone-600 border-2 border-transparent hover:bg-stone-100'}`}>
-                <span>⏳ Pendiente</span>
-                {selectedAppt.status === 'pending' && <span>✓</span>}
-              </button>
-
-              <button onClick={() => handleStatusChange('completed')} disabled={updatingStatus || selectedAppt.status === 'completed'} className={`w-full py-3 px-4 rounded-xl font-bold flex items-center justify-between transition-all ${selectedAppt.status === 'completed' ? 'bg-emerald-50 text-emerald-600 border-2 border-emerald-400' : 'bg-stone-50 text-stone-600 border-2 border-transparent hover:bg-emerald-50 hover:text-emerald-700'}`}>
-                <span>✅ Realizada</span>
-                {selectedAppt.status === 'completed' && <span>✓</span>}
-              </button>
-
-              <button onClick={() => handleStatusChange('no_show')} disabled={updatingStatus || selectedAppt.status === 'no_show'} className={`w-full py-3 px-4 rounded-xl font-bold flex items-center justify-between transition-all ${selectedAppt.status === 'no_show' ? 'bg-stone-100 text-stone-600 border-2 border-stone-400' : 'bg-stone-50 text-stone-600 border-2 border-transparent hover:bg-stone-200'}`}>
-                <span>👻 No Asistió</span>
-                {selectedAppt.status === 'no_show' && <span>✓</span>}
-              </button>
-
-              <button onClick={() => handleStatusChange('cancelled')} disabled={updatingStatus || selectedAppt.status === 'cancelled'} className={`w-full py-3 px-4 rounded-xl font-bold flex items-center justify-between transition-all ${selectedAppt.status === 'cancelled' ? 'bg-red-50 text-red-600 border-2 border-red-500' : 'bg-stone-50 text-stone-600 border-2 border-transparent hover:bg-red-50 hover:text-red-600'}`}>
-                <span>❌ Cancelada</span>
-                {selectedAppt.status === 'cancelled' && <span>✓</span>}
-              </button>
+              <div className="relative">
+                <select 
+                  value={selectedAppt.status}
+                  onChange={(e) => handleStatusChange(e.target.value)}
+                  disabled={updatingStatus}
+                  className={`w-full py-4 px-4 rounded-xl font-bold appearance-none transition-all outline-none border-2
+                    ${selectedAppt.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-400' : 
+                      selectedAppt.status === 'cancelled' ? 'bg-red-50 text-red-700 border-red-500' : 
+                      selectedAppt.status === 'no_show' ? 'bg-stone-100 text-stone-600 border-stone-400' :
+                      selectedAppt.status === 'web_pending' ? 'bg-orange-50 text-orange-700 border-orange-400' :
+                      selectedAppt.status === 'confirmed' ? 'bg-[#fdf2f3] text-[#d9777f] border-[#d9777f]' :
+                      'bg-stone-50 text-stone-600 border-transparent'}
+                  `}
+                >
+                  <option value="pending">⏳ Pendiente</option>
+                  <option value="confirmed">✨ Confirmada</option>
+                  <option value="completed">✅ Realizada</option>
+                  <option value="no_show">No Asistió</option>
+                  <option value="cancelled">❌ Cancelada</option>
+                  {selectedAppt.status === 'web_pending' && <option value="web_pending">🌐 Pendiente Web</option>}
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-current opacity-50 font-bold">▼</div>
+              </div>
+            </div>
             </div>
 
             <div className="mt-8 pt-6 border-t border-stone-100 flex justify-center flex-col items-center">
