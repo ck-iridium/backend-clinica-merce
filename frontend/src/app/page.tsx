@@ -60,13 +60,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-stone-900 text-stone-300 py-16 px-6 text-center border-t border-stone-800">
-        <h2 className="text-2xl font-bold text-white mb-6">Clínica Mercè</h2>
-        <p className="mb-2">Calle Belleza 123, Madrid, España</p>
-        <p className="mb-10 text-stone-400">hola@clinicamerce.com | +34 600 000 000</p>
-        <p className="text-sm text-stone-600">© 2026 Clínica Mercè. Todos los derechos reservados.</p>
-      </footer>
     </div>
   );
 }
