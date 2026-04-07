@@ -37,14 +37,23 @@ export default function BackupsPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/backups/${filename}/download`);
       if (res.ok) {
         const data = await res.json();
-        // Redirect to signed URL
+        
+        // Para forzar la descarga en lugar de previsualización:
+        // 1. Fetch al contenido real a través de la Signed URL
+        const fileRes = await fetch(data.url);
+        const blob = await fileRes.blob();
+        
+        // 2. Crear link de descarga local
+        const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
-        link.href = data.url;
+        link.href = url;
         link.download = filename;
-        link.target = "_blank";
         document.body.appendChild(link);
-        link.dispatchEvent(new MouseEvent('click', { bubbles: false, cancelable: true, view: window }));
+        link.click();
+        
+        // Limpieza
         document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
       } else {
         alert("Error al generar el enlace de descarga.");
       }
@@ -168,13 +177,13 @@ export default function BackupsPage() {
                       <p className="font-bold">No hay copias de seguridad en la nube.</p>
                   </div>
               ) : (
-                  <table className="w-full text-left text-sm">
+                  <table className="w-full text-left text-sm table-fixed">
                       <thead className="bg-stone-50 text-stone-500 font-bold uppercase tracking-widest text-[10px]">
                           <tr>
-                              <th className="px-8 py-4">Archivo</th>
-                              <th className="px-8 py-4">Fecha de Creación</th>
-                              <th className="px-8 py-4">Tamaño</th>
-                              <th className="px-8 py-4 text-right">Acción</th>
+                              <th className="px-8 py-4 w-[40%]">Archivo</th>
+                              <th className="px-8 py-4 w-[30%]">Fecha de Creación</th>
+                              <th className="px-8 py-4 w-[15%]">Tamaño</th>
+                              <th className="px-8 py-4 w-[15%] text-right">Acción</th>
                           </tr>
                       </thead>
                       <tbody className="divide-y divide-stone-100">
