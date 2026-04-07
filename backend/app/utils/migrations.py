@@ -29,7 +29,9 @@ def run_auto_migrations():
             "ALTER TABLE clinic_settings ADD COLUMN maps_url VARCHAR",
             "ALTER TABLE clinic_settings ADD COLUMN whatsapp_number VARCHAR",
             "ALTER TABLE appointments ADD COLUMN reminder_sent BOOLEAN DEFAULT 0",
-            "ALTER TABLE clinic_settings ADD COLUMN booking_margin_hours FLOAT DEFAULT 2.0"
+            "ALTER TABLE clinic_settings ADD COLUMN booking_margin_hours FLOAT DEFAULT 2.0",
+            "ALTER TABLE services ADD COLUMN category_id VARCHAR",
+            "ALTER TABLE services ADD COLUMN is_featured BOOLEAN DEFAULT 0"
         ]
         
         for m in migrations:

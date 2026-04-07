@@ -47,6 +47,23 @@ class ClientResponse(ClientBase):
     class Config:
         from_attributes = True
 
+# --- Service Categories ---
+class ServiceCategoryBase(BaseModel):
+    name: str
+
+class ServiceCategoryCreate(ServiceCategoryBase):
+    pass
+
+class ServiceCategoryUpdate(ServiceCategoryBase):
+    pass
+
+class ServiceCategoryResponse(ServiceCategoryBase):
+    id: str
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
 # --- Services ---
 class ServiceBase(BaseModel):
     name: str
@@ -54,6 +71,8 @@ class ServiceBase(BaseModel):
     duration_minutes: int
     price: float
     is_active: bool = True
+    is_featured: bool = False
+    category_id: Optional[str] = None
 
 class ServiceCreate(ServiceBase):
     pass
@@ -64,10 +83,13 @@ class ServiceUpdate(BaseModel):
     duration_minutes: Optional[int] = None
     price: Optional[float] = None
     is_active: Optional[bool] = None
+    is_featured: Optional[bool] = None
+    category_id: Optional[str] = None
 
 class ServiceResponse(ServiceBase):
     id: str
     created_at: datetime
+    category: Optional[ServiceCategoryResponse] = None
     
     class Config:
         from_attributes = True

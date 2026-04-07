@@ -5,7 +5,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from .database import engine, Base
-from .routers import clients, services, appointments, vouchers, invoices, settings, users, voucher_templates, time_blocks, automation
+from .routers import clients, services, appointments, vouchers, invoices, settings, users, voucher_templates, time_blocks, automation, service_categories
 
 # Crear las tablas en la base de datos (Nota: en producción mejor usar Alembic)
 Base.metadata.create_all(bind=engine)
@@ -94,6 +94,7 @@ app.include_router(settings.router)
 app.include_router(voucher_templates.router)
 app.include_router(time_blocks.router)
 app.include_router(automation.router)
+app.include_router(service_categories.router)
 
 @app.get("/")
 def read_root():

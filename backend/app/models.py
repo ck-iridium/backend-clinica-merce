@@ -44,17 +44,28 @@ class Consent(Base):
     
     client = relationship("Client", back_populates="consents")
 
+class ServiceCategory(Base):
+    __tablename__ = "service_categories"
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = Column(String, nullable=False, unique=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    services = relationship("Service", back_populates="category")
+
 class Service(Base):
     __tablename__ = "services"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    category_id = Column(String(36), ForeignKey("service_categories.id"), nullable=True)
     name = Column(String, nullable=False)
     description = Column(Text, nullable=True)
     duration_minutes = Column(Integer, nullable=False)
     price = Column(Numeric(10, 2), nullable=False)
     is_active = Column(Boolean, default=True)
+    is_featured = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
+    category = relationship("ServiceCategory", back_populates="services")
     voucher_templates = relationship("VoucherTemplate", back_populates="service")
 
 class VoucherTemplate(Base):
