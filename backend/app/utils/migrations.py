@@ -20,7 +20,7 @@ def run_auto_migrations():
             "ALTER TABLE clinic_settings ADD COLUMN smtp_user VARCHAR",
             "ALTER TABLE clinic_settings ADD COLUMN smtp_password VARCHAR",
             "ALTER TABLE clinic_settings ADD COLUMN smtp_from_email VARCHAR",
-            "ALTER TABLE clinic_settings ADD COLUMN smtp_use_tls BOOLEAN DEFAULT 1",
+            "ALTER TABLE clinic_settings ADD COLUMN smtp_use_tls BOOLEAN DEFAULT TRUE",
             "ALTER TABLE services ADD COLUMN is_active BOOLEAN DEFAULT TRUE",
             "ALTER TABLE appointments ADD COLUMN created_at TIMESTAMP",
             "ALTER TABLE clinic_settings ADD COLUMN legal_name VARCHAR DEFAULT ''",
