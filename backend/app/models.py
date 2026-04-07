@@ -48,6 +48,7 @@ class ServiceCategory(Base):
     __tablename__ = "service_categories"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     name = Column(String, nullable=False, unique=True)
+    image_url = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     services = relationship("Service", back_populates="category")
@@ -168,3 +169,26 @@ class TimeBlock(Base):
     end_time = Column(DateTime, nullable=False)
     reason = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+class SiteContent(Base):
+    __tablename__ = "site_content"
+    id = Column(Integer, primary_key=True, default=1)
+    
+    # Hero Section
+    hero_title = Column(String, default="Descubre tu mejor versión")
+    hero_subtitle = Column(String, default="Tratamientos estéticos avanzados y personalizados para resaltar tu belleza natural.")
+    hero_button_text = Column(String, default="Reservar Cita")
+    hero_button_link = Column(String, default="/reservar")
+    hero_image_url = Column(String, nullable=True)
+    
+    # About Section
+    about_title = Column(String, default="Sobre Merce Estética")
+    about_text = Column(Text, default="Nuestra pasión es cuidar de ti y de tu piel con los tratamientos más innovadores.")
+    about_image_url = Column(String, nullable=True)
+    
+    # CTA Section
+    cta_title = Column(String, default="¿Lista para empezar a cuidarte?")
+    cta_subtitle = Column(String, default="Pide cita hoy mismo o contáctanos para asesoramiento personalizado.")
+    cta_button_text = Column(String, default="Contactar")
+    cta_button_link = Column(String, default="/contacto")
+

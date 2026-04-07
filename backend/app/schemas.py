@@ -50,6 +50,7 @@ class ClientResponse(ClientBase):
 # --- Service Categories ---
 class ServiceCategoryBase(BaseModel):
     name: str
+    image_url: Optional[str] = None
 
 class ServiceCategoryCreate(ServiceCategoryBase):
     pass
@@ -327,4 +328,43 @@ class DirectSaleRequest(BaseModel):
     final_price: float
     payment_method: str  # e.g. "Efectivo", "Tarjeta"
     is_simplified: bool = False
+
+# --- Site Content (CMS) ---
+class SiteContentBase(BaseModel):
+    hero_title: str
+    hero_subtitle: str
+    hero_button_text: str
+    hero_button_link: str
+    hero_image_url: Optional[str] = None
+    
+    about_title: str
+    about_text: str
+    about_image_url: Optional[str] = None
+    
+    cta_title: str
+    cta_subtitle: str
+    cta_button_text: str
+    cta_button_link: str
+
+class SiteContentUpdate(BaseModel):
+    hero_title: Optional[str] = None
+    hero_subtitle: Optional[str] = None
+    hero_button_text: Optional[str] = None
+    hero_button_link: Optional[str] = None
+    hero_image_url: Optional[str] = None
+    
+    about_title: Optional[str] = None
+    about_text: Optional[str] = None
+    about_image_url: Optional[str] = None
+    
+    cta_title: Optional[str] = None
+    cta_subtitle: Optional[str] = None
+    cta_button_text: Optional[str] = None
+    cta_button_link: Optional[str] = None
+
+class SiteContentResponse(SiteContentBase):
+    id: int
+    
+    class Config:
+        from_attributes = True
 

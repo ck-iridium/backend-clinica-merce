@@ -32,7 +32,8 @@ def run_auto_migrations():
             "ALTER TABLE clinic_settings ADD COLUMN booking_margin_hours FLOAT DEFAULT 2.0",
             "ALTER TABLE services ADD COLUMN category_id VARCHAR",
             "ALTER TABLE services ADD COLUMN is_featured BOOLEAN DEFAULT FALSE",
-            "ALTER TABLE services ADD COLUMN created_at TIMESTAMP"
+            "ALTER TABLE services ADD COLUMN created_at TIMESTAMP",
+            "ALTER TABLE service_categories ADD COLUMN image_url VARCHAR"
         ]
         
         for m in migrations:

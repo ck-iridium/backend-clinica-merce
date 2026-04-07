@@ -8,6 +8,7 @@ export const metadata: Metadata = {
 };
 
 import LayoutWrapper from "@/components/LayoutWrapper";
+import PublicNavbar from "@/components/PublicNavbar";
 
 export default function RootLayout({
   children,
@@ -17,7 +18,8 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body className="antialiased bg-stone-50 text-stone-900 flex flex-col min-h-screen">
-        <main className="flex-grow">
+        <PublicNavbar />
+        <main className="flex-grow relative">
           {children}
         </main>
         <LayoutWrapper />

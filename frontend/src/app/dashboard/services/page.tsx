@@ -11,6 +11,7 @@ export default function ServicesPage() {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [editingCategoryName, setEditingCategoryName] = useState('');
+  const [editingCategoryImage, setEditingCategoryImage] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   
@@ -130,18 +131,41 @@ export default function ServicesPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/service-categories/${editingCategoryId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: editingCategoryName })
+        body: JSON.stringify({ name: editingCategoryName, image_url: editingCategoryImage })
       });
       if (res.ok) {
         setEditingCategoryId(null);
         setEditingCategoryName('');
+        setEditingCategoryImage(null);
         fetchCategories();
         fetchServices(); // Refresh to see updated category names
       } else {
         alert("Error al actualizar categoría.");
       }
     } catch (err) {
-      alert("Error de conexión.");
+      alert("Error de conexión al actualizar categoría.");
+    }
+  };
+
+  const handleCatImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    const uploadData = new FormData();
+    uploadData.append("file", file);
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/`, {
+        method: "POST",
+        body: uploadData,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setEditingCategoryImage(data.url);
+      } else {
+        alert("Error al subir la imagen");
+      }
+    } catch (err) {
+      alert("Error de conexión");
     }
   };
 
@@ -410,40 +434,61 @@ export default function ServicesPage() {
             
             <div className="overflow-y-auto flex-1 space-y-3 pr-2 custom-scrollbar">
               {categories.map(cat => (
-                <div key={cat.id} className="flex items-center justify-between p-4 bg-stone-50 rounded-2xl border border-stone-200 group transition-all">
-                  {editingCategoryId === cat.id ? (
-                    <form onSubmit={handleUpdateCategory} className="flex-1 flex gap-2">
-                      <input 
-                        autoFocus
-                        type="text" 
-                        value={editingCategoryName} 
-                        onChange={(e) => setEditingCategoryName(e.target.value)} 
-                        className="flex-1 px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
-                      />
-                      <button type="submit" className="bg-emerald-500 text-white px-3 py-2 rounded-lg font-bold text-xs uppercase shadow-sm">OK</button>
-                      <button type="button" onClick={() => setEditingCategoryId(null)} className="bg-stone-200 text-stone-600 px-3 py-2 rounded-lg font-bold text-xs uppercase">×</button>
-                    </form>
-                  ) : (
-                    <>
-                      <span className="font-bold text-stone-700">{cat.name}</span>
-                      <div className="flex gap-2">
-                        <button 
-                          onClick={() => { setEditingCategoryId(cat.id); setEditingCategoryName(cat.name); }}
-                          className="p-2 text-stone-400 hover:text-stone-600 hover:bg-white rounded-lg transition-all"
-                          title="Editar nombre"
-                        >
-                          ✏️
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteCategory(cat.id)}
-                          className="p-2 text-stone-300 hover:text-red-500 hover:bg-white rounded-lg transition-all"
-                          title="Eliminar categoría"
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    </>
-                  )}
+                <div key={cat.id} className="flex flex-col p-4 bg-stone-50 rounded-2xl border border-stone-200 group transition-all gap-3">
+                  <div className="flex items-center justify-between">
+                    {editingCategoryId === cat.id ? (
+                      <form onSubmit={handleUpdateCategory} className="flex-1 flex flex-col gap-3">
+                        <div className="flex gap-2">
+                          <input 
+                            autoFocus
+                            type="text" 
+                            value={editingCategoryName} 
+                            onChange={(e) => setEditingCategoryName(e.target.value)} 
+                            className="flex-1 px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
+                          />
+                          <button type="submit" className="bg-emerald-500 text-white px-3 py-2 rounded-lg font-bold text-xs uppercase shadow-sm">OK</button>
+                          <button type="button" onClick={() => {setEditingCategoryId(null); setEditingCategoryImage(null);}} className="bg-stone-200 text-stone-600 px-3 py-2 rounded-lg font-bold text-xs uppercase">×</button>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          {editingCategoryImage && (
+                            <img src={editingCategoryImage.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${editingCategoryImage}` : editingCategoryImage} className="w-12 h-12 object-cover rounded-md shadow-sm border border-stone-200" alt="cat" />
+                          )}
+                          <div className="flex-1">
+                             <label className="text-xs font-semibold text-stone-500 mb-1 block">Imagen de portada (opcional)</label>
+                             <input type="file" accept="image/*" onChange={handleCatImageUpload} className="w-full text-xs text-stone-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-stone-200 file:text-stone-700 hover:file:bg-stone-300 transition-all cursor-pointer" />
+                          </div>
+                          {editingCategoryImage && <button type="button" onClick={() => setEditingCategoryImage('')} className="text-xs text-red-500 font-bold underline mt-4">Quitar</button>}
+                        </div>
+                      </form>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-3">
+                          {cat.image_url ? (
+                            <img src={cat.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${cat.image_url}` : cat.image_url} alt="" className="w-10 h-10 object-cover rounded-lg border border-stone-200" />
+                          ) : (
+                            <div className="w-10 h-10 rounded-lg bg-stone-200 flex items-center justify-center text-stone-400 text-sm">📁</div>
+                          )}
+                          <span className="font-bold text-stone-700">{cat.name}</span>
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                          <button 
+                            onClick={() => { setEditingCategoryId(cat.id); setEditingCategoryName(cat.name); setEditingCategoryImage(cat.image_url || null); }}
+                            className="p-2 text-stone-400 hover:text-stone-600 hover:bg-white rounded-lg transition-all"
+                            title="Editar"
+                          >
+                            ✏️
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteCategory(cat.id)}
+                            className="p-2 text-stone-300 hover:text-red-500 hover:bg-white rounded-lg transition-all"
+                            title="Eliminar categoría"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

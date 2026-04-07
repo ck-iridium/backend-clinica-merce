@@ -50,6 +50,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <Link href="/dashboard/settings" className="block px-4 py-3 rounded-xl hover:bg-[#fdf2f3] hover:text-[#d9777f] text-stone-600 font-medium transition-colors">
             Ajustes
           </Link>
+          <Link href="/dashboard/cms" className="block px-4 py-3 rounded-xl hover:bg-stone-800 hover:text-white bg-stone-100 text-stone-800 font-bold transition-all mt-6 shadow-sm border border-stone-200">
+            🌐 Editor Web (CMS)
+          </Link>
         </nav>
       </aside>
 
