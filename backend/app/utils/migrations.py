@@ -21,17 +21,18 @@ def run_auto_migrations():
             "ALTER TABLE clinic_settings ADD COLUMN smtp_password VARCHAR",
             "ALTER TABLE clinic_settings ADD COLUMN smtp_from_email VARCHAR",
             "ALTER TABLE clinic_settings ADD COLUMN smtp_use_tls BOOLEAN DEFAULT 1",
-            "ALTER TABLE services ADD COLUMN is_active BOOLEAN DEFAULT 1",
-            "ALTER TABLE appointments ADD COLUMN created_at DATETIME",
+            "ALTER TABLE services ADD COLUMN is_active BOOLEAN DEFAULT TRUE",
+            "ALTER TABLE appointments ADD COLUMN created_at TIMESTAMP",
             "ALTER TABLE clinic_settings ADD COLUMN legal_name VARCHAR DEFAULT ''",
             "ALTER TABLE clinic_settings ADD COLUMN sanitary_register VARCHAR",
             "ALTER TABLE clinic_settings ADD COLUMN instagram_url VARCHAR",
             "ALTER TABLE clinic_settings ADD COLUMN maps_url VARCHAR",
             "ALTER TABLE clinic_settings ADD COLUMN whatsapp_number VARCHAR",
-            "ALTER TABLE appointments ADD COLUMN reminder_sent BOOLEAN DEFAULT 0",
+            "ALTER TABLE appointments ADD COLUMN reminder_sent BOOLEAN DEFAULT FALSE",
             "ALTER TABLE clinic_settings ADD COLUMN booking_margin_hours FLOAT DEFAULT 2.0",
             "ALTER TABLE services ADD COLUMN category_id VARCHAR",
-            "ALTER TABLE services ADD COLUMN is_featured BOOLEAN DEFAULT 0"
+            "ALTER TABLE services ADD COLUMN is_featured BOOLEAN DEFAULT FALSE",
+            "ALTER TABLE services ADD COLUMN created_at TIMESTAMP"
         ]
         
         for m in migrations:
@@ -43,9 +44,29 @@ def run_auto_migrations():
                 db.rollback()
                 # Silenciamos errores si la columna ya existe
                 error_msg = str(e).lower()
-                if "already exists" in error_msg or "duplicate column" in error_msg:
+                if "already exists" in error_msg or "duplicate column" in error_msg or "already exists" in error_msg:
                     continue
                 logger.warning(f"⚠️ Nota de migración '{m}': {e}")
+
+        # --- Lógica de Protección de Datos (Categorías) ---
+        from ..models import Service, ServiceCategory
+        
+        # 1. Asegurar que existe al menos la categoría 'General'
+        general_cat = db.query(ServiceCategory).filter(ServiceCategory.name == "General").first()
+        if not general_cat:
+            general_cat = ServiceCategory(name="General")
+            db.add(general_cat)
+            db.commit()
+            db.refresh(general_cat)
+            logger.info("✅ Categoría 'General' auto-creada en migración.")
+
+        # 2. Vincular servicios sin categoría a 'General'
+        orphaned_services = db.query(Service).filter(Service.category_id == None).all()
+        if orphaned_services:
+            for s in orphaned_services:
+                s.category_id = general_cat.id
+            db.commit()
+            logger.info(f"✅ Se han vinculado {len(orphaned_services)} servicios a la categoría 'General'.")
                 
     except Exception as e:
         logger.error(f"❌ Error crítico en auto-migración: {e}")
