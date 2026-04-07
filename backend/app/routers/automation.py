@@ -6,6 +6,10 @@ from .. import models
 from ..database import get_db
 from ..utils.mailer import send_appointment_notification
 import logging
+import json
+from .settings import export_database
+from supabase import create_client, Client
+
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +51,67 @@ def send_reminders(
     db.commit()
     logger.info(f"Reminders scheduled for {count} appointments tomorrow.")
     return {"status": "success", "reminders_sent": count}
+
+@router.post("/backup")
+def execute_cloud_backup(
+    x_cron_key: str = Header(None),
+    db: Session = Depends(get_db)
+):
+    """
+    Endpoint protected by X-Cron-Key.
+    Generates a full database JSON export, uploads it to Supabase Storage,
+    and enforces a retention policy of a maximum of 7 backups.
+    """
+    secret_key = os.environ.get("CRON_SECRET_KEY", "dev_secret")
+    if x_cron_key != secret_key:
+        raise HTTPException(status_code=403, detail="Invalid cron key")
+
+    supabase_url = os.environ.get("SUPABASE_URL")
+    supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+
+    if not supabase_url or not supabase_key:
+        logger.error("No Supabase configuration found to perform backup.")
+        raise HTTPException(status_code=500, detail="Supabase Storage no configurado.")
+
+    try:
+        supabase: Client = create_client(supabase_url, supabase_key)
+        
+        # 1. Extraer BD
+        data = export_database(db)
+        json_str = json.dumps(data)
+        
+        # 2. Subir nuevo archivo (backup_YYYY_MM_DD.json)
+        now = datetime.utcnow()
+        filename = f"backup_{now.strftime('%Y_%m_%d')}.json"
+        
+        # Opcional: manejar si ya existe el de hoy para no fallar
+        res = supabase.storage.from_("backups").upload(
+            file=json_str.encode('utf-8'),
+            path=filename,
+            file_options={"content-type": "application/json", "upsert": "true"}
+        )
+        
+        # 3. Retención máxima de 7 archivos
+        files_res = supabase.storage.from_("backups").list()
+        # sort explicitly by name ascending (older dates first)
+        valid_files = [f for f in files_res if f['name'].startswith('backup_')]
+        valid_files.sort(key=lambda x: x['name'])
+        
+        deleted_count = 0
+        if len(valid_files) > 7:
+            # Seleccionar los más antiguos (sobrantes)
+            excess = len(valid_files) - 7
+            to_delete = [f['name'] for f in valid_files[:excess]]
+            supabase.storage.from_("backups").remove(to_delete)
+            deleted_count = len(to_delete)
+            
+        logger.info(f"Cloud backup successful: {filename}. Deleted old: {deleted_count}.")
+        return {"status": "success", "file": filename, "deleted_old": deleted_count}
+        
+    except Exception as e:
+        logger.error(f"Error during cloud backup: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/cleanup-unverified")
 def cleanup_unverified(
