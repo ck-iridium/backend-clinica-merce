@@ -37,21 +37,14 @@ export default function BackupsPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/backups/${filename}/download`);
       if (res.ok) {
         const data = await res.json();
-        
-        // Para forzar la descarga en lugar de previsualización:
-        // 1. Fetch al contenido real a través de la Signed URL
         const fileRes = await fetch(data.url);
         const blob = await fileRes.blob();
-        
-        // 2. Crear link de descarga local
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
         link.download = filename;
         document.body.appendChild(link);
         link.click();
-        
-        // Limpieza
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
       } else {
@@ -63,7 +56,6 @@ export default function BackupsPage() {
     }
   };
 
-  // --- Lógica de Backup Manual ---
   const handleExport = async () => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/backup/export`);
@@ -98,18 +90,15 @@ export default function BackupsPage() {
   
   const executeRestore = async () => {
     if (confirmCode !== 'CONFIRMAR' || !pendingFile) return;
-    
     setRestoring(true);
     try {
       const text = await pendingFile.text();
       const payload = JSON.parse(text);
-      
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/backup/restore`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      
       if (res.ok) {
         alert("Sistema restaurado con éxito. Refrescando plataforma...");
         window.location.reload();
@@ -153,7 +142,6 @@ export default function BackupsPage() {
       </div>
 
       <div className="space-y-8">
-        
         {/* NUBE SUPABASE */}
         <div className="bg-white rounded-[2rem] border border-stone-100 shadow-sm overflow-hidden">
            <div className="p-8 border-b border-stone-100 flex items-center gap-4 bg-gradient-to-r from-blue-50/50 to-white">
@@ -177,42 +165,56 @@ export default function BackupsPage() {
                       <p className="font-bold">No hay copias de seguridad en la nube.</p>
                   </div>
               ) : (
-                  <table className="w-full text-left text-sm table-fixed">
-                      <thead className="bg-stone-50 text-stone-500 font-bold uppercase tracking-widest text-[10px]">
-                          <tr>
-                              <th className="px-8 py-4 w-[40%]">Archivo</th>
-                              <th className="px-8 py-4 w-[30%]">Fecha de Creación</th>
-                              <th className="px-8 py-4 w-[15%]">Tamaño</th>
-                              <th className="px-8 py-4 w-[15%] text-right">Acción</th>
-                          </tr>
-                      </thead>
-                      <tbody className="divide-y divide-stone-100">
-                          {cloudBackups.map((file, idx) => (
-                              <tr key={idx} className="hover:bg-stone-50 transition-colors group">
-                                  <td className="px-8 py-4 font-mono font-bold text-stone-700 flex items-center gap-2">
-                                      <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                                      {file.name}
-                                  </td>
-                                  <td className="px-8 py-4 text-stone-500 flex items-center gap-2">
-                                      <Calendar className="w-4 h-4" />
-                                      {new Date(file.created_at).toLocaleString('es-ES')}
-                                  </td>
-                                  <td className="px-8 py-4 text-stone-500 font-mono">
-                                      {formatSize(file.metadata?.size || 0)}
-                                  </td>
-                                  <td className="px-8 py-4 text-right">
-                                      <button 
-                                          onClick={() => downloadCloudBackup(file.name)}
-                                          className="inline-flex items-center gap-2 text-blue-600 font-bold bg-blue-50 px-4 py-2 rounded-lg hover:bg-blue-600 hover:text-white transition-colors"
-                                      >
-                                          <Download className="w-4 h-4" />
-                                          Descargar
-                                      </button>
-                                  </td>
-                              </tr>
-                          ))}
-                      </tbody>
-                  </table>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm table-fixed min-w-[900px]">
+                        <thead className="bg-stone-50 text-stone-500 font-bold uppercase tracking-widest text-[10px]">
+                            <tr>
+                                <th className="px-8 py-5 w-[40%]">ARCHIVO</th>
+                                <th className="px-8 py-5 w-[25%]">FECHA DE CREACIÓN</th>
+                                <th className="px-8 py-5 w-[15%]">TAMAÑO</th>
+                                <th className="px-8 py-5 w-[20%] text-right">ACCIÓN</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-stone-100 bg-white">
+                            {cloudBackups.map((file, idx) => (
+                                <tr key={idx} className="hover:bg-stone-50 transition-colors group">
+                                    <td className="px-8 py-5 font-mono font-bold text-stone-700">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                            <span className="truncate">{file.name}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-5 text-stone-500 font-medium">
+                                        <div className="flex items-center gap-2">
+                                            <Calendar className="w-4 h-4 text-stone-300" />
+                                            {new Date(file.created_at).toLocaleString('es-ES', { 
+                                                day: '2-digit', 
+                                                month: '2-digit', 
+                                                year: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            })}
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-5">
+                                        <span className="bg-stone-100 text-stone-600 text-[11px] font-bold px-2 py-1 rounded-md">
+                                            {formatSize(file.metadata?.size || 0)}
+                                        </span>
+                                    </td>
+                                    <td className="px-8 py-5 text-right">
+                                        <button 
+                                            onClick={() => downloadCloudBackup(file.name)}
+                                            className="inline-flex items-center gap-2 text-white bg-[#d9777f] px-5 py-2.5 rounded-xl font-bold shadow-sm hover:bg-[#c7656e] active:scale-95 transition-all text-xs"
+                                        >
+                                            <Download className="w-3.5 h-3.5" />
+                                            Descargar
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                  </div>
               )}
            </div>
         </div>
@@ -224,44 +226,32 @@ export default function BackupsPage() {
              <span>Manipulación Crítica de Datos (Manual)</span>
            </h3>
            <p className="text-sm text-stone-600 mb-6">
-             Exporta o importa toda la base de datos manualmente. <span className="font-bold underline text-red-600">La importación destruirá la información actual para sobre-escribirla.</span> Usa esta herramienta solo para restaurar el sistema tras una catástrofe usando un archivo .json descargado.
+             Exporta o importa toda la base de datos manualmente. <span className="font-bold underline text-red-600">La importación destruirá la información actual para sobre-escribirla.</span>
            </p>
            
            <div className="flex flex-wrap gap-4">
               <button type="button" onClick={handleExport} className="border border-stone-300 bg-white hover:bg-stone-50 text-stone-700 px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 shadow-sm transition-colors">
                 📥 Exportar DB Abierta (.json)
               </button>
-
               <input type="file" accept=".json" ref={backupInputRef} className="hidden" onChange={onFileSelect} />
-              
               <button type="button" onClick={handleRestoreClick} className="border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 shadow-sm transition-colors">
                 ⚠️ Cargar DB Externa (Restaurar)
               </button>
            </div>
         </div>
-
       </div>
 
       {/* MODAL DE ALERTA ROJA: RESTAURACIÓN CRÍTICA */}
       {showBackupModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-red-900/40 backdrop-blur-md p-4 animate-in fade-in duration-300">
            <div className="bg-red-50 rounded-[2.5rem] shadow-2xl p-10 max-w-md w-full text-center border-4 border-red-500 relative">
-              
-              <button 
-                onClick={() => setShowBackupModal(false)}
-                className="absolute top-6 right-6 text-red-300 hover:text-red-500 font-bold text-xl transition-all"
-              >✕</button>
-
+              <button onClick={() => setShowBackupModal(false)} className="absolute top-6 right-6 text-red-300 hover:text-red-500 font-bold text-xl transition-all">✕</button>
               <div className="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 animate-pulse">⚠️</div>
-              
               <h2 className="text-2xl font-black text-red-700 uppercase tracking-tighter mb-4">PELIGRO CRÍTICO</h2>
-              
               <p className="text-red-600/80 text-sm font-medium mb-8 leading-relaxed">
                 Estás a punto de **SOBRESCRIBIR TODA LA BASE DE DATOS**. <br/>
-                <span className="font-bold underline">Esta acción es irreversible y destruirá</span> las facturas, clientes y citas actuales para sustituirlas por las del archivo: <br/>
-                <span className="text-red-900 block mt-2 font-mono text-[11px] bg-red-100/50 p-2 rounded-lg truncate">{pendingFile?.name}</span>
+                <span className="font-bold underline">Esta acción es irreversible</span>
               </p>
-
               <div className="space-y-4">
                  <div>
                     <label className="block text-[10px] font-bold text-red-400 uppercase tracking-widest mb-2 text-left px-2">Código de Seguridad</label>
@@ -273,21 +263,10 @@ export default function BackupsPage() {
                       className="w-full p-4 bg-white border-2 border-red-200 rounded-2xl focus:border-red-500 outline-none text-center font-black tracking-[0.2em] text-red-600 shadow-inner"
                     />
                  </div>
-
-                 <button 
-                   onClick={executeRestore}
-                   disabled={confirmCode !== 'CONFIRMAR' || restoring}
-                   className="w-full bg-red-600 hover:bg-red-700 text-white py-5 rounded-2xl font-black shadow-xl shadow-red-200 active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:grayscale"
-                 >
+                 <button onClick={executeRestore} disabled={confirmCode !== 'CONFIRMAR' || restoring} className="w-full bg-red-600 hover:bg-red-700 text-white py-5 rounded-2xl font-black shadow-xl shadow-red-200 active:scale-95 transition-all disabled:opacity-30">
                    {restoring ? 'RESTAURANDO...' : 'SÍ, BORRAR Y RESTAURAR'}
                  </button>
-
-                 <button 
-                   onClick={() => setShowBackupModal(false)}
-                   className="text-xs font-bold text-red-300 hover:text-red-500 transition-colors uppercase tracking-widest"
-                 >
-                   Cancelar y Volver
-                 </button>
+                 <button onClick={() => setShowBackupModal(false)} className="text-xs font-bold text-red-300 hover:text-red-500 transition-colors uppercase tracking-widest">Cancelar</button>
               </div>
            </div>
         </div>
