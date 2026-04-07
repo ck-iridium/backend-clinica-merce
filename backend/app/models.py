@@ -140,8 +140,10 @@ class ClinicSettings(Base):
 
     # Enlaces y Redes Sociales
     instagram_url = Column(String, nullable=True)
-    maps_url = Column(String, nullable=True)
+    # SEO
+    allow_search_engine_indexing = Column(Boolean, default=False)
     whatsapp_number = Column(String, nullable=True)
+    maps_url = Column(String, nullable=True)
 
     # Numeration
     invoice_prefix = Column(String, default="FA-{YY}-")

@@ -121,6 +121,7 @@ class ClinicSettingsBase(BaseModel):
     default_tax_rate: float = 21.0
     instagram_url: Optional[str] = None
     maps_url: Optional[str] = None
+    allow_search_engine_indexing: bool = False
     whatsapp_number: Optional[str] = None
     booking_margin_hours: float = 2.0
 
@@ -146,6 +147,7 @@ class ClinicSettingsUpdate(BaseModel):
     default_tax_rate: Optional[float] = None
     instagram_url: Optional[str] = None
     maps_url: Optional[str] = None
+    allow_search_engine_indexing: Optional[bool] = None
     whatsapp_number: Optional[str] = None
     booking_margin_hours: Optional[float] = None
 

@@ -235,6 +235,31 @@ export default function SettingsPage() {
            </div>
         </div>
 
+        {/* Control SEO */}
+        <div className="bg-white rounded-[2rem] border border-stone-100 p-8 shadow-sm">
+           <h3 className="text-[10px] font-bold text-[#d9777f] uppercase tracking-widest mb-6 border-b border-stone-100 pb-2 flex items-center gap-2">
+             <span>🔍 Posicionamiento SEO</span>
+           </h3>
+           <label className="flex items-center gap-4 cursor-pointer group w-fit">
+              <div className="relative">
+                <input 
+                  type="checkbox" 
+                  checked={settings.allow_search_engine_indexing} 
+                  onChange={e => setSettings({...settings, allow_search_engine_indexing: e.target.checked})} 
+                  className="sr-only" 
+                />
+                <div className={`block w-14 h-8 rounded-full transition-colors ${settings.allow_search_engine_indexing ? 'bg-emerald-500' : 'bg-stone-300'}`}></div>
+                <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${settings.allow_search_engine_indexing ? 'translate-x-6' : ''}`}></div>
+              </div>
+              <div className="flex flex-col">
+                <span className={`text-sm font-bold transition-colors ${settings.allow_search_engine_indexing ? 'text-emerald-700' : 'text-stone-500'}`}>
+                  {settings.allow_search_engine_indexing ? 'Indexación en Google Activada' : 'Indexación Oculta (No Index)'}
+                </span>
+                <span className="text-xs text-stone-400 font-medium">Determina si los motores de búsqueda pueden rastrear e indexar tu página pública.</span>
+              </div>
+           </label>
+        </div>
+
         {/* Imágenes y Logos */}
         <div className="bg-white rounded-[2rem] border border-stone-100 p-8 shadow-sm">
            <h3 className="text-[10px] font-bold text-[#d9777f] uppercase tracking-widest mb-6 border-b border-stone-100 pb-2 flex items-center gap-2">

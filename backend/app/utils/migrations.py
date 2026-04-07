@@ -33,7 +33,8 @@ def run_auto_migrations():
             "ALTER TABLE services ADD COLUMN category_id VARCHAR",
             "ALTER TABLE services ADD COLUMN is_featured BOOLEAN DEFAULT FALSE",
             "ALTER TABLE services ADD COLUMN created_at TIMESTAMP",
-            "ALTER TABLE service_categories ADD COLUMN image_url VARCHAR"
+            "ALTER TABLE service_categories ADD COLUMN image_url VARCHAR",
+            "ALTER TABLE clinic_settings ADD COLUMN allow_search_engine_indexing BOOLEAN DEFAULT FALSE"
         ]
         
         for m in migrations:
