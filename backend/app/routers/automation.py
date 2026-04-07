@@ -78,7 +78,8 @@ def execute_cloud_backup(
         
         # 1. Extraer BD
         data = export_database(db)
-        json_str = json.dumps(data)
+        # Usamos default=str para serializar Decimal (precios) y dates que no hayan sido convertidos
+        json_str = json.dumps(data, default=str)
         
         # 2. Subir nuevo archivo (backup_YYYY_MM_DD.json)
         now = datetime.utcnow()
