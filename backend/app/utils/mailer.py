@@ -149,7 +149,15 @@ def send_appointment_notification(appointment_id: str, type: str):
             return
 
         settings = db.query(models.ClinicSettings).first()
-        frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000").rstrip('/')
+        
+        frontend_url = os.environ.get("FRONTEND_URL")
+        if not frontend_url:
+            # Si estamos en Render, usar el dominio de producción
+            if os.environ.get("RENDER") == "true":
+                frontend_url = "https://www.esteticamerce.com"
+            else:
+                frontend_url = "http://localhost:3000"
+        frontend_url = frontend_url.rstrip('/')
         clinic_name = settings.clinic_name
         service = appointment.service
         client = appointment.client
