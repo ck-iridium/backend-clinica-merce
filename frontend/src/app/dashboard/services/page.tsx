@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect, useRef } from 'react';
 import CropImageModal from '@/components/CropImageModal';
+import MediaPickerModal from '@/components/MediaPickerModal';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 
 export default function ServicesPage() {
@@ -24,6 +25,7 @@ export default function ServicesPage() {
   const [showCropModal, setShowCropModal] = useState(false);
   const [selectedImageForCrop, setSelectedImageForCrop] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
   const imgInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -358,11 +360,14 @@ export default function ServicesPage() {
                  )}
                  <div className="flex-1">
                     <h3 className="font-bold text-stone-800 mb-2">Imagen del Catálogo</h3>
-                    <p className="text-sm text-stone-500 mb-4 leading-relaxed">Selecciona una imagen atractiva que ilustre el tratamiento. Podrás enfocar y recortar la parte importante en el siguiente paso.</p>
-                    <input type="file" ref={imgInputRef} accept="image/*" className="hidden" onChange={handleServiceImageSelect} />
+                    <p className="text-sm text-stone-500 mb-4 leading-relaxed">Selecciona una imagen de tu galería o sube una nueva. Podrás recortarla en el siguiente paso.</p>
                     <div className="flex gap-2">
-                      <button type="button" onClick={() => imgInputRef.current?.click()} className="px-5 py-2.5 rounded-xl font-bold bg-white border border-stone-200 shadow-sm text-stone-600 hover:text-[#d4af37] text-sm transition-colors">
-                        Subir Imagen
+                      <button
+                        type="button"
+                        onClick={() => setShowMediaPicker(true)}
+                        className="px-5 py-2.5 rounded-xl font-bold bg-[#d4af37] hover:bg-[#b08e23] text-white text-sm transition-colors shadow-md flex items-center gap-2"
+                      >
+                        <span>🖼️</span> Seleccionar imagen
                       </button>
                       {formData.image_url && (
                         <button type="button" onClick={() => setFormData({...formData, image_url: ''})} className="px-5 py-2.5 rounded-xl font-bold bg-red-50 text-red-600 text-sm transition-colors hover:bg-red-100">
@@ -498,6 +503,17 @@ export default function ServicesPage() {
           imageSrc={selectedImageForCrop}
           onClose={() => {setShowCropModal(false); setSelectedImageForCrop('');}}
           onCropComplete={onServiceCropComplete}
+        />
+      )}
+
+      {/* Media Picker for service image */}
+      {showMediaPicker && (
+        <MediaPickerModal
+          onClose={() => setShowMediaPicker(false)}
+          onImageSelected={(url) => {
+            setFormData(prev => ({ ...prev, image_url: url }));
+            setShowMediaPicker(false);
+          }}
         />
       )}
 

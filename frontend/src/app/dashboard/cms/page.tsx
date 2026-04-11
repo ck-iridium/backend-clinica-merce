@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect } from 'react';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
-import CropImageModal from '@/components/CropImageModal';
+import MediaPickerModal from '@/components/MediaPickerModal';
 
 export default function CMSPage() {
   const { showFeedback } = useFeedback();
@@ -9,10 +9,8 @@ export default function CMSPage() {
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('hero');
 
-  // Cropping & Uploading States
-  const [showCropModal, setShowCropModal] = useState(false);
-  const [selectedImageForCrop, setSelectedImageForCrop] = useState('');
-  const [currentFieldNameForCrop, setCurrentFieldNameForCrop] = useState<string | null>(null);
+  // Media Picker state
+  const [pickerFieldName, setPickerFieldName] = useState<string | null>(null);
   const [uploadingFieldName, setUploadingFieldName] = useState<string | null>(null);
 
   const defaultContent = {
@@ -74,46 +72,9 @@ export default function CMSPage() {
     }
   };
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.addEventListener("load", () => {
-      setSelectedImageForCrop(reader.result?.toString() || "");
-      setCurrentFieldNameForCrop(fieldName);
-      setShowCropModal(true);
-    });
-    reader.readAsDataURL(file);
-    // Reset input
-    e.target.value = '';
-  };
-
-  const handleCropComplete = async (croppedBlob: Blob) => {
-    if (!currentFieldNameForCrop) return;
-    
-    setShowCropModal(false);
-    setUploadingFieldName(currentFieldNameForCrop);
-
-    const uploadData = new FormData();
-    uploadData.append("file", croppedBlob, "cms_image.webp");
-
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/`, {
-        method: "POST",
-        body: uploadData,
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setFormData(prev => ({ ...prev, [currentFieldNameForCrop]: data.url }));
-      } else {
-        showFeedback({ type: 'error', title: 'Error', message: 'Error al subir la imagen' });
-      }
-    } catch (err) {
-      showFeedback({ type: 'error', title: 'Error', message: 'Error de conexión' });
-    } finally {
-      setUploadingFieldName(null);
-      setCurrentFieldNameForCrop(null);
-    }
+  const handleImageSelected = (fieldName: string, url: string) => {
+    setFormData(prev => ({ ...prev, [fieldName]: url }));
+    setPickerFieldName(null);
   };
 
   if (loading) {
@@ -132,20 +93,30 @@ export default function CMSPage() {
             <div className="w-32 h-32 rounded-xl overflow-hidden shadow-sm shrink-0 bg-white p-1 relative">
               {isUploading ? (
                 <div className="absolute inset-0 bg-stone-900/40 flex items-center justify-center animate-in fade-in z-10">
-                   <div className="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <div className="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
                 </div>
               ) : null}
               {val && <img src={val.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${val}` : val} alt="Preview" className="w-full h-full object-cover rounded-lg" />}
             </div>
           )}
-          <div className="flex-1">
-            <input 
-              type="file" 
-              accept="image/*" 
-              onChange={(e) => handleImageSelect(e, fieldName)}
-              className="w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[#d4af37] file:text-white hover:file:bg-[#b08e23] transition-all cursor-pointer"
-            />
-            {val && !isUploading && <button type="button" onClick={() => setFormData(prev => ({...prev, [fieldName]: ''}))} className="mt-4 text-xs font-bold font-stone-500 text-red-500 hover:underline">Quitar imagen</button>}
+          <div className="flex-1 flex flex-col gap-3">
+            <button
+              type="button"
+              onClick={() => setPickerFieldName(String(fieldName))}
+              className="flex items-center gap-2 bg-[#d4af37] hover:bg-[#b08e23] text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-md active:scale-95 w-fit"
+            >
+              <span>🖼️</span>
+              <span>Seleccionar imagen</span>
+            </button>
+            {val && !isUploading && (
+              <button
+                type="button"
+                onClick={() => setFormData(prev => ({...prev, [fieldName]: ''}))}
+                className="text-xs font-bold text-red-500 hover:underline text-left w-fit"
+              >
+                Quitar imagen
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -292,12 +263,11 @@ export default function CMSPage() {
           </div>
         </form>
       </div>
-      {/* Cropping Modal */}
-      {showCropModal && (
-        <CropImageModal 
-          imageSrc={selectedImageForCrop}
-          onClose={() => { setShowCropModal(false); setSelectedImageForCrop(''); }}
-          onCropComplete={handleCropComplete}
+      {/* Media Picker Modal */}
+      {pickerFieldName && (
+        <MediaPickerModal
+          onClose={() => setPickerFieldName(null)}
+          onImageSelected={(url) => handleImageSelected(pickerFieldName, url)}
         />
       )}
     </div>
