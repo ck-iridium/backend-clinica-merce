@@ -2,19 +2,84 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #1c1917;
-  --primary: #d9777f;
-  --primary-light: #f3c7cb;
-  --accent: #d4af37;
-}
+@layer base {
+  :root {
+    --background: 0 0% 98%; /* #FAFAFA - Crema muy claro */
+    --foreground: 24 10% 10%; /* #1c1917 - Antracita */
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: 'Inter', system-ui, sans-serif;
-  scroll-behavior: smooth;
+    --card: 0 0% 100%; /* #FFFFFF - Blanco puro */
+    --card-foreground: 24 10% 10%;
+ 
+    --popover: 0 0% 100%;
+    --popover-foreground: 24 10% 10%;
+ 
+    --primary: 46 65% 52%; /* #D4AF37 - Dorado refinado */
+    --primary-foreground: 0 0% 98%; /* #FAFAFA */
+ 
+    --secondary: 40 100% 98%; /* #FFFBF5 - Crema cálido */
+    --secondary-foreground: 24 10% 10%;
+ 
+    --muted: 60 5% 96%; /* stone-100 */
+    --muted-foreground: 25 5% 45%; /* stone-500 */
+ 
+    --accent: 40 100% 98%; /* #FFFBF5 */
+    --accent-foreground: 24 10% 10%;
+ 
+    --destructive: 0 84% 60%; /* red-500 */
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 60 5% 90%; /* stone-200 */
+    --input: 60 5% 90%;
+    --ring: 46 65% 52%; /* Dorado */
+ 
+    --radius: 1rem; /* rounded-2xl base roughly */
+  }
+ 
+  .dark {
+    /* Mantenemos el mismo esquema base ya que es una aplicación que brillará en versión light, pero aseguramos variables base para prevenir bugs visuales si Tailwind intenta usar .dark */
+    --background: 24 10% 10%;
+    --foreground: 0 0% 98%;
+ 
+    --card: 24 10% 12%;
+    --card-foreground: 0 0% 98%;
+ 
+    --popover: 24 10% 12%;
+    --popover-foreground: 0 0% 98%;
+ 
+    --primary: 46 65% 52%;
+    --primary-foreground: 0 0% 98%;
+ 
+    --secondary: 24 10% 15%;
+    --secondary-foreground: 0 0% 98%;
+ 
+    --muted: 24 10% 15%;
+    --muted-foreground: 25 5% 65%;
+ 
+    --accent: 24 10% 15%;
+    --accent-foreground: 0 0% 98%;
+ 
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 98%;
+ 
+    --border: 24 10% 15%;
+    --input: 24 10% 15%;
+    --ring: 46 65% 52%;
+  }
+}
+ 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+    scroll-behavior: smooth;
+  }
+  
+  /* Títulos usando la familia Serif configurada de Google Fonts */
+  h1, h2, h3, h4, h5, h6, .font-serif {
+    font-family: var(--font-cormorant), serif;
+  }
 }
 
 .glass-card {

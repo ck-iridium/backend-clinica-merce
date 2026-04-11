@@ -1,5 +1,13 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import { Inter, Cormorant_Garamond } from 'next/font/google';
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const cormorantGaramond = Cormorant_Garamond({ 
+  weight: ['400', '500', '600', '700'],
+  subsets: ['latin'], 
+  variable: '--font-cormorant' 
+});
 
 export async function generateMetadata(): Promise<Metadata> {
   let allowIndexing = false;
@@ -56,8 +64,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" suppressHydrationWarning>
-      <body className="antialiased bg-stone-50 text-stone-900 flex flex-col min-h-screen">
+    <html lang="es" suppressHydrationWarning className={`${inter.variable} ${cormorantGaramond.variable}`}>
+      <body className="antialiased bg-background text-foreground flex flex-col min-h-screen">
         <FeedbackProvider>
           <PublicNavbar />
           <main className="flex-grow relative">

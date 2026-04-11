@@ -3,7 +3,11 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X } from 'lucide-react';
+import { 
+  Menu, X, LayoutDashboard, Users, Sparkles, 
+  Ticket, Receipt, CalendarDays, Settings, 
+  Database, Image as ImageIcon, Globe, Tag
+} from 'lucide-react';
 
 interface DashboardSidebarProps {
   clinicName: string;
@@ -11,39 +15,38 @@ interface DashboardSidebarProps {
 }
 
 const navLinks = [
-  { href: '/dashboard/pos',      label: 'Venta Rápida',        icon: '🏷️',  style: 'accent' },
-  { href: '/dashboard',          label: 'Inicio',               icon: null,   style: 'normal', exact: true },
-  { href: '/dashboard/clients',  label: 'Clientes',             icon: null,   style: 'normal' },
-  { href: '/dashboard/services', label: 'Servicios',            icon: null,   style: 'normal' },
-  { href: '/dashboard/vouchers', label: 'Bonos',                icon: null,   style: 'normal' },
-  { href: '/dashboard/invoices', label: 'Facturas',             icon: null,   style: 'normal' },
-  { href: '/dashboard/calendar', label: 'Agenda',               icon: null,   style: 'normal' },
-  { href: '/dashboard/settings', label: 'Ajustes Generales',    icon: null,   style: 'normal' },
-  { href: '/dashboard/backups',  label: 'Copias de Seguridad',  icon: null,   style: 'normal' },
-  { href: '/dashboard/media',    label: 'Galería de Medios',    icon: '🖼️',  style: 'highlight' },
-  { href: '/dashboard/cms',      label: 'Editor Web (CMS)',     icon: '🌐',   style: 'highlight' },
+  { href: '/dashboard/pos',      label: 'Venta Rápida',        icon: Tag,             style: 'accent' },
+  { href: '/dashboard',          label: 'Inicio',               icon: LayoutDashboard, style: 'normal', exact: true },
+  { href: '/dashboard/clients',  label: 'Clientes',             icon: Users,           style: 'normal' },
+  { href: '/dashboard/services', label: 'Servicios',            icon: Sparkles,        style: 'normal' },
+  { href: '/dashboard/vouchers', label: 'Bonos',                icon: Ticket,          style: 'normal' },
+  { href: '/dashboard/invoices', label: 'Facturas',             icon: Receipt,         style: 'normal' },
+  { href: '/dashboard/calendar', label: 'Agenda',               icon: CalendarDays,    style: 'normal' },
+  { href: '/dashboard/settings', label: 'Ajustes Generales',    icon: Settings,        style: 'normal' },
+  { href: '/dashboard/backups',  label: 'Copias de Seguridad',  icon: Database,        style: 'normal' },
+  { href: '/dashboard/media',    label: 'Galería de Medios',    icon: ImageIcon,       style: 'highlight' },
+  { href: '/dashboard/cms',      label: 'Editor Web (CMS)',     icon: Globe,           style: 'highlight' },
 ];
 
 export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSidebarProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isDesktopExpanded, setIsDesktopExpanded] = useState(false);
   const pathname = usePathname();
   const touchStartX = useRef<number>(0);
   const touchStartY = useRef<number>(0);
 
-  // Auto-close on navigation
   useEffect(() => {
-    setIsOpen(false);
+    setIsMobileOpen(false);
   }, [pathname]);
 
-  // Lock body scroll when drawer is open on mobile
   useEffect(() => {
-    if (isOpen) {
+    if (isMobileOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
     return () => { document.body.style.overflow = ''; };
-  }, [isOpen]);
+  }, [isMobileOpen]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -53,9 +56,8 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
   const handleTouchEnd = (e: React.TouchEvent) => {
     const deltaX = touchStartX.current - e.changedTouches[0].clientX;
     const deltaY = Math.abs(touchStartY.current - e.changedTouches[0].clientY);
-    // Swipe left (more horizontal than vertical, at least 60px)
     if (deltaX > 60 && deltaY < 100) {
-      setIsOpen(false);
+      setIsMobileOpen(false);
     }
   };
 
@@ -64,112 +66,127 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
     return pathname.startsWith(href) && href !== '/dashboard';
   };
 
-  const SidebarContent = () => (
-    <>
-      {/* Logo / Clinic */}
-      <div className="p-6 border-b border-stone-100 bg-[#fdf2f3]/50 flex items-center justify-between">
-        <div>
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#d9777f] to-[#b35e65] mb-3 flex items-center justify-center text-white font-bold text-xl shadow-md overflow-hidden">
-            {logoUrl ? <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" /> : clinicName.charAt(0)}
-          </div>
-          <h2 className="text-xl font-bold text-stone-800 leading-tight">{clinicName}</h2>
-          <p className="text-xs font-semibold text-[#d9777f] uppercase tracking-wider">Panel Administrativo</p>
-        </div>
-        {/* Close button — only relevant on mobile drawer */}
-        <button
-          onClick={() => setIsOpen(false)}
-          className="md:hidden w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-stone-500 transition-all"
-          aria-label="Cerrar menú"
-        >
-          <X size={16} />
-        </button>
-      </div>
+  // NavItems renderer for DRY (used in both mobile and desktop views)
+  const NavItems = ({ expanded }: { expanded: boolean }) => (
+    <div className="flex flex-col gap-1 w-full relative z-10 px-3">
+      {navLinks.map((link, idx) => {
+        const active = isActive(link.href, link.exact);
+        const Icon = link.icon;
+        
+        let containerClasses = "";
+        let iconClasses = "transition-all duration-300 ";
+        let textClasses = "text-sm font-medium whitespace-nowrap overflow-hidden transition-all duration-300 ";
 
-      {/* Navigation */}
-      <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
-        {navLinks.map((link, idx) => {
-          const active = isActive(link.href, link.exact);
+        if (link.style === 'accent') {
+          containerClasses = `mb-4 shadow-sm border ${active ? 'bg-primary text-primary-foreground border-primary' : 'bg-white text-stone-700 border-stone-200 hover:bg-stone-50'}`;
+          iconClasses += active ? "text-primary-foreground" : "text-primary";
+        } else if (link.style === 'highlight') {
+          containerClasses = `shadow-sm border ${idx === navLinks.findIndex(l => l.style === 'highlight') ? 'mt-6' : ''} ${active ? 'bg-stone-900 text-white border-stone-900' : 'bg-white text-stone-700 border-stone-200 hover:bg-stone-50'}`;
+          iconClasses += active ? "text-white" : "text-stone-500";
+        } else {
+          containerClasses = active ? 'bg-primary/10 text-primary font-bold' : 'text-stone-500 hover:bg-stone-100/50 hover:text-stone-800';
+          iconClasses += active ? "text-primary" : "text-stone-400 group-hover:text-stone-600";
+        }
 
-          if (link.style === 'accent') {
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`block px-4 py-3 rounded-xl font-bold transition-all mb-2 flex items-center gap-2 shadow-sm border ${active ? 'bg-stone-900 text-white border-stone-900' : 'bg-stone-100 text-stone-800 border-stone-200 hover:bg-stone-800 hover:text-white'}`}
-              >
-                {link.icon && <span className="text-lg">{link.icon}</span>} {link.label}
-              </Link>
-            );
-          }
-
-          if (link.style === 'highlight') {
-            const first = navLinks.filter(l => l.style === 'highlight')[0];
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`block px-4 py-3 rounded-xl font-bold transition-all flex items-center gap-2 shadow-sm border ${idx === navLinks.findIndex(l => l.style === 'highlight') ? 'mt-4' : ''} ${active ? 'bg-stone-900 text-white border-stone-900' : 'bg-stone-100 text-stone-800 border-stone-200 hover:bg-stone-800 hover:text-white'}`}
-              >
-                {link.icon && <span>{link.icon}</span>} {link.label}
-              </Link>
-            );
-          }
-
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`block px-4 py-3 rounded-xl font-medium transition-colors ${active ? 'bg-[#fdf2f3] text-[#d9777f] font-bold' : 'text-stone-600 hover:bg-[#fdf2f3] hover:text-[#d9777f]'}`}
-            >
+        return (
+          <Link
+            key={link.href}
+            href={link.href}
+            title={!expanded ? link.label : undefined}
+            className={`group flex items-center rounded-xl p-3 transition-all duration-200 ${containerClasses}`}
+          >
+            <div className="flex-shrink-0 flex items-center justify-center w-6">
+              <Icon size={18} className={iconClasses} strokeWidth={active ? 2.5 : 2} />
+            </div>
+            
+            <div className={`${textClasses} ${expanded ? 'w-40 opacity-100 ml-3' : 'w-0 opacity-0 ml-0'}`}>
               {link.label}
-            </Link>
-          );
-        })}
-      </nav>
-    </>
+            </div>
+          </Link>
+        );
+      })}
+    </div>
   );
 
   return (
     <>
       {/* ─── Mobile Top Bar ─── */}
-      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-stone-200 sticky top-0 z-30 shadow-sm print:hidden">
+      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-white/80 backdrop-blur-xl border-b border-stone-200/50 sticky top-0 z-30 shadow-sm print:hidden">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#d9777f] to-[#b35e65] flex items-center justify-center text-white font-bold text-sm shadow overflow-hidden">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-white font-bold text-sm shadow overflow-hidden">
             {logoUrl ? <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" /> : clinicName.charAt(0)}
           </div>
           <span className="font-bold text-stone-800 text-base">{clinicName}</span>
         </div>
         <button
-          onClick={() => setIsOpen(true)}
-          className="w-10 h-10 rounded-xl bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-stone-600 transition-all active:scale-95"
-          aria-label="Abrir menú"
+          onClick={() => setIsMobileOpen(true)}
+          className="w-10 h-10 rounded-xl bg-stone-100/50 hover:bg-stone-100 flex items-center justify-center text-stone-600 transition-all active:scale-95 border border-stone-200/50"
         >
           <Menu size={20} />
         </button>
       </div>
 
-      {/* ─── Desktop Sidebar ─── */}
-      <aside className="hidden md:flex md:flex-col w-64 bg-white border-r border-stone-200 flex-shrink-0 z-10 shadow-sm h-screen sticky top-0 overflow-y-auto print:hidden">
-        <SidebarContent />
+      {/* ─── Desktop Sidebar (Heygen Style) ─── */}
+      <aside className="hidden md:block sticky top-0 h-screen z-40 print:hidden">
+        {/* Spacer to keep layout flow stable */}
+        <div className="w-20 h-full border-r border-stone-200/50 bg-stone-50" />
+        
+        {/* Actual floating sidebar */}
+        <div 
+          className={`absolute top-0 left-0 h-full bg-stone-50/90 backdrop-blur-2xl border-r border-stone-200/50 flex flex-col py-6 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden shadow-[4px_0_24px_rgba(0,0,0,0.02)] ${isDesktopExpanded ? 'w-64' : 'w-20'}`}
+          onMouseEnter={() => setIsDesktopExpanded(true)}
+          onMouseLeave={() => setIsDesktopExpanded(false)}
+        >
+          {/* Logo Area */}
+          <div className="flex items-center px-4 mb-8">
+            <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-white font-serif italic text-2xl shadow-lg shadow-primary/20 overflow-hidden mx-auto">
+              {logoUrl ? <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" /> : clinicName.charAt(0)}
+            </div>
+            
+            <div className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isDesktopExpanded ? 'w-40 opacity-100 ml-4' : 'w-0 opacity-0 ml-0'}`}>
+              <h2 className="text-lg font-bold text-stone-800 leading-tight font-serif">{clinicName}</h2>
+              <p className="text-[10px] font-bold text-primary uppercase tracking-widest mt-0.5">Admin Panel</p>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto custom-scrollbar overflow-x-hidden">
+            <NavItems expanded={isDesktopExpanded} />
+          </div>
+        </div>
       </aside>
 
       {/* ─── Mobile Drawer ─── */}
-
-      {/* Backdrop */}
       <div
-        onClick={() => setIsOpen(false)}
-        className={`md:hidden fixed inset-0 z-40 bg-stone-900/60 backdrop-blur-sm transition-opacity duration-300 print:hidden ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-        aria-hidden="true"
+        onClick={() => setIsMobileOpen(false)}
+        className={`md:hidden fixed inset-0 z-[100] bg-stone-900/40 backdrop-blur-sm transition-opacity duration-300 print:hidden ${isMobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
       />
 
-      {/* Drawer Panel */}
       <aside
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className={`md:hidden fixed top-0 left-0 h-full w-[85vw] max-w-xs z-50 bg-white flex flex-col shadow-2xl transition-transform duration-300 ease-in-out print:hidden ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
-        aria-label="Menú principal"
+        className={`md:hidden fixed top-0 left-0 h-full w-[85vw] max-w-xs z-[101] bg-stone-50 flex flex-col py-6 shadow-2xl shadow-stone-900/20 transition-transform duration-300 cubic-bezier(0.16,1,0.3,1) print:hidden ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
-        <SidebarContent />
+        <div className="flex items-center justify-between px-6 mb-8">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-white font-serif italic text-2xl shadow-lg shadow-primary/20 overflow-hidden">
+              {logoUrl ? <img src={logoUrl} alt={clinicName} className="w-full h-full object-cover" /> : clinicName.charAt(0)}
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-stone-800 leading-tight font-serif">{clinicName}</h2>
+              <p className="text-[10px] font-bold text-primary uppercase tracking-widest mt-0.5">Admin Panel</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setIsMobileOpen(false)}
+            className="w-8 h-8 rounded-full bg-stone-200/50 hover:bg-stone-200 flex items-center justify-center text-stone-500 transition-all"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-3">
+          <NavItems expanded={true} />
+        </div>
       </aside>
     </>
   );
