@@ -111,6 +111,30 @@ export default function ServicesPage() {
     }
   };
 
+  const handleDeleteService = async () => {
+    if (!editingId) return;
+    
+    if (!confirm("⚠️ ¿Estás seguro de que deseas eliminar este servicio? Esta acción no se puede deshacer y borrará también su foto.")) return;
+    
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/${editingId}`, {
+        method: 'DELETE'
+      });
+      
+      if (res.status === 409) {
+        const errorData = await res.json();
+        alert(`❌ Error: ${errorData.detail}`);
+      } else if (res.ok) {
+        await fetchServices();
+        handleCancel();
+      } else {
+        alert("Error al eliminar el servicio.");
+      }
+    } catch (err) {
+      alert("Error de conexión al servidor.");
+    }
+  };
+
   const handleCreateCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCategoryName) return;
@@ -434,13 +458,22 @@ export default function ServicesPage() {
               </div>
 
             </form>
-            <div className="p-6 md:p-8 bg-stone-50/50 border-t border-stone-100 flex justify-end gap-4 relative z-10">
-              <button onClick={handleCancel} type="button" className="px-6 py-3 rounded-xl font-bold text-stone-600 hover:bg-stone-100 transition-all active:scale-95">
-                Cancelar
-              </button>
-              <button disabled={saving} onClick={handleSubmit} type="button" className="bg-stone-900 hover:bg-[#d4af37] disabled:opacity-50 text-white px-10 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95 min-w-[200px]">
-                {saving ? 'Guardando...' : (editingId ? 'Guardar Cambios' : 'Añadir Servicio')}
-              </button>
+            <div className="p-6 md:p-8 bg-stone-50/50 border-t border-stone-100 flex justify-between gap-4 relative z-10">
+              {editingId ? (
+                <button type="button" onClick={handleDeleteService} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 w-14 h-14 rounded-xl transition-all shadow-sm flex items-center justify-center text-xl" title="Eliminar Servicio de Forma Segura">
+                  🗑️
+                </button>
+              ) : (
+                <div></div>
+              )}
+              <div className="flex gap-4">
+                <button onClick={handleCancel} type="button" className="px-6 py-3 rounded-xl font-bold text-stone-600 hover:bg-stone-100 transition-all active:scale-95">
+                  Cancelar
+                </button>
+                <button disabled={saving || uploadingImage} onClick={handleSubmit} type="button" className="bg-stone-900 hover:bg-[#d4af37] disabled:opacity-50 text-white px-10 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95 min-w-[200px]">
+                  {saving ? 'Guardando...' : (editingId ? 'Guardar Cambios' : 'Añadir Servicio')}
+                </button>
+              </div>
             </div>
           </div>
         </div>
