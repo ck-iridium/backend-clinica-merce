@@ -31,11 +31,11 @@ def seed_admin_user():
             )
             db.add(new_user)
             db.commit()
-            print(f"✅ Usuario semilla '{admin_email}' creado.")
+            print(f"Usuario semilla '{admin_email}' creado.")
         else:
-            print(f"ℹ️ Usuario '{admin_email}' ya existe.")
+            print(f"Usuario '{admin_email}' ya existe.")
     except Exception as e:
-        print(f"❌ Error en semilla: {e}")
+        print(f"Error en semilla: {e}")
     finally:
         db.close()
 
@@ -50,9 +50,9 @@ run_auto_migrations_wrapper()
 # Verificación de API Key de Resend (Solo primeros 4 caracteres)
 resend_key = os.environ.get("RESEND_API_KEY", "").strip()
 if resend_key:
-    print(f"📧 Resend API Key cargada: {resend_key[:4]}...")
+    print(f"Resend API Key cargada: {resend_key[:4]}...")
 else:
-    print("⚠️ ADVERTENCIA: RESEND_API_KEY no encontrada en el entorno.")
+    print("ADVERTENCIA: RESEND_API_KEY no encontrada en el entorno.")
 
 app = FastAPI(
     title="Clínica Médica API",

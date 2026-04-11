@@ -17,7 +17,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const logoUrl = settings?.logo_app_b64 || null;
 
   return (
-    <FeedbackProvider>
       <div className="min-h-screen bg-background md:flex font-sans text-foreground print:bg-white overflow-hidden">
         
         {/* Sidebar: Mobile top bar + new Heygen-style desktop hover drawer */}
@@ -67,6 +66,5 @@ export default async function DashboardLayout({ children }: { children: React.Re
           
         </main>
       </div>
-    </FeedbackProvider>
   );
 }

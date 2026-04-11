@@ -2,6 +2,16 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
+import { Skeleton } from "@/components/ui/skeleton";
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 
 export default function VouchersPage() {
   const { showFeedback } = useFeedback();
@@ -239,20 +249,65 @@ export default function VouchersPage() {
   });
 
   if (loading) return (
-    <div className="p-20 text-center">
-      <div className="inline-block w-8 h-8 border-4 border-[#f3c7cb] border-t-[#d9777f] rounded-full animate-spin mb-4"></div>
-      <p className="text-stone-500 font-medium tracking-widest uppercase text-xs">Cargando bonos...</p>
+    <div className="space-y-10 animate-pulse">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-stone-100 pb-4">
+        <div className="space-y-2">
+          <Skeleton className="h-10 w-64" />
+          <Skeleton className="h-4 w-96" />
+        </div>
+        <Skeleton className="h-12 w-48 rounded-xl" />
+      </div>
+
+      <div className="flex justify-between items-center mb-6">
+        <Skeleton className="h-8 w-40" />
+        <Skeleton className="h-10 w-44 rounded-xl" />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div key={i} className="bg-white rounded-2xl p-6 border border-stone-100 space-y-4">
+            <div className="flex justify-between">
+              <div className="space-y-2">
+                <Skeleton className="h-5 w-32" />
+                <Skeleton className="h-3 w-20" />
+              </div>
+              <Skeleton className="h-6 w-16 rounded-lg" />
+            </div>
+            <Skeleton className="h-14 w-full rounded-xl" />
+            <div className="space-y-2">
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-2.5 w-full rounded-full" />
+            </div>
+            <Skeleton className="h-4 w-32" />
+          </div>
+        ))}
+      </div>
     </div>
   );
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    show: { opacity: 1, y: 0 }
+  };
 
   return (
     <div className="animate-in fade-in duration-500 pb-20">
       
       {/* Header & Tabs */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4 border-b border-stone-200 pb-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4 border-b border-stone-200/60 pb-6">
         <div>
-          <h1 className="text-3xl font-extrabold text-stone-800 tracking-tight">Gestión de Bonos</h1>
-          <p className="text-stone-500 mt-1 font-medium">Control de plantillas y tratamientos emitidos a clientes.</p>
+          <h1 className="text-4xl font-black text-stone-900 tracking-tight font-serif italic">Gestión de Bonos</h1>
+          <p className="text-stone-500 mt-1.5 font-medium">Control de plantillas y tratamientos emitidos de forma personalizada.</p>
         </div>
         
         {/* Tabs Navigation */}
@@ -285,90 +340,122 @@ export default function VouchersPage() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
             {vouchers.map(v => {
               const expired = isExpired(v.expiration_date);
               const isEmpty = v.used_sessions >= v.total_sessions;
               const active = !expired && !isEmpty;
 
               return (
-                <div key={v.id} className={`bg-white rounded-2xl p-6 border transition-all ${active ? 'border-stone-100 shadow-sm hover:border-[#f3c7cb] group' : 'border-stone-100 opacity-60'}`}>
-                  <div className="flex justify-between items-start mb-4">
+                <motion.div 
+                  key={v.id} 
+                  variants={itemVariants}
+                  className={`bg-white rounded-[2rem] p-7 border transition-all relative overflow-hidden ${active ? 'border-primary/10 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] hover:scale-[1.01] group' : 'border-stone-100 opacity-60'}`}
+                >
+                  <div className="flex justify-between items-start mb-5">
                     <div>
-                      <h3 className="font-extrabold text-stone-800">{getClientName(v.client_id)}</h3>
-                      <p className="text-xs font-bold text-[#d9777f] uppercase tracking-wider mt-1">{getServiceName(v.service_id)}</p>
+                      <h3 className="font-extrabold text-stone-900 text-lg leading-tight">{getClientName(v.client_id)}</h3>
+                      <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mt-1.5">{getServiceName(v.service_id)}</p>
                     </div>
-                    {active ? (
-                      <span className="bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-lg text-xs font-bold border border-emerald-100 uppercase tracking-widest shadow-sm">
-                        Activo
-                      </span>
-                    ) : (
-                      <span className="bg-stone-100 text-stone-500 px-2.5 py-1 rounded-lg text-xs font-bold border border-stone-200 uppercase tracking-widest">
-                        {isEmpty ? 'Agotado' : 'Caducado'}
-                      </span>
-                    )}
+
+                    <div className="flex items-center gap-2">
+                      {active ? (
+                        <span className="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[10px] font-black border border-emerald-100 uppercase tracking-widest">
+                          Activo
+                        </span>
+                      ) : (
+                        <span className="bg-stone-50 text-stone-400 px-3 py-1 rounded-full text-[10px] font-black border border-stone-100 uppercase tracking-widest">
+                          {isEmpty ? 'Agotado' : 'Caducado'}
+                        </span>
+                      )}
+
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="w-8 h-8 rounded-full border border-stone-100 flex items-center justify-center text-stone-400 hover:text-stone-900 hover:bg-stone-50 transition-all focus:outline-none">
+                            <span className="text-lg leading-none mb-1">...</span>
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuLabel>Acciones del Bono</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem asChild>
+                            <Link href={`/dashboard/clients/${v.client_id}`} className="cursor-pointer">
+                              Ver Ficha Cliente
+                            </Link>
+                          </DropdownMenuItem>
+                          {v.payment_status !== 'paid' && (
+                            <DropdownMenuItem onClick={() => handleOpenPayModal(v)} className="text-amber-600 font-bold">
+                              Cobrar Pendiente
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleDeleteVoucher(v.id)} className="text-rose-600">
+                            Anular Bono
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
                   
                   {/* Financial Status Indicator */}
-                  <div className="mb-4 bg-stone-50 p-3 rounded-xl border border-stone-100 flex justify-between items-center">
+                  <div className={`mb-6 p-4 rounded-2xl border flex justify-between items-center ${
+                    v.payment_status === 'paid' ? 'bg-emerald-50/30 border-emerald-100/50' : 
+                    v.payment_status === 'partial' ? 'bg-amber-50/30 border-amber-100/50' : 
+                    'bg-rose-50/30 border-rose-100/50'
+                  }`}>
                     <div>
-                      <p className="text-[10px] uppercase font-bold text-stone-400">Estado Pago</p>
-                      <p className="text-sm font-bold text-stone-800" title={`Pagado: ${v.amount_paid}€ / Total: ${v.total_price}€`}>
-                        {v.payment_status === 'paid' && <span className="text-emerald-600 flex items-center gap-1">✓ Pagado Total</span>}
+                      <p className="text-[9px] uppercase font-black text-stone-400 tracking-wider mb-0.5">Estado Financiero</p>
+                      <div className="text-xs font-bold">
+                        {v.payment_status === 'paid' && <span className="text-emerald-700">✓ Completado</span>}
                         {v.payment_status === 'partial' && (
-                          <span className="text-amber-500 flex items-center gap-1 cursor-pointer hover:underline" onClick={() => handleOpenPayModal(v)}>
-                            ⚠️ Resta: {v.total_price - v.amount_paid}€ <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded ml-1">Cobrar</span>
-                          </span>
+                          <span className="text-amber-600">⚠️ Deuda: {v.total_price - v.amount_paid}€</span>
                         )}
                         {v.payment_status === 'pending' && (
-                          <span className="text-rose-500 flex items-center gap-1 cursor-pointer hover:underline" onClick={() => handleOpenPayModal(v)}>
-                            ✕ Pendiente Comp. <span className="text-[10px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded ml-1">Cobrar</span>
-                          </span>
+                          <span className="text-rose-600">✕ Sin Cobrar</span>
                         )}
-                      </p>
+                      </div>
                     </div>
                      <div className="text-right">
-                       <p className="text-[10px] uppercase font-bold text-stone-400">Total</p>
-                       <p className="text-sm font-extrabold text-stone-800">{v.total_price}€</p>
+                       <p className="text-[9px] uppercase font-black text-stone-400 tracking-wider mb-0.5">Inversión</p>
+                       <p className="text-base font-black text-stone-800">{v.total_price}€</p>
                      </div>
                   </div>
 
-                  <div className="mb-4">
-                    <div className="flex justify-between text-xs font-bold mb-1.5">
-                      <span className="text-stone-500">Sesiones Disfrutadas</span>
-                      <span className="text-stone-800">{v.used_sessions} / {v.total_sessions}</span>
+                  <div className="mb-6">
+                    <div className="flex justify-between text-[11px] font-black uppercase tracking-widest mb-2">
+                      <span className="text-stone-400">Progreso Sesiones</span>
+                      <span className="text-stone-900">{v.used_sessions} / {v.total_sessions}</span>
                     </div>
-                    <div className="h-2.5 w-full bg-stone-100 rounded-full overflow-hidden border border-stone-200">
-                      <div 
-                        className={`h-full transition-all ${active ? 'bg-[#d9777f]' : 'bg-stone-300'}`} 
-                        style={{ width: `${Math.min((v.used_sessions / v.total_sessions) * 100, 100)}%` }}
+                    <div className="h-3 w-full bg-stone-100 rounded-full overflow-hidden border border-stone-200/30 p-0.5">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.min((v.used_sessions / v.total_sessions) * 100, 100)}%` }}
+                        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                        className={`h-full rounded-full ${active ? 'bg-gradient-to-r from-primary/80 to-primary' : 'bg-stone-300'}`} 
                       />
                     </div>
                   </div>
 
-                  <div className="flex gap-2 items-center text-xs font-semibold text-stone-400">
-                    <span className="flex-1">⏳ Vence: {new Date(v.expiration_date).toLocaleDateString()}</span>
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-stone-400 uppercase tracking-wider">
+                    <span className="w-1.5 h-1.5 rounded-full bg-stone-200"></span>
+                    <span>Vence el {new Date(v.expiration_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
                   </div>
-
-                  {/* Acciones Rápidas */}
-                  <div className="flex gap-2 mt-4 pt-4 border-t border-stone-50 opacity-0 group-hover:opacity-100 transition-opacity">
-                     <Link href={`/dashboard/clients/${v.client_id}`} className="flex-1 text-center py-2 bg-stone-50 text-stone-600 font-bold text-xs rounded-xl hover:bg-stone-100 transition-colors">
-                       Ver Ficha
-                     </Link>
-                     <button onClick={() => handleDeleteVoucher(v.id)} className="px-3 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 font-bold transition-colors">
-                       ✕
-                     </button>
-                  </div>
-                </div>
+                </motion.div>
               );
             })}
             
             {vouchers.length === 0 && (
-              <div className="col-span-full py-20 text-center border-2 border-dashed border-stone-200 rounded-3xl">
-                <p className="text-stone-400 font-medium">No hay bonos activos asignados a clientes.</p>
+              <div className="col-span-full py-24 text-center border-2 border-dashed border-stone-200 rounded-[2.5rem] bg-stone-50/30">
+                <span className="text-4xl block mb-4 opacity-20">🎟️</span>
+                <p className="text-stone-400 font-bold">No hay bonos activos asignados a clientes.</p>
               </div>
             )}
-          </div>
+          </motion.div>
         </>
       )}
 
@@ -388,34 +475,34 @@ export default function VouchersPage() {
           <div className="bg-white rounded-[2rem] border border-stone-100 shadow-sm overflow-hidden">
              <table className="w-full text-left border-collapse">
                 <thead>
-                   <tr className="bg-stone-50 border-b border-stone-100 text-xs uppercase tracking-wider font-bold text-stone-400">
-                      <th className="p-5">Nombre de la Plantilla</th>
-                      <th className="p-5">Tratamiento Válido</th>
-                      <th className="p-5 text-center">Nº Sesiones</th>
-                      <th className="p-5">Precio Sugerido</th>
-                      <th className="p-5 text-right">Acciones</th>
+                   <tr className="bg-stone-50/50 border-b border-stone-100 text-[10px] uppercase tracking-[0.15em] font-black text-stone-400">
+                      <th className="px-8 py-5">Nombre de la Plantilla</th>
+                      <th className="px-8 py-5">Tratamiento Válido</th>
+                      <th className="px-8 py-5 text-center">Nº Sesiones</th>
+                      <th className="px-8 py-5">Precio Sugerido</th>
+                      <th className="px-8 py-5 text-right">Acciones</th>
                    </tr>
                 </thead>
-                <tbody className="divide-y divide-stone-50">
+                <tbody className="divide-y divide-stone-100">
                    {templates.length === 0 ? (
-                      <tr><td colSpan={5} className="p-10 text-center text-stone-400 font-medium">El catálogo está vacío. Crea tu primer bono base.</td></tr>
+                      <tr><td colSpan={5} className="p-16 text-center text-stone-400 font-bold">El catálogo está vacío. Crea tu primer bono base.</td></tr>
                    ) : templates.map(t => (
-                      <tr key={t.id} className="hover:bg-stone-50/50 transition-colors group">
-                         <td className="p-5 font-bold text-stone-800">{t.name}</td>
-                         <td className="p-5 font-medium text-stone-500 text-sm">{getServiceName(t.service_id)}</td>
-                         <td className="p-5 text-center">
-                            <span className="inline-block bg-[#fdf2f3] text-[#d9777f] font-extrabold text-xs px-3 py-1 rounded-lg">
-                              {t.total_sessions} ses.
+                      <tr key={t.id} className="hover:bg-stone-50/80 transition-colors group">
+                         <td className="px-8 py-6 font-extrabold text-stone-900">{t.name}</td>
+                         <td className="px-8 py-6 font-medium text-stone-500 text-sm">{getServiceName(t.service_id)}</td>
+                         <td className="px-8 py-6 text-center">
+                            <span className="inline-block bg-primary/5 text-primary font-black text-[10px] px-3 py-1 rounded-full uppercase tracking-tighter">
+                              {t.total_sessions} sesiones
                             </span>
                          </td>
-                         <td className="p-5 font-extrabold text-stone-700">{t.price} €</td>
-                         <td className="p-5 text-right">
+                         <td className="px-8 py-6 font-black text-stone-900">{t.price} €</td>
+                         <td className="px-8 py-6 text-right">
                             <button 
                               onClick={() => handleDeleteTemplate(t.id)}
-                              className="w-8 h-8 rounded-full bg-white border border-stone-200 flex items-center justify-center text-stone-400 hover:border-red-200 hover:text-red-500 hover:bg-red-50 transition-colors ml-auto opacity-0 group-hover:opacity-100"
+                              className="w-10 h-10 rounded-xl bg-white border border-stone-100 flex items-center justify-center text-stone-400 hover:border-rose-200 hover:text-rose-600 hover:bg-rose-50 transition-all ml-auto opacity-0 group-hover:opacity-100 active:scale-95 shadow-sm"
                               title="Eliminar plantilla"
                             >
-                              ✕
+                              <span className="text-xl leading-none">×</span>
                             </button>
                          </td>
                       </tr>

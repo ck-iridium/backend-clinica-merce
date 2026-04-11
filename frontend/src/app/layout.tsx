@@ -56,7 +56,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 import LayoutWrapper from "@/components/LayoutWrapper";
 import PublicNavbar from "@/components/PublicNavbar";
-import { FeedbackProvider } from "@/app/contexts/FeedbackContext";
+import { Providers } from "@/components/Providers";
 
 export default function RootLayout({
   children,
@@ -66,13 +66,13 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning className={`${inter.variable} ${cormorantGaramond.variable}`}>
       <body className="antialiased bg-background text-foreground flex flex-col min-h-screen">
-        <FeedbackProvider>
+        <Providers>
           <PublicNavbar />
           <main className="flex-grow relative">
             {children}
           </main>
           <LayoutWrapper />
-        </FeedbackProvider>
+        </Providers>
       </body>
     </html>
   );

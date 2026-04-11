@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Download, Eye, Trash2 } from "lucide-react";
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 export default function InvoicesPage() {
   const { showFeedback } = useFeedback();
@@ -114,8 +115,11 @@ export default function InvoicesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/30 text-sm">
-                {invoices.map((inv) => (
-                  <tr 
+                {invoices.map((inv, index) => (
+                  <motion.tr 
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
                     key={inv.id} 
                     className="hover:bg-muted/30 transition-colors group"
                    >
@@ -170,7 +174,7 @@ export default function InvoicesPage() {
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </td>
-                  </tr>
+                  </motion.tr>
                 ))}
               </tbody>
             </table>

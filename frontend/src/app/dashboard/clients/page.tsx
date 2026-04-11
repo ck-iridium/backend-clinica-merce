@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, FileText, User as UserIcon } from "lucide-react";
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 export default function ClientsPage() {
   const { showFeedback } = useFeedback();
@@ -225,8 +226,14 @@ export default function ClientsPage() {
               ) : (
                 clients
                   .filter(c => c.email !== 'contado@clinica-mercedes.com')
-                  .map((client) => (
-                  <tr key={client.id} className="hover:bg-muted/30 group transition-colors">
+                  .map((client, index) => (
+                  <motion.tr 
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    key={client.id} 
+                    className="hover:bg-muted/30 group transition-colors"
+                  >
                     <td className="px-8 py-5">
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center text-stone-500 font-serif font-bold shadow-sm">
@@ -275,7 +282,7 @@ export default function ClientsPage() {
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </td>
-                  </tr>
+                  </motion.tr>
                 ))
               )}
             </tbody>

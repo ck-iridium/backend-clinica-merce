@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import MediaPickerModal from '@/components/MediaPickerModal';
+import { Skeleton } from "@/components/ui/skeleton";
+import { motion } from 'framer-motion';
 
 export default function CMSPage() {
   const { showFeedback } = useFeedback();
@@ -135,12 +137,37 @@ export default function CMSPage() {
   return (
     <div className="animate-in fade-in duration-500 pb-20">
       <div className="mb-10">
-        <h1 className="text-4xl font-serif text-stone-800">Editor Web (CMS)</h1>
-        <p className="text-muted-foreground mt-2 text-sm font-sans">Personaliza los textos e imágenes principales de tu web pública.</p>
-        <p className="text-muted-foreground/70 mt-1 text-xs italic">Nota: Los datos de contacto se configuran desde Ajustes globales.</p>
+        <motion.h1 
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-4xl font-serif text-stone-800"
+        >
+          Editor Web (CMS)
+        </motion.h1>
+        <motion.p 
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="text-muted-foreground mt-2 text-sm font-sans"
+        >
+          Personaliza los textos e imágenes principales de tu web pública.
+        </motion.p>
+        <motion.p 
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="text-muted-foreground/70 mt-1 text-xs italic"
+        >
+          Nota: Los datos de contacto se configuran desde Ajustes globales.
+        </motion.p>
       </div>
 
-      <div className="bg-card rounded-[2.5rem] shadow-sm border border-border/40 overflow-hidden">
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
+        className="bg-card rounded-[2.5rem] shadow-sm border border-border/40 overflow-hidden"
+      >
         <div className="flex border-b border-border/50 overflow-x-auto custom-scrollbar font-sans px-4">
           <button 
             type="button"
@@ -275,7 +302,7 @@ export default function CMSPage() {
             </button>
           </div>
         </form>
-      </div>
+      </motion.div>
       {/* Media Picker Modal */}
       {pickerFieldName && (
         <MediaPickerModal

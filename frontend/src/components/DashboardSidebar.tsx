@@ -133,7 +133,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
         
         {/* Actual floating sidebar */}
         <div 
-          className={`absolute top-0 left-0 h-full bg-stone-50/90 backdrop-blur-2xl border-r border-stone-200/50 flex flex-col py-6 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden shadow-[4px_0_24px_rgba(0,0,0,0.02)] ${isDesktopExpanded ? 'w-64' : 'w-20'}`}
+          className={`absolute top-0 left-0 h-full bg-stone-50/90 backdrop-blur-2xl border-r border-stone-200/50 flex flex-col py-6 transition-all duration-300 ease-&lsqb;cubic-bezier(0.16,1,0.3,1)&rsqb; overflow-hidden shadow-[4px_0_24px_rgba(0,0,0,0.02)] ${isDesktopExpanded ? 'w-64' : 'w-20'}`}
           onMouseEnter={() => setIsDesktopExpanded(true)}
           onMouseLeave={() => setIsDesktopExpanded(false)}
         >
