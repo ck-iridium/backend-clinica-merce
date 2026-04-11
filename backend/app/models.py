@@ -63,6 +63,10 @@ class Service(Base):
     price = Column(Numeric(10, 2), nullable=False)
     is_active = Column(Boolean, default=True)
     is_featured = Column(Boolean, default=False)
+    image_url = Column(String, nullable=True)
+    seo_title = Column(String, nullable=True)
+    seo_description = Column(Text, nullable=True)
+    seo_keywords = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships

@@ -1,5 +1,6 @@
 "use client"
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import CropImageModal from '@/components/CropImageModal';
 
 export default function ServicesPage() {
   const [services, setServices] = useState<any[]>([]);
@@ -15,9 +16,13 @@ export default function ServicesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   
-  const defaultForm = { name: '', description: '', duration_minutes: 30, price: 0, is_active: true, category_id: '', is_featured: false };
+  const defaultForm = { name: '', description: '', duration_minutes: 30, price: 0, is_active: true, category_id: '', is_featured: false, image_url: '', seo_title: '', seo_description: '', seo_keywords: '' };
   const [formData, setFormData] = useState(defaultForm);
   const [saving, setSaving] = useState(false);
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [selectedImageForCrop, setSelectedImageForCrop] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const imgInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchServices();
@@ -62,7 +67,11 @@ export default function ServicesPage() {
       price: svc.price,
       is_active: svc.is_active,
       category_id: svc.category_id || '',
-      is_featured: svc.is_featured || false
+      is_featured: svc.is_featured || false,
+      image_url: svc.image_url || '',
+      seo_title: svc.seo_title || '',
+      seo_description: svc.seo_description || '',
+      seo_keywords: svc.seo_keywords || ''
     });
     setShowForm(true);
   };
@@ -169,6 +178,43 @@ export default function ServicesPage() {
     }
   };
 
+  const handleServiceImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      setSelectedImageForCrop(reader.result?.toString() || "");
+      setShowCropModal(true);
+    });
+    reader.readAsDataURL(e.target.files[0]);
+  };
+
+  const onServiceCropComplete = async (croppedBlob: Blob) => {
+    setShowCropModal(false);
+    setSelectedImageForCrop('');
+    
+    // Subir el blob como archivo
+    setUploadingImage(true);
+    const uploadData = new FormData();
+    uploadData.append("file", croppedBlob, "cropped_service_image.webp");
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/`, {
+        method: "POST",
+        body: uploadData,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setFormData(prev => ({ ...prev, image_url: data.url }));
+      } else {
+        alert("Error al guardar la imagen recortada en la nube");
+      }
+    } catch (err) {
+      alert("Error de conexión");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const handleDeleteCategory = async (catId: string) => {
     const hasServices = services.some(s => s.category_id === catId);
     if (hasServices) {
@@ -254,28 +300,63 @@ export default function ServicesPage() {
             </div>
             
             <form onSubmit={handleSubmit} className="p-6 md:p-8 relative z-10 max-h-[70vh] overflow-y-auto custom-scrollbar">
+              
+              {/* Sección de Imagen del Tratamiento */}
+              <div className="mb-8 flex gap-6 items-start bg-stone-50 border border-stone-200 p-6 rounded-[2rem]">
+                 {uploadingImage ? (
+                    <div className="w-32 h-32 rounded-2xl bg-white border border-stone-200 flex flex-col justify-center items-center shrink-0">
+                       <div className="w-8 h-8 border-4 border-yellow-100 border-t-[#d4af37] rounded-full animate-spin mb-2"></div>
+                       <span className="text-[10px] font-bold text-[#d4af37] uppercase tracking-widest text-center px-2">Subiendo...</span>
+                    </div>
+                 ) : formData.image_url ? (
+                    <div className="w-32 h-32 rounded-2xl overflow-hidden bg-white shadow-sm shrink-0">
+                       <img src={formData.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${formData.image_url}` : formData.image_url} alt="Tratamiento" className="w-full h-full object-cover" />
+                    </div>
+                 ) : (
+                    <div className="w-32 h-32 rounded-2xl bg-white border border-stone-200 border-dashed flex flex-col justify-center items-center shrink-0">
+                       <span className="text-2xl mb-1">🖼️</span>
+                       <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest text-center px-2">Sin Foto</span>
+                    </div>
+                 )}
+                 <div className="flex-1">
+                    <h3 className="font-bold text-stone-800 mb-2">Imagen del Catálogo</h3>
+                    <p className="text-sm text-stone-500 mb-4 leading-relaxed">Selecciona una imagen atractiva que ilustre el tratamiento. Podrás enfocar y recortar la parte importante en el siguiente paso.</p>
+                    <input type="file" ref={imgInputRef} accept="image/*" className="hidden" onChange={handleServiceImageSelect} />
+                    <div className="flex gap-2">
+                      <button type="button" onClick={() => imgInputRef.current?.click()} className="px-5 py-2.5 rounded-xl font-bold bg-white border border-stone-200 shadow-sm text-stone-600 hover:text-[#d4af37] text-sm transition-colors">
+                        Subir Imagen
+                      </button>
+                      {formData.image_url && (
+                        <button type="button" onClick={() => setFormData({...formData, image_url: ''})} className="px-5 py-2.5 rounded-xl font-bold bg-red-50 text-red-600 text-sm transition-colors hover:bg-red-100">
+                          Quitar
+                        </button>
+                      )}
+                    </div>
+                 </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Nombre del servicio *</label>
-                  <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="Ej: Láser Axilas" />
+                  <input required type="text" value={formData.name || ""} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="Ej: Láser Axilas" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Descripción pública</label>
-                  <input type="text" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="El tratamiento perfecto para..." />
+                  <input type="text" value={formData.description || ""} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="El tratamiento perfecto para..." />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Duración (minutos) *</label>
-                  <input required type="number" min="5" step="5" value={formData.duration_minutes} onChange={e => setFormData({...formData, duration_minutes: Number(e.target.value)})} className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" />
+                  <input required type="number" min="5" step="5" value={formData.duration_minutes || 0} onChange={e => setFormData({...formData, duration_minutes: Number(e.target.value)})} className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" />
                   <p className="text-xs text-stone-400 mt-2 font-medium">Reserva el hueco total bloqueado en Agenda.</p>
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Precio Base (€) *</label>
-                  <input required type="number" min="0" step="0.5" value={formData.price} onChange={e => setFormData({...formData, price: Number(e.target.value)})} className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" />
+                  <input required type="number" min="0" step="0.5" value={formData.price || 0} onChange={e => setFormData({...formData, price: Number(e.target.value)})} className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Categoría *</label>
                   <div className="flex gap-2">
-                    <select required value={formData.category_id} onChange={e => setFormData({...formData, category_id: e.target.value})} className="flex-1 px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all appearance-none cursor-pointer">
+                    <select required value={formData.category_id || ""} onChange={e => setFormData({...formData, category_id: e.target.value})} className="flex-1 px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all appearance-none cursor-pointer">
                       <option value="">-- Selecciona una categoría --</option>
                       {categories.map(cat => (
                         <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -325,6 +406,33 @@ export default function ServicesPage() {
                   </label>
                 </div>
               </div>
+
+              {/* BLOQUE SEO */}
+              <div className="mt-8 border border-stone-100 bg-stone-50/50 rounded-2xl overflow-hidden">
+                <details className="group">
+                  <summary className="font-extrabold text-stone-700 bg-stone-100/50 px-6 py-4 cursor-pointer hover:bg-stone-100 transition-colors list-none flex justify-between items-center">
+                     <div>
+                       <span className="text-lg">⚙️</span> Configuración SEO <span className="font-normal text-sm text-stone-400 ml-2">(Opcional)</span>
+                     </div>
+                     <span className="text-stone-400 group-open:rotate-180 transition-transform">▼</span>
+                  </summary>
+                  <div className="p-6 grid grid-cols-1 gap-6">
+                    <div>
+                      <label className="block text-sm font-semibold text-stone-700 mb-2">Título de la Página (Meta Title)</label>
+                      <input type="text" value={formData.seo_title || ""} onChange={e => setFormData({...formData, seo_title: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder={`Ej: ${formData.name || 'Tratamiento'} en Clínica Merce`} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-stone-700 mb-2">Descripción Corta (Meta Description)</label>
+                      <textarea rows={3} value={formData.seo_description || ""} onChange={e => setFormData({...formData, seo_description: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="Resumen persuasivo de 150 caracteres sobre este tratamiento..." />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-stone-700 mb-2">Palabras Clave (Meta Keywords)</label>
+                      <input type="text" value={formData.seo_keywords || ""} onChange={e => setFormData({...formData, seo_keywords: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="láser, depilación, axilas, tratamiento..." />
+                    </div>
+                  </div>
+                </details>
+              </div>
+
             </form>
             <div className="p-6 md:p-8 bg-stone-50/50 border-t border-stone-100 flex justify-end gap-4 relative z-10">
               <button onClick={handleCancel} type="button" className="px-6 py-3 rounded-xl font-bold text-stone-600 hover:bg-stone-100 transition-all active:scale-95">
@@ -336,6 +444,14 @@ export default function ServicesPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {showCropModal && (
+        <CropImageModal 
+          imageSrc={selectedImageForCrop}
+          onClose={() => {setShowCropModal(false); setSelectedImageForCrop('');}}
+          onCropComplete={onServiceCropComplete}
+        />
       )}
 
       {/* Grid of Services */}

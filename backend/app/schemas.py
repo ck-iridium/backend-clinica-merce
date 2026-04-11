@@ -74,6 +74,10 @@ class ServiceBase(BaseModel):
     is_active: bool = True
     is_featured: bool = False
     category_id: Optional[str] = None
+    image_url: Optional[str] = None
+    seo_title: Optional[str] = None
+    seo_description: Optional[str] = None
+    seo_keywords: Optional[str] = None
 
 class ServiceCreate(ServiceBase):
     pass
@@ -86,6 +90,10 @@ class ServiceUpdate(BaseModel):
     is_active: Optional[bool] = None
     is_featured: Optional[bool] = None
     category_id: Optional[str] = None
+    image_url: Optional[str] = None
+    seo_title: Optional[str] = None
+    seo_description: Optional[str] = None
+    seo_keywords: Optional[str] = None
 
 class ServiceResponse(ServiceBase):
     id: str

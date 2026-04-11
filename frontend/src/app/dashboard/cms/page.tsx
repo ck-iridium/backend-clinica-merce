@@ -158,19 +158,19 @@ export default function CMSPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Título Principal (H1)</label>
-                  <input required type="text" value={formData.hero_title} onChange={e => setFormData({...formData, hero_title: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all text-xl font-bold" />
+                  <input required type="text" value={formData.hero_title || ""} onChange={e => setFormData({...formData, hero_title: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all text-xl font-bold" />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Subtítulo (Opcional)</label>
-                  <textarea rows={2} value={formData.hero_subtitle} onChange={e => setFormData({...formData, hero_subtitle: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" />
+                  <textarea rows={2} value={formData.hero_subtitle || ""} onChange={e => setFormData({...formData, hero_subtitle: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Texto del Botón</label>
-                  <input type="text" value={formData.hero_button_text} onChange={e => setFormData({...formData, hero_button_text: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" />
+                  <input type="text" value={formData.hero_button_text || ""} onChange={e => setFormData({...formData, hero_button_text: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Enlace del Botón</label>
-                  <input type="text" value={formData.hero_button_link} onChange={e => setFormData({...formData, hero_button_link: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="Ej: /tratamientos o #contacto" />
+                  <input type="text" value={formData.hero_button_link || ""} onChange={e => setFormData({...formData, hero_button_link: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="Ej: /tratamientos o #contacto" />
                 </div>
               </div>
             </div>
@@ -185,11 +185,11 @@ export default function CMSPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Título de la Sección</label>
-                  <input type="text" value={formData.about_title} onChange={e => setFormData({...formData, about_title: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all text-xl font-bold" />
+                  <input type="text" value={formData.about_title || ""} onChange={e => setFormData({...formData, about_title: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all text-xl font-bold" />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Texto Biografía / Filosofía</label>
-                  <textarea rows={6} value={formData.about_text} onChange={e => setFormData({...formData, about_text: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" />
+                  <textarea rows={6} value={formData.about_text || ""} onChange={e => setFormData({...formData, about_text: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" />
                 </div>
               </div>
             </div>
@@ -202,19 +202,19 @@ export default function CMSPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Título CTA</label>
-                  <input type="text" value={formData.cta_title} onChange={e => setFormData({...formData, cta_title: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all text-xl font-bold" />
+                  <input type="text" value={formData.cta_title || ""} onChange={e => setFormData({...formData, cta_title: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all text-xl font-bold" />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Subtítulo CTA</label>
-                  <input type="text" value={formData.cta_subtitle} onChange={e => setFormData({...formData, cta_subtitle: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" />
+                  <input type="text" value={formData.cta_subtitle || ""} onChange={e => setFormData({...formData, cta_subtitle: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Texto del Botón</label>
-                  <input type="text" value={formData.cta_button_text} onChange={e => setFormData({...formData, cta_button_text: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" />
+                  <input type="text" value={formData.cta_button_text || ""} onChange={e => setFormData({...formData, cta_button_text: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Enlace del Botón</label>
-                  <input type="text" value={formData.cta_button_link} onChange={e => setFormData({...formData, cta_button_link: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="Ej: https://wa.me/346..." />
+                  <input type="text" value={formData.cta_button_link || ""} onChange={e => setFormData({...formData, cta_button_link: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="Ej: https://wa.me/346..." />
                 </div>
               </div>
             </div>
@@ -227,15 +227,15 @@ export default function CMSPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Título de la Página (Aparecerá en la pestaña y en Google)</label>
-                  <input type="text" value={formData.seo_title} onChange={e => setFormData({...formData, seo_title: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all text-xl font-bold" placeholder="Ej: Clínica Merce | Tratamientos avanzados" />
+                  <input type="text" value={formData.seo_title || ""} onChange={e => setFormData({...formData, seo_title: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all text-xl font-bold" placeholder="Ej: Clínica Merce | Tratamientos avanzados" />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Descripción (Ayuda a posicionar en Google)</label>
-                  <textarea rows={3} value={formData.seo_description} onChange={e => setFormData({...formData, seo_description: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="Resumen de 1-2 frases para convencer en Google..." />
+                  <textarea rows={3} value={formData.seo_description || ""} onChange={e => setFormData({...formData, seo_description: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="Resumen de 1-2 frases para convencer en Google..." />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Palabras Clave (Separadas por comas)</label>
-                  <input type="text" value={formData.seo_keywords} onChange={e => setFormData({...formData, seo_keywords: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="estética, depilación, masajes..." />
+                  <input type="text" value={formData.seo_keywords || ""} onChange={e => setFormData({...formData, seo_keywords: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="estética, depilación, masajes..." />
                 </div>
               </div>
               

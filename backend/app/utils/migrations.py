@@ -37,7 +37,11 @@ def run_auto_migrations():
             "ALTER TABLE clinic_settings ADD COLUMN allow_search_engine_indexing BOOLEAN DEFAULT FALSE",
             "ALTER TABLE site_content ADD COLUMN seo_title VARCHAR",
             "ALTER TABLE site_content ADD COLUMN seo_description VARCHAR",
-            "ALTER TABLE site_content ADD COLUMN seo_keywords VARCHAR"
+            "ALTER TABLE site_content ADD COLUMN seo_keywords VARCHAR",
+            "ALTER TABLE services ADD COLUMN image_url VARCHAR",
+            "ALTER TABLE services ADD COLUMN seo_title VARCHAR",
+            "ALTER TABLE services ADD COLUMN seo_description VARCHAR",
+            "ALTER TABLE services ADD COLUMN seo_keywords VARCHAR"
         ]
         
         for m in migrations:
