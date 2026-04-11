@@ -78,7 +78,16 @@ export default function CMSPage() {
   };
 
   if (loading) {
-    return <div className="text-center py-20"><div className="inline-block w-8 h-8 border-4 border-yellow-100 border-t-[#d4af37] rounded-full animate-spin"></div></div>;
+    return (
+      <div className="animate-in fade-in duration-500 space-y-6">
+        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-4 w-96 mb-8" />
+        <div className="bg-card rounded-[2.5rem] border border-border/40 p-10 h-96 shadow-sm">
+           <Skeleton className="h-12 w-full mb-8" />
+           <Skeleton className="h-64 w-full rounded-2xl" />
+        </div>
+      </div>
+    );
   }
 
   const ImageUploadBlock = ({ label, fieldName }: { label: string, fieldName: keyof typeof defaultContent }) => {
@@ -86,35 +95,35 @@ export default function CMSPage() {
     const isUploading = uploadingFieldName === fieldName;
 
     return (
-      <div className="mb-6 p-6 border border-stone-100 bg-stone-50 rounded-2xl">
-        <label className="block text-sm font-semibold text-stone-700 mb-4">{label}</label>
-        <div className="flex items-center gap-6">
+      <div className="mb-8 p-8 border border-border/40 bg-card rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] transition-all">
+        <label className="block text-sm font-bold text-foreground mb-4 font-sans">{label}</label>
+        <div className="flex items-center gap-8">
           {(val || isUploading) && (
-            <div className="w-32 h-32 rounded-xl overflow-hidden shadow-sm shrink-0 bg-white p-1 relative">
+            <div className="w-36 h-36 rounded-2xl overflow-hidden shadow-inner shrink-0 bg-muted/30 p-1.5 relative border border-border/50">
               {isUploading ? (
-                <div className="absolute inset-0 bg-stone-900/40 flex items-center justify-center animate-in fade-in z-10">
-                  <div className="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <div className="absolute inset-0 bg-background/50 flex items-center justify-center animate-in fade-in z-10 backdrop-blur-sm">
+                  <div className="w-8 h-8 border-4 border-border border-t-primary rounded-full animate-spin"></div>
                 </div>
               ) : null}
-              {val && <img src={val.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${val}` : val} alt="Preview" className="w-full h-full object-cover rounded-lg" />}
+              {val && <img src={val.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${val}` : val} alt="Preview" className="w-full h-full object-cover rounded-xl shadow-sm" />}
             </div>
           )}
-          <div className="flex-1 flex flex-col gap-3">
+          <div className="flex-1 flex flex-col gap-4">
             <button
               type="button"
               onClick={() => setPickerFieldName(String(fieldName))}
-              className="flex items-center gap-2 bg-[#d4af37] hover:bg-[#b08e23] text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-md active:scale-95 w-fit"
+              className="flex items-center gap-3 bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-2xl font-bold text-sm transition-all shadow-md active:scale-95 w-fit"
             >
-              <span>🖼️</span>
+              <span className="text-lg">🖼️</span>
               <span>Seleccionar imagen</span>
             </button>
             {val && !isUploading && (
               <button
                 type="button"
                 onClick={() => setFormData(prev => ({...prev, [fieldName]: ''}))}
-                className="text-xs font-bold text-red-500 hover:underline text-left w-fit"
+                className="text-xs font-bold text-destructive hover:text-destructive/80 transition-colors text-left w-fit px-2"
               >
-                Quitar imagen
+                Quitar imagen actual
               </button>
             )}
           </div>
@@ -124,140 +133,144 @@ export default function CMSPage() {
   };
 
   return (
-    <div className="animate-in fade-in duration-500">
-      <div className="mb-8">
-        <h1 className="text-3xl font-extrabold text-stone-800">Editor Web (CMS)</h1>
-        <p className="text-stone-500 mt-2 font-medium">Personaliza los textos e imágenes principales de tu web pública.</p>
-        <p className="text-stone-400 mt-1 text-sm italic">Nota: Los datos de contacto (Teléfono, Dirección, RRSS) se configuran desde Ajustes globales.</p>
+    <div className="animate-in fade-in duration-500 pb-20">
+      <div className="mb-10">
+        <h1 className="text-4xl font-serif text-stone-800">Editor Web (CMS)</h1>
+        <p className="text-muted-foreground mt-2 text-sm font-sans">Personaliza los textos e imágenes principales de tu web pública.</p>
+        <p className="text-muted-foreground/70 mt-1 text-xs italic">Nota: Los datos de contacto se configuran desde Ajustes globales.</p>
       </div>
 
-      <div className="bg-white rounded-[2.5rem] shadow-sm border border-stone-100 overflow-hidden">
-        <div className="flex border-b border-stone-100 overflow-x-auto custom-scrollbar">
+      <div className="bg-card rounded-[2.5rem] shadow-sm border border-border/40 overflow-hidden">
+        <div className="flex border-b border-border/50 overflow-x-auto custom-scrollbar font-sans px-4">
           <button 
+            type="button"
             onClick={() => setActiveTab('hero')}
-            className={`px-8 py-5 font-bold text-sm whitespace-nowrap transition-colors ${activeTab === 'hero' ? 'text-[#d4af37] border-b-2 border-[#d4af37] bg-yellow-50/30' : 'text-stone-500 hover:bg-stone-50'}`}>
+            className={`px-8 py-5 font-bold text-sm whitespace-nowrap transition-colors ${activeTab === 'hero' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-stone-500 hover:bg-stone-50'}`}>
             Portada (Hero)
           </button>
           <button 
+            type="button"
             onClick={() => setActiveTab('about')}
-            className={`px-8 py-5 font-bold text-sm whitespace-nowrap transition-colors ${activeTab === 'about' ? 'text-[#d4af37] border-b-2 border-[#d4af37] bg-yellow-50/30' : 'text-stone-500 hover:bg-stone-50'}`}>
+            className={`px-8 py-5 font-bold text-sm whitespace-nowrap transition-colors ${activeTab === 'about' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-stone-500 hover:bg-stone-50'}`}>
             Sobre Mí
           </button>
           <button 
+            type="button"
             onClick={() => setActiveTab('cta')}
-            className={`px-8 py-5 font-bold text-sm whitespace-nowrap transition-colors ${activeTab === 'cta' ? 'text-[#d4af37] border-b-2 border-[#d4af37] bg-yellow-50/30' : 'text-stone-500 hover:bg-stone-50'}`}>
+            className={`px-8 py-5 font-bold text-sm whitespace-nowrap transition-colors ${activeTab === 'cta' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-stone-500 hover:bg-stone-50'}`}>
             Llamada a la Acción (CTA)
           </button>
           <button 
+            type="button"
             onClick={() => setActiveTab('seo')}
-            className={`px-8 py-5 font-bold text-sm whitespace-nowrap transition-colors ${activeTab === 'seo' ? 'text-[#d4af37] border-b-2 border-[#d4af37] bg-yellow-50/30' : 'text-stone-500 hover:bg-stone-50'}`}>
+            className={`px-8 py-5 font-bold text-sm whitespace-nowrap transition-colors ${activeTab === 'seo' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-stone-500 hover:bg-stone-50'}`}>
             SEO y Redes Sociales
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 md:p-10">
+        <form onSubmit={handleSubmit} className="p-6 md:p-12 font-sans font-medium">
           {activeTab === 'hero' && (
-            <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-              <h2 className="text-xl font-bold text-stone-800 mb-6">Bloque Principal (Arriba)</h2>
+            <div className="space-y-8 animate-in slide-in-from-right-4 duration-500">
+              <h2 className="text-2xl font-serif font-bold text-stone-800 mb-2 border-b border-border/30 pb-4">Bloque Principal (Portada)</h2>
               
-              <ImageUploadBlock label="Imagen Principal (Fondo o Lado)" fieldName="hero_image_url" />
+              <ImageUploadBlock label="Imagen Principal (Hero Background)" fieldName="hero_image_url" />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">Título Principal (H1)</label>
-                  <input required type="text" value={formData.hero_title || ""} onChange={e => setFormData({...formData, hero_title: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all text-xl font-bold" />
+                  <label className="block text-sm font-bold text-foreground mb-3">Título Principal (H1)</label>
+                  <input required type="text" value={formData.hero_title || ""} onChange={e => setFormData({...formData, hero_title: e.target.value})} className="w-full px-5 py-4 rounded-2xl border border-border bg-stone-50/50 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-xl font-bold shadow-sm" />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">Subtítulo (Opcional)</label>
-                  <textarea rows={2} value={formData.hero_subtitle || ""} onChange={e => setFormData({...formData, hero_subtitle: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" />
+                  <label className="block text-sm font-bold text-foreground mb-3">Subtítulo (Opcional)</label>
+                  <textarea rows={2} value={formData.hero_subtitle || ""} onChange={e => setFormData({...formData, hero_subtitle: e.target.value})} className="w-full px-5 py-4 rounded-2xl border border-border bg-stone-50/50 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium shadow-sm" />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">Texto del Botón</label>
-                  <input type="text" value={formData.hero_button_text || ""} onChange={e => setFormData({...formData, hero_button_text: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" />
+                  <label className="block text-sm font-bold text-foreground mb-3">Texto del Botón Principal</label>
+                  <input type="text" value={formData.hero_button_text || ""} onChange={e => setFormData({...formData, hero_button_text: e.target.value})} className="w-full px-5 py-4 rounded-2xl border border-border bg-stone-50/50 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium shadow-sm" />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">Enlace del Botón</label>
-                  <input type="text" value={formData.hero_button_link || ""} onChange={e => setFormData({...formData, hero_button_link: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="Ej: /tratamientos o #contacto" />
+                  <label className="block text-sm font-bold text-foreground mb-3">Enlace del Botón</label>
+                  <input type="text" value={formData.hero_button_link || ""} onChange={e => setFormData({...formData, hero_button_link: e.target.value})} className="w-full px-5 py-4 rounded-2xl border border-border bg-stone-50/50 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium shadow-sm" placeholder="Ej: /servicios o #contacto" />
                 </div>
               </div>
             </div>
           )}
 
           {activeTab === 'about' && (
-            <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-              <h2 className="text-xl font-bold text-stone-800 mb-6">Bloque "Sobre Mí" o Filosofía</h2>
+            <div className="space-y-8 animate-in slide-in-from-right-4 duration-500">
+              <h2 className="text-2xl font-serif font-bold text-stone-800 mb-2 border-b border-border/30 pb-4">Bloque "Sobre la Clínica"</h2>
               
-              <ImageUploadBlock label="Foto Perfil o Clínica" fieldName="about_image_url" />
+              <ImageUploadBlock label="Fotografía de Presentación" fieldName="about_image_url" />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">Título de la Sección</label>
-                  <input type="text" value={formData.about_title || ""} onChange={e => setFormData({...formData, about_title: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all text-xl font-bold" />
+                  <label className="block text-sm font-bold text-foreground mb-3">Título de la Sección</label>
+                  <input type="text" value={formData.about_title || ""} onChange={e => setFormData({...formData, about_title: e.target.value})} className="w-full px-5 py-4 rounded-2xl border border-border bg-stone-50/50 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-bold shadow-sm text-lg" />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">Texto Biografía / Filosofía</label>
-                  <textarea rows={6} value={formData.about_text || ""} onChange={e => setFormData({...formData, about_text: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" />
+                  <label className="block text-sm font-bold text-foreground mb-3">Texto Biografía / Filosofía</label>
+                  <textarea rows={6} value={formData.about_text || ""} onChange={e => setFormData({...formData, about_text: e.target.value})} className="w-full px-5 py-4 rounded-2xl border border-border bg-stone-50/50 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium shadow-sm leading-relaxed" />
                 </div>
               </div>
             </div>
           )}
 
           {activeTab === 'cta' && (
-            <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-              <h2 className="text-xl font-bold text-stone-800 mb-6">Bloque Final (Llamada a la Acción)</h2>
+            <div className="space-y-8 animate-in slide-in-from-right-4 duration-500">
+              <h2 className="text-2xl font-serif font-bold text-stone-800 mb-2 border-b border-border/30 pb-4">Despedida (Llamada a la Acción)</h2>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">Título CTA</label>
-                  <input type="text" value={formData.cta_title || ""} onChange={e => setFormData({...formData, cta_title: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all text-xl font-bold" />
+                  <label className="block text-sm font-bold text-foreground mb-3">Título CTA</label>
+                  <input type="text" value={formData.cta_title || ""} onChange={e => setFormData({...formData, cta_title: e.target.value})} className="w-full px-5 py-4 rounded-2xl border border-border bg-stone-50/50 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-bold shadow-sm text-lg" />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">Subtítulo CTA</label>
-                  <input type="text" value={formData.cta_subtitle || ""} onChange={e => setFormData({...formData, cta_subtitle: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" />
+                  <label className="block text-sm font-bold text-foreground mb-3">Subtítulo CTA</label>
+                  <input type="text" value={formData.cta_subtitle || ""} onChange={e => setFormData({...formData, cta_subtitle: e.target.value})} className="w-full px-5 py-4 rounded-2xl border border-border bg-stone-50/50 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium shadow-sm" />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">Texto del Botón</label>
-                  <input type="text" value={formData.cta_button_text || ""} onChange={e => setFormData({...formData, cta_button_text: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" />
+                  <label className="block text-sm font-bold text-foreground mb-3">Texto del Botón</label>
+                  <input type="text" value={formData.cta_button_text || ""} onChange={e => setFormData({...formData, cta_button_text: e.target.value})} className="w-full px-5 py-4 rounded-2xl border border-border bg-stone-50/50 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium shadow-sm" />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">Enlace del Botón</label>
-                  <input type="text" value={formData.cta_button_link || ""} onChange={e => setFormData({...formData, cta_button_link: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="Ej: https://wa.me/346..." />
+                  <label className="block text-sm font-bold text-foreground mb-3">Enlace del Botón</label>
+                  <input type="text" value={formData.cta_button_link || ""} onChange={e => setFormData({...formData, cta_button_link: e.target.value})} className="w-full px-5 py-4 rounded-2xl border border-border bg-stone-50/50 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium shadow-sm" placeholder="Ej: /reserva" />
                 </div>
               </div>
             </div>
           )}
 
           {activeTab === 'seo' && (
-            <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-              <h2 className="text-xl font-bold text-stone-800 mb-6">Optimización y Redes Sociales</h2>
+            <div className="space-y-8 animate-in slide-in-from-right-4 duration-500">
+              <h2 className="text-2xl font-serif font-bold text-stone-800 mb-2 border-b border-border/30 pb-4">Optimización Redes y Buscadores</h2>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">Título de la Página (Aparecerá en la pestaña y en Google)</label>
-                  <input type="text" value={formData.seo_title || ""} onChange={e => setFormData({...formData, seo_title: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all text-xl font-bold" placeholder="Ej: Clínica Merce | Tratamientos avanzados" />
+                  <label className="block text-sm font-bold text-foreground mb-3">Título de la Página (SEO H1)</label>
+                  <input type="text" value={formData.seo_title || ""} onChange={e => setFormData({...formData, seo_title: e.target.value})} className="w-full px-5 py-4 rounded-2xl border border-border bg-stone-50/50 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-bold shadow-sm" placeholder="Ej: Clínica Merce | Estética Avanzada" />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">Descripción (Ayuda a posicionar en Google)</label>
-                  <textarea rows={3} value={formData.seo_description || ""} onChange={e => setFormData({...formData, seo_description: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="Resumen de 1-2 frases para convencer en Google..." />
+                  <label className="block text-sm font-bold text-foreground mb-3">Descripción (Extracto Meta)</label>
+                  <textarea rows={3} value={formData.seo_description || ""} onChange={e => setFormData({...formData, seo_description: e.target.value})} className="w-full px-5 py-4 rounded-2xl border border-border bg-stone-50/50 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium shadow-sm" placeholder="Resumen de 1-2 frases para convencer en Google..." />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">Palabras Clave (Separadas por comas)</label>
-                  <input type="text" value={formData.seo_keywords || ""} onChange={e => setFormData({...formData, seo_keywords: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="estética, depilación, masajes..." />
+                  <label className="block text-sm font-bold text-foreground mb-3">Palabras Clave (Separadas por comas)</label>
+                  <input type="text" value={formData.seo_keywords || ""} onChange={e => setFormData({...formData, seo_keywords: e.target.value})} className="w-full px-5 py-4 rounded-2xl border border-border bg-stone-50/50 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium shadow-sm cursor-text" placeholder="estética, láser, belleza..." />
                 </div>
               </div>
               
-              <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100 flex gap-4 mt-8">
-                 <div className="text-3xl">📱</div>
+              <div className="p-8 bg-muted/50 rounded-3xl border border-border/50 flex gap-6 mt-8 shadow-inner shadow-black/5">
+                 <div className="text-3xl shrink-0">📱</div>
                  <div>
-                    <h3 className="font-bold text-blue-900 text-sm">Previsualización Social (WhatsApp, Instagram...)</h3>
-                    <p className="text-sm text-blue-800/70">Cuando pegues tu enlace en WhatsApp o redes sociales, automáticamente usaremos estos textos y la <b>Imagen Principal (Hero)</b> definida en la pestaña Portada.</p>
+                    <h3 className="font-bold text-stone-800 text-sm mb-1 font-sans">Previsualización Social Automática</h3>
+                    <p className="text-sm text-muted-foreground font-medium">Cuando pegues tu enlace en WhatsApp o redes sociales, automáticamente usaremos estos textos y la <b>Imagen Principal</b> definida en la pestaña Portada.</p>
                  </div>
               </div>
             </div>
           )}
 
-          <div className="mt-10 pt-6 border-t border-stone-100 flex justify-end">
-            <button disabled={saving} type="submit" className="bg-stone-900 hover:bg-[#d4af37] disabled:opacity-50 text-white px-10 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95">
+          <div className="mt-12 pt-8 border-t border-border/40 flex justify-end">
+            <button disabled={saving} type="submit" className="bg-stone-900 hover:bg-stone-800 disabled:opacity-50 text-white px-10 py-4 rounded-2xl font-bold transition-all shadow-lg active:scale-95 text-base">
               {saving ? 'Guardando...' : 'Guardar Cambios'}
             </button>
           </div>

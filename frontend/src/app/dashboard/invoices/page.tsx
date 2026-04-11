@@ -2,6 +2,16 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal, Download, Eye, Trash2 } from "lucide-react";
+import Link from 'next/link';
 
 export default function InvoicesPage() {
   const { showFeedback } = useFeedback();
@@ -67,80 +77,98 @@ export default function InvoicesPage() {
     <div className="animate-in fade-in duration-500 pb-20">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-stone-800 tracking-tight">Registro de Facturación</h1>
-          <p className="text-stone-500 font-medium">Historial de tickets, ventas y bonos emitidos</p>
+          <h1 className="text-4xl font-serif text-stone-800 tracking-tight">Registro de Facturación</h1>
+          <p className="text-muted-foreground mt-1 text-sm font-sans">Historial de tickets, ventas y bonos emitidos</p>
         </div>
       </div>
 
       {loading ? (
-        <div className="text-center py-32">
-          <div className="inline-block w-8 h-8 border-4 border-[#d4af37] border-t-[#d9777f] rounded-full animate-spin mb-4"></div>
-          <p className="text-stone-500 font-medium tracking-widest uppercase text-xs">Cargando base de datos...</p>
+        <div className="bg-card rounded-[2rem] border border-border/40 shadow-sm overflow-hidden p-6 w-full space-y-4">
+          {Array(4).fill(0).map((_, i) => (
+             <div key={i} className="flex justify-between items-center w-full px-4 py-3">
+                <Skeleton className="h-6 w-24" />
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-6 w-20 rounded-full" />
+                <Skeleton className="h-8 w-8 rounded-lg" />
+             </div>
+          ))}
         </div>
       ) : invoices.length === 0 ? (
-        <div className="py-20 text-center bg-white rounded-3xl border border-stone-100 shadow-sm">
+        <div className="py-20 text-center bg-card rounded-[2rem] border border-border/40 shadow-sm">
           <span className="text-5xl opacity-50 mb-4 block">🧾</span>
-          <p className="text-stone-500 font-medium text-lg">No hay ninguna factura registrada todavía.</p>
+          <p className="text-muted-foreground font-medium text-sm">No hay ninguna factura registrada todavía.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-[2rem] border border-stone-100 shadow-sm overflow-hidden">
+        <div className="bg-card rounded-[2rem] border border-border/40 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse font-sans">
               <thead>
-                <tr className="bg-stone-50 border-b border-stone-100 text-[10px] uppercase tracking-widest text-stone-400">
-                  <th className="p-5 font-bold">Fecha</th>
-                  <th className="p-5 font-bold">Cliente</th>
-                  <th className="p-5 font-bold">Concepto</th>
-                  <th className="p-5 font-bold text-center">Estado</th>
-                  <th className="p-5 font-bold text-right">Importe</th>
-                  <th className="p-5 font-bold text-center">Ticket</th>
-                  <th className="p-5"></th>
+                <tr className="bg-muted/50 border-b border-border/50 text-[10px] uppercase tracking-widest text-muted-foreground">
+                  <th className="p-5 font-semibold">Fecha</th>
+                  <th className="p-5 font-semibold">Cliente</th>
+                  <th className="p-5 font-semibold">Concepto</th>
+                  <th className="p-5 font-semibold text-center">Estado</th>
+                  <th className="p-5 font-semibold text-right">Importe</th>
+                  <th className="p-5 font-semibold text-right">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-100 text-sm">
+              <tbody className="divide-y divide-border/30 text-sm">
                 {invoices.map((inv) => (
                   <tr 
                     key={inv.id} 
-                    onClick={() => router.push(`/dashboard/invoices/${inv.id}`)}
-                    className="hover:bg-[#fdf2f3] cursor-pointer transition-colors group"
+                    className="hover:bg-muted/30 transition-colors group"
                    >
-                    <td className="p-5 font-semibold text-stone-600">
+                    <td className="px-5 py-4 font-semibold text-stone-600">
                       {new Date(inv.date).toLocaleDateString()}
                     </td>
-                    <td className="p-5 font-bold text-stone-800">
+                    <td className="px-5 py-4 font-bold text-foreground">
                       {getClientName(inv.client_id)}
                     </td>
-                    <td className="p-5 font-semibold text-stone-600">
+                    <td className="px-5 py-4 font-medium text-stone-600">
                       {inv.concept}
                     </td>
-                    <td className="p-5 text-center">
+                    <td className="px-5 py-4 text-center">
                       <div 
-                        className={`inline-block px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest ${
+                        className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
                           inv.status === 'paid' 
-                            ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
-                            : 'bg-orange-50 text-orange-600 border border-orange-100'
+                            ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-sm' 
+                            : 'bg-amber-50 text-amber-600 border border-amber-100 shadow-sm'
                         }`}
                       >
                         {inv.status === 'paid' ? 'Pagada ✓' : 'Pendiente ⏳'}
                       </div>
                     </td>
-                    <td className="p-5 font-extrabold text-stone-800 text-right">
+                    <td className="px-5 py-4 font-extrabold text-foreground text-right">
                       {Number(inv.amount).toFixed(2)} €
                     </td>
-                    <td className="p-5 text-center font-bold text-[#d9777f] text-sm flex items-center gap-2 justify-center">
-                       <span>Ver Folio</span>
-                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                       </svg>
-                    </td>
-                    <td className="p-5 text-center opacity-0 group-hover:opacity-100 transition-opacity">
-                       <button 
-                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(inv.id); }}
-                          className="text-stone-300 hover:text-red-500 text-lg font-bold"
-                          title="Eliminar Registro"
-                        >
-                          ✕
-                        </button>
+                    <td className="px-5 py-4 text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger className="p-2 rounded-lg hover:bg-stone-100 text-stone-400 hover:text-stone-700 transition-colors focus:outline-none ml-auto">
+                          <MoreHorizontal size={18} />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/dashboard/invoices/${inv.id}`} className="cursor-pointer flex items-center gap-2">
+                              <Eye size={14} className="text-stone-500" />
+                              Ver Detalle
+                            </Link>
+                          </DropdownMenuItem>
+                          {/* Descargar is a placeholder that user had commented out the old functions for, but we'll add the UI */}
+                          <DropdownMenuItem className="cursor-pointer flex items-center gap-2">
+                            <Download size={14} className="text-stone-500" />
+                            Descargar PDF
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            onClick={() => handleDelete(inv.id)}
+                            className="cursor-pointer flex items-center gap-2 text-destructive focus:text-destructive focus:bg-destructive/10"
+                          >
+                            <Trash2 size={14} />
+                            Eliminar Registro
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </td>
                   </tr>
                 ))}
