@@ -19,6 +19,9 @@ export default function CMSPage() {
     cta_subtitle: '',
     cta_button_text: '',
     cta_button_link: '',
+    seo_title: '',
+    seo_description: '',
+    seo_keywords: '',
   };
 
   const [formData, setFormData] = useState(defaultContent);
@@ -138,6 +141,11 @@ export default function CMSPage() {
             className={`px-8 py-5 font-bold text-sm whitespace-nowrap transition-colors ${activeTab === 'cta' ? 'text-[#d4af37] border-b-2 border-[#d4af37] bg-yellow-50/30' : 'text-stone-500 hover:bg-stone-50'}`}>
             Llamada a la Acción (CTA)
           </button>
+          <button 
+            onClick={() => setActiveTab('seo')}
+            className={`px-8 py-5 font-bold text-sm whitespace-nowrap transition-colors ${activeTab === 'seo' ? 'text-[#d4af37] border-b-2 border-[#d4af37] bg-yellow-50/30' : 'text-stone-500 hover:bg-stone-50'}`}>
+            SEO y Redes Sociales
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-8 md:p-10">
@@ -208,6 +216,35 @@ export default function CMSPage() {
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Enlace del Botón</label>
                   <input type="text" value={formData.cta_button_link} onChange={e => setFormData({...formData, cta_button_link: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="Ej: https://wa.me/346..." />
                 </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'seo' && (
+            <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+              <h2 className="text-xl font-bold text-stone-800 mb-6">Optimización y Redes Sociales</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Título de la Página (Aparecerá en la pestaña y en Google)</label>
+                  <input type="text" value={formData.seo_title} onChange={e => setFormData({...formData, seo_title: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all text-xl font-bold" placeholder="Ej: Clínica Merce | Tratamientos avanzados" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Descripción (Ayuda a posicionar en Google)</label>
+                  <textarea rows={3} value={formData.seo_description} onChange={e => setFormData({...formData, seo_description: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="Resumen de 1-2 frases para convencer en Google..." />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Palabras Clave (Separadas por comas)</label>
+                  <input type="text" value={formData.seo_keywords} onChange={e => setFormData({...formData, seo_keywords: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="estética, depilación, masajes..." />
+                </div>
+              </div>
+              
+              <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100 flex gap-4 mt-8">
+                 <div className="text-3xl">📱</div>
+                 <div>
+                    <h3 className="font-bold text-blue-900 text-sm">Previsualización Social (WhatsApp, Instagram...)</h3>
+                    <p className="text-sm text-blue-800/70">Cuando pegues tu enlace en WhatsApp o redes sociales, automáticamente usaremos estos textos y la <b>Imagen Principal (Hero)</b> definida en la pestaña Portada.</p>
+                 </div>
               </div>
             </div>
           )}

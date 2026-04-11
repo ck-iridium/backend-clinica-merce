@@ -194,3 +194,8 @@ class SiteContent(Base):
     cta_button_text = Column(String, default="Contactar")
     cta_button_link = Column(String, default="/contacto")
 
+    # SEO Dinámico
+    seo_title = Column(String, nullable=True)
+    seo_description = Column(Text, nullable=True)
+    seo_keywords = Column(String, nullable=True)
+

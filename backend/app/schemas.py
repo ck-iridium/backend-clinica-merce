@@ -347,6 +347,10 @@ class SiteContentBase(BaseModel):
     cta_subtitle: str
     cta_button_text: str
     cta_button_link: str
+    
+    seo_title: Optional[str] = None
+    seo_description: Optional[str] = None
+    seo_keywords: Optional[str] = None
 
 class SiteContentUpdate(BaseModel):
     hero_title: Optional[str] = None
@@ -363,6 +367,10 @@ class SiteContentUpdate(BaseModel):
     cta_subtitle: Optional[str] = None
     cta_button_text: Optional[str] = None
     cta_button_link: Optional[str] = None
+    
+    seo_title: Optional[str] = None
+    seo_description: Optional[str] = None
+    seo_keywords: Optional[str] = None
 
 class SiteContentResponse(SiteContentBase):
     id: int
