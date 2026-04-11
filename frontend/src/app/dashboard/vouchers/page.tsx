@@ -1,8 +1,10 @@
 "use client"
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useFeedback } from '@/app/contexts/FeedbackContext';
 
 export default function VouchersPage() {
+  const { showFeedback } = useFeedback();
   const [activeTab, setActiveTab] = useState<'catalogo' | 'vendidos'>('vendidos');
   
   // Data States
@@ -90,7 +92,7 @@ export default function VouchersPage() {
         setTemplatePrice('');
         fetchData();
       } else {
-        alert("Error al crear plantilla");
+        showFeedback({ type: 'error', title: 'Error', message: 'Error al crear plantilla' });
       }
     } finally {
       setSaving(false);
@@ -103,13 +105,22 @@ export default function VouchersPage() {
   };
 
   const handleDeleteTemplate = async (id: string) => {
-    if (!confirm('¿Seguro que deseas eliminar esta plantilla?')) return;
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/voucher_templates/${id}`, { method: 'DELETE' });
-      if (res.ok) fetchData();
-    } catch (e) {
-      console.error(e);
-    }
+    showFeedback({
+      type: 'confirm',
+      title: 'Eliminar plantilla',
+      message: '¿Seguro que deseas eliminar esta plantilla?',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/voucher_templates/${id}`, { method: 'DELETE' });
+          if (res.ok) {
+              fetchData();
+              showFeedback({ type: 'success', title: 'Plantilla eliminada', message: 'La plantilla ha sido eliminada con éxito.' });
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    });
   };
 
   // --- Handlers: Vouchers (Assignments) ---
@@ -146,7 +157,7 @@ export default function VouchersPage() {
         setShowPayModal(false);
         fetchData();
       } else {
-        alert("Error al registrar el pago");
+        showFeedback({ type: 'error', title: 'Error', message: 'Error al registrar el pago' });
       }
     } finally {
       setPaying(false);
@@ -155,7 +166,10 @@ export default function VouchersPage() {
 
   const handleAssignVoucher = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedTemplateId) return alert('Debes seleccionar una plantilla.');
+    if (!selectedTemplateId) {
+       showFeedback({ type: 'error', title: 'Error', message: 'Debes seleccionar una plantilla.' });
+       return;
+    }
     setSaving(true);
     
     const purDate = new Date();
@@ -189,7 +203,7 @@ export default function VouchersPage() {
         setAssignAmountPaid('');
         fetchData();
       } else {
-        alert("Error emitiendo el bono.");
+        showFeedback({ type: 'error', title: 'Error', message: 'Error emitiendo el bono.' });
       }
     } finally {
       setSaving(false);
@@ -197,13 +211,22 @@ export default function VouchersPage() {
   };
 
   const handleDeleteVoucher = async (id: string) => {
-    if (!confirm('¿Seguro que deseas anular este bono? Se perderán las sesiones restantes.')) return;
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vouchers/${id}`, { method: 'DELETE' });
-      if (res.ok) fetchData();
-    } catch (e) {
-      console.error(e);
-    }
+    showFeedback({
+      type: 'confirm',
+      title: 'Anular Bono',
+      message: '¿Seguro que deseas anular este bono? Se perderán las sesiones restantes.',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vouchers/${id}`, { method: 'DELETE' });
+          if (res.ok) {
+              fetchData();
+              showFeedback({ type: 'success', title: 'Bono anulado', message: 'El bono ha sido anulado con éxito.' });
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    });
   };
 
   const isExpired = (expDate: string) => new Date(expDate) < new Date();

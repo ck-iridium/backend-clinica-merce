@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useFeedback } from '@/app/contexts/FeedbackContext';
 
 export default function POSPage() {
+  const { showFeedback } = useFeedback();
   const [clients, setClients] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,7 +81,7 @@ export default function POSPage() {
         const invoice = await res.json();
         setLastInvoice(invoice);
       } else {
-        alert("Error al procesar la venta");
+        showFeedback({ type: 'error', title: 'Error', message: 'Error al procesar la venta' });
       }
     } catch (e) {
       console.error(e);

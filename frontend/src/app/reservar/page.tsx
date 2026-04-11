@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useFeedback } from '@/app/contexts/FeedbackContext';
 
 // Helper for local ISO to prevent Server/Client boundary timezone rendering errors on Backend
 const formatLocalISO = (date: Date) => {
@@ -9,6 +10,7 @@ const formatLocalISO = (date: Date) => {
 };
 
 export default function BookingPage() {
+  const { showFeedback } = useFeedback();
   const [step, setStep] = useState(1);
   const [services, setServices] = useState<any[]>([]);
   const [appointments, setAppointments] = useState<any[]>([]);
@@ -218,7 +220,7 @@ export default function BookingPage() {
                             const day = nd.getDay();
                             
                             if (day === 0 || day === 6) {
-                              alert("La clínica está cerrada los fines de semana. Por favor, elige un día de lunes a viernes.");
+                              showFeedback({ type: 'info', title: 'Fines de Semana', message: "La clínica está cerrada los fines de semana. Por favor, elige un día de lunes a viernes." });
                               return;
                             }
                             if (!isNaN(nd.getTime())) {

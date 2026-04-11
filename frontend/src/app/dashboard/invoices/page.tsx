@@ -1,8 +1,10 @@
 "use client"
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useFeedback } from '@/app/contexts/FeedbackContext';
 
 export default function InvoicesPage() {
+  const { showFeedback } = useFeedback();
   const router = useRouter();
   const [invoices, setInvoices] = useState<any[]>([]);
   const [clients, setClients] = useState<any[]>([]);
@@ -44,13 +46,19 @@ export default function InvoicesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Seguro que deseas eliminar este registro de facturación de forma permanente?')) return;
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/invoices/${id}`, { method: 'DELETE' });
-      if (res.ok) fetchData();
-    } catch (e) {
-      console.error(e);
-    }
+    showFeedback({
+      type: 'confirm',
+      title: 'Eliminar Registro',
+      message: '¿Seguro que deseas eliminar este registro de facturación de forma permanente?',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/invoices/${id}`, { method: 'DELETE' });
+          if (res.ok) fetchData();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    });
   };
 
   // Funciones de descarga eliminadas para dar paso a la vista de detalle ERP.

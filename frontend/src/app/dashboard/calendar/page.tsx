@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useFeedback } from '@/app/contexts/FeedbackContext';
 
 const getMonday = (d: Date) => {
   const date = new Date(d);
@@ -10,6 +11,7 @@ const getMonday = (d: Date) => {
 };
 
 function CalendarContent() {
+  const { showFeedback } = useFeedback();
   const searchParams = useSearchParams();
   const initialClientId = searchParams.get('client_id');
   const [currentWeek, setCurrentWeek] = useState(() => getMonday(new Date()));
@@ -155,7 +157,7 @@ function CalendarContent() {
         setAppointmentNotes('');
       } else {
         const errorData = await res.json();
-        alert(errorData.detail || "Error reservando la cita");
+        showFeedback({ type: 'error', title: 'Error', message: errorData.detail || "Error reservando la cita" });
       }
     } finally {
       setSaving(false);
@@ -175,7 +177,7 @@ function CalendarContent() {
         await fetchData();
         setShowEditModal(false);
       } else {
-        alert("Error actualizando estado.");
+        showFeedback({ type: 'error', title: 'Error', message: 'Error actualizando estado.' });
       }
     } catch (e) {
       console.error(e);
@@ -198,7 +200,7 @@ function CalendarContent() {
         // Update local object to sync the "Guardar" button visibility
         setSelectedAppt({ ...selectedAppt, notes: editNotes });
       } else {
-        alert("Error guardando nota.");
+        showFeedback({ type: 'error', title: 'Error', message: 'Error guardando nota.' });
       }
     } catch (e) {
       console.error(e);
@@ -272,7 +274,7 @@ function CalendarContent() {
         setShowEditModal(false);
         setConfirmDelete(false);
       } else {
-        alert("Error eliminando cita.");
+        showFeedback({ type: 'error', title: 'Error', message: 'Error eliminando cita.' });
       }
     } catch (e) {
       console.error(e);

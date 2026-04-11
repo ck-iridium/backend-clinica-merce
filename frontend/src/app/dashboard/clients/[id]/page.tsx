@@ -1,8 +1,10 @@
 "use client"
 import { useState, useEffect } from 'react';
 import { SignaturePadModal } from '@/components/SignaturePadModal';
+import { useFeedback } from '@/app/contexts/FeedbackContext';
 
 export default function ClientProfilePage({ params }: { params: { id: string } }) {
+  const { showFeedback } = useFeedback();
   const [client, setClient] = useState<any>(null);
   const [appointments, setAppointments] = useState<any[]>([]);
   const [vouchers, setVouchers] = useState<any[]>([]);
@@ -73,10 +75,10 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
         setClient(updated);
         setIsEditing(false);
       } else {
-        alert("Error al guardar los cambios.");
+        showFeedback({ type: 'error', title: 'Error', message: 'Error al guardar los cambios.' });
       }
     } catch (err) {
-      alert("Error de conexión fallida.");
+      showFeedback({ type: 'error', title: 'Error', message: 'Error de conexión fallida.' });
     } finally {
       setSaving(false);
     }
@@ -112,11 +114,11 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
         setConsents([newConsent, ...consents]);
         setIsSignatureModalOpen(false);
       } else {
-        alert("Error al guardar el documento legal");
+        showFeedback({ type: 'error', title: 'Error', message: 'Error al guardar el documento legal' });
       }
     } catch (e) {
       console.error(e);
-      alert("Error al guardar el documento legal");
+      showFeedback({ type: 'error', title: 'Error', message: 'Error al guardar el documento legal' });
     }
   };
 
@@ -144,7 +146,7 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
         setShowPayModal(false);
         fetchClient(); // refresh specific client data
       } else {
-        alert("Error al registrar el pago");
+        showFeedback({ type: 'error', title: 'Error', message: 'Error al registrar el pago' });
       }
     } finally {
       setPaying(false);

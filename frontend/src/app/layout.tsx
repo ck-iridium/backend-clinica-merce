@@ -48,6 +48,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 import LayoutWrapper from "@/components/LayoutWrapper";
 import PublicNavbar from "@/components/PublicNavbar";
+import { FeedbackProvider } from "@/app/contexts/FeedbackContext";
 
 export default function RootLayout({
   children,
@@ -57,11 +58,13 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body className="antialiased bg-stone-50 text-stone-900 flex flex-col min-h-screen">
-        <PublicNavbar />
-        <main className="flex-grow relative">
-          {children}
-        </main>
-        <LayoutWrapper />
+        <FeedbackProvider>
+          <PublicNavbar />
+          <main className="flex-grow relative">
+            {children}
+          </main>
+          <LayoutWrapper />
+        </FeedbackProvider>
       </body>
     </html>
   );

@@ -1,0 +1,1 @@
+PROHIBIDO agrupar múltiples comandos de terminal (como git add, commit, push) en un solo bloque de código. OBLIGATORIO: Cuando sugieras comandos de terminal al usuario, debes entregar CADA COMANDO en un bloque de código markdown individual (tipo bash) separado. Esto es vital para facilitar que el usuario pueda copiar cada comando con un solo clic.

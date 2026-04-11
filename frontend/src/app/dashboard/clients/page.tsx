@@ -10,8 +10,10 @@ interface Client {
   dni?: string | null;
   address?: string | null;
 }
+import { useFeedback } from '@/app/contexts/FeedbackContext';
 
 export default function ClientsPage() {
+  const { showFeedback } = useFeedback();
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -73,7 +75,7 @@ export default function ClientsPage() {
       setShowForm(false);
       setFormData({ name: '', email: '', phone: '', allergies: '', dni: '', address: '' });
     } catch (err) {
-      alert("No se pudo guardar la ficha. Verifica tu conexión a Render.");
+      showFeedback({ type: 'error', title: 'Error de Red', message: "No se pudo guardar la ficha. Verifica tu conexión a Render." });
     } finally {
       setSaving(false);
     }

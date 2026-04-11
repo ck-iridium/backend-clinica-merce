@@ -2,8 +2,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useFeedback } from '@/app/contexts/FeedbackContext';
 
 export default function ConsentPreviewPage() {
+  const { showFeedback } = useFeedback();
   const { id: clientId, consent_id: consentId } = useParams();
   const router = useRouter();
   
@@ -29,7 +31,7 @@ export default function ConsentPreviewPage() {
       if (sRes.ok) setSettings(await sRes.json());
     } catch (e) {
       console.error(e);
-      alert("Error cargando la vista del documento legal");
+      showFeedback({ type: 'error', title: 'Error', message: 'Error cargando la vista del documento legal' });
     } finally {
       setLoading(false);
     }

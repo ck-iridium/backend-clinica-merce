@@ -1,7 +1,9 @@
 "use client"
 import { useState, useEffect, useRef } from 'react';
+import { useFeedback } from '@/app/contexts/FeedbackContext';
 
 export default function SettingsPage() {
+  const { showFeedback } = useFeedback();
   const [settings, setSettings] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -38,10 +40,10 @@ export default function SettingsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      alert("Configuración guardada correctamente");
+      showFeedback({ type: 'success', title: 'Éxito', message: 'Configuración guardada correctamente' });
     } catch (e) {
       console.error(e);
-      alert("Error al guardar");
+      showFeedback({ type: 'error', title: 'Error', message: 'Error al guardar' });
     } finally {
       setSaving(false);
     }

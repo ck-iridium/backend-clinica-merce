@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import Cropper, { Point, Area } from 'react-easy-crop';
+import { useFeedback } from '@/app/contexts/FeedbackContext';
 
 interface CropImageModalProps {
   imageSrc: string;
@@ -8,6 +9,7 @@ interface CropImageModalProps {
 }
 
 export default function CropImageModal({ imageSrc, onClose, onCropComplete }: CropImageModalProps) {
+  const { showFeedback } = useFeedback();
   const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [aspectRatio, setAspectRatio] = useState<number>(4 / 3);
@@ -51,13 +53,13 @@ export default function CropImageModal({ imageSrc, onClose, onCropComplete }: Cr
         if (blob) {
           onCropComplete(blob);
         } else {
-          alert('Error construyendo la imagen recortada.');
+          showFeedback({ type: 'error', title: 'Error Técnico', message: 'No se pudo construir la imagen recortada.' });
           setIsProcessing(false);
         }
       }, 'image/webp', 0.9);
     } catch (e) {
       console.error(e);
-      alert('Error al recortar la imagen.');
+      showFeedback({ type: 'error', title: 'Error', message: 'Se produjo un fallo inesperado al recortar la imagen.' });
       setIsProcessing(false);
     }
   };

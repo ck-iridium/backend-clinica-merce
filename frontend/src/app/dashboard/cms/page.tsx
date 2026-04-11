@@ -1,7 +1,9 @@
 "use client"
 import { useState, useEffect } from 'react';
+import { useFeedback } from '@/app/contexts/FeedbackContext';
 
 export default function CMSPage() {
+  const { showFeedback } = useFeedback();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('hero');
@@ -54,12 +56,12 @@ export default function CMSPage() {
         body: JSON.stringify(formData)
       });
       if (res.ok) {
-        alert("Contenido actualizado exitosamente.");
+        showFeedback({ type: 'success', title: 'Éxito', message: 'Contenido actualizado exitosamente.' });
       } else {
-        alert("Error al actualizar contenido.");
+        showFeedback({ type: 'error', title: 'Error', message: 'Error al actualizar contenido.' });
       }
     } catch (err) {
-      alert("Error de conexión al servidor.");
+      showFeedback({ type: 'error', title: 'Error', message: 'Error de conexión al servidor.' });
     } finally {
       setSaving(false);
     }
@@ -80,10 +82,10 @@ export default function CMSPage() {
         const data = await res.json();
         setFormData(prev => ({ ...prev, [fieldName]: data.url }));
       } else {
-        alert("Error al subir la imagen");
+        showFeedback({ type: 'error', title: 'Error', message: 'Error al subir la imagen' });
       }
     } catch (err) {
-      alert("Error de conexión");
+      showFeedback({ type: 'error', title: 'Error', message: 'Error de conexión' });
     }
   };
 

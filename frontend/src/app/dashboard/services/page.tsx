@@ -1,8 +1,10 @@
 "use client"
 import { useState, useEffect, useRef } from 'react';
 import CropImageModal from '@/components/CropImageModal';
+import { useFeedback } from '@/app/contexts/FeedbackContext';
 
 export default function ServicesPage() {
+  const { showFeedback } = useFeedback();
   const [services, setServices] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -102,10 +104,10 @@ export default function ServicesPage() {
         await fetchServices();
         handleCancel();
       } else {
-        alert("Error al guardar el servicio.");
+        showFeedback({ type: 'error', title: 'Error', message: 'Error al guardar el servicio.' });
       }
     } catch (err) {
-      alert("Error de conexión.");
+      showFeedback({ type: 'error', title: 'Lamentable', message: 'Error de conexión.' });
     } finally {
       setSaving(false);
     }
@@ -114,25 +116,31 @@ export default function ServicesPage() {
   const handleDeleteService = async () => {
     if (!editingId) return;
     
-    if (!confirm("⚠️ ¿Estás seguro de que deseas eliminar este servicio? Esta acción no se puede deshacer y borrará también su foto.")) return;
-    
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/${editingId}`, {
-        method: 'DELETE'
-      });
-      
-      if (res.status === 409) {
-        const errorData = await res.json();
-        alert(`❌ Error: ${errorData.detail}`);
-      } else if (res.ok) {
-        await fetchServices();
-        handleCancel();
-      } else {
-        alert("Error al eliminar el servicio.");
+    showFeedback({
+      type: 'confirm',
+      title: 'Eliminar Servicio',
+      message: '¿Estás seguro de que deseas eliminar este servicio? Esta acción no se puede deshacer y borrará también su foto.',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/${editingId}`, {
+            method: 'DELETE'
+          });
+          
+          if (res.status === 409) {
+            const errorData = await res.json();
+            showFeedback({ type: 'error', title: 'Conflicto', message: errorData.detail });
+          } else if (res.ok) {
+            await fetchServices();
+            handleCancel();
+            showFeedback({ type: 'success', title: 'Éxito', message: 'Servicio eliminado.' });
+          } else {
+            showFeedback({ type: 'error', title: 'Error', message: 'Error al eliminar el servicio.' });
+          }
+        } catch (err) {
+          showFeedback({ type: 'error', title: 'Error', message: 'Error de conexión al servidor.' });
+        }
       }
-    } catch (err) {
-      alert("Error de conexión al servidor.");
-    }
+    });
   };
 
   const handleCreateCategory = async (e: React.FormEvent) => {
@@ -150,10 +158,10 @@ export default function ServicesPage() {
         fetchCategories();
       } else {
         const errorData = await res.json();
-        alert(`Error al crear categoría: ${errorData.detail || 'Error desconocido'}`);
+        showFeedback({ type: 'error', title: 'Error', message: `Error al crear categoría: ${errorData.detail || 'Error desconocido'}` });
       }
     } catch (err) {
-      alert("Error de conexión al crear categoría.");
+      showFeedback({ type: 'error', title: 'Error', message: 'Error de conexión al crear categoría.' });
     }
   };
 
@@ -173,10 +181,10 @@ export default function ServicesPage() {
         fetchCategories();
         fetchServices(); // Refresh to see updated category names
       } else {
-        alert("Error al actualizar categoría.");
+        showFeedback({ type: 'error', title: 'Error', message: 'Error al actualizar categoría.' });
       }
     } catch (err) {
-      alert("Error de conexión al actualizar categoría.");
+      showFeedback({ type: 'error', title: 'Error', message: 'Error de conexión al actualizar categoría.' });
     }
   };
 
@@ -195,10 +203,10 @@ export default function ServicesPage() {
         const data = await res.json();
         setEditingCategoryImage(data.url);
       } else {
-        alert("Error al subir la imagen");
+        showFeedback({ type: 'error', title: 'Error', message: 'Error al subir la imagen' });
       }
     } catch (err) {
-      alert("Error de conexión");
+      showFeedback({ type: 'error', title: 'Error', message: 'Error de conexión' });
     }
   };
 
@@ -230,10 +238,10 @@ export default function ServicesPage() {
         const data = await res.json();
         setFormData(prev => ({ ...prev, image_url: data.url }));
       } else {
-        alert("Error al guardar la imagen recortada en la nube");
+        showFeedback({ type: 'error', title: 'Error', message: 'Error al guardar la imagen recortada en la nube' });
       }
     } catch (err) {
-      alert("Error de conexión");
+      showFeedback({ type: 'error', title: 'Error', message: 'Error de conexión' });
     } finally {
       setUploadingImage(false);
     }
@@ -242,24 +250,30 @@ export default function ServicesPage() {
   const handleDeleteCategory = async (catId: string) => {
     const hasServices = services.some(s => s.category_id === catId);
     if (hasServices) {
-      alert("⚠️ No puedes borrar una categoría con servicios asignados. Mueve los servicios a otra categoría primero.");
+      showFeedback({ type: 'error', title: 'Conflicto', message: 'No puedes borrar una categoría con servicios asignados. Mueve los servicios a otra categoría primero.' });
       return;
     }
 
-    if (!confirm("¿Estás seguro de que deseas eliminar esta categoría?")) return;
-
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/service-categories/${catId}`, {
-        method: 'DELETE'
-      });
-      if (res.ok) {
-        fetchCategories();
-      } else {
-        alert("Error al eliminar categoría.");
+    showFeedback({
+      type: 'confirm',
+      title: 'Eliminar Categoría',
+      message: '¿Estás seguro de que deseas eliminar esta categoría?',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/service-categories/${catId}`, {
+            method: 'DELETE'
+          });
+          if (res.ok) {
+            fetchCategories();
+            showFeedback({ type: 'success', title: 'Éxito', message: 'Categoría eliminada.' });
+          } else {
+            showFeedback({ type: 'error', title: 'Error', message: 'Error al eliminar categoría.' });
+          }
+        } catch (err) {
+          showFeedback({ type: 'error', title: 'Error', message: 'Error de conexión.' });
+        }
       }
-    } catch (err) {
-      alert("Error de conexión.");
-    }
+    });
   };
 
   const filteredServices = showArchived 

@@ -2,8 +2,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useFeedback } from '@/app/contexts/FeedbackContext';
 
 export default function CancelarPage() {
+    const { showFeedback } = useFeedback();
     const router = useRouter();
     const [id, setId] = useState<string | null>(null);
     const [step, setStep] = useState(1);
@@ -51,7 +53,7 @@ export default function CancelarPage() {
             setCancelResult(data);
             setStep(2);
         } catch (e: any) {
-            alert(e.message);
+            showFeedback({ type: 'error', title: 'Error', message: e.message });
         } finally {
             setCancelling(false);
         }
