@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models
+from pydantic import BaseModel
 import os
 from supabase import create_client, Client as SupabaseClient
 from typing import List
@@ -143,3 +144,43 @@ async def delete_media_file(filename: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Error al eliminar el archivo en Supabase: {e}")
 
     return {"message": f"Archivo '{filename}' eliminado correctamente."}
+
+
+class BulkDeleteRequest(BaseModel):
+    filenames: List[str]
+
+
+@router.post("/bulk-delete")
+async def bulk_delete_media_files(payload: BulkDeleteRequest, db: Session = Depends(get_db)):
+    """
+    Safely deletes multiple orphaned files in one operation.
+    Returns a 409 immediately if ANY of the requested files is still in use.
+    """
+    if not payload.filenames:
+        raise HTTPException(status_code=400, detail="La lista de archivos no puede estar vacía.")
+
+    usage_map = build_used_urls_map(db)
+
+    # Safety check: block the whole operation if any file is in use
+    blocked = []
+    for name in payload.filenames:
+        if name in usage_map:
+            blocked.append(f"'{name}' → {', '.join(usage_map[name])}")
+
+    if blocked:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Operación cancelada. Los siguientes archivos están EN USO: {'; '.join(blocked)}"
+        )
+
+    supabase = get_supabase()
+    try:
+        supabase.storage.from_("media").remove(payload.filenames)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al eliminar archivos en Supabase: {e}")
+
+    return {
+        "message": f"{len(payload.filenames)} archivo(s) eliminados correctamente.",
+        "deleted": payload.filenames,
+    }
+

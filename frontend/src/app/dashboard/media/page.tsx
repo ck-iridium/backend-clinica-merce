@@ -39,6 +39,10 @@ export default function MediaGalleryPage() {
   const [deleting, setDeleting] = useState(false);
   const [filter, setFilter] = useState<'all' | 'in_use' | 'orphan'>('all');
 
+  // Multi-select state
+  const [selectedNames, setSelectedNames] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
   // Upload / Crop states
   const [showCropModal, setShowCropModal] = useState(false);
   const [selectedImageForCrop, setSelectedImageForCrop] = useState('');
@@ -64,6 +68,7 @@ export default function MediaGalleryPage() {
     fetchData();
   }, [fetchData]);
 
+  // --- Single delete ---
   const handleDelete = () => {
     if (!selectedFile) return;
 
@@ -101,6 +106,60 @@ export default function MediaGalleryPage() {
     });
   };
 
+  // --- Multi-select helpers ---
+  const toggleSelect = (name: string) => {
+    setSelectedNames(prev => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+    // Deselect detail panel when selecting via checkbox
+    setSelectedFile(null);
+  };
+
+  const selectAllOrphans = () => {
+    const orphans = filteredFiles.filter(f => f.status === 'orphan').map(f => f.name);
+    setSelectedNames(new Set(orphans));
+  };
+
+  const clearSelection = () => setSelectedNames(new Set());
+
+  // --- Bulk delete ---
+  const handleBulkDelete = () => {
+    if (selectedNames.size === 0) return;
+
+    showFeedback({
+      type: 'confirm',
+      title: `Eliminar ${selectedNames.size} imágenes`,
+      message: `¿Estás seguro de que deseas eliminar estas ${selectedNames.size} imágenes definitivamente? Esta acción NO se puede deshacer.`,
+      onConfirm: async () => {
+        setBulkDeleting(true);
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/bulk-delete`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ filenames: Array.from(selectedNames) }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            clearSelection();
+            await fetchData();
+            showFeedback({ type: 'success', title: '¡Limpieza completada!', message: data.message });
+          } else {
+            const err = await res.json();
+            showFeedback({ type: 'error', title: 'Error', message: err.detail || 'No se pudo ejecutar la limpieza.' });
+          }
+        } catch {
+          showFeedback({ type: 'error', title: 'Error', message: 'Error de conexión al servidor.' });
+        } finally {
+          setBulkDeleting(false);
+        }
+      },
+    });
+  };
+
+  // Upload handler
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     const reader = new FileReader();
@@ -133,11 +192,12 @@ export default function MediaGalleryPage() {
   };
 
   const filteredFiles = files.filter(f => filter === 'all' || f.status === filter);
+  const orphanCount = files.filter(f => f.status === 'orphan').length;
   const usedPercent = quota ? Math.min((quota.used_bytes / MAX_BYTES) * 100, 100) : 0;
   const isNearLimit = usedPercent > 80;
 
   return (
-    <div className="animate-in fade-in duration-500 pb-20">
+    <div className="animate-in fade-in duration-500 pb-32">
       {/* Hero Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-extrabold text-stone-800 tracking-tight flex items-center gap-3">
@@ -174,13 +234,13 @@ export default function MediaGalleryPage() {
       )}
 
       {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 flex-wrap">
         {/* Filter Pills */}
         <div className="flex gap-2 bg-white border border-stone-200 p-1 rounded-2xl shadow-sm">
           {(['all', 'in_use', 'orphan'] as const).map(f => (
             <button
               key={f}
-              onClick={() => setFilter(f)}
+              onClick={() => { setFilter(f); clearSelection(); }}
               className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${filter === f ? 'bg-stone-900 text-white shadow' : 'text-stone-500 hover:bg-stone-100'}`}
             >
               {f === 'all' ? `Todas (${files.length})` : f === 'in_use' ? `En Uso (${files.filter(x => x.status === 'in_use').length})` : `Huérfanas (${files.filter(x => x.status === 'orphan').length})`}
@@ -188,16 +248,28 @@ export default function MediaGalleryPage() {
           ))}
         </div>
 
-        {/* Upload Button */}
-        <label className={`relative cursor-pointer ${uploadingNew ? 'opacity-60 pointer-events-none' : ''}`}>
-          <input type="file" accept="image/*" className="sr-only" onChange={handleFileSelect} disabled={uploadingNew} />
-          <div className="flex items-center gap-2 bg-stone-900 hover:bg-[#d9777f] text-white px-5 py-3 rounded-2xl font-bold text-sm transition-all shadow-lg active:scale-95">
-            {uploadingNew
-              ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /><span>Subiendo...</span></>
-              : <><span className="text-lg">+</span><span>Subir Nueva Imagen</span></>
-            }
-          </div>
-        </label>
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Select All Orphans shortcut */}
+          {orphanCount > 0 && selectedNames.size === 0 && (
+            <button
+              onClick={selectAllOrphans}
+              className="text-sm font-bold text-stone-500 hover:text-stone-800 border border-stone-200 bg-white px-4 py-2.5 rounded-2xl transition-all hover:border-stone-400"
+            >
+              Seleccionar todas las huérfanas
+            </button>
+          )}
+
+          {/* Upload Button */}
+          <label className={`relative cursor-pointer ${uploadingNew ? 'opacity-60 pointer-events-none' : ''}`}>
+            <input type="file" accept="image/*" className="sr-only" onChange={handleFileSelect} disabled={uploadingNew} />
+            <div className="flex items-center gap-2 bg-stone-900 hover:bg-[#d9777f] text-white px-5 py-3 rounded-2xl font-bold text-sm transition-all shadow-lg active:scale-95">
+              {uploadingNew
+                ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /><span>Subiendo...</span></>
+                : <><span className="text-lg">+</span><span>Subir Nueva</span></>
+              }
+            </div>
+          </label>
+        </div>
       </div>
 
       {/* Main Grid + Detail Panel */}
@@ -216,32 +288,58 @@ export default function MediaGalleryPage() {
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3">
-              {filteredFiles.map(file => (
-                <button
-                  key={file.name}
-                  onClick={() => setSelectedFile(file)}
-                  className={`group relative rounded-2xl overflow-hidden aspect-square border-2 transition-all duration-200 ${selectedFile?.name === file.name ? 'border-[#d9777f] ring-2 ring-[#d9777f]/30 scale-[0.98]' : 'border-transparent hover:border-stone-300 hover:shadow-md'} bg-stone-100`}
-                >
-                  <img
-                    src={file.url}
-                    alt={file.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                  />
-                  {/* Status badge */}
-                  <div className={`absolute top-2 right-2 w-2.5 h-2.5 rounded-full shadow-md ${file.status === 'in_use' ? 'bg-emerald-400' : 'bg-stone-400'}`} />
-                  {/* Hover overlay with filename */}
-                  <div className="absolute inset-0 bg-stone-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
-                    <p className="text-white text-[10px] font-bold truncate w-full text-left leading-tight">{file.name}</p>
+              {filteredFiles.map(file => {
+                const isChecked = selectedNames.has(file.name);
+                const canSelect = file.status === 'orphan';
+                return (
+                  <div
+                    key={file.name}
+                    className={`group relative rounded-2xl overflow-hidden aspect-square border-2 transition-all duration-200 cursor-pointer bg-stone-100
+                      ${isChecked ? 'border-red-500 ring-2 ring-red-400/40 scale-[0.97]' : selectedFile?.name === file.name ? 'border-[#d9777f] ring-2 ring-[#d9777f]/30 scale-[0.98]' : 'border-transparent hover:border-stone-300 hover:shadow-md'}`}
+                    onClick={() => {
+                      if (selectedNames.size > 0 && canSelect) {
+                        toggleSelect(file.name);
+                      } else {
+                        setSelectedFile(file === selectedFile ? null : file);
+                      }
+                    }}
+                  >
+                    <img
+                      src={file.url}
+                      alt={file.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+
+                    {/* Status dot */}
+                    <div className={`absolute top-2 right-2 w-2.5 h-2.5 rounded-full shadow-md transition-opacity ${isChecked ? 'opacity-0' : 'opacity-100'} ${file.status === 'in_use' ? 'bg-emerald-400' : 'bg-stone-400'}`} />
+
+                    {/* Checkbox — only for orphans */}
+                    {canSelect && (
+                      <div
+                        className="absolute top-2 left-2"
+                        onClick={e => { e.stopPropagation(); toggleSelect(file.name); }}
+                      >
+                        <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all shadow-md
+                          ${isChecked ? 'bg-red-500 border-red-500' : 'bg-white/80 border-stone-300 opacity-0 group-hover:opacity-100'}`}>
+                          {isChecked && <span className="text-white text-[10px] font-black leading-none">✓</span>}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 bg-stone-900/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2 pointer-events-none">
+                      <p className="text-white text-[10px] font-bold truncate w-full text-left leading-tight">{file.name}</p>
+                    </div>
                   </div>
-                </button>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
 
         {/* Detail Panel */}
-        {selectedFile && (
+        {selectedFile && selectedNames.size === 0 && (
           <div className="w-72 shrink-0 bg-white rounded-[2rem] border border-stone-100 shadow-xl overflow-hidden animate-in slide-in-from-right-4 duration-300 sticky top-6">
             {/* Preview */}
             <div className="aspect-video bg-stone-100 relative">
@@ -312,6 +410,37 @@ export default function MediaGalleryPage() {
           </div>
         )}
       </div>
+
+      {/* ── Floating Bulk Action Bar ── */}
+      {selectedNames.size > 0 && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 duration-300">
+          <div className="flex items-center gap-3 bg-stone-900 text-white px-6 py-4 rounded-[2rem] shadow-2xl border border-white/10">
+            <div className="flex items-center gap-2">
+              <span className="w-7 h-7 bg-red-500 text-white rounded-xl flex items-center justify-center text-sm font-black">
+                {selectedNames.size}
+              </span>
+              <span className="text-sm font-bold">imagen{selectedNames.size > 1 ? 'es' : ''} seleccionada{selectedNames.size > 1 ? 's' : ''}</span>
+            </div>
+            <div className="w-px h-6 bg-white/20" />
+            <button
+              onClick={clearSelection}
+              className="text-sm text-white/60 hover:text-white font-bold transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleBulkDelete}
+              disabled={bulkDeleting}
+              className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 rounded-xl font-black text-sm transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-red-500/30"
+            >
+              {bulkDeleting
+                ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /><span>Eliminando...</span></>
+                : <><span>🗑️</span><span>Borrar {selectedNames.size} seleccionadas</span></>
+              }
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Crop Modal */}
       {showCropModal && (
