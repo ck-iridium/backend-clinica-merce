@@ -7,7 +7,7 @@ from slowapi.errors import RateLimitExceeded
 from fastapi.staticfiles import StaticFiles
 import os
 from .database import engine, Base
-from .routers import clients, services, appointments, vouchers, invoices, settings, users, voucher_templates, time_blocks, automation, service_categories, site_content, uploads, backups
+from .routers import clients, services, appointments, vouchers, invoices, settings, users, voucher_templates, time_blocks, automation, service_categories, site_content, uploads, backups, media
 
 # Crear las tablas en la base de datos (Nota: en producción mejor usar Alembic)
 Base.metadata.create_all(bind=engine)
@@ -100,6 +100,7 @@ app.include_router(service_categories.router)
 app.include_router(site_content.router)
 app.include_router(uploads.router)
 app.include_router(backups.router)
+app.include_router(media.router)
 
 # Serve static files for uploads
 os.makedirs("uploads", exist_ok=True)
