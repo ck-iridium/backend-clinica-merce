@@ -1,12 +1,19 @@
 "use client"
 import { useState, useEffect } from 'react';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
+import CropImageModal from '@/components/CropImageModal';
 
 export default function CMSPage() {
   const { showFeedback } = useFeedback();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('hero');
+
+  // Cropping & Uploading States
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [selectedImageForCrop, setSelectedImageForCrop] = useState('');
+  const [currentFieldNameForCrop, setCurrentFieldNameForCrop] = useState<string | null>(null);
+  const [uploadingFieldName, setUploadingFieldName] = useState<string | null>(null);
 
   const defaultContent = {
     hero_title: '',
@@ -67,11 +74,28 @@ export default function CMSPage() {
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
     if (!e.target.files || e.target.files.length === 0) return;
     const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      setSelectedImageForCrop(reader.result?.toString() || "");
+      setCurrentFieldNameForCrop(fieldName);
+      setShowCropModal(true);
+    });
+    reader.readAsDataURL(file);
+    // Reset input
+    e.target.value = '';
+  };
+
+  const handleCropComplete = async (croppedBlob: Blob) => {
+    if (!currentFieldNameForCrop) return;
+    
+    setShowCropModal(false);
+    setUploadingFieldName(currentFieldNameForCrop);
+
     const uploadData = new FormData();
-    uploadData.append("file", file);
+    uploadData.append("file", croppedBlob, "cms_image.webp");
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/`, {
@@ -80,12 +104,15 @@ export default function CMSPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setFormData(prev => ({ ...prev, [fieldName]: data.url }));
+        setFormData(prev => ({ ...prev, [currentFieldNameForCrop]: data.url }));
       } else {
         showFeedback({ type: 'error', title: 'Error', message: 'Error al subir la imagen' });
       }
     } catch (err) {
       showFeedback({ type: 'error', title: 'Error', message: 'Error de conexión' });
+    } finally {
+      setUploadingFieldName(null);
+      setCurrentFieldNameForCrop(null);
     }
   };
 
@@ -95,23 +122,30 @@ export default function CMSPage() {
 
   const ImageUploadBlock = ({ label, fieldName }: { label: string, fieldName: keyof typeof defaultContent }) => {
     const val = formData[fieldName];
+    const isUploading = uploadingFieldName === fieldName;
+
     return (
       <div className="mb-6 p-6 border border-stone-100 bg-stone-50 rounded-2xl">
         <label className="block text-sm font-semibold text-stone-700 mb-4">{label}</label>
         <div className="flex items-center gap-6">
-          {val && (
-            <div className="w-32 h-32 rounded-xl overflow-hidden shadow-sm shrink-0 bg-white p-1">
-              <img src={val.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${val}` : val} alt="Preview" className="w-full h-full object-cover rounded-lg" />
+          {(val || isUploading) && (
+            <div className="w-32 h-32 rounded-xl overflow-hidden shadow-sm shrink-0 bg-white p-1 relative">
+              {isUploading ? (
+                <div className="absolute inset-0 bg-stone-900/40 flex items-center justify-center animate-in fade-in z-10">
+                   <div className="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+                </div>
+              ) : null}
+              {val && <img src={val.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${val}` : val} alt="Preview" className="w-full h-full object-cover rounded-lg" />}
             </div>
           )}
           <div className="flex-1">
             <input 
               type="file" 
               accept="image/*" 
-              onChange={(e) => handleImageUpload(e, fieldName)}
+              onChange={(e) => handleImageSelect(e, fieldName)}
               className="w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[#d4af37] file:text-white hover:file:bg-[#b08e23] transition-all cursor-pointer"
             />
-            {val && <button type="button" onClick={() => setFormData(prev => ({...prev, [fieldName]: ''}))} className="mt-4 text-xs font-bold font-stone-500 text-red-500 hover:underline">Quitar imagen</button>}
+            {val && !isUploading && <button type="button" onClick={() => setFormData(prev => ({...prev, [fieldName]: ''}))} className="mt-4 text-xs font-bold font-stone-500 text-red-500 hover:underline">Quitar imagen</button>}
           </div>
         </div>
       </div>
@@ -258,6 +292,14 @@ export default function CMSPage() {
           </div>
         </form>
       </div>
+      {/* Cropping Modal */}
+      {showCropModal && (
+        <CropImageModal 
+          imageSrc={selectedImageForCrop}
+          onClose={() => { setShowCropModal(false); setSelectedImageForCrop(''); }}
+          onCropComplete={handleCropComplete}
+        />
+      )}
     </div>
   );
 }
