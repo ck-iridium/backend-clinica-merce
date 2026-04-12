@@ -47,7 +47,6 @@ export default function ServicesPage() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [showCatMediaPicker, setShowCatMediaPicker] = useState(false);
-  const imgInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchServices();
@@ -389,9 +388,9 @@ export default function ServicesPage() {
                       <button
                         type="button"
                         onClick={() => setShowMediaPicker(true)}
-                        className="px-5 py-2.5 rounded-xl font-bold bg-[#d4af37] hover:bg-[#b08e23] text-white text-sm transition-colors shadow-md flex items-center gap-2"
+                        className="px-5 py-2.5 rounded-xl font-bold bg-stone-900 hover:bg-[#d9777f] text-white text-sm transition-colors shadow-md flex items-center gap-2"
                       >
-                        <ImageIcon size={18} strokeWidth={1.5} /> Seleccionar imagen
+                        <ImageIcon size={18} strokeWidth={1.5} /> {formData.image_url ? 'Cambiar imagen' : 'Seleccionar imagen'}
                       </button>
                       {formData.image_url && (
                         <button type="button" onClick={() => setFormData({...formData, image_url: ''})} className="px-5 py-2.5 rounded-xl font-bold bg-red-50 text-red-600 text-sm transition-colors hover:bg-red-100">
