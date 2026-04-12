@@ -1,7 +1,8 @@
-'use client';
-
+"use client"
+import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Bell, User, Users, LogOut, ChevronDown } from 'lucide-react';
+import { GlobalSearch } from './GlobalSearch';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +18,7 @@ interface DashboardHeaderProps {
 
 export default function DashboardHeader({ clinicName }: DashboardHeaderProps) {
   const router = useRouter();
+  const [open, setOpen] = React.useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -24,22 +26,24 @@ export default function DashboardHeader({ clinicName }: DashboardHeaderProps) {
   };
 
   return (
-    <header className="hidden md:flex items-center justify-between px-8 py-5 sticky top-0 z-20 bg-background/70 backdrop-blur-2xl border-b border-border/40">
+    <>
+      <header className="hidden md:flex items-center justify-between px-8 py-5 sticky top-0 z-20 bg-background/70 backdrop-blur-2xl border-b border-border/40">
 
-      {/* Search Bar Island */}
-      <div className="flex items-center bg-card/60 backdrop-blur-md border border-border/60 rounded-2xl px-4 py-2.5 w-[28rem] shadow-sm opacity-50 cursor-not-allowed">
-        <Search size={18} strokeWidth={1.5} className="text-muted-foreground mr-3 shrink-0" />
-        <input
-          type="text"
-          placeholder="Comando rápido: Buscar reservas o clientes..."
-          className="bg-transparent border-none outline-none text-sm font-medium w-full text-foreground placeholder:text-muted-foreground/70 cursor-not-allowed"
-          disabled
-        />
-        <span className="text-[10px] font-bold text-muted-foreground border border-border rounded px-1.5 py-0.5 ml-2">⌘K</span>
-      </div>
+        {/* Search Bar Island — Ahora es un Trigger */}
+        <button
+          onClick={() => setOpen(true)}
+          className="flex items-center bg-card/60 backdrop-blur-md border border-border/60 hover:border-primary/30 transition-all rounded-2xl px-4 py-2.5 w-[28rem] shadow-sm text-left group"
+        >
+          <Search size={18} strokeWidth={1.5} className="text-muted-foreground mr-3 shrink-0 group-hover:text-primary transition-colors" />
+          <span className="text-sm font-medium text-muted-foreground/70 flex-1">
+            Comando rápido: Buscar reservas o clientes...
+          </span>
+          <span className="text-[10px] font-bold text-muted-foreground border border-border rounded px-1.5 py-0.5 ml-2 text-stone-400">Ctrl K</span>
+        </button>
 
-      {/* Quick Actions Island */}
-      <div className="flex items-center gap-4">
+        {/* Quick Actions Island */}
+        <div className="flex items-center gap-4">
+
 
         {/* Bell — inactiva */}
         <button
@@ -100,5 +104,9 @@ export default function DashboardHeader({ clinicName }: DashboardHeaderProps) {
 
       </div>
     </header>
+
+    <GlobalSearch open={open} setOpen={setOpen} />
+    </>
   );
 }
+
