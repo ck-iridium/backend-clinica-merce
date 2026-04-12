@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect, useRef } from 'react';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
+import { Save, Building2, Link2, SearchCode, ImageIcon, Hash, ChevronDown } from 'lucide-react';
 
 export default function SettingsPage() {
   const { showFeedback } = useFeedback();
@@ -97,14 +98,15 @@ export default function SettingsPage() {
     <div className="animate-in fade-in duration-500 pb-20 max-w-[1100px] mx-auto">
       <div className="mb-10 flex justify-between items-center">
         <div>
-           <h1 className="text-3xl font-extrabold text-stone-800 tracking-tight">Ajustes Generales del Sistema</h1>
-           <p className="text-stone-500 font-medium">Configura la información de tu clínica y preferencias.</p>
+          <h1 className="text-4xl font-serif font-semibold text-stone-800 tracking-tight">Ajustes Generales</h1>
+          <p className="text-stone-400 font-medium mt-1">Configura la información de tu clínica y preferencias.</p>
         </div>
-        <button 
-           onClick={handleSave}
-           disabled={saving}
-           className="bg-[#d9777f] hover:bg-[#c7656e] text-white px-8 py-3 rounded-xl font-bold shadow-sm transition-all flex items-center gap-2 disabled:opacity-50"
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="bg-stone-900 hover:bg-[#d9777f] text-white px-6 py-3 rounded-xl font-bold shadow-sm transition-all flex items-center gap-2 disabled:opacity-50"
         >
+          <Save size={16} strokeWidth={1.5} />
           {saving ? 'Guardando...' : 'Guardar Cambios'}
         </button>
       </div>
@@ -112,10 +114,13 @@ export default function SettingsPage() {
       <form onSubmit={handleSave} className="space-y-8">
         
         {/* Detalles de la Empresa */}
-        <div className="bg-white rounded-[2rem] border border-stone-100 p-8 shadow-sm">
-           <h3 className="text-[10px] font-bold text-[#d9777f] uppercase tracking-widest mb-6 border-b border-stone-100 pb-2 flex items-center gap-2">
-             <span>🏢 Detalles de la Empresa</span>
-           </h3>
+        <div className="bg-white rounded-[2.5rem] border border-stone-100 p-8 shadow-sm">
+          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-stone-100">
+            <span className="w-9 h-9 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-500">
+              <Building2 size={18} strokeWidth={1.5} />
+            </span>
+            <h3 className="text-2xl font-serif font-semibold text-stone-800">Detalles de la Empresa</h3>
+          </div>
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-xs font-bold text-stone-500 mb-2">Nombre Comercial</label>
@@ -149,10 +154,13 @@ export default function SettingsPage() {
         </div>
 
         {/* Enlaces y Redes Sociales */}
-        <div className="bg-white rounded-[2rem] border border-stone-100 p-8 shadow-sm">
-           <h3 className="text-[10px] font-bold text-[#d9777f] uppercase tracking-widest mb-6 border-b border-stone-100 pb-2 flex items-center gap-2">
-             <span>🔗 Enlaces y Redes Sociales</span>
-           </h3>
+        <div className="bg-white rounded-[2.5rem] border border-stone-100 p-8 shadow-sm">
+          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-stone-100">
+            <span className="w-9 h-9 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-500">
+              <Link2 size={18} strokeWidth={1.5} />
+            </span>
+            <h3 className="text-2xl font-serif font-semibold text-stone-800">Enlaces y Redes Sociales</h3>
+          </div>
            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label className="block text-xs font-bold text-stone-500 mb-2">URL de Instagram</label>
@@ -170,10 +178,13 @@ export default function SettingsPage() {
         </div>
 
         {/* Control SEO */}
-        <div className="bg-white rounded-[2rem] border border-stone-100 p-8 shadow-sm">
-           <h3 className="text-[10px] font-bold text-[#d9777f] uppercase tracking-widest mb-6 border-b border-stone-100 pb-2 flex items-center gap-2">
-             <span>🔍 Posicionamiento SEO</span>
-           </h3>
+        <div className="bg-white rounded-[2.5rem] border border-stone-100 p-8 shadow-sm">
+          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-stone-100">
+            <span className="w-9 h-9 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-500">
+              <SearchCode size={18} strokeWidth={1.5} />
+            </span>
+            <h3 className="text-2xl font-serif font-semibold text-stone-800">Posicionamiento SEO</h3>
+          </div>
            <label className="flex items-center gap-4 cursor-pointer group w-fit">
               <div className="relative">
                 <input 
@@ -195,10 +206,13 @@ export default function SettingsPage() {
         </div>
 
         {/* Imágenes y Logos */}
-        <div className="bg-white rounded-[2rem] border border-stone-100 p-8 shadow-sm">
-           <h3 className="text-[10px] font-bold text-[#d9777f] uppercase tracking-widest mb-6 border-b border-stone-100 pb-2 flex items-center gap-2">
-             <span>🖼️ Imágenes y Logos</span>
-           </h3>
+        <div className="bg-white rounded-[2.5rem] border border-stone-100 p-8 shadow-sm">
+          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-stone-100">
+            <span className="w-9 h-9 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-500">
+              <ImageIcon size={18} strokeWidth={1.5} />
+            </span>
+            <h3 className="text-2xl font-serif font-semibold text-stone-800">Imágenes y Logotipos</h3>
+          </div>
            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               
               {/* Logo App */}
@@ -245,10 +259,13 @@ export default function SettingsPage() {
 
 
         {/* Numeración */}
-        <div className="bg-white rounded-[2rem] border border-stone-100 p-8 shadow-sm">
-           <h3 className="text-[10px] font-bold text-[#d9777f] uppercase tracking-widest mb-6 border-b border-stone-100 pb-2 flex items-center gap-2">
-             <span>🔢 Agenda y Numeración</span>
-           </h3>
+        <div className="bg-white rounded-[2.5rem] border border-stone-100 p-8 shadow-sm">
+          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-stone-100">
+            <span className="w-9 h-9 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-500">
+              <Hash size={18} strokeWidth={1.5} />
+            </span>
+            <h3 className="text-2xl font-serif font-semibold text-stone-800">Agenda y Numeración</h3>
+          </div>
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2 p-4 bg-orange-50/50 border border-orange-100 rounded-xl mb-2">
                 <label className="block text-xs font-bold text-orange-700 mb-2">Margen de antelación para hoy (Horas)</label>

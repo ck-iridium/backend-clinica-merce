@@ -3,6 +3,26 @@ import { useState, useEffect, useRef } from 'react';
 import CropImageModal from '@/components/CropImageModal';
 import MediaPickerModal from '@/components/MediaPickerModal';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
+import { 
+  Settings2, 
+  Plus, 
+  Sparkles, 
+  Image as ImageIcon, 
+  Trash2, 
+  Pencil, 
+  FolderTree, 
+  Flower2, 
+  Clock, 
+  X, 
+  ChevronDown 
+} from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function ServicesPage() {
   const { showFeedback } = useFeedback();
@@ -26,6 +46,7 @@ export default function ServicesPage() {
   const [selectedImageForCrop, setSelectedImageForCrop] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const [showCatMediaPicker, setShowCatMediaPicker] = useState(false);
   const imgInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -307,12 +328,13 @@ export default function ServicesPage() {
           <button 
             onClick={() => setShowManageCategoriesModal(true)}
             className="px-4 py-3 rounded-xl bg-white text-stone-600 border border-stone-200 font-bold transition-all hover:bg-stone-50 active:scale-95 shadow-sm flex items-center gap-2">
-            <span>⚙️</span> <span className="hidden sm:inline">Categorías</span>
+            <Settings2 size={18} strokeWidth={1.5} className="text-stone-400" /> <span className="hidden sm:inline">Categorías</span>
           </button>
           <button 
             onClick={() => showForm ? handleCancel() : setShowForm(true)}
-            className={`px-6 py-3 rounded-xl font-bold transition-all shadow-md active:scale-95 ${showForm ? 'bg-stone-200 text-stone-700' : 'bg-[#d4af37] hover:bg-[#b08e23] border border-transparent text-white'}`}>
-            {showForm ? 'Cancelar' : '+ Nuevo Servicio'}
+            className={`px-6 py-3 rounded-xl font-bold transition-all shadow-md active:scale-95 flex items-center gap-2 ${showForm ? 'bg-stone-200 text-stone-700' : 'bg-[#d4af37] hover:bg-[#b08e23] border border-transparent text-white'}`}>
+            {showForm ? <X size={18} strokeWidth={1.5} /> : <Plus size={18} strokeWidth={1.5} />}
+            {showForm ? 'Cancelar' : 'Nuevo Servicio'}
           </button>
         </div>
       </div>
@@ -328,14 +350,16 @@ export default function ServicesPage() {
             {/* Header del Modal */}
             <div className="p-6 md:p-8 flex justify-between items-center border-b border-stone-50 relative z-10">
               <h2 className="text-2xl font-bold text-stone-800 flex items-center gap-3">
-                <span className="w-10 h-10 rounded-2xl bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">✨</span>
+                <span className="w-10 h-10 rounded-2xl bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
+                  <Sparkles size={20} strokeWidth={1.5} />
+                </span>
                 {editingId ? 'Editar Técnica de Tratamiento' : 'Alta Técnica de Tratamiento'}
               </h2>
               <button 
                 onClick={handleCancel}
                 className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-stone-50 text-stone-400 hover:text-stone-800 transition-all text-2xl leading-none"
               >
-                ×
+                <X size={24} strokeWidth={1.5} />
               </button>
             </div>
             
@@ -354,7 +378,7 @@ export default function ServicesPage() {
                     </div>
                  ) : (
                     <div className="w-32 h-32 rounded-2xl bg-white border border-stone-200 border-dashed flex flex-col justify-center items-center shrink-0">
-                       <span className="text-2xl mb-1">🖼️</span>
+                       <ImageIcon size={24} strokeWidth={1.5} className="text-stone-300 mb-1" />
                        <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest text-center px-2">Sin Foto</span>
                     </div>
                  )}
@@ -367,7 +391,7 @@ export default function ServicesPage() {
                         onClick={() => setShowMediaPicker(true)}
                         className="px-5 py-2.5 rounded-xl font-bold bg-[#d4af37] hover:bg-[#b08e23] text-white text-sm transition-colors shadow-md flex items-center gap-2"
                       >
-                        <span>🖼️</span> Seleccionar imagen
+                        <ImageIcon size={18} strokeWidth={1.5} /> Seleccionar imagen
                       </button>
                       {formData.image_url && (
                         <button type="button" onClick={() => setFormData({...formData, image_url: ''})} className="px-5 py-2.5 rounded-xl font-bold bg-red-50 text-red-600 text-sm transition-colors hover:bg-red-100">
@@ -389,23 +413,27 @@ export default function ServicesPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Duración (minutos) *</label>
-                  <input required type="number" min="5" step="5" value={formData.duration_minutes || 0} onChange={e => setFormData({...formData, duration_minutes: Number(e.target.value)})} className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" />
+                  <input required type="number" min="5" step="5" value={formData.duration_minutes || 0} onChange={e => setFormData({...formData, duration_minutes: Number(e.target.value)})} className="w-full max-w-[140px] px-4 py-3 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all text-center font-bold" />
                   <p className="text-xs text-stone-400 mt-2 font-medium">Reserva el hueco total bloqueado en Agenda.</p>
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Precio Base (€) *</label>
-                  <input required type="number" min="0" step="0.5" value={formData.price || 0} onChange={e => setFormData({...formData, price: Number(e.target.value)})} className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" />
+                  <input required type="number" min="0" step="0.5" value={formData.price || 0} onChange={e => setFormData({...formData, price: Number(e.target.value)})} className="w-full max-w-[140px] px-4 py-3 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all text-center font-bold" />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Categoría *</label>
                   <div className="flex gap-2">
-                    <select required value={formData.category_id || ""} onChange={e => setFormData({...formData, category_id: e.target.value})} className="flex-1 px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all appearance-none cursor-pointer">
-                      <option value="">-- Selecciona una categoría --</option>
-                      {categories.map(cat => (
-                        <option key={cat.id} value={cat.id}>{cat.name}</option>
-                      ))}
-                    </select>
-                    <button type="button" onClick={() => setShowCategoryModal(true)} className="px-4 py-4 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold transition-all text-sm border border-stone-200 shrink-0">
+                    <Select value={formData.category_id || ""} onValueChange={(val) => setFormData({...formData, category_id: val})}>
+                      <SelectTrigger className="flex-1">
+                        <SelectValue placeholder="-- Selecciona una categoría --" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map(cat => (
+                          <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <button type="button" onClick={() => setShowCategoryModal(true)} className="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold transition-all text-sm border border-stone-200 shrink-0">
                       + Nueva Categoría
                     </button>
                   </div>
@@ -454,10 +482,10 @@ export default function ServicesPage() {
               <div className="mt-8 border border-stone-100 bg-stone-50/50 rounded-2xl overflow-hidden">
                 <details className="group">
                   <summary className="font-extrabold text-stone-700 bg-stone-100/50 px-6 py-4 cursor-pointer hover:bg-stone-100 transition-colors list-none flex justify-between items-center">
-                     <div>
-                       <span className="text-lg">⚙️</span> Configuración SEO <span className="font-normal text-sm text-stone-400 ml-2">(Opcional)</span>
+                     <div className="flex items-center gap-2">
+                       <Settings2 size={18} strokeWidth={1.5} className="text-stone-500" /> Configuración SEO <span className="font-normal text-sm text-stone-400 ml-2">(Opcional)</span>
                      </div>
-                     <span className="text-stone-400 group-open:rotate-180 transition-transform">▼</span>
+                     <ChevronDown size={18} strokeWidth={1.5} className="text-stone-400 group-open:rotate-180 transition-transform" />
                   </summary>
                   <div className="p-6 grid grid-cols-1 gap-6">
                     <div>
@@ -479,8 +507,8 @@ export default function ServicesPage() {
             </form>
             <div className="p-6 md:p-8 bg-stone-50/50 border-t border-stone-100 flex justify-between gap-4 relative z-10">
               {editingId ? (
-                <button type="button" onClick={handleDeleteService} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 w-14 h-14 rounded-xl transition-all shadow-sm flex items-center justify-center text-xl" title="Eliminar Servicio de Forma Segura">
-                  🗑️
+                <button type="button" onClick={handleDeleteService} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 w-14 h-14 rounded-xl transition-all shadow-sm flex items-center justify-center" title="Eliminar Servicio de Forma Segura">
+                  <Trash2 size={20} strokeWidth={1.5} />
                 </button>
               ) : (
                 <div></div>
@@ -529,7 +557,9 @@ export default function ServicesPage() {
           {Object.entries(groupedServices).map(([categoryName, svcs]) => (
             <div key={categoryName}>
               <h3 className="text-xl font-black text-stone-800 mb-6 flex items-center gap-3">
-                <span className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center text-[#d4af37] text-sm leading-none">✽</span>
+                <span className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center text-[#d4af37] text-sm leading-none">
+                  <Flower2 size={16} strokeWidth={1.5} />
+                </span>
                 {categoryName}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -554,10 +584,10 @@ export default function ServicesPage() {
                     
                     <div className="flex justify-between items-center border-t border-stone-100 pt-4 mt-auto relative z-10">
                       <div className="flex items-center gap-2 text-stone-400 text-sm font-semibold bg-stone-50 px-3 py-1.5 rounded-lg border border-stone-100">
-                        <span className="text-[#d4af37] text-base leading-none">⏱</span> {svc.duration_minutes} min
+                        <Clock size={16} strokeWidth={1.5} className="text-[#d4af37]" /> {svc.duration_minutes} min
                       </div>
-                      <button onClick={() => handleEditClick(svc)} className="text-stone-400 hover:text-stone-800 font-bold text-sm bg-white border border-stone-200 px-3 py-1.5 rounded-lg shadow-sm active:scale-95 transition-all">
-                        Editar
+                      <button onClick={() => handleEditClick(svc)} className="text-stone-400 hover:text-stone-800 font-bold text-sm bg-white border border-stone-200 px-3 py-1.5 rounded-lg shadow-sm active:scale-95 transition-all flex items-center gap-1.5">
+                        <Pencil size={14} strokeWidth={1.5} /> Editar
                       </button>
                     </div>
                   </div>
@@ -602,13 +632,15 @@ export default function ServicesPage() {
       {/* Modal Gestionar Categorías */}
       {showManageCategoriesModal && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/40 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-40 flex items-center justify-center bg-stone-900/40 backdrop-blur-sm p-4"
           onClick={(e) => { if (e.target === e.currentTarget) setShowManageCategoriesModal(false); }}
         >
           <div className="bg-white rounded-[2.5rem] shadow-2xl p-8 max-w-lg w-full animate-in zoom-in-95 duration-200 max-h-[80vh] overflow-hidden flex flex-col">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-2xl font-extrabold text-stone-800">Gestionar Categorías</h3>
-              <button onClick={() => setShowManageCategoriesModal(false)} className="text-stone-300 hover:text-stone-800 transition-colors text-2xl leading-none">×</button>
+              <button onClick={() => setShowManageCategoriesModal(false)} className="text-stone-300 hover:text-stone-800 transition-colors">
+                <X size={24} strokeWidth={1.5} />
+              </button>
             </div>
             
             <div className="overflow-y-auto flex-1 space-y-3 pr-2 custom-scrollbar">
@@ -626,17 +658,32 @@ export default function ServicesPage() {
                             className="flex-1 px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
                           />
                           <button type="submit" className="bg-emerald-500 text-white px-3 py-2 rounded-lg font-bold text-xs uppercase shadow-sm">OK</button>
-                          <button type="button" onClick={() => {setEditingCategoryId(null); setEditingCategoryImage(null);}} className="bg-stone-200 text-stone-600 px-3 py-2 rounded-lg font-bold text-xs uppercase">×</button>
+                          <button type="button" onClick={() => {setEditingCategoryId(null); setEditingCategoryImage(null);}} className="bg-stone-200 text-stone-600 px-3 py-2 rounded-lg font-bold text-xs uppercase">
+                            <X size={14} strokeWidth={1.5} />
+                          </button>
                         </div>
                         <div className="flex items-center gap-3">
                           {editingCategoryImage && (
                             <img src={editingCategoryImage.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${editingCategoryImage}` : editingCategoryImage} className="w-12 h-12 object-cover rounded-md shadow-sm border border-stone-200" alt="cat" />
                           )}
                           <div className="flex-1">
-                             <label className="text-xs font-semibold text-stone-500 mb-1 block">Imagen de portada (opcional)</label>
-                             <input type="file" accept="image/*" onChange={handleCatImageUpload} className="w-full text-xs text-stone-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-stone-200 file:text-stone-700 hover:file:bg-stone-300 transition-all cursor-pointer" />
+                            <label className="text-xs font-semibold text-stone-500 mb-2 block">Imagen de portada (opcional)</label>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setShowCatMediaPicker(true)}
+                                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-600 text-xs font-bold transition-all border border-stone-200"
+                              >
+                                <ImageIcon size={14} strokeWidth={1.5} />
+                                {editingCategoryImage ? 'Cambiar imagen' : 'Seleccionar de galería'}
+                              </button>
+                              {editingCategoryImage && (
+                                <button type="button" onClick={() => setEditingCategoryImage('')} className="text-xs text-red-500 font-bold px-2 py-1 rounded-lg bg-red-50 hover:bg-red-100 transition-all">
+                                  Quitar
+                                </button>
+                              )}
+                            </div>
                           </div>
-                          {editingCategoryImage && <button type="button" onClick={() => setEditingCategoryImage('')} className="text-xs text-red-500 font-bold underline mt-4">Quitar</button>}
                         </div>
                       </form>
                     ) : (
@@ -645,24 +692,26 @@ export default function ServicesPage() {
                           {cat.image_url ? (
                             <img src={cat.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${cat.image_url}` : cat.image_url} alt="" className="w-10 h-10 object-cover rounded-lg border border-stone-200" />
                           ) : (
-                            <div className="w-10 h-10 rounded-lg bg-stone-200 flex items-center justify-center text-stone-400 text-sm">📁</div>
+                            <div className="w-10 h-10 rounded-lg bg-stone-200 flex items-center justify-center text-stone-400">
+                              <FolderTree size={18} strokeWidth={1.5} />
+                            </div>
                           )}
                           <span className="font-bold text-stone-700">{cat.name}</span>
                         </div>
                         <div className="flex gap-2 shrink-0">
                           <button 
                             onClick={() => { setEditingCategoryId(cat.id); setEditingCategoryName(cat.name); setEditingCategoryImage(cat.image_url || null); }}
-                            className="p-2 text-stone-400 hover:text-stone-600 hover:bg-white rounded-lg transition-all"
+                            className="p-2 text-stone-400 hover:text-stone-800 hover:bg-white rounded-lg transition-all"
                             title="Editar"
                           >
-                            ✏️
+                            <Pencil size={16} strokeWidth={1.5} />
                           </button>
                           <button 
                             onClick={() => handleDeleteCategory(cat.id)}
                             className="p-2 text-stone-300 hover:text-red-500 hover:bg-white rounded-lg transition-all"
                             title="Eliminar categoría"
                           >
-                            🗑️
+                            <Trash2 size={16} strokeWidth={1.5} />
                           </button>
                         </div>
                       </>
@@ -678,6 +727,16 @@ export default function ServicesPage() {
           </div>
         </div>
       )}
+      {showCatMediaPicker && (
+        <MediaPickerModal
+          onClose={() => setShowCatMediaPicker(false)}
+          onImageSelected={(url) => {
+            setEditingCategoryImage(url);
+            setShowCatMediaPicker(false);
+          }}
+        />
+      )}
+
     </div>
   );
 }

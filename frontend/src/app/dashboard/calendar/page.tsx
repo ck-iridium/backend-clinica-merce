@@ -2,6 +2,14 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
+import { Calendar, Clock, Lock, Unlock, X, ChevronLeft, ChevronRight, Sparkles, Trash2, AlertTriangle, Phone, Save } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const getMonday = (d: Date) => {
   const date = new Date(d);
@@ -325,8 +333,8 @@ function CalendarContent() {
         <div className="flex gap-2">
           <button 
             onClick={() => { const d = new Date(currentWeek); d.setDate(d.getDate() - 7); setCurrentWeek(d); }}
-            className="px-5 py-2 bg-white border border-stone-200 text-stone-600 rounded-xl font-bold shadow-sm hover:bg-[#fdf2f3] hover:text-[#d9777f] hover:border-[#f3c7cb] transition-colors">
-            &larr; Ant
+            className="px-4 py-2 bg-white border border-stone-200 text-stone-600 rounded-xl font-bold shadow-sm hover:bg-[#fdf2f3] hover:text-[#d9777f] hover:border-[#f3c7cb] transition-colors flex items-center gap-1">
+            <ChevronLeft size={18} strokeWidth={1.5} /> Ant
           </button>
           <button 
             onClick={() => setCurrentWeek(getMonday(new Date()))}
@@ -335,8 +343,8 @@ function CalendarContent() {
           </button>
           <button 
             onClick={() => { const d = new Date(currentWeek); d.setDate(d.getDate() + 7); setCurrentWeek(d); }}
-            className="px-5 py-2 bg-white border border-stone-200 text-stone-600 rounded-xl font-bold shadow-sm hover:bg-[#fdf2f3] hover:text-[#d9777f] hover:border-[#f3c7cb] transition-colors">
-            Sig &rarr;
+            className="px-4 py-2 bg-white border border-stone-200 text-stone-600 rounded-xl font-bold shadow-sm hover:bg-[#fdf2f3] hover:text-[#d9777f] hover:border-[#f3c7cb] transition-colors flex items-center gap-1">
+            Sig <ChevronRight size={18} strokeWidth={1.5} />
           </button>
         </div>
       </div>
@@ -591,7 +599,7 @@ function CalendarContent() {
           onClick={(e) => { if (e.target === e.currentTarget) setShowModal(false); }}
         >
           <div className="bg-white rounded-[2rem] shadow-2xl p-8 max-w-lg w-full relative animate-in zoom-in-95 duration-200">
-            <button onClick={() => setShowModal(false)} className="absolute top-6 right-6 w-8 h-8 rounded-full bg-stone-100 text-stone-500 font-bold hover:bg-stone-200 flex items-center justify-center transition-colors">✕</button>
+            <button onClick={() => setShowModal(false)} className="absolute top-6 right-6 w-8 h-8 rounded-full bg-stone-100 text-stone-500 hover:bg-stone-200 flex items-center justify-center transition-colors"><X size={18} strokeWidth={1.5} /></button>
             <div className="flex gap-4 mb-6 p-1 bg-stone-100 rounded-2xl w-fit">
               <button 
                 onClick={() => setModalType('appointment')}
@@ -611,7 +619,7 @@ function CalendarContent() {
               <>
                 <h2 className="text-2xl font-extrabold text-stone-800 mb-2">Asignar Cita</h2>
                 <p className="text-[#d9777f] font-bold mb-3 flex items-center gap-2">
-                  📅 {selectedSlot && `${selectedSlot.date.toLocaleDateString('es-ES')} a las ${selectedSlot.hour.toString().padStart(2, '0')}:${selectedMinutes.toString().padStart(2, '0')} h`}
+                  <Calendar size={16} strokeWidth={1.5} /> {selectedSlot && `${selectedSlot.date.toLocaleDateString('es-ES')} a las ${selectedSlot.hour.toString().padStart(2, '0')}:${selectedMinutes.toString().padStart(2, '0')} h`}
                 </p>
                 
                 {/* Selector de Minutos Manual para precisión */}
@@ -654,7 +662,7 @@ function CalendarContent() {
                     <div className="mb-4">
                        <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Hueco Disponible</p>
                        <p className="text-xs font-bold text-stone-600 flex items-center gap-1">
-                          ⏱ {gapMinutes} minutos libres {nextEvent && `(hasta la siguiente cita)`}
+                          <Clock size={14} strokeWidth={1.5} /> {gapMinutes} minutos libres {nextEvent && `(hasta la siguiente cita)`}
                        </p>
                        {availableServices.length === 0 && (
                           <div className="mt-2 p-3 bg-red-50 border border-red-100 rounded-xl text-[11px] text-red-600 font-bold">
@@ -668,43 +676,50 @@ function CalendarContent() {
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div>
                     <label className="block text-sm font-semibold text-stone-700 mb-2">Cliente *</label>
-                    <select required value={selectedClientId} onChange={e => setSelectedClientId(e.target.value)} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50 shadow-inner appearance-none">
-                      <option value="">-- Elige un cliente --</option>
-                      {clients
-                        .filter(c => c.email !== 'contado@clinica-mercedes.com')
-                        .map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
+                    <Select required value={selectedClientId} onValueChange={setSelectedClientId}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="-- Elige un cliente --" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {clients
+                          .filter(c => c.email !== 'contado@clinica-mercedes.com')
+                          .map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
                   </div>
                   
                   <div>
                     <label className="block text-sm font-semibold text-stone-700 mb-2">Tratamiento a realizar *</label>
-                    <select required value={selectedServiceId} onChange={e => setSelectedServiceId(e.target.value)} className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50 shadow-inner appearance-none">
-                      <option value="">-- Selecciona el servicio --</option>
-                      {(() => {
-                        const start_time = new Date(selectedSlot!.date);
-                        start_time.setHours(selectedSlot!.hour, selectedMinutes, 0, 0);
-                        const closingTime = new Date(selectedSlot!.date);
-                        closingTime.setHours(19, 0, 0, 0);
-                        const dayAppts = getAppointmentsForDay(selectedSlot!.date);
-                        const dayBlocks = getBlocksForDay(selectedSlot!.date);
-                        const nextEvent = [...dayAppts, ...dayBlocks]
-                          .map(e => ({ ...e, start: new Date(e.start_time.endsWith('Z') ? e.start_time.slice(0, -1) : e.start_time) }))
-                          .filter(e => e.start > start_time)
-                          .sort((a, b) => a.start.getTime() - b.start.getTime())[0];
-                        const limitDate = nextEvent ? (nextEvent.start < closingTime ? nextEvent.start : closingTime) : closingTime;
-                        const gapMinutes = Math.floor((limitDate.getTime() - start_time.getTime()) / 60000);
-                        
-                        return services.map(s => (
-                          <option key={s.id} value={s.id} disabled={s.duration_minutes > gapMinutes}>
-                            {s.name} ({s.duration_minutes} min) {s.duration_minutes > gapMinutes ? '⚠️ EXCEDIDO' : ''}
-                          </option>
-                        ));
-                      })()}
-                    </select>
+                    <Select value={selectedServiceId} onValueChange={setSelectedServiceId}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="-- Selecciona el servicio --" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(() => {
+                          const start_time = new Date(selectedSlot!.date);
+                          start_time.setHours(selectedSlot!.hour, selectedMinutes, 0, 0);
+                          const closingTime = new Date(selectedSlot!.date);
+                          closingTime.setHours(19, 0, 0, 0);
+                          const dayAppts = getAppointmentsForDay(selectedSlot!.date);
+                          const dayBlocks = getBlocksForDay(selectedSlot!.date);
+                          const nextEvent = [...dayAppts, ...dayBlocks]
+                            .map(e => ({ ...e, start: new Date(e.start_time.endsWith('Z') ? e.start_time.slice(0, -1) : e.start_time) }))
+                            .filter(e => e.start > start_time)
+                            .sort((a, b) => a.start.getTime() - b.start.getTime())[0];
+                          const limitDate = nextEvent ? (nextEvent.start < closingTime ? nextEvent.start : closingTime) : closingTime;
+                          const gapMinutes = Math.floor((limitDate.getTime() - start_time.getTime()) / 60000);
+                          return services.map(s => (
+                            <SelectItem key={s.id} value={s.id} disabled={s.duration_minutes > gapMinutes}>
+                              {s.name} ({s.duration_minutes} min) {s.duration_minutes > gapMinutes ? '⚠️ EXCEDIDO' : ''}
+                            </SelectItem>
+                          ));
+                        })()}
+                      </SelectContent>
+                    </Select>
                     {selectedServiceId && (
                       <div className="mt-3 p-4 bg-yellow-50 border border-yellow-100 rounded-xl">
                         <p className="text-xs text-yellow-800 font-medium flex items-center gap-2">
-                          <span className="text-yellow-600 font-bold text-lg leading-none">⏱</span> 
+                          <Clock size={16} strokeWidth={1.5} className="text-yellow-600" />
                           La agenda se bloqueará automáticamente durante {serviceMap.get(selectedServiceId)?.duration_minutes} minutos.
                         </p>
                       </div>
@@ -727,7 +742,7 @@ function CalendarContent() {
                       type="submit" 
                       className="w-full bg-stone-900 hover:bg-[#d9777f] text-white px-6 py-4 rounded-xl font-bold transition-all disabled:opacity-50 active:scale-95 shadow-lg shadow-stone-900/10"
                     >
-                      {saving ? 'Registrando...' : '✓ Guardar Cita'}
+                      {saving ? 'Registrando...' : 'Guardar Cita'}
                     </button>
                     <button type="button" onClick={() => setShowModal(false)} className="w-full py-4 rounded-xl font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 transition-all active:scale-95">
                       Cancelar
@@ -739,7 +754,7 @@ function CalendarContent() {
               <>
                 <h2 className="text-2xl font-extrabold text-stone-800 mb-2">Bloquear Horario</h2>
                 <p className="text-stone-500 font-bold mb-6 flex items-center gap-2">
-                  🔒 {selectedSlot && `${selectedSlot.date.toLocaleDateString('es-ES')} a las ${selectedSlot.hour.toString().padStart(2, '0')}:00 h`}
+                  <Lock size={18} strokeWidth={1.5} /> {selectedSlot && `${selectedSlot.date.toLocaleDateString('es-ES')} a las ${selectedSlot.hour.toString().padStart(2, '0')}:00 h`}
                 </p>
 
                 <form onSubmit={handleBlockSubmit} className="space-y-5">
@@ -792,7 +807,7 @@ function CalendarContent() {
           onClick={(e) => { if (e.target === e.currentTarget) setShowBlockDeleteModal(false); }}
         >
           <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-xs w-full text-center animate-in zoom-in-95 duration-200">
-             <div className="w-16 h-16 bg-stone-100 text-stone-400 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">🔓</div>
+             <div className="w-16 h-16 bg-stone-100 text-stone-400 rounded-full flex items-center justify-center mx-auto mb-4"><Unlock size={32} strokeWidth={1.5} /></div>
              <h3 className="text-xl font-extrabold text-stone-800 mb-2">Liberar Horario</h3>
              <p className="text-stone-500 text-sm mb-8">¿Deseas eliminar este bloqueo y permitir nuevas citas en este hueco?</p>
              <div className="flex flex-col gap-2">
@@ -821,7 +836,7 @@ function CalendarContent() {
           onClick={(e) => { if (e.target === e.currentTarget) setShowEditModal(false); }}
         >
           <div className="bg-white rounded-[2rem] shadow-2xl p-8 max-w-sm w-full relative animate-in zoom-in-95 duration-200">
-            <button onClick={() => setShowEditModal(false)} className="absolute top-6 right-6 w-8 h-8 rounded-full bg-stone-100 text-stone-500 font-bold hover:bg-stone-200 flex items-center justify-center transition-colors">✕</button>
+            <button onClick={() => setShowEditModal(false)} className="absolute top-6 right-6 w-8 h-8 rounded-full bg-stone-100 text-stone-500 hover:bg-stone-200 flex items-center justify-center transition-colors"><X size={18} strokeWidth={1.5} /></button>
             
             <div className="mb-6">
               <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1">Cliente</p>
@@ -830,7 +845,7 @@ function CalendarContent() {
             
             <div className="mb-8">
               <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1">Tratamiento</p>
-              <p className="text-lg font-bold text-[#d9777f] flex items-center gap-2">✨ {serviceMap.get(selectedAppt.service_id)?.name || 'Borrador...'}</p>
+              <p className="text-lg font-bold text-[#d9777f] flex items-center gap-2"><Sparkles size={18} strokeWidth={1.5} /> {serviceMap.get(selectedAppt.service_id)?.name || 'Borrador...'}</p>
             </div>
 
             <div className="mb-6">
@@ -859,7 +874,7 @@ function CalendarContent() {
                   disabled={updatingStatus}
                   className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-orange-200 transition-all active:scale-95 flex items-center justify-center gap-2"
                 >
-                  Confirmar Cita Web ✨
+                  <Sparkles size={16} strokeWidth={1.5} /> Confirmar Cita Web
                 </button>
                 <p className="text-[10px] text-orange-400 font-bold uppercase tracking-widest mt-2 text-center">Nueva reserva desde internet</p>
               </div>
@@ -878,7 +893,7 @@ function CalendarContent() {
                 }}
                 className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-4 rounded-xl shadow-lg shadow-green-100 transition-all active:scale-95 flex items-center justify-center gap-2"
               >
-                📲 Contactar por WhatsApp
+                <Phone size={18} strokeWidth={1.5} /> Contactar por WhatsApp
               </button>
             </div>
 
@@ -886,40 +901,43 @@ function CalendarContent() {
               <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-2 border-b border-stone-100 pb-2">Estado de la Cita</p>
               
               <div className="relative">
-                <select 
+                <Select
                   value={selectedAppt.status}
-                  onChange={(e) => handleStatusChange(e.target.value)}
+                  onValueChange={(val) => handleStatusChange(val)}
                   disabled={updatingStatus}
-                  className={`w-full py-4 px-4 rounded-xl font-bold appearance-none transition-all outline-none border-2
-                    ${selectedAppt.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-400' : 
-                      selectedAppt.status === 'cancelled' ? 'bg-red-50 text-red-700 border-red-500' : 
+                >
+                  <SelectTrigger className={`w-full font-bold border-2 transition-all
+                    ${selectedAppt.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-400' :
+                      selectedAppt.status === 'cancelled' ? 'bg-red-50 text-red-700 border-red-500' :
                       selectedAppt.status === 'no_show' ? 'bg-stone-100 text-stone-600 border-stone-400' :
                       selectedAppt.status === 'web_pending' ? 'bg-orange-50 text-orange-700 border-orange-400' :
                       selectedAppt.status === 'confirmed' ? 'bg-[#fdf2f3] text-[#d9777f] border-[#d9777f]' :
                       'bg-stone-50 text-stone-600 border-transparent'}
-                  `}
-                >
-                  <option value="pending">⏳ Pendiente</option>
-                  <option value="confirmed">✨ Confirmada</option>
-                  <option value="completed">✅ Realizada</option>
-                  <option value="no_show">No Asistió</option>
-                  <option value="cancelled">❌ Cancelada</option>
-                  {selectedAppt.status === 'web_pending' && <option value="web_pending">🌐 Pendiente Web</option>}
-                </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-current opacity-50 font-bold">▼</div>
+                  `}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">⏳ Pendiente</SelectItem>
+                    <SelectItem value="confirmed">✨ Confirmada</SelectItem>
+                    <SelectItem value="completed">✅ Realizada</SelectItem>
+                    <SelectItem value="no_show">No Asistió</SelectItem>
+                    <SelectItem value="cancelled">❌ Cancelada</SelectItem>
+                    {selectedAppt.status === 'web_pending' && <SelectItem value="web_pending">🌐 Pendiente Web</SelectItem>}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             </div>
 
             <div className="mt-8 pt-6 border-t border-stone-100 flex justify-center flex-col items-center">
               {!confirmDelete ? (
-                <button onClick={() => setConfirmDelete(true)} disabled={updatingStatus} className="text-xs font-bold text-stone-400 hover:text-red-500 uppercase tracking-widest transition-colors flex items-center gap-1">
-                  🗑 Eliminar Cita del Sistema
+                <button onClick={() => setConfirmDelete(true)} disabled={updatingStatus} className="text-xs font-bold text-stone-400 hover:text-red-500 uppercase tracking-widest transition-colors flex items-center gap-1.5">
+                  <Trash2 size={14} strokeWidth={1.5} /> Eliminar Cita del Sistema
                 </button>
               ) : (
                 <div className="flex gap-3 mt-2">
-                  <button onClick={handleDeleteAppointment} disabled={updatingStatus} className="text-xs font-bold bg-red-50 text-red-600 px-4 py-2 rounded-lg hover:bg-red-100 uppercase tracking-widest transition-colors">
-                    ⚠️ Sí, Borrar definitivamente
+                  <button onClick={handleDeleteAppointment} disabled={updatingStatus} className="text-xs font-bold bg-red-50 text-red-600 px-4 py-2 rounded-lg hover:bg-red-100 uppercase tracking-widest transition-colors flex items-center gap-1">
+                    <AlertTriangle size={14} strokeWidth={1.5} /> Sí, Borrar definitivamente
                   </button>
                   <button onClick={() => setConfirmDelete(false)} disabled={updatingStatus} className="text-xs font-bold bg-stone-100 text-stone-500 px-4 py-2 rounded-lg hover:bg-stone-200 uppercase tracking-widest transition-colors">
                     Cancelar
