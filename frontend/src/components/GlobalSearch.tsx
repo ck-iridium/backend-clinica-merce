@@ -11,6 +11,7 @@ import {
   User,
   Zap,
   Loader2,
+  ShieldCheck,
 } from "lucide-react"
 
 import {
@@ -116,6 +117,10 @@ export function GlobalSearch({ open, setOpen }: { open: boolean, setOpen: (open:
 
         {/* Ajustes */}
         <CommandGroup heading="Ajustes y Sistema">
+          <CommandItem className="cursor-pointer" onSelect={() => runCommand(() => router.push("/dashboard/team"))}>
+            <ShieldCheck className="mr-2 h-4 w-4" />
+            <span>Gestionar Equipo</span>
+          </CommandItem>
           <CommandItem className="cursor-pointer" onSelect={() => runCommand(() => router.push("/dashboard/settings"))}>
             <Settings className="mr-2 h-4 w-4" />
             <span>Ajustes Generales</span>

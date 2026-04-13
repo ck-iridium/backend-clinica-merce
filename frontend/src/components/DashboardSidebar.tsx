@@ -6,7 +6,8 @@ import { usePathname } from 'next/navigation';
 import { 
   Menu, X, LayoutDashboard, Users, Sparkles, 
   Ticket, Receipt, CalendarDays, Settings, 
-  Database, Image as ImageIcon, Globe, Tag
+  Database, Image as ImageIcon, Globe, Tag,
+  ShieldCheck
 } from 'lucide-react';
 
 interface DashboardSidebarProps {
@@ -18,6 +19,7 @@ const navLinks = [
   { href: '/dashboard/pos',      label: 'Venta Rápida',        icon: Tag,             style: 'accent' },
   { href: '/dashboard',          label: 'Inicio',               icon: LayoutDashboard, style: 'normal', exact: true },
   { href: '/dashboard/clients',  label: 'Clientes',             icon: Users,           style: 'normal' },
+  { href: '/dashboard/team',     label: 'Equipo',               icon: ShieldCheck,     style: 'normal' },
   { href: '/dashboard/services', label: 'Servicios',            icon: Sparkles,        style: 'normal' },
   { href: '/dashboard/vouchers', label: 'Bonos',                icon: Ticket,          style: 'normal' },
   { href: '/dashboard/invoices', label: 'Facturas',             icon: Receipt,         style: 'normal' },
