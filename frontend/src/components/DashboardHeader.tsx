@@ -3,6 +3,7 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Bell, User, Users, LogOut, ChevronDown } from 'lucide-react';
 import { GlobalSearch } from './GlobalSearch';
+import { NotificationsPopover } from './NotificationsPopover';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,15 +45,7 @@ export default function DashboardHeader({ clinicName }: DashboardHeaderProps) {
         {/* Quick Actions Island */}
         <div className="flex items-center gap-4">
 
-
-        {/* Bell — inactiva */}
-        <button
-          disabled
-          className="relative w-11 h-11 rounded-2xl bg-card border border-border/50 flex items-center justify-center text-muted-foreground shadow-sm opacity-50 cursor-not-allowed"
-        >
-          <Bell size={18} strokeWidth={1.5} />
-          <span className="absolute top-2.5 right-3 w-2 h-2 rounded-full bg-destructive border-[1.5px] border-card" />
-        </button>
+        <NotificationsPopover />
 
         {/* Profile Dropdown */}
         <DropdownMenu>
