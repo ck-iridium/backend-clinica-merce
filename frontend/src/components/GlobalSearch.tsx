@@ -31,7 +31,7 @@ export function GlobalSearch({ open, setOpen }: { open: boolean, setOpen: (open:
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
-        setOpen((prev: boolean) => !prev)
+        setOpen(!open)
       }
     }
 
@@ -65,21 +65,6 @@ export function GlobalSearch({ open, setOpen }: { open: boolean, setOpen: (open:
           <CommandItem onSelect={() => runCommand(() => router.push("/dashboard/vouchers"))}>
             <CreditCard className="mr-2 h-4 w-4" />
             <span>Ver Bonos y Packs</span>
-          </CommandItem>
-        </CommandGroup>
-        <CommandSeparator />
-        <CommandGroup heading="Directorio de Clientes">
-          <CommandItem onSelect={() => runCommand(() => router.push("/dashboard/clients?search=Juan+Bares"))}>
-            <User className="mr-2 h-4 w-4" />
-            <span>Juan Bares</span>
-          </CommandItem>
-          <CommandItem onSelect={() => runCommand(() => router.push("/dashboard/clients?search=Maria+Gomez"))}>
-            <User className="mr-2 h-4 w-4" />
-            <span>María Gómez</span>
-          </CommandItem>
-          <CommandItem onSelect={() => runCommand(() => router.push("/dashboard/clients?search=Carlos+Ruiz"))}>
-            <User className="mr-2 h-4 w-4" />
-            <span>Carlos Ruiz</span>
           </CommandItem>
         </CommandGroup>
         <CommandSeparator />
