@@ -1,5 +1,6 @@
 "use client"
 import React, { useEffect } from 'react';
+import { AlertCircle, CheckCircle2, XCircle, Info } from 'lucide-react';
 
 export interface FeedbackConfig {
   type: 'success' | 'error' | 'confirm' | 'info';
@@ -27,10 +28,34 @@ export default function FeedbackModal({
   
   // Icon and Colors by type
   const iconMap = {
-    success: { icon: '✅', color: 'text-emerald-500', bg: 'bg-emerald-50', border: 'border-emerald-100', button: 'bg-emerald-500 hover:bg-emerald-600' },
-    error: { icon: '❌', color: 'text-red-500', bg: 'bg-red-50', border: 'border-red-100', button: 'bg-red-500 hover:bg-red-600' },
-    confirm: { icon: '⚠️', color: 'text-amber-500', bg: 'bg-amber-50', border: 'border-amber-100', button: 'bg-red-500 hover:bg-red-600 focus:ring-red-500' },
-    info: { icon: 'ℹ️', color: 'text-blue-500', bg: 'bg-blue-50', border: 'border-blue-100', button: 'bg-blue-500 hover:bg-blue-600' }
+    success: { 
+      icon: <CheckCircle2 size={42} strokeWidth={1.2} />, 
+      color: 'text-emerald-500', 
+      bg: 'bg-emerald-50', 
+      border: 'border-emerald-100', 
+      button: 'bg-stone-800 hover:bg-stone-900' 
+    },
+    error: { 
+      icon: <XCircle size={42} strokeWidth={1.2} />, 
+      color: 'text-rose-500', 
+      bg: 'bg-rose-50', 
+      border: 'border-rose-100', 
+      button: 'bg-stone-800 hover:bg-stone-900' 
+    },
+    confirm: { 
+      icon: <AlertCircle size={42} strokeWidth={1.2} />, 
+      color: 'text-[#d9a05b]', // Ámbar siena suave
+      bg: 'bg-[#fdf8f3]', 
+      border: 'border-[#f3e9df]', 
+      button: 'bg-[#bf7d6b] hover:bg-[#a66a5a] shadow-lg shadow-[#bf7d6b]/20' // Terracota elegante
+    },
+    info: { 
+      icon: <Info size={42} strokeWidth={1.2} />, 
+      color: 'text-sky-500', 
+      bg: 'bg-sky-50', 
+      border: 'border-sky-100', 
+      button: 'bg-stone-800 hover:bg-stone-900' 
+    }
   };
 
   const theme = iconMap[type];
@@ -44,29 +69,35 @@ export default function FeedbackModal({
   }, []);
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
-      {/* Backdrop */}
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 sm:p-4">
+      {/* Backdrop con Blur Moderno */}
       <div 
-        className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm transition-opacity" 
+        className="absolute inset-0 bg-stone-900/40 backdrop-blur-md transition-opacity duration-300" 
         onClick={type !== 'confirm' ? onClose : undefined}
       ></div>
       
-      {/* Modal Box */}
-      <div className={`relative w-full max-w-sm bg-white rounded-[2rem] p-8 shadow-2xl border ${theme.border} transform animate-in zoom-in-95 fade-in duration-200`}>
+      {/* Modal Box: Isla Blanca Premium */}
+      <div className={`relative w-full max-w-md bg-white rounded-[2.5rem] p-10 sm:p-12 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.15)] border border-stone-100 transform animate-in zoom-in-95 fade-in duration-300`}>
         
         <div className="flex flex-col items-center text-center">
-          <div className={`w-20 h-20 rounded-full flex items-center justify-center text-4xl mb-6 shadow-inner ${theme.bg}`}>
+          {/* Icon Container Soft */}
+          <div className={`w-24 h-24 rounded-[2rem] flex items-center justify-center mb-8 rotate-3 ${theme.color} ${theme.bg} border ${theme.border} shadow-sm`}>
             {theme.icon}
           </div>
           
-          <h2 className="text-2xl font-extrabold text-stone-800 mb-3">{title}</h2>
-          <p className="text-stone-500 leading-relaxed font-medium mb-8 text-sm">{message}</p>
+          <h2 className="text-3xl font-serif font-light text-stone-800 mb-4 tracking-tight leading-none">
+            {title}
+          </h2>
           
-          <div className="flex gap-3 w-full justify-center">
+          <p className="text-stone-400 font-medium mb-10 text-base leading-relaxed max-w-[280px]">
+            {message}
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 w-full justify-center items-center">
             {type === 'confirm' && (
                <button 
                 onClick={onClose}
-                className="flex-1 py-3 px-4 rounded-xl font-bold bg-white text-stone-500 border border-stone-200 hover:bg-stone-50 active:scale-95 transition-all text-sm"
+                className="order-2 sm:order-1 text-sm font-bold text-stone-400 hover:text-stone-600 transition-all border-b-2 border-transparent hover:border-stone-200 py-1"
                >
                  {cancelText}
                </button>
@@ -74,7 +105,7 @@ export default function FeedbackModal({
             
             <button 
               onClick={type === 'confirm' ? onConfirmHandler : onClose}
-              className={`flex-1 py-3 px-4 rounded-xl font-bold text-white shadow-md active:scale-95 transition-all text-sm ${type === 'confirm' ? 'bg-red-500 hover:bg-red-600' : 'bg-stone-800 hover:bg-stone-900'}`}
+              className={`order-1 sm:order-2 px-10 py-4 rounded-full font-bold text-white transition-all active:scale-95 text-sm uppercase tracking-widest ${theme.button}`}
             >
               {type === 'confirm' ? confirmText : 'Entendido'}
             </button>
