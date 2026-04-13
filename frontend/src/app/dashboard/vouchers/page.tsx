@@ -2,7 +2,15 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
+import { toast } from 'sonner';
 import { Skeleton } from "@/components/ui/skeleton";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   DropdownMenu, 
@@ -101,9 +109,12 @@ export default function VouchersPage() {
         setTemplateServiceId('');
         setTemplatePrice('');
         fetchData();
+        toast.success('Plantilla de bono creada');
       } else {
-        showFeedback({ type: 'error', title: 'Error', message: 'Error al crear plantilla' });
+        toast.error('Error al crear plantilla');
       }
+    } catch (e) {
+      toast.error('Error de conexión');
     } finally {
       setSaving(false);
     }
@@ -124,10 +135,12 @@ export default function VouchersPage() {
           const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/voucher_templates/${id}`, { method: 'DELETE' });
           if (res.ok) {
               fetchData();
-              showFeedback({ type: 'success', title: 'Plantilla eliminada', message: 'La plantilla ha sido eliminada con éxito.' });
+              toast.success('Plantilla eliminada correctamente');
+          } else {
+              toast.error('Error al eliminar plantilla');
           }
         } catch (e) {
-          console.error(e);
+          toast.error('Error de conexión');
         }
       }
     });
@@ -166,9 +179,12 @@ export default function VouchersPage() {
       if (res.ok) {
         setShowPayModal(false);
         fetchData();
+        toast.success('Pago registrado correctamente');
       } else {
-        showFeedback({ type: 'error', title: 'Error', message: 'Error al registrar el pago' });
+        toast.error('Error al registrar el pago');
       }
+    } catch (e) {
+      toast.error('Error de conexión');
     } finally {
       setPaying(false);
     }
@@ -177,7 +193,7 @@ export default function VouchersPage() {
   const handleAssignVoucher = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedTemplateId) {
-       showFeedback({ type: 'error', title: 'Error', message: 'Debes seleccionar una plantilla.' });
+       toast.error('Debes seleccionar una plantilla');
        return;
     }
     setSaving(true);
@@ -212,9 +228,12 @@ export default function VouchersPage() {
         setAssignPrice('');
         setAssignAmountPaid('');
         fetchData();
+        toast.success('Bono emitido y asignado');
       } else {
-        showFeedback({ type: 'error', title: 'Error', message: 'Error emitiendo el bono.' });
+        toast.error('Error emitiendo el bono');
       }
+    } catch (e) {
+      toast.error('Error de conexión');
     } finally {
       setSaving(false);
     }
@@ -230,10 +249,12 @@ export default function VouchersPage() {
           const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vouchers/${id}`, { method: 'DELETE' });
           if (res.ok) {
               fetchData();
-              showFeedback({ type: 'success', title: 'Bono anulado', message: 'El bono ha sido anulado con éxito.' });
+              toast.success('Bono anulado correctamente');
+          } else {
+              toast.error('Error al anular el bono');
           }
         } catch (e) {
-          console.error(e);
+          toast.error('Error de conexión');
         }
       }
     });
@@ -526,17 +547,16 @@ export default function VouchersPage() {
               {/* 1. Seleccionar Cliente */}
               <div className="mb-5">
                 <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Cliente Receptor</label>
-                <select 
-                  required 
-                  value={selectedClientId} 
-                  onChange={e => setSelectedClientId(e.target.value)}
-                  className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl font-semibold text-stone-800 focus:outline-none focus:border-[#d9777f] focus:ring-1 focus:ring-[#d9777f]"
-                >
-                  <option value="">Selecciona cliente...</option>
-                  {clients
-                    .filter(c => c.email !== 'contado@clinica-mercedes.com')
-                    .map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
+                <Select required value={selectedClientId} onValueChange={setSelectedClientId}>
+                  <SelectTrigger className="w-full bg-stone-50 border-stone-200">
+                    <SelectValue placeholder="Selecciona cliente..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clients
+                      .filter(c => c.email !== 'contado@clinica-mercedes.com')
+                      .map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* 2. Seleccionar Plantilla con Buscador */}
@@ -653,18 +673,25 @@ export default function VouchersPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Servicio / Tratamiento base</label>
-                  <select 
+                  <Select 
                     required 
                     value={templateServiceId} 
-                    onChange={e => {
-                      setTemplateServiceId(e.target.value);
-                      calculateTemplateDefaultPrice(e.target.value, templateSessions);
-                    }} 
-                    className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-semibold"
+                    onValueChange={(val) => {
+                      setTemplateServiceId(val);
+                      calculateTemplateDefaultPrice(val, templateSessions);
+                    }}
                   >
-                    <option value="">Seleccionar...</option>
-                    {services.filter(s => s.is_active).map(s => <option key={s.id} value={s.id}>{s.name} ({s.price}€/sesión)</option>)}
-                  </select>
+                    <SelectTrigger className="w-full bg-stone-50 border-stone-200">
+                      <SelectValue placeholder="Seleccionar servicio..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {services.filter(s => s.is_active).map(s => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.name} ({s.price}€/sesión)
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>

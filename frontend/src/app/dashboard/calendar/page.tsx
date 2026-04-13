@@ -2,6 +2,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
+import { toast } from 'sonner';
 import { Calendar, Clock, Lock, Unlock, X, ChevronLeft, ChevronRight, Sparkles, Trash2, AlertTriangle, Phone, Save } from 'lucide-react';
 import {
   Select,
@@ -163,10 +164,13 @@ function CalendarContent() {
         setSelectedClientId('');
         setSelectedServiceId('');
         setAppointmentNotes('');
+        toast.success('Cita agendada correctamente');
       } else {
         const errorData = await res.json();
-        showFeedback({ type: 'error', title: 'Error', message: errorData.detail || "Error reservando la cita" });
+        toast.error(`Error: ${errorData.detail || "No se pudo reservar la cita"}`);
       }
+    } catch (err) {
+      toast.error('Error de conexión con el servidor');
     } finally {
       setSaving(false);
     }
@@ -184,11 +188,12 @@ function CalendarContent() {
       if (res.ok) {
         await fetchData();
         setShowEditModal(false);
+        toast.success('Estado de la cita actualizado');
       } else {
-        showFeedback({ type: 'error', title: 'Error', message: 'Error actualizando estado.' });
+        toast.error('Error al actualizar el estado');
       }
     } catch (e) {
-      console.error(e);
+      toast.error('Error de conexión');
     } finally {
       setUpdatingStatus(false);
     }
@@ -207,11 +212,12 @@ function CalendarContent() {
         await fetchData();
         // Update local object to sync the "Guardar" button visibility
         setSelectedAppt({ ...selectedAppt, notes: editNotes });
+        toast.success('Nota guardada');
       } else {
-        showFeedback({ type: 'error', title: 'Error', message: 'Error guardando nota.' });
+        toast.error('Error al guardar la nota');
       }
     } catch (e) {
-      console.error(e);
+      toast.error('Error de conexión');
     } finally {
       setUpdatingStatus(false);
     }
@@ -248,7 +254,12 @@ function CalendarContent() {
         await fetchData();
         setShowModal(false);
         setBlockReason('');
+        toast.success('Horario bloqueado');
+      } else {
+        toast.error('Error al bloquear horario');
       }
+    } catch (err) {
+      toast.error('Error de conexión');
     } finally {
       setSaving(false);
     }
@@ -264,7 +275,12 @@ function CalendarContent() {
       if (res.ok) {
         await fetchData();
         setShowBlockDeleteModal(false);
+        toast.success('Horario liberado');
+      } else {
+        toast.error('Error al liberar horario');
       }
+    } catch (err) {
+      toast.error('Error de conexión');
     } finally {
       setUpdatingStatus(false);
     }
@@ -272,23 +288,31 @@ function CalendarContent() {
 
   const handleDeleteAppointment = async () => {
     if (!selectedAppt) return;
-    setUpdatingStatus(true);
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/${selectedAppt.id}`, {
-        method: 'DELETE'
-      });
-      if (res.ok) {
-        await fetchData();
-        setShowEditModal(false);
-        setConfirmDelete(false);
-      } else {
-        showFeedback({ type: 'error', title: 'Error', message: 'Error eliminando cita.' });
+    
+    showFeedback({
+      type: 'confirm',
+      title: 'Eliminar Cita',
+      message: '¿Estás seguro de que deseas eliminar esta cita? Esta acción no se puede deshacer.',
+      onConfirm: async () => {
+        setUpdatingStatus(true);
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/${selectedAppt.id}`, {
+            method: 'DELETE'
+          });
+          if (res.ok) {
+            await fetchData();
+            setShowEditModal(false);
+            toast.success('Cita eliminada correctamente');
+          } else {
+            toast.error('No se pudo eliminar la cita');
+          }
+        } catch (e) {
+          toast.error('Error de conexión');
+        } finally {
+          setUpdatingStatus(false);
+        }
       }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setUpdatingStatus(false);
-    }
+    });
   };
 
   const days = Array.from({ length: 5 }).map((_, i) => {
@@ -929,21 +953,15 @@ function CalendarContent() {
             </div>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-stone-100 flex justify-center flex-col items-center">
-              {!confirmDelete ? (
-                <button onClick={() => setConfirmDelete(true)} disabled={updatingStatus} className="text-xs font-bold text-stone-400 hover:text-red-500 uppercase tracking-widest transition-colors flex items-center gap-1.5">
-                  <Trash2 size={14} strokeWidth={1.5} /> Eliminar Cita del Sistema
-                </button>
-              ) : (
-                <div className="flex gap-3 mt-2">
-                  <button onClick={handleDeleteAppointment} disabled={updatingStatus} className="text-xs font-bold bg-red-50 text-red-600 px-4 py-2 rounded-lg hover:bg-red-100 uppercase tracking-widest transition-colors flex items-center gap-1">
-                    <AlertTriangle size={14} strokeWidth={1.5} /> Sí, Borrar definitivamente
-                  </button>
-                  <button onClick={() => setConfirmDelete(false)} disabled={updatingStatus} className="text-xs font-bold bg-stone-100 text-stone-500 px-4 py-2 rounded-lg hover:bg-stone-200 uppercase tracking-widest transition-colors">
-                    Cancelar
-                  </button>
-                </div>
-              )}
+            <div className="mt-8 pt-6 border-t border-stone-100 flex justify-center">
+              <button 
+                onClick={handleDeleteAppointment} 
+                disabled={updatingStatus} 
+                className="text-[10px] font-black text-stone-300 hover:text-rose-500 uppercase tracking-[0.2em] transition-all flex items-center gap-2 group"
+              >
+                <Trash2 size={14} strokeWidth={2} className="group-hover:scale-110 transition-transform" /> 
+                Eliminar Cita
+              </button>
             </div>
           </div>
         </div>

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { SignaturePadModal } from '@/components/SignaturePadModal';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
+import { toast } from 'sonner';
 
 export default function ClientProfilePage({ params }: { params: { id: string } }) {
   const { showFeedback } = useFeedback();
@@ -74,11 +75,12 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
         const updated = await res.json();
         setClient(updated);
         setIsEditing(false);
+        toast.success('Ficha de cliente actualizada');
       } else {
-        showFeedback({ type: 'error', title: 'Error', message: 'Error al guardar los cambios.' });
+        toast.error('Error al guardar los cambios');
       }
     } catch (err) {
-      showFeedback({ type: 'error', title: 'Error', message: 'Error de conexión fallida.' });
+      toast.error('Error de conexión fallida');
     } finally {
       setSaving(false);
     }
@@ -113,12 +115,13 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
         const newConsent = await res.json();
         setConsents([newConsent, ...consents]);
         setIsSignatureModalOpen(false);
+        toast.success('Consentimiento guardado y firmado');
       } else {
-        showFeedback({ type: 'error', title: 'Error', message: 'Error al guardar el documento legal' });
+        toast.error('Error al guardar el documento legal');
       }
     } catch (e) {
       console.error(e);
-      showFeedback({ type: 'error', title: 'Error', message: 'Error al guardar el documento legal' });
+      toast.error('Error de conexión al servidor');
     }
   };
 
@@ -145,9 +148,12 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
       if (res.ok) {
         setShowPayModal(false);
         fetchClient(); // refresh specific client data
+        toast.success('Cobro registrado correctamente');
       } else {
-        showFeedback({ type: 'error', title: 'Error', message: 'Error al registrar el pago' });
+        toast.error('Error al registrar el pago');
       }
+    } catch (e) {
+      toast.error('Error de conexión');
     } finally {
       setPaying(false);
     }

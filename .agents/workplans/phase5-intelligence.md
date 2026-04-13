@@ -16,12 +16,13 @@ Este plan detalla los pasos para dotar de funcionalidad inteligente a los elemen
 - [x] **Integración**: Sustitución de la campana estática en `DashboardHeader`.
 
 ## Punto 5.3: Gestión de Roles y Equipo
-- [ ] **Página de Equipo**: Crear `src/app/dashboard/team/page.tsx` con estética Isla Blanca.
-- [ ] **Tabla de Empleados**: Diseño elegante con avatares, roles y estados de actividad.
-- [ ] **Restricción de Rol**: Implementar lógica `userRole !== 'admin'` para ocultar acciones de edición/creación.
-- [ ] **Buscador**: Añadir acceso directo "Gestionar Equipo" al `GlobalSearch.tsx`.
+- [x] **Página de Equipo**: Crear `src/app/dashboard/team/page.tsx` con estética Isla Blanca.
+- [x] **Tabla de Empleados**: Diseño elegante con avatares, roles y estados de actividad.
+- [x] **Restricción de Rol**: Implementar lógica `userRole !== 'admin'` para ocultar acciones de edición/creación.
+- [x] **Buscador**: Añadir acceso directo "Gestionar Equipo" al `GlobalSearch.tsx`.
+- [x] **Sidebar**: Añadir enlace "Equipo" al menú lateral principal.
 
 ## Verificación Planificada
-- [ ] Validar que la redirección desde el buscador a la nueva página de equipo funciona.
-- [ ] Comprobar visualmente la restricción de rol simulando un rol diferente a 'admin'.
-- [ ] Asegurar coherencia estética (Cormorant, rounded-2.5rem) en la nueva página.
+- [x] Validar que la redirección desde el buscador a la nueva página de equipo funciona.
+- [x] Comprobar visualmente la restricción de rol simulando un rol diferente a 'admin'.
+- [x] Asegurar coherencia estética (Cormorant, rounded-2.5rem) en la nueva página.

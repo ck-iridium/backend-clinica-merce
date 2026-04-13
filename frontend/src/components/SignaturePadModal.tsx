@@ -1,4 +1,11 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 
 interface SignaturePadModalProps {
   isOpen: boolean;
@@ -120,16 +127,17 @@ export function SignaturePadModal({ isOpen, onClose, onSave, clientName }: Signa
           {/* Tipo de Documento */}
           <div className="mb-6">
             <label className="block text-sm font-bold text-[#d9777f] uppercase tracking-widest mb-2">Seleccione el Acuerdo:</label>
-            <select 
-              value={docType}
-              onChange={e => setDocType(e.target.value)}
-              className="w-full p-4 bg-white border border-stone-200 rounded-xl font-bold text-stone-700 focus:outline-none focus:border-[#d9777f] focus:ring-1 focus:ring-[#d9777f] shadow-sm appearance-none"
-            >
-              <option value="rgpd_general">Tratamiento de Datos Personales, Clínicos e Imágenes (Ley General RGPD)</option>
-              <option value="laser_hair_removal">Consentimiento Informado: Depilación Láser Diodo/Alejandrita</option>
-              <option value="botulinum_toxin">Consentimiento Informado: Moduladores Musculares (Toxina Botulínica)</option>
-              <option value="facial_fillers">Consentimiento Informado: Implantes de Relleno (Ácido Hialurónico)</option>
-            </select>
+            <Select value={docType} onValueChange={setDocType}>
+              <SelectTrigger className="w-full bg-white border-stone-200">
+                <SelectValue placeholder="Seleccione un acuerdo..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="rgpd_general">Tratamiento de Datos Personales (Ley General RGPD)</SelectItem>
+                <SelectItem value="laser_hair_removal">Consentimiento Informado: Depilación Láser</SelectItem>
+                <SelectItem value="botulinum_toxin">Consentimiento Informado: Toxina Botulínica</SelectItem>
+                <SelectItem value="facial_fillers">Consentimiento Informado: Rellenos Faciales</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Texto Legal Frozen (Demo) */}

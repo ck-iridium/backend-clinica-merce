@@ -1,43 +1,56 @@
-# Política de Feedback UI (Clínica Merce)
+# Política de Feedback UI Híbrida (Clínica Merce)
 
-**CRÍTICO**: PROHIBIDO el uso de funciones nativas de navegador como `alert()` o `confirm()`.
+Esta política define el uso coordinado de **Sonner (Toasts)** y **FeedbackModal (Modales)** para garantizar una experiencia de usuario fluida y segura.
 
-Todo el feedback, confirmaciones o alertas de error al usuario en el frontend deben gestionarse OBLIGATORIAMENTE a través del `FeedbackContext` y el componente `FeedbackModal` personalizado.
+## 1. Regla General de Selección
 
-## Uso Correcto
+| Tipo de Evento | Herramienta | Comportamiento |
+| :--- | :--- | :--- |
+| **Éxito rutinario** | **Sonner (Toast)** | Desaparece solo. No interrumpe. |
+| **Error no crítico** | **Sonner (Toast)** | Informativo, rojo suave. |
+| **Confirmación de Acción** | **FeedbackModal** | Requiere interacción explícita (Sí/No). |
+| **Advertencia/Peligro** | **FeedbackModal** | Interrumpe para evitar errores graves. |
+| **Error Crítico/Bloqueante** | **FeedbackModal** | Explicación detallada del fallo. |
 
-Para lanzar un modal de error, éxito o confirmación, debes invocar el hook global.
+---
+
+## 2. Uso de Sonner (Toasts)
+
+Utilizar para eventos que confirman que la acción del usuario ha tenido éxito sin necesidad de validación extra.
+
+- `toast.success('...')`: Guardar ajustes, subir imagen, copiar al portapapeles, ítem actualizado.
+- `toast.error('...')`: Fallo de validación simple, error de red temporal.
 
 ```tsx
-import { useFeedback } from '@/app/contexts/FeedbackContext';
+import { toast } from 'sonner';
 
-export default function MiComponente() {
-  const { showFeedback } = useFeedback();
+// Ejemplo: Éxito rápido
+toast.success('Ajustes actualizados correctamente');
 
-  const handleAction = () => {
-    showFeedback({
-      type: 'confirm',
-      title: 'Confirmación Requerida',
-      message: '¿Estás seguro de que deseas eliminar este elemento? Esta acción es irreversible.',
-      onConfirm: async () => {
-        // Lógica de borrado asíncrona aquí
-        await fetch('...', { method: 'DELETE' });
-        showFeedback({
-          type: 'success',
-          title: '¡Eliminado!',
-          message: 'El registro se ha borrado con éxito.'
-        });
-      }
-    });
-  };
-}
+// Ejemplo: Error informativo
+toast.error('No se pudo conectar con el servidor');
 ```
 
-## Argumentos
+---
 
-- `type`: `'success' | 'error' | 'confirm'`
-- `title`: Título en formato texto.
-- `message`: Detalle largo o resumen.
-- `onConfirm`: (Opcional). Callback a ejecutar cuando el usuario pulsa "Confirmar" o "Entendido" dependiendo del tipo de modal. En modales 'confirm' es mandatorio si requiere una acción posterior.
+## 3. Uso de FeedbackModal (Contexto)
 
-Cualquier PR o modificación generada por un agente debe ceñirse a esta arquitectura.
+Utilizar para situaciones donde la atención del usuario es obligatoria o la acción es irreversible.
+
+- `type: 'confirm'`: Borrar cliente, eliminar servicio, cancelar cita.
+- `type: 'error' (Crítico)`: Fallo de seguridad, pérdida de datos, error de base de datos persistente.
+- `type: 'success' (Hito)`: Solo para éxitos de gran importancia (ej: Factura generada con éxito tras proceso complejo).
+
+---
+
+## 4. Cuadro de Situaciones Comunes
+
+| Situación | Feedback Recomendado | Texto Sugerido |
+| :--- | :--- | :--- |
+| Guardar cambios en CMS | Toast Success | "Contenido actualizado" |
+| Borrar una imagen | Modal Confirm | "¿Eliminar imagen permanentemente?" |
+| Error al cargar tabla | Toast Error | "Error al cargar datos" |
+| Acceso Denegado | Modal Error | "No tiene permisos para esta acción" |
+| Copiar URL | Toast Success | "URL copiada al portapapeles" |
+
+**PROHIBIDO**: El uso de `alert()` o `confirm()` nativos sigue estrictamente prohibido.

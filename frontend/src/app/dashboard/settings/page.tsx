@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect, useRef } from 'react';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
+import { toast } from 'sonner';
 import { Save, Building2, Link2, SearchCode, ImageIcon, Hash, ChevronDown } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -41,10 +42,10 @@ export default function SettingsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      showFeedback({ type: 'success', title: 'Éxito', message: 'Configuración guardada correctamente' });
+      toast.success('Ajustes actualizados correctamente');
     } catch (e) {
       console.error(e);
-      showFeedback({ type: 'error', title: 'Error', message: 'Error al guardar' });
+      toast.error('Error al guardar la configuración');
     } finally {
       setSaving(false);
     }

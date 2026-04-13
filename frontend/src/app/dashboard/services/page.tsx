@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import CropImageModal from '@/components/CropImageModal';
 import MediaPickerModal from '@/components/MediaPickerModal';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
+import { toast } from 'sonner';
 import { 
   Settings2, 
   Plus, 
@@ -125,11 +126,13 @@ export default function ServicesPage() {
       if (res.ok) {
         await fetchServices();
         handleCancel();
+        toast.success(editingId ? 'Servicio actualizado' : 'Servicio creado con éxito');
       } else {
-        showFeedback({ type: 'error', title: 'Error', message: 'Error al guardar el servicio.' });
+        const errorData = await res.json();
+        toast.error(`Error: ${errorData.detail || 'No se pudo guardar el servicio'}`);
       }
     } catch (err) {
-      showFeedback({ type: 'error', title: 'Lamentable', message: 'Error de conexión.' });
+      toast.error('Error de conexión con el servidor');
     } finally {
       setSaving(false);
     }
@@ -154,12 +157,12 @@ export default function ServicesPage() {
           } else if (res.ok) {
             await fetchServices();
             handleCancel();
-            showFeedback({ type: 'success', title: 'Éxito', message: 'Servicio eliminado.' });
+            toast.success('Servicio eliminado correctamente');
           } else {
-            showFeedback({ type: 'error', title: 'Error', message: 'Error al eliminar el servicio.' });
+            toast.error('No se pudo eliminar el servicio');
           }
         } catch (err) {
-          showFeedback({ type: 'error', title: 'Error', message: 'Error de conexión al servidor.' });
+          toast.error('Error de conexión al servidor');
         }
       }
     });
@@ -178,12 +181,13 @@ export default function ServicesPage() {
         setNewCategoryName('');
         setShowCategoryModal(false);
         fetchCategories();
+        toast.success('Categoría creada');
       } else {
         const errorData = await res.json();
-        showFeedback({ type: 'error', title: 'Error', message: `Error al crear categoría: ${errorData.detail || 'Error desconocido'}` });
+        toast.error(`Error: ${errorData.detail || 'No se pudo crear la categoría'}`);
       }
     } catch (err) {
-      showFeedback({ type: 'error', title: 'Error', message: 'Error de conexión al crear categoría.' });
+      toast.error('Error de conexión al crear categoría');
     }
   };
 
@@ -201,12 +205,13 @@ export default function ServicesPage() {
         setEditingCategoryName('');
         setEditingCategoryImage(null);
         fetchCategories();
-        fetchServices(); // Refresh to see updated category names
+        fetchServices();
+        toast.success('Categoría actualizada');
       } else {
-        showFeedback({ type: 'error', title: 'Error', message: 'Error al actualizar categoría.' });
+        toast.error('No se pudo actualizar la categoría');
       }
     } catch (err) {
-      showFeedback({ type: 'error', title: 'Error', message: 'Error de conexión al actualizar categoría.' });
+      toast.error('Error de conexión al actualizar categoría');
     }
   };
 
@@ -224,11 +229,12 @@ export default function ServicesPage() {
       if (res.ok) {
         const data = await res.json();
         setEditingCategoryImage(data.url);
+        toast.success('Imagen subida');
       } else {
-        showFeedback({ type: 'error', title: 'Error', message: 'Error al subir la imagen' });
+        toast.error('Error al subir la imagen');
       }
     } catch (err) {
-      showFeedback({ type: 'error', title: 'Error', message: 'Error de conexión' });
+      toast.error('Error de conexión');
     }
   };
 
@@ -259,11 +265,12 @@ export default function ServicesPage() {
       if (res.ok) {
         const data = await res.json();
         setFormData(prev => ({ ...prev, image_url: data.url }));
+        toast.success('Imagen recortada y guardada');
       } else {
-        showFeedback({ type: 'error', title: 'Error', message: 'Error al guardar la imagen recortada en la nube' });
+        toast.error('Error al procesar el recorte');
       }
     } catch (err) {
-      showFeedback({ type: 'error', title: 'Error', message: 'Error de conexión' });
+      toast.error('Error de conexión');
     } finally {
       setUploadingImage(false);
     }
@@ -287,12 +294,12 @@ export default function ServicesPage() {
           });
           if (res.ok) {
             fetchCategories();
-            showFeedback({ type: 'success', title: 'Éxito', message: 'Categoría eliminada.' });
+            toast.success('Categoría eliminada');
           } else {
-            showFeedback({ type: 'error', title: 'Error', message: 'Error al eliminar categoría.' });
+            toast.error('Error al eliminar categoría');
           }
         } catch (err) {
-          showFeedback({ type: 'error', title: 'Error', message: 'Error de conexión.' });
+          toast.error('Error de conexión');
         }
       }
     });
