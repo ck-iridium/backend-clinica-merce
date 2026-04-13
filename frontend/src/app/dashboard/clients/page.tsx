@@ -18,15 +18,25 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, FileText, User as UserIcon } from "lucide-react";
+import { MoreHorizontal, FileText, User as UserIcon, UserPlus } from "lucide-react";
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 export default function ClientsPage() {
   const { showFeedback } = useFeedback();
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Validation and Data States
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', allergies: '', dni: '', address: '' });
@@ -82,10 +92,11 @@ export default function ClientsPage() {
       if (!res.ok) throw new Error("Error en el servidor al guardar");
       
       await fetchClients(); // Recargar datos
-      setShowForm(false);
+      setIsModalOpen(false);
       setFormData({ name: '', email: '', phone: '', allergies: '', dni: '', address: '' });
+      toast.success('Cliente registrado correctamente');
     } catch (err) {
-      showFeedback({ type: 'error', title: 'Error de Red', message: "No se pudo guardar la ficha. Verifica tu conexión a Render." });
+      toast.error("No se pudo guardar la ficha. Verifica la conexión.");
     } finally {
       setSaving(false);
     }
@@ -94,97 +105,120 @@ export default function ClientsPage() {
   return (
     <div className="animate-in fade-in duration-500">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
         <div>
-          <h1 className="text-4xl font-serif text-stone-800">Directorio de Clientes</h1>
-          <p className="text-muted-foreground mt-1 text-sm font-sans">Gestión de fichas médicas e historiales</p>
+          <h1 className="text-4xl font-serif font-light text-stone-800 tracking-tight">Directorio de Clientes</h1>
+          <p className="text-stone-400 mt-1.5 text-sm font-medium">Gestión de fichas médicas e historiales</p>
         </div>
-        <button 
-          onClick={() => setShowForm(!showForm)}
-          className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 shadow-sm ${showForm ? 'bg-stone-200 text-stone-700 hover:bg-stone-300' : 'bg-primary text-primary-foreground hover:opacity-90 hover:shadow-md'}`}>
-          {showForm ? 'Cancelar' : '+ Añadir Cliente'}
-        </button>
-      </div>
+        
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogTrigger asChild>
+            <button className="bg-stone-900 text-white px-8 py-3 rounded-full text-sm font-bold hover:bg-[#d9777f] transition-all active:scale-95 shadow-lg shadow-stone-200 flex items-center gap-2 group">
+              <UserPlus size={18} className="group-hover:rotate-12 transition-transform" />
+              Añadir Cliente
+            </button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl bg-white rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden">
+            <DialogHeader className="p-10 pb-0">
+              <DialogTitle className="text-3xl font-serif font-light text-stone-800 tracking-tight">
+                Nueva Ficha Médica
+              </DialogTitle>
+              <DialogDescription className="text-stone-400 text-sm mt-1">
+                Completa los datos para dar de alta al cliente en el sistema.
+              </DialogDescription>
+            </DialogHeader>
 
-      {/* Creation Form */}
-      {showForm && (
-        <div className="bg-white p-6 md:p-8 rounded-[2rem] shadow-xl shadow-[#fdf2f3] border border-[#f3c7cb] mb-10 overflow-hidden relative">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#fdf2f3] rounded-full blur-3xl opacity-60 -translate-y-1/2 translate-x-1/2"></div>
-          
-          <h2 className="text-2xl font-bold text-stone-800 mb-6 border-b border-stone-100 pb-4 relative z-10">Nueva Ficha Médica</h2>
-          <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">Nombre completo *</label>
-                <input 
-                  type="text" 
-                  value={formData.name} 
-                  onChange={e => {setFormData({...formData, name: e.target.value}); setErrors({...errors, name: ''});}} 
-                  className={`w-full px-5 py-4 rounded-xl border bg-stone-50 focus:bg-white transition-colors ${errors.name ? 'border-red-400 focus:ring-red-400' : 'border-stone-200 focus:ring-[#d9777f]'} focus:outline-none focus:ring-2`} 
-                  placeholder="Ana Martínez" 
-                />
-                {errors.name && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.name}</p>}
+            <form onSubmit={handleSubmit} className="p-10 space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">Nombre completo *</label>
+                  <input 
+                    type="text" 
+                    value={formData.name} 
+                    onChange={e => {setFormData({...formData, name: e.target.value}); setErrors({...errors, name: ''});}} 
+                    className={`w-full px-6 py-4 rounded-2xl border bg-stone-50/50 transition-all ${errors.name ? 'border-red-300 focus:ring-red-100' : 'border-stone-100 focus:ring-stone-100 focus:bg-white'} outline-none focus:ring-4`} 
+                    placeholder="Ana Martínez" 
+                  />
+                  {errors.name && <p className="text-red-500 text-[10px] font-bold mt-1 ml-1 uppercase">{errors.name}</p>}
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">Correo electrónico *</label>
+                  <input 
+                    type="email" 
+                    value={formData.email} 
+                    onChange={e => {setFormData({...formData, email: e.target.value}); setErrors({...errors, email: ''});}} 
+                    className={`w-full px-6 py-4 rounded-2xl border bg-stone-50/50 transition-all ${errors.email ? 'border-red-300 focus:ring-red-100' : 'border-stone-100 focus:ring-stone-100 focus:bg-white'} outline-none focus:ring-4`} 
+                    placeholder="ana@email.com" 
+                  />
+                  {errors.email && <p className="text-red-500 text-[10px] font-bold mt-1 ml-1 uppercase">{errors.email}</p>}
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">Teléfono móvil</label>
+                  <input 
+                    type="tel" 
+                    value={formData.phone} 
+                    onChange={e => setFormData({...formData, phone: e.target.value})} 
+                    className="w-full px-6 py-4 rounded-2xl border border-stone-100 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-stone-100 transition-all" 
+                    placeholder="+34 600..." 
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">DNI / NIF</label>
+                  <input 
+                    type="text" 
+                    value={formData.dni} 
+                    onChange={e => setFormData({...formData, dni: e.target.value})} 
+                    className="w-full px-6 py-4 rounded-2xl border border-stone-100 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-stone-100 transition-all" 
+                    placeholder="00000000X (Opcional)" 
+                  />
+                </div>
+
+                <div className="md:col-span-2 space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">Dirección Fiscal Completa</label>
+                  <input 
+                    type="text" 
+                    value={formData.address} 
+                    onChange={e => setFormData({...formData, address: e.target.value})} 
+                    className="w-full px-6 py-4 rounded-2xl border border-stone-100 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-stone-100 transition-all" 
+                    placeholder="Calle Ejemplar 123, Madrid (Opcional)" 
+                  />
+                </div>
+
+                <div className="md:col-span-2 space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">Alergias / Notas críticas</label>
+                  <input 
+                    type="text" 
+                    value={formData.allergies} 
+                    onChange={e => setFormData({...formData, allergies: e.target.value})} 
+                    className="w-full px-6 py-4 rounded-2xl border border-stone-100 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-stone-100 transition-all" 
+                    placeholder="Alergia al látex, medicamentos..." 
+                  />
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">Correo electrónico *</label>
-                <input 
-                  type="email" 
-                  value={formData.email} 
-                  onChange={e => {setFormData({...formData, email: e.target.value}); setErrors({...errors, email: ''});}} 
-                  className={`w-full px-5 py-4 rounded-xl border bg-stone-50 focus:bg-white transition-colors ${errors.email ? 'border-red-400 focus:ring-red-400' : 'border-stone-200 focus:ring-[#d9777f]'} focus:outline-none focus:ring-2`} 
-                  placeholder="ana@email.com" 
-                />
-                {errors.email && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.email}</p>}
+
+              <div className="flex justify-end gap-3 pt-4">
+                <button 
+                  type="button" 
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-8 py-4 rounded-full text-xs font-bold text-stone-400 hover:text-stone-600 transition-all"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  disabled={saving} 
+                  type="submit" 
+                  className="bg-[#bf7d6b] hover:bg-[#a66a5a] disabled:opacity-50 text-white px-10 py-4 rounded-full text-xs font-bold uppercase tracking-widest transition-all shadow-lg shadow-[#bf7d6b]/20 active:scale-95"
+                >
+                  {saving ? 'Registrando...' : 'Registrar Ficha'}
+                </button>
               </div>
-              <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">Teléfono móvil</label>
-                <input 
-                  type="tel" 
-                  value={formData.phone} 
-                  onChange={e => setFormData({...formData, phone: e.target.value})} 
-                  className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d9777f] transition-colors" 
-                  placeholder="+34 600..." 
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">DNI / NIF</label>
-                <input 
-                  type="text" 
-                  value={formData.dni} 
-                  onChange={e => setFormData({...formData, dni: e.target.value})} 
-                  className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d9777f] transition-colors" 
-                  placeholder="00000000X (Opcional)" 
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-stone-700 mb-2">Dirección Fiscal Completa</label>
-                <input 
-                  type="text" 
-                  value={formData.address} 
-                  onChange={e => setFormData({...formData, address: e.target.value})} 
-                  className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d9777f] transition-colors" 
-                  placeholder="Calle Ejemplar 123, Madrid (Opcional)" 
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-stone-700 mb-2">Alergias / Notas críticas</label>
-                <input 
-                  type="text" 
-                  value={formData.allergies} 
-                  onChange={e => setFormData({...formData, allergies: e.target.value})} 
-                  className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d9777f] transition-colors" 
-                  placeholder="Alergia al látex, medicamentos..." 
-                />
-              </div>
-            </div>
-            <div className="flex justify-end pt-4">
-              <button disabled={saving} type="submit" className="bg-stone-900 hover:bg-[#d9777f] disabled:opacity-50 disabled:cursor-not-allowed text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95">
-                {saving ? 'Registrando...' : 'Registrar Cliente'}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
 
       {/* Table Section (SaaS Island) */}
       <div className="bg-card rounded-[2rem] shadow-sm overflow-hidden border border-border/40">

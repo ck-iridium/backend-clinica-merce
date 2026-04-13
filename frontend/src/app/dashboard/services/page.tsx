@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ServicesPage() {
   const { showFeedback } = useFeedback();
@@ -371,36 +372,36 @@ export default function ServicesPage() {
             
             <form onSubmit={handleSubmit} className="p-6 md:p-8 relative z-10 max-h-[70vh] overflow-y-auto custom-scrollbar">
               
-              {/* Sección de Imagen del Tratamiento */}
-              <div className="mb-8 flex gap-6 items-start bg-stone-50 border border-stone-200 p-6 rounded-[2rem]">
+              {/* Sección de Imagen del Tratamiento - Responsiva */}
+              <div className="mb-8 flex flex-col md:flex-row items-center md:items-start bg-stone-50 border border-stone-200 p-6 rounded-[2rem] gap-6 text-center md:text-left">
                  {uploadingImage ? (
-                    <div className="w-32 h-32 rounded-2xl bg-white border border-stone-200 flex flex-col justify-center items-center shrink-0">
-                       <div className="w-8 h-8 border-4 border-yellow-100 border-t-[#d4af37] rounded-full animate-spin mb-2"></div>
-                       <span className="text-[10px] font-bold text-[#d4af37] uppercase tracking-widest text-center px-2">Subiendo...</span>
+                    <div className="w-28 h-28 rounded-2xl bg-white border border-stone-200 flex flex-col justify-center items-center shrink-0">
+                       <div className="w-6 h-6 border-4 border-yellow-100 border-t-[#d4af37] rounded-full animate-spin mb-2"></div>
+                       <span className="text-[9px] font-bold text-[#d4af37] uppercase tracking-widest">Subiendo...</span>
                     </div>
                  ) : formData.image_url ? (
-                    <div className="w-32 h-32 rounded-2xl overflow-hidden bg-white shadow-sm shrink-0">
+                    <div className="w-28 h-28 rounded-2xl overflow-hidden bg-white shadow-sm shrink-0">
                        <img src={formData.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${formData.image_url}` : formData.image_url} alt="Tratamiento" className="w-full h-full object-cover" />
                     </div>
                  ) : (
-                    <div className="w-32 h-32 rounded-2xl bg-white border border-stone-200 border-dashed flex flex-col justify-center items-center shrink-0">
-                       <ImageIcon size={24} strokeWidth={1.5} className="text-stone-300 mb-1" />
-                       <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest text-center px-2">Sin Foto</span>
+                    <div className="w-28 h-28 rounded-2xl bg-white border border-stone-200 border-dashed flex flex-col justify-center items-center shrink-0">
+                       <ImageIcon size={20} strokeWidth={1.5} className="text-stone-300 mb-1" />
+                       <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">Sin Foto</span>
                     </div>
                  )}
                  <div className="flex-1">
-                    <h3 className="font-bold text-stone-800 mb-2">Imagen del Catálogo</h3>
-                    <p className="text-sm text-stone-500 mb-4 leading-relaxed">Selecciona una imagen de tu galería o sube una nueva. Podrás recortarla en el siguiente paso.</p>
-                    <div className="flex gap-2">
+                    <h3 className="font-bold text-stone-800 mb-1 text-sm uppercase tracking-tight">Imagen del Catálogo</h3>
+                    <p className="text-xs text-stone-400 mb-4 leading-relaxed max-w-sm mx-auto md:mx-0">Selecciona una imagen de tu galería o sube una nueva. Podrás recortarla en el siguiente paso.</p>
+                    <div className="flex gap-2 justify-center md:justify-start">
                       <button
                         type="button"
                         onClick={() => setShowMediaPicker(true)}
-                        className="px-5 py-2.5 rounded-xl font-bold bg-stone-900 hover:bg-[#d9777f] text-white text-sm transition-colors shadow-md flex items-center gap-2"
+                        className="px-4 py-2 rounded-xl font-bold bg-stone-900 hover:bg-[#d9777f] text-white text-xs transition-colors shadow-md flex items-center gap-2"
                       >
-                        <ImageIcon size={18} strokeWidth={1.5} /> {formData.image_url ? 'Cambiar imagen' : 'Seleccionar imagen'}
+                        <ImageIcon size={14} strokeWidth={1.5} /> {formData.image_url ? 'Cambiar' : 'Seleccionar Imagen'}
                       </button>
                       {formData.image_url && (
-                        <button type="button" onClick={() => setFormData({...formData, image_url: ''})} className="px-5 py-2.5 rounded-xl font-bold bg-red-50 text-red-600 text-sm transition-colors hover:bg-red-100">
+                        <button type="button" onClick={() => setFormData({...formData, image_url: ''})} className="px-4 py-2 rounded-xl font-bold bg-red-50 text-red-600 text-xs transition-colors hover:bg-red-100">
                           Quitar
                         </button>
                       )}
@@ -417,21 +418,22 @@ export default function ServicesPage() {
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Descripción pública</label>
                   <input type="text" value={formData.description || ""} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="El tratamiento perfecto para..." />
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">Duración (minutos) *</label>
-                  <input required type="number" min="5" step="5" value={formData.duration_minutes || 0} onChange={e => setFormData({...formData, duration_minutes: Number(e.target.value)})} className="w-full max-w-[140px] px-4 py-3 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all text-center font-bold" />
-                  <p className="text-xs text-stone-400 mt-2 font-medium">Reserva el hueco total bloqueado en Agenda.</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">Precio Base (€) *</label>
-                  <input required type="number" min="0" step="0.5" value={formData.price || 0} onChange={e => setFormData({...formData, price: Number(e.target.value)})} className="w-full max-w-[140px] px-4 py-3 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all text-center font-bold" />
+                <div className="md:col-span-2 grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">Duración (min) *</label>
+                    <input required type="number" min="5" step="5" value={formData.duration_minutes || 0} onChange={e => setFormData({...formData, duration_minutes: Number(e.target.value)})} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all text-center font-bold" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">Precio (€) *</label>
+                    <input required type="number" min="0" step="0.5" value={formData.price || 0} onChange={e => setFormData({...formData, price: Number(e.target.value)})} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all text-center font-bold" />
+                  </div>
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Categoría *</label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-row gap-2">
                     <Select value={formData.category_id || ""} onValueChange={(val) => setFormData({...formData, category_id: val})}>
-                      <SelectTrigger className="flex-1">
-                        <SelectValue placeholder="-- Selecciona una categoría --" />
+                      <SelectTrigger className="flex-1 md:w-full">
+                        <SelectValue placeholder="-- Elige --" />
                       </SelectTrigger>
                       <SelectContent>
                         {categories.map(cat => (
@@ -439,8 +441,9 @@ export default function ServicesPage() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <button type="button" onClick={() => setShowCategoryModal(true)} className="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold transition-all text-sm border border-stone-200 shrink-0">
-                      + Nueva Categoría
+                    <button type="button" onClick={() => setShowCategoryModal(true)} className="w-11 h-11 md:w-auto md:px-4 md:py-2 bg-stone-800 text-white p-2 rounded-xl font-bold transition-all text-sm shrink-0 flex items-center justify-center gap-2 hover:bg-stone-900">
+                      <Plus size={20} strokeWidth={2.5} />
+                      <span className="hidden md:inline">Nueva Categoría</span>
                     </button>
                   </div>
                 </div>
@@ -511,22 +514,28 @@ export default function ServicesPage() {
               </div>
 
             </form>
-            <div className="p-6 md:p-8 bg-stone-50/50 border-t border-stone-100 flex justify-between gap-4 relative z-10">
-              {editingId ? (
-                <button type="button" onClick={handleDeleteService} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 w-14 h-14 rounded-xl transition-all shadow-sm flex items-center justify-center" title="Eliminar Servicio de Forma Segura">
-                  <Trash2 size={20} strokeWidth={1.5} />
+            <div className="p-6 md:p-8 bg-stone-50/50 border-t border-stone-100 flex flex-col-reverse md:flex-row justify-end gap-3 relative z-10 w-full">
+              {editingId && (
+                <button type="button" onClick={handleDeleteService} className="order-3 md:order-1 text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 w-full md:w-11 h-11 rounded-xl transition-all shadow-sm flex items-center justify-center md:mr-auto" title="Eliminar Servicio">
+                  <Trash2 size={18} strokeWidth={1.5} />
+                  <span className="md:hidden ml-2 font-bold text-sm">Eliminar Tratamiento</span>
                 </button>
-              ) : (
-                <div></div>
               )}
-              <div className="flex gap-4">
-                <button onClick={handleCancel} type="button" className="px-6 py-3 rounded-xl font-bold text-stone-600 hover:bg-stone-100 transition-all active:scale-95">
-                  Cancelar
-                </button>
-                <button disabled={saving || uploadingImage} onClick={handleSubmit} type="button" className="bg-stone-900 hover:bg-[#d4af37] disabled:opacity-50 text-white px-10 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95 min-w-[200px]">
-                  {saving ? 'Guardando...' : (editingId ? 'Guardar Cambios' : 'Añadir Servicio')}
-                </button>
-              </div>
+              <button 
+                onClick={handleCancel} 
+                type="button" 
+                className="w-full md:w-auto px-5 py-4 md:py-3 rounded-xl font-bold text-stone-600 hover:bg-stone-100 transition-all text-sm"
+              >
+                Cancelar
+              </button>
+              <button 
+                disabled={saving || uploadingImage} 
+                onClick={handleSubmit} 
+                type="button" 
+                className="w-full md:w-auto bg-stone-900 hover:bg-[#d4af37] disabled:opacity-50 text-white px-8 py-4 md:py-3 rounded-xl font-bold transition-all shadow-lg text-sm active:scale-95"
+              >
+                {saving ? 'Guardando...' : (editingId ? 'Guardar Cambios' : 'Añadir Servicio')}
+              </button>
             </div>
           </div>
         </div>
@@ -553,7 +562,38 @@ export default function ServicesPage() {
 
       {/* Grid of Services */}
       {loading ? (
-        <div className="text-center py-20"><div className="inline-block w-8 h-8 border-4 border-yellow-100 border-t-[#d4af37] rounded-full animate-spin"></div></div>
+        <div className="space-y-12">
+          {Array(2).fill(0).map((_, i) => (
+            <div key={i}>
+              <div className="flex items-center gap-3 mb-6">
+                <Skeleton className="w-8 h-8 rounded-full" />
+                <Skeleton className="h-6 w-48 rounded-lg" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {Array(3).fill(0).map((_, j) => (
+                  <div key={j} className="bg-white p-6 rounded-[2rem] shadow-sm border border-stone-100 flex flex-col gap-6">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-2">
+                        <Skeleton className="h-6 w-32 rounded-lg" />
+                        <Skeleton className="h-3 w-20 rounded-full" />
+                      </div>
+                      <Skeleton className="w-16 h-8 rounded-xl" />
+                    </div>
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-full rounded-md" />
+                      <Skeleton className="h-4 w-3/4 rounded-md" />
+                      <Skeleton className="h-4 w-1/2 rounded-md" />
+                    </div>
+                    <div className="flex justify-between items-center border-t border-stone-100 pt-4 mt-auto">
+                      <Skeleton className="h-8 w-24 rounded-lg" />
+                      <Skeleton className="h-8 w-20 rounded-lg" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       ) : filteredServices.length === 0 ? (
         <div className="text-center py-24 text-stone-400 bg-stone-50/50 rounded-[2rem] border border-stone-200 border-dashed">
           {showArchived ? 'No hay servicios en el catálogo.' : 'No tienes servicios activos actualmente. Activa alguno o crea uno nuevo.'}

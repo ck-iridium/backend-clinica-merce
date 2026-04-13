@@ -643,11 +643,8 @@ export default function VouchersPage() {
               </div>
               
               <div className="mt-8">
-                <button 
-                  type="submit" 
-                  disabled={saving || !selectedTemplateId} 
-                  className="w-full py-4 rounded-xl font-extrabold text-white bg-[#d9777f] hover:bg-[#c6646b] shadow-md transition-colors disabled:opacity-50 flex justify-center items-center h-[56px]"
-                >
+                <button type="submit" disabled={saving} className="w-full py-4 bg-stone-800 text-white font-extrabold rounded-xl hover:bg-stone-900 transition-all flex justify-center items-center">
+                  <span className="sr-only">Emitir Nuevo Bono</span>
                   {saving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : "Crear y Asignar Bono"}
                 </button>
               </div>
@@ -662,8 +659,14 @@ export default function VouchersPage() {
           <div className="bg-white rounded-[2rem] w-full max-w-sm shadow-2xl p-6">
             <h2 className="text-xl font-extrabold text-stone-800 mb-6 flex justify-between">
               Crear Plantilla
-              <button onClick={() => setShowTemplateModal(false)} className="text-stone-400">✕</button>
+              <button 
+                type="button"
+                onClick={() => setShowTemplateModal(false)} className="text-stone-400">✕</button>
             </h2>
+            <div className="sr-only">
+              <h2>Nueva Plantilla de Bono</h2>
+              <p>Define los parámetros básicos para una nueva plantilla de bono descargable.</p>
+            </div>
 
             <form onSubmit={handleCreateTemplate}>
               <div className="space-y-4">

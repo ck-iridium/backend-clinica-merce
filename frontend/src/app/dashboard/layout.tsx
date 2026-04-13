@@ -1,6 +1,7 @@
 import DashboardSidebar from '@/components/DashboardSidebar';
 import DashboardHeader from '@/components/DashboardHeader';
 import { FeedbackProvider } from '@/app/contexts/FeedbackContext';
+import MobileBottomBar from '@/components/MobileBottomBar';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   let settings = null;
@@ -23,7 +24,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <DashboardSidebar clinicName={clinicName} logoUrl={logoUrl} />
 
         {/* Main Content Area */}
-        <main className="flex-1 flex flex-col h-screen overflow-hidden print:overflow-visible">
+        <main className="flex-1 flex flex-col h-screen overflow-hidden pb-20 md:pb-0 print:overflow-visible">
           
           <DashboardHeader clinicName={clinicName} />
 
@@ -34,6 +35,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             </div>
           </div>
           
+          <MobileBottomBar />
         </main>
       </div>
   );

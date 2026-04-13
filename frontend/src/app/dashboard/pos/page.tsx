@@ -233,11 +233,11 @@ export default function POSPage() {
               <button 
                 onClick={handleProcessSale}
                 disabled={(!isSimplified && !selectedClientId) || !selectedServiceId || isProcessing}
-                className="w-full bg-white text-stone-900 px-8 py-5 rounded-[1.5rem] font-black text-xl hover:bg-stone-100 transition-all disabled:opacity-30 active:scale-95 shadow-xl"
+                className="w-full bg-white text-stone-900 px-8 py-6 rounded-2xl font-black text-xl hover:bg-stone-100 transition-all disabled:opacity-30 active:scale-95 shadow-xl md:py-5"
               >
                 {isProcessing ? 'Procesando...' : 'Confirmar y Cobrar'}
               </button>
-              {!isSimplified && !selectedClientId && searchTerm && <p className="text-[10px] text-white/40 mt-3 text-center">Debes seleccionar un cliente de la lista</p>}
+              {!isSimplified && !selectedClientId && searchTerm && <p className="text-[10px] text-white/40 mt-4 text-center">Debes seleccionar un cliente de la lista</p>}
             </div>
           </div>
 

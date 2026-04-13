@@ -101,9 +101,13 @@ export default function InvoicesPage() {
           <p className="text-muted-foreground font-medium text-sm">No hay ninguna factura registrada todavía.</p>
         </div>
       ) : (
-        <div className="bg-card rounded-[2rem] border border-border/40 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse font-sans">
+        <div className="bg-card rounded-[2.5rem] border border-border/40 shadow-sm overflow-hidden relative group/table">
+          {/* Sombras indicadoras de scroll lateral en móvil */}
+          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 opacity-0 group-hover/table:opacity-100 transition-opacity md:hidden pointer-events-none"></div>
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 opacity-0 group-hover/table:opacity-100 transition-opacity md:hidden pointer-events-none"></div>
+          
+          <div className="overflow-x-auto scrollbar-hide">
+            <table className="w-full text-left border-collapse font-sans min-w-[700px]">
               <thead>
                 <tr className="bg-muted/50 border-b border-border/50 text-[10px] uppercase tracking-widest text-muted-foreground">
                   <th className="p-5 font-semibold">Fecha</th>

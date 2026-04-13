@@ -10,6 +10,8 @@ import {
   Stethoscope, 
   UserCircle 
 } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useFeedback } from "@/app/contexts/FeedbackContext"
 
 const teamMembers = [
   {
@@ -39,6 +41,14 @@ const teamMembers = [
 ]
 
 export default function TeamPage() {
+  const [loading, setLoading] = React.useState(true);
+  
+  React.useEffect(() => {
+    // Simulación de carga de la API
+    const timer = setTimeout(() => setLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Simulación de rol de usuario (cambiar a 'staff' para probar la restricción)
   const userRole = 'admin'; 
 
@@ -69,10 +79,12 @@ export default function TeamPage() {
         )}
       </div>
 
-      {/* Tabla Premium Isla Blanca */}
-      <div className="bg-white rounded-[2.5rem] border border-stone-100 shadow-sm overflow-hidden p-8">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+      <div className="bg-white rounded-[2.5rem] border border-stone-100 shadow-sm overflow-hidden p-4 md:p-8 relative group/table">
+        <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white to-transparent z-10 opacity-0 group-hover/table:opacity-100 transition-opacity md:hidden pointer-events-none"></div>
+        <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white to-transparent z-10 opacity-0 group-hover/table:opacity-100 transition-opacity md:hidden pointer-events-none"></div>
+        
+        <div className="overflow-x-auto scrollbar-hide">
+          <table className="w-full text-left border-collapse min-w-[600px]">
             <thead>
               <tr className="border-b border-stone-50">
                 <th className="pb-5 px-4 text-[11px] font-black uppercase tracking-widest text-stone-300">Miembro</th>
@@ -83,7 +95,32 @@ export default function TeamPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-50">
-              {teamMembers.map((member) => (
+              {loading ? (
+                Array(3).fill(0).map((_, i) => (
+                  <tr key={i}>
+                    <td className="py-5 px-4">
+                      <div className="flex items-center gap-4">
+                        <Skeleton className="w-10 h-10 rounded-full" />
+                        <Skeleton className="h-4 w-24 rounded-lg" />
+                      </div>
+                    </td>
+                    <td className="py-5 px-4"><Skeleton className="h-4 w-20 rounded-lg" /></td>
+                    <td className="py-5 px-4">
+                      <div className="flex items-center gap-2">
+                         <Skeleton className="w-1.5 h-1.5 rounded-full" />
+                         <Skeleton className="h-3 w-12 rounded-full" />
+                      </div>
+                    </td>
+                    <td className="py-5 px-4"><Skeleton className="h-4 w-40 rounded-lg" /></td>
+                    <td className="py-5 px-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Skeleton className="w-8 h-8 rounded-xl" />
+                        <Skeleton className="w-8 h-8 rounded-xl" />
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : teamMembers.map((member) => (
                 <tr key={member.id} className="group hover:bg-stone-50/50 transition-colors">
                   <td className="py-5 px-4">
                     <div className="flex items-center gap-4">

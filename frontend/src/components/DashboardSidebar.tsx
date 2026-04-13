@@ -7,15 +7,23 @@ import {
   Menu, X, LayoutDashboard, Users, Sparkles, 
   Ticket, Receipt, CalendarDays, Settings, 
   Database, Image as ImageIcon, Globe, Tag,
-  ShieldCheck
+  ShieldCheck, User
 } from 'lucide-react';
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 
 interface DashboardSidebarProps {
   clinicName: string;
   logoUrl: string | null;
 }
 
-const navLinks = [
+export const navLinks = [
   { href: '/dashboard/pos',      label: 'Venta Rápida',        icon: Tag,             style: 'accent' },
   { href: '/dashboard',          label: 'Inicio',               icon: LayoutDashboard, style: 'normal', exact: true },
   { href: '/dashboard/clients',  label: 'Clientes',             icon: Users,           style: 'normal' },
@@ -113,19 +121,16 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
   return (
     <>
       {/* ─── Mobile Top Bar ─── */}
-      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-white/80 backdrop-blur-xl border-b border-stone-200/50 sticky top-0 z-30 shadow-sm print:hidden">
+      <div className="md:hidden flex items-center justify-between px-6 py-4 bg-white/70 backdrop-blur-md border-b border-stone-100 sticky top-0 z-40 print:hidden">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-white font-bold text-sm shadow overflow-hidden">
+          <div className="w-9 h-9 rounded-2xl bg-stone-900 flex items-center justify-center text-white font-serif italic text-xl shadow-lg shadow-stone-200 overflow-hidden">
             {logoUrl ? <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" /> : clinicName.charAt(0)}
           </div>
-          <span className="font-bold text-stone-800 text-base">{clinicName}</span>
         </div>
-        <button
-          onClick={() => setIsMobileOpen(true)}
-          className="w-10 h-10 rounded-xl bg-stone-100/50 hover:bg-stone-100 flex items-center justify-center text-stone-600 transition-all active:scale-95 border border-stone-200/50"
-        >
-          <Menu size={20} />
-        </button>
+        
+        <div className="w-9 h-9 rounded-full bg-stone-200 overflow-hidden border-2 border-white shadow-sm flex items-center justify-center">
+            <User size={16} strokeWidth={1.5} className="text-stone-500" />
+        </div>
       </div>
 
       {/* ─── Desktop Sidebar (Heygen Style) ─── */}
@@ -157,39 +162,6 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
         </div>
       </aside>
 
-      {/* ─── Mobile Drawer ─── */}
-      <div
-        onClick={() => setIsMobileOpen(false)}
-        className={`md:hidden fixed inset-0 z-[100] bg-stone-900/40 backdrop-blur-sm transition-opacity duration-300 print:hidden ${isMobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-      />
-
-      <aside
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        className={`md:hidden fixed top-0 left-0 h-full w-[85vw] max-w-xs z-[101] bg-stone-50 flex flex-col py-6 shadow-2xl shadow-stone-900/20 transition-transform duration-300 cubic-bezier(0.16,1,0.3,1) print:hidden ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
-      >
-        <div className="flex items-center justify-between px-6 mb-8">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-white font-serif italic text-2xl shadow-lg shadow-primary/20 overflow-hidden">
-              {logoUrl ? <img src={logoUrl} alt={clinicName} className="w-full h-full object-cover" /> : clinicName.charAt(0)}
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-stone-800 leading-tight font-serif">{clinicName}</h2>
-              <p className="text-[10px] font-bold text-primary uppercase tracking-widest mt-0.5">Admin Panel</p>
-            </div>
-          </div>
-          <button
-            onClick={() => setIsMobileOpen(false)}
-            className="w-8 h-8 rounded-full bg-stone-200/50 hover:bg-stone-200 flex items-center justify-center text-stone-500 transition-all"
-          >
-            <X size={16} />
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-3">
-          <NavItems expanded={true} />
-        </div>
-      </aside>
     </>
   );
 }

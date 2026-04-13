@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CalendarDays, Users, Banknote, Activity, Plus, UserPlus, Zap, ChevronRight, CalendarCheck } from 'lucide-react';
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardPage() {
   const [clients, setClients] = useState<any[]>([]);
@@ -127,9 +128,16 @@ export default function DashboardPage() {
 
       {/* ── Grid de Métricas ── */}
       {loading ? (
-        <div className="text-center py-32">
-          <div className="inline-block w-10 h-10 border-4 border-[#f3c7cb] border-t-[#d9777f] rounded-full animate-spin mb-4" />
-          <p className="text-stone-400 font-medium text-sm">Sincronizando con la base de datos...</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {Array(4).fill(0).map((_, i) => (
+            <div key={i} className="bg-white rounded-[2.5rem] border border-stone-100 shadow-sm p-7 flex items-center justify-between">
+              <div className="space-y-3">
+                <Skeleton className="h-3 w-20 rounded-full" />
+                <Skeleton className="h-8 w-16 rounded-lg" />
+              </div>
+              <Skeleton className="w-14 h-14 rounded-2xl" />
+            </div>
+          ))}
         </div>
       ) : (
         <>
