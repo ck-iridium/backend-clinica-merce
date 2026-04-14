@@ -86,7 +86,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="animate-in fade-in duration-500 pb-20">
+    <div className="animate-in fade-in duration-500">
 
       {/* ── Bienvenida ── */}
       <div className="mb-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">

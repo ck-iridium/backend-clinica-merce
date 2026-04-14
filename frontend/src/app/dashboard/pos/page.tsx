@@ -108,7 +108,7 @@ export default function POSPage() {
   );
 
   return (
-    <div className="max-w-4xl mx-auto py-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-32">
+    <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
       
       <header className="mb-10 text-center md:text-left">
         <h1 className="text-4xl font-black text-stone-800 tracking-tight flex items-center justify-center md:justify-start gap-4">

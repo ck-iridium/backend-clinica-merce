@@ -20,6 +20,14 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export default function VouchersPage() {
   const { showFeedback } = useFeedback();
@@ -322,7 +330,7 @@ export default function VouchersPage() {
   };
 
   return (
-    <div className="animate-in fade-in duration-500 pb-20">
+    <div className="animate-in fade-in duration-500">
       
       {/* Header & Tabs */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4 border-b border-stone-200/60 pb-6">
@@ -535,197 +543,197 @@ export default function VouchersPage() {
       )}
 
       {/* ======================= MODAL: EMITIR BONO (ASSIGNMENT) ======================= */}
-      {showAssignModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/40 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="bg-white rounded-[2rem] w-full max-w-lg shadow-2xl overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-stone-100 flex justify-between items-center bg-stone-50">
-              <h2 className="text-xl font-extrabold text-stone-800">Emitir / Vender Bono</h2>
-              <button onClick={() => setShowAssignModal(false)} className="text-stone-400 hover:text-stone-600 font-bold p-2">✕</button>
-            </div>
+      <Dialog open={showAssignModal} onOpenChange={setShowAssignModal}>
+        <DialogContent className="flex flex-col w-[95vw] sm:max-w-lg max-h-[85dvh] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-[2.5rem]">
+          <DialogHeader className="shrink-0 p-8 border-b border-stone-100 bg-stone-50">
+            <DialogTitle className="text-xl font-extrabold text-stone-800">Emitir / Vender Bono</DialogTitle>
+            <DialogDescription className="text-stone-400 text-sm">
+              Asigna un bono del catálogo a un cliente y define las condiciones de pago.
+            </DialogDescription>
+          </DialogHeader>
 
-            <form onSubmit={handleAssignVoucher} className="flex-1 flex flex-col overflow-hidden">
-              <div className="flex-1 overflow-y-auto max-h-[70vh] px-8 py-4 custom-scrollbar">
-                {/* 1. Seleccionar Cliente */}
-                <div className="mb-5">
-                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Cliente Receptor</label>
-                  <Select required value={selectedClientId} onValueChange={setSelectedClientId}>
+          <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+            <form id="assign-voucher-form" onSubmit={handleAssignVoucher}>
+              {/* 1. Seleccionar Cliente */}
+              <div className="mb-5">
+                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Cliente Receptor</label>
+                <Select required value={selectedClientId} onValueChange={setSelectedClientId}>
+                  <SelectTrigger className="w-full bg-stone-50 border-stone-200">
+                    <SelectValue placeholder="Selecciona cliente..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clients
+                      .filter(c => c.email !== 'contado@clinica-mercedes.com')
+                      .map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* 2. Seleccionar Plantilla con Buscador */}
+              <div className="mb-6 p-4 bg-stone-50 border border-stone-200 rounded-2xl relative">
+                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Elegir Plantilla del Catálogo</label>
+                {!selectedTemplateId ? (
+                   <>
+                      <input 
+                        type="text" 
+                        placeholder="Buscar plantilla..." 
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        className="w-full p-3 mb-2 bg-white border border-stone-200 rounded-xl text-sm outline-none"
+                      />
+                      <div className="max-h-40 overflow-y-auto space-y-2 pr-2">
+                         {filteredTemplates.length === 0 && <p className="text-xs text-stone-400">No se encontraron plantillas.</p>}
+                         {filteredTemplates.map(t => (
+                            <div 
+                              key={t.id} 
+                              onClick={() => handleSelectTemplateForAssignment(t.id)}
+                              className="p-3 bg-white border border-stone-100 rounded-xl hover:border-[#d9777f] hover:shadow-sm cursor-pointer transition-all flex justify-between items-center"
+                            >
+                               <div>
+                                 <p className="font-bold text-stone-700 text-sm">{t.name}</p>
+                                 <p className="text-xs text-stone-400">{t.total_sessions} Sesiones</p>
+                               </div>
+                               <span className="font-extrabold text-[#d9777f]">{t.price}€</span>
+                            </div>
+                         ))}
+                      </div>
+                   </>
+                ) : (
+                   <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-[#f3c7cb] shadow-inner">
+                      <div>
+                         <p className="font-bold text-stone-800 text-sm">{templates.find(t => t.id === selectedTemplateId)?.name}</p>
+                         <p className="text-xs text-[#d9777f] font-semibold mt-0.5">{templates.find(t => t.id === selectedTemplateId)?.total_sessions} Sesiones a consumir</p>
+                      </div>
+                      <button 
+                        type="button" 
+                        onClick={() => setSelectedTemplateId('')}
+                        className="text-xs font-bold text-stone-400 underline hover:text-stone-600"
+                      >Cambiar</button>
+                   </div>
+                )}
+              </div>
+
+              {/* 3. Condiciones Financieras */}
+              <div className={`grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 transition-all duration-300 ${selectedTemplateId ? 'opacity-100' : 'opacity-40 grayscale pointer-events-none'}`}>
+                <div>
+                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5 ml-1">Precio Final Pactado (€)</label>
+                  <input 
+                    type="number" step="0.01" required 
+                    value={assignPrice} onChange={e => setAssignPrice(Number(e.target.value))}
+                    className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-extrabold text-[#b08e23] outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-emerald-600 tracking-wide mb-1">Pago Inicial Hoy (€)</label>
+                  <input 
+                    type="number" step="0.01" required min="0" max={Number(assignPrice)}
+                    value={assignAmountPaid} onChange={e => setAssignAmountPaid(Number(e.target.value))}
+                    className="w-full p-3 bg-white border border-stone-200 border-l-4 border-l-emerald-400 rounded-xl font-extrabold text-stone-800 outline-none focus:border-l-emerald-600 focus:bg-emerald-50/30"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Caducidad del Bono</label>
+                    <select 
+                      value={expirationMonths} onChange={e => setExpirationMonths(Number(e.target.value))}
+                      className="w-full p-3 bg-white border border-stone-200 rounded-xl font-semibold text-stone-700 outline-none"
+                    >
+                      <option value={3}>3 meses desde la compra</option>
+                      <option value={6}>6 meses desde la compra</option>
+                      <option value={12}>12 meses desde la compra</option>
+                      <option value={24}>2 años desde la compra</option>
+                    </select>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <DialogFooter className="shrink-0 p-8 border-t border-stone-100 bg-stone-50/50 sm:flex-row">
+            <button 
+              form="assign-voucher-form"
+              type="submit" 
+              disabled={saving || !selectedTemplateId} 
+              className="w-full py-4 bg-stone-800 text-white font-extrabold rounded-xl hover:bg-stone-900 transition-all flex justify-center items-center shadow-lg disabled:opacity-50"
+            >
+              {saving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : "Crear y Asignar Bono"}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ======================= MODAL: CREAR PLANTILLA ======================= */}
+      <Dialog open={showTemplateModal} onOpenChange={setShowTemplateModal}>
+        <DialogContent className="flex flex-col w-[95vw] sm:max-w-sm max-h-[85dvh] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-[2.5rem]">
+          <DialogHeader className="shrink-0 p-6 border-b border-stone-50 bg-white">
+            <DialogTitle className="text-xl font-extrabold text-stone-800">Crear Plantilla</DialogTitle>
+            <DialogDescription className="text-stone-400 text-xs mt-1">
+              Define los parámetros básicos para una nueva plantilla de bono.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto p-6">
+            <form id="template-form" onSubmit={handleCreateTemplate}>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Nombre (Ej: Bono 5 Ses. Axilas)</label>
+                  <input required type="text" value={templateName} onChange={e => setTemplateName(e.target.value)} className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-semibold" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Servicio / Tratamiento base</label>
+                  <Select value={templateServiceId} onValueChange={(val) => {
+                    setTemplateServiceId(val);
+                    calculateTemplateDefaultPrice(val, templateSessions);
+                  }}>
                     <SelectTrigger className="w-full bg-stone-50 border-stone-200">
-                      <SelectValue placeholder="Selecciona cliente..." />
+                      <SelectValue placeholder="-- Elige técnica --" />
                     </SelectTrigger>
                     <SelectContent>
-                      {clients
-                        .filter(c => c.email !== 'contado@clinica-mercedes.com')
-                        .map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                      {services.filter(s => s.is_active).map(s => <SelectItem key={s.id} value={s.id}>{s.name} ({s.price}€/sesión)</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
-
-                {/* 2. Seleccionar Plantilla con Buscador */}
-                <div className="mb-6 p-4 bg-stone-50 border border-stone-200 rounded-2xl relative">
-                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Elegir Plantilla del Catálogo</label>
-                  {!selectedTemplateId ? (
-                     <>
-                        <input 
-                          type="text" 
-                          placeholder="Buscar plantilla..." 
-                          value={searchTerm}
-                          onChange={e => setSearchTerm(e.target.value)}
-                          className="w-full p-3 mb-2 bg-white border border-stone-200 rounded-xl text-sm outline-none"
-                        />
-                        <div className="max-h-40 overflow-y-auto space-y-2 pr-2">
-                           {filteredTemplates.length === 0 && <p className="text-xs text-stone-400">No se encontraron plantillas.</p>}
-                           {filteredTemplates.map(t => (
-                              <div 
-                                key={t.id} 
-                                onClick={() => handleSelectTemplateForAssignment(t.id)}
-                                className="p-3 bg-white border border-stone-100 rounded-xl hover:border-[#d9777f] hover:shadow-sm cursor-pointer transition-all flex justify-between items-center"
-                              >
-                                 <div>
-                                   <p className="font-bold text-stone-700 text-sm">{t.name}</p>
-                                   <p className="text-xs text-stone-400">{t.total_sessions} Sesiones</p>
-                                 </div>
-                                 <span className="font-extrabold text-[#d9777f]">{t.price}€</span>
-                              </div>
-                           ))}
-                        </div>
-                     </>
-                  ) : (
-                     <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-[#f3c7cb] shadow-inner">
-                        <div>
-                           <p className="font-bold text-stone-800 text-sm">{templates.find(t => t.id === selectedTemplateId)?.name}</p>
-                           <p className="text-xs text-[#d9777f] font-semibold mt-0.5">{templates.find(t => t.id === selectedTemplateId)?.total_sessions} Sesiones a consumir</p>
-                        </div>
-                        <button 
-                          type="button" 
-                          onClick={() => setSelectedTemplateId('')}
-                          className="text-xs font-bold text-stone-400 underline hover:text-stone-600"
-                        >Cambiar</button>
-                     </div>
-                  )}
+                <div>
+                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Nº de Sesiones / Usos</label>
+                  <input 
+                    required type="number" min="1"
+                    value={templateSessions} 
+                    onChange={e => {
+                      const sess = Number(e.target.value);
+                      setTemplateSessions(sess);
+                      calculateTemplateDefaultPrice(templateServiceId, sess);
+                    }} 
+                    className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-800" 
+                  />
                 </div>
-
-                {/* 3. Condiciones Financieras (Sólo viables si seleccionamos plantilla) */}
-                <div className={`grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 transition-all duration-300 ${selectedTemplateId ? 'opacity-100' : 'opacity-40 grayscale pointer-events-none'}`}>
-                  <div>
-                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5 ml-1">Precio Final Pactado (€)</label>
-                    <input 
-                      type="number" step="0.01" required 
-                      value={assignPrice} onChange={e => setAssignPrice(Number(e.target.value))}
-                      className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-extrabold text-[#b08e23] outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-emerald-600 tracking-wide mb-1">Pago Inicial Hoy (€)</label>
-                    <input 
-                      type="number" step="0.01" required min="0" max={Number(assignPrice)}
-                      value={assignAmountPaid} onChange={e => setAssignAmountPaid(Number(e.target.value))}
-                      className="w-full p-3 bg-white border border-stone-200 border-l-4 border-l-emerald-400 rounded-xl font-extrabold text-stone-800 outline-none focus:border-l-emerald-600 focus:bg-emerald-50/30"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                      <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Caducidad del Bono</label>
-                      <select 
-                        value={expirationMonths} onChange={e => setExpirationMonths(Number(e.target.value))}
-                        className="w-full p-3 bg-white border border-stone-200 rounded-xl font-semibold text-stone-700 outline-none"
-                      >
-                        <option value={3}>3 meses desde la compra</option>
-                        <option value={6}>6 meses desde la compra</option>
-                        <option value={12}>12 meses desde la compra</option>
-                        <option value={24}>2 años desde la compra</option>
-                      </select>
-                  </div>
+                <div>
+                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Precio de Venta Sugerido (€)</label>
+                  <input required type="number" step="0.01" value={templatePrice} onChange={e => setTemplatePrice(Number(e.target.value))} className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-bold text-[#b08e23]" />
                 </div>
-              </div>
-              
-              <div className="p-8 pt-6 border-t border-stone-100 bg-stone-50/50">
-                <button type="submit" disabled={saving || !selectedTemplateId} className="w-full py-4 bg-stone-800 text-white font-extrabold rounded-xl hover:bg-stone-900 transition-all flex justify-center items-center shadow-lg disabled:opacity-50">
-                  <span className="sr-only">Emitir Nuevo Bono</span>
-                  {saving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : "Crear y Asignar Bono"}
-                </button>
               </div>
             </form>
           </div>
-        </div>
-      )}
 
-      {/* ======================= MODAL: CREAR PLANTILLA ======================= */}
-      {showTemplateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/40 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="bg-white rounded-[2rem] w-full max-w-sm shadow-2xl p-6">
-            <h2 className="text-xl font-extrabold text-stone-800 mb-6 flex justify-between">
-              Crear Plantilla
-              <button 
-                type="button"
-                onClick={() => setShowTemplateModal(false)} className="text-stone-400">✕</button>
-            </h2>
-            <div className="sr-only">
-              <h2>Nueva Plantilla de Bono</h2>
-              <p>Define los parámetros básicos para una nueva plantilla de bono descargable.</p>
-            </div>
-
-            <form onSubmit={handleCreateTemplate} className="flex flex-col">
-              <div className="flex-1 overflow-y-auto max-h-[60vh] px-2 py-4 shadow-inner bg-stone-50/20 rounded-xl">
-                <div className="space-y-4 px-2">
-                  <div>
-                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Nombre (Ej: Bono 5 Ses. Axilas)</label>
-                    <input required type="text" value={templateName} onChange={e => setTemplateName(e.target.value)} className="w-full p-3 bg-white border border-stone-200 rounded-xl font-semibold" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Servicio / Tratamiento base</label>
-                    <Select value={templateServiceId} onValueChange={(val) => {
-                      setTemplateServiceId(val);
-                      calculateTemplateDefaultPrice(val, templateSessions);
-                    }}>
-                      <SelectTrigger className="w-full bg-white border-stone-200">
-                        <SelectValue placeholder="-- Elige técnica --" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {services.filter(s => s.is_active).map(s => <SelectItem key={s.id} value={s.id}>{s.name} ({s.price}€/sesión)</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Nº de Sesiones / Usos</label>
-                    <input 
-                      required type="number" min="1"
-                      value={templateSessions} 
-                      onChange={e => {
-                        const sess = Number(e.target.value);
-                        setTemplateSessions(sess);
-                        calculateTemplateDefaultPrice(templateServiceId, sess);
-                      }} 
-                      className="w-full p-3 bg-white border border-stone-200 rounded-xl font-bold text-stone-800" 
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Precio de Venta Sugerido (€)</label>
-                    <input required type="number" step="0.01" value={templatePrice} onChange={e => setTemplatePrice(Number(e.target.value))} className="w-full p-3 bg-white border border-stone-200 rounded-xl font-bold text-[#b08e23]" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 pt-4 border-t border-stone-50">
-                <button type="submit" disabled={saving} className="w-full py-4 bg-[#bf7d6b] text-white font-extrabold rounded-xl hover:bg-[#a66a5a] transition-all flex justify-center items-center shadow-lg shadow-[#bf7d6b]/20 active:scale-95">
-                  {saving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : "Guardar Plantilla"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+          <DialogFooter className="shrink-0 p-6 border-t border-stone-50 bg-stone-50/50 sm:flex-row">
+            <button form="template-form" type="submit" disabled={saving} className="w-full py-4 bg-[#bf7d6b] text-white font-extrabold rounded-xl hover:bg-[#a66a5a] transition-all flex justify-center items-center shadow-lg shadow-[#bf7d6b]/20 active:scale-95">
+              {saving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : "Guardar Plantilla"}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* ======================= MODAL: SALDAR DEUDA ======================= */}
-      {showPayModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/40 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="bg-white rounded-[2rem] w-full max-w-sm shadow-2xl p-6">
-            <h2 className="text-xl font-extrabold text-stone-800 mb-6 flex justify-between">
-              Añadir Pago
-              <button onClick={() => setShowPayModal(false)} className="text-stone-400">✕</button>
-            </h2>
+      <Dialog open={showPayModal} onOpenChange={setShowPayModal}>
+        <DialogContent className="flex flex-col w-[95vw] sm:max-w-sm max-h-[85dvh] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-[2.5rem]">
+          <DialogHeader className="shrink-0 p-6 border-b border-stone-50 bg-white">
+            <DialogTitle className="text-xl font-extrabold text-stone-800">Añadir Pago</DialogTitle>
+            <DialogDescription className="text-stone-400 text-xs mt-1">
+              Registra un cobro parcial o total sobre la deuda del bono.
+            </DialogDescription>
+          </DialogHeader>
 
-            <form onSubmit={handlePayDebt}>
+          <div className="flex-1 overflow-y-auto p-6">
+            <form id="pay-debt-form" onSubmit={handlePayDebt}>
               <p className="text-sm text-stone-500 mb-4 bg-stone-50 p-3 rounded-lg border border-stone-100">
                 La deuda actual de este bono es de <strong className="text-rose-500">{currentDebt}€</strong>.
               </p>
@@ -739,21 +747,21 @@ export default function VouchersPage() {
                   max={currentDebt}
                   value={payAmount} 
                   onChange={e => setPayAmount(Number(e.target.value))} 
-                  className="w-full p-4 bg-white border border-stone-200 border-l-4 border-l-[#d9777f] rounded-xl font-extrabold text-stone-800 outline-none text-xl" 
+                  className="w-full p-4 bg-stone-50 border border-stone-200 border-l-4 border-l-[#d9777f] rounded-xl font-extrabold text-stone-800 outline-none text-xl" 
                 />
-                <p className="text-[10px] text-stone-400 mt-1">Este importe se sumará al saldo pagado del bono. Permite pagos parciales.</p>
-              </div>
-
-              <div className="mt-8 flex gap-3">
-                 <button type="button" onClick={() => setShowPayModal(false)} className="flex-1 py-3 text-stone-600 font-bold border border-stone-200 rounded-xl hover:bg-stone-50">Cancelar</button>
-                 <button type="submit" disabled={paying} className="flex-1 py-3 text-white bg-[#d9777f] font-bold rounded-xl hover:bg-[#c6646b] shadow-md flex justify-center items-center">
-                   {paying ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : 'Confirmar Cobro'}
-                 </button>
+                <p className="text-[10px] text-stone-400 mt-1">Este importe se sumará al saldo pagado.</p>
               </div>
             </form>
           </div>
-        </div>
-      )}
+
+          <DialogFooter className="shrink-0 p-6 border-t border-stone-100 bg-stone-50/50 flex gap-3 sm:flex-row">
+            <button type="button" onClick={() => setShowPayModal(false)} className="flex-1 py-3 text-stone-600 font-bold border border-stone-200 rounded-xl hover:bg-stone-50 bg-white">Cancelar</button>
+            <button form="pay-debt-form" type="submit" disabled={paying} className="flex-1 py-3 text-white bg-[#d9777f] font-bold rounded-xl hover:bg-[#c6646b] shadow-md flex justify-center items-center">
+              {paying ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : 'Confirmar'}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
     </div>
   );

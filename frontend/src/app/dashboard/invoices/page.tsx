@@ -75,7 +75,7 @@ export default function InvoicesPage() {
   // Funciones de descarga eliminadas para dar paso a la vista de detalle ERP.
 
   return (
-    <div className="animate-in fade-in duration-500 pb-20">
+    <div className="animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
         <div>
           <h1 className="text-4xl font-serif text-stone-800 tracking-tight">Registro de Facturación</h1>

@@ -96,7 +96,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="animate-in fade-in duration-500 pb-20 max-w-[1100px] mx-auto">
+    <div className="animate-in fade-in duration-500 max-w-[1100px] mx-auto">
       <div className="mb-10 flex justify-between items-center">
         <div>
           <h1 className="text-4xl font-serif font-semibold text-stone-800 tracking-tight">Ajustes Generales</h1>

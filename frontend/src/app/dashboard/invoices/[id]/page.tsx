@@ -2,6 +2,15 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export default function InvoicePreviewPage() {
   const { id } = useParams();
@@ -119,7 +128,7 @@ export default function InvoicePreviewPage() {
   if (!invoice) return <div className="p-10 text-center font-bold text-stone-500">Documento no disponible.</div>;
 
   return (
-    <div className="animate-in fade-in duration-500 pb-20 max-w-[1400px] mx-auto">
+    <div className="animate-in fade-in duration-500 max-w-[1400px] mx-auto">
       
       {/* HEADER DE NAVEGACION (No se imprime) */}
       <div className="mb-8 print:hidden flex items-center gap-4">
@@ -156,17 +165,54 @@ export default function InvoicePreviewPage() {
           <div className="bg-white p-6 rounded-[2rem] border border-stone-100 shadow-sm">
             <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-4">Control de Estado</p>
             
-            <button 
-              onClick={() => setShowConfirmModal(true)}
-              className={`w-full p-4 rounded-xl flex items-center justify-between text-left transition-all font-bold text-sm mb-6 ${
-                invoice.status === 'paid' 
-                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm'
-                : 'bg-orange-50 text-orange-700 border border-orange-200 shadow-sm'
-              }`}
-            >
-              <span>{invoice.status === 'paid' ? '✔ Estado: Pagado' : '⏳ Estado: Pendiente'}</span>
-              <span className="text-xs opacity-70 italic underline">Cambiar</span>
-            </button>
+            {/* Usamos el Dialog de Shadcn para el cambio de estado */}
+            <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
+              <DialogTrigger asChild>
+                <button 
+                  className={`w-full p-4 rounded-xl flex items-center justify-between text-left transition-all font-bold text-sm mb-6 ${
+                    invoice.status === 'paid' 
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm'
+                    : 'bg-orange-50 text-orange-700 border border-orange-200 shadow-sm'
+                  }`}
+                >
+                  <span>{invoice.status === 'paid' ? '✔ Estado: Pagado' : '⏳ Estado: Pendiente'}</span>
+                  <span className="text-xs opacity-70 italic underline">Cambiar</span>
+                </button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px] p-0 overflow-hidden bg-white/95 backdrop-blur-xl border-white/20 shadow-2xl rounded-[2rem] flex flex-col max-h-[85dvh]">
+                <DialogHeader className="p-8 pb-4 bg-stone-50/50 border-b border-stone-100">
+                  <div className="w-12 h-12 bg-stone-900 text-white rounded-2xl flex items-center justify-center text-xl mb-4 shadow-lg">⚖️</div>
+                  <DialogTitle className="text-2xl font-serif font-bold text-stone-900 tracking-tight">Cambiar Estado</DialogTitle>
+                  <DialogDescription className="text-stone-500 font-medium">
+                    ¿Estás seguro de que deseas cambiar el estado de esta factura?
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="flex-1 overflow-y-auto p-8 space-y-4">
+                  <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100">
+                    <p className="text-sm font-bold text-amber-700 flex gap-2">
+                      <span>⚠️</span>
+                      Esta acción afectará directamente a los reportes de contabilidad y reconciliación de caja.
+                    </p>
+                  </div>
+                </div>
+
+                <DialogFooter className="p-8 pt-4 bg-stone-50/50 border-t border-stone-100 flex gap-3">
+                  <button 
+                    onClick={() => setShowConfirmModal(false)}
+                    className="flex-1 px-6 py-4 rounded-2xl font-bold bg-white border border-stone-200 text-stone-500 hover:bg-stone-50 transition-all font-sans text-sm"
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    onClick={() => handleToggleStatus(invoice.status)}
+                    className="flex-1 px-6 py-4 rounded-2xl font-bold bg-stone-900 text-white hover:bg-[#d9777f] transition-all shadow-lg shadow-stone-200 font-sans text-sm active:scale-95"
+                  >
+                    Confirmar Cambio
+                  </button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
 
             <button 
               onClick={handlePrint}
@@ -335,33 +381,7 @@ export default function InvoicePreviewPage() {
 
       </div>
 
-      {/* MODAL DE CONFIRMACION DE CAMBIO DE ESTADO */}
-      {showConfirmModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-900/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-           <div className="bg-white rounded-[2rem] shadow-2xl p-8 max-w-sm w-full text-center border border-stone-100">
-              <div className="w-16 h-16 bg-[#fdf2f3] text-[#d9777f] rounded-full flex items-center justify-center text-3xl mx-auto mb-4">⚖️</div>
-              <h3 className="text-xl font-extrabold text-stone-800 mb-2">Confirmar Acción</h3>
-              <p className="text-stone-500 text-sm mb-8">
-                ¿Estás seguro de que deseas cambiar el estado de esta factura? <br/>
-                <span className="font-bold text-stone-600">Esto afectará directamente a los reportes de contabilidad.</span>
-              </p>
-              <div className="flex flex-col gap-3">
-                 <button 
-                   onClick={() => handleToggleStatus(invoice.status)}
-                   className="bg-stone-900 text-white py-4 rounded-xl font-bold hover:bg-[#d9777f] transition-all active:scale-95 shadow-lg"
-                 >
-                   Sí, Cambiar Estado
-                 </button>
-                 <button 
-                   onClick={() => setShowConfirmModal(false)}
-                   className="bg-stone-100 text-stone-500 py-3 rounded-xl font-bold hover:bg-stone-200 transition-all"
-                 >
-                   Cancelar
-                 </button>
-              </div>
-           </div>
-        </div>
-      )}
+      {/* Visor A4, etc. termina aquí */}
     </div>
   );
 }

@@ -1,6 +1,14 @@
 "use client"
 import { useState, useEffect, useRef } from 'react';
 import { Cloud, Download, Server, RefreshCw, AlertCircle, Calendar } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export default function BackupsPage() {
   const [cloudBackups, setCloudBackups] = useState<any[]>([]);
@@ -123,7 +131,7 @@ export default function BackupsPage() {
   };
 
   return (
-    <div className="animate-in fade-in duration-500 pb-20 max-w-[1100px] mx-auto">
+    <div className="animate-in fade-in duration-500 max-w-[1100px] mx-auto">
       <div className="mb-10 flex justify-between items-end">
         <div>
            <h1 className="text-3xl font-extrabold text-stone-800 tracking-tight flex items-center gap-3">
@@ -241,36 +249,47 @@ export default function BackupsPage() {
         </div>
       </div>
 
-      {/* MODAL DE ALERTA ROJA: RESTAURACIÓN CRÍTICA */}
-      {showBackupModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-red-900/40 backdrop-blur-md p-4 animate-in fade-in duration-300">
-           <div className="bg-red-50 rounded-[2.5rem] shadow-2xl p-10 max-w-md w-full text-center border-4 border-red-500 relative">
-              <button onClick={() => setShowBackupModal(false)} className="absolute top-6 right-6 text-red-300 hover:text-red-500 font-bold text-xl transition-all">✕</button>
-              <div className="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 animate-pulse">⚠️</div>
-              <h2 className="text-2xl font-black text-red-700 uppercase tracking-tighter mb-4">PELIGRO CRÍTICO</h2>
-              <p className="text-red-600/80 text-sm font-medium mb-8 leading-relaxed">
-                Estás a punto de **SOBRESCRIBIR TODA LA BASE DE DATOS**. <br/>
-                <span className="font-bold underline">Esta acción es irreversible</span>
-              </p>
-              <div className="space-y-4">
-                 <div>
-                    <label className="block text-[10px] font-bold text-red-400 uppercase tracking-widest mb-2 text-left px-2">Código de Seguridad</label>
-                    <input 
-                      type="text" 
-                      value={confirmCode}
-                      onChange={e => setConfirmCode(e.target.value)}
-                      placeholder="Escribe CONFIRMAR"
-                      className="w-full p-4 bg-white border-2 border-red-200 rounded-2xl focus:border-red-500 outline-none text-center font-black tracking-[0.2em] text-red-600 shadow-inner"
-                    />
-                 </div>
-                 <button onClick={executeRestore} disabled={confirmCode !== 'CONFIRMAR' || restoring} className="w-full bg-red-600 hover:bg-red-700 text-white py-5 rounded-2xl font-black shadow-xl shadow-red-200 active:scale-95 transition-all disabled:opacity-30">
-                   {restoring ? 'RESTAURANDO...' : 'SÍ, BORRAR Y RESTAURAR'}
-                 </button>
-                 <button onClick={() => setShowBackupModal(false)} className="text-xs font-bold text-red-300 hover:text-red-500 transition-colors uppercase tracking-widest">Cancelar</button>
-              </div>
-           </div>
-        </div>
-      )}
+      {/* MODAL DE ALERTA ROJA: RESTAURACIÓN CRÍTICA (Sándwich) */}
+      <Dialog open={showBackupModal} onOpenChange={setShowBackupModal}>
+        <DialogContent className="sm:max-w-[425px] p-0 overflow-hidden bg-red-50/95 backdrop-blur-xl border-red-200 shadow-2xl rounded-[2.5rem] flex flex-col max-h-[85dvh]">
+          <DialogHeader className="p-8 pb-4 bg-red-100/50 border-b border-red-200">
+            <div className="w-12 h-12 bg-red-600 text-white rounded-2xl flex items-center justify-center text-xl mb-4 shadow-lg animate-pulse">⚠️</div>
+            <DialogTitle className="text-2xl font-black text-red-700 uppercase tracking-tighter">Peligro Crítico</DialogTitle>
+            <DialogDescription className="text-red-600/80 font-medium">
+              Estás a punto de **SOBRESCRIBIR TODA LA BASE DE DATOS**. Esta acción es irreversible.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto p-8 space-y-6">
+            <div className="p-4 bg-white rounded-2xl border border-red-100 shadow-inner">
+              <label className="block text-[10px] font-bold text-red-400 uppercase tracking-widest mb-3 px-1">Validación de Seguridad</label>
+              <input 
+                type="text" 
+                value={confirmCode}
+                onChange={e => setConfirmCode(e.target.value)}
+                placeholder="Escribe CONFIRMAR"
+                className="w-full p-4 bg-red-50/50 border-2 border-red-100 rounded-2xl focus:border-red-500 outline-none text-center font-black tracking-[0.2em] text-red-700 transition-all"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="p-8 pt-4 bg-red-100/50 border-t border-red-200 flex flex-col gap-3">
+            <button 
+              onClick={executeRestore} 
+              disabled={confirmCode !== 'CONFIRMAR' || restoring} 
+              className="w-full bg-red-600 hover:bg-red-700 text-white py-5 rounded-2xl font-black shadow-xl shadow-red-200 active:scale-95 transition-all disabled:opacity-30 text-sm"
+            >
+              {restoring ? 'RESTAURANDO...' : 'SÍ, BORRAR Y RESTAURAR'}
+            </button>
+            <button 
+              onClick={() => setShowBackupModal(false)}
+              className="w-full py-3 rounded-2xl font-bold bg-white text-red-400 hover:text-red-600 transition-all text-xs uppercase tracking-widest"
+            >
+              Cancelar
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

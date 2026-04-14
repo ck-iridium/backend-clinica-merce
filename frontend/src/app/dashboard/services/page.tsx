@@ -17,6 +17,16 @@ import {
   X, 
   ChevronDown 
 } from 'lucide-react';
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -24,7 +34,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ServicesPage() {
   const { showFeedback } = useFeedback();
@@ -55,14 +64,7 @@ export default function ServicesPage() {
     fetchCategories();
   }, []);
 
-  // Bloqueo de scroll cuando hay modales abiertos
-  useEffect(() => {
-    if (showForm || showManageCategoriesModal || showCategoryModal) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-  }, [showForm, showManageCategoriesModal, showCategoryModal]);
+
 
   const fetchCategories = async () => {
     try {
@@ -346,67 +348,59 @@ export default function ServicesPage() {
         </div>
       </div>
 
-      {showForm && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 backdrop-blur-sm p-4 md:p-6 sm:p-2 overflow-y-auto"
-          onClick={(e) => { if (e.target === e.currentTarget) handleCancel(); }}
-        >
-          <div className="bg-white w-full max-w-4xl rounded-[2.5rem] shadow-2xl border border-stone-100 overflow-hidden relative animate-in zoom-in-95 fade-in duration-300">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-yellow-50 rounded-full blur-3xl opacity-60 -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-            
-            {/* Header del Modal */}
-            <div className="p-6 md:p-8 flex justify-between items-center border-b border-stone-50 relative z-10">
-              <h2 className="text-2xl font-bold text-stone-800 flex items-center gap-3">
-                <span className="w-10 h-10 rounded-2xl bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
-                  <Sparkles size={20} strokeWidth={1.5} />
-                </span>
-                {editingId ? 'Editar Técnica de Tratamiento' : 'Alta Técnica de Tratamiento'}
-              </h2>
-              <button 
-                onClick={handleCancel}
-                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-stone-50 text-stone-400 hover:text-stone-800 transition-all text-2xl leading-none"
-              >
-                <X size={24} strokeWidth={1.5} />
-              </button>
-            </div>
-            
-            <form onSubmit={handleSubmit} className="p-6 md:p-8 relative z-10 max-h-[70vh] overflow-y-auto custom-scrollbar">
-              
+      <Dialog open={showForm} onOpenChange={(open) => !open && handleCancel()}>
+        <DialogContent className="flex flex-col w-[95vw] sm:max-w-4xl max-h-[85dvh] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-[2.5rem]">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-yellow-50 rounded-full blur-3xl opacity-60 -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+          
+          <DialogHeader className="shrink-0 p-6 md:p-8 border-b border-stone-100 bg-white relative z-10">
+            <DialogTitle className="text-2xl font-bold text-stone-800 flex items-center gap-3">
+              <span className="w-10 h-10 rounded-2xl bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
+                <Sparkles size={20} strokeWidth={1.5} />
+              </span>
+              {editingId ? 'Editar Técnica de Tratamiento' : 'Alta Técnica de Tratamiento'}
+            </DialogTitle>
+            <DialogDescription className="text-stone-400 text-sm ml-13">
+              Configura los detalles técnicos, precio y visibilidad del tratamiento en el catálogo.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar relative z-10">
+            <form id="service-form" onSubmit={handleSubmit}>
               {/* Sección de Imagen del Tratamiento - Responsiva */}
               <div className="mb-8 flex flex-col md:flex-row items-center md:items-start bg-stone-50 border border-stone-200 p-6 rounded-[2rem] gap-6 text-center md:text-left">
-                 {uploadingImage ? (
-                    <div className="w-28 h-28 rounded-2xl bg-white border border-stone-200 flex flex-col justify-center items-center shrink-0">
-                       <div className="w-6 h-6 border-4 border-yellow-100 border-t-[#d4af37] rounded-full animate-spin mb-2"></div>
-                       <span className="text-[9px] font-bold text-[#d4af37] uppercase tracking-widest">Subiendo...</span>
-                    </div>
-                 ) : formData.image_url ? (
-                    <div className="w-28 h-28 rounded-2xl overflow-hidden bg-white shadow-sm shrink-0">
-                       <img src={formData.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${formData.image_url}` : formData.image_url} alt="Tratamiento" className="w-full h-full object-cover" />
-                    </div>
-                 ) : (
-                    <div className="w-28 h-28 rounded-2xl bg-white border border-stone-200 border-dashed flex flex-col justify-center items-center shrink-0">
-                       <ImageIcon size={20} strokeWidth={1.5} className="text-stone-300 mb-1" />
-                       <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">Sin Foto</span>
-                    </div>
-                 )}
-                 <div className="flex-1">
-                    <h3 className="font-bold text-stone-800 mb-1 text-sm uppercase tracking-tight">Imagen del Catálogo</h3>
-                    <p className="text-xs text-stone-400 mb-4 leading-relaxed max-w-sm mx-auto md:mx-0">Selecciona una imagen de tu galería o sube una nueva. Podrás recortarla en el siguiente paso.</p>
-                    <div className="flex gap-2 justify-center md:justify-start">
-                      <button
-                        type="button"
-                        onClick={() => setShowMediaPicker(true)}
-                        className="px-4 py-2 rounded-xl font-bold bg-stone-900 hover:bg-[#d9777f] text-white text-xs transition-colors shadow-md flex items-center gap-2"
-                      >
-                        <ImageIcon size={14} strokeWidth={1.5} /> {formData.image_url ? 'Cambiar' : 'Seleccionar Imagen'}
+                {uploadingImage ? (
+                  <div className="w-28 h-28 rounded-2xl bg-white border border-stone-200 flex flex-col justify-center items-center shrink-0">
+                    <div className="w-6 h-6 border-4 border-yellow-100 border-t-[#d4af37] rounded-full animate-spin mb-2"></div>
+                    <span className="text-[9px] font-bold text-[#d4af37] uppercase tracking-widest">Subiendo...</span>
+                  </div>
+                ) : formData.image_url ? (
+                  <div className="w-28 h-28 rounded-2xl overflow-hidden bg-white shadow-sm shrink-0">
+                    <img src={formData.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${formData.image_url}` : formData.image_url} alt="Tratamiento" className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="w-28 h-28 rounded-2xl bg-white border border-stone-200 border-dashed flex flex-col justify-center items-center shrink-0">
+                    <ImageIcon size={20} strokeWidth={1.5} className="text-stone-300 mb-1" />
+                    <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">Sin Foto</span>
+                  </div>
+                )}
+                <div className="flex-1">
+                  <h3 className="font-bold text-stone-800 mb-1 text-sm uppercase tracking-tight">Imagen del Catálogo</h3>
+                  <p className="text-xs text-stone-400 mb-4 leading-relaxed max-w-sm mx-auto md:mx-0">Selecciona una imagen de tu galería o sube una nueva. Podrás recortarla en el siguiente paso.</p>
+                  <div className="flex gap-2 justify-center md:justify-start">
+                    <button
+                      type="button"
+                      onClick={() => setShowMediaPicker(true)}
+                      className="px-4 py-2 rounded-xl font-bold bg-stone-900 hover:bg-[#d9777f] text-white text-xs transition-colors shadow-md flex items-center gap-2"
+                    >
+                      <ImageIcon size={14} strokeWidth={1.5} /> {formData.image_url ? 'Cambiar' : 'Seleccionar Imagen'}
+                    </button>
+                    {formData.image_url && (
+                      <button type="button" onClick={() => setFormData({...formData, image_url: ''})} className="px-4 py-2 rounded-xl font-bold bg-red-50 text-red-600 text-xs transition-colors hover:bg-red-100">
+                        Quitar
                       </button>
-                      {formData.image_url && (
-                        <button type="button" onClick={() => setFormData({...formData, image_url: ''})} className="px-4 py-2 rounded-xl font-bold bg-red-50 text-red-600 text-xs transition-colors hover:bg-red-100">
-                          Quitar
-                        </button>
-                      )}
-                    </div>
-                 </div>
+                    )}
+                  </div>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -491,10 +485,10 @@ export default function ServicesPage() {
               <div className="mt-8 border border-stone-100 bg-stone-50/50 rounded-2xl overflow-hidden">
                 <details className="group">
                   <summary className="font-extrabold text-stone-700 bg-stone-100/50 px-6 py-4 cursor-pointer hover:bg-stone-100 transition-colors list-none flex justify-between items-center">
-                     <div className="flex items-center gap-2">
-                       <Settings2 size={18} strokeWidth={1.5} className="text-stone-500" /> Configuración SEO <span className="font-normal text-sm text-stone-400 ml-2">(Opcional)</span>
-                     </div>
-                     <ChevronDown size={18} strokeWidth={1.5} className="text-stone-400 group-open:rotate-180 transition-transform" />
+                    <div className="flex items-center gap-2">
+                      <Settings2 size={18} strokeWidth={1.5} className="text-stone-500" /> Configuración SEO <span className="font-normal text-sm text-stone-400 ml-2">(Opcional)</span>
+                    </div>
+                    <ChevronDown size={18} strokeWidth={1.5} className="text-stone-400 group-open:rotate-180 transition-transform" />
                   </summary>
                   <div className="p-6 grid grid-cols-1 gap-6">
                     <div>
@@ -512,34 +506,38 @@ export default function ServicesPage() {
                   </div>
                 </details>
               </div>
-
             </form>
-            <div className="p-6 md:p-8 bg-stone-50/50 border-t border-stone-100 flex flex-col-reverse md:flex-row justify-end gap-3 relative z-10 w-full">
-              {editingId && (
-                <button type="button" onClick={handleDeleteService} className="order-3 md:order-1 text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 w-full md:w-11 h-11 rounded-xl transition-all shadow-sm flex items-center justify-center md:mr-auto" title="Eliminar Servicio">
-                  <Trash2 size={18} strokeWidth={1.5} />
-                  <span className="md:hidden ml-2 font-bold text-sm">Eliminar Tratamiento</span>
-                </button>
-              )}
-              <button 
-                onClick={handleCancel} 
-                type="button" 
-                className="w-full md:w-auto px-5 py-4 md:py-3 rounded-xl font-bold text-stone-600 hover:bg-stone-100 transition-all text-sm"
-              >
-                Cancelar
-              </button>
-              <button 
-                disabled={saving || uploadingImage} 
-                onClick={handleSubmit} 
-                type="button" 
-                className="w-full md:w-auto bg-stone-900 hover:bg-[#d4af37] disabled:opacity-50 text-white px-8 py-4 md:py-3 rounded-xl font-bold transition-all shadow-lg text-sm active:scale-95"
-              >
-                {saving ? 'Guardando...' : (editingId ? 'Guardar Cambios' : 'Añadir Servicio')}
-              </button>
-            </div>
           </div>
-        </div>
-      )}
+
+          <DialogFooter className="shrink-0 p-6 md:p-8 bg-stone-50/50 border-t border-stone-100 flex flex-row items-center justify-end gap-3 relative z-10 w-full sm:flex-row">
+            {editingId && (
+              <button 
+                type="button" 
+                onClick={handleDeleteService} 
+                className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 w-11 h-11 rounded-xl transition-all shadow-sm flex items-center justify-center mr-auto" 
+                title="Eliminar Servicio"
+              >
+                <Trash2 size={18} strokeWidth={1.5} />
+              </button>
+            )}
+            <button 
+              onClick={handleCancel} 
+              type="button" 
+              className="px-5 py-3 rounded-xl font-bold text-stone-600 hover:bg-stone-100 transition-all text-sm"
+            >
+              Cancelar
+            </button>
+            <button 
+              form="service-form"
+              disabled={saving || uploadingImage} 
+              type="submit" 
+              className="bg-stone-900 hover:bg-[#d4af37] disabled:opacity-50 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg text-sm active:scale-95"
+            >
+              {saving ? 'Guardando...' : (editingId ? 'Guardar Cambios' : 'Añadir Servicio')}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {showCropModal && (
         <CropImageModal 
@@ -645,51 +643,51 @@ export default function ServicesPage() {
       )}
 
       {/* Modal Nueva Categoría */}
-      {showCategoryModal && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/40 backdrop-blur-sm p-4"
-          onClick={(e) => { if (e.target === e.currentTarget) setShowCategoryModal(false); }}
-        >
-          <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full animate-in zoom-in-95 duration-200">
-            <h3 className="text-xl font-extrabold text-stone-800 mb-2">Nueva Categoría</h3>
-            <p className="text-stone-500 text-sm mb-6">Añade una agrupación para tus servicios.</p>
-            <form onSubmit={handleCreateCategory}>
+      <Dialog open={showCategoryModal} onOpenChange={setShowCategoryModal}>
+        <DialogContent className="flex flex-col w-[95vw] sm:max-w-md max-h-[85dvh] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-[2.5rem]">
+          <DialogHeader className="shrink-0 p-8 border-b border-stone-50 bg-white">
+            <DialogTitle className="text-xl font-extrabold text-stone-800">Nueva Categoría</DialogTitle>
+            <DialogDescription className="text-stone-500 text-sm">
+              Añade una agrupación para tus servicios.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto p-8">
+            <form id="new-category-form" onSubmit={handleCreateCategory}>
               <input 
                 required 
                 type="text" 
                 value={newCategoryName} 
                 onChange={(e) => setNewCategoryName(e.target.value)} 
                 placeholder="Ej: Depilación Láser, Faciales..." 
-                className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all mb-6" 
+                className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" 
               />
-              <div className="flex gap-3">
-                <button type="submit" className="flex-1 bg-stone-900 hover:bg-[#d4af37] text-white px-6 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95">
-                  Crear
-                </button>
-                <button type="button" onClick={() => setShowCategoryModal(false)} className="px-6 py-4 rounded-xl font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 transition-all">
-                  Cancelar
-                </button>
-              </div>
             </form>
           </div>
-        </div>
-      )}
+
+          <DialogFooter className="shrink-0 p-6 border-t border-stone-50 bg-stone-50/30 flex gap-3 sm:flex-row">
+            <button type="button" onClick={() => setShowCategoryModal(false)} className="flex-1 px-6 py-4 rounded-xl font-bold text-stone-600 bg-white border border-stone-100 hover:bg-stone-50 transition-all">
+              Cancelar
+            </button>
+            <button form="new-category-form" type="submit" className="flex-1 bg-stone-900 hover:bg-[#d4af37] text-white px-6 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95">
+              Crear
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Modal Gestionar Categorías */}
-      {showManageCategoriesModal && (
-        <div 
-          className="fixed inset-0 z-40 flex items-center justify-center bg-stone-900/40 backdrop-blur-sm p-4"
-          onClick={(e) => { if (e.target === e.currentTarget) setShowManageCategoriesModal(false); }}
-        >
-          <div className="bg-white rounded-[2.5rem] shadow-2xl p-8 max-w-lg w-full animate-in zoom-in-95 duration-200 max-h-[80vh] overflow-hidden flex flex-col">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-extrabold text-stone-800">Gestionar Categorías</h3>
-              <button onClick={() => setShowManageCategoriesModal(false)} className="text-stone-300 hover:text-stone-800 transition-colors">
-                <X size={24} strokeWidth={1.5} />
-              </button>
-            </div>
-            
-            <div className="overflow-y-auto flex-1 space-y-3 pr-2 custom-scrollbar">
+      <Dialog open={showManageCategoriesModal} onOpenChange={setShowManageCategoriesModal}>
+        <DialogContent className="flex flex-col w-[95vw] sm:max-w-lg max-h-[85dvh] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-[2.5rem]">
+          <DialogHeader className="shrink-0 p-8 border-b border-stone-50 bg-white">
+            <DialogTitle className="text-2xl font-extrabold text-stone-800">Gestionar Categorías</DialogTitle>
+            <DialogDescription className="text-stone-400 text-sm">
+              Organiza las agrupaciones de tratamientos y sus imágenes de portada.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+            <div className="space-y-3">
               {categories.map(cat => (
                 <div key={cat.id} className="flex flex-col p-4 bg-stone-50 rounded-2xl border border-stone-200 group transition-all gap-3">
                   <div className="flex items-center justify-between">
@@ -703,8 +701,8 @@ export default function ServicesPage() {
                             onChange={(e) => setEditingCategoryName(e.target.value)} 
                             className="flex-1 px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
                           />
-                          <button type="submit" className="bg-emerald-500 text-white px-3 py-2 rounded-lg font-bold text-xs uppercase shadow-sm">OK</button>
-                          <button type="button" onClick={() => {setEditingCategoryId(null); setEditingCategoryImage(null);}} className="bg-stone-200 text-stone-600 px-3 py-2 rounded-lg font-bold text-xs uppercase">
+                          <button type="submit" className="bg-emerald-500 text-white px-4 py-2 rounded-lg font-bold text-xs uppercase shadow-sm">OK</button>
+                          <button type="button" onClick={() => {setEditingCategoryId(null); setEditingCategoryImage(null);}} className="bg-stone-200 text-stone-600 px-3 py-2 rounded-lg font-bold text-xs uppercase flex items-center justify-center">
                             <X size={14} strokeWidth={1.5} />
                           </button>
                         </div>
@@ -721,7 +719,7 @@ export default function ServicesPage() {
                                 className="flex items-center gap-2 px-3 py-2 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-600 text-xs font-bold transition-all border border-stone-200"
                               >
                                 <ImageIcon size={14} strokeWidth={1.5} />
-                                {editingCategoryImage ? 'Cambiar imagen' : 'Seleccionar de galería'}
+                                {editingCategoryImage ? 'Cambiar' : 'Galería'}
                               </button>
                               {editingCategoryImage && (
                                 <button type="button" onClick={() => setEditingCategoryImage('')} className="text-xs text-red-500 font-bold px-2 py-1 rounded-lg bg-red-50 hover:bg-red-100 transition-all">
@@ -766,13 +764,14 @@ export default function ServicesPage() {
                 </div>
               ))}
             </div>
-
-            <div className="mt-8 pt-6 border-t border-stone-100 italic text-stone-400 text-xs text-center">
-              Las categorías que tengan servicios asignados no podrán ser eliminadas por seguridad.
-            </div>
           </div>
-        </div>
-      )}
+
+          <DialogFooter className="shrink-0 p-6 border-t border-stone-100 italic text-stone-400 text-[10px] text-center bg-stone-50/50 block">
+            Las categorías que tengan servicios asignados no podrán ser eliminadas por seguridad.
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {showCatMediaPicker && (
         <MediaPickerModal
           onClose={() => setShowCatMediaPicker(false)}

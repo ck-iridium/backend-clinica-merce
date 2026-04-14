@@ -81,7 +81,7 @@ export default function CMSPage() {
 
   if (loading) {
     return (
-      <div className="animate-in fade-in duration-500 space-y-6">
+      <div className="animate-in fade-in duration-500 max-w-[1100px] mx-auto">
         <Skeleton className="h-10 w-64" />
         <Skeleton className="h-4 w-96 mb-8" />
         <div className="bg-card rounded-[2.5rem] border border-border/40 p-10 h-96 shadow-sm">
@@ -135,7 +135,7 @@ export default function CMSPage() {
   };
 
   return (
-    <div className="animate-in fade-in duration-500 pb-20">
+    <div className="animate-in fade-in duration-500">
       <div className="mb-10">
         <motion.h1 
           initial={{ opacity: 0, y: 5 }}

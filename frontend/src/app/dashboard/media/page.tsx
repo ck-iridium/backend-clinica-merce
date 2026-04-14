@@ -197,7 +197,7 @@ export default function MediaGalleryPage() {
   const isNearLimit = usedPercent > 80;
 
   return (
-    <div className="animate-in fade-in duration-500 pb-32">
+    <div className="animate-in fade-in duration-500">
       {/* Hero Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-extrabold text-stone-800 tracking-tight flex items-center gap-3">

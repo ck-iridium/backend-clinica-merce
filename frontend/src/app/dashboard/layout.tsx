@@ -2,6 +2,7 @@ import DashboardSidebar from '@/components/DashboardSidebar';
 import DashboardHeader from '@/components/DashboardHeader';
 import { FeedbackProvider } from '@/app/contexts/FeedbackContext';
 import MobileBottomBar from '@/components/MobileBottomBar';
+import RouteGuard from '@/components/RouteGuard';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   let settings = null;
@@ -19,6 +20,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
       <div className="min-h-screen bg-background md:flex font-sans text-foreground print:bg-white">
+        <RouteGuard />
         
         {/* Sidebar: Mobile top bar + new Heygen-style desktop hover drawer */}
         <DashboardSidebar clinicName={clinicName} logoUrl={logoUrl} />
@@ -29,7 +31,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <DashboardHeader clinicName={clinicName} />
 
           {/* Children View (The Canvas for "Islas de contenido") */}
-          <div className="pt-24 md:pt-28 px-4 md:px-8 pb-24 md:pb-8 max-w-[1400px] mx-auto z-10 relative space-y-6 w-full">
+          <div className="pt-24 pb-28 md:pt-8 md:pb-8 px-4 md:px-8 max-w-[1400px] mx-auto z-10 relative space-y-6 w-full">
             {children}
           </div>
           
