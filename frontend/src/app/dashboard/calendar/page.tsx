@@ -624,7 +624,7 @@ function CalendarContent() {
         </div>
 
         {/* MOBILE CALENDAR VIEW (Booksy Style) */}
-        <div className="block md:hidden border border-stone-100 rounded-3xl overflow-hidden bg-white shadow-xl shadow-stone-100/50 flex flex-col mb-4" style={{ height: 'calc(100dvh - 14rem)' }}>
+        <div className="block md:hidden border border-stone-100 rounded-[2.5rem] rounded-b-none overflow-hidden bg-white shadow-xl shadow-stone-100/50 flex flex-col -mx-2 -mb-10" style={{ height: 'calc(100dvh - 10.5rem)', minHeight: '500px' }}>
           {/* Sticky Header with Horizontal scroll for Days */}
           <div className="bg-white z-20 border-b border-stone-100 shadow-sm shrink-0">
             <div className="flex items-center overflow-x-auto p-4 gap-4 custom-scrollbar snap-x">
@@ -653,19 +653,19 @@ function CalendarContent() {
             </div>
           </div>
 
-          {/* Automatically Stretched Hours & Appointments Column (No Internal Scroll) */}
-          <div className="flex-1 relative bg-white overflow-hidden pb-1">
-            <div className="relative w-full h-full">
+          {/* Scrollable Hours & Appointments Column (Internal Scroll Enabled) */}
+          <div className="flex-1 overflow-y-auto relative bg-white custom-scrollbar pb-6">
+            <div className="relative w-full" style={{ height: `${hours.length * 72}px` }}>
               {/* Horizontal line markers */}
               {hours.map((h, i) => (
-                <div key={`mhl-${h}`} className="absolute w-full border-t border-stone-50" style={{ top: `${(i / hours.length) * 100}%`, height: `${100 / hours.length}%`, pointerEvents: 'none' }}></div>
+                <div key={`mhl-${h}`} className="absolute w-full border-t border-stone-50" style={{ top: `${i * 72}px`, height: '72px', pointerEvents: 'none' }}></div>
               ))}
               
               <div className="flex flex-row absolute top-0 w-full h-full">
                 {/* Scale column */}
                 <div className="w-[50px] shrink-0 border-r border-stone-50 bg-white relative pointer-events-none">
                   {hours.map((h, i) => (
-                    <div key={`mh-${h}`} className="text-right pr-2 text-[10px] font-bold text-stone-400" style={{ height: `${100 / hours.length}%`, position: 'absolute', top: `calc(${(i / hours.length) * 100}% - 6px)`, width: '100%' }}>
+                    <div key={`mh-${h}`} className="text-right pr-2 text-[10px] font-bold text-stone-400" style={{ height: '72px', position: 'absolute', top: `${i * 72 - 6}px`, width: '100%' }}>
                       {h.toString().padStart(2, '0')}:00
                     </div>
                   ))}
@@ -691,7 +691,7 @@ function CalendarContent() {
                           ? 'bg-stone-50 cursor-not-allowed flex items-center justify-center pointer-events-none' 
                           : 'active:bg-[#fdf2f3]'
                         }`}
-                        style={{ top: `${(i / hours.length) * 100}%`, height: `${100 / hours.length}%` }}
+                        style={{ top: `${i * 72}px`, height: '72px' }}
                       >
                         {isLunch && i === hours.indexOf(14) && <span className="text-[10px] uppercase tracking-widest font-bold text-stone-300">Descanso (Cerrado)</span>}
                       </div>
@@ -709,21 +709,21 @@ function CalendarContent() {
                     let durationMin = (end.getTime() - start.getTime()) / 60000;
                     if (durationMin < 5 || isNaN(durationMin)) durationMin = 60;
 
-                    let topOffsetPercent = ((startHour - 9) * 60 + startMin) / (hours.length * 60) * 100;
-                    if (topOffsetPercent < 0) topOffsetPercent = 0; 
+                    let topOffsetPx = ((startHour - 9) * 72) + (startMin / 60) * 72;
+                    if (topOffsetPx < 0) topOffsetPx = 0; 
                     
-                    const heightPercent = Math.max((durationMin / (hours.length * 60)) * 100, (15 / (hours.length * 60)) * 100);
+                    const heightPx = Math.max((durationMin / 60) * 72, 20);
 
                     return (
                       <div 
                         key={block.id}
                         onClick={(e) => { e.stopPropagation(); setSelectedBlock(block); setShowBlockDeleteModal(true); }}
                         className="absolute w-[95%] left-[2.5%] ml-auto mr-auto bg-stone-100 rounded-xl border border-stone-200 border-dashed opacity-80 flex items-center justify-center z-10 hover:bg-stone-200 transition-colors cursor-pointer"
-                        style={{ top: `${topOffsetPercent}%`, height: `${heightPercent}%` }}
+                        style={{ top: `${topOffsetPx}px`, height: `${heightPx}px` }}
                       >
                         <div className="flex items-center gap-1.5 text-stone-500">
                           <Lock size={12} strokeWidth={2.5} />
-                          {heightPercent >= 6 && <span className="text-[10px] font-bold uppercase tracking-wider">{block.reason || 'Bloqueo'}</span>}
+                          {heightPx >= 30 && <span className="text-[10px] font-bold uppercase tracking-wider">{block.reason || 'Bloqueo'}</span>}
                         </div>
                       </div>
                     );
@@ -740,10 +740,10 @@ function CalendarContent() {
                     let durationMin = (end.getTime() - start.getTime()) / 60000;
                     if (durationMin < 5 || isNaN(durationMin)) durationMin = 30; // Min height safeguard
 
-                    let topOffsetPercent = ((startHour - 9) * 60 + startMin) / (hours.length * 60) * 100;
-                    if (topOffsetPercent < 0) topOffsetPercent = 0; 
+                    let topOffsetPx = ((startHour - 9) * 72) + (startMin / 60) * 72;
+                    if (topOffsetPx < 0) topOffsetPx = 0; 
                     
-                    const heightPercent = Math.max((durationMin / (hours.length * 60)) * 100, (20 / (hours.length * 60)) * 100);
+                    const heightPx = Math.max((durationMin / 60) * 72, 35);
                     
                     const client = clientMap.get(appt.client_id) || { name: 'Desconocido' };
                     const service = serviceMap.get(appt.service_id) || { name: '...' };
@@ -753,15 +753,15 @@ function CalendarContent() {
                       <div 
                         key={appt.id} 
                         onClick={(e) => { e.stopPropagation(); setSelectedAppt(appt); setShowEditModal(true); setConfirmDelete(false); }}
-                        className={`absolute w-[95%] left-[2.5%] ml-auto mr-auto border-[1.5px] rounded-xl shadow-sm px-3 py-1.5 z-20 overflow-hidden active:scale-[0.98] transition-all flex flex-col justify-start ${colors}`}
-                        style={{ top: `${topOffsetPercent}%`, height: `${heightPercent}%` }}
+                        className={`absolute w-[95%] left-[2.5%] ml-auto mr-auto border-[1.5px] rounded-xl shadow-sm px-3 py-2 z-20 overflow-hidden active:scale-[0.98] transition-all flex flex-col justify-start ${colors}`}
+                        style={{ top: `${topOffsetPx}px`, height: `${heightPx}px` }}
                       >
-                        <div className={`font-extrabold text-xs tracking-tight leading-none mb-0.5 ${appt.status === 'cancelled' || appt.status === 'no_show' ? 'text-current line-through opacity-70' : 'text-stone-800'}`}>
+                        <div className={`font-extrabold text-[11px] sm:text-xs tracking-tight leading-none mb-[2px] ${appt.status === 'cancelled' || appt.status === 'no_show' ? 'text-current line-through opacity-70' : 'text-stone-800'}`}>
                           {appt.status === 'web_pending' && <span className="text-orange-600 mr-1">[WEB]</span>}
                           {client.name}
                         </div>
-                        {heightPercent >= 7 && (
-                          <div className={`text-[9px] font-semibold truncate leading-tight opacity-90 mt-0.5`}>{service.name}</div>
+                        {heightPx >= 45 && (
+                          <div className={`text-[9px] font-semibold truncate leading-tight opacity-90`}>{service.name}</div>
                         )}
                       </div>
                     );
