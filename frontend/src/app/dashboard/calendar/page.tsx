@@ -626,8 +626,8 @@ function CalendarContent() {
 
       {/* Book Appointment Modal */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="flex flex-col w-[95vw] sm:max-w-lg max-h-[85dvh] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-xl">
-          <DialogHeader className="shrink-0 p-8 border-b border-stone-50 bg-stone-50/50">
+        <DialogContent className="p-0 border-none w-[95vw] sm:max-w-lg h-fit max-h-[100dvh] sm:max-h-[calc(100vh-2rem)] rounded-xl">
+          <DialogHeader className="sticky top-0 z-30 shrink-0 p-8 border-b border-stone-100 bg-white/95 backdrop-blur-md">
             <div className="flex gap-4 mb-4 p-1 bg-stone-100 rounded-2xl w-fit">
               <button 
                 onClick={() => setModalType('appointment')}
@@ -777,15 +777,15 @@ function CalendarContent() {
             )}
           </div>
 
-          <DialogFooter className="shrink-0 p-8 border-t border-stone-100 bg-stone-50/50 flex flex-row gap-3">
-            <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-4 rounded-xl font-bold text-stone-600 bg-white border border-stone-100 hover:bg-stone-100 transition-all">
+          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 pt-12 bg-gradient-to-t from-white via-white/95 to-transparent flex flex-row gap-3 rounded-b-xl z-20 pointer-events-none">
+            <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-4 rounded-xl font-bold text-stone-600 bg-white border border-stone-100 hover:bg-stone-50 shadow-sm transition-all pointer-events-auto">
               Cancelar
             </button>
             <button 
               form={modalType === 'appointment' ? 'appointment-form' : 'block-form'}
               disabled={saving} 
               type="submit" 
-              className={`flex-1 ${modalType === 'appointment' ? 'bg-stone-900 border-stone-900' : 'bg-stone-800 border-stone-800'} text-white px-6 py-4 rounded-xl font-bold transition-all disabled:opacity-50 active:scale-95 shadow-lg shadow-stone-900/10 border`}
+              className={`flex-1 ${modalType === 'appointment' ? 'bg-stone-900 border-stone-900' : 'bg-stone-800 border-stone-800'} text-white px-6 py-4 rounded-xl font-bold transition-all disabled:opacity-50 active:scale-95 shadow-lg shadow-stone-900/10 border pointer-events-auto`}
             >
               {saving ? 'Guardando...' : (modalType === 'appointment' ? 'Agendar' : 'Bloquear')}
             </button>
@@ -821,8 +821,8 @@ function CalendarContent() {
 
       {/* Edit Appointment Modal */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent className="flex flex-col w-[95vw] sm:max-w-md max-h-[85dvh] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-xl">
-          <DialogHeader className="shrink-0 p-8 border-b border-stone-50 bg-stone-50/50">
+        <DialogContent className="p-0 border-none w-[95vw] sm:max-w-md h-fit max-h-[100dvh] sm:max-h-[calc(100vh-2rem)] rounded-xl">
+          <DialogHeader className="sticky top-0 z-30 shrink-0 p-8 border-b border-stone-100 bg-white/95 backdrop-blur-md">
             <div className="flex justify-between items-start mb-2">
               <div>
                 <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Cita Confirmada</p>
@@ -924,11 +924,11 @@ function CalendarContent() {
             </div>
           </div>
 
-          <DialogFooter className="shrink-0 p-6 border-t border-stone-100 flex justify-center bg-stone-50/30">
+          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 pt-12 flex justify-center bg-gradient-to-t from-white via-white/95 to-transparent rounded-b-xl z-20 pointer-events-none">
             <button 
               onClick={handleDeleteAppointment} 
               disabled={updatingStatus} 
-              className="text-[10px] font-black text-stone-300 hover:text-rose-500 uppercase tracking-[0.2em] transition-all flex items-center gap-2 group p-2"
+              className="text-[10px] font-black text-stone-300 hover:text-rose-500 uppercase tracking-[0.2em] transition-all flex items-center gap-2 group p-2 mx-auto pointer-events-auto"
             >
               <Trash2 size={14} strokeWidth={2} className="group-hover:scale-110 transition-transform" /> 
               Eliminar Permanentemente

@@ -408,7 +408,7 @@ export default function ServicesPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Descripción pública</label>
-                  <input type="text" value={formData.description || ""} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="El tratamiento perfecto para..." />
+                  <textarea rows={3} value={formData.description || ""} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all resize-none" placeholder="El tratamiento perfecto para..." />
                 </div>
                 <div className="md:col-span-2 grid grid-cols-2 gap-4">
                   <div>
@@ -507,7 +507,7 @@ export default function ServicesPage() {
             </form>
           </div>
 
-          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 md:p-8 bg-white border-t border-stone-100 flex flex-row items-center justify-end gap-3 rounded-b-xl z-20 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
+          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 md:p-8 pt-12 bg-gradient-to-t from-white via-white/95 to-transparent flex flex-row items-center justify-end gap-3 rounded-b-xl z-20">
             {editingId && (
               <button 
                 type="button" 
@@ -663,7 +663,7 @@ export default function ServicesPage() {
             </form>
           </div>
 
-          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 border-t border-stone-100 bg-white flex gap-3 rounded-b-xl z-20 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
+          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 pt-12 bg-gradient-to-t from-white via-white/95 to-transparent flex gap-3 rounded-b-xl z-20">
             <button type="button" onClick={() => setShowCategoryModal(false)} className="flex-1 px-6 py-4 rounded-xl font-bold text-stone-600 bg-white border border-stone-100 hover:bg-stone-50 transition-all">
               Cancelar
             </button>
@@ -691,40 +691,45 @@ export default function ServicesPage() {
                   <div className="flex items-center justify-between">
                     {editingCategoryId === cat.id ? (
                       <form onSubmit={handleUpdateCategory} className="flex-1 flex flex-col gap-3">
-                        <div className="flex gap-2">
-                          <input 
-                            autoFocus
-                            type="text" 
-                            value={editingCategoryName} 
-                            onChange={(e) => setEditingCategoryName(e.target.value)} 
-                            className="flex-1 px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
-                          />
-                          <button type="submit" className="bg-emerald-500 text-white px-4 py-2 rounded-lg font-bold text-xs uppercase shadow-sm">OK</button>
-                          <button type="button" onClick={() => {setEditingCategoryId(null); setEditingCategoryImage(null);}} className="bg-stone-200 text-stone-600 px-3 py-2 rounded-lg font-bold text-xs uppercase flex items-center justify-center">
-                            <X size={14} strokeWidth={1.5} />
-                          </button>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          {editingCategoryImage && (
-                            <img src={editingCategoryImage.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${editingCategoryImage}` : editingCategoryImage} className="w-12 h-12 object-cover rounded-md shadow-sm border border-stone-200" alt="cat" />
-                          )}
-                          <div className="flex-1">
-                            <label className="text-xs font-semibold text-stone-500 mb-2 block">Imagen de portada (opcional)</label>
-                            <div className="flex gap-2">
-                              <button
-                                type="button"
-                                onClick={() => setShowCatMediaPicker(true)}
-                                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-600 text-xs font-bold transition-all border border-stone-200"
-                              >
-                                <ImageIcon size={14} strokeWidth={1.5} />
-                                {editingCategoryImage ? 'Cambiar' : 'Galería'}
-                              </button>
-                              {editingCategoryImage && (
-                                <button type="button" onClick={() => setEditingCategoryImage('')} className="text-xs text-red-500 font-bold px-2 py-1 rounded-lg bg-red-50 hover:bg-red-100 transition-all">
-                                  Quitar
+                        <div className="flex flex-col gap-4">
+                          <div>
+                            <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1.5 block">Nombre Categoría</label>
+                            <input 
+                              autoFocus
+                              type="text" 
+                              value={editingCategoryName} 
+                              onChange={(e) => setEditingCategoryName(e.target.value)} 
+                              className="w-full px-4 py-3 rounded-xl border border-stone-200 font-bold focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
+                            />
+                          </div>
+                          
+                          <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-stone-200">
+                            {editingCategoryImage && (
+                              <img src={editingCategoryImage.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${editingCategoryImage}` : editingCategoryImage} className="w-12 h-12 object-cover rounded-xl shadow-sm border border-stone-100" alt="cat" />
+                            )}
+                            <div className="flex-1">
+                              <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1.5 block">Imagen de Portada</label>
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setShowCatMediaPicker(true)}
+                                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-stone-50 hover:bg-stone-100 text-stone-600 text-xs font-bold transition-all border border-stone-200"
+                                >
+                                  <ImageIcon size={14} strokeWidth={1.5} />
+                                  {editingCategoryImage ? 'Mofificar' : 'Galería'}
                                 </button>
-                              )}
+                                {editingCategoryImage && (
+                                  <button type="button" onClick={() => setEditingCategoryImage('')} className="text-[10px] text-red-500 font-bold px-3 py-2 rounded-lg bg-red-50 hover:bg-red-100 transition-all uppercase tracking-widest">
+                                    Quitar
+                                  </button>
+                                )}
+                              </div>
                             </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2 mt-2">
+                            <button type="button" onClick={() => {setEditingCategoryId(null); setEditingCategoryImage(null);}} className="bg-stone-200 text-stone-600 px-4 py-3 rounded-xl font-bold text-xs uppercase hover:bg-stone-300 transition-all">Cancelar</button>
+                            <button type="submit" className="bg-[#d4af37] border border-[#b08e23] text-white px-4 py-3 rounded-xl font-bold text-xs uppercase shadow-md hover:bg-[#b08e23] transition-all">Guardar</button>
                           </div>
                         </div>
                       </form>

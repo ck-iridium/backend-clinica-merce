@@ -545,7 +545,7 @@ export default function VouchersPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="p-8 pb-32">
+          <div className="p-8">
             <form id="assign-voucher-form" onSubmit={handleAssignVoucher}>
               {/* 1. Seleccionar Cliente */}
               <div className="mb-5">
@@ -628,15 +628,17 @@ export default function VouchersPage() {
 
                 <div className="md:col-span-2">
                     <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Caducidad del Bono</label>
-                    <select 
-                      value={expirationMonths} onChange={e => setExpirationMonths(Number(e.target.value))}
-                      className="w-full p-3 bg-white border border-stone-200 rounded-xl font-semibold text-stone-700 outline-none"
-                    >
-                      <option value={3}>3 meses desde la compra</option>
-                      <option value={6}>6 meses desde la compra</option>
-                      <option value={12}>12 meses desde la compra</option>
-                      <option value={24}>2 años desde la compra</option>
-                    </select>
+                    <Select value={expirationMonths.toString()} onValueChange={(val) => setExpirationMonths(Number(val))}>
+                      <SelectTrigger className="w-full bg-white border border-stone-200 rounded-xl font-semibold text-stone-700">
+                        <SelectValue placeholder="Selecciona caducidad..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="3">3 meses desde la compra</SelectItem>
+                        <SelectItem value="6">6 meses desde la compra</SelectItem>
+                        <SelectItem value="12">12 meses desde la compra</SelectItem>
+                        <SelectItem value="24">2 años desde la compra</SelectItem>
+                      </SelectContent>
+                    </Select>
                 </div>
               </div>
             </form>

@@ -180,83 +180,85 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                     </div>
 
                     {/* Content area con scroll interno PROPIO */}
-                    <div className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-stone-50/30 relative">
-                        {activeTab === 'gallery' && (
-                            <div className="h-full">
-                                {galleryLoading ? (
-                                    <div className="flex flex-col items-center justify-center h-full min-h-[300px] gap-4">
-                                        <div className="w-10 h-10 border-4 border-stone-200 border-t-[#d4af37] rounded-full animate-spin" />
-                                        <p className="text-stone-400 text-sm font-medium tracking-widest uppercase">Cargando...</p>
-                                    </div>
-                                ) : galleryFiles.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center h-full min-h-[300px] gap-4 text-center">
-                                        <span className="text-5xl opacity-40">🖼️</span>
-                                        <p className="text-stone-500 font-medium">No hay imágenes.</p>
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4 pb-20">
-                                        {galleryFiles.map(file => (
-                                            <button
-                                                type="button"
-                                                key={file.url}
-                                                onClick={(e) => safeSelectImage(e, file.url)}
-                                                className="group relative rounded-2xl overflow-hidden aspect-square bg-white border border-stone-200 hover:border-[#d4af37] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-left"
-                                            >
-                                                <img
-                                                    src={file.url}
-                                                    alt={file.name}
-                                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                    loading="lazy"
-                                                />
-                                                {file.status === 'in_use' && (
-                                                    <div className="absolute top-2 right-2 z-10">
-                                                        <span className="flex h-3 w-3 relative">
-                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                                            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 shadow-sm border border-white"></span>
-                                                        </span>
-                                                    </div>
-                                                )}
-                                                <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/30 transition-all flex items-center justify-center">
-                                                    <div className="opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all bg-[#d4af37] text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg">
-                                                        Elegir
-                                                    </div>
-                                                </div>
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {activeTab === 'upload' && (
-                            <div className="flex flex-col items-center justify-center min-h-[300px] h-full pb-20">
-                                {uploading ? (
-                                    <div className="flex flex-col items-center gap-6">
-                                        <div className="w-12 h-12 border-4 border-stone-200 border-t-[#d4af37] rounded-full animate-spin" />
-                                        <p className="text-stone-600 font-bold">Procesando...</p>
-                                    </div>
-                                ) : (
-                                    <label 
-                                        className="w-full max-w-lg cursor-pointer group"
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        <input type="file" accept="image/*" className="sr-only" onChange={handleFileInput} />
-                                        <div className="border-2 border-dashed border-stone-300 group-hover:border-[#d4af37] rounded-xl p-16 text-center transition-all bg-white group-hover:bg-[#fbf9f4] shadow-sm group-hover:shadow-md">
-                                            <div className="text-6xl mb-6 transform group-hover:scale-110 transition-transform duration-300">📤</div>
-                                            <p className="font-extrabold text-stone-800 text-xl mb-2">Subir Foto</p>
-                                            <p className="text-sm text-stone-500">Toca para explorar imágenes</p>
+                    <div className="flex-1 overflow-y-auto custom-scrollbar bg-stone-50/30 relative">
+                        <div className="p-6">
+                            {activeTab === 'gallery' && (
+                                <div className="h-full">
+                                    {galleryLoading ? (
+                                        <div className="flex flex-col items-center justify-center h-full min-h-[300px] gap-4">
+                                            <div className="w-10 h-10 border-4 border-stone-200 border-t-[#d4af37] rounded-full animate-spin" />
+                                            <p className="text-stone-400 text-sm font-medium tracking-widest uppercase">Cargando...</p>
                                         </div>
-                                    </label>
-                                )}
-                            </div>
-                        )}
+                                    ) : galleryFiles.length === 0 ? (
+                                        <div className="flex flex-col items-center justify-center h-full min-h-[300px] gap-4 text-center">
+                                            <span className="text-5xl opacity-40">🖼️</span>
+                                            <p className="text-stone-500 font-medium">No hay imágenes.</p>
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4 pb-24">
+                                            {galleryFiles.map(file => (
+                                                <button
+                                                    type="button"
+                                                    key={file.url}
+                                                    onClick={(e) => safeSelectImage(e, file.url)}
+                                                    className="group relative rounded-2xl overflow-hidden aspect-square bg-white border border-stone-200 hover:border-[#d4af37] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-left"
+                                                >
+                                                    <img
+                                                        src={file.url}
+                                                        alt={file.name}
+                                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                        loading="lazy"
+                                                    />
+                                                    {file.status === 'in_use' && (
+                                                        <div className="absolute top-2 right-2 z-10">
+                                                            <span className="flex h-3 w-3 relative">
+                                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 shadow-sm border border-white"></span>
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                    <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/30 transition-all flex items-center justify-center">
+                                                        <div className="opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all bg-[#d4af37] text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg">
+                                                            Elegir
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
-                        {/* FOOTER FLOTANTE FIJO TRANSPARENTE (Sticky-like dentro del área de scroll) */}
-                        <div className="absolute bottom-0 left-0 right-0 p-6 flex justify-center bg-gradient-to-t from-white via-white/80 to-transparent shrink-0 z-20 pointer-events-none">
+                            {activeTab === 'upload' && (
+                                <div className="flex flex-col items-center justify-center min-h-[300px] h-full pb-24">
+                                    {uploading ? (
+                                        <div className="flex flex-col items-center gap-6">
+                                            <div className="w-12 h-12 border-4 border-stone-200 border-t-[#d4af37] rounded-full animate-spin" />
+                                            <p className="text-stone-600 font-bold">Procesando...</p>
+                                        </div>
+                                    ) : (
+                                        <label 
+                                            className="w-full max-w-lg cursor-pointer group"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <input type="file" accept="image/*" className="sr-only" onChange={handleFileInput} />
+                                            <div className="border-2 border-dashed border-stone-300 group-hover:border-[#d4af37] rounded-xl p-16 text-center transition-all bg-white group-hover:bg-[#fbf9f4] shadow-sm group-hover:shadow-md">
+                                                <div className="text-6xl mb-6 transform group-hover:scale-110 transition-transform duration-300">📤</div>
+                                                <p className="font-extrabold text-stone-800 text-xl mb-2">Subir Foto</p>
+                                                <p className="text-sm text-stone-500">Toca para explorar imágenes</p>
+                                            </div>
+                                        </label>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* FOOTER FLOTANTE FIJO ESTILO GRADIENTE (Sticky inside scrollable) */}
+                        <div className="sticky bottom-0 left-0 right-0 w-full p-6 pt-16 flex justify-center bg-gradient-to-t from-white via-white/95 to-transparent z-20 pointer-events-none">
                             <button
                                 type="button"
                                 onClick={handleClose}
-                                className="px-10 py-3.5 rounded-full font-black text-stone-600 bg-white/90 backdrop-blur-md border border-stone-200 hover:bg-white hover:text-stone-900 transition-all text-sm shadow-xl active:scale-95 uppercase tracking-widest pointer-events-auto"
+                                className="px-10 py-3.5 rounded-full font-black text-stone-600 bg-white/95 backdrop-blur-md border border-stone-200 hover:bg-white hover:text-stone-900 transition-all text-sm shadow-xl active:scale-95 uppercase tracking-widest pointer-events-auto"
                             >
                                 Cerrar Galería
                             </button>
