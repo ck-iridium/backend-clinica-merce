@@ -507,7 +507,7 @@ export default function ServicesPage() {
             </form>
           </div>
 
-          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 md:p-8 bg-white border-t border-stone-100 flex flex-row items-center justify-end gap-3 z-20">
+          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 md:p-8 bg-gradient-to-t from-white via-white to-white/0 flex flex-row items-center justify-end gap-3 rounded-b-xl z-20">
             {editingId && (
               <button 
                 type="button" 
@@ -521,7 +521,7 @@ export default function ServicesPage() {
             <button 
               onClick={handleCancel} 
               type="button" 
-              className="px-5 py-3 rounded-xl font-bold text-stone-600 hover:bg-stone-100 transition-all text-sm"
+              className="px-5 py-3 rounded-xl font-bold text-stone-600 hover:bg-stone-100 transition-all text-sm bg-white"
             >
               Cancelar
             </button>
@@ -529,7 +529,7 @@ export default function ServicesPage() {
               form="service-form"
               disabled={saving || uploadingImage} 
               type="submit" 
-              className="bg-stone-900 hover:bg-[#d4af37] disabled:opacity-50 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg text-sm active:scale-95"
+              className="bg-stone-900 hover:bg-[#d4af37] disabled:opacity-50 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg text-sm active:scale-95 border border-stone-800"
             >
               {saving ? 'Guardando...' : (editingId ? 'Guardar Cambios' : 'Añadir Servicio')}
             </button>
@@ -663,11 +663,11 @@ export default function ServicesPage() {
             </form>
           </div>
 
-          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 border-t border-stone-100 bg-gradient-to-t from-white via-white to-white/0 flex gap-3 rounded-b-2xl z-20">
+          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 border-t border-stone-100 bg-gradient-to-t from-white via-white to-white/0 flex gap-3 rounded-b-xl z-20">
             <button type="button" onClick={() => setShowCategoryModal(false)} className="flex-1 px-6 py-4 rounded-xl font-bold text-stone-600 bg-white border border-stone-100 hover:bg-stone-50 transition-all">
               Cancelar
             </button>
-            <button form="new-category-form" type="submit" className="flex-1 bg-stone-900 hover:bg-[#d4af37] text-white px-6 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95">
+            <button form="new-category-form" type="submit" className="flex-1 bg-stone-900 hover:bg-[#d4af37] text-white px-6 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95 border border-stone-800">
               Crear
             </button>
           </DialogFooter>
@@ -764,7 +764,7 @@ export default function ServicesPage() {
             </div>
           </div>
 
-          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 border-t border-stone-100 bg-white italic text-stone-400 text-[10px] text-center block rounded-b-2xl">
+          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 border-t border-stone-100 bg-white italic text-stone-400 text-[10px] text-center block rounded-b-xl z-20">
             Las categorías que tengan servicios asignados no podrán ser eliminadas por seguridad.
           </DialogFooter>
         </DialogContent>
