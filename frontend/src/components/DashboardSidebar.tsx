@@ -137,39 +137,45 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
 
   return (
     <>
-      <div className={`md:hidden fixed top-0 left-0 w-full z-50 flex items-center justify-between p-6 bg-transparent transition-transform duration-300 ease-in-out pointer-events-none ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+      <div className={`md:hidden fixed top-0 left-0 w-full z-50 flex items-center justify-between px-6 py-6 bg-transparent transition-transform duration-300 ease-in-out pointer-events-none ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
         <div className="pointer-events-auto">
-          <div className="w-11 h-11 rounded-2xl bg-stone-900 flex items-center justify-center text-white font-serif italic text-xl shadow-2xl shadow-stone-400 overflow-hidden border border-white/20">
-            {logoUrl ? <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" /> : clinicName.charAt(0)}
+          <div className="w-12 h-12 rounded-[1.25rem] bg-stone-900/90 backdrop-blur-md flex items-center justify-center text-white font-serif italic text-2xl shadow-xl shadow-stone-900/10 border border-white/10 transition-transform active:scale-90">
+            {logoUrl ? <img src={logoUrl} alt="Logo" className="w-full h-full object-cover rounded-[1.25rem]" /> : clinicName.charAt(0)}
           </div>
         </div>
         
         <div className="pointer-events-auto">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="w-11 h-11 rounded-full bg-stone-100 overflow-hidden border-2 border-white shadow-xl flex items-center justify-center active:scale-95 transition-all outline-none">
-                  <User size={20} strokeWidth={1.5} className="text-stone-500" />
+              <button className="w-12 h-12 rounded-full bg-white/80 backdrop-blur-md overflow-hidden border border-stone-200/50 shadow-lg shadow-stone-200/20 flex items-center justify-center active:scale-90 transition-all outline-none">
+                  <User size={22} strokeWidth={1.5} className="text-stone-600" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52 rounded-2xl shadow-2xl border border-stone-100 p-1.5 z-[60]">
-              <DropdownMenuLabel className="text-xs font-black uppercase tracking-widest text-stone-400 px-3 py-2">
-                Mi cuenta
+            <DropdownMenuContent align="end" className="w-56 rounded-[1.5rem] shadow-2xl border border-stone-100 p-2 z-[60] bg-white/95 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200">
+              <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 px-4 py-3">
+                Gestión de Cuenta
               </DropdownMenuLabel>
-              <DropdownMenuItem disabled className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl opacity-50">
-                <User size={15} strokeWidth={1.5} />
-                <span className="font-semibold text-sm">Mi Perfil</span>
+              <DropdownMenuItem disabled className="flex items-center gap-3 px-4 py-3 rounded-xl opacity-40">
+                <div className="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center">
+                   <User size={16} strokeWidth={1.5} />
+                </div>
+                <span className="font-bold text-sm">Mi Perfil</span>
               </DropdownMenuItem>
-              <DropdownMenuItem disabled className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl opacity-50">
-                <Users size={15} strokeWidth={1.5} />
-                <span className="font-semibold text-sm">Gestión de Usuarios</span>
+              <DropdownMenuItem disabled className="flex items-center gap-3 px-4 py-3 rounded-xl opacity-40">
+                <div className="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center">
+                   <Users size={16} strokeWidth={1.5} />
+                </div>
+                <span className="font-bold text-sm">Equipo</span>
               </DropdownMenuItem>
-              <DropdownMenuSeparator className="my-1.5 bg-stone-100" />
+              <DropdownMenuSeparator className="my-2 bg-stone-100/80" />
               <DropdownMenuItem
                 onClick={handleLogout}
-                className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-rose-600 focus:text-rose-600 focus:bg-rose-50 cursor-pointer group"
               >
-                <LogOut size={15} strokeWidth={1.5} />
-                <span className="font-semibold text-sm">Cerrar Sesión</span>
+                <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center group-focus:bg-rose-100 transition-colors">
+                   <LogOut size={16} strokeWidth={1.5} />
+                </div>
+                <span className="font-bold text-sm">Cerrar Sesión</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

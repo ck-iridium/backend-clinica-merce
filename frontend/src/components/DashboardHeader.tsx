@@ -28,7 +28,7 @@ export default function DashboardHeader({ clinicName }: DashboardHeaderProps) {
 
   return (
     <>
-      <header className="hidden md:flex items-center justify-between px-8 py-5 sticky top-0 z-20 bg-background/70 backdrop-blur-2xl border-b border-border/40">
+      <header className="hidden md:flex items-center justify-between px-8 py-5 sticky top-0 z-20 bg-transparent border-none">
 
         {/* Search Bar Island — Ahora es un Trigger */}
         <button

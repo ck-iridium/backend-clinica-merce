@@ -18,24 +18,19 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const logoUrl = settings?.logo_app_b64 || null;
 
   return (
-      <div className="min-h-screen bg-background md:flex font-sans text-foreground print:bg-white overflow-hidden">
+      <div className="min-h-screen bg-background md:flex font-sans text-foreground print:bg-white">
         
         {/* Sidebar: Mobile top bar + new Heygen-style desktop hover drawer */}
         <DashboardSidebar clinicName={clinicName} logoUrl={logoUrl} />
 
         {/* Main Content Area */}
-        <main className="flex-1 flex flex-col h-screen overflow-hidden pt-24 md:pt-0 pb-24 md:pb-0 print:overflow-visible text-foreground">
+        <main className="flex-1 flex flex-col relative text-foreground">
           
           <DashboardHeader clinicName={clinicName} />
 
           {/* Children View (The Canvas for "Islas de contenido") */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-8 relative">
-            <div className="max-w-[1400px] mx-auto z-10 relative space-y-6">
-              {children}
-            </div>
-            
-            {/* Spacer for bottom navigation on mobile */}
-            <div className="h-24 md:hidden shrink-0"></div>
+          <div className="pt-24 md:pt-28 px-4 md:px-8 pb-24 md:pb-8 max-w-[1400px] mx-auto z-10 relative space-y-6 w-full">
+            {children}
           </div>
           
           <MobileBottomBar />
