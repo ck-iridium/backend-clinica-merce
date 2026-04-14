@@ -507,7 +507,7 @@ export default function ServicesPage() {
             </form>
           </div>
 
-          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 md:p-8 bg-gradient-to-t from-white via-white to-white/0 flex flex-row items-center justify-end gap-3 rounded-b-2xl z-20">
+          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 md:p-8 bg-white border-t border-stone-100 flex flex-row items-center justify-end gap-3 z-20">
             {editingId && (
               <button 
                 type="button" 

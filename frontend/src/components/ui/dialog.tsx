@@ -34,10 +34,11 @@ const DialogContent = React.forwardRef<
   <DialogPortal>
     <DialogOverlay />
     {/* CONTENEDOR MAESTRO DE SCROLL Y EVENTOS */}
+    {/* flex items-center justify-center permite el centrado vertical nativo de modales cortos */}
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed inset-0 z-[110] overflow-y-auto pointer-events-auto custom-scrollbar flex flex-col items-center justify-start outline-none",
+        "fixed inset-0 z-[110] overflow-y-auto overscroll-behavior-contain pointer-events-auto custom-scrollbar flex flex-col items-center justify-center sm:justify-start outline-none p-4 sm:p-6",
         "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
       )}
       onClick={(e) => {
@@ -47,21 +48,19 @@ const DialogContent = React.forwardRef<
       }}
       {...props}
     >
-      {/* 
-          BOTÓN DE CIERRE FIJO: Posición ajustada a 2em (top-8 right-8) para que respire.
-      */}
-      <DialogPrimitive.Close className="fixed top-8 right-8 rounded-full ring-offset-background transition-colors hover:bg-stone-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground w-10 h-10 flex items-center justify-center bg-white shadow-lg border border-stone-100 z-[150]">
-        <X size={20} strokeWidth={2.5} className="text-stone-800" />
-        <span className="sr-only">Cerrar</span>
-      </DialogPrimitive.Close>
-
-      {/* EL FOLIO BLANCO (Unificación symmétrica con rounded-xl / 0.75rem) */}
+      {/* EL FOLIO BLANCO (Escala dinámica de anchos y border-radius unificado a 0.75rem / rounded-xl) */}
       <div 
         className={cn(
-          "relative mx-auto my-4 w-[calc(100%-24px)] sm:w-full sm:max-w-lg bg-background rounded-xl shadow-2xl p-0 overflow-visible ring-1 ring-black/5",
+          "relative mx-auto my-auto sm:my-8 w-full sm:max-w-xl md:max-w-2xl lg:max-w-4xl bg-background rounded-xl shadow-2xl p-0 overflow-hidden ring-1 ring-black/5 pt-12 sm:pt-0",
           className
         )}
       >
+        {/* BOTÓN DE CIERRE STICKY DENTRO DEL FOLIO (Visible en Desktop/Tablet) */}
+        <DialogPrimitive.Close className="sticky top-6 float-right mr-6 rounded-full ring-offset-background transition-colors hover:bg-stone-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none w-10 h-10 flex items-center justify-center bg-white shadow-lg border border-stone-100 z-[150]">
+          <X size={20} strokeWidth={2.5} className="text-stone-800" />
+          <span className="sr-only">Cerrar</span>
+        </DialogPrimitive.Close>
+
         {children}
       </div>
     </DialogPrimitive.Content>

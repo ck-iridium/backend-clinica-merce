@@ -15,7 +15,7 @@ const Command = React.forwardRef<
   <CommandPrimitive
     ref={ref}
     className={cn(
-      "flex h-full w-full flex-col overflow-hidden rounded-md bg-popover text-popover-foreground",
+      "flex h-full w-full flex-col overflow-hidden rounded-xl bg-popover text-popover-foreground",
       className
     )}
     {...props}
@@ -28,7 +28,7 @@ interface CommandDialogProps extends DialogProps {}
 const CommandDialog = ({ children, ...props }: CommandDialogProps) => {
   return (
     <Dialog {...props}>
-      <DialogContent className="overflow-hidden p-0 shadow-2xl rounded-[2.5rem] bg-white">
+      <DialogContent className="overflow-hidden p-0 shadow-2xl rounded-xl bg-white sm:max-w-2xl">
         <DialogTitle className="sr-only">Buscador global</DialogTitle>
         <DialogDescription className="sr-only">Buscador para elementos generales del panel de control de la clínica</DialogDescription>
         <Command className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-serif [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-stone-400 [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:tracking-widest [&_[cmdk-group-heading]]:pt-4 [&_[cmdk-group-heading]]:pb-2 [&_[cmdk-group]:not([hidden])~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-14 [&_[cmdk-item]]:px-3 [&_[cmdk-item]]:py-4 [&_[cmdk-item]]:rounded-xl [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">

@@ -3,7 +3,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { toast } from 'sonner';
-import { Calendar, Clock, Lock, Unlock, X, ChevronLeft, ChevronRight, Sparkles, Trash2, AlertTriangle, Phone, Save } from 'lucide-react';
+import { Calendar, Clock, Lock, Unlock, ChevronLeft, ChevronRight, Sparkles, Trash2, AlertTriangle, Phone, Save } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -626,7 +626,7 @@ function CalendarContent() {
 
       {/* Book Appointment Modal */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="flex flex-col w-[95vw] sm:max-w-lg max-h-[85dvh] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-[2.5rem]">
+        <DialogContent className="flex flex-col w-[95vw] sm:max-w-lg max-h-[85dvh] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-xl">
           <DialogHeader className="shrink-0 p-8 border-b border-stone-50 bg-stone-50/50">
             <div className="flex gap-4 mb-4 p-1 bg-stone-100 rounded-2xl w-fit">
               <button 
@@ -740,7 +740,7 @@ function CalendarContent() {
                       value={appointmentNotes} 
                       onChange={e => setAppointmentNotes(e.target.value)} 
                       placeholder="Observaciones de la cita..."
-                      className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50 min-h-[100px] resize-none text-sm"
+                       className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50 min-h-[100px] resize-none text-sm"
                     />
                   </div>
                 </div>
@@ -795,7 +795,7 @@ function CalendarContent() {
 
       {/* STEP 4: BLOCK DELETE MODAL */}
       <Dialog open={showBlockDeleteModal} onOpenChange={setShowBlockDeleteModal}>
-        <DialogContent className="flex flex-col w-[95vw] sm:max-w-xs max-h-[85dvh] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-[2.5rem]">
+        <DialogContent className="flex flex-col w-[95vw] sm:max-w-xs max-h-[85dvh] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-xl">
           <div className="flex-1 overflow-y-auto p-8 text-center">
              <div className="w-16 h-16 bg-stone-100 text-stone-400 rounded-full flex items-center justify-center mx-auto mb-4"><Unlock size={32} strokeWidth={1.5} /></div>
              <h3 className="text-xl font-extrabold text-stone-800 mb-2">Liberar Horario</h3>
@@ -821,7 +821,7 @@ function CalendarContent() {
 
       {/* Edit Appointment Modal */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent className="flex flex-col w-[95vw] sm:max-w-md max-h-[85dvh] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-[2.5rem]">
+        <DialogContent className="flex flex-col w-[95vw] sm:max-w-md max-h-[85dvh] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-xl">
           <DialogHeader className="shrink-0 p-8 border-b border-stone-50 bg-stone-50/50">
             <div className="flex justify-between items-start mb-2">
               <div>
