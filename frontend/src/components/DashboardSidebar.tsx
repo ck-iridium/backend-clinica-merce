@@ -86,18 +86,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
     return () => { document.body.style.overflow = ''; };
   }, [isMobileOpen]);
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-  };
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    const deltaX = touchStartX.current - e.changedTouches[0].clientX;
-    const deltaY = Math.abs(touchStartY.current - e.changedTouches[0].clientY);
-    if (deltaX > 60 && deltaY < 100) {
-      setIsMobileOpen(false);
-    }
-  };
 
   const isActive = (href: string, exact?: boolean) => {
     if (exact) return pathname === href;
@@ -148,44 +137,42 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
 
   return (
     <>
-      <div className="md:hidden fixed top-0 left-0 w-full z-40 bg-transparent pointer-events-none print:hidden">
-        <div className={`flex items-center justify-between px-6 py-4 transition-transform duration-300 ease-in-out ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
-          <div className="flex items-center gap-3 pointer-events-auto">
-            <div className="w-10 h-10 rounded-2xl bg-stone-900 flex items-center justify-center text-white font-serif italic text-xl shadow-xl shadow-stone-200 overflow-hidden border border-white/20">
-              {logoUrl ? <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" /> : clinicName.charAt(0)}
-            </div>
+      <div className={`md:hidden fixed top-0 left-0 w-full z-50 flex items-center justify-between p-6 bg-transparent transition-transform duration-300 ease-in-out pointer-events-none ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+        <div className="pointer-events-auto">
+          <div className="w-11 h-11 rounded-2xl bg-stone-900 flex items-center justify-center text-white font-serif italic text-xl shadow-2xl shadow-stone-400 overflow-hidden border border-white/20">
+            {logoUrl ? <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" /> : clinicName.charAt(0)}
           </div>
-          
-          <div className="pointer-events-auto">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="w-10 h-10 rounded-full bg-stone-200 overflow-hidden border-2 border-white shadow-lg flex items-center justify-center active:scale-95 transition-all outline-none">
-                    <User size={18} strokeWidth={1.5} className="text-stone-500" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52 rounded-2xl shadow-xl border border-stone-100 p-1.5 z-[60]">
-                <DropdownMenuLabel className="text-xs font-black uppercase tracking-widest text-stone-400 px-3 py-2">
-                  Mi cuenta
-                </DropdownMenuLabel>
-                <DropdownMenuItem disabled className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl opacity-50">
-                  <User size={15} strokeWidth={1.5} />
-                  <span className="font-semibold text-sm">Mi Perfil</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem disabled className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl opacity-50">
-                  <Users size={15} strokeWidth={1.5} />
-                  <span className="font-semibold text-sm">Gestión de Usuarios</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="my-1.5 bg-stone-100" />
-                <DropdownMenuItem
-                  onClick={handleLogout}
-                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
-                >
-                  <LogOut size={15} strokeWidth={1.5} />
-                  <span className="font-semibold text-sm">Cerrar Sesión</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+        </div>
+        
+        <div className="pointer-events-auto">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="w-11 h-11 rounded-full bg-stone-100 overflow-hidden border-2 border-white shadow-xl flex items-center justify-center active:scale-95 transition-all outline-none">
+                  <User size={20} strokeWidth={1.5} className="text-stone-500" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-52 rounded-2xl shadow-2xl border border-stone-100 p-1.5 z-[60]">
+              <DropdownMenuLabel className="text-xs font-black uppercase tracking-widest text-stone-400 px-3 py-2">
+                Mi cuenta
+              </DropdownMenuLabel>
+              <DropdownMenuItem disabled className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl opacity-50">
+                <User size={15} strokeWidth={1.5} />
+                <span className="font-semibold text-sm">Mi Perfil</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl opacity-50">
+                <Users size={15} strokeWidth={1.5} />
+                <span className="font-semibold text-sm">Gestión de Usuarios</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="my-1.5 bg-stone-100" />
+              <DropdownMenuItem
+                onClick={handleLogout}
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
+              >
+                <LogOut size={15} strokeWidth={1.5} />
+                <span className="font-semibold text-sm">Cerrar Sesión</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 

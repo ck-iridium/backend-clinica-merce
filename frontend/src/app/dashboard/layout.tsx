@@ -24,7 +24,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <DashboardSidebar clinicName={clinicName} logoUrl={logoUrl} />
 
         {/* Main Content Area */}
-        <main className="flex-1 flex flex-col h-screen overflow-hidden pb-24 md:pb-0 print:overflow-visible text-foreground">
+        <main className="flex-1 flex flex-col h-screen overflow-hidden pt-24 md:pt-0 pb-24 md:pb-0 print:overflow-visible text-foreground">
           
           <DashboardHeader clinicName={clinicName} />
 
