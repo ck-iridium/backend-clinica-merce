@@ -3,6 +3,14 @@ import { useState, useEffect } from 'react';
 import { SignaturePadModal } from '@/components/SignaturePadModal';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { toast } from 'sonner';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export default function ClientProfilePage({ params }: { params: { id: string } }) {
   const { showFeedback } = useFeedback();
@@ -450,15 +458,17 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
       />
 
       {/* --- Modal de Saldar Deuda --- */}
-      {showPayModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/40 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="bg-white rounded-[2rem] w-full max-w-sm shadow-2xl p-6">
-            <h2 className="text-xl font-extrabold text-stone-800 mb-6 flex justify-between">
-              Añadir Pago
-              <button onClick={() => setShowPayModal(false)} className="text-stone-400">✕</button>
-            </h2>
+      <Dialog open={showPayModal} onOpenChange={setShowPayModal}>
+        <DialogContent className="p-0 border-none max-w-sm">
+          <DialogHeader className="p-6 border-b border-stone-50 bg-white rounded-t-xl">
+            <DialogTitle className="text-xl font-extrabold text-stone-800">Añadir Pago</DialogTitle>
+            <DialogDescription className="text-stone-400 text-xs mt-1">
+              Registra un cobro parcial o total sobre la deuda del bono del paciente.
+            </DialogDescription>
+          </DialogHeader>
 
-            <form onSubmit={handlePayDebt}>
+          <div className="p-6 pb-32">
+            <form id="pay-debt-form-profile" onSubmit={handlePayDebt}>
               <p className="text-sm text-stone-500 mb-4 bg-stone-50 p-3 rounded-lg border border-stone-100">
                 La deuda actual de este bono es de <strong className="text-rose-500">{currentDebt}€</strong>.
               </p>
@@ -476,17 +486,17 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
                 />
                 <p className="text-[10px] text-stone-400 mt-1">Este importe cerrará parcialmente o totalmente la deuda, actualizando la factura pendiente.</p>
               </div>
-
-              <div className="mt-8 flex gap-3">
-                 <button type="button" onClick={() => setShowPayModal(false)} className="flex-1 py-3 text-stone-600 font-bold border border-stone-200 rounded-xl hover:bg-stone-50">Cancelar</button>
-                 <button type="submit" disabled={paying} className="flex-1 py-3 text-white bg-[#d9777f] font-bold rounded-xl hover:bg-[#c6646b] shadow-md flex justify-center items-center">
-                   {paying ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : 'Confirmar Cobro'}
-                 </button>
-              </div>
             </form>
           </div>
-        </div>
-      )}
+
+          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 border-t border-stone-100 bg-gradient-to-t from-white via-white to-white/0 flex gap-3 rounded-b-2xl z-20">
+             <button type="button" onClick={() => setShowPayModal(false)} className="flex-1 py-3 text-stone-600 font-bold border border-stone-200 rounded-xl hover:bg-stone-50">Cancelar</button>
+             <button form="pay-debt-form-profile" type="submit" disabled={paying} className="flex-1 py-3 text-white bg-[#d9777f] font-bold rounded-xl hover:bg-[#c6646b] shadow-md flex justify-center items-center">
+               {paying ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : 'Confirmar Cobro'}
+             </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

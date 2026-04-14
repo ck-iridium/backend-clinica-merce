@@ -349,10 +349,8 @@ export default function ServicesPage() {
       </div>
 
       <Dialog open={showForm} onOpenChange={(open) => !open && handleCancel()}>
-        <DialogContent className="flex flex-col w-[95vw] sm:max-w-4xl max-h-[85dvh] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-[2.5rem]">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-yellow-50 rounded-full blur-3xl opacity-60 -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-          
-          <DialogHeader className="shrink-0 p-6 md:p-8 border-b border-stone-100 bg-white relative z-10">
+        <DialogContent className="p-0 border-none">
+          <DialogHeader className="p-6 md:p-8 border-b border-stone-100 bg-white relative z-10 rounded-t-xl">
             <DialogTitle className="text-2xl font-bold text-stone-800 flex items-center gap-3">
               <span className="w-10 h-10 rounded-2xl bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
                 <Sparkles size={20} strokeWidth={1.5} />
@@ -364,9 +362,9 @@ export default function ServicesPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar relative z-10">
+          <div className="p-6 md:p-8 pb-32">
             <form id="service-form" onSubmit={handleSubmit}>
-              {/* Sección de Imagen del Tratamiento - Responsiva */}
+              {/* Sección de Imagen del Tratamiento */}
               <div className="mb-8 flex flex-col md:flex-row items-center md:items-start bg-stone-50 border border-stone-200 p-6 rounded-[2rem] gap-6 text-center md:text-left">
                 {uploadingImage ? (
                   <div className="w-28 h-28 rounded-2xl bg-white border border-stone-200 flex flex-col justify-center items-center shrink-0">
@@ -385,7 +383,7 @@ export default function ServicesPage() {
                 )}
                 <div className="flex-1">
                   <h3 className="font-bold text-stone-800 mb-1 text-sm uppercase tracking-tight">Imagen del Catálogo</h3>
-                  <p className="text-xs text-stone-400 mb-4 leading-relaxed max-w-sm mx-auto md:mx-0">Selecciona una imagen de tu galería o sube una nueva. Podrás recortarla en el siguiente paso.</p>
+                  <p className="text-xs text-stone-400 mb-4 leading-relaxed max-w-sm mx-auto md:mx-0">Selecciona una imagen de tu galería o sube una nueva.</p>
                   <div className="flex gap-2 justify-center md:justify-start">
                     <button
                       type="button"
@@ -509,7 +507,7 @@ export default function ServicesPage() {
             </form>
           </div>
 
-          <DialogFooter className="shrink-0 p-6 md:p-8 bg-stone-50/50 border-t border-stone-100 flex flex-row items-center justify-end gap-3 relative z-10 w-full sm:flex-row">
+          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 md:p-8 bg-gradient-to-t from-white via-white to-white/0 flex flex-row items-center justify-end gap-3 rounded-b-2xl z-20">
             {editingId && (
               <button 
                 type="button" 
@@ -644,15 +642,15 @@ export default function ServicesPage() {
 
       {/* Modal Nueva Categoría */}
       <Dialog open={showCategoryModal} onOpenChange={setShowCategoryModal}>
-        <DialogContent className="flex flex-col w-[95vw] sm:max-w-md max-h-[85dvh] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-[2.5rem]">
-          <DialogHeader className="shrink-0 p-8 border-b border-stone-50 bg-white">
+        <DialogContent className="p-0 border-none max-w-md">
+          <DialogHeader className="p-8 border-b border-stone-50 bg-white rounded-t-xl">
             <DialogTitle className="text-xl font-extrabold text-stone-800">Nueva Categoría</DialogTitle>
             <DialogDescription className="text-stone-500 text-sm">
               Añade una agrupación para tus servicios.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto p-8">
+          <div className="p-8 pb-32">
             <form id="new-category-form" onSubmit={handleCreateCategory}>
               <input 
                 required 
@@ -665,7 +663,7 @@ export default function ServicesPage() {
             </form>
           </div>
 
-          <DialogFooter className="shrink-0 p-6 border-t border-stone-50 bg-stone-50/30 flex gap-3 sm:flex-row">
+          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 border-t border-stone-100 bg-gradient-to-t from-white via-white to-white/0 flex gap-3 rounded-b-2xl z-20">
             <button type="button" onClick={() => setShowCategoryModal(false)} className="flex-1 px-6 py-4 rounded-xl font-bold text-stone-600 bg-white border border-stone-100 hover:bg-stone-50 transition-all">
               Cancelar
             </button>
@@ -678,15 +676,15 @@ export default function ServicesPage() {
 
       {/* Modal Gestionar Categorías */}
       <Dialog open={showManageCategoriesModal} onOpenChange={setShowManageCategoriesModal}>
-        <DialogContent className="flex flex-col w-[95vw] sm:max-w-lg max-h-[85dvh] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-[2.5rem]">
-          <DialogHeader className="shrink-0 p-8 border-b border-stone-50 bg-white">
+        <DialogContent className="p-0 border-none max-w-lg">
+          <DialogHeader className="p-8 border-b border-stone-50 bg-white rounded-t-xl">
             <DialogTitle className="text-2xl font-extrabold text-stone-800">Gestionar Categorías</DialogTitle>
             <DialogDescription className="text-stone-400 text-sm">
               Organiza las agrupaciones de tratamientos y sus imágenes de portada.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+          <div className="p-8 pb-32">
             <div className="space-y-3">
               {categories.map(cat => (
                 <div key={cat.id} className="flex flex-col p-4 bg-stone-50 rounded-2xl border border-stone-200 group transition-all gap-3">
@@ -766,7 +764,7 @@ export default function ServicesPage() {
             </div>
           </div>
 
-          <DialogFooter className="shrink-0 p-6 border-t border-stone-100 italic text-stone-400 text-[10px] text-center bg-stone-50/50 block">
+          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 border-t border-stone-100 bg-white italic text-stone-400 text-[10px] text-center block rounded-b-2xl">
             Las categorías que tengan servicios asignados no podrán ser eliminadas por seguridad.
           </DialogFooter>
         </DialogContent>

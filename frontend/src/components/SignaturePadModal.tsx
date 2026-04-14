@@ -7,6 +7,15 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+
 interface SignaturePadModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -109,21 +118,16 @@ export function SignaturePadModal({ isOpen, onClose, onSave, clientName }: Signa
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/80 backdrop-blur-sm p-4 animate-in fade-in">
-      <div className="bg-white rounded-[2rem] w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
-        
-        {/* Header */}
-        <div className="px-8 py-6 border-b border-stone-100 flex justify-between items-center bg-stone-50">
-          <div>
-            <h2 className="text-2xl font-extrabold text-stone-800">Consentimiento Médico (RGPD)</h2>
-            <p className="text-stone-500 font-medium text-sm">Validación legal y protección de datos</p>
-          </div>
-          <button onClick={onClose} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-stone-200 text-stone-400 hover:text-stone-700 hover:border-stone-400 transition-all font-bold">
-            ✕
-          </button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="p-0 border-none max-w-4xl">
+        <DialogHeader className="px-8 py-6 border-b border-stone-100 bg-stone-50 rounded-t-xl">
+          <DialogTitle className="text-2xl font-extrabold text-stone-800">Consentimiento Médico (RGPD)</DialogTitle>
+          <DialogDescription className="text-stone-500 font-medium text-sm">
+            Validación legal y protección de datos para Don/Doña {clientName}
+          </DialogDescription>
+        </DialogHeader>
 
-        <div className="p-8 pb-4 flex-1 overflow-y-auto">
+        <div className="p-8 pb-4">
           {/* Tipo de Documento */}
           <div className="mb-6">
             <label className="block text-sm font-bold text-[#d9777f] uppercase tracking-widest mb-2">Seleccione el Acuerdo:</label>
@@ -183,8 +187,7 @@ export function SignaturePadModal({ isOpen, onClose, onSave, clientName }: Signa
           </div>
         </div>
 
-        {/* Footer Actions */}
-        <div className="px-8 py-6 border-t border-stone-100 bg-stone-50 flex justify-end gap-4">
+        <DialogFooter className="sticky bottom-0 left-0 w-full px-8 py-6 border-t border-stone-100 bg-gradient-to-t from-white via-white to-white/0 rounded-b-2xl z-20 flex justify-end gap-4">
            <button onClick={onClose} className="px-6 py-3 font-bold text-stone-500 bg-white hover:bg-stone-100 border border-stone-200 rounded-xl transition-colors">
               Cancelar
            </button>
@@ -195,8 +198,8 @@ export function SignaturePadModal({ isOpen, onClose, onSave, clientName }: Signa
             >
               ✓ Aceptar y Firmar Documento
            </button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

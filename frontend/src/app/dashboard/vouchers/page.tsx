@@ -332,26 +332,31 @@ export default function VouchersPage() {
   return (
     <div className="animate-in fade-in duration-500">
       
-      {/* Header & Tabs */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4 border-b border-stone-200/60 pb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-4xl font-black text-stone-900 tracking-tight font-serif italic">Gestión de Bonos</h1>
-          <p className="text-stone-500 mt-1.5 font-medium">Control de plantillas y tratamientos emitidos de forma personalizada.</p>
+          <h1 className="text-3xl font-extrabold text-stone-800">Dirección de Bonos</h1>
+          <p className="text-stone-500 mt-1 font-medium">Control de tratamientos emitidos y catálogo de bonos base</p>
         </div>
-        
-        {/* Tabs Navigation */}
-        <div className="flex bg-stone-100 p-1 rounded-xl">
+        <div className="flex items-center gap-3">
+          <div className="flex bg-white border border-stone-200 p-1 rounded-xl shadow-sm">
+            <button 
+              onClick={() => setActiveTab('vendidos')}
+              className={`px-4 py-2 rounded-lg font-bold text-xs transition-all ${activeTab === 'vendidos' ? 'bg-stone-900 text-white shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
+            >
+               Emitidos
+            </button>
+            <button 
+              onClick={() => setActiveTab('catalogo')}
+              className={`px-4 py-2 rounded-lg font-bold text-xs transition-all ${activeTab === 'catalogo' ? 'bg-stone-900 text-white shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
+            >
+               Catálogo
+            </button>
+          </div>
           <button 
-            onClick={() => setActiveTab('vendidos')}
-            className={`px-6 py-2 rounded-lg font-bold text-sm transition-all ${activeTab === 'vendidos' ? 'bg-white text-[#d9777f] shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
+            onClick={() => activeTab === 'vendidos' ? setShowAssignModal(true) : setShowTemplateModal(true)}
+            className="px-6 py-3 rounded-xl bg-[#d4af37] hover:bg-[#b08e23] border border-transparent text-white font-bold transition-all shadow-md active:scale-95 flex items-center gap-2"
           >
-             Bonos Asignados
-          </button>
-          <button 
-            onClick={() => setActiveTab('catalogo')}
-             className={`px-6 py-2 rounded-lg font-bold text-sm transition-all ${activeTab === 'catalogo' ? 'bg-white text-[#d9777f] shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
-          >
-             Catálogo (Plantillas)
+            <span className="text-lg">+</span> {activeTab === 'vendidos' ? 'Emitir Bono' : 'Nueva Plantilla'}
           </button>
         </div>
       </div>
@@ -360,13 +365,7 @@ export default function VouchersPage() {
       {activeTab === 'vendidos' && (
         <>
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-stone-800 block">Clientes con Bonos</h2>
-            <button 
-              onClick={() => setShowAssignModal(true)}
-              className="bg-[#d9777f] hover:bg-[#c6646b] text-white px-5 py-2.5 rounded-xl font-extrabold text-sm shadow-sm transition-all hover:shadow border border-[#c6646b] flex items-center gap-2"
-            >
-              <span>+</span> Emitir Nuevo Bono
-            </button>
+            <h2 className="text-lg font-bold text-stone-700 ml-1">Bonos activos en pacientes</h2>
           </div>
 
           <motion.div 
@@ -492,13 +491,7 @@ export default function VouchersPage() {
       {activeTab === 'catalogo' && (
         <>
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-stone-800 block">Plantillas de Tratamiento</h2>
-            <button 
-              onClick={() => setShowTemplateModal(true)}
-              className="bg-stone-800 hover:bg-stone-700 text-white px-4 py-2 rounded-xl font-bold text-sm transition-all flex items-center gap-2"
-            >
-              <span>+</span> Crear Plantilla
-            </button>
+            <h2 className="text-lg font-bold text-stone-700 ml-1">Modelos de bonos configurados</h2>
           </div>
           
           <div className="bg-white rounded-[2rem] border border-stone-100 shadow-sm overflow-hidden">
@@ -544,21 +537,21 @@ export default function VouchersPage() {
 
       {/* ======================= MODAL: EMITIR BONO (ASSIGNMENT) ======================= */}
       <Dialog open={showAssignModal} onOpenChange={setShowAssignModal}>
-        <DialogContent className="flex flex-col w-[95vw] sm:max-w-lg max-h-[85dvh] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-[2.5rem]">
-          <DialogHeader className="shrink-0 p-8 border-b border-stone-100 bg-stone-50">
+        <DialogContent className="p-0 border-none max-w-lg">
+          <DialogHeader className="p-8 border-b border-stone-100 bg-stone-50 rounded-t-xl">
             <DialogTitle className="text-xl font-extrabold text-stone-800">Emitir / Vender Bono</DialogTitle>
             <DialogDescription className="text-stone-400 text-sm">
               Asigna un bono del catálogo a un cliente y define las condiciones de pago.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+          <div className="p-8 pb-32">
             <form id="assign-voucher-form" onSubmit={handleAssignVoucher}>
               {/* 1. Seleccionar Cliente */}
               <div className="mb-5">
                 <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Cliente Receptor</label>
                 <Select required value={selectedClientId} onValueChange={setSelectedClientId}>
-                  <SelectTrigger className="w-full bg-stone-50 border-stone-200">
+                  <SelectTrigger className="w-full bg-stone-50 border-stone-200 uppercase tracking-tighter shadow-sm font-bold">
                     <SelectValue placeholder="Selecciona cliente..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -581,7 +574,7 @@ export default function VouchersPage() {
                         onChange={e => setSearchTerm(e.target.value)}
                         className="w-full p-3 mb-2 bg-white border border-stone-200 rounded-xl text-sm outline-none"
                       />
-                      <div className="max-h-40 overflow-y-auto space-y-2 pr-2">
+                      <div className="max-h-40 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
                          {filteredTemplates.length === 0 && <p className="text-xs text-stone-400">No se encontraron plantillas.</p>}
                          {filteredTemplates.map(t => (
                             <div 
@@ -649,7 +642,7 @@ export default function VouchersPage() {
             </form>
           </div>
 
-          <DialogFooter className="shrink-0 p-8 border-t border-stone-100 bg-stone-50/50 sm:flex-row">
+          <DialogFooter className="sticky bottom-0 left-0 w-full p-8 border-t border-stone-100 bg-gradient-to-t from-white via-white to-white/0 rounded-b-2xl z-20">
             <button 
               form="assign-voucher-form"
               type="submit" 
@@ -664,15 +657,15 @@ export default function VouchersPage() {
 
       {/* ======================= MODAL: CREAR PLANTILLA ======================= */}
       <Dialog open={showTemplateModal} onOpenChange={setShowTemplateModal}>
-        <DialogContent className="flex flex-col w-[95vw] sm:max-w-sm max-h-[85dvh] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-[2.5rem]">
-          <DialogHeader className="shrink-0 p-6 border-b border-stone-50 bg-white">
+        <DialogContent className="p-0 border-none max-w-sm">
+          <DialogHeader className="p-6 border-b border-stone-50 bg-white rounded-t-xl">
             <DialogTitle className="text-xl font-extrabold text-stone-800">Crear Plantilla</DialogTitle>
             <DialogDescription className="text-stone-400 text-xs mt-1">
               Define los parámetros básicos para una nueva plantilla de bono.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="p-6 pb-32">
             <form id="template-form" onSubmit={handleCreateTemplate}>
               <div className="space-y-4">
                 <div>
@@ -685,7 +678,7 @@ export default function VouchersPage() {
                     setTemplateServiceId(val);
                     calculateTemplateDefaultPrice(val, templateSessions);
                   }}>
-                    <SelectTrigger className="w-full bg-stone-50 border-stone-200">
+                    <SelectTrigger className="w-full bg-stone-50 border-stone-200 font-bold">
                       <SelectValue placeholder="-- Elige técnica --" />
                     </SelectTrigger>
                     <SelectContent>
@@ -714,7 +707,7 @@ export default function VouchersPage() {
             </form>
           </div>
 
-          <DialogFooter className="shrink-0 p-6 border-t border-stone-50 bg-stone-50/50 sm:flex-row">
+          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 border-t border-stone-50 bg-gradient-to-t from-white via-white to-white/0 rounded-b-2xl z-20">
             <button form="template-form" type="submit" disabled={saving} className="w-full py-4 bg-[#bf7d6b] text-white font-extrabold rounded-xl hover:bg-[#a66a5a] transition-all flex justify-center items-center shadow-lg shadow-[#bf7d6b]/20 active:scale-95">
               {saving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : "Guardar Plantilla"}
             </button>
@@ -724,15 +717,15 @@ export default function VouchersPage() {
 
       {/* ======================= MODAL: SALDAR DEUDA ======================= */}
       <Dialog open={showPayModal} onOpenChange={setShowPayModal}>
-        <DialogContent className="flex flex-col w-[95vw] sm:max-w-sm max-h-[85dvh] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-[2.5rem]">
-          <DialogHeader className="shrink-0 p-6 border-b border-stone-50 bg-white">
+        <DialogContent className="p-0 border-none max-w-sm">
+          <DialogHeader className="p-6 border-b border-stone-50 bg-white rounded-t-xl">
             <DialogTitle className="text-xl font-extrabold text-stone-800">Añadir Pago</DialogTitle>
             <DialogDescription className="text-stone-400 text-xs mt-1">
               Registra un cobro parcial o total sobre la deuda del bono.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="p-6 pb-32">
             <form id="pay-debt-form" onSubmit={handlePayDebt}>
               <p className="text-sm text-stone-500 mb-4 bg-stone-50 p-3 rounded-lg border border-stone-100">
                 La deuda actual de este bono es de <strong className="text-rose-500">{currentDebt}€</strong>.
@@ -754,7 +747,7 @@ export default function VouchersPage() {
             </form>
           </div>
 
-          <DialogFooter className="shrink-0 p-6 border-t border-stone-100 bg-stone-50/50 flex gap-3 sm:flex-row">
+          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 border-t border-stone-100 bg-gradient-to-t from-white via-white to-white/0 flex gap-3 rounded-b-2xl z-20">
             <button type="button" onClick={() => setShowPayModal(false)} className="flex-1 py-3 text-stone-600 font-bold border border-stone-200 rounded-xl hover:bg-stone-50 bg-white">Cancelar</button>
             <button form="pay-debt-form" type="submit" disabled={paying} className="flex-1 py-3 text-white bg-[#d9777f] font-bold rounded-xl hover:bg-[#c6646b] shadow-md flex justify-center items-center">
               {paying ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : 'Confirmar'}

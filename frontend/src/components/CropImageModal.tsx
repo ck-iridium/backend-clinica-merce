@@ -65,7 +65,7 @@ export default function CropImageModal({ imageSrc, onClose, onCropComplete }: Cr
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-900/90 p-4">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-stone-900/90 p-4">
       <div className="bg-white rounded-[2rem] w-full max-w-2xl overflow-hidden flex flex-col h-[80vh] max-h-[800px] animate-in zoom-in-95">
         
         {/* Header */}

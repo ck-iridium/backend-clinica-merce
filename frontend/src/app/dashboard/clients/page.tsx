@@ -119,8 +119,8 @@ export default function ClientsPage() {
               Añadir Cliente
             </button>
           </DialogTrigger>
-          <DialogContent className="flex flex-col w-[95vw] sm:max-w-2xl max-h-[85dvh] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-[2.5rem]">
-            <DialogHeader className="shrink-0 p-8 md:p-10 pb-6 border-b border-stone-100 bg-white relative z-10">
+          <DialogContent className="p-0 border-none max-w-2xl">
+            <DialogHeader className="p-8 md:p-10 pb-6 border-b border-stone-100 bg-white relative z-10 rounded-t-xl">
               <DialogTitle className="text-3xl font-serif font-light text-stone-800 tracking-tight">
                 Nueva Ficha Médica
               </DialogTitle>
@@ -129,8 +129,8 @@ export default function ClientsPage() {
               </DialogDescription>
             </DialogHeader>
 
-            <form id="client-form" onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
-              <div className="flex-1 overflow-y-auto px-8 md:px-10 py-6 custom-scrollbar">
+            <form id="client-form" onSubmit={handleSubmit} className="flex flex-col">
+              <div className="px-8 md:px-10 py-6 pb-32">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">Nombre completo *</label>
@@ -202,7 +202,7 @@ export default function ClientsPage() {
                 </div>
               </div>
 
-              <div className="shrink-0 flex justify-end gap-3 p-8 md:p-10 py-6 border-t border-stone-50 bg-white sm:flex-row mt-auto">
+              <div className="sticky bottom-0 left-0 w-full flex justify-end gap-3 p-8 md:p-10 py-6 border-t border-stone-100 bg-gradient-to-t from-white via-white to-white/0 rounded-b-2xl z-20">
                 <button 
                   type="button" 
                   onClick={() => setIsModalOpen(false)}
