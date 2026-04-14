@@ -623,8 +623,8 @@ function CalendarContent() {
           </div>
         </div>
 
-        {/* MOBILE CALENDAR VIEW (Booksy Style) */}
-        <div className="block md:hidden border border-stone-100 rounded-[2.5rem] rounded-b-none overflow-hidden bg-white shadow-xl shadow-stone-100/50 flex flex-col -mx-2 -mb-10" style={{ height: 'calc(100dvh - 10.5rem)', minHeight: '500px' }}>
+        {/* MOBILE CALENDAR VIEW (Booksy Style) - Extended to reach footer exactly */}
+        <div className="block md:hidden border-x border-t border-stone-100 rounded-t-[2.5rem] overflow-hidden bg-white shadow-xl shadow-stone-100/50 flex flex-col -mx-4 -mb-28" style={{ height: 'calc(100dvh - 6rem)', minHeight: '550px' }}>
           {/* Sticky Header with Horizontal scroll for Days */}
           <div className="bg-white z-20 border-b border-stone-100 shadow-sm shrink-0">
             <div className="flex items-center overflow-x-auto p-4 gap-4 custom-scrollbar snap-x">
@@ -654,8 +654,8 @@ function CalendarContent() {
           </div>
 
           {/* Scrollable Hours & Appointments Column (Internal Scroll Enabled) */}
-          <div className="flex-1 overflow-y-auto relative bg-white custom-scrollbar pb-6">
-            <div className="relative w-full" style={{ height: `${hours.length * 72}px` }}>
+          <div className="flex-1 overflow-y-auto relative bg-white custom-scrollbar pt-6 pb-6">
+            <div className="relative w-full" style={{ height: `${hours.length * 72 + 24}px` }}>
               {/* Horizontal line markers */}
               {hours.map((h, i) => (
                 <div key={`mhl-${h}`} className="absolute w-full border-t border-stone-50" style={{ top: `${i * 72}px`, height: '72px', pointerEvents: 'none' }}></div>
