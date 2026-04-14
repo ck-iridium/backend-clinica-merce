@@ -57,12 +57,12 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
               <Menu size={24} strokeWidth={1.5} />
             </button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-[85vw] max-w-xs p-0 bg-stone-50 border-none">
+          <SheetContent side="left" className="w-[85vw] max-w-xs p-0 bg-stone-50 border-none [&>button]:hidden">
             <SheetTitle className="sr-only">Navegación Principal</SheetTitle>
             <SheetDescription className="sr-only">Menú lateral de navegación con todas las secciones</SheetDescription>
             
             <div className="flex flex-col h-full py-8">
-              <div className="px-6 mb-10 flex items-center justify-between">
+              <div className="hidden px-6 mb-10 flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-[1.25rem] bg-stone-900 flex items-center justify-center text-white font-serif italic text-2xl shadow-xl shadow-stone-200 overflow-hidden">
                     {logoUrl ? <img src={logoUrl} alt={clinicName} className="w-full h-full object-cover" /> : clinicName.charAt(0)}

@@ -193,8 +193,8 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
           onMouseEnter={() => setIsDesktopExpanded(true)}
           onMouseLeave={() => setIsDesktopExpanded(false)}
         >
-          {/* Logo Area */}
-          <div className="flex items-center px-4 mb-8">
+          {/* Logo Area - Hidden on mobile, visible on desktop/tablet */}
+          <div className="hidden md:flex items-center px-4 mb-8">
             <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-white font-serif italic text-2xl shadow-lg shadow-primary/20 overflow-hidden mx-auto">
               {logoUrl ? <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" /> : clinicName.charAt(0)}
             </div>
