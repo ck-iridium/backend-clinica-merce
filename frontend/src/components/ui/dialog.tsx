@@ -48,18 +48,17 @@ const DialogContent = React.forwardRef<
       {...props}
     >
       {/* 
-          BOTÓN DE CIERRE FIJO: Siempre visible arriba a la derecha del portal. 
-          No se mueve con el scroll del folio blanco.
+          BOTÓN DE CIERRE FIJO: Posición ajustada a 2em (top-8 right-8) para que respire.
       */}
-      <DialogPrimitive.Close className="fixed top-4 right-4 sm:top-6 sm:right-6 rounded-full ring-offset-background transition-colors hover:bg-stone-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground w-10 h-10 flex items-center justify-center bg-white shadow-lg border border-stone-100 z-[150]">
+      <DialogPrimitive.Close className="fixed top-8 right-8 rounded-full ring-offset-background transition-colors hover:bg-stone-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground w-10 h-10 flex items-center justify-center bg-white shadow-lg border border-stone-100 z-[150]">
         <X size={20} strokeWidth={2.5} className="text-stone-800" />
         <span className="sr-only">Cerrar</span>
       </DialogPrimitive.Close>
 
-      {/* EL FOLIO BLANCO (Recuperamos los laterales y el ancho máximo) */}
+      {/* EL FOLIO BLANCO (Unificación symmétrica con rounded-xl / 0.75rem) */}
       <div 
         className={cn(
-          "relative mx-auto my-4 w-[calc(100%-24px)] sm:w-full sm:max-w-lg bg-background rounded-[2rem] shadow-2xl p-0 overflow-visible ring-1 ring-black/5",
+          "relative mx-auto my-4 w-[calc(100%-24px)] sm:w-full sm:max-w-lg bg-background rounded-xl shadow-2xl p-0 overflow-visible ring-1 ring-black/5",
           className
         )}
       >

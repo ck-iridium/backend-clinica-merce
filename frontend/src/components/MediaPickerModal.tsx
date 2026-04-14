@@ -123,29 +123,32 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
     return (
       <Dialog open={true} onOpenChange={(open) => !open && handleClose()}>
         <DialogPrimitive.Portal>
+            {/* CAPA 1: OVERLAY HERMANO (Z-200) */}
             <DialogPrimitive.Overlay 
                 className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 pointer-events-auto" 
                 onClick={handleClose}
             />
             
+            {/* CAPA 2: CONTENEDOR DE SCROLL HERMANO (Z-210) */}
             <DialogPrimitive.Content 
                 ref={ref}
                 className={cn(
-                    "fixed inset-0 z-[210] overflow-y-auto pointer-events-auto custom-scrollbar flex flex-col items-center justify-start outline-none",
+                    "fixed inset-0 z-[210] overflow-hidden pointer-events-none flex flex-col items-center justify-center outline-none p-4 sm:p-6",
                     "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
                 )}
                 onPointerDownOutside={(e) => { e.preventDefault(); e.stopPropagation(); }}
                 onInteractOutside={(e) => { e.preventDefault(); e.stopPropagation(); }}
             >
+                {/* BOTÓN CIERRE FIJO PROPIO */}
                 <button 
                     onClick={handleClose}
-                    className="fixed top-4 right-4 sm:top-6 sm:right-6 rounded-full ring-offset-background transition-colors hover:bg-stone-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 w-10 h-10 flex items-center justify-center bg-white shadow-lg border border-stone-100 z-[250]"
+                    className="fixed top-8 right-8 rounded-full ring-offset-background transition-colors hover:bg-stone-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 w-10 h-10 flex items-center justify-center bg-white shadow-lg border border-stone-100 z-[250] pointer-events-auto"
                 >
                     <X size={20} strokeWidth={2.5} className="text-stone-800" />
                 </button>
 
-                {/* EL FOLIO BLANCO (Altura máxima y border-radius unificado a 2rem) */}
-                <div className="relative mx-auto my-4 w-[calc(100%-24px)] sm:w-full sm:max-w-4xl bg-white rounded-[2rem] shadow-2xl p-0 overflow-hidden flex flex-col min-h-[calc(100vh-2rem)] sm:min-h-[calc(100vh-3rem)]">
+                {/* EL FOLIO BLANCO (Estructura interna con FOOTER FIJO TRANSPARENTE) */}
+                <div className="relative w-full max-w-4xl bg-white rounded-xl shadow-2xl p-0 overflow-hidden flex flex-col h-full max-h-full pointer-events-auto">
                     <DialogHeader className="sr-only">
                         <DialogTitle>Galería de Selección de Imágenes</DialogTitle>
                         <DialogDescription>Selecciona o sube imágenes para la clínica.</DialogDescription>
@@ -175,8 +178,8 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                         </button>
                     </div>
 
-                    {/* Content area con scroll interno */}
-                    <div className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-stone-50/30 relative">
+                    {/* Content area con scroll interno PROPIO */}
+                    <div className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-stone-50/30">
                         {activeTab === 'gallery' && (
                             <div className="h-full">
                                 {galleryLoading ? (
@@ -225,7 +228,7 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                         )}
 
                         {activeTab === 'upload' && (
-                            <div className="flex flex-col items-center justify-center min-h-[300px] h-full">
+                            <div className="flex flex-col items-center justify-center min-h-[300px] h-full pb-20">
                                 {uploading ? (
                                     <div className="flex flex-col items-center gap-6">
                                         <div className="w-12 h-12 border-4 border-stone-200 border-t-[#d4af37] rounded-full animate-spin" />
@@ -237,7 +240,7 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                                         onClick={(e) => e.stopPropagation()}
                                     >
                                         <input type="file" accept="image/*" className="sr-only" onChange={handleFileInput} />
-                                        <div className="border-2 border-dashed border-stone-300 group-hover:border-[#d4af37] rounded-[2rem] p-16 text-center transition-all bg-white group-hover:bg-[#fbf9f4] shadow-sm group-hover:shadow-md">
+                                        <div className="border-2 border-dashed border-stone-300 group-hover:border-[#d4af37] rounded-xl p-16 text-center transition-all bg-white group-hover:bg-[#fbf9f4] shadow-sm group-hover:shadow-md">
                                             <div className="text-6xl mb-6 transform group-hover:scale-110 transition-transform duration-300">📤</div>
                                             <p className="font-extrabold text-stone-800 text-xl mb-2">Subir Foto</p>
                                             <p className="text-sm text-stone-500">Toca para explorar imágenes</p>
@@ -246,17 +249,17 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                                 )}
                             </div>
                         )}
+                    </div>
 
-                        {/* BOTÓN DE CIERRE STICKY (Siempre visible) */}
-                        <div className="sticky bottom-0 left-0 right-0 flex justify-center py-6 pointer-events-none z-[100]">
-                            <button
-                                type="button"
-                                onClick={handleClose}
-                                className="pointer-events-auto px-10 py-3.5 rounded-full font-black text-stone-600 bg-white/90 backdrop-blur-md border border-stone-200 hover:bg-white hover:text-stone-900 transition-all text-sm shadow-2xl active:scale-95 uppercase tracking-widest ring-1 ring-black/5"
-                            >
-                                Cerrar Galería
-                            </button>
-                        </div>
+                    {/* FOOTER FLOTANTE FIJO (Fuera del scroll pero dentro del folio, con transparencia) */}
+                    <div className="absolute bottom-0 left-0 right-0 p-6 flex justify-center bg-gradient-to-t from-white via-white/80 to-transparent shrink-0 z-20 pointer-events-none">
+                        <button
+                            type="button"
+                            onClick={handleClose}
+                            className="px-10 py-3.5 rounded-full font-black text-stone-600 bg-white/90 backdrop-blur-md border border-stone-200 hover:bg-white hover:text-stone-900 transition-all text-sm shadow-xl active:scale-95 uppercase tracking-widest pointer-events-auto"
+                        >
+                            Cerrar Galería
+                        </button>
                     </div>
                 </div>
             </DialogPrimitive.Content>
