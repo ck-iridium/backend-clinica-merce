@@ -1,9 +1,10 @@
 "use client"
 import { useState, useEffect, Suspense } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { toast } from 'sonner';
-import { Calendar, Clock, Lock, Unlock, ChevronLeft, ChevronRight, Sparkles, Trash2, AlertTriangle, Phone, Save } from 'lucide-react';
+import { Calendar, Clock, Lock, Unlock, ChevronLeft, ChevronRight, ChevronDown, Sparkles, Trash2, AlertTriangle, Phone, Save } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -32,6 +33,7 @@ function CalendarContent() {
   const searchParams = useSearchParams();
   const initialClientId = searchParams.get('client_id');
   const [currentWeek, setCurrentWeek] = useState(() => getMonday(new Date()));
+  const [mobileSelectedDate, setMobileSelectedDate] = useState(() => new Date());
   const [appointments, setAppointments] = useState<any[]>([]);
   const [timeBlocks, setTimeBlocks] = useState<any[]>([]);
   const [clients, setClients] = useState<any[]>([]);
@@ -46,6 +48,7 @@ function CalendarContent() {
   const [selectedAppt, setSelectedAppt] = useState<any>(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [mobileTopbarPortal, setMobileTopbarPortal] = useState<Element | null>(null);
 
   // Time Block creation state (Step 4)
   const [modalType, setModalType] = useState<'appointment' | 'block'>('appointment');
@@ -84,6 +87,17 @@ function CalendarContent() {
   const [editNotes, setEditNotes] = useState('');
 
   useEffect(() => {
+    // Auto-scroll the mobile day selector when it changes
+    setTimeout(() => {
+      const el = document.getElementById(`m-day-${mobileSelectedDate.toISOString().slice(0, 10)}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      }
+    }, 100);
+  }, [mobileSelectedDate]);
+
+  useEffect(() => {
+    setMobileTopbarPortal(document.getElementById('mobile-topbar-center'));
     fetchData();
   }, []);
 
@@ -329,6 +343,13 @@ function CalendarContent() {
     return d;
   });
 
+  // Mobile Vista: Generamos un carrusel dinámico de 30 días centrado en la fecha seleccionada móvil
+  const mobileDays = Array.from({ length: 31 }).map((_, i) => {
+    const d = new Date(mobileSelectedDate);
+    d.setDate(d.getDate() - 15 + i);
+    return d;
+  });
+
   const hours = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18]; // 09:00 to 19:00 (19:00 is the end line)
 
   const clientMap = new Map(clients.map(c => [c.id, c]));
@@ -357,7 +378,8 @@ function CalendarContent() {
 
   return (
     <div className="animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+      {/* Desktop Header Container (Hidden on Mobile) */}
+      <div className="hidden md:flex flex-row justify-between items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-extrabold text-stone-800">Agenda Activa</h1>
           <p className="text-stone-500 mt-1 font-medium">Gestión de reservas y tiempos semanales</p>
@@ -380,6 +402,37 @@ function CalendarContent() {
           </button>
         </div>
       </div>
+        
+      {/* Mobile Header Native Date Picker (Injected into DashboardSidebar Portal) */}
+      {mobileTopbarPortal && createPortal(
+        <div className="flex items-center gap-2">
+          <div className="relative pointer-events-auto">
+            <div className="bg-white/80 backdrop-blur-md border border-stone-200/50 text-stone-800 rounded-xl px-4 py-2.5 font-bold shadow-sm flex items-center justify-between gap-3 min-w-[130px] max-w-[160px]">
+              <Calendar size={18} className="text-[#d9777f] shrink-0" />
+              <span className="capitalize text-sm text-center flex-1 truncate">{mobileSelectedDate.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' }).replace('.', '')}</span>
+              <ChevronDown size={18} className="text-stone-400 shrink-0" />
+            </div>
+            <input 
+              type="date"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer pointer-events-auto z-10"
+              style={{ display: 'block' }}
+              value={mobileSelectedDate.toISOString().slice(0, 10)}
+              onChange={(e) => {
+                if (e.target.value) {
+                  setMobileSelectedDate(new Date(e.target.value));
+                }
+              }}
+            />
+          </div>
+          <button 
+            onClick={() => setMobileSelectedDate(new Date())}
+            className="pointer-events-auto bg-white/80 backdrop-blur-md border border-stone-200/50 text-stone-600 rounded-xl px-4 py-2.5 font-bold shadow-sm active:scale-95 transition-transform text-sm"
+          >
+            Hoy
+          </button>
+        </div>,
+        mobileTopbarPortal
+      )}
 
       {loading ? (
         <div className="text-center py-32">
@@ -387,7 +440,9 @@ function CalendarContent() {
           <p className="text-stone-500 font-medium">Cargando calendario...</p>
         </div>
       ) : (
-        <div className="bg-white rounded-[2rem] shadow-xl shadow-stone-100/50 border border-stone-100 overflow-x-auto relative">
+        <>
+        {/* DESKTOP CALENDAR VIEW */}
+        <div className="hidden md:block bg-white rounded-[2rem] shadow-xl shadow-stone-100/50 border border-stone-100 overflow-x-auto relative">
           <div className="min-w-[800px]">
             {/* Header row */}
             <div className="grid grid-cols-6 border-b border-stone-100 bg-stone-50/80">
@@ -567,6 +622,156 @@ function CalendarContent() {
             </div>
           </div>
         </div>
+
+        {/* MOBILE CALENDAR VIEW (Booksy Style) */}
+        <div className="block md:hidden border border-stone-100 rounded-3xl overflow-hidden bg-white shadow-xl shadow-stone-100/50 flex flex-col mb-4" style={{ height: 'calc(100dvh - 14rem)' }}>
+          {/* Sticky Header with Horizontal scroll for Days */}
+          <div className="bg-white z-20 border-b border-stone-100 shadow-sm shrink-0">
+            <div className="flex items-center overflow-x-auto p-4 gap-4 custom-scrollbar snap-x">
+              {mobileDays.map((md, idx) => {
+                const isSelected = md.getDate() === mobileSelectedDate.getDate() && md.getMonth() === mobileSelectedDate.getMonth();
+                const isToday = md.getDate() === (new Date()).getDate() && md.getMonth() === (new Date()).getMonth();
+                return (
+                  <button 
+                    key={`md-${idx}`}
+                    id={`m-day-${md.toISOString().slice(0,10)}`}
+                    onClick={() => setMobileSelectedDate(md)}
+                    className="flex flex-col items-center justify-center shrink-0 snap-center min-w-[3rem]"
+                  >
+                    <span className={`text-[10px] font-bold uppercase tracking-wider mb-2 ${isSelected ? 'text-[#d9777f]' : 'text-stone-400'}`}>
+                      {md.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '')}
+                    </span>
+                    <span className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-extrabold transition-all border
+                      ${isSelected ? 'bg-[#fdf2f3] text-[#d9777f] border-[#f3c7cb] scale-110 shadow-sm relative' : 'bg-transparent text-stone-600 border-transparent hover:bg-stone-50'}
+                      ${isToday && !isSelected ? 'border-stone-200 bg-stone-50' : ''}
+                    `}>
+                      {md.getDate()}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Automatically Stretched Hours & Appointments Column (No Internal Scroll) */}
+          <div className="flex-1 relative bg-white overflow-hidden pb-1">
+            <div className="relative w-full h-full">
+              {/* Horizontal line markers */}
+              {hours.map((h, i) => (
+                <div key={`mhl-${h}`} className="absolute w-full border-t border-stone-50" style={{ top: `${(i / hours.length) * 100}%`, height: `${100 / hours.length}%`, pointerEvents: 'none' }}></div>
+              ))}
+              
+              <div className="flex flex-row absolute top-0 w-full h-full">
+                {/* Scale column */}
+                <div className="w-[50px] shrink-0 border-r border-stone-50 bg-white relative pointer-events-none">
+                  {hours.map((h, i) => (
+                    <div key={`mh-${h}`} className="text-right pr-2 text-[10px] font-bold text-stone-400" style={{ height: `${100 / hours.length}%`, position: 'absolute', top: `calc(${(i / hours.length) * 100}% - 6px)`, width: '100%' }}>
+                      {h.toString().padStart(2, '0')}:00
+                    </div>
+                  ))}
+                </div>
+
+                {/* Day Area */}
+                <div className="flex-1 relative group">
+                  {/* Empty Clickable Slots */}
+                  {hours.map((h, i) => {
+                    const isLunch = h === 14 || h === 15;
+                    return (
+                      <div 
+                        key={`mslot-${h}`} 
+                        onClick={() => { 
+                          if (isLunch) return;
+                          setSelectedSlot({ date: mobileSelectedDate, hour: h }); 
+                          setSelectedMinutes(h === 9 ? 30 : 0); 
+                          setModalType('appointment'); 
+                          setShowModal(true); 
+                        }}
+                        className={`absolute w-full border-b border-transparent transition-all z-0 ${
+                          isLunch 
+                          ? 'bg-stone-50 cursor-not-allowed flex items-center justify-center pointer-events-none' 
+                          : 'active:bg-[#fdf2f3]'
+                        }`}
+                        style={{ top: `${(i / hours.length) * 100}%`, height: `${100 / hours.length}%` }}
+                      >
+                        {isLunch && i === hours.indexOf(14) && <span className="text-[10px] uppercase tracking-widest font-bold text-stone-300">Descanso (Cerrado)</span>}
+                      </div>
+                    );
+                  })}
+
+                  {/* Blocks */}
+                  {getBlocksForDay(mobileSelectedDate).map((block) => {
+                    const start = new Date(block.start_time.endsWith('Z') ? block.start_time.slice(0, -1) : block.start_time);
+                    const end = new Date(block.end_time.endsWith('Z') ? block.end_time.slice(0, -1) : block.end_time);
+                    
+                    const startHour = start.getHours();
+                    const startMin = start.getMinutes();
+                    
+                    let durationMin = (end.getTime() - start.getTime()) / 60000;
+                    if (durationMin < 5 || isNaN(durationMin)) durationMin = 60;
+
+                    let topOffsetPercent = ((startHour - 9) * 60 + startMin) / (hours.length * 60) * 100;
+                    if (topOffsetPercent < 0) topOffsetPercent = 0; 
+                    
+                    const heightPercent = Math.max((durationMin / (hours.length * 60)) * 100, (15 / (hours.length * 60)) * 100);
+
+                    return (
+                      <div 
+                        key={block.id}
+                        onClick={(e) => { e.stopPropagation(); setSelectedBlock(block); setShowBlockDeleteModal(true); }}
+                        className="absolute w-[95%] left-[2.5%] ml-auto mr-auto bg-stone-100 rounded-xl border border-stone-200 border-dashed opacity-80 flex items-center justify-center z-10 hover:bg-stone-200 transition-colors cursor-pointer"
+                        style={{ top: `${topOffsetPercent}%`, height: `${heightPercent}%` }}
+                      >
+                        <div className="flex items-center gap-1.5 text-stone-500">
+                          <Lock size={12} strokeWidth={2.5} />
+                          {heightPercent >= 6 && <span className="text-[10px] font-bold uppercase tracking-wider">{block.reason || 'Bloqueo'}</span>}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Appointments */}
+                  {getAppointmentsForDay(mobileSelectedDate).map((appt) => {
+                    const start = new Date(appt.start_time.endsWith('Z') ? appt.start_time.slice(0,-1) : appt.start_time);
+                    const end = new Date(appt.end_time.endsWith('Z') ? appt.end_time.slice(0,-1) : appt.end_time);
+                    
+                    const startHour = start.getHours();
+                    const startMin = start.getMinutes();
+                    
+                    let durationMin = (end.getTime() - start.getTime()) / 60000;
+                    if (durationMin < 5 || isNaN(durationMin)) durationMin = 30; // Min height safeguard
+
+                    let topOffsetPercent = ((startHour - 9) * 60 + startMin) / (hours.length * 60) * 100;
+                    if (topOffsetPercent < 0) topOffsetPercent = 0; 
+                    
+                    const heightPercent = Math.max((durationMin / (hours.length * 60)) * 100, (20 / (hours.length * 60)) * 100);
+                    
+                    const client = clientMap.get(appt.client_id) || { name: 'Desconocido' };
+                    const service = serviceMap.get(appt.service_id) || { name: '...' };
+                    const colors = getStatusColors(appt.status);
+
+                    return (
+                      <div 
+                        key={appt.id} 
+                        onClick={(e) => { e.stopPropagation(); setSelectedAppt(appt); setShowEditModal(true); setConfirmDelete(false); }}
+                        className={`absolute w-[95%] left-[2.5%] ml-auto mr-auto border-[1.5px] rounded-xl shadow-sm px-3 py-1.5 z-20 overflow-hidden active:scale-[0.98] transition-all flex flex-col justify-start ${colors}`}
+                        style={{ top: `${topOffsetPercent}%`, height: `${heightPercent}%` }}
+                      >
+                        <div className={`font-extrabold text-xs tracking-tight leading-none mb-0.5 ${appt.status === 'cancelled' || appt.status === 'no_show' ? 'text-current line-through opacity-70' : 'text-stone-800'}`}>
+                          {appt.status === 'web_pending' && <span className="text-orange-600 mr-1">[WEB]</span>}
+                          {client.name}
+                        </div>
+                        {heightPercent >= 7 && (
+                          <div className={`text-[9px] font-semibold truncate leading-tight opacity-90 mt-0.5`}>{service.name}</div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </>
       )}
 
       {/* STEP 2: TOOLTIP HOVER (Conditional Render) */}

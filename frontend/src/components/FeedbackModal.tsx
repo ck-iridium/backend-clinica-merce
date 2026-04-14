@@ -1,5 +1,6 @@
 "use client"
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AlertCircle, CheckCircle2, XCircle, Info } from 'lucide-react';
 
 export interface FeedbackConfig {
@@ -59,15 +60,23 @@ export default function FeedbackModal({
 
   const theme = iconMap[type];
 
+  // Controlar montaje en el cliente para evitar errores de hidratación y poder usar document.body
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
+    setMounted(true);
+    const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = originalOverflow;
     };
   }, []);
 
-  return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 sm:p-4 pointer-events-auto">
+  if (!mounted) return null;
+
+  // Renderizamos en un Portal para romper cualquier contexto de apilamiento conflictivo
+  return createPortal(
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-6 sm:p-4 pointer-events-auto">
       {/* Backdrop con Blur y bloqueo total */}
       <div 
         className="absolute inset-0 bg-stone-900/40 backdrop-blur-md transition-opacity duration-300" 
@@ -115,6 +124,7 @@ export default function FeedbackModal({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

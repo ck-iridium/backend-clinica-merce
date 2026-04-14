@@ -138,13 +138,16 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
   return (
     <>
       <div className={`md:hidden fixed top-0 left-0 w-full z-50 flex items-center justify-between px-6 py-6 bg-transparent transition-transform duration-300 ease-in-out pointer-events-none ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
-        <div className="pointer-events-auto">
+        <div className="pointer-events-auto shrink-0">
           <div className="w-12 h-12 rounded-[1.25rem] bg-stone-900/90 backdrop-blur-md flex items-center justify-center text-white font-serif italic text-2xl shadow-xl shadow-stone-900/10 border border-white/10 transition-transform active:scale-90">
             {logoUrl ? <img src={logoUrl} alt="Logo" className="w-full h-full object-cover rounded-[1.25rem]" /> : clinicName.charAt(0)}
           </div>
         </div>
+
+        {/* Placeholder para inyectar controles específicos de página a través de React Portal */}
+        <div id="mobile-topbar-center" className="flex-1 flex justify-center items-center pointer-events-auto px-2"></div>
         
-        <div className="pointer-events-auto">
+        <div className="pointer-events-auto shrink-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="w-12 h-12 rounded-full bg-white/80 backdrop-blur-md overflow-hidden border border-stone-200/50 shadow-lg shadow-stone-200/20 flex items-center justify-center active:scale-90 transition-all outline-none">
