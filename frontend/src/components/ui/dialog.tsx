@@ -37,7 +37,7 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed inset-0 z-[210] overflow-y-auto pointer-events-auto custom-scrollbar flex flex-col outline-none p-4 sm:p-6",
+        "fixed inset-0 z-[210] pointer-events-auto flex items-center justify-center p-4 sm:p-6",
         "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
       )}
       onClick={(e) => {
@@ -47,20 +47,23 @@ const DialogContent = React.forwardRef<
       }}
       {...props}
     >
-      {/* EL FOLIO BLANCO (Escala dinámica de anchos y border-radius unificado a 0.75rem / rounded-xl) */}
+      {/* EL FOLIO BLANCO (Arquitectura de Scroll Interno) */}
       <div 
         className={cn(
-          "relative mx-auto my-auto sm:my-8 w-full sm:max-w-xl md:max-w-2xl lg:max-w-4xl bg-background rounded-xl shadow-2xl p-0 ring-1 ring-black/5 pointer-events-auto",
+          "relative w-full max-h-full sm:max-w-xl md:max-w-2xl lg:max-w-4xl bg-background rounded-xl shadow-2xl p-0 ring-1 ring-black/5 pointer-events-auto overflow-hidden flex flex-col",
           className
         )}
       >
-        {/* BOTÓN DE CIERRE STICKY DENTRO DEL FOLIO */}
-        <DialogPrimitive.Close className="absolute right-4 top-5 sm:sticky sm:top-6 sm:float-right sm:mr-6 sm:right-auto sm:mt-0 rounded-full ring-offset-background transition-colors hover:bg-stone-200 focus:outline-none focus:ring-2 focus:ring-ring disabled:pointer-events-none w-10 h-10 flex items-center justify-center bg-white shadow-lg border border-stone-100 z-[150]">
+        {/* BOTÓN DE CIERRE ABSOLUTO (Flota siempre en la esquina superior sin interrumpir la cabecera) */}
+        <DialogPrimitive.Close className="absolute top-6 right-6 rounded-full ring-offset-background transition-colors hover:bg-stone-200 focus:outline-none focus:ring-2 focus:ring-ring disabled:pointer-events-none w-10 h-10 flex items-center justify-center bg-white shadow-[0_4px_10px_rgba(0,0,0,0.1)] border border-stone-100 z-[150]">
           <X size={20} strokeWidth={2.5} className="text-stone-800" />
           <span className="sr-only">Cerrar</span>
         </DialogPrimitive.Close>
 
-        {children}
+        {/* ÁREA DE SCROLL INTERNA */}
+        <div className="overflow-y-auto custom-scrollbar flex-1 w-full">
+          {children}
+        </div>
       </div>
     </DialogPrimitive.Content>
   </DialogPortal>

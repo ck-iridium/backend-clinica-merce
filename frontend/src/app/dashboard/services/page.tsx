@@ -362,7 +362,7 @@ export default function ServicesPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="p-6 md:p-8 pb-32">
+          <div className="p-6 md:p-8">
             <form id="service-form" onSubmit={handleSubmit}>
               {/* Sección de Imagen del Tratamiento */}
               <div className="mb-8 flex flex-col md:flex-row items-center md:items-start bg-stone-50 border border-stone-200 p-6 rounded-[2rem] gap-6 text-center md:text-left">
@@ -507,7 +507,7 @@ export default function ServicesPage() {
             </form>
           </div>
 
-          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 md:p-8 bg-gradient-to-t from-white via-white to-white/0 flex flex-row items-center justify-end gap-3 rounded-b-xl z-20">
+          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 md:p-8 bg-white border-t border-stone-100 flex flex-row items-center justify-end gap-3 rounded-b-xl z-20 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
             {editingId && (
               <button 
                 type="button" 
@@ -650,7 +650,7 @@ export default function ServicesPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="p-8 pb-32">
+          <div className="p-8">
             <form id="new-category-form" onSubmit={handleCreateCategory}>
               <input 
                 required 
@@ -663,7 +663,7 @@ export default function ServicesPage() {
             </form>
           </div>
 
-          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 border-t border-stone-100 bg-gradient-to-t from-white via-white to-white/0 flex gap-3 rounded-b-xl z-20">
+          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 border-t border-stone-100 bg-white flex gap-3 rounded-b-xl z-20 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
             <button type="button" onClick={() => setShowCategoryModal(false)} className="flex-1 px-6 py-4 rounded-xl font-bold text-stone-600 bg-white border border-stone-100 hover:bg-stone-50 transition-all">
               Cancelar
             </button>
@@ -684,7 +684,7 @@ export default function ServicesPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="p-8 pb-32">
+          <div className="p-8">
             <div className="space-y-3">
               {categories.map(cat => (
                 <div key={cat.id} className="flex flex-col p-4 bg-stone-50 rounded-2xl border border-stone-200 group transition-all gap-3">
