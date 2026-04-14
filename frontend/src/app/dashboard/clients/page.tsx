@@ -128,78 +128,80 @@ export default function ClientsPage() {
               </DialogDescription>
             </DialogHeader>
 
-            <form onSubmit={handleSubmit} className="p-10 space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">Nombre completo *</label>
-                  <input 
-                    type="text" 
-                    value={formData.name} 
-                    onChange={e => {setFormData({...formData, name: e.target.value}); setErrors({...errors, name: ''});}} 
-                    className={`w-full px-6 py-4 rounded-2xl border bg-stone-50/50 transition-all ${errors.name ? 'border-red-300 focus:ring-red-100' : 'border-stone-100 focus:ring-stone-100 focus:bg-white'} outline-none focus:ring-4`} 
-                    placeholder="Ana Martínez" 
-                  />
-                  {errors.name && <p className="text-red-500 text-[10px] font-bold mt-1 ml-1 uppercase">{errors.name}</p>}
-                </div>
+            <form onSubmit={handleSubmit} className="flex flex-col">
+              <div className="flex-1 overflow-y-auto max-h-[60vh] px-10 py-4 custom-scrollbar">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">Nombre completo *</label>
+                    <input 
+                      type="text" 
+                      value={formData.name} 
+                      onChange={e => {setFormData({...formData, name: e.target.value}); setErrors({...errors, name: ''});}} 
+                      className={`w-full px-6 py-4 rounded-2xl border bg-stone-50/50 transition-all ${errors.name ? 'border-red-300 focus:ring-red-100' : 'border-stone-100 focus:ring-stone-100 focus:bg-white'} outline-none focus:ring-4`} 
+                      placeholder="Ana Martínez" 
+                    />
+                    {errors.name && <p className="text-red-500 text-[10px] font-bold mt-1 ml-1 uppercase">{errors.name}</p>}
+                  </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">Correo electrónico *</label>
-                  <input 
-                    type="email" 
-                    value={formData.email} 
-                    onChange={e => {setFormData({...formData, email: e.target.value}); setErrors({...errors, email: ''});}} 
-                    className={`w-full px-6 py-4 rounded-2xl border bg-stone-50/50 transition-all ${errors.email ? 'border-red-300 focus:ring-red-100' : 'border-stone-100 focus:ring-stone-100 focus:bg-white'} outline-none focus:ring-4`} 
-                    placeholder="ana@email.com" 
-                  />
-                  {errors.email && <p className="text-red-500 text-[10px] font-bold mt-1 ml-1 uppercase">{errors.email}</p>}
-                </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">Correo electrónico *</label>
+                    <input 
+                      type="email" 
+                      value={formData.email} 
+                      onChange={e => {setFormData({...formData, email: e.target.value}); setErrors({...errors, email: ''});}} 
+                      className={`w-full px-6 py-4 rounded-2xl border bg-stone-50/50 transition-all ${errors.email ? 'border-red-300 focus:ring-red-100' : 'border-stone-100 focus:ring-stone-100 focus:bg-white'} outline-none focus:ring-4`} 
+                      placeholder="ana@email.com" 
+                    />
+                    {errors.email && <p className="text-red-500 text-[10px] font-bold mt-1 ml-1 uppercase">{errors.email}</p>}
+                  </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">Teléfono móvil</label>
-                  <input 
-                    type="tel" 
-                    value={formData.phone} 
-                    onChange={e => setFormData({...formData, phone: e.target.value})} 
-                    className="w-full px-6 py-4 rounded-2xl border border-stone-100 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-stone-100 transition-all" 
-                    placeholder="+34 600..." 
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">Teléfono móvil</label>
+                    <input 
+                      type="tel" 
+                      value={formData.phone} 
+                      onChange={e => setFormData({...formData, phone: e.target.value})} 
+                      className="w-full px-6 py-4 rounded-2xl border border-stone-100 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-stone-100 transition-all" 
+                      placeholder="+34 600..." 
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">DNI / NIF</label>
-                  <input 
-                    type="text" 
-                    value={formData.dni} 
-                    onChange={e => setFormData({...formData, dni: e.target.value})} 
-                    className="w-full px-6 py-4 rounded-2xl border border-stone-100 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-stone-100 transition-all" 
-                    placeholder="00000000X (Opcional)" 
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">DNI / NIF</label>
+                    <input 
+                      type="text" 
+                      value={formData.dni} 
+                      onChange={e => setFormData({...formData, dni: e.target.value})} 
+                      className="w-full px-6 py-4 rounded-2xl border border-stone-100 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-stone-100 transition-all" 
+                      placeholder="00000000X (Opcional)" 
+                    />
+                  </div>
 
-                <div className="md:col-span-2 space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">Dirección Fiscal Completa</label>
-                  <input 
-                    type="text" 
-                    value={formData.address} 
-                    onChange={e => setFormData({...formData, address: e.target.value})} 
-                    className="w-full px-6 py-4 rounded-2xl border border-stone-100 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-stone-100 transition-all" 
-                    placeholder="Calle Ejemplar 123, Madrid (Opcional)" 
-                  />
-                </div>
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">Dirección Fiscal Completa</label>
+                    <input 
+                      type="text" 
+                      value={formData.address} 
+                      onChange={e => setFormData({...formData, address: e.target.value})} 
+                      className="w-full px-6 py-4 rounded-2xl border border-stone-100 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-stone-100 transition-all" 
+                      placeholder="Calle Ejemplar 123, Madrid (Opcional)" 
+                    />
+                  </div>
 
-                <div className="md:col-span-2 space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">Alergias / Notas críticas</label>
-                  <input 
-                    type="text" 
-                    value={formData.allergies} 
-                    onChange={e => setFormData({...formData, allergies: e.target.value})} 
-                    className="w-full px-6 py-4 rounded-2xl border border-stone-100 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-stone-100 transition-all" 
-                    placeholder="Alergia al látex, medicamentos..." 
-                  />
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">Alergias / Notas críticas</label>
+                    <input 
+                      type="text" 
+                      value={formData.allergies} 
+                      onChange={e => setFormData({...formData, allergies: e.target.value})} 
+                      className="w-full px-6 py-4 rounded-2xl border border-stone-100 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-stone-100 transition-all" 
+                      placeholder="Alergia al látex, medicamentos..." 
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4">
+              <div className="flex justify-end gap-3 p-10 pt-6 border-t border-stone-50">
                 <button 
                   type="button" 
                   onClick={() => setIsModalOpen(false)}

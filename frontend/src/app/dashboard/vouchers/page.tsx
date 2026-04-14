@@ -543,107 +543,104 @@ export default function VouchersPage() {
               <button onClick={() => setShowAssignModal(false)} className="text-stone-400 hover:text-stone-600 font-bold p-2">✕</button>
             </div>
 
-            <form onSubmit={handleAssignVoucher} className="p-6 overflow-y-auto max-h-[75vh]">
-              {/* 1. Seleccionar Cliente */}
-              <div className="mb-5">
-                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Cliente Receptor</label>
-                <Select required value={selectedClientId} onValueChange={setSelectedClientId}>
-                  <SelectTrigger className="w-full bg-stone-50 border-stone-200">
-                    <SelectValue placeholder="Selecciona cliente..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clients
-                      .filter(c => c.email !== 'contado@clinica-mercedes.com')
-                      .map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
+            <form onSubmit={handleAssignVoucher} className="flex-1 flex flex-col overflow-hidden">
+              <div className="flex-1 overflow-y-auto max-h-[70vh] px-8 py-4 custom-scrollbar">
+                {/* 1. Seleccionar Cliente */}
+                <div className="mb-5">
+                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Cliente Receptor</label>
+                  <Select required value={selectedClientId} onValueChange={setSelectedClientId}>
+                    <SelectTrigger className="w-full bg-stone-50 border-stone-200">
+                      <SelectValue placeholder="Selecciona cliente..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {clients
+                        .filter(c => c.email !== 'contado@clinica-mercedes.com')
+                        .map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              {/* 2. Seleccionar Plantilla con Buscador */}
-              <div className="mb-6 p-4 bg-stone-50 border border-stone-200 rounded-2xl relative">
-                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Elegir Plantilla del Catálogo</label>
-                {!selectedTemplateId ? (
-                   <>
-                      <input 
-                        type="text" 
-                        placeholder="Buscar plantilla..." 
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        className="w-full p-3 mb-2 bg-white border border-stone-200 rounded-xl text-sm outline-none"
-                      />
-                      <div className="max-h-40 overflow-y-auto space-y-2 pr-2">
-                         {filteredTemplates.length === 0 && <p className="text-xs text-stone-400">No se encontraron plantillas.</p>}
-                         {filteredTemplates.map(t => (
-                            <div 
-                              key={t.id} 
-                              onClick={() => handleSelectTemplateForAssignment(t.id)}
-                              className="p-3 bg-white border border-stone-100 rounded-xl hover:border-[#d9777f] hover:shadow-sm cursor-pointer transition-all flex justify-between items-center"
-                            >
-                               <div>
-                                 <p className="font-bold text-stone-700 text-sm">{t.name}</p>
-                                 <p className="text-xs text-stone-400">{t.total_sessions} Sesiones</p>
-                               </div>
-                               <span className="font-extrabold text-[#d9777f]">{t.price}€</span>
-                            </div>
-                         ))}
-                      </div>
-                   </>
-                ) : (
-                   <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-[#f3c7cb] shadow-inner">
-                      <div>
-                         <p className="font-bold text-stone-800 text-sm">{templates.find(t => t.id === selectedTemplateId)?.name}</p>
-                         <p className="text-xs text-[#d9777f] font-semibold mt-0.5">{templates.find(t => t.id === selectedTemplateId)?.total_sessions} Sesiones a consumir</p>
-                      </div>
-                      <button 
-                        type="button" 
-                        onClick={() => setSelectedTemplateId('')}
-                        className="text-xs font-bold text-stone-400 underline hover:text-stone-600"
-                      >Cambiar</button>
-                   </div>
-                )}
-              </div>
+                {/* 2. Seleccionar Plantilla con Buscador */}
+                <div className="mb-6 p-4 bg-stone-50 border border-stone-200 rounded-2xl relative">
+                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Elegir Plantilla del Catálogo</label>
+                  {!selectedTemplateId ? (
+                     <>
+                        <input 
+                          type="text" 
+                          placeholder="Buscar plantilla..." 
+                          value={searchTerm}
+                          onChange={e => setSearchTerm(e.target.value)}
+                          className="w-full p-3 mb-2 bg-white border border-stone-200 rounded-xl text-sm outline-none"
+                        />
+                        <div className="max-h-40 overflow-y-auto space-y-2 pr-2">
+                           {filteredTemplates.length === 0 && <p className="text-xs text-stone-400">No se encontraron plantillas.</p>}
+                           {filteredTemplates.map(t => (
+                              <div 
+                                key={t.id} 
+                                onClick={() => handleSelectTemplateForAssignment(t.id)}
+                                className="p-3 bg-white border border-stone-100 rounded-xl hover:border-[#d9777f] hover:shadow-sm cursor-pointer transition-all flex justify-between items-center"
+                              >
+                                 <div>
+                                   <p className="font-bold text-stone-700 text-sm">{t.name}</p>
+                                   <p className="text-xs text-stone-400">{t.total_sessions} Sesiones</p>
+                                 </div>
+                                 <span className="font-extrabold text-[#d9777f]">{t.price}€</span>
+                              </div>
+                           ))}
+                        </div>
+                     </>
+                  ) : (
+                     <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-[#f3c7cb] shadow-inner">
+                        <div>
+                           <p className="font-bold text-stone-800 text-sm">{templates.find(t => t.id === selectedTemplateId)?.name}</p>
+                           <p className="text-xs text-[#d9777f] font-semibold mt-0.5">{templates.find(t => t.id === selectedTemplateId)?.total_sessions} Sesiones a consumir</p>
+                        </div>
+                        <button 
+                          type="button" 
+                          onClick={() => setSelectedTemplateId('')}
+                          className="text-xs font-bold text-stone-400 underline hover:text-stone-600"
+                        >Cambiar</button>
+                     </div>
+                  )}
+                </div>
 
-              {/* 3. Condiciones Financieras (Sólo viables si seleccionamos plantilla) */}
-              <div className={`transition-all duration-300 ${selectedTemplateId ? 'opacity-100 h-auto' : 'opacity-0 h-0 overflow-hidden'}`}>
-                 <h3 className="text-sm font-extrabold text-stone-800 mb-3 border-b border-stone-100 pb-2">Acuerdo Financiero & Caducidad</h3>
-                 
-                 <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label className="block text-xs font-bold text-stone-500 tracking-wide mb-1">Precio Final Acordado (€)</label>
-                      <input 
-                        type="number" step="0.01" required 
-                        value={assignPrice} onChange={e => setAssignPrice(Number(e.target.value))}
-                        className="w-full p-3 bg-white border border-stone-200 border-l-4 border-l-stone-400 rounded-xl font-extrabold text-stone-800 outline-none focus:border-l-[#d9777f]"
-                      />
-                      <p className="text-[10px] text-stone-400 mt-1 leading-tight">Valor por defecto provisto por la plantilla. Puedes ajustarlo si existe descuento.</p>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-emerald-600 tracking-wide mb-1">Pago Inicial Hoy (€)</label>
-                      <input 
-                        type="number" step="0.01" required min="0" max={Number(assignPrice)}
-                        value={assignAmountPaid} onChange={e => setAssignAmountPaid(Number(e.target.value))}
-                        className="w-full p-3 bg-white border border-stone-200 border-l-4 border-l-emerald-400 rounded-xl font-extrabold text-stone-800 outline-none focus:border-l-emerald-600 focus:bg-emerald-50/30"
-                      />
-                       <p className="text-[10px] text-stone-400 mt-1 leading-tight">Dinero adelantado por el cliente en el momento de crear el bono.</p>
-                    </div>
-                 </div>
+                {/* 3. Condiciones Financieras (Sólo viables si seleccionamos plantilla) */}
+                <div className={`grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 transition-all duration-300 ${selectedTemplateId ? 'opacity-100' : 'opacity-40 grayscale pointer-events-none'}`}>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5 ml-1">Precio Final Pactado (€)</label>
+                    <input 
+                      type="number" step="0.01" required 
+                      value={assignPrice} onChange={e => setAssignPrice(Number(e.target.value))}
+                      className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-extrabold text-[#b08e23] outline-none"
+                    />
+                  </div>
 
-                 <div className="mb-2">
-                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Caducidad</label>
-                    <select 
-                      value={expirationMonths} onChange={e => setExpirationMonths(Number(e.target.value))}
-                      className="w-full p-3 bg-white border border-stone-200 rounded-xl font-semibold text-stone-700 outline-none"
-                    >
-                      <option value={3}>3 meses desde la compra</option>
-                      <option value={6}>6 meses desde la compra</option>
-                      <option value={12}>12 meses desde la compra</option>
-                      <option value={24}>2 años desde la compra</option>
-                    </select>
-                 </div>
+                  <div>
+                    <label className="block text-xs font-bold text-emerald-600 tracking-wide mb-1">Pago Inicial Hoy (€)</label>
+                    <input 
+                      type="number" step="0.01" required min="0" max={Number(assignPrice)}
+                      value={assignAmountPaid} onChange={e => setAssignAmountPaid(Number(e.target.value))}
+                      className="w-full p-3 bg-white border border-stone-200 border-l-4 border-l-emerald-400 rounded-xl font-extrabold text-stone-800 outline-none focus:border-l-emerald-600 focus:bg-emerald-50/30"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                      <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Caducidad del Bono</label>
+                      <select 
+                        value={expirationMonths} onChange={e => setExpirationMonths(Number(e.target.value))}
+                        className="w-full p-3 bg-white border border-stone-200 rounded-xl font-semibold text-stone-700 outline-none"
+                      >
+                        <option value={3}>3 meses desde la compra</option>
+                        <option value={6}>6 meses desde la compra</option>
+                        <option value={12}>12 meses desde la compra</option>
+                        <option value={24}>2 años desde la compra</option>
+                      </select>
+                  </div>
+                </div>
               </div>
               
-              <div className="mt-8">
-                <button type="submit" disabled={saving} className="w-full py-4 bg-stone-800 text-white font-extrabold rounded-xl hover:bg-stone-900 transition-all flex justify-center items-center">
+              <div className="p-8 pt-6 border-t border-stone-100 bg-stone-50/50">
+                <button type="submit" disabled={saving || !selectedTemplateId} className="w-full py-4 bg-stone-800 text-white font-extrabold rounded-xl hover:bg-stone-900 transition-all flex justify-center items-center shadow-lg disabled:opacity-50">
                   <span className="sr-only">Emitir Nuevo Bono</span>
                   {saving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : "Crear y Asignar Bono"}
                 </button>
@@ -668,60 +665,51 @@ export default function VouchersPage() {
               <p>Define los parámetros básicos para una nueva plantilla de bono descargable.</p>
             </div>
 
-            <form onSubmit={handleCreateTemplate}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Nombre (Ej: Bono 5 Ses. Axilas)</label>
-                  <input required type="text" value={templateName} onChange={e => setTemplateName(e.target.value)} className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-semibold" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Servicio / Tratamiento base</label>
-                  <Select 
-                    required 
-                    value={templateServiceId} 
-                    onValueChange={(val) => {
+            <form onSubmit={handleCreateTemplate} className="flex flex-col">
+              <div className="flex-1 overflow-y-auto max-h-[60vh] px-2 py-4 shadow-inner bg-stone-50/20 rounded-xl">
+                <div className="space-y-4 px-2">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Nombre (Ej: Bono 5 Ses. Axilas)</label>
+                    <input required type="text" value={templateName} onChange={e => setTemplateName(e.target.value)} className="w-full p-3 bg-white border border-stone-200 rounded-xl font-semibold" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Servicio / Tratamiento base</label>
+                    <Select value={templateServiceId} onValueChange={(val) => {
                       setTemplateServiceId(val);
                       calculateTemplateDefaultPrice(val, templateSessions);
-                    }}
-                  >
-                    <SelectTrigger className="w-full bg-stone-50 border-stone-200">
-                      <SelectValue placeholder="Seleccionar servicio..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {services.filter(s => s.is_active).map(s => (
-                        <SelectItem key={s.id} value={s.id}>
-                          {s.name} ({s.price}€/sesión)
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+                    }}>
+                      <SelectTrigger className="w-full bg-white border-stone-200">
+                        <SelectValue placeholder="-- Elige técnica --" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {services.filter(s => s.is_active).map(s => <SelectItem key={s.id} value={s.id}>{s.name} ({s.price}€/sesión)</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <div>
-                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Sesiones</label>
+                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Nº de Sesiones / Usos</label>
                     <input 
-                      required type="number" min="1" 
+                      required type="number" min="1"
                       value={templateSessions} 
                       onChange={e => {
                         const sess = Number(e.target.value);
                         setTemplateSessions(sess);
                         calculateTemplateDefaultPrice(templateServiceId, sess);
                       }} 
-                      className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-semibold" 
+                      className="w-full p-3 bg-white border border-stone-200 rounded-xl font-bold text-stone-800" 
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Total (€)</label>
-                    <input required type="number" step="0.01" value={templatePrice} onChange={e => setTemplatePrice(Number(e.target.value))} className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-extrabold text-[#d9777f]" />
+                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Precio de Venta Sugerido (€)</label>
+                    <input required type="number" step="0.01" value={templatePrice} onChange={e => setTemplatePrice(Number(e.target.value))} className="w-full p-3 bg-white border border-stone-200 rounded-xl font-bold text-[#b08e23]" />
                   </div>
                 </div>
               </div>
 
-              <div className="mt-8 flex gap-3">
-                 <button type="button" onClick={() => setShowTemplateModal(false)} className="flex-1 py-3 text-stone-600 font-bold border border-stone-200 rounded-xl hover:bg-stone-50">Cancelar</button>
-                 <button type="submit" disabled={saving} className="flex-1 py-3 text-white bg-stone-800 font-bold rounded-xl hover:bg-stone-900 shadow-md">
-                   {saving ? 'Guardando...' : 'Guardar'}
-                 </button>
+              <div className="mt-6 pt-4 border-t border-stone-50">
+                <button type="submit" disabled={saving} className="w-full py-4 bg-[#bf7d6b] text-white font-extrabold rounded-xl hover:bg-[#a66a5a] transition-all flex justify-center items-center shadow-lg shadow-[#bf7d6b]/20 active:scale-95">
+                  {saving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : "Guardar Plantilla"}
+                </button>
               </div>
             </form>
           </div>

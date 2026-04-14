@@ -24,7 +24,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <DashboardSidebar clinicName={clinicName} logoUrl={logoUrl} />
 
         {/* Main Content Area */}
-        <main className="flex-1 flex flex-col h-screen overflow-hidden pb-20 md:pb-0 print:overflow-visible">
+        <main className="flex-1 flex flex-col h-screen overflow-hidden pb-24 md:pb-0 print:overflow-visible text-foreground">
           
           <DashboardHeader clinicName={clinicName} />
 
@@ -33,6 +33,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <div className="max-w-[1400px] mx-auto z-10 relative space-y-6">
               {children}
             </div>
+            
+            {/* Spacer for bottom navigation on mobile */}
+            <div className="h-24 md:hidden shrink-0"></div>
           </div>
           
           <MobileBottomBar />
