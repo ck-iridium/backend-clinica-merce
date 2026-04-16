@@ -33,7 +33,13 @@ function CalendarContent() {
   const searchParams = useSearchParams();
   const initialClientId = searchParams.get('client_id');
   const [currentWeek, setCurrentWeek] = useState(() => getMonday(new Date()));
-  const [mobileSelectedDate, setMobileSelectedDate] = useState(() => new Date());
+  const [mobileSelectedDate, setMobileSelectedDate] = useState(() => {
+    const now = new Date();
+    if (now.getHours() > 19 || (now.getHours() === 19 && now.getMinutes() >= 15)) {
+      now.setDate(now.getDate() + 1);
+    }
+    return now;
+  });
   const [appointments, setAppointments] = useState<any[]>([]);
   const [timeBlocks, setTimeBlocks] = useState<any[]>([]);
   const [clients, setClients] = useState<any[]>([]);
@@ -350,7 +356,7 @@ function CalendarContent() {
     return d;
   });
 
-  const hours = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18]; // 09:00 to 19:00 (19:00 is the end line)
+  const hours = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]; // De 09:00 a 19:00 (última ranura cubre hasta 20:00)
 
   const clientMap = new Map(clients.map(c => [c.id, c]));
   const serviceMap = new Map(services.map(s => [s.id, s]));
@@ -653,9 +659,9 @@ function CalendarContent() {
             </div>
           </div>
 
-          {/* Scrollable Hours & Appointments Column (Internal Scroll Enabled) */}
-          <div className="flex-1 overflow-y-auto relative bg-white custom-scrollbar pt-6 pb-6">
-            <div className="relative w-full" style={{ height: `${hours.length * 72 + 24}px` }}>
+          {/* Scrollable Hours & Appointments Column (Internal Scroll Enabled, Exact limits) */}
+          <div className="flex-1 overflow-y-auto relative bg-white custom-scrollbar pb-10">
+            <div className="relative w-full" style={{ height: `${hours.length * 72 + 36}px` }}>
               {/* Horizontal line markers */}
               {hours.map((h, i) => (
                 <div key={`mhl-${h}`} className="absolute w-full border-t border-stone-50" style={{ top: `${i * 72}px`, height: '72px', pointerEvents: 'none' }}></div>
@@ -665,7 +671,7 @@ function CalendarContent() {
                 {/* Scale column */}
                 <div className="w-[50px] shrink-0 border-r border-stone-50 bg-white relative pointer-events-none">
                   {hours.map((h, i) => (
-                    <div key={`mh-${h}`} className="text-right pr-2 text-[10px] font-bold text-stone-400" style={{ height: '72px', position: 'absolute', top: `${i * 72 - 6}px`, width: '100%' }}>
+                    <div key={`mh-${h}`} className="text-right pr-2 text-[10px] font-bold text-stone-400 z-30" style={{ height: '72px', position: 'absolute', top: `${i * 72 - 6}px`, width: '100%' }}>
                       {h.toString().padStart(2, '0')}:00
                     </div>
                   ))}
