@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
@@ -33,13 +33,23 @@ function CalendarContent() {
   const searchParams = useSearchParams();
   const initialClientId = searchParams.get('client_id');
   const [currentWeek, setCurrentWeek] = useState(() => getMonday(new Date()));
-  const [mobileSelectedDate, setMobileSelectedDate] = useState(() => {
+  const [mobileSelectedDate, setMobileSelectedDate] = useState<Date>(() => new Date());
+  const [carouselAnchor, setCarouselAnchor] = useState<Date>(() => new Date());
+  
+  const mobileDaysContainerRef = useRef<HTMLDivElement>(null);
+  const activeDayRef = useRef<HTMLButtonElement>(null);
+  
+  // Robust client-side initialization
+  useEffect(() => {
     const now = new Date();
+    // Logic: If after 19:15, default to tomorrow
     if (now.getHours() > 19 || (now.getHours() === 19 && now.getMinutes() >= 15)) {
       now.setDate(now.getDate() + 1);
     }
-    return now;
-  });
+    setMobileSelectedDate(new Date(now));
+    setCarouselAnchor(new Date(now));
+    setCurrentWeek(getMonday(now));
+  }, []);
   const [appointments, setAppointments] = useState<any[]>([]);
   const [timeBlocks, setTimeBlocks] = useState<any[]>([]);
   const [clients, setClients] = useState<any[]>([]);
@@ -93,13 +103,11 @@ function CalendarContent() {
   const [editNotes, setEditNotes] = useState('');
 
   useEffect(() => {
-    // Auto-scroll the mobile day selector when it changes
-    setTimeout(() => {
-      const el = document.getElementById(`m-day-${mobileSelectedDate.toISOString().slice(0, 10)}`);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-      }
-    }, 100);
+    // Only scroll if we manually select a day that might be out of view
+    // (The initial date is already at index 2, so it's always visible on mount)
+    if (mobileDaysContainerRef.current && activeDayRef.current) {
+      activeDayRef.current.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
   }, [mobileSelectedDate]);
 
   useEffect(() => {
@@ -349,10 +357,11 @@ function CalendarContent() {
     return d;
   });
 
-  // Mobile Vista: Generamos un carrusel dinámico de 30 días centrado en la fecha seleccionada móvil
-  const mobileDays = Array.from({ length: 31 }).map((_, i) => {
-    const d = new Date(mobileSelectedDate);
-    d.setDate(d.getDate() - 15 + i);
+  // Mobile: Generamos el carrusel relativo al ANCLA (estabilidad de datos)
+  // Empezar 2 días antes del ancla para que el activo sea el tercer elemento (siempre visible)
+  const mobileDays = Array.from({ length: 28 }).map((_, i) => {
+    const d = new Date(carouselAnchor);
+    d.setDate(d.getDate() - 2 + i);
     return d;
   });
 
@@ -422,16 +431,27 @@ function CalendarContent() {
               type="date"
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer pointer-events-auto z-10"
               style={{ display: 'block' }}
-              value={mobileSelectedDate.toISOString().slice(0, 10)}
+              value={`${mobileSelectedDate.getFullYear()}-${(mobileSelectedDate.getMonth()+1).toString().padStart(2, '0')}-${mobileSelectedDate.getDate().toString().padStart(2, '0')}`}
               onChange={(e) => {
                 if (e.target.value) {
-                  setMobileSelectedDate(new Date(e.target.value));
+                  // Parsear exactamente a la hora local para evitar saltos por UTC
+                  const [y, m, d] = e.target.value.split('-');
+                  const newLocal = new Date(Number(y), Number(m)-1, Number(d), 12, 0, 0);
+                  setMobileSelectedDate(newLocal);
                 }
               }}
             />
           </div>
           <button 
-            onClick={() => setMobileSelectedDate(new Date())}
+            onClick={() => {
+              const hoy = new Date();
+              if (hoy.getHours() > 19 || (hoy.getHours() === 19 && hoy.getMinutes() >= 15)) {
+                hoy.setDate(hoy.getDate() + 1);
+              }
+              setMobileSelectedDate(new Date(hoy));
+              setCarouselAnchor(new Date(hoy));
+              setCurrentWeek(getMonday(hoy));
+            }}
             className="pointer-events-auto bg-white/80 backdrop-blur-md border border-stone-200/50 text-stone-600 rounded-xl px-4 py-2.5 font-bold shadow-sm active:scale-95 transition-transform text-sm"
           >
             Hoy
@@ -633,14 +653,14 @@ function CalendarContent() {
         <div className="block md:hidden border-x border-t border-stone-100 rounded-t-[2.5rem] overflow-hidden bg-white shadow-xl shadow-stone-100/50 flex flex-col -mx-4 -mb-28" style={{ height: 'calc(100dvh - 6rem)', minHeight: '550px' }}>
           {/* Sticky Header with Horizontal scroll for Days */}
           <div className="bg-white z-20 border-b border-stone-100 shadow-sm shrink-0">
-            <div className="flex items-center overflow-x-auto p-4 gap-4 custom-scrollbar snap-x">
+            <div ref={mobileDaysContainerRef} className="flex items-center overflow-x-auto p-4 gap-4 custom-scrollbar snap-x relative scroll-smooth">
               {mobileDays.map((md, idx) => {
                 const isSelected = md.getDate() === mobileSelectedDate.getDate() && md.getMonth() === mobileSelectedDate.getMonth();
                 const isToday = md.getDate() === (new Date()).getDate() && md.getMonth() === (new Date()).getMonth();
                 return (
                   <button 
                     key={`md-${idx}`}
-                    id={`m-day-${md.toISOString().slice(0,10)}`}
+                    ref={isSelected ? activeDayRef : null}
                     onClick={() => setMobileSelectedDate(md)}
                     className="flex flex-col items-center justify-center shrink-0 snap-center min-w-[3rem]"
                   >
