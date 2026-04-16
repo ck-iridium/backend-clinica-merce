@@ -113,6 +113,11 @@ export default function ServicesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name) return;
+
+    if (formData.duration_minutes < 15 || formData.duration_minutes % 15 !== 0) {
+      toast.error('La duración debe ser en intervalos de 15 minutos');
+      return;
+    }
     
     setSaving(true);
     try {
@@ -413,7 +418,7 @@ export default function ServicesPage() {
                 <div className="md:col-span-2 grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-stone-700 mb-2">Duración (min) *</label>
-                    <input required type="number" min="5" step="5" value={formData.duration_minutes || 0} onChange={e => setFormData({...formData, duration_minutes: Number(e.target.value)})} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all text-center font-bold" />
+                    <input required type="number" min="15" step="15" value={formData.duration_minutes || 0} onChange={e => setFormData({...formData, duration_minutes: Number(e.target.value)})} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all text-center font-bold" />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-stone-700 mb-2">Precio (€) *</label>

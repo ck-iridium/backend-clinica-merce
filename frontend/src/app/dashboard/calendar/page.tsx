@@ -380,13 +380,30 @@ function CalendarContent() {
     hours.push(i);
   }
 
+  const timeToMinutes = (timeStr: string) => {
+    if (!timeStr) return 0;
+    const parts = timeStr.split(':');
+    return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+  };
+
   // Funciones auxiliares para descansos y vacaciones
   const isLunchTime = (hour: number, minute: number) => {
     if (!settings || !settings.lunch_start || !settings.lunch_end) return false;
     const timeMins = hour * 60 + minute;
-    const startMins = parseInt(settings.lunch_start.split(':')[0]) * 60 + parseInt(settings.lunch_start.split(':')[1]);
-    const endMins = parseInt(settings.lunch_end.split(':')[0]) * 60 + parseInt(settings.lunch_end.split(':')[1]);
+    const startMins = timeToMinutes(settings.lunch_start);
+    const endMins = timeToMinutes(settings.lunch_end);
     return timeMins >= startMins && timeMins < endMins;
+  };
+
+  const isTimeDisabled = (hour: number, minute: number) => {
+    if (!settings) return false;
+    const currentMins = hour * 60 + minute;
+    const openMins = timeToMinutes(settings.open_time || "09:00");
+    const closeMins = timeToMinutes(settings.close_time || "19:30");
+    
+    if (currentMins < openMins || currentMins >= closeMins) return true;
+    if (isLunchTime(hour, minute)) return true;
+    return false;
   };
 
   const isDayClosed = (date: Date) => {
@@ -598,39 +615,48 @@ function CalendarContent() {
                           </div>
                       )}
 
-                      {/* Clickable Empty Slots for Creation */}
-                      {hours.map((h, i) => {
-                        const isLunch = isLunchTime(h, 0) || isLunchTime(h, 30);
-                        return (
-                          <div 
-                            key={`slot-${dIdx}-${h}`} 
-                            onClick={() => { 
-                              if (isLunch || closed) return;
-                              setSelectedSlot({ date: day, hour: h }); 
-                              setSelectedMinutes(h === startHour ? 30 : 0); 
-                              setModalType('appointment'); 
-                              setShowModal(true); 
-                            }}
-                            className={`absolute w-full border-b border-transparent transition-all z-0 ${
-                              isLunch || closed
-                              ? 'bg-stone-50 flex items-center justify-center' 
-                              : 'hover:bg-gradient-to-b hover:from-white hover:to-[#fdf2f3] cursor-pointer hover:border-stone-100'
-                            } ${closed ? '' : (isLunch ? 'cursor-not-allowed' : '')}`}
-                            style={{ 
-                              top: `${i * 80}px`, 
-                              height: '80px',
-                              backgroundImage: isLunch ? 'repeating-linear-gradient(45deg, #fafaf9, #fafaf9 10px, #f5f5f4 10px, #f5f5f4 20px)' : 'none'
-                            }}>
-                            {isLunch && !closed ? (
-                              <span className="text-[10px] font-bold text-stone-300 uppercase tracking-widest text-center select-none">
-                                DESCANSO / COMIDA
-                              </span>
-                            ) : (!closed ? (
-                              <span className="opacity-0 group-hover:opacity-100 text-[#d9777f] font-bold text-xs absolute top-2 left-2 transition-opacity">+</span>
-                            ) : null)}
-                          </div>
-                        );
-                      })}
+                      {/* Clickable Empty Slots for Creation (15min Precision) */}
+                      <div className="absolute inset-0 z-0">
+                        {hours.map((h, i) => (
+                           <div key={`h-container-${dIdx}-${h}`} className="absolute w-full" style={{ top: `${i * 80}px`, height: '80px' }}>
+                              {[0, 15, 30, 45].map(m => {
+                                const disabled = closed || isTimeDisabled(h, m);
+                                const isLunch = isLunchTime(h, m);
+                                return (
+                                  <div
+                                    key={`slot-${dIdx}-${h}-${m}`}
+                                    onClick={() => {
+                                      if (disabled) return;
+                                      setSelectedSlot({ date: day, hour: h });
+                                      setSelectedMinutes(m);
+                                      setModalType('appointment');
+                                      setShowModal(true);
+                                    }}
+                                    className={`w-full h-1/4 transition-all relative
+                                      ${m !== 45 ? 'border-b border-dashed border-stone-100' : ''}
+                                      ${disabled 
+                                        ? 'bg-stone-50/60 cursor-not-allowed' 
+                                        : 'hover:bg-[#fdf2f3]/50 cursor-pointer'
+                                      }
+                                    `}
+                                    style={{
+                                      backgroundImage: isLunch ? 'repeating-linear-gradient(45deg, #fafaf9, #fafaf9 5px, #f5f5f4 5px, #f5f5f4 10px)' : 'none'
+                                    }}
+                                  >
+                                    {!disabled && (
+                                      <span className="opacity-0 hover:opacity-100 text-[#d9777f] font-black text-[9px] absolute top-0.5 left-1 transition-opacity">+</span>
+                                    )}
+                                    {isLunch && m === 0 && (
+                                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                          <span className="text-[8px] font-bold text-stone-300 uppercase tracking-widest leading-none">Descanso</span>
+                                       </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                           </div>
+                        ))}
+                      </div>
 
                       {/* Render Time Blocks (Grey Striped) */}
                       {!closed && dayBlocks.map(block => {
@@ -786,34 +812,45 @@ function CalendarContent() {
                           </div>
                         )}
                         
-                        {/* Empty Clickable Slots */}
-                        {hours.map((h, i) => {
-                          const isLunch = isLunchTime(h, 0) || isLunchTime(h, 30);
-                          return (
-                            <div 
-                              key={`mslot-${h}`} 
-                              onClick={() => { 
-                                if (isLunch || closed) return;
-                                setSelectedSlot({ date: mobileSelectedDate, hour: h }); 
-                                setSelectedMinutes(h === startHour ? 30 : 0); 
-                                setModalType('appointment'); 
-                                setShowModal(true); 
-                              }}
-                              className={`absolute w-full border-b border-transparent transition-all z-0 ${
-                                isLunch || closed
-                                ? 'bg-stone-50 cursor-not-allowed flex items-center justify-center pointer-events-none' 
-                                : 'active:bg-[#fdf2f3] cursor-pointer'
-                              }`}
-                              style={{ 
-                                top: `${i * 72}px`, 
-                                height: '72px',
-                                backgroundImage: isLunch ? 'repeating-linear-gradient(45deg, #fafaf9, #fafaf9 10px, #f5f5f4 10px, #f5f5f4 20px)' : 'none'
-                              }}
-                            >
-                              {isLunch && !closed && <span className="text-[10px] uppercase tracking-widest font-bold text-stone-300 select-none">Descanso (Cerrado)</span>}
-                            </div>
-                          );
-                        })}
+                        {/* Empty Clickable Slots (15min Precision) */}
+                        <div className="absolute inset-0 z-0">
+                          {hours.map((h, i) => (
+                             <div key={`mh-container-${h}`} className="absolute w-full" style={{ top: `${i * 72}px`, height: '72px' }}>
+                               {[0, 15, 30, 45].map(m => {
+                                  const disabled = closed || isTimeDisabled(h, m);
+                                  const isLunch = isLunchTime(h, m);
+                                  return (
+                                    <div
+                                      key={`mslot-${h}-${m}`}
+                                      onClick={() => {
+                                        if (disabled) return;
+                                        setSelectedSlot({ date: mobileSelectedDate, hour: h });
+                                        setSelectedMinutes(m);
+                                        setModalType('appointment');
+                                        setShowModal(true);
+                                      }}
+                                      className={`w-full h-1/4 transition-all relative
+                                        ${m !== 45 ? 'border-b border-dashed border-stone-50' : ''}
+                                        ${disabled 
+                                          ? 'bg-stone-50/60 cursor-not-allowed' 
+                                          : 'active:bg-[#fdf2f3] cursor-pointer'
+                                        }
+                                      `}
+                                      style={{
+                                        backgroundImage: isLunch ? 'repeating-linear-gradient(45deg, #fafaf9, #fafaf9 5px, #f5f5f4 5px, #f5f5f4 10px)' : 'none'
+                                      }}
+                                    >
+                                      {isLunch && m === 15 && (
+                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                          <span className="text-[8px] uppercase tracking-widest font-extrabold text-stone-300 leading-none">Cerrado / Lunch</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                               })}
+                             </div>
+                          ))}
+                        </div>
 
                         {/* Blocks */}
                         {!closed && getBlocksForDay(mobileSelectedDate).map((block) => {
