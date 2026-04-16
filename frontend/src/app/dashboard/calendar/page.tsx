@@ -50,6 +50,7 @@ function CalendarContent() {
     setCarouselAnchor(new Date(now));
     setCurrentWeek(getMonday(now));
   }, []);
+  const [settings, setSettings] = useState<any>(null);
   const [appointments, setAppointments] = useState<any[]>([]);
   const [timeBlocks, setTimeBlocks] = useState<any[]>([]);
   const [clients, setClients] = useState<any[]>([]);
@@ -117,11 +118,12 @@ function CalendarContent() {
 
   const fetchData = async () => {
     try {
-      const [apptRes, clientRes, srvRes, blockRes] = await Promise.all([
+      const [apptRes, clientRes, srvRes, blockRes, settingsRes] = await Promise.all([
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/`),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/`),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/time-blocks/`)
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/time-blocks/`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/`)
       ]);
       
       if (apptRes.ok) setAppointments(await apptRes.json());
@@ -131,6 +133,7 @@ function CalendarContent() {
         setServices(servs.filter((s:any) => s.is_active));
       }
       if (blockRes.ok) setTimeBlocks(await blockRes.json());
+      if (settingsRes.ok) setSettings(await settingsRes.json());
     } catch (e) {
       console.error(e);
     } finally {
@@ -365,7 +368,50 @@ function CalendarContent() {
     return d;
   });
 
-  const hours = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]; // De 09:00 a 19:00 (última ranura cubre hasta 20:00)
+  // Generate hours dynamically from settings
+  let startHour = 9;
+  let endHour = 19;
+  if (settings && settings.open_time && settings.close_time) {
+    startHour = parseInt(settings.open_time.split(':')[0]);
+    endHour = parseInt(settings.close_time.split(':')[0]);
+  }
+  const hours: number[] = [];
+  for (let i = startHour; i <= endHour; i++) {
+    hours.push(i);
+  }
+
+  // Funciones auxiliares para descansos y vacaciones
+  const isLunchTime = (hour: number, minute: number) => {
+    if (!settings || !settings.lunch_start || !settings.lunch_end) return false;
+    const timeMins = hour * 60 + minute;
+    const startMins = parseInt(settings.lunch_start.split(':')[0]) * 60 + parseInt(settings.lunch_start.split(':')[1]);
+    const endMins = parseInt(settings.lunch_end.split(':')[0]) * 60 + parseInt(settings.lunch_end.split(':')[1]);
+    return timeMins >= startMins && timeMins < endMins;
+  };
+
+  const isDayClosed = (date: Date) => {
+    const dayBlocks = getBlocksForDay(date);
+    // Para considerarse cerrado, o tiene unas vacaciones de día completo (duration = 600+) o un annual_holiday
+    return dayBlocks.some(b => {
+      if (b.is_annual_holiday) return true;
+      // Validar si dura todo el día o si el motivo dice cerrado/vacaciones
+      const start = new Date(b.start_time.endsWith('Z') ? b.start_time.slice(0, -1) : b.start_time);
+      const end = new Date(b.end_time.endsWith('Z') ? b.end_time.slice(0, -1) : b.end_time);
+      const durationHours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+      return durationHours >= 8; // Asumimos > 8h es día completo de cierre temporal
+    });
+  };
+
+  const getDayClosedReason = (date: Date) => {
+    const dayBlocks = getBlocksForDay(date);
+    const block = dayBlocks.find(b => {
+      if (b.is_annual_holiday) return true;
+      const start = new Date(b.start_time.endsWith('Z') ? b.start_time.slice(0, -1) : b.start_time);
+      const end = new Date(b.end_time.endsWith('Z') ? b.end_time.slice(0, -1) : b.end_time);
+      return ((end.getTime() - start.getTime()) / (1000 * 60 * 60)) >= 8;
+    });
+    return block ? (block.reason || 'Cerrado') : null;
+  };
 
   const clientMap = new Map(clients.map(c => [c.id, c]));
   const serviceMap = new Map(services.map(s => [s.id, s]));
@@ -387,7 +433,22 @@ function CalendarContent() {
       let tString = b.start_time;
       if (tString.endsWith('Z')) tString = tString.slice(0, -1);
       const bDate = new Date(tString);
-      return bDate.getDate() === date.getDate() && bDate.getMonth() === date.getMonth() && bDate.getFullYear() === date.getFullYear();
+      
+      // Anual holiday check
+      if (b.is_annual_holiday) {
+        return bDate.getDate() === date.getDate() && bDate.getMonth() === date.getMonth();
+      }
+      
+      let eString = b.end_time;
+      if (eString.endsWith('Z')) eString = eString.slice(0, -1);
+      const eDate = new Date(eString);
+
+      // Multi-day block check (date is between start and end inclusive of days)
+      const targetTime = date.getTime();
+      const startTime = new Date(bDate.getFullYear(), bDate.getMonth(), bDate.getDate()).getTime();
+      const endTime = new Date(eDate.getFullYear(), eDate.getMonth(), eDate.getDate(), 23, 59, 59).getTime();
+
+      return targetTime >= startTime && targetTime <= endTime;
     });
   };
 
@@ -405,11 +466,27 @@ function CalendarContent() {
             className="px-4 py-2 bg-white border border-stone-200 text-stone-600 rounded-xl font-bold shadow-sm hover:bg-[#fdf2f3] hover:text-[#d9777f] hover:border-[#f3c7cb] transition-colors flex items-center gap-1">
             <ChevronLeft size={18} strokeWidth={1.5} /> Ant
           </button>
+          
+          <div className="relative flex items-center bg-white border border-stone-200 rounded-xl hover:bg-[#fdf2f3] hover:border-[#f3c7cb] transition-colors focus-within:ring-2 focus-within:ring-[#d9777f]">
+            <input 
+              type="date"
+              className="px-4 py-2 bg-transparent text-stone-600 font-bold focus:outline-none cursor-pointer w-full h-full text-center"
+              title="Saltar a fecha"
+              value={currentWeek.toISOString().split('T')[0]} // Bind al lunes actual
+              onChange={(e) => {
+                if (e.target.value) {
+                  setCurrentWeek(getMonday(new Date(e.target.value)));
+                }
+              }}
+            />
+          </div>
+
           <button 
             onClick={() => setCurrentWeek(getMonday(new Date()))}
             className="px-5 py-2 bg-white border border-stone-200 text-stone-600 rounded-xl font-bold shadow-sm hover:bg-[#fdf2f3] hover:text-[#d9777f] hover:border-[#f3c7cb] transition-colors">
             Hoy
           </button>
+
           <button 
             onClick={() => { const d = new Date(currentWeek); d.setDate(d.getDate() + 7); setCurrentWeek(d); }}
             className="px-4 py-2 bg-white border border-stone-200 text-stone-600 rounded-xl font-bold shadow-sm hover:bg-[#fdf2f3] hover:text-[#d9777f] hover:border-[#f3c7cb] transition-colors flex items-center gap-1">
@@ -508,65 +585,62 @@ function CalendarContent() {
                 {days.map((day, dIdx) => {
                   const dayAppts = getAppointmentsForDay(day);
                   const dayBlocks = getBlocksForDay(day);
+                  const closed = isDayClosed(day);
+                  const closedReason = getDayClosedReason(day);
                   
                   return (
                     <div key={`col-${dIdx}`} className="border-r border-stone-100 relative last:border-r-0 group">
                       
+                      {closed && (
+                          <div className="absolute inset-0 z-[60] bg-stone-100/80 backdrop-blur-[1px] flex flex-col items-center justify-center p-4 text-center cursor-not-allowed border-[3px] border-stone-300 pointer-events-auto">
+                             <Lock size={24} className="text-stone-400 mb-2" strokeWidth={1.5} />
+                             <span className="text-stone-600 font-extrabold uppercase tracking-widest text-xs">{closedReason || 'CERRADO'}</span>
+                          </div>
+                      )}
+
                       {/* Clickable Empty Slots for Creation */}
                       {hours.map((h, i) => {
-                        const isLunch = h === 14 || h === 15;
+                        const isLunch = isLunchTime(h, 0) || isLunchTime(h, 30);
                         return (
                           <div 
                             key={`slot-${dIdx}-${h}`} 
                             onClick={() => { 
-                              if (isLunch) return;
+                              if (isLunch || closed) return;
                               setSelectedSlot({ date: day, hour: h }); 
-                              setSelectedMinutes(h === 9 ? 30 : 0); 
+                              setSelectedMinutes(h === startHour ? 30 : 0); 
                               setModalType('appointment'); 
                               setShowModal(true); 
                             }}
                             className={`absolute w-full border-b border-transparent transition-all z-0 ${
-                              isLunch 
-                              ? 'bg-stone-50 cursor-not-allowed flex items-center justify-center' 
+                              isLunch || closed
+                              ? 'bg-stone-50 flex items-center justify-center' 
                               : 'hover:bg-gradient-to-b hover:from-white hover:to-[#fdf2f3] cursor-pointer hover:border-stone-100'
-                            }`}
+                            } ${closed ? '' : (isLunch ? 'cursor-not-allowed' : '')}`}
                             style={{ 
                               top: `${i * 80}px`, 
                               height: '80px',
                               backgroundImage: isLunch ? 'repeating-linear-gradient(45deg, #fafaf9, #fafaf9 10px, #f5f5f4 10px, #f5f5f4 20px)' : 'none'
                             }}>
-                            {isLunch ? (
+                            {isLunch && !closed ? (
                               <span className="text-[10px] font-bold text-stone-300 uppercase tracking-widest text-center select-none">
-                                CERRADO
+                                DESCANSO / COMIDA
                               </span>
-                            ) : (
+                            ) : (!closed ? (
                               <span className="opacity-0 group-hover:opacity-100 text-[#d9777f] font-bold text-xs absolute top-2 left-2 transition-opacity">+</span>
-                            )}
-                            
-                            {/* Visual Block for Morning Start (09:00-09:30) */}
-                            {h === 9 && (
-                               <div 
-                                 className="absolute top-0 w-full h-[40px] pointer-events-none"
-                                 style={{ backgroundImage: 'repeating-linear-gradient(45deg, #fafaf9, #fafaf9 10px, #f5f5f4 10px, #f5f5f4 20px)' }}
-                               >
-                                  <div className="absolute inset-0 flex items-center justify-center">
-                                      <span className="text-[9px] font-bold text-stone-300 uppercase tracking-tighter opacity-50">CERRADO</span>
-                                  </div>
-                               </div>
-                            )}
+                            ) : null)}
                           </div>
                         );
                       })}
 
                       {/* Render Time Blocks (Grey Striped) */}
-                      {dayBlocks.map(block => {
+                      {!closed && dayBlocks.map(block => {
                         let tS = block.start_time;
                         let tE = block.end_time;
                         if (tS.endsWith('Z')) tS = tS.slice(0, -1);
                         if (tE.endsWith('Z')) tE = tE.slice(0, -1);
                         const start = new Date(tS);
                         const end = new Date(tE);
-                        const top = ((start.getHours() - 9) * 80) + (start.getMinutes() / 60) * 80;
+                        const top = ((start.getHours() - startHour) * 80) + (start.getMinutes() / 60) * 80;
                         const duration = (end.getTime() - start.getTime()) / 60000;
                         const height = (duration / 60) * 80;
                         const isFullDay = duration >= 600;
@@ -590,7 +664,7 @@ function CalendarContent() {
                       })}
 
                       {/* Render Booked Appointments */}
-                      {dayAppts.map(appt => {
+                      {!closed && dayAppts.map(appt => {
                         let tStringStart = appt.start_time;
                         let tStringEnd = appt.end_time;
                         if (tStringStart.endsWith('Z')) tStringStart = tStringStart.slice(0, -1);
@@ -599,15 +673,15 @@ function CalendarContent() {
                         const start = new Date(tStringStart);
                         const end = new Date(tStringEnd);
                         
-                        const startHour = start.getHours();
-                        const startMin = start.getMinutes();
+                        const apptStartHour = start.getHours();
+                        const apptStartMin = start.getMinutes();
                         
                         const durationMs = end.getTime() - start.getTime();
                         let durationMin = durationMs / 60000;
                         if (durationMin < 5 || isNaN(durationMin)) durationMin = 30; // Min height safeguard
 
                         // Safeguard clamp for top boundary
-                        let topOffset = ((startHour - 9) * 80) + (startMin / 60) * 80;
+                        let topOffset = ((apptStartHour - startHour) * 80) + (apptStartMin / 60) * 80;
                         if (topOffset < 0) topOffset = 0; 
                         
                         const heightPx = Math.max((durationMin / 60) * 80, 30); // at least 30px so text is visibly readable
@@ -699,81 +773,102 @@ function CalendarContent() {
 
                 {/* Day Area */}
                 <div className="flex-1 relative group">
-                  {/* Empty Clickable Slots */}
-                  {hours.map((h, i) => {
-                    const isLunch = h === 14 || h === 15;
+                  {(() => {
+                    const closed = isDayClosed(mobileSelectedDate);
+                    const closedReason = getDayClosedReason(mobileSelectedDate);
+                    
                     return (
-                      <div 
-                        key={`mslot-${h}`} 
-                        onClick={() => { 
-                          if (isLunch) return;
-                          setSelectedSlot({ date: mobileSelectedDate, hour: h }); 
-                          setSelectedMinutes(h === 9 ? 30 : 0); 
-                          setModalType('appointment'); 
-                          setShowModal(true); 
-                        }}
-                        className={`absolute w-full border-b border-transparent transition-all z-0 ${
-                          isLunch 
-                          ? 'bg-stone-50 cursor-not-allowed flex items-center justify-center pointer-events-none' 
-                          : 'active:bg-[#fdf2f3]'
-                        }`}
-                        style={{ top: `${i * 72}px`, height: '72px' }}
-                      >
-                        {isLunch && i === hours.indexOf(14) && <span className="text-[10px] uppercase tracking-widest font-bold text-stone-300">Descanso (Cerrado)</span>}
-                      </div>
-                    );
-                  })}
+                      <>
+                        {closed && (
+                          <div className="absolute inset-0 z-[60] bg-stone-100/80 backdrop-blur-[1px] flex flex-col items-center justify-center p-4 text-center cursor-not-allowed border-[3px] border-stone-300 pointer-events-auto">
+                            <Lock size={32} className="text-stone-400 mb-3" strokeWidth={1.5} />
+                            <span className="text-stone-600 font-extrabold uppercase tracking-widest text-sm">{closedReason || 'CERRADO'}</span>
+                          </div>
+                        )}
+                        
+                        {/* Empty Clickable Slots */}
+                        {hours.map((h, i) => {
+                          const isLunch = isLunchTime(h, 0) || isLunchTime(h, 30);
+                          return (
+                            <div 
+                              key={`mslot-${h}`} 
+                              onClick={() => { 
+                                if (isLunch || closed) return;
+                                setSelectedSlot({ date: mobileSelectedDate, hour: h }); 
+                                setSelectedMinutes(h === startHour ? 30 : 0); 
+                                setModalType('appointment'); 
+                                setShowModal(true); 
+                              }}
+                              className={`absolute w-full border-b border-transparent transition-all z-0 ${
+                                isLunch || closed
+                                ? 'bg-stone-50 cursor-not-allowed flex items-center justify-center pointer-events-none' 
+                                : 'active:bg-[#fdf2f3] cursor-pointer'
+                              }`}
+                              style={{ 
+                                top: `${i * 72}px`, 
+                                height: '72px',
+                                backgroundImage: isLunch ? 'repeating-linear-gradient(45deg, #fafaf9, #fafaf9 10px, #f5f5f4 10px, #f5f5f4 20px)' : 'none'
+                              }}
+                            >
+                              {isLunch && !closed && <span className="text-[10px] uppercase tracking-widest font-bold text-stone-300 select-none">Descanso (Cerrado)</span>}
+                            </div>
+                          );
+                        })}
 
-                  {/* Blocks */}
-                  {getBlocksForDay(mobileSelectedDate).map((block) => {
-                    const start = new Date(block.start_time.endsWith('Z') ? block.start_time.slice(0, -1) : block.start_time);
+                        {/* Blocks */}
+                        {!closed && getBlocksForDay(mobileSelectedDate).map((block) => {
+                          const start = new Date(block.start_time.endsWith('Z') ? block.start_time.slice(0, -1) : block.start_time);
                     const end = new Date(block.end_time.endsWith('Z') ? block.end_time.slice(0, -1) : block.end_time);
                     
-                    const startHour = start.getHours();
-                    const startMin = start.getMinutes();
-                    
-                    let durationMin = (end.getTime() - start.getTime()) / 60000;
-                    if (durationMin < 5 || isNaN(durationMin)) durationMin = 60;
+                          const apptStartHour = start.getHours();
+                          const apptStartMin = start.getMinutes();
+                          
+                          let durationMin = (end.getTime() - start.getTime()) / 60000;
+                          if (durationMin < 5 || isNaN(durationMin)) durationMin = 60;
 
-                    let topOffsetPx = ((startHour - 9) * 72) + (startMin / 60) * 72;
-                    if (topOffsetPx < 0) topOffsetPx = 0; 
-                    
-                    const heightPx = Math.max((durationMin / 60) * 72, 20);
+                          let topOffsetPx = ((apptStartHour - startHour) * 72) + (apptStartMin / 60) * 72;
+                          if (topOffsetPx < 0) topOffsetPx = 0; 
+                          
+                          const heightPx = Math.max((durationMin / 60) * 72, 20);
 
-                    return (
-                      <div 
-                        key={block.id}
-                        onClick={(e) => { e.stopPropagation(); setSelectedBlock(block); setShowBlockDeleteModal(true); }}
-                        className="absolute w-[95%] left-[2.5%] ml-auto mr-auto bg-stone-100 rounded-xl border border-stone-200 border-dashed opacity-80 flex items-center justify-center z-10 hover:bg-stone-200 transition-colors cursor-pointer"
-                        style={{ top: `${topOffsetPx}px`, height: `${heightPx}px` }}
-                      >
-                        <div className="flex items-center gap-1.5 text-stone-500">
-                          <Lock size={12} strokeWidth={2.5} />
-                          {heightPx >= 30 && <span className="text-[10px] font-bold uppercase tracking-wider">{block.reason || 'Bloqueo'}</span>}
-                        </div>
-                      </div>
-                    );
-                  })}
+                          return (
+                            <div 
+                              key={block.id}
+                              onClick={(e) => { e.stopPropagation(); setSelectedBlock(block); setShowBlockDeleteModal(true); }}
+                              className="absolute w-[95%] left-[2.5%] ml-auto mr-auto bg-stone-100 rounded-xl border border-stone-200 border-dashed opacity-80 flex items-center justify-center z-10 hover:bg-stone-200 transition-colors cursor-pointer block-content overflow-hidden"
+                              style={{ 
+                                top: `${topOffsetPx}px`, 
+                                height: `${heightPx}px`,
+                                backgroundImage: 'repeating-linear-gradient(45deg, #f5f5f4, #f5f5f4 10px, #eeeeee 10px, #eeeeee 20px)'
+                              }}
+                            >
+                              <div className="flex items-center gap-1.5 text-stone-500">
+                                <Lock size={12} strokeWidth={2.5} />
+                                {heightPx >= 30 && <span className="text-[10px] font-bold uppercase tracking-wider text-center">{block.reason || 'Bloqueo'}</span>}
+                              </div>
+                            </div>
+                          );
+                        })}
 
-                  {/* Appointments */}
-                  {getAppointmentsForDay(mobileSelectedDate).map((appt) => {
-                    const start = new Date(appt.start_time.endsWith('Z') ? appt.start_time.slice(0,-1) : appt.start_time);
-                    const end = new Date(appt.end_time.endsWith('Z') ? appt.end_time.slice(0,-1) : appt.end_time);
-                    
-                    const startHour = start.getHours();
-                    const startMin = start.getMinutes();
-                    
-                    let durationMin = (end.getTime() - start.getTime()) / 60000;
-                    if (durationMin < 5 || isNaN(durationMin)) durationMin = 30; // Min height safeguard
+                        {/* Appointments */}
+                        {!closed && getAppointmentsForDay(mobileSelectedDate).map((appt) => {
+                          const start = new Date(appt.start_time.endsWith('Z') ? appt.start_time.slice(0,-1) : appt.start_time);
+                          const end = new Date(appt.end_time.endsWith('Z') ? appt.end_time.slice(0,-1) : appt.end_time);
+                          
+                          const apptStartHour = start.getHours();
+                          const apptStartMin = start.getMinutes();
+                          
+                          let durationMin = (end.getTime() - start.getTime()) / 60000;
+                          if (durationMin < 5 || isNaN(durationMin)) durationMin = 30; // Min height safeguard
 
-                    let topOffsetPx = ((startHour - 9) * 72) + (startMin / 60) * 72;
-                    if (topOffsetPx < 0) topOffsetPx = 0; 
-                    
-                    const heightPx = Math.max((durationMin / 60) * 72, 35);
-                    
-                    const client = clientMap.get(appt.client_id) || { name: 'Desconocido' };
-                    const service = serviceMap.get(appt.service_id) || { name: '...' };
-                    const colors = getStatusColors(appt.status);
+                          let topOffsetPx = ((apptStartHour - startHour) * 72) + (apptStartMin / 60) * 72;
+                          if (topOffsetPx < 0) topOffsetPx = 0; 
+                          
+                          const heightPx = Math.max((durationMin / 60) * 72, 35);
+                          
+                          const client = clientMap.get(appt.client_id) || { name: 'Desconocido' };
+                          const service = serviceMap.get(appt.service_id) || { name: '...' };
+                          const colors = getStatusColors(appt.status);
 
                     return (
                       <div 
@@ -789,9 +884,12 @@ function CalendarContent() {
                         {heightPx >= 45 && (
                           <div className={`text-[9px] font-semibold truncate leading-tight opacity-90`}>{service.name}</div>
                         )}
-                      </div>
+                            </div>
+                          );
+                        })}
+                      </>
                     );
-                  })}
+                  })()}
                 </div>
               </div>
             </div>
@@ -885,7 +983,7 @@ function CalendarContent() {
             {modalType === 'appointment' ? (
               <form id="appointment-form" onSubmit={handleSubmit} className="space-y-6">
                 <div className="flex gap-2 mb-2 p-1 bg-stone-50 border border-stone-100 rounded-xl w-fit mx-auto sm:mx-0">
-                   {(selectedSlot?.hour === 9 ? [30, 45] : [0, 15, 30, 45]).map(m => (
+                   {(selectedSlot?.hour === startHour ? [30, 45] : [0, 15, 30, 45]).map(m => (
                       <button 
                         key={m}
                         type="button"
@@ -902,15 +1000,32 @@ function CalendarContent() {
                   const start_time = new Date(selectedSlot.date);
                   start_time.setHours(selectedSlot.hour, selectedMinutes, 0, 0);
                   const closingTime = new Date(selectedSlot.date);
-                  closingTime.setHours(19, 0, 0, 0);
+                  closingTime.setHours(endHour, settings?.close_time ? parseInt(settings.close_time.split(':')[1]) : 30, 0, 0); // Ej: 19:30
+                  
+                  // Filter lunch blocks logically out of available gaps to stop weird calculations
+                  let lunchStart = closingTime;
+                  if (settings?.lunch_start) {
+                    lunchStart = new Date(selectedSlot.date);
+                    lunchStart.setHours(parseInt(settings.lunch_start.split(':')[0]), parseInt(settings.lunch_start.split(':')[1]), 0, 0);
+                  }
+
                   const dayAppts = getAppointmentsForDay(selectedSlot.date);
                   const dayBlocks = getBlocksForDay(selectedSlot.date);
-                  const nextEvent = [...dayAppts, ...dayBlocks]
+                  
+                  const futureEvents = [...dayAppts, ...dayBlocks]
                     .map(e => ({ ...e, start: new Date(e.start_time.endsWith('Z') ? e.start_time.slice(0, -1) : e.start_time) }))
                     .filter(e => e.start > start_time)
-                    .sort((a, b) => a.start.getTime() - b.start.getTime())[0];
-                  const limitDate = nextEvent ? (nextEvent.start < closingTime ? nextEvent.start : closingTime) : closingTime;
+                    .sort((a, b) => a.start.getTime() - b.start.getTime());
+                  
+                  let nextEventStart = futureEvents.length > 0 ? futureEvents[0].start : closingTime;
+                  // Si cae en horario de mañana y el próximo bloque es después de lunch, lunch limita la duración.
+                  if (start_time < lunchStart && nextEventStart > lunchStart) {
+                    nextEventStart = lunchStart;
+                  }
+
+                  const limitDate = nextEventStart < closingTime ? nextEventStart : closingTime;
                   const gapMinutes = Math.floor((limitDate.getTime() - start_time.getTime()) / 60000);
+                  
                   return (
                     <div className="mb-4">
                        <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Hueco Disponible</p>

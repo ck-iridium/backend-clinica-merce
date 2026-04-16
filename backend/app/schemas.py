@@ -132,6 +132,10 @@ class ClinicSettingsBase(BaseModel):
     allow_search_engine_indexing: bool = False
     whatsapp_number: Optional[str] = None
     booking_margin_hours: float = 2.0
+    open_time: str = "09:00"
+    close_time: str = "19:30"
+    lunch_start: Optional[str] = None
+    lunch_end: Optional[str] = None
 
 class ClinicSettingsUpdate(BaseModel):
     clinic_name: Optional[str] = None
@@ -158,6 +162,10 @@ class ClinicSettingsUpdate(BaseModel):
     allow_search_engine_indexing: Optional[bool] = None
     whatsapp_number: Optional[str] = None
     booking_margin_hours: Optional[float] = None
+    open_time: Optional[str] = None
+    close_time: Optional[str] = None
+    lunch_start: Optional[str] = None
+    lunch_end: Optional[str] = None
 
 # --- Consents ---
 class ConsentBase(BaseModel):
@@ -317,6 +325,7 @@ class TimeBlockBase(BaseModel):
     start_time: datetime
     end_time: datetime
     reason: Optional[str] = None
+    is_annual_holiday: bool = False
 
 class TimeBlockCreate(TimeBlockBase):
     pass
@@ -325,6 +334,7 @@ class TimeBlockUpdate(ModelMetaclass if 'ModelMetaclass' in globals() else BaseM
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
     reason: Optional[str] = None
+    is_annual_holiday: Optional[bool] = None
 
 class TimeBlockResponse(TimeBlockBase):
     id: str

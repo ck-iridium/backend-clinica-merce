@@ -1,0 +1,8 @@
+- [x] Task 1: Backend & BD
+  - [x] Modificar `models.py`
+  - [x] Modificar `schemas.py`
+  - [x] Generar migración Alembic
+  - [x] Aplicar migración Alembic
+  - [x] Verificar backend endpoints
+- [x] Task 2: UI Ajustes (Panel Administrador)
+- [x] Task 3: Adaptación Lógica de la Agenda

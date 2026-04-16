@@ -144,10 +144,16 @@ class ClinicSettings(Base):
 
     # Enlaces y Redes Sociales
     instagram_url = Column(String, nullable=True)
-    # SEO
+    # SEO e integraciones
     allow_search_engine_indexing = Column(Boolean, default=False)
     whatsapp_number = Column(String, nullable=True)
     maps_url = Column(String, nullable=True)
+
+    # Horario Base (Agenda)
+    open_time = Column(String, default="09:00")
+    close_time = Column(String, default="19:30")
+    lunch_start = Column(String, nullable=True)
+    lunch_end = Column(String, nullable=True)
 
     # Numeration
     invoice_prefix = Column(String, default="FA-{YY}-")
@@ -174,6 +180,7 @@ class TimeBlock(Base):
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=False)
     reason = Column(String, nullable=True)
+    is_annual_holiday = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 class SiteContent(Base):

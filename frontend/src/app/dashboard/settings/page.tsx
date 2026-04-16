@@ -2,13 +2,26 @@
 import { useState, useEffect, useRef } from 'react';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { toast } from 'sonner';
-import { Save, Building2, Link2, SearchCode, ImageIcon, Hash, ChevronDown } from 'lucide-react';
+import { Save, Building2, Link2, SearchCode, ImageIcon, Hash, ChevronDown, Clock, Calendar, Trash2 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 export default function SettingsPage() {
   const { showFeedback } = useFeedback();
   const [settings, setSettings] = useState<any>(null);
+  const [timeBlocks, setTimeBlocks] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // Modal de Ausencias
+  const [showBlockModal, setShowBlockModal] = useState(false);
+  const [newBlock, setNewBlock] = useState({ start_time: '', end_time: '', reason: '', is_annual_holiday: false });
+  const [addingBlock, setAddingBlock] = useState(false);
   
   // File inputs refs
   const logoAppRef = useRef<HTMLInputElement>(null);
@@ -21,9 +34,16 @@ export default function SettingsPage() {
 
   const fetchSettings = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/`);
-      if (res.ok) {
-        setSettings(await res.json());
+      const [settingsRes, blocksRes] = await Promise.all([
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/time-blocks/`)
+      ]);
+      
+      if (settingsRes.ok) {
+        setSettings(await settingsRes.json());
+      }
+      if (blocksRes.ok) {
+        setTimeBlocks(await blocksRes.json());
       }
     } catch (e) {
       console.error(e);
@@ -48,6 +68,53 @@ export default function SettingsPage() {
       toast.error('Error al guardar la configuración');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleAddBlock = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddingBlock(true);
+    try {
+      // Parse dates to add local timezone properly if needed or just send local generic
+      const payload = {
+        ...newBlock,
+        start_time: new Date(newBlock.start_time).toISOString(),
+        end_time: new Date(newBlock.end_time).toISOString()
+      };
+      
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/time-blocks/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        toast.success('Ausencia añadida correctamente');
+        setShowBlockModal(false);
+        fetchSettings(); // refresh list
+      } else {
+        toast.error('Error al añadir la ausencia');
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Error de red al añadir');
+    } finally {
+      setAddingBlock(false);
+    }
+  };
+
+  const handleDeleteBlock = async (id: string) => {
+    if (!confirm('¿Seguro que deseas eliminar esta ausencia?')) return;
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/time-blocks/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        toast.success('Ausencia eliminada');
+        fetchSettings();
+      } else {
+        toast.error('Error al eliminar');
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error('Error de red');
     }
   };
 
@@ -152,6 +219,75 @@ export default function SettingsPage() {
                 <input type="email" value={settings.clinic_email} onChange={e => setSettings({...settings, clinic_email: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] focus:ring-1 focus:ring-[#d9777f] transition-all" />
               </div>
            </div>
+        </div>
+
+        {/* Horario Hábil */}
+        <div className="bg-white rounded-[2.5rem] border border-stone-100 p-8 shadow-sm">
+          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-stone-100">
+            <span className="w-9 h-9 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-500">
+              <Clock size={18} strokeWidth={1.5} />
+            </span>
+            <h3 className="text-2xl font-serif font-semibold text-stone-800">Horario Hábil y Descansos</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            <div>
+              <label className="block text-xs font-bold text-emerald-700 mb-2">Apertura (Mañana)</label>
+              <input type="time" value={settings.open_time || ''} onChange={e => setSettings({...settings, open_time: e.target.value})} className="w-full p-4 bg-emerald-50/50 border border-emerald-100 rounded-xl focus:border-emerald-400 font-mono font-bold text-emerald-800 transition-all outline-none" required />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-stone-500 mb-2">Inicio Descanso</label>
+              <input type="time" value={settings.lunch_start || ''} onChange={e => setSettings({...settings, lunch_start: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] font-mono font-bold transition-all outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-stone-500 mb-2">Fin Descanso</label>
+              <input type="time" value={settings.lunch_end || ''} onChange={e => setSettings({...settings, lunch_end: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] font-mono font-bold transition-all outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-orange-700 mb-2">Cierre (Tarde/Noche)</label>
+              <input type="time" value={settings.close_time || ''} onChange={e => setSettings({...settings, close_time: e.target.value})} className="w-full p-4 bg-orange-50/50 border border-orange-100 rounded-xl focus:border-orange-400 font-mono font-bold text-orange-800 transition-all outline-none" required />
+            </div>
+          </div>
+          <p className="text-[10px] text-stone-400 mt-4 leading-relaxed tracking-wide font-medium">Define las horas límite en las que los clientes pueden pedir cita. Los bloques de descanso se ignorarán al buscar disponibilidad. Puedes dejar los campos de descanso vacíos si haces jornada continua.</p>
+        </div>
+
+        {/* Gestor de Ausencias */}
+        <div className="bg-white rounded-[2.5rem] border border-stone-100 p-8 shadow-sm">
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-stone-100">
+            <div className="flex items-center gap-3">
+              <span className="w-9 h-9 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-500">
+                <Calendar size={18} strokeWidth={1.5} />
+              </span>
+              <h3 className="text-2xl font-serif font-semibold text-stone-800">Vacaciones y Festivos</h3>
+            </div>
+            <button type="button" onClick={() => setShowBlockModal(true)} className="bg-[#fdf2f3] text-[#d9777f] px-4 py-2 rounded-xl font-bold hover:bg-[#f3c7cb] transition-colors text-sm">
+              + Añadir Ausencia
+            </button>
+          </div>
+          
+          <div className="bg-stone-50/50 border border-stone-100 rounded-2xl overflow-hidden">
+            {timeBlocks && timeBlocks.length > 0 ? (
+              <ul className="divide-y divide-stone-100">
+                {timeBlocks.map((tb: any) => (
+                  <li key={tb.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-white transition-colors">
+                    <div className="flex flex-col">
+                      <span className="font-bold text-stone-800">{tb.reason || 'Día inhábil'}</span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs text-stone-500 bg-stone-100 px-2 py-1 rounded-md font-mono">{new Date(tb.start_time).toLocaleDateString()} a {new Date(tb.end_time).toLocaleDateString()}</span>
+                        {tb.is_annual_holiday && <span className="text-[10px] font-bold text-[#d9777f] uppercase tracking-wider bg-[#fdf2f3] px-2 py-1 rounded">Anual</span>}
+                      </div>
+                    </div>
+                    <button type="button" onClick={() => handleDeleteBlock(tb.id)} className="text-stone-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-xl transition-colors">
+                      <Trash2 size={16} strokeWidth={1.5} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="p-8 text-center text-stone-400 text-sm">
+                No hay vacaciones ni días festivos programados.
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Enlaces y Redes Sociales */}
@@ -297,6 +433,61 @@ export default function SettingsPage() {
         </div>
 
       </form>
+
+      {/* Modal Añadir Ausencia */}
+      <Dialog open={showBlockModal} onOpenChange={setShowBlockModal}>
+        <DialogContent className="sm:max-w-[425px] rounded-[2rem] p-0 overflow-hidden border-0 shadow-2xl">
+          <div className="bg-[#fdf2f3] p-6 pb-4">
+             <DialogHeader>
+                <DialogTitle className="text-2xl font-serif text-[#d9777f]">Añadir Nueva Ausencia</DialogTitle>
+                <DialogDescription className="text-stone-600 font-medium pt-1 border-opacity-30">
+                  Bloquea la agenda para festivos o vacaciones.
+                </DialogDescription>
+             </DialogHeader>
+          </div>
+          <form onSubmit={handleAddBlock} className="p-6 pt-4 bg-white grid gap-5">
+            <div className="grid gap-2">
+              <label className="text-xs font-bold text-stone-500">Motivo (Ej. Vacaciones de Verano)</label>
+              <input required type="text" value={newBlock.reason} onChange={e => setNewBlock({...newBlock, reason: e.target.value})} className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] transition-all" />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <label className="text-xs font-bold text-stone-500">Día de Inicio</label>
+                <input required type="date" value={newBlock.start_time} onChange={e => setNewBlock({...newBlock, start_time: e.target.value})} className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] font-mono text-sm" />
+              </div>
+              <div className="grid gap-2">
+                <label className="text-xs font-bold text-stone-500">Día de Fin</label>
+                <input required type="date" value={newBlock.end_time} onChange={e => setNewBlock({...newBlock, end_time: e.target.value})} className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] font-mono text-sm" />
+              </div>
+            </div>
+
+            <label className="flex items-center gap-3 cursor-pointer mt-2 p-3 bg-stone-50 rounded-xl border border-stone-100">
+                <div className="relative">
+                  <input 
+                    type="checkbox" 
+                    checked={newBlock.is_annual_holiday} 
+                    onChange={e => setNewBlock({...newBlock, is_annual_holiday: e.target.checked})} 
+                    className="sr-only" 
+                  />
+                  <div className={`block w-10 h-6 rounded-full transition-colors ${newBlock.is_annual_holiday ? 'bg-[#d9777f]' : 'bg-stone-300'}`}></div>
+                  <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${newBlock.is_annual_holiday ? 'translate-x-4' : ''}`}></div>
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-stone-700 block">Este es un festivo que se repite anualmente</span>
+                  <span className="text-[10px] text-stone-400 block leading-tight mt-0.5">Ej: 25 de diciembre o fecha nacional fija.</span>
+                </div>
+            </label>
+
+            <div className="flex justify-end gap-3 mt-4">
+               <button type="button" onClick={() => setShowBlockModal(false)} className="px-4 py-2 text-stone-500 font-bold hover:bg-stone-100 rounded-xl transition-colors">Cancelar</button>
+               <button type="submit" disabled={addingBlock} className="px-6 py-2 bg-stone-900 text-white font-bold rounded-xl shadow-sm hover:bg-stone-800 transition-colors disabled:opacity-50">
+                 {addingBlock ? 'Guardando...' : 'Añadir Ausencia'}
+               </button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
