@@ -34,15 +34,15 @@ function CalendarContent() {
 
   return (
     <div className="flex flex-row h-full w-full overflow-hidden bg-stone-50/50">
-      
+
       {/* A. COLUMNA IZQUIERDA: ContextPanel (Colapsable) */}
       <div className={`
         hidden md:block h-full transition-all duration-300 ease-in-out overflow-hidden shadow-2xl
         ${isPanelOpen ? 'w-[280px] lg:w-[320px] opacity-100' : 'w-0 opacity-0'}
       `}>
         <div className="min-w-[280px] lg:min-w-[320px] h-full overflow-y-auto">
-          <ContextPanel 
-            clinicName={c.settings?.clinic_name} 
+          <ContextPanel
+            clinicName={c.settings?.clinic_name}
             selectedDate={c.mobileSelectedDate}
             onDateChange={c.handleMobileDateSelect}
             confirmedCount={confirmedCount}
@@ -56,9 +56,9 @@ function CalendarContent() {
 
       {/* B. COLUMNA DERECHA: Agenda (Principal) */}
       <div className="flex-1 h-full flex flex-col overflow-hidden relative">
-        
+
         {/* Toggle Button (Focus Mode) */}
-        <button 
+        <button
           onClick={() => setIsPanelOpen(!isPanelOpen)}
           className={`
             absolute top-5 left-5 z-50 p-2.5 rounded-full border border-stone-200 shadow-xl transition-all duration-300 group
@@ -75,15 +75,14 @@ function CalendarContent() {
 
         {/* Contenedor de la Agenda como una "Isla" Elástica */}
         <div className={`
-          flex-1 flex flex-col bg-white rounded-[0.75em] shadow-2xl shadow-stone-200/40 overflow-hidden relative transition-all duration-300
-          ${isPanelOpen ? '' : 'm-2'}
+          flex-1 flex flex-col bg-white shadow-2xl shadow-stone-200/40 overflow-hidden relative transition-all duration-300 mb-[10px]
         `}>
-          
+
           {/* Calendar Area (Sin paddings externos para Edge-to-Edge) */}
           <div className="flex-1 flex flex-col overflow-hidden">
-            
+
             {/* 1. CABECERA (Reducida a lo mínimo para maximizar espacio) */}
-            <CalendarHeader 
+            <CalendarHeader
               currentWeek={c.currentWeek}
               mobileSelectedDate={c.mobileSelectedDate}
               onPrevWeek={c.handlePrevWeek}
@@ -95,16 +94,16 @@ function CalendarContent() {
             />
 
             {/* 2. VISTA DESKTOP (Grilla Semanal Elástica) */}
-            <div className="hidden md:flex flex-col flex-1 bg-white rounded-[0.75em] shadow-sm overflow-hidden relative translate-z-0">
+            <div className="hidden md:flex flex-col flex-1 bg-white overflow-hidden relative translate-z-0">
               {/* Header de Días */}
               <div className="grid grid-cols-[100px_repeat(5,1fr)] border-b border-stone-200 bg-stone-50/30">
                 <div className="border-r border-stone-200"></div>
                 {c.days.map((date, i) => (
-                  <div key={i} className="p-4 text-center border-r border-stone-200 last:border-r-0">
-                    <p className="text-[10px] font-black text-[#d9777f] uppercase tracking-[0.2em] mb-1">
+                  <div key={i} className="py-3 px-4 text-center border-r border-stone-200 last:border-r-0">
+                    <p className="text-[10px] font-black text-[#d9777f] uppercase tracking-[0.2em] mb-0.5">
                       {date.toLocaleDateString('es-ES', { weekday: 'short' })}
                     </p>
-                    <p className="text-2xl font-serif italic font-black text-stone-800">
+                    <p className="text-2xl font-serif italic font-black text-stone-900">
                       {date.getDate()}
                     </p>
                   </div>
@@ -117,7 +116,7 @@ function CalendarContent() {
                   <TimeScale hours={c.hours} heightPerHour={0} part="guides" />
                   <TimeScale hours={c.hours} heightPerHour={0} part="axis" viewType="desktop" />
                   {c.days.map((date, i) => (
-                    <DayColumn 
+                    <DayColumn
                       key={i}
                       date={date}
                       appointments={c.getAppointmentsForDay(date)}
@@ -175,7 +174,7 @@ function CalendarContent() {
                   <TimeScale hours={c.hours} heightPerHour={72} part="axis" viewType="mobile" />
                   <div className="flex-1 relative">
                     <TimeScale hours={c.hours} heightPerHour={72} part="guides" />
-                    <DayColumn 
+                    <DayColumn
                       date={c.mobileSelectedDate}
                       appointments={c.getAppointmentsForDay(c.mobileSelectedDate)}
                       blocks={c.getBlocksForDay(c.mobileSelectedDate)}
@@ -206,7 +205,7 @@ function CalendarContent() {
         </div>
 
         {/* 4. MODALES Y TOOLTIPS (Inyectados fuera del flujo del canvas para evitar recortes) */}
-        <CalendarModals 
+        <CalendarModals
           showModal={c.showModal}
           setShowModal={c.setShowModal}
           showEditModal={c.showEditModal}
@@ -234,25 +233,23 @@ function CalendarContent() {
         />
 
         {c.hoveredAppt && (
-          <div 
+          <div
             className="fixed z-[100] pointer-events-none animate-in fade-in zoom-in-95 duration-200"
-            style={{ 
-              left: c.tooltipPos.x + 20 > (typeof window !== 'undefined' ? window.innerWidth : 1200) - 380 ? c.tooltipPos.x - 395 : c.tooltipPos.x + 20, 
+            style={{
+              left: c.tooltipPos.x + 20 > (typeof window !== 'undefined' ? window.innerWidth : 1200) - 380 ? c.tooltipPos.x - 395 : c.tooltipPos.x + 20,
               top: c.tooltipPos.y + 250 > (typeof window !== 'undefined' ? window.innerHeight : 800) ? c.tooltipPos.y - 230 : c.tooltipPos.y + 20
             }}
           >
             <div className="bg-white/98 backdrop-blur-xl border border-stone-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-[2rem] p-7 w-[380px] ring-1 ring-black/5 relative overflow-hidden">
-              <div className={`absolute top-0 left-0 w-1.5 h-full ${
-                c.hoveredAppt.status === 'confirmed' ? 'bg-blue-500' : 
-                c.hoveredAppt.status === 'completed' ? 'bg-emerald-500' : 
-                c.hoveredAppt.status === 'cancelled' ? 'bg-red-500' : 
-                'bg-orange-500'
-              }`}></div>
-              
-              <div className={`absolute top-6 right-7 px-3 py-1 rounded-full text-[12px] font-black tracking-tighter border ${
-                c.hoveredAppt.status === 'confirmed' ? 'bg-blue-50 text-blue-600 border-blue-100' : 
+              <div className={`absolute top-0 left-0 w-1.5 h-full ${c.hoveredAppt.status === 'confirmed' ? 'bg-blue-500' :
+                c.hoveredAppt.status === 'completed' ? 'bg-emerald-500' :
+                  c.hoveredAppt.status === 'cancelled' ? 'bg-red-500' :
+                    'bg-orange-500'
+                }`}></div>
+
+              <div className={`absolute top-6 right-7 px-3 py-1 rounded-full text-[12px] font-black tracking-tighter border ${c.hoveredAppt.status === 'confirmed' ? 'bg-blue-50 text-blue-600 border-blue-100' :
                 'bg-orange-50 text-orange-600 border-orange-100'
-              }`}>
+                }`}>
                 {new Date(c.hoveredAppt.start_time.endsWith('Z') ? c.hoveredAppt.start_time.slice(0, -1) : c.hoveredAppt.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </div>
 
@@ -267,27 +264,26 @@ function CalendarContent() {
                   <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-1.5 flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-stone-300"></span> Servicio / Tratamiento
                   </p>
-                  <p className={`font-black text-[17px] leading-tight ${
-                    c.hoveredAppt.status === 'confirmed' ? 'text-blue-600' : 
-                    c.hoveredAppt.status === 'completed' ? 'text-emerald-600' : 
-                    'text-orange-600'
-                  }`}>{c.serviceMap.get(c.hoveredAppt.service_id)?.name || 'Sin especificar'}</p>
+                  <p className={`font-black text-[17px] leading-tight ${c.hoveredAppt.status === 'confirmed' ? 'text-blue-600' :
+                    c.hoveredAppt.status === 'completed' ? 'text-emerald-600' :
+                      'text-orange-600'
+                    }`}>{c.serviceMap.get(c.hoveredAppt.service_id)?.name || 'Sin especificar'}</p>
                 </div>
                 <div className="flex justify-between items-center bg-stone-50/50 p-4 rounded-2xl border border-stone-100 mt-1">
                   <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em]">Estado Actual</p>
                   <span className={`text-[11px] font-black px-3 py-1.5 rounded-xl uppercase tracking-wider
-                    ${c.hoveredAppt.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 
-                      c.hoveredAppt.status === 'cancelled' ? 'bg-red-100 text-red-700' : 
-                      c.hoveredAppt.status === 'web_pending' ? 'bg-orange-100 text-orange-700' :
-                      c.hoveredAppt.status === 'confirmed' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
-                      'bg-slate-100 text-slate-700'
+                    ${c.hoveredAppt.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
+                      c.hoveredAppt.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                        c.hoveredAppt.status === 'web_pending' ? 'bg-orange-100 text-orange-700' :
+                          c.hoveredAppt.status === 'confirmed' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
+                            'bg-slate-100 text-slate-700'
                     }`}>
-                    {c.hoveredAppt.status === 'completed' ? 'Realizada' : 
-                     c.hoveredAppt.status === 'cancelled' ? 'Cancelada' : 
-                     c.hoveredAppt.status === 'web_pending' ? 'Pte. Confirmar' :
-                     c.hoveredAppt.status === 'confirmed' ? 'Confirmada' :
-                     c.hoveredAppt.status === 'no_show' ? 'No Asistió' :
-                     'Pendiente'}
+                    {c.hoveredAppt.status === 'completed' ? 'Realizada' :
+                      c.hoveredAppt.status === 'cancelled' ? 'Cancelada' :
+                        c.hoveredAppt.status === 'web_pending' ? 'Pte. Confirmar' :
+                          c.hoveredAppt.status === 'confirmed' ? 'Confirmada' :
+                            c.hoveredAppt.status === 'no_show' ? 'No Asistió' :
+                              'Pendiente'}
                   </span>
                 </div>
                 <div className="mt-1 bg-[#fefefe] p-4 rounded-2xl border border-stone-50 shadow-sm">

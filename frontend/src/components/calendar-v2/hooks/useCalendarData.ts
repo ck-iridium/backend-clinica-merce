@@ -283,7 +283,8 @@ export function useCalendarData() {
 
   const startHour = settings && settings.open_time ? parseInt(settings.open_time.split(':')[0]) : 9;
   const endHour = settings && settings.close_time ? parseInt(settings.close_time.split(':')[0]) : 19;
-  const hours = Array.from({ length: endHour - startHour + 1 }, (_, i) => startHour + i);
+  // Generar hasta la hora anterior al cierre (ej: si cierra a las 20:00, el último slot es 19:00-20:00)
+  const hours = Array.from({ length: endHour - startHour }, (_, i) => startHour + i);
 
   return {
     // Estados principales

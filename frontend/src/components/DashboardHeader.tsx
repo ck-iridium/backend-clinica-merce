@@ -47,54 +47,6 @@ export default function DashboardHeader({ clinicName }: DashboardHeaderProps) {
 
         <NotificationsPopover />
 
-        {/* Profile Dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-3 bg-card border border-border/50 py-1.5 pl-1.5 pr-4 rounded-2xl shadow-sm cursor-pointer hover:shadow-md transition-all group outline-none">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-white shadow-inner">
-                <User size={16} strokeWidth={1.5} />
-              </div>
-              <div className="flex flex-col text-left">
-                <span className="text-sm font-bold text-stone-800 leading-tight">Administrador</span>
-                <span className="text-[10px] text-muted-foreground font-semibold leading-tight">{clinicName}</span>
-              </div>
-              <ChevronDown size={14} strokeWidth={1.5} className="text-muted-foreground ml-1 group-data-[state=open]:rotate-180 transition-transform duration-200" />
-            </button>
-          </DropdownMenuTrigger>
-
-          <DropdownMenuContent align="end" className="w-52 rounded-2xl shadow-xl border border-stone-100 p-1.5">
-            <DropdownMenuLabel className="text-xs font-black uppercase tracking-widest text-stone-400 px-3 py-2">
-              Mi cuenta
-            </DropdownMenuLabel>
-
-            <DropdownMenuItem
-              disabled
-              className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl cursor-not-allowed opacity-50"
-            >
-              <User size={15} strokeWidth={1.5} />
-              <span className="font-semibold text-sm">Mi Perfil</span>
-            </DropdownMenuItem>
-
-            <DropdownMenuItem
-              disabled
-              className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl cursor-not-allowed opacity-50"
-            >
-              <Users size={15} strokeWidth={1.5} />
-              <span className="font-semibold text-sm">Gestión de Usuarios</span>
-            </DropdownMenuItem>
-
-            <DropdownMenuSeparator className="my-1.5 bg-stone-100" />
-
-            <DropdownMenuItem
-              onClick={handleLogout}
-              className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
-            >
-              <LogOut size={15} strokeWidth={1.5} />
-              <span className="font-semibold text-sm">Cerrar Sesión</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
       </div>
     </header>
 

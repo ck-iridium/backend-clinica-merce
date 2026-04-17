@@ -90,37 +90,6 @@ export function ContextPanel({
     return (
         <aside className="w-full md:w-[300px] h-full flex flex-col bg-white border-r border-stone-100 flex-shrink-0 animate-in fade-in slide-in-from-left duration-500">
             
-            {/* 1. CABECERA: Perfil y Notificaciones */}
-            <div className="p-6 border-b border-stone-50 bg-stone-50/20">
-                <div className="flex items-center justify-between mb-2">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <button className="flex items-center gap-3 group outline-none">
-                                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#d9777f] to-[#f3c7cb] flex items-center justify-center text-white shadow-lg shadow-rose-200/50 group-hover:scale-105 transition-transform">
-                                    <User size={20} strokeWidth={2} />
-                                </div>
-                                <div className="flex flex-col text-left">
-                                    <span className="text-sm font-black text-stone-800 leading-tight">Administrador</span>
-                                    <span className="text-[10px] text-stone-400 font-bold uppercase tracking-widest">{clinicName}</span>
-                                </div>
-                            </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="w-56 rounded-2xl shadow-2xl border-stone-100 p-2">
-                            <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-stone-400 px-3 py-2">Cuenta</DropdownMenuLabel>
-                            <DropdownMenuItem className="rounded-xl p-3 font-bold text-sm">Mi Perfil</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="rounded-xl p-3 font-bold text-sm text-rose-600">Cerrar Sesión</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    <div className="relative">
-                        <NotificationsPopover />
-                        {/* Indicador visual si hay notificaciones (opcional) */}
-                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#d9777f] border-2 border-white rounded-full"></div>
-                    </div>
-                </div>
-            </div>
-
             <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-10">
                 
                 {/* 2. BÚSQUEDA: Reservas o Clientes */}
