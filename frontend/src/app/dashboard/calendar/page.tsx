@@ -85,6 +85,7 @@ function CalendarContent() {
                 onApptClick={c.handleApptClick}
                 onBlockClick={c.handleBlockClick}
                 onApptMouseEnter={c.handleApptMouseEnter}
+                onApptMouseMove={c.handleApptMouseMove}
                 onApptMouseLeave={c.handleApptMouseLeave}
                 checkIsLunch={c.isLunchTime}
                 checkIsDisabled={c.isTimeDisabled}
@@ -145,6 +146,9 @@ function CalendarContent() {
                 onSlotClick={(h, m) => c.handleSlotClick(h, m, c.mobileSelectedDate)}
                 onApptClick={c.handleApptClick}
                 onBlockClick={c.handleBlockClick}
+                onApptMouseEnter={c.handleApptMouseEnter}
+                onApptMouseMove={c.handleApptMouseMove}
+                onApptMouseLeave={c.handleApptMouseLeave}
                 checkIsLunch={c.isLunchTime}
                 checkIsDisabled={c.isTimeDisabled}
                 clientMap={c.clientMap}
@@ -188,34 +192,55 @@ function CalendarContent() {
         <div 
           className="fixed z-[100] pointer-events-none animate-in fade-in zoom-in-95 duration-200"
           style={{ 
-            left: c.tooltipPos.x + 15 > (typeof window !== 'undefined' ? window.innerWidth : 1200) - 280 ? c.tooltipPos.x - 295 : c.tooltipPos.x + 15, 
-            top: c.tooltipPos.y + 200 > (typeof window !== 'undefined' ? window.innerHeight : 800) ? c.tooltipPos.y - 210 : c.tooltipPos.y + 15
+            left: c.tooltipPos.x + 20 > (typeof window !== 'undefined' ? window.innerWidth : 1200) - 380 ? c.tooltipPos.x - 395 : c.tooltipPos.x + 20, 
+            top: c.tooltipPos.y + 250 > (typeof window !== 'undefined' ? window.innerHeight : 800) ? c.tooltipPos.y - 230 : c.tooltipPos.y + 20
           }}
         >
-          <div className="bg-white/95 backdrop-blur-md border border-stone-100 shadow-2xl rounded-2xl p-5 w-[280px] ring-1 ring-black/5 relative">
-            <div className="absolute top-4 right-5 bg-[#fdf2f3] text-[#d9777f] px-2 py-0.5 rounded-md text-[11px] font-black tracking-tighter">
+          <div className="bg-white/98 backdrop-blur-xl border border-stone-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-[2rem] p-7 w-[380px] ring-1 ring-black/5 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-[#d9777f]"></div>
+            
+            <div className="absolute top-6 right-7 bg-[#fdf2f3] text-[#d9777f] px-3 py-1 rounded-full text-[12px] font-black tracking-tighter border border-[#f3c7cb]">
               {new Date(c.hoveredAppt.start_time.endsWith('Z') ? c.hoveredAppt.start_time.slice(0, -1) : c.hoveredAppt.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </div>
-            <div className="flex flex-col gap-3">
+
+            <div className="flex flex-col gap-5">
               <div>
-                <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">Cliente</p>
-                <p className="font-extrabold text-stone-800 text-[15px] truncate pr-16">{c.clientMap.get(c.hoveredAppt.client_id)?.name || 'Desconocido'}</p>
+                <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-1.5 flex items-center gap-2">
+                   <span className="w-1.5 h-1.5 rounded-full bg-stone-300"></span> Cliente
+                </p>
+                <p className="font-extrabold text-stone-900 text-[20px] leading-tight pr-20">{c.clientMap.get(c.hoveredAppt.client_id)?.name || 'Desconocido'}</p>
               </div>
+              
               <div>
-                <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">Servicio / Tratamiento</p>
-                <p className="font-bold text-[#d9777f] text-[12px] leading-tight">{c.serviceMap.get(c.hoveredAppt.service_id)?.name || '...'}</p>
+                <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-1.5 flex items-center gap-2">
+                   <span className="w-1.5 h-1.5 rounded-full bg-stone-300"></span> Servicio / Tratamiento
+                </p>
+                <p className="font-black text-[#d9777f] text-[15px] leading-tight">{c.serviceMap.get(c.hoveredAppt.service_id)?.name || 'Borrador...'}</p>
               </div>
-              <div className="flex justify-between items-center bg-stone-50 p-2.5 rounded-xl border border-stone-100">
-                <p className="text-[8px] font-bold text-stone-400 uppercase tracking-widest">Estado</p>
-                <span className={`text-[10px] font-black px-2 rounded-lg uppercase tracking-tight
+
+              <div className="flex justify-between items-center bg-stone-50/50 p-4 rounded-2xl border border-stone-100 mt-1">
+                <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em]">Estado Actual</p>
+                <span className={`text-[11px] font-black px-3 py-1.5 rounded-xl uppercase tracking-wider
                   ${c.hoveredAppt.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 
                     c.hoveredAppt.status === 'cancelled' ? 'bg-red-100 text-red-700' : 
                     c.hoveredAppt.status === 'web_pending' ? 'bg-orange-100 text-orange-700' :
-                    c.hoveredAppt.status === 'confirmed' ? 'bg-[#fdf2f3] text-[#d9777f]' :
+                    c.hoveredAppt.status === 'confirmed' ? 'bg-[#fdf2f3] text-[#d9777f] border border-[#f3c7cb]' :
                     'bg-slate-100 text-slate-700'
                   }`}>
-                  {c.hoveredAppt.status}
+                  {c.hoveredAppt.status === 'completed' ? 'Realizada' : 
+                   c.hoveredAppt.status === 'cancelled' ? 'Cancelada' : 
+                   c.hoveredAppt.status === 'web_pending' ? 'Pte. Confirmar' :
+                   c.hoveredAppt.status === 'confirmed' ? 'Confirmada' :
+                   c.hoveredAppt.status === 'no_show' ? 'No Asistió' :
+                   'Pendiente'}
                 </span>
+              </div>
+
+              <div className="mt-1 bg-[#fefefe] p-4 rounded-2xl border border-stone-50 shadow-sm">
+                <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-2">Notas del Profesional</p>
+                <p className="text-[13px] text-stone-600 font-medium italic leading-relaxed line-clamp-4">
+                  {c.hoveredAppt.notes || 'Sin observaciones registradas...'}
+                </p>
               </div>
             </div>
           </div>

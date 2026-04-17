@@ -109,10 +109,10 @@ export function CalendarModals({
 
     setSaving(true);
     const service = services.find(s => s.id === selectedServiceId);
-    
+
     const start_time = new Date(selectedSlot.date);
     start_time.setHours(selectedSlot.hour, selectedMinutes, 0, 0);
-    
+
     const end_time = new Date(start_time.getTime() + service.duration_minutes * 60000);
 
     try {
@@ -124,7 +124,7 @@ export function CalendarModals({
           service_id: selectedServiceId,
           start_time: formatLocalISO(start_time),
           end_time: formatLocalISO(end_time),
-          status: 'pending',
+          status: 'confirmed', // Cambiado de 'pending' para disparar notificaciones si el backend lo requiere
           notes: appointmentNotes
         })
       });
@@ -289,16 +289,16 @@ export function CalendarModals({
     <>
       {/* 1. Modal de Creación (Cita o Bloqueo) */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="p-0 border-none w-[95vw] sm:max-w-lg h-fit max-h-[100dvh] sm:max-h-[calc(100vh-2rem)] rounded-xl">
+        <DialogContent className="p-0 border-none w-[95vw] sm:max-w-lg lg:max-w-[35em] h-fit max-h-[100dvh] sm:max-h-[calc(100vh-2rem)] rounded-xl">
           <DialogHeader className="sticky top-0 z-30 shrink-0 p-8 border-b border-stone-100 bg-white/95 backdrop-blur-md">
             <div className="flex gap-4 mb-4 p-1 bg-stone-100 rounded-2xl w-fit">
-              <button 
+              <button
                 onClick={() => setModalType('appointment')}
                 className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${modalType === 'appointment' ? 'bg-white text-stone-800 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
               >
                 Nueva Cita
               </button>
-              <button 
+              <button
                 onClick={() => setModalType('block')}
                 className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${modalType === 'block' ? 'bg-stone-800 text-white shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
               >
@@ -317,16 +317,16 @@ export function CalendarModals({
             {modalType === 'appointment' ? (
               <form id="appointment-form" onSubmit={handleSubmit} className="space-y-6">
                 <div className="flex gap-2 mb-2 p-1 bg-stone-50 border border-stone-100 rounded-xl w-fit mx-auto sm:mx-0">
-                   {(selectedSlot?.hour === startHour ? [30, 45] : [0, 15, 30, 45]).map(m => (
-                      <button 
-                        key={m}
-                        type="button"
-                        onClick={() => setSelectedMinutes(m)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${selectedMinutes === m ? 'bg-stone-800 text-white shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}
-                      >
-                         :{m.toString().padStart(2, '0')}
-                      </button>
-                   ))}
+                  {(selectedSlot?.hour === startHour ? [30, 45] : [0, 15, 30, 45]).map(m => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => setSelectedMinutes(m)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${selectedMinutes === m ? 'bg-stone-800 text-white shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}
+                    >
+                      :{m.toString().padStart(2, '0')}
+                    </button>
+                  ))}
                 </div>
 
                 {(() => {
@@ -335,7 +335,7 @@ export function CalendarModals({
                   start_time.setHours(selectedSlot.hour, selectedMinutes, 0, 0);
                   const closingTime = new Date(selectedSlot.date);
                   closingTime.setHours(endHour, settings?.close_time ? parseInt(settings.close_time.split(':')[1]) : 30, 0, 0);
-                  
+
                   let lunchStart = closingTime;
                   if (settings?.lunch_start) {
                     lunchStart = new Date(selectedSlot.date);
@@ -344,28 +344,28 @@ export function CalendarModals({
 
                   const dayAppts = getAppointmentsForDay(selectedSlot.date);
                   const dayBlocks = getBlocksForDay(selectedSlot.date);
-                  
+
                   const futureEvents = [...dayAppts, ...dayBlocks]
                     .map(e => ({ ...e, start: new Date(e.start_time.endsWith('Z') ? e.start_time.slice(0, -1) : e.start_time) }))
                     .filter(e => e.start > start_time)
                     .sort((a, b) => a.start.getTime() - b.start.getTime());
-                  
+
                   let nextEventStart = futureEvents.length > 0 ? futureEvents[0].start : closingTime;
                   if (start_time < lunchStart && nextEventStart > lunchStart) nextEventStart = lunchStart;
 
                   const limitDate = nextEventStart < closingTime ? nextEventStart : closingTime;
                   const gapMinutes = Math.floor((limitDate.getTime() - start_time.getTime()) / 60000);
-                  
+
                   return (
                     <div className="mb-4">
-                       <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Hueco Disponible</p>
-                       <p className="text-xs font-bold text-stone-600 flex items-center gap-1">
-                          <Clock size={14} strokeWidth={1.5} /> {gapMinutes} minutos libres
-                       </p>
+                      <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Hueco Disponible</p>
+                      <p className="text-xs font-bold text-stone-600 flex items-center gap-1">
+                        <Clock size={14} strokeWidth={1.5} /> {gapMinutes} minutos libres
+                      </p>
                     </div>
                   );
                 })()}
-                
+
                 <div className="space-y-5">
                   <div>
                     <label className="block text-sm font-semibold text-stone-700 mb-2">Cliente *</label>
@@ -380,7 +380,7 @@ export function CalendarModals({
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-semibold text-stone-700 mb-2">Tratamiento *</label>
                     <Select value={selectedServiceId} onValueChange={setSelectedServiceId}>
@@ -393,7 +393,7 @@ export function CalendarModals({
                           const start_time = new Date(selectedSlot.date);
                           start_time.setHours(selectedSlot.hour, selectedMinutes, 0, 0);
                           const closingTime = new Date(selectedSlot.date);
-                          closingTime.setHours(19, 0, 0, 0);
+                          closingTime.setHours(endHour, 0, 0, 0);
                           const nextEvent = [...getAppointmentsForDay(selectedSlot.date), ...getBlocksForDay(selectedSlot.date)]
                             .map(e => ({ ...e, start: new Date(e.start_time.endsWith('Z') ? e.start_time.slice(0, -1) : e.start_time) }))
                             .filter(e => e.start > start_time)
@@ -412,11 +412,11 @@ export function CalendarModals({
 
                   <div>
                     <label className="block text-sm font-semibold text-stone-700 mb-2">Notas</label>
-                    <textarea 
-                      value={appointmentNotes} 
-                      onChange={e => setAppointmentNotes(e.target.value)} 
+                    <textarea
+                      value={appointmentNotes}
+                      onChange={e => setAppointmentNotes(e.target.value)}
                       placeholder="Observaciones de la cita..."
-                       className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50 min-h-[100px] resize-none text-sm"
+                      className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50 min-h-[100px] resize-none text-sm"
                     />
                   </div>
                 </div>
@@ -425,26 +425,26 @@ export function CalendarModals({
               <form id="block-form" onSubmit={handleBlockSubmit} className="space-y-6">
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Motivo</label>
-                  <input 
-                    type="text" 
-                    value={blockReason} 
-                    onChange={e => setBlockReason(e.target.value)} 
+                  <input
+                    type="text"
+                    value={blockReason}
+                    onChange={e => setBlockReason(e.target.value)}
                     placeholder="Ej: Descanso, Formación..."
                     className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-stone-800 outline-none bg-stone-50"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Duración</label>
                   <div className="grid grid-cols-3 gap-2">
                     {[30, 60, 120, 240, -1].map(mins => (
-                      <button 
+                      <button
                         key={mins}
                         type="button"
                         onClick={() => setBlockDuration(mins)}
                         className={`py-3 rounded-xl font-bold text-[10px] transition-all border-2 ${blockDuration === mins ? 'bg-stone-800 border-stone-800 text-white' : 'bg-white border-stone-100 text-stone-500 hover:border-stone-300'}`}
                       >
-                        {mins === -1 ? 'Día Completo' : (mins >= 60 ? `${mins/60}h` : `${mins}min`)}
+                        {mins === -1 ? 'Día Completo' : (mins >= 60 ? `${mins / 60}h` : `${mins}min`)}
                       </button>
                     ))}
                   </div>
@@ -457,10 +457,10 @@ export function CalendarModals({
             <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-4 rounded-xl font-bold text-stone-600 bg-white border border-stone-100 hover:bg-stone-50 shadow-sm transition-all pointer-events-auto">
               Cancelar
             </button>
-            <button 
+            <button
               form={modalType === 'appointment' ? 'appointment-form' : 'block-form'}
-              disabled={saving} 
-              type="submit" 
+              disabled={saving}
+              type="submit"
               className={`flex-1 ${modalType === 'appointment' ? 'bg-stone-900 border-stone-900' : 'bg-stone-800 border-stone-800'} text-white px-6 py-4 rounded-xl font-bold transition-all disabled:opacity-50 active:scale-95 shadow-lg shadow-stone-900/10 border pointer-events-auto`}
             >
               {saving ? 'Guardando...' : (modalType === 'appointment' ? 'Agendar' : 'Bloquear')}
@@ -471,21 +471,27 @@ export function CalendarModals({
 
       {/* 2. Modal de Liberación de Bloqueo */}
       <Dialog open={showBlockDeleteModal} onOpenChange={setShowBlockDeleteModal}>
-        <DialogContent className="flex flex-col w-[95vw] sm:max-w-xs max-h-[85dvh] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-xl">
+        <DialogContent className="flex flex-col w-[95vw] sm:max-w-[300px] lg:max-w-[22em] max-h-[85dvh] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-xl">
           <div className="flex-1 overflow-y-auto p-8 text-center">
-             <div className="w-16 h-16 bg-stone-100 text-stone-400 rounded-full flex items-center justify-center mx-auto mb-4"><Unlock size={32} strokeWidth={1.5} /></div>
-             <h3 className="text-xl font-extrabold text-stone-800 mb-2">Liberar Horario</h3>
-             <p className="text-stone-500 text-sm">¿Deseas eliminar este bloqueo y permitir nuevas citas en este hueco?</p>
+            <div className="w-16 h-16 bg-stone-100 text-stone-400 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Unlock size={32} strokeWidth={1.5} />
+            </div>
+            <DialogHeader className="p-0">
+              <DialogTitle className="text-xl font-extrabold text-stone-800 mb-2">Liberar Horario</DialogTitle>
+              <DialogDescription className="text-stone-500 text-sm">
+                ¿Deseas eliminar este bloqueo y permitir nuevas citas en este hueco?
+              </DialogDescription>
+            </DialogHeader>
           </div>
           <DialogFooter className="shrink-0 p-6 pt-2 flex flex-col gap-2 sm:flex-col border-t-0">
-            <button 
+            <button
               onClick={handleDeleteBlock}
               disabled={updatingStatus}
               className="w-full bg-stone-900 text-white py-4 rounded-xl font-bold hover:bg-black transition-all active:scale-95"
             >
               {updatingStatus ? 'Liberando...' : 'Sí, Eliminar Bloqueo'}
             </button>
-            <button 
+            <button
               onClick={() => setShowBlockDeleteModal(false)}
               className="w-full bg-stone-50 text-stone-500 py-3 rounded-xl font-bold hover:bg-stone-100 transition-all"
             >
@@ -497,14 +503,31 @@ export function CalendarModals({
 
       {/* 3. Modal de Edición de Cita */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent className="p-0 border-none w-[95vw] sm:max-w-md h-fit max-h-[100dvh] sm:max-h-[calc(100vh-2rem)] rounded-xl">
+        <DialogContent className="p-0 border-none w-[95vw] sm:max-w-[340px] lg:max-w-[35em] h-fit max-h-[100dvh] sm:max-h-[calc(100vh-2rem)] rounded-xl">
           <DialogHeader className="sticky top-0 z-30 shrink-0 p-8 border-b border-stone-100 bg-white/95 backdrop-blur-md">
             <div className="flex justify-between items-start mb-2">
               <div>
-                <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Cita Confirmada</p>
+                <p className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.2em] mb-1">
+                  {selectedAppt?.status === 'web_pending' ? 'Reserva Web' :
+                    selectedAppt?.status === 'completed' ? 'Cita Realizada' :
+                      selectedAppt?.status === 'cancelled' ? 'Cita Cancelada' :
+                        'Cita Confirmada'}
+                </p>
                 <DialogTitle className="text-2xl font-serif italic font-black text-stone-800">
                   {selectedAppt ? clientMap.get(selectedAppt.client_id)?.name : 'Detalle Cita'}
                 </DialogTitle>
+                {selectedAppt && (
+                  <DialogDescription className="text-[#d9777f] font-bold flex items-center gap-2 mt-2 text-xs">
+                    <Calendar size={14} strokeWidth={1.5} />
+                    {new Date(selectedAppt.start_time.endsWith('Z') ? selectedAppt.start_time.slice(0, -1) : selectedAppt.start_time).toLocaleDateString('es-ES', {
+                      weekday: 'long',
+                      day: 'numeric',
+                      month: 'long',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })} h
+                  </DialogDescription>
+                )}
               </div>
             </div>
           </DialogHeader>
@@ -523,14 +546,14 @@ export function CalendarModals({
 
             <div>
               <label className="block text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">Notas del Tratamiento</label>
-              <textarea 
-                value={editNotes} 
-                onChange={e => setEditNotes(e.target.value)} 
+              <textarea
+                value={editNotes}
+                onChange={e => setEditNotes(e.target.value)}
                 className="w-full px-5 py-4 rounded-2xl border border-stone-100 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50 min-h-[100px] resize-none text-sm placeholder:italic shadow-inner"
                 placeholder="Añadir notas del tratamiento..."
               />
               {selectedAppt && editNotes !== (selectedAppt.notes || '') && (
-                <button 
+                <button
                   onClick={() => handleUpdateNotes()}
                   disabled={updatingStatus}
                   className="mt-3 w-full bg-stone-800 text-white text-xs font-bold uppercase py-3 rounded-xl hover:bg-stone-900 transition-all flex items-center justify-center gap-2"
@@ -545,7 +568,7 @@ export function CalendarModals({
                 <p className="text-[10px] text-orange-600 font-bold uppercase tracking-widest mb-3 flex items-center gap-1">
                   <AlertTriangle size={12} /> Reserva pendiente de confirmar
                 </p>
-                <button 
+                <button
                   onClick={() => handleStatusChange('confirmed')}
                   disabled={updatingStatus}
                   className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-orange-200 transition-all active:scale-95 flex items-center justify-center gap-2"
@@ -557,8 +580,8 @@ export function CalendarModals({
 
             <div className="space-y-4">
               <p className="text-xs font-bold text-stone-400 uppercase tracking-widest border-b border-stone-100 pb-2">Acciones Rápidas</p>
-              
-              <button 
+
+              <button
                 onClick={() => {
                   if (selectedAppt) {
                     const client = clientMap.get(selectedAppt.client_id);
@@ -572,7 +595,7 @@ export function CalendarModals({
               </button>
 
               <div className="space-y-3 pt-4">
-                <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Cambiar Estado</p>
+                <p className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.2em] mb-1">Cambiar Estado</p>
                 <Select
                   value={selectedAppt?.status}
                   onValueChange={(val) => handleStatusChange(val)}
@@ -580,20 +603,20 @@ export function CalendarModals({
                 >
                   <SelectTrigger className={`w-full h-14 rounded-2xl font-bold border-2 transition-all
                     ${selectedAppt?.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-400' :
-                      selectedAppt?.status === 'cancelled' ? 'bg-red-50 text-red-700 border-red-500' :
-                      selectedAppt?.status === 'no_show' ? 'bg-stone-100 text-stone-600 border-stone-400' :
-                      selectedAppt?.status === 'web_pending' ? 'bg-orange-50 text-orange-700 border-orange-400' :
-                      selectedAppt?.status === 'confirmed' ? 'bg-[#fdf2f3] text-[#d9777f] border-[#d9777f]' :
-                      'bg-stone-50 text-stone-600 border-transparent'}
+                      selectedAppt?.status === 'cancelled' ? 'bg-rose-50 text-rose-700 border-rose-500 shadow-sm shadow-rose-100' :
+                        selectedAppt?.status === 'no_show' ? 'bg-stone-100 text-stone-600 border-stone-400' :
+                          selectedAppt?.status === 'web_pending' ? 'bg-orange-50 text-orange-700 border-orange-400' :
+                            selectedAppt?.status === 'confirmed' ? 'bg-[#fdf2f3] text-[#d9777f] border-[#d9777f] shadow-sm shadow-rose-100' :
+                              'bg-stone-50 text-stone-600 border-transparent'}
                   `}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl border-none shadow-2xl">
-                    <SelectItem value="pending">⏳ Pendiente</SelectItem>
-                    <SelectItem value="confirmed">✨ Confirmada</SelectItem>
-                    <SelectItem value="completed">✅ Realizada</SelectItem>
-                    <SelectItem value="no_show">No Asistió</SelectItem>
-                    <SelectItem value="cancelled">❌ Cancelada</SelectItem>
+                    <SelectItem value="pending" className="font-medium p-3">⏳ Pendiente</SelectItem>
+                    <SelectItem value="confirmed" className="font-bold text-[#d9777f] p-3">✨ Confirmada</SelectItem>
+                    <SelectItem value="completed" className="font-bold text-emerald-600 p-3">✅ Realizada</SelectItem>
+                    <SelectItem value="no_show" className="font-medium p-3">No Asistió</SelectItem>
+                    <SelectItem value="cancelled" className="font-bold text-rose-600 p-3">❌ Cancelada</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -601,12 +624,12 @@ export function CalendarModals({
           </div>
 
           <DialogFooter className="sticky bottom-0 left-0 w-full p-6 pt-12 flex justify-center bg-gradient-to-t from-white via-white/95 to-transparent rounded-b-xl z-20 pointer-events-none">
-            <button 
-              onClick={handleDeleteAppointment} 
-              disabled={updatingStatus} 
+            <button
+              onClick={handleDeleteAppointment}
+              disabled={updatingStatus}
               className="text-[10px] font-black text-stone-300 hover:text-rose-500 uppercase tracking-[0.2em] transition-all flex items-center gap-2 group p-2 mx-auto pointer-events-auto"
             >
-              <Trash2 size={14} strokeWidth={2} className="group-hover:scale-110 transition-transform" /> 
+              <Trash2 size={14} strokeWidth={2} className="group-hover:scale-110 transition-transform" />
               Eliminar Permanentemente
             </button>
           </DialogFooter>

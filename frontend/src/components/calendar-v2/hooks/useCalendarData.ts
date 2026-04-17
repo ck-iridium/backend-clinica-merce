@@ -245,6 +245,10 @@ export function useCalendarData() {
     setTooltipPos({ x: e.clientX, y: e.clientY });
   };
 
+  const handleApptMouseMove = (e: React.MouseEvent) => {
+    setTooltipPos({ x: e.clientX, y: e.clientY });
+  };
+
   const handleApptMouseLeave = () => {
     setHoveredAppt(null);
   };
@@ -341,6 +345,7 @@ export function useCalendarData() {
     handleApptClick,
     handleBlockClick,
     handleApptMouseEnter,
+    handleApptMouseMove,
     handleApptMouseLeave,
     openWhatsApp
   };

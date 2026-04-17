@@ -20,6 +20,7 @@ interface DayColumnProps {
   onApptClick: (appt: any) => void;
   onBlockClick: (block: any) => void;
   onApptMouseEnter?: (e: React.MouseEvent, appt: any) => void;
+  onApptMouseMove?: (e: React.MouseEvent) => void;
   onApptMouseLeave?: () => void;
   
   // Logic helpers (pasados desde el hook de datos)
@@ -51,6 +52,7 @@ export function DayColumn({
   onApptClick,
   onBlockClick,
   onApptMouseEnter,
+  onApptMouseMove,
   onApptMouseLeave,
   checkIsLunch,
   checkIsDisabled,
@@ -166,9 +168,9 @@ export function DayColumn({
             appointment={appt}
             client={clientMap.get(appt.client_id)}
             service={serviceMap.get(appt.service_id)}
-            onClick={onApptClick}
+            onClick={(e, appt) => onApptClick(appt)}
             onMouseEnter={onApptMouseEnter}
-            onMouseMove={onApptMouseEnter}
+            onMouseMove={onApptMouseMove}
             onMouseLeave={onApptMouseLeave}
             isMobile={viewType === 'mobile'}
             style={{ top: `${top}px`, height: `${height}px`, width: '100%', left: 0 }}

@@ -77,7 +77,7 @@ export function AppointmentCard({
       onMouseEnter={(e) => onMouseEnter?.(e, appointment)}
       onMouseMove={(e) => onMouseMove?.(e, appointment)}
       onMouseLeave={onMouseLeave}
-      className={`absolute w-full left-0 border-l-[3px] border-y shadow-sm px-2 py-0.5 z-20 overflow-hidden hover:brightness-95 transition-all cursor-pointer flex flex-col justify-center border-stone-200 ${colors}`}
+      className={`absolute w-full left-0 border-l-[3px] border-y shadow-sm px-2 py-0.5 z-20 overflow-hidden hover:brightness-95 hover:scale-105 hover:shadow-md hover:z-30 transition-all cursor-pointer flex flex-col justify-center border-stone-200 ${colors}`}
       style={style}
     >
       <div className={`font-black truncate leading-none ${heightPx < 25 ? 'text-[9px]' : 'text-[10px] sm:text-[11px]'} ${appointment.status === 'cancelled' || appointment.status === 'no_show' ? 'text-current line-through' : 'text-stone-800'}`}>
