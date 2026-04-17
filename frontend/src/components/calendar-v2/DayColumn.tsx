@@ -9,6 +9,7 @@ interface DayColumnProps {
   blocks: any[];
   isClosed: boolean;
   closedReason?: string | null;
+  closedBlock?: any;
   hours: number[];
   startHour: number;
   heightPerHour: number;
@@ -41,6 +42,7 @@ export function DayColumn({
   blocks,
   isClosed,
   closedReason,
+  closedBlock,
   hours,
   startHour,
   heightPerHour,
@@ -61,11 +63,22 @@ export function DayColumn({
       
       {/* Estado Cerrado (Overlay) */}
       {isClosed && (
-        <div className="absolute inset-0 z-[60] bg-stone-100/80 backdrop-blur-[1px] flex flex-col items-center justify-center p-4 text-center cursor-not-allowed border-[3px] border-stone-300 pointer-events-auto">
-          <Lock size={viewType === 'mobile' ? 32 : 24} className="text-stone-400 mb-2" strokeWidth={1.5} />
-          <span className="text-stone-600 font-extrabold uppercase tracking-widest text-xs">
+        <div 
+          onClick={(e) => {
+            e.stopPropagation();
+            if (closedBlock) onBlockClick(closedBlock);
+          }}
+          className="absolute inset-0 z-[60] bg-stone-100/80 backdrop-blur-[1px] flex flex-col items-center justify-center p-4 text-center cursor-pointer border-[3px] border-stone-300 pointer-events-auto hover:bg-stone-200/80 transition-all group/closed"
+        >
+          <div className="w-16 h-16 bg-white/50 rounded-full flex items-center justify-center mb-3 shadow-sm group-hover/closed:scale-110 transition-transform">
+            <Lock size={viewType === 'mobile' ? 32 : 24} className="text-[#d9777f]" strokeWidth={2} />
+          </div>
+          <span className="text-stone-800 font-black uppercase tracking-widest text-xs">
             {closedReason || 'CERRADO'}
           </span>
+          <p className="text-[10px] text-stone-400 mt-2 font-bold opacity-0 group-hover/closed:opacity-100 transition-opacity">
+            Hacer click para gestionar bloqueo
+          </p>
         </div>
       )}
 
@@ -122,7 +135,7 @@ export function DayColumn({
           <div 
             key={block.id}
             onClick={() => onBlockClick(block)}
-            className={`absolute w-[94%] left-[3%] rounded-lg border-2 z-10 cursor-pointer hover:border-stone-400 transition-all flex items-center justify-center overflow-hidden ${isFullDay ? 'border-stone-800 border-[3px]' : 'border-stone-200'}`}
+            className={`absolute w-full left-0 z-10 cursor-pointer hover:border-stone-400 transition-all flex items-center justify-center overflow-hidden border-y-2 last:border-b-0 ${isFullDay ? 'border-stone-800 border-x-[3px]' : 'border-stone-200 border-x-0'}`}
             style={{ top: `${top}px`, height: `${height}px`, backgroundImage: 'repeating-linear-gradient(45deg, #f5f5f4, #f5f5f4 10px, #eeeeee 10px, #eeeeee 20px)' }}
           >
             <span className="text-[10px] font-black text-stone-400 uppercase tracking-tighter opacity-60 text-center px-1">
@@ -143,7 +156,9 @@ export function DayColumn({
         const end = new Date(tE);
         const top = Math.max(((start.getHours() - startHour) * heightPerHour) + (start.getMinutes() / 60) * heightPerHour, 0);
         const duration = (end.getTime() - start.getTime()) / 60000;
-        const height = Math.max((duration / 60) * heightPerHour, viewType === 'mobile' ? 35 : 30);
+        // Ajuste altura: 15min = 0.25h. Si heightPerHour es 80, 15min = 20px. 
+        // Eliminamos el Math.max arbitrario de 30px para que encaje perfecto.
+        const height = (duration / 60) * heightPerHour;
 
         return (
           <AppointmentCard
@@ -156,7 +171,7 @@ export function DayColumn({
             onMouseMove={onApptMouseEnter}
             onMouseLeave={onApptMouseLeave}
             isMobile={viewType === 'mobile'}
-            style={{ top: `${top}px`, height: `${height}px` }}
+            style={{ top: `${top}px`, height: `${height}px`, width: '100%', left: 0 }}
           />
         );
       })}

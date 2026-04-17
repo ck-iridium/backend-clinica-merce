@@ -39,6 +39,18 @@ export function useCalendarData() {
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // --- NUEVO: Estados de UI y Modales ---
+  const [showModal, setShowModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showBlockDeleteModal, setShowBlockDeleteModal] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState<{ date: Date, hour: number } | null>(null);
+  const [selectedMinutes, setSelectedMinutes] = useState(0);
+  const [selectedAppt, setSelectedAppt] = useState<any>(null);
+  const [selectedBlock, setSelectedBlock] = useState<any>(null);
+  const [hoveredAppt, setHoveredAppt] = useState<any>(null);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+  const [mobileTopbarPortal, setMobileTopbarPortal] = useState<Element | null>(null);
+
   // Inicialización de cliente (Robusta)
   useEffect(() => {
     const now = new Date();
@@ -46,12 +58,14 @@ export function useCalendarData() {
     if (now.getHours() > 19 || (now.getHours() === 19 && now.getMinutes() >= 15)) {
       now.setDate(now.getDate() + 1);
     }
-    setMobileSelectedDate(new Date(now));
-    setCarouselAnchor(new Date(now));
-    setCurrentWeek(getMonday(now));
+    const safeNow = new Date(now);
+    setMobileSelectedDate(safeNow);
+    setCarouselAnchor(safeNow);
+    setCurrentWeek(getMonday(safeNow));
   }, []);
 
   useEffect(() => {
+    setMobileTopbarPortal(document.getElementById('mobile-topbar-center'));
     fetchData();
   }, []);
 
@@ -155,15 +169,95 @@ export function useCalendarData() {
     });
   };
 
-  const getDayClosedReason = (date: Date) => {
+  const getClosedBlockForDay = (date: Date) => {
     const dayBlocks = getBlocksForDay(date);
-    const block = dayBlocks.find(b => {
+    return dayBlocks.find(b => {
       if (b.is_annual_holiday) return true;
       const start = new Date(b.start_time.endsWith('Z') ? b.start_time.slice(0, -1) : b.start_time);
       const end = new Date(b.end_time.endsWith('Z') ? b.end_time.slice(0, -1) : b.end_time);
       return ((end.getTime() - start.getTime()) / (1000 * 60 * 60)) >= 8;
     });
+  };
+
+  const getDayClosedReason = (date: Date) => {
+    const block = getClosedBlockForDay(date);
     return block ? (block.reason || 'Cerrado') : null;
+  };
+
+  /**
+   * MANEJADORES DE NAVEGACIÓN
+   */
+  const handlePrevWeek = () => {
+    const d = new Date(currentWeek);
+    d.setDate(d.getDate() - 7);
+    setCurrentWeek(d);
+  };
+
+  const handleNextWeek = () => {
+    const d = new Date(currentWeek);
+    d.setDate(d.getDate() + 7);
+    setCurrentWeek(d);
+  };
+
+  const handleToday = () => {
+    const now = new Date();
+    setCurrentWeek(getMonday(now));
+    setMobileSelectedDate(new Date(now));
+    setCarouselAnchor(new Date(now));
+    
+    // Auto-scroll en móvil
+    if (mobileDaysContainerRef.current && activeDayRef.current) {
+        activeDayRef.current.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+  };
+
+  const handleDateSelect = (date: Date) => {
+    setCurrentWeek(getMonday(date));
+  };
+
+  const handleMobileDateSelect = (date: Date) => {
+    setMobileSelectedDate(date);
+    setCarouselAnchor(date);
+    setCurrentWeek(getMonday(date));
+  };
+
+  /**
+   * MANEJADORES DE INTERACCIÓN
+   */
+  const handleSlotClick = (hour: number, minute: number, date: Date) => {
+    setSelectedSlot({ date, hour });
+    setSelectedMinutes(minute);
+    setShowModal(true);
+  };
+
+  const handleApptClick = (appt: any) => {
+    setSelectedAppt(appt);
+    setShowEditModal(true);
+  };
+
+  const handleBlockClick = (block: any) => {
+    setSelectedBlock(block);
+    setShowBlockDeleteModal(true);
+  };
+
+  const handleApptMouseEnter = (e: React.MouseEvent, appt: any) => {
+    setHoveredAppt(appt);
+    setTooltipPos({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleApptMouseLeave = () => {
+    setHoveredAppt(null);
+  };
+
+  const openWhatsApp = (clientName: string, phone: string, serviceName: string, startTime: string) => {
+    if (!phone) return;
+    const date = new Date(startTime.endsWith('Z') ? startTime.slice(0, -1) : startTime);
+    const dateStr = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+    const message = `¡Hola ${clientName}! Soy Merce de Estética Merce. Te escribo sobre tu cita para ${serviceName} el ${dateStr}.`;
+    const encoded = encodeURIComponent(message);
+    let cleanPhone = phone.replace(/\s+/g, '').replace('+', '');
+    if (!cleanPhone.startsWith('34') && cleanPhone.length === 9) cleanPhone = '34' + cleanPhone;
+    window.open(`https://wa.me/${cleanPhone}?text=${encoded}`, '_blank');
   };
 
   // Cálculo de periodos y mapas
@@ -220,8 +314,34 @@ export function useCalendarData() {
     isTimeDisabled,
     isDayClosed,
     getDayClosedReason,
+    getClosedBlockForDay,
     getAppointmentsForDay,
     getBlocksForDay,
-    initialClientId
+    initialClientId,
+
+    // UI States
+    showModal, setShowModal,
+    showEditModal, setShowEditModal,
+    showBlockDeleteModal, setShowBlockDeleteModal,
+    selectedSlot, setSelectedSlot,
+    selectedMinutes, setSelectedMinutes,
+    selectedAppt, setSelectedAppt,
+    selectedBlock, setSelectedBlock,
+    hoveredAppt, setHoveredAppt,
+    tooltipPos, setTooltipPos,
+    mobileTopbarPortal,
+
+    // Handlers
+    handlePrevWeek,
+    handleNextWeek,
+    handleToday,
+    handleDateSelect,
+    handleMobileDateSelect,
+    handleSlotClick,
+    handleApptClick,
+    handleBlockClick,
+    handleApptMouseEnter,
+    handleApptMouseLeave,
+    openWhatsApp
   };
 }

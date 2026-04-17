@@ -24,13 +24,15 @@ export function EmptySlot({
   const isLastSlotOfHour = minute === 45;
   const borderClass = !isLastSlotOfHour ? (viewType === 'desktop' ? 'border-b border-dashed border-stone-200' : 'border-b border-dashed border-stone-200') : '';
   
-  const bgImage = isLunch 
-    ? 'repeating-linear-gradient(45deg, #fafaf9, #fafaf9 5px, #f5f5f4 5px, #f5f5f4 10px)' 
-    : 'none';
+  const bgImage = isDisabled
+    ? 'repeating-linear-gradient(45deg, #f5f5f4, #f5f5f4 8px, #eeeeee 8px, #eeeeee 16px)'
+    : isLunch 
+      ? 'repeating-linear-gradient(45deg, #fafaf9, #fafaf9 5px, #f5f5f4 5px, #f5f5f4 10px)' 
+      : 'none';
 
   const baseClasses = viewType === 'desktop' 
-    ? `w-full h-1/4 transition-all relative ${borderClass} ${isDisabled ? 'bg-stone-50/60 cursor-not-allowed' : 'hover:bg-[#fdf2f3]/50 cursor-pointer'}`
-    : `w-full h-1/4 transition-all relative ${borderClass} ${isDisabled ? 'bg-stone-50/60 cursor-not-allowed' : 'active:bg-[#fdf2f3] cursor-pointer'}`;
+    ? `w-full h-1/4 transition-all relative ${borderClass} ${isDisabled ? 'bg-stone-100/30 cursor-not-allowed opacity-50' : 'hover:bg-[#fdf2f3]/50 cursor-pointer'}`
+    : `w-full h-1/4 transition-all relative ${borderClass} ${isDisabled ? 'bg-stone-100/30 cursor-not-allowed opacity-50' : 'active:bg-[#fdf2f3] cursor-pointer'}`;
 
   return (
     <div

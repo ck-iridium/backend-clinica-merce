@@ -77,16 +77,16 @@ export function AppointmentCard({
       onMouseEnter={(e) => onMouseEnter?.(e, appointment)}
       onMouseMove={(e) => onMouseMove?.(e, appointment)}
       onMouseLeave={onMouseLeave}
-      className={`absolute w-[92%] left-[4%] ml-auto mr-auto border-l-[4px] rounded-r-lg shadow-sm px-2 py-1 z-20 overflow-hidden hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer flex flex-col justify-start ${colors}`}
+      className={`absolute w-full left-0 border-l-[3px] border-y shadow-sm px-2 py-0.5 z-20 overflow-hidden hover:brightness-95 transition-all cursor-pointer flex flex-col justify-center border-stone-200 ${colors}`}
       style={style}
     >
-      <div className={`font-extrabold text-[10px] sm:text-xs truncate leading-tight mb-0.5 ${appointment.status === 'cancelled' || appointment.status === 'no_show' ? 'text-current line-through' : 'text-stone-800'}`}>
-        {appointment.status === 'web_pending' && <span className="text-orange-600 mr-1">[WEB]</span>}
-        {client?.name || 'Cliente Desconocido'}
+      <div className={`font-black truncate leading-none ${heightPx < 25 ? 'text-[9px]' : 'text-[10px] sm:text-[11px]'} ${appointment.status === 'cancelled' || appointment.status === 'no_show' ? 'text-current line-through' : 'text-stone-800'}`}>
+        {appointment.status === 'web_pending' && <span className="text-orange-600 mr-0.5">[W]</span>}
+        {client?.name || 'Cliente'}
       </div>
-      {heightPx >= 36 && (
-        <div className={`text-[9px] font-semibold truncate leading-tight ${appointment.status === 'completed' ? 'text-emerald-700' : (appointment.status === 'pending' ? 'text-[#b35e65]' : 'text-current opacity-80')}`}>
-          {service?.name || 'Servicio...'}
+      {heightPx >= 30 && (
+        <div className={`text-[8px] font-bold truncate leading-none mt-0.5 ${appointment.status === 'completed' ? 'text-emerald-700' : (appointment.status === 'pending' ? 'text-[#b35e65]' : 'text-current opacity-70')}`}>
+          {service?.name || '...'}
         </div>
       )}
     </div>
