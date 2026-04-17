@@ -87,7 +87,7 @@ export function DayColumn({
       {/* Grid de Slots Vacíos (Elástico) */}
       <div className="absolute inset-0 z-0 flex flex-col h-full">
         {hours.map((h, i) => (
-          <div key={`h-container-${h}`} className="flex-1 flex flex-col border-b border-stone-100/50 last:border-b-0">
+          <div key={`h-container-${h}`} className="flex-1 flex flex-col border-b border-stone-300 last:border-b-0">
             {[0, 15, 30, 45].map(m => (
               <EmptySlot
                 key={`slot-${h}-${m}`}

@@ -29,17 +29,21 @@ export function TimeScale({
         {hours.map((h, i) => (
           <div 
             key={`axis-${h}`} 
-            className="flex-1 relative"
+            className="flex-1 relative flex items-start justify-center"
           >
-            <div className="absolute -top-[7px] left-0 w-full text-center text-[10px] font-bold text-stone-400">
-              {h.toString().padStart(2, '0')}:00
+            <div className="relative -top-[12px] bg-white border border-stone-200 px-2.5 py-1 rounded-lg shadow-sm z-50">
+              <span className="text-[12px] font-black text-stone-600 tracking-tighter">
+                {h.toString().padStart(2, '0')}:00
+              </span>
             </div>
           </div>
         ))}
-        {/* Marcador para la hora de cierre (final de la última celda) */}
-        <div className="h-0 relative">
-             <div className="absolute -top-[7px] left-0 w-full text-center text-[10px] font-bold text-stone-400 opacity-30">
-                {(hours[hours.length - 1] + 1).toString().padStart(2, '0')}:00
+        {/* Marcador para la hora de cierre */}
+        <div className="h-0 relative flex items-start justify-center">
+             <div className="relative -top-[12px] bg-stone-50 border border-stone-100 px-2 py-0.5 rounded-lg z-20 opacity-50">
+                <span className="text-[10px] font-bold text-stone-400 uppercase tracking-tighter">
+                  {(hours[hours.length - 1] + 1).toString().padStart(2, '0')}:00
+                </span>
              </div>
         </div>
       </div>
@@ -47,13 +51,13 @@ export function TimeScale({
   }
 
   return (
-    <div className="w-[50px] shrink-0 border-r border-stone-200 bg-white relative pointer-events-none flex flex-col h-full">
+    <div className="w-[60px] shrink-0 border-r border-stone-200 bg-white relative pointer-events-none flex flex-col h-full">
       {hours.map((h, i) => (
         <div 
           key={`maxis-${h}`} 
           className="flex-1 relative"
         >
-          <div className="absolute -top-[7px] right-2 text-[10px] font-bold text-stone-400 z-30">
+          <div className="absolute -top-[8px] right-2 text-[12px] font-black text-stone-500 z-30">
             {h.toString().padStart(2, '0')}:00
           </div>
         </div>

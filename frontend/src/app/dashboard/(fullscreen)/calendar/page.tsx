@@ -72,7 +72,7 @@ function CalendarContent() {
             <div className="hidden md:flex flex-col flex-1 bg-white rounded-[0.75em] shadow-sm overflow-hidden relative translate-z-0">
               {/* Header de Días */}
               <div className="grid grid-cols-[100px_repeat(5,1fr)] border-b border-stone-200 bg-stone-50/30">
-                <div className="p-4 border-r border-stone-200"></div>
+                <div className="border-r border-stone-200"></div>
                 {c.days.map((date, i) => (
                   <div key={i} className="p-4 text-center border-r border-stone-200 last:border-r-0">
                     <p className="text-[10px] font-black text-[#d9777f] uppercase tracking-[0.2em] mb-1">
@@ -86,7 +86,7 @@ function CalendarContent() {
               </div>
 
               {/* Cuerpo de la Grilla (Elástico No-Scroll) */}
-              <div className="flex-1 flex flex-col relative overflow-hidden h-full">
+              <div className="flex-1 flex flex-col relative overflow-visible h-full">
                 <div className="grid grid-cols-[100px_repeat(5,1fr)] relative h-full flex-1">
                   <TimeScale hours={c.hours} heightPerHour={0} part="guides" />
                   <TimeScale hours={c.hours} heightPerHour={0} part="axis" viewType="desktop" />
@@ -216,22 +216,36 @@ function CalendarContent() {
             }}
           >
             <div className="bg-white/98 backdrop-blur-xl border border-stone-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-[2rem] p-7 w-[380px] ring-1 ring-black/5 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-1 h-full bg-[#d9777f]"></div>
-              <div className="absolute top-6 right-7 bg-[#fdf2f3] text-[#d9777f] px-3 py-1 rounded-full text-[12px] font-black tracking-tighter border border-[#f3c7cb]">
+              <div className={`absolute top-0 left-0 w-1.5 h-full ${
+                c.hoveredAppt.status === 'confirmed' ? 'bg-blue-500' : 
+                c.hoveredAppt.status === 'completed' ? 'bg-emerald-500' : 
+                c.hoveredAppt.status === 'cancelled' ? 'bg-red-500' : 
+                'bg-orange-500'
+              }`}></div>
+              
+              <div className={`absolute top-6 right-7 px-3 py-1 rounded-full text-[12px] font-black tracking-tighter border ${
+                c.hoveredAppt.status === 'confirmed' ? 'bg-blue-50 text-blue-600 border-blue-100' : 
+                'bg-orange-50 text-orange-600 border-orange-100'
+              }`}>
                 {new Date(c.hoveredAppt.start_time.endsWith('Z') ? c.hoveredAppt.start_time.slice(0, -1) : c.hoveredAppt.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </div>
+
               <div className="flex flex-col gap-5">
                 <div>
                   <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-1.5 flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-stone-300"></span> Cliente
                   </p>
-                  <p className="font-extrabold text-stone-900 text-[20px] leading-tight pr-20">{c.clientMap.get(c.hoveredAppt.client_id)?.name || 'Desconocido'}</p>
+                  <p className="font-extrabold text-stone-900 text-[22px] leading-tight pr-20">{c.clientMap.get(c.hoveredAppt.client_id)?.name || 'Desconocido'}</p>
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-1.5 flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-stone-300"></span> Servicio / Tratamiento
                   </p>
-                  <p className="font-black text-[#d9777f] text-[15px] leading-tight">{c.serviceMap.get(c.hoveredAppt.service_id)?.name || 'Borrador...'}</p>
+                  <p className={`font-black text-[17px] leading-tight ${
+                    c.hoveredAppt.status === 'confirmed' ? 'text-blue-600' : 
+                    c.hoveredAppt.status === 'completed' ? 'text-emerald-600' : 
+                    'text-orange-600'
+                  }`}>{c.serviceMap.get(c.hoveredAppt.service_id)?.name || 'Sin especificar'}</p>
                 </div>
                 <div className="flex justify-between items-center bg-stone-50/50 p-4 rounded-2xl border border-stone-100 mt-1">
                   <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em]">Estado Actual</p>
@@ -239,7 +253,7 @@ function CalendarContent() {
                     ${c.hoveredAppt.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 
                       c.hoveredAppt.status === 'cancelled' ? 'bg-red-100 text-red-700' : 
                       c.hoveredAppt.status === 'web_pending' ? 'bg-orange-100 text-orange-700' :
-                      c.hoveredAppt.status === 'confirmed' ? 'bg-[#fdf2f3] text-[#d9777f] border border-[#f3c7cb]' :
+                      c.hoveredAppt.status === 'confirmed' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
                       'bg-slate-100 text-slate-700'
                     }`}>
                     {c.hoveredAppt.status === 'completed' ? 'Realizada' : 
