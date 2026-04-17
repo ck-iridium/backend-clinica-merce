@@ -585,12 +585,12 @@ function CalendarContent() {
             <div className="relative bg-white" style={{ height: `${hours.length * 80}px` }}>
               {/* Horizontal line markers */}
               {hours.map((h, i) => (
-                <div key={`hl-${h}`} className="absolute w-full border-t border-stone-50" style={{ top: `${i * 80}px`, height: '80px', pointerEvents: 'none' }}></div>
+                <div key={`hl-${h}`} className="absolute w-full border-t border-stone-300" style={{ top: `${i * 80}px`, height: '80px', pointerEvents: 'none' }}></div>
               ))}
 
               <div className="grid grid-cols-6 absolute top-0 w-full h-full">
                 {/* Time Scale Column */}
-                <div className="border-r border-stone-100 bg-stone-50/20 relative z-10 pointer-events-none">
+                <div className="border-r border-stone-200 bg-stone-50/20 relative z-10 pointer-events-none">
                   {hours.map((h, i) => (
                     <div key={`h-${h}`} className="text-center text-[10px] font-bold text-stone-400" style={{ height: '80px', position: 'absolute', top: `${i * 80 - 6}px`, width: '100%' }}>
                       {h.toString().padStart(2, '0')}:00
@@ -606,7 +606,7 @@ function CalendarContent() {
                   const closedReason = getDayClosedReason(day);
                   
                   return (
-                    <div key={`col-${dIdx}`} className="border-r border-stone-100 relative last:border-r-0 group">
+                    <div key={`col-${dIdx}`} className="border-r border-stone-200 relative last:border-r-0 group">
                       
                       {closed && (
                           <div className="absolute inset-0 z-[60] bg-stone-100/80 backdrop-blur-[1px] flex flex-col items-center justify-center p-4 text-center cursor-not-allowed border-[3px] border-stone-300 pointer-events-auto">
@@ -633,7 +633,7 @@ function CalendarContent() {
                                       setShowModal(true);
                                     }}
                                     className={`w-full h-1/4 transition-all relative
-                                      ${m !== 45 ? 'border-b border-dashed border-stone-100' : ''}
+                                      ${m !== 45 ? 'border-b border-dashed border-stone-200' : ''}
                                       ${disabled 
                                         ? 'bg-stone-50/60 cursor-not-allowed' 
                                         : 'hover:bg-[#fdf2f3]/50 cursor-pointer'
@@ -784,12 +784,12 @@ function CalendarContent() {
             <div className="relative w-full" style={{ height: `${hours.length * 72 + 36}px` }}>
               {/* Horizontal line markers */}
               {hours.map((h, i) => (
-                <div key={`mhl-${h}`} className="absolute w-full border-t border-stone-50" style={{ top: `${i * 72}px`, height: '72px', pointerEvents: 'none' }}></div>
+                <div key={`mhl-${h}`} className="absolute w-full border-t border-stone-300" style={{ top: `${i * 72}px`, height: '72px', pointerEvents: 'none' }}></div>
               ))}
               
               <div className="flex flex-row absolute top-0 w-full h-full">
                 {/* Scale column */}
-                <div className="w-[50px] shrink-0 border-r border-stone-50 bg-white relative pointer-events-none">
+                <div className="w-[50px] shrink-0 border-r border-stone-200 bg-white relative pointer-events-none">
                   {hours.map((h, i) => (
                     <div key={`mh-${h}`} className="text-right pr-2 text-[10px] font-bold text-stone-400 z-30" style={{ height: '72px', position: 'absolute', top: `${i * 72 - 6}px`, width: '100%' }}>
                       {h.toString().padStart(2, '0')}:00
@@ -830,7 +830,7 @@ function CalendarContent() {
                                         setShowModal(true);
                                       }}
                                       className={`w-full h-1/4 transition-all relative
-                                        ${m !== 45 ? 'border-b border-dashed border-stone-50' : ''}
+                                        ${m !== 45 ? 'border-b border-dashed border-stone-200' : ''}
                                         ${disabled 
                                           ? 'bg-stone-50/60 cursor-not-allowed' 
                                           : 'active:bg-[#fdf2f3] cursor-pointer'
