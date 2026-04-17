@@ -2,9 +2,9 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { 
-  Menu, X, LayoutDashboard, Users, Sparkles, 
-  Ticket, Receipt, CalendarDays, Settings, 
+import {
+  Menu, X, LayoutDashboard, Users, Sparkles,
+  Ticket, Receipt, CalendarDays, Settings,
   Database, Image as ImageIcon, Globe, Tag,
   ShieldCheck, User, LogOut
 } from 'lucide-react';
@@ -31,18 +31,18 @@ interface DashboardSidebarProps {
 }
 
 export const navLinks = [
-  { href: '/dashboard/pos',      label: 'Venta Rápida',        icon: Tag,             style: 'accent' },
-  { href: '/dashboard',          label: 'Inicio',               icon: LayoutDashboard, style: 'normal', exact: true },
-  { href: '/dashboard/clients',  label: 'Clientes',             icon: Users,           style: 'normal' },
-  { href: '/dashboard/team',     label: 'Equipo',               icon: ShieldCheck,     style: 'normal' },
-  { href: '/dashboard/services', label: 'Servicios',            icon: Sparkles,        style: 'normal' },
-  { href: '/dashboard/vouchers', label: 'Bonos',                icon: Ticket,          style: 'normal' },
-  { href: '/dashboard/invoices', label: 'Facturas',             icon: Receipt,         style: 'normal' },
-  { href: '/dashboard/calendar', label: 'Agenda',               icon: CalendarDays,    style: 'normal' },
-  { href: '/dashboard/settings', label: 'Ajustes Generales',    icon: Settings,        style: 'normal' },
-  { href: '/dashboard/backups',  label: 'Copias de Seguridad',  icon: Database,        style: 'normal' },
-  { href: '/dashboard/media',    label: 'Galería de Medios',    icon: ImageIcon,       style: 'highlight' },
-  { href: '/dashboard/cms',      label: 'Editor Web (CMS)',     icon: Globe,           style: 'highlight' },
+  { href: '/dashboard/pos', label: 'Venta Rápida', icon: Tag, style: 'accent' },
+  { href: '/dashboard', label: 'Inicio', icon: LayoutDashboard, style: 'normal', exact: true },
+  { href: '/dashboard/clients', label: 'Clientes', icon: Users, style: 'normal' },
+  { href: '/dashboard/team', label: 'Equipo', icon: ShieldCheck, style: 'normal' },
+  { href: '/dashboard/services', label: 'Servicios', icon: Sparkles, style: 'normal' },
+  { href: '/dashboard/vouchers', label: 'Bonos', icon: Ticket, style: 'normal' },
+  { href: '/dashboard/invoices', label: 'Facturas', icon: Receipt, style: 'normal' },
+  { href: '/dashboard/calendar', label: 'Agenda', icon: CalendarDays, style: 'normal' },
+  { href: '/dashboard/settings', label: 'Ajustes Generales', icon: Settings, style: 'normal' },
+  { href: '/dashboard/backups', label: 'Copias de Seguridad', icon: Database, style: 'normal' },
+  { href: '/dashboard/media', label: 'Galería de Medios', icon: ImageIcon, style: 'highlight' },
+  { href: '/dashboard/cms', label: 'Editor Web (CMS)', icon: Globe, style: 'highlight' },
 ];
 
 export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSidebarProps) {
@@ -94,41 +94,46 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
   };
 
   // NavItems renderer for DRY (used in both mobile and desktop views)
-  const NavItems = ({ expanded }: { expanded: boolean }) => (
-    <div className="flex flex-col gap-1 w-full relative z-10 px-3">
+  const NavItems = () => (
+    <div className="flex flex-col gap-2 w-full relative z-10 px-3">
       {navLinks.map((link, idx) => {
         const active = isActive(link.href, link.exact);
         const Icon = link.icon;
-        
+
         let containerClasses = "";
         let iconClasses = "transition-all duration-300 ";
-        let textClasses = "text-sm font-medium whitespace-nowrap overflow-hidden transition-all duration-300 ";
 
-        if (link.style === 'accent') {
-          containerClasses = `mb-4 shadow-sm border ${active ? 'bg-primary text-primary-foreground border-primary' : 'bg-white text-stone-700 border-stone-200 hover:bg-stone-50'}`;
-          iconClasses += active ? "text-primary-foreground" : "text-primary";
-        } else if (link.style === 'highlight') {
-          containerClasses = `shadow-sm border ${idx === navLinks.findIndex(l => l.style === 'highlight') ? 'mt-6' : ''} ${active ? 'bg-stone-900 text-white border-stone-900' : 'bg-white text-stone-700 border-stone-200 hover:bg-stone-50'}`;
-          iconClasses += active ? "text-white" : "text-stone-500";
+        if (active) {
+          containerClasses = "bg-stone-800 text-white shadow-lg";
+          iconClasses += "text-white";
         } else {
-          containerClasses = active ? 'bg-primary/10 text-primary font-bold' : 'text-stone-500 hover:bg-stone-100/50 hover:text-stone-800';
-          iconClasses += active ? "text-primary" : "text-stone-400 group-hover:text-stone-600";
+          containerClasses = "text-stone-500 hover:bg-stone-900 hover:text-white";
+          iconClasses += "text-stone-500 group-hover:text-white";
+        }
+
+        if (link.style === 'accent' && !active) {
+          containerClasses += " border border-stone-800 mb-2";
         }
 
         return (
           <Link
             key={link.href}
             href={link.href}
-            title={!expanded ? link.label : undefined}
-            className={`group flex items-center rounded-xl p-3 transition-all duration-200 ${containerClasses}`}
+            className={`group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 ${containerClasses}`}
           >
-            <div className="flex-shrink-0 flex items-center justify-center w-6">
-              <Icon size={18} className={iconClasses} strokeWidth={active ? 2.5 : 2} />
+            <div className="flex-shrink-0 flex items-center justify-center">
+              <Icon size={22} className={iconClasses} strokeWidth={active ? 2.5 : 1.5} />
             </div>
-            
-            <div className={`${textClasses} ${expanded ? 'w-40 opacity-100 ml-3' : 'w-0 opacity-0 ml-0'}`}>
+
+            {/* Tooltip SaaS (Cápsula Flotante) */}
+            <span className="absolute left-full top-1/2 -translate-y-1/2 ml-5 px-4 py-2 bg-stone-800 text-white text-[12px] font-black uppercase tracking-[0.15em] rounded-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-300 whitespace-nowrap z-[110] shadow-2xl border border-stone-700 translate-x-[-15px] group-hover/item:translate-x-0 pointer-events-none">
               {link.label}
-            </div>
+            </span>
+
+            {/* Puntito indicador activo */}
+            {active && (
+              <div className="absolute -left-1 w-1 h-6 bg-white rounded-r-full shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
+            )}
           </Link>
         );
       })}
@@ -137,47 +142,29 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
 
   return (
     <>
+      {/* ─── Mobile Topbar (Unchanged) ─── */}
       <div className={`md:hidden fixed top-0 left-0 w-full z-50 flex items-center justify-between px-6 py-6 bg-transparent transition-transform duration-300 ease-in-out pointer-events-none ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
         <div className="pointer-events-auto shrink-0">
-          <div className="w-12 h-12 rounded-[1.25rem] bg-stone-900/90 backdrop-blur-md flex items-center justify-center text-white font-serif italic text-2xl shadow-xl shadow-stone-900/10 border border-white/10 transition-transform active:scale-90">
+          <div className="w-12 h-12 rounded-[1.25rem] bg-stone-950 flex items-center justify-center text-white font-serif italic text-2xl shadow-xl shadow-stone-900/10 border border-white/10 transition-transform active:scale-90">
             {logoUrl ? <img src={logoUrl} alt="Logo" className="w-full h-full object-cover rounded-[1.25rem]" /> : clinicName.charAt(0)}
           </div>
         </div>
 
-        {/* Placeholder para inyectar controles específicos de página a través de React Portal */}
         <div id="mobile-topbar-center" className="flex-1 flex justify-center items-center pointer-events-auto px-2"></div>
-        
+
         <div className="pointer-events-auto shrink-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="w-12 h-12 rounded-full bg-white/80 backdrop-blur-md overflow-hidden border border-stone-200/50 shadow-lg shadow-stone-200/20 flex items-center justify-center active:scale-90 transition-all outline-none">
-                  <User size={22} strokeWidth={1.5} className="text-stone-600" />
+              <button className="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center active:scale-90 transition-all outline-none">
+                <User size={22} strokeWidth={1.5} className="text-stone-600" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 rounded-[1.5rem] shadow-2xl border border-stone-100 p-2 z-[60] bg-white/95 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200">
+            <DropdownMenuContent align="end" className="w-56 rounded-[1.5rem] shadow-2xl border border-stone-100 p-2 z-[60] bg-white opacity-95">
               <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 px-4 py-3">
                 Gestión de Cuenta
               </DropdownMenuLabel>
-              <DropdownMenuItem disabled className="flex items-center gap-3 px-4 py-3 rounded-xl opacity-40">
-                <div className="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center">
-                   <User size={16} strokeWidth={1.5} />
-                </div>
-                <span className="font-bold text-sm">Mi Perfil</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem disabled className="flex items-center gap-3 px-4 py-3 rounded-xl opacity-40">
-                <div className="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center">
-                   <Users size={16} strokeWidth={1.5} />
-                </div>
-                <span className="font-bold text-sm">Equipo</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator className="my-2 bg-stone-100/80" />
-              <DropdownMenuItem
-                onClick={handleLogout}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-rose-600 focus:text-rose-600 focus:bg-rose-50 cursor-pointer group"
-              >
-                <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center group-focus:bg-rose-100 transition-colors">
-                   <LogOut size={16} strokeWidth={1.5} />
-                </div>
+              <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 rounded-xl text-rose-600 cursor-pointer">
+                <LogOut size={16} strokeWidth={1.5} />
                 <span className="font-bold text-sm">Cerrar Sesión</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -185,35 +172,44 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
         </div>
       </div>
 
-      {/* ─── Desktop Sidebar (Heygen Style) ─── */}
-      <aside className="hidden md:block sticky top-0 h-screen z-40 print:hidden">
-        {/* Spacer to keep layout flow stable */}
-        <div className="w-20 h-full border-r border-stone-200/50 bg-stone-50" />
-        
-        {/* Actual floating sidebar */}
-        <div 
-          className={`absolute top-0 left-0 h-full bg-stone-50/90 backdrop-blur-2xl border-r border-stone-200/50 flex flex-col py-6 transition-all duration-300 ease-&lsqb;cubic-bezier(0.16,1,0.3,1)&rsqb; overflow-hidden shadow-[4px_0_24px_rgba(0,0,0,0.02)] ${isDesktopExpanded ? 'w-64' : 'w-20'}`}
-          onMouseEnter={() => setIsDesktopExpanded(true)}
-          onMouseLeave={() => setIsDesktopExpanded(false)}
-        >
-          {/* Logo Area - Hidden on mobile, visible on desktop/tablet */}
-          <div className="hidden md:flex items-center px-4 mb-8">
-            <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-white font-serif italic text-2xl shadow-lg shadow-primary/20 overflow-hidden mx-auto">
+      {/* ─── Desktop Sidebar (SaaS Deep Dark Style) ─── */}
+      <aside className="hidden md:block sticky top-0 h-screen z-[100] print:hidden shrink-0">
+        {/* Actual fixed sidebar */}
+        <div className="w-20 h-full bg-stone-950 border-r border-stone-800 flex flex-col py-8 shadow-2xl overflow-visible">
+
+          {/* Logo Area - Isotype Only */}
+          <div className="flex items-center justify-center mb-10 px-4">
+            <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-[#d9777f] to-[#b35e65] flex items-center justify-center text-white font-serif italic text-2xl shadow-lg shadow-black/40 overflow-hidden">
               {logoUrl ? <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" /> : clinicName.charAt(0)}
-            </div>
-            
-            <div className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isDesktopExpanded ? 'w-40 opacity-100 ml-4' : 'w-0 opacity-0 ml-0'}`}>
-              <h2 className="text-lg font-bold text-stone-800 leading-tight font-serif">{clinicName}</h2>
-              <p className="text-[10px] font-bold text-primary uppercase tracking-widest mt-0.5">Admin Panel</p>
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar overflow-x-hidden">
-            <NavItems expanded={isDesktopExpanded} />
+          <div className="flex-1 overflow-visible">
+            <NavItems />
+          </div>
+
+          {/* User Section Bottom */}
+          <div className="px-3 mt-auto pt-4 border-t border-stone-900/50">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="w-full flex items-center justify-center p-3 rounded-2xl text-stone-500 hover:bg-stone-900 hover:text-white transition-all outline-none">
+                  <User size={22} strokeWidth={1.5} />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" side="right" className="w-56 ml-4 rounded-[1.5rem] bg-stone-900 border-stone-800 text-white shadow-2xl p-2 animate-in slide-in-from-left-2 duration-200">
+                <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-stone-500 px-4 py-3">
+                  Admin: {clinicName}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-stone-800" />
+                <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 rounded-xl text-rose-400 focus:bg-rose-950 focus:text-rose-300 cursor-pointer">
+                  <LogOut size={16} />
+                  <span className="font-bold text-sm">Cerrar Sesión</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </aside>
-
     </>
   );
 }

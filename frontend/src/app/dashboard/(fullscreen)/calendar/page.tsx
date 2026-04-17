@@ -1,12 +1,13 @@
 'use client';
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useState } from 'react';
 import { useCalendarData } from '@/components/calendar-v2/hooks/useCalendarData';
 import { CalendarHeader } from '@/components/calendar-v2/CalendarHeader';
 import { TimeScale } from '@/components/calendar-v2/TimeScale';
 import { DayColumn } from '@/components/calendar-v2/DayColumn';
 import { CalendarModals } from '@/components/calendar-v2/CalendarModals';
 import { ContextPanel } from '@/components/calendar-v2/ContextPanel';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,6 +18,7 @@ export const dynamic = 'force-dynamic';
  */
 function CalendarContent() {
   const c = useCalendarData();
+  const [isPanelOpen, setIsPanelOpen] = useState(true);
 
   if (c.loading) {
     return (
@@ -33,25 +35,49 @@ function CalendarContent() {
   return (
     <div className="flex flex-row h-full w-full overflow-hidden bg-stone-50/50">
       
-      {/* A. COLUMNA IZQUIERDA: ContextPanel (Solo Desktop) */}
-      <div className="hidden md:block h-full overflow-y-auto shadow-2xl">
-        <ContextPanel 
-          clinicName={c.settings?.clinic_name} 
-          selectedDate={c.mobileSelectedDate}
-          onDateChange={c.handleMobileDateSelect}
-          confirmedCount={confirmedCount}
-          pendingCount={pendingCount}
-          onPrev={c.handlePrevWeek}
-          onNext={c.handleNextWeek}
-          onToday={c.handleToday}
-        />
+      {/* A. COLUMNA IZQUIERDA: ContextPanel (Colapsable) */}
+      <div className={`
+        hidden md:block h-full transition-all duration-300 ease-in-out overflow-hidden shadow-2xl
+        ${isPanelOpen ? 'w-[280px] lg:w-[320px] opacity-100' : 'w-0 opacity-0'}
+      `}>
+        <div className="min-w-[280px] lg:min-w-[320px] h-full overflow-y-auto">
+          <ContextPanel 
+            clinicName={c.settings?.clinic_name} 
+            selectedDate={c.mobileSelectedDate}
+            onDateChange={c.handleMobileDateSelect}
+            confirmedCount={confirmedCount}
+            pendingCount={pendingCount}
+            onPrev={c.handlePrevWeek}
+            onNext={c.handleNextWeek}
+            onToday={c.handleToday}
+          />
+        </div>
       </div>
 
       {/* B. COLUMNA DERECHA: Agenda (Principal) */}
       <div className="flex-1 h-full flex flex-col overflow-hidden relative">
         
+        {/* Toggle Button (Focus Mode) */}
+        <button 
+          onClick={() => setIsPanelOpen(!isPanelOpen)}
+          className={`
+            absolute top-5 left-5 z-50 p-2.5 rounded-full border border-stone-200 shadow-xl transition-all duration-300 group
+            ${isPanelOpen ? 'bg-white/40 backdrop-blur-sm text-stone-500 hover:text-stone-800' : 'bg-white text-stone-900 hover:scale-110'}
+          `}
+          title={isPanelOpen ? "Cerrar Panel" : "Abrir Panel"}
+        >
+          {isPanelOpen ? (
+            <PanelLeftClose size={18} className="group-hover:-translate-x-0.5 transition-transform" />
+          ) : (
+            <PanelLeftOpen size={20} className="text-[#d9777f]" />
+          )}
+        </button>
+
         {/* Contenedor de la Agenda como una "Isla" Elástica */}
-        <div className="flex-1 flex flex-col bg-white rounded-[0.75em] shadow-2xl shadow-stone-200/40 overflow-hidden relative">
+        <div className={`
+          flex-1 flex flex-col bg-white rounded-[0.75em] shadow-2xl shadow-stone-200/40 overflow-hidden relative transition-all duration-300
+          ${isPanelOpen ? '' : 'm-2'}
+        `}>
           
           {/* Calendar Area (Sin paddings externos para Edge-to-Edge) */}
           <div className="flex-1 flex flex-col overflow-hidden">
