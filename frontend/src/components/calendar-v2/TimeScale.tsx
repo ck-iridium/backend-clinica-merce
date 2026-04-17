@@ -17,46 +17,45 @@ export function TimeScale({
   viewType = 'desktop',
   part
 }: TimeScaleProps) {
+  // Las guías horizontales ahora se manejan mediante CSS background pattern en el padre.
   if (part === 'guides') {
-    return (
-      <div className="absolute w-full pointer-events-none" style={{ height: `${hours.length * heightPerHour}px` }}>
-        {hours.map((h, i) => (
-          <div 
-            key={`guide-${h}`} 
-            className="absolute w-full border-t border-stone-300" 
-            style={{ top: `${i * heightPerHour}px`, height: `${heightPerHour}px` }}
-          />
-        ))}
-      </div>
-    );
+    return null;
   }
 
   // Render Hour Axis
   if (viewType === 'desktop') {
     return (
-      <div className="border-r border-stone-200 bg-stone-50/20 relative z-10 pointer-events-none">
+      <div className="flex flex-col h-full border-r border-stone-200 bg-stone-50/20 relative z-10 pointer-events-none w-full">
         {hours.map((h, i) => (
           <div 
             key={`axis-${h}`} 
-            className="text-center text-[10px] font-bold text-stone-400" 
-            style={{ height: `${heightPerHour}px`, position: 'absolute', top: `${i * heightPerHour - 6}px`, width: '100%' }}
+            className="flex-1 relative"
           >
-            {h.toString().padStart(2, '0')}:00
+            <div className="absolute -top-[7px] left-0 w-full text-center text-[10px] font-bold text-stone-400">
+              {h.toString().padStart(2, '0')}:00
+            </div>
           </div>
         ))}
+        {/* Marcador para la hora de cierre (final de la última celda) */}
+        <div className="h-0 relative">
+             <div className="absolute -top-[7px] left-0 w-full text-center text-[10px] font-bold text-stone-400 opacity-30">
+                {(hours[hours.length - 1] + 1).toString().padStart(2, '0')}:00
+             </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="w-[50px] shrink-0 border-r border-stone-200 bg-white relative pointer-events-none">
+    <div className="w-[50px] shrink-0 border-r border-stone-200 bg-white relative pointer-events-none flex flex-col h-full">
       {hours.map((h, i) => (
         <div 
           key={`maxis-${h}`} 
-          className="text-right pr-2 text-[10px] font-bold text-stone-400 z-30" 
-          style={{ height: `${heightPerHour}px`, position: 'absolute', top: `${i * heightPerHour - 6}px`, width: '100%' }}
+          className="flex-1 relative"
         >
-          {h.toString().padStart(2, '0')}:00
+          <div className="absolute -top-[7px] right-2 text-[10px] font-bold text-stone-400 z-30">
+            {h.toString().padStart(2, '0')}:00
+          </div>
         </div>
       ))}
     </div>

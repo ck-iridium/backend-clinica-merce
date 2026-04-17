@@ -22,20 +22,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <div className="min-h-screen bg-background md:flex font-sans text-foreground print:bg-white">
         <RouteGuard />
         
-        {/* Sidebar: Mobile top bar + new Heygen-style desktop hover drawer */}
+        {/* Sidebar: Siempre visible para todas las rutas del dashboard */}
         <DashboardSidebar clinicName={clinicName} logoUrl={logoUrl} />
 
-        {/* Main Content Area */}
-        <main className="flex-1 flex flex-col relative text-foreground">
-          
-          <DashboardHeader clinicName={clinicName} />
-
-          {/* Children View (The Canvas for "Islas de contenido") */}
-          <div className="pt-24 pb-28 md:pt-8 md:pb-8 px-4 md:px-8 max-w-[1400px] mx-auto z-10 relative space-y-6 w-full">
-            {children}
-          </div>
-          
-          <MobileBottomBar />
+        {/* Área de Contenido Principal: El comportamiento (header, padding, scroll) se define en los layouts de grupo */}
+        <main className="flex-1 flex flex-col relative text-foreground w-full">
+          {children}
         </main>
       </div>
   );

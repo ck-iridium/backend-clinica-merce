@@ -47,7 +47,15 @@ export function AppointmentCard({
   style
 }: AppointmentCardProps) {
   const colors = getStatusColors(appointment.status);
-  const heightPx = typeof style.height === 'number' ? style.height : parseInt(style.height as string || '0');
+  const heightValue = style.height?.toString() || '0';
+  const isPercentage = heightValue.endsWith('%');
+  const heightNum = parseFloat(heightValue);
+
+  // Umbrales de visibilidad adaptados
+  // En modelo proporcional, un bloque de 15min es ~2.5% de una jornada de 10h.
+  const showService = isPercentage ? heightNum >= 4 : heightNum >= 30;
+  const showStatus = isPercentage ? heightNum >= 5.5 : heightNum >= 45; // ~30-45 min
+  const useSmallText = isPercentage ? heightNum < 3 : heightNum < 25;
 
   // RENDER MÓVIL (Basado en la lógica del bloque md:hidden)
   if (isMobile) {
@@ -57,12 +65,12 @@ export function AppointmentCard({
         className={`absolute w-[95%] left-[2.5%] ml-auto mr-auto border-[1.5px] rounded-xl shadow-sm px-3 py-2 z-20 overflow-hidden active:scale-[0.98] transition-all flex flex-col justify-start ${colors}`}
         style={style}
       >
-        <div className={`font-extrabold text-[11px] sm:text-xs tracking-tight leading-none mb-[2px] ${appointment.status === 'cancelled' || appointment.status === 'no_show' ? 'text-current line-through opacity-70' : 'text-stone-800'}`}>
+        <div className={`font-extrabold text-[12px] tracking-tight leading-none mb-[2px] ${appointment.status === 'cancelled' || appointment.status === 'no_show' ? 'text-current line-through opacity-70' : 'text-stone-800'}`}>
           {appointment.status === 'web_pending' && <span className="text-orange-600 mr-1">[WEB]</span>}
           {client?.name || 'Cliente Desconocido'}
         </div>
-        {heightPx >= 45 && (
-          <div className={`text-[9px] font-semibold truncate leading-tight opacity-90`}>
+        {showService && (
+          <div className={`text-[10px] font-semibold truncate leading-tight opacity-90`}>
             {service?.name || 'Servicio...'}
           </div>
         )}
@@ -77,16 +85,26 @@ export function AppointmentCard({
       onMouseEnter={(e) => onMouseEnter?.(e, appointment)}
       onMouseMove={(e) => onMouseMove?.(e, appointment)}
       onMouseLeave={onMouseLeave}
-      className={`absolute w-full left-0 border-l-[3px] border-y shadow-sm px-2 py-0.5 z-20 overflow-hidden hover:brightness-95 hover:scale-105 hover:shadow-md hover:z-30 transition-all cursor-pointer flex flex-col justify-center border-stone-200 ${colors}`}
+      className={`absolute w-full left-0 border-l-[4px] border-y shadow-sm px-2.5 pt-2 pb-1 z-20 overflow-hidden hover:brightness-95 hover:scale-[1.02] hover:shadow-md hover:z-30 transition-all cursor-pointer flex flex-col justify-start border-stone-200/50 ${colors}`}
       style={style}
     >
-      <div className={`font-black truncate leading-none ${heightPx < 25 ? 'text-[9px]' : 'text-[10px] sm:text-[11px]'} ${appointment.status === 'cancelled' || appointment.status === 'no_show' ? 'text-current line-through' : 'text-stone-800'}`}>
-        {appointment.status === 'web_pending' && <span className="text-orange-600 mr-0.5">[W]</span>}
+      <div className={`font-black truncate leading-tight mb-0.5 ${useSmallText ? 'text-[10px]' : 'text-[12px]'} ${appointment.status === 'cancelled' || appointment.status === 'no_show' ? 'text-current line-through' : 'text-stone-900'}`}>
+        {appointment.status === 'web_pending' && <span className="text-orange-600 mr-1">[WEB]</span>}
         {client?.name || 'Cliente'}
       </div>
-      {heightPx >= 30 && (
-        <div className={`text-[8px] font-bold truncate leading-none mt-0.5 ${appointment.status === 'completed' ? 'text-emerald-700' : (appointment.status === 'pending' ? 'text-[#b35e65]' : 'text-current opacity-70')}`}>
-          {service?.name || '...'}
+      
+      {showService && (
+        <div className={`text-[10px] font-bold truncate leading-none mb-1.5 ${appointment.status === 'completed' ? 'text-emerald-700' : (appointment.status === 'confirmed' ? 'text-[#b35e65]' : 'text-stone-500')}`}>
+          {service?.name || 'Sin Servicio'}
+        </div>
+      )}
+
+      {showStatus && (
+        <div className="flex items-center gap-1 mt-auto pb-1">
+          <div className={`w-1.5 h-1.5 rounded-full ${appointment.status === 'confirmed' ? 'bg-[#d9777f]' : 'bg-orange-400'}`}></div>
+          <span className="text-[9px] font-black uppercase tracking-widest opacity-70">
+            {appointment.status === 'confirmed' ? 'Confirmada' : (appointment.status === 'web_pending' ? 'Web Pendiente' : 'Pendiente')}
+          </span>
         </div>
       )}
     </div>

@@ -61,7 +61,7 @@ export function DayColumn({
 }: DayColumnProps) {
 
   return (
-    <div className={`relative flex-1 border-r border-stone-200 last:border-r-0 group`}>
+    <div className={`relative flex-1 border-r border-stone-200 last:border-r-0 group h-full min-h-full`}>
       
       {/* Estado Cerrado (Overlay) */}
       {isClosed && (
@@ -84,10 +84,10 @@ export function DayColumn({
         </div>
       )}
 
-      {/* Grid de Slots Vacíos */}
-      <div className="absolute inset-0 z-0">
+      {/* Grid de Slots Vacíos (Elástico) */}
+      <div className="absolute inset-0 z-0 flex flex-col h-full">
         {hours.map((h, i) => (
-          <div key={`h-container-${h}`} className="absolute w-full" style={{ top: `${i * heightPerHour}px`, height: `${heightPerHour}px` }}>
+          <div key={`h-container-${h}`} className="flex-1 flex flex-col border-b border-stone-100/50 last:border-b-0">
             {[0, 15, 30, 45].map(m => (
               <EmptySlot
                 key={`slot-${h}-${m}`}
@@ -103,7 +103,7 @@ export function DayColumn({
         ))}
       </div>
 
-      {/* Bloqueos de Tiempo (Striped Blocks) */}
+      {/* Bloqueos de Tiempo (Porcentual) */}
       {!isClosed && blocks.map(block => {
         let tS = block.start_time;
         let tE = block.end_time;
@@ -112,33 +112,29 @@ export function DayColumn({
         
         const start = new Date(tS);
         const end = new Date(tE);
-        const top = ((start.getHours() - startHour) * heightPerHour) + (start.getMinutes() / 60) * heightPerHour;
+        
+        // Cálculo porcentual
+        const dayStartMins = startHour * 60;
+        const totalMins = hours.length * 60;
+        const currentStartMins = (start.getHours() * 60) + start.getMinutes();
+        const diffMins = Math.max(currentStartMins - dayStartMins, 0);
+        
+        const topPercent = (diffMins / totalMins) * 100;
         const duration = (end.getTime() - start.getTime()) / 60000;
-        const height = (duration / 60) * heightPerHour;
+        const heightPercent = (duration / totalMins) * 100;
+        
         const isFullDay = duration >= 600;
-
-        if (viewType === 'mobile') {
-          return (
-            <div 
-              key={block.id}
-              onClick={() => onBlockClick(block)}
-              className="absolute w-[95%] left-[2.5%] ml-auto mr-auto bg-stone-100 rounded-xl border border-stone-200 border-dashed opacity-80 flex items-center justify-center z-10 hover:bg-stone-200 transition-colors cursor-pointer overflow-hidden"
-              style={{ top: `${top}px`, height: `${height}px`, backgroundImage: 'repeating-linear-gradient(45deg, #f5f5f4, #f5f5f4 10px, #eeeeee 10px, #eeeeee 20px)' }}
-            >
-              <div className="flex items-center gap-1.5 text-stone-500">
-                <Lock size={12} strokeWidth={2.5} />
-                {height >= 30 && <span className="text-[10px] font-bold uppercase tracking-wider text-center">{block.reason || 'Bloqueo'}</span>}
-              </div>
-            </div>
-          );
-        }
 
         return (
           <div 
             key={block.id}
             onClick={() => onBlockClick(block)}
             className={`absolute w-full left-0 z-10 cursor-pointer hover:border-stone-400 transition-all flex items-center justify-center overflow-hidden border-y-2 last:border-b-0 ${isFullDay ? 'border-stone-800 border-x-[3px]' : 'border-stone-200 border-x-0'}`}
-            style={{ top: `${top}px`, height: `${height}px`, backgroundImage: 'repeating-linear-gradient(45deg, #f5f5f4, #f5f5f4 10px, #eeeeee 10px, #eeeeee 20px)' }}
+            style={{ 
+                top: `${topPercent}%`, 
+                height: `${heightPercent}%`, 
+                backgroundImage: 'repeating-linear-gradient(45deg, #f5f5f4, #f5f5f4 10px, #eeeeee 10px, #eeeeee 20px)' 
+            }}
           >
             <span className="text-[10px] font-black text-stone-400 uppercase tracking-tighter opacity-60 text-center px-1">
               {block.reason || 'HORARIO BLOQUEADO'}
@@ -147,7 +143,7 @@ export function DayColumn({
         );
       })}
 
-      {/* Citas (Appointment Cards) */}
+      {/* Citas (Porcentual) */}
       {!isClosed && appointments.map(appt => {
         let tS = appt.start_time;
         let tE = appt.end_time;
@@ -156,11 +152,16 @@ export function DayColumn({
 
         const start = new Date(tS);
         const end = new Date(tE);
-        const top = Math.max(((start.getHours() - startHour) * heightPerHour) + (start.getMinutes() / 60) * heightPerHour, 0);
+
+        // Cálculo porcentual
+        const dayStartMins = startHour * 60;
+        const totalMins = hours.length * 60;
+        const currentStartMins = (start.getHours() * 60) + start.getMinutes();
+        const diffMins = Math.max(currentStartMins - dayStartMins, 0);
+
+        const topPercent = (diffMins / totalMins) * 100;
         const duration = (end.getTime() - start.getTime()) / 60000;
-        // Ajuste altura: 15min = 0.25h. Si heightPerHour es 80, 15min = 20px. 
-        // Eliminamos el Math.max arbitrario de 30px para que encaje perfecto.
-        const height = (duration / 60) * heightPerHour;
+        const heightPercent = (duration / totalMins) * 100;
 
         return (
           <AppointmentCard
@@ -173,7 +174,12 @@ export function DayColumn({
             onMouseMove={onApptMouseMove}
             onMouseLeave={onApptMouseLeave}
             isMobile={viewType === 'mobile'}
-            style={{ top: `${top}px`, height: `${height}px`, width: '100%', left: 0 }}
+            style={{ 
+                top: `${topPercent}%`, 
+                height: `${heightPercent}%`, 
+                width: '100%', 
+                left: 0 
+            }}
           />
         );
       })}
