@@ -42,7 +42,12 @@ def get_clinic_settings(db: Session):
 
 def update_clinic_settings(db: Session, update_data: schemas.ClinicSettingsUpdate):
     settings = get_clinic_settings(db)
-    for key, value in update_data.model_dump(exclude_unset=True).items():
+    data = update_data.model_dump(exclude_unset=True)
+    # Serializar working_days como JSON string para SQLite
+    if 'working_days' in data and data['working_days'] is not None:
+        import json
+        data['working_days'] = json.dumps(data['working_days'])
+    for key, value in data.items():
         setattr(settings, key, value)
     db.commit()
     db.refresh(settings)
@@ -195,21 +200,31 @@ def update_service(db: Session, service_id: str, service: schemas.ServiceUpdate)
 # Appointments
 def check_appointment_collision(db: Session, start_time: datetime, end_time: datetime, ignore_id: str = None):
     """
-    Returns True if there's a collision with existing appointments or time blocks,
-    or if the appointment exceeds the 19:00 strict closing time.
+    Returns an error string if there's a collision with existing appointments or time blocks,
+    or if the appointment exceeds the clinic's configured closing time.
     """
-    # 1. Closing Time Check (Strict 19:00)
-    # We assume 'start_time' and 'end_time' are naive datetimes representing LOCAL TIME.
-    if end_time.hour >= 19 and end_time.minute > 0:
-        return "La cita excede el horario de cierre (19:00)."
-    if end_time.hour > 19:
-        return "La cita excede el horario de cierre (19:00)."
+    settings = get_clinic_settings(db)
+
+    # 1. Closing Time Check (Dynamic from ClinicSettings)
+    close_time_str = settings.close_time if settings and settings.close_time else "19:00"
+    close_h, close_m = map(int, close_time_str.split(':'))
+    close_limit = end_time.replace(hour=close_h, minute=close_m, second=0, microsecond=0)
+    if end_time > close_limit:
+        return f"La cita excede el horario de cierre configurado ({close_time_str})."
+
+    # 1b. Working Days Check (Dynamic from ClinicSettings)
+    # working_days stored as JSON string in DB (e.g. "[1,2,3,4,5]")
+    # isoweekday(): 1=Mon ... 7=Sun
+    raw_wd = getattr(settings, 'working_days', None)
+    if raw_wd and isinstance(raw_wd, str):
+        import json
+        working_days = json.loads(raw_wd)
+    else:
+        working_days = raw_wd or [1, 2, 3, 4, 5]
+    day_index = start_time.isoweekday()  # 1=Mon, 7=Sun
+    if day_index not in list(working_days):
+        return "La clínica está cerrada ese día según la configuración del panel."
     
-    # 1b. Weekend Restriction (Saturdays & Sundays)
-    # weekday() returns 0 for Monday, 5 for Saturday, 6 for Sunday
-    if start_time.weekday() in [5, 6]:
-        return "La clínica está cerrada los fines de semana (Sábados y Domingos)."
-        
     # 1c. Past Time Restriction
     if start_time < get_spain_now():
         return "No puedes reservar una cita en el pasado."
@@ -463,15 +478,6 @@ def delete_voucher_template(db: Session, template_id: str):
     return db_template
 
 
-# ──────────────────────────────────────────────────────────────
-# PUBLIC BOOKING ENGINE
-# ──────────────────────────────────────────────────────────────
-
-# Clinic working blocks: 09:30-14:00 and 16:00-19:00
-_SCHEDULE_BLOCKS = [
-    (9, 30, 14, 0),   # morning: 09:30 → 14:00
-    (16, 0, 19, 0),   # afternoon: 16:00 → 19:00
-]
 _SLOT_STEP_MINUTES = 15
 
 
@@ -507,13 +513,22 @@ def find_or_create_client(db: Session, name: str, email: str | None, phone: str 
 
 def get_availability_slots(db: Session, target_date: date, service_id: str) -> List[str]:
     """Return available time slots (HH:MM strings) for a given date and service."""
-    # 0. Weekend guard: clinic is closed Saturday (5) and Sunday (6)
-    if target_date.weekday() in (5, 6):
-        return []
-
-    # Get settings for margin calculation
+    
+    # Get settings for schedule and margin calculation
     settings = get_clinic_settings(db)
     margin_hours = float(settings.booking_margin_hours) if settings.booking_margin_hours else 0.0
+
+    # 0. Working Days Guard (Dynamic from ClinicSettings)
+    # isoweekday(): 1=Mon ... 7=Sun
+    raw_wd = getattr(settings, 'working_days', None)
+    if raw_wd and isinstance(raw_wd, str):
+        import json
+        working_days = json.loads(raw_wd)
+    else:
+        working_days = raw_wd or [1, 2, 3, 4, 5]
+    day_index = target_date.isoweekday()
+    if day_index not in list(working_days):
+        return []
 
     # 1. Get service duration
     service = db.query(models.Service).filter(models.Service.id == service_id).first()
@@ -521,7 +536,27 @@ def get_availability_slots(db: Session, target_date: date, service_id: str) -> L
         return []
     duration = timedelta(minutes=int(service.duration_minutes))
 
-    # 2. Fetch existing appointments for that day (excluding cancelled)
+    # 2. Build schedule blocks dynamically from ClinicSettings
+    open_time_str = settings.open_time if settings and settings.open_time else "09:00"
+    close_time_str = settings.close_time if settings and settings.close_time else "19:00"
+    lunch_start_str = settings.lunch_start if settings and settings.lunch_start else None
+    lunch_end_str = settings.lunch_end if settings and settings.lunch_end else None
+
+    open_h, open_m = map(int, open_time_str.split(':'))
+    close_h, close_m = map(int, close_time_str.split(':'))
+
+    if lunch_start_str and lunch_end_str:
+        lh_s, lm_s = map(int, lunch_start_str.split(':'))
+        lh_e, lm_e = map(int, lunch_end_str.split(':'))
+        schedule_blocks = [
+            (open_h, open_m, lh_s, lm_s),   # morning: open → lunch_start
+            (lh_e, lm_e, close_h, close_m), # afternoon: lunch_end → close
+        ]
+    else:
+        # Jornada continua: un solo bloque
+        schedule_blocks = [(open_h, open_m, close_h, close_m)]
+
+    # 3. Fetch existing appointments for that day (excluding cancelled)
     day_start = datetime(target_date.year, target_date.month, target_date.day, 0, 0, 0)
     day_end   = datetime(target_date.year, target_date.month, target_date.day, 23, 59, 59)
     existing_appts = db.query(models.Appointment).filter(
@@ -530,17 +565,17 @@ def get_availability_slots(db: Session, target_date: date, service_id: str) -> L
         models.Appointment.status != "cancelled",
     ).all()
 
-    # 2b. Fetch existing time blocks for that day
+    # 3b. Fetch existing time blocks for that day
     existing_blocks = db.query(models.TimeBlock).filter(
         models.TimeBlock.start_time >= day_start,
         models.TimeBlock.start_time <= day_end,
     ).all()
 
-    # 3. Generate candidate slots across both schedule blocks
+    # 4. Generate candidate slots across all schedule blocks
     available = []
     step = timedelta(minutes=_SLOT_STEP_MINUTES)
 
-    for (sh, sm, eh, em) in _SCHEDULE_BLOCKS:
+    for (sh, sm, eh, em) in schedule_blocks:
         block_start = datetime(target_date.year, target_date.month, target_date.day, sh, sm)
         block_end   = datetime(target_date.year, target_date.month, target_date.day, eh, em)
         slot = block_start
@@ -548,7 +583,7 @@ def get_availability_slots(db: Session, target_date: date, service_id: str) -> L
         while slot + duration <= block_end:  # slot must finish inside the block
             slot_end = slot + duration
 
-            # 4. Overlap check: max(slot_start, appt_start) < min(slot_end, appt_end)
+            # 5. Overlap check: max(slot_start, appt_start) < min(slot_end, appt_end)
             overlaps = False
             
             # Check appointments

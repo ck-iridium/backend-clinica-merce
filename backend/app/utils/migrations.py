@@ -41,7 +41,9 @@ def run_auto_migrations():
             "ALTER TABLE services ADD COLUMN image_url VARCHAR",
             "ALTER TABLE services ADD COLUMN seo_title VARCHAR",
             "ALTER TABLE services ADD COLUMN seo_description VARCHAR",
-            "ALTER TABLE services ADD COLUMN seo_keywords VARCHAR"
+            "ALTER TABLE services ADD COLUMN seo_keywords VARCHAR",
+            # ── Días laborables dinámicos ──────────────────────────────────────────
+            "ALTER TABLE clinic_settings ADD COLUMN working_days VARCHAR DEFAULT '[1,2,3,4,5]'",
         ]
         
         for m in migrations:
@@ -53,7 +55,7 @@ def run_auto_migrations():
                 db.rollback()
                 # Silenciamos errores si la columna ya existe
                 error_msg = str(e).lower()
-                if "already exists" in error_msg or "duplicate column" in error_msg or "already exists" in error_msg:
+                if "already exists" in error_msg or "duplicate column" in error_msg:
                     continue
                 logger.warning(f"⚠️ Nota de migración '{m}': {e}")
 

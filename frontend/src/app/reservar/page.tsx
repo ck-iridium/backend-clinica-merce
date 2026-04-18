@@ -85,11 +85,23 @@ export default function BookingPage() {
     fetchBaseData();
   }, []);
 
+  // Días laborables desde localStorage (sincronizados con Ajustes del panel)
+  // getDay(): 0=Dom, 1=Lun...6=Sab → nuestro esquema: 1=Lun...7=Dom
+  const getWorkingDays = (): number[] => {
+    if (typeof window === 'undefined') return [1, 2, 3, 4, 5];
+    try {
+      const saved = localStorage.getItem('mercestetica_working_days');
+      return saved ? JSON.parse(saved) : [1, 2, 3, 4, 5];
+    } catch { return [1, 2, 3, 4, 5]; }
+  };
+  const toWeekDayIndex = (jsDay: number) => jsDay === 0 ? 7 : jsDay; // Convertir de getDay() a esquema 1-7
+
   // Fetch availability from backend whenever date or service changes
   useEffect(() => {
     if (!selectedService || !selectedDate) return;
-    const dow = selectedDate.getDay();
-    if (dow === 0 || dow === 6) { setAvailableSlots([]); return; } // weekend: skip fetch
+    const workingDays = getWorkingDays();
+    const dayIndex = toWeekDayIndex(selectedDate.getDay());
+    if (!workingDays.includes(dayIndex)) { setAvailableSlots([]); return; }
     setLoadingSlots(true);
     setSelectedTime('');
     const dateStr = selectedDate.toLocaleDateString('en-CA'); // YYYY-MM-DD in local tz
@@ -217,10 +229,11 @@ export default function BookingPage() {
                           onChange={(e) => {
                             const [y, m, d] = e.target.value.split('-').map(Number);
                             const nd = new Date(y, m - 1, d); // Local time parsing
-                            const day = nd.getDay();
+                            const workingDays = getWorkingDays();
+                            const dayIndex = toWeekDayIndex(nd.getDay());
                             
-                            if (day === 0 || day === 6) {
-                              showFeedback({ type: 'info', title: 'Fines de Semana', message: "La clínica está cerrada los fines de semana. Por favor, elige un día de lunes a viernes." });
+                            if (!workingDays.includes(dayIndex)) {
+                              showFeedback({ type: 'info', title: 'Día No Laborable', message: "La clínica no abre ese día. Por favor, elige uno de los días disponibles." });
                               return;
                             }
                             if (!isNaN(nd.getTime())) {
@@ -232,7 +245,7 @@ export default function BookingPage() {
                         />
                         <p className="text-xs text-stone-400 font-medium mt-4 bg-white p-4 rounded-xl border border-stone-100 flex items-center gap-2">
                           <span className="text-base text-[#d4af37]">ℹ️</span>
-                          Cerramos sábados y domingos. Solo mostramos horas que quepan enteras dentro del horario: mañanas de 09:30 a 14:00 y tardes de 16:00 a 19:00.
+                          Solo se muestran horas disponibles dentro del horario de apertura de la clínica.
                         </p>
                       </div>
 
@@ -244,10 +257,10 @@ export default function BookingPage() {
                     {/* Time Slots Math Calculated */}
                     <div className="w-full md:w-1/2">
                       <label className="block text-sm font-extrabold uppercase tracking-widest text-stone-400 mb-4 px-2">Horas Disponibles</label>
-                      {selectedDate.getDay() === 0 || selectedDate.getDay() === 6 ? (
+                      {!getWorkingDays().includes(toWeekDayIndex(selectedDate.getDay())) ? (
                         <div className="p-8 bg-red-50 text-red-600 rounded-[2rem] font-medium text-center border border-red-100 shadow-inner">
                           <div className="text-4xl mb-4">🚪</div>
-                          Lo sentimos, la clínica está cerrada los sábados y domingos. Por favor, elige un día entre lunes y viernes.
+                          La clínica no está disponible este día. Por favor, elige un día laborable del calendario.
                         </div>
                       ) : loadingSlots ? (
                         <div className="p-8 text-center text-stone-400 font-bold">

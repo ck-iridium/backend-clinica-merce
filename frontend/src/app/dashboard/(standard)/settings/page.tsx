@@ -40,7 +40,15 @@ export default function SettingsPage() {
       ]);
       
       if (settingsRes.ok) {
-        setSettings(await settingsRes.json());
+        const remoteSettings = await settingsRes.json();
+        // Cargar días laborables desde localStorage para persistencia real
+        const savedDays = localStorage.getItem('mercestetica_working_days');
+        if (savedDays) {
+          remoteSettings.working_days = JSON.parse(savedDays);
+        } else if (!remoteSettings.working_days) {
+          remoteSettings.working_days = [1, 2, 3, 4, 5]; // Default L-V
+        }
+        setSettings(remoteSettings);
       }
       if (blocksRes.ok) {
         setTimeBlocks(await blocksRes.json());
@@ -229,25 +237,67 @@ export default function SettingsPage() {
             </span>
             <h3 className="text-2xl font-serif font-semibold text-stone-800">Horario Hábil y Descansos</h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            <div>
-              <label className="block text-xs font-bold text-emerald-700 mb-2">Apertura (Mañana)</label>
-              <input type="time" value={settings.open_time || ''} onChange={e => setSettings({...settings, open_time: e.target.value})} className="w-full p-4 bg-emerald-50/50 border border-emerald-100 rounded-xl focus:border-emerald-400 font-mono font-bold text-emerald-800 transition-all outline-none" required />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-xs font-bold text-emerald-700 mb-2">Apertura (Mañana)</label>
+                <input type="time" value={settings.open_time || ''} onChange={e => setSettings({...settings, open_time: e.target.value})} className="w-full p-4 bg-emerald-50/50 border border-emerald-100 rounded-xl focus:border-emerald-400 font-mono font-bold text-emerald-800 transition-all outline-none" required />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-orange-700 mb-2">Cierre (Tarde/Noche)</label>
+                <input type="time" value={settings.close_time || ''} onChange={e => setSettings({...settings, close_time: e.target.value})} className="w-full p-4 bg-orange-50/50 border border-orange-100 rounded-xl focus:border-orange-400 font-mono font-bold text-orange-800 transition-all outline-none" required />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-stone-500 mb-2">Inicio Descanso</label>
+                <input type="time" value={settings.lunch_start || ''} onChange={e => setSettings({...settings, lunch_start: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] font-mono font-bold transition-all outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-stone-500 mb-2">Fin Descanso</label>
+                <input type="time" value={settings.lunch_end || ''} onChange={e => setSettings({...settings, lunch_end: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] font-mono font-bold transition-all outline-none" />
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-bold text-stone-500 mb-2">Inicio Descanso</label>
-              <input type="time" value={settings.lunch_start || ''} onChange={e => setSettings({...settings, lunch_start: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] font-mono font-bold transition-all outline-none" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-stone-500 mb-2">Fin Descanso</label>
-              <input type="time" value={settings.lunch_end || ''} onChange={e => setSettings({...settings, lunch_end: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d9777f] font-mono font-bold transition-all outline-none" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-orange-700 mb-2">Cierre (Tarde/Noche)</label>
-              <input type="time" value={settings.close_time || ''} onChange={e => setSettings({...settings, close_time: e.target.value})} className="w-full p-4 bg-orange-50/50 border border-orange-100 rounded-xl focus:border-orange-400 font-mono font-bold text-orange-800 transition-all outline-none" required />
+
+            <div className="flex flex-col">
+              <label className="block text-xs font-bold text-stone-500 mb-4 uppercase tracking-widest">Días Laborables</label>
+              <div className="flex flex-wrap gap-3">
+                {[
+                  { id: 1, label: 'L' },
+                  { id: 2, label: 'M' },
+                  { id: 3, label: 'X' },
+                  { id: 4, label: 'J' },
+                  { id: 5, label: 'V' },
+                  { id: 6, label: 'S' },
+                  { id: 7, label: 'D' }
+                ].map((day) => {
+                  const isActive = (settings.working_days || [1,2,3,4,5]).includes(day.id);
+                  return (
+                    <button
+                      key={day.id}
+                      type="button"
+                      onClick={() => {
+                        const current = settings.working_days || [1,2,3,4,5];
+                        const next = isActive 
+                          ? current.filter((d: number) => d !== day.id)
+                          : [...current, day.id].sort();
+                        
+                        // Guardado inmediato en localStorage para persistencia real
+                        localStorage.setItem('mercestetica_working_days', JSON.stringify(next));
+                        setSettings({ ...settings, working_days: next });
+                      }}
+                      className={`w-12 h-12 rounded-2xl font-black transition-all flex items-center justify-center text-sm shadow-sm
+                        ${isActive 
+                          ? 'bg-stone-900 text-white shadow-stone-200 scale-105' 
+                          : 'bg-white border border-stone-200 text-stone-400 hover:border-stone-400'}
+                      `}
+                    >
+                      {day.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] text-stone-400 mt-4 leading-relaxed tracking-wide font-medium italic">Selecciona los días que la clínica estará abierta. Los días desactivados aparecerán como "Día Libre" en la agenda.</p>
             </div>
           </div>
-          <p className="text-[10px] text-stone-400 mt-4 leading-relaxed tracking-wide font-medium">Define las horas límite en las que los clientes pueden pedir cita. Los bloques de descanso se ignorarán al buscar disponibilidad. Puedes dejar los campos de descanso vacíos si haces jornada continua.</p>
         </div>
 
         {/* Gestor de Ausencias */}

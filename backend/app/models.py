@@ -161,6 +161,9 @@ class ClinicSettings(Base):
     default_tax_rate = Column(Numeric(5, 2), default=21.0)
     booking_margin_hours = Column(Float, default=2.0)
 
+    # Working Days (JSON array stored as string: e.g. "[1,2,3,4,5]")
+    working_days = Column(String, nullable=True)  # 1=Lun...7=Dom
+
 class Invoice(Base):
     __tablename__ = "invoices"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))

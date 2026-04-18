@@ -1,5 +1,5 @@
 import React from 'react';
-import { Lock } from 'lucide-react';
+import { Lock, CalendarOff } from 'lucide-react';
 import { EmptySlot } from './EmptySlot';
 import { AppointmentCard } from './AppointmentCard';
 
@@ -8,6 +8,7 @@ interface DayColumnProps {
   appointments: any[];
   blocks: any[];
   isClosed: boolean;
+  isWorkingDay?: boolean;
   closedReason?: string | null;
   closedBlock?: any;
   hours: number[];
@@ -42,6 +43,7 @@ export function DayColumn({
   appointments,
   blocks,
   isClosed,
+  isWorkingDay = true,
   closedReason,
   closedBlock,
   hours,
@@ -61,8 +63,27 @@ export function DayColumn({
 }: DayColumnProps) {
 
   return (
-    <div className={`relative flex-1 border-r border-stone-200 last:border-r-0 group h-full min-h-full`}>
+    <div className={`relative flex-1 border-r border-stone-200 last:border-r-0 group h-full min-h-full ${!isWorkingDay ? 'bg-stone-50/30' : ''}`}>
       
+      {/* Overlay de DÍA LIBRE / NO LABORABLE */}
+      {!isWorkingDay && (
+        <div 
+          className="absolute inset-0 z-[60] flex flex-col items-center justify-center p-4 text-center pointer-events-auto cursor-not-allowed"
+          style={{ 
+            backgroundImage: 'repeating-linear-gradient(45deg, #f5f5f4 0px, #f5f5f4 10px, #ffffff 10px, #ffffff 20px)',
+            opacity: 0.95
+          }}
+        >
+          <div className="w-16 h-16 bg-white/80 rounded-full flex items-center justify-center mb-4 shadow-sm border border-stone-100">
+            <CalendarOff size={32} className="text-stone-300" strokeWidth={1.5} />
+          </div>
+          <span className="text-stone-400 font-black uppercase tracking-[0.3em] text-[11px]">
+            Día Libre
+          </span>
+          <p className="text-[9px] text-stone-300 mt-2 font-bold uppercase tracking-wider">Centro Cerrado</p>
+        </div>
+      )}
+
       {/* Estado Cerrado (Overlay) */}
       {isClosed && (
         <div 
@@ -94,7 +115,7 @@ export function DayColumn({
                 hour={h}
                 minute={m}
                 isLunch={checkIsLunch(h, m)}
-                isDisabled={isClosed || checkIsDisabled(h, m)}
+                isDisabled={isClosed || !isWorkingDay || checkIsDisabled(h, m)}
                 onClick={onSlotClick}
                 viewType={viewType}
               />
@@ -104,7 +125,7 @@ export function DayColumn({
       </div>
 
       {/* Bloqueos de Tiempo (Porcentual) */}
-      {!isClosed && blocks.map(block => {
+      {!isClosed && isWorkingDay && blocks.map(block => {
         let tS = block.start_time;
         let tE = block.end_time;
         if (tS.endsWith('Z')) tS = tS.slice(0, -1);
@@ -144,7 +165,7 @@ export function DayColumn({
       })}
 
       {/* Citas (Porcentual) */}
-      {!isClosed && appointments.map(appt => {
+      {!isClosed && isWorkingDay && appointments.map(appt => {
         let tS = appt.start_time;
         let tE = appt.end_time;
         if (tS.endsWith('Z')) tS = tS.slice(0, -1);

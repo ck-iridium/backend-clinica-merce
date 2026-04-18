@@ -265,8 +265,29 @@ export function useCalendarData() {
     window.open(`https://wa.me/${cleanPhone}?text=${encoded}`, '_blank');
   };
 
+  // Configuración de días laborables con persistencia real (localStorage)
+  const [workingDays, setWorkingDays] = useState<number[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('mercestetica_working_days');
+      if (saved) return JSON.parse(saved);
+    }
+    return settings?.working_days || [1, 2, 3, 4, 5];
+  });
+
+  // Sincronizar cuando los settings de la API cargan (por si hay cambios remotos)
+  useEffect(() => {
+    if (settings?.working_days) {
+      setWorkingDays(settings.working_days);
+    } else if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('mercestetica_working_days');
+      if (saved) setWorkingDays(JSON.parse(saved));
+    }
+  }, [settings]);
+
+  const maxDays = Math.max(...workingDays, 5);
+
   // Cálculo de periodos y mapas
-  const days = Array.from({ length: 5 }).map((_, i) => {
+  const days = Array.from({ length: maxDays }).map((_, i) => {
     const d = new Date(currentWeek);
     d.setDate(d.getDate() + i);
     return d;
@@ -288,6 +309,7 @@ export function useCalendarData() {
 
   return {
     // Estados principales
+    workingDays,
     currentWeek,
     setCurrentWeek,
     mobileSelectedDate,

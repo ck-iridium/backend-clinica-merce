@@ -96,7 +96,10 @@ function CalendarContent() {
             {/* 2. VISTA DESKTOP (Grilla Semanal Elástica) */}
             <div className="hidden md:flex flex-col flex-1 bg-white overflow-hidden relative translate-z-0">
               {/* Header de Días */}
-              <div className="grid grid-cols-[100px_repeat(5,1fr)] border-b border-stone-200 bg-stone-50/30">
+              <div 
+                className="grid border-b border-stone-200 bg-stone-50/30"
+                style={{ gridTemplateColumns: `100px repeat(${c.days.length}, minmax(0, 1fr))` }}
+              >
                 <div className="border-r border-stone-200"></div>
                 {c.days.map((date, i) => (
                   <div key={i} className="py-3 px-4 text-center border-r border-stone-200 last:border-r-0">
@@ -109,16 +112,19 @@ function CalendarContent() {
                   </div>
                 ))}
               </div>
-
               {/* Cuerpo de la Grilla (Elástico No-Scroll) */}
               <div className="flex-1 flex flex-col relative overflow-visible h-full">
-                <div className="grid grid-cols-[100px_repeat(5,1fr)] relative h-full flex-1">
+                <div 
+                  className="grid relative h-full flex-1"
+                  style={{ gridTemplateColumns: `100px repeat(${c.days.length}, minmax(0, 1fr))` }}
+                >
                   <TimeScale hours={c.hours} heightPerHour={0} part="guides" />
                   <TimeScale hours={c.hours} heightPerHour={0} part="axis" viewType="desktop" />
                   {c.days.map((date, i) => (
-                    <DayColumn
+                    <DayColumn 
                       key={i}
                       date={date}
+                      isWorkingDay={c.workingDays.includes(date.getDay() === 0 ? 7 : date.getDay())}
                       appointments={c.getAppointmentsForDay(date)}
                       blocks={c.getBlocksForDay(date)}
                       isClosed={c.isDayClosed(date)}
@@ -140,8 +146,8 @@ function CalendarContent() {
                       serviceMap={c.serviceMap}
                     />
                   ))}
-                </div>
               </div>
+            </div>
             </div>
 
             {/* 3. VISTA MÓVIL (Carrusel Diario) */}

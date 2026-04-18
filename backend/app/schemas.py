@@ -136,6 +136,7 @@ class ClinicSettingsBase(BaseModel):
     close_time: str = "19:30"
     lunch_start: Optional[str] = None
     lunch_end: Optional[str] = None
+    working_days: Optional[List[int]] = None
 
 class ClinicSettingsUpdate(BaseModel):
     clinic_name: Optional[str] = None
@@ -166,6 +167,7 @@ class ClinicSettingsUpdate(BaseModel):
     close_time: Optional[str] = None
     lunch_start: Optional[str] = None
     lunch_end: Optional[str] = None
+    working_days: Optional[List[int]] = None
 
 # --- Consents ---
 class ConsentBase(BaseModel):
@@ -185,8 +187,21 @@ class ConsentResponse(ConsentBase):
     class Config:
         from_attributes = True
 
+from pydantic import field_validator
+
 class ClinicSettingsResponse(ClinicSettingsBase):
     id: int
+
+    @field_validator('working_days', mode='before')
+    @classmethod
+    def parse_working_days(cls, v):
+        if isinstance(v, str):
+            import json
+            try:
+                return json.loads(v)
+            except Exception:
+                return [1, 2, 3, 4, 5]
+        return v
 
     class Config:
         from_attributes = True
