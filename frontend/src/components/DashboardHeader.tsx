@@ -1,17 +1,9 @@
 "use client"
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Bell, User, Users, LogOut, ChevronDown } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { GlobalSearch } from './GlobalSearch';
 import { NotificationsPopover } from './NotificationsPopover';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 interface DashboardHeaderProps {
   clinicName: string;

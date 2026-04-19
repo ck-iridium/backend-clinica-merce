@@ -52,6 +52,10 @@ export function useCalendarData() {
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const [mobileTopbarPortal, setMobileTopbarPortal] = useState<Element | null>(null);
 
+  // --- NUEVO: Búsqueda y Filtros (Spotlight) ---
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeFilter, setActiveFilter] = useState<'ALL' | 'CONFIRMADA' | 'PENDIENTE' | 'PAGADA'>('ALL');
+
   // Inicialización de cliente (Robusta)
   useEffect(() => {
     const now = new Date();
@@ -303,8 +307,11 @@ export function useCalendarData() {
   const serviceMap = new Map(services.map(s => [s.id, s]));
 
   const startHour = settings && settings.open_time ? parseInt(settings.open_time.split(':')[0]) : 9;
-  const endHour = settings && settings.close_time ? parseInt(settings.close_time.split(':')[0]) : 19;
-  // Generar hasta la hora anterior al cierre (ej: si cierra a las 20:00, el último slot es 19:00-20:00)
+  const endHour = settings && settings.close_time 
+    ? Math.ceil((parseInt(settings.close_time.split(':')[0]) * 60 + parseInt(settings.close_time.split(':')[1])) / 60) 
+    : 19;
+  
+  // Generar array de horas dinámico desde apertura hasta cierre
   const hours = Array.from({ length: endHour - startHour }, (_, i) => startHour + i);
 
   return {
@@ -371,6 +378,12 @@ export function useCalendarData() {
     handleApptMouseEnter,
     handleApptMouseMove,
     handleApptMouseLeave,
-    openWhatsApp
+    openWhatsApp,
+
+    // Búsqueda y Filtros
+    searchTerm,
+    setSearchTerm,
+    activeFilter,
+    setActiveFilter
   };
 }

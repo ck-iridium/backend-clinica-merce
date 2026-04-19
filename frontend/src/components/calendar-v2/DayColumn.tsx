@@ -31,6 +31,10 @@ interface DayColumnProps {
   // Maps para resolución de nombres
   clientMap: Map<string, any>;
   serviceMap: Map<string, any>;
+
+  // Búsqueda y Filtros
+  searchTerm?: string;
+  activeFilter?: 'ALL' | 'CONFIRMADA' | 'PENDIENTE' | 'PAGADA';
 }
 
 /**
@@ -59,7 +63,9 @@ export function DayColumn({
   checkIsLunch,
   checkIsDisabled,
   clientMap,
-  serviceMap
+  serviceMap,
+  searchTerm = '',
+  activeFilter = 'ALL'
 }: DayColumnProps) {
 
   return (
@@ -164,7 +170,7 @@ export function DayColumn({
         );
       })}
 
-      {/* Citas (Porcentual) */}
+      {/* Citas (Porcentual) con Efecto Spotlight */}
       {!isClosed && isWorkingDay && appointments.map(appt => {
         let tS = appt.start_time;
         let tE = appt.end_time;
@@ -174,7 +180,6 @@ export function DayColumn({
         const start = new Date(tS);
         const end = new Date(tE);
 
-        // Cálculo porcentual
         const dayStartMins = startHour * 60;
         const totalMins = hours.length * 60;
         const currentStartMins = (start.getHours() * 60) + start.getMinutes();
@@ -184,12 +189,37 @@ export function DayColumn({
         const duration = (end.getTime() - start.getTime()) / 60000;
         const heightPercent = (duration / totalMins) * 100;
 
+        // Lógica de Spotlight (Refinada con Null Safety y mapeo de nombres)
+        const client = clientMap?.get(appt.client_id);
+        const service = serviceMap?.get(appt.service_id);
+        
+        let isHighlighted = true;
+
+        // 1. Filtro por Estado 
+        if (activeFilter !== 'ALL') {
+          if (activeFilter === 'CONFIRMADA' && appt.status !== 'confirmed') isHighlighted = false;
+          if (activeFilter === 'PENDIENTE' && (appt.status !== 'web_pending' && appt.status !== 'pending')) isHighlighted = false;
+          if (activeFilter === 'PAGADA' && appt.status !== 'completed') isHighlighted = false;
+        }
+
+        // 2. Filtro por Búsqueda (Case-Insensitive sobre nombres resueltos)
+        if (isHighlighted && searchTerm && searchTerm.trim() !== '') {
+          const query = searchTerm.toLowerCase();
+          const clientName = client?.name?.toLowerCase() || '';
+          const serviceName = service?.name?.toLowerCase() || '';
+          
+          if (!clientName.includes(query) && !serviceName.includes(query)) {
+            isHighlighted = false;
+          }
+        }
+
         return (
           <AppointmentCard
             key={appt.id}
             appointment={appt}
-            client={clientMap.get(appt.client_id)}
-            service={serviceMap.get(appt.service_id)}
+            client={client}
+            service={service}
+            isHighlighted={isHighlighted}
             onClick={(e, appt) => onApptClick(appt)}
             onMouseEnter={onApptMouseEnter}
             onMouseMove={onApptMouseMove}

@@ -51,14 +51,16 @@ export function TimeScale({
   }
 
   return (
-    <div className="w-[60px] shrink-0 border-r border-stone-200 bg-white relative pointer-events-none flex flex-col h-full">
+    <div className="w-[62px] shrink-0 border-r border-stone-200 bg-stone-50/10 relative pointer-events-none flex flex-col h-full z-20">
       {hours.map((h, i) => (
         <div 
           key={`maxis-${h}`} 
-          className="flex-1 relative"
+          className="flex-1 relative flex items-start justify-end pr-2"
         >
-          <div className="absolute -top-[8px] right-2 text-[12px] font-black text-stone-500 z-30">
-            {h.toString().padStart(2, '0')}:00
+          <div className="relative -top-[10px] bg-white border border-stone-200 px-2 py-0.5 rounded-lg shadow-sm z-50">
+            <span className="text-[11px] font-black text-stone-600 tracking-tighter">
+              {h.toString().padStart(2, '0')}:00
+            </span>
           </div>
         </div>
       ))}
