@@ -9,6 +9,7 @@ import { CalendarModals } from '@/components/calendar-v2/CalendarModals';
 import { ContextPanel } from '@/components/calendar-v2/ContextPanel';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { TimeIndicator } from '@/components/calendar-v2/TimeIndicator';
+import { AnimatePresence, motion } from 'framer-motion';
 
 export const dynamic = 'force-dynamic';
 
@@ -82,26 +83,34 @@ function CalendarContent() {
         </div>
       </div>
 
-      {/* MÓVIL — Overlay a pantalla completa */}
-      {isMobilePanelOpen && (
-        <div className="fixed inset-0 z-50 bg-white md:hidden overflow-y-auto animate-in slide-in-from-left duration-300">
-          <ContextPanel
-            clinicName={c.settings?.clinic_name}
-            selectedDate={c.mobileSelectedDate}
-            onDateChange={(date) => { c.handleMobileDateSelect(date); setIsMobilePanelOpen(false); }}
-            confirmedCount={confirmedCount}
-            pendingCount={pendingCount}
-            onPrev={c.handlePrevWeek}
-            onNext={c.handleNextWeek}
-            onToday={c.handleToday}
-            searchTerm={c.searchTerm}
-            setSearchTerm={c.setSearchTerm}
-            activeFilter={c.activeFilter}
-            setActiveFilter={c.setActiveFilter}
-            onClose={() => setIsMobilePanelOpen(false)}
-          />
-        </div>
-      )}
+      {/* MÓVIL — Overlay a pantalla completa con animación de entrada/salida */}
+      <AnimatePresence>
+        {isMobilePanelOpen && (
+          <motion.div
+            initial={{ x: '-100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '-100%' }}
+            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+            className="fixed inset-0 z-50 bg-white md:hidden overflow-y-auto"
+          >
+            <ContextPanel
+              clinicName={c.settings?.clinic_name}
+              selectedDate={c.mobileSelectedDate}
+              onDateChange={(date) => { c.handleMobileDateSelect(date); setIsMobilePanelOpen(false); }}
+              confirmedCount={confirmedCount}
+              pendingCount={pendingCount}
+              onPrev={c.handlePrevWeek}
+              onNext={c.handleNextWeek}
+              onToday={c.handleToday}
+              searchTerm={c.searchTerm}
+              setSearchTerm={c.setSearchTerm}
+              activeFilter={c.activeFilter}
+              setActiveFilter={c.setActiveFilter}
+              onClose={() => setIsMobilePanelOpen(false)}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── B. COLUMNA DERECHA: Agenda ── */}
       <div className="flex-1 h-full flex flex-col overflow-hidden relative">
@@ -344,7 +353,7 @@ function CalendarContent() {
               top: c.tooltipPos.y + 250 > (typeof window !== 'undefined' ? window.innerHeight : 800) ? c.tooltipPos.y - 230 : c.tooltipPos.y + 20
             }}
           >
-            <div className="bg-white/98 backdrop-blur-xl border border-stone-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-[2rem] p-7 w-[380px] ring-1 ring-black/5 relative overflow-hidden">
+            <div className="bg-white/98 backdrop-blur-xl border border-stone-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-[0.75em] p-7 w-[380px] ring-1 ring-black/5 relative overflow-hidden">
               <div className={`absolute top-0 left-0 w-1.5 h-full ${c.hoveredAppt.status === 'confirmed' ? 'bg-blue-500' :
                 c.hoveredAppt.status === 'completed' ? 'bg-emerald-500' :
                   c.hoveredAppt.status === 'cancelled' ? 'bg-red-500' :

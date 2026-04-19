@@ -71,7 +71,7 @@ export function AppointmentCard({
     return (
       <div 
         onClick={(e) => onClick(e, appointment)}
-        className={`absolute w-[95%] left-[2.5%] ml-auto mr-auto border-[1.5px] rounded-xl shadow-sm px-3 py-2 z-20 overflow-hidden active:scale-[0.98] transition-all flex flex-col justify-start ${colors} ${!isHighlighted ? 'opacity-20 grayscale pointer-events-none' : ''}`}
+        className={`absolute w-[95%] left-[2.5%] ml-auto mr-auto border-[1.5px] rounded-none shadow-sm px-3 py-2 z-20 overflow-hidden active:scale-[0.98] transition-all flex flex-col justify-start ${colors} ${!isHighlighted ? 'opacity-20 grayscale pointer-events-none' : ''}`}
         style={style}
       >
         <div className={`font-extrabold text-[12px] tracking-tight leading-none mb-[2px] ${appointment.status === 'cancelled' || appointment.status === 'no_show' ? 'text-current line-through opacity-70' : 'text-stone-800'}`}>
@@ -94,7 +94,7 @@ export function AppointmentCard({
       onMouseEnter={(e) => onMouseEnter?.(e, appointment)}
       onMouseMove={(e) => onMouseMove?.(e, appointment)}
       onMouseLeave={onMouseLeave}
-      className={`absolute w-full left-0 border-l-[4px] border-y shadow-sm px-2.5 pt-2 pb-1 z-20 overflow-hidden hover:brightness-95 hover:scale-[1.02] hover:shadow-md hover:z-30 transition-all cursor-pointer flex flex-col justify-start
+      className={`absolute w-full left-0 border-l-[4px] border-y shadow-sm px-2.5 pt-2 pb-1 z-20 overflow-hidden rounded-none hover:brightness-95 hover:scale-[1.02] hover:shadow-md hover:z-30 transition-all cursor-pointer flex flex-col justify-start
         ${appointment.status === 'confirmed' ? 'border-l-blue-500' : 
           appointment.status === 'pending' || appointment.status === 'web_pending' ? 'border-l-orange-500' :
           appointment.status === 'completed' ? 'border-l-emerald-500' :
