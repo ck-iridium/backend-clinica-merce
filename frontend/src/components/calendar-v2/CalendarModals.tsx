@@ -17,6 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { EditAppointmentModal } from './modals/EditAppointmentModal';
+import { CreateAppointmentModal } from './modals/CreateAppointmentModal';
+import { DeleteBlockConfirm } from './modals/DeleteBlockConfirm';
 
 interface CalendarModalsProps {
   // Control de visibilidad
@@ -74,18 +77,9 @@ export function CalendarModals({
 }: CalendarModalsProps) {
   const { showFeedback } = useFeedback();
 
-  // Estados internos de formulario
-  const [modalType, setModalType] = useState<'appointment' | 'block'>('appointment');
-  const [selectedClientId, setSelectedClientId] = useState('');
-  const [selectedServiceId, setSelectedServiceId] = useState('');
-  const [appointmentNotes, setAppointmentNotes] = useState('');
-  const [saving, setSaving] = useState(false);
-
+  // Estados para Edición (necesarios para los handlers del Orquestador)
   const [editNotes, setEditNotes] = useState('');
   const [updatingStatus, setUpdatingStatus] = useState(false);
-
-  const [blockReason, setBlockReason] = useState('');
-  const [blockDuration, setBlockDuration] = useState(60);
 
   // Sincronización de notas al editar
   useEffect(() => {
@@ -93,99 +87,6 @@ export function CalendarModals({
       setEditNotes(selectedAppt.notes || '');
     }
   }, [selectedAppt]);
-
-  // Formateador local para API (ISO naive)
-  const formatLocalISO = (date: Date) => {
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:00`;
-  };
-
-  /**
-   * HANDLERS DE CREACIÓN
-   */
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedClientId || !selectedServiceId || !selectedSlot) return;
-
-    setSaving(true);
-    const service = services.find(s => s.id === selectedServiceId);
-
-    const start_time = new Date(selectedSlot.date);
-    start_time.setHours(selectedSlot.hour, selectedMinutes, 0, 0);
-
-    const end_time = new Date(start_time.getTime() + service.duration_minutes * 60000);
-
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          client_id: selectedClientId,
-          service_id: selectedServiceId,
-          start_time: formatLocalISO(start_time),
-          end_time: formatLocalISO(end_time),
-          status: 'confirmed', // Cambiado de 'pending' para disparar notificaciones si el backend lo requiere
-          notes: appointmentNotes
-        })
-      });
-
-      if (res.ok) {
-        await fetchData();
-        setShowModal(false);
-        setSelectedClientId('');
-        setSelectedServiceId('');
-        setAppointmentNotes('');
-        toast.success('Cita agendada correctamente');
-      } else {
-        const err = await res.json();
-        toast.error(`Error: ${err.detail || "No se pudo reservar"}`);
-      }
-    } catch (err) {
-      toast.error('Error de conexión');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleBlockSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedSlot) return;
-
-    setSaving(true);
-    const start_time = new Date(selectedSlot.date);
-    if (blockDuration === -1) {
-      start_time.setHours(9, 0, 0, 0);
-    } else {
-      start_time.setHours(selectedSlot.hour, selectedMinutes, 0, 0);
-    }
-
-    const durationMins = blockDuration === -1 ? 600 : blockDuration;
-    const end_time = new Date(start_time.getTime() + durationMins * 60000);
-
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/time-blocks/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          start_time: formatLocalISO(start_time),
-          end_time: formatLocalISO(end_time),
-          reason: blockReason
-        })
-      });
-      if (res.ok) {
-        await fetchData();
-        setShowModal(false);
-        setBlockReason('');
-        toast.success('Horario bloqueado');
-      } else {
-        toast.error('Error al bloquear horario');
-      }
-    } catch (err) {
-      toast.error('Error de conexión');
-    } finally {
-      setSaving(false);
-    }
-  };
 
   /**
    * HANDLERS DE EDICIÓN
@@ -264,384 +165,53 @@ export function CalendarModals({
     });
   };
 
-  const handleDeleteBlock = async () => {
-    if (!selectedBlock) return;
-    setUpdatingStatus(true);
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/time-blocks/${selectedBlock.id}`, {
-        method: 'DELETE'
-      });
-      if (res.ok) {
-        await fetchData();
-        setShowBlockDeleteModal(false);
-        toast.success('Horario liberado');
-      } else {
-        toast.error('Error al liberar');
-      }
-    } catch (err) {
-      toast.error('Error de conexión');
-    } finally {
-      setUpdatingStatus(false);
-    }
+  const handleDeleteBlock = () => {
+    // La lógica se ha movido al componente modular DeleteBlockConfirm
   };
 
   return (
     <>
-      {/* 1. Modal de Creación (Cita o Bloqueo) */}
-      <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="p-0 border-none w-[95vw] sm:max-w-lg lg:max-w-[35em] h-fit max-h-[100dvh] sm:max-h-[calc(100vh-2rem)] rounded-xl">
-          <DialogHeader className="sticky top-0 z-30 shrink-0 p-8 border-b border-stone-100 bg-white/95 backdrop-blur-md">
-            <div className="flex gap-4 mb-4 p-1 bg-stone-100 rounded-2xl w-fit">
-              <button
-                onClick={() => setModalType('appointment')}
-                className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${modalType === 'appointment' ? 'bg-white text-stone-800 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
-              >
-                Nueva Cita
-              </button>
-              <button
-                onClick={() => setModalType('block')}
-                className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${modalType === 'block' ? 'bg-stone-800 text-white shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
-              >
-                Bloqueo
-              </button>
-            </div>
-            <DialogTitle className="text-2xl font-extrabold text-stone-800">
-              {modalType === 'appointment' ? 'Asignar Cita' : 'Bloquear Horario'}
-            </DialogTitle>
-            <DialogDescription className="text-[#d9777f] font-bold flex items-center gap-2 mt-1">
-              <Calendar size={16} strokeWidth={1.5} /> {selectedSlot && `${selectedSlot.date.toLocaleDateString('es-ES')} a las ${selectedSlot.hour.toString().padStart(2, '0')}:${selectedMinutes.toString().padStart(2, '0')} h`}
-            </DialogDescription>
-          </DialogHeader>
+      {/* 1. Modal de Creación (Modularizado V2) */}
+      <CreateAppointmentModal
+        showModal={showModal}
+        setShowModal={setShowModal}
+        selectedSlot={selectedSlot}
+        selectedMinutes={selectedMinutes}
+        setSelectedMinutes={setSelectedMinutes}
+        clients={clients}
+        services={services}
+        settings={settings}
+        startHour={startHour}
+        endHour={endHour}
+        getAppointmentsForDay={getAppointmentsForDay}
+        getBlocksForDay={getBlocksForDay}
+        fetchData={fetchData}
+      />
 
-          <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-            {modalType === 'appointment' ? (
-              <form id="appointment-form" onSubmit={handleSubmit} className="space-y-6">
-                <div className="flex gap-2 mb-2 p-1 bg-stone-50 border border-stone-100 rounded-xl w-fit mx-auto sm:mx-0">
-                  {(selectedSlot?.hour === startHour ? [30, 45] : [0, 15, 30, 45]).map(m => (
-                    <button
-                      key={m}
-                      type="button"
-                      onClick={() => setSelectedMinutes(m)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${selectedMinutes === m ? 'bg-stone-800 text-white shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}
-                    >
-                      :{m.toString().padStart(2, '0')}
-                    </button>
-                  ))}
-                </div>
+      {/* 2. Modal de Liberación de Bloqueo (Modularizado V2) */}
+      <DeleteBlockConfirm
+        showBlockDeleteModal={showBlockDeleteModal}
+        setShowBlockDeleteModal={setShowBlockDeleteModal}
+        selectedBlock={selectedBlock}
+        fetchData={fetchData}
+      />
 
-                {(() => {
-                  if (!selectedSlot) return null;
-                  const start_time = new Date(selectedSlot.date);
-                  start_time.setHours(selectedSlot.hour, selectedMinutes, 0, 0);
-                  const closingTime = new Date(selectedSlot.date);
-                  closingTime.setHours(endHour, settings?.close_time ? parseInt(settings.close_time.split(':')[1]) : 30, 0, 0);
-
-                  let lunchStart = closingTime;
-                  if (settings?.lunch_start) {
-                    lunchStart = new Date(selectedSlot.date);
-                    lunchStart.setHours(parseInt(settings.lunch_start.split(':')[0]), parseInt(settings.lunch_start.split(':')[1]), 0, 0);
-                  }
-
-                  const dayAppts = getAppointmentsForDay(selectedSlot.date);
-                  const dayBlocks = getBlocksForDay(selectedSlot.date);
-
-                  const futureEvents = [...dayAppts, ...dayBlocks]
-                    .map(e => ({ ...e, start: new Date(e.start_time.endsWith('Z') ? e.start_time.slice(0, -1) : e.start_time) }))
-                    .filter(e => e.start > start_time)
-                    .sort((a, b) => a.start.getTime() - b.start.getTime());
-
-                  let nextEventStart = futureEvents.length > 0 ? futureEvents[0].start : closingTime;
-                  if (start_time < lunchStart && nextEventStart > lunchStart) nextEventStart = lunchStart;
-
-                  const limitDate = nextEventStart < closingTime ? nextEventStart : closingTime;
-                  const gapMinutes = Math.floor((limitDate.getTime() - start_time.getTime()) / 60000);
-
-                  return (
-                    <div className="mb-4">
-                      <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Hueco Disponible</p>
-                      <p className="text-xs font-bold text-stone-600 flex items-center gap-1">
-                        <Clock size={14} strokeWidth={1.5} /> {gapMinutes} minutos libres
-                      </p>
-                    </div>
-                  );
-                })()}
-
-                <div className="space-y-5">
-                  <div>
-                    <label className="block text-sm font-semibold text-stone-700 mb-2">Cliente *</label>
-                    <Select required value={selectedClientId} onValueChange={setSelectedClientId}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="-- Elige un cliente --" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {clients
-                          .filter(c => c.email !== 'contado@clinica-mercedes.com')
-                          .map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-stone-700 mb-2">Tratamiento *</label>
-                    <Select value={selectedServiceId} onValueChange={setSelectedServiceId}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="-- Selecciona el servicio --" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {(() => {
-                          if (!selectedSlot) return null;
-                          const start_time = new Date(selectedSlot.date);
-                          start_time.setHours(selectedSlot.hour, selectedMinutes, 0, 0);
-                          const closingTime = new Date(selectedSlot.date);
-                          closingTime.setHours(endHour, 0, 0, 0);
-                          const nextEvent = [...getAppointmentsForDay(selectedSlot.date), ...getBlocksForDay(selectedSlot.date)]
-                            .map(e => ({ ...e, start: new Date(e.start_time.endsWith('Z') ? e.start_time.slice(0, -1) : e.start_time) }))
-                            .filter(e => e.start > start_time)
-                            .sort((a, b) => a.start.getTime() - b.start.getTime())[0];
-                          const limitDate = nextEvent ? (nextEvent.start < closingTime ? nextEvent.start : closingTime) : closingTime;
-                          const gapMinutes = Math.floor((limitDate.getTime() - start_time.getTime()) / 60000);
-                          return services.map(s => (
-                            <SelectItem key={s.id} value={s.id} disabled={s.duration_minutes > gapMinutes}>
-                              {s.name} ({s.duration_minutes} min) {s.duration_minutes > gapMinutes ? '⚠️ EXCEDIDO' : ''}
-                            </SelectItem>
-                          ));
-                        })()}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-stone-700 mb-2">Notas</label>
-                    <textarea
-                      value={appointmentNotes}
-                      onChange={e => setAppointmentNotes(e.target.value)}
-                      placeholder="Observaciones de la cita..."
-                      className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50 min-h-[100px] resize-none text-sm"
-                    />
-                  </div>
-                </div>
-              </form>
-            ) : (
-              <form id="block-form" onSubmit={handleBlockSubmit} className="space-y-6">
-                <div>
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">Motivo</label>
-                  <input
-                    type="text"
-                    value={blockReason}
-                    onChange={e => setBlockReason(e.target.value)}
-                    placeholder="Ej: Descanso, Formación..."
-                    className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-stone-800 outline-none bg-stone-50"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">Duración</label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[30, 60, 120, 240, -1].map(mins => (
-                      <button
-                        key={mins}
-                        type="button"
-                        onClick={() => setBlockDuration(mins)}
-                        className={`py-3 rounded-xl font-bold text-[10px] transition-all border-2 ${blockDuration === mins ? 'bg-stone-800 border-stone-800 text-white' : 'bg-white border-stone-100 text-stone-500 hover:border-stone-300'}`}
-                      >
-                        {mins === -1 ? 'Día Completo' : (mins >= 60 ? `${mins / 60}h` : `${mins}min`)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </form>
-            )}
-          </div>
-
-          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 pt-12 bg-gradient-to-t from-white via-white/95 to-transparent flex flex-row gap-3 rounded-b-xl z-20 pointer-events-none">
-            <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-4 rounded-xl font-bold text-stone-600 bg-white border border-stone-100 hover:bg-stone-50 shadow-sm transition-all pointer-events-auto">
-              Cancelar
-            </button>
-            <button
-              form={modalType === 'appointment' ? 'appointment-form' : 'block-form'}
-              disabled={saving}
-              type="submit"
-              className={`flex-1 ${modalType === 'appointment' ? 'bg-stone-900 border-stone-900' : 'bg-stone-800 border-stone-800'} text-white px-6 py-4 rounded-xl font-bold transition-all disabled:opacity-50 active:scale-95 shadow-lg shadow-stone-900/10 border pointer-events-auto`}
-            >
-              {saving ? 'Guardando...' : (modalType === 'appointment' ? 'Agendar' : 'Bloquear')}
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* 2. Modal de Liberación de Bloqueo */}
-      <Dialog open={showBlockDeleteModal} onOpenChange={setShowBlockDeleteModal}>
-        <DialogContent className="flex flex-col w-[95vw] sm:max-w-[300px] lg:max-w-[22em] max-h-[85dvh] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-xl">
-          <div className="flex-1 overflow-y-auto p-8 text-center">
-            <div className="w-16 h-16 bg-stone-100 text-stone-400 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Unlock size={32} strokeWidth={1.5} />
-            </div>
-            <DialogHeader className="p-0">
-              <DialogTitle className="text-xl font-extrabold text-stone-800 mb-2">Liberar Horario</DialogTitle>
-              <DialogDescription className="text-stone-500 text-sm">
-                ¿Deseas eliminar este bloqueo y permitir nuevas citas en este hueco?
-              </DialogDescription>
-            </DialogHeader>
-          </div>
-          <DialogFooter className="shrink-0 p-6 pt-2 flex flex-col gap-2 sm:flex-col border-t-0">
-            <button
-              onClick={handleDeleteBlock}
-              disabled={updatingStatus}
-              className="w-full bg-stone-900 text-white py-4 rounded-xl font-bold hover:bg-black transition-all active:scale-95"
-            >
-              {updatingStatus ? 'Liberando...' : 'Sí, Eliminar Bloqueo'}
-            </button>
-            <button
-              onClick={() => setShowBlockDeleteModal(false)}
-              className="w-full bg-stone-50 text-stone-500 py-3 rounded-xl font-bold hover:bg-stone-100 transition-all"
-            >
-              Cancelar
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* 3. Modal de Edición de Cita */}
-      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent className="p-0 border-none w-[95vw] sm:max-w-[340px] lg:max-w-[35em] h-fit max-h-[100dvh] sm:max-h-[calc(100vh-2rem)] rounded-xl">
-          <DialogHeader className="sticky top-0 z-30 shrink-0 p-8 border-b border-stone-100 bg-white/95 backdrop-blur-md">
-            <div className="flex flex-col gap-2">
-              {selectedAppt && (
-                <span className={`px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider border w-fit
-                  ${selectedAppt.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                    selectedAppt.status === 'cancelled' ? 'bg-[#fef2f2] text-[#991b1b] border-[#fee2e2]' :
-                      selectedAppt.status === 'web_pending' ? 'bg-orange-50 text-orange-600 border-orange-200' :
-                        selectedAppt.status === 'pending' ? 'bg-[#fffbeb] text-[#92400e] border-[#fef3c7]' :
-                          'bg-[#f0f9f4] text-[#2d6a4f] border-[#d8f3dc]'}
-                `}>
-                  {selectedAppt.status === 'web_pending' ? 'Web' :
-                    selectedAppt.status === 'completed' ? 'Realizada' :
-                      selectedAppt.status === 'cancelled' ? 'Cancelada' :
-                        selectedAppt.status === 'pending' ? 'Pendiente' :
-                          'Confirmada'}
-                </span>
-              )}
-              <DialogTitle className="text-2xl md:text-3xl font-serif italic font-black text-stone-800 leading-tight">
-                {selectedAppt ? clientMap.get(selectedAppt.client_id)?.name : 'Detalle Cita'}
-              </DialogTitle>
-              {selectedAppt && (
-                <DialogDescription className="text-[#d9777f] font-bold flex items-center gap-2 text-sm">
-                  <Calendar size={14} strokeWidth={2.5} />
-                  {new Date(selectedAppt.start_time.endsWith('Z') ? selectedAppt.start_time.slice(0, -1) : selectedAppt.start_time).toLocaleDateString('es-ES', {
-                    day: 'numeric',
-                    month: 'long',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })} h
-                </DialogDescription>
-              )}
-            </div>
-          </DialogHeader>
-
-          <div className="flex-1 overflow-y-auto p-8 custom-scrollbar space-y-8">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Tratamiento</p>
-              </div>
-              <div className="flex items-center gap-2 py-1.5 border-b border-stone-100">
-                <Sparkles size={16} strokeWidth={2} className="text-[#d9777f]" />
-                <p className="text-base font-bold text-stone-700">
-                  {selectedAppt ? serviceMap.get(selectedAppt.service_id)?.name : '...'}
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Notas del Tratamiento</label>
-              <textarea
-                value={editNotes}
-                onChange={e => setEditNotes(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-stone-100 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50 min-h-[42px] h-auto resize-none text-[13px] placeholder:italic shadow-inner overflow-hidden"
-                placeholder="Añadir nota..."
-              />
-              {selectedAppt && editNotes !== (selectedAppt.notes || '') && (
-                <button
-                  onClick={() => handleUpdateNotes()}
-                  disabled={updatingStatus}
-                  className="mt-2 w-full bg-stone-800 text-white text-[10px] font-bold uppercase py-2.5 rounded-lg hover:bg-stone-900 transition-all flex items-center justify-center gap-2"
-                >
-                  <Save size={12} /> Guardar Notas
-                </button>
-              )}
-            </div>
-
-            {selectedAppt?.status === 'web_pending' && (
-              <div className="p-4 bg-orange-50 border border-orange-100 rounded-2xl">
-                <p className="text-[10px] text-orange-600 font-bold uppercase tracking-widest mb-3 flex items-center gap-1">
-                  <AlertTriangle size={12} /> Reserva pendiente
-                </p>
-                <button
-                  onClick={() => handleStatusChange('confirmed')}
-                  disabled={updatingStatus}
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold py-3 rounded-xl transition-all active:scale-95"
-                >
-                  Confirmar Ahora
-                </button>
-              </div>
-            )}
-
-            <div className="space-y-3 pb-4">
-              <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest border-b border-stone-100 pb-1.5">Acciones Rápidas</p>
-
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => {
-                    if (selectedAppt) {
-                      const client = clientMap.get(selectedAppt.client_id);
-                      const service = serviceMap.get(selectedAppt.service_id);
-                      if (client && service) openWhatsApp(client.name, client.phone, service.name, selectedAppt.start_time);
-                    }
-                  }}
-                  className="w-12 h-12 shrink-0 bg-[#25D366] hover:bg-[#128C7E] text-white rounded-xl shadow-lg shadow-green-100 transition-all active:scale-95 flex items-center justify-center outline-none"
-                  title="Contactar por WhatsApp"
-                >
-                  <MessageCircle size={20} strokeWidth={2} />
-                </button>
-
-                <div className="flex-1">
-                  <Select
-                    value={selectedAppt?.status}
-                    onValueChange={(val) => handleStatusChange(val)}
-                    disabled={updatingStatus}
-                  >
-                    <SelectTrigger className={`w-full h-12 rounded-xl font-bold border transition-all text-[11px]
-                      ${selectedAppt?.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
-                        selectedAppt?.status === 'cancelled' ? 'bg-[#fef2f2] text-[#991b1b] border-[#fee2e2]' :
-                          selectedAppt?.status === 'web_pending' ? 'bg-orange-50 text-orange-700 border-orange-300' :
-                            selectedAppt?.status === 'pending' ? 'bg-[#fffbeb] text-[#92400e] border-[#fef3c7]' :
-                              selectedAppt?.status === 'confirmed' ? 'bg-[#f0f9f4] text-[#2d6a4f] border-[#d8f3dc]' :
-                                'bg-stone-50 text-stone-600 border-stone-100'}
-                    `}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl border-none shadow-2xl">
-                      <SelectItem value="pending">⏳ Pendiente</SelectItem>
-                      <SelectItem value="confirmed" className="font-bold text-[#2d6a4f]">✨ Confirmada</SelectItem>
-                      <SelectItem value="completed" className="font-bold text-emerald-600">✅ Realizada</SelectItem>
-                      <SelectItem value="no_show">No Asistió</SelectItem>
-                      <SelectItem value="cancelled" className="font-bold text-[#991b1b]">❌ Cancelada</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <button
-                  onClick={handleDeleteAppointment}
-                  disabled={updatingStatus}
-                  className="w-12 h-12 shrink-0 bg-stone-50 hover:bg-rose-50 text-stone-400 hover:text-rose-500 rounded-xl transition-all active:scale-95 flex items-center justify-center outline-none"
-                  title="Eliminar cita"
-                >
-                  <Trash2 size={18} strokeWidth={2} />
-                </button>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* 3. Modal de Edición de Cita (Modularizado V2) */}
+      <EditAppointmentModal
+        showEditModal={showEditModal}
+        setShowEditModal={setShowEditModal}
+        selectedAppt={selectedAppt}
+        setSelectedAppt={setSelectedAppt}
+        clientMap={clientMap}
+        serviceMap={serviceMap}
+        editNotes={editNotes}
+        setEditNotes={setEditNotes}
+        updatingStatus={updatingStatus}
+        handleStatusChange={handleStatusChange}
+        handleUpdateNotes={handleUpdateNotes}
+        handleDeleteAppointment={handleDeleteAppointment}
+        openWhatsApp={openWhatsApp}
+      />
     </>
   );
 }

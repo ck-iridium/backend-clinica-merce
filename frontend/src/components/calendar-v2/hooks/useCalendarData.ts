@@ -204,6 +204,18 @@ export function useCalendarData() {
     setCurrentWeek(d);
   };
 
+  const handlePrevDay = () => {
+    const d = new Date(mobileSelectedDate);
+    d.setDate(d.getDate() - 1);
+    handleMobileDateSelect(d);
+  };
+
+  const handleNextDay = () => {
+    const d = new Date(mobileSelectedDate);
+    d.setDate(d.getDate() + 1);
+    handleMobileDateSelect(d);
+  };
+
   const handleToday = () => {
     const now = new Date();
     setCurrentWeek(getMonday(now));
@@ -369,6 +381,8 @@ export function useCalendarData() {
     // Handlers
     handlePrevWeek,
     handleNextWeek,
+    handlePrevDay,
+    handleNextDay,
     handleToday,
     handleDateSelect,
     handleMobileDateSelect,

@@ -99,13 +99,13 @@ function CalendarContent() {
               onDateChange={(date) => { c.handleMobileDateSelect(date); setIsMobilePanelOpen(false); }}
               confirmedCount={confirmedCount}
               pendingCount={pendingCount}
-              onPrev={c.handlePrevWeek}
-              onNext={c.handleNextWeek}
-              onToday={c.handleToday}
+              onPrev={() => { c.handlePrevDay(); setIsMobilePanelOpen(false); }}
+              onNext={() => { c.handleNextDay(); setIsMobilePanelOpen(false); }}
+              onToday={() => { c.handleToday(); setIsMobilePanelOpen(false); }}
               searchTerm={c.searchTerm}
               setSearchTerm={c.setSearchTerm}
               activeFilter={c.activeFilter}
-              setActiveFilter={c.setActiveFilter}
+              setActiveFilter={(f) => { c.setActiveFilter(f); setIsMobilePanelOpen(false); }}
               onClose={() => setIsMobilePanelOpen(false)}
             />
           </motion.div>
@@ -173,6 +173,7 @@ function CalendarContent() {
                 >
                   <TimeIndicator 
                     startHour={c.startHour} 
+                    totalHours={c.hours.length}
                     heightPerHour={80} 
                     viewType="desktop" 
                   />
@@ -281,6 +282,7 @@ function CalendarContent() {
                 {c.mobileSelectedDate.toDateString() === new Date().toDateString() && (
                   <TimeIndicator 
                     startHour={c.startHour} 
+                    totalHours={c.hours.length}
                     heightPerHour={MOBILE_HEIGHT_PER_HOUR} 
                     viewType="mobile" 
                   />

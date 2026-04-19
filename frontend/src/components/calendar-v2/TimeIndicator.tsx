@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 
 interface TimeIndicatorProps {
   startHour: number;
+  totalHours: number;
   heightPerHour: number;
   viewType: 'desktop' | 'mobile';
 }
@@ -15,6 +16,7 @@ interface TimeIndicatorProps {
  */
 export function TimeIndicator({
   startHour,
+  totalHours,
   heightPerHour,
   viewType
 }: TimeIndicatorProps) {
@@ -32,15 +34,22 @@ export function TimeIndicator({
   const currentHour = now.getHours();
   const currentMinutes = now.getMinutes();
 
-  // Cálculo de la posición top en píxeles
-  // (Hora Actual - Hora Inicio) * Alto + (Minutos / 60) * Alto
-  const topOffset = (currentHour - startHour) * heightPerHour + (currentMinutes / 60) * heightPerHour;
+  // Cálculo de la posición top
+  let topOffset: string;
+  
+  if (viewType === 'desktop') {
+    // En Desktop la grilla es elástica, usamos PORCENTAJE
+    const totalMins = totalHours * 60;
+    const elapsedMins = (currentHour - startHour) * 60 + currentMinutes;
+    topOffset = `${(elapsedMins / totalMins) * 100}%`;
+  } else {
+    // En Móvil la grilla es rígida (píxeles hardcoded en el padre)
+    const px = (currentHour - startHour) * heightPerHour + (currentMinutes / 60) * heightPerHour;
+    topOffset = `${px}px`;
+  }
 
   // No renderizar si estamos fuera del rango visible de la agenda
-  // (Aunque generalmente la agenda cubre 09:00 - 20:00, el indicador desaparece si es de noche)
-  if (currentHour < startHour || currentHour >= startHour + 12) { // Asumimos un máximo de 12h visibles
-    // En una implementación real, esto debería compararse con endHour dinámico
-    // pero por ahora silenciamos si está muy fuera.
+  if (currentHour < startHour || currentHour >= startHour + totalHours) {
     return null;
   }
 
@@ -49,7 +58,7 @@ export function TimeIndicator({
   return (
     <div 
       className="absolute left-0 right-0 pointer-events-none z-40 transition-all duration-1000 ease-linear"
-      style={{ top: `${topOffset}px` }}
+      style={{ top: topOffset }}
     >
       {/* Línea horizontal */}
       <div className="w-full h-[1.5px] bg-[#ef4444] shadow-[0_0_8px_rgba(239,68,68,0.3)] relative">
