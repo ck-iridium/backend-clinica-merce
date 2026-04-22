@@ -72,7 +72,6 @@ export default function TeamPage() {
     try {
       setLoading(true);
       const data = await getTeamMembers();
-      console.log("Datos recibidos del servidor:", data);
       setMembers(data || []);
     } catch (err) {
       console.error("Error crítico cargando miembros del equipo:", err);
