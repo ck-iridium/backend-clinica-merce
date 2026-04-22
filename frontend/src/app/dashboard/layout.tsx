@@ -26,16 +26,16 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const logoUrl = settings?.logo_app_b64 || null;
 
   return (
-      <div className="min-h-screen bg-background md:flex font-sans text-foreground print:bg-white">
-        <RouteGuard />
-        
-        {/* Sidebar: Siempre visible para todas las rutas del dashboard */}
-        <DashboardSidebar clinicName={clinicName} logoUrl={logoUrl} />
+    <div className="min-h-screen bg-background md:flex font-sans text-foreground print:bg-white">
+      <RouteGuard />
 
-        {/* Área de Contenido Principal: El comportamiento (header, padding, scroll) se define en los layouts de grupo */}
-        <main className="flex-1 flex flex-col relative text-foreground w-full">
-          {children}
-        </main>
-      </div>
+      {/* Sidebar: Siempre visible para todas las rutas del dashboard */}
+      <DashboardSidebar clinicName={clinicName} logoUrl={logoUrl} />
+
+      {/* Área de Contenido Principal: El comportamiento (header, padding, scroll) se define en los layouts de grupo */}
+      <main className="flex-1 flex flex-col relative text-foreground w-full">
+        {children}
+      </main>
+    </div>
   );
 }
