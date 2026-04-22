@@ -6,10 +6,13 @@ import { revalidatePath } from 'next/cache';
 // 1. Función defensiva: Crea el cliente justo cuando se necesita y 
 // limpia cualquier comilla o espacio fantasma que venga de Vercel.
 function getSupabaseAdmin() {
-  const url = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace(/['"]/g, '').trim();
+  // Hardcodeamos la URL pública como fallback para evitar fallos de Vercel
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ypimdbkiuguiszaddzaj.supabase.co';
+  const urlLimpia = url.replace(/['"]/g, '').trim();
+  
   const key = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').replace(/['"]/g, '').trim();
-
-  return createClient(url, key, {
+  
+  return createClient(urlLimpia, key, {
     auth: {
       autoRefreshToken: false,
       persistSession: false
