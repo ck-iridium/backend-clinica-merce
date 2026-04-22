@@ -91,7 +91,7 @@ function CalendarContent() {
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed inset-0 z-50 bg-white md:hidden overflow-y-auto"
+            className="fixed inset-x-0 top-0 bottom-[56px] z-50 bg-white md:hidden overflow-y-auto"
           >
             <ContextPanel
               clinicName={c.settings?.clinic_name}
@@ -215,14 +215,15 @@ function CalendarContent() {
         </div>
 
         {/*
-          ── MÓVIL: Arquitectura final rígida (100dvh) ──
-          - Eliminamos scroll global y sticky. El raíz móvil dicta el alto límite.
-          - El header es estático (flex-shrink-0).
-          - Solo la grilla interna tiene scroll con el PB para el BottomNav.
+          ── MÓVIL: Layout completamente fijo (fixed inset-0) ──
+          - Independiente del flujo del documento y de cualquier ancestro.
+          - El header de días queda anclado y nunca se desplaza.
+          - La grilla scroll solo en su propio contenedor interno.
+          - top-0 bottom-[56px] deja espacio exacto para el BottomNav.
         */}
-        <div className="md:hidden flex flex-col h-[100dvh] overflow-hidden bg-white pb-[56px]">
+        <div className="md:hidden fixed inset-x-0 top-0 bottom-[56px] flex flex-col bg-white overflow-hidden z-10">
 
-          {/* 1. Header estático (No sticky) */}
+          {/* 1. Header estático anclado (nunca se mueve) */}
           <div className="flex-shrink-0 flex items-center bg-white shadow-sm border-b border-stone-100 p-1">
 
             {/* Botón abrir panel */}
