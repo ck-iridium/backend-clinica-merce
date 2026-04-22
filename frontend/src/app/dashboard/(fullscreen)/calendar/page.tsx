@@ -91,7 +91,7 @@ function CalendarContent() {
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed inset-x-0 top-0 bottom-[56px] z-50 bg-white md:hidden overflow-y-auto"
+            className="fixed inset-x-0 top-0 bottom-[56px] z-[60] bg-white md:hidden overflow-y-auto overflow-x-hidden"
           >
             <ContextPanel
               clinicName={c.settings?.clinic_name}
@@ -215,13 +215,13 @@ function CalendarContent() {
         </div>
 
         {/*
-          ── MÓVIL: Layout completamente fijo (fixed inset-0) ──
-          - Independiente del flujo del documento y de cualquier ancestro.
-          - El header de días queda anclado y nunca se desplaza.
-          - La grilla scroll solo en su propio contenedor interno.
-          - top-0 bottom-[56px] deja espacio exacto para el BottomNav.
+          ── MÓVIL: Flex pura dentro del layout (h-[100dvh] overflow-hidden) ──
+          - El contenedor raíz es flex-col, ocupa todo el espacio disponible menos el BottomNav.
+          - No usamos fixed aquí para evitar conflictos con el layout padre.
+          - overflow-x-hidden elimina el scroll horizontal.
+          - Solo la grilla interna tiene overflow-y-auto.
         */}
-        <div className="md:hidden fixed inset-x-0 top-0 bottom-[56px] flex flex-col bg-white overflow-hidden z-10">
+        <div className="md:hidden flex-1 flex flex-col overflow-hidden bg-white min-h-0">
 
           {/* 1. Header estático anclado (nunca se mueve) */}
           <div className="flex-shrink-0 flex items-center bg-white shadow-sm border-b border-stone-100 p-1">
@@ -271,11 +271,11 @@ function CalendarContent() {
             </div>
           </div>
 
-          {/* 2. Grilla con scroll interno y padding para el footer */}
-          <div ref={mobileGridRef} className="flex-1 min-h-0 overflow-y-auto bg-white">
+          {/* 2. Grilla con scroll interno — pb-[56px] para que el footer no tape las últimas horas */}
+          <div ref={mobileGridRef} className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden bg-white pb-[56px]">
             <div
               className="flex relative"
-              style={{ height: `${c.hours.length * MOBILE_HEIGHT_PER_HOUR}px` }}
+              style={{ height: `${c.hours.length * MOBILE_HEIGHT_PER_HOUR}px`, width: '100%' }}
             >
               <TimeScale hours={c.hours} heightPerHour={MOBILE_HEIGHT_PER_HOUR} part="axis" viewType="mobile" />
               <div className="flex-1 relative border-l border-stone-100">

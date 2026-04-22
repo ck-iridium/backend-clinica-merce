@@ -162,7 +162,7 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 w-full z-50 md:hidden bg-white/90 backdrop-blur-md border-t border-stone-200 px-4 py-2 flex justify-between items-center print:hidden pb-safe">
+      <div className="fixed bottom-0 left-0 w-full z-[70] md:hidden bg-white/90 backdrop-blur-md border-t border-stone-200 px-4 py-2 flex justify-between items-center print:hidden pb-safe">
         
         <Link href="/dashboard" className="p-2 text-stone-500 hover:text-stone-800 transition-colors">
           <Home size={24} strokeWidth={1.5} />
