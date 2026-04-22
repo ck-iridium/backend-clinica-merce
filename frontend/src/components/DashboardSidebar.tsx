@@ -111,11 +111,17 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
     }
 
     const filteredLinks = navLinks.filter(link => {
-      if (role === 'Especialista') {
-        if (link.href === '/dashboard/invoices' || link.href === '/dashboard/team') return false;
-      }
-      if (role === 'Recepción') {
-        if (link.href === '/dashboard/team') return false;
+      // Regla estricta: Solo Administrador ve Equipo, Facturación y Ajustes
+      // Normalizamos a minúsculas para evitar errores de mayúsculas (Admin vs Administrador)
+      const currentRole = role?.toLowerCase();
+      if (currentRole !== 'administrador' && currentRole !== 'admin') {
+        const restrictedPaths = [
+          '/dashboard/team',
+          '/dashboard/invoices',
+          '/dashboard/settings',
+          '/dashboard/backups'
+        ];
+        if (restrictedPaths.includes(link.href)) return false;
       }
       return true;
     });

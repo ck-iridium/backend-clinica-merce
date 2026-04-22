@@ -54,11 +54,10 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
     { href: '/dashboard/vouchers', label: 'Bonos', icon: Ticket },
     { href: '/dashboard/invoices', label: 'Facturas', icon: Receipt },
   ].filter(item => {
-    if (role === 'Especialista') {
-      if (item.href === '/dashboard/invoices' || item.href === '/dashboard/team') return false;
-    }
-    if (role === 'Recepción') {
-      if (item.href === '/dashboard/team') return false;
+    // Solo Administrador ve Equipo y Facturas
+    const currentRole = role?.toLowerCase();
+    if (currentRole !== 'administrador' && currentRole !== 'admin') {
+      if (item.href === '/dashboard/team' || item.href === '/dashboard/invoices') return false;
     }
     return true;
   });
@@ -79,7 +78,14 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
     { href: '/dashboard/backups', label: 'Copias de Seguridad', icon: Database },
     { href: '/dashboard/media', label: 'Galería de Medios', icon: ImageIcon },
     { href: '/dashboard/cms', label: 'Editor Web (CMS)', icon: Globe },
-  ];
+  ].filter(item => {
+    // Solo Administrador ve Ajustes y Backups
+    const currentRole = role?.toLowerCase();
+    if (currentRole !== 'administrador' && currentRole !== 'admin') {
+      if (item.href === '/dashboard/settings' || item.href === '/dashboard/backups') return false;
+    }
+    return true;
+  });
 
   const handleNavigateSubmenu = (level: MenuLevel) => {
     setDirection(1);

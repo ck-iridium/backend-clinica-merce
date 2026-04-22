@@ -14,20 +14,19 @@ export function useAuthRole() {
           if (user.email) {
             const result = await getUserRoleByEmail(user.email);
             if (result.success && result.role) {
+              // Normalizamos a minúsculas para comparaciones seguras
               setRole(result.role);
               return;
             } else if (user.role) {
-              // Fallback temporal si no existe en perfiles de Supabase
               setRole(user.role);
               return;
             }
           }
         }
-        // Rol por defecto más restrictivo si falla
-        setRole('Recepción');
+        setRole(null); // No hay sesión o usuario
       } catch (err) {
         console.error("Error fetching user role:", err);
-        setRole('Recepción');
+        setRole(null);
       } finally {
         setLoading(false);
       }

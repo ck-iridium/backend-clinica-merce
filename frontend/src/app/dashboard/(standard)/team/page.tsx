@@ -60,9 +60,10 @@ export default function TeamPage() {
 
   React.useEffect(() => {
     if (!loadingRole) {
-      if (role === 'Especialista' || role === 'Recepción') {
+      const currentRole = role?.toLowerCase();
+      if (currentRole !== 'administrador' && currentRole !== 'admin') {
         router.replace('/dashboard');
-        toast.error("Acceso denegado: No tienes permisos para gestionar el equipo.");
+        toast.error("Acceso denegado: Solo los administradores pueden gestionar el equipo.");
       }
     }
   }, [role, loadingRole, router]);
@@ -144,7 +145,7 @@ export default function TeamPage() {
     }
   };
 
-  if (loadingRole || role === 'Especialista' || role === 'Recepción') {
+  if (loadingRole || (role?.toLowerCase() !== 'administrador' && role?.toLowerCase() !== 'admin')) {
     return (
       <div className="flex flex-col gap-4 justify-center items-center h-[60vh] animate-in fade-in duration-500">
         <Skeleton className="w-16 h-16 rounded-2xl" />

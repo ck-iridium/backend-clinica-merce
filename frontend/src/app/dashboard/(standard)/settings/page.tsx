@@ -2,6 +2,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+import { useAuthRole } from '@/hooks/useAuthRole';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Save, Building2, Link2, SearchCode, ImageIcon, Hash, ChevronDown, Clock, Calendar, Trash2 } from 'lucide-react';
 import {
   Dialog,
@@ -13,6 +16,8 @@ import {
 
 export default function SettingsPage() {
   const { showFeedback } = useFeedback();
+  const router = useRouter();
+  const { role, loading: loadingRole } = useAuthRole();
   const [settings, setSettings] = useState<any>(null);
   const [timeBlocks, setTimeBlocks] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
@@ -29,8 +34,16 @@ export default function SettingsPage() {
   const sigRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    fetchSettings();
-  }, []);
+    if (!loadingRole) {
+      const currentRole = role?.toLowerCase();
+      if (currentRole !== 'administrador' && currentRole !== 'admin') {
+        router.replace('/dashboard');
+        toast.error("Acceso denegado: Solo los administradores pueden gestionar los ajustes.");
+      } else {
+        fetchSettings();
+      }
+    }
+  }, [role, loadingRole, router]);
 
   const fetchSettings = async () => {
     try {
@@ -166,8 +179,13 @@ export default function SettingsPage() {
     reader.readAsDataURL(file);
   };
 
-  if (loading || !settings) {
-     return <div className="text-center py-32"><div className="w-8 h-8 border-4 border-[#d4af37] border-t-[#d9777f] rounded-full animate-spin mx-auto"></div></div>;
+  if (loading || loadingRole || !settings || (role?.toLowerCase() !== 'administrador' && role?.toLowerCase() !== 'admin')) {
+     return (
+       <div className="flex flex-col gap-4 justify-center items-center h-[60vh] animate-in fade-in duration-500">
+         <Skeleton className="w-16 h-16 rounded-2xl" />
+         <Skeleton className="w-48 h-6 rounded-xl" />
+       </div>
+     );
   }
 
   return (
