@@ -98,61 +98,53 @@ export function ContextPanel({
     return (
         <aside className="w-full h-full flex flex-col bg-white border-r border-stone-100 flex-shrink-0 animate-in fade-in slide-in-from-left duration-500">
 
-            {/* Botón de Cierre — solo visible en Móvil (overlay) */}
-            {onClose && (
-                <div className="md:hidden flex items-center justify-between px-5 pt-5 pb-3 border-b border-stone-100 flex-shrink-0">
-                    <p className="text-xs font-black text-stone-400 uppercase tracking-[0.2em]">Menú</p>
-                    <button
-                        onClick={onClose}
-                        className="p-2 rounded-xl bg-stone-50 border border-stone-100 text-stone-500 active:scale-95 transition-all hover:bg-rose-50 hover:text-[#d9777f] hover:border-rose-100 group"
-                        aria-label="Cerrar panel"
-                    >
-                        <PanelLeftClose size={20} className="text-stone-500 hover:text-stone-800 transition-transform w-5 h-5" />
-                    </button>
-                </div>
-            )}
-
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-10">
-
-                {/* 2. BÚSQUEDA: Reservas o Clientes */}
-                <div className="space-y-3">
-                    <p className="text-[10px] font-black text-stone-300 uppercase tracking-[0.2em] ml-1">Buscador Inteligente</p>
-                    <div className="relative group">
+            {/* Botón de Cierre — ahora integrado en la fila de búsqueda para ahorrar espacio vertical */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-6">
+                
+                {/* 2. BÚSQUEDA Y COLAPSAR: Compactados en una sola fila */}
+                <div className="flex items-center gap-2">
+                    <div className="relative flex-1 group">
                         <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-[#d9777f] transition-colors" />
                         <input
                             type="text"
-                            placeholder="Buscar reservas o clientes..."
+                            placeholder="Buscar..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-11 pr-4 py-3.5 bg-stone-50 border border-stone-100 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-[#f3c7cb] focus:bg-white outline-none transition-all shadow-sm"
+                            className="w-full pl-11 pr-4 py-3 bg-stone-50 border border-stone-100 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-[#f3c7cb] focus:bg-white outline-none transition-all shadow-sm"
                         />
                     </div>
+                    {onClose && (
+                        <button
+                            onClick={onClose}
+                            className="p-3 rounded-2xl bg-stone-50 border border-stone-100 text-stone-500 active:scale-95 transition-all hover:bg-rose-50 hover:text-[#d9777f] hover:border-rose-100 shrink-0"
+                            aria-label="Cerrar panel"
+                        >
+                            <PanelLeftClose size={20} />
+                        </button>
+                    )}
                 </div>
 
-                {/* 3. NAVEGACIÓN: Mini-Calendario */}
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between px-1">
-                        <p className="text-[10px] font-black text-stone-300 uppercase tracking-[0.2em]">Agenda rápida</p>
-                        <div className="flex gap-2">
+                {/* 3. NAVEGACIÓN: Mini-Calendario Compacto */}
+                <div className="space-y-3">
+                    <div className="bg-white border border-stone-100 rounded-[2rem] p-4 shadow-sm">
+                        <div className="flex items-center justify-between mb-4 px-1">
                             <button
                                 onClick={handlePrevMonth}
                                 className="p-1.5 rounded-lg hover:bg-stone-50 text-stone-400 transition-colors"
                             >
-                                <ChevronLeft size={16} />
+                                <ChevronLeft size={18} />
                             </button>
+                            <p className="font-serif italic font-bold text-stone-800 capitalize text-sm">
+                                {viewDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
+                            </p>
                             <button
                                 onClick={handleNextMonth}
                                 className="p-1.5 rounded-lg hover:bg-stone-50 text-stone-400 transition-colors"
                             >
-                                <ChevronRight size={16} />
+                                <ChevronRight size={18} />
                             </button>
                         </div>
-                    </div>
-
-                    <div className="bg-white border border-stone-100 rounded-[2rem] p-4 shadow-sm">
-                        <p className="text-center font-serif italic font-bold text-stone-800 mb-4 capitalize">
-                            {viewDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
-                        </p>
+                        
                         <div className="grid grid-cols-7 gap-1 text-center mb-2">
                             {daysOfWeek.map(d => (
                                 <span key={d} className="text-[9px] font-black text-stone-300 uppercase">{d}</span>
@@ -179,33 +171,36 @@ export function ContextPanel({
                                 );
                             })}
                         </div>
-                    </div>
 
-                    <div className="grid grid-cols-3 gap-2 px-1">
-                        <button
-                            onClick={onPrev}
-                            className="py-2.5 bg-stone-50 border border-stone-100 text-stone-600 rounded-xl font-bold text-[10px] uppercase tracking-wider hover:bg-[#fdf2f3] hover:text-[#d9777f] hover:border-[#f3c7cb] transition-all flex items-center justify-center gap-1 shadow-sm"
-                        >
-                            <ChevronLeft size={14} /> Ant
-                        </button>
-                        <button
-                            onClick={onToday}
-                            className="py-2.5 bg-white border border-stone-100 text-stone-600 rounded-xl font-bold text-[10px] uppercase tracking-wider hover:bg-[#fdf2f3] hover:text-[#d9777f] hover:border-[#f3c7cb] transition-all shadow-sm"
-                        >
-                            Hoy
-                        </button>
-                        <button
-                            onClick={onNext}
-                            className="py-2.5 bg-stone-50 border border-stone-100 text-stone-600 rounded-xl font-bold text-[10px] uppercase tracking-wider hover:bg-[#fdf2f3] hover:text-[#d9777f] hover:border-[#f3c7cb] transition-all flex items-center justify-center gap-1 shadow-sm"
-                        >
-                            Sig <ChevronRight size={14} />
-                        </button>
+                        {/* Navegación Diaria Compacta */}
+                        <div className="flex items-center justify-between mt-4 pt-4 border-t border-stone-50">
+                            <button 
+                                onClick={onPrev}
+                                className="p-2 rounded-lg hover:bg-stone-50 text-stone-400 hover:text-[#d9777f] transition-all"
+                                title="Día Anterior"
+                            >
+                                <ChevronLeft size={18} />
+                            </button>
+                            <button 
+                                onClick={onToday}
+                                className="px-4 py-1.5 rounded-lg bg-stone-50 border border-stone-100 text-stone-600 font-black text-[10px] uppercase tracking-widest hover:bg-[#fdf2f3] hover:text-[#d9777f] hover:border-[#f3c7cb] transition-all"
+                            >
+                                Hoy
+                            </button>
+                            <button 
+                                onClick={onNext}
+                                className="p-2 rounded-lg hover:bg-stone-50 text-stone-400 hover:text-[#d9777f] transition-all"
+                                title="Día Siguiente"
+                            >
+                                <ChevronRight size={18} />
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 {/* 4. FILTROS VISUALES */}
-                <div className="space-y-4">
-                    <p className="text-[10px] font-black text-stone-300 uppercase tracking-[0.2em] ml-1">Filtros de Vista</p>
+                <div className="space-y-3">
+                    <p className="text-[10px] font-black text-stone-300 uppercase tracking-[0.2em] ml-1">Filtros</p>
                     <div className="space-y-2">
                         <button
                             onClick={() => setActiveFilter(activeFilter === 'CONFIRMADA' ? 'ALL' : 'CONFIRMADA')}
