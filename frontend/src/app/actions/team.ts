@@ -6,19 +6,14 @@ import { revalidatePath } from 'next/cache';
 // 1. Función defensiva: Crea el cliente justo cuando se necesita y 
 // limpia cualquier comilla o espacio fantasma que venga de Vercel.
 function getSupabaseAdmin() {
+  // Mantén la URL hardcodeada porque Vercel es caprichoso con ella
   const url = 'https://ypimdbkiuguiszaddzaj.supabase.co';
 
-  // PEGÁMOS LA SERVICE ROLE KEY DIRECTAMENTE AQUÍ (Solo para esta prueba)
-  // Es la que empieza por eyJ... y termina en CrsKF8
-  const key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwaW1kYmtpdWd1aXN6YWRkemFqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDU5MTg4NiwiZXhwIjoyMDkwMTY3ODg2fQ.Q8syF6pO-v2Wd0VaBc0Q8iR4iXeWMEePoYnNlCrsKF8';
-
-  console.log("INTENTANDO CONEXIÓN MAESTRA DIRECTA...");
+  // Volvemos a leer de process.env de forma segura
+  const key = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').replace(/['"]/g, '').trim();
 
   return createClient(url, key, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
+    auth: { persistSession: false, autoRefreshToken: false }
   });
 }
 
