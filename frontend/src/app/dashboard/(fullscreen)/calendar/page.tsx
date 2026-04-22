@@ -167,15 +167,15 @@ function CalendarContent() {
             >
               {/* Indicador de Tiempo Real (Desktop) */}
               {c.days.some(d => d.toDateString() === new Date().toDateString()) && (
-                <div 
+                <div
                   className="absolute inset-0 pointer-events-none z-40"
                   style={{ gridColumn: '2 / -1' }}
                 >
-                  <TimeIndicator 
-                    startHour={c.startHour} 
+                  <TimeIndicator
+                    startHour={c.startHour}
                     totalHours={c.hours.length}
-                    heightPerHour={80} 
-                    viewType="desktop" 
+                    heightPerHour={80}
+                    viewType="desktop"
                   />
                 </div>
               )}
@@ -280,14 +280,14 @@ function CalendarContent() {
               <div className="flex-1 relative border-l border-stone-100">
                 {/* Indicador de Tiempo Real (Móvil) */}
                 {c.mobileSelectedDate.toDateString() === new Date().toDateString() && (
-                  <TimeIndicator 
-                    startHour={c.startHour} 
+                  <TimeIndicator
+                    startHour={c.startHour}
                     totalHours={c.hours.length}
-                    heightPerHour={MOBILE_HEIGHT_PER_HOUR} 
-                    viewType="mobile" 
+                    heightPerHour={MOBILE_HEIGHT_PER_HOUR}
+                    viewType="mobile"
                   />
                 )}
-                
+
                 <TimeScale hours={c.hours} heightPerHour={MOBILE_HEIGHT_PER_HOUR} part="guides" />
                 <DayColumn
                   date={c.mobileSelectedDate}

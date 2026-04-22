@@ -147,7 +147,7 @@ export default function TeamPage() {
                     <span className="text-sm font-medium text-stone-400 underline decoration-stone-200 underline-offset-4">{member.email}</span>
                   </td>
                   <td className="py-5 px-4 text-right">
-                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center justify-end gap-2 transition-opacity">
                       <button className="p-2.5 rounded-xl hover:bg-white hover:shadow-md text-stone-400 hover:text-stone-800 transition-all border border-transparent hover:border-stone-100">
                         <Edit2 size={16} strokeWidth={1.5} />
                       </button>

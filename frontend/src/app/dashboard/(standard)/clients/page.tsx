@@ -18,7 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, FileText, User as UserIcon, UserPlus } from "lucide-react";
+import { Eye, UserPlus } from "lucide-react";
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -299,25 +299,13 @@ export default function ClientsPage() {
                       )}
                     </td>
                     <td className="px-8 py-5 text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger className="p-2 rounded-lg hover:bg-stone-100 text-stone-400 hover:text-stone-700 transition-colors focus:outline-none">
-                          <MoreHorizontal size={18} />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuItem asChild>
-                            <Link href={`/dashboard/clients/${client.id}`} className="cursor-pointer flex items-center gap-2">
-                              <UserIcon size={14} className="text-stone-500" />
-                              Ver Ficha Completa
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link href={`/dashboard/clients/${client.id}?tab=history`} className="cursor-pointer flex items-center gap-2">
-                              <FileText size={14} className="text-stone-500" />
-                              Historial Clínico
-                            </Link>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <Link 
+                        href={`/dashboard/clients/${client.id}`}
+                        className="p-2.5 rounded-xl hover:bg-stone-100 text-stone-400 hover:text-[#d9777f] transition-all border border-transparent hover:border-stone-100 inline-flex items-center justify-center group/eye"
+                        title="Ver ficha completa"
+                      >
+                        <Eye size={18} strokeWidth={1.5} className="group-hover/eye:scale-110 transition-transform" />
+                      </Link>
                     </td>
                   </motion.tr>
                 ))

@@ -1,23 +1,39 @@
 "use client"
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Home, Search, Plus, Bell, Menu } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Home, Search, Plus, Bell, Menu, ChevronRight, ChevronLeft, LogOut, User, LayoutDashboard, Users, Sparkles, Ticket, Receipt, CalendarDays, Settings, Database, Image as ImageIcon, Globe, Tag, ShieldCheck } from 'lucide-react';
 import { GlobalSearch } from './GlobalSearch';
-import { navLinks } from './DashboardSidebar';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
-  SheetHeader,
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
 
-export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = null }: { clinicName?: string, logoUrl?: string | null }) {
+type MenuLevel = 'main' | 'gestion' | 'configuracion';
+
+interface MobileBottomBarProps {
+  clinicName?: string;
+  logoUrl?: string | null;
+}
+
+export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = null }: MobileBottomBarProps) {
   const [openSearch, setOpenSearch] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [menuLevel, setMenuLevel] = useState<MenuLevel>('main');
+  const [direction, setDirection] = useState(1);
   const pathname = usePathname();
+  const router = useRouter();
+
+  // Reiniciar el nivel de menú al cerrar
+  useEffect(() => {
+    if (!isMobileOpen) {
+      setTimeout(() => setMenuLevel('main'), 300);
+    }
+  }, [isMobileOpen]);
 
   useEffect(() => {
     setIsMobileOpen(false);
@@ -27,6 +43,122 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
     if (exact) return pathname === href;
     return pathname.startsWith(href) && href !== '/dashboard';
   };
+
+  const navItemsMain = [
+    { href: '/dashboard/pos', label: 'Venta Rápida', icon: Tag, isSubmenu: false, style: 'accent' },
+    { href: '/dashboard', label: 'Inicio', icon: LayoutDashboard, isSubmenu: false, exact: true },
+    { href: '/dashboard/calendar', label: 'Agenda', icon: CalendarDays, isSubmenu: false },
+    { href: '/dashboard/clients', label: 'Clientes', icon: Users, isSubmenu: false },
+    { id: 'gestion', label: 'Gestión Avanzada', icon: ShieldCheck, isSubmenu: true },
+    { id: 'configuracion', label: 'Configuración', icon: Settings, isSubmenu: true }
+  ];
+
+  const submenuGestion = [
+    { href: '/dashboard/team', label: 'Equipo', icon: ShieldCheck },
+    { href: '/dashboard/services', label: 'Servicios', icon: Sparkles },
+    { href: '/dashboard/vouchers', label: 'Bonos', icon: Ticket },
+    { href: '/dashboard/invoices', label: 'Facturas', icon: Receipt },
+  ];
+
+  const submenuConfig = [
+    { href: '/dashboard/settings', label: 'Ajustes Generales', icon: Settings },
+    { href: '/dashboard/backups', label: 'Copias de Seguridad', icon: Database },
+    { href: '/dashboard/media', label: 'Galería de Medios', icon: ImageIcon },
+    { href: '/dashboard/cms', label: 'Editor Web (CMS)', icon: Globe },
+  ];
+
+  const handleNavigateSubmenu = (level: MenuLevel) => {
+    setDirection(1);
+    setMenuLevel(level);
+  };
+
+  const handleBack = () => {
+    setDirection(-1);
+    setMenuLevel('main');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    setIsMobileOpen(false);
+    router.push('/login');
+  };
+
+  const slideVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? '100%' : '-100%',
+      opacity: 0
+    }),
+    center: {
+      x: 0,
+      opacity: 1
+    },
+    exit: (direction: number) => ({
+      x: direction < 0 ? '100%' : '-100%',
+      opacity: 0
+    })
+  };
+
+  const renderNavList = (items: any[]) => (
+    <div className="flex flex-col gap-2 w-full pt-2">
+      {items.map((item) => {
+        if (item.isSubmenu) {
+          return (
+            <button
+              key={item.id}
+              onClick={() => handleNavigateSubmenu(item.id as MenuLevel)}
+              className="group flex items-center justify-between rounded-xl p-3.5 transition-all duration-200 text-stone-500 hover:bg-stone-900 hover:text-white"
+            >
+              <div className="flex items-center">
+                <div className="flex-shrink-0 flex items-center justify-center w-6">
+                  <item.icon size={20} className="text-stone-500 group-hover:text-white transition-all duration-300" strokeWidth={1.5} />
+                </div>
+                <div className="text-sm font-bold whitespace-nowrap ml-3">
+                  {item.label}
+                </div>
+              </div>
+              <ChevronRight size={18} className="text-stone-600 group-hover:text-white" />
+            </button>
+          );
+        }
+
+        const active = isActive(item.href, item.exact);
+        const Icon = item.icon;
+        let containerClasses = "";
+        let iconClasses = "transition-all duration-300 ";
+
+        if (active) {
+          containerClasses = "bg-stone-800 text-white shadow-lg";
+          iconClasses += "text-white";
+        } else {
+          containerClasses = "text-stone-500 hover:bg-stone-900 hover:text-white";
+          iconClasses += "text-stone-500 group-hover:text-white";
+        }
+
+        if (item.style === 'accent' && !active) {
+          containerClasses += " border border-stone-800 mb-2";
+        }
+
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={() => setIsMobileOpen(false)}
+            className={`group flex items-center rounded-xl p-3.5 transition-all duration-200 ${containerClasses}`}
+          >
+            <div className="flex-shrink-0 flex items-center justify-center w-6">
+              <Icon size={20} className={iconClasses} strokeWidth={active ? 2.5 : 1.5} />
+            </div>
+            <div className="text-sm font-bold whitespace-nowrap ml-3">
+              {item.label}
+            </div>
+            {active && (
+              <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#d9777f] shadow-[0_0_8px_#d9777f]"></div>
+            )}
+          </Link>
+        );
+      })}
+    </div>
+  );
 
   return (
     <>
@@ -57,67 +189,90 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
               <Menu size={24} strokeWidth={1.5} />
             </button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-[85vw] max-w-xs p-0 bg-stone-50 border-none [&>button]:hidden">
+          <SheetContent side="left" className="w-[85vw] max-w-xs p-0 bg-stone-950 border-none [&>button]:hidden shadow-[10px_0_40px_rgba(0,0,0,0.5)] flex flex-col">
             <SheetTitle className="sr-only">Navegación Principal</SheetTitle>
             <SheetDescription className="sr-only">Menú lateral de navegación con todas las secciones</SheetDescription>
             
-            <div className="flex flex-col h-full py-8">
-              <div className="hidden px-6 mb-10 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-[1.25rem] bg-stone-900 flex items-center justify-center text-white font-serif italic text-2xl shadow-xl shadow-stone-200 overflow-hidden">
-                    {logoUrl ? <img src={logoUrl} alt={clinicName} className="w-full h-full object-cover" /> : clinicName.charAt(0)}
+            <div className="flex-1 overflow-hidden relative">
+              <AnimatePresence initial={false} custom={direction}>
+                
+                {menuLevel === 'main' && (
+                  <motion.div
+                    key="main"
+                    custom={direction}
+                    variants={slideVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    className="absolute inset-0 w-full h-full overflow-y-auto px-4 pt-8 pb-4 custom-scrollbar"
+                  >
+                    {renderNavList(navItemsMain)}
+                  </motion.div>
+                )}
+
+                {menuLevel === 'gestion' && (
+                  <motion.div
+                    key="gestion"
+                    custom={direction}
+                    variants={slideVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    className="absolute inset-0 w-full h-full overflow-y-auto px-4 pt-8 pb-4 custom-scrollbar"
+                  >
+                    <button onClick={handleBack} className="flex items-center text-stone-400 hover:text-white font-bold text-lg mb-6 w-full -ml-1 transition-colors">
+                      <ChevronLeft size={24} className="mr-1" /> Gestión
+                    </button>
+                    {renderNavList(submenuGestion)}
+                  </motion.div>
+                )}
+
+                {menuLevel === 'configuracion' && (
+                  <motion.div
+                    key="config"
+                    custom={direction}
+                    variants={slideVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    className="absolute inset-0 w-full h-full overflow-y-auto px-4 pt-8 pb-4 custom-scrollbar"
+                  >
+                    <button onClick={handleBack} className="flex items-center text-stone-400 hover:text-white font-bold text-lg mb-6 w-full -ml-1 transition-colors">
+                      <ChevronLeft size={24} className="mr-1" /> Configuración
+                    </button>
+                    {renderNavList(submenuConfig)}
+                  </motion.div>
+                )}
+
+              </AnimatePresence>
+            </div>
+
+            {/* SECCIÓN USUARIO FIJA (Bottom) */}
+            <div className="mt-auto px-5 py-4 border-t border-stone-800 bg-stone-950 flex shadow-[0_-10px_20px_rgba(0,0,0,0.2)] relative z-20 shrink-0">
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#d9777f] to-[#b35e65] text-white flex items-center justify-center font-bold text-lg shadow-lg shrink-0 overflow-hidden">
+                    {/* Sustituir por avatarUrl si existe */}
+                    <User size={20} />
                   </div>
-                  <div>
-                    <SheetHeader className="text-left p-0 mb-0">
-                      <SheetTitle className="text-xl font-bold text-stone-800 leading-tight font-serif p-0">
-                        {clinicName}
-                      </SheetTitle>
-                      <SheetDescription className="text-[10px] font-black uppercase tracking-widest text-[#d9777f] mt-0.5">
-                        Admin Panel
-                      </SheetDescription>
-                    </SheetHeader>
+                  <div className="flex flex-col overflow-hidden">
+                    <span className="text-white font-bold text-sm leading-tight truncate">Admin</span>
+                    <span className="text-stone-500 text-[10px] font-black uppercase tracking-widest truncate">{clinicName}</span>
                   </div>
                 </div>
-              </div>
-              
-              <div className="flex-1 overflow-y-auto px-2">
-                <div className="flex flex-col gap-1 w-full relative z-10 px-3">
-                  {navLinks.map((link, idx) => {
-                    const active = isActive(link.href, link.exact);
-                    const Icon = link.icon;
-                    let containerClasses = "";
-                    let iconClasses = "transition-all duration-300 ";
-                    let textClasses = "text-sm font-medium whitespace-nowrap overflow-hidden transition-all duration-300 w-40 opacity-100 ml-3";
-
-                    if (link.style === 'accent') {
-                      containerClasses = `mb-4 shadow-sm border ${active ? 'bg-[#bf7d6b] text-white border-[#bf7d6b]' : 'bg-white text-stone-700 border-stone-200 hover:bg-stone-50'}`;
-                      iconClasses += active ? "text-white" : "text-[#bf7d6b]";
-                    } else if (link.style === 'highlight') {
-                      containerClasses = `shadow-sm border ${idx === navLinks.findIndex(l => l.style === 'highlight') ? 'mt-6' : ''} ${active ? 'bg-stone-900 text-white border-stone-900' : 'bg-white text-stone-700 border-stone-200 hover:bg-stone-50'}`;
-                      iconClasses += active ? "text-white" : "text-stone-500";
-                    } else {
-                      containerClasses = active ? 'bg-[#bf7d6b]/10 text-[#bf7d6b] font-bold' : 'text-stone-500 hover:bg-stone-100/50 hover:text-stone-800';
-                      iconClasses += active ? "text-[#bf7d6b]" : "text-stone-400";
-                    }
-
-                    return (
-                      <Link
-                        key={link.href}
-                        href={link.href}
-                        className={`group flex items-center rounded-xl p-3 transition-all duration-200 ${containerClasses}`}
-                      >
-                        <div className="flex-shrink-0 flex items-center justify-center w-6">
-                          <Icon size={18} className={iconClasses} strokeWidth={active ? 2.5 : 2} />
-                        </div>
-                        <div className={textClasses}>
-                          {link.label}
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
+                <button 
+                  onClick={handleLogout} 
+                  className="p-2.5 rounded-xl text-rose-400/80 hover:bg-rose-500/10 hover:text-rose-400 transition-colors shrink-0 ml-2"
+                  title="Cerrar sesión"
+                >
+                  <LogOut size={20} strokeWidth={2} />
+                </button>
               </div>
             </div>
+
           </SheetContent>
         </Sheet>
       </div>
