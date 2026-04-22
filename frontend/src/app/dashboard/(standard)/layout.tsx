@@ -1,15 +1,21 @@
+export const dynamic = 'force-dynamic';
+
 import DashboardHeader from '@/components/DashboardHeader';
+
 import MobileBottomBar from '@/components/MobileBottomBar';
 
 export default async function StandardLayout({ children }: { children: React.ReactNode }) {
   let settings = null;
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/settings/`, {
-      cache: 'no-store'
+      cache: 'no-store',
+      signal: AbortSignal.timeout(5000)
     });
-    if (res.ok) settings = await res.json();
+    if (res.ok) {
+      settings = await res.json();
+    }
   } catch (e) {
-    console.error("Failed to fetch settings for layout:", e);
+    console.warn("StandardLayout: Usando ajustes por defecto debido a error en el fetch.");
   }
   
   const clinicName = settings?.clinic_name || "Clínica";

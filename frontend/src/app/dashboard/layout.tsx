@@ -1,4 +1,7 @@
+export const dynamic = 'force-dynamic';
+
 import DashboardSidebar from '@/components/DashboardSidebar';
+
 import DashboardHeader from '@/components/DashboardHeader';
 import { FeedbackProvider } from '@/app/contexts/FeedbackContext';
 import MobileBottomBar from '@/components/MobileBottomBar';
@@ -8,11 +11,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
   let settings = null;
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/settings/`, {
-      cache: 'no-store'
+      cache: 'no-store',
+      // Añadir un timeout corto para evitar bloqueos si Render está dormido
+      signal: AbortSignal.timeout(5000)
     });
-    if (res.ok) settings = await res.json();
+    if (res.ok) {
+      settings = await res.json();
+    }
   } catch (e) {
-    console.error("Failed to fetch settings for layout:", e);
+    console.warn("DashboardLayout: No se pudieron cargar los ajustes (Render Cold Start o Offline). Usando valores por defecto.");
   }
 
   const clinicName = settings?.clinic_name || "Clínica";
