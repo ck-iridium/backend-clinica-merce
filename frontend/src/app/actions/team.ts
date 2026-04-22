@@ -3,10 +3,12 @@
 import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
 
-// Inicializar cliente con Service Role (Bypass RLS)
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey, {
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+// Helper para obtener cliente con privilegios de administrador (Service Role)
+// Esto permite saltar el RLS y es seguro ya que solo se ejecuta en el servidor (Server Actions)
+const getAdminClient = () => createClient(supabaseUrl, supabaseServiceKey, {
   auth: {
     autoRefreshToken: false,
     persistSession: false
@@ -15,6 +17,8 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
 
 export async function inviteTeamMember(data: { email: string, full_name: string, role: string }) {
   try {
+    const supabase = getAdminClient();
+
     // 1. Invitar al usuario por email
     const { data: authData, error: authError } = await supabase.auth.admin.inviteUserByEmail(data.email, {
       data: {
@@ -59,13 +63,15 @@ export async function inviteTeamMember(data: { email: string, full_name: string,
 
 export async function getTeamMembers() {
   try {
+    const supabase = getAdminClient();
+    
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error("Error obteniendo equipo:", error);
+      console.error("Error obteniendo equipo desde Supabase:", error);
       return [];
     }
 
@@ -78,11 +84,14 @@ export async function getTeamMembers() {
 
 export async function deleteTeamMember(userId: string) {
   try {
+    const supabase = getAdminClient();
     const { error } = await supabase.auth.admin.deleteUser(userId);
+    
     if (error) {
       console.error("Error eliminando usuario:", error);
       return { success: false, error: error.message };
     }
+    
     revalidatePath('/dashboard/team');
     return { success: true };
   } catch (error: any) {
@@ -93,6 +102,7 @@ export async function deleteTeamMember(userId: string) {
 
 export async function updateTeamMemberRole(userId: string, newRole: string) {
   try {
+    const supabase = getAdminClient();
     const { error } = await supabase
       .from('profiles')
       .update({ role: newRole })
