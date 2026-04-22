@@ -1,3 +1,7 @@
+---
+description: 
+---
+
 # Plan de Implementación: Horarios Flexibles y Bloqueos Vacacionales
 
 Este documento desglosa la construcción del sistema definitivo de gestión de tiempos e inhabilitación dinámica para la Clínica Mercè, dividiendo el trabajo en tareas secuenciales para evitar regresiones y garantizar escalabilidad.

@@ -12,6 +12,8 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import { useAuthRole } from '@/hooks/useAuthRole';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type MenuLevel = 'main' | 'gestion' | 'configuracion';
 
@@ -27,6 +29,8 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
   const [direction, setDirection] = useState(1);
   const pathname = usePathname();
   const router = useRouter();
+  const { role, loading } = useAuthRole();
+
 
   // Reiniciar el nivel de menú al cerrar
   useEffect(() => {
@@ -44,21 +48,31 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
     return pathname.startsWith(href) && href !== '/dashboard';
   };
 
-  const navItemsMain = [
-    { href: '/dashboard/pos', label: 'Venta Rápida', icon: Tag, isSubmenu: false, style: 'accent' },
-    { href: '/dashboard', label: 'Inicio', icon: LayoutDashboard, isSubmenu: false, exact: true },
-    { href: '/dashboard/calendar', label: 'Agenda', icon: CalendarDays, isSubmenu: false },
-    { href: '/dashboard/clients', label: 'Clientes', icon: Users, isSubmenu: false },
-    { id: 'gestion', label: 'Gestión Avanzada', icon: ShieldCheck, isSubmenu: true },
-    { id: 'configuracion', label: 'Configuración', icon: Settings, isSubmenu: true }
-  ];
-
   const submenuGestion = [
     { href: '/dashboard/team', label: 'Equipo', icon: ShieldCheck },
     { href: '/dashboard/services', label: 'Servicios', icon: Sparkles },
     { href: '/dashboard/vouchers', label: 'Bonos', icon: Ticket },
     { href: '/dashboard/invoices', label: 'Facturas', icon: Receipt },
+  ].filter(item => {
+    if (role === 'Especialista') {
+      if (item.href === '/dashboard/invoices' || item.href === '/dashboard/team') return false;
+    }
+    if (role === 'Recepción') {
+      if (item.href === '/dashboard/team') return false;
+    }
+    return true;
+  });
+
+  const navItemsMain = [
+    { href: '/dashboard/pos', label: 'Venta Rápida', icon: Tag, isSubmenu: false, style: 'accent' },
+    { href: '/dashboard', label: 'Inicio', icon: LayoutDashboard, isSubmenu: false, exact: true },
+    { href: '/dashboard/calendar', label: 'Agenda', icon: CalendarDays, isSubmenu: false },
+    { href: '/dashboard/clients', label: 'Clientes', icon: Users, isSubmenu: false },
+    // Solo mostrar "Gestión Avanzada" si hay elementos en el submenú
+    ...(submenuGestion.length > 0 ? [{ id: 'gestion', label: 'Gestión Avanzada', icon: ShieldCheck, isSubmenu: true }] : []),
+    { id: 'configuracion', label: 'Configuración', icon: Settings, isSubmenu: true }
   ];
+
 
   const submenuConfig = [
     { href: '/dashboard/settings', label: 'Ajustes Generales', icon: Settings },
@@ -160,6 +174,20 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
     </div>
   );
 
+  const renderNavListWithSkeleton = (items: any[]) => {
+    if (loading) {
+      return (
+        <div className="flex flex-col gap-3 w-full pt-2">
+          {Array(5).fill(0).map((_, i) => (
+             <Skeleton key={i} className="h-12 w-full rounded-xl bg-stone-900/40" />
+          ))}
+        </div>
+      );
+    }
+    return renderNavList(items);
+  };
+
+
   return (
     <>
       <div className="fixed bottom-0 left-0 w-full z-[70] md:hidden bg-white/90 backdrop-blur-md border-t border-stone-200 px-4 py-2 flex justify-between items-center print:hidden pb-safe">
@@ -207,7 +235,7 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     className="absolute inset-0 w-full h-full overflow-y-auto px-4 pt-8 pb-4 custom-scrollbar"
                   >
-                    {renderNavList(navItemsMain)}
+                    {renderNavListWithSkeleton(navItemsMain)}
                   </motion.div>
                 )}
 
@@ -225,7 +253,7 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
                     <button onClick={handleBack} className="flex items-center text-stone-400 hover:text-white font-bold text-lg mb-6 w-full -ml-1 transition-colors">
                       <ChevronLeft size={24} className="mr-1" /> Gestión
                     </button>
-                    {renderNavList(submenuGestion)}
+                    {renderNavListWithSkeleton(submenuGestion)}
                   </motion.div>
                 )}
 
@@ -243,7 +271,7 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
                     <button onClick={handleBack} className="flex items-center text-stone-400 hover:text-white font-bold text-lg mb-6 w-full -ml-1 transition-colors">
                       <ChevronLeft size={24} className="mr-1" /> Configuración
                     </button>
-                    {renderNavList(submenuConfig)}
+                    {renderNavListWithSkeleton(submenuConfig)}
                   </motion.div>
                 )}
 

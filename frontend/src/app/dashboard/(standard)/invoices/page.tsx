@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
+import { useAuthRole } from '@/hooks/useAuthRole';
+import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   DropdownMenu,
@@ -17,13 +19,22 @@ import { motion } from 'framer-motion';
 export default function InvoicesPage() {
   const { showFeedback } = useFeedback();
   const router = useRouter();
+  const { role, loading: loadingRole } = useAuthRole();
   const [invoices, setInvoices] = useState<any[]>([]);
   const [clients, setClients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (!loadingRole) {
+      if (role === 'Especialista') {
+        router.replace('/dashboard');
+        toast.error("Acceso denegado: No tienes permisos para ver facturación.");
+      } else {
+        fetchData();
+      }
+    }
+  }, [role, loadingRole, router]);
+
 
   const fetchData = async () => {
     try {
@@ -74,8 +85,18 @@ export default function InvoicesPage() {
 
   // Funciones de descarga eliminadas para dar paso a la vista de detalle ERP.
 
+  if (loadingRole || role === 'Especialista') {
+    return (
+      <div className="flex flex-col gap-4 justify-center items-center h-[60vh] animate-in fade-in duration-500">
+        <Skeleton className="w-16 h-16 rounded-2xl" />
+        <Skeleton className="w-48 h-6 rounded-xl" />
+      </div>
+    );
+  }
+
   return (
     <div className="animate-in fade-in duration-500">
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
         <div>
           <h1 className="text-4xl font-serif text-stone-800 tracking-tight">Registro de Facturación</h1>

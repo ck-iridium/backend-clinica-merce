@@ -1,3 +1,7 @@
+---
+description: 
+---
+
 # Fase 6: Experiencia Sensorial y UX Premium
 
 Este plan detalla los pasos para elevar la calidad de uso de la aplicación mediante feedback visual, estados de carga y optimizaciones de diseño para móviles.

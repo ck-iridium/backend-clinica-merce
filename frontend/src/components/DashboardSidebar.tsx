@@ -24,6 +24,9 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import { useAuthRole } from '@/hooks/useAuthRole';
+import { Skeleton } from '@/components/ui/skeleton';
+
 
 interface DashboardSidebarProps {
   clinicName: string;
@@ -52,6 +55,8 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
   const [lastScrollY, setLastScrollY] = useState(0);
   const pathname = usePathname();
   const router = useRouter();
+  const { role, loading } = useAuthRole();
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -94,51 +99,74 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
   };
 
   // NavItems renderer for DRY (used in both mobile and desktop views)
-  const NavItems = () => (
-    <div className="flex flex-col gap-2 w-full relative z-10 px-3">
-      {navLinks.map((link, idx) => {
-        const active = isActive(link.href, link.exact);
-        const Icon = link.icon;
+  const NavItems = () => {
+    if (loading) {
+      return (
+        <div className="flex flex-col gap-3 w-full px-3 py-2 animate-in fade-in duration-500">
+          {Array(6).fill(0).map((_, i) => (
+            <Skeleton key={i} className="h-12 w-full rounded-2xl bg-stone-900/40" />
+          ))}
+        </div>
+      );
+    }
 
-        let containerClasses = "";
-        let iconClasses = "transition-all duration-300 ";
+    const filteredLinks = navLinks.filter(link => {
+      if (role === 'Especialista') {
+        if (link.href === '/dashboard/invoices' || link.href === '/dashboard/team') return false;
+      }
+      if (role === 'Recepción') {
+        if (link.href === '/dashboard/team') return false;
+      }
+      return true;
+    });
 
-        if (active) {
-          containerClasses = "bg-stone-800 text-white shadow-lg";
-          iconClasses += "text-white";
-        } else {
-          containerClasses = "text-stone-500 hover:bg-stone-900 hover:text-white";
-          iconClasses += "text-stone-500 group-hover:text-white";
-        }
+    return (
+      <div className="flex flex-col gap-2 w-full relative z-10 px-3 animate-in fade-in zoom-in-95 duration-500">
+        {filteredLinks.map((link, idx) => {
+          const active = isActive(link.href, link.exact);
+          const Icon = link.icon;
 
-        if (link.style === 'accent' && !active) {
-          containerClasses += " border border-stone-800 mb-2";
-        }
+          let containerClasses = "";
+          let iconClasses = "transition-all duration-300 ";
 
-        return (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={`group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 ${containerClasses}`}
-          >
-            <div className="flex-shrink-0 flex items-center justify-center">
-              <Icon size={22} className={iconClasses} strokeWidth={active ? 2.5 : 1.5} />
-            </div>
+          if (active) {
+            containerClasses = "bg-stone-800 text-white shadow-lg";
+            iconClasses += "text-white";
+          } else {
+            containerClasses = "text-stone-500 hover:bg-stone-900 hover:text-white";
+            iconClasses += "text-stone-500 group-hover:text-white";
+          }
 
-            {/* Tooltip SaaS (Cápsula Flotante) */}
-            <span className="absolute left-full top-1/2 -translate-y-1/2 ml-5 px-4 py-2 bg-stone-800 text-white text-[12px] font-black uppercase tracking-[0.15em] rounded-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-300 whitespace-nowrap z-[110] shadow-2xl border border-stone-700 translate-x-[-15px] group-hover/item:translate-x-0 pointer-events-none">
-              {link.label}
-            </span>
+          if (link.style === 'accent' && !active) {
+            containerClasses += " border border-stone-800 mb-2";
+          }
 
-            {/* Puntito indicador activo */}
-            {active && (
-              <div className="absolute -left-1 w-1 h-6 bg-white rounded-r-full shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
-            )}
-          </Link>
-        );
-      })}
-    </div>
-  );
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 ${containerClasses}`}
+            >
+              <div className="flex-shrink-0 flex items-center justify-center">
+                <Icon size={22} className={iconClasses} strokeWidth={active ? 2.5 : 1.5} />
+              </div>
+
+              {/* Tooltip SaaS (Cápsula Flotante) */}
+              <span className="absolute left-full top-1/2 -translate-y-1/2 ml-5 px-4 py-2 bg-stone-800 text-white text-[12px] font-black uppercase tracking-[0.15em] rounded-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-300 whitespace-nowrap z-[110] shadow-2xl border border-stone-700 translate-x-[-15px] group-hover/item:translate-x-0 pointer-events-none">
+                {link.label}
+              </span>
+
+              {/* Puntito indicador activo */}
+              {active && (
+                <div className="absolute -left-1 w-1 h-6 bg-white rounded-r-full shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
+              )}
+            </Link>
+          );
+        })}
+      </div>
+    );
+  };
+
 
   return (
     <>

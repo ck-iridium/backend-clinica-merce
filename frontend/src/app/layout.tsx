@@ -66,6 +66,8 @@ export async function generateMetadata(): Promise<Metadata> {
 import LayoutWrapper from "@/components/LayoutWrapper";
 import PublicNavbar from "@/components/PublicNavbar";
 import { Providers } from "@/components/Providers";
+import InviteHandler from "@/components/InviteHandler";
+
 
 export default function RootLayout({
   children,
@@ -76,6 +78,7 @@ export default function RootLayout({
     <html lang="es" suppressHydrationWarning className={`${inter.variable} ${cormorantGaramond.variable}`}>
       <body className="antialiased bg-background text-foreground flex flex-col min-h-screen">
         <Providers>
+          <InviteHandler />
           <PublicNavbar />
           <main className="flex-grow relative">
             {children}

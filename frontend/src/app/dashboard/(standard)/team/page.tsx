@@ -8,49 +8,145 @@ import {
   Trash2, 
   ShieldCheck, 
   Stethoscope, 
-  UserCircle 
+  UserCircle,
+  Loader2
 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useFeedback } from "@/app/contexts/FeedbackContext"
-
-const teamMembers = [
-  {
-    id: 1,
-    name: "Mercè S.",
-    role: "Administrador",
-    email: "merce@clinicamerce.com",
-    status: "Activo",
-    avatar: null,
-  },
-  {
-    id: 2,
-    name: "Dra. Laura Gil",
-    role: "Especialista",
-    email: "laura.gil@clinicamerce.com",
-    status: "Activo",
-    avatar: null,
-  },
-  {
-    id: 3,
-    name: "Carlos Ruiz",
-    role: "Recepción",
-    email: "carlos.r@clinicamerce.com",
-    status: "Inactivo",
-    avatar: null,
-  },
-]
+import { getTeamMembers, inviteTeamMember, deleteTeamMember, updateTeamMemberRole } from "@/app/actions/team"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
+import { useAuthRole } from "@/hooks/useAuthRole"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export default function TeamPage() {
+  const [members, setMembers] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
   
+  // Estados para Modal de Invitación
+  const [isInviteModalOpen, setIsInviteModalOpen] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [formData, setFormData] = React.useState({
+    full_name: '',
+    email: '',
+    role: 'Recepción'
+  });
+
+  // Estados para Modal de Edición
+  const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
+  const [memberToEdit, setMemberToEdit] = React.useState<any>(null);
+  const [editRole, setEditRole] = React.useState('');
+  const [isEditing, setIsEditing] = React.useState(false);
+
+  const { showFeedback } = useFeedback();
+  const router = useRouter();
+  const { role, loading: loadingRole } = useAuthRole();
+
   React.useEffect(() => {
-    // Simulación de carga de la API
-    const timer = setTimeout(() => setLoading(false), 800);
-    return () => clearTimeout(timer);
+    if (!loadingRole) {
+      if (role === 'Especialista' || role === 'Recepción') {
+        router.replace('/dashboard');
+        toast.error("Acceso denegado: No tienes permisos para gestionar el equipo.");
+      }
+    }
+  }, [role, loadingRole, router]);
+
+
+  const fetchMembers = async () => {
+    setLoading(true);
+    const data = await getTeamMembers();
+    setMembers(data);
+    setLoading(false);
+  };
+
+  React.useEffect(() => {
+    fetchMembers();
   }, []);
 
-  // Simulación de rol de usuario (cambiar a 'staff' para probar la restricción)
-  const userRole = 'admin'; 
+  const handleInvite = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.full_name || !formData.email || !formData.role) {
+      toast.error("Por favor completa todos los campos");
+      return;
+    }
+
+    setIsSubmitting(true);
+    const result = await inviteTeamMember(formData);
+    setIsSubmitting(false);
+
+    if (result.success) {
+      toast.success(`Invitación enviada a ${formData.email}`);
+      setIsInviteModalOpen(false);
+      setFormData({ full_name: '', email: '', role: 'Recepción' });
+      fetchMembers();
+    } else {
+      toast.error(result.error || "Error al invitar al usuario");
+    }
+  };
+
+  const handleDelete = (userId: string, userName: string) => {
+    showFeedback({
+      type: 'confirm',
+      title: 'Confirmar Eliminación',
+      message: `¿Estás seguro de que deseas eliminar a ${userName} de la clínica? Esta acción es irreversible.`,
+      confirmText: 'Eliminar Miembro',
+      cancelText: 'Cancelar',
+      onConfirm: async () => {
+        const result = await deleteTeamMember(userId);
+        if (result.success) {
+          toast.success(`${userName} ha sido eliminado correctamente.`);
+          fetchMembers();
+        } else {
+          toast.error(result.error || "Error al eliminar al usuario.");
+        }
+      }
+    });
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!memberToEdit) return;
+    
+    setIsEditing(true);
+    const result = await updateTeamMemberRole(memberToEdit.id, editRole);
+    setIsEditing(false);
+
+    if (result.success) {
+      toast.success("Rol actualizado correctamente.");
+      setIsEditModalOpen(false);
+      fetchMembers();
+    } else {
+      toast.error(result.error || "Error al actualizar el rol.");
+    }
+  };
+
+  if (loadingRole || role === 'Especialista' || role === 'Recepción') {
+    return (
+      <div className="flex flex-col gap-4 justify-center items-center h-[60vh] animate-in fade-in duration-500">
+        <Skeleton className="w-16 h-16 rounded-2xl" />
+        <Skeleton className="w-48 h-6 rounded-xl" />
+      </div>
+    );
+  }
+
+  // userRole is now dynamic from useAuthRole
+  const userRole = role; 
+
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
@@ -66,10 +162,86 @@ export default function TeamPage() {
         </div>
 
         {userRole === 'admin' ? (
-          <button className="flex items-center gap-2.5 bg-stone-900 hover:bg-[#d9777f] text-white px-6 py-3.5 rounded-2xl font-bold text-sm transition-all shadow-lg shadow-stone-200 active:scale-95">
-            <UserPlus size={18} strokeWidth={1.5} />
-            Añadir Miembro
-          </button>
+          <Dialog open={isInviteModalOpen} onOpenChange={setIsInviteModalOpen}>
+            <DialogTrigger asChild>
+              <button className="flex items-center gap-2.5 bg-stone-900 hover:bg-[#d9777f] text-white px-6 py-3.5 rounded-2xl font-bold text-sm transition-all shadow-lg shadow-stone-200 active:scale-95">
+                <UserPlus size={18} strokeWidth={1.5} />
+                Añadir Miembro
+              </button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px] rounded-[2rem] p-6 bg-white border-stone-100 shadow-2xl">
+              <DialogHeader className="mb-4">
+                <DialogTitle className="font-serif italic text-2xl text-stone-800">Invitar al Equipo</DialogTitle>
+                <DialogDescription className="text-stone-500">
+                  Enviaremos un correo de invitación para que el usuario configure su contraseña.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleInvite} className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black uppercase tracking-widest text-stone-400">
+                    Nombre Completo
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.full_name}
+                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d9777f]/20 focus:border-[#d9777f] transition-all"
+                    placeholder="Ej. Dra. Laura Gil"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black uppercase tracking-widest text-stone-400">
+                    Correo Electrónico
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d9777f]/20 focus:border-[#d9777f] transition-all"
+                    placeholder="laura@clinicamerce.com"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black uppercase tracking-widest text-stone-400">
+                    Rol
+                  </label>
+                  <Select
+                    value={formData.role}
+                    onValueChange={(val) => setFormData({ ...formData, role: val })}
+                  >
+                    <SelectTrigger className="w-full bg-stone-50 border-stone-200 rounded-xl px-4 py-3 h-auto text-sm focus:ring-[#d9777f]/20 focus:border-[#d9777f]">
+                      <SelectValue placeholder="Selecciona un rol" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border-stone-100 shadow-xl">
+                      <SelectItem value="Administrador" className="rounded-lg">Administrador</SelectItem>
+                      <SelectItem value="Especialista" className="rounded-lg">Especialista</SelectItem>
+                      <SelectItem value="Recepción" className="rounded-lg">Recepción</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <DialogFooter className="pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsInviteModalOpen(false)}
+                    className="px-5 py-2.5 rounded-xl font-bold text-stone-500 hover:bg-stone-100 transition-colors text-sm"
+                    disabled={isSubmitting}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="flex items-center gap-2 bg-stone-900 hover:bg-[#d9777f] text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
+                  >
+                    {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <UserPlus size={16} />}
+                    {isSubmitting ? "Enviando..." : "Enviar Invitación"}
+                  </button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         ) : (
           <div className="bg-stone-50 border border-stone-100 px-5 py-3 rounded-2xl">
             <p className="text-stone-400 text-xs font-semibold">
@@ -120,7 +292,13 @@ export default function TeamPage() {
                     </td>
                   </tr>
                 ))
-              ) : teamMembers.map((member) => (
+              ) : members.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-12 text-center text-stone-400 font-medium">
+                    No hay miembros en el equipo aún.
+                  </td>
+                </tr>
+              ) : members.map((member) => (
                 <tr key={member.id} className="group hover:bg-stone-50/50 transition-colors">
                   <td className="py-5 px-4">
                     <div className="flex items-center gap-4">
@@ -129,7 +307,7 @@ export default function TeamPage() {
                          member.role === 'Especialista' ? <Stethoscope size={20} /> : 
                          <UserCircle size={20} />}
                       </div>
-                      <span className="font-bold text-stone-800">{member.name}</span>
+                      <span className="font-bold text-stone-800">{member.full_name}</span>
                     </div>
                   </td>
                   <td className="py-5 px-4">
@@ -148,10 +326,22 @@ export default function TeamPage() {
                   </td>
                   <td className="py-5 px-4 text-right">
                     <div className="flex items-center justify-end gap-2 transition-opacity">
-                      <button className="p-2.5 rounded-xl hover:bg-white hover:shadow-md text-stone-400 hover:text-stone-800 transition-all border border-transparent hover:border-stone-100">
+                      <button 
+                        onClick={() => {
+                          setMemberToEdit(member);
+                          setEditRole(member.role);
+                          setIsEditModalOpen(true);
+                        }}
+                        className="p-2.5 rounded-xl hover:bg-white hover:shadow-md text-stone-400 hover:text-stone-800 transition-all border border-transparent hover:border-stone-100"
+                        title="Editar Rol"
+                      >
                         <Edit2 size={16} strokeWidth={1.5} />
                       </button>
-                      <button className="p-2.5 rounded-xl hover:bg-white hover:shadow-md text-stone-400 hover:text-red-500 transition-all border border-transparent hover:border-stone-100">
+                      <button 
+                        onClick={() => handleDelete(member.id, member.full_name)}
+                        className="p-2.5 rounded-xl hover:bg-white hover:shadow-md text-stone-400 hover:text-red-500 transition-all border border-transparent hover:border-stone-100"
+                        title="Eliminar Miembro"
+                      >
                         <Trash2 size={16} strokeWidth={1.5} />
                       </button>
                     </div>
@@ -175,6 +365,80 @@ export default function TeamPage() {
           </p>
         </div>
       </div>
+
+      {/* Modal de Edición de Rol */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="sm:max-w-[425px] rounded-[2rem] p-6 bg-white border-stone-100 shadow-2xl">
+          <DialogHeader className="mb-4">
+            <DialogTitle className="font-serif italic text-2xl text-stone-800">Editar Rol</DialogTitle>
+            <DialogDescription className="text-stone-500">
+              Modifica los permisos de acceso para este miembro.
+            </DialogDescription>
+          </DialogHeader>
+          {memberToEdit && (
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[11px] font-black uppercase tracking-widest text-stone-400">
+                  Nombre Completo
+                </label>
+                <input
+                  type="text"
+                  value={memberToEdit.full_name}
+                  disabled
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-500 opacity-70 cursor-not-allowed"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[11px] font-black uppercase tracking-widest text-stone-400">
+                  Correo Electrónico
+                </label>
+                <input
+                  type="email"
+                  value={memberToEdit.email}
+                  disabled
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-500 opacity-70 cursor-not-allowed"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[11px] font-black uppercase tracking-widest text-stone-400">
+                  Rol
+                </label>
+                <Select
+                  value={editRole}
+                  onValueChange={setEditRole}
+                >
+                  <SelectTrigger className="w-full bg-stone-50 border-stone-200 rounded-xl px-4 py-3 h-auto text-sm focus:ring-[#d9777f]/20 focus:border-[#d9777f]">
+                    <SelectValue placeholder="Selecciona un rol" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-stone-100 shadow-xl">
+                    <SelectItem value="Administrador" className="rounded-lg">Administrador</SelectItem>
+                    <SelectItem value="Especialista" className="rounded-lg">Especialista</SelectItem>
+                    <SelectItem value="Recepción" className="rounded-lg">Recepción</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <DialogFooter className="pt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="px-5 py-2.5 rounded-xl font-bold text-stone-500 hover:bg-stone-100 transition-colors text-sm"
+                  disabled={isEditing}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={isEditing}
+                  className="flex items-center gap-2 bg-stone-900 hover:bg-[#d9777f] text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
+                >
+                  {isEditing ? <Loader2 size={16} className="animate-spin" /> : <Edit2 size={16} />}
+                  {isEditing ? "Guardando..." : "Guardar Cambios"}
+                </button>
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

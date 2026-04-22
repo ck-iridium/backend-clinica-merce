@@ -1,3 +1,7 @@
+---
+description: 
+---
+
 # Fase 4: Rediseño del Dashboard Home (Estilo Heygen)
 
 Este documento detalla la hoja de ruta para transformar el "Home" del Dashboard y su Header superior en una interfaz premium siguiendo el estándar visual establecido.

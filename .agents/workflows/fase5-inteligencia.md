@@ -1,3 +1,7 @@
+---
+description: 
+---
+
 # Fase 5: Inteligencia del Header
 
 Este plan detalla los pasos para dotar de funcionalidad inteligente a los elementos del Header superior, elevando la experiencia de usuario al estándar premium.

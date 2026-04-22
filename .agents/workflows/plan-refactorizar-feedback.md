@@ -1,3 +1,7 @@
+---
+description: 
+---
+
 # Plan de Refactorización: Feedback Híbrido
 
 Este plan detalla la migración del sistema de alertas actual a un modelo híbrido basado en la nueva [Política de Feedback UI](file:///c:/Users/Juan/MERCE/CLINICA%20MERCE/.agents/rules/ui-feedback-policy.md).

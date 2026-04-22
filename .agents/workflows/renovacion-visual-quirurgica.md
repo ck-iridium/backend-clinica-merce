@@ -1,3 +1,7 @@
+---
+description: 
+---
+
 # Tareas: Renovación Visual Quirúrgica
 
 - [x] **Fase 1: Estandarización Iconográfica (Lucide 1.5)**
