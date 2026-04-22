@@ -7,13 +7,19 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 // Helper para obtener cliente con privilegios de administrador (Service Role)
-// Esto permite saltar el RLS y es seguro ya que solo se ejecuta en el servidor (Server Actions)
-const getAdminClient = () => createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
+const getAdminClient = () => {
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.error("CRÍTICO: Faltan variables de entorno de Supabase en el servidor.");
+    throw new Error("Error de configuración del servidor.");
   }
-});
+  return createClient(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  });
+};
+
 
 export async function inviteTeamMember(data: { email: string, full_name: string, role: string }) {
   try {

@@ -1,10 +1,7 @@
 "use client"
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
-
 import * as React from "react"
+
 import { 
   Users, 
   UserPlus, 
@@ -72,11 +69,19 @@ export default function TeamPage() {
 
 
   const fetchMembers = async () => {
-    setLoading(true);
-    const data = await getTeamMembers();
-    setMembers(data);
-    setLoading(false);
+    try {
+      setLoading(true);
+      const data = await getTeamMembers();
+      setMembers(data || []);
+    } catch (err) {
+      console.error("Error crítico cargando miembros del equipo:", err);
+      toast.error("Error al conectar con el servidor de equipo.");
+      setMembers([]);
+    } finally {
+      setLoading(false);
+    }
   };
+
 
   React.useEffect(() => {
     fetchMembers();
