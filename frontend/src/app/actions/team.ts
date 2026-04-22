@@ -3,30 +3,23 @@
 import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-// Helper para obtener cliente con privilegios de administrador (Service Role)
-const getAdminClient = () => {
-  if (!supabaseUrl || !supabaseServiceKey) {
-    console.error("CRÍTICO: Faltan variables de entorno de Supabase en el servidor.");
-    throw new Error("Error de configuración del servidor.");
-  }
-  return createClient(supabaseUrl, supabaseServiceKey, {
+// Instancia global de Supabase Admin (Service Role)
+// IMPORTANTE: Esto solo se ejecuta en el servidor (Server Actions)
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  {
     auth: {
       autoRefreshToken: false,
       persistSession: false
     }
-  });
-};
-
+  }
+);
 
 export async function inviteTeamMember(data: { email: string, full_name: string, role: string }) {
   try {
-    const supabase = getAdminClient();
-
-    // 1. Invitar al usuario por email
-    const { data: authData, error: authError } = await supabase.auth.admin.inviteUserByEmail(data.email, {
+    // 1. Invitar al usuario por email usando privilegios de admin
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, {
       data: {
         full_name: data.full_name,
         role: data.role
@@ -43,8 +36,8 @@ export async function inviteTeamMember(data: { email: string, full_name: string,
       return { success: false, error: "No se pudo obtener el ID del usuario invitado" };
     }
 
-    // 2. Insertar en la tabla profiles
-    const { error: dbError } = await supabase
+    // 2. Insertar en la tabla profiles (bypass RLS)
+    const { error: dbError } = await supabaseAdmin
       .from('profiles')
       .insert({
         id: userId,
@@ -69,15 +62,13 @@ export async function inviteTeamMember(data: { email: string, full_name: string,
 
 export async function getTeamMembers() {
   try {
-    const supabase = getAdminClient();
-    
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('profiles')
       .select('*')
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error("Error obteniendo equipo desde Supabase:", error);
+      console.error("Error obteniendo equipo desde Supabase Admin:", error);
       return [];
     }
 
@@ -90,8 +81,7 @@ export async function getTeamMembers() {
 
 export async function deleteTeamMember(userId: string) {
   try {
-    const supabase = getAdminClient();
-    const { error } = await supabase.auth.admin.deleteUser(userId);
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
     
     if (error) {
       console.error("Error eliminando usuario:", error);
@@ -108,8 +98,7 @@ export async function deleteTeamMember(userId: string) {
 
 export async function updateTeamMemberRole(userId: string, newRole: string) {
   try {
-    const supabase = getAdminClient();
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('profiles')
       .update({ role: newRole })
       .eq('id', userId);
