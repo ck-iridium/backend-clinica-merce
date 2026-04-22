@@ -91,7 +91,7 @@ function CalendarContent() {
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed inset-x-0 top-0 bottom-[56px] z-[60] bg-white md:hidden overflow-y-auto overflow-x-hidden"
+            className="fixed inset-x-0 top-0 bottom-[56px] z-[60] bg-white md:hidden overflow-y-auto overflow-x-hidden overscroll-none"
           >
             <ContextPanel
               clinicName={c.settings?.clinic_name}

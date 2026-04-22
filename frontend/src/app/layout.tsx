@@ -1,5 +1,5 @@
 import "./globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Cormorant_Garamond } from 'next/font/google';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
@@ -8,6 +8,15 @@ const cormorantGaramond = Cormorant_Garamond({
   subsets: ['latin'], 
   variable: '--font-cormorant' 
 });
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#ffffff',
+};
+
 
 export async function generateMetadata(): Promise<Metadata> {
   let allowIndexing = false;
