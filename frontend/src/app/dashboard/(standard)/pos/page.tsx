@@ -3,9 +3,15 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
+import { useRouter } from 'next/navigation';
+import { useAuthRole } from '@/hooks/useAuthRole';
+import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function POSPage() {
   const { showFeedback } = useFeedback();
+  const router = useRouter();
+  const { role, loading: loadingRole } = useAuthRole();
   const [clients, setClients] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,8 +27,18 @@ export default function POSPage() {
   const [lastInvoice, setLastInvoice] = useState<any>(null);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (!loadingRole) {
+      const currentRole = role?.toLowerCase();
+      const hasAccess = currentRole === 'administrador' || currentRole === 'admin' || currentRole === 'recepción' || currentRole === 'recepcion';
+      
+      if (!hasAccess) {
+        router.replace('/dashboard');
+        toast.error("Acceso denegado: No tienes permisos para realizar ventas.");
+      } else {
+        fetchData();
+      }
+    }
+  }, [role, loadingRole, router]);
 
   const fetchData = async () => {
     try {
@@ -100,10 +116,13 @@ export default function POSPage() {
     setIsSimplified(false);
   };
 
-  if (loading) return (
-    <div className="p-20 text-center">
-      <div className="inline-block w-8 h-8 border-4 border-[#f3c7cb] border-t-[#d9777f] rounded-full animate-spin mb-4"></div>
-      <p className="text-stone-500 font-medium tracking-widest uppercase text-xs">Abriendo Terminal de Venta...</p>
+  const currentRole = role?.toLowerCase();
+  const hasAccess = currentRole === 'administrador' || currentRole === 'admin' || currentRole === 'recepción' || currentRole === 'recepcion';
+
+  if (loading || loadingRole || !hasAccess) return (
+    <div className="flex flex-col gap-4 justify-center items-center h-[60vh] animate-in fade-in duration-500">
+      <Skeleton className="w-16 h-16 rounded-2xl" />
+      <Skeleton className="w-48 h-6 rounded-xl" />
     </div>
   );
 

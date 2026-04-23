@@ -111,19 +111,24 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
     }
 
     const filteredLinks = navLinks.filter(link => {
-      // Regla estricta: Solo Administrador ve Equipo, Facturación y Ajustes
-      // Normalizamos a minúsculas para evitar errores de mayúsculas (Admin vs Administrador)
       const currentRole = role?.toLowerCase();
-      if (currentRole !== 'administrador' && currentRole !== 'admin') {
-        const restrictedPaths = [
-          '/dashboard/team',
-          '/dashboard/invoices',
-          '/dashboard/settings',
-          '/dashboard/backups'
-        ];
-        if (restrictedPaths.includes(link.href)) return false;
+      
+      // Administrador ve todo
+      if (currentRole === 'administrador' || currentRole === 'admin') return true;
+      
+      // Recepción: Agenda, Clientes y Facturación/Ventas (pos e invoices). NO ve Equipo ni Ajustes.
+      if (currentRole === 'recepción' || currentRole === 'recepcion') {
+        const restricted = ['/dashboard/team', '/dashboard/settings', '/dashboard/backups', '/dashboard/cms'];
+        return !restricted.includes(link.href);
       }
-      return true;
+      
+      // Especialista: ÚNICAMENTE Agenda y Clientes. NO ve Facturación, ni Equipo, ni Ajustes.
+      if (currentRole === 'especialista') {
+        const allowed = ['/dashboard', '/dashboard/calendar', '/dashboard/clients'];
+        return allowed.includes(link.href);
+      }
+      
+      return false; // Por defecto no ve nada si no hay rol o es desconocido
     });
 
     return (

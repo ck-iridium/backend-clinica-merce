@@ -27,9 +27,12 @@ export default function InvoicesPage() {
   useEffect(() => {
     if (!loadingRole) {
       const currentRole = role?.toLowerCase();
-      if (currentRole !== 'administrador' && currentRole !== 'admin') {
+      // Administrador y Recepción pueden ver facturas. Especialista NO.
+      const hasAccess = currentRole === 'administrador' || currentRole === 'admin' || currentRole === 'recepción' || currentRole === 'recepcion';
+      
+      if (!hasAccess) {
         router.replace('/dashboard');
-        toast.error("Acceso denegado: Solo los administradores pueden ver la facturación.");
+        toast.error("Acceso denegado: No tienes permisos para ver la facturación.");
       } else {
         fetchData();
       }
@@ -84,9 +87,10 @@ export default function InvoicesPage() {
     });
   };
 
-  // Funciones de descarga eliminadas para dar paso a la vista de detalle ERP.
+  const currentRole = role?.toLowerCase();
+  const hasAccess = currentRole === 'administrador' || currentRole === 'admin' || currentRole === 'recepción' || currentRole === 'recepcion';
 
-  if (loadingRole || (role?.toLowerCase() !== 'administrador' && role?.toLowerCase() !== 'admin')) {
+  if (loadingRole || !hasAccess) {
     return (
       <div className="flex flex-col gap-4 justify-center items-center h-[60vh] animate-in fade-in duration-500">
         <Skeleton className="w-16 h-16 rounded-2xl" />

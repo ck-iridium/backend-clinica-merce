@@ -3,8 +3,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CalendarDays, Users, Banknote, Activity, Plus, UserPlus, Zap, ChevronRight, CalendarCheck } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuthRole } from '@/hooks/useAuthRole';
 
 export default function DashboardPage() {
+  const { role, loading: loadingRole } = useAuthRole();
   const [clients, setClients] = useState<any[]>([]);
   const [appointments, setAppointments] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
@@ -116,13 +118,16 @@ export default function DashboardPage() {
             <UserPlus size={18} strokeWidth={1.5} />
             Nuevo Cliente
           </button>
-          <button
-            onClick={() => router.push('/dashboard/pos')}
-            className="flex items-center gap-2 bg-white hover:bg-stone-50 text-stone-700 border border-stone-200 px-5 py-3 rounded-2xl font-bold text-sm shadow-sm transition-all active:scale-95"
-          >
-            <Zap size={18} strokeWidth={1.5} />
-            Cobro Rápido
-          </button>
+          
+          {(role?.toLowerCase() !== 'especialista') && (
+            <button
+              onClick={() => router.push('/dashboard/pos')}
+              className="flex items-center gap-2 bg-white hover:bg-stone-50 text-stone-700 border border-stone-200 px-5 py-3 rounded-2xl font-bold text-sm shadow-sm transition-all active:scale-95"
+            >
+              <Zap size={18} strokeWidth={1.5} />
+              Cobro Rápido
+            </button>
+          )}
         </div>
       </div>
 

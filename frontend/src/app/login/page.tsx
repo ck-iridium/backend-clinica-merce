@@ -15,19 +15,30 @@ export default function LoginPage() {
     setLoading(true);
     
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password
       });
-      
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.detail || 'Credenciales incorrectas');
+
+      if (authError) {
+        throw new Error(authError.message === 'Invalid login credentials' ? 'Credenciales incorrectas' : authError.message);
       }
       
-      const data = await res.json();
-      localStorage.setItem('user', JSON.stringify(data));
+      // Simulamos la estructura de usuario de FastAPI para mantener retrocompatibilidad inmediata con el hook useAuthRole
+      // Guardamos el token en caso de necesitarlo para acciones futuras
+      const userPayload = {
+        email: data.user.email,
+        id: data.user.id,
+        access_token: data.session.access_token
+      };
+      
+      localStorage.setItem('user', JSON.stringify(userPayload));
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.message);

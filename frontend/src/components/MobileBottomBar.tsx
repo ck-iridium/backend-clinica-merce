@@ -54,24 +54,24 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
     { href: '/dashboard/vouchers', label: 'Bonos', icon: Ticket },
     { href: '/dashboard/invoices', label: 'Facturas', icon: Receipt },
   ].filter(item => {
-    // Solo Administrador ve Equipo y Facturas
     const currentRole = role?.toLowerCase();
-    if (currentRole !== 'administrador' && currentRole !== 'admin') {
-      if (item.href === '/dashboard/team' || item.href === '/dashboard/invoices') return false;
+    
+    // Administrador ve todo
+    if (currentRole === 'administrador' || currentRole === 'admin') return true;
+    
+    // Recepción ve Facturas, Servicios, Bonos. NO ve Equipo.
+    if (currentRole === 'recepción' || currentRole === 'recepcion') {
+      return item.href !== '/dashboard/team';
     }
-    return true;
+    
+    // Especialista: ÚNICAMENTE ve Servicios y Bonos (auxiliares de agenda). NO ve Facturas ni Equipo.
+    if (currentRole === 'especialista') {
+      const allowed = ['/dashboard/services', '/dashboard/vouchers'];
+      return allowed.includes(item.href);
+    }
+    
+    return false;
   });
-
-  const navItemsMain = [
-    { href: '/dashboard/pos', label: 'Venta Rápida', icon: Tag, isSubmenu: false, style: 'accent' },
-    { href: '/dashboard', label: 'Inicio', icon: LayoutDashboard, isSubmenu: false, exact: true },
-    { href: '/dashboard/calendar', label: 'Agenda', icon: CalendarDays, isSubmenu: false },
-    { href: '/dashboard/clients', label: 'Clientes', icon: Users, isSubmenu: false },
-    // Solo mostrar "Gestión Avanzada" si hay elementos en el submenú
-    ...(submenuGestion.length > 0 ? [{ id: 'gestion', label: 'Gestión Avanzada', icon: ShieldCheck, isSubmenu: true }] : []),
-    { id: 'configuracion', label: 'Configuración', icon: Settings, isSubmenu: true }
-  ];
-
 
   const submenuConfig = [
     { href: '/dashboard/settings', label: 'Ajustes Generales', icon: Settings },
@@ -79,11 +79,36 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
     { href: '/dashboard/media', label: 'Galería de Medios', icon: ImageIcon },
     { href: '/dashboard/cms', label: 'Editor Web (CMS)', icon: Globe },
   ].filter(item => {
-    // Solo Administrador ve Ajustes y Backups
     const currentRole = role?.toLowerCase();
-    if (currentRole !== 'administrador' && currentRole !== 'admin') {
-      if (item.href === '/dashboard/settings' || item.href === '/dashboard/backups') return false;
+    
+    // Administrador ve todo
+    if (currentRole === 'administrador' || currentRole === 'admin') return true;
+    
+    // Recepción ve Media/CMS (opcional, pero NO Ajustes/Backups)
+    if (currentRole === 'recepción' || currentRole === 'recepcion') {
+      const restricted = ['/dashboard/settings', '/dashboard/backups'];
+      return !restricted.includes(item.href);
     }
+    
+    // Especialista no ve nada en configuración según la directriz "ÚNICAMENTE Agenda y Clientes"
+    return false;
+  });
+
+  const navItemsMain = [
+    { href: '/dashboard/pos', label: 'Venta Rápida', icon: Tag, isSubmenu: false, style: 'accent' },
+    { href: '/dashboard', label: 'Inicio', icon: LayoutDashboard, isSubmenu: false, exact: true },
+    { href: '/dashboard/calendar', label: 'Agenda', icon: CalendarDays, isSubmenu: false },
+    { href: '/dashboard/clients', label: 'Clientes', icon: Users, isSubmenu: false },
+    // Solo mostrar submenús si tienen contenido para el rol actual
+    ...(submenuGestion.length > 0 ? [{ id: 'gestion', label: 'Gestión Avanzada', icon: ShieldCheck, isSubmenu: true }] : []),
+    ...(submenuConfig.length > 0 ? [{ id: 'configuracion', label: 'Configuración', icon: Settings, isSubmenu: true }] : []),
+  ].filter(item => {
+    if (!item.href) return true; // Los submenús no tienen href directo
+    const currentRole = role?.toLowerCase();
+    
+    // Especialista NO ve Venta Rápida
+    if (currentRole === 'especialista' && item.href === '/dashboard/pos') return false;
+    
     return true;
   });
 

@@ -27,15 +27,17 @@ Flujo completo desde la creación de infraestructura en Supabase hasta la implem
 3. **Feedback:** Integración total con 'FeedbackModal' (cero alertas nativas).
 
 ### ✅ FASE 2: Permisos Granulares (RBAC UI)
-1. **Sidebar Dinámico:** Filtrado de menús según rol ('Especialista', 'Recepción', 'Admin').
-2. **Protección de Rutas:** Guardias de seguridad en `/team` e `/invoices`.
-3. **UX de Carga:** Skeletons premium durante la validación de permisos.
+1. **Sidebar y Menú Móvil Dinámico:** Filtrado estricto por roles:
+   - **Admin:** Acceso total.
+   - **Recepción:** Agenda, Clientes, Facturas y Venta Rápida. (Oculta Equipo/Ajustes).
+   - **Especialista:** Solo Agenda y Clientes. (Oculta Facturación/Ventas/Equipo/Ajustes).
+2. **Protección de Rutas (Guards):** Redirección forzada en `/team`, `/invoices`, `/settings` y `/pos` según el privilegio del rol.
+3. **UX de Carga:** Skeletons premium y validación asíncrona de roles antes de mostrar contenido sensible.
 
-## Próximos Pasos (Pendientes)
-
-### 🚀 PRÓXIMO GRAN PASO: Migración de Autenticación Nativa
-- Migrar el sistema de login actual (FastAPI) a Supabase Auth nativo.
-- Configurar persistencia de sesión mediante cookies o gestión oficial de Supabase.
+### ✅ FASE 3: Migración de Autenticación Nativa (Supabase Auth)
+1. **Login Nativo:** Migración del sistema (/login) de FastAPI a Supabase Auth (`signInWithPassword`).
+2. **Persistencia:** Gestión de sesión integrada con el hook `useAuthRole` para validación inmediata de perfiles.
+3. **Seguridad:** Eliminación de dependencias del backend heredado para la autenticación de personal.
 
 ---
 
