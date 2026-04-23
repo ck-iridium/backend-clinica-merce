@@ -222,9 +222,13 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" side="right" className="w-56 ml-4 rounded-[1.5rem] bg-stone-900 border-stone-800 text-white shadow-2xl p-2 animate-in slide-in-from-left-2 duration-200">
                 <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-stone-500 px-4 py-3">
-                  Admin: {clinicName}
+                  Usuario: {role || 'Clínica Mercè'}
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-stone-800" />
+                <DropdownMenuItem onClick={() => router.push('/dashboard/profile')} className="flex items-center gap-3 px-4 py-3 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer">
+                  <User size={16} />
+                  <span className="font-bold text-sm">Mi Perfil</span>
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 rounded-xl text-rose-400 focus:bg-rose-950 focus:text-rose-300 cursor-pointer">
                   <LogOut size={16} />
                   <span className="font-bold text-sm">Cerrar Sesión</span>

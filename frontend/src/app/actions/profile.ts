@@ -68,3 +68,43 @@ export async function getUserRoleByEmail(email: string) {
     return { success: false, role: null };
   }
 }
+
+export async function getUserProfile(userId: string) {
+  try {
+    const adminSupabase = getSupabaseAdmin();
+    const { data, error } = await adminSupabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      console.error("Error obteniendo perfil:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, profile: data };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function updateUserProfile(userId: string, updates: any) {
+  try {
+    const adminSupabase = getSupabaseAdmin();
+    const { error } = await adminSupabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', userId);
+
+    if (error) {
+      console.error("Error actualizando perfil:", error);
+      return { success: false, error: error.message };
+    }
+
+    revalidatePath('/dashboard/profile');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}

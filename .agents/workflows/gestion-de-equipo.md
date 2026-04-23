@@ -1,10 +1,10 @@
 ---
-description: 
+description: Gestión de infraestructura de personal y roles RBAC.
 ---
 
-# Workflow: Gestión de Equipo 5ae5
+# Workflow: Gestión de Equipo
 
-Este workflow detalla el proceso de implementación de la gestión de personal utilizando supabase auth y perfiles dinámicos.
+Este workflow detalla el proceso de implementación de la gestión de personal utilizando Supabase Auth y perfiles dinámicos.
 
 ## Descripción
 Flujo completo desde la creación de infraestructura en Supabase hasta la implementación de permisos granulares (RBAC) para los diferentes roles de la clínica.
@@ -38,6 +38,9 @@ Flujo completo desde la creación de infraestructura en Supabase hasta la implem
 1. **Login Nativo:** Migración del sistema (/login) de FastAPI a Supabase Auth (`signInWithPassword`).
 2. **Persistencia:** Gestión de sesión integrada con el hook `useAuthRole` para validación inmediata de perfiles.
 3. **Seguridad:** Eliminación de dependencias del backend heredado para la autenticación de personal.
+
+### ➡️ FASE 4: Experiencia de Usuario y Ajustes Personales
+**Transición:** Iniciamos la gestión individual de cuentas. Ver [`gestion-de-perfil.md`](file:///c:/Users/Juan/MERCE/CLINICA%20MERCE/.agents/workflows/gestion-de-perfil.md) para más detalles.
 
 ---
 
