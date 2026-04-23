@@ -132,7 +132,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
     });
 
     return (
-      <div className="flex flex-col gap-2 w-full relative z-10 px-3 animate-in fade-in zoom-in-95 duration-500">
+      <div className="flex flex-col gap-2 w-full relative z-10 px-3">
         {filteredLinks.map((link, idx) => {
           const active = isActive(link.href, link.exact);
           const Icon = link.icon;

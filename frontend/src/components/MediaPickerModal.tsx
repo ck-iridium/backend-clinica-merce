@@ -25,6 +25,8 @@ interface MediaFile {
 interface MediaPickerModalProps {
   onClose: () => void;
   onImageSelected: (url: string) => void;
+  forceAspect?: number;
+  maxResolution?: number;
 }
 
 function formatBytes(bytes: number): string {
@@ -34,7 +36,7 @@ function formatBytes(bytes: number): string {
 }
 
 const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
-  ({ onClose, onImageSelected }, ref) => {
+  ({ onClose, onImageSelected, forceAspect, maxResolution }, ref) => {
     const { showFeedback } = useFeedback();
     const [activeTab, setActiveTab] = useState<'upload' | 'gallery'>('gallery');
 
@@ -134,7 +136,7 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
             <DialogPrimitive.Content 
                 ref={ref}
                 className={cn(
-                    "fixed inset-0 z-[210] overflow-hidden pointer-events-none flex flex-col items-center justify-center outline-none p-4 sm:p-6",
+                    "fixed inset-0 z-[210] overflow-hidden pointer-events-none flex flex-col items-center justify-center outline-none p-4 sm:p-20",
                     "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
                 )}
                 onPointerDownOutside={(e) => { e.preventDefault(); e.stopPropagation(); }}
@@ -142,7 +144,7 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
             >
                 {/* BOTÓN CIERRE STICKY DENTRO DEL FOLIO (top-8 right-8) */}
                 {/* Se mantiene visible sobre el folio blanco */}
-                <div className="relative w-full max-w-4xl bg-white rounded-xl shadow-2xl p-0 overflow-hidden flex flex-col h-full max-h-full pointer-events-auto">
+                <div className="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl p-0 overflow-hidden flex flex-col h-full max-h-[700px] pointer-events-auto border border-stone-100">
                     <button 
                         onClick={handleClose}
                         className="absolute top-6 right-6 rounded-full ring-offset-background transition-colors hover:bg-stone-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 w-10 h-10 flex items-center justify-center bg-white shadow-lg border border-stone-100 z-[250] pointer-events-auto"
@@ -253,30 +255,20 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                             )}
                         </div>
 
-                        {/* FOOTER FLOTANTE FIJO ESTILO GRADIENTE (Sticky inside scrollable) */}
-                        <div className="sticky bottom-0 left-0 right-0 w-full p-6 pt-16 flex justify-center bg-gradient-to-t from-white via-white/95 to-transparent z-20 pointer-events-none">
-                            <button
-                                type="button"
-                                onClick={handleClose}
-                                className="px-10 py-3.5 rounded-full font-black text-stone-600 bg-white/95 backdrop-blur-md border border-stone-200 hover:bg-white hover:text-stone-900 transition-all text-sm shadow-xl active:scale-95 uppercase tracking-widest pointer-events-auto"
-                            >
-                                Cerrar Galería
-                            </button>
-                        </div>
                     </div>
                 </div>
             </DialogPrimitive.Content>
         </DialogPrimitive.Portal>
 
-        {/* Modal de Crop anidado */}
+        {/* Modal de Crop anidado (Radix Dialog) */}
         {showCropModal && (
-          <div className="fixed inset-0 z-[500]" onClick={(e) => e.stopPropagation()}>
-            <CropImageModal
-              imageSrc={selectedImageForCrop}
-              onClose={() => { setShowCropModal(false); setSelectedImageForCrop(''); }}
-              onCropComplete={handleCropComplete}
-            />
-          </div>
+          <CropImageModal
+            imageSrc={selectedImageForCrop}
+            onClose={() => { setShowCropModal(false); setSelectedImageForCrop(''); }}
+            onCropComplete={handleCropComplete}
+            forceAspect={forceAspect}
+            maxResolution={maxResolution}
+          />
         )}
       </Dialog>
     );

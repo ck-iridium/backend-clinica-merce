@@ -1,18 +1,29 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import Cropper, { Point, Area } from 'react-easy-crop';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import {
+  Dialog,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription
+} from '@/components/ui/dialog';
+import { cn } from '@/lib/utils';
+import { X, Loader2, CheckCircle2 } from "lucide-react";
 
 interface CropImageModalProps {
   imageSrc: string;
   onClose: () => void;
   onCropComplete: (croppedBlob: Blob) => void;
+  forceAspect?: number;
+  maxResolution?: number; // Nueva prop opcional
 }
 
-export default function CropImageModal({ imageSrc, onClose, onCropComplete }: CropImageModalProps) {
+export default function CropImageModal({ imageSrc, onClose, onCropComplete, forceAspect, maxResolution }: CropImageModalProps) {
   const { showFeedback } = useFeedback();
   const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  const [aspectRatio, setAspectRatio] = useState<number>(4 / 3);
+  const [aspectRatio, setAspectRatio] = useState<number>(forceAspect || 4 / 3);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -34,8 +45,18 @@ export default function CropImageModal({ imageSrc, onClose, onCropComplete }: Cr
 
       if (!ctx) return;
 
-      canvas.width = croppedAreaPixels.width;
-      canvas.height = croppedAreaPixels.height;
+      let targetWidth = croppedAreaPixels.width;
+      let targetHeight = croppedAreaPixels.height;
+
+      // Solo aplicamos reducción si se especifica una resolución máxima
+      if (maxResolution && (targetWidth > maxResolution || targetHeight > maxResolution)) {
+        const scale = maxResolution / Math.max(targetWidth, targetHeight);
+        targetWidth *= scale;
+        targetHeight *= scale;
+      }
+
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
 
       ctx.drawImage(
         image,
@@ -45,8 +66,8 @@ export default function CropImageModal({ imageSrc, onClose, onCropComplete }: Cr
         croppedAreaPixels.height,
         0,
         0,
-        croppedAreaPixels.width,
-        croppedAreaPixels.height
+        targetWidth,
+        targetHeight
       );
 
       canvas.toBlob((blob) => {
@@ -65,84 +86,105 @@ export default function CropImageModal({ imageSrc, onClose, onCropComplete }: Cr
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-stone-900/90 p-4">
-      <div className="bg-white rounded-[2rem] w-full max-w-2xl overflow-hidden flex flex-col h-[80vh] max-h-[800px] animate-in zoom-in-95">
-        
-        {/* Header */}
-        <div className="p-6 border-b border-stone-100 flex justify-between items-center bg-stone-50">
-          <h3 className="font-extrabold text-xl text-stone-800">Recortar Imagen</h3>
-          <button onClick={onClose} className="text-stone-400 hover:text-stone-800 text-2xl leading-none">&times;</button>
-        </div>
+    <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+      <DialogPrimitive.Portal>
+        {/* Overlay con Z-Index superior a la galería (z-200) */}
+        <DialogPrimitive.Overlay
+          className="fixed inset-0 z-[800] bg-stone-900/90 backdrop-blur-sm animate-in fade-in duration-300"
+        />
 
-        {/* Workspace */}
-        <div className="flex-1 relative bg-stone-900">
-          <Cropper
-            image={imageSrc}
-            crop={crop}
-            zoom={zoom}
-            aspect={aspectRatio}
-            onCropChange={setCrop}
-            onCropComplete={handleCropComplete}
-            onZoomChange={setZoom}
-          />
-        </div>
+        <DialogPrimitive.Content
+          className={cn(
+            "fixed inset-0 z-[810] overflow-hidden flex items-center justify-center outline-none p-4",
+            "animate-in zoom-in-95 duration-300"
+          )}
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
+        >
+          <div className="relative bg-white rounded-[2rem] w-full max-w-2xl overflow-hidden flex flex-col h-[80vh] max-h-[800px] shadow-2xl border border-stone-200 pointer-events-auto">
 
-        {/* Controles de Ratio */}
-        <div className="p-6 bg-stone-50 border-t border-stone-200">
-           
-           <div className="flex items-center justify-between gap-6 mb-6">
-              
-              <div className="flex-1">
-                 <label className="text-xs font-bold text-stone-500 uppercase tracking-wider mb-2 block">Zoom</label>
-                 <input
+            {/* Header */}
+            <div className="p-6 border-b border-stone-100 flex justify-between items-center bg-stone-50 shrink-0">
+              <h3 className="font-serif font-bold text-xl text-stone-800">Recortar Imagen</h3>
+              <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-stone-200 transition-colors">
+                <X size={20} className="text-stone-500" />
+              </button>
+            </div>
+
+            <DialogHeader className="sr-only">
+              <DialogTitle>Editor de Recorte</DialogTitle>
+              <DialogDescription>Ajusta tu imagen antes de subirla.</DialogDescription>
+            </DialogHeader>
+
+            {/* Workspace */}
+            <div className="flex-1 relative bg-stone-950">
+              <Cropper
+                image={imageSrc}
+                crop={crop}
+                zoom={zoom}
+                aspect={aspectRatio}
+                onCropChange={setCrop}
+                onCropComplete={handleCropComplete}
+                onZoomChange={setZoom}
+              />
+            </div>
+
+            {/* Controles */}
+            <div className="p-8 bg-white border-t border-stone-100 shrink-0">
+
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-8 mb-8">
+                <div className={cn("w-full", !forceAspect && "sm:flex-1")}>
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-3 block px-1">Nivel de Zoom</label>
+                  <input
                     type="range"
                     value={zoom}
                     min={1}
                     max={3}
                     step={0.1}
-                    aria-labelledby="Zoom"
                     onChange={(e) => setZoom(Number(e.target.value))}
-                    className="w-full accent-[#d4af37]"
+                    className="w-full h-1.5 bg-stone-100 rounded-lg appearance-none cursor-pointer accent-stone-900"
                   />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-stone-500 uppercase tracking-wider mb-2 block">Proporción</label>
-                <div className="flex gap-2 bg-white border border-stone-200 p-1 rounded-xl">
-                  <button 
-                    onClick={() => setAspectRatio(1)}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${aspectRatio === 1 ? 'bg-[#d4af37] text-white' : 'text-stone-500 hover:bg-stone-100'}`}
-                  >1:1</button>
-                  <button 
-                    onClick={() => setAspectRatio(4/3)}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${aspectRatio === 4/3 ? 'bg-[#d4af37] text-white' : 'text-stone-500 hover:bg-stone-100'}`}
-                  >4:3</button>
-                  <button 
-                    onClick={() => setAspectRatio(16/9)}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${aspectRatio === 16/9 ? 'bg-[#d4af37] text-white' : 'text-stone-500 hover:bg-stone-100'}`}
-                  >16:9</button>
                 </div>
+
+                {!forceAspect && (
+                  <div className="shrink-0">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-3 block px-1">Proporción</label>
+                    <div className="flex gap-2 bg-stone-50 border border-stone-100 p-1.5 rounded-2xl">
+                      {[
+                        { label: '1:1', val: 1 },
+                        { label: '4:3', val: 4 / 3 },
+                        { label: '16:9', val: 16 / 9 }
+                      ].map(ratio => (
+                        <button
+                          key={ratio.label}
+                          onClick={() => setAspectRatio(ratio.val)}
+                          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${aspectRatio === ratio.val ? 'bg-white text-stone-900 shadow-sm border border-stone-200' : 'text-stone-400 hover:text-stone-600'}`}
+                        >{ratio.label}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
-           </div>
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={onClose}
+                  className="px-8 py-3.5 rounded-2xl font-bold text-stone-500 hover:text-stone-800 hover:bg-stone-50 transition-all text-sm"
+                >Cancelar</button>
 
-           <div className="flex justify-end gap-3">
-              <button 
-                onClick={onClose} 
-                className="px-6 py-3 rounded-xl font-bold text-stone-600 bg-white border border-stone-200 hover:bg-stone-50 transition-all"
-              >Cancelar</button>
-              
-              <button 
-                onClick={createCroppedImage}
-                disabled={isProcessing}
-                className="bg-stone-900 hover:bg-[#d4af37] text-white min-w-[150px] px-8 py-3 rounded-xl font-bold transition-all shadow-md disabled:opacity-50 flex justify-center items-center"
-              >
-                {isProcessing ? <span className="animate-pulse">Recortando...</span> : 'Aplicar Recorte'}
-              </button>
-           </div>
-        </div>
-
-      </div>
-    </div>
+                <button
+                  onClick={createCroppedImage}
+                  disabled={isProcessing}
+                  className="bg-stone-900 hover:bg-[#d9777f] text-white min-w-[180px] px-10 py-3.5 rounded-2xl font-bold transition-all shadow-xl shadow-stone-200 disabled:opacity-50 flex justify-center items-center gap-2 group"
+                >
+                  {isProcessing ? <Loader2 className="animate-spin" size={18} /> : <CheckCircle2 size={18} className="group-hover:scale-110 transition-transform" />}
+                  {isProcessing ? 'Procesando...' : 'Aplicar Recorte'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </Dialog>
   );
 }
