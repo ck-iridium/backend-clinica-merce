@@ -2,13 +2,13 @@
 
 import * as React from "react"
 
-import { 
-  Users, 
-  UserPlus, 
-  Edit2, 
-  Trash2, 
-  ShieldCheck, 
-  Stethoscope, 
+import {
+  Users,
+  UserPlus,
+  Edit2,
+  Trash2,
+  ShieldCheck,
+  Stethoscope,
   UserCircle,
   Loader2
 } from "lucide-react"
@@ -54,10 +54,6 @@ export default function TeamPage() {
   const [memberToEdit, setMemberToEdit] = React.useState<any>(null);
   const [editRole, setEditRole] = React.useState('');
   const [isEditing, setIsEditing] = React.useState(false);
-
-  const { showFeedback } = useFeedback();
-  const router = useRouter();
-  const { role, loading: loadingRole } = useAuthRole();
 
   React.useEffect(() => {
     if (!loadingRole) {
@@ -149,7 +145,7 @@ export default function TeamPage() {
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!memberToEdit) return;
-    
+
     setIsEditing(true);
     const result = await updateTeamMemberRole(memberToEdit.id, editRole);
     setIsEditing(false);
@@ -173,7 +169,7 @@ export default function TeamPage() {
   }
 
   // userRole is now dynamic from useAuthRole
-  const userRole = role; 
+  const userRole = role;
 
 
   return (
@@ -282,7 +278,7 @@ export default function TeamPage() {
       <div className="bg-white rounded-[2.5rem] border border-stone-100 shadow-sm overflow-hidden p-4 md:p-8 relative group/table">
         <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white to-transparent z-10 opacity-0 group-hover/table:opacity-100 transition-opacity md:hidden pointer-events-none"></div>
         <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white to-transparent z-10 opacity-0 group-hover/table:opacity-100 transition-opacity md:hidden pointer-events-none"></div>
-        
+
         <div className="overflow-x-auto scrollbar-hide">
           <table className="w-full text-left border-collapse min-w-[600px]">
             <thead>
@@ -307,8 +303,8 @@ export default function TeamPage() {
                     <td className="py-5 px-4"><Skeleton className="h-4 w-20 rounded-lg" /></td>
                     <td className="py-5 px-4">
                       <div className="flex items-center gap-2">
-                         <Skeleton className="w-1.5 h-1.5 rounded-full" />
-                         <Skeleton className="h-3 w-12 rounded-full" />
+                        <Skeleton className="w-1.5 h-1.5 rounded-full" />
+                        <Skeleton className="h-3 w-12 rounded-full" />
                       </div>
                     </td>
                     <td className="py-5 px-4"><Skeleton className="h-4 w-40 rounded-lg" /></td>
@@ -331,9 +327,9 @@ export default function TeamPage() {
                   <td className="py-5 px-4">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center text-stone-400 border border-white shadow-sm shrink-0">
-                        {member.role === 'Administrador' ? <ShieldCheck size={20} /> : 
-                         member.role === 'Especialista' ? <Stethoscope size={20} /> : 
-                         <UserCircle size={20} />}
+                        {member.role === 'Administrador' ? <ShieldCheck size={20} /> :
+                          member.role === 'Especialista' ? <Stethoscope size={20} /> :
+                            <UserCircle size={20} />}
                       </div>
                       <span className="font-bold text-stone-800">{member.full_name}</span>
                     </div>
@@ -354,7 +350,7 @@ export default function TeamPage() {
                   </td>
                   <td className="py-5 px-4 text-right">
                     <div className="flex items-center justify-end gap-2 transition-opacity">
-                      <button 
+                      <button
                         onClick={() => {
                           setMemberToEdit(member);
                           setEditRole(member.role);
@@ -365,7 +361,7 @@ export default function TeamPage() {
                       >
                         <Edit2 size={16} strokeWidth={1.5} />
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleDelete(member.id, member.full_name)}
                         className="p-2.5 rounded-xl hover:bg-white hover:shadow-md text-stone-400 hover:text-red-500 transition-all border border-transparent hover:border-stone-100"
                         title="Eliminar Miembro"
