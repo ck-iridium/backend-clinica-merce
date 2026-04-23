@@ -1,11 +1,7 @@
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+import { supabase, getSupabaseAdmin } from '@/lib/supabase';
 
 /**
  * Actualiza la contraseña del usuario y cambia su estado a 'Activo'.
@@ -13,14 +9,7 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
  */
 export async function updatePasswordAndActivate(newPassword: string, accessToken: string) {
   try {
-    // 1. Cliente estándar
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    });
-
+    // 1. Cliente estándar (importado de @/lib/supabase)
     // 2. Obtener el usuario de forma segura validando el token
     const { data: { user }, error: userError } = await supabase.auth.getUser(accessToken);
     if (userError || !user) {
@@ -29,12 +18,7 @@ export async function updatePasswordAndActivate(newPassword: string, accessToken
     }
 
     // 3. Instanciar cliente Admin (Service Role)
-    const adminSupabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    });
+    const adminSupabase = getSupabaseAdmin();
 
     // 4. Cambiar la contraseña usando los privilegios de administrador
     const { error: passwordError } = await adminSupabase.auth.admin.updateUserById(user.id, {
@@ -67,12 +51,7 @@ export async function updatePasswordAndActivate(newPassword: string, accessToken
 
 export async function getUserRoleByEmail(email: string) {
   try {
-    const adminSupabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    });
+    const adminSupabase = getSupabaseAdmin();
 
     const { data, error } = await adminSupabase
       .from('profiles')

@@ -1,21 +1,7 @@
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
-
-// 1. Función defensiva: Crea el cliente justo cuando se necesita y 
-// limpia cualquier comilla o espacio fantasma que venga de Vercel.
-function getSupabaseAdmin() {
-  // Mantén la URL hardcodeada porque Vercel es caprichoso con ella
-  const url = 'https://ypimdbkiuguiszaddzaj.supabase.co';
-
-  // Volvemos a leer de process.env de forma segura
-  const key = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').replace(/['"]/g, '').trim();
-
-  return createClient(url, key, {
-    auth: { persistSession: false, autoRefreshToken: false }
-  });
-}
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 export async function inviteTeamMember(data: { email: string, full_name: string, role: string }) {
   try {
