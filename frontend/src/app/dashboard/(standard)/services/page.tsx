@@ -4,6 +4,8 @@ import CropImageModal from '@/components/CropImageModal';
 import MediaPickerModal from '@/components/MediaPickerModal';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+import { useAuthRole } from '@/hooks/useAuthRole';
 import { 
   Settings2, 
   Plus, 
@@ -36,6 +38,8 @@ import {
 } from "@/components/ui/select";
 
 export default function ServicesPage() {
+  const router = useRouter();
+  const { role, loading: loadingRole } = useAuthRole();
   const { showFeedback } = useFeedback();
   const [services, setServices] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
@@ -60,11 +64,26 @@ export default function ServicesPage() {
   const [showCatMediaPicker, setShowCatMediaPicker] = useState(false);
 
   useEffect(() => {
-    fetchServices();
-    fetchCategories();
-  }, []);
+    if (!loadingRole) {
+      const currentRole = role?.toLowerCase();
+      if (currentRole !== 'administrador' && currentRole !== 'admin') {
+        toast.error("Acceso denegado: No tienes permisos para gestionar servicios.");
+        router.replace('/dashboard');
+      } else {
+        fetchServices();
+        fetchCategories();
+      }
+    }
+  }, [role, loadingRole, router]);
 
-
+  if (loadingRole) {
+    return (
+      <div className="flex flex-col gap-4 justify-center items-center h-[60vh] animate-in fade-in duration-500">
+        <Skeleton className="w-16 h-16 rounded-2xl" />
+        <Skeleton className="w-48 h-6 rounded-xl" />
+      </div>
+    );
+  }
 
   const fetchCategories = async () => {
     try {

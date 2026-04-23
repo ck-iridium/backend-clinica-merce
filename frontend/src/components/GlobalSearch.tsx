@@ -14,6 +14,8 @@ import {
   ShieldCheck,
 } from "lucide-react"
 
+import { useAuthRole } from "@/hooks/useAuthRole"
+
 import {
   CommandDialog,
   CommandEmpty,
@@ -31,21 +33,19 @@ interface Client {
 
 export function GlobalSearch({ open, setOpen }: { open: boolean, setOpen: (open: boolean) => void }) {
   const router = useRouter()
+  const { role } = useAuthRole()
+  const currentRole = role?.toLowerCase()
+  const isEspecialista = currentRole === 'especialista'
+  const isRecepcion = currentRole === 'recepción' || currentRole === 'recepcion'
+  const isAdmin = currentRole === 'administrador' || currentRole === 'admin'
+
   const [clients, setClients] = React.useState<Client[]>([])
   const [loadingClients, setLoadingClients] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState('')
 
-  // Atajo de teclado Ctrl+K / ⌘K
-  React.useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault()
-        setOpen(!open)
-      }
-    }
-    document.addEventListener("keydown", down)
-    return () => document.removeEventListener("keydown", down)
-  }, [setOpen, open])
+  // NOTA: El atajo de teclado Ctrl+K ha sido eliminado de aquí para evitar
+  // colisiones de estado si el componente se monta en Header y Footer simultáneamente.
+  // Ahora debe ser gestionado por el componente padre (DashboardHeader).
 
   // Limpiar búsqueda al cerrar
   React.useEffect(() => {
@@ -89,43 +89,59 @@ export function GlobalSearch({ open, setOpen }: { open: boolean, setOpen: (open:
             <Users className="mr-2 h-4 w-4" />
             <span>Ir a Clientes</span>
           </CommandItem>
-          <CommandItem className="cursor-pointer" onSelect={() => runCommand(() => router.push("/dashboard/services"))}>
-            <Zap className="mr-2 h-4 w-4" />
-            <span>Ir a Servicios</span>
-          </CommandItem>
-          <CommandItem className="cursor-pointer" onSelect={() => runCommand(() => router.push("/dashboard/vouchers"))}>
-            <CreditCard className="mr-2 h-4 w-4" />
-            <span>Ver Bonos y Packs</span>
-          </CommandItem>
+          
+          {/* Servicios y Bonos filtrados */}
+          {isAdmin && (
+            <CommandItem className="cursor-pointer" onSelect={() => runCommand(() => router.push("/dashboard/services"))}>
+              <Zap className="mr-2 h-4 w-4" />
+              <span>Ir a Servicios</span>
+            </CommandItem>
+          )}
+          
+          {(!isEspecialista) && (
+            <CommandItem className="cursor-pointer" onSelect={() => runCommand(() => router.push("/dashboard/vouchers"))}>
+              <CreditCard className="mr-2 h-4 w-4" />
+              <span>Ver Bonos y Packs</span>
+            </CommandItem>
+          )}
         </CommandGroup>
 
         <CommandSeparator />
 
-        {/* Gestión de Contenidos */}
-        <CommandGroup heading="Gestión de Contenidos">
-          <CommandItem className="cursor-pointer" onSelect={() => runCommand(() => router.push("/dashboard/media"))}>
-            <Search className="mr-2 h-4 w-4" />
-            <span>Galería de Medios</span>
-          </CommandItem>
-          <CommandItem className="cursor-pointer" onSelect={() => runCommand(() => router.push("/dashboard/cms"))}>
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Editor Web (CMS)</span>
-          </CommandItem>
-        </CommandGroup>
+        {/* Gestión de Contenidos: Solo Admin (Ni Especialista ni Recepción) */}
+        {isAdmin && (
+          <>
+            <CommandGroup heading="Gestión de Contenidos">
+              <CommandItem className="cursor-pointer" onSelect={() => runCommand(() => router.push("/dashboard/media"))}>
+                <Search className="mr-2 h-4 w-4" />
+                <span>Galería de Medios</span>
+              </CommandItem>
+              
+              <CommandItem className="cursor-pointer" onSelect={() => runCommand(() => router.push("/dashboard/cms"))}>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Editor Web (CMS)</span>
+              </CommandItem>
+            </CommandGroup>
+            <CommandSeparator />
+          </>
+        )}
 
-        <CommandSeparator />
-
-        {/* Ajustes */}
-        <CommandGroup heading="Ajustes y Sistema">
-          <CommandItem className="cursor-pointer" onSelect={() => runCommand(() => router.push("/dashboard/team"))}>
-            <ShieldCheck className="mr-2 h-4 w-4" />
-            <span>Gestionar Equipo</span>
-          </CommandItem>
-          <CommandItem className="cursor-pointer" onSelect={() => runCommand(() => router.push("/dashboard/settings"))}>
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Ajustes Generales</span>
-          </CommandItem>
-        </CommandGroup>
+        {/* Ajustes: Solo Admin */}
+        {isAdmin && (
+          <>
+            <CommandGroup heading="Ajustes y Sistema">
+              <CommandItem className="cursor-pointer" onSelect={() => runCommand(() => router.push("/dashboard/team"))}>
+                <ShieldCheck className="mr-2 h-4 w-4" />
+                <span>Gestionar Equipo</span>
+              </CommandItem>
+              <CommandItem className="cursor-pointer" onSelect={() => runCommand(() => router.push("/dashboard/settings"))}>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Ajustes Generales</span>
+              </CommandItem>
+            </CommandGroup>
+            <CommandSeparator />
+          </>
+        )}
 
         {/* Clientes — solo visibles si hay búsqueda activa */}
         {searchQuery.length > 0 && (

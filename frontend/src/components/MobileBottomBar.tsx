@@ -59,17 +59,7 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
     // Administrador ve todo
     if (currentRole === 'administrador' || currentRole === 'admin') return true;
     
-    // Recepción ve Facturas, Servicios, Bonos. NO ve Equipo.
-    if (currentRole === 'recepción' || currentRole === 'recepcion') {
-      return item.href !== '/dashboard/team';
-    }
-    
-    // Especialista: ÚNICAMENTE ve Servicios y Bonos (auxiliares de agenda). NO ve Facturas ni Equipo.
-    if (currentRole === 'especialista') {
-      const allowed = ['/dashboard/services', '/dashboard/vouchers'];
-      return allowed.includes(item.href);
-    }
-    
+    // Recepción y Especialista NO ven submenú de Gestión Avanzada
     return false;
   });
 
@@ -84,13 +74,7 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
     // Administrador ve todo
     if (currentRole === 'administrador' || currentRole === 'admin') return true;
     
-    // Recepción ve Media/CMS (opcional, pero NO Ajustes/Backups)
-    if (currentRole === 'recepción' || currentRole === 'recepcion') {
-      const restricted = ['/dashboard/settings', '/dashboard/backups'];
-      return !restricted.includes(item.href);
-    }
-    
-    // Especialista no ve nada en configuración según la directriz "ÚNICAMENTE Agenda y Clientes"
+    // Recepción y Especialista NO ven menú de Configuración
     return false;
   });
 
@@ -99,6 +83,7 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
     { href: '/dashboard', label: 'Inicio', icon: LayoutDashboard, isSubmenu: false, exact: true },
     { href: '/dashboard/calendar', label: 'Agenda', icon: CalendarDays, isSubmenu: false },
     { href: '/dashboard/clients', label: 'Clientes', icon: Users, isSubmenu: false },
+    { href: '/dashboard/invoices', label: 'Facturas', icon: Receipt, isSubmenu: false },
     // Solo mostrar submenús si tienen contenido para el rol actual
     ...(submenuGestion.length > 0 ? [{ id: 'gestion', label: 'Gestión Avanzada', icon: ShieldCheck, isSubmenu: true }] : []),
     ...(submenuConfig.length > 0 ? [{ id: 'configuracion', label: 'Configuración', icon: Settings, isSubmenu: true }] : []),
@@ -106,8 +91,15 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
     if (!item.href) return true; // Los submenús no tienen href directo
     const currentRole = role?.toLowerCase();
     
-    // Especialista NO ve Venta Rápida
-    if (currentRole === 'especialista' && item.href === '/dashboard/pos') return false;
+    // Especialista NO ve Venta Rápida ni Facturas
+    if (currentRole === 'especialista') {
+      if (item.href === '/dashboard/pos' || item.href === '/dashboard/invoices') return false;
+    }
+    
+    // Administrador NO necesita facturas suelto porque ya lo tiene en Gestión Avanzada
+    if (currentRole === 'administrador' || currentRole === 'admin') {
+      if (item.href === '/dashboard/invoices') return false;
+    }
     
     return true;
   });
@@ -231,8 +223,11 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
           <Search size={24} strokeWidth={1.5} />
         </button>
         
-        {/* Botón Central (Venta Rápida) */}
-        <Link href="/dashboard/pos" className="rounded-full p-3 -mt-6 shadow-lg bg-stone-800 text-white hover:bg-stone-900 transition-all flex items-center justify-center border-4 border-stone-50 active:scale-95">
+        {/* Botón Central (Acción Rápida dependiente del rol) */}
+        <Link 
+          href={(role?.toLowerCase() === 'especialista') ? '/dashboard/calendar' : '/dashboard/pos'} 
+          className="rounded-full p-3 -mt-6 shadow-lg bg-stone-800 text-white hover:bg-stone-900 transition-all flex items-center justify-center border-4 border-stone-50 active:scale-95"
+        >
           <Plus size={24} strokeWidth={2} />
         </Link>
 

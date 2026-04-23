@@ -13,6 +13,17 @@ export default function DashboardHeader({ clinicName }: DashboardHeaderProps) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
 
+  React.useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setOpen((o) => !o);
+      }
+    };
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem('user');
     router.push('/login');

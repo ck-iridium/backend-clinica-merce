@@ -116,9 +116,9 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
       // Administrador ve todo
       if (currentRole === 'administrador' || currentRole === 'admin') return true;
       
-      // Recepción: Agenda, Clientes y Facturación/Ventas (pos e invoices). NO ve Equipo ni Ajustes.
+      // Recepción: Agenda, Clientes y Facturación/Ventas (pos e invoices). NO ve Equipo, Ajustes, Servicios, Bonos, Galería, etc.
       if (currentRole === 'recepción' || currentRole === 'recepcion') {
-        const restricted = ['/dashboard/team', '/dashboard/settings', '/dashboard/backups', '/dashboard/cms'];
+        const restricted = ['/dashboard/team', '/dashboard/settings', '/dashboard/backups', '/dashboard/cms', '/dashboard/services', '/dashboard/vouchers', '/dashboard/media'];
         return !restricted.includes(link.href);
       }
       

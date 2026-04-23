@@ -85,7 +85,12 @@ export default function DashboardPage() {
       color: 'text-amber-600',
       bg: 'bg-amber-50',
     },
-  ];
+  ].filter(m => {
+    if (role?.toLowerCase() === 'especialista') {
+      return m.label !== 'Ingresos Estimados';
+    }
+    return true;
+  });
 
   return (
     <div className="animate-in fade-in duration-500">

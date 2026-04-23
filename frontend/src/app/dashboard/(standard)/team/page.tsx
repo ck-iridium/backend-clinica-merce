@@ -36,10 +36,11 @@ import {
 } from "@/components/ui/select"
 
 export default function TeamPage() {
+  const router = useRouter();
+  const { role, loading: loadingRole } = useAuthRole();
+  const { showFeedback } = useFeedback();
   const [members, setMembers] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
-  
-  // Estados para Modal de Invitación
   const [isInviteModalOpen, setIsInviteModalOpen] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [formData, setFormData] = React.useState({
@@ -85,8 +86,25 @@ export default function TeamPage() {
 
 
   React.useEffect(() => {
-    fetchMembers();
-  }, []);
+    if (!loadingRole) {
+      const currentRole = role?.toLowerCase();
+      if (currentRole !== 'administrador' && currentRole !== 'admin') {
+        toast.error("Acceso denegado: Solo el Administrador puede gestionar el equipo.");
+        router.replace('/dashboard');
+      } else {
+        fetchMembers();
+      }
+    }
+  }, [role, loadingRole, router]);
+
+  if (loadingRole) {
+    return (
+      <div className="flex flex-col gap-4 justify-center items-center h-[60vh] animate-in fade-in duration-500">
+        <Skeleton className="w-16 h-16 rounded-2xl" />
+        <Skeleton className="w-48 h-6 rounded-xl" />
+      </div>
+    );
+  }
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();

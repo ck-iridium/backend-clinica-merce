@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+import { useAuthRole } from '@/hooks/useAuthRole';
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Select, 
@@ -30,6 +32,8 @@ import {
 } from "@/components/ui/dialog";
 
 export default function VouchersPage() {
+  const router = useRouter();
+  const { role, loading: loadingRole } = useAuthRole();
   const { showFeedback } = useFeedback();
   const [activeTab, setActiveTab] = useState<'catalogo' | 'vendidos'>('vendidos');
   
@@ -68,8 +72,25 @@ export default function VouchersPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (!loadingRole) {
+      const currentRole = role?.toLowerCase();
+      if (currentRole === 'especialista') {
+        toast.error("Acceso denegado: No tienes permisos para gestionar bonos.");
+        router.replace('/dashboard');
+      } else {
+        fetchData();
+      }
+    }
+  }, [role, loadingRole, router]);
+
+  if (loadingRole) {
+    return (
+      <div className="flex flex-col gap-4 justify-center items-center h-[60vh] animate-in fade-in duration-500">
+        <Skeleton className="w-16 h-16 rounded-2xl" />
+        <Skeleton className="w-48 h-6 rounded-xl" />
+      </div>
+    );
+  }
 
   const fetchData = async () => {
     try {
