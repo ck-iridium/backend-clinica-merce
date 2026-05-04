@@ -13,11 +13,11 @@ export default function InviteHandler() {
 
     const hash = window.location.hash;
     if (hash && hash.includes('access_token=') && hash.includes('type=invite')) {
-      // Si la URL actual ya es /dashboard/profile, no redirigir para evitar bucles
-      if (pathname === '/dashboard/profile') return;
+      // Si la URL actual ya es /activar-cuenta, no redirigir para evitar bucles
+      if (pathname === '/activar-cuenta') return;
 
-      // Preservar el hash y redirigir al perfil
-      router.push(`/dashboard/profile${hash}`);
+      // Preservar el hash y redirigir a la ruta dedicada de activación
+      router.push(`/activar-cuenta${hash}`);
     }
   }, [pathname, router]);
 
