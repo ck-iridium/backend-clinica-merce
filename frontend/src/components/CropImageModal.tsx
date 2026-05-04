@@ -31,8 +31,8 @@ export default function CropImageModal({ imageSrc, onClose, onCropComplete, forc
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
 
-  const createCroppedImage = async () => {
-    if (!croppedAreaPixels) return;
+  const processImage = async (useCrop: boolean) => {
+    if (useCrop && !croppedAreaPixels) return;
     setIsProcessing(true);
 
     try {
@@ -45,10 +45,23 @@ export default function CropImageModal({ imageSrc, onClose, onCropComplete, forc
 
       if (!ctx) return;
 
-      let targetWidth = croppedAreaPixels.width;
-      let targetHeight = croppedAreaPixels.height;
+      // Definir dimensiones de origen y destino
+      let sourceX = 0;
+      let sourceY = 0;
+      let sourceWidth = image.width;
+      let sourceHeight = image.height;
 
-      // Solo aplicamos reducción si se especifica una resolución máxima
+      if (useCrop && croppedAreaPixels) {
+        sourceX = croppedAreaPixels.x;
+        sourceY = croppedAreaPixels.y;
+        sourceWidth = croppedAreaPixels.width;
+        sourceHeight = croppedAreaPixels.height;
+      }
+
+      let targetWidth = sourceWidth;
+      let targetHeight = sourceHeight;
+
+      // Aplicar reducción si se especifica una resolución máxima
       if (maxResolution && (targetWidth > maxResolution || targetHeight > maxResolution)) {
         const scale = maxResolution / Math.max(targetWidth, targetHeight);
         targetWidth *= scale;
@@ -60,10 +73,10 @@ export default function CropImageModal({ imageSrc, onClose, onCropComplete, forc
 
       ctx.drawImage(
         image,
-        croppedAreaPixels.x,
-        croppedAreaPixels.y,
-        croppedAreaPixels.width,
-        croppedAreaPixels.height,
+        sourceX,
+        sourceY,
+        sourceWidth,
+        sourceHeight,
         0,
         0,
         targetWidth,
@@ -74,13 +87,13 @@ export default function CropImageModal({ imageSrc, onClose, onCropComplete, forc
         if (blob) {
           onCropComplete(blob);
         } else {
-          showFeedback({ type: 'error', title: 'Error Técnico', message: 'No se pudo construir la imagen recortada.' });
+          showFeedback({ type: 'error', title: 'Error Técnico', message: 'No se pudo procesar la imagen.' });
           setIsProcessing(false);
         }
       }, 'image/webp', 0.9);
     } catch (e) {
       console.error(e);
-      showFeedback({ type: 'error', title: 'Error', message: 'Se produjo un fallo inesperado al recortar la imagen.' });
+      showFeedback({ type: 'error', title: 'Error', message: 'Fallo al procesar la imagen.' });
       setIsProcessing(false);
     }
   };
@@ -88,7 +101,6 @@ export default function CropImageModal({ imageSrc, onClose, onCropComplete, forc
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
       <DialogPrimitive.Portal>
-        {/* Overlay con Z-Index superior a la galería (z-200) */}
         <DialogPrimitive.Overlay
           className="fixed inset-0 z-[800] bg-stone-900/90 backdrop-blur-sm animate-in fade-in duration-300"
         />
@@ -103,9 +115,8 @@ export default function CropImageModal({ imageSrc, onClose, onCropComplete, forc
         >
           <div className="relative bg-white rounded-[2rem] w-full max-w-2xl overflow-hidden flex flex-col h-[80vh] max-h-[800px] shadow-2xl border border-stone-200 pointer-events-auto">
 
-            {/* Header */}
             <div className="p-6 border-b border-stone-100 flex justify-between items-center bg-stone-50 shrink-0">
-              <h3 className="font-serif font-bold text-xl text-stone-800">Recortar Imagen</h3>
+              <h3 className="font-serif font-bold text-xl text-stone-800">Editor de Imagen</h3>
               <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-stone-200 transition-colors">
                 <X size={20} className="text-stone-500" />
               </button>
@@ -116,7 +127,6 @@ export default function CropImageModal({ imageSrc, onClose, onCropComplete, forc
               <DialogDescription>Ajusta tu imagen antes de subirla.</DialogDescription>
             </DialogHeader>
 
-            {/* Workspace */}
             <div className="flex-1 relative bg-stone-950">
               <Cropper
                 image={imageSrc}
@@ -129,7 +139,6 @@ export default function CropImageModal({ imageSrc, onClose, onCropComplete, forc
               />
             </div>
 
-            {/* Controles */}
             <div className="p-8 bg-white border-t border-stone-100 shrink-0">
 
               <div className="flex flex-col sm:flex-row items-center justify-between gap-8 mb-8">
@@ -166,16 +175,24 @@ export default function CropImageModal({ imageSrc, onClose, onCropComplete, forc
                 )}
               </div>
 
-              <div className="flex justify-end gap-4">
+              <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
                 <button
                   onClick={onClose}
-                  className="px-8 py-3.5 rounded-2xl font-bold text-stone-500 hover:text-stone-800 hover:bg-stone-50 transition-all text-sm"
+                  className="px-6 py-3.5 rounded-2xl font-bold text-stone-400 hover:text-stone-800 transition-all text-sm order-3 sm:order-1"
                 >Cancelar</button>
 
                 <button
-                  onClick={createCroppedImage}
+                  onClick={() => processImage(false)}
                   disabled={isProcessing}
-                  className="bg-stone-900 hover:bg-[#d9777f] text-white min-w-[180px] px-10 py-3.5 rounded-2xl font-bold transition-all shadow-xl shadow-stone-200 disabled:opacity-50 flex justify-center items-center gap-2 group"
+                  className="px-6 py-3.5 rounded-2xl font-bold text-stone-600 border border-stone-200 hover:bg-stone-50 transition-all text-sm active:scale-95 order-2"
+                >
+                  Omitir Recorte
+                </button>
+
+                <button
+                  onClick={() => processImage(true)}
+                  disabled={isProcessing}
+                  className="bg-stone-900 hover:bg-[#d9777f] text-white min-w-[160px] px-8 py-3.5 rounded-2xl font-bold transition-all shadow-xl shadow-stone-200 disabled:opacity-50 flex justify-center items-center gap-2 group order-1 sm:order-3"
                 >
                   {isProcessing ? <Loader2 className="animate-spin" size={18} /> : <CheckCircle2 size={18} className="group-hover:scale-110 transition-transform" />}
                   {isProcessing ? 'Procesando...' : 'Aplicar Recorte'}

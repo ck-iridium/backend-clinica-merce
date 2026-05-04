@@ -12,9 +12,27 @@ router = APIRouter(
 def create_invoice(invoice: schemas.InvoiceCreate, db: Session = Depends(database.get_db)):
     return crud.create_invoice(db=db, invoice=invoice)
 
-@router.get("/", response_model=List[schemas.InvoiceResponse])
-def read_invoices(skip: int = 0, limit: int = 100, db: Session = Depends(database.get_db)):
-    return crud.get_invoices(db, skip=skip, limit=limit)
+from typing import List, Optional
+
+@router.get("/", response_model=schemas.PaginatedInvoicesResponse)
+def read_invoices(
+    page: int = 1,
+    limit: int = 10,
+    status: str = "all",
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    search: Optional[str] = None,
+    db: Session = Depends(database.get_db)
+):
+    return crud.get_invoices(
+        db=db,
+        page=page,
+        limit=limit,
+        status=status,
+        start_date=start_date,
+        end_date=end_date,
+        search=search
+    )
 
 @router.get("/{invoice_id}", response_model=schemas.InvoiceResponse)
 def read_invoice(invoice_id: str, db: Session = Depends(database.get_db)):

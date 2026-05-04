@@ -310,6 +310,19 @@ class InvoiceResponse(InvoiceBase):
     class Config:
         from_attributes = True
 
+class InvoiceKPIs(BaseModel):
+    total_gross: float
+    tax_base: float
+    vat_quota: float
+
+class PaginatedInvoicesResponse(BaseModel):
+    total: int
+    pages: int
+    page: int
+    kpis: InvoiceKPIs
+    data: List[InvoiceResponse]
+
+
 
 # --- Public Booking (Landing) ---
 class PublicBookingRequest(BaseModel):

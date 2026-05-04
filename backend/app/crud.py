@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import or_
+from sqlalchemy import or_, func
+import math
 from datetime import datetime, date, timedelta
 from typing import List
 from . import models, schemas
@@ -408,8 +409,54 @@ def delete_voucher(db: Session, voucher_id: str):
 def get_invoice(db: Session, invoice_id: str):
     return db.query(models.Invoice).filter(models.Invoice.id == invoice_id).first()
 
-def get_invoices(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Invoice).offset(skip).limit(limit).all()
+def get_invoices(db: Session, page: int = 1, limit: int = 10, status: str = "all", start_date: str = None, end_date: str = None, search: str = None):
+    query = db.query(models.Invoice)
+    
+    if status and status.lower() != "all" and status.lower() != "todas":
+        # Convert "pagadas" to "paid" and "pendientes" to "pending" if they come in Spanish
+        mapped_status = status.lower()
+        if mapped_status == "pagadas": mapped_status = "paid"
+        if mapped_status == "pendientes": mapped_status = "pending"
+        query = query.filter(models.Invoice.status == mapped_status)
+        
+    if start_date:
+        query = query.filter(models.Invoice.date >= start_date)
+    if end_date:
+        query = query.filter(models.Invoice.date <= end_date)
+        
+    if search:
+        search_term = f"%{search}%"
+        query = query.join(models.Client, models.Invoice.client_id == models.Client.id, isouter=True)
+        query = query.filter(
+            or_(
+                models.Invoice.concept.ilike(search_term),
+                models.Client.name.ilike(search_term)
+            )
+        )
+        
+    total = query.count()
+    
+    total_gross_scalar = query.with_entities(func.sum(models.Invoice.amount)).scalar() or 0.0
+    total_gross = float(total_gross_scalar)
+    tax_base = total_gross / 1.21
+    vat_quota = total_gross - tax_base
+    
+    offset = (page - 1) * limit
+    invoices = query.order_by(models.Invoice.date.desc()).offset(offset).limit(limit).all()
+    
+    pages = math.ceil(total / limit) if limit > 0 else 0
+    
+    return {
+        "total": total,
+        "pages": pages,
+        "page": page,
+        "kpis": {
+            "total_gross": round(total_gross, 2),
+            "tax_base": round(tax_base, 2),
+            "vat_quota": round(vat_quota, 2)
+        },
+        "data": invoices
+    }
 
 def create_invoice(db: Session, invoice: schemas.InvoiceCreate):
     invoice_dict = invoice.model_dump()
