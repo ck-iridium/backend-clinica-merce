@@ -18,7 +18,7 @@ export async function inviteTeamMember(data: { email: string, full_name: string,
     const userId = authData.user?.id;
     if (!userId) return { success: false, error: "No se pudo obtener el ID del usuario invitado" };
 
-    const { error: dbError } = await supabaseAdmin.from('profiles').insert({
+    const { error: dbError } = await supabaseAdmin.from('profiles').upsert({
       id: userId,
       email: data.email,
       full_name: data.full_name,

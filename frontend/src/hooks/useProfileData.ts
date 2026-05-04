@@ -283,18 +283,30 @@ export function useProfileData() {
     handleMediaSelected,
     handleLogout: () => { localStorage.removeItem('user'); router.push('/login'); },
     handleSaveAll: async () => {
-      if (!profile) return;
+      if (!user) return;
       setSavingPrefs(true);
       try {
-        const { success } = await updateUserProfile(profile.id, { 
+        const { success, error } = await updateUserProfile(user.id, { 
           full_name: fullName,
           receive_email_appointments: receiveEmailAppointments,
           receive_agenda_reminders: receiveAgendaReminders
         });
+        
         if (success) {
           toast.success("Cambios guardados correctamente");
-          setProfile({ ...profile, full_name: fullName });
+          // Actualizamos el objeto profile para resetear isDirty
+          setProfile({ 
+            ...profile, 
+            id: user.id,
+            full_name: fullName,
+            receive_email_appointments: receiveEmailAppointments,
+            receive_agenda_reminders: receiveAgendaReminders
+          });
+        } else {
+          toast.error(error || "No se pudieron guardar los cambios");
         }
+      } catch (err: any) {
+        toast.error("Error crítico al guardar: " + err.message);
       } finally {
         setSavingPrefs(false);
       }
