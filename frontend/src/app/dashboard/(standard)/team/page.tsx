@@ -185,7 +185,7 @@ export default function TeamPage() {
           </p>
         </div>
 
-        {userRole === 'admin' ? (
+        {(role?.toLowerCase() === 'administrador' || role?.toLowerCase() === 'admin') ? (
           <Dialog open={isInviteModalOpen} onOpenChange={setIsInviteModalOpen}>
             <DialogTrigger asChild>
               <button className="flex items-center gap-2.5 bg-stone-900 hover:bg-[#d9777f] text-white px-6 py-3.5 rounded-2xl font-bold text-sm transition-all shadow-lg shadow-stone-200 active:scale-95">

@@ -14,8 +14,9 @@ interface ProfileAvatarCardProps {
   handleAvatarClick: () => void;
   onFileSelected: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleRemoveAvatar: () => void;
-  handleUpdatePreferences: () => void;
+  handleSaveAll: () => void;
   savingPrefs: boolean;
+  isDirty: boolean;
 }
 
 export default function ProfileAvatarCard({
@@ -26,8 +27,9 @@ export default function ProfileAvatarCard({
   handleAvatarClick,
   onFileSelected,
   handleRemoveAvatar,
-  handleUpdatePreferences,
-  savingPrefs
+  handleSaveAll,
+  savingPrefs,
+  isDirty
 }: ProfileAvatarCardProps) {
   return (
     <div className="lg:col-span-4 space-y-8 sticky top-24">
@@ -117,18 +119,18 @@ export default function ProfileAvatarCard({
         </div>
       </div>
 
-      {/* Botón Guardar Preferencias (Reubicado por petición) */}
+      {/* Botón Maestro: Guardar Cambios (Notificaciones + Nombre) */}
       <button
-        onClick={handleUpdatePreferences}
-        disabled={savingPrefs}
-        className="w-full bg-emerald-600 text-white hover:bg-emerald-700 px-8 py-5 rounded-[2.5rem] font-bold text-sm shadow-xl shadow-emerald-100 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3 group"
+        onClick={handleSaveAll}
+        disabled={savingPrefs || !isDirty}
+        className="w-full bg-emerald-600 text-white hover:bg-emerald-700 px-8 py-5 rounded-[2.5rem] font-bold text-sm shadow-xl shadow-emerald-100 transition-all active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed flex items-center justify-center gap-3 group"
       >
         {savingPrefs ? (
           <Loader2 className="animate-spin" size={18} />
         ) : (
           <CheckCircle2 size={18} className="text-emerald-100 group-hover:scale-110 transition-transform" />
         )}
-        Guardar Preferencias
+        {isDirty ? 'Guardar Cambios' : 'Sin cambios pendientes'}
       </button>
     </div>
   );

@@ -275,14 +275,32 @@ export function useProfileData() {
     setSelectedImageForCrop,
     
     // Actions
-    handleUpdateIdentity,
     handleUpdatePassword,
-    handleUpdatePreferences,
     handleAvatarClick,
     onFileSelected,
     handleCropComplete,
     handleRemoveAvatar,
     handleMediaSelected,
-    handleLogout: () => { localStorage.removeItem('user'); router.push('/login'); }
+    handleLogout: () => { localStorage.removeItem('user'); router.push('/login'); },
+    handleSaveAll: async () => {
+      if (!profile) return;
+      setSavingPrefs(true);
+      try {
+        const { success } = await updateUserProfile(profile.id, { 
+          full_name: fullName,
+          receive_email_appointments: receiveEmailAppointments,
+          receive_agenda_reminders: receiveAgendaReminders
+        });
+        if (success) {
+          toast.success("Cambios guardados correctamente");
+          setProfile({ ...profile, full_name: fullName });
+        }
+      } finally {
+        setSavingPrefs(false);
+      }
+    },
+    isDirty: fullName !== (profile?.full_name || '') || 
+             receiveEmailAppointments !== (profile?.receive_email_appointments ?? true) || 
+             receiveAgendaReminders !== (profile?.receive_agenda_reminders ?? true)
   };
 }

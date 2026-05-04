@@ -7,18 +7,12 @@ interface ProfileIdentityFormProps {
   fullName: string;
   setFullName: (val: string) => void;
   email: string;
-  savingIdentity: boolean;
-  handleUpdateIdentity: (e: React.FormEvent) => void;
-  isNameChanged: boolean;
 }
 
 export default function ProfileIdentityForm({
   fullName,
   setFullName,
-  email,
-  savingIdentity,
-  handleUpdateIdentity,
-  isNameChanged
+  email
 }: ProfileIdentityFormProps) {
   return (
     <section className="bg-white rounded-[3rem] border border-stone-100 shadow-sm p-10 relative">
@@ -32,7 +26,7 @@ export default function ProfileIdentityForm({
         </div>
       </div>
 
-      <form onSubmit={handleUpdateIdentity} className="space-y-6">
+      <form className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-3">
             <label className="text-[11px] font-black uppercase tracking-widest text-stone-400 px-1">Nombre Completo</label>
@@ -56,16 +50,6 @@ export default function ProfileIdentityForm({
               />
             </div>
           </div>
-        </div>
-        <div className="flex justify-end pt-4">
-          <button
-            type="submit"
-            disabled={savingIdentity || !isNameChanged}
-            className="bg-stone-900 text-white hover:bg-[#d9777f] px-10 py-4 rounded-2xl font-bold text-sm shadow-xl shadow-stone-200 transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 flex items-center gap-3 group"
-          >
-            {savingIdentity ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} className="group-hover:rotate-12 transition-transform" />}
-            Guardar Perfil
-          </button>
         </div>
       </form>
     </section>

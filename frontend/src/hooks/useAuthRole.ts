@@ -15,10 +15,10 @@ export function useAuthRole() {
             const result = await getUserRoleByEmail(user.email);
             if (result.success && result.role) {
               // Normalizamos a minúsculas para comparaciones seguras
-              setRole(result.role);
+              setRole(result.role.toLowerCase());
               return;
             } else if (user.role) {
-              setRole(user.role);
+              setRole(user.role.toLowerCase());
               return;
             }
           }

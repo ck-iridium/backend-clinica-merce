@@ -54,8 +54,9 @@ export default function ProfilePage() {
           handleAvatarClick={data.handleAvatarClick}
           onFileSelected={data.onFileSelected}
           handleRemoveAvatar={data.handleRemoveAvatar}
-          handleUpdatePreferences={data.handleUpdatePreferences}
+          handleSaveAll={data.handleSaveAll}
           savingPrefs={data.savingPrefs}
+          isDirty={data.isDirty}
         />
 
         {/* Columna Derecha: Formularios de Ajustes */}
@@ -64,9 +65,6 @@ export default function ProfilePage() {
             fullName={data.fullName}
             setFullName={data.setFullName}
             email={data.user?.email}
-            savingIdentity={data.savingIdentity}
-            handleUpdateIdentity={data.handleUpdateIdentity}
-            isNameChanged={data.fullName !== data.profile?.full_name}
           />
 
           <ProfileSecurityForm 
