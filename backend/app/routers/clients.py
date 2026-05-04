@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from .. import crud, schemas, database
+from .. import schemas, database, crud as monolithic_crud
+from ..crud import clients as crud
 
 router = APIRouter(
     prefix="/clients",
@@ -41,15 +42,15 @@ def create_client_consent(client_id: str, consent: schemas.ConsentCreate, db: Se
     
     # Force client_id to match path
     consent.client_id = client_id
-    return crud.create_consent(db=db, consent=consent)
+    return monolithic_crud.create_consent(db=db, consent=consent)
 
 @router.get("/{client_id}/consents", response_model=List[schemas.ConsentResponse])
 def read_client_consents(client_id: str, db: Session = Depends(database.get_db)):
-    return crud.get_consents_by_client(db, client_id=client_id)
+    return monolithic_crud.get_consents_by_client(db, client_id=client_id)
 
 @router.get("/{client_id}/consents/{consent_id}", response_model=schemas.ConsentResponse)
 def read_single_consent(client_id: str, consent_id: str, db: Session = Depends(database.get_db)):
-    db_consent = crud.get_consent(db, consent_id=consent_id)
+    db_consent = monolithic_crud.get_consent(db, consent_id=consent_id)
     if not db_consent or db_consent.client_id != client_id:
         raise HTTPException(status_code=404, detail="Consent not found")
     return db_consent

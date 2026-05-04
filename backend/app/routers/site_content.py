@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from .. import crud, schemas, database
+from .. import schemas, database
+from ..crud import site_content as crud
 
 router = APIRouter(
     prefix="/site-content",

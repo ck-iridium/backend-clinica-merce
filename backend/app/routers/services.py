@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from .. import crud, schemas, database, models
+from .. import schemas, database, models
+from ..crud import services as crud
 import os
 from supabase import create_client, Client
 

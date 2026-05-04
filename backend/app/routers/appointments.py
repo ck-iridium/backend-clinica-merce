@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks, R
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import date as DateType
-from .. import crud, schemas, database
+from .. import schemas, database
+from ..crud import appointments as crud
 from ..limiter import limiter
 
 
