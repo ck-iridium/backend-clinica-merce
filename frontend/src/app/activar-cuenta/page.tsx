@@ -19,28 +19,46 @@ export default function ActivarCuentaPage() {
 
   useEffect(() => {
     setMounted(true);
-    // Extraer token de la URL si venimos de la invitación de Supabase
-    if (typeof window !== 'undefined' && window.location.hash) {
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const token = hashParams.get('access_token');
-      const type = hashParams.get('type');
-      
-      if (token && type === 'invite') {
-        setAccessToken(token);
-        
-        // Obtener el email del usuario para ayudar al gestor de contraseñas
-        supabase.auth.getUser(token).then(({ data }) => {
-          if (data.user?.email) setUserEmail(data.user.email);
-        });
 
-        // Opcional: Limpiar el hash de la URL por seguridad para que no quede en el historial
-        window.history.replaceState(null, '', window.location.pathname);
+    const checkToken = async () => {
+      if (typeof window === 'undefined') return;
+
+      let token = null;
+
+      // 1. Intentar extraer del hash (método estándar de invitación)
+      if (window.location.hash) {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const hashToken = hashParams.get('access_token');
+        const type = hashParams.get('type');
+        
+        if (hashToken && type === 'invite') {
+           token = hashToken;
+           setAccessToken(token);
+           // Limpiar el hash para seguridad
+           window.history.replaceState(null, '', window.location.pathname);
+        }
+      }
+
+      // 2. Si no hay token en hash, o acabamos de limpiarlo, 
+      // verificamos si Supabase ya ha establecido una sesión (común en móviles)
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        // Usamos el token de la sesión activa
+        const sessionToken = session.access_token;
+        setAccessToken(sessionToken);
+        if (session.user?.email) setUserEmail(session.user.email);
+      } else if (token) {
+        // Si teníamos token del hash pero no hay sesión aún, cargamos el usuario
+        const { data } = await supabase.auth.getUser(token);
+        if (data.user?.email) setUserEmail(data.user.email);
       } else {
+        // Solo marcar error si realmente no hay rastro de invitación ni sesión
         setErrorUrl(true);
       }
-    } else {
-      setErrorUrl(true);
-    }
+    };
+
+    checkToken();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -95,7 +113,7 @@ export default function ActivarCuentaPage() {
   if (!mounted) return null;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-stone-50 px-6 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-stone-50 px-6 relative py-12">
       {/* Dynamic background lights (Diseño Premium heredado) */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#f3c7cb] rounded-full blur-[100px] opacity-40"></div>
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#d4af37] rounded-full blur-[100px] opacity-20"></div>

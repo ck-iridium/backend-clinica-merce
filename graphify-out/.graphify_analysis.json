@@ -1,0 +1,905 @@
+{
+  "communities": {
+    "0": [
+      "app_crud_check_appointment_collision",
+      "app_crud_create_appointment",
+      "app_crud_create_client",
+      "app_crud_create_consent",
+      "app_crud_create_direct_sale",
+      "app_crud_create_invoice",
+      "app_crud_create_public_appointment",
+      "app_crud_create_service",
+      "app_crud_create_service_category",
+      "app_crud_create_time_block",
+      "app_crud_create_voucher",
+      "app_crud_create_voucher_template",
+      "app_crud_delete_appointment",
+      "app_crud_delete_invoice",
+      "app_crud_delete_service_category",
+      "app_crud_delete_time_block",
+      "app_crud_delete_voucher",
+      "app_crud_delete_voucher_template",
+      "app_crud_find_or_create_client",
+      "app_crud_generate_invoice_id",
+      "app_crud_get_appointments",
+      "app_crud_get_availability_slots",
+      "app_crud_get_client",
+      "app_crud_get_clients",
+      "app_crud_get_clinic_settings",
+      "app_crud_get_consent",
+      "app_crud_get_consents_by_client",
+      "app_crud_get_invoice",
+      "app_crud_get_invoices",
+      "app_crud_get_service",
+      "app_crud_get_service_categories",
+      "app_crud_get_service_category",
+      "app_crud_get_services",
+      "app_crud_get_site_content",
+      "app_crud_get_spain_now",
+      "app_crud_get_time_blocks",
+      "app_crud_get_voucher_template",
+      "app_crud_get_voucher_templates",
+      "app_crud_get_vouchers",
+      "app_crud_rationale_10",
+      "app_crud_rationale_202",
+      "app_crud_rationale_485",
+      "app_crud_rationale_515",
+      "app_crud_rationale_623",
+      "app_crud_update_appointment",
+      "app_crud_update_client",
+      "app_crud_update_clinic_settings",
+      "app_crud_update_invoice",
+      "app_crud_update_service",
+      "app_crud_update_service_category",
+      "app_crud_update_site_content",
+      "app_crud_update_voucher",
+      "app_main_run_auto_migrations_wrapper",
+      "backend_app_crud_py",
+      "backend_app_utils_migrations_py",
+      "utils_migrations_rationale_9",
+      "utils_migrations_run_auto_migrations"
+    ],
+    "1": [
+      "app_schemas_appointmentbase",
+      "app_schemas_appointmentcreate",
+      "app_schemas_appointmentresponse",
+      "app_schemas_appointmentupdate",
+      "app_schemas_availabilityresponse",
+      "app_schemas_clientbase",
+      "app_schemas_clientcreate",
+      "app_schemas_clientresponse",
+      "app_schemas_clientupdate",
+      "app_schemas_clinicsettingsbase",
+      "app_schemas_clinicsettingsresponse",
+      "app_schemas_clinicsettingsupdate",
+      "app_schemas_config",
+      "app_schemas_consentbase",
+      "app_schemas_consentcreate",
+      "app_schemas_consentresponse",
+      "app_schemas_directsalerequest",
+      "app_schemas_invoicebase",
+      "app_schemas_invoicecreate",
+      "app_schemas_invoiceresponse",
+      "app_schemas_invoiceupdate",
+      "app_schemas_parse_working_days",
+      "app_schemas_publicbookingrequest",
+      "app_schemas_publicbookingresponse",
+      "app_schemas_servicebase",
+      "app_schemas_servicecategorybase",
+      "app_schemas_servicecategorycreate",
+      "app_schemas_servicecategoryresponse",
+      "app_schemas_servicecategoryupdate",
+      "app_schemas_servicecreate",
+      "app_schemas_serviceresponse",
+      "app_schemas_serviceupdate",
+      "app_schemas_sitecontentbase",
+      "app_schemas_sitecontentresponse",
+      "app_schemas_sitecontentupdate",
+      "app_schemas_timeblockbase",
+      "app_schemas_timeblockcreate",
+      "app_schemas_timeblockresponse",
+      "app_schemas_timeblockupdate",
+      "app_schemas_userbase",
+      "app_schemas_usercreate",
+      "app_schemas_userresponse",
+      "app_schemas_voucherbase",
+      "app_schemas_vouchercreate",
+      "app_schemas_voucherresponse",
+      "app_schemas_vouchertemplatebase",
+      "app_schemas_vouchertemplatecreate",
+      "app_schemas_vouchertemplateresponse",
+      "app_schemas_voucherupdate",
+      "backend_app_schemas_py",
+      "basemodel"
+    ],
+    "2": [
+      "cms_page_fetchcontent",
+      "cms_page_handleimageselected",
+      "cms_page_handlesubmit",
+      "components_dashboardsidebar_handlelogout",
+      "components_dashboardsidebar_handlescroll",
+      "components_dashboardsidebar_isactive",
+      "components_mobilebottombar_handleback",
+      "components_mobilebottombar_handlelogout",
+      "components_mobilebottombar_handlenavigatesubmenu",
+      "components_mobilebottombar_isactive",
+      "frontend_src_app_dashboard_standard_cms_page_tsx",
+      "frontend_src_app_dashboard_standard_invoices_page_tsx",
+      "frontend_src_app_dashboard_standard_page_tsx",
+      "frontend_src_app_dashboard_standard_pos_page_tsx",
+      "frontend_src_app_dashboard_standard_profile_page_tsx",
+      "frontend_src_app_dashboard_standard_settings_page_tsx",
+      "frontend_src_components_dashboardsidebar_tsx",
+      "frontend_src_components_globalsearch_tsx",
+      "frontend_src_components_mobilebottombar_tsx",
+      "frontend_src_hooks_useauthrole_ts",
+      "hooks_useauthrole_useauthrole",
+      "hooks_useprofiledata_useprofiledata",
+      "invoices_page_fetchdata",
+      "invoices_page_getclientname",
+      "invoices_page_handledelete",
+      "invoices_page_handletogglestatus",
+      "pos_page_fetchdata",
+      "pos_page_handleprocesssale",
+      "pos_page_handleservicechange",
+      "pos_page_resetform",
+      "settings_page_fetchsettings",
+      "settings_page_handleaddblock",
+      "settings_page_handledeleteblock",
+      "settings_page_handleimageupload",
+      "settings_page_handlesave",
+      "standard_page_fetchdata",
+      "ui_skeleton_skeleton"
+    ],
+    "3": [
+      "calendar_v2_calendarmodals_calendarmodals",
+      "calendar_v2_timescale_timescale",
+      "cancelar_page_handlecancel",
+      "cancelar_page_handlerebook",
+      "clients_page_fetchclients",
+      "clients_page_handlesubmit",
+      "clients_page_validate",
+      "consent_id_page_fetchdata",
+      "consent_id_page_handleprint",
+      "contexts_feedbackcontext_usefeedback",
+      "frontend_src_app_dashboard_fullscreen_calendar_page_tsx",
+      "frontend_src_app_dashboard_standard_clients_id_consents_consent_id_page_tsx",
+      "frontend_src_app_dashboard_standard_clients_page_tsx",
+      "frontend_src_app_dashboard_standard_media_page_tsx",
+      "frontend_src_app_reservar_cancelar_page_tsx",
+      "frontend_src_app_reservar_page_tsx",
+      "frontend_src_app_reservar_verificar_page_tsx",
+      "frontend_src_components_calendar_v2_calendarmodals_tsx",
+      "frontend_src_components_calendar_v2_hooks_usecalendardata_ts",
+      "frontend_src_components_calendar_v2_timescale_tsx",
+      "hooks_usecalendardata_getmonday",
+      "hooks_usecalendardata_usecalendardata",
+      "media_page_clearselection",
+      "media_page_formatbytes",
+      "media_page_handlebulkdelete",
+      "media_page_handlecropcomplete",
+      "media_page_handledelete",
+      "media_page_handlefileselect",
+      "media_page_selectallorphans",
+      "media_page_toggleselect",
+      "reservar_page_fetchbasedata",
+      "reservar_page_formatlocaliso",
+      "reservar_page_getworkingdays",
+      "reservar_page_handlebooking",
+      "reservar_page_toweekdayindex",
+      "verificar_page_getgooglecalendarurl",
+      "verificar_page_handleverify"
+    ],
+    "4": [
+      "app_database_get_db",
+      "app_main_force_seed",
+      "app_main_read_root",
+      "app_main_seed_admin_user",
+      "app_models_appointment",
+      "app_models_client",
+      "app_models_clinicsettings",
+      "app_models_consent",
+      "app_models_invoice",
+      "app_models_service",
+      "app_models_servicecategory",
+      "app_models_sitecontent",
+      "app_models_timeblock",
+      "app_models_user",
+      "app_models_voucher",
+      "app_models_vouchertemplate",
+      "backend_app_database_py",
+      "backend_app_limiter_py",
+      "backend_app_main_py",
+      "backend_app_models_py",
+      "backend_app_routers_backups_py",
+      "backend_app_routers_time_blocks_py",
+      "backend_app_utils_migrate_categories_py",
+      "base",
+      "routers_backups_get_backup_download_url",
+      "routers_backups_get_supabase_client",
+      "routers_backups_list_backups",
+      "routers_backups_rationale_21",
+      "routers_backups_rationale_37",
+      "routers_time_blocks_create_time_block",
+      "routers_time_blocks_delete_time_block",
+      "routers_time_blocks_read_time_blocks",
+      "utils_migrate_categories_run"
+    ],
+    "5": [
+      "backend_app_routers_automation_py",
+      "backend_app_routers_settings_py",
+      "backend_app_utils_mailer_py",
+      "routers_automation_cancel_appointment",
+      "routers_automation_cleanup_unverified",
+      "routers_automation_execute_cloud_backup",
+      "routers_automation_get_appointment_for_cancellation",
+      "routers_automation_get_appointment_for_verification",
+      "routers_automation_rationale_122",
+      "routers_automation_rationale_151",
+      "routers_automation_rationale_178",
+      "routers_automation_rationale_209",
+      "routers_automation_rationale_234",
+      "routers_automation_rationale_27",
+      "routers_automation_rationale_60",
+      "routers_automation_send_reminders",
+      "routers_automation_verify_appointment",
+      "routers_settings_export_database",
+      "routers_settings_read_settings",
+      "routers_settings_restore_database",
+      "routers_settings_update_settings",
+      "utils_mailer_get_html_template",
+      "utils_mailer_rationale_100",
+      "utils_mailer_rationale_139",
+      "utils_mailer_rationale_15",
+      "utils_mailer_send_appointment_notification",
+      "utils_mailer_send_email"
+    ],
+    "6": [
+      "frontend_scratch_old_stable_fetchdata",
+      "frontend_scratch_old_stable_formatlocaliso",
+      "frontend_scratch_old_stable_getappointmentsforday",
+      "frontend_scratch_old_stable_getblocksforday",
+      "frontend_scratch_old_stable_getdayclosedreason",
+      "frontend_scratch_old_stable_getmonday",
+      "frontend_scratch_old_stable_getstatuscolors",
+      "frontend_scratch_old_stable_handleblocksubmit",
+      "frontend_scratch_old_stable_handledeleteappointment",
+      "frontend_scratch_old_stable_handledeleteblock",
+      "frontend_scratch_old_stable_handleslotclick",
+      "frontend_scratch_old_stable_handlestatuschange",
+      "frontend_scratch_old_stable_handlesubmit",
+      "frontend_scratch_old_stable_handleupdatenotes",
+      "frontend_scratch_old_stable_isdayclosed",
+      "frontend_scratch_old_stable_islunchtime",
+      "frontend_scratch_old_stable_istimedisabled",
+      "frontend_scratch_old_stable_openwhatsapp",
+      "frontend_scratch_old_stable_timetominutes",
+      "frontend_scratch_old_stable_tsx"
+    ],
+    "7": [
+      "frontend_scratch_original_page_fetchdata",
+      "frontend_scratch_original_page_formatlocaliso",
+      "frontend_scratch_original_page_getappointmentsforday",
+      "frontend_scratch_original_page_getblocksforday",
+      "frontend_scratch_original_page_getdayclosedreason",
+      "frontend_scratch_original_page_getmonday",
+      "frontend_scratch_original_page_getstatuscolors",
+      "frontend_scratch_original_page_handleblocksubmit",
+      "frontend_scratch_original_page_handledeleteappointment",
+      "frontend_scratch_original_page_handledeleteblock",
+      "frontend_scratch_original_page_handleslotclick",
+      "frontend_scratch_original_page_handlestatuschange",
+      "frontend_scratch_original_page_handlesubmit",
+      "frontend_scratch_original_page_handleupdatenotes",
+      "frontend_scratch_original_page_isdayclosed",
+      "frontend_scratch_original_page_islunchtime",
+      "frontend_scratch_original_page_istimedisabled",
+      "frontend_scratch_original_page_openwhatsapp",
+      "frontend_scratch_original_page_timetominutes",
+      "frontend_scratch_original_page_tsx"
+    ],
+    "8": [
+      "frontend_scratch_pre_refactor_fetchdata",
+      "frontend_scratch_pre_refactor_formatlocaliso",
+      "frontend_scratch_pre_refactor_getappointmentsforday",
+      "frontend_scratch_pre_refactor_getblocksforday",
+      "frontend_scratch_pre_refactor_getdayclosedreason",
+      "frontend_scratch_pre_refactor_getmonday",
+      "frontend_scratch_pre_refactor_getstatuscolors",
+      "frontend_scratch_pre_refactor_handleblocksubmit",
+      "frontend_scratch_pre_refactor_handledeleteappointment",
+      "frontend_scratch_pre_refactor_handledeleteblock",
+      "frontend_scratch_pre_refactor_handleslotclick",
+      "frontend_scratch_pre_refactor_handlestatuschange",
+      "frontend_scratch_pre_refactor_handlesubmit",
+      "frontend_scratch_pre_refactor_handleupdatenotes",
+      "frontend_scratch_pre_refactor_isdayclosed",
+      "frontend_scratch_pre_refactor_islunchtime",
+      "frontend_scratch_pre_refactor_istimedisabled",
+      "frontend_scratch_pre_refactor_openwhatsapp",
+      "frontend_scratch_pre_refactor_timetominutes",
+      "frontend_scratch_pre_refactor_tsx"
+    ],
+    "9": [
+      "actions_profile_getuserprofile",
+      "actions_profile_getuserrolebyemail",
+      "actions_profile_updatepasswordandactivate",
+      "actions_profile_updateuserprofile",
+      "actions_team_deleteteammember",
+      "actions_team_getteammembers",
+      "actions_team_inviteteammember",
+      "actions_team_updateteammemberrole",
+      "activar_cuenta_page_handlesubmit",
+      "frontend_src_app_actions_profile_ts",
+      "frontend_src_app_actions_team_ts",
+      "frontend_src_app_activar_cuenta_page_tsx",
+      "frontend_src_app_dashboard_standard_team_page_tsx",
+      "frontend_src_hooks_useprofiledata_ts",
+      "frontend_src_lib_supabase_ts",
+      "lib_supabase_getsupabaseadmin",
+      "team_page_fetchmembers",
+      "team_page_handledelete",
+      "team_page_handleeditsubmit",
+      "team_page_handleinvite"
+    ],
+    "10": [
+      "components_cropimagemodal_createcroppedimage",
+      "components_mediapickermodal_formatbytes",
+      "components_mediapickermodal_handleclose",
+      "components_mediapickermodal_handlecropcomplete",
+      "components_mediapickermodal_handlefileinput",
+      "components_mediapickermodal_loadgallery",
+      "components_mediapickermodal_safeselectimage",
+      "frontend_src_components_cropimagemodal_tsx",
+      "frontend_src_components_mediapickermodal_tsx",
+      "frontend_src_components_ui_command_tsx",
+      "frontend_src_components_ui_dialog_tsx",
+      "frontend_src_components_ui_dropdown_menu_tsx",
+      "frontend_src_components_ui_popover_tsx",
+      "frontend_src_components_ui_select_tsx",
+      "frontend_src_components_ui_sheet_tsx",
+      "frontend_src_components_ui_skeleton_tsx",
+      "frontend_src_lib_utils_ts",
+      "lib_utils_cn",
+      "ui_dialog_cn"
+    ],
+    "11": [
+      "frontend_src_app_dashboard_standard_services_page_tsx",
+      "services_page_fetchcategories",
+      "services_page_fetchservices",
+      "services_page_getcategoryname",
+      "services_page_handlecancel",
+      "services_page_handlecatimageupload",
+      "services_page_handlecreatecategory",
+      "services_page_handledeletecategory",
+      "services_page_handledeleteservice",
+      "services_page_handleeditclick",
+      "services_page_handleserviceimageselect",
+      "services_page_handlesubmit",
+      "services_page_handleupdatecategory",
+      "services_page_onservicecropcomplete"
+    ],
+    "12": [
+      "backend_app_routers_media_py",
+      "routers_media_build_used_urls_map",
+      "routers_media_bulk_delete_media_files",
+      "routers_media_bulkdeleterequest",
+      "routers_media_delete_media_file",
+      "routers_media_get_media_quota",
+      "routers_media_get_supabase",
+      "routers_media_list_all_media",
+      "routers_media_rationale_103",
+      "routers_media_rationale_130",
+      "routers_media_rationale_155",
+      "routers_media_rationale_27",
+      "routers_media_rationale_64"
+    ],
+    "13": [
+      "frontend_src_app_dashboard_standard_vouchers_page_tsx",
+      "vouchers_page_calculatetemplatedefaultprice",
+      "vouchers_page_fetchdata",
+      "vouchers_page_getclientname",
+      "vouchers_page_getservicename",
+      "vouchers_page_handleassignvoucher",
+      "vouchers_page_handlecreatetemplate",
+      "vouchers_page_handledeletetemplate",
+      "vouchers_page_handledeletevoucher",
+      "vouchers_page_handleopenpaymodal",
+      "vouchers_page_handlepaydebt",
+      "vouchers_page_handleselecttemplateforassignment",
+      "vouchers_page_isexpired"
+    ],
+    "14": [
+      "backend_app_routers_appointments_py",
+      "routers_appointments_create_appointment",
+      "routers_appointments_delete_appointment",
+      "routers_appointments_get_availability",
+      "routers_appointments_public_booking",
+      "routers_appointments_rationale_22",
+      "routers_appointments_rationale_42",
+      "routers_appointments_read_appointments",
+      "routers_appointments_update_appointment"
+    ],
+    "15": [
+      "backend_app_init_py",
+      "backend_app_routers_site_content_py",
+      "backend_app_routers_users_py",
+      "routers_site_content_get_site_content",
+      "routers_site_content_update_site_content",
+      "routers_users_login",
+      "routers_users_loginrequest",
+      "routers_users_read_user_me"
+    ],
+    "16": [
+      "backend_app_routers_clients_py",
+      "routers_clients_create_client",
+      "routers_clients_create_client_consent",
+      "routers_clients_read_client",
+      "routers_clients_read_client_consents",
+      "routers_clients_read_clients",
+      "routers_clients_read_single_consent",
+      "routers_clients_update_client"
+    ],
+    "17": [
+      "app_layout_generatemetadata",
+      "components_providers_providers",
+      "contexts_feedbackcontext_feedbackprovider",
+      "dashboard_layout_dashboardlayout",
+      "frontend_src_app_contexts_feedbackcontext_tsx",
+      "frontend_src_app_dashboard_layout_tsx",
+      "frontend_src_app_layout_tsx",
+      "frontend_src_components_providers_tsx"
+    ],
+    "18": [
+      "backups_page_downloadcloudbackup",
+      "backups_page_executerestore",
+      "backups_page_fetchcloudbackups",
+      "backups_page_formatsize",
+      "backups_page_handleexport",
+      "backups_page_handlerestoreclick",
+      "backups_page_onfileselect",
+      "frontend_src_app_dashboard_standard_backups_page_tsx"
+    ],
+    "19": [
+      "components_signaturepadmodal_signaturepadmodal",
+      "frontend_src_app_dashboard_standard_clients_id_page_tsx",
+      "frontend_src_components_signaturepadmodal_tsx",
+      "id_page_fetchclient",
+      "id_page_handleopenpaymodal",
+      "id_page_handlepaydebt",
+      "id_page_handlesavesignature",
+      "id_page_handleupdate"
+    ],
+    "20": [
+      "backend_app_routers_invoices_py",
+      "routers_invoices_create_direct_sale",
+      "routers_invoices_create_invoice",
+      "routers_invoices_delete_invoice",
+      "routers_invoices_read_invoice",
+      "routers_invoices_read_invoices",
+      "routers_invoices_update_invoice"
+    ],
+    "21": [
+      "calendar_v2_appointmentcard_appointmentcard",
+      "calendar_v2_appointmentcard_getstatuscolors",
+      "calendar_v2_emptyslot_emptyslot",
+      "frontend_src_components_calendar_v2_appointmentcard_tsx",
+      "frontend_src_components_calendar_v2_daycolumn_tsx",
+      "frontend_src_components_calendar_v2_emptyslot_tsx"
+    ],
+    "22": [
+      "backend_app_routers_service_categories_py",
+      "routers_service_categories_create_service_category",
+      "routers_service_categories_delete_service_category",
+      "routers_service_categories_read_service_categories",
+      "routers_service_categories_update_service_category"
+    ],
+    "23": [
+      "backend_app_routers_services_py",
+      "routers_services_create_service",
+      "routers_services_delete_service",
+      "routers_services_read_services",
+      "routers_services_update_service"
+    ],
+    "24": [
+      "backend_app_routers_vouchers_py",
+      "routers_vouchers_create_voucher",
+      "routers_vouchers_delete_voucher",
+      "routers_vouchers_read_vouchers",
+      "routers_vouchers_update_voucher"
+    ],
+    "25": [
+      "backend_app_routers_voucher_templates_py",
+      "routers_voucher_templates_create_voucher_template",
+      "routers_voucher_templates_delete_voucher_template",
+      "routers_voucher_templates_read_voucher_template",
+      "routers_voucher_templates_read_voucher_templates"
+    ],
+    "26": [
+      "backend_app_routers_uploads_py",
+      "routers_uploads_cleanup_orphaned_media",
+      "routers_uploads_rationale_73",
+      "routers_uploads_upload_image"
+    ],
+    "27": [
+      "frontend_src_app_dashboard_standard_invoices_id_page_tsx",
+      "id_page_fetchdata",
+      "id_page_handleprint",
+      "id_page_handletogglestatus"
+    ],
+    "28": [
+      "calendar_v2_contextpanel_getdaysinmonth",
+      "calendar_v2_contextpanel_handlenextmonth",
+      "calendar_v2_contextpanel_handleprevmonth",
+      "frontend_src_components_calendar_v2_contextpanel_tsx"
+    ],
+    "29": [
+      "frontend_src_components_calendar_v2_modals_createappointmentmodal_tsx",
+      "modals_createappointmentmodal_formatlocaliso",
+      "modals_createappointmentmodal_handleblocksubmit",
+      "modals_createappointmentmodal_handlesubmit"
+    ],
+    "30": [
+      "backend_migrate_vouchers_v2_py",
+      "backend_migrate_vouchers_v2_run_migration"
+    ],
+    "31": [
+      "app_page_getdata",
+      "frontend_src_app_page_tsx"
+    ],
+    "32": [
+      "contacto_page_getsettings",
+      "frontend_src_app_contacto_page_tsx"
+    ],
+    "33": [
+      "cookies_page_cookiespage",
+      "frontend_src_app_cookies_page_tsx"
+    ],
+    "34": [
+      "frontend_src_app_dashboard_fullscreen_layout_tsx",
+      "fullscreen_layout_fullscreenlayout"
+    ],
+    "35": [
+      "frontend_src_app_dashboard_standard_layout_tsx",
+      "standard_layout_standardlayout"
+    ],
+    "36": [
+      "frontend_src_app_dashboard_standard_template_tsx",
+      "standard_template_dashboardtemplate"
+    ],
+    "37": [
+      "frontend_src_app_login_page_tsx",
+      "login_page_handlelogin"
+    ],
+    "38": [
+      "frontend_src_app_privacidad_page_tsx",
+      "privacidad_page_privacidadpage"
+    ],
+    "39": [
+      "frontend_src_app_tratamientos_page_tsx",
+      "tratamientos_page_getdata"
+    ],
+    "40": [
+      "components_cookiebanner_cookiebanner",
+      "frontend_src_components_cookiebanner_tsx"
+    ],
+    "41": [
+      "components_dashboardheader_dashboardheader",
+      "frontend_src_components_dashboardheader_tsx"
+    ],
+    "42": [
+      "components_footer_footer",
+      "frontend_src_components_footer_tsx"
+    ],
+    "43": [
+      "components_invitehandler_invitehandler",
+      "frontend_src_components_invitehandler_tsx"
+    ],
+    "44": [
+      "components_layoutwrapper_layoutwrapper",
+      "frontend_src_components_layoutwrapper_tsx"
+    ],
+    "45": [
+      "components_routeguard_routeguard",
+      "frontend_src_components_routeguard_tsx"
+    ],
+    "46": [
+      "frontend_src_components_calendar_v2_modals_deleteblockconfirm_tsx",
+      "modals_deleteblockconfirm_handledeleteblock"
+    ],
+    "47": [
+      "frontend_src_components_profile_profileidentityform_tsx",
+      "profile_profileidentityform_profileidentityform"
+    ],
+    "48": [
+      "frontend_src_components_profile_profilesecurityform_tsx",
+      "profile_profilesecurityform_profilesecurityform"
+    ],
+    "49": [
+      "tmp_check_db_check_schema",
+      "tmp_check_db_py"
+    ],
+    "50": [
+      "backend_create_admin_py"
+    ],
+    "51": [
+      "backend_migrate_py"
+    ],
+    "52": [
+      "backend_migrate_clients_py"
+    ],
+    "53": [
+      "backend_migrate_consents_py"
+    ],
+    "54": [
+      "backend_migrate_horarios_py"
+    ],
+    "55": [
+      "backend_migrate_tax_py"
+    ],
+    "56": [
+      "backend_test_conn_py"
+    ],
+    "57": [
+      "backend_test_post_py"
+    ],
+    "58": [
+      "frontend_next_env_d_ts"
+    ],
+    "59": [
+      "frontend_next_config_js"
+    ],
+    "60": [
+      "frontend_postcss_config_js"
+    ],
+    "61": [
+      "frontend_tailwind_config_ts"
+    ],
+    "62": [
+      "frontend_src_app_aviso_legal_page_tsx"
+    ],
+    "63": [
+      "frontend_src_components_feedbackmodal_tsx"
+    ],
+    "64": [
+      "frontend_src_components_notificationspopover_tsx"
+    ],
+    "65": [
+      "frontend_src_components_publicnavbar_tsx"
+    ],
+    "66": [
+      "frontend_src_components_calendar_v2_calendarheader_tsx"
+    ],
+    "67": [
+      "frontend_src_components_calendar_v2_timeindicator_tsx"
+    ],
+    "68": [
+      "frontend_src_components_calendar_v2_modals_editappointmentmodal_tsx"
+    ],
+    "69": [
+      "frontend_src_components_profile_profileavatarcard_tsx"
+    ],
+    "70": [
+      "frontend_src_components_profile_profilepreferencesform_tsx"
+    ]
+  },
+  "cohesion": {
+    "0": 0.05,
+    "1": 0.07,
+    "2": 0.07,
+    "3": 0.06,
+    "4": 0.09,
+    "5": 0.08,
+    "6": 0.16,
+    "7": 0.16,
+    "8": 0.16,
+    "9": 0.19,
+    "10": 0.11,
+    "11": 0.2,
+    "12": 0.24,
+    "13": 0.19,
+    "14": 0.22,
+    "15": 0.25,
+    "16": 0.25,
+    "17": 0.25,
+    "18": 0.25,
+    "19": 0.29,
+    "20": 0.29,
+    "21": 0.4,
+    "22": 0.4,
+    "23": 0.4,
+    "24": 0.4,
+    "25": 0.4,
+    "26": 0.5,
+    "27": 0.5,
+    "28": 0.5,
+    "29": 0.83,
+    "30": 1.0,
+    "31": 1.0,
+    "32": 1.0,
+    "33": 1.0,
+    "34": 1.0,
+    "35": 1.0,
+    "36": 1.0,
+    "37": 1.0,
+    "38": 1.0,
+    "39": 1.0,
+    "40": 1.0,
+    "41": 1.0,
+    "42": 1.0,
+    "43": 1.0,
+    "44": 1.0,
+    "45": 1.0,
+    "46": 1.0,
+    "47": 1.0,
+    "48": 1.0,
+    "49": 1.0,
+    "50": 1.0,
+    "51": 1.0,
+    "52": 1.0,
+    "53": 1.0,
+    "54": 1.0,
+    "55": 1.0,
+    "56": 1.0,
+    "57": 1.0,
+    "58": 1.0,
+    "59": 1.0,
+    "60": 1.0,
+    "61": 1.0,
+    "62": 1.0,
+    "63": 1.0,
+    "64": 1.0,
+    "65": 1.0,
+    "66": 1.0,
+    "67": 1.0,
+    "68": 1.0,
+    "69": 1.0,
+    "70": 1.0
+  },
+  "gods": [
+    {
+      "id": "contexts_feedbackcontext_usefeedback",
+      "label": "useFeedback()",
+      "degree": 26
+    },
+    {
+      "id": "hooks_useauthrole_useauthrole",
+      "label": "useAuthRole()",
+      "degree": 14
+    },
+    {
+      "id": "ui_skeleton_skeleton",
+      "label": "Skeleton()",
+      "degree": 13
+    },
+    {
+      "id": "lib_supabase_getsupabaseadmin",
+      "label": "getSupabaseAdmin()",
+      "degree": 11
+    },
+    {
+      "id": "lib_utils_cn",
+      "label": "cn()",
+      "degree": 10
+    },
+    {
+      "id": "app_crud_get_clinic_settings",
+      "label": "get_clinic_settings()",
+      "degree": 9
+    },
+    {
+      "id": "app_crud_check_appointment_collision",
+      "label": "check_appointment_collision()",
+      "degree": 7
+    },
+    {
+      "id": "utils_migrations_run_auto_migrations",
+      "label": "run_auto_migrations()",
+      "degree": 6
+    },
+    {
+      "id": "frontend_scratch_old_stable_fetchdata",
+      "label": "fetchData()",
+      "degree": 6
+    },
+    {
+      "id": "frontend_scratch_original_page_fetchdata",
+      "label": "fetchData()",
+      "degree": 6
+    }
+  ],
+  "surprises": [
+    {
+      "source": "run_auto_migrations_wrapper()",
+      "target": "run_auto_migrations()",
+      "source_files": [
+        "backend/app/main.py",
+        "backend/app/utils/migrations.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; peripheral node `run_auto_migrations_wrapper()` unexpectedly reaches hub `run_auto_migrations()`"
+    },
+    {
+      "source": "run_auto_migrations()",
+      "target": "ServiceCategory",
+      "source_files": [
+        "backend/app/utils/migrations.py",
+        "backend/app/models.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; bridges separate communities"
+    },
+    {
+      "source": "useProfileData()",
+      "target": "useFeedback()",
+      "source_files": [
+        "frontend/src/hooks/useProfileData.ts",
+        "frontend/src/app/contexts/FeedbackContext.tsx"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; bridges separate communities"
+    },
+    {
+      "source": "get_clinic_settings()",
+      "target": "run_auto_migrations()",
+      "source_files": [
+        "backend/app/crud.py",
+        "backend/app/utils/migrations.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source"
+    },
+    {
+      "source": "get_site_content()",
+      "target": "run_auto_migrations()",
+      "source_files": [
+        "backend/app/crud.py",
+        "backend/app/utils/migrations.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source"
+    }
+  ],
+  "questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `useFeedback()` connect `Community 3` to `Community 2`, `Community 6`, `Community 7`, `Community 8`, `Community 9`, `Community 10`, `Community 11`, `Community 13`, `Community 17`, `Community 19`?",
+      "why": "High betweenness centrality (0.127) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `LoginRequest` connect `Community 15` to `Community 1`?",
+      "why": "High betweenness centrality (0.074) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `BulkDeleteRequest` connect `Community 12` to `Community 1`?",
+      "why": "High betweenness centrality (0.018) - this node is a cross-community bridge."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 3 inferred relationships involving `useFeedback()` (e.g. with `CalendarModals()` and `useCalendarData()`) actually correct?",
+      "why": "`useFeedback()` has 3 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "isolated_nodes",
+      "question": "What connects `Returns a naive datetime representing the current local time in Spain.`, `Returns an error string if there's a collision with existing appointments or tim`, `Look up an existing client by email OR phone. Create a new one if not found.` to the rest of the system?",
+      "why": "28 weakly-connected nodes found - possible documentation gaps or missing edges."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Community 0` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.05 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Community 1` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.07 - nodes in this community are weakly interconnected."
+    }
+  ]
+}
