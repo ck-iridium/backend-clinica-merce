@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase';
 export default function ActivarCuentaPage() {
   const router = useRouter();
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,6 +27,12 @@ export default function ActivarCuentaPage() {
       
       if (token && type === 'invite') {
         setAccessToken(token);
+        
+        // Obtener el email del usuario para ayudar al gestor de contraseñas
+        supabase.auth.getUser(token).then(({ data }) => {
+          if (data.user?.email) setUserEmail(data.user.email);
+        });
+
         // Opcional: Limpiar el hash de la URL por seguridad para que no quede en el historial
         window.history.replaceState(null, '', window.location.pathname);
       } else {
@@ -112,6 +119,16 @@ export default function ActivarCuentaPage() {
            </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Campo oculto para que el gestor de contraseñas asocie la clave al email correcto */}
+            <input 
+              type="text" 
+              name="username" 
+              value={userEmail} 
+              readOnly 
+              autoComplete="username" 
+              className="hidden" 
+            />
+
             <div className="space-y-2">
               <label className="text-[11px] font-black uppercase tracking-widest text-stone-400 px-1">
                 Nueva Contraseña
@@ -122,8 +139,10 @@ export default function ActivarCuentaPage() {
                 </div>
                 <input
                   type="password"
+                  name="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="new-password"
                   className="w-full bg-white/50 border border-stone-200 rounded-2xl pl-12 pr-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#d9777f]/20 focus:border-[#d9777f] focus:bg-white transition-all shadow-sm"
                   placeholder="Mínimo 6 caracteres"
                   required
@@ -141,8 +160,10 @@ export default function ActivarCuentaPage() {
                 </div>
                 <input
                   type="password"
+                  name="confirm-password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  autoComplete="new-password"
                   className="w-full bg-white/50 border border-stone-200 rounded-2xl pl-12 pr-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#d9777f]/20 focus:border-[#d9777f] focus:bg-white transition-all shadow-sm"
                   placeholder="Repite la contraseña"
                   required
