@@ -65,15 +65,18 @@ export default function ActivarCuentaPage() {
     if (result.success) {
       toast.success("Cuenta activada correctamente. Redirigiendo al sistema...");
       
-      // Aseguramos que la sesión cliente de Supabase esté sincronizada y lista
-      const { data, error } = await supabase.auth.getSession();
-      
-      if (data.session) {
-         // Recreamos el formato esperado por el hook useAuthRole temporal (compatibility layer)
+      // Realizamos un login automático con la nueva contraseña para asegurar la sesión
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: userEmail,
+        password: password
+      });
+
+      if (!signInError && signInData.session) {
+         // Recreamos el formato esperado por el hook useAuthRole
          const userPayload = {
-            email: data.session.user.email,
-            id: data.session.user.id,
-            access_token: data.session.access_token
+            email: signInData.session.user.email,
+            id: signInData.session.user.id,
+            access_token: signInData.session.access_token
          };
          localStorage.setItem('user', JSON.stringify(userPayload));
       }
