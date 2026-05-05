@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, User, Bell, ChevronLeft, ChevronRight, CheckCircle2, Clock, PanelLeftClose } from 'lucide-react';
-import { NotificationsPopover } from '@/components/NotificationsPopover';
+import { Search, ChevronLeft, ChevronRight, CheckCircle2, Clock, PanelLeftClose } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
