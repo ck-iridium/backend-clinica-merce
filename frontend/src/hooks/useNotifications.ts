@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
+
 import { supabase } from '@/lib/supabase';
 import type { Notification } from '@/types/notification.types';
 import { formatRelativeTime } from '@/types/notification.types';
@@ -66,43 +68,47 @@ export function useNotifications() {
     fetchNotifications(userId).finally(() => setLoading(false));
 
     // ─── Canal Realtime ────────────────────────────────────────────────────
-    // Añadimos un timestamp para que cada suscripción sea única y evitar errores
-    // si el useEffect se re-ejecuta (ej. React Strict Mode).
+    // Encadenamos .on() ANTES de .subscribe() estrictamente para evitar race conditions
     const channel = supabase
-      .channel(`notifications:user:${userId}:${Date.now()}`)
+      .channel(`notifications-${userId}`)
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*', // Escuchamos todos los cambios (INSERT/UPDATE) en un solo bloque
           schema: 'public',
           table: 'notifications',
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
-          // Añadir la nueva notificación al principio de la lista
-          const newNotif = enrichNotification(payload.new as Record<string, unknown>);
-          setNotifications((prev) => [newNotif, ...prev]);
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${userId}`,
-        },
-        (payload) => {
-          // Actualizar la notificación modificada en la lista
-          const updated = enrichNotification(payload.new as Record<string, unknown>);
-          setNotifications((prev) =>
-            prev.map((n) => (n.id === updated.id ? updated : n))
-          );
+          if (payload.eventType === 'INSERT') {
+            const newNotif = enrichNotification(payload.new as Record<string, unknown>);
+            setNotifications((prev) => [newNotif, ...prev]);
+
+            // ─── Toast de notificación en tiempo real ──────────────────────
+            // richColors está activo en el Toaster, así que cada método
+            // aplica su color automáticamente (verde, rojo, amarillo, etc.)
+            const toastOptions = {
+              description: newNotif.description,
+              duration: 5000,
+            };
+            switch (newNotif.type) {
+              case 'success': toast.success(newNotif.title, toastOptions); break;
+              case 'warning': toast.warning(newNotif.title, toastOptions); break;
+              case 'error':   toast.error(newNotif.title, toastOptions);   break;
+              default:        toast.info(newNotif.title, toastOptions);    break;
+            }
+
+          } else if (payload.eventType === 'UPDATE') {
+            const updated = enrichNotification(payload.new as Record<string, unknown>);
+            setNotifications((prev) =>
+              prev.map((n) => (n.id === updated.id ? updated : n))
+            );
+          }
         }
       )
       .subscribe();
 
-    // Limpieza: eliminar la suscripción al desmontar el componente
+    // Cleanup: eliminar el canal al desmontar o cambiar de usuario
     return () => {
       supabase.removeChannel(channel);
     };
