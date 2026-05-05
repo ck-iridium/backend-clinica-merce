@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 
 import { supabase } from '@/lib/supabase';
@@ -37,6 +37,18 @@ export function useNotifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    // Inicializar el audio solo en el cliente (SSR-safe).
+    // El archivo debe estar en: frontend/public/sounds/notification.mp3
+    const audio = new Audio('/sounds/notification.mp3');
+    audio.volume = 0.4; // Volumen al 40%, sutil y no intrusivo
+    audio.load();       // Precarga en memoria para evitar latencia en el primer play()
+    audioRef.current = audio;
+  }, []);
+
 
   // Obtener el userId del localStorage al montar
   useEffect(() => {
@@ -96,6 +108,16 @@ export function useNotifications() {
               case 'warning': toast.warning(newNotif.title, toastOptions); break;
               case 'error':   toast.error(newNotif.title, toastOptions);   break;
               default:        toast.info(newNotif.title, toastOptions);    break;
+            }
+
+            // ─── Sonido de notificación ──────────────────────────────────────
+            // try/catch obligatorio: el navegador bloquea autoplay si el
+            // usuario no ha interactuado con la página todavía.
+            if (audioRef.current) {
+              audioRef.current.currentTime = 0; // Reiniciar si ya sonó antes
+              audioRef.current.play().catch(() => {
+                // Bloqueado por política de autoplay — se ignora silenciosamente
+              });
             }
 
           } else if (payload.eventType === 'UPDATE') {
