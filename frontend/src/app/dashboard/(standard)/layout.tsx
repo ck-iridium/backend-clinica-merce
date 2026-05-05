@@ -22,7 +22,7 @@ export default async function StandardLayout({ children }: { children: React.Rea
   return (
     <>
     <div className="min-h-screen bg-[#FAFAFA]">
-      <div className="pt-24 pb-28 md:pt-4 md:pb-8 px-4 md:px-8 max-w-[1400px] mx-auto z-10 relative space-y-6 w-full">
+      <div className="pt-8 pb-28 md:pt-4 md:pb-8 px-4 md:px-8 max-w-[1400px] mx-auto z-10 relative space-y-6 w-full">
         {children}
       </div>
       <MobileBottomBar />

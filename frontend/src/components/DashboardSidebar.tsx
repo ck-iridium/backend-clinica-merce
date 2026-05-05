@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  Menu, X, LayoutDashboard, Users, Sparkles,
+  LayoutDashboard, Users, Sparkles,
   Ticket, Receipt, CalendarDays, Settings,
   Database, Image as ImageIcon, Globe, Tag,
   ShieldCheck, User, LogOut, Search, ChevronRight,
@@ -54,8 +54,6 @@ export const navLinks = [
 export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSidebarProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isDesktopExpanded, setIsDesktopExpanded] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
   const pathname = usePathname();
   const router = useRouter();
   const { role, userName: authUserName, loading } = useAuthRole();
@@ -81,20 +79,6 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
   }, []);
 
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      // Ocultar si hacemos scroll hacia abajo y hemos pasado los primeros 50px
-      if (currentScrollY > lastScrollY && currentScrollY > 50) {
-        setIsVisible(false);
-      } else { // Mostrar si hacemos scroll hacia arriba
-        setIsVisible(true);
-      }
-      setLastScrollY(currentScrollY);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -318,20 +302,6 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
 
   return (
     <>
-      {/* ─── Mobile Topbar (Condicionalmente oculto en agenda) ─── */}
-      <div className={`md:hidden fixed top-0 left-0 w-full z-50 flex items-center justify-between px-6 py-6 bg-transparent transition-transform duration-300 ease-in-out pointer-events-none ${isVisible ? 'translate-y-0' : '-translate-y-full'} ${pathname === '/dashboard/calendar' ? 'hidden' : 'flex'}`}>
-        <div className="pointer-events-auto shrink-0">
-          <div className="w-12 h-12 rounded-[1.25rem] bg-stone-950 flex items-center justify-center text-white font-serif italic text-2xl shadow-xl shadow-stone-900/10 border border-white/10 transition-transform active:scale-90">
-            {logoUrl ? <img src={logoUrl} alt="Logo" className="w-full h-full object-cover rounded-[1.25rem]" /> : clinicName.charAt(0)}
-          </div>
-        </div>
-
-        <div id="mobile-topbar-center" className="flex-1 flex justify-center items-center pointer-events-auto px-2"></div>
-
-        <div className="pointer-events-auto shrink-0 invisible w-12">
-          {/* Perfil movido al DashboardSidebar bottom por directriz de diseño */}
-        </div>
-      </div>
 
       {/* ─── Desktop Sidebar (SaaS Deep Dark Style) ─── */}
       <aside className="hidden md:block sticky top-0 h-screen z-[100] print:hidden shrink-0">
