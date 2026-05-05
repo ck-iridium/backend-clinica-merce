@@ -133,6 +133,9 @@ export function useNotifications() {
             const toastOptions = {
               description: newNotif.description,
               duration: 5000,
+              // Forzamos un texto más grande y legible en el Toast
+              className: 'text-base font-semibold',
+              descriptionClassName: 'text-sm font-medium mt-1 opacity-90',
             };
             switch (newNotif.type) {
               case 'success': toast.success(newNotif.title, toastOptions); break;

@@ -119,16 +119,16 @@ function NotificationList({
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
-                  <span className={`text-sm font-bold leading-snug transition-colors ${
+                  <span className={`text-base font-bold leading-snug transition-colors ${
                     n.read ? 'text-stone-400' : 'text-white'
                   }`}>
                     {n.title}
                   </span>
-                  <span className="text-[10px] font-bold text-stone-600 uppercase tracking-tighter whitespace-nowrap shrink-0 mt-0.5">
+                  <span className="text-xs font-bold text-stone-600 uppercase tracking-tighter whitespace-nowrap shrink-0 mt-1">
                     {n.time}
                   </span>
                 </div>
-                <p className="text-xs text-stone-500 font-medium leading-snug mt-0.5">
+                <p className="text-sm text-stone-400 font-medium leading-relaxed mt-1">
                   {n.description}
                 </p>
               </div>
