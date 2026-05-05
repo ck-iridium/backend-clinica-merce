@@ -6,8 +6,11 @@ import {
   Menu, X, LayoutDashboard, Users, Sparkles,
   Ticket, Receipt, CalendarDays, Settings,
   Database, Image as ImageIcon, Globe, Tag,
-  ShieldCheck, User, LogOut
+  ShieldCheck, User, LogOut, Search, ChevronRight,
+  MoreHorizontal
 } from 'lucide-react';
+import { GlobalSearch } from './GlobalSearch';
+import { NotificationsPopover } from './NotificationsPopover';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,6 +59,19 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
   const pathname = usePathname();
   const router = useRouter();
   const { role, loading } = useAuthRole();
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  // Keyboard shortcut for search (Ctrl+K)
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setSearchOpen((o) => !o);
+      }
+    };
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
 
 
   useEffect(() => {
@@ -131,9 +147,13 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
       return false; // Por defecto no ve nada si no hay rol o es desconocido
     });
 
+    const advancedHrefs = ['/dashboard/team', '/dashboard/services', '/dashboard/vouchers', '/dashboard/invoices'];
+    const mainLinks = filteredLinks.filter(link => !advancedHrefs.includes(link.href));
+    const advancedLinks = filteredLinks.filter(link => advancedHrefs.includes(link.href));
+
     return (
       <div className="flex flex-col gap-2 w-full relative z-10 px-3">
-        {filteredLinks.map((link, idx) => {
+        {mainLinks.map((link) => {
           const active = isActive(link.href, link.exact);
           const Icon = link.icon;
 
@@ -174,6 +194,46 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
             </Link>
           );
         })}
+
+        {/* Gestión Avanzada Flyout */}
+        {advancedLinks.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className={`group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 ${advancedLinks.some(l => isActive(l.href)) ? 'bg-stone-800 text-white shadow-lg' : 'text-stone-500 hover:bg-stone-900 hover:text-white'}`}>
+                <div className="flex-shrink-0 flex items-center justify-center">
+                  <MoreHorizontal size={22} strokeWidth={1.5} />
+                </div>
+                <span className="absolute left-full top-1/2 -translate-y-1/2 ml-5 px-4 py-2 bg-stone-800 text-white text-[12px] font-black uppercase tracking-[0.15em] rounded-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-300 whitespace-nowrap z-[110] shadow-2xl border border-stone-700 translate-x-[-15px] group-hover/item:translate-x-0 pointer-events-none">
+                  Gestión Avanzada
+                </span>
+                {advancedLinks.some(l => isActive(l.href)) && (
+                   <div className="absolute -left-1 w-1 h-6 bg-white rounded-r-full shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
+                )}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" side="right" className="w-56 ml-4 rounded-[1.5rem] bg-stone-900 border-stone-800 text-white shadow-2xl p-2 animate-in slide-in-from-left-2 duration-200">
+              <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-stone-500 px-4 py-3">
+                Gestión Avanzada
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-stone-800" />
+              {advancedLinks.map((link) => {
+                const Icon = link.icon;
+                const active = isActive(link.href);
+                return (
+                  <DropdownMenuItem
+                    key={link.href}
+                    onClick={() => router.push(link.href)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer ${active ? 'bg-stone-800 text-white' : 'text-stone-400'}`}
+                  >
+                    <Icon size={18} strokeWidth={active ? 2.5 : 1.5} />
+                    <span className="font-bold text-sm">{link.label}</span>
+                    {active && <div className="ml-auto w-1.5 h-1.5 bg-white rounded-full"></div>}
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
     );
   };
@@ -208,12 +268,30 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
             </div>
           </div>
 
-          <div className="flex-1 overflow-visible">
+          <div className="flex-1 overflow-visible flex flex-col">
+            {/* Search Trigger Slot */}
+            <div className="px-3 mb-6">
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="w-full group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 text-stone-500 hover:bg-stone-900 hover:text-white border border-transparent hover:border-stone-800"
+              >
+                <Search size={22} strokeWidth={1.5} />
+                <span className="absolute left-full top-1/2 -translate-y-1/2 ml-5 px-4 py-2 bg-stone-800 text-white text-[12px] font-black uppercase tracking-[0.15em] rounded-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-300 whitespace-nowrap z-[110] shadow-2xl border border-stone-700 translate-x-[-15px] group-hover/item:translate-x-0 pointer-events-none">
+                  Buscar (Ctrl K)
+                </span>
+              </button>
+            </div>
+
             <NavItems />
           </div>
 
-          {/* User Section Bottom */}
-          <div className="px-3 mt-auto pt-4 border-t border-stone-900/50">
+          {/* Utilities & User Section Bottom */}
+          <div className="px-3 mt-auto pt-4 border-t border-stone-900/50 space-y-2">
+            {/* Notifications Slot */}
+            <div className="flex justify-center">
+              <NotificationsPopover />
+            </div>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="w-full flex items-center justify-center p-3 rounded-2xl text-stone-500 hover:bg-stone-900 hover:text-white transition-all outline-none">
@@ -238,6 +316,8 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
           </div>
         </div>
       </aside>
+
+      <GlobalSearch open={searchOpen} setOpen={setSearchOpen} />
     </>
   );
 }
