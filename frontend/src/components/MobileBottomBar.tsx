@@ -19,6 +19,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuPortal,
 } from '@/components/ui/dropdown-menu';
 import { useAuthRole } from '@/hooks/useAuthRole';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -35,6 +36,7 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [menuLevel, setMenuLevel] = useState<MenuLevel>('main');
   const [direction, setDirection] = useState(1);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const { role, userName: authUserName, loading } = useAuthRole();
@@ -327,9 +329,9 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
               </AnimatePresence>
             </div>
 
-            {/* SECCIÓN USUARIO FIJA (Bottom) con Dropdown */}
-            <div className="mt-auto border-t border-stone-800 bg-stone-950 shadow-[0_-10_20px_rgba(0,0,0,0.2)] relative z-[80] shrink-0">
-              <DropdownMenu>
+            {/* SECCIÓN USUARIO FIJA (Bottom) con Dropdown Animado */}
+            <div className="mt-auto border-t border-stone-800 bg-stone-950 shadow-[0_-10px_20px_rgba(0,0,0,0.2)] relative z-[80] shrink-0">
+              <DropdownMenu open={isUserMenuOpen} onOpenChange={setIsUserMenuOpen} modal={false}>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center justify-between w-full px-5 py-5 group outline-none hover:bg-stone-900/50 active:bg-stone-900 transition-all duration-200">
                     <div className="flex items-center gap-3 overflow-hidden">
@@ -341,28 +343,43 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
                         <span className="text-stone-500 text-[10px] font-black uppercase tracking-widest truncate">{role || 'Personal'}</span>
                       </div>
                     </div>
-                    <ChevronUp size={18} className="text-stone-600 group-hover:text-stone-400 group-data-[state=open]:rotate-180 transition-all duration-300" />
+                    <ChevronUp size={18} className={`text-stone-600 transition-all duration-300 ${isUserMenuOpen ? 'rotate-180 text-white' : 'group-hover:text-stone-400'}`} />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent 
-                  align="center" 
-                  side="top" 
-                  sideOffset={10}
-                  className="w-[calc(85vw-20px)] max-w-[280px] z-[100] rounded-2xl bg-stone-900 border-stone-800 text-white shadow-2xl p-2 animate-in slide-in-from-bottom-2 duration-300"
-                >
-                  <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-stone-500 px-4 py-3">
-                    Gestión de Cuenta
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-stone-800 mx-2" />
-                  <DropdownMenuItem onClick={() => router.push('/dashboard/profile')} className="flex items-center gap-3 px-4 py-3.5 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer transition-colors">
-                    <User size={18} strokeWidth={1.5} className="text-stone-400" />
-                    <span className="font-bold text-sm">Mi Perfil</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-rose-400 focus:bg-rose-950 focus:text-rose-300 cursor-pointer transition-colors">
-                    <LogOut size={18} strokeWidth={1.5} />
-                    <span className="font-bold text-sm">Cerrar Sesión</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
+                
+                <AnimatePresence>
+                  {isUserMenuOpen && (
+                    <DropdownMenuPortal forceMount>
+                      <DropdownMenuContent 
+                        asChild
+                        align="center" 
+                        side="top" 
+                        sideOffset={15}
+                        className="w-[calc(85vw-20px)] max-w-[280px] z-[9999] rounded-2xl bg-stone-900 border-stone-800 text-white shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-2 border outline-none"
+                      >
+                        <motion.div
+                          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                        >
+                          <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-stone-500 px-4 py-3">
+                            Gestión de Cuenta
+                          </DropdownMenuLabel>
+                          <DropdownMenuSeparator className="bg-stone-800 mx-2" />
+                          <DropdownMenuItem onClick={() => { setIsUserMenuOpen(false); router.push('/dashboard/profile'); }} className="flex items-center gap-3 px-4 py-3.5 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer transition-colors">
+                            <User size={18} strokeWidth={1.5} className="text-stone-400" />
+                            <span className="font-bold text-sm">Mi Perfil</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => { setIsUserMenuOpen(false); handleLogout(); }} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-rose-400 focus:bg-rose-950 focus:text-rose-300 cursor-pointer transition-colors">
+                            <LogOut size={18} strokeWidth={1.5} />
+                            <span className="font-bold text-sm">Cerrar Sesión</span>
+                          </DropdownMenuItem>
+                        </motion.div>
+                      </DropdownMenuContent>
+                    </DropdownMenuPortal>
+                  )}
+                </AnimatePresence>
               </DropdownMenu>
             </div>
 
