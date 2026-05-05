@@ -111,8 +111,11 @@ export function useNotifications() {
     fetchNotifications(userId).finally(() => setLoading(false));
 
     // ─── Canal Realtime ────────────────────────────────────────────────────
+    // Generamos un nombre de canal único por cada ejecución del useEffect
+    // para evitar colisiones si React Strict Mode monta/desmonta rápidamente.
+    const channelName = `notifications-${userId}-${Math.random().toString(36).slice(2, 9)}`;
     const channel = supabase
-      .channel(`notifications-${userId}`)
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
