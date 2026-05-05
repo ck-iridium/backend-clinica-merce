@@ -66,8 +66,10 @@ export function useNotifications() {
     fetchNotifications(userId).finally(() => setLoading(false));
 
     // ─── Canal Realtime ────────────────────────────────────────────────────
+    // Añadimos un timestamp para que cada suscripción sea única y evitar errores
+    // si el useEffect se re-ejecuta (ej. React Strict Mode).
     const channel = supabase
-      .channel(`notifications:user:${userId}`)
+      .channel(`notifications:user:${userId}:${Date.now()}`)
       .on(
         'postgres_changes',
         {
