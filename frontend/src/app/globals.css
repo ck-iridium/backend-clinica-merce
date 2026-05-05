@@ -88,3 +88,19 @@
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.4);
 }
+
+@layer utilities {
+  .dark-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .dark-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .dark-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #44403c; /* stone-700 */
+    border-radius: 10px;
+  }
+  .dark-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #57534e; /* stone-600 */
+  }
+}

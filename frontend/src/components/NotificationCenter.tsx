@@ -17,25 +17,6 @@ import type { Notification, NotificationCenterProps } from '@/types/notification
 import { NOTIFICATION_COLORS } from '@/types/notification.types';
 import { mockNotifications, getUnreadCount } from '@/mocks/notification.mocks';
 
-// ─── Sub-componente: Trigger (La Campana) ────────────────────────────────────
-function BellTrigger({ unreadCount, isMobile }: { unreadCount: number; isMobile: boolean }) {
-  return (
-    <button
-      className={
-        isMobile
-          ? 'relative p-2 text-stone-500 hover:text-stone-800 transition-colors'
-          : 'relative w-full flex items-center justify-center p-3.5 rounded-2xl text-stone-500 hover:bg-stone-900 hover:text-white transition-all duration-200 outline-none'
-      }
-      aria-label="Abrir notificaciones"
-    >
-      <Bell size={22} strokeWidth={1.5} />
-      {unreadCount > 0 && (
-        <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 border-2 border-stone-950 animate-pulse" />
-      )}
-    </button>
-  );
-}
-
 // ─── Sub-componente: Cabecera del Panel ──────────────────────────────────────
 function NotificationHeader({ unreadCount }: { unreadCount: number }) {
   return (
@@ -64,8 +45,8 @@ function NotificationList({
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
-      {/* Items */}
-      <div className="flex-1 overflow-y-auto divide-y divide-stone-800/50 custom-scrollbar">
+      {/* Items — dark-scrollbar para coherencia con el tema oscuro */}
+      <div className="flex-1 overflow-y-auto divide-y divide-stone-800/50 dark-scrollbar">
         {notifications.map((n) => {
           const Icon = n.icon;
           const colorClasses = NOTIFICATION_COLORS[n.type];
@@ -77,23 +58,15 @@ function NotificationList({
                 !n.read ? 'border-l-2 border-rose-500' : 'border-l-2 border-transparent'
               }`}
             >
-              {/* Icono con color según tipo */}
               {Icon && (
-                <div
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${colorClasses}`}
-                >
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${colorClasses}`}>
                   <Icon size={16} strokeWidth={1.75} />
                 </div>
               )}
 
-              {/* Contenido */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
-                  <span
-                    className={`text-sm font-bold leading-snug ${
-                      n.read ? 'text-stone-400' : 'text-white'
-                    }`}
-                  >
+                  <span className={`text-sm font-bold leading-snug ${n.read ? 'text-stone-400' : 'text-white'}`}>
                     {n.title}
                   </span>
                   <span className="text-[10px] font-bold text-stone-600 uppercase tracking-tighter whitespace-nowrap shrink-0 mt-0.5">
@@ -109,7 +82,7 @@ function NotificationList({
         })}
       </div>
 
-      {/* Footer: Marcar como leídas */}
+      {/* Footer: Marcar como leídas — solo visible si hay no leídas */}
       {unreadCount > 0 && (
         <div className="px-4 py-3.5 border-t border-stone-800 shrink-0">
           <button
@@ -133,14 +106,30 @@ export function NotificationCenter({ isMobile }: NotificationCenterProps) {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
+  // Trigger INLINE: Accede directamente al estado del componente padre,
+  // garantizando que el badge se actualice cuando unreadCount cambie.
+  const bellButton = (
+    <button
+      className={
+        isMobile
+          ? 'relative p-2 text-stone-500 hover:text-stone-800 transition-colors'
+          : 'relative w-full flex items-center justify-center p-3.5 rounded-2xl text-stone-500 hover:bg-stone-900 hover:text-white transition-all duration-200 outline-none'
+      }
+      aria-label="Abrir notificaciones"
+    >
+      <Bell size={22} strokeWidth={1.5} />
+      {unreadCount > 0 && (
+        <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 border-2 border-stone-950 animate-pulse" />
+      )}
+    </button>
+  );
+
   // ── RAMA DESKTOP: Popover anclado a la derecha ───────────────────────────
   if (!isMobile) {
     return (
       <Popover>
         <PopoverTrigger asChild>
-          <span>
-            <BellTrigger unreadCount={unreadCount} isMobile={false} />
-          </span>
+          <span>{bellButton}</span>
         </PopoverTrigger>
         <PopoverContent
           side="right"
@@ -159,9 +148,7 @@ export function NotificationCenter({ isMobile }: NotificationCenterProps) {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <span>
-          <BellTrigger unreadCount={unreadCount} isMobile={true} />
-        </span>
+        <span>{bellButton}</span>
       </SheetTrigger>
       <SheetContent
         side="bottom"
