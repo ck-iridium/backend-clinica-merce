@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 
@@ -38,17 +40,46 @@ export function useNotifications() {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
 
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  // Ref para el pool de sonidos categorizados (positive, alert, neutral)
+  const soundsRef = useRef<Record<string, HTMLAudioElement>>({});
 
   useEffect(() => {
-    // Inicializar el audio solo en el cliente (SSR-safe).
-    // El archivo debe estar en: frontend/public/sounds/notification.mp3
-    const audio = new Audio('/sounds/notification.mp3');
-    audio.volume = 0.4; // Volumen al 40%, sutil y no intrusivo
-    audio.load();       // Precarga en memoria para evitar latencia en el primer play()
-    audioRef.current = audio;
+    if (typeof window === 'undefined') return;
+
+    // Inicializamos el mapa de sonidos apuntando a public/sounds/ (.wav)
+    const audioPool = {
+      positive: new Audio('/sounds/positive.wav'),
+      alert:    new Audio('/sounds/alert.wav'),
+      neutral:  new Audio('/sounds/neutral.wav'),
+    };
+
+    // Configuración común y precarga para evitar latencia
+    Object.values(audioPool).forEach(audio => {
+      audio.volume = 0.4;
+      audio.load();
+    });
+
+    soundsRef.current = audioPool;
   }, []);
 
+  // Función interna para reproducir el sonido según el tipo
+  const playNotificationSound = useCallback((type: Notification['type']) => {
+    const pool = soundsRef.current;
+    let audio: HTMLAudioElement | undefined;
+
+    switch (type) {
+      case 'success': audio = pool.positive; break;
+      case 'error':   audio = pool.alert;    break;
+      default:        audio = pool.neutral;  break; // info y warning usan el neutral
+    }
+
+    if (audio) {
+      audio.currentTime = 0;
+      audio.play().catch(() => {
+        // Bloqueado por política de autoplay del navegador - se ignora silenciosamente
+      });
+    }
+  }, []);
 
   // Obtener el userId del localStorage al montar
   useEffect(() => {
@@ -80,13 +111,12 @@ export function useNotifications() {
     fetchNotifications(userId).finally(() => setLoading(false));
 
     // ─── Canal Realtime ────────────────────────────────────────────────────
-    // Encadenamos .on() ANTES de .subscribe() estrictamente para evitar race conditions
     const channel = supabase
       .channel(`notifications-${userId}`)
       .on(
         'postgres_changes',
         {
-          event: '*', // Escuchamos todos los cambios (INSERT/UPDATE) en un solo bloque
+          event: '*', // Escuchamos INSERT y UPDATE
           schema: 'public',
           table: 'notifications',
           filter: `user_id=eq.${userId}`,
@@ -97,8 +127,6 @@ export function useNotifications() {
             setNotifications((prev) => [newNotif, ...prev]);
 
             // ─── Toast de notificación en tiempo real ──────────────────────
-            // richColors está activo en el Toaster, así que cada método
-            // aplica su color automáticamente (verde, rojo, amarillo, etc.)
             const toastOptions = {
               description: newNotif.description,
               duration: 5000,
@@ -110,15 +138,8 @@ export function useNotifications() {
               default:        toast.info(newNotif.title, toastOptions);    break;
             }
 
-            // ─── Sonido de notificación ──────────────────────────────────────
-            // try/catch obligatorio: el navegador bloquea autoplay si el
-            // usuario no ha interactuado con la página todavía.
-            if (audioRef.current) {
-              audioRef.current.currentTime = 0; // Reiniciar si ya sonó antes
-              audioRef.current.play().catch(() => {
-                // Bloqueado por política de autoplay — se ignora silenciosamente
-              });
-            }
+            // ─── Sonido de notificación categorizado ─────────────────────────
+            playNotificationSound(newNotif.type);
 
           } else if (payload.eventType === 'UPDATE') {
             const updated = enrichNotification(payload.new as Record<string, unknown>);
@@ -130,17 +151,15 @@ export function useNotifications() {
       )
       .subscribe();
 
-    // Cleanup: eliminar el canal al desmontar o cambiar de usuario
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId, fetchNotifications]);
+  }, [userId, fetchNotifications, playNotificationSound]);
 
   // ─── Acción: Marcar todas como leídas ────────────────────────────────────
   const markAllAsRead = useCallback(async () => {
     if (!userId) return;
 
-    // Optimistic update: actualizar la UI inmediatamente sin esperar a la DB
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
 
     const { error } = await supabase
@@ -151,12 +170,10 @@ export function useNotifications() {
 
     if (error) {
       console.error('useNotifications: Error al marcar como leídas:', error.message);
-      // Revertir en caso de error refetcheando
       fetchNotifications(userId);
     }
   }, [userId, fetchNotifications]);
 
-  // ─── Helper: Contar no leídas ─────────────────────────────────────────────
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return { notifications, loading, unreadCount, markAllAsRead };
