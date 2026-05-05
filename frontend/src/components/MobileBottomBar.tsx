@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Search, Plus, Bell, Menu, ChevronRight, ChevronLeft, LogOut, User, LayoutDashboard, Users, Sparkles, Ticket, Receipt, CalendarDays, Settings, Database, Image as ImageIcon, Globe, Tag, ShieldCheck, Briefcase, FileText } from 'lucide-react';
+import { Home, Search, Plus, Bell, Menu, ChevronRight, ChevronLeft, ChevronUp, LogOut, User, LayoutDashboard, Users, Sparkles, Ticket, Receipt, CalendarDays, Settings, Database, Image as ImageIcon, Globe, Tag, ShieldCheck, Briefcase, FileText, MoreHorizontal } from 'lucide-react';
 import { GlobalSearch } from './GlobalSearch';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -12,6 +12,14 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useAuthRole } from '@/hooks/useAuthRole';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -106,8 +114,8 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
 
     // Recepción ve Facturas, POS y Bonos como directos (porque no tiene submenús)
     if (currentRole === 'recepción' || currentRole === 'recepcion') {
-       const allowed = ['/dashboard', '/dashboard/calendar', '/dashboard/clients', '/dashboard/invoices', '/dashboard/pos', '/dashboard/vouchers'];
-       return allowed.includes(item.href || '');
+      const allowed = ['/dashboard', '/dashboard/calendar', '/dashboard/clients', '/dashboard/invoices', '/dashboard/pos', '/dashboard/vouchers'];
+      return allowed.includes(item.href || '');
     }
 
     // Administrador: Ve Facturas como directo (igual que en desktop).
@@ -319,27 +327,43 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
               </AnimatePresence>
             </div>
 
-            {/* SECCIÓN USUARIO FIJA (Bottom) */}
-            <div className="mt-auto px-5 py-4 border-t border-stone-800 bg-stone-950 flex shadow-[0_-10px_20px_rgba(0,0,0,0.2)] relative z-20 shrink-0">
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-3 overflow-hidden">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#d9777f] to-[#b35e65] text-white flex items-center justify-center font-bold text-lg shadow-lg shrink-0 overflow-hidden">
-                    {/* Sustituir por avatarUrl si existe */}
-                    <User size={20} />
-                  </div>
-                  <div className="flex flex-col overflow-hidden">
-                    <span className="text-white font-bold text-sm leading-tight truncate">{userName || 'Usuario'}</span>
-                    <span className="text-stone-500 text-[10px] font-black uppercase tracking-widest truncate">{role || 'Personal'}</span>
-                  </div>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="p-2.5 rounded-xl text-rose-400/80 hover:bg-rose-500/10 hover:text-rose-400 transition-colors shrink-0 ml-2"
-                  title="Cerrar sesión"
+            {/* SECCIÓN USUARIO FIJA (Bottom) con Dropdown */}
+            <div className="mt-auto border-t border-stone-800 bg-stone-950 shadow-[0_-10_20px_rgba(0,0,0,0.2)] relative z-[80] shrink-0">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center justify-between w-full px-5 py-5 group outline-none hover:bg-stone-900/50 active:bg-stone-900 transition-all duration-200">
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#d9777f] to-[#b35e65] text-white flex items-center justify-center font-bold text-lg shadow-lg shrink-0 overflow-hidden group-active:scale-95 transition-transform">
+                        <User size={20} />
+                      </div>
+                      <div className="flex flex-col text-left overflow-hidden">
+                        <span className="text-white font-bold text-sm leading-tight truncate">{userName || 'Usuario'}</span>
+                        <span className="text-stone-500 text-[10px] font-black uppercase tracking-widest truncate">{role || 'Personal'}</span>
+                      </div>
+                    </div>
+                    <ChevronUp size={18} className="text-stone-600 group-hover:text-stone-400 group-data-[state=open]:rotate-180 transition-all duration-300" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent 
+                  align="center" 
+                  side="top" 
+                  sideOffset={10}
+                  className="w-[calc(85vw-20px)] max-w-[280px] z-[100] rounded-2xl bg-stone-900 border-stone-800 text-white shadow-2xl p-2 animate-in slide-in-from-bottom-2 duration-300"
                 >
-                  <LogOut size={20} strokeWidth={2} />
-                </button>
-              </div>
+                  <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-stone-500 px-4 py-3">
+                    Gestión de Cuenta
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-stone-800 mx-2" />
+                  <DropdownMenuItem onClick={() => router.push('/dashboard/profile')} className="flex items-center gap-3 px-4 py-3.5 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer transition-colors">
+                    <User size={18} strokeWidth={1.5} className="text-stone-400" />
+                    <span className="font-bold text-sm">Mi Perfil</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-rose-400 focus:bg-rose-950 focus:text-rose-300 cursor-pointer transition-colors">
+                    <LogOut size={18} strokeWidth={1.5} />
+                    <span className="font-bold text-sm">Cerrar Sesión</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
           </SheetContent>

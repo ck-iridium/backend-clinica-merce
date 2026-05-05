@@ -132,12 +132,11 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
       );
     }
 
-    // Definición de grupos según la nueva directriz
     const currentRole = role?.toLowerCase();
-    const isAdmin = currentRole === 'administrador' || currentRole === 'admin';
     const isRecepcion = currentRole === 'recepción' || currentRole === 'recepcion';
+    const isAdmin = currentRole === 'administrador' || currentRole === 'admin';
 
-    // Definición de grupos dinámica según el rol
+    // Definición de grupos dinámica según el rol para evitar redundancias
     const directLinksHrefs = [
       '/dashboard/pos', 
       '/dashboard', 
