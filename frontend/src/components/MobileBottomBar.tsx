@@ -2,8 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Search, Plus, Bell, Menu, ChevronRight, ChevronLeft, ChevronUp, LogOut, User, LayoutDashboard, Users, Sparkles, Ticket, Receipt, CalendarDays, Settings, Database, Image as ImageIcon, Globe, Tag, ShieldCheck, Briefcase, FileText, MoreHorizontal } from 'lucide-react';
+import { Home, Search, Plus, Menu, ChevronRight, ChevronLeft, ChevronUp, LogOut, User, LayoutDashboard, Users, Sparkles, Ticket, Receipt, CalendarDays, Settings, Database, Image as ImageIcon, Globe, Tag, ShieldCheck, Briefcase, FileText, MoreHorizontal } from 'lucide-react';
 import { GlobalSearch } from './GlobalSearch';
+import { NotificationCenter } from './NotificationCenter';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Sheet,
@@ -257,9 +258,7 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
         </Link>
 
         {/* Notificaciones */}
-        <button className="p-2 text-stone-500 hover:text-stone-800 transition-colors">
-          <Bell size={24} strokeWidth={1.5} />
-        </button>
+        <NotificationCenter isMobile={true} />
 
         {/* Menú Hamburguesa que abre el Sheet Lateral */}
         <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>

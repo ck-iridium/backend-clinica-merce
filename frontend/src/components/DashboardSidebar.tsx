@@ -10,7 +10,7 @@ import {
   MoreHorizontal, Briefcase, FileText
 } from 'lucide-react';
 import { GlobalSearch } from './GlobalSearch';
-import { NotificationsPopover } from './NotificationsPopover';
+import { NotificationCenter } from './NotificationCenter';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -323,7 +323,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
           <div className="px-3 mt-auto pt-4 border-t border-stone-900/50 space-y-2">
             {/* Notifications Slot */}
             <div className="flex justify-center">
-              <NotificationsPopover />
+              <NotificationCenter isMobile={false} />
             </div>
 
             <DropdownMenu>
