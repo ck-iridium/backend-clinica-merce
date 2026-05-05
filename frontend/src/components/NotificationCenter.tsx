@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Bell } from 'lucide-react';
+import { Bell, X } from 'lucide-react';
 import {
   Popover,
   PopoverContent,
@@ -11,24 +11,41 @@ import {
   Sheet,
   SheetContent,
   SheetTitle,
-  SheetTrigger,
 } from '@/components/ui/sheet';
 import type { Notification, NotificationCenterProps } from '@/types/notification.types';
 import { NOTIFICATION_COLORS } from '@/types/notification.types';
 import { mockNotifications, getUnreadCount } from '@/mocks/notification.mocks';
 
 // ─── Sub-componente: Cabecera del Panel ──────────────────────────────────────
-function NotificationHeader({ unreadCount }: { unreadCount: number }) {
+function NotificationHeader({
+  unreadCount,
+  onClose,
+}: {
+  unreadCount: number;
+  onClose?: () => void;
+}) {
   return (
     <div className="px-5 py-4 border-b border-stone-800 flex items-center justify-between shrink-0">
       <h3 className="font-serif text-xl font-semibold text-white tracking-tight">
         Notificaciones
       </h3>
-      {unreadCount > 0 && (
-        <span className="text-[10px] font-black uppercase tracking-widest text-rose-400 bg-rose-950/50 px-2.5 py-1 rounded-full">
-          {unreadCount} sin leer
-        </span>
-      )}
+      <div className="flex items-center gap-2">
+        {unreadCount > 0 && (
+          <span className="text-[10px] font-black uppercase tracking-widest text-rose-400 bg-rose-950/50 px-2.5 py-1 rounded-full">
+            {unreadCount} sin leer
+          </span>
+        )}
+        {/* Botón X de cierre explícito (solo en móvil) */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-xl text-stone-500 hover:bg-stone-800 hover:text-white transition-all"
+            aria-label="Cerrar notificaciones"
+          >
+            <X size={18} strokeWidth={2} />
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -54,8 +71,8 @@ function NotificationList({
           return (
             <div
               key={n.id}
-              className={`flex items-start gap-3.5 px-4 py-4 transition-colors cursor-pointer hover:bg-stone-800/40 relative ${
-                !n.read ? 'border-l-2 border-rose-500' : 'border-l-2 border-transparent'
+              className={`flex items-start gap-3.5 px-4 py-4 transition-all cursor-pointer hover:bg-stone-800/40 border-l-2 ${
+                !n.read ? 'border-rose-500' : 'border-transparent'
               }`}
             >
               {Icon && (
@@ -63,10 +80,12 @@ function NotificationList({
                   <Icon size={16} strokeWidth={1.75} />
                 </div>
               )}
-
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
-                  <span className={`text-sm font-bold leading-snug ${n.read ? 'text-stone-400' : 'text-white'}`}>
+                  {/* El título cambia de color según n.read — reactivo al estado del padre */}
+                  <span className={`text-sm font-bold leading-snug transition-colors ${
+                    n.read ? 'text-stone-400' : 'text-white'
+                  }`}>
                     {n.title}
                   </span>
                   <span className="text-[10px] font-bold text-stone-600 uppercase tracking-tighter whitespace-nowrap shrink-0 mt-0.5">
@@ -82,7 +101,7 @@ function NotificationList({
         })}
       </div>
 
-      {/* Footer: Marcar como leídas — solo visible si hay no leídas */}
+      {/* Footer: Marcar como leídas */}
       {unreadCount > 0 && (
         <div className="px-4 py-3.5 border-t border-stone-800 shrink-0">
           <button
@@ -99,15 +118,21 @@ function NotificationList({
 
 // ─── Componente Principal: NotificationCenter ────────────────────────────────
 export function NotificationCenter({ isMobile }: NotificationCenterProps) {
-  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
+  // Estado de notificaciones: único origen de verdad para el contador y la lista
+  const [notifications, setNotifications] = useState<Notification[]>(() =>
+    mockNotifications.map((n) => ({ ...n }))
+  );
+  // Estado de apertura del Sheet (controlado manualmente para evitar que
+  // Shadcn desmonte el árbol y pierda el estado de notificaciones)
+  const [sheetOpen, setSheetOpen] = useState(false);
+
   const unreadCount = getUnreadCount(notifications);
 
   const markAllAsRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
-  // Trigger INLINE: Accede directamente al estado del componente padre,
-  // garantizando que el badge se actualice cuando unreadCount cambie.
+  // ── Trigger inline: accede al estado reactivo del componente padre ───────
   const bellButton = (
     <button
       className={
@@ -144,26 +169,34 @@ export function NotificationCenter({ isMobile }: NotificationCenterProps) {
     );
   }
 
-  // ── RAMA MÓVIL: Sheet emergente desde abajo ──────────────────────────────
+  // ── RAMA MÓVIL: Sheet con estado controlado + botón X explícito ──────────
   return (
-    <Sheet>
-      <SheetTrigger asChild>
-        <span>{bellButton}</span>
-      </SheetTrigger>
-      <SheetContent
-        side="bottom"
-        className="bg-stone-950 border-stone-800 text-white rounded-t-3xl max-h-[80vh] p-0 flex flex-col [&>button]:hidden z-[9999]"
-      >
-        <SheetTitle className="sr-only">Notificaciones</SheetTitle>
+    <>
+      {/* Trigger manual para evitar que SheetTrigger desmonte el componente */}
+      <span onClick={() => setSheetOpen(true)}>
+        {bellButton}
+      </span>
 
-        {/* Handle visual */}
-        <div className="flex justify-center pt-3 pb-1 shrink-0">
-          <div className="w-12 h-1.5 rounded-full bg-stone-700" />
-        </div>
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent
+          side="bottom"
+          className="bg-stone-950 border-stone-800 text-white rounded-t-3xl max-h-[80vh] p-0 flex flex-col [&>button]:hidden z-[9999]"
+        >
+          <SheetTitle className="sr-only">Notificaciones</SheetTitle>
 
-        <NotificationHeader unreadCount={unreadCount} />
-        <NotificationList notifications={notifications} onMarkAllRead={markAllAsRead} />
-      </SheetContent>
-    </Sheet>
+          {/* Handle visual */}
+          <div className="flex justify-center pt-3 pb-1 shrink-0">
+            <div className="w-12 h-1.5 rounded-full bg-stone-700" />
+          </div>
+
+          {/* Header con botón X de cierre explícito */}
+          <NotificationHeader
+            unreadCount={unreadCount}
+            onClose={() => setSheetOpen(false)}
+          />
+          <NotificationList notifications={notifications} onMarkAllRead={markAllAsRead} />
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }
