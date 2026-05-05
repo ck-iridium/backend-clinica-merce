@@ -12,9 +12,9 @@ import {
   SheetContent,
   SheetTitle,
 } from '@/components/ui/sheet';
-import type { Notification, NotificationCenterProps } from '@/types/notification.types';
+import type { NotificationCenterProps } from '@/types/notification.types';
 import { NOTIFICATION_COLORS } from '@/types/notification.types';
-import { mockNotifications, getUnreadCount } from '@/mocks/notification.mocks';
+import { useNotifications } from '@/hooks/useNotifications';
 
 // ─── Sub-componente: Cabecera del Panel ──────────────────────────────────────
 function NotificationHeader({
@@ -53,12 +53,37 @@ function NotificationHeader({
 // ─── Sub-componente: Lista de Notificaciones ─────────────────────────────────
 function NotificationList({
   notifications,
+  loading,
   onMarkAllRead,
 }: {
-  notifications: Notification[];
+  notifications: ReturnType<typeof useNotifications>['notifications'];
+  loading: boolean;
   onMarkAllRead: () => void;
 }) {
-  const unreadCount = getUnreadCount(notifications);
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center py-12">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 rounded-full border-2 border-stone-700 border-t-rose-400 animate-spin" />
+          <p className="text-xs text-stone-600 font-medium">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (notifications.length === 0) {
+    return (
+      <div className="flex-1 flex items-center justify-center py-12">
+        <div className="flex flex-col items-center gap-3 text-center px-6">
+          <Bell size={32} strokeWidth={1} className="text-stone-700" />
+          <p className="text-sm text-stone-500 font-medium">Sin notificaciones</p>
+          <p className="text-xs text-stone-700">Aquí aparecerán los avisos importantes de la clínica.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
@@ -80,9 +105,14 @@ function NotificationList({
                   <Icon size={16} strokeWidth={1.75} />
                 </div>
               )}
+              {/* Icono genérico si no hay LucideIcon (datos de Supabase) */}
+              {!Icon && (
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${colorClasses}`}>
+                  <Bell size={16} strokeWidth={1.75} />
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
-                  {/* El título cambia de color según n.read — reactivo al estado del padre */}
                   <span className={`text-sm font-bold leading-snug transition-colors ${
                     n.read ? 'text-stone-400' : 'text-white'
                   }`}>
@@ -118,19 +148,12 @@ function NotificationList({
 
 // ─── Componente Principal: NotificationCenter ────────────────────────────────
 export function NotificationCenter({ isMobile }: NotificationCenterProps) {
-  // Estado de notificaciones: único origen de verdad para el contador y la lista
-  const [notifications, setNotifications] = useState<Notification[]>(() =>
-    mockNotifications.map((n) => ({ ...n }))
-  );
-  // Estado de apertura del Sheet (controlado manualmente para evitar que
-  // Shadcn desmonte el árbol y pierda el estado de notificaciones)
+  // Fuente de datos real: Supabase + Realtime (sustituye a los mocks)
+  const { notifications, loading, unreadCount, markAllAsRead } = useNotifications();
+
+  // Estado de apertura del Sheet controlado manualmente para que Shadcn
+  // no desmonte el árbol y no pierda el estado de notificaciones
   const [sheetOpen, setSheetOpen] = useState(false);
-
-  const unreadCount = getUnreadCount(notifications);
-
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  };
 
   // ── Trigger inline: accede al estado reactivo del componente padre ───────
   const bellButton = (
@@ -163,7 +186,7 @@ export function NotificationCenter({ isMobile }: NotificationCenterProps) {
           className="w-[360px] p-0 rounded-2xl bg-stone-900 border-stone-800 text-white shadow-2xl overflow-hidden animate-in slide-in-from-left-2 duration-200 flex flex-col max-h-[480px]"
         >
           <NotificationHeader unreadCount={unreadCount} />
-          <NotificationList notifications={notifications} onMarkAllRead={markAllAsRead} />
+          <NotificationList notifications={notifications} loading={loading} onMarkAllRead={markAllAsRead} />
         </PopoverContent>
       </Popover>
     );
@@ -172,7 +195,6 @@ export function NotificationCenter({ isMobile }: NotificationCenterProps) {
   // ── RAMA MÓVIL: Sheet con estado controlado + botón X explícito ──────────
   return (
     <>
-      {/* Trigger manual para evitar que SheetTrigger desmonte el componente */}
       <span onClick={() => setSheetOpen(true)}>
         {bellButton}
       </span>
@@ -189,12 +211,11 @@ export function NotificationCenter({ isMobile }: NotificationCenterProps) {
             <div className="w-12 h-1.5 rounded-full bg-stone-700" />
           </div>
 
-          {/* Header con botón X de cierre explícito */}
           <NotificationHeader
             unreadCount={unreadCount}
             onClose={() => setSheetOpen(false)}
           />
-          <NotificationList notifications={notifications} onMarkAllRead={markAllAsRead} />
+          <NotificationList notifications={notifications} loading={loading} onMarkAllRead={markAllAsRead} />
         </SheetContent>
       </Sheet>
     </>
