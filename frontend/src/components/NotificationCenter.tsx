@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Bell, X } from 'lucide-react';
+
 import {
   Popover,
   PopoverContent,
@@ -55,11 +57,14 @@ function NotificationList({
   notifications,
   loading,
   onMarkAllRead,
+  onNotificationClick,
 }: {
   notifications: ReturnType<typeof useNotifications>['notifications'];
   loading: boolean;
   onMarkAllRead: () => void;
+  onNotificationClick: (n: ReturnType<typeof useNotifications>['notifications'][0]) => void;
 }) {
+
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   if (loading) {
@@ -96,6 +101,7 @@ function NotificationList({
           return (
             <div
               key={n.id}
+              onClick={() => onNotificationClick(n)}
               className={`flex items-start gap-3.5 px-4 py-4 transition-all cursor-pointer hover:bg-stone-800/40 border-l-2 ${
                 !n.read ? 'border-rose-500' : 'border-transparent'
               }`}
@@ -148,12 +154,32 @@ function NotificationList({
 
 // ─── Componente Principal: NotificationCenter ────────────────────────────────
 export function NotificationCenter({ isMobile }: NotificationCenterProps) {
-  // Fuente de datos real: Supabase + Realtime (sustituye a los mocks)
-  const { notifications, loading, unreadCount, markAllAsRead } = useNotifications();
+  const router = useRouter();
+  // Fuente de datos real: Supabase + Realtime
+  const { notifications, loading, unreadCount, markAllAsRead, markAsRead } = useNotifications();
 
-  // Estado de apertura del Sheet controlado manualmente para que Shadcn
-  // no desmonte el árbol y no pierda el estado de notificaciones
+  // Estados de apertura controlados manualmente para que el panel se cierre al hacer clic
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [popoverOpen, setPopoverOpen] = useState(false);
+
+  // ─── Manejador de Clic en Notificación ────────────────────────────────────
+  const handleNotificationClick = (n: ReturnType<typeof useNotifications>['notifications'][0]) => {
+    // 1. Marcar como leída si no lo estaba
+    if (!n.read) {
+      markAsRead(n.id);
+    }
+
+    // 2. Navegación basada en metadata
+    if (n.metadata?.date) {
+      // Redirigir al calendario en la fecha de la cita
+      router.push(`/dashboard/calendar?date=${n.metadata.date}`);
+    }
+
+    // 3. Cerrar el panel
+    setSheetOpen(false);
+    setPopoverOpen(false);
+  };
+
 
   // ── Trigger inline: accede al estado reactivo del componente padre ───────
   const bellButton = (
@@ -175,7 +201,7 @@ export function NotificationCenter({ isMobile }: NotificationCenterProps) {
   // ── RAMA DESKTOP: Popover anclado a la derecha ───────────────────────────
   if (!isMobile) {
     return (
-      <Popover>
+      <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
         <PopoverTrigger asChild>
           <span>{bellButton}</span>
         </PopoverTrigger>
@@ -186,7 +212,12 @@ export function NotificationCenter({ isMobile }: NotificationCenterProps) {
           className="w-[360px] p-0 rounded-2xl bg-stone-900 border-stone-800 text-white shadow-2xl overflow-hidden animate-in slide-in-from-left-2 duration-200 flex flex-col max-h-[480px]"
         >
           <NotificationHeader unreadCount={unreadCount} />
-          <NotificationList notifications={notifications} loading={loading} onMarkAllRead={markAllAsRead} />
+          <NotificationList 
+            notifications={notifications} 
+            loading={loading} 
+            onMarkAllRead={markAllAsRead} 
+            onNotificationClick={handleNotificationClick} 
+          />
         </PopoverContent>
       </Popover>
     );
@@ -215,7 +246,12 @@ export function NotificationCenter({ isMobile }: NotificationCenterProps) {
             unreadCount={unreadCount}
             onClose={() => setSheetOpen(false)}
           />
-          <NotificationList notifications={notifications} loading={loading} onMarkAllRead={markAllAsRead} />
+          <NotificationList 
+            notifications={notifications} 
+            loading={loading} 
+            onMarkAllRead={markAllAsRead} 
+            onNotificationClick={handleNotificationClick} 
+          />
         </SheetContent>
       </Sheet>
     </>

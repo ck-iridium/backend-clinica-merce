@@ -177,7 +177,25 @@ export function useNotifications() {
     }
   }, [userId, fetchNotifications]);
 
+  // ─── Acción: Marcar una como leída ───────────────────────────────────────
+  const markAsRead = useCallback(async (id: string) => {
+    if (!userId) return;
+
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+
+    const { error } = await supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('id', id)
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('useNotifications: Error al marcar notificación como leída:', error.message);
+      fetchNotifications(userId);
+    }
+  }, [userId, fetchNotifications]);
+
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  return { notifications, loading, unreadCount, markAllAsRead };
+  return { notifications, loading, unreadCount, markAllAsRead, markAsRead };
 }
