@@ -1,39 +1,55 @@
 import { useState, useEffect } from 'react';
-import { getUserRoleByEmail } from '@/app/actions/profile';
+import { getUserRoleByEmail, getUserProfile } from '@/app/actions/profile';
 
 export function useAuthRole() {
   const [role, setRole] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchRole = async () => {
+    const fetchAuthData = async () => {
       try {
         const userStr = localStorage.getItem('user');
         if (userStr) {
           const user = JSON.parse(userStr);
-          if (user.email) {
-            const result = await getUserRoleByEmail(user.email);
-            if (result.success && result.role) {
-              // Normalizamos a minúsculas para comparaciones seguras
-              setRole(result.role.toLowerCase());
-              return;
-            } else if (user.role) {
-              setRole(user.role.toLowerCase());
-              return;
+          
+          // 1. Intentar obtener el nombre del localStorage primero (caché rápida)
+          if (user.full_name || user.name) {
+             setUserName(user.full_name || user.name);
+          }
+
+          // 2. Obtener perfil completo de la DB para asegurar datos frescos (rol y nombre)
+          const profileRes = await getUserProfile(user.id);
+          
+          if (profileRes.success && profileRes.profile) {
+            const p = profileRes.profile;
+            const name = p.full_name || p.name || 'Usuario';
+            const r = p.role?.toLowerCase() || user.role?.toLowerCase() || null;
+            
+            setUserName(name);
+            setRole(r);
+
+            // 3. Sincronizar localStorage si el nombre ha cambiado o no existía
+            if (user.full_name !== name) {
+              localStorage.setItem('user', JSON.stringify({ ...user, full_name: name }));
             }
+            return;
+          } else if (user.role) {
+             // Fallback a los datos de la sesión si la DB falla
+             setRole(user.role.toLowerCase());
           }
         }
-        setRole(null); // No hay sesión o usuario
-      } catch (err) {
-        console.error("Error fetching user role:", err);
         setRole(null);
+        setUserName(null);
+      } catch (err) {
+        console.error("Error en useAuthRole:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchRole();
+    fetchAuthData();
   }, []);
 
-  return { role, loading };
+  return { role, userName, loading };
 }

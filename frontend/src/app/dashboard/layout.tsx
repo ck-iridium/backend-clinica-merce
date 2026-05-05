@@ -2,7 +2,6 @@ export const dynamic = 'force-dynamic';
 
 import DashboardSidebar from '@/components/DashboardSidebar';
 
-import DashboardHeader from '@/components/DashboardHeader';
 import { FeedbackProvider } from '@/app/contexts/FeedbackContext';
 import MobileBottomBar from '@/components/MobileBottomBar';
 import RouteGuard from '@/components/RouteGuard';

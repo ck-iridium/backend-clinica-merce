@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Search, Plus, Bell, Menu, ChevronRight, ChevronLeft, LogOut, User, LayoutDashboard, Users, Sparkles, Ticket, Receipt, CalendarDays, Settings, Database, Image as ImageIcon, Globe, Tag, ShieldCheck } from 'lucide-react';
+import { Home, Search, Plus, Bell, Menu, ChevronRight, ChevronLeft, LogOut, User, LayoutDashboard, Users, Sparkles, Ticket, Receipt, CalendarDays, Settings, Database, Image as ImageIcon, Globe, Tag, ShieldCheck, Briefcase, FileText } from 'lucide-react';
 import { GlobalSearch } from './GlobalSearch';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -29,7 +29,14 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
   const [direction, setDirection] = useState(1);
   const pathname = usePathname();
   const router = useRouter();
-  const { role, loading } = useAuthRole();
+  const { role, userName: authUserName, loading } = useAuthRole();
+  const [userName, setUserName] = useState<string>('');
+
+  useEffect(() => {
+    if (authUserName) {
+      setUserName(authUserName);
+    }
+  }, [authUserName]);
 
 
   // Reiniciar el nivel de menú al cerrar
@@ -52,13 +59,12 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
     { href: '/dashboard/team', label: 'Equipo', icon: ShieldCheck },
     { href: '/dashboard/services', label: 'Servicios', icon: Sparkles },
     { href: '/dashboard/vouchers', label: 'Bonos', icon: Ticket },
-    { href: '/dashboard/invoices', label: 'Facturas', icon: Receipt },
   ].filter(item => {
     const currentRole = role?.toLowerCase();
-    
+
     // Administrador ve todo
     if (currentRole === 'administrador' || currentRole === 'admin') return true;
-    
+
     // Recepción y Especialista NO ven submenú de Gestión Avanzada
     return false;
   });
@@ -70,10 +76,10 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
     { href: '/dashboard/cms', label: 'Editor Web (CMS)', icon: Globe },
   ].filter(item => {
     const currentRole = role?.toLowerCase();
-    
+
     // Administrador ve todo
     if (currentRole === 'administrador' || currentRole === 'admin') return true;
-    
+
     // Recepción y Especialista NO ven menú de Configuración
     return false;
   });
@@ -84,23 +90,32 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
     { href: '/dashboard/calendar', label: 'Agenda', icon: CalendarDays, isSubmenu: false },
     { href: '/dashboard/clients', label: 'Clientes', icon: Users, isSubmenu: false },
     { href: '/dashboard/invoices', label: 'Facturas', icon: Receipt, isSubmenu: false },
+    { href: '/dashboard/vouchers', label: 'Bonos', icon: Ticket, isSubmenu: false },
     // Solo mostrar submenús si tienen contenido para el rol actual
     ...(submenuGestion.length > 0 ? [{ id: 'gestion', label: 'Gestión Avanzada', icon: ShieldCheck, isSubmenu: true }] : []),
     ...(submenuConfig.length > 0 ? [{ id: 'configuracion', label: 'Configuración', icon: Settings, isSubmenu: true }] : []),
   ].filter(item => {
     if (!item.href) return true; // Los submenús no tienen href directo
     const currentRole = role?.toLowerCase();
-    
-    // Especialista NO ve Venta Rápida ni Facturas
+
+    // Especialista SOLO ve: Inicio, Agenda, Clientes.
     if (currentRole === 'especialista') {
-      if (item.href === '/dashboard/pos' || item.href === '/dashboard/invoices') return false;
+      const allowed = ['/dashboard', '/dashboard/calendar', '/dashboard/clients'];
+      return allowed.includes(item.href || '');
     }
-    
-    // Administrador NO necesita facturas suelto porque ya lo tiene en Gestión Avanzada
+
+    // Recepción ve Facturas, POS y Bonos como directos (porque no tiene submenús)
+    if (currentRole === 'recepción' || currentRole === 'recepcion') {
+       const allowed = ['/dashboard', '/dashboard/calendar', '/dashboard/clients', '/dashboard/invoices', '/dashboard/pos', '/dashboard/vouchers'];
+       return allowed.includes(item.href || '');
+    }
+
+    // Administrador: Ve Facturas como directo (igual que en desktop).
+    // Pero Bonos lo ve en el submenú de Gestión, así que lo ocultamos del Main para evitar duplicados.
     if (currentRole === 'administrador' || currentRole === 'admin') {
-      if (item.href === '/dashboard/invoices') return false;
+      if (item.href === '/dashboard/vouchers') return false;
     }
-    
+
     return true;
   });
 
@@ -147,7 +162,7 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
             >
               <div className="flex items-center">
                 <div className="flex-shrink-0 flex items-center justify-center w-6">
-                  <item.icon size={20} className="text-stone-500 group-hover:text-white transition-all duration-300" strokeWidth={1.5} />
+                  {item.id === 'gestion' ? <Briefcase size={20} className="text-stone-500 group-hover:text-white transition-all duration-300" strokeWidth={1.5} /> : <item.icon size={20} className="text-stone-500 group-hover:text-white transition-all duration-300" strokeWidth={1.5} />}
                 </div>
                 <div className="text-sm font-bold whitespace-nowrap ml-3">
                   {item.label}
@@ -159,7 +174,7 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
         }
 
         const active = isActive(item.href, item.exact);
-        const Icon = item.icon;
+        const Icon = (item.href === '/dashboard/invoices') ? FileText : item.icon;
         let containerClasses = "";
         let iconClasses = "transition-all duration-300 ";
 
@@ -202,7 +217,7 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
       return (
         <div className="flex flex-col gap-3 w-full pt-2">
           {Array(5).fill(0).map((_, i) => (
-             <Skeleton key={i} className="h-12 w-full rounded-xl bg-stone-900/40" />
+            <Skeleton key={i} className="h-12 w-full rounded-xl bg-stone-900/40" />
           ))}
         </div>
       );
@@ -214,18 +229,18 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
   return (
     <>
       <div className="fixed bottom-0 left-0 w-full z-[70] md:hidden bg-white/90 backdrop-blur-md border-t border-stone-200 px-4 py-2 flex justify-between items-center print:hidden pb-safe">
-        
+
         <Link href="/dashboard" className="p-2 text-stone-500 hover:text-stone-800 transition-colors">
           <Home size={24} strokeWidth={1.5} />
         </Link>
-        
+
         <button onClick={() => setOpenSearch(true)} className="p-2 text-stone-500 hover:text-stone-800 transition-colors">
           <Search size={24} strokeWidth={1.5} />
         </button>
-        
+
         {/* Botón Central (Acción Rápida dependiente del rol) */}
-        <Link 
-          href={(role?.toLowerCase() === 'especialista') ? '/dashboard/calendar' : '/dashboard/pos'} 
+        <Link
+          href={(role?.toLowerCase() === 'especialista') ? '/dashboard/calendar' : '/dashboard/pos'}
           className="rounded-full p-3 -mt-6 shadow-lg bg-stone-800 text-white hover:bg-stone-900 transition-all flex items-center justify-center border-4 border-stone-50 active:scale-95"
         >
           <Plus size={24} strokeWidth={2} />
@@ -235,7 +250,7 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
         <button className="p-2 text-stone-500 hover:text-stone-800 transition-colors">
           <Bell size={24} strokeWidth={1.5} />
         </button>
-        
+
         {/* Menú Hamburguesa que abre el Sheet Lateral */}
         <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
           <SheetTrigger asChild>
@@ -246,10 +261,10 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
           <SheetContent side="left" className="w-[85vw] max-w-xs p-0 bg-stone-950 border-none [&>button]:hidden shadow-[10px_0_40px_rgba(0,0,0,0.5)] flex flex-col">
             <SheetTitle className="sr-only">Navegación Principal</SheetTitle>
             <SheetDescription className="sr-only">Menú lateral de navegación con todas las secciones</SheetDescription>
-            
+
             <div className="flex-1 overflow-hidden relative">
               <AnimatePresence initial={false} custom={direction}>
-                
+
                 {menuLevel === 'main' && (
                   <motion.div
                     key="main"
@@ -313,12 +328,12 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
                     <User size={20} />
                   </div>
                   <div className="flex flex-col overflow-hidden">
-                    <span className="text-white font-bold text-sm leading-tight truncate">Admin</span>
-                    <span className="text-stone-500 text-[10px] font-black uppercase tracking-widest truncate">{clinicName}</span>
+                    <span className="text-white font-bold text-sm leading-tight truncate">{userName || 'Usuario'}</span>
+                    <span className="text-stone-500 text-[10px] font-black uppercase tracking-widest truncate">{role || 'Personal'}</span>
                   </div>
                 </div>
-                <button 
-                  onClick={handleLogout} 
+                <button
+                  onClick={handleLogout}
                   className="p-2.5 rounded-xl text-rose-400/80 hover:bg-rose-500/10 hover:text-rose-400 transition-colors shrink-0 ml-2"
                   title="Cerrar sesión"
                 >

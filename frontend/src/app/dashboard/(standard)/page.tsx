@@ -6,12 +6,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthRole } from '@/hooks/useAuthRole';
 
 export default function DashboardPage() {
-  const { role, loading: loadingRole } = useAuthRole();
+  const { role, userName: authUserName, loading: loadingRole } = useAuthRole();
   const [clients, setClients] = useState<any[]>([]);
   const [appointments, setAppointments] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const [userName, setUserName] = useState<string>('');
+
+  useEffect(() => {
+    if (authUserName) {
+      setUserName(authUserName);
+    }
+  }, [authUserName]);
 
   useEffect(() => {
     // Basic auth check
@@ -100,7 +107,7 @@ export default function DashboardPage() {
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-1">Panel de Control</p>
           <h1 className="text-4xl md:text-5xl font-serif font-semibold text-stone-800 leading-tight">
-            Bienvenida de nuevo, Mercè
+            Bienvenido/a de nuevo, {userName}
           </h1>
           <p className="text-stone-400 font-medium mt-2 text-sm">
             {new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}

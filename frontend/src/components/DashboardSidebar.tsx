@@ -7,7 +7,7 @@ import {
   Ticket, Receipt, CalendarDays, Settings,
   Database, Image as ImageIcon, Globe, Tag,
   ShieldCheck, User, LogOut, Search, ChevronRight,
-  MoreHorizontal
+  MoreHorizontal, Briefcase, FileText
 } from 'lucide-react';
 import { GlobalSearch } from './GlobalSearch';
 import { NotificationsPopover } from './NotificationsPopover';
@@ -58,8 +58,15 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
   const [lastScrollY, setLastScrollY] = useState(0);
   const pathname = usePathname();
   const router = useRouter();
-  const { role, loading } = useAuthRole();
+  const { role, userName: authUserName, loading } = useAuthRole();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [userName, setUserName] = useState<string>('');
+
+  useEffect(() => {
+    if (authUserName) {
+      setUserName(authUserName);
+    }
+  }, [authUserName]);
 
   // Keyboard shortcut for search (Ctrl+K)
   useEffect(() => {
@@ -114,7 +121,6 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
     return pathname.startsWith(href) && href !== '/dashboard';
   };
 
-  // NavItems renderer for DRY (used in both mobile and desktop views)
   const NavItems = () => {
     if (loading) {
       return (
@@ -126,36 +132,74 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
       );
     }
 
-    const filteredLinks = navLinks.filter(link => {
-      const currentRole = role?.toLowerCase();
-      
-      // Administrador ve todo
-      if (currentRole === 'administrador' || currentRole === 'admin') return true;
-      
-      // Recepción: Agenda, Clientes y Facturación/Ventas (pos e invoices). NO ve Equipo, Ajustes, Servicios, Bonos, Galería, etc.
-      if (currentRole === 'recepción' || currentRole === 'recepcion') {
-        const restricted = ['/dashboard/team', '/dashboard/settings', '/dashboard/backups', '/dashboard/cms', '/dashboard/services', '/dashboard/vouchers', '/dashboard/media'];
-        return !restricted.includes(link.href);
-      }
-      
-      // Especialista: ÚNICAMENTE Agenda y Clientes. NO ve Facturación, ni Equipo, ni Ajustes.
-      if (currentRole === 'especialista') {
-        const allowed = ['/dashboard', '/dashboard/calendar', '/dashboard/clients'];
-        return allowed.includes(link.href);
-      }
-      
-      return false; // Por defecto no ve nada si no hay rol o es desconocido
-    });
+    // Definición de grupos según la nueva directriz
+    const currentRole = role?.toLowerCase();
+    const isAdmin = currentRole === 'administrador' || currentRole === 'admin';
+    const isRecepcion = currentRole === 'recepción' || currentRole === 'recepcion';
 
-    const advancedHrefs = ['/dashboard/team', '/dashboard/services', '/dashboard/vouchers', '/dashboard/invoices'];
-    const mainLinks = filteredLinks.filter(link => !advancedHrefs.includes(link.href));
-    const advancedLinks = filteredLinks.filter(link => advancedHrefs.includes(link.href));
+    // Definición de grupos dinámica según el rol
+    const directLinksHrefs = [
+      '/dashboard/pos', 
+      '/dashboard', 
+      '/dashboard/calendar', 
+      '/dashboard/clients', 
+      '/dashboard/invoices',
+      ...(isRecepcion ? ['/dashboard/vouchers'] : []) // Solo Recepción ve Bonos fuera
+    ];
+
+    const gestionLinksHrefs = [
+      '/dashboard/team', 
+      '/dashboard/services', 
+      ...(isAdmin ? ['/dashboard/vouchers'] : []) // Admin sigue viendo Bonos en Gestión
+    ];
+
+    const configLinksHrefs = ['/dashboard/settings', '/dashboard/backups', '/dashboard/media', '/dashboard/cms'];
+
+    const directLinks = navLinks.filter(link => directLinksHrefs.includes(link.href));
+    const gestionLinks = navLinks.filter(link => gestionLinksHrefs.includes(link.href));
+    const configLinks = navLinks.filter(link => configLinksHrefs.includes(link.href));
+
+    // Filtrado por roles para cada grupo
+    const filterByRole = (links: typeof navLinks) => {
+      const currentRole = role?.toLowerCase();
+      return links.filter(link => {
+        if (currentRole === 'administrador' || currentRole === 'admin') return true;
+
+        if (currentRole === 'recepción' || currentRole === 'recepcion') {
+          // Recepción NO ve: Equipo, Servicios, Ajustes, Media, CMS, Backups
+          const restricted = ['/dashboard/team', '/dashboard/settings', '/dashboard/backups', '/dashboard/cms', '/dashboard/services', '/dashboard/media'];
+          return !restricted.includes(link.href);
+        }
+
+        if (currentRole === 'especialista') {
+          const allowed = ['/dashboard', '/dashboard/calendar', '/dashboard/clients'];
+          return allowed.includes(link.href);
+        }
+        return false;
+      });
+    };
+
+    const filteredDirect = filterByRole(directLinks);
+    const filteredGestion = filterByRole(gestionLinks);
+    const filteredConfig = filterByRole(configLinks);
 
     return (
       <div className="flex flex-col gap-2 w-full relative z-10 px-3">
-        {mainLinks.map((link) => {
+        {/* 1. GlobalSearch (Lupa) */}
+        <button
+          onClick={() => setSearchOpen(true)}
+          className="w-full group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 text-stone-500 hover:bg-stone-900 hover:text-white border border-transparent hover:border-stone-800 mb-2"
+        >
+          <Search size={22} strokeWidth={1.5} />
+          <span className="absolute left-full top-1/2 -translate-y-1/2 ml-5 px-4 py-2 bg-stone-800 text-white text-[12px] font-black uppercase tracking-[0.15em] rounded-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-300 whitespace-nowrap z-[110] shadow-2xl border border-stone-700 translate-x-[-15px] group-hover/item:translate-x-0 pointer-events-none">
+            Buscar (Ctrl K)
+          </span>
+        </button>
+
+        {/* 2-6. Accesos Directos */}
+        {filteredDirect.map((link) => {
           const active = isActive(link.href, link.exact);
-          const Icon = link.icon;
+          const Icon = link.href === '/dashboard/invoices' ? FileText : link.icon;
 
           let containerClasses = "";
           let iconClasses = "transition-all duration-300 ";
@@ -181,13 +225,9 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
               <div className="flex-shrink-0 flex items-center justify-center">
                 <Icon size={22} className={iconClasses} strokeWidth={active ? 2.5 : 1.5} />
               </div>
-
-              {/* Tooltip SaaS (Cápsula Flotante) */}
               <span className="absolute left-full top-1/2 -translate-y-1/2 ml-5 px-4 py-2 bg-stone-800 text-white text-[12px] font-black uppercase tracking-[0.15em] rounded-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-300 whitespace-nowrap z-[110] shadow-2xl border border-stone-700 translate-x-[-15px] group-hover/item:translate-x-0 pointer-events-none">
                 {link.label}
               </span>
-
-              {/* Puntito indicador activo */}
               {active && (
                 <div className="absolute -left-1 w-1 h-6 bg-white rounded-r-full shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
               )}
@@ -195,28 +235,28 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
           );
         })}
 
-        {/* Gestión Avanzada Flyout */}
-        {advancedLinks.length > 0 && (
+        {/* Grupo 'Gestión' Flyout */}
+        {filteredGestion.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className={`group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 ${advancedLinks.some(l => isActive(l.href)) ? 'bg-stone-800 text-white shadow-lg' : 'text-stone-500 hover:bg-stone-900 hover:text-white'}`}>
+              <button className={`group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 ${filteredGestion.some(l => isActive(l.href)) ? 'bg-stone-800 text-white shadow-lg' : 'text-stone-500 hover:bg-stone-900 hover:text-white'}`}>
                 <div className="flex-shrink-0 flex items-center justify-center">
-                  <MoreHorizontal size={22} strokeWidth={1.5} />
+                  <Briefcase size={22} strokeWidth={1.5} />
                 </div>
                 <span className="absolute left-full top-1/2 -translate-y-1/2 ml-5 px-4 py-2 bg-stone-800 text-white text-[12px] font-black uppercase tracking-[0.15em] rounded-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-300 whitespace-nowrap z-[110] shadow-2xl border border-stone-700 translate-x-[-15px] group-hover/item:translate-x-0 pointer-events-none">
-                  Gestión Avanzada
+                  Gestión
                 </span>
-                {advancedLinks.some(l => isActive(l.href)) && (
-                   <div className="absolute -left-1 w-1 h-6 bg-white rounded-r-full shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
+                {filteredGestion.some(l => isActive(l.href)) && (
+                  <div className="absolute -left-1 w-1 h-6 bg-white rounded-r-full shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
                 )}
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" side="right" className="w-56 ml-4 rounded-[1.5rem] bg-stone-900 border-stone-800 text-white shadow-2xl p-2 animate-in slide-in-from-left-2 duration-200">
               <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-stone-500 px-4 py-3">
-                Gestión Avanzada
+                Gestión
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-stone-800" />
-              {advancedLinks.map((link) => {
+              {filteredGestion.map((link) => {
                 const Icon = link.icon;
                 const active = isActive(link.href);
                 return (
@@ -227,7 +267,45 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
                   >
                     <Icon size={18} strokeWidth={active ? 2.5 : 1.5} />
                     <span className="font-bold text-sm">{link.label}</span>
-                    {active && <div className="ml-auto w-1.5 h-1.5 bg-white rounded-full"></div>}
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+
+        {/* Grupo 'Configuración' Flyout (Admin Only) */}
+        {filteredConfig.length > 0 && (role?.toLowerCase() === 'admin' || role?.toLowerCase() === 'administrador') && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className={`group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 ${filteredConfig.some(l => isActive(l.href)) ? 'bg-stone-800 text-white shadow-lg' : 'text-stone-500 hover:bg-stone-900 hover:text-white'}`}>
+                <div className="flex-shrink-0 flex items-center justify-center">
+                  <Settings size={22} strokeWidth={1.5} />
+                </div>
+                <span className="absolute left-full top-1/2 -translate-y-1/2 ml-5 px-4 py-2 bg-stone-800 text-white text-[12px] font-black uppercase tracking-[0.15em] rounded-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-300 whitespace-nowrap z-[110] shadow-2xl border border-stone-700 translate-x-[-15px] group-hover/item:translate-x-0 pointer-events-none">
+                  Configuración
+                </span>
+                {filteredConfig.some(l => isActive(l.href)) && (
+                  <div className="absolute -left-1 w-1 h-6 bg-white rounded-r-full shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
+                )}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" side="right" className="w-56 ml-4 rounded-[1.5rem] bg-stone-900 border-stone-800 text-white shadow-2xl p-2 animate-in slide-in-from-left-2 duration-200">
+              <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-stone-500 px-4 py-3">
+                Configuración
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-stone-800" />
+              {filteredConfig.map((link) => {
+                const Icon = link.icon;
+                const active = isActive(link.href);
+                return (
+                  <DropdownMenuItem
+                    key={link.href}
+                    onClick={() => router.push(link.href)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer ${active ? 'bg-stone-800 text-white' : 'text-stone-400'}`}
+                  >
+                    <Icon size={18} strokeWidth={active ? 2.5 : 1.5} />
+                    <span className="font-bold text-sm">{link.label}</span>
                   </DropdownMenuItem>
                 );
               })}
@@ -269,19 +347,6 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
           </div>
 
           <div className="flex-1 overflow-visible flex flex-col">
-            {/* Search Trigger Slot */}
-            <div className="px-3 mb-6">
-              <button
-                onClick={() => setSearchOpen(true)}
-                className="w-full group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 text-stone-500 hover:bg-stone-900 hover:text-white border border-transparent hover:border-stone-800"
-              >
-                <Search size={22} strokeWidth={1.5} />
-                <span className="absolute left-full top-1/2 -translate-y-1/2 ml-5 px-4 py-2 bg-stone-800 text-white text-[12px] font-black uppercase tracking-[0.15em] rounded-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-300 whitespace-nowrap z-[110] shadow-2xl border border-stone-700 translate-x-[-15px] group-hover/item:translate-x-0 pointer-events-none">
-                  Buscar (Ctrl K)
-                </span>
-              </button>
-            </div>
-
             <NavItems />
           </div>
 
@@ -300,7 +365,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" side="right" className="w-56 ml-4 rounded-[1.5rem] bg-stone-900 border-stone-800 text-white shadow-2xl p-2 animate-in slide-in-from-left-2 duration-200">
                 <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-stone-500 px-4 py-3">
-                  Usuario: {role || 'Clínica Mercè'}
+                  {userName || 'Usuario'}: {role || 'Personal'}
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-stone-800" />
                 <DropdownMenuItem onClick={() => router.push('/dashboard/profile')} className="flex items-center gap-3 px-4 py-3 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer">
