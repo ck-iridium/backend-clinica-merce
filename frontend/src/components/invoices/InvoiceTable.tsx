@@ -43,7 +43,7 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
   const exportToCSV = () => {
     if (invoices.length === 0) return;
     
-    const headers = ['Fecha', 'Cliente', 'Concepto', 'Estado', 'Importe', 'IVA', 'Es_Simplificada'];
+    const headers = ['Fecha', 'Cliente', 'Concepto', 'Estado', 'Total Bruto', 'Base Imponible', 'Cuota IVA', 'Tipo IVA (%)', 'Es_Simplificada'];
     const csvContent = [
       headers.join(','),
       ...invoices.map(inv => {
@@ -51,11 +51,26 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
         const client = `"${getClientName(inv.client_id).replace(/"/g, '""')}"`;
         const concept = `"${inv.concept.replace(/"/g, '""')}"`;
         const status = inv.status === 'paid' ? 'Pagada' : 'Pendiente';
-        const amount = inv.amount.toString();
-        const tax = inv.tax_rate.toString();
+        
+        // Cálculos financieros
+        const totalBruto = Number(inv.amount);
+        const taxRate = Number(inv.tax_rate);
+        const baseImponible = totalBruto / (1 + (taxRate / 100));
+        const cuotaIva = totalBruto - baseImponible;
+        
         const simplified = inv.is_simplified ? 'Si' : 'No';
         
-        return [date, client, concept, status, amount, tax, simplified].join(',');
+        return [
+          date, 
+          client, 
+          concept, 
+          status, 
+          totalBruto.toFixed(2), 
+          baseImponible.toFixed(2), 
+          cuotaIva.toFixed(2), 
+          taxRate.toString(), 
+          simplified
+        ].join(',');
       })
     ].join('\n');
 
