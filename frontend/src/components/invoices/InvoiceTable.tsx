@@ -154,8 +154,12 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
       const base = bruto / (1 + (taxRate / 100));
       const iva = bruto - base;
       
+      // Formato de fecha corto DD/MM/YY para ganar espacio
+      const d = new Date(inv.date);
+      const shortDate = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear().toString().slice(-2)}`;
+      
       return [
-        new Date(inv.date).toLocaleDateString('es-ES'),
+        shortDate,
         getClientName(inv.client_id),
         inv.concept,
         `${base.toFixed(2)} €`,
@@ -166,26 +170,31 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
 
     autoTable(doc, {
       startY: 80,
-      head: [['Fecha', 'Cliente', 'Concepto', 'Base Imp.', 'IVA', 'Total']],
+      head: [['Fecha', 'Cliente', 'Concepto', 'Base', 'IVA', 'Total']],
       body: tableData,
       theme: 'striped',
       headStyles: {
         fillColor: [28, 25, 23],
         textColor: [255, 255, 255],
-        fontSize: 10,
+        fontSize: 9,
         fontStyle: 'bold',
         halign: 'left'
       },
       bodyStyles: {
-        fontSize: 9,
-        textColor: [68, 64, 60] // Stone-700
+        fontSize: 8,
+        textColor: [68, 64, 60], // Stone-700
+        cellPadding: 3
       },
       columnStyles: {
-        3: { halign: 'right' },
-        4: { halign: 'right' },
-        5: { halign: 'right' }
+        0: { cellWidth: 18 }, // Fecha corta
+        3: { halign: 'right', cellWidth: 22 }, // Base fijo
+        4: { halign: 'right', cellWidth: 18 }, // IVA fijo
+        5: { halign: 'right', cellWidth: 22 }  // Total fijo
       },
       margin: { left: 20, right: 20 },
+      styles: {
+        overflow: 'linebreak', // Cliente y concepto usarán el espacio restante y saltarán de línea
+      },
       didDrawPage: (data) => {
         // Footer de página
         doc.setFontSize(8);
