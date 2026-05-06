@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
+import CategoryImage from '@/components/CategoryImage';
 
 export const metadata: Metadata = {
   title: 'Catálogo de Tratamientos | Clínica de Estética',
@@ -66,11 +67,12 @@ export default async function CatalogPage() {
                 <section key={catName} className="max-w-7xl mx-auto px-6">
                   {/* Category Header */}
                   <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-10 border-b border-stone-200 pb-8">
-                    {categoryInfo?.image_url && (
-                       <div className="w-24 h-24 sm:w-32 sm:h-32 shrink-0 rounded-[1.5rem] overflow-hidden shadow-lg border border-stone-100">
-                         <img src={categoryInfo.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${categoryInfo.image_url}` : categoryInfo.image_url} alt={catName} className="w-full h-full object-cover" />
-                       </div>
-                    )}
+                    <div className="w-24 h-24 sm:w-32 sm:h-32 shrink-0 rounded-[1.5rem] overflow-hidden shadow-lg border border-stone-100 bg-white">
+                      <CategoryImage 
+                        src={categoryInfo?.image_url?.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${categoryInfo.image_url}` : categoryInfo?.image_url} 
+                        alt={catName} 
+                      />
+                    </div>
                     <div>
                       <h2 className="text-3xl md:text-4xl font-extrabold text-stone-800 tracking-tight">{catName}</h2>
                       <p className="text-stone-500 font-semibold mt-2">{svcs.length} tratamientos disponibles</p>

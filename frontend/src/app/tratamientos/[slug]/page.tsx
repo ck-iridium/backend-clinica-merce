@@ -16,6 +16,15 @@ async function getServiceData(slug: string) {
   return res.json();
 }
 
+async function getRelatedServices(categoryId: string, currentServiceId: string) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/`, {
+    next: { revalidate: 60 }
+  });
+  if (!res.ok) return [];
+  const services = await res.json();
+  return services.filter((s: any) => s.category_id === categoryId && s.id !== currentServiceId && s.is_active).slice(0, 3);
+}
+
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const service = await getServiceData(params.slug);
   
@@ -45,6 +54,8 @@ export default async function TreatmentDynamicPage({ params }: { params: { slug:
     headerStyle: 'split',
     accentColor: '#d4af37'
   };
+
+  const relatedServices = await getRelatedServices(service.category_id, service.id);
 
   return (
     <div className="min-h-screen bg-stone-50 font-sans mt-16 md:mt-0">
@@ -82,7 +93,7 @@ export default async function TreatmentDynamicPage({ params }: { params: { slug:
                     <p className="text-xl font-bold">{service.price} €</p>
                   </div>
                 </div>
-                <Link href={`/reservar?servicio=${service.id}`} className="px-8 py-4 rounded-xl font-bold text-white shadow-xl transition-transform hover:scale-105" style={{ backgroundColor: layoutPreferences.accentColor }}>
+                <Link href={`/reservar?servicio=${service.id}&nombre=${encodeURIComponent(service.name)}`} className="px-8 py-4 rounded-xl font-bold text-white shadow-xl transition-transform hover:scale-105" style={{ backgroundColor: layoutPreferences.accentColor }}>
                   Reservar Cita Ahora
                 </Link>
               </div>
@@ -92,7 +103,7 @@ export default async function TreatmentDynamicPage({ params }: { params: { slug:
           {/* Layout para modo SPLIT */}
           {layoutPreferences.headerStyle === 'split' && (
             <>
-              <div className={`w-full md:w-1/2 p-12 md:p-20 flex flex-col justify-center ${layoutPreferences.alignment === 'right' ? 'md:order-1' : 'md:order-2'}`}>
+              <div className={`w-full md:w-1/2 p-8 md:p-20 flex flex-col justify-center ${layoutPreferences.alignment === 'right' ? 'md:order-1' : 'md:order-2'}`}>
                 <span className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: layoutPreferences.accentColor }}>Tratamiento Especializado</span>
                 <h1 className="text-4xl md:text-6xl font-serif text-stone-900 mb-6 leading-tight">{service.name}</h1>
                 <p className="text-stone-500 text-lg mb-8 leading-relaxed">{service.description}</p>
@@ -108,7 +119,7 @@ export default async function TreatmentDynamicPage({ params }: { params: { slug:
                   </div>
                 </div>
 
-                <Link href={`/reservar?servicio=${service.id}`} className="w-fit px-8 py-4 rounded-xl font-bold text-white shadow-lg transition-transform hover:scale-105" style={{ backgroundColor: layoutPreferences.accentColor }}>
+                <Link href={`/reservar?servicio=${service.id}&nombre=${encodeURIComponent(service.name)}`} className="w-fit px-8 py-4 rounded-xl font-bold text-white shadow-lg transition-transform hover:scale-105" style={{ backgroundColor: layoutPreferences.accentColor }}>
                   Reservar Cita Ahora
                 </Link>
               </div>
@@ -132,6 +143,29 @@ export default async function TreatmentDynamicPage({ params }: { params: { slug:
               className="prose prose-stone prose-lg max-w-none prose-headings:font-serif prose-a:text-[#d4af37] marker:text-[#d4af37]"
               dangerouslySetInnerHTML={{ __html: service.content_html }} 
             />
+          </section>
+        )}
+
+        {/* Bloque 3: Cross-Selling */}
+        {relatedServices.length > 0 && (
+          <section className="max-w-7xl mx-auto px-6 py-24 border-t border-stone-100">
+            <h2 className="text-3xl md:text-4xl font-serif text-stone-800 mb-12 text-center">Otros tratamientos que te pueden interesar</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {relatedServices.map((svc: any) => (
+                <Link href={`/tratamientos/${svc.slug || svc.id}`} key={svc.id} className="bg-stone-50 p-8 rounded-[2rem] hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border border-stone-100 flex flex-col group">
+                  <h3 className="text-xl font-bold text-stone-800 group-hover:text-[#d4af37] transition-colors mb-4">{svc.name}</h3>
+                  <p className="text-sm text-stone-500 mb-8 line-clamp-2">{svc.description}</p>
+                  <div className="flex justify-between items-center mt-auto pt-6 border-t border-stone-200/50">
+                    <span className="text-stone-400 font-semibold text-sm flex items-center gap-1">
+                      <span className="text-[#d4af37] text-lg leading-none">⏱</span> {svc.duration_minutes} min
+                    </span>
+                    <span className="bg-white border border-[#d4af37]/30 text-[#b08e23] px-3 py-1.5 rounded-xl font-bold text-sm shadow-sm">
+                      {svc.price} €
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </section>
         )}
 

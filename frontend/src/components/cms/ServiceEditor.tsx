@@ -260,9 +260,9 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#FAFAFA]">
-      {/* ─── PANEL IZQUIERDO: Configuración (30%) ─────────────────────────────── */}
-      <aside className="w-[30%] min-w-[350px] max-w-[450px] h-full bg-white border-r border-stone-200 flex flex-col shadow-sm overflow-hidden shrink-0">
+    <div className="flex flex-col md:flex-row h-screen overflow-hidden bg-[#FAFAFA]">
+      {/* ─── PANEL IZQUIERDO: Configuración (100% móvil, 30% desktop) ─────────────────────────────── */}
+      <aside className="w-full md:w-[30%] md:min-w-[350px] md:max-w-[450px] h-full bg-white border-r border-stone-200 flex flex-col shadow-sm overflow-hidden shrink-0 z-20">
         <form id="service-editor-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full">
           
           {/* Cabecera del Panel */}
@@ -528,8 +528,8 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
         </form>
       </aside>
 
-      {/* ─── PANEL DERECHO: Live Preview (70%) ────────────────────────────────── */}
-      <div className="flex-1 h-full overflow-y-auto bg-stone-100/60 relative">
+      {/* ─── PANEL DERECHO: Live Preview (Oculto en móvil, 70% desktop) ────────────────────────────────── */}
+      <div className="hidden md:block flex-1 h-full overflow-y-auto bg-stone-100/60 relative">
 
         {/* Barra Superior del Preview */}
         <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-stone-200 px-8 py-3 flex items-center gap-3 shadow-sm">
