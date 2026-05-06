@@ -79,28 +79,34 @@ export default async function CatalogPage() {
 
                   {/* Services Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {svcs.map((svc: any) => (
-                       <div key={svc.id} className="bg-white p-8 rounded-[2.5rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-stone-100 flex flex-col relative group overflow-hidden">
-                          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-yellow-50 to-transparent rounded-bl-[4rem] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
-                          
-                          <div className="flex justify-between items-start mb-6 gap-4 relative z-10">
-                            <h3 className="text-xl md:text-2xl font-bold leading-tight">{svc.name}</h3>
-                            <span className="bg-[#fcf8e5] text-[#b08e23] px-3 py-1.5 rounded-xl font-bold text-sm shrink-0 whitespace-nowrap shadow-sm border border-yellow-100">
-                              {svc.price} €
-                            </span>
-                          </div>
-                          
-                          <p className="text-stone-500 mb-8 font-medium leading-relaxed min-h-[4.5rem] relative z-10">
-                            {svc.description || 'Tratamiento especializado en clínica.'}
-                          </p>
-                          
-                          <div className="mt-auto pt-6 border-t border-stone-100 flex justify-between items-center relative z-10">
-                            <span className="text-stone-400 font-semibold text-sm flex items-center gap-1">
-                               <span className="text-[#d4af37] text-lg leading-none">⏱</span> {svc.duration_minutes} min
-                            </span>
-                          </div>
-                       </div>
-                    ))}
+                    {svcs.map((svc: any) => {
+                       const serviceLink = `/tratamientos/${svc.slug || svc.id}`;
+                       return (
+                         <Link href={serviceLink} key={svc.id} className="bg-white p-8 rounded-[2.5rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-stone-100 flex flex-col relative group overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-yellow-50 to-transparent rounded-bl-[4rem] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                            
+                            <div className="flex justify-between items-start mb-6 gap-4 relative z-10">
+                              <h3 className="text-xl md:text-2xl font-bold leading-tight group-hover:text-[#d4af37] transition-colors">{svc.name}</h3>
+                              <span className="bg-[#fcf8e5] text-[#b08e23] px-3 py-1.5 rounded-xl font-bold text-sm shrink-0 whitespace-nowrap shadow-sm border border-yellow-100">
+                                {svc.price} €
+                              </span>
+                            </div>
+                            
+                            <p className="text-stone-500 mb-8 font-medium leading-relaxed min-h-[4.5rem] relative z-10">
+                              {svc.description || 'Tratamiento especializado en clínica.'}
+                            </p>
+                            
+                            <div className="mt-auto pt-6 border-t border-stone-100 flex justify-between items-center relative z-10">
+                              <span className="text-stone-400 font-semibold text-sm flex items-center gap-1">
+                                 <span className="text-[#d4af37] text-lg leading-none">⏱</span> {svc.duration_minutes} min
+                              </span>
+                              <span className="text-sm font-bold text-[#d4af37] opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                                Ver detalles <span className="text-lg leading-none">→</span>
+                              </span>
+                            </div>
+                         </Link>
+                       );
+                    })}
                   </div>
                 </section>
               );

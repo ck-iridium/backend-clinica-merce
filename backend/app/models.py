@@ -1,5 +1,6 @@
 import uuid
-from sqlalchemy import Column, String, Text, Boolean, Integer, Numeric, DateTime, Date, ForeignKey, Float
+from sqlalchemy import Column, String, Text, Boolean, Integer, Numeric, DateTime, Date, ForeignKey, Float, UniqueConstraint
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from .database import Base
@@ -58,7 +59,9 @@ class Service(Base):
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     category_id = Column(String(36), ForeignKey("service_categories.id"), nullable=True)
     name = Column(String, nullable=False)
+    slug = Column(String(255), nullable=True, unique=True, index=True)
     description = Column(Text, nullable=True)
+    content_html = Column(Text, nullable=True)
     duration_minutes = Column(Integer, nullable=False)
     price = Column(Numeric(10, 2), nullable=False)
     is_active = Column(Boolean, default=True)
@@ -67,6 +70,7 @@ class Service(Base):
     seo_title = Column(String, nullable=True)
     seo_description = Column(Text, nullable=True)
     seo_keywords = Column(String, nullable=True)
+    layout_preferences = Column(JSONB, default=dict, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships

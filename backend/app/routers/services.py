@@ -19,6 +19,20 @@ def create_service(service: schemas.ServiceCreate, db: Session = Depends(databas
 def read_services(skip: int = 0, limit: int = 100, db: Session = Depends(database.get_db)):
     return crud.get_services(db, skip=skip, limit=limit)
 
+@router.get("/{service_id}", response_model=schemas.ServiceResponse)
+def read_service(service_id: str, db: Session = Depends(database.get_db)):
+    db_service = crud.get_service(db, service_id=service_id)
+    if db_service is None:
+        raise HTTPException(status_code=404, detail="Service not found")
+    return db_service
+
+@router.get("/slug/{slug}", response_model=schemas.ServiceResponse)
+def read_service_by_slug(slug: str, db: Session = Depends(database.get_db)):
+    db_service = crud.get_service_by_slug(db, slug=slug)
+    if db_service is None:
+        raise HTTPException(status_code=404, detail="Service not found")
+    return db_service
+
 @router.patch("/{service_id}", response_model=schemas.ServiceResponse)
 def update_service(service_id: str, service_update: schemas.ServiceUpdate, db: Session = Depends(database.get_db)):
     db_service = crud.update_service(db, service_id=service_id, service=service_update)

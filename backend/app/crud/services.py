@@ -5,6 +5,13 @@ from .. import models, schemas
 def get_service(db: Session, service_id: str):
     return db.query(models.Service).filter(models.Service.id == service_id).first()
 
+def get_service_by_slug(db: Session, slug: str):
+    service = db.query(models.Service).filter(models.Service.slug == slug).first()
+    if not service:
+        # Fallback para servicios antiguos sin slug (buscar por ID si es un UUID válido)
+        service = db.query(models.Service).filter(models.Service.id == slug).first()
+    return service
+
 def get_services(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Service).offset(skip).limit(limit).all()
 

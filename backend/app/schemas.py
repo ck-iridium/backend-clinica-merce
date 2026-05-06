@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from datetime import datetime, date
 
 # --- Users ---
@@ -68,7 +68,9 @@ class ServiceCategoryResponse(ServiceCategoryBase):
 # --- Services ---
 class ServiceBase(BaseModel):
     name: str
+    slug: Optional[str] = None
     description: Optional[str] = None
+    content_html: Optional[str] = None
     duration_minutes: int
     price: float
     is_active: bool = True
@@ -78,13 +80,16 @@ class ServiceBase(BaseModel):
     seo_title: Optional[str] = None
     seo_description: Optional[str] = None
     seo_keywords: Optional[str] = None
+    layout_preferences: Optional[Dict[str, Any]] = None
 
 class ServiceCreate(ServiceBase):
     pass
 
 class ServiceUpdate(BaseModel):
     name: Optional[str] = None
+    slug: Optional[str] = None
     description: Optional[str] = None
+    content_html: Optional[str] = None
     duration_minutes: Optional[int] = None
     price: Optional[float] = None
     is_active: Optional[bool] = None
@@ -94,11 +99,12 @@ class ServiceUpdate(BaseModel):
     seo_title: Optional[str] = None
     seo_description: Optional[str] = None
     seo_keywords: Optional[str] = None
+    layout_preferences: Optional[Dict[str, Any]] = None
 
 class ServiceResponse(ServiceBase):
     id: str
     created_at: datetime
-    category: Optional[ServiceCategoryResponse] = None
+    category: Optional['ServiceCategoryResponse'] = None
     
     class Config:
         from_attributes = True

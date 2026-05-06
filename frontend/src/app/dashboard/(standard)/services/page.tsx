@@ -5,6 +5,7 @@ import MediaPickerModal from '@/components/MediaPickerModal';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuthRole } from '@/hooks/useAuthRole';
 import { 
   Settings2, 
@@ -17,7 +18,8 @@ import {
   Flower2, 
   Clock, 
   X, 
-  ChevronDown 
+  ChevronDown,
+  ExternalLink
 } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -105,22 +107,9 @@ export default function ServicesPage() {
     }
   };
 
+  // El botón Editar ahora navega al Split-Screen editor en lugar de abrir un modal
   const handleEditClick = (svc: any) => {
-    setEditingId(svc.id);
-    setFormData({
-      name: svc.name,
-      description: svc.description || '',
-      duration_minutes: svc.duration_minutes,
-      price: svc.price,
-      is_active: svc.is_active,
-      category_id: svc.category_id || '',
-      is_featured: svc.is_featured || false,
-      image_url: svc.image_url || '',
-      seo_title: svc.seo_title || '',
-      seo_description: svc.seo_description || '',
-      seo_keywords: svc.seo_keywords || ''
-    });
-    setShowForm(true);
+    router.push(`/dashboard/services/${svc.id}/edit`);
   };
 
   const handleCancel = () => {
@@ -363,203 +352,15 @@ export default function ServicesPage() {
             className="px-4 py-3 rounded-xl bg-white text-stone-600 border border-stone-200 font-bold transition-all hover:bg-stone-50 active:scale-95 shadow-sm flex items-center gap-2">
             <Settings2 size={18} strokeWidth={1.5} className="text-stone-400" /> <span className="hidden sm:inline">Categorías</span>
           </button>
-          <button 
-            onClick={() => showForm ? handleCancel() : setShowForm(true)}
-            className={`px-6 py-3 rounded-xl font-bold transition-all shadow-md active:scale-95 flex items-center gap-2 ${showForm ? 'bg-stone-200 text-stone-700' : 'bg-[#d4af37] hover:bg-[#b08e23] border border-transparent text-white'}`}>
-            {showForm ? <X size={18} strokeWidth={1.5} /> : <Plus size={18} strokeWidth={1.5} />}
-            {showForm ? 'Cancelar' : 'Nuevo Servicio'}
-          </button>
+          <Link 
+            href="/dashboard/services/new"
+            className="px-6 py-3 rounded-xl font-bold transition-all shadow-md active:scale-95 flex items-center gap-2 bg-[#d4af37] hover:bg-[#b08e23] border border-transparent text-white">
+            <Plus size={18} strokeWidth={1.5} />
+            Nuevo Servicio
+          </Link>
         </div>
       </div>
 
-      <Dialog open={showForm} onOpenChange={(open) => !open && handleCancel()}>
-        <DialogContent className="p-0 border-none">
-          <DialogHeader className="p-6 md:p-8 border-b border-stone-100 bg-white relative z-10 rounded-t-xl">
-            <DialogTitle className="text-2xl font-bold text-stone-800 flex items-center gap-3">
-              <span className="w-10 h-10 rounded-2xl bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
-                <Sparkles size={20} strokeWidth={1.5} />
-              </span>
-              {editingId ? 'Editar Técnica de Tratamiento' : 'Alta Técnica de Tratamiento'}
-            </DialogTitle>
-            <DialogDescription className="text-stone-400 text-sm ml-13">
-              Configura los detalles técnicos, precio y visibilidad del tratamiento en el catálogo.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="p-6 md:p-8">
-            <form id="service-form" onSubmit={handleSubmit}>
-              {/* Sección de Imagen del Tratamiento */}
-              <div className="mb-8 flex flex-col md:flex-row items-center md:items-start bg-stone-50 border border-stone-200 p-6 rounded-[2rem] gap-6 text-center md:text-left">
-                {uploadingImage ? (
-                  <div className="w-28 h-28 rounded-2xl bg-white border border-stone-200 flex flex-col justify-center items-center shrink-0">
-                    <div className="w-6 h-6 border-4 border-yellow-100 border-t-[#d4af37] rounded-full animate-spin mb-2"></div>
-                    <span className="text-[9px] font-bold text-[#d4af37] uppercase tracking-widest">Subiendo...</span>
-                  </div>
-                ) : formData.image_url ? (
-                  <div className="w-28 h-28 rounded-2xl overflow-hidden bg-white shadow-sm shrink-0">
-                    <img src={formData.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${formData.image_url}` : formData.image_url} alt="Tratamiento" className="w-full h-full object-cover" />
-                  </div>
-                ) : (
-                  <div className="w-28 h-28 rounded-2xl bg-white border border-stone-200 border-dashed flex flex-col justify-center items-center shrink-0">
-                    <ImageIcon size={20} strokeWidth={1.5} className="text-stone-300 mb-1" />
-                    <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">Sin Foto</span>
-                  </div>
-                )}
-                <div className="flex-1">
-                  <h3 className="font-bold text-stone-800 mb-1 text-sm uppercase tracking-tight">Imagen del Catálogo</h3>
-                  <p className="text-xs text-stone-400 mb-4 leading-relaxed max-w-sm mx-auto md:mx-0">Selecciona una imagen de tu galería o sube una nueva.</p>
-                  <div className="flex gap-2 justify-center md:justify-start">
-                    <button
-                      type="button"
-                      onClick={() => setShowMediaPicker(true)}
-                      className="px-4 py-2 rounded-xl font-bold bg-stone-900 hover:bg-[#d9777f] text-white text-xs transition-colors shadow-md flex items-center gap-2"
-                    >
-                      <ImageIcon size={14} strokeWidth={1.5} /> {formData.image_url ? 'Cambiar' : 'Seleccionar Imagen'}
-                    </button>
-                    {formData.image_url && (
-                      <button type="button" onClick={() => setFormData({...formData, image_url: ''})} className="px-4 py-2 rounded-xl font-bold bg-red-50 text-red-600 text-xs transition-colors hover:bg-red-100">
-                        Quitar
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div>
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">Nombre del servicio *</label>
-                  <input required type="text" value={formData.name || ""} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="Ej: Láser Axilas" />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">Descripción pública</label>
-                  <textarea rows={3} value={formData.description || ""} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all resize-none" placeholder="El tratamiento perfecto para..." />
-                </div>
-                <div className="md:col-span-2 grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-stone-700 mb-2">Duración (min) *</label>
-                    <input required type="number" min="15" step="15" value={formData.duration_minutes || 0} onChange={e => setFormData({...formData, duration_minutes: Number(e.target.value)})} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all text-center font-bold" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-stone-700 mb-2">Precio (€) *</label>
-                    <input required type="number" min="0" step="0.5" value={formData.price || 0} onChange={e => setFormData({...formData, price: Number(e.target.value)})} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all text-center font-bold" />
-                  </div>
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">Categoría *</label>
-                  <div className="flex flex-row gap-2">
-                    <Select value={formData.category_id || ""} onValueChange={(val) => setFormData({...formData, category_id: val})}>
-                      <SelectTrigger className="flex-1 md:w-full">
-                        <SelectValue placeholder="-- Elige --" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map(cat => (
-                          <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <button type="button" onClick={() => setShowCategoryModal(true)} className="w-11 h-11 md:w-auto md:px-4 md:py-2 bg-stone-800 text-white p-2 rounded-xl font-bold transition-all text-sm shrink-0 flex items-center justify-center gap-2 hover:bg-stone-900">
-                      <Plus size={20} strokeWidth={2.5} />
-                      <span className="hidden md:inline">Nueva Categoría</span>
-                    </button>
-                  </div>
-                </div>
-                <div className="md:col-span-2 flex flex-col gap-5 mt-2 p-6 bg-stone-50 rounded-2xl border border-stone-100">
-                  <label className="flex items-center gap-3 cursor-pointer group w-fit">
-                    <div className="relative">
-                      <input 
-                        type="checkbox" 
-                        checked={formData.is_active} 
-                        onChange={e => setFormData({...formData, is_active: e.target.checked})} 
-                        className="sr-only" 
-                      />
-                      <div className={`block w-14 h-8 rounded-full transition-colors ${formData.is_active ? 'bg-emerald-500' : 'bg-stone-300'}`}></div>
-                      <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${formData.is_active ? 'translate-x-6' : ''}`}></div>
-                    </div>
-                    <span className={`text-sm font-bold transition-colors ${formData.is_active ? 'text-emerald-700' : 'text-stone-500'}`}>
-                      {formData.is_active ? 'Servicio Activo (Visible en Agenda)' : 'Servicio Archivado (Oculto)'}
-                    </span>
-                  </label>
-                  
-                  <div className="h-px bg-stone-200 w-full"></div>
-
-                  <label className="flex items-center gap-3 cursor-pointer group w-fit">
-                    <div className="relative">
-                      <input 
-                        type="checkbox" 
-                        checked={formData.is_featured} 
-                        onChange={e => setFormData({...formData, is_featured: e.target.checked})} 
-                        className="sr-only" 
-                      />
-                      <div className={`block w-14 h-8 rounded-full transition-colors ${formData.is_featured ? 'bg-[#d4af37]' : 'bg-stone-300'}`}></div>
-                      <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${formData.is_featured ? 'translate-x-6' : ''}`}></div>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className={`text-sm font-bold transition-colors ${formData.is_featured ? 'text-[#b08e23]' : 'text-stone-500'}`}>
-                        {formData.is_featured ? 'Destacado en Portada' : 'Servicio Normal'}
-                      </span>
-                      <span className="text-xs text-stone-400 font-medium">Marcando esta opción, el tratamiento aparecerá en el slider de la web pública.</span>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              {/* BLOQUE SEO */}
-              <div className="mt-8 border border-stone-100 bg-stone-50/50 rounded-2xl overflow-hidden">
-                <details className="group">
-                  <summary className="font-extrabold text-stone-700 bg-stone-100/50 px-6 py-4 cursor-pointer hover:bg-stone-100 transition-colors list-none flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <Settings2 size={18} strokeWidth={1.5} className="text-stone-500" /> Configuración SEO <span className="font-normal text-sm text-stone-400 ml-2">(Opcional)</span>
-                    </div>
-                    <ChevronDown size={18} strokeWidth={1.5} className="text-stone-400 group-open:rotate-180 transition-transform" />
-                  </summary>
-                  <div className="p-6 grid grid-cols-1 gap-6">
-                    <div>
-                      <label className="block text-sm font-semibold text-stone-700 mb-2">Título de la Página (Meta Title)</label>
-                      <input type="text" value={formData.seo_title || ""} onChange={e => setFormData({...formData, seo_title: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder={`Ej: ${formData.name || 'Tratamiento'} en Clínica Merce`} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-stone-700 mb-2">Descripción Corta (Meta Description)</label>
-                      <textarea rows={3} value={formData.seo_description || ""} onChange={e => setFormData({...formData, seo_description: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="Resumen persuasivo de 150 caracteres sobre este tratamiento..." />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-stone-700 mb-2">Palabras Clave (Meta Keywords)</label>
-                      <input type="text" value={formData.seo_keywords || ""} onChange={e => setFormData({...formData, seo_keywords: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" placeholder="láser, depilación, axilas, tratamiento..." />
-                    </div>
-                  </div>
-                </details>
-              </div>
-            </form>
-          </div>
-
-          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 md:p-8 pt-12 bg-gradient-to-t from-white via-white/95 to-transparent flex flex-row items-center justify-end gap-3 rounded-b-xl z-20">
-            {editingId && (
-              <button 
-                type="button" 
-                onClick={handleDeleteService} 
-                className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 w-11 h-11 rounded-xl transition-all shadow-sm flex items-center justify-center mr-auto" 
-                title="Eliminar Servicio"
-              >
-                <Trash2 size={18} strokeWidth={1.5} />
-              </button>
-            )}
-            <button 
-              onClick={handleCancel} 
-              type="button" 
-              className="px-5 py-3 rounded-xl font-bold text-stone-600 hover:bg-stone-100 transition-all text-sm bg-white"
-            >
-              Cancelar
-            </button>
-            <button 
-              form="service-form"
-              disabled={saving || uploadingImage} 
-              type="submit" 
-              className="bg-stone-900 hover:bg-[#d4af37] disabled:opacity-50 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg text-sm active:scale-95 border border-stone-800"
-            >
-              {saving ? 'Guardando...' : (editingId ? 'Guardar Cambios' : 'Añadir Servicio')}
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {showCropModal && (
         <CropImageModal 
