@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Invoice } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
-import { Download, MoreHorizontal, Eye, Trash2, FileSpreadsheet, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Download, MoreHorizontal, Eye, Trash2, FileSpreadsheet, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +14,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useFeedback } from '@/app/contexts/FeedbackContext';
+
 
 interface Props {
   invoices: Invoice[];
@@ -84,6 +87,121 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
     document.body.removeChild(link);
   };
 
+  const exportToPDF = () => {
+    if (invoices.length === 0) return;
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    
+    // Configuración estética
+    const primaryColor = [28, 25, 23]; // Antracita (#1c1917)
+    const secondaryColor = [120, 113, 108]; // Stone-500
+    
+    // Título Principal
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.text("Registro de Facturación", 20, 25);
+    
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+    doc.text(`Generado el ${new Date().toLocaleDateString('es-ES')} - Página ${pagination.page}`, 20, 32);
+
+    // Totales (KPIs) de las facturas actuales
+    let totalBruto = 0;
+    let totalBase = 0;
+    let totalIva = 0;
+
+    invoices.forEach(inv => {
+      const bruto = Number(inv.amount);
+      const taxRate = Number(inv.tax_rate);
+      const base = bruto / (1 + (taxRate / 100));
+      const iva = bruto - base;
+      
+      totalBruto += bruto;
+      totalBase += base;
+      totalIva += iva;
+    });
+
+    // Dibujar tarjetas de totales
+    const cardWidth = (pageWidth - 50) / 3;
+    const cardY = 45;
+
+    const drawCard = (label: string, value: string, x: number) => {
+        doc.setDrawColor(231, 229, 228); // Stone-200
+        doc.setFillColor(250, 250, 250); // Stone-50
+        doc.roundedRect(x, cardY, cardWidth, 25, 3, 3, "FD");
+        
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+        doc.text(label.toUpperCase(), x + 5, cardY + 8);
+        
+        doc.setFontSize(14);
+        doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        doc.text(value, x + 5, cardY + 18);
+    };
+
+    drawCard("Total Bruto", `${totalBruto.toFixed(2)} €`, 20);
+    drawCard("Base Imponible", `${totalBase.toFixed(2)} €`, 20 + cardWidth + 5);
+    drawCard("Cuota IVA", `${totalIva.toFixed(2)} €`, 20 + (cardWidth + 5) * 2);
+
+    // Tabla de Datos
+    const tableData = invoices.map(inv => {
+      const bruto = Number(inv.amount);
+      const taxRate = Number(inv.tax_rate);
+      const base = bruto / (1 + (taxRate / 100));
+      const iva = bruto - base;
+      
+      return [
+        new Date(inv.date).toLocaleDateString('es-ES'),
+        getClientName(inv.client_id),
+        inv.concept,
+        `${base.toFixed(2)} €`,
+        `${iva.toFixed(2)} €`,
+        `${bruto.toFixed(2)} €`
+      ];
+    });
+
+    autoTable(doc, {
+      startY: 80,
+      head: [['Fecha', 'Cliente', 'Concepto', 'Base Imp.', 'IVA', 'Total']],
+      body: tableData,
+      theme: 'striped',
+      headStyles: {
+        fillColor: [28, 25, 23],
+        textColor: [255, 255, 255],
+        fontSize: 10,
+        fontStyle: 'bold',
+        halign: 'left'
+      },
+      bodyStyles: {
+        fontSize: 9,
+        textColor: [68, 64, 60] // Stone-700
+      },
+      columnStyles: {
+        3: { halign: 'right' },
+        4: { halign: 'right' },
+        5: { halign: 'right' }
+      },
+      margin: { left: 20, right: 20 },
+      didDrawPage: (data) => {
+        // Footer de página
+        doc.setFontSize(8);
+        doc.setTextColor(168, 162, 158); // Stone-400
+        doc.text(
+          `Página ${data.pageNumber}`,
+          pageWidth / 2,
+          doc.internal.pageSize.getHeight() - 10,
+          { align: 'center' }
+        );
+      }
+    });
+
+    doc.save(`facturacion_merce_p${pagination.page}.pdf`);
+  };
+
   const handleDelete = (id: string) => {
     showFeedback({
       type: 'confirm',
@@ -113,7 +231,15 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
     <div className="bg-card rounded-[2.5rem] border border-border/40 shadow-sm overflow-hidden flex flex-col">
       
       {/* Header Tools */}
-      <div className="p-4 border-b border-border/40 flex justify-end bg-stone-50/50">
+      <div className="p-4 border-b border-border/40 flex justify-end gap-3 bg-stone-50/50">
+        <button 
+          onClick={exportToPDF}
+          disabled={invoices.length === 0}
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-stone-200 rounded-xl text-sm font-bold text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-all shadow-sm disabled:opacity-50"
+        >
+          <FileText size={16} className="text-rose-600" />
+          Descargar PDF
+        </button>
         <button 
           onClick={exportToCSV}
           disabled={invoices.length === 0}
