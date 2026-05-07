@@ -60,7 +60,7 @@ export default function PublicNavbar() {
       const target = e.target as HTMLElement | Document;
       
       // Ignorar eventos de scroll que provengan de los carruseles horizontales
-      if (target !== document && target.id !== 'main-scroll-container') {
+      if (target !== document && (target as HTMLElement).id !== 'main-scroll-container') {
         return;
       }
 
