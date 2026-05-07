@@ -110,9 +110,9 @@ export default async function Home() {
           const isEven = index % 2 === 0;
 
           return (
-            <section key={category.id} className={`w-full py-24 overflow-hidden flex flex-col justify-center h-[100dvh] snap-start md:h-auto md:snap-none ${isEven ? 'bg-white' : 'bg-[#F7F7F5]'}`}>
+            <section key={category.id} className={`w-full pt-20 pb-8 md:py-24 overflow-hidden flex flex-col h-[100dvh] snap-start md:h-auto md:snap-none ${isEven ? 'bg-white' : 'bg-[#F7F7F5]'}`}>
               {/* 1. Título y descripción (Centrados y contenidos) */}
-              <div className="w-full max-w-[1400px] mx-auto px-6 md:px-12 mb-10 flex justify-between items-end gap-8">
+              <div className="w-full max-w-[1400px] mx-auto px-6 md:px-12 mb-6 flex-shrink-0 flex justify-between items-end gap-8">
                 <div className="max-w-2xl">
                   <h2 className="text-4xl md:text-5xl font-serif font-extrabold text-stone-900 mb-4">{category.name}</h2>
                   <p className="hidden md:block text-lg md:text-xl text-stone-500">{category.description || 'Descubre nuestros tratamientos exclusivos diseñados para resaltar tu belleza natural.'}</p>
@@ -156,9 +156,9 @@ export default async function Home() {
               )}
 
               {/* Layout Móvil: Apple-Style Snap Carousel */}
-              <div className="md:hidden flex overflow-x-auto snap-x snap-mandatory hide-scroll gap-4 px-6 pb-8 items-center flex-1">
+              <div className="md:hidden flex overflow-x-auto snap-x snap-mandatory hide-scroll gap-4 px-6 items-center flex-1 min-h-0">
                 {categoryServices.map((svc: any) => (
-                  <ServiceCard key={svc.id} service={svc} className="w-[85vw] h-[65vh] max-h-[600px] snap-center" />
+                  <ServiceCard key={svc.id} service={svc} className="w-[75vw] h-full snap-center" />
                 ))}
 
                 {/* Booksy End Card (Solo Móvil) */}
@@ -166,7 +166,7 @@ export default async function Home() {
                   href="https://booksy.com/es-es/12345_clinica-merce_estetica_12345_madrid"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-shrink-0 w-[85vw] h-[65vh] max-h-[600px] snap-center rounded-[2.5rem] bg-stone-900 p-10 flex flex-col justify-between text-white shadow-xl"
+                  className="flex-shrink-0 w-[75vw] h-full snap-center rounded-[2.5rem] bg-stone-900 p-8 flex flex-col justify-between text-white shadow-xl"
                 >
                   <div>
                     <span className="text-5xl">✨</span>

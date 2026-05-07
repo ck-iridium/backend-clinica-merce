@@ -49,7 +49,7 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={`
-        group relative rounded-3xl overflow-hidden border border-stone-100 block bg-stone-50 transition-transform duration-500 ease-out shadow-sm hover:shadow-xl hover:scale-[1.03]
+        group relative rounded-3xl overflow-hidden border border-stone-100 block bg-stone-50 transition-transform duration-500 ease-out shadow-sm hover:shadow-xl md:hover:scale-[1.03]
         flex-shrink-0
         ${className ? className : `
           w-[85vw] md:w-auto

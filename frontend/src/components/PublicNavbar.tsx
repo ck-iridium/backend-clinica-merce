@@ -58,6 +58,12 @@ export default function PublicNavbar() {
     const handleScroll = (e: Event) => {
       // Capturamos el scroll ya sea del window o del contenedor principal en móvil
       const target = e.target as HTMLElement | Document;
+      
+      // Ignorar eventos de scroll que provengan de los carruseles horizontales
+      if (target !== document && target.id !== 'main-scroll-container') {
+        return;
+      }
+
       const scrollY = target === document ? window.scrollY : (target as HTMLElement).scrollTop;
       
       if (scrollY !== undefined) {

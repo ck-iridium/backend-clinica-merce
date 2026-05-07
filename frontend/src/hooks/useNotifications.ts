@@ -34,6 +34,9 @@ function enrichNotification(raw: Record<string, unknown>): Notification {
   };
 }
 
+// ─── Estado Global para Deduplicación de Toasts ───────────────────────────
+const recentlyToasted = new Set<string>();
+
 // ─── Hook Principal ──────────────────────────────────────────────────────────
 export function useNotifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -129,23 +132,29 @@ export function useNotifications() {
             const newNotif = enrichNotification(payload.new as Record<string, unknown>);
             setNotifications((prev) => [newNotif, ...prev]);
 
-            // ─── Toast de notificación en tiempo real ──────────────────────
-            const toastOptions = {
-              description: newNotif.description,
-              duration: 5000,
-              // Forzamos un texto más grande y legible en el Toast
-              className: 'text-base font-semibold',
-              descriptionClassName: 'text-sm font-medium mt-1 opacity-90',
-            };
-            switch (newNotif.type) {
-              case 'success': toast.success(newNotif.title, toastOptions); break;
-              case 'warning': toast.warning(newNotif.title, toastOptions); break;
-              case 'error':   toast.error(newNotif.title, toastOptions);   break;
-              default:        toast.info(newNotif.title, toastOptions);    break;
-            }
+            // ─── Deduplicación global para evitar doble Toast (Desktop + Mobile) ──
+            if (!recentlyToasted.has(newNotif.id)) {
+              recentlyToasted.add(newNotif.id);
+              setTimeout(() => recentlyToasted.delete(newNotif.id), 5000);
 
-            // ─── Sonido de notificación categorizado ─────────────────────────
-            playNotificationSound(newNotif.type);
+              // ─── Toast de notificación en tiempo real ──────────────────────
+              const toastOptions = {
+                description: newNotif.description,
+                duration: 5000,
+                // Forzamos un texto más grande y legible en el Toast
+                className: 'text-base font-semibold',
+                descriptionClassName: 'text-sm font-medium mt-1 opacity-90',
+              };
+              switch (newNotif.type) {
+                case 'success': toast.success(newNotif.title, toastOptions); break;
+                case 'warning': toast.warning(newNotif.title, toastOptions); break;
+                case 'error':   toast.error(newNotif.title, toastOptions);   break;
+                default:        toast.info(newNotif.title, toastOptions);    break;
+              }
+
+              // ─── Sonido de notificación categorizado ─────────────────────────
+              playNotificationSound(newNotif.type);
+            }
 
           } else if (payload.eventType === 'UPDATE') {
             const updated = enrichNotification(payload.new as Record<string, unknown>);
