@@ -8,10 +8,11 @@ export default function LayoutWrapper() {
   const isDashboard = pathname?.startsWith('/dashboard');
 
   if (isDashboard) return null;
+  const isHome = pathname === '/';
 
   return (
     <>
-      <Footer />
+      {!isHome && <Footer />}
       <CookieBanner />
     </>
   );

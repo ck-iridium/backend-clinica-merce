@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
 import ServiceCard from '@/components/ServiceCard';
-import BooksyFAB from '@/components/BooksyFAB';
 import TreatmentCarousel from '@/components/TreatmentCarousel';
+import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
   title: 'Clínica de Estética Avanzada',
@@ -40,9 +40,9 @@ export default async function Home() {
 
       {/* HEADER / NAV (Eliminado en favor de PublicNavbar global) */}
 
-      <main id="main-scroll-container" className="pt-0 md:pt-0 h-screen overflow-y-auto snap-y snap-mandatory md:h-auto md:overflow-visible md:snap-none">
+      <main id="main-scroll-container" className="w-full h-[100dvh] overflow-y-auto snap-y snap-mandatory md:h-auto md:overflow-visible md:snap-none">
         {/* HERO SECTION */}
-        <section className={`relative h-screen w-full flex snap-start ${content.hero_alignment === 'top' ? 'items-start pt-48' : content.hero_alignment === 'bottom' ? 'items-end pb-32' : 'items-center'} justify-center p-6 md:p-12 overflow-hidden mt-0`}>
+        <section className={`relative h-[100dvh] min-h-[600px] w-full flex snap-start md:snap-none ${content.hero_alignment === 'top' ? 'items-start pt-48' : content.hero_alignment === 'bottom' ? 'items-end pb-32' : 'items-center'} justify-center p-6 md:p-12 overflow-hidden mt-0`}>
           {content.hero_video_url ? (
             <div className="absolute inset-0 z-0 bg-stone-900">
               <video
@@ -81,7 +81,7 @@ export default async function Home() {
         </section>
 
         {/* ABOUT SECTION */}
-        <section className="h-screen snap-start md:h-auto py-24 bg-white relative flex items-center">
+        <section className="py-24 bg-white relative flex items-center h-[100dvh] snap-start md:h-auto md:snap-none">
           <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 items-center w-full">
             <div className="space-y-6">
               <h2 className="text-4xl font-extrabold text-stone-900">{content.about_title}</h2>
@@ -110,12 +110,12 @@ export default async function Home() {
           const isEven = index % 2 === 0;
 
           return (
-            <section key={category.id} className={`w-full py-24 overflow-hidden h-screen snap-start flex flex-col justify-center md:h-auto md:block ${isEven ? 'bg-white' : 'bg-[#F7F7F5]'}`}>
+            <section key={category.id} className={`w-full py-24 overflow-hidden flex flex-col justify-center h-[100dvh] snap-start md:h-auto md:snap-none ${isEven ? 'bg-white' : 'bg-[#F7F7F5]'}`}>
               {/* 1. Título y descripción (Centrados y contenidos) */}
               <div className="w-full max-w-[1400px] mx-auto px-6 md:px-12 mb-10 flex justify-between items-end gap-8">
                 <div className="max-w-2xl">
                   <h2 className="text-4xl md:text-5xl font-serif font-extrabold text-stone-900 mb-4">{category.name}</h2>
-                  <p className="text-lg md:text-xl text-stone-500">{category.description || 'Descubre nuestros tratamientos exclusivos diseñados para resaltar tu belleza natural.'}</p>
+                  <p className="hidden md:block text-lg md:text-xl text-stone-500">{category.description || 'Descubre nuestros tratamientos exclusivos diseñados para resaltar tu belleza natural.'}</p>
                 </div>
                 <Link href={`/tratamientos#${category.id}`} className="hidden md:inline-flex items-center gap-2 font-bold text-[#d4af37] hover:text-stone-900 transition-colors uppercase tracking-widest text-sm">
                   Ver Catálogo <span className="text-xl">→</span>
@@ -156,9 +156,9 @@ export default async function Home() {
               )}
 
               {/* Layout Móvil: Apple-Style Snap Carousel */}
-              <div className="md:hidden flex overflow-x-auto snap-x snap-mandatory hide-scroll gap-4 px-6 pb-8 h-[65vh] items-center">
+              <div className="md:hidden flex overflow-x-auto snap-x snap-mandatory hide-scroll gap-4 px-6 pb-8 items-center flex-1">
                 {categoryServices.map((svc: any) => (
-                  <ServiceCard key={svc.id} service={svc} className="w-[85vw] h-full snap-center" />
+                  <ServiceCard key={svc.id} service={svc} className="w-[85vw] h-[65vh] max-h-[600px] snap-center" />
                 ))}
 
                 {/* Booksy End Card (Solo Móvil) */}
@@ -166,7 +166,7 @@ export default async function Home() {
                   href="https://booksy.com/es-es/12345_clinica-merce_estetica_12345_madrid"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-shrink-0 w-[85vw] h-full snap-center rounded-[2.5rem] bg-stone-900 p-10 flex flex-col justify-between text-white shadow-xl"
+                  className="flex-shrink-0 w-[85vw] h-[65vh] max-h-[600px] snap-center rounded-[2.5rem] bg-stone-900 p-10 flex flex-col justify-between text-white shadow-xl"
                 >
                   <div>
                     <span className="text-5xl">✨</span>
@@ -180,18 +180,12 @@ export default async function Home() {
                   </div>
                 </a>
               </div>
-
-              <div className="mt-8 text-center md:hidden px-6">
-                <Link href={`/tratamientos#${category.id}`} className="inline-block border border-stone-200 text-stone-600 px-8 py-4 rounded-full font-bold w-full">
-                  Explorar toda la categoría
-                </Link>
-              </div>
             </section>
           );
         })}
 
         {/* CTA FINAL SECTION */}
-        <section className="h-screen snap-start flex flex-col justify-center w-full py-24 bg-[#d4af37] text-stone-900 text-center px-6">
+        <section className="flex flex-col justify-center w-full py-24 bg-[#d4af37] text-stone-900 text-center px-6 h-[100dvh] snap-start md:h-auto md:snap-none">
           <div className="max-w-3xl mx-auto space-y-8 animate-in zoom-in-95 duration-700 w-full">
             <h2 className="text-5xl md:text-6xl font-extrabold tracking-tight">{content.cta_title}</h2>
             <p className="text-xl md:text-2xl font-medium opacity-90">{content.cta_subtitle}</p>
@@ -219,8 +213,12 @@ export default async function Home() {
             )}
           </div>
         </section>
+
+        {/* FOOTER MANUAL PARA SNAP MÓVIL */}
+        <div className="snap-start md:snap-none w-full">
+          <Footer />
+        </div>
       </main>
-      <BooksyFAB />
     </div>
   );
 }

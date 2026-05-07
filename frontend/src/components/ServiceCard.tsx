@@ -105,32 +105,33 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
           )}
         </div>
 
-        {/* Gradiente Protector para el texto */}
-        <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity duration-1000 ${showVideo ? 'opacity-100' : 'opacity-0'}`}></div>
-        <div className={`absolute inset-0 bg-gradient-to-t from-stone-50/90 via-stone-50/40 to-transparent transition-opacity duration-1000 ${showVideo ? 'opacity-0' : 'opacity-100'}`}></div>
+        {/* Gradiente Protector para el texto (Oscuro permanentemente para leer texto blanco) */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10"></div>
 
-        {/* CONTENEDOR DE TEXTO PEGADO ABAJO (Push-up Effect) */}
-        <div className="absolute bottom-0 left-0 w-full p-6 md:p-8 z-20 flex flex-col justify-end">
-            {/* Título y precio (Siempre visibles) */}
-            <div>
-              <h3 className={`font-serif font-extrabold leading-tight mb-2 transition-colors duration-1000 ${isLarge ? 'text-3xl md:text-4xl' : 'text-2xl md:text-3xl'} ${showVideo ? 'text-white' : 'text-stone-900'}`}>
-                {service.name}
-              </h3>
-              <div className={`flex items-center gap-3 font-semibold text-sm uppercase tracking-wider transition-colors duration-1000 ${showVideo ? 'text-[#d4af37]' : 'text-stone-600'}`}>
-                  <span>{service.duration_minutes} MIN</span>
-                  <span>•</span>
-                  <span>{service.price} €</span>
-              </div>
+        {/* CONTENEDOR DE TEXTO PEGADO ABAJO */}
+        <div className="absolute bottom-0 left-0 w-full p-8 z-20 flex flex-col justify-end">
+          
+          {/* Título y precio (Siempre visibles) */}
+          <div>
+            <h3 className="text-2xl font-serif text-white font-bold leading-tight mb-2">
+              {service.name}
+            </h3>
+            <div className="flex items-center gap-3 text-[#d4af37] font-semibold text-sm uppercase tracking-wider">
+              <span>{service.duration_minutes} MIN</span>
+              <span>•</span>
+              <span>{service.price} €</span>
             </div>
+          </div>
 
-            {/* Descripción (Oculta por defecto, se expande en hover usando grid) */}
-            <div className={`grid transition-all duration-500 ease-in-out ${isLarge ? 'grid-rows-[1fr]' : 'grid-rows-[0fr] group-hover:grid-rows-[1fr]'}`}>
-              <div className="overflow-hidden">
-                <p className={`text-sm mt-4 line-clamp-3 transition-colors duration-1000 ${showVideo ? 'text-stone-300' : 'text-stone-600'}`}>
-                  {service.description}
-                </p>
-              </div>
+          {/* Descripción (Oculta por defecto, se expande en hover) */}
+          <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-all duration-500 ease-in-out">
+            <div className="overflow-hidden">
+              <p className="text-gray-200 text-sm mt-4 line-clamp-3">
+                {service.description}
+              </p>
             </div>
+          </div>
+
         </div>
     </Link>
   );

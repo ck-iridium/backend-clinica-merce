@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -13,6 +13,8 @@ export default function PublicNavbar() {
   
   // States for Phase 1
   const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const lastScrollY = useRef(0);
   const [categories, setCategories] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -51,7 +53,7 @@ export default function PublicNavbar() {
     }
   }, [isDashboard]);
 
-  // Scroll logic for Glassmorphism
+  // Scroll logic for Glassmorphism & Smart Header
   useEffect(() => {
     const handleScroll = (e: Event) => {
       // Capturamos el scroll ya sea del window o del contenedor principal en móvil
@@ -60,13 +62,22 @@ export default function PublicNavbar() {
       
       if (scrollY !== undefined) {
         setScrolled(scrollY > 50);
+
+        // Smart Header Logic
+        if (scrollY > 200 && scrollY > lastScrollY.current && !isOpen) {
+          setHidden(true); // Ocultar al bajar
+        } else if (scrollY < lastScrollY.current || scrollY <= 50) {
+          setHidden(false); // Mostrar al subir
+        }
+
+        lastScrollY.current = scrollY;
       }
     };
     
     // Usamos capture: true para interceptar eventos de scroll de elementos hijos (como el main con overflow-y-auto)
     window.addEventListener('scroll', handleScroll, true);
     return () => window.removeEventListener('scroll', handleScroll, true);
-  }, []);
+  }, [isOpen]);
 
   // Bloqueo de scroll cuando el menú móvil está abierto para aislar la experiencia
   useEffect(() => {
@@ -84,7 +95,7 @@ export default function PublicNavbar() {
 
   return (
     <>
-      <nav className={`fixed w-full top-0 z-[100] transition-all duration-700 ${(scrolled || !isHome) ? 'bg-white/90 backdrop-blur-xl border-b border-stone-200/50 shadow-sm py-0' : 'bg-transparent border-transparent py-2'}`}>
+      <nav className={`fixed w-full top-0 z-[100] transition-all duration-500 ease-in-out ${hidden ? '-translate-y-full' : 'translate-y-0'} ${(scrolled || !isHome) ? 'bg-white/90 backdrop-blur-xl border-b border-stone-200/50 shadow-sm py-0' : 'bg-transparent border-transparent py-2'}`}>
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between relative">
         
         {/* LOGO - z-index alto para estar sobre el overlay si es necesario */}

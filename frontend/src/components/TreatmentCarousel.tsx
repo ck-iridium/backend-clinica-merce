@@ -1,43 +1,61 @@
 "use client";
 import { useRef } from 'react';
-import ServiceCard from './ServiceCard'; // Asegúrate de la ruta
+import ServiceCard from './ServiceCard'; 
 
 export default function TreatmentCarousel({ servicios }: { servicios: any[] }) {
-  const carouselRef = useRef<HTMLDivElement>(null);
+  // 1. Referencia al contenedor de SCROLL
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const scroll = (direction: 'left' | 'right') => {
-    if (carouselRef.current) {
-      // Scrolleamos un 60% del ancho visible de la pantalla para asegurar que rompemos el punto de snap
-      const scrollAmount = direction === 'left' ? -carouselRef.current.clientWidth * 0.6 : carouselRef.current.clientWidth * 0.6;
-      carouselRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+  const handleScroll = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const child = scrollContainerRef.current.children[0] as HTMLElement;
+      const childWidth = child ? child.offsetWidth : 320;
+      const gap = 24; // gap-6
+      const scrollAmount = direction === 'left' ? -(childWidth + gap) : (childWidth + gap);
+      
+      scrollContainerRef.current.scrollBy({
+        left: scrollAmount,
+        behavior: 'smooth'
+      });
+    } else {
+      console.error("Error: No se encuentra la referencia al contenedor de scroll");
     }
   };
 
   return (
-    <div className="w-full flex flex-col">
-      {/* TRACK DEL CARRUSEL (Sangrado Edge-to-Edge) */}
+    <div className="w-full flex flex-col group/carousel">
+      <style dangerouslySetInnerHTML={{ __html: '.hide-scroll-desktop::-webkit-scrollbar { display: none; } .hide-scroll-desktop { -ms-overflow-style: none; scrollbar-width: none; }' }} />
+      {/* CONTENEDOR DE SCROLL - LA REF VA AQUÍ */}
       <div 
-        ref={carouselRef}
-        className="flex overflow-x-auto snap-x snap-mandatory gap-6 pt-8 pb-24 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        ref={scrollContainerRef}
+        className="flex overflow-x-auto hide-scroll-desktop gap-6 py-12"
         style={{
-          paddingLeft: 'max(1.5rem, calc((100vw - 1400px) / 2 + 3rem))', /* 3rem = px-12 align */
-          paddingRight: '1.5rem'
+          paddingLeft: 'max(1.5rem, calc((100vw - 1400px) / 2 + 3rem))',
+          paddingRight: 'max(1.5rem, calc((100vw - 1400px) / 2 + 3rem))'
         }}
       >
-        {servicios.map((servicio) => (
-          <div key={servicio.id} className="min-w-[320px] max-w-[320px] md:min-w-[360px] md:max-w-[360px] h-[450px] md:h-[520px] shrink-0 snap-start">
-            <ServiceCard service={servicio} className="w-full h-full" />
+        {servicios.map((s) => (
+          <div key={s.id} className="w-[300px] h-[540px] shrink-0">
+            <ServiceCard service={s} className="w-full h-full" />
           </div>
         ))}
       </div>
 
-      {/* FLECHAS DE NAVEGACIÓN (Alineadas a la derecha del contenedor base) */}
-      <div className="w-full max-w-[1400px] mx-auto px-6 md:px-12 mt-2 flex justify-end gap-4 hidden md:flex">
-        <button onClick={() => scroll('left')} className="w-10 h-10 rounded-full bg-white shadow-md border border-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-all">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+      {/* BOTONES DE NAVEGACIÓN - BLANCOS ESTILO APPLE */}
+      <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12 flex justify-end gap-4 -mt-4 mb-8 hidden md:flex">
+        <button 
+          onClick={() => handleScroll('left')}
+          className="w-12 h-12 rounded-full bg-white shadow-lg border border-gray-100 flex items-center justify-center text-gray-800 hover:scale-110 active:scale-95 transition-all z-30"
+          aria-label="Anterior"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
         </button>
-        <button onClick={() => scroll('right')} className="w-10 h-10 rounded-full bg-white shadow-md border border-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-all">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+        <button 
+          onClick={() => handleScroll('right')}
+          className="w-12 h-12 rounded-full bg-white shadow-lg border border-gray-100 flex items-center justify-center text-gray-800 hover:scale-110 active:scale-95 transition-all z-30"
+          aria-label="Siguiente"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
         </button>
       </div>
     </div>
