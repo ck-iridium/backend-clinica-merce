@@ -77,6 +77,7 @@ class ServiceBase(BaseModel):
     is_featured: bool = False
     category_id: Optional[str] = None
     image_url: Optional[str] = None
+    video_url: Optional[str] = None
     seo_title: Optional[str] = None
     seo_description: Optional[str] = None
     seo_keywords: Optional[str] = None
@@ -96,6 +97,7 @@ class ServiceUpdate(BaseModel):
     is_featured: Optional[bool] = None
     category_id: Optional[str] = None
     image_url: Optional[str] = None
+    video_url: Optional[str] = None
     seo_title: Optional[str] = None
     seo_description: Optional[str] = None
     seo_keywords: Optional[str] = None
@@ -385,20 +387,22 @@ class DirectSaleRequest(BaseModel):
 
 # --- Site Content (CMS) ---
 class SiteContentBase(BaseModel):
-    hero_title: str
-    hero_subtitle: str
-    hero_button_text: str
-    hero_button_link: str
+    hero_title: Optional[str] = None
+    hero_subtitle: Optional[str] = None
+    hero_button_text: Optional[str] = None
+    hero_button_link: Optional[str] = None
     hero_image_url: Optional[str] = None
+    hero_video_url: Optional[str] = None
+    hero_alignment: Optional[str] = "center"
     
-    about_title: str
-    about_text: str
+    about_title: Optional[str] = None
+    about_text: Optional[str] = None
     about_image_url: Optional[str] = None
     
-    cta_title: str
-    cta_subtitle: str
-    cta_button_text: str
-    cta_button_link: str
+    cta_title: Optional[str] = None
+    cta_subtitle: Optional[str] = None
+    cta_button_text: Optional[str] = None
+    cta_button_link: Optional[str] = None
     
     seo_title: Optional[str] = None
     seo_description: Optional[str] = None
@@ -410,6 +414,8 @@ class SiteContentUpdate(BaseModel):
     hero_button_text: Optional[str] = None
     hero_button_link: Optional[str] = None
     hero_image_url: Optional[str] = None
+    hero_video_url: Optional[str] = None
+    hero_alignment: Optional[str] = None
     
     about_title: Optional[str] = None
     about_text: Optional[str] = None

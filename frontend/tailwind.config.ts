@@ -19,8 +19,8 @@ const config = {
     },
     extend: {
       fontFamily: {
-        sans: ["var(--font-inter)"],
-        serif: ["var(--font-cormorant)"],
+        sans: ["var(--font-inter)", "sans-serif"],
+        serif: ["var(--font-playfair)", "serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -55,6 +55,11 @@ const config = {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        brand: {
+          gold: "#d4af37",
+          dark: "#1F2937",
+          surface: "#F7F7F5",
         },
       },
       borderRadius: {

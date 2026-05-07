@@ -13,17 +13,17 @@ export default function BrandingTab({
   handleImageUpload 
 }: BrandingTabProps) {
   return (
-    <div className="space-y-8 animate-in slide-in-from-bottom-2 duration-300">
-      <div className="bg-white rounded-[2.5rem] border border-stone-100 p-8 shadow-sm">
-        <div className="flex items-center gap-3 mb-6 pb-4 border-b border-stone-100">
+    <div className="space-y-4 md:space-y-8 animate-in slide-in-from-bottom-2 duration-300">
+      <div className="bg-white rounded-3xl md:rounded-[2.5rem] border border-stone-100 p-5 md:p-8 shadow-sm">
+        <div className="flex items-center gap-3 mb-4 md:mb-6 pb-3 md:pb-4 border-b border-stone-100">
           <span className="w-9 h-9 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-500">
             <Sparkles size={18} strokeWidth={1.5} />
           </span>
           <h3 className="text-2xl font-serif font-semibold text-stone-800">Identidad Visual App</h3>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="border border-stone-200 rounded-[2rem] p-8 bg-stone-50/50 flex flex-col items-center gap-6 transition-all hover:bg-stone-50 group">
-            <div className="w-32 h-32 bg-white shadow-xl shadow-stone-200/50 border border-stone-100 rounded-[2.5rem] flex items-center justify-center p-6 transition-transform group-hover:scale-105 duration-500">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
+          <div className="border border-stone-200 rounded-[2rem] p-5 md:p-8 bg-stone-50/50 flex flex-col items-center gap-6 transition-all hover:bg-stone-50 group">
+            <div className="w-32 h-32 bg-white shadow-xl shadow-stone-200/50 border border-stone-100 rounded-3xl md:rounded-[2.5rem] flex items-center justify-center p-6 transition-transform group-hover:scale-105 duration-500">
                 {settings.logo_app_b64 ? <img src={settings.logo_app_b64} alt="App Logo" className="max-h-full object-contain" /> : <Building2 className="text-stone-200" size={48} />}
             </div>
             <div className="text-center">

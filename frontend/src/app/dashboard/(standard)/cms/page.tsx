@@ -21,6 +21,8 @@ export default function CMSPage() {
     hero_button_text: '',
     hero_button_link: '',
     hero_image_url: '',
+    hero_video_url: '',
+    hero_alignment: 'center',
     about_title: '',
     about_text: '',
     about_image_url: '',
@@ -211,14 +213,36 @@ export default function CMSPage() {
                   <label className="block text-sm font-bold text-foreground mb-3">Subtítulo (Opcional)</label>
                   <textarea rows={2} value={formData.hero_subtitle || ""} onChange={e => setFormData({...formData, hero_subtitle: e.target.value})} className="w-full px-5 py-4 rounded-2xl border border-border bg-stone-50/50 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium shadow-sm" />
                 </div>
+                <div className="md:col-span-1">
+                  <label className="block text-sm font-bold text-foreground mb-3 font-sans">Alineación del Contenido</label>
+                  <select 
+                    value={formData.hero_alignment || "center"} 
+                    onChange={e => setFormData({...formData, hero_alignment: e.target.value})} 
+                    className="w-full px-5 py-4 rounded-2xl border border-border bg-stone-50/50 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-bold shadow-sm"
+                  >
+                    <option value="top">Superior (Top)</option>
+                    <option value="center">Centrado (Center)</option>
+                    <option value="bottom">Inferior (Bottom)</option>
+                  </select>
+                </div>
                 <div>
-                  <label className="block text-sm font-bold text-foreground mb-3">Texto del Botón Principal</label>
+                  <label className="block text-sm font-bold text-foreground mb-3 font-sans">Texto del Botón Principal</label>
                   <input type="text" value={formData.hero_button_text || ""} onChange={e => setFormData({...formData, hero_button_text: e.target.value})} className="w-full px-5 py-4 rounded-2xl border border-border bg-stone-50/50 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium shadow-sm" />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-foreground mb-3">Enlace del Botón</label>
+                  <label className="block text-sm font-bold text-foreground mb-3 font-sans">Enlace del Botón</label>
                   <input type="text" value={formData.hero_button_link || ""} onChange={e => setFormData({...formData, hero_button_link: e.target.value})} className="w-full px-5 py-4 rounded-2xl border border-border bg-stone-50/50 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium shadow-sm" placeholder="Ej: /servicios o #contacto" />
                 </div>
+              </div>
+
+              <div className="pt-8 border-t border-border/20">
+                <h3 className="text-lg font-bold text-stone-800 mb-6 font-serif tracking-tight flex items-center gap-2">
+                   <span className="text-xl">🎥</span> Video de Fondo (Opcional)
+                </h3>
+                <ImageUploadBlock label="Video Principal (MP4)" fieldName="hero_video_url" />
+                <p className="text-xs text-muted-foreground mt-2 italic">
+                  Nota: Si subes un video, tendrá prioridad sobre la imagen de fondo. Usa un video ligero (MP4) para mejor rendimiento.
+                </p>
               </div>
             </div>
           )}

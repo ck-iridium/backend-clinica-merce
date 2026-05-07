@@ -67,6 +67,7 @@ class Service(Base):
     is_active = Column(Boolean, default=True)
     is_featured = Column(Boolean, default=False)
     image_url = Column(String, nullable=True)
+    video_url = Column(String, nullable=True)
     seo_title = Column(String, nullable=True)
     seo_description = Column(Text, nullable=True)
     seo_keywords = Column(String, nullable=True)
@@ -200,6 +201,8 @@ class SiteContent(Base):
     hero_button_text = Column(String, default="Reservar Cita")
     hero_button_link = Column(String, default="/reservar")
     hero_image_url = Column(String, nullable=True)
+    hero_video_url = Column(String, nullable=True)
+    hero_alignment = Column(String, default="center") # top, center, bottom
     
     # About Section
     about_title = Column(String, default="Sobre Merce Estética")

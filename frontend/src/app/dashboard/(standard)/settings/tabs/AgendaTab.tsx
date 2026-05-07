@@ -16,10 +16,10 @@ export default function AgendaTab({
   handleDeleteBlock 
 }: AgendaTabProps) {
   return (
-    <div className="space-y-8 animate-in slide-in-from-bottom-2 duration-300">
+    <div className="space-y-4 md:space-y-8 animate-in slide-in-from-bottom-2 duration-300">
       {/* Horario Hábil */}
-      <div className="bg-white rounded-[2.5rem] border border-stone-100 p-8 shadow-sm">
-        <div className="flex items-center gap-3 mb-6 pb-4 border-b border-stone-100">
+      <div className="bg-white rounded-3xl md:rounded-[2.5rem] border border-stone-100 p-5 md:p-8 shadow-sm">
+        <div className="flex items-center gap-3 mb-4 md:mb-6 pb-3 md:pb-4 border-b border-stone-100">
           <span className="w-9 h-9 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-500">
             <Clock size={18} strokeWidth={1.5} />
           </span>
@@ -88,8 +88,8 @@ export default function AgendaTab({
       </div>
 
       {/* Gestor de Ausencias */}
-      <div className="bg-white rounded-[2.5rem] border border-stone-100 p-8 shadow-sm">
-        <div className="flex items-center justify-between mb-6 pb-4 border-b border-stone-100">
+      <div className="bg-white rounded-3xl md:rounded-[2.5rem] border border-stone-100 p-5 md:p-8 shadow-sm">
+        <div className="flex items-center justify-between mb-4 md:mb-6 pb-3 md:pb-4 border-b border-stone-100">
           <div className="flex items-center gap-3">
             <span className="w-9 h-9 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-500">
               <Calendar size={18} strokeWidth={1.5} />
@@ -105,7 +105,7 @@ export default function AgendaTab({
           {timeBlocks && timeBlocks.length > 0 ? (
             <ul className="divide-y divide-stone-100">
               {timeBlocks.map((tb: any) => (
-                <li key={tb.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-white transition-colors">
+                <li key={tb.id} className="p-4 flex flex-row items-center justify-between gap-4 hover:bg-white transition-colors">
                   <div className="flex flex-col">
                     <span className="font-bold text-stone-800">{tb.reason || 'Día inhábil'}</span>
                     <div className="flex items-center gap-2 mt-1">
@@ -128,8 +128,8 @@ export default function AgendaTab({
       </div>
 
       {/* Margen Agenda */}
-      <div className="bg-white rounded-[2.5rem] border border-stone-100 p-8 shadow-sm">
-        <div className="flex items-center gap-3 mb-6 pb-4 border-b border-stone-100">
+      <div className="bg-white rounded-3xl md:rounded-[2.5rem] border border-stone-100 p-5 md:p-8 shadow-sm">
+        <div className="flex items-center gap-3 mb-4 md:mb-6 pb-3 md:pb-4 border-b border-stone-100">
           <span className="w-9 h-9 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-500">
             <Hash size={18} strokeWidth={1.5} />
           </span>

@@ -26,16 +26,18 @@ export default function SettingsPage() {
   const router = useRouter();
   const { role, loading: loadingRole } = useAuthRole();
   const [settings, setSettings] = useState<any>(null);
+  const [originalSettings, setOriginalSettings] = useState<any>(null);
   const [timeBlocks, setTimeBlocks] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('general');
+  const [hasChanges, setHasChanges] = useState(false);
 
   // Modal de Ausencias
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [newBlock, setNewBlock] = useState({ start_time: '', end_time: '', reason: '', is_annual_holiday: false });
   const [addingBlock, setAddingBlock] = useState(false);
-  
+
   // File inputs refs
   const logoAppRef = useRef<HTMLInputElement>(null);
   const logoPdfRef = useRef<HTMLInputElement>(null);
@@ -59,7 +61,7 @@ export default function SettingsPage() {
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/`),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/time-blocks/`)
       ]);
-      
+
       if (settingsRes.ok) {
         const remoteSettings = await settingsRes.json();
         const savedDays = localStorage.getItem('mercestetica_working_days');
@@ -69,6 +71,7 @@ export default function SettingsPage() {
           remoteSettings.working_days = [1, 2, 3, 4, 5];
         }
         setSettings(remoteSettings);
+        setOriginalSettings(JSON.parse(JSON.stringify(remoteSettings)));
       }
       if (blocksRes.ok) {
         setTimeBlocks(await blocksRes.json());
@@ -80,6 +83,13 @@ export default function SettingsPage() {
     }
   };
 
+  useEffect(() => {
+    if (settings && originalSettings) {
+      const isDifferent = JSON.stringify(settings) !== JSON.stringify(originalSettings);
+      setHasChanges(isDifferent);
+    }
+  }, [settings, originalSettings]);
+
   const handleSave = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setSaving(true);
@@ -90,6 +100,8 @@ export default function SettingsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+      setOriginalSettings(JSON.parse(JSON.stringify(settings)));
+      setHasChanges(false);
       toast.success('Ajustes actualizados correctamente');
     } catch (e) {
       console.error(e);
@@ -108,7 +120,7 @@ export default function SettingsPage() {
         start_time: new Date(newBlock.start_time).toISOString(),
         end_time: new Date(newBlock.end_time).toISOString()
       };
-      
+
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/time-blocks/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -130,19 +142,25 @@ export default function SettingsPage() {
   };
 
   const handleDeleteBlock = async (id: string) => {
-    if (!confirm('¿Seguro que deseas eliminar esta ausencia?')) return;
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/time-blocks/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        toast.success('Ausencia eliminada');
-        fetchSettings();
-      } else {
-        toast.error('Error al eliminar');
+    showFeedback({
+      type: 'confirm',
+      title: 'Eliminar Ausencia',
+      message: '¿Estás seguro de que deseas eliminar este bloque horario? Esta acción no se puede deshacer.',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/time-blocks/${id}`, { method: 'DELETE' });
+          if (res.ok) {
+            toast.success('Ausencia eliminada');
+            fetchSettings();
+          } else {
+            toast.error('Error al eliminar');
+          }
+        } catch (e) {
+          console.error(e);
+          toast.error('Error de red');
+        }
       }
-    } catch (e) {
-      console.error(e);
-      toast.error('Error de red');
-    }
+    });
   };
 
   const handleImageUpload = (field: string, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -173,36 +191,26 @@ export default function SettingsPage() {
   };
 
   if (loading || loadingRole || !settings || (role?.toLowerCase() !== 'administrador' && role?.toLowerCase() !== 'admin')) {
-     return (
-       <div className="flex flex-col gap-4 justify-center items-center h-[60vh] animate-in fade-in duration-500">
-         <Skeleton className="w-16 h-16 rounded-2xl" />
-         <Skeleton className="w-48 h-6 rounded-xl" />
-       </div>
-     );
+    return (
+      <div className="flex flex-col gap-4 justify-center items-center h-[60vh] animate-in fade-in duration-500">
+        <Skeleton className="w-16 h-16 rounded-2xl" />
+        <Skeleton className="w-48 h-6 rounded-xl" />
+      </div>
+    );
   }
 
   return (
-    <div className="animate-in fade-in duration-500 max-w-[1200px] mx-auto pb-20">
-      {/* CABECERA */}
-      <div className="mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-4xl font-serif font-semibold text-stone-800 tracking-tight">Ajustes</h1>
-          <p className="text-stone-400 font-medium mt-1">Configura la identidad y operativa de tu clínica.</p>
-        </div>
-        <button
-          onClick={() => handleSave()}
-          disabled={saving}
-          className="bg-stone-900 hover:bg-[#d4af37] text-white px-6 py-3 rounded-xl font-bold shadow-sm transition-all flex items-center gap-2 disabled:opacity-50 shrink-0"
-        >
-          <Save size={16} strokeWidth={1.5} />
-          {saving ? 'Guardando...' : 'Guardar Cambios'}
-        </button>
+    <div className="animate-in fade-in duration-500 max-w-[1200px] mx-auto px-0 sm:px-4 md:px-8 pt-4 md:pt-0 pb-32 md:pb-20">
+      {/* CABECERA (Desktop & Mobile) */}
+      <div className="mb-3 md:mb-8 px-3 sm:px-0">
+        <h1 className="text-3xl md:text-4xl font-serif font-semibold text-stone-800 tracking-tight">Ajustes</h1>
+        <p className="text-xs md:text-base text-stone-400 font-medium mt-1">Configura la identidad y operativa de tu clínica.</p>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-8 items-start">
-        {/* SIDEBAR */}
-        <aside className="w-full md:w-64 shrink-0 bg-white border border-stone-100 rounded-[2rem] p-3 shadow-sm sticky top-24">
-          <nav className="flex flex-row md:flex-col gap-1 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 scrollbar-hide">
+      <div className="flex flex-col md:flex-row gap-2 md:gap-8 items-start relative px-1 sm:px-0">
+        {/* SIDEBAR (Desktop) / TOPBAR (Mobile) */}
+        <aside className="w-full md:w-64 shrink-0 z-40 sticky top-1 md:top-24 bg-white border border-stone-100 rounded-2xl md:rounded-[2rem] p-1.5 md:p-3 shadow-sm">
+          <nav className="flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-x-visible scrollbar-hide">
             {[
               { id: 'general', label: 'General', icon: Building2 },
               { id: 'agenda', label: 'Agenda', icon: Clock },
@@ -213,89 +221,119 @@ export default function SettingsPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm transition-all whitespace-nowrap
-                  ${activeTab === tab.id 
-                    ? 'bg-stone-900 text-white shadow-md shadow-stone-200' 
-                    : 'text-stone-400 hover:text-stone-600 hover:bg-stone-50'}`}
+                className={`flex items-center gap-2 px-4 py-2.5 md:py-3 rounded-full md:rounded-2xl font-bold text-sm transition-all whitespace-nowrap
+                    ${activeTab === tab.id
+                    ? 'bg-stone-900 text-white shadow-md shadow-stone-200'
+                    : 'bg-stone-50 md:bg-transparent text-stone-500 hover:text-stone-700 hover:bg-stone-100 border border-stone-100 md:border-transparent'}`}
               >
-                <tab.icon size={18} strokeWidth={activeTab === tab.id ? 2 : 1.5} />
+                <tab.icon size={16} strokeWidth={activeTab === tab.id ? 2 : 1.5} />
                 {tab.label}
               </button>
             ))}
           </nav>
+
+          {/* BOTÓN GUARDAR (Desktop) */}
+          <div className="hidden md:block mt-4 pt-4 border-t border-stone-50">
+            <button
+              onClick={() => handleSave()}
+              disabled={saving || !hasChanges}
+              className={`w-full py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 shadow-sm
+                  ${hasChanges
+                  ? 'bg-stone-900 text-white hover:bg-[#d4af37]'
+                  : 'bg-stone-100 text-stone-300 cursor-not-allowed'}`}
+            >
+              <Save size={18} strokeWidth={1.5} />
+              {saving ? 'Guardando...' : 'Guardar Cambios'}
+            </button>
+            {!hasChanges && <p className="text-[10px] text-stone-300 text-center mt-2 font-medium italic">No hay cambios pendientes</p>}
+          </div>
         </aside>
 
         {/* PANEL DINÁMICO */}
-        <div className="flex-1 w-full">
+        <div className="flex-1 w-full mt-0 relative z-10">
           {activeTab === 'general' && <GeneralTab settings={settings} setSettings={setSettings} />}
           {activeTab === 'agenda' && (
-            <AgendaTab 
-              settings={settings} 
-              setSettings={setSettings} 
-              timeBlocks={timeBlocks} 
-              setShowBlockModal={setShowBlockModal} 
-              handleDeleteBlock={handleDeleteBlock} 
+            <AgendaTab
+              settings={settings}
+              setSettings={setSettings}
+              timeBlocks={timeBlocks}
+              setShowBlockModal={setShowBlockModal}
+              handleDeleteBlock={handleDeleteBlock}
             />
           )}
           {activeTab === 'billing' && (
-            <BillingTab 
-              settings={settings} 
-              setSettings={setSettings} 
-              logoPdfRef={logoPdfRef} 
-              sigRef={sigRef} 
-              handleImageUpload={handleImageUpload} 
+            <BillingTab
+              settings={settings}
+              setSettings={setSettings}
+              logoPdfRef={logoPdfRef}
+              sigRef={sigRef}
+              handleImageUpload={handleImageUpload}
             />
           )}
           {activeTab === 'branding' && (
-            <BrandingTab 
-              settings={settings} 
-              logoAppRef={logoAppRef} 
-              handleImageUpload={handleImageUpload} 
+            <BrandingTab
+              settings={settings}
+              logoAppRef={logoAppRef}
+              handleImageUpload={handleImageUpload}
             />
           )}
           {activeTab === 'advanced' && <AdvancedTab settings={settings} setSettings={setSettings} />}
         </div>
       </div>
 
+      {/* FAB STICKY (Mobile) */}
+      <div className={`md:hidden fixed bottom-16 right-6 z-50 transition-all duration-300 ${hasChanges ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
+        <button
+          onClick={() => handleSave()}
+          disabled={saving || !hasChanges}
+          className="px-6 py-4 rounded-full font-bold bg-stone-900 text-white flex items-center justify-center gap-2 shadow-[0_8px_30px_rgb(0,0,0,0.2)] active:scale-95 transition-transform"
+        >
+          <Save size={18} strokeWidth={1.5} />
+          {saving ? 'Guardando...' : 'Guardar'}
+        </button>
+      </div>
+
+      {/* MODAL AUSENCIAS */}
+
       {/* MODAL AUSENCIAS (Centralizado en el padre) */}
       <Dialog open={showBlockModal} onOpenChange={setShowBlockModal}>
         <DialogContent className="sm:max-w-[425px] rounded-[2rem] p-0 overflow-hidden border-0 shadow-2xl">
           <div className="bg-[#fcf8e5] p-6 pb-4 border-b border-stone-100">
-             <DialogHeader>
-                <DialogTitle className="text-2xl font-serif text-stone-800">Añadir Nueva Ausencia</DialogTitle>
-                <DialogDescription className="text-stone-500 font-medium pt-1">
-                  Bloquea la agenda para festivos o vacaciones.
-                </DialogDescription>
-             </DialogHeader>
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-serif text-stone-800">Añadir Nueva Ausencia</DialogTitle>
+              <DialogDescription className="text-stone-500 font-medium pt-1">
+                Bloquea la agenda para festivos o vacaciones.
+              </DialogDescription>
+            </DialogHeader>
           </div>
           <form onSubmit={handleAddBlock} className="p-6 pt-4 bg-white grid gap-5">
             <div className="grid gap-2">
               <label className="text-xs font-bold text-stone-500">Motivo (Ej. Vacaciones de Verano)</label>
-              <input required type="text" value={newBlock.reason} onChange={e => setNewBlock({...newBlock, reason: e.target.value})} className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] transition-all outline-none" />
+              <input required type="text" value={newBlock.reason} onChange={e => setNewBlock({ ...newBlock, reason: e.target.value })} className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] transition-all outline-none" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <label className="text-xs font-bold text-stone-500">Inicio</label>
-                <input required type="date" value={newBlock.start_time} onChange={e => setNewBlock({...newBlock, start_time: e.target.value})} className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono text-sm outline-none" />
+                <input required type="date" value={newBlock.start_time} onChange={e => setNewBlock({ ...newBlock, start_time: e.target.value })} className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono text-sm outline-none" />
               </div>
               <div className="grid gap-2">
                 <label className="text-xs font-bold text-stone-500">Fin</label>
-                <input required type="date" value={newBlock.end_time} onChange={e => setNewBlock({...newBlock, end_time: e.target.value})} className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono text-sm outline-none" />
+                <input required type="date" value={newBlock.end_time} onChange={e => setNewBlock({ ...newBlock, end_time: e.target.value })} className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono text-sm outline-none" />
               </div>
             </div>
             <label className="flex items-center gap-3 cursor-pointer p-3 bg-stone-50 rounded-xl border border-stone-100">
-                <div className="relative">
-                  <input type="checkbox" checked={newBlock.is_annual_holiday} onChange={e => setNewBlock({...newBlock, is_annual_holiday: e.target.checked})} className="sr-only" />
-                  <div className={`block w-10 h-6 rounded-full transition-colors ${newBlock.is_annual_holiday ? 'bg-[#d4af37]' : 'bg-stone-300'}`}></div>
-                  <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${newBlock.is_annual_holiday ? 'translate-x-4' : ''}`}></div>
-                </div>
-                <span className="text-xs font-bold text-stone-700">Se repite anualmente</span>
+              <div className="relative">
+                <input type="checkbox" checked={newBlock.is_annual_holiday} onChange={e => setNewBlock({ ...newBlock, is_annual_holiday: e.target.checked })} className="sr-only" />
+                <div className={`block w-10 h-6 rounded-full transition-colors ${newBlock.is_annual_holiday ? 'bg-[#d4af37]' : 'bg-stone-300'}`}></div>
+                <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${newBlock.is_annual_holiday ? 'translate-x-4' : ''}`}></div>
+              </div>
+              <span className="text-xs font-bold text-stone-700">Se repite anualmente</span>
             </label>
             <div className="flex justify-end gap-3 mt-4">
-               <button type="button" onClick={() => setShowBlockModal(false)} className="px-4 py-2 text-stone-500 font-bold hover:bg-stone-100 rounded-xl transition-colors">Cancelar</button>
-               <button type="submit" disabled={addingBlock} className="px-6 py-2 bg-stone-900 text-white font-bold rounded-xl shadow-sm hover:bg-stone-800 transition-colors disabled:opacity-50">
-                 {addingBlock ? 'Guardando...' : 'Añadir Ausencia'}
-               </button>
+              <button type="button" onClick={() => setShowBlockModal(false)} className="px-4 py-2 text-stone-500 font-bold hover:bg-stone-100 rounded-xl transition-colors">Cancelar</button>
+              <button type="submit" disabled={addingBlock} className="px-6 py-2 bg-stone-900 text-white font-bold rounded-xl shadow-sm hover:bg-stone-800 transition-colors disabled:opacity-50">
+                {addingBlock ? 'Guardando...' : 'Añadir Ausencia'}
+              </button>
             </div>
           </form>
         </DialogContent>

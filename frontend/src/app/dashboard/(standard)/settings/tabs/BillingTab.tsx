@@ -17,10 +17,10 @@ export default function BillingTab({
   handleImageUpload 
 }: BillingTabProps) {
   return (
-    <div className="space-y-8 animate-in slide-in-from-bottom-2 duration-300">
+    <div className="space-y-4 md:space-y-8 animate-in slide-in-from-bottom-2 duration-300">
       {/* Numeración y Prefijos */}
-      <div className="bg-white rounded-[2.5rem] border border-stone-100 p-8 shadow-sm">
-        <div className="flex items-center gap-3 mb-6 pb-4 border-b border-stone-100">
+      <div className="bg-white rounded-3xl md:rounded-[2.5rem] border border-stone-100 p-5 md:p-8 shadow-sm">
+        <div className="flex items-center gap-3 mb-4 md:mb-6 pb-3 md:pb-4 border-b border-stone-100">
           <span className="w-9 h-9 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-500">
             <Hash size={18} strokeWidth={1.5} />
           </span>
@@ -49,8 +49,8 @@ export default function BillingTab({
       </div>
 
       {/* Imágenes de Documentos */}
-      <div className="bg-white rounded-[2.5rem] border border-stone-100 p-8 shadow-sm">
-        <div className="flex items-center gap-3 mb-6 pb-4 border-b border-stone-100">
+      <div className="bg-white rounded-3xl md:rounded-[2.5rem] border border-stone-100 p-5 md:p-8 shadow-sm">
+        <div className="flex items-center gap-3 mb-4 md:mb-6 pb-3 md:pb-4 border-b border-stone-100">
           <span className="w-9 h-9 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-500">
             <ImageIcon size={18} strokeWidth={1.5} />
           </span>
