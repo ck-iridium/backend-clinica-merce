@@ -8,11 +8,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Controller } from 'react-hook-form';
+import type { ServiceFormData } from '@/components/cms/ServiceEditor';
 
 interface GeneralTabProps {
-  register: UseFormRegister<any>;
-  control: Control<any>;
-  formValues: any;
+  register: UseFormRegister<ServiceFormData>;
+  control: Control<ServiceFormData>;
+  formValues: ServiceFormData;
   categories: any[];
   slugLocked: boolean;
   setSlugLocked: (locked: boolean) => void;

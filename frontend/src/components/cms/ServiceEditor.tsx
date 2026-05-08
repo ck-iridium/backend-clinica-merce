@@ -21,7 +21,7 @@ import DesignTab from '@/app/dashboard/(standard)/services/editor/components/Des
 import SeoTab from '@/app/dashboard/(standard)/services/editor/components/SeoTab';
 
 // Interfaz para el formulario
-interface ServiceFormData {
+export interface ServiceFormData {
   name: string;
   slug: string;
   description: string;

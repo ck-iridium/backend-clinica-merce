@@ -3,11 +3,12 @@ import { Sparkles } from 'lucide-react';
 import { UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Editor } from '@tiptap/react';
+import type { ServiceFormData } from '@/components/cms/ServiceEditor';
 
 interface SeoTabProps {
-  formValues: any;
-  register: UseFormRegister<any>;
-  setValue: UseFormSetValue<any>;
+  formValues: ServiceFormData;
+  register: UseFormRegister<ServiceFormData>;
+  setValue: UseFormSetValue<ServiceFormData>;
   editor: Editor | null;
 }
 

@@ -8,12 +8,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Controller } from 'react-hook-form';
+import type { ServiceFormData } from '@/components/cms/ServiceEditor';
 
 interface DesignTabProps {
-  formValues: any;
-  register: UseFormRegister<any>;
-  control: Control<any>;
-  setValue: UseFormSetValue<any>;
+  formValues: ServiceFormData;
+  register: UseFormRegister<ServiceFormData>;
+  control: Control<ServiceFormData>;
+  setValue: UseFormSetValue<ServiceFormData>;
   setShowMediaPicker: (show: boolean) => void;
 }
 
