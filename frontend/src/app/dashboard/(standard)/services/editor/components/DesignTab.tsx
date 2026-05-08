@@ -52,7 +52,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4 border-t border-stone-200 pt-6">
+      <div className="grid grid-cols-1 gap-4 border-t border-stone-200 pt-6">
         <div>
           <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Estilo Cabecera</label>
           <Controller
@@ -71,25 +71,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
             )}
           />
         </div>
-        <div>
-          <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Alineación Imagen</label>
-          <Controller
-            name="layout_preferences.alignment"
-            control={control}
-            render={({ field }) => (
-              <Select onValueChange={field.onChange} value={field.value}>
-                <SelectTrigger className="w-full h-[40px] rounded-lg border-stone-200 bg-white text-sm font-semibold shadow-none">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="right">Derecha</SelectItem>
-                  <SelectItem value="left">Izquierda</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-          />
-        </div>
-        <div className="col-span-2">
+        <div className="mt-2">
           <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Color de Acento</label>
           <div className="flex flex-wrap gap-2 items-center">
             <button 

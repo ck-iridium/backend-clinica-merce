@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Sparkles, Image as ImageIcon, Loader2 } from 'lucide-react';
 import {
   Dialog,
@@ -38,8 +38,46 @@ export default function AIImageGeneratorModal({
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [shotType, setShotType] = useState('closeup_beauty');
   const [visualStyle, setVisualStyle] = useState('luxury');
+  const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
+
+  // Helper para procesar archivos de imagen (Upload, Drop, Paste)
+  const processImageFile = useCallback((file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast.error('El archivo debe ser una imagen (JPG, PNG, WEBP, etc.)');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setReferenceImage(reader.result as string);
+      toast.success('📸 Imagen de referencia cargada');
+    };
+    reader.readAsDataURL(file);
+  }, []);
+
+  // Event Listener para Pegar (Ctrl+V)
+  useEffect(() => {
+    if (!open) return;
+
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const file = items[i].getAsFile();
+          if (file) {
+            processImageFile(file);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [open, processImageFile]);
 
   const handleOptimizePrompt = async () => {
     if (!serviceName) {
@@ -83,7 +121,8 @@ export default function AIImageGeneratorModal({
           prompt: prompt.trim(),
           aspect_ratio: aspectRatio,
           shot_type: shotType,
-          visual_style: visualStyle
+          visual_style: visualStyle,
+          reference_image: referenceImage
         })
       });
 
@@ -201,6 +240,51 @@ export default function AIImageGeneratorModal({
                   <SelectItem value="9:16">Vertical (9:16 - Móvil)</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Componente de Imagen de Referencia */}
+            <div className="pt-2">
+              <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 block">
+                🖼️ Imagen de Referencia (Opcional)
+              </label>
+              
+              {!referenceImage ? (
+                <div 
+                  onClick={() => document.getElementById('ref-image-input')?.click()}
+                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) processImageFile(file);
+                  }}
+                  className="w-full py-5 border-2 border-dashed border-stone-100 rounded-2xl flex flex-col items-center justify-center text-stone-400 hover:border-[#d4af37] hover:bg-yellow-50/20 transition-all cursor-pointer group"
+                >
+                  <ImageIcon size={20} className="mb-1 group-hover:scale-110 transition-transform" />
+                  <span className="text-[10px] font-bold">Clic, arrastrar o pega (Ctrl+V) una imagen</span>
+                  <input 
+                    id="ref-image-input"
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) processImageFile(file);
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="relative w-24 h-24 rounded-2xl overflow-hidden border border-stone-200 shadow-sm animate-in zoom-in-95 duration-200">
+                  <img src={referenceImage} alt="Referencia" className="w-full h-full object-cover" />
+                  <button 
+                    onClick={() => setReferenceImage(null)}
+                    className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-md"
+                    title="Quitar imagen"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

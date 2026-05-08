@@ -35,16 +35,14 @@ def optimize_prompt(request: schemas.OptimizePromptRequest, db: Session = Depend
     ai_provider = settings.ai_provider or "gemini"
     
     system_prompt = (
-        "Eres un fotógrafo editorial de belleza de élite para clínicas de lujo en 2026. Tu objetivo es leer los detalles de un tratamiento estético y crear el prompt de imagen perfecto.\n"
-        "REGLAS DE ORO:\n"
+        "Eres un fotógrafo comercial de belleza editorial de élite para clínicas estéticas de lujo del año 2026. Tu objetivo es crear el prompt de imagen perfecto, fotorealista y premium.\n"
+        "REGLAS DE ORO VISUALES:\n"
         "1. Escribe el prompt EN INGLÉS.\n"
-        "2. ESTÉTICA: 'Commercial Beauty Editorial', 'High-end Aesthetic Clinic Result'.\n"
-        "3. ILUMINACIÓN: 'High-key studio lighting, bright, radiant, soft diffused light, elimination of deep shadows'. La imagen debe ser luminosa.\n"
-        "4. PIEL: 'Flawless skin texture, dewy finish, radiant glowing skin, airbrushed natural look'. Prohibido texturas imperfectas.\n"
-        "5. ENFOQUE (Si es depilación/cuerpo): No te enfoques en máquinas voluminosas. Enfócate en la piel perfecta, o en una mano profesional sujetando una herramienta minimalista tocando elegantemente la piel. Sugiere la tecnología con luz o brillo.\n"
-        "6. PROHIBICIONES: 'NO abstract art, NO text, NO names, NO faces showing, NO full people'.\n"
-        "7. TOMA: Por defecto, 'Macro, detailed close-up shot'.\n"
-        "Devuelve ÚNICAMENTE el texto del prompt, sin comillas ni introducciones."
+        "2. ANCLAJE ANATÓMICO OBLIGATORIO: Describe un primer plano (macro shot) o plano medio centrado en una zona humana real y pulida (ej. 'A detailed macro shot of flawless, glowing skin on a client's arm/leg/forehead'). Prohibido descripciones abstractas de 'área de suavidad'.\n"
+        "3. TRATAMIENTO DIRECTO: Describe visualmente la interacción o el resultado (ej. 'A high-end modern cosmetic device elegantly touching a smooth area of flawless skin').\n"
+        "4. ESTÉTICA Y LUZ: '2026 premium aesthetic clinic, high-end commercial photography, radiant high-key studio lighting, soft diffused light, zero imperfections'. La imagen debe gritar LUJO.\n"
+        "5. PROHIBICIONES: 'NO text, NO names, NO faces, NO full people' (para evitar el horror-cara y centrarnos en el resultado en la piel).\n"
+        "Devuelve SOLO el texto del prompt."
     )
     
     user_context = (
@@ -285,54 +283,82 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
         if not api_key or '***' in api_key:
             api_key = os.getenv("GEMINI_API_KEY")
             
-        # Validación estricta
         if not api_key or len(api_key) < 10 or '***' in api_key:
-            raise HTTPException(status_code=400, detail="Clave API de Gemini inválida o no configurada. Por favor, revísala en Ajustes.")
+            raise HTTPException(status_code=400, detail="Clave API de Gemini inválida o no configurada.")
 
-        print(f"DEBUG GEMINI KEY: {api_key[:5]}...{api_key[-4:]}")
-        
         try:
-            # Parseo estricto del Aspect Ratio para Google
-            ar_input = request.aspect_ratio
-            ar = "1:1"
-            if "16:9" in ar_input: ar = "16:9"
-            elif "9:16" in ar_input: ar = "9:16"
-            elif "1:1" in ar_input: ar = "1:1"
+            # Configurar modelo multimodal (Nano Banana 2 / Gemini 3.1 Flash Image)
+            genai.configure(api_key=api_key)
+            model_name = settings.gemini_model_image or "gemini-3.1-flash-image-preview"
+            model = genai.GenerativeModel(model_name)
 
-            model_name = settings.gemini_model_image or "imagen-4.0-generate-001"
-            # URL EXACTA REST
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:predict?key={api_key}"
-            payload = {
-                "instances": [
-                    {"prompt": refined_prompt}
-                ],
-                "parameters": {
-                    "sampleCount": 1,
-                    "aspectRatio": ar
-                }
-            }
+            # Preparar partes del contenido
+            prompt_parts = []
             
-            headers = {"Content-Type": "application/json"}
-            resp = requests.post(url, json=payload, headers=headers)
+            # 1. Prompt de texto refinado
+            base_prompt = refined_prompt
+            if request.reference_image:
+                base_prompt = f"Crea una imagen comercial premium basada exactamente en la estética, texturas y composición de esta imagen de referencia. El tratamiento a mostrar es: {request.prompt}. Mantén el estilo 'Quiet Luxury' de la clínica."
             
-            if not resp.ok:
-                err_data = resp.json()
-                print(f"DEBUG GOOGLE ERROR: {err_data}")
-                raise ValueError(f"Google API Error: {err_data.get('error', {}).get('message', 'Unknown error')}")
-            
-            resp_data = resp.json()
-            predictions = resp_data.get("predictions", [])
-            if not predictions:
-                raise ValueError("No se obtuvieron predicciones de Gemini")
+            prompt_parts.append(base_prompt)
+
+            # 2. Imagen de referencia (si existe)
+            if request.reference_image:
+                b64_data = request.reference_image
+                if "," in b64_data:
+                    b64_data = b64_data.split(",")[1]
                 
-            base64_img = predictions[0].get("bytesBase64Encoded")
-            if not base64_img:
-                raise ValueError("Gemini no devolvió la imagen en base64")
-                
-            file_bytes = base64.b64decode(base64_img)
+                prompt_parts.append({
+                    "mime_type": "image/jpeg",
+                    "data": base64.b64decode(b64_data)
+                })
+
+            # Generar contenido
+            response = model.generate_content(prompt_parts)
+            
+            # DEBUG: Imprimir estructura para entender qué devuelve Nano Banana 2
+            print(f"DEBUG NANO BANANA RESPONSE: {response}")
+            
+            if not response.candidates or not response.candidates[0].content.parts:
+                # Verificar si hay un mensaje de error o bloqueo de seguridad
+                if hasattr(response, 'prompt_feedback') and response.prompt_feedback:
+                    print(f"DEBUG PROMPT FEEDBACK: {response.prompt_feedback}")
+                raise ValueError("La IA no devolvió contenido. Posible bloqueo de seguridad o prompt inválido.")
+            
+            # Revisar todas las partes para depuración
+            for i, part in enumerate(response.candidates[0].content.parts):
+                print(f"PART {i} TYPE: {type(part)}")
+                if hasattr(part, 'text'):
+                    print(f"PART {i} TEXT: {part.text[:100]}...")
+
+            # Buscar la parte que contiene los bytes de la imagen
+            # En el SDK de Google, suele ser un objeto con 'inline_data' o directamente 'data' si es un Blob
+            file_bytes = None
+            for part in response.candidates[0].content.parts:
+                # Caso 1: inline_data (estándar en SDK moderno)
+                if hasattr(part, 'inline_data') and part.inline_data:
+                    file_bytes = part.inline_data.data
+                    break
+                # Caso 2: blob (algunas versiones/modelos)
+                if hasattr(part, 'blob') and part.blob:
+                    file_bytes = part.blob.data
+                    break
+                # Caso 3: Atributo data directo (raro pero posible)
+                if hasattr(part, 'data') and part.data:
+                    file_bytes = part.data
+                    break
+
+            if not file_bytes:
+                # Si no hay bytes pero hay texto, el modelo nos está hablando en lugar de generar
+                if hasattr(response.candidates[0].content.parts[0], 'text'):
+                    text_content = response.candidates[0].content.parts[0].text
+                    raise ValueError(f"El modelo devolvió texto en lugar de una imagen: {text_content[:200]}")
+                raise ValueError("No se encontraron datos binarios de imagen en la respuesta de Nano Banana 2.")
 
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Error en Gemini Image Generation: {e}")
+            import traceback
+            traceback.print_exc()
+            raise HTTPException(status_code=500, detail=f"Error en Nano Banana 2 (Gemini 3.1): {str(e)}")
 
     if not file_bytes:
         raise HTTPException(status_code=500, detail="No se pudo obtener la imagen generada.")

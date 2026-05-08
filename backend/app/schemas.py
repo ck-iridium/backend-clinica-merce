@@ -475,6 +475,7 @@ class AIImageGenerationRequest(BaseModel):
     aspect_ratio: str  # "1:1", "16:9", "9:16"
     shot_type: str = "conceptual"
     visual_style: str = "luxury"
+    reference_image: Optional[str] = None  # Base64 string
 
 class OptimizePromptRequest(BaseModel):
     service_name: str

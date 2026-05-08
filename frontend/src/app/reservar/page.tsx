@@ -62,15 +62,17 @@ export default function BookingPage() {
           const activeSrvs = data.filter((s: any) => s.is_active);
           setServices(activeSrvs);
 
-          // Check if we came from a rebook link with srvId
+          // Check if we came from a rebook link or treatment page with service ID
           if (typeof window !== 'undefined') {
             const qs = new URLSearchParams(window.location.search);
-            const srvId = qs.get('srvId');
+            const srvId = qs.get('servicio') || qs.get('srvId') || qs.get('serviceId');
+            
             if (srvId) {
-              const targetSrv = activeSrvs.find((s: any) => s.id === srvId);
+              const targetSrv = activeSrvs.find((s: any) => String(s.id) === String(srvId));
               if (targetSrv) {
                 setSelectedService(targetSrv);
                 setStep(2);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
               }
             }
           }

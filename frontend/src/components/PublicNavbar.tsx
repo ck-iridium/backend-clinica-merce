@@ -69,10 +69,12 @@ export default function PublicNavbar() {
       if (scrollY !== undefined) {
         setScrolled(scrollY > 50);
 
-        // Smart Header Logic
-        if (scrollY > 200 && scrollY > lastScrollY.current && !isOpen) {
+        // Smart Header Logic - No ocultar en páginas de tratamiento individual
+        const isIndividualTreatment = pathname?.startsWith('/tratamientos/') && pathname !== '/tratamientos';
+        
+        if (scrollY > 200 && scrollY > lastScrollY.current && !isOpen && !isIndividualTreatment) {
           setHidden(true); // Ocultar al bajar
-        } else if (scrollY < lastScrollY.current || scrollY <= 50) {
+        } else if (scrollY < lastScrollY.current || scrollY <= 50 || isIndividualTreatment) {
           setHidden(false); // Mostrar al subir
         }
 

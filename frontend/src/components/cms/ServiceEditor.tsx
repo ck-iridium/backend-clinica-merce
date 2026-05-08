@@ -387,47 +387,74 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
               </>
             )}
 
-            {/* Layout para modo SPLIT */}
+            {/* Layout para modo SPLIT (Nuevo diseño Editorial) */}
             {formValues.layout_preferences.headerStyle === 'split' && (
-              <>
-                <div className={`w-full md:w-1/2 p-12 md:p-20 flex flex-col justify-center ${formValues.layout_preferences.alignment === 'right' ? 'md:order-1' : 'md:order-2'}`}>
-                  <span className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: formValues.layout_preferences.accentColor }}>Tratamiento Especializado</span>
-                  <h1 className="text-4xl md:text-6xl font-serif text-stone-900 mb-6 leading-tight">{formValues.name || 'Título del Tratamiento'}</h1>
-                  <p className="text-stone-500 text-lg mb-8 leading-relaxed">{formValues.description || 'La descripción corta aparecerá aquí, dando a los pacientes una idea rápida de los beneficios del servicio.'}</p>
-                  
-                  <div className="flex flex-wrap gap-4 items-center mb-10">
-                    <div className="bg-stone-50 border border-stone-100 px-6 py-3 rounded-2xl">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1">Duración</p>
-                      <p className="text-lg font-bold text-stone-800">{formValues.duration_minutes} min</p>
-                    </div>
-                    <div className="bg-stone-50 border border-stone-100 px-6 py-3 rounded-2xl">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1">Precio desde</p>
-                      <p className="text-lg font-bold text-stone-800">{formValues.price} €</p>
-                    </div>
-                  </div>
-
-                  <button className="w-fit px-8 py-4 rounded-xl font-bold text-white shadow-lg transition-transform hover:scale-105" style={{ backgroundColor: formValues.layout_preferences.accentColor }}>
-                    Reservar Cita Ahora
-                  </button>
-                </div>
-                <div className={`w-full md:w-1/2 min-h-[400px] bg-stone-100 relative ${formValues.layout_preferences.alignment === 'right' ? 'md:order-2' : 'md:order-1'}`}>
+              <div className="flex flex-col md:flex-row min-h-screen relative w-full">
+                {/* Columna Izquierda: Visual (Sticky 9:16) */}
+                <div className="w-full md:w-[42%] lg:w-[40%] md:h-screen md:sticky md:top-0 overflow-hidden bg-stone-100">
                   {formValues.image_url ? (
-                    <img src={formValues.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${formValues.image_url}` : formValues.image_url} alt="Cover" className="absolute inset-0 w-full h-full object-cover" />
+                    <img 
+                      src={formValues.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${formValues.image_url}` : formValues.image_url} 
+                      alt="Cover" 
+                      className="w-full h-full object-cover aspect-[9/16] md:aspect-auto" 
+                    />
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center text-stone-300">
+                    <div className="w-full h-full flex items-center justify-center text-stone-300">
                       <ImageIcon size={64} strokeWidth={1} />
                     </div>
                   )}
                 </div>
-              </>
+
+                {/* Columna Derecha: Contenido (Scroll) */}
+                <div className="w-full md:w-[58%] lg:w-[60%] flex flex-col pt-12 pb-24 px-6 md:px-12 lg:px-16">
+                  <div className="max-w-2xl">
+                    <span className="text-xs font-black uppercase tracking-[0.2em] text-[#d4af37] mb-4 block">
+                      Tratamiento Especializado
+                    </span>
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-stone-900 mb-8 leading-[1.1]">
+                      {formValues.name || 'Título del Tratamiento'}
+                    </h1>
+
+                    {/* Pricing & Time Card */}
+                    <div className="flex flex-wrap gap-4 items-center mb-10 p-6 bg-stone-50 rounded-3xl border border-stone-100 shadow-sm">
+                      <div className="px-6 border-r border-stone-200">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1">Duración</p>
+                        <p className="text-lg font-bold text-stone-800">{formValues.duration_minutes} min</p>
+                      </div>
+                      <div className="px-6">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1">Inversión desde</p>
+                        <p className="text-lg font-bold text-stone-800">{formValues.price} €</p>
+                      </div>
+                      <div className="ml-auto">
+                        <button disabled className="px-6 py-3 rounded-2xl font-bold text-white shadow-lg" style={{ backgroundColor: formValues.layout_preferences.accentColor }}>
+                          Reservar Ahora
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Short Description */}
+                    <p className="text-lg md:text-xl text-stone-500 font-sans leading-relaxed mb-12 italic">
+                      "{formValues.description || 'La descripción corta aparecerá aquí...'}"
+                    </p>
+
+                    {/* Content Rich Text (Sync with Tiptap) */}
+                    <div 
+                      className="prose prose-stone max-w-none prose-headings:font-serif prose-headings:font-normal prose-p:leading-relaxed prose-a:text-[#d4af37] prose-img:rounded-3xl"
+                      dangerouslySetInnerHTML={{ __html: formValues.content_html || '<p class="text-stone-300 italic">El contenido detallado aparecerá aquí...</p>' }} 
+                    />
+                  </div>
+                </div>
+              </div>
             )}
           </section>
 
-          {/* Bloque 2: Contenido Enriquecido (Prose) */}
-          <section className="max-w-3xl mx-auto px-8 py-20">
-            <div className="prose prose-stone prose-lg max-w-none prose-headings:font-serif prose-a:text-[#d4af37]"
-                 dangerouslySetInnerHTML={{ __html: formValues.content_html || '<p class="text-stone-400 italic">El contenido detallado aparecerá aquí...</p>' }} />
-          </section>
+          {/* Bloque 2: Contenido Enriquecido (Solo visible en modo FULL para evitar duplicación) */}
+          {formValues.layout_preferences.headerStyle === 'full' && (
+            <section className="max-w-3xl mx-auto px-8 py-20">
+              <div className="prose prose-stone prose-lg max-w-none prose-headings:font-serif prose-a:text-[#d4af37]"
+                   dangerouslySetInnerHTML={{ __html: formValues.content_html || '<p class="text-stone-400 italic">El contenido detallado aparecerá aquí...</p>' }} />
+            </section>
+          )}
         </div>
 
       </div>

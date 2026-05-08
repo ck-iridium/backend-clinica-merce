@@ -125,23 +125,23 @@ export default function AdvancedTab({ settings, setSettings }: AdvancedTabProps)
                   <div>
                     <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1 mb-2 block">Modelo de Imagen</label>
                     <Select 
-                      value={settings.gemini_model_image || 'imagen-4.0-generate-001'} 
+                      value={settings.gemini_model_image || 'gemini-3.1-flash-image-preview'} 
                       onValueChange={val => setSettings({...settings, gemini_model_image: val})}
                     >
                       <SelectTrigger className="w-full h-12 bg-white border-stone-200 rounded-xl focus:ring-[#d4af37]/20 font-semibold text-stone-800">
                         <SelectValue placeholder="Seleccionar modelo" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-stone-100 shadow-xl">
-                        <SelectItem value="imagen-4.0-fast-generate-001" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">
+                        <SelectItem value="gemini-3.1-flash-image-preview" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">
                           <div className="flex flex-col">
-                            <span className="font-bold">Imagen 4.0 Fast</span>
-                            <span className="text-[10px] text-stone-400 uppercase">Económico y veloz</span>
+                            <span className="font-bold">Nano Banana 2 (3.1 Flash)</span>
+                            <span className="text-[10px] text-[#d4af37] font-bold uppercase">Recomendado (Image-to-Image)</span>
                           </div>
                         </SelectItem>
                         <SelectItem value="imagen-4.0-generate-001" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">
                           <div className="flex flex-col">
                             <span className="font-bold">Imagen 4.0 Standard</span>
-                            <span className="text-[10px] text-stone-400 uppercase">Calidad estándar clínica</span>
+                            <span className="text-[10px] text-stone-400 uppercase">Calidad clásica estable</span>
                           </div>
                         </SelectItem>
                       </SelectContent>
