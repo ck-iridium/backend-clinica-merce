@@ -44,7 +44,7 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
 
   return (
     <Link 
-      href={`/tratamientos`} 
+      href={`/tratamientos/${service.slug || service.id}`} 
       ref={containerRef}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

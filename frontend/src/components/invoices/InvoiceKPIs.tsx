@@ -53,7 +53,7 @@ export default function InvoiceKPIs({ kpis, loading }: Props) {
             </div>
           </div>
           <div>
-            <h3 className="text-2xl font-bold text-stone-800 tracking-tight">
+            <h3 className="text-3xl font-serif font-bold text-stone-800 tracking-tight">
               {formatEuro(kpis.tax_base)}
             </h3>
           </div>
@@ -70,7 +70,7 @@ export default function InvoiceKPIs({ kpis, loading }: Props) {
             </div>
           </div>
           <div>
-            <h3 className="text-2xl font-bold text-stone-800 tracking-tight">
+            <h3 className="text-3xl font-serif font-bold text-stone-800 tracking-tight">
               {formatEuro(kpis.vat_quota)}
             </h3>
           </div>

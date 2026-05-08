@@ -58,7 +58,7 @@ export default async function TreatmentDynamicPage({ params }: { params: { slug:
   const relatedServices = await getRelatedServices(service.category_id, service.id);
 
   return (
-    <div className="min-h-screen bg-stone-50 font-sans mt-16 md:mt-0">
+    <div className="min-h-screen bg-stone-50 font-sans pt-20">
       {/* Botón flotante para volver (Opcional, pero da buena UX en móvil si el usuario viene del catálogo) */}
       <div className="fixed top-24 left-6 z-50 hidden md:block">
         <Link href="/tratamientos" className="w-10 h-10 rounded-full bg-white shadow-md border border-stone-100 flex items-center justify-center text-stone-500 hover:text-stone-800 hover:scale-105 transition-all">
@@ -102,8 +102,8 @@ export default async function TreatmentDynamicPage({ params }: { params: { slug:
 
           {/* Layout para modo SPLIT */}
           {layoutPreferences.headerStyle === 'split' && (
-            <>
-              <div className={`w-full md:w-1/2 p-8 md:p-20 flex flex-col justify-center ${layoutPreferences.alignment === 'right' ? 'md:order-1' : 'md:order-2'}`}>
+            <div className="w-full flex flex-col md:flex-row">
+              <div className={`w-full md:w-1/2 p-8 md:p-16 flex flex-col justify-center ${layoutPreferences.alignment === 'right' ? 'md:order-1' : 'md:order-2'}`}>
                 <span className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: layoutPreferences.accentColor }}>Tratamiento Especializado</span>
                 <h1 className="text-4xl md:text-6xl font-serif text-stone-900 mb-6 leading-tight">{service.name}</h1>
                 <p className="text-stone-500 text-lg mb-8 leading-relaxed">{service.description}</p>
@@ -132,7 +132,7 @@ export default async function TreatmentDynamicPage({ params }: { params: { slug:
                   </div>
                 )}
               </div>
-            </>
+            </div>
           )}
         </section>
 

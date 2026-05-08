@@ -160,25 +160,6 @@ export default async function Home() {
                 {categoryServices.map((svc: any) => (
                   <ServiceCard key={svc.id} service={svc} className="w-[75vw] h-full snap-center" />
                 ))}
-
-                {/* Booksy End Card (Solo Móvil) */}
-                <a
-                  href="https://booksy.com/es-es/12345_clinica-merce_estetica_12345_madrid"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-shrink-0 w-[75vw] h-full snap-center rounded-[2.5rem] bg-stone-900 p-8 flex flex-col justify-between text-white shadow-xl"
-                >
-                  <div>
-                    <span className="text-5xl">✨</span>
-                    <h3 className="mt-8 text-4xl font-serif font-bold leading-tight">Vive la experiencia Merce</h3>
-                  </div>
-                  <div className="space-y-6">
-                    <p className="font-medium text-white/70 text-lg">Reserva tu tratamiento favorito en menos de un minuto.</p>
-                    <div className="bg-[#D4AF37] text-stone-900 py-4 px-8 rounded-full font-bold text-center text-xl shadow-luxury">
-                      Reservar Cita
-                    </div>
-                  </div>
-                </a>
               </div>
             </section>
           );
