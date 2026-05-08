@@ -49,6 +49,8 @@ def run_auto_migrations():
             "ALTER TABLE clinic_settings ADD COLUMN gemini_model_image VARCHAR DEFAULT 'imagen-4.0-generate-001'",
             "ALTER TABLE clinic_settings ADD COLUMN openai_model_text VARCHAR DEFAULT 'gpt-4o-mini'",
             "ALTER TABLE clinic_settings ADD COLUMN openai_model_image VARCHAR DEFAULT 'dall-e-3'",
+            "ALTER TABLE clinic_settings ADD COLUMN default_image_shot VARCHAR DEFAULT 'conceptual'",
+            "ALTER TABLE clinic_settings ADD COLUMN default_image_style VARCHAR DEFAULT 'luxury'",
         ]
         
         for m in migrations:

@@ -131,6 +131,8 @@ export default function DesignTab({ formValues, register, control, setValue, set
         open={showAIImageModal} 
         onClose={() => setShowAIImageModal(false)}
         serviceName={formValues.name}
+        description={formValues.description}
+        contentHtml={formValues.content_html}
         onGenerate={(url) => {
           setValue('image_url', url, { shouldDirty: true });
         }}

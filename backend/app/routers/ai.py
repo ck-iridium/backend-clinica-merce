@@ -26,6 +26,59 @@ Instrucciones obligatorias:
 - Tono seleccionado: {tone} (premium = elegante y sutil; cercano = empático y claro; clinico = científico y preciso).
 """
 
+@router.post("/optimize-prompt")
+def optimize_prompt(request: schemas.OptimizePromptRequest, db: Session = Depends(database.get_db)):
+    settings = db.query(models.ClinicSettings).first()
+    if not settings:
+        raise HTTPException(status_code=500, detail="Configuración de la clínica no encontrada.")
+
+    ai_provider = settings.ai_provider or "gemini"
+    
+    system_prompt = (
+        "Eres un fotógrafo editorial de belleza de élite para clínicas de lujo en 2026. Tu objetivo es leer los detalles de un tratamiento estético y crear el prompt de imagen perfecto.\n"
+        "REGLAS DE ORO:\n"
+        "1. Escribe el prompt EN INGLÉS.\n"
+        "2. ESTÉTICA: 'Commercial Beauty Editorial', 'High-end Aesthetic Clinic Result'.\n"
+        "3. ILUMINACIÓN: 'High-key studio lighting, bright, radiant, soft diffused light, elimination of deep shadows'. La imagen debe ser luminosa.\n"
+        "4. PIEL: 'Flawless skin texture, dewy finish, radiant glowing skin, airbrushed natural look'. Prohibido texturas imperfectas.\n"
+        "5. ENFOQUE (Si es depilación/cuerpo): No te enfoques en máquinas voluminosas. Enfócate en la piel perfecta, o en una mano profesional sujetando una herramienta minimalista tocando elegantemente la piel. Sugiere la tecnología con luz o brillo.\n"
+        "6. PROHIBICIONES: 'NO abstract art, NO text, NO names, NO faces showing, NO full people'.\n"
+        "7. TOMA: Por defecto, 'Macro, detailed close-up shot'.\n"
+        "Devuelve ÚNICAMENTE el texto del prompt, sin comillas ni introducciones."
+    )
+    
+    user_context = (
+        f"Service: {request.service_name}\n"
+        f"Short Description: {request.description}\n"
+        f"Full Content: {request.content_html}"
+    )
+
+    try:
+        if ai_provider == "gemini":
+            api_key = settings.gemini_api_key or os.getenv("GEMINI_API_KEY")
+            genai.configure(api_key=api_key)
+            model_name = settings.gemini_model_text or 'gemini-2.5-flash'
+            model = genai.GenerativeModel(model_name)
+            response = model.generate_content(system_prompt + "\n\nContexto:\n" + user_context)
+            return {"prompt": response.text.strip()}
+
+        elif ai_provider == "openai":
+            api_key = settings.openai_api_key or os.getenv("OPENAI_API_KEY")
+            client = OpenAI(api_key=api_key)
+            model_name = settings.openai_model_text or "gpt-4o-mini"
+            response = client.chat.completions.create(
+                model=model_name,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_context}
+                ]
+            )
+            return {"prompt": response.choices[0].message.content.strip()}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error optimizando prompt: {str(e)}")
+
+
 @router.post("/generate")
 def generate_content(request: schemas.AIGenerationRequest, db: Session = Depends(database.get_db)):
     # 1. Recuperar la configuración para saber qué proveedor y claves usar
@@ -139,6 +192,34 @@ def generate_content(request: schemas.AIGenerationRequest, db: Session = Depends
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error en el proveedor de IA ({ai_provider}): {str(e)}")
 
+def refine_image_prompt(user_prompt: str, shot_type: str, visual_style: str) -> str:
+    """
+    Refina el prompt del usuario para estética Commercial Beauty Editorial.
+    """
+    refined = user_prompt
+    
+    # 1. Prefijos de Toma
+    if shot_type == 'closeup_beauty':
+        refined = f"Commercial Beauty Editorial, extreme macro close-up of {refined}. High-end aesthetic clinic result, flawless skin texture, radiant glowing skin."
+    elif shot_type == 'closeup':
+        refined = f"Macro, detailed close-up shot of {refined}. Professional medical aesthetic, clean and precise."
+    elif shot_type == 'scene':
+        refined = f"Atmospheric scene of {refined} in a luxury clinic setting. High-key studio lighting, bright and radiant environment."
+
+    # 2. Sufijos de Estilo
+    style_suffixes = {
+        'luxury': "Commercial Beauty style, dewy skin finish, soft diffused light, elimination of deep shadows, 8k resolution, elegant, high-key.",
+        'clean': "Pristine clinic aesthetic, bright minimalist background, neutral high-end lighting, professional medical editorial look.",
+        'zen': "Radiant spa atmosphere, soft glowing natural light, peaceful, dewy skin texture, harmonic color palette."
+    }
+    
+    suffix = style_suffixes.get(visual_style, style_suffixes['luxury'])
+    
+    # 3. Prompt de Estilo Estricto (Inyectado siempre)
+    strict_style = "High-key studio lighting, flawless skin texture, radiant glowing skin, NO faces, NO text, NO names, professional editorial photography."
+    
+    return f"{refined}, {suffix}, {strict_style}"
+
 @router.post("/generate-image")
 def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depends(database.get_db)):
     settings = db.query(models.ClinicSettings).first()
@@ -146,7 +227,11 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
         raise HTTPException(status_code=500, detail="Configuración de la clínica no encontrada.")
 
     ai_provider = settings.ai_provider or "gemini"
-    prompt = request.prompt + ". Fotografía realista premium, luz suave, colores neutros, aspecto de clínica de lujo, pieles reales, sin texto ni letras generadas."
+    
+    # Refinar el prompt según la toma y estilo
+    refined_prompt = refine_image_prompt(request.prompt, request.shot_type, request.visual_style)
+    
+    print(f"DEBUG REFINED PROMPT: {refined_prompt}")
 
     file_bytes = None
 
@@ -180,7 +265,7 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
         try:
             response = client.images.generate(
                 model=model_name,
-                prompt=prompt,
+                prompt=refined_prompt,
                 size=size,
                 quality="standard",
                 n=1,
@@ -219,7 +304,7 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:predict?key={api_key}"
             payload = {
                 "instances": [
-                    {"prompt": prompt}
+                    {"prompt": refined_prompt}
                 ],
                 "parameters": {
                     "sampleCount": 1,

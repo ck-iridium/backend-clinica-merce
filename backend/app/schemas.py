@@ -153,6 +153,8 @@ class ClinicSettingsBase(BaseModel):
     gemini_model_image: Optional[str] = None
     openai_model_text: Optional[str] = None
     openai_model_image: Optional[str] = None
+    default_image_shot: Optional[str] = "conceptual"
+    default_image_style: Optional[str] = "luxury"
 
 class ClinicSettingsUpdate(BaseModel):
     clinic_name: Optional[str] = None
@@ -191,6 +193,8 @@ class ClinicSettingsUpdate(BaseModel):
     gemini_model_image: Optional[str] = None
     openai_model_text: Optional[str] = None
     openai_model_image: Optional[str] = None
+    default_image_shot: Optional[str] = None
+    default_image_style: Optional[str] = None
 
 # --- Consents ---
 class ConsentBase(BaseModel):
@@ -469,3 +473,10 @@ class AIGenerationRequest(BaseModel):
 class AIImageGenerationRequest(BaseModel):
     prompt: str
     aspect_ratio: str  # "1:1", "16:9", "9:16"
+    shot_type: str = "conceptual"
+    visual_style: str = "luxury"
+
+class OptimizePromptRequest(BaseModel):
+    service_name: str
+    description: Optional[str] = ""
+    content_html: Optional[str] = ""

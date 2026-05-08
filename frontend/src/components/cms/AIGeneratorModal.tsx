@@ -72,7 +72,10 @@ export default function AIGeneratorModal({ onClose, onGenerate, targetType, serv
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white w-full max-w-lg rounded-[2.5rem] p-8 shadow-2xl relative border border-stone-100 mx-4 animate-in zoom-in-95 duration-300">
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white w-full max-w-lg rounded-[2.5rem] p-8 shadow-2xl relative border border-stone-100 mx-4 animate-in zoom-in-95 duration-300"
+      >
         
         {/* Close Button */}
         <button 
