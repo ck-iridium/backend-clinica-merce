@@ -252,32 +252,31 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
             "16:9": "1792x1024",
             "9:16": "1024x1792"
         }
-        # Extraer el valor puro si viene con texto
-        ar_pure = "1:1"
-        if "16:9" in ar_input: ar_pure = "16:9"
-        elif "9:16" in ar_input: ar_pure = "9:16"
-        
-        size = size_map.get(ar_pure, "1024x1024")
-        model_name = settings.openai_model_image or "dall-e-3"
-        
+
+        if not api_key or len(api_key) < 10 or '***' in api_key:
+            raise HTTPException(status_code=400, detail="Clave API de OpenAI inválida o no configurada.")
+
         try:
+            client = OpenAI(api_key=api_key)
+            model_name = settings.openai_model_image or "dall-e-3"
+            
+            # OpenAI no soporta image-to-image nativo en DALL-E 3 vía API
+            # Solo enviamos el texto refinado
             response = client.images.generate(
                 model=model_name,
                 prompt=refined_prompt,
-                size=size,
-                quality="standard",
+                size="1024x1024",
+                quality="hd",
                 n=1,
             )
             image_url = response.data[0].url
-            
-            # Descargar imagen
-            req = urllib.request.Request(image_url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req) as r:
-                file_bytes = r.read()
-                
+            resp = requests.get(image_url)
+            file_bytes = resp.content
+
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Error en OpenAI {model_name}: {e}")
-            
+            raise HTTPException(status_code=500, detail=f"Error en OpenAI Image Generation: {e}")
+
+    # --- PROVEEDOR: GEMINI ---
     elif ai_provider == "gemini":
         api_key = settings.gemini_api_key
         if not api_key or '***' in api_key:
@@ -298,7 +297,7 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
             # 1. Prompt de texto refinado
             base_prompt = refined_prompt
             if request.reference_image:
-                base_prompt = f"Crea una imagen comercial premium basada exactamente en la estética, texturas y composición de esta imagen de referencia. El tratamiento a mostrar es: {request.prompt}. Mantén el estilo 'Quiet Luxury' de la clínica."
+                base_prompt = f"Crea una imagen comercial premium basada exactamente en la estética, texturas y composición de esta imagen de referencia. El tratamiento a mostrar es: {request.prompt}. {style_suffix} Mantén el estilo 'Quiet Luxury' de la clínica."
             
             prompt_parts.append(base_prompt)
 

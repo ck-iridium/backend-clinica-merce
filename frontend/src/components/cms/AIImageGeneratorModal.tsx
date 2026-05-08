@@ -39,19 +39,50 @@ export default function AIImageGeneratorModal({
   const [shotType, setShotType] = useState('closeup_beauty');
   const [visualStyle, setVisualStyle] = useState('luxury');
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
+  const [excludeText, setExcludeText] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
 
-  // Helper para procesar archivos de imagen (Upload, Drop, Paste)
+  // Helper para procesar y optimizar archivos de imagen (Upload, Drop, Paste)
   const processImageFile = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) {
       toast.error('El archivo debe ser una imagen (JPG, PNG, WEBP, etc.)');
       return;
     }
+
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setReferenceImage(reader.result as string);
-      toast.success('📸 Imagen de referencia cargada');
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        // Optimización: Redimensionar a max 1024px para agilizar la subida y el proceso de IA
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const MAX_SIZE = 1024;
+
+        if (width > height) {
+          if (width > MAX_SIZE) {
+            height *= MAX_SIZE / width;
+            width = MAX_SIZE;
+          }
+        } else {
+          if (height > MAX_SIZE) {
+            width *= MAX_SIZE / height;
+            height = MAX_SIZE;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        // Convertir a base64 con calidad optimizada
+        const optimizedB64 = canvas.toDataURL('image/jpeg', 0.85);
+        setReferenceImage(optimizedB64);
+        toast.success('📸 Imagen optimizada y cargada');
+      };
+      img.src = e.target?.result as string;
     };
     reader.readAsDataURL(file);
   }, []);
@@ -122,7 +153,8 @@ export default function AIImageGeneratorModal({
           aspect_ratio: aspectRatio,
           shot_type: shotType,
           visual_style: visualStyle,
-          reference_image: referenceImage
+          reference_image: referenceImage,
+          exclude_text: excludeText
         })
       });
 
@@ -242,6 +274,23 @@ export default function AIImageGeneratorModal({
               </Select>
             </div>
 
+            {/* Filtros de Calidad */}
+            <div className="flex items-center justify-between p-4 bg-stone-50 rounded-2xl border border-stone-100 mb-2">
+              <div className="flex flex-col">
+                <span className="text-[11px] font-bold text-stone-700">Evitar Textos</span>
+                <span className="text-[9px] text-stone-400 font-medium leading-tight">Elimina automáticamente marcas de agua y tipografías</span>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  className="sr-only peer" 
+                  checked={excludeText} 
+                  onChange={(e) => setExcludeText(e.target.checked)} 
+                />
+                <div className="w-11 h-6 bg-stone-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#d4af37]"></div>
+              </label>
+            </div>
+
             {/* Componente de Imagen de Referencia */}
             <div className="pt-2">
               <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 block">
@@ -304,7 +353,7 @@ export default function AIImageGeneratorModal({
             {isGenerating ? (
               <>
                 <Loader2 size={16} className="animate-spin" />
-                Generando (puede tardar 10-20s)...
+                Procesando (10-20s)...
               </>
             ) : (
               <>
