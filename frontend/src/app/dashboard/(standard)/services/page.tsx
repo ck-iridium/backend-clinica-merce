@@ -503,10 +503,20 @@ export default function ServicesPage() {
       <Dialog open={showManageCategoriesModal} onOpenChange={setShowManageCategoriesModal}>
         <DialogContent className="p-0 border-none max-w-lg">
           <DialogHeader className="p-8 border-b border-stone-50 bg-white rounded-t-xl">
-            <DialogTitle className="text-2xl font-extrabold text-stone-800">Gestionar Categorías</DialogTitle>
-            <DialogDescription className="text-stone-400 text-sm">
-              Organiza las agrupaciones de tratamientos y sus imágenes de portada.
-            </DialogDescription>
+            <div className="flex justify-between items-start">
+              <div>
+                <DialogTitle className="text-2xl font-extrabold text-stone-800">Gestionar Categorías</DialogTitle>
+                <DialogDescription className="text-stone-400 text-sm mt-1">
+                  Organiza las agrupaciones de tratamientos y sus imágenes de portada.
+                </DialogDescription>
+              </div>
+              <button 
+                onClick={() => setShowCategoryModal(true)}
+                className="bg-[#d4af37] text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md hover:bg-[#b08e23] transition-all active:scale-95 flex items-center gap-2"
+              >
+                <Plus size={16} strokeWidth={2} /> Nueva
+              </button>
+            </div>
           </DialogHeader>
 
           <div className="p-8">

@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { UseFormRegister, Control, UseFormSetValue } from 'react-hook-form';
-import { Lock, Unlock, Sparkles } from 'lucide-react';
+import { Lock, Unlock, Sparkles, Plus } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -9,12 +10,15 @@ import {
 } from "@/components/ui/select";
 import { Controller } from 'react-hook-form';
 import type { ServiceFormData } from '@/components/cms/ServiceEditor';
+import CreateCategoryInlineModal from './CreateCategoryInlineModal';
 
 interface GeneralTabProps {
   register: UseFormRegister<ServiceFormData>;
   control: Control<ServiceFormData>;
+  setValue: UseFormSetValue<ServiceFormData>;
   formValues: ServiceFormData;
   categories: any[];
+  refreshCategories: () => void;
   slugLocked: boolean;
   setSlugLocked: (locked: boolean) => void;
   setShowAIModal: (type: 'short_description' | 'rich_content') => void;
@@ -23,12 +27,15 @@ interface GeneralTabProps {
 export default function GeneralTab({
   register,
   control,
+  setValue,
   formValues,
   categories,
+  refreshCategories,
   slugLocked,
   setSlugLocked,
   setShowAIModal
 }: GeneralTabProps) {
+  const [showCreateCat, setShowCreateCat] = useState(false);
   return (
     <div className="space-y-4">
       <div>
@@ -55,24 +62,38 @@ export default function GeneralTab({
         <p className="text-[10px] text-stone-400 mt-1">Identificador único para la URL pública.</p>
       </div>
       <div>
-        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Categoría *</label>
-        <Controller
-          name="category_id"
-          control={control}
-          rules={{ required: true }}
-          render={({ field }) => (
-            <Select onValueChange={field.onChange} value={field.value}>
-              <SelectTrigger className="w-full h-[46px] rounded-xl border-stone-200 bg-white font-semibold shadow-none">
-                <SelectValue placeholder="-- Seleccionar --" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map(cat => (
-                  <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        />
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest">Categoría *</label>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="flex-1">
+            <Controller
+              name="category_id"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger className="w-full h-[46px] rounded-xl border-stone-200 bg-white font-semibold shadow-none">
+                    <SelectValue placeholder="-- Seleccionar --" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map(cat => (
+                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
+          <button 
+            type="button" 
+            onClick={() => setShowCreateCat(true)}
+            className="w-[46px] h-[46px] flex items-center justify-center shrink-0 rounded-xl border border-stone-200 bg-stone-50 hover:bg-white hover:border-stone-300 transition-colors text-stone-500"
+            title="Añadir Categoría"
+          >
+            <Plus size={18} />
+          </button>
+        </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
@@ -106,6 +127,15 @@ export default function GeneralTab({
           <p className="text-[10px] text-stone-500 uppercase tracking-widest">Visible en el catálogo</p>
         </div>
       </div>
+
+      <CreateCategoryInlineModal 
+        open={showCreateCat} 
+        onOpenChange={setShowCreateCat} 
+        onCreated={(newId) => {
+          refreshCategories();
+          setValue('category_id', newId, { shouldDirty: true });
+        }} 
+      />
     </div>
   );
 }

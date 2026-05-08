@@ -38,7 +38,7 @@ export default function AIGeneratorModal({ onClose, onGenerate, targetType, serv
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: contextPrompt,
-          type: 'description',
+          type: targetType,
           tone: tone
         })
       });

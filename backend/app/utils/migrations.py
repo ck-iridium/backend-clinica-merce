@@ -44,6 +44,11 @@ def run_auto_migrations():
             "ALTER TABLE services ADD COLUMN seo_keywords VARCHAR",
             # ── Días laborables dinámicos ──────────────────────────────────────────
             "ALTER TABLE clinic_settings ADD COLUMN working_days VARCHAR DEFAULT '[1,2,3,4,5]'",
+            # ── Modelos de IA específicos ─────────────────────────────────────────
+            "ALTER TABLE clinic_settings ADD COLUMN gemini_model_text VARCHAR DEFAULT 'gemini-2.5-flash'",
+            "ALTER TABLE clinic_settings ADD COLUMN gemini_model_image VARCHAR DEFAULT 'imagen-4.0-generate-001'",
+            "ALTER TABLE clinic_settings ADD COLUMN openai_model_text VARCHAR DEFAULT 'gpt-4o-mini'",
+            "ALTER TABLE clinic_settings ADD COLUMN openai_model_image VARCHAR DEFAULT 'dall-e-3'",
         ]
         
         for m in migrations:

@@ -1,4 +1,11 @@
-import { SearchCode, Sparkles, Key } from 'lucide-react';
+import { SearchCode, Sparkles, Key, ChevronDown } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface AdvancedTabProps {
   settings: any;
@@ -70,28 +77,140 @@ export default function AdvancedTab({ settings, setSettings }: AdvancedTabProps)
             </div>
             
             {settings.ai_provider === 'gemini' && (
-              <div className="animate-in fade-in zoom-in-95 duration-200">
-                <input 
-                  type="password" 
-                  value={settings.gemini_api_key || ''} 
-                  onChange={e => setSettings({...settings, gemini_api_key: e.target.value})} 
-                  placeholder="AIzaSy..." 
-                  className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20 outline-none transition-all font-mono text-sm shadow-sm"
-                />
-                <p className="text-xs text-stone-400 mt-2 ml-1">Consigue tu API Key gratuita en <a href="https://aistudio.google.com/" target="_blank" rel="noreferrer" className="text-[#d4af37] hover:underline font-bold">Google AI Studio</a>.</p>
+              <div className="animate-in fade-in zoom-in-95 duration-200 space-y-4">
+                <div>
+                  <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1 mb-1.5 block">API Key de Gemini</label>
+                  <input 
+                    type="password" 
+                    value={settings.gemini_api_key || ''} 
+                    onChange={e => setSettings({...settings, gemini_api_key: e.target.value})} 
+                    placeholder="AIzaSy..." 
+                    className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20 outline-none transition-all font-mono text-sm shadow-sm"
+                  />
+                  <p className="text-xs text-stone-400 mt-2 ml-1">Consigue tu API Key gratuita en <a href="https://aistudio.google.com/" target="_blank" rel="noreferrer" className="text-[#d4af37] hover:underline font-bold">Google AI Studio</a>.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1 mb-2 block">Modelo de Texto</label>
+                    <Select 
+                      value={settings.gemini_model_text || 'gemini-2.5-flash'} 
+                      onValueChange={val => setSettings({...settings, gemini_model_text: val})}
+                    >
+                      <SelectTrigger className="w-full h-12 bg-white border-stone-200 rounded-xl focus:ring-[#d4af37]/20 font-semibold text-stone-800">
+                        <SelectValue placeholder="Seleccionar modelo" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-stone-100 shadow-xl">
+                        <SelectItem value="gemini-2.5-flash" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">
+                          <div className="flex flex-col">
+                            <span className="font-bold">Gemini 2.5 Flash</span>
+                            <span className="text-[10px] text-stone-400 uppercase">Más barato y rápido</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="gemini-3-flash" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">
+                          <div className="flex flex-col">
+                            <span className="font-bold">Gemini 3 Flash</span>
+                            <span className="text-[10px] text-stone-400 uppercase">Estándar equilibrado</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="gemini-3.1-pro" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">
+                          <div className="flex flex-col">
+                            <span className="font-bold">Gemini 3.1 Pro</span>
+                            <span className="text-[10px] text-stone-400 uppercase">Máxima calidad de texto</span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1 mb-2 block">Modelo de Imagen</label>
+                    <Select 
+                      value={settings.gemini_model_image || 'imagen-4.0-generate-001'} 
+                      onValueChange={val => setSettings({...settings, gemini_model_image: val})}
+                    >
+                      <SelectTrigger className="w-full h-12 bg-white border-stone-200 rounded-xl focus:ring-[#d4af37]/20 font-semibold text-stone-800">
+                        <SelectValue placeholder="Seleccionar modelo" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-stone-100 shadow-xl">
+                        <SelectItem value="imagen-4.0-fast-generate-001" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">
+                          <div className="flex flex-col">
+                            <span className="font-bold">Imagen 4.0 Fast</span>
+                            <span className="text-[10px] text-stone-400 uppercase">Económico y veloz</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="imagen-4.0-generate-001" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">
+                          <div className="flex flex-col">
+                            <span className="font-bold">Imagen 4.0 Standard</span>
+                            <span className="text-[10px] text-stone-400 uppercase">Calidad estándar clínica</span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
             )}
 
             {settings.ai_provider === 'openai' && (
-              <div className="animate-in fade-in zoom-in-95 duration-200">
-                <input 
-                  type="password" 
-                  value={settings.openai_api_key || ''} 
-                  onChange={e => setSettings({...settings, openai_api_key: e.target.value})} 
-                  placeholder="sk-..." 
-                  className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20 outline-none transition-all font-mono text-sm shadow-sm"
-                />
-                <p className="text-xs text-stone-400 mt-2 ml-1">Consigue tu API Key en la <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer" className="text-[#d4af37] hover:underline font-bold">plataforma de OpenAI</a>.</p>
+              <div className="animate-in fade-in zoom-in-95 duration-200 space-y-6">
+                <div>
+                  <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1 mb-2 block">API Key de OpenAI</label>
+                  <input 
+                    type="password" 
+                    value={settings.openai_api_key || ''} 
+                    onChange={e => setSettings({...settings, openai_api_key: e.target.value})} 
+                    placeholder="sk-..." 
+                    className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20 outline-none transition-all font-mono text-sm shadow-sm"
+                  />
+                  <p className="text-xs text-stone-400 mt-2 ml-1">Consigue tu API Key en la <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer" className="text-[#d4af37] hover:underline font-bold">plataforma de OpenAI</a>.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1 mb-2 block">Modelo de Texto</label>
+                    <Select 
+                      value={settings.openai_model_text || 'gpt-4o-mini'} 
+                      onValueChange={val => setSettings({...settings, openai_model_text: val})}
+                    >
+                      <SelectTrigger className="w-full h-12 bg-white border-stone-200 rounded-xl focus:ring-[#d4af37]/20 font-semibold text-stone-800">
+                        <SelectValue placeholder="Seleccionar modelo" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-stone-100 shadow-xl">
+                        <SelectItem value="gpt-4o-mini" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">
+                          <div className="flex flex-col">
+                            <span className="font-bold">GPT-4o mini</span>
+                            <span className="text-[10px] text-stone-400 uppercase">Más barato y potente</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="gpt-4o" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">
+                          <div className="flex flex-col">
+                            <span className="font-bold">GPT-4o</span>
+                            <span className="text-[10px] text-stone-400 uppercase">Máximo rendimiento</span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1 mb-2 block">Modelo de Imagen</label>
+                    <Select 
+                      value={settings.openai_model_image || 'dall-e-3'} 
+                      onValueChange={val => setSettings({...settings, openai_model_image: val})}
+                    >
+                      <SelectTrigger className="w-full h-12 bg-white border-stone-200 rounded-xl focus:ring-[#d4af37]/20 font-semibold text-stone-800">
+                        <SelectValue placeholder="Seleccionar modelo" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-stone-100 shadow-xl">
+                        <SelectItem value="dall-e-3" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">
+                          <div className="flex flex-col">
+                            <span className="font-bold">DALL-E 3</span>
+                            <span className="text-[10px] text-stone-400 uppercase">Calidad Standard (Ahorro)</span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
             )}
           </div>

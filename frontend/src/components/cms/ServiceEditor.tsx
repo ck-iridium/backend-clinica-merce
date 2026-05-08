@@ -75,7 +75,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
   const [isDeleting, setIsDeleting] = useState(false);
   const [showAIModal, setShowAIModal] = useState<'short_description' | 'rich_content' | null>(null);
 
-  const { register, handleSubmit, watch, setValue, control, reset } = useForm<ServiceFormData>({
+  const { register, handleSubmit, watch, setValue, control, reset, formState: { isDirty } } = useForm<ServiceFormData>({
     defaultValues: initialData ? {
       ...DEFAULT_FORM_DATA,
       ...initialData,
@@ -109,11 +109,15 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
 
   const formValues = watch();
 
-  useEffect(() => {
+  const fetchCategories = () => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/service-categories/`)
       .then(res => res.json())
       .then(data => setCategories(data))
       .catch(console.error);
+  };
+
+  useEffect(() => {
+    fetchCategories();
   }, []);
 
   const editor = useEditor({
@@ -137,6 +141,8 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
       }
     }
   }, [initialData, editor]);
+
+  const [exitAfterSave, setExitAfterSave] = useState(true);
 
   const onSubmit = async (data: ServiceFormData) => {
     setSaving(true);
@@ -164,8 +170,15 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
       });
 
       if (res.ok) {
+        const savedData = await res.json();
         toast.success(isNew ? 'Servicio creado con éxito' : 'Servicio actualizado');
-        router.push('/dashboard/services');
+        
+        if (exitAfterSave) {
+          router.push('/dashboard/services');
+        } else if (isNew && savedData.id) {
+          // Si era nuevo y pulsó "Guardar cambios", redirigimos a la edición del nuevo ID
+          router.push(`/dashboard/services/${savedData.id}/edit`);
+        }
       } else {
         const errorData = await res.json();
         toast.error(`Error: ${errorData.detail || 'No se pudo guardar el servicio.'}`);
@@ -219,13 +232,24 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
                 </p>
               </div>
             </div>
-            <button 
-              type="submit" 
-              disabled={saving}
-              className="bg-stone-900 hover:bg-[#d4af37] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-50 shadow-sm"
-            >
-              {saving ? 'Guardando...' : 'Guardar'}
-            </button>
+            <div className="flex gap-2">
+              <button 
+                type="submit" 
+                disabled={saving || (!isDirty && !isNew)}
+                onClick={() => setExitAfterSave(false)}
+                className="bg-stone-100 hover:bg-stone-200 text-stone-700 px-4 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-30 disabled:grayscale shadow-sm"
+              >
+                {saving && !exitAfterSave ? '...' : 'Guardar cambios'}
+              </button>
+              <button 
+                type="submit" 
+                disabled={saving || (!isDirty && !isNew)}
+                onClick={() => setExitAfterSave(true)}
+                className="bg-stone-900 hover:bg-[#d4af37] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-30 disabled:grayscale shadow-sm"
+              >
+                {saving && exitAfterSave ? 'Guardando...' : 'Guardar y salir'}
+              </button>
+            </div>
           </div>
 
           {/* Pestañas de Navegación */}
@@ -244,8 +268,10 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
               <GeneralTab 
                 register={register} 
                 control={control} 
+                setValue={setValue}
                 formValues={formValues} 
                 categories={categories} 
+                refreshCategories={fetchCategories}
                 slugLocked={slugLocked} 
                 setSlugLocked={setSlugLocked} 
                 setShowAIModal={setShowAIModal} 

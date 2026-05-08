@@ -1,4 +1,5 @@
-import { Image as ImageIcon, Pipette } from 'lucide-react';
+import { useState } from 'react';
+import { Image as ImageIcon, Pipette, Sparkles } from 'lucide-react';
 import { UseFormRegister, Control, UseFormSetValue } from 'react-hook-form';
 import {
   Select,
@@ -9,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Controller } from 'react-hook-form';
 import type { ServiceFormData } from '@/components/cms/ServiceEditor';
+import AIImageGeneratorModal from '@/components/cms/AIImageGeneratorModal';
 
 interface DesignTabProps {
   formValues: ServiceFormData;
@@ -19,10 +21,21 @@ interface DesignTabProps {
 }
 
 export default function DesignTab({ formValues, register, control, setValue, setShowMediaPicker }: DesignTabProps) {
+  const [showAIImageModal, setShowAIImageModal] = useState(false);
   return (
     <div className="space-y-6">
       <div>
-        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Imagen Principal</label>
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest">Imagen Principal</label>
+          <button 
+            type="button" 
+            onClick={() => setShowAIImageModal(true)}
+            className="flex items-center gap-1.5 text-xs font-bold text-[#d4af37] hover:bg-yellow-50/50 px-2.5 py-1 rounded-lg border border-yellow-100 transition-colors shadow-sm"
+          >
+            <Sparkles size={12} strokeWidth={2} />
+            Generar con IA
+          </button>
+        </div>
         {formValues.image_url ? (
           <div className="relative group rounded-xl overflow-hidden border border-stone-200">
             <img src={formValues.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${formValues.image_url}` : formValues.image_url} alt="Cover" className="w-full h-40 object-cover" />
@@ -113,6 +126,15 @@ export default function DesignTab({ formValues, register, control, setValue, set
           <p className="text-[10px] text-yellow-600 uppercase tracking-widest">Mostrar en slider principal</p>
         </div>
       </div>
+
+      <AIImageGeneratorModal 
+        open={showAIImageModal} 
+        onClose={() => setShowAIImageModal(false)}
+        serviceName={formValues.name}
+        onGenerate={(url) => {
+          setValue('image_url', url, { shouldDirty: true });
+        }}
+      />
     </div>
   );
 }

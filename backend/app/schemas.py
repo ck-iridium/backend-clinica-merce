@@ -149,6 +149,10 @@ class ClinicSettingsBase(BaseModel):
     ai_provider: Optional[str] = "gemini"
     gemini_api_key: Optional[str] = None
     openai_api_key: Optional[str] = None
+    gemini_model_text: Optional[str] = None
+    gemini_model_image: Optional[str] = None
+    openai_model_text: Optional[str] = None
+    openai_model_image: Optional[str] = None
 
 class ClinicSettingsUpdate(BaseModel):
     clinic_name: Optional[str] = None
@@ -183,6 +187,10 @@ class ClinicSettingsUpdate(BaseModel):
     ai_provider: Optional[str] = None
     gemini_api_key: Optional[str] = None
     openai_api_key: Optional[str] = None
+    gemini_model_text: Optional[str] = None
+    gemini_model_image: Optional[str] = None
+    openai_model_text: Optional[str] = None
+    openai_model_image: Optional[str] = None
 
 # --- Consents ---
 class ConsentBase(BaseModel):
@@ -458,3 +466,6 @@ class AIGenerationRequest(BaseModel):
     type: str  # "description" or "seo"
     tone: str = "premium" # "premium", "cercano", "clinico"
 
+class AIImageGenerationRequest(BaseModel):
+    prompt: str
+    aspect_ratio: str  # "1:1", "16:9", "9:16"
