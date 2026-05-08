@@ -33,6 +33,12 @@ def update_clinic_settings(db: Session, update_data: schemas.ClinicSettingsUpdat
     if 'working_days' in data and data['working_days'] is not None:
         import json
         data['working_days'] = json.dumps(data['working_days'])
+        
+    # Ignorar claves ofuscadas para evitar sobreescribir la clave real con asteriscos
+    for key in ['gemini_api_key', 'openai_api_key']:
+        if key in data and data[key] and '***' in data[key]:
+            del data[key]
+            
     for key, value in data.items():
         setattr(settings, key, value)
     db.commit()

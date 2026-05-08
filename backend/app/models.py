@@ -169,6 +169,11 @@ class ClinicSettings(Base):
     # Working Days (JSON array stored as string: e.g. "[1,2,3,4,5]")
     working_days = Column(String, nullable=True)  # 1=Lun...7=Dom
 
+    # AI Configuration
+    ai_provider = Column(String, default="gemini") # "gemini" or "openai"
+    gemini_api_key = Column(String, nullable=True)
+    openai_api_key = Column(String, nullable=True)
+
 class Invoice(Base):
     __tablename__ = "invoices"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))

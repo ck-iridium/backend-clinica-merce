@@ -146,6 +146,10 @@ class ClinicSettingsBase(BaseModel):
     lunch_end: Optional[str] = None
     working_days: Optional[List[int]] = None
 
+    ai_provider: Optional[str] = "gemini"
+    gemini_api_key: Optional[str] = None
+    openai_api_key: Optional[str] = None
+
 class ClinicSettingsUpdate(BaseModel):
     clinic_name: Optional[str] = None
     clinic_nif: Optional[str] = None
@@ -176,6 +180,9 @@ class ClinicSettingsUpdate(BaseModel):
     lunch_start: Optional[str] = None
     lunch_end: Optional[str] = None
     working_days: Optional[List[int]] = None
+    ai_provider: Optional[str] = None
+    gemini_api_key: Optional[str] = None
+    openai_api_key: Optional[str] = None
 
 # --- Consents ---
 class ConsentBase(BaseModel):
@@ -209,6 +216,15 @@ class ClinicSettingsResponse(ClinicSettingsBase):
                 return json.loads(v)
             except Exception:
                 return [1, 2, 3, 4, 5]
+        return v
+
+    @field_validator('gemini_api_key', 'openai_api_key', mode='after')
+    @classmethod
+    def obfuscate_api_keys(cls, v):
+        if v and len(v) > 8:
+            return f"{v[:4]}***{v[-4:]}"
+        elif v:
+            return "***"
         return v
 
     class Config:
@@ -435,4 +451,10 @@ class SiteContentResponse(SiteContentBase):
     
     class Config:
         from_attributes = True
+
+# --- AI Integration ---
+class AIGenerationRequest(BaseModel):
+    prompt: str
+    type: str  # "description" or "seo"
+    tone: str = "premium" # "premium", "cercano", "clinico"
 
