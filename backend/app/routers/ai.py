@@ -226,8 +226,16 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
 
     ai_provider = settings.ai_provider or "gemini"
     
-    # Refinar el prompt según la toma y estilo
+    # Refinar el prompt base
     refined_prompt = refine_image_prompt(request.prompt, request.shot_type, request.visual_style)
+    
+    # Preparar sufijo de estilo y filtros adicionales
+    style_suffix = f", {request.shot_type}, style: {request.visual_style}, luxury editorial photography, 8k, highly detailed."
+    if request.exclude_text:
+        style_suffix += " ZERO TEXT, NO letters, NO words, NO characters, NO logos, NO watermarks. Pure visual composition."
+    
+    # Añadir sufijo al prompt refinado para proveedores que no usan multimodal
+    refined_prompt += style_suffix
     
     print(f"DEBUG REFINED PROMPT: {refined_prompt}")
 
@@ -297,7 +305,19 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
             # 1. Prompt de texto refinado
             base_prompt = refined_prompt
             if request.reference_image:
-                base_prompt = f"Crea una imagen comercial premium basada exactamente en la estética, texturas y composición de esta imagen de referencia. El tratamiento a mostrar es: {request.prompt}. {style_suffix} Mantén el estilo 'Quiet Luxury' de la clínica."
+                if request.reference_type == "style":
+                    # Instrucción de Estilo (Evitar clonación)
+                    base_prompt = (
+                        f"Crea una imagen comercial premium usando esta referencia ÚNICAMENTE para la iluminación, paleta de colores y 'vibe' estético. "
+                        f"IMPORTANTE: Genera una modelo COMPLETAMENTE DIFERENTE a la de la foto. NO clones a la persona. "
+                        f"El tratamiento a mostrar es: {request.prompt}. {style_suffix} Estética 'Quiet Luxury'."
+                    )
+                else:
+                    # Instrucción de Composición (Fiel a la referencia)
+                    base_prompt = (
+                        f"Crea una imagen basada exactamente en la composición, pose y estructura de esta referencia. "
+                        f"El tratamiento a mostrar es: {request.prompt}. {style_suffix} Mantén la fidelidad estructural."
+                    )
             
             prompt_parts.append(base_prompt)
 

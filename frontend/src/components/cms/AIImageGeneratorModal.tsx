@@ -39,6 +39,7 @@ export default function AIImageGeneratorModal({
   const [shotType, setShotType] = useState('closeup_beauty');
   const [visualStyle, setVisualStyle] = useState('luxury');
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
+  const [referenceType, setReferenceType] = useState('style');
   const [excludeText, setExcludeText] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
@@ -154,7 +155,8 @@ export default function AIImageGeneratorModal({
           shot_type: shotType,
           visual_style: visualStyle,
           reference_image: referenceImage,
-          exclude_text: excludeText
+          exclude_text: excludeText,
+          reference_type: referenceType
         })
       });
 
@@ -177,7 +179,7 @@ export default function AIImageGeneratorModal({
   return (
     <Dialog open={open} onOpenChange={(val) => !val && !isGenerating && onClose()}>
       <DialogContent 
-        className="p-0 border-none max-w-lg overflow-hidden bg-white"
+        className="p-0 border-none max-w-lg overflow-hidden bg-white max-h-[95vh] overflow-y-auto"
         onInteractOutside={(e) => e.preventDefault()}
         onPointerDownOutside={(e) => e.preventDefault()}
       >
@@ -323,15 +325,44 @@ export default function AIImageGeneratorModal({
                   />
                 </div>
               ) : (
-                <div className="relative w-24 h-24 rounded-2xl overflow-hidden border border-stone-200 shadow-sm animate-in zoom-in-95 duration-200">
-                  <img src={referenceImage} alt="Referencia" className="w-full h-full object-cover" />
-                  <button 
-                    onClick={() => setReferenceImage(null)}
-                    className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-md"
-                    title="Quitar imagen"
-                  >
-                    ×
-                  </button>
+                <div className="space-y-4 animate-in zoom-in-95 duration-300 p-1">
+                  <div className="flex items-center gap-4">
+                    <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-[#d4af37] shadow-md shrink-0">
+                      <img src={referenceImage} alt="Referencia" className="w-full h-full object-cover" />
+                      <button 
+                        onClick={() => setReferenceImage(null)}
+                        className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg border-2 border-white z-10"
+                        title="Quitar imagen"
+                      >
+                        ×
+                      </button>
+                    </div>
+                    
+                    <div className="flex-1 bg-gradient-to-br from-yellow-50 to-orange-50/30 p-3.5 rounded-2xl border border-yellow-100 shadow-sm">
+                      <label className="text-[10px] font-black text-[#b08e23] uppercase mb-2 block tracking-wider">
+                        🎯 Modo de Referencia
+                      </label>
+                      <Select disabled={isGenerating} value={referenceType} onValueChange={setReferenceType}>
+                        <SelectTrigger className="w-full h-[38px] rounded-xl border-white bg-white/80 backdrop-blur-sm text-[11px] font-bold text-stone-800 shadow-inner">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-stone-100 shadow-2xl">
+                          <SelectItem value="style" className="py-2.5">
+                            <div className="flex flex-col">
+                              <span className="font-bold">Heredar Estética</span>
+                              <span className="text-[9px] text-stone-400">Nueva modelo, misma luz</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="composition" className="py-2.5">
+                            <div className="flex flex-col">
+                              <span className="font-bold">Calcar Composición</span>
+                              <span className="text-[9px] text-stone-400">Misma modelo y pose</span>
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

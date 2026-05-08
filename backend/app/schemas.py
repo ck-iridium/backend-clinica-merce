@@ -477,6 +477,7 @@ class AIImageGenerationRequest(BaseModel):
     visual_style: str = "luxury"
     reference_image: Optional[str] = None  # Base64 string
     exclude_text: bool = True
+    reference_type: str = "style" # "style" o "composition"
 
 class OptimizePromptRequest(BaseModel):
     service_name: str
