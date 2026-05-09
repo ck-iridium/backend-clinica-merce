@@ -11,7 +11,7 @@ import {
   DialogDescription 
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
-import { X } from "lucide-react";
+import { X, Play } from "lucide-react";
 
 interface MediaFile {
   name: string;
