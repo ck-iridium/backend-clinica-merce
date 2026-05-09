@@ -1,10 +1,9 @@
 export const dynamic = 'force-dynamic';
 
 import DashboardSidebar from '@/components/DashboardSidebar';
-
-import { FeedbackProvider } from '@/app/contexts/FeedbackContext';
-import MobileBottomBar from '@/components/MobileBottomBar';
 import RouteGuard from '@/components/RouteGuard';
+import { AIImageProvider } from '@/app/contexts/AIImageContext';
+import AIGenerationFloatingCard from '@/components/cms/AIGenerationFloatingCard';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   let settings = null;
@@ -25,16 +24,19 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const logoUrl = settings?.logo_app_b64 || null;
 
   return (
-    <div className="min-h-screen bg-background md:flex font-sans text-foreground print:bg-white">
-      <RouteGuard />
+    <AIImageProvider>
+      <div className="min-h-screen bg-background md:flex font-sans text-foreground print:bg-white">
+        <RouteGuard />
 
-      {/* Sidebar: Siempre visible para todas las rutas del dashboard */}
-      <DashboardSidebar clinicName={clinicName} logoUrl={logoUrl} />
+        {/* Sidebar: Siempre visible para todas las rutas del dashboard */}
+        <DashboardSidebar clinicName={clinicName} logoUrl={logoUrl} />
 
-      {/* Área de Contenido Principal: El comportamiento (header, padding, scroll) se define en los layouts de grupo */}
-      <main className="flex-1 flex flex-col relative text-foreground w-full">
-        {children}
-      </main>
-    </div>
+        {/* Área de Contenido Principal: El comportamiento (header, padding, scroll) se define en los layouts de grupo */}
+        <main className="flex-1 flex flex-col relative text-foreground w-full">
+          {children}
+        </main>
+      </div>
+      <AIGenerationFloatingCard />
+    </AIImageProvider>
   );
 }

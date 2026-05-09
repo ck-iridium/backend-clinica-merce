@@ -15,8 +15,11 @@ router = APIRouter(
 
 @router.post("/")
 async def upload_image(file: UploadFile = File(...)):
-    if not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="El archivo debe ser una imagen")
+    is_image = file.content_type.startswith("image/")
+    is_video = file.content_type.startswith("video/")
+
+    if not is_image and not is_video:
+        raise HTTPException(status_code=400, detail="El archivo debe ser una imagen o un vídeo")
     
     supabase_url = os.environ.get("SUPABASE_URL")
     supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
@@ -28,34 +31,39 @@ async def upload_image(file: UploadFile = File(...)):
         supabase: Client = create_client(supabase_url, supabase_key)
         file_bytes = await file.read()
         
-        if file.content_type == "image/svg+xml":
-            filename = f"{uuid.uuid4().hex}.svg"
-            final_bytes = file_bytes
-            content_type = "image/svg+xml"
+        filename = f"{uuid.uuid4().hex}"
+        content_type = file.content_type
+        final_bytes = file_bytes
+
+        if is_image:
+            if file.content_type == "image/svg+xml":
+                filename += ".svg"
+            else:
+                try:
+                    # Comprimir a WEBP preservando canal Alfa con Pillow
+                    image = Image.open(io.BytesIO(file_bytes))
+                    if image.mode not in ("RGB", "RGBA"):
+                        if 'transparency' in image.info or image.mode in ('P', 'LA'):
+                            image = image.convert("RGBA")
+                        else:
+                            image = image.convert("RGB")
+                    
+                    buffer = io.BytesIO()
+                    image.save(buffer, format="WEBP", quality=85)
+                    final_bytes = buffer.getvalue()
+                    filename += ".webp"
+                    content_type = "image/webp"
+                except Exception:
+                    # Fallback si falla PIL
+                    ext = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
+                    filename += f".{ext}"
         else:
-            try:
-                # Comprimir a WEBP preservando canal Alfa con Pillow
-                image = Image.open(io.BytesIO(file_bytes))
-                if image.mode not in ("RGB", "RGBA"):
-                    if 'transparency' in image.info or image.mode in ('P', 'LA'):
-                        image = image.convert("RGBA")
-                    else:
-                        image = image.convert("RGB")
-                
-                buffer = io.BytesIO()
-                image.save(buffer, format="WEBP", quality=85)
-                final_bytes = buffer.getvalue()
-                filename = f"{uuid.uuid4().hex}.webp"
-                content_type = "image/webp"
-            except Exception as e:
-                # Fallback
-                ext = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
-                filename = f"{uuid.uuid4().hex}.{ext}"
-                final_bytes = file_bytes
-                content_type = file.content_type
+            # Es vídeo, subir tal cual con su extensión original
+            ext = file.filename.split('.')[-1] if '.' in file.filename else 'mp4'
+            filename += f".{ext}"
         
         # Subir a Supabase Storage (bucket 'media')
-        res = supabase.storage.from_("media").upload(
+        supabase.storage.from_("media").upload(
             file=final_bytes,
             path=filename,
             file_options={"content-type": content_type, "upsert": "true"}

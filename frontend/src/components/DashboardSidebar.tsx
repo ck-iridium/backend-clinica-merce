@@ -29,6 +29,8 @@ import {
 } from "@/components/ui/sheet";
 import { useAuthRole } from '@/hooks/useAuthRole';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAIImage } from '@/app/contexts/AIImageContext';
+import { toast } from 'sonner';
 
 
 interface DashboardSidebarProps {
@@ -106,6 +108,17 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
   };
 
   const NavItems = () => {
+    const { isGenerating } = useAIImage();
+
+    const handleProtectedNavigation = (e: React.MouseEvent, href: string) => {
+      if (isGenerating) {
+        e.preventDefault();
+        toast.warning("Espera a que la IA termine antes de salir de la edición.");
+        return;
+      }
+      router.push(href);
+    };
+
     if (loading) {
       return (
         <div className="flex flex-col gap-3 w-full px-3 py-2 animate-in fade-in duration-500">
@@ -170,8 +183,14 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
       <div className="flex flex-col gap-2 w-full relative z-10 px-3">
         {/* 1. GlobalSearch (Lupa) */}
         <button
-          onClick={() => setSearchOpen(true)}
-          className="w-full group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 text-stone-500 hover:bg-stone-900 hover:text-white border border-transparent hover:border-stone-800 mb-2"
+          onClick={() => {
+            if (isGenerating) {
+              toast.warning("No puedes buscar mientras se genera la imagen.");
+              return;
+            }
+            setSearchOpen(true);
+          }}
+          className={`w-full group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 text-stone-500 hover:bg-stone-900 hover:text-white border border-transparent hover:border-stone-800 mb-2 ${isGenerating ? 'opacity-30 grayscale cursor-not-allowed' : ''}`}
         >
           <Search size={22} strokeWidth={1.5} />
           <span className="absolute left-full top-1/2 -translate-y-1/2 ml-5 px-4 py-2 bg-stone-800 text-white text-[12px] font-black uppercase tracking-[0.15em] rounded-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-300 whitespace-nowrap z-[110] shadow-2xl border border-stone-700 translate-x-[-15px] group-hover/item:translate-x-0 pointer-events-none">
@@ -203,7 +222,13 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
             <Link
               key={link.href}
               href={link.href}
-              className={`group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 ${containerClasses}`}
+              onClick={(e) => {
+                if (isGenerating) {
+                  e.preventDefault();
+                  toast.warning("Espera a que la IA termine antes de salir.");
+                }
+              }}
+              className={`group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 ${containerClasses} ${isGenerating ? 'opacity-30 grayscale cursor-not-allowed' : ''}`}
             >
               <div className="flex-shrink-0 flex items-center justify-center">
                 <Icon size={22} className={iconClasses} strokeWidth={active ? 2.5 : 1.5} />
@@ -222,7 +247,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
         {filteredGestion.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className={`group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 ${filteredGestion.some(l => isActive(l.href)) ? 'bg-stone-800 text-white shadow-lg' : 'text-stone-500 hover:bg-stone-900 hover:text-white'}`}>
+              <button disabled={isGenerating} className={`group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 ${filteredGestion.some(l => isActive(l.href)) ? 'bg-stone-800 text-white shadow-lg' : 'text-stone-500 hover:bg-stone-900 hover:text-white'} ${isGenerating ? 'opacity-30 grayscale cursor-not-allowed' : ''}`}>
                 <div className="flex-shrink-0 flex items-center justify-center">
                   <Briefcase size={22} strokeWidth={1.5} />
                 </div>
@@ -245,7 +270,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
                 return (
                   <DropdownMenuItem
                     key={link.href}
-                    onClick={() => router.push(link.href)}
+                    onClick={(e) => handleProtectedNavigation(e, link.href)}
                     className={`flex items-center gap-3 px-4 py-3 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer ${active ? 'bg-stone-800 text-white' : 'text-stone-400'}`}
                   >
                     <Icon size={18} strokeWidth={active ? 2.5 : 1.5} />

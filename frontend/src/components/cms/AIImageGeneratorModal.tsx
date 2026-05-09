@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from 'sonner';
+import { useAIImage } from '@/app/contexts/AIImageContext';
 
 interface AIImageGeneratorModalProps {
   open: boolean;
@@ -35,7 +36,7 @@ export default function AIImageGeneratorModal({
   contentHtml
 }: AIImageGeneratorModalProps) {
   const [prompt, setPrompt] = useState(serviceName ? `Tratamiento: ${serviceName}` : '');
-  const [aspectRatio, setAspectRatio] = useState('1:1');
+  const [aspectRatio, setAspectRatio] = useState('9:16');
   const [shotType, setShotType] = useState('closeup_beauty');
   const [visualStyle, setVisualStyle] = useState('luxury');
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
@@ -156,39 +157,29 @@ export default function AIImageGeneratorModal({
     }
   };
 
+  const { startGeneration, setOnFinish } = useAIImage();
+
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
-    setIsGenerating(true);
     
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ai/generate-image`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: prompt.trim(),
-          aspect_ratio: aspectRatio,
-          shot_type: shotType,
-          visual_style: visualStyle,
-          reference_image: referenceImage,
-          exclude_text: excludeText,
-          reference_type: referenceType
-        })
-      });
+    // Registrar el callback para cuando termine en segundo plano
+    setOnFinish((url: string) => {
+      onGenerate(url);
+    });
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail || "Error al generar la imagen");
-      }
+    // Iniciar generación (esto es async pero no lo esperamos aquí para cerrar el modal)
+    startGeneration({
+      prompt: prompt.trim(),
+      aspect_ratio: aspectRatio,
+      shot_type: shotType,
+      visual_style: visualStyle,
+      reference_image: referenceImage,
+      exclude_text: excludeText,
+      reference_type: referenceType
+    });
 
-      const data = await res.json();
-      onGenerate(data.url);
-      toast.success('Imagen generada y guardada con éxito');
-      onClose();
-    } catch (error: any) {
-      toast.error(error.message || 'Error de conexión');
-    } finally {
-      setIsGenerating(false);
-    }
+    onClose();
+    toast.info('🚀 Generación iniciada en segundo plano');
   };
 
   return (
@@ -284,9 +275,9 @@ export default function AIImageGeneratorModal({
                   <SelectValue placeholder="Selecciona formato" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="9:16">Vertical (9:16 - Móvil)</SelectItem>
                   <SelectItem value="1:1">Cuadrada (1:1 - Portadas)</SelectItem>
                   <SelectItem value="16:9">Horizontal (16:9 - Cabeceras)</SelectItem>
-                  <SelectItem value="9:16">Vertical (9:16 - Móvil)</SelectItem>
                 </SelectContent>
               </Select>
             </div>

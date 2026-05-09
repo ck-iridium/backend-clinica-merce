@@ -27,6 +27,7 @@ interface MediaPickerModalProps {
   onImageSelected: (url: string) => void;
   forceAspect?: number;
   maxResolution?: number;
+  mediaType?: 'image' | 'video';
 }
 
 function formatBytes(bytes: number): string {
@@ -36,7 +37,7 @@ function formatBytes(bytes: number): string {
 }
 
 const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
-  ({ onClose, onImageSelected, forceAspect, maxResolution }, ref) => {
+  ({ onClose, onImageSelected, forceAspect, maxResolution, mediaType = 'image' }, ref) => {
     const { showFeedback } = useFeedback();
     const [activeTab, setActiveTab] = useState<'upload' | 'gallery'>('gallery');
 
@@ -59,7 +60,14 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/all`);
         if (res.ok) {
-          setGalleryFiles(await res.json());
+          const allFiles = await res.json();
+          // Filtrar por tipo si se especifica
+          const filtered = allFiles.filter((f: MediaFile) => {
+            if (mediaType === 'video') return f.content_type.startsWith('video/');
+            if (mediaType === 'image') return f.content_type.startsWith('image/');
+            return true;
+          });
+          setGalleryFiles(filtered);
           setGalleryLoaded(true);
         } else {
           showFeedback({ type: 'error', title: 'Error', message: 'No se pudo cargar la galería.' });
@@ -71,17 +79,47 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
       }
     };
 
-    const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
       e.stopPropagation();
-      if (!e.target.files || e.target.files.length === 0) return;
+      const file = e.target.files?.[0];
+      if (!file) return;
       
-      const reader = new FileReader();
-      reader.addEventListener('load', () => {
-        setSelectedImageForCrop(reader.result?.toString() || '');
-        setShowCropModal(true);
-      });
-      reader.readAsDataURL(e.target.files[0]);
+      // Si es video, subir directamente
+      if (file.type.startsWith('video/')) {
+        await uploadDirectly(file);
+      } else {
+        // Si es imagen, pasar por crop
+        const reader = new FileReader();
+        reader.addEventListener('load', () => {
+          setSelectedImageForCrop(reader.result?.toString() || '');
+          setShowCropModal(true);
+        });
+        reader.readAsDataURL(file);
+      }
       e.target.value = '';
+    };
+
+    const uploadDirectly = async (file: File) => {
+      setUploading(true);
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/`, {
+          method: 'POST',
+          body: formData,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          onImageSelected(data.url);
+          onClose();
+        } else {
+          showFeedback({ type: 'error', title: 'Error', message: 'No se pudo subir el archivo.' });
+        }
+      } catch {
+        showFeedback({ type: 'error', title: 'Error', message: 'Error de conexión.' });
+      } finally {
+        setUploading(false);
+      }
     };
 
     const handleCropComplete = async (croppedBlob: Blob) => {
@@ -122,6 +160,8 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
       onClose();
     };
 
+    const isVideo = (contentType: string) => contentType.startsWith('video/');
+
     return (
       <Dialog open={true} onOpenChange={(open) => !open && handleClose()}>
         <DialogPrimitive.Portal>
@@ -144,7 +184,7 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
             >
                 {/* BOTÓN CIERRE STICKY DENTRO DEL FOLIO (top-8 right-8) */}
                 {/* Se mantiene visible sobre el folio blanco */}
-                <div className="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl p-0 overflow-hidden flex flex-col h-full max-h-[700px] pointer-events-auto border border-stone-100">
+                <div className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl p-0 overflow-hidden flex flex-col h-full max-h-[750px] pointer-events-auto border border-stone-100">
                     <button 
                         onClick={handleClose}
                         className="absolute top-6 right-6 rounded-full ring-offset-background transition-colors hover:bg-stone-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 w-10 h-10 flex items-center justify-center bg-white shadow-lg border border-stone-100 z-[250] pointer-events-auto"
@@ -153,15 +193,17 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                     </button>
 
                     <DialogHeader className="sr-only">
-                        <DialogTitle>Galería de Selección de Imágenes</DialogTitle>
-                        <DialogDescription>Selecciona o sube imágenes para la clínica.</DialogDescription>
+                        <DialogTitle>Galería de Selección de Medios</DialogTitle>
+                        <DialogDescription>Selecciona o sube imágenes o vídeos para la clínica.</DialogDescription>
                     </DialogHeader>
 
                     {/* Header Interno */}
                     <div className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-stone-100 bg-stone-50/80 shrink-0">
                         <div>
-                            <h3 className="text-xl font-extrabold text-stone-800 tracking-tight text-left">Galería de Medios</h3>
-                            <p className="text-xs text-stone-500 font-medium mt-1 text-left">Elige o sube contenido gráfico</p>
+                            <h3 className="text-xl font-extrabold text-stone-800 tracking-tight text-left">
+                              {mediaType === 'video' ? 'Galería de Vídeos' : 'Galería de Imágenes'}
+                            </h3>
+                            <p className="text-xs text-stone-500 font-medium mt-1 text-left">Elige o sube contenido multimedia optimizado</p>
                         </div>
                     </div>
 
@@ -171,13 +213,13 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveTab('gallery'); }}
                             className={`px-6 py-4 text-sm font-bold border-b-[3px] transition-all flex-[0_0_auto] ${activeTab === 'gallery' ? 'border-[#d4af37] text-stone-900' : 'border-transparent text-stone-400 hover:text-stone-600'}`}
                         >
-                            Imágenes Disponibles
+                            {mediaType === 'video' ? 'Vídeos Disponibles' : 'Imágenes Disponibles'}
                         </button>
                         <button
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveTab('upload'); }}
                             className={`px-6 py-4 text-sm font-bold border-b-[3px] transition-all flex-[0_0_auto] ${activeTab === 'upload' ? 'border-[#d4af37] text-stone-900' : 'border-transparent text-stone-400 hover:text-stone-600'}`}
                         >
-                            Subir Nueva
+                            Subir {mediaType === 'video' ? 'Vídeo' : 'Imagen'}
                         </button>
                     </div>
 
@@ -193,24 +235,40 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                                         </div>
                                     ) : galleryFiles.length === 0 ? (
                                         <div className="flex flex-col items-center justify-center h-full min-h-[300px] gap-4 text-center">
-                                            <span className="text-5xl opacity-40">🖼️</span>
-                                            <p className="text-stone-500 font-medium">No hay imágenes.</p>
+                                            <span className="text-5xl opacity-40">{mediaType === 'video' ? '🎥' : '🖼️'}</span>
+                                            <p className="text-stone-500 font-medium">No hay {mediaType === 'video' ? 'vídeos' : 'imágenes'}.</p>
                                         </div>
                                     ) : (
-                                        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4 pb-24">
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 pb-24">
                                             {galleryFiles.map(file => (
                                                 <button
                                                     type="button"
                                                     key={file.url}
                                                     onClick={(e) => safeSelectImage(e, file.url)}
-                                                    className="group relative rounded-2xl overflow-hidden aspect-square bg-white border border-stone-200 hover:border-[#d4af37] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-left"
+                                                    className="group relative rounded-2xl overflow-hidden aspect-square bg-stone-100 border border-stone-200 hover:border-[#d4af37] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-left"
                                                 >
-                                                    <img
-                                                        src={file.url}
-                                                        alt={file.name}
-                                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                        loading="lazy"
-                                                    />
+                                                    {isVideo(file.content_type) ? (
+                                                      <div className="w-full h-full relative flex items-center justify-center bg-stone-900">
+                                                        <video src={file.url} className="w-full h-full object-cover opacity-60" />
+                                                        <div className="absolute inset-0 flex items-center justify-center">
+                                                          <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-lg">
+                                                            <Play fill="white" size={16} className="text-white ml-1" />
+                                                          </div>
+                                                        </div>
+                                                      </div>
+                                                    ) : (
+                                                      <img
+                                                          src={file.url}
+                                                          alt={file.name}
+                                                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                          loading="lazy"
+                                                      />
+                                                    )}
+                                                    
+                                                    <div className="absolute top-2 left-2 z-10 px-2 py-1 bg-black/50 backdrop-blur-md rounded-lg text-[8px] font-black text-white uppercase tracking-widest">
+                                                      {formatBytes(file.size)}
+                                                    </div>
+
                                                     {file.status === 'in_use' && (
                                                         <div className="absolute top-2 right-2 z-10">
                                                             <span className="flex h-3 w-3 relative">
@@ -236,18 +294,27 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                                     {uploading ? (
                                         <div className="flex flex-col items-center gap-6">
                                             <div className="w-12 h-12 border-4 border-stone-200 border-t-[#d4af37] rounded-full animate-spin" />
-                                            <p className="text-stone-600 font-bold">Procesando...</p>
+                                            <p className="text-stone-600 font-bold">Subiendo archivo...</p>
                                         </div>
                                     ) : (
                                         <label 
                                             className="w-full max-w-lg cursor-pointer group"
                                             onClick={(e) => e.stopPropagation()}
                                         >
-                                            <input type="file" accept="image/*" className="sr-only" onChange={handleFileInput} />
-                                            <div className="border-2 border-dashed border-stone-300 group-hover:border-[#d4af37] rounded-xl p-16 text-center transition-all bg-white group-hover:bg-[#fbf9f4] shadow-sm group-hover:shadow-md">
-                                                <div className="text-6xl mb-6 transform group-hover:scale-110 transition-transform duration-300">📤</div>
-                                                <p className="font-extrabold text-stone-800 text-xl mb-2">Subir Foto</p>
-                                                <p className="text-sm text-stone-500">Toca para explorar imágenes</p>
+                                            <input 
+                                              type="file" 
+                                              accept={mediaType === 'video' ? "video/*" : "image/*"} 
+                                              className="sr-only" 
+                                              onChange={handleFileInput} 
+                                            />
+                                            <div className="border-2 border-dashed border-stone-300 group-hover:border-[#d4af37] rounded-3xl p-16 text-center transition-all bg-white group-hover:bg-[#fbf9f4] shadow-sm group-hover:shadow-md">
+                                                <div className="text-6xl mb-6 transform group-hover:scale-110 transition-transform duration-300">
+                                                  {mediaType === 'video' ? '📹' : '🖼️'}
+                                                </div>
+                                                <p className="font-extrabold text-stone-800 text-xl mb-2">Subir {mediaType === 'video' ? 'Vídeo' : 'Foto'}</p>
+                                                <p className="text-sm text-stone-500 italic">
+                                                  {mediaType === 'video' ? 'Formatos sugeridos: .mp4, .webm' : 'Formatos sugeridos: .webp, .jpg'}
+                                                </p>
                                             </div>
                                         </label>
                                     )}

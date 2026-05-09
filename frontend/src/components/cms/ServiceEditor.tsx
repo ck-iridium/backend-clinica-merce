@@ -8,11 +8,12 @@ import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { toast } from 'sonner';
 import { 
-  ArrowLeft, Eye, Sparkles, Image as ImageIcon, Trash2
+  ArrowLeft, Eye, Sparkles, Image as ImageIcon, Trash2, Loader2
 } from 'lucide-react';
 import MediaPickerModal from '@/components/MediaPickerModal';
 import FeedbackModal from '@/components/FeedbackModal';
 import AIGeneratorModal from './AIGeneratorModal';
+import { useAIImage } from '@/app/contexts/AIImageContext';
 
 // Tabs
 import GeneralTab from '@/app/dashboard/(standard)/services/editor/components/GeneralTab';
@@ -31,6 +32,7 @@ export interface ServiceFormData {
   is_featured: boolean;
   category_id: string;
   image_url: string;
+  video_url: string;
   seo_title: string;
   seo_description: string;
   seo_keywords: string;
@@ -52,6 +54,7 @@ const DEFAULT_FORM_DATA: ServiceFormData = {
   is_featured: false,
   category_id: '',
   image_url: '',
+  video_url: '',
   seo_title: '',
   seo_description: '',
   seo_keywords: '',
@@ -68,7 +71,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
   const isNew = !serviceId;
   const [categories, setCategories] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
-  const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const [mediaPickerSlot, setMediaPickerSlot] = useState<'image' | 'video' | null>(null);
   const [activeTab, setActiveTab] = useState<'general' | 'content' | 'design' | 'seo'>('general');
   const [slugLocked, setSlugLocked] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -90,6 +93,8 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
         ...DEFAULT_FORM_DATA,
         ...initialData,
         slug: initialData.slug || '',
+        image_url: initialData.image_url || '',
+        video_url: initialData.video_url || '',
         content_html: initialData.content_html || '',
         seo_title: initialData.seo_title || '',
         seo_description: initialData.seo_description || '',
@@ -211,6 +216,8 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
     }
   };
 
+  const { isGenerating: isGeneratingAI } = useAIImage();
+
   return (
     <div className="flex flex-col md:flex-row h-screen overflow-hidden bg-[#FAFAFA]">
       {/* ─── PANEL IZQUIERDO: Configuración (100% móvil, 30% desktop) ─────────────────────────────── */}
@@ -221,31 +228,37 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
           <div className="px-6 py-5 border-b border-stone-100 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-[#fcf8e5] flex items-center justify-center">
-                <Sparkles size={16} strokeWidth={1.75} className="text-[#b08e23]" />
+                {isGeneratingAI ? (
+                  <Loader2 size={16} strokeWidth={1.75} className="text-[#b08e23] animate-spin" />
+                ) : (
+                  <Sparkles size={16} strokeWidth={1.75} className="text-[#b08e23]" />
+                )}
               </div>
               <div>
                 <h2 className="font-serif text-lg font-semibold text-stone-800 leading-tight">
                   {isNew ? 'Nuevo Servicio' : 'Editar Servicio'}
                 </h2>
                 <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">
-                  CMS Visual
+                  {isGeneratingAI ? 'Generando imagen...' : 'CMS Visual'}
                 </p>
               </div>
             </div>
             <div className="flex gap-2">
               <button 
                 type="submit" 
-                disabled={saving || (!isDirty && !isNew)}
+                disabled={saving || isGeneratingAI || (!isDirty && !isNew)}
                 onClick={() => setExitAfterSave(false)}
                 className="bg-stone-100 hover:bg-stone-200 text-stone-700 px-4 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-30 disabled:grayscale shadow-sm"
+                title={isGeneratingAI ? "No puedes guardar mientras se genera la imagen" : ""}
               >
                 {saving && !exitAfterSave ? '...' : 'Guardar cambios'}
               </button>
               <button 
                 type="submit" 
-                disabled={saving || (!isDirty && !isNew)}
+                disabled={saving || isGeneratingAI || (!isDirty && !isNew)}
                 onClick={() => setExitAfterSave(true)}
                 className="bg-stone-900 hover:bg-[#d4af37] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-30 disabled:grayscale shadow-sm"
+                title={isGeneratingAI ? "No puedes guardar mientras se genera la imagen" : ""}
               >
                 {saving && exitAfterSave ? 'Guardando...' : 'Guardar y salir'}
               </button>
@@ -293,7 +306,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
                 register={register} 
                 control={control} 
                 setValue={setValue} 
-                setShowMediaPicker={setShowMediaPicker} 
+                setMediaPickerSlot={setMediaPickerSlot} 
               />
             </div>
 
@@ -315,8 +328,9 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
               {!isNew && (
                 <button
                   type="button"
+                  disabled={isGeneratingAI}
                   onClick={() => setShowDeleteModal(true)}
-                  className="w-12 h-12 flex items-center justify-center rounded-xl bg-white border border-stone-200 text-red-400 hover:text-red-600 hover:border-red-100 hover:bg-red-50 transition-all shrink-0"
+                  className="w-12 h-12 flex items-center justify-center rounded-xl bg-white border border-stone-200 text-red-400 hover:text-red-600 hover:border-red-100 hover:bg-red-50 transition-all shrink-0 disabled:opacity-30 disabled:grayscale"
                   title="Eliminar Servicio"
                 >
                   <Trash2 size={18} />
@@ -324,7 +338,13 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
               )}
               <Link
                 href="/dashboard/services"
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white border border-stone-200 text-stone-600 font-bold text-sm hover:bg-stone-50 hover:border-stone-300 transition-all shadow-sm"
+                onClick={(e) => {
+                  if (isGeneratingAI) {
+                    e.preventDefault();
+                    toast.warning("Espera a que la IA termine antes de salir.");
+                  }
+                }}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white border border-stone-200 text-stone-600 font-bold text-sm hover:bg-stone-50 hover:border-stone-300 transition-all shadow-sm ${isGeneratingAI ? 'opacity-30 grayscale cursor-not-allowed' : ''}`}
               >
                 <ArrowLeft size={15} strokeWidth={2} />
                 Cancelar
@@ -459,12 +479,17 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
 
       </div>
 
-      {showMediaPicker && (
+      {mediaPickerSlot && (
         <MediaPickerModal
-          onClose={() => setShowMediaPicker(false)}
+          onClose={() => setMediaPickerSlot(null)}
+          mediaType={mediaPickerSlot}
           onImageSelected={(url) => {
-            setValue('image_url', url, { shouldDirty: true });
-            setShowMediaPicker(false);
+            if (mediaPickerSlot === 'image') {
+              setValue('image_url', url, { shouldDirty: true });
+            } else if (mediaPickerSlot === 'video') {
+              setValue('video_url', url, { shouldDirty: true });
+            }
+            setMediaPickerSlot(null);
           }}
         />
       )}

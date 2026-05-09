@@ -332,15 +332,14 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
                     "data": base64.b64decode(b64_data)
                 })
 
-            # Configurar generación para forzar el formato solicitado
-            generation_config = {
-                "aspect_ratio": request.aspect_ratio
-            }
+            # Inyectar la proporción en el prompt final como instrucción de texto
+            # ya que el SDK parece no reconocer 'aspect_ratio' en GenerationConfig aún
+            final_prompt = f"{base_prompt}. Format: 9:16 aspect ratio, vertical mobile orientation."
+            prompt_parts[0] = final_prompt
 
             # Generar contenido con timeout de seguridad (90s)
             response = model.generate_content(
                 prompt_parts,
-                generation_config=generation_config,
                 request_options={"timeout": 90000} # En milisegundos
             )
             
