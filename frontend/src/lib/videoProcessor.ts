@@ -68,5 +68,5 @@ export const processVideo = async (
   await ffmpegInstance.deleteFile(outputName);
 
   // Devolver como Blob de vídeo MP4
-  return new Blob([data], { type: 'video/mp4' });
+  return new Blob([data as any], { type: 'video/mp4' });
 };
