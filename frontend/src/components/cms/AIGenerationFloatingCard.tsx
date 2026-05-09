@@ -5,7 +5,7 @@ import { useAIImage } from '@/app/contexts/AIImageContext';
 import { Sparkles, Loader2, CheckCircle2, AlertCircle, X } from 'lucide-react';
 
 export default function AIGenerationFloatingCard() {
-  const { isGenerating, generationMode, generationTime, resultUrl, error, resetGeneration, retry, cancelGeneration } = useAIImage();
+  const { isGenerating, generationTime, resultUrl, error, resetGeneration, retry, cancelGeneration } = useAIImage();
   const [isClosing, setIsClosing] = React.useState(false);
 
   const handleClose = React.useCallback(() => {
@@ -27,8 +27,6 @@ export default function AIGenerationFloatingCard() {
   }, [resultUrl, handleClose, isClosing]);
 
   if (!isGenerating && !resultUrl && !error) return null;
-
-  const isVideo = generationMode === 'video' || (resultUrl && resultUrl.endsWith('.mp4'));
 
   return (
     <div className={`fixed bottom-6 right-6 z-[200] transition-all duration-500 ${isClosing ? 'animate-out fade-out slide-out-to-bottom-10 fill-mode-forwards' : 'animate-in slide-in-from-right-10'}`}>
