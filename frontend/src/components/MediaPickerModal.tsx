@@ -3,6 +3,8 @@
 import React, { useState, useEffect, forwardRef } from 'react';
 import CropImageModal from '@/components/CropImageModal';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
+import { processVideo } from '@/lib/videoProcessor';
+import { Loader2, Sparkles } from 'lucide-react';
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { 
   Dialog, 
@@ -48,6 +50,32 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
     const [showCropModal, setShowCropModal] = useState(false);
     const [selectedImageForCrop, setSelectedImageForCrop] = useState('');
     const [uploading, setUploading] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [processingProgress, setProcessingProgress] = useState(0);
+    const [isDragging, setIsDragging] = useState(false);
+
+    const onDragOver = (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(true);
+    };
+
+    const onDragLeave = () => {
+      setIsDragging(false);
+    };
+
+    const onDrop = async (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+      const files = e.dataTransfer.files;
+      if (files && files.length > 0) {
+        // Simular el evento para reutilizar la lógica de handleFileInput
+        const pseudoEvent = {
+          target: { files: files },
+          stopPropagation: () => {}
+        } as unknown as React.ChangeEvent<HTMLInputElement>;
+        handleFileInput(pseudoEvent);
+      }
+    };
 
     useEffect(() => {
       if (activeTab === 'gallery' && !galleryLoaded) {
@@ -84,9 +112,20 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
       const file = e.target.files?.[0];
       if (!file) return;
       
-      // Si es video, subir directamente
+      // Si es video, optimizar antes de subir
       if (file.type.startsWith('video/')) {
-        await uploadDirectly(file);
+        setIsProcessing(true);
+        setProcessingProgress(0);
+        try {
+          const optimizedBlob = await processVideo(file, (p) => setProcessingProgress(p));
+          await uploadDirectly(optimizedBlob, `video_${Date.now()}.mp4`);
+        } catch (err) {
+          console.error(err);
+          showFeedback({ type: 'error', title: 'Error', message: 'No se pudo optimizar el vídeo.' });
+        } finally {
+          setIsProcessing(false);
+          setProcessingProgress(0);
+        }
       } else {
         // Si es imagen, pasar por crop
         const reader = new FileReader();
@@ -99,10 +138,10 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
       e.target.value = '';
     };
 
-    const uploadDirectly = async (file: File) => {
+    const uploadDirectly = async (fileOrBlob: File | Blob, customName?: string) => {
       setUploading(true);
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', fileOrBlob, customName || (fileOrBlob instanceof File ? fileOrBlob.name : 'upload.mp4'));
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/`, {
           method: 'POST',
@@ -249,7 +288,7 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                                                 >
                                                     {isVideo(file.content_type) ? (
                                                       <div className="w-full h-full relative flex items-center justify-center bg-stone-900">
-                                                        <video src={file.url} className="w-full h-full object-cover opacity-60" />
+                                                        <video src={file.url} className="w-full h-full object-cover opacity-60" crossOrigin="anonymous" />
                                                         <div className="absolute inset-0 flex items-center justify-center">
                                                           <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-lg">
                                                             <Play fill="white" size={16} className="text-white ml-1" />
@@ -262,6 +301,7 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                                                           alt={file.name}
                                                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                           loading="lazy"
+                                                          crossOrigin="anonymous"
                                                       />
                                                     )}
                                                     
@@ -291,15 +331,43 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
 
                             {activeTab === 'upload' && (
                                 <div className="flex flex-col items-center justify-center min-h-[300px] h-full pb-24">
-                                    {uploading ? (
-                                        <div className="flex flex-col items-center gap-6">
-                                            <div className="w-12 h-12 border-4 border-stone-200 border-t-[#d4af37] rounded-full animate-spin" />
-                                            <p className="text-stone-600 font-bold">Subiendo archivo...</p>
+                                    {(uploading || isProcessing) ? (
+                                        <div className="flex flex-col items-center gap-6 p-12 bg-white rounded-3xl border border-stone-100 shadow-sm w-full max-w-sm">
+                                            <div className="relative flex items-center justify-center">
+                                              <Loader2 size={48} className="text-[#d4af37] animate-spin" />
+                                              {isProcessing && (
+                                                <div className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-stone-800">
+                                                  {processingProgress}%
+                                                </div>
+                                              )}
+                                            </div>
+                                            <div className="text-center">
+                                              <p className="text-stone-800 font-black uppercase tracking-widest text-xs mb-1">
+                                                {isProcessing ? 'Optimizando Vídeo' : 'Subiendo a la Nube'}
+                                              </p>
+                                              <p className="text-stone-400 text-[10px] font-medium leading-relaxed">
+                                                {isProcessing ? 'Eliminando audio y reduciendo tamaño...' : 'Guardando archivo en el servidor...'}
+                                              </p>
+                                            </div>
+                                            {isProcessing && (
+                                              <div className="w-full bg-stone-100 rounded-full h-1.5 overflow-hidden">
+                                                <div 
+                                                  className="h-full bg-[#d4af37] transition-all duration-300"
+                                                  style={{ width: `${processingProgress}%` }}
+                                                />
+                                              </div>
+                                            )}
                                         </div>
                                     ) : (
                                         <label 
-                                            className="w-full max-w-lg cursor-pointer group"
+                                            className={cn(
+                                              "w-full max-w-lg cursor-pointer group transition-all duration-300",
+                                              isDragging ? "scale-105" : ""
+                                            )}
                                             onClick={(e) => e.stopPropagation()}
+                                            onDragOver={onDragOver}
+                                            onDragLeave={onDragLeave}
+                                            onDrop={onDrop}
                                         >
                                             <input 
                                               type="file" 
@@ -307,7 +375,10 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                                               className="sr-only" 
                                               onChange={handleFileInput} 
                                             />
-                                            <div className="border-2 border-dashed border-stone-300 group-hover:border-[#d4af37] rounded-3xl p-16 text-center transition-all bg-white group-hover:bg-[#fbf9f4] shadow-sm group-hover:shadow-md">
+                                            <div className={cn(
+                                              "border-2 border-dashed rounded-3xl p-16 text-center transition-all bg-white shadow-sm group-hover:shadow-md",
+                                              isDragging ? "border-[#d4af37] bg-[#fbf9f4]" : "border-stone-300 group-hover:border-[#d4af37] group-hover:bg-[#fbf9f4]"
+                                            )}>
                                                 <div className="text-6xl mb-6 transform group-hover:scale-110 transition-transform duration-300">
                                                   {mediaType === 'video' ? '📹' : '🖼️'}
                                                 </div>

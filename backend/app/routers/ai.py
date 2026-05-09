@@ -337,10 +337,10 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
             final_prompt = f"{base_prompt}. Format: 9:16 aspect ratio, vertical mobile orientation."
             prompt_parts[0] = final_prompt
 
-            # Generar contenido con timeout de seguridad (90s)
+            # Generar contenido con timeout de seguridad ampliado (180s)
             response = model.generate_content(
                 prompt_parts,
-                request_options={"timeout": 90000} # En milisegundos
+                request_options={"timeout": 180000} # En milisegundos
             )
             
             # DEBUG: Imprimir estructura para entender qué devuelve Nano Banana 2
@@ -424,8 +424,7 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
         
         # Registrar en la tabla Media (Galería)
         try:
-            from .models import Media
-            new_media = Media(
+            new_media = models.Media(
                 filename=filename,
                 url=public_url,
                 file_type="image",

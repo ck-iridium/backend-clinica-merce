@@ -3,6 +3,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import CropImageModal from '@/components/CropImageModal';
+import { processVideo } from '@/lib/videoProcessor';
+import { Loader2, Sparkles, Upload } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface MediaFile {
   name: string;
@@ -37,7 +40,7 @@ export default function MediaGalleryPage() {
   const [loading, setLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState<MediaFile | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'in_use' | 'orphan'>('all');
+  const [filter, setFilter] = useState<'all' | 'in_use' | 'orphan' | 'video'>('all');
 
   // Multi-select state
   const [selectedNames, setSelectedNames] = useState<Set<string>>(new Set());
@@ -50,6 +53,34 @@ export default function MediaGalleryPage() {
 
   // Full Image Modal
   const [showFullImageModal, setShowFullImageModal] = useState(false);
+
+  // Video Processing states
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingProgress, setProcessingProgress] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const onDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const onDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      // Reutilizamos handleFileSelect simulando el evento
+      const pseudoEvent = {
+        target: { files: files }
+      } as unknown as React.ChangeEvent<HTMLInputElement>;
+      handleFileSelect(pseudoEvent);
+    }
+  };
+  const [processingStatus, setProcessingStatus] = useState('');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -162,30 +193,18 @@ export default function MediaGalleryPage() {
     });
   };
 
-  // Upload handler
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    const reader = new FileReader();
-    reader.addEventListener('load', () => {
-      setSelectedImageForCrop(reader.result?.toString() || '');
-      setShowCropModal(true);
-    });
-    reader.readAsDataURL(e.target.files[0]);
-    e.target.value = '';
-  };
-
-  const handleCropComplete = async (croppedBlob: Blob) => {
-    setShowCropModal(false);
+  // Generic Upload handler
+  const handleUpload = async (blob: Blob, name: string) => {
     setUploadingNew(true);
     const uploadData = new FormData();
-    uploadData.append('file', croppedBlob, 'media_upload.webp');
+    uploadData.append('file', blob, name);
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/`, { method: 'POST', body: uploadData });
       if (res.ok) {
         await fetchData();
-        showFeedback({ type: 'success', title: 'Subida Completa', message: 'Nueva imagen añadida a la galería.' });
+        showFeedback({ type: 'success', title: 'Subida Completa', message: 'Nuevo archivo añadido a la galería.' });
       } else {
-        showFeedback({ type: 'error', title: 'Error', message: 'No se pudo subir la imagen.' });
+        showFeedback({ type: 'error', title: 'Error', message: 'No se pudo subir el archivo.' });
       }
     } catch {
       showFeedback({ type: 'error', title: 'Error', message: 'Error de conexión al subir.' });
@@ -194,7 +213,51 @@ export default function MediaGalleryPage() {
     }
   };
 
-  const filteredFiles = files.filter(f => filter === 'all' || f.status === filter);
+  // Upload handler
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    
+    if (file.type.startsWith('video/')) {
+      setIsProcessing(true);
+      setProcessingStatus('Cargando motor de vídeo...');
+      try {
+        const optimizedBlob = await processVideo(file, (progress) => {
+          setProcessingStatus(`Optimizando vídeo... ${progress}%`);
+          setProcessingProgress(progress);
+        });
+        
+        setProcessingStatus('Finalizando subida...');
+        await handleUpload(optimizedBlob, `video_${Date.now()}.mp4`);
+      } catch (err) {
+        console.error(err);
+        showFeedback({ type: 'error', title: 'Error', message: 'No se pudo procesar el vídeo. Asegúrate de usar un navegador compatible.' });
+      } finally {
+        setIsProcessing(false);
+        setProcessingStatus('');
+        setProcessingProgress(0);
+      }
+    } else {
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        setSelectedImageForCrop(reader.result?.toString() || '');
+        setShowCropModal(true);
+      });
+      reader.readAsDataURL(file);
+    }
+    e.target.value = '';
+  };
+
+  const handleCropComplete = async (croppedBlob: Blob) => {
+    setShowCropModal(false);
+    await handleUpload(croppedBlob, 'media_upload.webp');
+  };
+
+  const filteredFiles = files.filter(f => {
+    if (filter === 'all') return true;
+    if (filter === 'video') return f.name.toLowerCase().endsWith('.mp4') || f.content_type?.includes('video');
+    return f.status === filter;
+  });
   const orphanCount = files.filter(f => f.status === 'orphan').length;
   const usedPercent = quota ? Math.min((quota.used_bytes / MAX_BYTES) * 100, 100) : 0;
   const isNearLimit = usedPercent > 80;
@@ -209,6 +272,42 @@ export default function MediaGalleryPage() {
         </h1>
         <p className="text-stone-500 font-medium mt-2">Gestión centralizada de imágenes alojadas en Supabase.</p>
       </div>
+
+      {/* Upload Zone */}
+      {!isProcessing && (
+        <div className="mb-8">
+          <label 
+            onDragOver={onDragOver}
+            onDragLeave={onDragLeave}
+            onDrop={onDrop}
+            className={`
+              flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-[2rem] cursor-pointer transition-all duration-300
+              ${isDragging 
+                ? 'border-[#d4af37] bg-[#fbf9f4] scale-[1.01] shadow-lg' 
+                : 'border-stone-200 bg-white hover:bg-stone-50 hover:border-stone-300 shadow-sm'}
+            `}
+          >
+            <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4">
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-colors ${isDragging ? 'bg-[#d4af37] text-white' : 'bg-stone-100 text-stone-400'}`}>
+                <span className="text-2xl">{isDragging ? '📥' : '☁️'}</span>
+              </div>
+              <p className="mb-1 text-sm text-stone-800 font-black uppercase tracking-widest">
+                {isDragging ? '¡Suéltalo aquí!' : 'Haz clic o arrastra para subir'}
+              </p>
+              <p className="text-xs text-stone-400 font-medium italic">
+                Optimización automática de vídeo (720p, sin audio) activa
+              </p>
+            </div>
+            <input 
+              type="file" 
+              className="hidden" 
+              onChange={handleFileSelect}
+              multiple
+              accept="image/*,video/*"
+            />
+          </label>
+        </div>
+      )}
 
       {/* Quota Bar */}
       {quota && (
@@ -236,17 +335,48 @@ export default function MediaGalleryPage() {
         </div>
       )}
 
+      {/* Video Processing HUD */}
+      {isProcessing && (
+        <div className="mb-8 p-6 rounded-[2rem] bg-stone-900 text-white shadow-2xl border border-white/10 animate-in slide-in-from-top-4 duration-500">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-[#d4af37]/20 flex items-center justify-center text-[#d4af37]">
+                <Sparkles className="animate-pulse" />
+              </div>
+              <div>
+                <p className="text-lg font-bold">{processingStatus}</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-2xl font-black text-[#d4af37]">{processingProgress}%</p>
+            </div>
+          </div>
+          <div className="w-full bg-white/10 rounded-full h-2.5 overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-[#d4af37] to-[#d9777f] transition-all duration-300"
+              style={{ width: `${processingProgress}%` }}
+            />
+          </div>
+          <p className="text-[10px] text-stone-400 mt-3 italic">
+            Estamos eliminando el audio y comprimiendo el vídeo para que la web de la clínica vuele. No cierres esta pestaña.
+          </p>
+        </div>
+      )}
+
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 flex-wrap">
         {/* Filter Pills */}
-        <div className="flex gap-2 bg-white border border-stone-200 p-1 rounded-2xl shadow-sm">
-          {(['all', 'in_use', 'orphan'] as const).map(f => (
+        <div className="flex gap-2 bg-white border border-stone-200 p-1 rounded-2xl shadow-sm overflow-x-auto no-scrollbar">
+          {(['all', 'in_use', 'orphan', 'video'] as const).map(f => (
             <button
               key={f}
               onClick={() => { setFilter(f); clearSelection(); }}
-              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${filter === f ? 'bg-stone-900 text-white shadow' : 'text-stone-500 hover:bg-stone-100'}`}
+              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${filter === f ? 'bg-stone-900 text-white shadow' : 'text-stone-500 hover:bg-stone-100'}`}
             >
-              {f === 'all' ? `Todas (${files.length})` : f === 'in_use' ? `En Uso (${files.filter(x => x.status === 'in_use').length})` : `Huérfanas (${files.filter(x => x.status === 'orphan').length})`}
+              {f === 'all' ? `Todas (${files.length})` : 
+               f === 'in_use' ? `En Uso (${files.filter(x => x.status === 'in_use').length})` : 
+               f === 'orphan' ? `Huérfanas (${files.filter(x => x.status === 'orphan').length})` : 
+               `Vídeos (${files.filter(x => x.name.toLowerCase().endsWith('.mp4') || x.content_type?.includes('video')).length})`}
             </button>
           ))}
         </div>
@@ -263,11 +393,11 @@ export default function MediaGalleryPage() {
           )}
 
           {/* Upload Button */}
-          <label className={`relative cursor-pointer ${uploadingNew ? 'opacity-60 pointer-events-none' : ''}`}>
-            <input type="file" accept="image/*" className="sr-only" onChange={handleFileSelect} disabled={uploadingNew} />
+          <label className={`relative cursor-pointer ${(uploadingNew || isProcessing) ? 'opacity-60 pointer-events-none' : ''}`}>
+            <input type="file" accept="image/*,video/*" className="sr-only" onChange={handleFileSelect} disabled={uploadingNew || isProcessing} />
             <div className="flex items-center gap-2 bg-stone-900 hover:bg-[#d9777f] text-white px-5 py-3 rounded-2xl font-bold text-sm transition-all shadow-lg active:scale-95">
-              {uploadingNew
-                ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /><span>Subiendo...</span></>
+              {(uploadingNew || isProcessing)
+                ? <><Loader2 size={16} className="animate-spin" /><span>{isProcessing ? 'Procesando...' : 'Subiendo...'}</span></>
                 : <><span className="text-lg">+</span><span>Subir Nueva</span></>
               }
             </div>
@@ -315,6 +445,7 @@ export default function MediaGalleryPage() {
                             className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
                             muted
                             playsInline
+                            crossOrigin="anonymous"
                           />
                           <div className="absolute inset-0 flex items-center justify-center">
                             <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-lg">
@@ -328,6 +459,7 @@ export default function MediaGalleryPage() {
                           alt={file.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           loading="lazy"
+                          crossOrigin="anonymous"
                         />
                       )}
 
@@ -371,9 +503,10 @@ export default function MediaGalleryPage() {
                     autoPlay 
                     muted 
                     loop
+                    crossOrigin="anonymous"
                   />
                 ) : (
-                  <img src={selectedFile.url} alt={selectedFile.name} className="w-full h-full object-cover" />
+                  <img src={selectedFile.url} alt={selectedFile.name} className="w-full h-full object-cover" crossOrigin="anonymous" />
                 )}
                 
                 <div className="absolute inset-0 bg-stone-900/40 opacity-0 group-hover/preview:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-none">
@@ -509,6 +642,7 @@ export default function MediaGalleryPage() {
                   className="max-w-full max-h-[90vh] shadow-[0_0_80px_rgba(0,0,0,0.5)] rounded-lg" 
                   controls 
                   autoPlay
+                  crossOrigin="anonymous"
                 />
               ) : (
                 <img 
@@ -516,6 +650,7 @@ export default function MediaGalleryPage() {
                   alt={selectedFile.name}
                   className="max-w-full max-h-[90vh] object-contain shadow-[0_0_80px_rgba(0,0,0,0.5)] rounded-lg"
                   onClick={(e) => e.stopPropagation()}
+                  crossOrigin="anonymous"
                 />
               )}
               

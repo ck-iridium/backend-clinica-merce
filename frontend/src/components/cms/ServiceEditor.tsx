@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { toast } from 'sonner';
-import { 
+import {
   ArrowLeft, Eye, Sparkles, Image as ImageIcon, Trash2, Loader2
 } from 'lucide-react';
 import MediaPickerModal from '@/components/MediaPickerModal';
@@ -101,9 +101,9 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
         seo_keywords: initialData.seo_keywords || '',
         layout_preferences: initialData.layout_preferences || DEFAULT_FORM_DATA.layout_preferences
       };
-      
+
       reset(safeData);
-      
+
       if (initialData.slug) {
         setSlugLocked(true);
       } else {
@@ -152,8 +152,8 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
   const onSubmit = async (data: ServiceFormData) => {
     setSaving(true);
     try {
-      const url = isNew 
-        ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/` 
+      const url = isNew
+        ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/`
         : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/${serviceId}`;
       const method = isNew ? 'POST' : 'PATCH';
 
@@ -177,7 +177,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
       if (res.ok) {
         const savedData = await res.json();
         toast.success(isNew ? 'Servicio creado con éxito' : 'Servicio actualizado');
-        
+
         if (exitAfterSave) {
           router.push('/dashboard/services');
         } else if (isNew && savedData.id) {
@@ -223,7 +223,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
       {/* ─── PANEL IZQUIERDO: Configuración (100% móvil, 30% desktop) ─────────────────────────────── */}
       <aside className="w-full md:w-[30%] md:min-w-[350px] md:max-w-[450px] h-full bg-white border-r border-stone-200 flex flex-col shadow-sm overflow-hidden shrink-0 z-20">
         <form id="service-editor-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full">
-          
+
           {/* Cabecera del Panel */}
           <div className="px-6 py-5 border-b border-stone-100 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
@@ -244,8 +244,8 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
               </div>
             </div>
             <div className="flex gap-2">
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={saving || isGeneratingAI || (!isDirty && !isNew)}
                 onClick={() => setExitAfterSave(false)}
                 className="bg-stone-100 hover:bg-stone-200 text-stone-700 px-4 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-30 disabled:grayscale shadow-sm"
@@ -253,8 +253,8 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
               >
                 {saving && !exitAfterSave ? '...' : 'Guardar cambios'}
               </button>
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={saving || isGeneratingAI || (!isDirty && !isNew)}
                 onClick={() => setExitAfterSave(true)}
                 className="bg-stone-900 hover:bg-[#d4af37] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-30 disabled:grayscale shadow-sm"
@@ -275,48 +275,48 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
 
           {/* Cuerpo del Formulario */}
           <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 bg-stone-50/30">
-            
+
             {/* PESTAÑA: GENERAL */}
             <div className={activeTab === 'general' ? 'block' : 'hidden'}>
-              <GeneralTab 
-                register={register} 
-                control={control} 
+              <GeneralTab
+                register={register}
+                control={control}
                 setValue={setValue}
-                formValues={formValues} 
-                categories={categories} 
+                formValues={formValues}
+                categories={categories}
                 refreshCategories={fetchCategories}
-                slugLocked={slugLocked} 
-                setSlugLocked={setSlugLocked} 
-                setShowAIModal={setShowAIModal} 
+                slugLocked={slugLocked}
+                setSlugLocked={setSlugLocked}
+                setShowAIModal={setShowAIModal}
               />
             </div>
 
             {/* PESTAÑA: CONTENIDO (Tiptap) */}
             <div className={activeTab === 'content' ? 'block' : 'hidden'}>
-              <ContentTab 
-                editor={editor} 
-                setShowAIModal={setShowAIModal} 
+              <ContentTab
+                editor={editor}
+                setShowAIModal={setShowAIModal}
               />
             </div>
 
             {/* PESTAÑA: DISEÑO (Mini-Elementor) */}
             <div className={activeTab === 'design' ? 'block' : 'hidden'}>
-              <DesignTab 
-                formValues={formValues} 
-                register={register} 
-                control={control} 
-                setValue={setValue} 
-                setMediaPickerSlot={setMediaPickerSlot} 
+              <DesignTab
+                formValues={formValues}
+                register={register}
+                control={control}
+                setValue={setValue}
+                setMediaPickerSlot={setMediaPickerSlot}
               />
             </div>
 
             {/* PESTAÑA: SEO */}
             <div className={activeTab === 'seo' ? 'block' : 'hidden'}>
-              <SeoTab 
-                formValues={formValues} 
-                register={register} 
-                setValue={setValue} 
-                editor={editor} 
+              <SeoTab
+                formValues={formValues}
+                register={register}
+                setValue={setValue}
+                editor={editor}
               />
             </div>
 
@@ -373,11 +373,11 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
         </div>
 
         {/* CONTENEDOR DEL PREVIEW (Simulación del Frontend) */}
-        <div className="w-full bg-white min-h-full pb-20 shadow-xl overflow-hidden">
-          
+        <div className="w-full bg-white min-h-full shadow-xl overflow-hidden">
+
           {/* Bloque 1: Hero Section */}
           <section className={`relative w-full ${formValues.layout_preferences.headerStyle === 'full' ? 'h-[60vh] flex items-center justify-center text-white text-center' : 'min-h-[50vh] flex flex-col md:flex-row'}`}>
-            
+
             {/* Background Image para modo FULL */}
             {formValues.layout_preferences.headerStyle === 'full' && (
               <>
@@ -409,14 +409,14 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
 
             {/* Layout para modo SPLIT (Nuevo diseño Editorial) */}
             {formValues.layout_preferences.headerStyle === 'split' && (
-              <div className="flex flex-col md:flex-row min-h-screen relative w-full">
+              <div className="flex flex-col md:flex-row min-h-full relative w-full">
                 {/* Columna Izquierda: Visual (Sticky 9:16) */}
-                <div className="w-full md:w-[42%] lg:w-[40%] md:h-screen md:sticky md:top-0 overflow-hidden bg-stone-100">
+                <div className="w-full md:w-[42%] lg:w-[40%] md:h-[calc(100vh-48px)] md:sticky md:top-0 overflow-hidden bg-stone-100">
                   {formValues.image_url ? (
-                    <img 
-                      src={formValues.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${formValues.image_url}` : formValues.image_url} 
-                      alt="Cover" 
-                      className="w-full h-full object-cover aspect-[9/16] md:aspect-auto" 
+                    <img
+                      src={formValues.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${formValues.image_url}` : formValues.image_url}
+                      alt="Cover"
+                      className="w-full h-full object-cover aspect-[9/16] md:aspect-auto"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-stone-300">
@@ -458,9 +458,9 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
                     </p>
 
                     {/* Content Rich Text (Sync with Tiptap) */}
-                    <div 
+                    <div
                       className="prose prose-stone max-w-none prose-headings:font-serif prose-headings:font-normal prose-p:leading-relaxed prose-a:text-[#d4af37] prose-img:rounded-3xl"
-                      dangerouslySetInnerHTML={{ __html: formValues.content_html || '<p class="text-stone-300 italic">El contenido detallado aparecerá aquí...</p>' }} 
+                      dangerouslySetInnerHTML={{ __html: formValues.content_html || '<p class="text-stone-300 italic">El contenido detallado aparecerá aquí...</p>' }}
                     />
                   </div>
                 </div>
@@ -472,7 +472,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
           {formValues.layout_preferences.headerStyle === 'full' && (
             <section className="max-w-3xl mx-auto px-8 py-20">
               <div className="prose prose-stone prose-lg max-w-none prose-headings:font-serif prose-a:text-[#d4af37]"
-                   dangerouslySetInnerHTML={{ __html: formValues.content_html || '<p class="text-stone-400 italic">El contenido detallado aparecerá aquí...</p>' }} />
+                dangerouslySetInnerHTML={{ __html: formValues.content_html || '<p class="text-stone-400 italic">El contenido detallado aparecerá aquí...</p>' }} />
             </section>
           )}
         </div>

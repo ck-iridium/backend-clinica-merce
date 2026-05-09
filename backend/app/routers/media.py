@@ -39,9 +39,10 @@ def build_used_urls_map(db: Session) -> dict:
         usage_map[filename].append(label)
 
     # Services
-    services = db.query(models.Service).filter(models.Service.image_url.isnot(None)).all()
+    services = db.query(models.Service).all()
     for s in services:
-        add_usage(s.image_url, f"Servicio: {s.name}")
+        if s.image_url: add_usage(s.image_url, f"Servicio: {s.name}")
+        if s.video_url: add_usage(s.video_url, f"Servicio (Vídeo): {s.name}")
 
     # Service Categories
     cats = db.query(models.ServiceCategory).filter(models.ServiceCategory.image_url.isnot(None)).all()
@@ -53,6 +54,8 @@ def build_used_urls_map(db: Session) -> dict:
     if site:
         if site.hero_image_url:
             add_usage(site.hero_image_url, "CMS: Imagen Hero (Portada)")
+        if site.hero_video_url:
+            add_usage(site.hero_video_url, "CMS: Vídeo Hero (Portada)")
         if site.about_image_url:
             add_usage(site.about_image_url, "CMS: Foto Sobre Mí")
 

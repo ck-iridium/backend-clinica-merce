@@ -83,15 +83,15 @@ export function AIImageProvider({ children }: { children: React.ReactNode }) {
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
-    // Timeout automático a los 90 segundos para imágenes
+    // Timeout automático a los 180 segundos para imágenes (IA Premium tarda más)
     const timeoutId = setTimeout(() => {
       if (abortControllerRef.current === controller) {
         controller.abort();
-        setError("Tiempo de espera agotado (90s). La IA está tardando demasiado.");
+        setError("Tiempo de espera agotado (180s). La IA está tardando demasiado.");
         setIsGenerating(false);
         toast.error("Tiempo de espera agotado.");
       }
-    }, 90000);
+    }, 180000);
     
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ai/generate-image`, {

@@ -58,9 +58,11 @@ async def upload_image(file: UploadFile = File(...)):
                     ext = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
                     filename += f".{ext}"
         else:
-            # Es vídeo, subir tal cual con su extensión original
+            # Es vídeo. El procesamiento se realiza en el cliente (frontend) con FFmpeg.wasm.
+            # El servidor simplemente recibe el archivo ya optimizado.
             ext = file.filename.split('.')[-1] if '.' in file.filename else 'mp4'
             filename += f".{ext}"
+            final_bytes = file_bytes
         
         # Subir a Supabase Storage (bucket 'media')
         supabase.storage.from_("media").upload(
@@ -87,20 +89,31 @@ async def cleanup_orphaned_media(db: Session = Depends(get_db)):
         
     used_urls = set()
     
-    services = db.query(models.Service.image_url).filter(models.Service.image_url.isnot(None)).all()
-    for s in services:
-        used_urls.add(s[0].split('/')[-1])
+    # 1. URLs de Servicios (Imágenes y Vídeos)
+    services = db.query(models.Service.image_url, models.Service.video_url).all()
+    for img, vid in services:
+        if img: used_urls.add(img.split('/')[-1])
+        if vid: used_urls.add(vid.split('/')[-1])
         
+    # 2. URLs de Categorías
     cats = db.query(models.ServiceCategory.image_url).filter(models.ServiceCategory.image_url.isnot(None)).all()
     for c in cats:
         used_urls.add(c[0].split('/')[-1])
         
+    # 3. Contenido del Sitio (Hero Image/Video, About)
     site = db.query(models.SiteContent).first()
     if site:
         if site.hero_image_url:
             used_urls.add(site.hero_image_url.split('/')[-1])
+        if site.hero_video_url:
+            used_urls.add(site.hero_video_url.split('/')[-1])
         if site.about_image_url:
             used_urls.add(site.about_image_url.split('/')[-1])
+
+    # 4. Galería Multimedia (Todo lo que esté en la tabla Media debe preservarse)
+    gallery_items = db.query(models.Media.url).all()
+    for item in gallery_items:
+        if item[0]: used_urls.add(item[0].split('/')[-1])
 
     try:
         supabase: Client = create_client(supabase_url, supabase_key)
