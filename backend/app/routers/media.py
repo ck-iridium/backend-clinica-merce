@@ -56,6 +56,11 @@ def build_used_urls_map(db: Session) -> dict:
         if site.about_image_url:
             add_usage(site.about_image_url, "CMS: Foto Sobre Mí")
 
+    # User Profiles (Avatars)
+    profiles = db.query(models.Profile).filter(models.Profile.avatar_url.isnot(None)).all()
+    for p in profiles:
+        add_usage(p.avatar_url, f"Perfil: {p.full_name or p.email or 'Usuario'}")
+
     return usage_map
 
 

@@ -94,7 +94,8 @@ export async function updateUserProfile(userId: string, updates: any) {
     const adminSupabase = getSupabaseAdmin();
     const { error } = await adminSupabase
       .from('profiles')
-      .upsert({ id: userId, ...updates });
+      .update(updates)
+      .eq('id', userId);
 
     if (error) {
       console.error("Error actualizando perfil:", error);

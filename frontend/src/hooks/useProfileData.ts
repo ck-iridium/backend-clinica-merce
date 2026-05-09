@@ -19,6 +19,7 @@ export function useProfileData() {
 
   // Form states
   const [fullName, setFullName] = useState('');
+  const [pendingAvatarUrl, setPendingAvatarUrl] = useState<string | null>(null);
   const [password, setPassword] = useState('');
   const [receiveEmailAppointments, setReceiveEmailAppointments] = useState(true);
   const [receiveAgendaReminders, setReceiveAgendaReminders] = useState(true);
@@ -60,6 +61,7 @@ export function useProfileData() {
         if (success && profileData) {
           setProfile(profileData);
           setFullName(profileData.full_name || '');
+          setPendingAvatarUrl(profileData.avatar_url || null);
           setReceiveEmailAppointments(profileData.receive_email_appointments ?? true);
           setReceiveAgendaReminders(profileData.receive_agenda_reminders ?? true);
         }
@@ -182,9 +184,8 @@ export function useProfileData() {
         .from('avatars')
         .getPublicUrl(filePath);
 
-      await updateUserProfile(profile.id, { avatar_url: publicUrl });
-      setProfile({ ...profile, avatar_url: publicUrl });
-      toast.success("Avatar actualizado con éxito");
+      setPendingAvatarUrl(publicUrl);
+      toast.success("Foto cargada (pulsa Guardar para aplicar)");
     } catch (err: any) {
       toast.error(err.message || "Error al actualizar avatar");
     } finally {
@@ -203,9 +204,8 @@ export function useProfileData() {
         if (!isAdmin && profile.avatar_url) {
           await deleteOldAvatar(profile.avatar_url);
         }
-        await updateUserProfile(profile.id, { avatar_url: null });
-        setProfile({ ...profile, avatar_url: null });
-        toast.success(isAdmin ? "Foto quitada del perfil" : "Foto de perfil eliminada");
+        setPendingAvatarUrl(null);
+        toast.info(isAdmin ? "Foto marcada para quitar" : "Foto marcada para eliminar");
       } catch (err) {
         toast.error("Error al procesar la solicitud");
       } finally {
@@ -230,9 +230,8 @@ export function useProfileData() {
   const handleMediaSelected = async (url: string) => {
     if (!profile) return;
     try {
-      await updateUserProfile(profile.id, { avatar_url: url });
-      setProfile({ ...profile, avatar_url: url });
-      toast.success("Avatar actualizado desde la galería");
+      setPendingAvatarUrl(url);
+      toast.success("Imagen de galería seleccionada");
     } catch (err) {
       toast.error("Error al actualizar avatar");
     } finally {
@@ -243,7 +242,7 @@ export function useProfileData() {
   return {
     // Data & Identity
     user,
-    profile,
+    profile: { ...profile, avatar_url: pendingAvatarUrl },
     role,
     loading: loading || loadingRole,
     fullName,
@@ -288,6 +287,7 @@ export function useProfileData() {
       try {
         const { success, error } = await updateUserProfile(user.id, { 
           full_name: fullName,
+          avatar_url: pendingAvatarUrl,
           receive_email_appointments: receiveEmailAppointments,
           receive_agenda_reminders: receiveAgendaReminders
         });
@@ -299,6 +299,7 @@ export function useProfileData() {
             ...profile, 
             id: user.id,
             full_name: fullName,
+            avatar_url: pendingAvatarUrl,
             receive_email_appointments: receiveEmailAppointments,
             receive_agenda_reminders: receiveAgendaReminders
           });
@@ -312,6 +313,7 @@ export function useProfileData() {
       }
     },
     isDirty: fullName !== (profile?.full_name || '') || 
+             pendingAvatarUrl !== (profile?.avatar_url || null) ||
              receiveEmailAppointments !== (profile?.receive_email_appointments ?? true) || 
              receiveAgendaReminders !== (profile?.receive_agenda_reminders ?? true)
   };

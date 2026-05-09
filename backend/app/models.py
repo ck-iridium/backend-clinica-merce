@@ -13,6 +13,18 @@ class User(Base):
     role = Column(String, default="client")
     created_at = Column(DateTime, default=datetime.utcnow)
 
+class Profile(Base):
+    __tablename__ = "profiles"
+    id = Column(String(36), primary_key=True)
+    full_name = Column(String, nullable=True)
+    avatar_url = Column(String, nullable=True)
+    role = Column(String, nullable=True)
+    email = Column(String, nullable=True)
+    status = Column(String, nullable=True)
+    receive_email_appointments = Column(Boolean, default=True)
+    receive_agenda_reminders = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
 class Client(Base):
     __tablename__ = "clients"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
