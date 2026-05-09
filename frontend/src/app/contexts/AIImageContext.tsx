@@ -5,10 +5,12 @@ import { toast } from 'sonner';
 
 interface AIImageContextType {
   isGenerating: boolean;
+  generationMode: 'image' | 'video';
   generationTime: number;
   resultUrl: string | null;
   error: string | null;
   startGeneration: (params: any) => Promise<void>;
+  startVideoGeneration: (params: any) => Promise<void>;
   resetGeneration: () => void;
   targetServiceId: string | null;
   setTargetServiceId: (id: string | null) => void;
@@ -22,6 +24,7 @@ const AIImageContext = createContext<AIImageContextType | undefined>(undefined);
 
 export function AIImageProvider({ children }: { children: React.ReactNode }) {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generationMode, setGenerationMode] = useState<'image' | 'video'>('image');
   const [generationTime, setGenerationTime] = useState(0);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -75,16 +78,17 @@ export function AIImageProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const startGeneration = async (params: any) => {
+    setGenerationMode('image');
     setIsGenerating(true);
     setResultUrl(null);
     setError(null);
-    setLastParams(params);
+    setLastParams({ params, type: 'image' });
 
     // Configurar AbortController y Timeout
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
-    // Timeout automático a los 90 segundos
+    // Timeout automático a los 90 segundos para imágenes
     const timeoutId = setTimeout(() => {
       if (abortControllerRef.current === controller) {
         controller.abort();
@@ -113,10 +117,7 @@ export function AIImageProvider({ children }: { children: React.ReactNode }) {
       setResultUrl(data.url);
       
       if (onFinishRef.current) {
-        console.log("AIImageContext: Ejecutando callback onFinish con URL:", data.url);
         onFinishRef.current(data.url);
-      } else {
-        console.warn("AIImageContext: No hay callback onFinish registrado!");
       }
       
       toast.success('✨ Imagen generada con éxito');
@@ -133,10 +134,72 @@ export function AIImageProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const startVideoGeneration = async (params: any) => {
+    setGenerationMode('video');
+    setIsGenerating(true);
+    setResultUrl(null);
+    setError(null);
+    setLastParams({ params, type: 'video' });
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    // Timeout extendido a 600s para vídeos (Grok Video permite hasta 10 mins)
+    const timeoutId = setTimeout(() => {
+      if (abortControllerRef.current === controller) {
+        controller.abort();
+        setError("Tiempo de espera agotado (600s). La IA está tardando demasiado.");
+        setIsGenerating(false);
+        toast.error("Tiempo de espera agotado.");
+      }
+    }, 600000);
+    
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ai/generate-video`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "Error al generar el vídeo");
+      }
+
+      const data = await res.json();
+      setResultUrl(data.url);
+      
+      if (onFinishRef.current) {
+        onFinishRef.current(data.url);
+      }
+      
+      toast.success('🎬 Vídeo generado con éxito');
+      if (data.message && !data.muted) {
+        toast.warning("Nota: El audio no se pudo eliminar, pero el vídeo está listo.");
+      }
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        console.log("Petición abortada");
+      } else {
+        setError(err.message || 'Error de conexión');
+        toast.error(err.message || 'Error al generar el vídeo');
+      }
+    } finally {
+      setIsGenerating(false);
+      abortControllerRef.current = null;
+    }
+  };
+
   const retry = async () => {
     if (lastParams) {
-      console.log("AIImageContext: Reintentando generación con últimos parámetros");
-      await startGeneration(lastParams);
+      if (lastParams.type === 'video') {
+        await startVideoGeneration(lastParams.params);
+      } else {
+        await startGeneration(lastParams.params);
+      }
     }
   };
 
@@ -156,10 +219,12 @@ export function AIImageProvider({ children }: { children: React.ReactNode }) {
   return (
     <AIImageContext.Provider value={{
       isGenerating,
+      generationMode,
       generationTime,
       resultUrl,
       error,
       startGeneration,
+      startVideoGeneration,
       resetGeneration,
       targetServiceId,
       setTargetServiceId,

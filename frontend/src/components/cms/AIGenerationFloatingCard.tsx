@@ -5,7 +5,7 @@ import { useAIImage } from '@/app/contexts/AIImageContext';
 import { Sparkles, Loader2, CheckCircle2, AlertCircle, X } from 'lucide-react';
 
 export default function AIGenerationFloatingCard() {
-  const { isGenerating, generationTime, resultUrl, error, resetGeneration, retry, cancelGeneration } = useAIImage();
+  const { isGenerating, generationMode, generationTime, resultUrl, error, resetGeneration, retry, cancelGeneration } = useAIImage();
   const [isClosing, setIsClosing] = React.useState(false);
 
   const handleClose = React.useCallback(() => {
@@ -28,6 +28,8 @@ export default function AIGenerationFloatingCard() {
 
   if (!isGenerating && !resultUrl && !error) return null;
 
+  const isVideo = generationMode === 'video' || (resultUrl && resultUrl.endsWith('.mp4'));
+
   return (
     <div className={`fixed bottom-6 right-6 z-[200] transition-all duration-500 ${isClosing ? 'animate-out fade-out slide-out-to-bottom-10 fill-mode-forwards' : 'animate-in slide-in-from-right-10'}`}>
       <div className={`w-80 overflow-hidden bg-white rounded-[2.5rem] border shadow-2xl transition-all duration-500 ${isGenerating ? 'border-yellow-200' : resultUrl ? 'border-emerald-200' : 'border-red-200'}`}>
@@ -49,10 +51,12 @@ export default function AIGenerationFloatingCard() {
               </div>
               <div>
                 <h4 className="font-serif font-bold text-stone-800 leading-tight">
-                  {isGenerating ? 'Generando Foto IA' : resultUrl ? '¡Imagen Lista!' : 'Error en Generación'}
+                  {isGenerating 
+                    ? (generationMode === 'video' ? 'Animando con Grok IA' : 'Generando Foto IA') 
+                    : (isVideo ? '¡Vídeo Listo!' : '¡Imagen Lista!')}
                 </h4>
                 <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mt-0.5">
-                  {isGenerating ? `Procesando (${generationTime}s)...` : resultUrl ? 'Lista para insertar' : 'Algo salió mal'}
+                  {isGenerating ? `Procesando (${generationTime}s)...` : resultUrl ? 'Listo para el catálogo' : 'Algo salió mal'}
                 </p>
               </div>
             </div>
@@ -68,14 +72,16 @@ export default function AIGenerationFloatingCard() {
               <div className="flex flex-col gap-1.5">
                 <div className="flex justify-between items-center text-[10px] font-bold">
                   <span className="text-stone-400 uppercase tracking-widest">Estado</span>
-                  <span className={`${generationTime > 60 ? 'text-amber-500' : 'text-[#d4af37]'} transition-colors animate-pulse`}>
-                    {generationTime > 60 ? 'Servidores ocupados...' : 'En curso...'}
+                  <span className={`${generationTime > 90 ? 'text-amber-500' : 'text-[#d4af37]'} transition-colors animate-pulse`}>
+                    {generationTime > 90 ? 'Finalizando detalles...' : 'En curso...'}
                   </span>
                 </div>
                 <div className="text-[11px] text-stone-500 leading-relaxed italic">
-                  {generationTime > 60 
-                    ? "Está tardando más de lo habitual. Puedes esperar un poco más o cancelar y reintentar."
-                    : "No cierres esta página mientras trabajamos en tu contenido editorial premium."}
+                  {generationMode === 'video' 
+                    ? "Grok está creando una animación cinematográfica premium. Esto puede tardar hasta 1 minuto."
+                    : (generationTime > 60 
+                        ? "Está tardando más de lo habitual. Puedes esperar un poco más o cancelar y reintentar."
+                        : "No cierres esta página mientras trabajamos en tu contenido editorial premium.")}
                 </div>
               </div>
               <button 
@@ -91,12 +97,23 @@ export default function AIGenerationFloatingCard() {
           {resultUrl && (
             <div className="space-y-4 animate-in zoom-in-95 duration-300">
               <div className="aspect-[9/16] max-h-48 rounded-2xl overflow-hidden border border-emerald-100 shadow-inner bg-stone-50">
-                <img src={resultUrl} alt="Result" className="w-full h-full object-cover" />
+                {isVideo ? (
+                  <video 
+                    src={resultUrl} 
+                    autoPlay 
+                    loop 
+                    muted 
+                    playsInline 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <img src={resultUrl} alt="Result" className="w-full h-full object-cover" />
+                )}
               </div>
               <div className="space-y-3">
                 <div className="flex items-center justify-center gap-2 py-2 px-4 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-100 animate-pulse">
                   <CheckCircle2 size={14} />
-                  <span className="text-[11px] font-bold">Imagen aplicada al tratamiento</span>
+                  <span className="text-[11px] font-bold">Multimedia aplicado al tratamiento</span>
                 </div>
                 <button 
                   onClick={handleClose}

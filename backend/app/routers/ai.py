@@ -421,7 +421,188 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
         )
         
         public_url = supabase.storage.from_("media").get_public_url(filename)
+        
+        # Registrar en la tabla Media (Galería)
+        try:
+            from .models import Media
+            new_media = Media(
+                filename=filename,
+                url=public_url,
+                file_type="image",
+                mime_type="image/webp",
+                size=len(final_bytes)
+            )
+            db.add(new_media)
+            db.commit()
+            print(f"✅ Imagen registrada en la galería: {public_url}")
+        except Exception as e:
+            print(f"⚠️ Error al registrar imagen en galería: {e}")
+
         return {"url": public_url}
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al guardar la imagen en Supabase: {e}")
+
+@router.post("/generate-video")
+async def generate_video(request: schemas.AIVideoGenerationRequest, db: Session = Depends(database.get_db)):
+    settings = db.query(models.ClinicSettings).first()
+    if not settings or not settings.xai_api_key:
+        raise HTTPException(status_code=400, detail="Configuración de xAI (Grok) no encontrada o sin API Key.")
+
+    api_key = settings.xai_api_key
+    if '***' in api_key:
+        api_key = os.getenv("XAI_API_KEY")
+    
+    if not api_key:
+         raise HTTPException(status_code=400, detail="Clave API de xAI no válida.")
+
+    # 1. Iniciar generación en xAI
+    # Prompt maestro optimizado para Clínica Merce (Quiet Luxury)
+    base_prompt = (
+        "Crea un video vertical 9:16 (480x854) de exactamente 10 segundos, calidad cinematográfica limpia, "
+        "sin ningún texto, sin overlays, sin logos, sin palabras, sin voz ni sonidos de ningún tipo. Solo visuals puros y silenciosos. "
+        "Usa esta imagen como referencia exacta y primer frame. "
+        "Importante: SOLO cortes directos y secos (hard cuts abruptos e instantáneos). Prohibido cualquier fundido o transición suave. "
+        "Muy dinámico, rápido y adictivo para reproducir en hover en la web. "
+        "Enfocar siempre en la zona del tratamiento que aparece en la imagen. Mantener el encuadre centrado en la acción y en la piel. "
+        "Iluminación suave y lujosa, estética clínica premium, tonos cálidos y neutros, glow natural en la piel. "
+        "Estructura con cambios rápidos de ángulo y cortes secos: "
+        "0-3.5 segundos: Plano detalle extremo del dispositivo o técnica aplicándose directamente en la zona del tratamiento. "
+        "Corte directo y seco a los 3.5 segundos. "
+        "3.5-7 segundos: Cambio abrupto de ángulo a plano medio frontal. Vemos la zona tratada completa con la clienta relajada. "
+        "Corte directo y seco a los 7 segundos. "
+        "7-10 segundos: Cambio abrupto a plano frontal más cercano. La clienta abre los ojos lentamente con expresión natural y serena. "
+        "Estilo: Alta calidad, movimientos fluidos dentro de cada plano pero cortes instantáneos y energéticos entre planos, "
+        "enfoque impecable en la piel y el servicio, estética premium de clínica avanzada, visualmente hipnótico."
+    )
+
+    # Añadimos el contexto específico del tratamiento al final
+    service_context = f" Contexto adicional: {request.prompt}" if request.prompt else ""
+    full_prompt = base_prompt + service_context
+
+    payload = {
+        "model": settings.xai_model_video or "grok-imagine-video",
+        "image_url": request.image_url,
+        "prompt": full_prompt,
+        "duration": 10, # Actualizado a 10s según tu prompt
+        "aspect_ratio": "9:16",
+        "resolution": "480p" # Identificador estándar aceptado por xAI
+    }
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+
+    try:
+        # Petición inicial
+        resp = requests.post("https://api.x.ai/v1/videos/generations", json=payload, headers=headers, timeout=30)
+        if resp.status_code != 200:
+            raise HTTPException(status_code=resp.status_code, detail=f"Error al iniciar generación en xAI: {resp.text}")
+        
+        data = resp.json()
+        request_id = data.get("request_id")
+        if not request_id:
+            raise HTTPException(status_code=500, detail="No se recibió request_id de xAI.")
+        
+        print(f"🚀 Iniciando generación de vídeo en xAI. Request ID: {request_id}")
+
+        # 2. Polling (Espera activa)
+        import time
+        max_attempts = 200 # 200 * 3s = 600s (10 minutos) max
+        video_url = None
+        
+        for _ in range(max_attempts):
+            time.sleep(3)
+            status_resp = requests.get(f"https://api.x.ai/v1/videos/{request_id}", headers=headers, timeout=10)
+            if status_resp.status_code == 200:
+                status_data = status_resp.json()
+                if status_data.get("status") == "done":
+                    video_url = status_data.get("video_url")
+                    break
+                elif status_data.get("status") == "failed":
+                    raise HTTPException(status_code=500, detail=f"La generación de vídeo en xAI falló: {status_data.get('error')}")
+            else:
+                # Si falla el polling una vez, seguimos intentando a menos que sea un error crítico
+                continue
+
+        if not video_url:
+            raise HTTPException(status_code=504, detail="Tiempo de espera agotado generando el vídeo en xAI.")
+
+        # 3. Descargar y procesar (Quitar audio)
+        video_resp = requests.get(video_url, stream=True)
+        if video_resp.status_code != 200:
+            raise HTTPException(status_code=500, detail="Error al descargar el vídeo de xAI.")
+
+        temp_input = f"temp_in_{uuid.uuid4().hex}.mp4"
+        temp_output = f"temp_out_{uuid.uuid4().hex}.mp4"
+        
+        with open(temp_input, "wb") as f:
+            for chunk in video_resp.iter_content(chunk_size=8192):
+                f.write(chunk)
+
+        # Intentar quitar audio con ffmpeg
+        import subprocess
+        try:
+            # -an quita el audio, -c copy evita re-codificar (es instantáneo)
+            subprocess.run(["ffmpeg", "-y", "-i", temp_input, "-an", "-c:v", "copy", temp_output], 
+                           check=True, capture_output=True)
+            final_path = temp_output
+            muted = True
+        except Exception:
+            # Si falla ffmpeg, usamos el original
+            final_path = temp_input
+            muted = False
+
+        # 4. Subir a Supabase
+        supabase_url = os.environ.get("SUPABASE_URL")
+        supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+        supabase: Client = create_client(supabase_url, supabase_key)
+        
+        filename = f"ai_video_{uuid.uuid4().hex}.mp4"
+        with open(final_path, "rb") as f:
+            supabase.storage.from_("media").upload(
+                file=f.read(),
+                path=filename,
+                file_options={"content-type": "video/mp4", "upsert": "true"}
+            )
+
+        # Limpiar temporales
+        if os.path.exists(temp_input): os.remove(temp_input)
+        if os.path.exists(temp_output): os.remove(temp_output)
+
+        public_url = supabase.storage.from_("media").get_public_url(filename)
+
+        # 5. Registrar en la tabla Media (Galería) para que no se pierda
+        try:
+            from .models import Media
+            new_media = Media(
+                filename=filename,
+                url=public_url,
+                file_type="video",
+                mime_type="video/mp4",
+                size=os.path.getsize(final_path) if os.path.exists(final_path) else 0,
+                service_id=None # Se podría vincular si tuviéramos el ID aquí
+            )
+            db.add(new_media)
+            db.commit()
+            print(f"✅ Vídeo registrado en la galería: {public_url}")
+        except Exception as e:
+            print(f"⚠️ Error al registrar en la galería (pero el vídeo se subió): {e}")
+
+        # Limpiar temporales
+        if os.path.exists(temp_input): os.remove(temp_input)
+        if os.path.exists(temp_output): os.remove(temp_output)
+
+        return {
+            "url": public_url, 
+            "muted": muted,
+            "message": "Vídeo generado con éxito" if muted else "Vídeo generado (audio no eliminado por falta de herramientas en el servidor)"
+        }
+
+    except Exception as e:
+        # Limpieza de seguridad
+        if 'temp_input' in locals() and os.path.exists(temp_input): os.remove(temp_input)
+        if 'temp_output' in locals() and os.path.exists(temp_output): os.remove(temp_output)
+        print(f"❌ Error en proceso de vídeo IA: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error en el proceso de vídeo IA: {str(e)}")

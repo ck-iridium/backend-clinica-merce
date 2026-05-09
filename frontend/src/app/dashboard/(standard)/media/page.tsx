@@ -307,187 +307,225 @@ export default function MediaGalleryPage() {
                       }
                     }}
                   >
-                    <img
-                      src={file.url}
-                      alt={file.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      loading="lazy"
-                    />
-
-                    {/* Status dot */}
-                    <div className={`absolute top-2 right-2 w-2.5 h-2.5 rounded-full shadow-md transition-opacity ${isChecked ? 'opacity-0' : 'opacity-100'} ${file.status === 'in_use' ? 'bg-emerald-400' : 'bg-stone-400'}`} />
-
-                    {/* Checkbox — only for orphans */}
-                    {canSelect && (
-                      <div
-                        className="absolute top-2 left-2"
-                        onClick={e => { e.stopPropagation(); toggleSelect(file.name); }}
-                      >
-                        <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all shadow-md
-                          ${isChecked ? 'bg-red-500 border-red-500' : 'bg-white/80 border-stone-300 opacity-0 group-hover:opacity-100'}`}>
-                          {isChecked && <span className="text-white text-[10px] font-black leading-none">✓</span>}
+                      {/* Media Preview */}
+                      {file.name.toLowerCase().endsWith('.mp4') || file.content_type?.includes('video') ? (
+                        <div className="w-full h-full relative bg-stone-900 flex items-center justify-center">
+                          <video
+                            src={file.url}
+                            className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
+                            muted
+                            playsInline
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-lg">
+                              <span className="text-white text-xs ml-0.5">▶</span>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      ) : (
+                        <img
+                          src={file.url}
+                          alt={file.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                        />
+                      )}
 
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-stone-900/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2 pointer-events-none">
-                      <p className="text-white text-[10px] font-bold truncate w-full text-left leading-tight">{file.name}</p>
+                      {/* Status dot */}
+                      <div className={`absolute top-2 right-2 w-2.5 h-2.5 rounded-full shadow-md transition-opacity ${isChecked ? 'opacity-0' : 'opacity-100'} ${file.status === 'in_use' ? 'bg-emerald-400' : 'bg-stone-400'}`} />
+
+                      {/* Checkbox — only for orphans */}
+                      {canSelect && (
+                        <div
+                          className="absolute top-2 left-2"
+                          onClick={e => { e.stopPropagation(); toggleSelect(file.name); }}
+                        >
+                          <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all shadow-md
+                            ${isChecked ? 'bg-red-500 border-red-500' : 'bg-white/80 border-stone-300 opacity-0 group-hover:opacity-100'}`}>
+                            {isChecked && <span className="text-white text-[10px] font-black leading-none">✓</span>}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Hover overlay */}
+                      <div className="absolute inset-0 bg-stone-900/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2 pointer-events-none">
+                        <p className="text-white text-[10px] font-bold truncate w-full text-left leading-tight">{file.name}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Detail Panel */}
+          {selectedFile && selectedNames.size === 0 && (
+            <div className="w-72 shrink-0 bg-white rounded-[2rem] border border-stone-100 shadow-xl overflow-hidden animate-in slide-in-from-right-4 duration-300 sticky top-6">
+              {/* Preview */}
+              <div className="aspect-video bg-stone-100 relative group/preview">
+                {selectedFile.name.toLowerCase().endsWith('.mp4') || selectedFile.content_type?.includes('video') ? (
+                  <video 
+                    src={selectedFile.url} 
+                    className="w-full h-full object-cover" 
+                    controls 
+                    autoPlay 
+                    muted 
+                    loop
+                  />
+                ) : (
+                  <img src={selectedFile.url} alt={selectedFile.name} className="w-full h-full object-cover" />
+                )}
+                
+                <div className="absolute inset-0 bg-stone-900/40 opacity-0 group-hover/preview:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-none">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowFullImageModal(true); }}
+                    className="bg-white text-stone-900 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-xl active:scale-95 transition-all pointer-events-auto"
+                  >
+                    🔍 Ver completo
+                  </button>
+                </div>
+                <button
+                  onClick={() => setSelectedFile(null)}
+                  className="absolute top-3 right-3 w-7 h-7 bg-white/80 rounded-full text-stone-500 hover:text-stone-900 flex items-center justify-center font-bold text-sm shadow-md z-10"
+                >✕</button>
+              </div>
+
+              <div className="p-5 space-y-4">
+                {/* Status Badge */}
+                <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-widest ${selectedFile.status === 'in_use' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-stone-100 text-stone-500 border border-stone-200'}`}>
+                  <span className={`w-2 h-2 rounded-full ${selectedFile.status === 'in_use' ? 'bg-emerald-400' : 'bg-stone-400'}`} />
+                  {selectedFile.status === 'in_use' ? 'EN USO' : 'HUÉRFANA'}
+                </div>
+
+                {/* File Info */}
+                <div className="space-y-2">
+                  <div>
+                    <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Archivo</p>
+                    <p className="text-sm font-bold text-stone-800 break-all">{selectedFile.name}</p>
+                  </div>
+                  <div className="flex gap-4">
+                    <div>
+                      <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Tamaño</p>
+                      <p className="text-sm font-bold text-stone-700">{formatBytes(selectedFile.size)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Tipo</p>
+                      <p className="text-sm font-bold text-stone-700">{selectedFile.content_type?.split('/')[1]?.toUpperCase() || selectedFile.name.split('.').pop()?.toUpperCase() || 'MED'}</p>
                     </div>
                   </div>
-                );
-              })}
+                </div>
+
+                {/* Usages */}
+                {selectedFile.usages.length > 0 && (
+                  <div>
+                    <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Usado en</p>
+                    <ul className="space-y-1">
+                      {selectedFile.usages.map((u, i) => (
+                        <li key={i} className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
+                          ✓ {u}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Copy URL */}
+                <button
+                  onClick={() => { navigator.clipboard.writeText(selectedFile.url); showFeedback({ type: 'success', title: '¡Copiado!', message: 'URL del archivo copiada al portapapeles.' }); }}
+                  className="w-full text-xs font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 py-2.5 px-4 rounded-xl transition-all border border-stone-200"
+                >
+                  📋 Copiar URL
+                </button>
+
+                {/* Delete */}
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting || selectedFile.status === 'in_use'}
+                  title={selectedFile.status === 'in_use' ? `No se puede borrar: ${selectedFile.usages.join(', ')}` : 'Eliminar archivo permanentemente'}
+                  className={`w-full py-3 px-4 rounded-xl font-bold text-sm transition-all ${selectedFile.status === 'in_use' ? 'bg-stone-100 text-stone-400 cursor-not-allowed border border-stone-200' : 'bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-200 active:scale-95 shadow-sm'}`}
+                >
+                  {deleting ? 'Eliminando...' : selectedFile.status === 'in_use' ? '🔒 En uso (No eliminable)' : '🗑️ Eliminar archivo'}
+                </button>
+              </div>
             </div>
           )}
         </div>
 
-        {/* Detail Panel */}
-        {selectedFile && selectedNames.size === 0 && (
-          <div className="w-72 shrink-0 bg-white rounded-[2rem] border border-stone-100 shadow-xl overflow-hidden animate-in slide-in-from-right-4 duration-300 sticky top-6">
-            {/* Preview */}
-            <div className="aspect-video bg-stone-100 relative group/preview">
-              <img src={selectedFile.url} alt={selectedFile.name} className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-stone-900/40 opacity-0 group-hover/preview:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                <button
-                  onClick={() => setShowFullImageModal(true)}
-                  className="bg-white text-stone-900 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-xl active:scale-95 transition-all"
-                >
-                  🔍 Ver completa
-                </button>
+        {/* ── Floating Bulk Action Bar ── */}
+        {selectedNames.size > 0 && (
+          <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 duration-300">
+            <div className="flex items-center gap-3 bg-stone-900 text-white px-6 py-4 rounded-[2rem] shadow-2xl border border-white/10">
+              <div className="flex items-center gap-2">
+                <span className="w-7 h-7 bg-red-500 text-white rounded-xl flex items-center justify-center text-sm font-black">
+                  {selectedNames.size}
+                </span>
+                <span className="text-sm font-bold">archivo{selectedNames.size > 1 ? 's' : ''} seleccionado{selectedNames.size > 1 ? 's' : ''}</span>
               </div>
+              <div className="w-px h-6 bg-white/20" />
               <button
-                onClick={() => setSelectedFile(null)}
-                className="absolute top-3 right-3 w-7 h-7 bg-white/80 rounded-full text-stone-500 hover:text-stone-900 flex items-center justify-center font-bold text-sm shadow-md"
-              >✕</button>
-            </div>
-
-            <div className="p-5 space-y-4">
-              {/* Status Badge */}
-              <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-widest ${selectedFile.status === 'in_use' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-stone-100 text-stone-500 border border-stone-200'}`}>
-                <span className={`w-2 h-2 rounded-full ${selectedFile.status === 'in_use' ? 'bg-emerald-400' : 'bg-stone-400'}`} />
-                {selectedFile.status === 'in_use' ? 'EN USO' : 'HUÉRFANA'}
-              </div>
-
-              {/* File Info */}
-              <div className="space-y-2">
-                <div>
-                  <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Archivo</p>
-                  <p className="text-sm font-bold text-stone-800 break-all">{selectedFile.name}</p>
-                </div>
-                <div className="flex gap-4">
-                  <div>
-                    <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Tamaño</p>
-                    <p className="text-sm font-bold text-stone-700">{formatBytes(selectedFile.size)}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Tipo</p>
-                    <p className="text-sm font-bold text-stone-700">{selectedFile.content_type?.split('/')[1]?.toUpperCase() || 'IMG'}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Usages */}
-              {selectedFile.usages.length > 0 && (
-                <div>
-                  <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Usado en</p>
-                  <ul className="space-y-1">
-                    {selectedFile.usages.map((u, i) => (
-                      <li key={i} className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
-                        ✓ {u}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Copy URL */}
-              <button
-                onClick={() => { navigator.clipboard.writeText(selectedFile.url); showFeedback({ type: 'success', title: '¡Copiado!', message: 'URL de la imagen copiada al portapapeles.' }); }}
-                className="w-full text-xs font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 py-2.5 px-4 rounded-xl transition-all border border-stone-200"
+                onClick={clearSelection}
+                className="text-sm text-white/60 hover:text-white font-bold transition-colors"
               >
-                📋 Copiar URL
+                Cancelar
               </button>
-
-              {/* Delete */}
               <button
-                onClick={handleDelete}
-                disabled={deleting || selectedFile.status === 'in_use'}
-                title={selectedFile.status === 'in_use' ? `No se puede borrar: ${selectedFile.usages.join(', ')}` : 'Eliminar imagen permanentemente'}
-                className={`w-full py-3 px-4 rounded-xl font-bold text-sm transition-all ${selectedFile.status === 'in_use' ? 'bg-stone-100 text-stone-400 cursor-not-allowed border border-stone-200' : 'bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-200 active:scale-95 shadow-sm'}`}
+                onClick={handleBulkDelete}
+                disabled={bulkDeleting}
+                className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 rounded-xl font-black text-sm transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-red-500/30"
               >
-                {deleting ? 'Eliminando...' : selectedFile.status === 'in_use' ? '🔒 En uso (No eliminable)' : '🗑️ Eliminar imagen'}
+                {bulkDeleting
+                  ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /><span>Eliminando...</span></>
+                  : <><span>🗑️</span><span>Borrar {selectedNames.size} seleccionados</span></>
+                }
               </button>
             </div>
           </div>
         )}
-      </div>
 
-      {/* ── Floating Bulk Action Bar ── */}
-      {selectedNames.size > 0 && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 duration-300">
-          <div className="flex items-center gap-3 bg-stone-900 text-white px-6 py-4 rounded-[2rem] shadow-2xl border border-white/10">
-            <div className="flex items-center gap-2">
-              <span className="w-7 h-7 bg-red-500 text-white rounded-xl flex items-center justify-center text-sm font-black">
-                {selectedNames.size}
-              </span>
-              <span className="text-sm font-bold">imagen{selectedNames.size > 1 ? 'es' : ''} seleccionada{selectedNames.size > 1 ? 's' : ''}</span>
-            </div>
-            <div className="w-px h-6 bg-white/20" />
-            <button
-              onClick={clearSelection}
-              className="text-sm text-white/60 hover:text-white font-bold transition-colors"
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={handleBulkDelete}
-              disabled={bulkDeleting}
-              className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 rounded-xl font-black text-sm transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-red-500/30"
-            >
-              {bulkDeleting
-                ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /><span>Eliminando...</span></>
-                : <><span>🗑️</span><span>Borrar {selectedNames.size} seleccionadas</span></>
-              }
-            </button>
-          </div>
-        </div>
-      )}
+        {/* Crop Modal */}
+        {showCropModal && (
+          <CropImageModal
+            imageSrc={selectedImageForCrop}
+            onClose={() => { setShowCropModal(false); setSelectedImageForCrop(''); }}
+            onCropComplete={handleCropComplete}
+          />
+        )}
 
-      {/* Crop Modal */}
-      {showCropModal && (
-        <CropImageModal
-          imageSrc={selectedImageForCrop}
-          onClose={() => { setShowCropModal(false); setSelectedImageForCrop(''); }}
-          onCropComplete={handleCropComplete}
-        />
-      )}
-
-      {/* Lightbox / Full Image Modal */}
-      {showFullImageModal && selectedFile && (
-        <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-950/90 backdrop-blur-md p-4 animate-in fade-in duration-300"
-          onClick={() => setShowFullImageModal(false)}
-        >
-          <button 
-            className="absolute top-6 right-6 w-12 h-12 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center text-2xl transition-colors shadow-2xl border border-white/10"
-            onClick={(e) => { e.stopPropagation(); setShowFullImageModal(false); }}
-          >✕</button>
-          
-          <div className="relative max-w-[95vw] max-h-[95vh] flex items-center justify-center animate-in zoom-in-95 duration-500">
-            <img 
-              src={selectedFile.url} 
-              alt={selectedFile.name}
-              className="max-w-full max-h-[90vh] object-contain shadow-[0_0_80px_rgba(0,0,0,0.5)] rounded-lg"
-              onClick={(e) => e.stopPropagation()}
-            />
+        {/* Lightbox / Full Image Modal */}
+        {showFullImageModal && selectedFile && (
+          <div 
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-950/90 backdrop-blur-md p-4 animate-in fade-in duration-300"
+            onClick={() => setShowFullImageModal(false)}
+          >
+            <button 
+              className="absolute top-6 right-6 w-12 h-12 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center text-2xl transition-colors shadow-2xl border border-white/10"
+              onClick={(e) => { e.stopPropagation(); setShowFullImageModal(false); }}
+            >✕</button>
             
-            {/* Info overlay inside modal */}
-            <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 pointer-events-none">
-              <p className="text-white font-bold text-xs">{selectedFile.name}</p>
+            <div className="relative max-w-[95vw] max-h-[95vh] flex items-center justify-center animate-in zoom-in-95 duration-500">
+              {selectedFile.name.toLowerCase().endsWith('.mp4') || selectedFile.content_type?.includes('video') ? (
+                <video 
+                  src={selectedFile.url} 
+                  className="max-w-full max-h-[90vh] shadow-[0_0_80px_rgba(0,0,0,0.5)] rounded-lg" 
+                  controls 
+                  autoPlay
+                />
+              ) : (
+                <img 
+                  src={selectedFile.url} 
+                  alt={selectedFile.name}
+                  className="max-w-full max-h-[90vh] object-contain shadow-[0_0_80px_rgba(0,0,0,0.5)] rounded-lg"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              )}
+              
+              {/* Info overlay inside modal */}
+              <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 pointer-events-none">
+                <p className="text-white font-bold text-xs">{selectedFile.name}</p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
-  );
-}
+        )}
+      </div>
+    );
+  }
