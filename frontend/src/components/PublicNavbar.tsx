@@ -3,6 +3,65 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge }: { svc: any, getFullUrl: (url: string) => string, onClick: () => void, isLarge?: boolean }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isHovered, setIsHovered] = useState(false);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      if (isHovered) {
+        videoRef.current.play().catch(() => {});
+      } else {
+        videoRef.current.pause();
+        videoRef.current.currentTime = 0;
+      }
+    }
+  }, [isHovered]);
+
+  return (
+    <Link 
+      href={`/tratamientos`} 
+      onClick={onClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={`group relative rounded-3xl overflow-hidden border border-stone-100 block bg-stone-50 transition-all duration-500 ${isLarge ? 'h-full' : 'aspect-video shadow-sm hover:shadow-xl hover:scale-[1.02]'}`}
+    >
+      {/* Imagen Principal */}
+      {svc.image_url ? (
+        <img 
+          src={getFullUrl(svc.image_url)} 
+          alt={svc.name} 
+          className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ${isHovered && svc.video_url ? 'opacity-0 scale-110' : 'opacity-100 scale-100'}`} 
+        />
+      ) : (
+        <div className="absolute inset-0 bg-stone-100 flex items-center justify-center">
+          <span className="font-serif text-stone-300 text-xs italic">Merce</span>
+        </div>
+      )}
+
+      {/* Vídeo Hover */}
+      {svc.video_url && (
+        <video
+          ref={videoRef}
+          src={getFullUrl(svc.video_url)}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+          muted
+          loop
+          playsInline
+        />
+      )}
+
+      {/* Info Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20 flex items-end p-6">
+        <div className="text-white w-full translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+            <h5 className="font-serif font-bold leading-tight line-clamp-2 text-xl">{svc.name}</h5>
+            <p className="text-[#d4af37] text-[10px] font-black uppercase tracking-[0.2em]">{svc.duration_minutes} min</p>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 export default function PublicNavbar() {
   const pathname = usePathname();
   const isDashboard = pathname?.startsWith('/dashboard');
@@ -20,6 +79,11 @@ export default function PublicNavbar() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [showMegaMenu, setShowMegaMenu] = useState(false);
   const [mobileAccordionOpen, setMobileAccordionOpen] = useState(false);
+
+  const getFullUrl = (url: string) => {
+    if (!url) return '';
+    return url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${url}` : url;
+  };
 
   useEffect(() => {
     if (isDashboard) return;
@@ -151,7 +215,7 @@ export default function PublicNavbar() {
               <div className="w-[300px] shrink-0 bg-[#F7F7F5] py-6 px-8 border-r border-stone-100">
                 <h4 className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-6">Categorías</h4>
                 <ul className="space-y-1">
-                  {categories.map(cat => (
+                  {categories.filter(c => c.name.toUpperCase() !== 'GENERAL').map(cat => (
                     <li key={cat.id}>
                       <button 
                           onMouseEnter={() => setActiveCategory(cat.id)}
@@ -166,31 +230,27 @@ export default function PublicNavbar() {
               </div>
               
               {/* Right Panel: Bento Grid Highlights */}
-              <div className="flex-1 py-6 px-8 bg-white">
+              <div className="flex-1 py-6 px-8 bg-white overflow-hidden">
                 {(() => {
                   const activeServices = services.filter(s => s.category_id === activeCategory).slice(0, 6);
                   const isFew = activeServices.length <= 3;
                   
                   return (
-                    <div className={`grid grid-cols-3 gap-6 ${isFew ? 'h-full' : ''}`}>
+                    <div 
+                      key={activeCategory} // Clave para forzar re-render y disparar animación
+                      className={`grid grid-cols-3 gap-6 h-full animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out`}
+                    >
                         {activeServices.map(svc => (
-                          <Link href={`/tratamientos`} key={svc.id} onClick={() => setShowMegaMenu(false)} className={`group relative rounded-3xl overflow-hidden border border-stone-100 block bg-stone-50 ${isFew ? 'h-full' : 'aspect-video'}`}>
-                              {/* Imagen Estática (Placeholder) */}
-                              <div className="absolute inset-0 bg-stone-100 group-hover:opacity-0 transition-opacity duration-700 flex items-center justify-center">
-                                <span className="font-serif text-stone-300 text-xs italic">Previsualización</span>
-                              </div>
-                              {/* Vídeo Hover simulado (Fondo animado) */}
-                              <div className="absolute inset-0 bg-stone-900 opacity-0 group-hover:opacity-100 transition-opacity duration-700 flex items-end p-6">
-                                <div className="text-white z-10 w-full">
-                                    <h5 className={`font-serif font-bold leading-tight line-clamp-2 ${isFew ? 'text-2xl mb-2' : 'text-xl'}`}>{svc.name}</h5>
-                                    <p className="text-[#d4af37] text-xs font-bold uppercase tracking-widest">{svc.duration_minutes} min</p>
-                                </div>
-                              </div>
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-                          </Link>
+                          <MegaMenuServiceCard 
+                            key={svc.id} 
+                            svc={svc} 
+                            isLarge={isFew}
+                            getFullUrl={getFullUrl} 
+                            onClick={() => setShowMegaMenu(false)} 
+                          />
                         ))}
                         {activeServices.length === 0 && (
-                          <p className="text-stone-400 font-medium text-sm col-span-3 text-center py-20">No hay tratamientos destacados en esta categoría.</p>
+                          <p className="text-stone-400 font-medium text-sm col-span-3 text-center py-20 animate-in fade-in duration-1000">No hay tratamientos destacados en esta categoría.</p>
                         )}
                     </div>
                   );
