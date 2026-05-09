@@ -20,7 +20,7 @@ function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge }: { svc: any, 
 
   return (
     <Link 
-      href={`/tratamientos`} 
+      href={`/tratamientos/${svc.slug || svc.id}`} 
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
