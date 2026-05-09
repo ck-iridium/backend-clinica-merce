@@ -43,6 +43,21 @@ export default function AIImageGeneratorModal({
   const [excludeText, setExcludeText] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
+  const [generationTime, setGenerationTime] = useState(0);
+
+  // Timer para medir el tiempo de generación
+  useEffect(() => {
+    let interval: any;
+    if (isGenerating) {
+      setGenerationTime(0);
+      interval = setInterval(() => {
+        setGenerationTime((prev) => prev + 1);
+      }, 1000);
+    } else {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [isGenerating]);
 
   // Helper para procesar y optimizar archivos de imagen (Upload, Drop, Paste)
   const processImageFile = useCallback((file: File) => {
@@ -384,7 +399,7 @@ export default function AIImageGeneratorModal({
             {isGenerating ? (
               <>
                 <Loader2 size={16} className="animate-spin" />
-                Procesando (10-20s)...
+                Procesando ({generationTime}s)...
               </>
             ) : (
               <>

@@ -332,8 +332,17 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
                     "data": base64.b64decode(b64_data)
                 })
 
-            # Generar contenido
-            response = model.generate_content(prompt_parts)
+            # Configurar generación para forzar el formato solicitado
+            generation_config = {
+                "aspect_ratio": request.aspect_ratio
+            }
+
+            # Generar contenido con timeout de seguridad (90s)
+            response = model.generate_content(
+                prompt_parts,
+                generation_config=generation_config,
+                request_options={"timeout": 90000} # En milisegundos
+            )
             
             # DEBUG: Imprimir estructura para entender qué devuelve Nano Banana 2
             print(f"DEBUG NANO BANANA RESPONSE: {response}")

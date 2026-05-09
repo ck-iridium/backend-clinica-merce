@@ -48,6 +48,9 @@ export default function MediaGalleryPage() {
   const [selectedImageForCrop, setSelectedImageForCrop] = useState('');
   const [uploadingNew, setUploadingNew] = useState(false);
 
+  // Full Image Modal
+  const [showFullImageModal, setShowFullImageModal] = useState(false);
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -342,8 +345,16 @@ export default function MediaGalleryPage() {
         {selectedFile && selectedNames.size === 0 && (
           <div className="w-72 shrink-0 bg-white rounded-[2rem] border border-stone-100 shadow-xl overflow-hidden animate-in slide-in-from-right-4 duration-300 sticky top-6">
             {/* Preview */}
-            <div className="aspect-video bg-stone-100 relative">
+            <div className="aspect-video bg-stone-100 relative group/preview">
               <img src={selectedFile.url} alt={selectedFile.name} className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-stone-900/40 opacity-0 group-hover/preview:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                <button
+                  onClick={() => setShowFullImageModal(true)}
+                  className="bg-white text-stone-900 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-xl active:scale-95 transition-all"
+                >
+                  🔍 Ver completa
+                </button>
+              </div>
               <button
                 onClick={() => setSelectedFile(null)}
                 className="absolute top-3 right-3 w-7 h-7 bg-white/80 rounded-full text-stone-500 hover:text-stone-900 flex items-center justify-center font-bold text-sm shadow-md"
@@ -449,6 +460,33 @@ export default function MediaGalleryPage() {
           onClose={() => { setShowCropModal(false); setSelectedImageForCrop(''); }}
           onCropComplete={handleCropComplete}
         />
+      )}
+
+      {/* Lightbox / Full Image Modal */}
+      {showFullImageModal && selectedFile && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-950/90 backdrop-blur-md p-4 animate-in fade-in duration-300"
+          onClick={() => setShowFullImageModal(false)}
+        >
+          <button 
+            className="absolute top-6 right-6 w-12 h-12 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center text-2xl transition-colors shadow-2xl border border-white/10"
+            onClick={(e) => { e.stopPropagation(); setShowFullImageModal(false); }}
+          >✕</button>
+          
+          <div className="relative max-w-[95vw] max-h-[95vh] flex items-center justify-center animate-in zoom-in-95 duration-500">
+            <img 
+              src={selectedFile.url} 
+              alt={selectedFile.name}
+              className="max-w-full max-h-[90vh] object-contain shadow-[0_0_80px_rgba(0,0,0,0.5)] rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
+            
+            {/* Info overlay inside modal */}
+            <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 pointer-events-none">
+              <p className="text-white font-bold text-xs">{selectedFile.name}</p>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
