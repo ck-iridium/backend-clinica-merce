@@ -149,12 +149,10 @@ class ClinicSettingsBase(BaseModel):
     ai_provider: Optional[str] = "gemini"
     gemini_api_key: Optional[str] = None
     openai_api_key: Optional[str] = None
-    xai_api_key: Optional[str] = None
     gemini_model_text: Optional[str] = None
     gemini_model_image: Optional[str] = None
     openai_model_text: Optional[str] = None
     openai_model_image: Optional[str] = None
-    xai_model_video: Optional[str] = None
     default_image_shot: Optional[str] = "conceptual"
     default_image_style: Optional[str] = "luxury"
 
@@ -191,12 +189,10 @@ class ClinicSettingsUpdate(BaseModel):
     ai_provider: Optional[str] = None
     gemini_api_key: Optional[str] = None
     openai_api_key: Optional[str] = None
-    xai_api_key: Optional[str] = None
     gemini_model_text: Optional[str] = None
     gemini_model_image: Optional[str] = None
     openai_model_text: Optional[str] = None
     openai_model_image: Optional[str] = None
-    xai_model_video: Optional[str] = None
     default_image_shot: Optional[str] = None
     default_image_style: Optional[str] = None
 
@@ -234,7 +230,7 @@ class ClinicSettingsResponse(ClinicSettingsBase):
                 return [1, 2, 3, 4, 5]
         return v
 
-    @field_validator('gemini_api_key', 'openai_api_key', 'xai_api_key', mode='after')
+    @field_validator('gemini_api_key', 'openai_api_key', mode='after')
     @classmethod
     def obfuscate_api_keys(cls, v):
         if v and len(v) > 8:
@@ -488,9 +484,4 @@ class OptimizePromptRequest(BaseModel):
     description: Optional[str] = ""
     content_html: Optional[str] = ""
 
-class AIVideoGenerationRequest(BaseModel):
-    image_url: str
-    prompt: Optional[str] = None
-    duration: int = 6
-    aspect_ratio: str = "9:16"
-    resolution: str = "720p"
+

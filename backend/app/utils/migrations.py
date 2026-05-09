@@ -51,9 +51,7 @@ def run_auto_migrations():
             "ALTER TABLE clinic_settings ADD COLUMN openai_model_image VARCHAR DEFAULT 'dall-e-3'",
             "ALTER TABLE clinic_settings ADD COLUMN default_image_shot VARCHAR DEFAULT 'conceptual'",
             "ALTER TABLE clinic_settings ADD COLUMN default_image_style VARCHAR DEFAULT 'luxury'",
-            # ── Grok Video Generation & Multimedia ──────────────────────────────────
-            "ALTER TABLE clinic_settings ADD COLUMN xai_api_key VARCHAR",
-            "ALTER TABLE clinic_settings ADD COLUMN xai_model_video VARCHAR DEFAULT 'grok-imagine-video'",
+            # ── Grok Video Generation & Multimedia (ELIMINADO) ────────────────────
             "ALTER TABLE services ADD COLUMN video_url VARCHAR",
             # ── Tabla de Medios (Galería) ──────────────────────────────────────────
             "CREATE TABLE IF NOT EXISTS media (id VARCHAR(36) PRIMARY KEY, filename VARCHAR, url VARCHAR, file_type VARCHAR, mime_type VARCHAR, size INTEGER, service_id VARCHAR(36), created_at TIMESTAMP)"

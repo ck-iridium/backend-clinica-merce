@@ -214,44 +214,6 @@ export default function AdvancedTab({ settings, setSettings }: AdvancedTabProps)
               </div>
             )}
           </div>
-
-          {/* Sección Grok Video (X.AI) */}
-          <div className="bg-[#f0f4f8]/50 p-6 rounded-[2rem] border border-[#e1e8ef] space-y-4">
-            <div className="flex items-center gap-3 mb-2">
-              <span className="w-8 h-8 rounded-xl bg-black flex items-center justify-center text-white font-serif font-black text-xs">𝕏</span>
-              <h4 className="font-bold text-stone-700 text-sm uppercase tracking-widest">Vídeo Generativo (Grok)</h4>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1 mb-1.5 block">X.AI API Key</label>
-                <input 
-                  type="password" 
-                  value={settings.xai_api_key || ''} 
-                  onChange={e => setSettings({...settings, xai_api_key: e.target.value})} 
-                  placeholder="xai-..." 
-                  className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:border-black focus:ring-2 focus:ring-black/5 outline-none transition-all font-mono text-sm shadow-sm"
-                />
-                <p className="text-xs text-stone-400 mt-2 ml-1">Consigue tu API Key en <a href="https://console.x.ai/" target="_blank" rel="noreferrer" className="text-stone-800 hover:underline font-bold underline-offset-2">console.x.ai</a>.</p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1 mb-2 block">Modelo de Vídeo</label>
-                  <div className="w-full h-12 bg-white border border-stone-200 rounded-xl flex items-center px-4 font-semibold text-stone-800 text-sm shadow-sm">
-                    <Sparkles size={14} className="mr-2 text-stone-400" />
-                    grok-imagine-video
-                    <span className="ml-auto text-[8px] bg-stone-100 px-2 py-0.5 rounded-full uppercase tracking-tighter text-stone-500 font-black">Beta</span>
-                  </div>
-                </div>
-                <div className="flex flex-col justify-center">
-                  <p className="text-[10px] text-stone-500 leading-tight italic">
-                    Este modelo se utilizará para animar las imágenes de los tratamientos al hacer hover.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 

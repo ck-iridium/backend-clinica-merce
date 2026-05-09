@@ -52,8 +52,8 @@ export default function AIGenerationFloatingCard() {
               <div>
                 <h4 className="font-serif font-bold text-stone-800 leading-tight">
                   {isGenerating 
-                    ? (generationMode === 'video' ? 'Animando con Grok IA' : 'Generando Foto IA') 
-                    : (isVideo ? '¡Vídeo Listo!' : '¡Imagen Lista!')}
+                    ? 'Generando Foto IA' 
+                    : '¡Imagen Lista!'}
                 </h4>
                 <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mt-0.5">
                   {isGenerating ? `Procesando (${generationTime}s)...` : resultUrl ? 'Listo para el catálogo' : 'Algo salió mal'}
@@ -72,16 +72,14 @@ export default function AIGenerationFloatingCard() {
               <div className="flex flex-col gap-1.5">
                 <div className="flex justify-between items-center text-[10px] font-bold">
                   <span className="text-stone-400 uppercase tracking-widest">Estado</span>
-                  <span className={`${generationTime > 90 ? 'text-amber-500' : 'text-[#d4af37]'} transition-colors animate-pulse`}>
-                    {generationTime > 90 ? 'Finalizando detalles...' : 'En curso...'}
+                  <span className={`${generationTime > 60 ? 'text-amber-500' : 'text-[#d4af37]'} transition-colors animate-pulse`}>
+                    {generationTime > 60 ? 'Finalizando detalles...' : 'En curso...'}
                   </span>
                 </div>
                 <div className="text-[11px] text-stone-500 leading-relaxed italic">
-                  {generationMode === 'video' 
-                    ? "Grok está creando una animación cinematográfica premium. Esto puede tardar hasta 1 minuto."
-                    : (generationTime > 60 
-                        ? "Está tardando más de lo habitual. Puedes esperar un poco más o cancelar y reintentar."
-                        : "No cierres esta página mientras trabajamos en tu contenido editorial premium.")}
+                  {generationTime > 60 
+                    ? "Está tardando más de lo habitual. Puedes esperar un poco más o cancelar y reintentar."
+                    : "No cierres esta página mientras trabajamos en tu contenido editorial premium."}
                 </div>
               </div>
               <button 
@@ -97,18 +95,7 @@ export default function AIGenerationFloatingCard() {
           {resultUrl && (
             <div className="space-y-4 animate-in zoom-in-95 duration-300">
               <div className="aspect-[9/16] max-h-48 rounded-2xl overflow-hidden border border-emerald-100 shadow-inner bg-stone-50">
-                {isVideo ? (
-                  <video 
-                    src={resultUrl} 
-                    autoPlay 
-                    loop 
-                    muted 
-                    playsInline 
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <img src={resultUrl} alt="Result" className="w-full h-full object-cover" />
-                )}
+                <img src={resultUrl} alt="Result" className="w-full h-full object-cover" />
               </div>
               <div className="space-y-3">
                 <div className="flex items-center justify-center gap-2 py-2 px-4 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-100 animate-pulse">

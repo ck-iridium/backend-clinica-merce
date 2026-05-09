@@ -185,13 +185,10 @@ class ClinicSettings(Base):
     ai_provider = Column(String, default="gemini") # "gemini" or "openai"
     gemini_api_key = Column(String, nullable=True)
     openai_api_key = Column(String, nullable=True)
-    xai_api_key = Column(String, nullable=True)
-    
     gemini_model_text = Column(String, default="gemini-2.5-flash")
     gemini_model_image = Column(String, default="imagen-4.0-generate-001")
     openai_model_text = Column(String, default="gpt-4o-mini")
     openai_model_image = Column(String, default="dall-e-3")
-    xai_model_video = Column(String, default="grok-imagine-video")
     
     default_image_shot = Column(String, default="conceptual")
     default_image_style = Column(String, default="luxury")

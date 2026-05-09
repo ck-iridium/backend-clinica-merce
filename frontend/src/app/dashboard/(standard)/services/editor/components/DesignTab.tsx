@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Image as ImageIcon, Pipette, Sparkles, Video, Trash2, Play, Loader2 } from 'lucide-react';
+import { Image as ImageIcon, Pipette, Sparkles, Video, Trash2 } from 'lucide-react';
 import { UseFormRegister, Control, UseFormSetValue } from 'react-hook-form';
 import {
   Select,
@@ -11,7 +11,6 @@ import {
 import { Controller } from 'react-hook-form';
 import type { ServiceFormData } from '@/components/cms/ServiceEditor';
 import AIImageGeneratorModal from '@/components/cms/AIImageGeneratorModal';
-import { useAIImage } from '@/app/contexts/AIImageContext';
 
 interface DesignTabProps {
   formValues: ServiceFormData;
@@ -23,27 +22,10 @@ interface DesignTabProps {
 
 export default function DesignTab({ formValues, register, control, setValue, setMediaPickerSlot }: DesignTabProps) {
   const [showAIImageModal, setShowAIImageModal] = useState(false);
-  const { startVideoGeneration, isGenerating, setOnFinish } = useAIImage();
   
   const getFullUrl = (url: string) => {
     if (!url) return '';
     return url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${url}` : url;
-  };
-
-  const handleAnimateWithAI = async () => {
-    if (!formValues.image_url) return;
-
-    // Registrar el callback para cuando termine el vídeo
-    setOnFinish((url) => {
-      setValue('video_url', url, { shouldDirty: true });
-    });
-
-    await startVideoGeneration({
-      image_url: getFullUrl(formValues.image_url),
-      prompt: `Premium cinematic animation of ${formValues.name}. High-end beauty editorial style, elegant movement, luxury aesthetic.`,
-      duration: 6,
-      aspect_ratio: "9:16"
-    });
   };
 
   return (
@@ -101,15 +83,6 @@ export default function DesignTab({ formValues, register, control, setValue, set
       <div className="space-y-3 pt-2">
         <div className="flex items-center justify-between">
           <label className="block text-xs font-bold text-stone-500 uppercase tracking-[0.15em]">Vídeo de Portada (Hover)</label>
-          <button 
-            type="button" 
-            onClick={handleAnimateWithAI}
-            disabled={!formValues.image_url || isGenerating}
-            className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-stone-800 hover:bg-stone-50 px-2.5 py-1.5 rounded-lg border border-stone-200 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed group"
-          >
-            {isGenerating ? <Loader2 size={12} className="animate-spin text-stone-400" /> : <Sparkles size={12} strokeWidth={2.5} className="text-[#d4af37] group-hover:scale-125 transition-transform" />}
-            Animar con Grok IA
-          </button>
         </div>
         
         {formValues.video_url ? (
@@ -239,4 +212,3 @@ export default function DesignTab({ formValues, register, control, setValue, set
     </div>
   );
 }
-
