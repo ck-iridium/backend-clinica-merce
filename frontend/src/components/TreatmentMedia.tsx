@@ -9,39 +9,31 @@ interface TreatmentMediaProps {
 }
 
 export default function TreatmentMedia({ imageUrl, videoUrl, headerStyle }: TreatmentMediaProps) {
-  const [videoLoaded, setVideoLoaded] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  // Si no hay vídeo, no necesitamos lógica de carga
-  const hasVideo = !!videoUrl && headerStyle === 'split_video';
-
-  return (
-    <div className="relative w-full h-full overflow-hidden">
-      {/* Imagen de Fondo / Placeholder */}
-      <img
-        src={imageUrl}
-        alt="Tratamiento"
-        className={`w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? 'opacity-0' : 'opacity-100'} ${headerStyle === 'split_video' ? 'aspect-[9/16] rounded-[2rem] md:rounded-[3rem]' : 'aspect-[9/16] md:aspect-auto'}`}
-      />
-
-      {/* Vídeo con carga progresiva */}
-      {hasVideo && (
+  // Si es estilo video y tenemos URL, usamos el reproductor con poster
+  if (headerStyle === 'split_video' && videoUrl) {
+    return (
+      <div className="relative h-full aspect-[9/16] rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)] bg-stone-100">
         <video
-          ref={videoRef}
           src={videoUrl}
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? 'opacity-100' : 'opacity-0'} aspect-[9/16] rounded-[2rem] md:rounded-[3rem]`}
+          poster={imageUrl}
+          className="w-full h-full object-cover"
           autoPlay
           loop
           muted
           playsInline
-          onLoadedData={() => setVideoLoaded(true)}
         />
-      )}
+      </div>
+    );
+  }
 
-      {/* Sombra suave para dar profundidad si es estilo video */}
-      {headerStyle === 'split_video' && (
-        <div className="absolute inset-0 pointer-events-none shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)] rounded-[2rem] md:rounded-[3rem]" />
-      )}
+  // Si es imagen estática o no hay video, mostramos la imagen con el mismo estilo
+  return (
+    <div className={`relative ${headerStyle === 'split_video' ? 'h-full aspect-[9/16] rounded-[2rem] md:rounded-[3rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)]' : 'w-full h-full'} overflow-hidden bg-stone-100`}>
+      <img
+        src={imageUrl}
+        alt="Tratamiento"
+        className="w-full h-full object-cover"
+      />
     </div>
   );
 }
