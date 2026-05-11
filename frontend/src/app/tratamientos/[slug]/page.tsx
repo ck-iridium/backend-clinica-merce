@@ -73,11 +73,17 @@ export default async function TreatmentDynamicPage({ params }: { params: { slug:
 
   return (
     <TreatmentScrollHandler>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+      `}} />
+      
       <div className="min-h-screen bg-white font-sans pt-20">
         <main className="w-full">
           <div className="flex flex-col md:flex-row min-h-screen relative">
             
-            {/* Columna Izquierda: Visual (Sticky 9:16) - PEGADA A LA DERECHA DE SU COLUMNA */}
+            {/* Columna Izquierda: Visual (Sticky 9:16) */}
             <div className={`w-full md:w-[42%] lg:w-[40%] h-[75vh] md:h-[calc(100vh-80px)] md:sticky md:top-20 flex items-center justify-center md:justify-end px-6 md:px-0 ${layoutPreferences.headerStyle === 'split_video' ? 'md:py-[20px] md:pr-4' : ''} relative group snap-start snap-stop-always`}>
               <TreatmentMedia 
                 imageUrl={getFullUrl(service.image_url)} 
@@ -88,7 +94,7 @@ export default async function TreatmentDynamicPage({ params }: { params: { slug:
               <ScrollIndicator />
             </div>
 
-            {/* Columna Derecha: Contenido (Scroll) - PEGADA A LA IZQUIERDA DE SU COLUMNA */}
+            {/* Columna Derecha: Contenido (Scroll) */}
             <div id="treatment-content" className="w-full md:w-[58%] lg:w-[60%] flex flex-col pt-12 pb-24 px-6 md:pl-8 md:pr-12 lg:pl-16 lg:pr-24 snap-start snap-stop-always scroll-mt-20">
               <div className="max-w-3xl">
                 <span className="text-xs font-black uppercase tracking-[0.2em] text-[#d4af37] mb-4 block">
@@ -136,8 +142,8 @@ export default async function TreatmentDynamicPage({ params }: { params: { slug:
 
           {/* Bloque: Cross-Selling (Full Width) */}
           {relatedServices.length > 0 && (
-            <section className="w-full bg-stone-50 py-24 md:py-32 border-t border-stone-100 overflow-hidden snap-start snap-stop-always scroll-mt-20">
-              <div className="max-w-[1400px] mx-auto px-6 mb-16 flex flex-col md:flex-row justify-between items-end gap-6">
+            <section className="w-full bg-stone-50 py-24 md:py-32 border-t border-stone-100 overflow-hidden snap-start snap-stop-always scroll-mt-20 flex flex-col min-h-screen md:min-h-0">
+              <div className="max-w-[1400px] mx-auto px-6 mb-16 flex flex-col md:flex-row justify-between items-end gap-6 flex-shrink-0">
                 <div className="max-w-xl">
                   <h2 className="text-3xl md:text-5xl font-serif text-stone-800 mb-4">Tratamientos Complementarios</h2>
                   <p className="text-stone-500">Descubre otras experiencias diseñadas para potenciar tu bienestar y belleza natural en nuestra clínica.</p>
@@ -147,32 +153,46 @@ export default async function TreatmentDynamicPage({ params }: { params: { slug:
                 </Link>
               </div>
 
-              {/* Lógica Dinámica de Visualización */}
-              <div className="w-full">
-                {relatedServices.length === 1 && (
-                  <div className="max-w-sm mx-auto px-6">
-                    <div className="h-[540px]">
-                      <ServiceCard service={relatedServices[0]} className="w-full h-full" />
-                    </div>
-                  </div>
-                )}
-
-                {relatedServices.length === 2 && (
-                  <div className="max-w-4xl mx-auto px-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Lógica Dinámica de Visualización (ESTILO HOME) */}
+              <div className="w-full flex-1 min-h-0 flex flex-col justify-center">
+                {/* Desktop Layouts */}
+                <div className="hidden md:block">
+                  {relatedServices.length === 1 && (
+                    <div className="max-w-sm mx-auto px-6">
                       <div className="h-[540px]">
                         <ServiceCard service={relatedServices[0]} className="w-full h-full" />
                       </div>
-                      <div className="h-[540px]">
-                        <ServiceCard service={relatedServices[1]} className="w-full h-full" />
+                    </div>
+                  )}
+
+                  {relatedServices.length === 2 && (
+                    <div className="max-w-4xl mx-auto px-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="h-[540px]">
+                          <ServiceCard service={relatedServices[0]} className="w-full h-full" />
+                        </div>
+                        <div className="h-[540px]">
+                          <ServiceCard service={relatedServices[1]} className="w-full h-full" />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {relatedServices.length >= 3 && (
-                  <TreatmentCarousel servicios={relatedServices} />
-                )}
+                  {relatedServices.length >= 3 && (
+                    <TreatmentCarousel servicios={relatedServices} />
+                  )}
+                </div>
+
+                {/* Mobile Layout: Apple-Style Snap Carousel (IGUAL QUE EN LA HOME) */}
+                <div className="md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-6 items-center flex-1">
+                  {relatedServices.map((svc: any) => (
+                    <ServiceCard 
+                      key={svc.id} 
+                      service={svc} 
+                      className="w-[75vw] h-[500px] snap-center snap-stop-always flex-shrink-0" 
+                    />
+                  ))}
+                </div>
               </div>
             </section>
           )}
