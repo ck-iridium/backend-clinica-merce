@@ -72,7 +72,6 @@ export default function PublicNavbar() {
   
   // States for Phase 1
   const [scrolled, setScrolled] = useState(false);
-  const [hidden, setHidden] = useState(false);
   const lastScrollY = useRef(0);
   const [categories, setCategories] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
@@ -132,16 +131,6 @@ export default function PublicNavbar() {
       
       if (scrollY !== undefined) {
         setScrolled(scrollY > 50);
-
-        // Smart Header Logic - No ocultar en páginas de tratamiento individual
-        const isIndividualTreatment = pathname?.startsWith('/tratamientos/') && pathname !== '/tratamientos';
-        
-        if (scrollY > 200 && scrollY > lastScrollY.current && !isOpen && !isIndividualTreatment) {
-          setHidden(true); // Ocultar al bajar
-        } else if (scrollY < lastScrollY.current || scrollY <= 50 || isIndividualTreatment) {
-          setHidden(false); // Mostrar al subir
-        }
-
         lastScrollY.current = scrollY;
       }
     };
@@ -167,7 +156,7 @@ export default function PublicNavbar() {
 
   return (
     <>
-      <nav className={`fixed w-full top-0 z-[100] transition-all duration-500 ease-in-out ${hidden ? '-translate-y-full' : 'translate-y-0'} ${(scrolled || !isHome) ? 'bg-white/90 backdrop-blur-xl border-b border-stone-200/50 shadow-sm py-0' : 'bg-transparent border-transparent py-2'}`}>
+      <nav className={`fixed w-full top-0 z-[100] transition-all duration-500 ease-in-out translate-y-0 ${(scrolled || !isHome) ? 'bg-white/90 backdrop-blur-xl border-b border-stone-200/50 shadow-sm py-0' : 'bg-transparent border-transparent py-2'}`}>
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between relative">
         
         {/* LOGO - z-index alto para estar sobre el overlay si es necesario */}
