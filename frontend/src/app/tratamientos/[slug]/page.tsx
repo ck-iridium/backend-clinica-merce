@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 
 import ServiceCard from '@/components/ServiceCard';
 import TreatmentCarousel from '@/components/TreatmentCarousel';
+import TreatmentActions from '@/components/TreatmentActions';
 
 async function getServiceData(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/slug/${slug}`, {
@@ -60,33 +61,44 @@ export default async function TreatmentDynamicPage({ params }: { params: { slug:
 
   const relatedServices = await getRelatedServices(service.category_id, service.id);
 
+  const getFullUrl = (url: string) => {
+    if (!url) return '';
+    return url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${url}` : url;
+  };
+
+  const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+
   return (
     <div className="min-h-screen bg-white font-sans pt-20">
       <main className="w-full">
         <div className="flex flex-col md:flex-row min-h-screen relative">
           
           {/* Columna Izquierda: Visual (Sticky 9:16) */}
-          <div className="w-full md:w-[42%] lg:w-[40%] md:h-[calc(100vh-80px)] md:sticky md:top-20 overflow-hidden bg-stone-100">
-            {service.image_url ? (
+          <div className={`w-full md:w-[45%] lg:w-[43%] md:h-[calc(100vh-80px)] md:sticky md:top-20 overflow-hidden bg-stone-100 flex items-center justify-end ${layoutPreferences.headerStyle === 'split_video' ? 'py-[25px] pr-[25px]' : ''}`}>
+            {layoutPreferences.headerStyle === 'split_video' && service.video_url ? (
+              <div className="relative h-full aspect-[9/16] rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)] bg-stone-200">
+                <video 
+                  src={getFullUrl(service.video_url)} 
+                  className="w-full h-full object-cover"
+                  autoPlay loop muted playsInline
+                />
+              </div>
+            ) : service.image_url ? (
               <img 
-                src={service.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${service.image_url}` : service.image_url} 
+                src={getFullUrl(service.image_url)} 
                 alt={service.name} 
-                className="w-full h-full object-cover aspect-[9/16] md:aspect-auto"
+                className={`w-full h-full object-cover ${layoutPreferences.headerStyle === 'split_video' ? 'aspect-[9/16] rounded-[2rem] md:rounded-[3rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)]' : 'aspect-[9/16] md:aspect-auto'}`}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-stone-200">
-                <span className="text-stone-400 font-serif italic">Clínica Mercè</span>
+                <span className="text-stone-400 font-serif italic text-2xl opacity-20">Clínica Mercè</span>
               </div>
             )}
           </div>
 
           {/* Columna Derecha: Contenido (Scroll) */}
-          <div className="w-full md:w-[58%] lg:w-[60%] flex flex-col pt-12 pb-24 px-6 md:px-16 lg:px-24">
-            {/* Breadcrumb / Back Link */}
-            <Link href="/tratamientos" className="flex items-center gap-2 text-stone-400 hover:text-[#d4af37] transition-colors mb-12 text-sm font-bold uppercase tracking-widest group">
-              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-              Volver a Tratamientos
-            </Link>
+          <div className="w-full md:w-[55%] lg:w-[57%] flex flex-col pt-12 pb-24 px-6 md:pl-12 md:pr-16 lg:pl-20 lg:pr-32">
+            {/* Header info */}
 
             {/* Header info */}
             <div className="max-w-3xl">
@@ -122,10 +134,13 @@ export default async function TreatmentDynamicPage({ params }: { params: { slug:
               {/* Content Rich Text */}
               {service.content_html && (
                 <div 
-                  className="prose prose-stone lg:prose-xl max-w-none prose-headings:font-serif prose-headings:font-normal prose-p:leading-relaxed prose-a:text-[#d4af37] prose-img:rounded-3xl"
+                  className="prose prose-stone lg:prose-xl max-w-none prose-headings:font-serif prose-headings:font-normal prose-p:leading-relaxed prose-a:text-[#d4af37] prose-img:rounded-3xl mb-16"
                   dangerouslySetInnerHTML={{ __html: service.content_html }} 
                 />
               )}
+
+              {/* Acciones Finales (Nueva Barra de Acciones) */}
+              <TreatmentActions serviceName={service.name} />
             </div>
           </div>
         </div>

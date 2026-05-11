@@ -271,8 +271,8 @@ export default function DesignTab({ formValues, register, control, setValue, set
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl shadow-xl border-stone-200">
-                  <SelectItem value="split" className="text-sm py-2.5">Dividida (Split)</SelectItem>
-                  <SelectItem value="full" className="text-sm py-2.5">Fondo Completo (Full)</SelectItem>
+                  <SelectItem value="split_image" className="text-sm py-2.5">Imagen Estática (Split)</SelectItem>
+                  <SelectItem value="split_video" className="text-sm py-2.5">Vídeo Vertical (Split)</SelectItem>
                 </SelectContent>
               </Select>
             )}

@@ -39,7 +39,7 @@ export interface ServiceFormData {
   content_html: string;
   layout_preferences: {
     alignment: 'left' | 'right';
-    headerStyle: 'full' | 'split';
+    headerStyle: 'split_image' | 'split_video';
     accentColor: string;
   };
 }
@@ -61,7 +61,7 @@ const DEFAULT_FORM_DATA: ServiceFormData = {
   content_html: '',
   layout_preferences: {
     alignment: 'left',
-    headerStyle: 'split',
+    headerStyle: 'split_image',
     accentColor: '#d4af37'
   }
 };
@@ -407,65 +407,73 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
               </>
             )}
 
-            {/* Layout para modo SPLIT (Nuevo diseño Editorial) */}
-            {formValues.layout_preferences.headerStyle === 'split' && (
-              <div className="flex flex-col md:flex-row min-h-full relative w-full">
-                {/* Columna Izquierda: Visual (Sticky 9:16) */}
-                <div className="w-full md:w-[42%] lg:w-[40%] md:h-[calc(100vh-48px)] md:sticky md:top-0 overflow-hidden bg-stone-100">
-                  {formValues.image_url ? (
-                    <img
-                      src={formValues.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${formValues.image_url}` : formValues.image_url}
-                      alt="Cover"
-                      className="w-full h-full object-cover aspect-[9/16] md:aspect-auto"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-stone-300">
-                      <ImageIcon size={64} strokeWidth={1} />
-                    </div>
-                  )}
-                </div>
-
-                {/* Columna Derecha: Contenido (Scroll) */}
-                <div className="w-full md:w-[58%] lg:w-[60%] flex flex-col pt-12 pb-24 px-6 md:px-12 lg:px-16">
-                  <div className="max-w-2xl">
-                    <span className="text-xs font-black uppercase tracking-[0.2em] text-[#d4af37] mb-4 block">
-                      Tratamiento Especializado
-                    </span>
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-stone-900 mb-8 leading-[1.1]">
-                      {formValues.name || 'Título del Tratamiento'}
-                    </h1>
-
-                    {/* Pricing & Time Card */}
-                    <div className="flex flex-wrap gap-4 items-center mb-10 p-6 bg-stone-50 rounded-3xl border border-stone-100 shadow-sm">
-                      <div className="px-6 border-r border-stone-200">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1">Duración</p>
-                        <p className="text-lg font-bold text-stone-800">{formValues.duration_minutes} min</p>
-                      </div>
-                      <div className="px-6">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1">Inversión desde</p>
-                        <p className="text-lg font-bold text-stone-800">{formValues.price} €</p>
-                      </div>
-                      <div className="ml-auto">
-                        <button disabled className="px-6 py-3 rounded-2xl font-bold text-white shadow-lg" style={{ backgroundColor: formValues.layout_preferences.accentColor }}>
-                          Reservar Ahora
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Short Description */}
-                    <p className="text-lg md:text-xl text-stone-500 font-sans leading-relaxed mb-12 italic">
-                      "{formValues.description || 'La descripción corta aparecerá aquí...'}"
-                    </p>
-
-                    {/* Content Rich Text (Sync with Tiptap) */}
-                    <div
-                      className="prose prose-stone max-w-none prose-headings:font-serif prose-headings:font-normal prose-p:leading-relaxed prose-a:text-[#d4af37] prose-img:rounded-3xl"
-                      dangerouslySetInnerHTML={{ __html: formValues.content_html || '<p class="text-stone-300 italic">El contenido detallado aparecerá aquí...</p>' }}
+          {/* Layout para modo SPLIT (Nuevo diseño Editorial) */}
+          {(formValues.layout_preferences.headerStyle === 'split' || formValues.layout_preferences.headerStyle === 'split_image' || formValues.layout_preferences.headerStyle === 'split_video') && (
+            <div className="flex flex-col md:flex-row min-h-full relative w-full">
+              {/* Columna Izquierda: Visual (Sticky 9:16) */}
+              <div className={`w-full md:w-[45%] lg:w-[43%] md:h-[calc(100vh-48px)] md:sticky md:top-0 overflow-hidden bg-stone-100 flex items-center justify-end ${formValues.layout_preferences.headerStyle === 'split_video' ? 'py-[25px] pr-[25px]' : ''}`}>
+                {formValues.layout_preferences.headerStyle === 'split_video' && formValues.video_url ? (
+                  <div className="relative h-full aspect-[9/16] rounded-[2rem] overflow-hidden shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)] bg-stone-200">
+                    <video
+                      src={formValues.video_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${formValues.video_url}` : formValues.video_url}
+                      className="w-full h-full object-cover"
+                      autoPlay loop muted playsInline
                     />
                   </div>
+                ) : formValues.image_url ? (
+                  <img
+                    src={formValues.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${formValues.image_url}` : formValues.image_url}
+                    alt="Cover"
+                    className={`w-full h-full object-cover ${formValues.layout_preferences.headerStyle === 'split_video' ? 'aspect-[9/16] rounded-[2rem] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)]' : 'aspect-[9/16] md:aspect-auto'}`}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-stone-300">
+                    <ImageIcon size={64} strokeWidth={1} />
+                  </div>
+                )}
+              </div>
+
+              {/* Columna Derecha: Contenido (Scroll) */}
+              <div className="w-full md:w-[55%] lg:w-[57%] flex flex-col pt-12 pb-24 px-6 md:pl-10 md:pr-12 lg:pl-16 lg:pr-24">
+                <div className="max-w-2xl">
+                  <span className="text-xs font-black uppercase tracking-[0.2em] text-[#d4af37] mb-4 block">
+                    Tratamiento Especializado
+                  </span>
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-stone-900 mb-8 leading-[1.1]">
+                    {formValues.name || 'Título del Tratamiento'}
+                  </h1>
+
+                  {/* Pricing & Time Card */}
+                  <div className="flex flex-wrap gap-4 items-center mb-10 p-6 bg-stone-50 rounded-3xl border border-stone-100 shadow-sm">
+                    <div className="px-6 border-r border-stone-200">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1">Duración</p>
+                      <p className="text-lg font-bold text-stone-800">{formValues.duration_minutes} min</p>
+                    </div>
+                    <div className="px-6">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1">Inversión desde</p>
+                      <p className="text-lg font-bold text-stone-800">{formValues.price} €</p>
+                    </div>
+                    <div className="ml-auto">
+                      <button disabled className="px-6 py-3 rounded-2xl font-bold text-white shadow-lg" style={{ backgroundColor: formValues.layout_preferences.accentColor }}>
+                        Reservar Ahora
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Short Description */}
+                  <p className="text-lg md:text-xl text-stone-500 font-sans leading-relaxed mb-12 italic">
+                    "{formValues.description || 'La descripción corta aparecerá aquí...'}"
+                  </p>
+
+                  {/* Content Rich Text (Sync with Tiptap) */}
+                  <div
+                    className="prose prose-stone max-w-none prose-headings:font-serif prose-headings:font-normal prose-p:leading-relaxed prose-a:text-[#d4af37] prose-img:rounded-3xl"
+                    dangerouslySetInnerHTML={{ __html: formValues.content_html || '<p class="text-stone-300 italic">El contenido detallado aparecerá aquí...</p>' }}
+                  />
                 </div>
               </div>
-            )}
+            </div>
+          )}
           </section>
 
           {/* Bloque 2: Contenido Enriquecido (Solo visible en modo FULL para evitar duplicación) */}
