@@ -378,9 +378,8 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
           {/* Bloque 1: Hero Section */}
           <section className="relative w-full min-h-[50vh] flex flex-col md:flex-row">
 
-          {/* Layout para modo SPLIT (Nuevo diseño Editorial) */}
-          <div className="flex flex-col md:flex-row min-h-full relative w-full">
-            {/* ... rest of the split layout ... */}
+            {/* Layout para modo SPLIT (Nuevo diseño Editorial) */}
+            <div className="flex flex-col md:flex-row min-h-full relative w-full">
               {/* Columna Izquierda: Visual (Sticky 9:16) */}
               <div className={`w-full md:w-[45%] lg:w-[43%] md:h-[calc(100vh-48px)] md:sticky md:top-0 overflow-hidden bg-stone-100 flex items-center justify-end ${formValues.layout_preferences.headerStyle === 'split_video' ? 'py-[25px] pr-[25px]' : ''}`}>
                 {formValues.layout_preferences.headerStyle === 'split_video' && formValues.video_url ? (
@@ -444,12 +443,8 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
                 </div>
               </div>
             </div>
-          )}
           </section>
-
-          </div>
         </div>
-
       </div>
 
       {mediaPickerSlot && (
