@@ -77,8 +77,8 @@ export default async function TreatmentDynamicPage({ params }: { params: { slug:
         <main className="w-full">
           <div className="flex flex-col md:flex-row min-h-screen relative">
             
-            {/* Columna Izquierda: Visual (Sticky 9:16) */}
-            <div className={`w-full md:w-[45%] lg:w-[43%] h-[75vh] md:h-[calc(100vh-80px)] md:sticky md:top-20 flex items-center justify-center md:justify-end px-6 md:px-0 ${layoutPreferences.headerStyle === 'split_video' ? 'md:py-[25px] md:pr-[25px]' : ''} relative group snap-start snap-stop-always`}>
+            {/* Columna Izquierda: Visual (Sticky 9:16) - PEGADA A LA DERECHA DE SU COLUMNA */}
+            <div className={`w-full md:w-[42%] lg:w-[40%] h-[75vh] md:h-[calc(100vh-80px)] md:sticky md:top-20 flex items-center justify-center md:justify-end px-6 md:px-0 ${layoutPreferences.headerStyle === 'split_video' ? 'md:py-[20px] md:pr-4' : ''} relative group snap-start snap-stop-always`}>
               <TreatmentMedia 
                 imageUrl={getFullUrl(service.image_url)} 
                 videoUrl={service.video_url ? getFullUrl(service.video_url) : undefined}
@@ -88,8 +88,8 @@ export default async function TreatmentDynamicPage({ params }: { params: { slug:
               <ScrollIndicator />
             </div>
 
-            {/* Columna Derecha: Contenido (Scroll) */}
-            <div id="treatment-content" className="w-full md:w-[55%] lg:w-[57%] flex flex-col pt-12 pb-24 px-6 md:pl-12 md:pr-16 lg:pl-20 lg:pr-32 snap-start snap-stop-always scroll-mt-20">
+            {/* Columna Derecha: Contenido (Scroll) - PEGADA A LA IZQUIERDA DE SU COLUMNA */}
+            <div id="treatment-content" className="w-full md:w-[58%] lg:w-[60%] flex flex-col pt-12 pb-24 px-6 md:pl-8 md:pr-12 lg:pl-16 lg:pr-24 snap-start snap-stop-always scroll-mt-20">
               <div className="max-w-3xl">
                 <span className="text-xs font-black uppercase tracking-[0.2em] text-[#d4af37] mb-4 block">
                   {service.category_name || 'Tratamiento Especializado'}

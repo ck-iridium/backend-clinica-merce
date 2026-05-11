@@ -6,17 +6,19 @@ export default function TreatmentScrollHandler({ children }: { children: React.R
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // 1. Auto-scroll suave inicial para mostrar un trozo del contenido
-    const timer = setTimeout(() => {
-      if (containerRef.current) {
-        containerRef.current.scrollTo({
-          top: 120, // Un pequeño scroll para asomar el contenido
-          behavior: 'smooth'
-        });
-      }
-    }, 1500); 
+    // Solo aplicamos el auto-scroll si es móvil (ancho < 768px)
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      const timer = setTimeout(() => {
+        if (containerRef.current) {
+          containerRef.current.scrollTo({
+            top: 120, // Un pequeño scroll para asomar el contenido
+            behavior: 'smooth'
+          });
+        }
+      }, 1500); 
 
-    return () => clearTimeout(timer);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   return (
