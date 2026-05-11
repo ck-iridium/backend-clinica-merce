@@ -55,7 +55,7 @@ export const processVideo = async (
     '-vcodec', 'libx264',
     '-crf', '30',
     '-preset', 'fast',
-    '-vf', "scale='min(720,iw)':-2",
+    '-vf', "scale='if(gt(iw,ih),-2,min(720,iw))':'if(gt(iw,ih),min(720,ih),-2)'",
     '-pix_fmt', 'yuv420p',
     outputName
   ]);
