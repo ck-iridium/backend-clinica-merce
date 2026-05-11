@@ -10,7 +10,7 @@ import TreatmentMedia from '@/components/TreatmentMedia';
 import TreatmentScrollHandler from '@/components/TreatmentScrollHandler';
 import ScrollIndicator from '@/components/ScrollIndicator';
 import Footer from '@/components/Footer';
-import { ChevronDown } from 'lucide-react';
+import PublicNavbar from '@/components/PublicNavbar';
 
 async function getServiceData(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/slug/${slug}`, {
@@ -31,7 +31,7 @@ async function getRelatedServices(categoryId: string, currentServiceId: string) 
   });
   if (!res.ok) return [];
   const services = await res.json();
-  return services.filter((s: any) => s.category_id === categoryId && s.id !== currentServiceId && s.is_active).slice(0, 6); // Aumentamos límite para slider
+  return services.filter((s: any) => s.category_id === categoryId && s.id !== currentServiceId && s.is_active).slice(0, 6);
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
@@ -57,7 +57,6 @@ export default async function TreatmentDynamicPage({ params }: { params: { slug:
     notFound();
   }
 
-  // Fallback a preferencias por defecto si no existen
   const layoutPreferences = service.layout_preferences || {
     alignment: 'left',
     headerStyle: 'split',
@@ -79,129 +78,116 @@ export default async function TreatmentDynamicPage({ params }: { params: { slug:
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
       `}} />
       
-      <div className="min-h-screen bg-white font-sans pt-20">
-        <main className="w-full">
-          <div className="flex flex-col md:flex-row min-h-screen relative">
-            
-            {/* Columna Izquierda: Visual (Sticky 9:16) */}
-            <div className={`w-full md:w-[42%] lg:w-[40%] h-[75vh] md:h-[calc(100vh-80px)] md:sticky md:top-20 flex items-center justify-center md:justify-end px-6 md:px-0 ${layoutPreferences.headerStyle === 'split_video' ? 'md:py-[20px] md:pr-4' : ''} relative group snap-start snap-stop-always`}>
-              <TreatmentMedia 
-                imageUrl={getFullUrl(service.image_url)} 
-                videoUrl={service.video_url ? getFullUrl(service.video_url) : undefined}
-                headerStyle={layoutPreferences.headerStyle}
-              />
-              
-              <ScrollIndicator />
-            </div>
+      {/* SECCIÓN 1: HERO (Contiene el Navbar interno para que suba con ella) */}
+      <section className="min-h-screen relative flex flex-col md:flex-row snap-start snap-stop-always">
+        <PublicNavbar />
+        
+        {/* Columna Izquierda: Visual (Sticky 9:16) */}
+        <div className={`w-full md:w-[42%] lg:w-[40%] h-[75vh] md:h-[calc(100vh-80px)] md:sticky md:top-20 flex items-center justify-center md:justify-end px-6 md:px-0 ${layoutPreferences.headerStyle === 'split_video' ? 'md:py-[20px] md:pr-4' : ''} relative group`}>
+          <TreatmentMedia 
+            imageUrl={getFullUrl(service.image_url)} 
+            videoUrl={service.video_url ? getFullUrl(service.video_url) : undefined}
+            headerStyle={layoutPreferences.headerStyle}
+          />
+          <ScrollIndicator />
+        </div>
 
-            {/* Columna Derecha: Contenido (Scroll) */}
-            <div id="treatment-content" className="w-full md:w-[58%] lg:w-[60%] flex flex-col pt-12 pb-24 px-6 md:pl-8 md:pr-12 lg:pl-16 lg:pr-24 snap-start snap-stop-always scroll-mt-20">
-              <div className="max-w-3xl">
-                <span className="text-xs font-black uppercase tracking-[0.2em] text-[#d4af37] mb-4 block">
-                  {service.category_name || 'Tratamiento Especializado'}
-                </span>
-                <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-stone-900 mb-8 leading-[1.1]">
-                  {service.name}
-                </h1>
+        {/* Columna Derecha: Texto - Ajustado scroll-mt-4 para reducir el espacio superior al pulsar Descubrir */}
+        <div id="treatment-content" className="w-full md:w-[58%] lg:w-[60%] flex flex-col pt-32 pb-24 px-6 md:pl-8 md:pr-12 lg:pl-16 lg:pr-24 snap-start snap-stop-always scroll-mt-4">
+          <div className="max-w-3xl">
+            <span className="text-xs font-black uppercase tracking-[0.2em] text-[#d4af37] mb-4 block">
+              {service.category_name || 'Tratamiento Especializado'}
+            </span>
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-stone-900 mb-8 leading-[1.1]">
+              {service.name}
+            </h1>
 
-                {/* Pricing & Time Card */}
-                <div className="flex flex-wrap gap-4 items-center mb-12 p-6 bg-stone-50 rounded-3xl border border-stone-100 shadow-sm">
-                  <div className="px-6 border-r border-stone-200">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1 text-center">Duración</p>
-                    <p className="text-xl font-bold text-stone-800">{service.duration_minutes} min</p>
-                  </div>
-                  <div className="px-6">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1 text-center">Inversión desde</p>
-                    <p className="text-xl font-bold text-stone-800">{service.price} €</p>
-                  </div>
-                  <div className="ml-auto">
-                    <Link href={`/reservar?servicio=${service.id}&nombre=${encodeURIComponent(service.name)}`} className="inline-block px-8 py-4 rounded-2xl font-bold text-white shadow-xl transition-all hover:scale-105 active:scale-95 whitespace-nowrap" style={{ backgroundColor: layoutPreferences.accentColor || '#d4af37' }}>
-                      Reservar Ahora
-                    </Link>
-                  </div>
-                </div>
-
-                {/* Short Description */}
-                <p className="text-xl md:text-2xl text-stone-500 font-sans leading-relaxed mb-16 italic">
-                  "{service.description}"
-                </p>
-
-                {/* Content Rich Text */}
-                {service.content_html && (
-                  <div 
-                    className="prose prose-stone lg:prose-xl max-w-none prose-headings:font-serif prose-headings:font-normal prose-p:leading-relaxed prose-a:text-[#d4af37] prose-img:rounded-3xl mb-16"
-                    dangerouslySetInnerHTML={{ __html: service.content_html }} 
-                  />
-                )}
-
-                {/* Acciones Finales (Nueva Barra de Acciones) */}
-                <TreatmentActions serviceName={service.name} />
+            {/* Pricing & Time Card */}
+            <div className="flex flex-wrap gap-4 items-center mb-12 p-6 bg-stone-50 rounded-3xl border border-stone-100 shadow-sm">
+              <div className="px-6 border-r border-stone-200">
+                <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1 text-center">Duración</p>
+                <p className="text-xl font-bold text-stone-800">{service.duration_minutes} min</p>
               </div>
-            </div>
-          </div>
-
-          {/* Bloque: Cross-Selling (Full Width) */}
-          {relatedServices.length > 0 && (
-            <section className="w-full bg-stone-50 py-24 md:py-32 border-t border-stone-100 overflow-hidden snap-start snap-stop-always scroll-mt-20 flex flex-col min-h-screen md:min-h-0">
-              <div className="max-w-[1400px] mx-auto px-6 mb-16 flex flex-col md:flex-row justify-between items-end gap-6 flex-shrink-0">
-                <div className="max-w-xl">
-                  <h2 className="text-3xl md:text-5xl font-serif text-stone-800 mb-4">Tratamientos Complementarios</h2>
-                  <p className="text-stone-500">Descubre otras experiencias diseñadas para potenciar tu bienestar y belleza natural en nuestra clínica.</p>
-                </div>
-                <Link href="/tratamientos" className="text-sm font-bold uppercase tracking-widest text-[#d4af37] border-b-2 border-[#d4af37]/20 pb-1 hover:border-[#d4af37] transition-all">
-                  Ver catálogo completo
+              <div className="px-6">
+                <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1 text-center">Inversión desde</p>
+                <p className="text-xl font-bold text-stone-800">{service.price} €</p>
+              </div>
+              <div className="ml-auto">
+                <Link href={`/reservar?servicio=${service.id}&nombre=${encodeURIComponent(service.name)}`} className="inline-block px-8 py-4 rounded-2xl font-bold text-white shadow-xl transition-all hover:scale-105 active:scale-95 whitespace-nowrap" style={{ backgroundColor: layoutPreferences.accentColor || '#d4af37' }}>
+                  Reservar Ahora
                 </Link>
               </div>
+            </div>
 
-              {/* Lógica Dinámica de Visualización (ESTILO HOME) */}
-              <div className="w-full flex-1 min-h-0 flex flex-col justify-center">
-                {/* Desktop Layouts */}
-                <div className="hidden md:block">
-                  {relatedServices.length === 1 && (
-                    <div className="max-w-sm mx-auto px-6">
-                      <div className="h-[540px]">
-                        <ServiceCard service={relatedServices[0]} className="w-full h-full" />
-                      </div>
-                    </div>
-                  )}
+            <p className="text-xl md:text-2xl text-stone-500 font-sans leading-relaxed mb-16 italic">
+              "{service.description}"
+            </p>
 
-                  {relatedServices.length === 2 && (
-                    <div className="max-w-4xl mx-auto px-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="h-[540px]">
-                          <ServiceCard service={relatedServices[0]} className="w-full h-full" />
-                        </div>
-                        <div className="h-[540px]">
-                          <ServiceCard service={relatedServices[1]} className="w-full h-full" />
-                        </div>
-                      </div>
-                    </div>
-                  )}
+            {service.content_html && (
+              <div 
+                className="prose prose-stone lg:prose-xl max-w-none prose-headings:font-serif prose-headings:font-normal prose-p:leading-relaxed prose-a:text-[#d4af37] prose-img:rounded-3xl mb-16"
+                dangerouslySetInnerHTML={{ __html: service.content_html }} 
+              />
+            )}
 
-                  {relatedServices.length >= 3 && (
-                    <TreatmentCarousel servicios={relatedServices} />
-                  )}
-                </div>
-
-                {/* Mobile Layout: Apple-Style Snap Carousel (IGUAL QUE EN LA HOME) */}
-                <div className="md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-6 items-center flex-1">
-                  {relatedServices.map((svc: any) => (
-                    <ServiceCard 
-                      key={svc.id} 
-                      service={svc} 
-                      className="w-[75vw] h-[500px] snap-center snap-stop-always flex-shrink-0" 
-                    />
-                  ))}
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* Footer Local (Como sección snap) */}
-          <div className="snap-start snap-stop-always scroll-mt-20">
-            <Footer />
+            <TreatmentActions serviceName={service.name} />
           </div>
-        </main>
+        </div>
+      </section>
+
+      {/* SECCIÓN 2: CROSS-SELLING - Ajustado scroll-mt-4 */}
+      {relatedServices.length > 0 && (
+        <section className="w-full bg-stone-50 pt-16 pb-24 md:py-32 border-t border-stone-100 overflow-hidden snap-start snap-stop-always scroll-mt-4 flex flex-col min-h-screen">
+          <div className="max-w-[1400px] mx-auto px-6 mb-12 flex flex-col md:flex-row justify-between items-end gap-6 flex-shrink-0">
+            <div className="max-w-xl">
+              <h2 className="text-3xl md:text-5xl font-serif text-stone-800 mb-4">Tratamientos Complementarios</h2>
+              <p className="text-stone-500">Descubre otras experiencias diseñadas para potenciar tu bienestar y belleza natural en nuestra clínica.</p>
+            </div>
+            <Link href="/tratamientos" className="hidden md:inline-flex text-sm font-bold uppercase tracking-widest text-[#d4af37] border-b-2 border-[#d4af37]/20 pb-1 hover:border-[#d4af37] transition-all">
+              Ver catálogo completo
+            </Link>
+          </div>
+
+          <div className="w-full flex-1 min-h-0 flex flex-col justify-center">
+            {/* Desktop Layouts */}
+            <div className="hidden md:block">
+              {relatedServices.length === 1 && (
+                <div className="max-w-sm mx-auto px-6">
+                  <div className="h-[540px]">
+                    <ServiceCard service={relatedServices[0]} className="w-full h-full" />
+                  </div>
+                </div>
+              )}
+              {relatedServices.length === 2 && (
+                <div className="max-w-4xl mx-auto px-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="h-[540px]"><ServiceCard service={relatedServices[0]} className="w-full h-full" /></div>
+                    <div className="h-[540px]"><ServiceCard service={relatedServices[1]} className="w-full h-full" /></div>
+                  </div>
+                </div>
+              )}
+              {relatedServices.length >= 3 && (
+                <TreatmentCarousel servicios={relatedServices} />
+              )}
+            </div>
+
+            {/* Mobile Layout: Apple-Style Snap Carousel */}
+            <div className="md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-6 items-center flex-1">
+              {relatedServices.map((svc: any) => (
+                <ServiceCard 
+                  key={svc.id} 
+                  service={svc} 
+                  className="w-[75vw] h-[500px] snap-center snap-stop-always flex-shrink-0" 
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* SECCIÓN 3: FOOTER - Snap independiente */}
+      <div className="snap-start snap-stop-always">
+        <Footer />
       </div>
     </TreatmentScrollHandler>
   );

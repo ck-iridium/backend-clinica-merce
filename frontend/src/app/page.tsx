@@ -3,6 +3,7 @@ import { Metadata } from 'next';
 import ServiceCard from '@/components/ServiceCard';
 import TreatmentCarousel from '@/components/TreatmentCarousel';
 import Footer from '@/components/Footer';
+import PublicNavbar from '@/components/PublicNavbar';
 
 export const metadata: Metadata = {
   title: 'Clínica de Estética Avanzada',
@@ -38,11 +39,12 @@ export default async function Home() {
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
       `}} />
 
-      {/* HEADER / NAV (Eliminado en favor de PublicNavbar global) */}
-
-      <main id="main-scroll-container" className="w-full h-[100dvh] overflow-y-auto snap-y-mandatory md:h-auto md:overflow-visible md:snap-none scroll-smooth-premium">
-        {/* HERO SECTION */}
+      <main id="main-scroll-container" className="w-full h-[100dvh] overflow-y-auto snap-y-mandatory md:h-auto md:overflow-visible md:snap-none scroll-smooth-premium relative">
+        
+        {/* HERO SECTION - Ahora contiene el Navbar para que suba con ella */}
         <section className={`relative h-[100dvh] min-h-[600px] w-full flex snap-start snap-stop-always md:snap-none ${content.hero_alignment === 'top' ? 'items-start pt-48' : content.hero_alignment === 'bottom' ? 'items-end pb-32' : 'items-center'} justify-center p-6 md:p-12 overflow-hidden mt-0`}>
+          <PublicNavbar />
+
           {content.hero_video_url ? (
             <div className="absolute inset-0 z-0 bg-stone-900">
               <video
@@ -111,7 +113,6 @@ export default async function Home() {
 
           return (
             <section key={category.id} className={`w-full pt-20 pb-8 md:py-24 overflow-hidden flex flex-col h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none ${isEven ? 'bg-white' : 'bg-[#F7F7F5]'}`}>
-              {/* 1. Título y descripción (Centrados y contenidos) */}
               <div className="w-full max-w-[1400px] mx-auto px-6 md:px-12 mb-6 flex-shrink-0 flex justify-between items-end gap-8">
                 <div className="max-w-2xl">
                   <h2 className="text-4xl md:text-5xl font-serif font-extrabold text-stone-900 mb-4">{category.name}</h2>
@@ -122,7 +123,6 @@ export default async function Home() {
                 </Link>
               </div>
 
-              {/* Layout Desktop 1 y 2 */}
               <div className="hidden md:block w-full max-w-[1400px] mx-auto px-6 md:px-12 mb-8">
                 {categoryServices.length === 1 && (
                   <div className="w-full">
@@ -133,7 +133,6 @@ export default async function Home() {
                     />
                   </div>
                 )}
-
                 {categoryServices.length === 2 && (
                   <div className="grid grid-cols-2 gap-8">
                     {categoryServices.map((svc: any) => (
@@ -148,14 +147,12 @@ export default async function Home() {
                 )}
               </div>
 
-              {/* 2. El Carrusel Desktop 3+ (LIBRE, ocupando el 100% del ancho) */}
               {categoryServices.length >= 3 && (
                 <div className="hidden md:block">
                   <TreatmentCarousel servicios={categoryServices} />
                 </div>
               )}
 
-              {/* Layout Móvil: Apple-Style Snap Carousel */}
               <div className="md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-6 items-center flex-1 min-h-0">
                 {categoryServices.map((svc: any) => (
                   <ServiceCard key={svc.id} service={svc} className="w-[75vw] h-full snap-center snap-stop-always" />
@@ -195,7 +192,6 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* FOOTER MANUAL PARA SNAP MÓVIL */}
         <div className="snap-start snap-stop-always md:snap-none w-full">
           <Footer />
         </div>

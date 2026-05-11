@@ -1,25 +1,11 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 
 export default function TreatmentScrollHandler({ children }: { children: React.ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    // Solo aplicamos el auto-scroll si es móvil (ancho < 768px)
-    if (typeof window !== 'undefined' && window.innerWidth < 768) {
-      const timer = setTimeout(() => {
-        if (containerRef.current) {
-          containerRef.current.scrollTo({
-            top: 120, // Un pequeño scroll para asomar el contenido
-            behavior: 'smooth'
-          });
-        }
-      }, 1500); 
-
-      return () => clearTimeout(timer);
-    }
-  }, []);
+  // Lógica de auto-scroll eliminada temporalmente por petición del usuario
 
   return (
     <div 

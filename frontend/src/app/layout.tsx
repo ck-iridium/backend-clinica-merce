@@ -64,7 +64,6 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 import LayoutWrapper from "@/components/LayoutWrapper";
-import PublicNavbar from "@/components/PublicNavbar";
 import { Providers } from "@/components/Providers";
 import InviteHandler from "@/components/InviteHandler";
 
@@ -79,11 +78,9 @@ export default function RootLayout({
       <body className="antialiased bg-background text-foreground flex flex-col min-h-screen">
         <Providers>
           <InviteHandler />
-          <PublicNavbar />
-          <main className="flex-grow relative">
+          <LayoutWrapper>
             {children}
-          </main>
-          <LayoutWrapper />
+          </LayoutWrapper>
         </Providers>
       </body>
     </html>
