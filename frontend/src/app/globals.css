@@ -90,6 +90,29 @@
 }
 
 @layer utilities {
+  .snap-stop-always {
+    scroll-snap-stop: always !important;
+    -webkit-scroll-snap-stop: always !important;
+  }
+
+  /* Efecto de scroll "Duro" (Lento al inicio, rápido al final) */
+  .scroll-smooth-premium {
+    scroll-behavior: smooth !important;
+  }
+}
+
+/* Optimización de inercia y snapping para iOS y Android */
+.snap-y-mandatory {
+  scroll-snap-type: y mandatory !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.snap-x-mandatory {
+  scroll-snap-type: x mandatory !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+@layer utilities {
   .dark-scrollbar::-webkit-scrollbar {
     width: 6px;
   }

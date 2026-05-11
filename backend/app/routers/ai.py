@@ -12,6 +12,16 @@ import base64
 import requests
 from PIL import Image
 from supabase import create_client, Client
+import logging
+
+# Configurar log a archivo de forma explícita
+log_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'ai_generation.log')
+file_handler = logging.FileHandler(log_path, mode='a')
+file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+logger = logging.getLogger("ai_generation")
+logger.setLevel(logging.INFO)
+logger.addHandler(file_handler)
+logger.propagate = False # Evitar duplicados en consola si uvicorn ya lo captura
 
 router = APIRouter(
     prefix="/ai",
@@ -190,7 +200,7 @@ def generate_content(request: schemas.AIGenerationRequest, db: Session = Depends
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error en el proveedor de IA ({ai_provider}): {str(e)}")
 
-def refine_image_prompt(user_prompt: str, shot_type: str, visual_style: str) -> str:
+def refine_image_prompt(user_prompt: str, shot_type: str, visual_style: str, has_reference: bool = False) -> str:
     """
     Refina el prompt del usuario para estética Commercial Beauty Editorial.
     """
@@ -214,7 +224,11 @@ def refine_image_prompt(user_prompt: str, shot_type: str, visual_style: str) -> 
     suffix = style_suffixes.get(visual_style, style_suffixes['luxury'])
     
     # 3. Prompt de Estilo Estricto (Inyectado siempre)
-    strict_style = "High-key studio lighting, flawless skin texture, radiant glowing skin, NO faces, NO text, NO names, professional editorial photography."
+    # Si hay referencia, permitimos caras si la composición lo requiere, pero mantenemos la prohibición de texto.
+    if has_reference:
+        strict_style = "High-key studio lighting, flawless skin texture, radiant glowing skin, professional editorial photography, NO text, NO names, NO logos."
+    else:
+        strict_style = "High-key studio lighting, flawless skin texture, radiant glowing skin, NO faces, NO text, NO names, professional editorial photography."
     
     return f"{refined}, {suffix}, {strict_style}"
 
@@ -227,7 +241,7 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
     ai_provider = settings.ai_provider or "gemini"
     
     # Refinar el prompt base
-    refined_prompt = refine_image_prompt(request.prompt, request.shot_type, request.visual_style)
+    refined_prompt = refine_image_prompt(request.prompt, request.shot_type, request.visual_style, has_reference=bool(request.reference_image))
     
     # Preparar sufijo de estilo y filtros adicionales
     style_suffix = f", {request.shot_type}, style: {request.visual_style}, luxury editorial photography, 8k, highly detailed."
@@ -237,8 +251,7 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
     # Añadir sufijo al prompt refinado para proveedores que no usan multimodal
     refined_prompt += style_suffix
     
-    print(f"DEBUG REFINED PROMPT: {refined_prompt}")
-
+    logger.info(f"START GENERATION: prompt='{request.prompt[:50]}...', provider='{ai_provider}'")
     file_bytes = None
 
     if ai_provider == "openai":
@@ -310,13 +323,13 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
                     base_prompt = (
                         f"Crea una imagen comercial premium usando esta referencia ÚNICAMENTE para la iluminación, paleta de colores y 'vibe' estético. "
                         f"IMPORTANTE: Genera una modelo COMPLETAMENTE DIFERENTE a la de la foto. NO clones a la persona. "
-                        f"El tratamiento a mostrar es: {request.prompt}. {style_suffix} Estética 'Quiet Luxury'."
+                        f"El tratamiento a mostrar es: {request.prompt}. Muestra el proceso detallado si la referencia lo sugiere. {style_suffix} Estética 'Quiet Luxury'."
                     )
                 else:
                     # Instrucción de Composición (Fiel a la referencia)
                     base_prompt = (
                         f"Crea una imagen basada exactamente en la composición, pose y estructura de esta referencia. "
-                        f"El tratamiento a mostrar es: {request.prompt}. {style_suffix} Mantén la fidelidad estructural."
+                        f"Captura fielmente el proceso, herramientas y manos mostradas. El tratamiento es: {request.prompt}. {style_suffix} Mantén la fidelidad estructural."
                     )
             
             prompt_parts.append(base_prompt)
@@ -337,14 +350,19 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
             final_prompt = f"{base_prompt}. Format: 9:16 aspect ratio, vertical mobile orientation."
             prompt_parts[0] = final_prompt
 
-            # Generar contenido con timeout de seguridad ampliado (180s)
+            # Generar contenido con timeout de seguridad ampliado (300s)
+            logger.info(f"Gemini Request: {final_prompt[:100]}...")
+            import time
+            start_time = time.time()
             response = model.generate_content(
                 prompt_parts,
-                request_options={"timeout": 180000} # En milisegundos
+                request_options={"timeout": 300} # En segundos
             )
+            gen_duration = time.time() - start_time
+            logger.info(f"Gemini Response received in {gen_duration:.2f}s")
             
             # DEBUG: Imprimir estructura para entender qué devuelve Nano Banana 2
-            print(f"DEBUG NANO BANANA RESPONSE: {response}")
+            # logger.info(f"DEBUG NANO BANANA RESPONSE: {response}")
             
             if not response.candidates or not response.candidates[0].content.parts:
                 # Verificar si hay un mensaje de error o bloqueo de seguridad
@@ -401,6 +419,8 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
         supabase: Client = create_client(supabase_url, supabase_key)
         
         # Comprimir a WEBP
+        print("DEBUG: Procesando imagen y convirtiendo a WEBP...")
+        img_start = time.time()
         image = Image.open(io.BytesIO(file_bytes))
         if image.mode not in ("RGB", "RGBA"):
             if 'transparency' in image.info or image.mode in ('P', 'LA'):
@@ -411,9 +431,12 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
         buffer = io.BytesIO()
         image.save(buffer, format="WEBP", quality=85)
         final_bytes = buffer.getvalue()
+        print(f"DEBUG: Imagen comprimida en {time.time() - img_start:.2f}s (Tamaño: {len(final_bytes)} bytes)")
         filename = f"ai_{uuid.uuid4().hex}.webp"
         
         # Subir a Supabase Storage
+        print(f"DEBUG: Subiendo a Supabase Storage: {filename}...")
+        upload_start = time.time()
         supabase.storage.from_("media").upload(
             file=final_bytes,
             path=filename,
@@ -421,6 +444,7 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
         )
         
         public_url = supabase.storage.from_("media").get_public_url(filename)
+        print(f"DEBUG: Subida completada en {time.time() - upload_start:.2f}s. URL: {public_url}")
         
         # Registrar en la tabla Media (Galería)
         try:
@@ -433,9 +457,9 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
             )
             db.add(new_media)
             db.commit()
-            print(f"✅ Imagen registrada en la galería: {public_url}")
+            logger.info(f"SUCCESS: Image registered in gallery: {public_url}")
         except Exception as e:
-            print(f"⚠️ Error al registrar imagen en galería: {e}")
+            logger.error(f"DB Error: {e}")
 
         return {"url": public_url}
         

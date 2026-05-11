@@ -25,18 +25,20 @@ interface DesignTabProps {
 
 export default function DesignTab({ formValues, register, control, setValue, setMediaPickerSlot }: DesignTabProps) {
   const [showAIImageModal, setShowAIImageModal] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
+  const [isProcessingVideo, setIsProcessingVideo] = useState(false);
   const [processingProgress, setProcessingProgress] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
+  const [isDraggingImage, setIsDraggingImage] = useState(false);
+  const [isDraggingVideo, setIsDraggingVideo] = useState(false);
 
   const getFullUrl = (url: string) => {
     if (!url) return '';
     return url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${url}` : url;
   };
 
-  const handleFileUpload = async (file: File) => {
-    if (file.type.startsWith('video/')) {
-      setIsProcessing(true);
+  const handleMediaUpload = async (file: File, type: 'image' | 'video') => {
+    if (type === 'video' && file.type.startsWith('video/')) {
+      setIsProcessingVideo(true);
       setProcessingProgress(0);
       try {
         const optimizedBlob = await processVideo(file, (progress) => {
@@ -62,26 +64,56 @@ export default function DesignTab({ formValues, register, control, setValue, set
         console.error(err);
         toast.error('Error al procesar el vídeo');
       } finally {
-        setIsProcessing(false);
+        setIsProcessingVideo(false);
         setProcessingProgress(0);
       }
+    } else if (type === 'image' && file.type.startsWith('image/')) {
+      setIsProcessingImage(true);
+      try {
+        const uploadData = new FormData();
+        uploadData.append('file', file);
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/`, {
+          method: 'POST',
+          body: uploadData
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setValue('image_url', data.url, { shouldDirty: true });
+          toast.success('Imagen subida correctamente');
+        } else {
+          toast.error('Error al subir la imagen');
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error('Error al subir la imagen');
+      } finally {
+        setIsProcessingImage(false);
+      }
+    } else {
+      toast.error(`Formato de archivo no válido para ${type === 'image' ? 'imagen' : 'vídeo'}`);
     }
   };
 
-  const onDragOver = (e: React.DragEvent) => {
+  const onDragOver = (e: React.DragEvent, type: 'image' | 'video') => {
     e.preventDefault();
-    setIsDragging(true);
+    if (type === 'image') setIsDraggingImage(true);
+    else setIsDraggingVideo(true);
   };
 
-  const onDragLeave = () => {
-    setIsDragging(false);
+  const onDragLeave = (type: 'image' | 'video') => {
+    if (type === 'image') setIsDraggingImage(false);
+    else setIsDraggingVideo(false);
   };
 
-  const onDrop = async (e: React.DragEvent) => {
+  const onDrop = async (e: React.DragEvent, type: 'image' | 'video') => {
     e.preventDefault();
-    setIsDragging(false);
+    if (type === 'image') setIsDraggingImage(false);
+    else setIsDraggingVideo(false);
+    
     const file = e.dataTransfer.files?.[0];
-    if (file) handleFileUpload(file);
+    if (file) handleMediaUpload(file, type);
   };
 
   return (
@@ -100,39 +132,62 @@ export default function DesignTab({ formValues, register, control, setValue, set
           </button>
         </div>
 
-        {formValues.image_url ? (
-          <div className="relative group rounded-2xl overflow-hidden border border-stone-200 aspect-video shadow-sm">
-            <img src={getFullUrl(formValues.image_url)} alt="Cover" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-            <div className="absolute inset-0 bg-stone-900/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-3 backdrop-blur-[2px]">
-              <button
-                type="button"
-                onClick={() => setMediaPickerSlot('image')}
-                className="px-4 py-2 bg-white text-stone-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#d4af37] hover:text-white transition-all shadow-xl active:scale-95"
-              >
-                Cambiar
-              </button>
-              <button
-                type="button"
-                onClick={() => setValue('image_url', '', { shouldDirty: true })}
-                className="p-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all shadow-xl active:scale-95"
-                title="Eliminar imagen"
-              >
-                <Trash2 size={16} />
-              </button>
+        <div
+          onDragOver={(e) => onDragOver(e, 'image')}
+          onDragLeave={() => onDragLeave('image')}
+          onDrop={(e) => onDrop(e, 'image')}
+          className={cn(
+            "relative transition-all duration-300",
+            isDraggingImage && "scale-[1.02] z-10"
+          )}
+        >
+          {isProcessingImage ? (
+            <div className="flex flex-col items-center justify-center p-8 w-full border-2 border-dashed border-[#d4af37] bg-[#fcf8e5] rounded-2xl min-h-[140px]">
+              <Loader2 className="w-8 h-8 text-[#d4af37] animate-spin mb-3" strokeWidth={1.5} />
+              <p className="text-[10px] font-black uppercase tracking-widest text-stone-500 animate-pulse">Subiendo...</p>
             </div>
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setMediaPickerSlot('image')}
-            className="w-full py-12 border-2 border-dashed border-stone-200 rounded-2xl flex flex-col items-center justify-center text-stone-400 hover:bg-stone-50 hover:border-[#d4af37] transition-all group"
-          >
-            <div className="w-12 h-12 rounded-2xl bg-stone-50 flex items-center justify-center mb-3 group-hover:bg-white group-hover:shadow-md transition-all">
-              <ImageIcon size={24} strokeWidth={1.5} />
+          ) : formValues.image_url ? (
+            <div className={cn(
+              "relative group rounded-2xl overflow-hidden border border-stone-200 aspect-video shadow-sm transition-all",
+              isDraggingImage && "border-[#d4af37] border-2 border-dashed bg-[#fcf8e5]"
+            )}>
+              <img src={getFullUrl(formValues.image_url)} alt="Cover" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+              <div className="absolute inset-0 bg-stone-900/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-3 backdrop-blur-[2px]">
+                <button
+                  type="button"
+                  onClick={() => setMediaPickerSlot('image')}
+                  className="px-4 py-2 bg-white text-stone-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#d4af37] hover:text-white transition-all shadow-xl active:scale-95"
+                >
+                  Cambiar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setValue('image_url', '', { shouldDirty: true })}
+                  className="p-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all shadow-xl active:scale-95"
+                  title="Eliminar imagen"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
             </div>
-            <span className="text-xs font-bold uppercase tracking-widest">Seleccionar Imagen</span>
-          </button>
-        )}
+          ) : (
+            <button
+              type="button"
+              onClick={() => setMediaPickerSlot('image')}
+              className={cn(
+                "w-full py-12 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center text-stone-400 transition-all group",
+                isDraggingImage ? "border-[#d4af37] bg-[#fcf8e5]" : "border-stone-200 hover:bg-stone-50 hover:border-[#d4af37]"
+              )}
+            >
+              <div className="w-12 h-12 rounded-2xl bg-stone-50 flex items-center justify-center mb-3 group-hover:bg-white group-hover:shadow-md transition-all">
+                <ImageIcon size={24} strokeWidth={1.5} />
+              </div>
+              <span className="text-xs font-bold uppercase tracking-widest">
+                {isDraggingImage ? '¡Suéltalo aquí!' : 'Seleccionar Imagen'}
+              </span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* SECCIÓN: VÍDEO DE PORTADA (HOVER) */}
@@ -142,15 +197,15 @@ export default function DesignTab({ formValues, register, control, setValue, set
         </div>
 
         <div
-          onDragOver={onDragOver}
-          onDragLeave={onDragLeave}
-          onDrop={onDrop}
+          onDragOver={(e) => onDragOver(e, 'video')}
+          onDragLeave={() => onDragLeave('video')}
+          onDrop={(e) => onDrop(e, 'video')}
           className={cn(
             "relative w-full min-h-[180px] rounded-2xl border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center overflow-hidden",
-            isDragging ? "border-[#d4af37] bg-[#fcf8e5] scale-[1.02] shadow-lg" : "border-stone-200 bg-white hover:border-[#d4af37] hover:bg-stone-50"
+            isDraggingVideo ? "border-[#d4af37] bg-[#fcf8e5] scale-[1.02] shadow-lg" : "border-stone-200 bg-white hover:border-[#d4af37] hover:bg-stone-50"
           )}
         >
-          {isProcessing ? (
+          {isProcessingVideo ? (
             <div className="flex flex-col items-center justify-center p-8 w-full">
               <div className="relative w-20 h-20 flex items-center justify-center mb-4">
                 <Loader2 className="w-full h-full text-[#d4af37] animate-spin opacity-20" strokeWidth={1} />
@@ -196,7 +251,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
                 <Video size={24} strokeWidth={1.5} />
               </div>
               <span className="text-xs font-bold uppercase tracking-widest">
-                {isDragging ? '¡Suéltalo aquí!' : 'Seleccionar o Arrastrar Vídeo'}
+                {isDraggingVideo ? '¡Suéltalo aquí!' : 'Seleccionar o Arrastrar Vídeo'}
               </span>
               <p className="text-[10px] mt-2 opacity-60">Se optimizará automáticamente para la web</p>
             </button>

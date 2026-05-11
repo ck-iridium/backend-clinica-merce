@@ -149,7 +149,7 @@ export default function PublicNavbar() {
     // Usamos capture: true para interceptar eventos de scroll de elementos hijos (como el main con overflow-y-auto)
     window.addEventListener('scroll', handleScroll, true);
     return () => window.removeEventListener('scroll', handleScroll, true);
-  }, [isOpen]);
+  }, [isOpen, pathname]);
 
   // Bloqueo de scroll cuando el menú móvil está abierto para aislar la experiencia
   useEffect(() => {
