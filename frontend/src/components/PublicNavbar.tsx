@@ -201,7 +201,7 @@ export default function PublicNavbar() {
         >
           <div className="flex h-[380px]">
               {/* Left Panel: Categories */}
-              <div className="w-[300px] shrink-0 bg-[#F7F7F5] py-6 px-8 border-r border-stone-100">
+              <div className="w-[280px] shrink-0 bg-[#F7F7F5] py-6 pl-8 pr-0 border-r border-stone-100 relative">
                 <h4 className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-6">Categorías</h4>
                 <ul className="space-y-1">
                   {categories.filter(c => c.name.toUpperCase() !== 'GENERAL').map(cat => (
@@ -209,7 +209,11 @@ export default function PublicNavbar() {
                       <button 
                           onMouseEnter={() => setActiveCategory(cat.id)}
                           onClick={() => { setShowMegaMenu(false); window.location.href = `/tratamientos#${cat.id}` }}
-                          className={`w-full text-left px-4 py-3 rounded-2xl transition-all font-serif text-xl whitespace-nowrap ${activeCategory === cat.id ? 'bg-white shadow-sm text-[#d4af37] font-semibold' : 'text-stone-500 hover:bg-stone-100'}`}
+                          className={`w-full text-left px-6 py-3 transition-all font-serif text-xl whitespace-nowrap relative ${
+                            activeCategory === cat.id 
+                              ? 'bg-white text-[#d4af37] font-semibold rounded-l-2xl -mr-[1px] z-10 shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.02)] after:absolute after:top-0 after:-right-[1px] after:w-[2px] after:h-full after:bg-white after:z-20' 
+                              : 'text-stone-500 hover:text-stone-800 rounded-2xl mr-4'
+                          }`}
                       >
                           {cat.name}
                       </button>
