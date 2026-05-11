@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import ServiceCard from '@/components/ServiceCard';
 import TreatmentCarousel from '@/components/TreatmentCarousel';
 import TreatmentActions from '@/components/TreatmentActions';
+import TreatmentMedia from '@/components/TreatmentMedia';
 
 async function getServiceData(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/slug/${slug}`, {
@@ -74,26 +75,12 @@ export default async function TreatmentDynamicPage({ params }: { params: { slug:
         <div className="flex flex-col md:flex-row min-h-screen relative">
           
           {/* Columna Izquierda: Visual (Sticky 9:16) */}
-          <div className={`w-full md:w-[45%] lg:w-[43%] md:h-[calc(100vh-80px)] md:sticky md:top-20 overflow-hidden bg-stone-100 flex items-center justify-end ${layoutPreferences.headerStyle === 'split_video' ? 'py-[25px] pr-[25px]' : ''}`}>
-            {layoutPreferences.headerStyle === 'split_video' && service.video_url ? (
-              <div className="relative h-full aspect-[9/16] rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)] bg-stone-200">
-                <video 
-                  src={getFullUrl(service.video_url)} 
-                  className="w-full h-full object-cover"
-                  autoPlay loop muted playsInline
-                />
-              </div>
-            ) : service.image_url ? (
-              <img 
-                src={getFullUrl(service.image_url)} 
-                alt={service.name} 
-                className={`w-full h-full object-cover ${layoutPreferences.headerStyle === 'split_video' ? 'aspect-[9/16] rounded-[2rem] md:rounded-[3rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)]' : 'aspect-[9/16] md:aspect-auto'}`}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-stone-200">
-                <span className="text-stone-400 font-serif italic text-2xl opacity-20">Clínica Mercè</span>
-              </div>
-            )}
+          <div className={`w-full md:w-[45%] lg:w-[43%] md:h-[calc(100vh-80px)] md:sticky md:top-20 flex items-center justify-end ${layoutPreferences.headerStyle === 'split_video' ? 'py-[25px] pr-[25px]' : ''}`}>
+            <TreatmentMedia 
+              imageUrl={getFullUrl(service.image_url)} 
+              videoUrl={service.video_url ? getFullUrl(service.video_url) : undefined}
+              headerStyle={layoutPreferences.headerStyle}
+            />
           </div>
 
           {/* Columna Derecha: Contenido (Scroll) */}
