@@ -2,6 +2,7 @@
 import { usePathname } from 'next/navigation';
 import Footer from "./Footer";
 import CookieBanner from "./CookieBanner";
+import ScrollToTop from "./ScrollToTop";
 
 export default function LayoutWrapper() {
   const pathname = usePathname();
@@ -14,6 +15,7 @@ export default function LayoutWrapper() {
   return (
     <>
       {(!isHome && !isTreatmentDetail) && <Footer />}
+      <ScrollToTop />
       <CookieBanner />
     </>
   );

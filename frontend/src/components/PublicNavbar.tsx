@@ -156,7 +156,7 @@ export default function PublicNavbar() {
 
   return (
     <>
-      <nav className={`fixed w-full top-0 z-[100] transition-all duration-500 ease-in-out translate-y-0 ${(scrolled || !isHome) ? 'bg-white/90 backdrop-blur-xl border-b border-stone-200/50 shadow-sm py-0' : 'bg-transparent border-transparent py-2'}`}>
+      <nav className={`absolute w-full top-0 z-[100] transition-all duration-500 ease-in-out translate-y-0 ${(scrolled || !isHome) ? 'bg-white/90 backdrop-blur-xl border-b border-stone-200/50 shadow-sm py-0' : 'bg-transparent border-transparent py-2'}`}>
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between relative">
         
         {/* LOGO - z-index alto para estar sobre el overlay si es necesario */}
