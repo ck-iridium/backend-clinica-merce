@@ -7,6 +7,7 @@ import ServiceCard from '@/components/ServiceCard';
 import TreatmentCarousel from '@/components/TreatmentCarousel';
 import TreatmentActions from '@/components/TreatmentActions';
 import TreatmentMedia from '@/components/TreatmentMedia';
+import { ChevronDown } from 'lucide-react';
 
 async function getServiceData(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/slug/${slug}`, {
@@ -75,12 +76,20 @@ export default async function TreatmentDynamicPage({ params }: { params: { slug:
         <div className="flex flex-col md:flex-row min-h-screen relative">
           
           {/* Columna Izquierda: Visual (Sticky 9:16) */}
-          <div className={`w-full md:w-[45%] lg:w-[43%] md:h-[calc(100vh-80px)] md:sticky md:top-20 flex items-center justify-end ${layoutPreferences.headerStyle === 'split_video' ? 'py-[25px] pr-[25px]' : ''}`}>
+          <div className={`w-full md:w-[45%] lg:w-[43%] h-[75vh] md:h-[calc(100vh-80px)] md:sticky md:top-20 flex items-center justify-center md:justify-end px-6 md:px-0 ${layoutPreferences.headerStyle === 'split_video' ? 'md:py-[25px] md:pr-[25px]' : ''} relative group`}>
             <TreatmentMedia 
               imageUrl={getFullUrl(service.image_url)} 
               videoUrl={service.video_url ? getFullUrl(service.video_url) : undefined}
               headerStyle={layoutPreferences.headerStyle}
             />
+            
+            {/* Indicador de Scroll (Solo móvil - Rediseñado para visibilidad total) */}
+            <div className="absolute bottom-16 left-1/2 -translate-x-1/2 md:hidden z-30">
+              <div className="flex flex-col items-center gap-2 bg-stone-900/40 backdrop-blur-md px-5 py-3 rounded-full border border-white/20 animate-bounce">
+                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white">Descubrir</span>
+                <ChevronDown size={14} className="text-white" />
+              </div>
+            </div>
           </div>
 
           {/* Columna Derecha: Contenido (Scroll) */}
