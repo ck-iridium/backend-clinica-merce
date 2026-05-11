@@ -376,40 +376,11 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
         <div className="w-full bg-white min-h-full shadow-xl overflow-hidden">
 
           {/* Bloque 1: Hero Section */}
-          <section className={`relative w-full ${formValues.layout_preferences.headerStyle === 'full' ? 'h-[60vh] flex items-center justify-center text-white text-center' : 'min-h-[50vh] flex flex-col md:flex-row'}`}>
-
-            {/* Background Image para modo FULL */}
-            {formValues.layout_preferences.headerStyle === 'full' && (
-              <>
-                <div className="absolute inset-0 bg-stone-900 z-0">
-                  {formValues.image_url && (
-                    <img src={formValues.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${formValues.image_url}` : formValues.image_url} alt="Hero bg" className="w-full h-full object-cover opacity-50" />
-                  )}
-                </div>
-                <div className="relative z-10 p-8 max-w-4xl mx-auto flex flex-col items-center">
-                  <span className="text-sm font-bold uppercase tracking-widest mb-4 opacity-80" style={{ color: formValues.layout_preferences.accentColor }}>Tratamiento Especializado</span>
-                  <h1 className="text-5xl md:text-7xl font-serif mb-6">{formValues.name || 'Título del Tratamiento'}</h1>
-                  <p className="text-lg md:text-xl opacity-90 max-w-2xl mb-8 leading-relaxed">{formValues.description || 'La descripción corta aparecerá aquí, dando a los pacientes una idea rápida de los beneficios del servicio.'}</p>
-                  <div className="flex gap-4 items-center justify-center mb-8 bg-white/10 backdrop-blur-sm p-4 rounded-2xl">
-                    <div className="text-center px-6 border-r border-white/20">
-                      <p className="text-[10px] uppercase tracking-widest opacity-70 mb-1">Duración</p>
-                      <p className="text-xl font-bold">{formValues.duration_minutes} min</p>
-                    </div>
-                    <div className="text-center px-6">
-                      <p className="text-[10px] uppercase tracking-widest opacity-70 mb-1">Precio desde</p>
-                      <p className="text-xl font-bold">{formValues.price} €</p>
-                    </div>
-                  </div>
-                  <button className="px-8 py-4 rounded-xl font-bold text-white shadow-xl transition-transform hover:scale-105" style={{ backgroundColor: formValues.layout_preferences.accentColor }}>
-                    Reservar Cita Ahora
-                  </button>
-                </div>
-              </>
-            )}
+          <section className="relative w-full min-h-[50vh] flex flex-col md:flex-row">
 
           {/* Layout para modo SPLIT (Nuevo diseño Editorial) */}
-          {(formValues.layout_preferences.headerStyle === 'split' || formValues.layout_preferences.headerStyle === 'split_image' || formValues.layout_preferences.headerStyle === 'split_video') && (
-            <div className="flex flex-col md:flex-row min-h-full relative w-full">
+          <div className="flex flex-col md:flex-row min-h-full relative w-full">
+            {/* ... rest of the split layout ... */}
               {/* Columna Izquierda: Visual (Sticky 9:16) */}
               <div className={`w-full md:w-[45%] lg:w-[43%] md:h-[calc(100vh-48px)] md:sticky md:top-0 overflow-hidden bg-stone-100 flex items-center justify-end ${formValues.layout_preferences.headerStyle === 'split_video' ? 'py-[25px] pr-[25px]' : ''}`}>
                 {formValues.layout_preferences.headerStyle === 'split_video' && formValues.video_url ? (
@@ -476,13 +447,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
           )}
           </section>
 
-          {/* Bloque 2: Contenido Enriquecido (Solo visible en modo FULL para evitar duplicación) */}
-          {formValues.layout_preferences.headerStyle === 'full' && (
-            <section className="max-w-3xl mx-auto px-8 py-20">
-              <div className="prose prose-stone prose-lg max-w-none prose-headings:font-serif prose-a:text-[#d4af37]"
-                dangerouslySetInnerHTML={{ __html: formValues.content_html || '<p class="text-stone-400 italic">El contenido detallado aparecerá aquí...</p>' }} />
-            </section>
-          )}
+          </div>
         </div>
 
       </div>
