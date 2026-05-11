@@ -9,10 +9,11 @@ export default function LayoutWrapper() {
 
   if (isDashboard) return null;
   const isHome = pathname === '/';
+  const isTreatmentDetail = pathname?.startsWith('/tratamientos/');
 
   return (
     <>
-      {!isHome && <Footer />}
+      {(!isHome && !isTreatmentDetail) && <Footer />}
       <CookieBanner />
     </>
   );
