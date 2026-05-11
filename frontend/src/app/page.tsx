@@ -42,7 +42,7 @@ export default async function Home() {
 
       <main id="main-scroll-container" className="w-full h-[100dvh] overflow-y-auto snap-y-mandatory md:h-auto md:overflow-visible md:snap-none scroll-smooth-premium">
         {/* HERO SECTION */}
-        <section className={`relative h-[100dvh] min-h-[600px] w-full flex snap-start md:snap-none ${content.hero_alignment === 'top' ? 'items-start pt-48' : content.hero_alignment === 'bottom' ? 'items-end pb-32' : 'items-center'} justify-center p-6 md:p-12 overflow-hidden mt-0`}>
+        <section className={`relative h-[100dvh] min-h-[600px] w-full flex snap-start snap-stop-always md:snap-none ${content.hero_alignment === 'top' ? 'items-start pt-48' : content.hero_alignment === 'bottom' ? 'items-end pb-32' : 'items-center'} justify-center p-6 md:p-12 overflow-hidden mt-0`}>
           {content.hero_video_url ? (
             <div className="absolute inset-0 z-0 bg-stone-900">
               <video
@@ -81,7 +81,7 @@ export default async function Home() {
         </section>
 
         {/* ABOUT SECTION */}
-        <section className="py-24 bg-white relative flex items-center h-[100dvh] snap-start md:h-auto md:snap-none">
+        <section className="py-24 bg-white relative flex items-center h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none">
           <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 items-center w-full">
             <div className="space-y-6">
               <h2 className="text-4xl font-extrabold text-stone-900">{content.about_title}</h2>
@@ -166,7 +166,7 @@ export default async function Home() {
         })}
 
         {/* CTA FINAL SECTION */}
-        <section className="flex flex-col justify-center w-full py-24 bg-[#d4af37] text-stone-900 text-center px-6 h-[100dvh] snap-start md:h-auto md:snap-none">
+        <section className="flex flex-col justify-center w-full py-24 bg-[#d4af37] text-stone-900 text-center px-6 h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none">
           <div className="max-w-3xl mx-auto space-y-8 animate-in zoom-in-95 duration-700 w-full">
             <h2 className="text-5xl md:text-6xl font-extrabold tracking-tight">{content.cta_title}</h2>
             <p className="text-xl md:text-2xl font-medium opacity-90">{content.cta_subtitle}</p>
@@ -196,7 +196,7 @@ export default async function Home() {
         </section>
 
         {/* FOOTER MANUAL PARA SNAP MÓVIL */}
-        <div className="snap-start md:snap-none w-full">
+        <div className="snap-start snap-stop-always md:snap-none w-full">
           <Footer />
         </div>
       </main>
