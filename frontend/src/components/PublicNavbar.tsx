@@ -32,12 +32,12 @@ function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen }
       onMouseLeave={() => setIsHovered(false)}
       className={`group relative rounded-3xl overflow-hidden border border-stone-100 block bg-stone-50 transition-all duration-500 ${isLarge ? 'h-full' : 'aspect-video shadow-sm hover:shadow-xl hover:scale-[1.02]'}`}
     >
-      {/* Imagen Principal */}
+      {/* Imagen Principal - Siempre visible en el fondo para evitar el flash */}
       {svc.image_url ? (
         <img
           src={getFullUrl(svc.image_url)}
           alt={svc.name}
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${videoLoaded ? 'opacity-0' : 'opacity-100'}`}
+          className="absolute inset-0 w-full h-full object-cover"
           loading="lazy"
         />
       ) : (
@@ -67,8 +67,8 @@ function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen }
       )}
 
       {/* Info Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20 flex items-end p-6">
-        <div className="text-white w-full translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+      <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-20 flex items-end p-6 transition-opacity ${isHovered ? 'opacity-100 duration-300' : 'opacity-0 duration-0'}`}>
+        <div className={`text-white w-full transition-transform duration-500 ${isHovered ? 'translate-y-0' : 'translate-y-4'}`}>
           <h5 className="font-serif font-bold leading-tight line-clamp-2 text-xl">{svc.name}</h5>
           <p className="text-[#d4af37] text-[10px] font-black uppercase tracking-[0.2em]">{svc.duration_minutes} min</p>
         </div>

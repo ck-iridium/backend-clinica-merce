@@ -60,8 +60,8 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
         `}
       `}
     >
-        {/* Imagen Estática con Lazy Loading */}
-        <div className={`absolute inset-0 bg-stone-200 transition-opacity duration-300 ${videoLoaded ? 'opacity-0' : 'opacity-100'}`}>
+        {/* Imagen Estática con Lazy Loading - Siempre visible de fondo para evitar flash */}
+        <div className="absolute inset-0 bg-stone-200">
           {service.image_url ? (
             <img 
               src={service.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${service.image_url}` : service.image_url} 
@@ -77,7 +77,7 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
         </div>
         
         {/* Vídeo / Imagen Secundaria Hover - CARGA BAJO DEMANDA */}
-        <div className={`absolute inset-0 bg-stone-900 transition-opacity duration-700 ${shouldShowVideo ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`absolute inset-0 transition-opacity ${shouldShowVideo ? 'opacity-100 duration-700' : 'opacity-0 duration-0'}`}>
           {videoUrl && shouldShowVideo && (
             <video 
               ref={videoRef}
