@@ -21,7 +21,7 @@ export default async function ContactoPage() {
 
   return (
     <div className="min-h-screen bg-stone-50 font-sans mt-16 md:mt-0 pt-32 pb-24">
-      <main className="max-w-4xl mx-auto px-6">
+      <main className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16 animate-in slide-in-from-bottom-4 duration-700">
           <span className="text-[#d4af37] font-bold tracking-widest uppercase text-sm mb-4 block">Contacto</span>
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-stone-900 mb-6">Estamos aquí para ti</h1>

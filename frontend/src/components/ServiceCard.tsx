@@ -6,6 +6,7 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isInView, setIsInView] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
   const containerRef = useRef<HTMLAnchorElement>(null);
 
   useEffect(() => {
@@ -16,7 +17,7 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
         setIsInView(entry.isIntersecting);
       },
       {
-        threshold: 0.6, // Se activa cuando el 60% de la tarjeta es visible (centro de pantalla)
+        threshold: 0.6, // Se activa cuando el 60% de la tarjeta es visible
       }
     );
 
@@ -24,23 +25,24 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
     return () => observer.disconnect();
   }, []);
 
+  const isTouchDevice = typeof window !== 'undefined' ? window.matchMedia('(pointer: coarse)').matches : false;
+  const shouldShowVideo = isTouchDevice ? isInView : isHovered;
+
   useEffect(() => {
     if (videoRef.current) {
-      // Si el dispositivo usa ratón (pointer: fine), el vídeo se activa con el hover.
-      // Si es táctil (móvil), se activa cuando está en el centro de la pantalla (isInView).
-      const isTouch = window.matchMedia('(pointer: coarse)').matches;
-      
-      if ((isTouch && isInView) || (!isTouch && isHovered)) {
+      if (shouldShowVideo) {
         videoRef.current.play().catch(() => {});
       } else {
         videoRef.current.pause();
       }
     }
-  }, [isInView, isHovered]);
+    // Reset inmediato del estado del vídeo cuando se deja de mostrar
+    if (!shouldShowVideo) {
+      setVideoLoaded(false);
+    }
+  }, [shouldShowVideo]);
 
-  // En móvil usamos isInView para la opacidad, en desktop usamos isHovered
-  const isTouchDevice = typeof window !== 'undefined' ? window.matchMedia('(pointer: coarse)').matches : false;
-  const showVideo = isTouchDevice ? isInView : isHovered;
+  const videoUrl = service.video_url?.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${service.video_url}` : service.video_url;
 
   return (
     <Link 
@@ -52,28 +54,20 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
         group relative rounded-3xl overflow-hidden border border-stone-100 block bg-stone-50 transition-transform duration-500 ease-out shadow-sm hover:shadow-xl md:hover:scale-[1.03]
         flex-shrink-0
         ${className ? className : `
-          w-[85vw] md:w-auto
+          w-[85vw] md:w-[372px]
           snap-center md:snap-align-none
-          aspect-[4/5] md:aspect-auto
-          ${isLarge ? 'md:h-full md:min-h-[400px]' : 'md:aspect-video'}
+          aspect-[9/16]
         `}
       `}
     >
-        {/* Imagen Estática */}
-        <div className={`absolute inset-0 bg-stone-200 transition-opacity duration-1000 ${showVideo ? 'opacity-0' : 'opacity-100'}`}>
+        {/* Imagen Estática con Lazy Loading */}
+        <div className={`absolute inset-0 bg-stone-200 transition-opacity duration-300 ${videoLoaded ? 'opacity-0' : 'opacity-100'}`}>
           {service.image_url ? (
             <img 
               src={service.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${service.image_url}` : service.image_url} 
               alt={service.name} 
               className="w-full h-full object-cover"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                e.currentTarget.parentElement?.classList.add('flex', 'items-center', 'justify-center');
-                const span = document.createElement('span');
-                span.className = 'font-serif text-stone-400 text-xs italic';
-                span.innerText = 'Sin Imagen';
-                e.currentTarget.parentElement?.appendChild(span);
-              }}
+              loading="lazy"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
@@ -82,37 +76,45 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
           )}
         </div>
         
-        {/* Vídeo / Imagen Secundaria Hover (Star Effect) */}
-        <div className={`absolute inset-0 bg-stone-900 transition-opacity duration-1000 ${showVideo ? 'opacity-100' : 'opacity-0'}`}>
-          {service.video_url && (
+        {/* Vídeo / Imagen Secundaria Hover - CARGA BAJO DEMANDA */}
+        <div className={`absolute inset-0 bg-stone-900 transition-opacity duration-700 ${shouldShowVideo ? 'opacity-100' : 'opacity-0'}`}>
+          {videoUrl && shouldShowVideo && (
             <video 
               ref={videoRef}
               loop 
               muted 
               playsInline 
-              className="w-full h-full object-cover"
-            >
-              <source src={service.video_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${service.video_url}` : service.video_url} type="video/mp4" />
-            </video>
+              className={`w-full h-full object-cover transition-opacity duration-500 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
+              onCanPlay={() => setVideoLoaded(true)}
+              src={videoUrl}
+            />
           )}
+          
+          {/* Spinner de carga minimalista - BLANCO */}
+          {videoUrl && shouldShowVideo && !videoLoaded && (
+            <div className="absolute bottom-8 right-8 z-30">
+              <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+            </div>
+          )}
+
           {!service.video_url && service.image_url && (
              <img 
               src={service.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${service.image_url}` : service.image_url} 
               alt={service.name} 
               className="w-full h-full object-cover opacity-40 mix-blend-overlay"
-              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              loading="lazy"
             />
           )}
         </div>
 
-        {/* Gradiente Protector para el texto (Oscuro permanentemente para leer texto blanco) */}
+        {/* Gradiente Protector para el texto */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10"></div>
 
         {/* CONTENEDOR DE TEXTO PEGADO ABAJO */}
         <div className="absolute bottom-0 left-0 w-full p-8 z-20 flex flex-col justify-end">
           
           {/* Título y precio (Siempre visibles) */}
-          <div>
+          <div className="transform transition-transform duration-500 group-hover:-translate-y-2">
             <h3 className="text-2xl font-serif text-white font-bold leading-tight mb-2">
               {service.name}
             </h3>
@@ -126,7 +128,7 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
           {/* Descripción (Oculta por defecto, se expande en hover) */}
           <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-all duration-500 ease-in-out">
             <div className="overflow-hidden">
-              <p className="text-gray-200 text-sm mt-4 line-clamp-3">
+              <p className="text-gray-200 text-sm mt-4 line-clamp-3 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
                 {service.description}
               </p>
             </div>

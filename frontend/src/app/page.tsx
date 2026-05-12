@@ -39,11 +39,13 @@ export default async function Home() {
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
       `}} />
 
-      <main id="main-scroll-container" className="w-full h-[100dvh] overflow-y-auto snap-y-mandatory md:h-auto md:overflow-visible md:snap-none scroll-smooth-premium relative">
-        
+      <main className="w-full h-[100dvh] overflow-y-auto snap-y-mandatory md:h-auto md:overflow-visible md:snap-none scroll-smooth-premium relative">
+
         {/* HERO SECTION - Ahora contiene el Navbar para que suba con ella */}
         <section className={`relative h-[100dvh] min-h-[600px] w-full flex snap-start snap-stop-always md:snap-none ${content.hero_alignment === 'top' ? 'items-start pt-48' : content.hero_alignment === 'bottom' ? 'items-end pb-32' : 'items-center'} justify-center p-6 md:p-12 overflow-hidden mt-0`}>
-          <PublicNavbar />
+          <div className="absolute top-0 left-0 w-full z-[100]">
+            <PublicNavbar />
+          </div>
 
           {content.hero_video_url ? (
             <div className="absolute inset-0 z-0 bg-stone-900">
@@ -113,7 +115,7 @@ export default async function Home() {
 
           return (
             <section key={category.id} className={`w-full pt-20 pb-8 md:py-24 overflow-hidden flex flex-col h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none ${isEven ? 'bg-white' : 'bg-[#F7F7F5]'}`}>
-              <div className="w-full max-w-[1400px] mx-auto px-6 md:px-12 mb-6 flex-shrink-0 flex justify-between items-end gap-8">
+              <div className="w-full max-w-7xl mx-auto px-6 mb-6 flex-shrink-0 flex justify-between items-end gap-8">
                 <div className="max-w-2xl">
                   <h2 className="text-4xl md:text-5xl font-serif font-extrabold text-stone-900 mb-4">{category.name}</h2>
                   <p className="hidden md:block text-lg md:text-xl text-stone-500">{category.description || 'Descubre nuestros tratamientos exclusivos diseñados para resaltar tu belleza natural.'}</p>
@@ -123,24 +125,22 @@ export default async function Home() {
                 </Link>
               </div>
 
-              <div className="hidden md:block w-full max-w-[1400px] mx-auto px-6 md:px-12 mb-8">
+              <div className="hidden md:block w-full max-w-7xl mx-auto px-6 mb-8">
                 {categoryServices.length === 1 && (
                   <div className="w-full">
                     <ServiceCard
                       service={categoryServices[0]}
-                      isLarge={true}
-                      className="w-full h-[500px]"
+                      className="w-full aspect-[16/9] md:h-[500px]"
                     />
                   </div>
                 )}
                 {categoryServices.length === 2 && (
-                  <div className="grid grid-cols-2 gap-8">
+                  <div className="flex justify-center gap-8">
                     {categoryServices.map((svc: any) => (
                       <ServiceCard
                         key={svc.id}
                         service={svc}
-                        isLarge={true}
-                        className="w-full h-[450px]"
+                        className="w-[372px] h-[662px]"
                       />
                     ))}
                   </div>

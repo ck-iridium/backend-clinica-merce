@@ -62,6 +62,9 @@ const config = {
           surface: "#F7F7F5",
         },
       },
+      maxWidth: {
+        "3xl": "50rem",
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
