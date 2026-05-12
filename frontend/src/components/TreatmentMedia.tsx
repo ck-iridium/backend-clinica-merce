@@ -11,6 +11,18 @@ interface TreatmentMediaProps {
 export default function TreatmentMedia({ imageUrl, videoUrl, headerStyle }: TreatmentMediaProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  // Verificación proactiva para imágenes/vídeos ya cargados (Caché / F5)
+  useEffect(() => {
+    if (imgRef.current && imgRef.current.complete) {
+      setIsLoaded(true);
+    }
+    if (videoRef.current && videoRef.current.readyState >= 3) {
+      setIsLoaded(true);
+    }
+  }, []);
 
   // Si es estilo video y tenemos URL, usamos el reproductor con poster
   if (headerStyle === 'split_video' && videoUrl) {
@@ -18,6 +30,7 @@ export default function TreatmentMedia({ imageUrl, videoUrl, headerStyle }: Trea
       <div className="relative h-full aspect-[9/16] max-w-full rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)] bg-stone-100">
         {!hasError ? (
           <video
+            ref={videoRef}
             src={videoUrl}
             poster={imageUrl}
             className={`w-full h-full object-cover transition-opacity duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
@@ -43,6 +56,7 @@ export default function TreatmentMedia({ imageUrl, videoUrl, headerStyle }: Trea
     <div className={`relative ${headerStyle === 'split_video' ? 'h-full aspect-[9/16] max-w-full rounded-[2rem] md:rounded-[3rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)]' : 'w-full h-full'} overflow-hidden bg-stone-100`}>
       {imageUrl && !hasError ? (
         <img
+          ref={imgRef}
           src={imageUrl}
           alt="Tratamiento"
           className={`w-full h-full object-cover transition-opacity duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
