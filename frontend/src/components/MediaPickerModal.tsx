@@ -4,6 +4,7 @@ import React, { useState, useEffect, forwardRef } from 'react';
 import CropImageModal from '@/components/CropImageModal';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { processVideo } from '@/lib/videoProcessor';
+import { type MediaFile, formatBytes } from '@/lib/mediaTypes';
 import { Loader2, Sparkles } from 'lucide-react';
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { 
@@ -15,27 +16,12 @@ import {
 import { cn } from '@/lib/utils';
 import { X, Play } from "lucide-react";
 
-interface MediaFile {
-  name: string;
-  url: string;
-  size: number;
-  content_type: string;
-  status: 'in_use' | 'orphan';
-  usages: string[];
-}
-
 interface MediaPickerModalProps {
   onClose: () => void;
   onImageSelected: (url: string) => void;
   forceAspect?: number;
   maxResolution?: number;
   mediaType?: 'image' | 'video';
-}
-
-function formatBytes(bytes: number): string {
-  if (!bytes) return '';
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(

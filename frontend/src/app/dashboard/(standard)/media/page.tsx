@@ -4,37 +4,17 @@ import { useState, useEffect, useCallback } from 'react';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import CropImageModal from '@/components/CropImageModal';
 import { processVideo } from '@/lib/videoProcessor';
-import { Loader2, Sparkles, Upload } from 'lucide-react';
-import { cn } from '@/lib/utils';
-
-interface MediaFile {
-  name: string;
-  url: string;
-  size: number;
-  content_type: string;
-  created_at: string;
-  status: 'in_use' | 'orphan';
-  usages: string[];
-}
-
-interface Quota {
-  used_bytes: number;
-  max_bytes: number;
-  file_count: number;
-}
-
-const MAX_BYTES = 1 * 1024 * 1024 * 1024; // 1 GB
-
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B';
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-}
+import { type MediaFile, type Quota, MAX_BYTES } from '@/lib/mediaTypes';
+import MediaQuotaBar from '@/components/media/MediaQuotaBar';
+import MediaGrid from '@/components/media/MediaGrid';
+import MediaBulkBar from '@/components/media/MediaBulkBar';
+import MediaLuxuryViewer from '@/components/media/MediaLuxuryViewer';
+import { Loader2, Sparkles } from 'lucide-react';
 
 export default function MediaGalleryPage() {
   const { showFeedback } = useFeedback();
 
+  // Core state
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [quota, setQuota] = useState<Quota | null>(null);
   const [loading, setLoading] = useState(true);
@@ -51,37 +31,13 @@ export default function MediaGalleryPage() {
   const [selectedImageForCrop, setSelectedImageForCrop] = useState('');
   const [uploadingNew, setUploadingNew] = useState(false);
 
-  // Full Image Modal
-  const [showFullImageModal, setShowFullImageModal] = useState(false);
-
   // Video Processing states
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingProgress, setProcessingProgress] = useState(0);
+  const [processingStatus, setProcessingStatus] = useState('');
   const [isDragging, setIsDragging] = useState(false);
 
-  const onDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const onDragLeave = () => {
-    setIsDragging(false);
-  };
-
-  const onDrop = async (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
-      // Reutilizamos handleFileSelect simulando el evento
-      const pseudoEvent = {
-        target: { files: files }
-      } as unknown as React.ChangeEvent<HTMLInputElement>;
-      handleFileSelect(pseudoEvent);
-    }
-  };
-  const [processingStatus, setProcessingStatus] = useState('');
-
+  // ── Data fetching ──
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -98,20 +54,14 @@ export default function MediaGalleryPage() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
-  // --- Single delete ---
+  // ── Single delete ──
   const handleDelete = () => {
     if (!selectedFile) return;
 
     if (selectedFile.status === 'in_use') {
-      showFeedback({
-        type: 'error',
-        title: 'Imagen en Uso',
-        message: `No se puede eliminar. Está vinculada a: ${selectedFile.usages.join(', ')}.`,
-      });
+      showFeedback({ type: 'error', title: 'Imagen en Uso', message: `No se puede eliminar. Está vinculada a: ${selectedFile.usages.join(', ')}.` });
       return;
     }
 
@@ -140,7 +90,7 @@ export default function MediaGalleryPage() {
     });
   };
 
-  // --- Multi-select helpers ---
+  // ── Multi-select helpers ──
   const toggleSelect = (name: string) => {
     setSelectedNames(prev => {
       const next = new Set(prev);
@@ -148,7 +98,6 @@ export default function MediaGalleryPage() {
       else next.add(name);
       return next;
     });
-    // Deselect detail panel when selecting via checkbox
     setSelectedFile(null);
   };
 
@@ -159,7 +108,7 @@ export default function MediaGalleryPage() {
 
   const clearSelection = () => setSelectedNames(new Set());
 
-  // --- Bulk delete ---
+  // ── Bulk delete ──
   const handleBulkDelete = () => {
     if (selectedNames.size === 0) return;
 
@@ -193,7 +142,7 @@ export default function MediaGalleryPage() {
     });
   };
 
-  // Generic Upload handler
+  // ── Upload handlers ──
   const handleUpload = async (blob: Blob, name: string) => {
     setUploadingNew(true);
     const uploadData = new FormData();
@@ -213,11 +162,10 @@ export default function MediaGalleryPage() {
     }
   };
 
-  // Upload handler
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     const file = e.target.files[0];
-    
+
     if (file.type.startsWith('video/')) {
       setIsProcessing(true);
       setProcessingStatus('Cargando motor de vídeo...');
@@ -226,7 +174,6 @@ export default function MediaGalleryPage() {
           setProcessingStatus(`Optimizando vídeo... ${progress}%`);
           setProcessingProgress(progress);
         });
-        
         setProcessingStatus('Finalizando subida...');
         await handleUpload(optimizedBlob, `video_${Date.now()}.mp4`);
       } catch (err) {
@@ -253,6 +200,19 @@ export default function MediaGalleryPage() {
     await handleUpload(croppedBlob, 'media_upload.webp');
   };
 
+  const onDragOver = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); };
+  const onDragLeave = () => { setIsDragging(false); };
+  const onDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const droppedFiles = e.dataTransfer.files;
+    if (droppedFiles && droppedFiles.length > 0) {
+      const pseudoEvent = { target: { files: droppedFiles } } as unknown as React.ChangeEvent<HTMLInputElement>;
+      handleFileSelect(pseudoEvent);
+    }
+  };
+
+  // ── Derived state ──
   const filteredFiles = files.filter(f => {
     if (filter === 'all') return true;
     if (filter === 'video') return f.name.toLowerCase().endsWith('.mp4') || f.content_type?.includes('video');
@@ -262,6 +222,7 @@ export default function MediaGalleryPage() {
   const usedPercent = quota ? Math.min((quota.used_bytes / MAX_BYTES) * 100, 100) : 0;
   const isNearLimit = usedPercent > 80;
 
+  // ── Render ──
   return (
     <div className="animate-in fade-in duration-500">
       {/* Hero Header */}
@@ -276,14 +237,14 @@ export default function MediaGalleryPage() {
       {/* Upload Zone */}
       {!isProcessing && (
         <div className="mb-8">
-          <label 
+          <label
             onDragOver={onDragOver}
             onDragLeave={onDragLeave}
             onDrop={onDrop}
             className={`
               flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-[2rem] cursor-pointer transition-all duration-300
-              ${isDragging 
-                ? 'border-[#d4af37] bg-[#fbf9f4] scale-[1.01] shadow-lg' 
+              ${isDragging
+                ? 'border-[#d4af37] bg-[#fbf9f4] scale-[1.01] shadow-lg'
                 : 'border-stone-200 bg-white hover:bg-stone-50 hover:border-stone-300 shadow-sm'}
             `}
           >
@@ -298,42 +259,13 @@ export default function MediaGalleryPage() {
                 Optimización automática de vídeo (720p, sin audio) activa
               </p>
             </div>
-            <input 
-              type="file" 
-              className="hidden" 
-              onChange={handleFileSelect}
-              multiple
-              accept="image/*,video/*"
-            />
+            <input type="file" className="hidden" onChange={handleFileSelect} multiple accept="image/*,video/*" />
           </label>
         </div>
       )}
 
       {/* Quota Bar */}
-      {quota && (
-        <div className={`mb-8 p-6 rounded-[2rem] border ${isNearLimit ? 'bg-red-50 border-red-200' : 'bg-white border-stone-100'} shadow-sm`}>
-          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-            <div>
-              <p className="text-xs font-black uppercase tracking-widest text-stone-400 mb-1">Cuota del Bucket</p>
-              <p className={`text-2xl font-black ${isNearLimit ? 'text-red-600' : 'text-stone-800'}`}>
-                {formatBytes(quota.used_bytes)}
-                <span className="text-sm font-medium text-stone-400 ml-2">/ 1 GB</span>
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs font-bold text-stone-500">{quota.file_count} archivos</p>
-              <p className={`text-sm font-bold ${isNearLimit ? 'text-red-500' : 'text-stone-400'}`}>{usedPercent.toFixed(1)}% utilizado</p>
-            </div>
-          </div>
-          <div className="w-full bg-stone-100 rounded-full h-3 overflow-hidden">
-            <div
-              className={`h-3 rounded-full transition-all duration-700 ${isNearLimit ? 'bg-gradient-to-r from-orange-400 to-red-500' : 'bg-gradient-to-r from-[#d9777f] to-[#d4af37]'}`}
-              style={{ width: `${usedPercent}%` }}
-            />
-          </div>
-          {isNearLimit && <p className="text-xs font-bold text-red-500 mt-2">⚠️ Atención: estás usando más del 80% de la cuota disponible.</p>}
-        </div>
-      )}
+      {quota && <MediaQuotaBar quota={quota} usedPercent={usedPercent} isNearLimit={isNearLimit} />}
 
       {/* Video Processing HUD */}
       {isProcessing && (
@@ -343,16 +275,12 @@ export default function MediaGalleryPage() {
               <div className="w-12 h-12 rounded-2xl bg-[#d4af37]/20 flex items-center justify-center text-[#d4af37]">
                 <Sparkles className="animate-pulse" />
               </div>
-              <div>
-                <p className="text-lg font-bold">{processingStatus}</p>
-              </div>
+              <p className="text-lg font-bold">{processingStatus}</p>
             </div>
-            <div className="text-right">
-              <p className="text-2xl font-black text-[#d4af37]">{processingProgress}%</p>
-            </div>
+            <p className="text-2xl font-black text-[#d4af37]">{processingProgress}%</p>
           </div>
           <div className="w-full bg-white/10 rounded-full h-2.5 overflow-hidden">
-            <div 
+            <div
               className="h-full bg-gradient-to-r from-[#d4af37] to-[#d9777f] transition-all duration-300"
               style={{ width: `${processingProgress}%` }}
             />
@@ -365,7 +293,6 @@ export default function MediaGalleryPage() {
 
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 flex-wrap">
-        {/* Filter Pills */}
         <div className="flex gap-2 bg-white border border-stone-200 p-1 rounded-2xl shadow-sm overflow-x-auto no-scrollbar">
           {(['all', 'in_use', 'orphan', 'video'] as const).map(f => (
             <button
@@ -373,16 +300,15 @@ export default function MediaGalleryPage() {
               onClick={() => { setFilter(f); clearSelection(); }}
               className={`px-4 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${filter === f ? 'bg-stone-900 text-white shadow' : 'text-stone-500 hover:bg-stone-100'}`}
             >
-              {f === 'all' ? `Todas (${files.length})` : 
-               f === 'in_use' ? `En Uso (${files.filter(x => x.status === 'in_use').length})` : 
-               f === 'orphan' ? `Huérfanas (${files.filter(x => x.status === 'orphan').length})` : 
-               `Vídeos (${files.filter(x => x.name.toLowerCase().endsWith('.mp4') || x.content_type?.includes('video')).length})`}
+              {f === 'all' ? `Todas (${files.length})` :
+                f === 'in_use' ? `En Uso (${files.filter(x => x.status === 'in_use').length})` :
+                  f === 'orphan' ? `Huérfanas (${files.filter(x => x.status === 'orphan').length})` :
+                    `Vídeos (${files.filter(x => x.name.toLowerCase().endsWith('.mp4') || x.content_type?.includes('video')).length})`}
             </button>
           ))}
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
-          {/* Select All Orphans shortcut */}
           {orphanCount > 0 && selectedNames.size === 0 && (
             <button
               onClick={selectAllOrphans}
@@ -391,8 +317,6 @@ export default function MediaGalleryPage() {
               Seleccionar todas las huérfanas
             </button>
           )}
-
-          {/* Upload Button */}
           <label className={`relative cursor-pointer ${(uploadingNew || isProcessing) ? 'opacity-60 pointer-events-none' : ''}`}>
             <input type="file" accept="image/*,video/*" className="sr-only" onChange={handleFileSelect} disabled={uploadingNew || isProcessing} />
             <div className="flex items-center gap-2 bg-stone-900 hover:bg-[#d9777f] text-white px-5 py-3 rounded-2xl font-bold text-sm transition-all shadow-lg active:scale-95">
@@ -405,262 +329,42 @@ export default function MediaGalleryPage() {
         </div>
       </div>
 
-      {/* Main Grid + Detail Panel */}
-      <div className="flex gap-6 items-start">
-        {/* Grid */}
-        <div className="flex-1 min-w-0">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center h-64 gap-4">
-              <div className="w-10 h-10 border-4 border-stone-200 border-t-[#d9777f] rounded-full animate-spin" />
-              <p className="text-stone-400 font-medium text-sm tracking-widest uppercase">Cargando galería...</p>
-            </div>
-          ) : filteredFiles.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64 gap-4 bg-white rounded-[2rem] border border-stone-100">
-              <span className="text-5xl opacity-30">🖼️</span>
-              <p className="text-stone-400 font-medium">No hay imágenes en esta categoría.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3">
-              {filteredFiles.map(file => {
-                const isChecked = selectedNames.has(file.name);
-                const canSelect = file.status === 'orphan';
-                return (
-                  <div
-                    key={file.name}
-                    className={`group relative rounded-2xl overflow-hidden aspect-square border-2 transition-all duration-200 cursor-pointer bg-stone-100
-                      ${isChecked ? 'border-red-500 ring-2 ring-red-400/40 scale-[0.97]' : selectedFile?.name === file.name ? 'border-[#d9777f] ring-2 ring-[#d9777f]/30 scale-[0.98]' : 'border-transparent hover:border-stone-300 hover:shadow-md'}`}
-                    onClick={() => {
-                      if (selectedNames.size > 0 && canSelect) {
-                        toggleSelect(file.name);
-                      } else {
-                        setSelectedFile(file === selectedFile ? null : file);
-                      }
-                    }}
-                  >
-                      {/* Media Preview */}
-                      {file.name.toLowerCase().endsWith('.mp4') || file.content_type?.includes('video') ? (
-                        <div className="w-full h-full relative bg-stone-900 flex items-center justify-center">
-                          <video
-                            src={file.url}
-                            className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
-                            muted
-                            playsInline
-                            crossOrigin="anonymous"
-                          />
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-lg">
-                              <span className="text-white text-xs ml-0.5">▶</span>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <img
-                          src={file.url}
-                          alt={file.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          loading="lazy"
-                          crossOrigin="anonymous"
-                        />
-                      )}
+      {/* Media Grid */}
+      <MediaGrid
+        files={filteredFiles}
+        loading={loading}
+        selectedFile={selectedFile}
+        selectedNames={selectedNames}
+        onFileClick={(file) => setSelectedFile(file)}
+        onToggleSelect={toggleSelect}
+      />
 
-                      {/* Status dot */}
-                      <div className={`absolute top-2 right-2 w-2.5 h-2.5 rounded-full shadow-md transition-opacity ${isChecked ? 'opacity-0' : 'opacity-100'} ${file.status === 'in_use' ? 'bg-emerald-400' : 'bg-stone-400'}`} />
+      {/* Floating Bulk Action Bar */}
+      <MediaBulkBar
+        count={selectedNames.size}
+        deleting={bulkDeleting}
+        onClear={clearSelection}
+        onDelete={handleBulkDelete}
+      />
 
-                      {/* Checkbox — only for orphans */}
-                      {canSelect && (
-                        <div
-                          className="absolute top-2 left-2"
-                          onClick={e => { e.stopPropagation(); toggleSelect(file.name); }}
-                        >
-                          <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all shadow-md
-                            ${isChecked ? 'bg-red-500 border-red-500' : 'bg-white/80 border-stone-300 opacity-0 group-hover:opacity-100'}`}>
-                            {isChecked && <span className="text-white text-[10px] font-black leading-none">✓</span>}
-                          </div>
-                        </div>
-                      )}
+      {/* Luxury Viewer Modal */}
+      {selectedFile && selectedNames.size === 0 && (
+        <MediaLuxuryViewer
+          file={selectedFile}
+          onClose={() => setSelectedFile(null)}
+          onDelete={handleDelete}
+          deleting={deleting}
+        />
+      )}
 
-                      {/* Hover overlay */}
-                      <div className="absolute inset-0 bg-stone-900/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2 pointer-events-none">
-                        <p className="text-white text-[10px] font-bold truncate w-full text-left leading-tight">{file.name}</p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Detail Panel */}
-          {selectedFile && selectedNames.size === 0 && (
-            <div className="w-72 shrink-0 bg-white rounded-[2rem] border border-stone-100 shadow-xl overflow-hidden animate-in slide-in-from-right-4 duration-300 sticky top-6">
-              {/* Preview */}
-              <div className="aspect-video bg-stone-100 relative group/preview">
-                {selectedFile.name.toLowerCase().endsWith('.mp4') || selectedFile.content_type?.includes('video') ? (
-                  <video 
-                    src={selectedFile.url} 
-                    className="w-full h-full object-cover" 
-                    controls 
-                    autoPlay 
-                    muted 
-                    loop
-                    crossOrigin="anonymous"
-                  />
-                ) : (
-                  <img src={selectedFile.url} alt={selectedFile.name} className="w-full h-full object-cover" crossOrigin="anonymous" />
-                )}
-                
-                <div className="absolute inset-0 bg-stone-900/40 opacity-0 group-hover/preview:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-none">
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setShowFullImageModal(true); }}
-                    className="bg-white text-stone-900 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-xl active:scale-95 transition-all pointer-events-auto"
-                  >
-                    🔍 Ver completo
-                  </button>
-                </div>
-                <button
-                  onClick={() => setSelectedFile(null)}
-                  className="absolute top-3 right-3 w-7 h-7 bg-white/80 rounded-full text-stone-500 hover:text-stone-900 flex items-center justify-center font-bold text-sm shadow-md z-10"
-                >✕</button>
-              </div>
-
-              <div className="p-5 space-y-4">
-                {/* Status Badge */}
-                <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-widest ${selectedFile.status === 'in_use' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-stone-100 text-stone-500 border border-stone-200'}`}>
-                  <span className={`w-2 h-2 rounded-full ${selectedFile.status === 'in_use' ? 'bg-emerald-400' : 'bg-stone-400'}`} />
-                  {selectedFile.status === 'in_use' ? 'EN USO' : 'HUÉRFANA'}
-                </div>
-
-                {/* File Info */}
-                <div className="space-y-2">
-                  <div>
-                    <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Archivo</p>
-                    <p className="text-sm font-bold text-stone-800 break-all">{selectedFile.name}</p>
-                  </div>
-                  <div className="flex gap-4">
-                    <div>
-                      <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Tamaño</p>
-                      <p className="text-sm font-bold text-stone-700">{formatBytes(selectedFile.size)}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Tipo</p>
-                      <p className="text-sm font-bold text-stone-700">{selectedFile.content_type?.split('/')[1]?.toUpperCase() || selectedFile.name.split('.').pop()?.toUpperCase() || 'MED'}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Usages */}
-                {selectedFile.usages.length > 0 && (
-                  <div>
-                    <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Usado en</p>
-                    <ul className="space-y-1">
-                      {selectedFile.usages.map((u, i) => (
-                        <li key={i} className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
-                          ✓ {u}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Copy URL */}
-                <button
-                  onClick={() => { navigator.clipboard.writeText(selectedFile.url); showFeedback({ type: 'success', title: '¡Copiado!', message: 'URL del archivo copiada al portapapeles.' }); }}
-                  className="w-full text-xs font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 py-2.5 px-4 rounded-xl transition-all border border-stone-200"
-                >
-                  📋 Copiar URL
-                </button>
-
-                {/* Delete */}
-                <button
-                  onClick={handleDelete}
-                  disabled={deleting || selectedFile.status === 'in_use'}
-                  title={selectedFile.status === 'in_use' ? `No se puede borrar: ${selectedFile.usages.join(', ')}` : 'Eliminar archivo permanentemente'}
-                  className={`w-full py-3 px-4 rounded-xl font-bold text-sm transition-all ${selectedFile.status === 'in_use' ? 'bg-stone-100 text-stone-400 cursor-not-allowed border border-stone-200' : 'bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-200 active:scale-95 shadow-sm'}`}
-                >
-                  {deleting ? 'Eliminando...' : selectedFile.status === 'in_use' ? '🔒 En uso (No eliminable)' : '🗑️ Eliminar archivo'}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* ── Floating Bulk Action Bar ── */}
-        {selectedNames.size > 0 && (
-          <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 duration-300">
-            <div className="flex items-center gap-3 bg-stone-900 text-white px-6 py-4 rounded-[2rem] shadow-2xl border border-white/10">
-              <div className="flex items-center gap-2">
-                <span className="w-7 h-7 bg-red-500 text-white rounded-xl flex items-center justify-center text-sm font-black">
-                  {selectedNames.size}
-                </span>
-                <span className="text-sm font-bold">archivo{selectedNames.size > 1 ? 's' : ''} seleccionado{selectedNames.size > 1 ? 's' : ''}</span>
-              </div>
-              <div className="w-px h-6 bg-white/20" />
-              <button
-                onClick={clearSelection}
-                className="text-sm text-white/60 hover:text-white font-bold transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleBulkDelete}
-                disabled={bulkDeleting}
-                className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 rounded-xl font-black text-sm transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-red-500/30"
-              >
-                {bulkDeleting
-                  ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /><span>Eliminando...</span></>
-                  : <><span>🗑️</span><span>Borrar {selectedNames.size} seleccionados</span></>
-                }
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Crop Modal */}
-        {showCropModal && (
-          <CropImageModal
-            imageSrc={selectedImageForCrop}
-            onClose={() => { setShowCropModal(false); setSelectedImageForCrop(''); }}
-            onCropComplete={handleCropComplete}
-          />
-        )}
-
-        {/* Lightbox / Full Image Modal */}
-        {showFullImageModal && selectedFile && (
-          <div 
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-950/90 backdrop-blur-md p-4 animate-in fade-in duration-300"
-            onClick={() => setShowFullImageModal(false)}
-          >
-            <button 
-              className="absolute top-6 right-6 w-12 h-12 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center text-2xl transition-colors shadow-2xl border border-white/10"
-              onClick={(e) => { e.stopPropagation(); setShowFullImageModal(false); }}
-            >✕</button>
-            
-            <div className="relative max-w-[95vw] max-h-[95vh] flex items-center justify-center animate-in zoom-in-95 duration-500">
-              {selectedFile.name.toLowerCase().endsWith('.mp4') || selectedFile.content_type?.includes('video') ? (
-                <video 
-                  src={selectedFile.url} 
-                  className="max-w-full max-h-[90vh] shadow-[0_0_80px_rgba(0,0,0,0.5)] rounded-lg" 
-                  controls 
-                  autoPlay
-                  crossOrigin="anonymous"
-                />
-              ) : (
-                <img 
-                  src={selectedFile.url} 
-                  alt={selectedFile.name}
-                  className="max-w-full max-h-[90vh] object-contain shadow-[0_0_80px_rgba(0,0,0,0.5)] rounded-lg"
-                  onClick={(e) => e.stopPropagation()}
-                  crossOrigin="anonymous"
-                />
-              )}
-              
-              {/* Info overlay inside modal */}
-              <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 pointer-events-none">
-                <p className="text-white font-bold text-xs">{selectedFile.name}</p>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
+      {/* Crop Modal */}
+      {showCropModal && (
+        <CropImageModal
+          imageSrc={selectedImageForCrop}
+          onClose={() => { setShowCropModal(false); setSelectedImageForCrop(''); }}
+          onCropComplete={handleCropComplete}
+        />
+      )}
+    </div>
+  );
+}
