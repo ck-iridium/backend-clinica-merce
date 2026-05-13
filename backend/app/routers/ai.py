@@ -241,28 +241,29 @@ async def ai_enhance_image_prompt(
     system_instruction = (
         "You are an elite Commercial Beauty Photography Director. Your task is to write a highly detailed "
         "TECHNICAL IMAGE PROMPT in ENGLISH for a high-end AI image generator.\n"
+        "CRITICAL RULE: THE USER'S WRITTEN INSTRUCTIONS ('user_prompt') HAVE ABSOLUTE PRIORITY OVER THE REFERENCE IMAGE. "
+        "If the user asks for a specific placement (e.g., 'under the eyebrow') that contradicts the reference image "
+        "(e.g., where it shows wax above the eyebrow), you MUST follow the USER'S TEXT and correct the placement in your technical description.\n\n"
         "RULES:\n"
         "1. OUTPUT ONLY THE ENGLISH PROMPT TEXT.\n"
-        "2. DO NOT use conversational language. Start directly with the scene description.\n"
-        "3. STYLE: 'Quiet Luxury', 2026 aesthetic, high-key studio lighting, flawless skin textures, editorial beauty.\n"
-        "4. CAMERA: 'Phase One XF, 80mm lens, f/8, macro detail, sharp focus'.\n"
-        "5. SUBJECT: Describe a young, beautiful model, but ensure she looks natural and sophisticated.\n"
+        "2. STYLE: 'Quiet Luxury', 2026 aesthetic, high-key studio lighting, flawless skin textures.\n"
+        "3. CAMERA: Professional macro photography, sharp focus on the specific treatment area.\n"
+        "4. SUBJECT: Ensure a COMPLETELY NEW model, different from the reference.\n"
     )
 
     if reference_image:
         if reference_type == "style":
             task = (
-                f"Analyze the attached reference image for LIGHTING, COLOR PALETTE, and VIBE only. "
-                f"Then, create a NEW scene for this treatment: '{user_prompt}'. "
-                f"IMPORTANT: The model MUST be COMPLETELY DIFFERENT from the reference. DO NOT clone the person. "
-                f"Describe the scene using the technical style found in the reference."
+                f"Analyze the attached reference image for LIGHTING and VIBE. "
+                f"Then, create a NEW scene for: '{user_prompt}'. "
+                f"Ensure the details in the text '{user_prompt}' are executed perfectly, ignoring any contradictory content in the reference."
             )
         else:
             task = (
-                f"Analyze the attached reference image for COMPOSITION, POSE, and PLACEMENT of tools/hands. "
-                f"Create a NEW scene for this treatment: '{user_prompt}'. "
-                f"IMPORTANT: Use the exact same composition and layout as the reference, but the MODEL'S FACE AND IDENTITY must be COMPLETELY NEW. "
-                f"Maintain the professional technical setup seen in the image."
+                f"Analyze the reference for COMPOSITION and POSE. "
+                f"Create a NEW scene for: '{user_prompt}'. "
+                f"IMPORTANT: Use the general composition but OVERRIDE the placement of elements if requested in: '{user_prompt}'. "
+                f"If the text says 'under the eyebrow' but the photo shows it above, your description MUST place it 'under the eyebrow' with surgical precision."
             )
         
         # Multimodal request
