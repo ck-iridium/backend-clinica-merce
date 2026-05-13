@@ -13,6 +13,7 @@ import requests
 from PIL import Image
 from supabase import create_client, Client
 import logging
+import time
 
 # Configurar log a archivo de forma explícita
 log_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'ai_generation.log')
@@ -202,87 +203,175 @@ def generate_content(request: schemas.AIGenerationRequest, db: Session = Depends
 
 def refine_image_prompt(user_prompt: str, shot_type: str, visual_style: str, has_reference: bool = False) -> str:
     """
-    Refina el prompt del usuario para estética Commercial Beauty Editorial.
+    Refina el prompt del usuario para estética Commercial Beauty Editorial (Fallback).
     """
     refined = user_prompt
-    
-    # 1. Prefijos de Toma
     if shot_type == 'closeup_beauty':
-        refined = f"Commercial Beauty Editorial, extreme macro close-up of {refined}. High-end aesthetic clinic result, flawless skin texture, radiant glowing skin."
+        refined = f"Commercial Beauty Editorial, extreme macro close-up of {refined}. High-end result, flawless skin."
     elif shot_type == 'closeup':
-        refined = f"Macro, detailed close-up shot of {refined}. Professional medical aesthetic, clean and precise."
+        refined = f"Macro, detailed close-up shot of {refined}. Professional aesthetic."
     elif shot_type == 'scene':
-        refined = f"Atmospheric scene of {refined} in a luxury clinic setting. High-key studio lighting, bright and radiant environment."
+        refined = f"Atmospheric scene of {refined} in a luxury clinic setting."
 
-    # 2. Sufijos de Estilo
     style_suffixes = {
-        'luxury': "Commercial Beauty style, dewy skin finish, soft diffused light, elimination of deep shadows, 8k resolution, elegant, high-key.",
-        'clean': "Pristine clinic aesthetic, bright minimalist background, neutral high-end lighting, professional medical editorial look.",
-        'zen': "Radiant spa atmosphere, soft glowing natural light, peaceful, dewy skin texture, harmonic color palette."
+        'luxury': "Commercial Beauty style, soft diffused light, 8k resolution, elegant, high-key.",
+        'clean': "Pristine clinic aesthetic, bright minimalist background, professional look.",
+        'zen': "Radiant spa atmosphere, soft natural light, peaceful."
     }
-    
     suffix = style_suffixes.get(visual_style, style_suffixes['luxury'])
-    
-    # 3. Prompt de Estilo Estricto (Inyectado siempre)
-    # Si hay referencia, permitimos caras si la composición lo requiere, pero mantenemos la prohibición de texto.
-    if has_reference:
-        strict_style = "High-key studio lighting, flawless skin texture, radiant glowing skin, professional editorial photography, NO text, NO names, NO logos."
-    else:
-        strict_style = "High-key studio lighting, flawless skin texture, radiant glowing skin, NO faces, NO text, NO names, professional editorial photography."
+    strict_style = "High-key studio lighting, flawless skin, NO text, NO names, professional editorial photography."
     
     return f"{refined}, {suffix}, {strict_style}"
 
+async def ai_enhance_image_prompt(
+    user_prompt: str, 
+    shot_type: str, 
+    visual_style: str, 
+    api_key: str, 
+    reference_image: Optional[str] = None,
+    reference_type: str = "style"
+) -> str:
+    """
+    Usa Gemini Flash para convertir un prompt básico en un guion técnico de fotografía profesional en inglés.
+    """
+    genai.configure(api_key=api_key)
+    # Usamos Flash 1.5 para velocidad y bajo coste en esta fase de 'pensamiento'
+    model = genai.GenerativeModel('gemini-1.5-flash-latest')
+    
+    system_instruction = (
+        "You are an elite Commercial Beauty Photography Director. Your task is to write a highly detailed "
+        "TECHNICAL IMAGE PROMPT in ENGLISH for a high-end AI image generator.\n"
+        "RULES:\n"
+        "1. OUTPUT ONLY THE ENGLISH PROMPT TEXT.\n"
+        "2. DO NOT use conversational language. Start directly with the scene description.\n"
+        "3. STYLE: 'Quiet Luxury', 2026 aesthetic, high-key studio lighting, flawless skin textures, editorial beauty.\n"
+        "4. CAMERA: 'Phase One XF, 80mm lens, f/8, macro detail, sharp focus'.\n"
+        "5. SUBJECT: Describe a young, beautiful model, but ensure she looks natural and sophisticated.\n"
+    )
+
+    if reference_image:
+        if reference_type == "style":
+            task = (
+                f"Analyze the attached reference image for LIGHTING, COLOR PALETTE, and VIBE only. "
+                f"Then, create a NEW scene for this treatment: '{user_prompt}'. "
+                f"IMPORTANT: The model MUST be COMPLETELY DIFFERENT from the reference. DO NOT clone the person. "
+                f"Describe the scene using the technical style found in the reference."
+            )
+        else:
+            task = (
+                f"Analyze the attached reference image for COMPOSITION, POSE, and PLACEMENT of tools/hands. "
+                f"Create a NEW scene for this treatment: '{user_prompt}'. "
+                f"IMPORTANT: Use the exact same composition and layout as the reference, but the MODEL'S FACE AND IDENTITY must be COMPLETELY NEW. "
+                f"Maintain the professional technical setup seen in the image."
+            )
+        
+        # Multimodal request
+        b64_data = reference_image
+        if "," in b64_data: b64_data = b64_data.split(",")[1]
+        
+        response = await model.generate_content_async([
+            system_instruction + task,
+            {"mime_type": "image/jpeg", "data": base64.b64decode(b64_data)}
+        ])
+    else:
+        task = f"Create a technical photography prompt for: '{user_prompt}'. Style: {visual_style}, Shot: {shot_type}."
+        response = await model.generate_content_async(system_instruction + task)
+
+    return response.text.strip()
+
 @router.post("/generate-image")
-def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depends(database.get_db)):
+async def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depends(database.get_db)):
     settings = db.query(models.ClinicSettings).first()
     if not settings:
         raise HTTPException(status_code=500, detail="Configuración de la clínica no encontrada.")
 
     ai_provider = settings.ai_provider or "gemini"
-    
-    # Refinar el prompt base
-    refined_prompt = refine_image_prompt(request.prompt, request.shot_type, request.visual_style, has_reference=bool(request.reference_image))
-    
-    # Preparar sufijo de estilo y filtros adicionales
-    style_suffix = f", {request.shot_type}, style: {request.visual_style}, luxury editorial photography, 8k, highly detailed."
-    if request.exclude_text:
-        style_suffix += " ZERO TEXT, NO letters, NO words, NO characters, NO logos, NO watermarks. Pure visual composition."
-    
-    # Añadir sufijo al prompt refinado para proveedores que no usan multimodal
-    refined_prompt += style_suffix
-    
+    api_key = settings.gemini_api_key or os.getenv("GEMINI_API_KEY")
+
+    if not api_key or '***' in api_key:
+        api_key = os.getenv("GEMINI_API_KEY")
+
+    if not api_key or len(api_key) < 10:
+        raise HTTPException(status_code=400, detail="Clave API no configurada correctamente.")
+
     logger.info(f"START GENERATION: prompt='{request.prompt[:50]}...', provider='{ai_provider}'")
+    
+    # PASO 1: El Cerebro (Mejorar y Traducir el prompt usando IA)
+    try:
+        logger.info("Enhancing prompt with Gemini Flash...")
+        refined_prompt = await ai_enhance_image_prompt(
+            user_prompt=request.prompt,
+            shot_type=request.shot_type,
+            visual_style=request.visual_style,
+            api_key=api_key,
+            reference_image=request.reference_image,
+            reference_type=request.reference_type
+        )
+        logger.info(f"REFINED PROMPT: {refined_prompt[:150]}...")
+    except Exception as e:
+        logger.error(f"Error in prompt enhancement: {e}")
+        # Fallback al refinado manual si la IA de texto falla
+        refined_prompt = refine_image_prompt(request.prompt, request.shot_type, request.visual_style, bool(request.reference_image))
+
     file_bytes = None
 
-    if ai_provider == "openai":
-        api_key = settings.openai_api_key
-        if not api_key or '***' in api_key:
-            api_key = os.getenv("OPENAI_API_KEY")
-        
-        # Validación estricta
-        if not api_key or len(api_key) < 10 or '***' in api_key:
-            raise HTTPException(status_code=400, detail="Clave API de OpenAI inválida o no configurada. Por favor, revísala en Ajustes.")
-        
-        print(f"DEBUG OPENAI KEY: {api_key[:5]}...{api_key[-4:]}")
-        client = OpenAI(api_key=api_key)
-        
-        # Mapeo estricto de aspect ratio para OpenAI
-        ar_input = request.aspect_ratio
-        size_map = {
-            "1:1": "1024x1024",
-            "16:9": "1792x1024",
-            "9:16": "1024x1792"
-        }
-
-        if not api_key or len(api_key) < 10 or '***' in api_key:
-            raise HTTPException(status_code=400, detail="Clave API de OpenAI inválida o no configurada.")
-
+    # --- PROVEEDOR: GEMINI (Imagen 3) ---
+    if ai_provider == "gemini":
         try:
-            client = OpenAI(api_key=api_key)
-            model_name = settings.openai_model_image or "dall-e-3"
+            genai.configure(api_key=api_key)
+            model_name = settings.gemini_model_image or "gemini-3.1-flash-image-preview"
+            model = genai.GenerativeModel(model_name)
+
+            # Configuramos filtros de seguridad relajados para contexto estético/médico
+            from google.generativeai.types import HarmCategory, HarmBlockThreshold
+            safety_settings = {
+                HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            }
+
+            # Preparamos el prompt final inyectando el aspect ratio como instrucción técnica
+            aspect_ratio_text = "9:16 aspect ratio, vertical portrait orientation"
+            if request.aspect_ratio == "16:9": aspect_ratio_text = "16:9 aspect ratio, cinematic horizontal orientation"
+            elif request.aspect_ratio == "1:1": aspect_ratio_text = "1:1 square aspect ratio"
+
+            final_instruction = f"{refined_prompt}. {aspect_ratio_text}. High-end commercial quality, 8k resolution, no text, no logos."
+
+            # PASO 2: Las Manos (Generación de Imagen)
+            # IMPORTANTE: NO enviamos la imagen de referencia aquí para evitar clones.
+            # El modelo de imagen solo recibe la descripción técnica perfecta en inglés.
+            start_time = time.time()
+            response = model.generate_content(
+                final_instruction,
+                safety_settings=safety_settings,
+                request_options={"timeout": 600} # Aumentamos a 10 min por si hay cola en Google
+            )
             
-            # OpenAI no soporta image-to-image nativo en DALL-E 3 vía API
-            # Solo enviamos el texto refinado
+            gen_duration = time.time() - start_time
+            logger.info(f"Gemini Image generated in {gen_duration:.2f}s")
+
+            if not response.candidates or not response.candidates[0].content.parts:
+                raise ValueError("La IA bloqueó la generación o devolvió contenido vacío. Revisa el prompt.")
+
+            # Extraer bytes
+            for part in response.candidates[0].content.parts:
+                if hasattr(part, 'inline_data'):
+                    file_bytes = part.inline_data.data
+                    break
+                elif hasattr(part, 'blob'):
+                    file_bytes = part.blob.data
+                    break
+
+        except Exception as e:
+            logger.error(f"Error in Gemini Image Generation: {e}")
+            raise HTTPException(status_code=500, detail=f"Error en Nano Banana 2: {str(e)}")
+
+    # --- PROVEEDOR: OPENAI (DALL-E 3) ---
+    elif ai_provider == "openai":
+        try:
+            client = OpenAI(api_key=settings.openai_api_key or os.getenv("OPENAI_API_KEY"))
+            model_name = settings.openai_model_image or "dall-e-3"
             response = client.images.generate(
                 model=model_name,
                 prompt=refined_prompt,
@@ -293,120 +382,64 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
             image_url = response.data[0].url
             resp = requests.get(image_url)
             file_bytes = resp.content
-
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error en OpenAI Image Generation: {e}")
 
-    # --- PROVEEDOR: GEMINI ---
-    elif ai_provider == "gemini":
-        api_key = settings.gemini_api_key
-        if not api_key or '***' in api_key:
-            api_key = os.getenv("GEMINI_API_KEY")
-            
-        if not api_key or len(api_key) < 10 or '***' in api_key:
-            raise HTTPException(status_code=400, detail="Clave API de Gemini inválida o no configurada.")
-
-        try:
-            # Configurar modelo multimodal (Nano Banana 2 / Gemini 3.1 Flash Image)
-            genai.configure(api_key=api_key)
-            model_name = settings.gemini_model_image or "gemini-3.1-flash-image-preview"
-            model = genai.GenerativeModel(model_name)
-
-            # Preparar partes del contenido
-            prompt_parts = []
-            
-            # 1. Prompt de texto refinado
-            base_prompt = refined_prompt
-            if request.reference_image:
-                if request.reference_type == "style":
-                    # Instrucción de Estilo (Evitar clonación)
-                    base_prompt = (
-                        f"Crea una imagen comercial premium usando esta referencia ÚNICAMENTE para la iluminación, paleta de colores y 'vibe' estético. "
-                        f"IMPORTANTE: Genera una modelo COMPLETAMENTE DIFERENTE a la de la foto. NO clones a la persona. "
-                        f"El tratamiento a mostrar es: {request.prompt}. Muestra el proceso detallado si la referencia lo sugiere. {style_suffix} Estética 'Quiet Luxury'."
-                    )
-                else:
-                    # Instrucción de Composición (Fiel a la referencia)
-                    base_prompt = (
-                        f"Crea una imagen basada exactamente en la composición, pose y estructura de esta referencia. "
-                        f"Captura fielmente el proceso, herramientas y manos mostradas. El tratamiento es: {request.prompt}. {style_suffix} Mantén la fidelidad estructural."
-                    )
-            
-            prompt_parts.append(base_prompt)
-
-            # 2. Imagen de referencia (si existe)
-            if request.reference_image:
-                b64_data = request.reference_image
-                if "," in b64_data:
-                    b64_data = b64_data.split(",")[1]
-                
-                prompt_parts.append({
-                    "mime_type": "image/jpeg",
-                    "data": base64.b64decode(b64_data)
-                })
-
-            # Inyectar la proporción en el prompt final como instrucción de texto
-            # ya que el SDK parece no reconocer 'aspect_ratio' en GenerationConfig aún
-            final_prompt = f"{base_prompt}. Format: 9:16 aspect ratio, vertical mobile orientation."
-            prompt_parts[0] = final_prompt
-
-            # Generar contenido con timeout de seguridad ampliado (300s)
-            logger.info(f"Gemini Request: {final_prompt[:100]}...")
-            import time
-            start_time = time.time()
-            response = model.generate_content(
-                prompt_parts,
-                request_options={"timeout": 300} # En segundos
-            )
-            gen_duration = time.time() - start_time
-            logger.info(f"Gemini Response received in {gen_duration:.2f}s")
-            
-            # DEBUG: Imprimir estructura para entender qué devuelve Nano Banana 2
-            # logger.info(f"DEBUG NANO BANANA RESPONSE: {response}")
-            
-            if not response.candidates or not response.candidates[0].content.parts:
-                # Verificar si hay un mensaje de error o bloqueo de seguridad
-                if hasattr(response, 'prompt_feedback') and response.prompt_feedback:
-                    print(f"DEBUG PROMPT FEEDBACK: {response.prompt_feedback}")
-                raise ValueError("La IA no devolvió contenido. Posible bloqueo de seguridad o prompt inválido.")
-            
-            # Revisar todas las partes para depuración
-            for i, part in enumerate(response.candidates[0].content.parts):
-                print(f"PART {i} TYPE: {type(part)}")
-                if hasattr(part, 'text'):
-                    print(f"PART {i} TEXT: {part.text[:100]}...")
-
-            # Buscar la parte que contiene los bytes de la imagen
-            # En el SDK de Google, suele ser un objeto con 'inline_data' o directamente 'data' si es un Blob
-            file_bytes = None
-            for part in response.candidates[0].content.parts:
-                # Caso 1: inline_data (estándar en SDK moderno)
-                if hasattr(part, 'inline_data') and part.inline_data:
-                    file_bytes = part.inline_data.data
-                    break
-                # Caso 2: blob (algunas versiones/modelos)
-                if hasattr(part, 'blob') and part.blob:
-                    file_bytes = part.blob.data
-                    break
-                # Caso 3: Atributo data directo (raro pero posible)
-                if hasattr(part, 'data') and part.data:
-                    file_bytes = part.data
-                    break
-
-            if not file_bytes:
-                # Si no hay bytes pero hay texto, el modelo nos está hablando en lugar de generar
-                if hasattr(response.candidates[0].content.parts[0], 'text'):
-                    text_content = response.candidates[0].content.parts[0].text
-                    raise ValueError(f"El modelo devolvió texto en lugar de una imagen: {text_content[:200]}")
-                raise ValueError("No se encontraron datos binarios de imagen en la respuesta de Nano Banana 2.")
-
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            raise HTTPException(status_code=500, detail=f"Error en Nano Banana 2 (Gemini 3.1): {str(e)}")
-
     if not file_bytes:
         raise HTTPException(status_code=500, detail="No se pudo obtener la imagen generada.")
+
+    # Guardado y compresión
+    supabase_url = os.environ.get("SUPABASE_URL")
+    supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+    
+    if not supabase_url or not supabase_key:
+        raise HTTPException(status_code=500, detail="Configuración de Supabase no encontrada")
+
+    try:
+        supabase: Client = create_client(supabase_url, supabase_key)
+        
+        # Comprimir a WEBP
+        print("DEBUG: Procesando imagen y convirtiendo a WEBP...")
+        img_start = time.time()
+        image = Image.open(io.BytesIO(file_bytes))
+        if image.mode not in ("RGB", "RGBA"):
+            if 'transparency' in image.info or image.mode in ('P', 'LA'):
+                image = image.convert("RGBA")
+            else:
+                image = image.convert("RGB")
+        
+        buffer = io.BytesIO()
+        image.save(buffer, format="WEBP", quality=85)
+        final_bytes = buffer.getvalue()
+        print(f"DEBUG: Imagen comprimida en {time.time() - img_start:.2f}s (Tamaño: {len(final_bytes)} bytes)")
+        filename = f"ai_{uuid.uuid4().hex}.webp"
+        
+        # Subir a Supabase Storage
+        upload_start = time.time()
+        supabase.storage.from_("media").upload(
+            file=final_bytes,
+            path=filename,
+            file_options={"content-type": "image/webp", "upsert": "true"}
+        )
+        
+        public_url = supabase.storage.from_("media").get_public_url(filename)
+        
+        # Registrar en la tabla Media
+        new_media = models.Media(
+            filename=filename,
+            url=public_url,
+            file_type="image",
+            mime_type="image/webp",
+            size=len(final_bytes)
+        )
+        db.add(new_media)
+        db.commit()
+        
+        return {"url": public_url}
+        
+    except Exception as e:
+        logger.error(f"Error saving to Supabase: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al guardar la imagen: {e}")
 
     # Guardado y compresión
     supabase_url = os.environ.get("SUPABASE_URL")
