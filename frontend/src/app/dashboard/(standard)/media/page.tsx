@@ -9,7 +9,7 @@ import MediaQuotaBar from '@/components/media/MediaQuotaBar';
 import MediaGrid from '@/components/media/MediaGrid';
 import MediaBulkBar from '@/components/media/MediaBulkBar';
 import MediaLuxuryViewer from '@/components/media/MediaLuxuryViewer';
-import { Loader2, Sparkles } from 'lucide-react';
+import { Loader2, Sparkles, Upload, Image, Film } from 'lucide-react';
 
 export default function MediaGalleryPage() {
   const { showFeedback } = useFeedback();
@@ -45,14 +45,22 @@ export default function MediaGalleryPage() {
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/all`),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/quota`),
       ]);
-      if (filesRes.ok) setFiles(await filesRes.json());
-      if (quotaRes.ok) setQuota(await quotaRes.json());
+      
+      if (filesRes.ok) {
+        const data = await filesRes.json();
+        setFiles(data || []);
+      }
+      if (quotaRes.ok) {
+        const qData = await quotaRes.json();
+        setQuota(qData);
+      }
     } catch (e) {
-      showFeedback({ type: 'error', title: 'Error de Red', message: 'No se pudo conectar con el servidor.' });
+      console.error("Error fetching media:", e);
+      // No usamos showFeedback aquí para evitar dependencias circulares/bucles
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, []); // Sin dependencias para que sea estable
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -70,18 +78,22 @@ export default function MediaGalleryPage() {
       title: 'Eliminar Imagen',
       message: `¿Seguro que deseas eliminar "${selectedFile.name}"? Esta acción es permanente.`,
       onConfirm: async () => {
+        // Cerramos el visor inmediatamente para dar feedback visual
+        const fileNameToDelete = selectedFile.name;
+        setSelectedFile(null);
         setDeleting(true);
+        
         try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/${encodeURIComponent(selectedFile.name)}`, { method: 'DELETE' });
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/${encodeURIComponent(fileNameToDelete)}`, { method: 'DELETE' });
           if (res.ok) {
-            setSelectedFile(null);
             await fetchData();
             showFeedback({ type: 'success', title: 'Eliminado', message: 'La imagen ha sido eliminada correctamente.' });
           } else {
-            const err = await res.json();
+            const err = await res.json().catch(() => ({ detail: 'Error desconocido' }));
             showFeedback({ type: 'error', title: 'Error', message: err.detail || 'No se pudo eliminar la imagen.' });
           }
-        } catch {
+        } catch (err) {
+          console.error(err);
           showFeedback({ type: 'error', title: 'Error', message: 'Error de conexión al servidor.' });
         } finally {
           setDeleting(false);
@@ -118,22 +130,23 @@ export default function MediaGalleryPage() {
       message: `¿Estás seguro de que deseas eliminar estas ${selectedNames.size} imágenes definitivamente? Esta acción NO se puede deshacer.`,
       onConfirm: async () => {
         setBulkDeleting(true);
+        const namesArray = Array.from(selectedNames);
         try {
           const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/bulk-delete`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ filenames: Array.from(selectedNames) }),
+            body: JSON.stringify({ filenames: namesArray }),
           });
           if (res.ok) {
-            const data = await res.json();
             clearSelection();
             await fetchData();
-            showFeedback({ type: 'success', title: '¡Limpieza completada!', message: data.message });
+            showFeedback({ type: 'success', title: '¡Limpieza completada!', message: 'Los archivos han sido eliminados.' });
           } else {
-            const err = await res.json();
+            const err = await res.json().catch(() => ({ detail: 'Error en el servidor' }));
             showFeedback({ type: 'error', title: 'Error', message: err.detail || 'No se pudo ejecutar la limpieza.' });
           }
-        } catch {
+        } catch (err) {
+          console.error(err);
           showFeedback({ type: 'error', title: 'Error', message: 'Error de conexión al servidor.' });
         } finally {
           setBulkDeleting(false);
@@ -164,33 +177,41 @@ export default function MediaGalleryPage() {
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0];
+    const selectedFiles = Array.from(e.target.files);
 
-    if (file.type.startsWith('video/')) {
-      setIsProcessing(true);
-      setProcessingStatus('Cargando motor de vídeo...');
-      try {
-        const optimizedBlob = await processVideo(file, (progress) => {
-          setProcessingStatus(`Optimizando vídeo... ${progress}%`);
-          setProcessingProgress(progress);
-        });
-        setProcessingStatus('Finalizando subida...');
-        await handleUpload(optimizedBlob, `video_${Date.now()}.mp4`);
-      } catch (err) {
-        console.error(err);
-        showFeedback({ type: 'error', title: 'Error', message: 'No se pudo procesar el vídeo. Asegúrate de usar un navegador compatible.' });
-      } finally {
-        setIsProcessing(false);
-        setProcessingStatus('');
-        setProcessingProgress(0);
+    for (const file of selectedFiles) {
+      if (file.type.startsWith('video/')) {
+        setIsProcessing(true);
+        setProcessingStatus(`Preparando vídeo: ${file.name}`);
+        try {
+          const optimizedBlob = await processVideo(file, (progress) => {
+            setProcessingStatus(`Optimizando vídeo: ${file.name} (${progress}%)`);
+            setProcessingProgress(progress);
+          });
+          setProcessingStatus(`Finalizando subida: ${file.name}`);
+          await handleUpload(optimizedBlob, `video_${Date.now()}.mp4`);
+        } catch (err) {
+          console.error(err);
+          showFeedback({ type: 'error', title: 'Error', message: `No se pudo procesar ${file.name}. Asegúrate de usar un navegador compatible.` });
+        } finally {
+          setIsProcessing(false);
+          setProcessingStatus('');
+          setProcessingProgress(0);
+        }
+      } else if (file.type.startsWith('image/')) {
+        // Si es solo una imagen, permitimos recorte
+        if (selectedFiles.length === 1) {
+          const reader = new FileReader();
+          reader.addEventListener('load', () => {
+            setSelectedImageForCrop(reader.result?.toString() || '');
+            setShowCropModal(true);
+          });
+          reader.readAsDataURL(file);
+        } else {
+          // Si son varias, subida directa para no saturar con modales
+          await handleUpload(file, file.name);
+        }
       }
-    } else {
-      const reader = new FileReader();
-      reader.addEventListener('load', () => {
-        setSelectedImageForCrop(reader.result?.toString() || '');
-        setShowCropModal(true);
-      });
-      reader.readAsDataURL(file);
     }
     e.target.value = '';
   };
@@ -249,14 +270,30 @@ export default function MediaGalleryPage() {
             `}
           >
             <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4">
-              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-colors ${isDragging ? 'bg-[#d4af37] text-white' : 'bg-stone-100 text-stone-400'}`}>
-                <span className="text-2xl">{isDragging ? '📥' : '☁️'}</span>
+              <div className={`w-16 h-16 rounded-[2rem] flex items-center justify-center mb-4 transition-all duration-500 ${isDragging ? 'bg-[#d4af37] text-white scale-110 shadow-xl' : 'bg-stone-50 text-stone-300'}`}>
+                {isDragging ? (
+                  <Upload size={32} />
+                ) : (
+                  <div className="flex -space-x-3">
+                    <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center border border-stone-100">
+                      <Image size={20} className="text-stone-400" />
+                    </div>
+                    <div className="w-10 h-10 rounded-xl bg-white shadow-md flex items-center justify-center border border-stone-100 z-10">
+                      <Film size={20} className="text-[#d4af37]" />
+                    </div>
+                  </div>
+                )}
               </div>
-              <p className="mb-1 text-sm text-stone-800 font-black uppercase tracking-widest">
-                {isDragging ? '¡Suéltalo aquí!' : 'Haz clic o arrastra para subir'}
+              <p className="mb-2 text-sm text-stone-800 font-black uppercase tracking-widest">
+                {isDragging ? '¡Suelte para procesar!' : 'Gestionar Activos Multimedia'}
               </p>
-              <p className="text-xs text-stone-400 font-medium italic">
-                Optimización automática de vídeo (720p, sin audio) activa
+              <div className="flex items-center gap-3 text-[10px] text-stone-400 font-bold uppercase tracking-widest">
+                <span className="flex items-center gap-1.5"><Image size={12} /> Imágenes</span>
+                <span className="w-1 h-1 rounded-full bg-stone-300" />
+                <span className="flex items-center gap-1.5"><Film size={12} /> Vídeos</span>
+              </div>
+              <p className="text-[10px] text-stone-300 mt-3 italic font-serif">
+                Optimización inteligente y compresión automática activa para máxima velocidad.
               </p>
             </div>
             <input type="file" className="hidden" onChange={handleFileSelect} multiple accept="image/*,video/*" />

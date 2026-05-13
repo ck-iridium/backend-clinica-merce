@@ -161,13 +161,15 @@ export default function CropImageModal({ imageSrc, onClose, onCropComplete, forc
                     <div className="flex gap-2 bg-stone-50 border border-stone-100 p-1.5 rounded-2xl">
                       {[
                         { label: '1:1', val: 1 },
+                        { label: '3:4', val: 3 / 4 },
                         { label: '4:3', val: 4 / 3 },
+                        { label: '9:16', val: 9 / 16 },
                         { label: '16:9', val: 16 / 9 }
                       ].map(ratio => (
                         <button
                           key={ratio.label}
                           onClick={() => setAspectRatio(ratio.val)}
-                          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${aspectRatio === ratio.val ? 'bg-white text-stone-900 shadow-sm border border-stone-200' : 'text-stone-400 hover:text-stone-600'}`}
+                          className={`px-3 py-2 rounded-xl text-[10px] font-black transition-all ${Math.abs(aspectRatio - ratio.val) < 0.01 ? 'bg-white text-stone-900 shadow-sm border border-stone-200' : 'text-stone-400 hover:text-stone-600'}`}
                         >{ratio.label}</button>
                       ))}
                     </div>
