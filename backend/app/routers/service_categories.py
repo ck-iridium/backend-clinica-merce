@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from .. import schemas, database
+from .. import schemas, database, models
 from ..crud import service_categories as crud
 
 router = APIRouter(
@@ -12,6 +12,13 @@ router = APIRouter(
 @router.post("/", response_model=schemas.ServiceCategoryResponse)
 def create_service_category(category: schemas.ServiceCategoryCreate, db: Session = Depends(database.get_db)):
     return crud.create_service_category(db=db, category=category)
+
+@router.post("/reorder")
+def reorder_categories(items: List[schemas.CategoryReorderItem], db: Session = Depends(database.get_db)):
+    for item in items:
+        db.query(models.ServiceCategory).filter(models.ServiceCategory.id == item.id).update({"order_index": item.order_index})
+    db.commit()
+    return {"status": "ok"}
 
 @router.patch("/{category_id}", response_model=schemas.ServiceCategoryResponse)
 def update_service_category(category_id: str, category: schemas.ServiceCategoryUpdate, db: Session = Depends(database.get_db)):

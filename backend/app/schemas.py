@@ -50,7 +50,13 @@ class ClientResponse(ClientBase):
 # --- Service Categories ---
 class ServiceCategoryBase(BaseModel):
     name: str
+    description: Optional[str] = None
     image_url: Optional[str] = None
+    order_index: Optional[int] = 0
+
+class CategoryReorderItem(BaseModel):
+    id: str
+    order_index: int
 
 class ServiceCategoryCreate(ServiceCategoryBase):
     pass
@@ -436,6 +442,8 @@ class SiteContentBase(BaseModel):
     seo_description: Optional[str] = None
     seo_keywords: Optional[str] = None
 
+    home_sections_order: Optional[str] = None
+
 class SiteContentUpdate(BaseModel):
     hero_title: Optional[str] = None
     hero_subtitle: Optional[str] = None
@@ -457,6 +465,8 @@ class SiteContentUpdate(BaseModel):
     seo_title: Optional[str] = None
     seo_description: Optional[str] = None
     seo_keywords: Optional[str] = None
+    
+    home_sections_order: Optional[str] = None
 
 class SiteContentResponse(SiteContentBase):
     id: int

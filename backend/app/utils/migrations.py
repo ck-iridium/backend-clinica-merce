@@ -54,7 +54,11 @@ def run_auto_migrations():
             # ── Grok Video Generation & Multimedia (ELIMINADO) ────────────────────
             "ALTER TABLE services ADD COLUMN video_url VARCHAR",
             # ── Tabla de Medios (Galería) ──────────────────────────────────────────
-            "CREATE TABLE IF NOT EXISTS media (id VARCHAR(36) PRIMARY KEY, filename VARCHAR, url VARCHAR, file_type VARCHAR, mime_type VARCHAR, size INTEGER, service_id VARCHAR(36), created_at TIMESTAMP)"
+            "CREATE TABLE IF NOT EXISTS media (id VARCHAR(36) PRIMARY KEY, filename VARCHAR, url VARCHAR, file_type VARCHAR, mime_type VARCHAR, size INTEGER, service_id VARCHAR(36), created_at TIMESTAMP)",
+            # ── Home Builder (Ordenamiento CMS) ──────────────────────────────────
+            "ALTER TABLE service_categories ADD COLUMN order_index INTEGER DEFAULT 0",
+            "ALTER TABLE service_categories ADD COLUMN description TEXT",
+            "ALTER TABLE site_content ADD COLUMN home_sections_order TEXT"
         ]
         
         for m in migrations:

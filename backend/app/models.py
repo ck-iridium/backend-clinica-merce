@@ -61,7 +61,9 @@ class ServiceCategory(Base):
     __tablename__ = "service_categories"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     name = Column(String, nullable=False, unique=True)
+    description = Column(Text, nullable=True)
     image_url = Column(String, nullable=True)
+    order_index = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     services = relationship("Service", back_populates="category")
@@ -238,6 +240,9 @@ class SiteContent(Base):
     cta_subtitle = Column(String, default="Pide cita hoy mismo o contáctanos para asesoramiento personalizado.")
     cta_button_text = Column(String, default="Contactar")
     cta_button_link = Column(String, default="/contacto")
+
+    # Orden dinámico de la Home
+    home_sections_order = Column(Text, nullable=True)
 
     # SEO Dinámico
     seo_title = Column(String, nullable=True)

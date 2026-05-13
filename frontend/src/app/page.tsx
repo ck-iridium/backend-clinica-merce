@@ -31,6 +31,49 @@ export default async function Home() {
 
   if (!content) return <div className="flex items-center justify-center min-h-screen text-stone-500 font-bold">Cargando la web...</div>;
 
+  // 1. Preparar todas las secciones disponibles
+  const baseSections = [
+    { id: 'hero', type: 'hero' },
+    { id: 'about', type: 'about' },
+    { id: 'cta', type: 'cta' }
+  ];
+
+  const catSections = categories.map((c: any) => ({
+    id: c.id,
+    type: 'category',
+    data: c
+  }));
+
+  const allAvailable = [...baseSections, ...catSections];
+  let orderedSections: any[] = [];
+
+  // 2. Aplicar el orden de la Base de Datos (Con defensa Ghost ID)
+  if (content.home_sections_order) {
+    try {
+      const savedOrder = JSON.parse(content.home_sections_order);
+      
+      // Filtrar y ordenar según el JSON
+      savedOrder.forEach((id: string) => {
+        const found = allAvailable.find(s => s.id === id);
+        if (found) orderedSections.push(found); // Si no existe (Fantasma), se ignora
+      });
+      
+      // Añadir cualquier sección nueva que no estuviera en el JSON
+      allAvailable.forEach(s => {
+        if (!orderedSections.find(o => o.id === s.id)) orderedSections.push(s);
+      });
+    } catch {
+      orderedSections = [...baseSections.slice(0, 2), ...catSections, baseSections[2]];
+    }
+  } else {
+    orderedSections = [...baseSections.slice(0, 2), ...catSections, baseSections[2]];
+  }
+
+  // 3. Imponer la regla: Hero siempre primero (El Footer va fuera del array dinámico)
+  const hero = orderedSections.find(s => s.type === 'hero') || baseSections[0];
+  const middle = orderedSections.filter(s => s.type !== 'hero' && s.type !== 'seo');
+  const finalOrder = [hero, ...middle];
+
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 font-sans">
       <style dangerouslySetInnerHTML={{
@@ -40,157 +83,160 @@ export default async function Home() {
       `}} />
 
       <main className="w-full h-[100dvh] overflow-y-auto snap-y-mandatory md:h-auto md:overflow-visible md:snap-none scroll-smooth-premium relative">
-
-        {/* HERO SECTION - Ahora contiene el Navbar para que suba con ella */}
-        <section className={`relative h-[100dvh] min-h-[600px] w-full flex snap-start snap-stop-always md:snap-none ${content.hero_alignment === 'top' ? 'items-start pt-48' : content.hero_alignment === 'bottom' ? 'items-end pb-32' : 'items-center'} justify-center p-6 md:p-12 overflow-hidden mt-0`}>
-          <div className="absolute top-0 left-0 w-full z-[100]">
-            <PublicNavbar />
-          </div>
-
-          {content.hero_video_url ? (
-            <div className="absolute inset-0 z-0 bg-stone-900">
-              <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="w-full h-full object-cover"
-              >
-                <source src={content.hero_video_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${content.hero_video_url}` : content.hero_video_url} type="video/mp4" />
-              </video>
-              <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-stone-900/20 to-stone-900/60 mix-blend-multiply"></div>
-            </div>
-          ) : content.hero_image_url ? (
-            <div className="absolute inset-0 z-0 bg-stone-900">
-              <img src={content.hero_image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${content.hero_image_url}` : content.hero_image_url} alt="Hero" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-stone-900/20 to-stone-900/60 mix-blend-multiply"></div>
-            </div>
-          ) : (
-            <div className="absolute inset-0 z-0 bg-stone-900"></div>
-          )}
-
-          <div className="relative z-10 max-w-5xl mx-auto text-center space-y-6 animate-in slide-in-from-bottom-8 fade-in duration-1000">
-            <h1 className="text-6xl md:text-8xl lg:text-[7rem] leading-none font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
-              {content.hero_title}
-            </h1>
-            <p className="text-xl md:text-3xl text-white/90 max-w-3xl mx-auto font-medium font-sans tracking-wide leading-relaxed drop-shadow-md">
-              {content.hero_subtitle}
-            </p>
-            <div className="pt-8">
-              <Link href={content.hero_button_link} className="inline-block bg-white/10 backdrop-blur-md border border-white/20 text-white px-12 py-5 rounded-full font-bold text-lg hover:bg-white hover:text-stone-900 transition-all duration-500 shadow-2xl hover:scale-105 active:scale-95 group">
-                {content.hero_button_text} <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">→</span>
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* ABOUT SECTION */}
-        <section className="py-24 bg-white relative flex items-center h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none">
-          <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 items-center w-full">
-            <div className="space-y-6">
-              <h2 className="text-4xl font-extrabold text-stone-900">{content.about_title}</h2>
-              <div className="text-lg text-stone-600 leading-relaxed whitespace-pre-wrap font-medium">
-                {content.about_text}
-              </div>
-            </div>
-            {content.about_image_url ? (
-              <div className="rounded-[3rem] overflow-hidden shadow-2xl aspect-[4/5] md:aspect-auto md:h-[600px] relative">
-                <img src={content.about_image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${content.about_image_url}` : content.about_image_url} alt="Sobre Mí" className="w-full h-full object-cover" />
-              </div>
-            ) : (
-              <div className="rounded-[3rem] bg-stone-100 aspect-[4/5] md:aspect-auto md:h-[600px] flex flex-col items-center justify-center text-stone-400 border-2 border-dashed border-stone-200">
-                <span className="text-4xl mb-4">📷</span>
-                <p className="font-bold">Añade tu foto desde el CMS</p>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* BENTO GRID POR CATEGORÍAS */}
-        {categories.length > 0 && categories.map((category: any, index: number) => {
-          const categoryServices = services.filter((s: any) => s.category_id === category.id && s.is_active);
-          if (categoryServices.length === 0) return null;
-
-          const isEven = index % 2 === 0;
-
-          return (
-            <section key={category.id} className={`w-full pt-20 pb-8 md:py-24 overflow-hidden flex flex-col h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none ${isEven ? 'bg-white' : 'bg-[#F7F7F5]'}`}>
-              <div className="w-full max-w-7xl mx-auto px-6 mb-6 flex-shrink-0 flex justify-between items-end gap-8">
-                <div className="max-w-2xl">
-                  <h2 className="text-4xl md:text-5xl font-serif font-extrabold text-stone-900 mb-4">{category.name}</h2>
-                  <p className="hidden md:block text-lg md:text-xl text-stone-500">{category.description || 'Descubre nuestros tratamientos exclusivos diseñados para resaltar tu belleza natural.'}</p>
+        
+        {/* RENDERIZADO DINÁMICO DE SECCIONES */}
+        {finalOrder.map((section, index) => {
+          
+          if (section.type === 'hero') {
+            return (
+              <section key="hero" className={`relative h-[100dvh] min-h-[600px] w-full flex snap-start snap-stop-always md:snap-none ${content.hero_alignment === 'top' ? 'items-start pt-48' : content.hero_alignment === 'bottom' ? 'items-end pb-32' : 'items-center'} justify-center p-6 md:p-12 overflow-hidden mt-0`}>
+                <div className="absolute top-0 left-0 w-full z-[100]">
+                  <PublicNavbar />
                 </div>
-                <Link href={`/tratamientos#${category.id}`} className="hidden md:inline-flex items-center gap-2 font-bold text-[#d4af37] hover:text-stone-900 transition-colors uppercase tracking-widest text-sm">
-                  Ver Catálogo <span className="text-xl">→</span>
-                </Link>
-              </div>
 
-              <div className="hidden md:block w-full max-w-7xl mx-auto px-6 mb-8">
-                {categoryServices.length === 1 && (
-                  <div className="w-full">
-                    <ServiceCard
-                      service={categoryServices[0]}
-                      className="w-full aspect-[16/9] md:h-[500px]"
-                    />
+                {content.hero_video_url ? (
+                  <div className="absolute inset-0 z-0 bg-stone-900">
+                    <video autoPlay loop muted playsInline className="w-full h-full object-cover">
+                      <source src={content.hero_video_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${content.hero_video_url}` : content.hero_video_url} type="video/mp4" />
+                    </video>
+                    <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-stone-900/20 to-stone-900/60 mix-blend-multiply"></div>
+                  </div>
+                ) : content.hero_image_url ? (
+                  <div className="absolute inset-0 z-0 bg-stone-900">
+                    <img src={content.hero_image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${content.hero_image_url}` : content.hero_image_url} alt="Hero" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-stone-900/20 to-stone-900/60 mix-blend-multiply"></div>
+                  </div>
+                ) : (
+                  <div className="absolute inset-0 z-0 bg-stone-900"></div>
+                )}
+
+                <div className="relative z-10 max-w-5xl mx-auto text-center space-y-6 animate-in slide-in-from-bottom-8 fade-in duration-1000">
+                  <h1 className="text-6xl md:text-8xl lg:text-[7rem] leading-none font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
+                    {content.hero_title}
+                  </h1>
+                  <p className="text-xl md:text-3xl text-white/90 max-w-3xl mx-auto font-medium font-sans tracking-wide leading-relaxed drop-shadow-md">
+                    {content.hero_subtitle}
+                  </p>
+                  <div className="pt-8">
+                    <Link href={content.hero_button_link} className="inline-block bg-white/10 backdrop-blur-md border border-white/20 text-white px-12 py-5 rounded-full font-bold text-lg hover:bg-white hover:text-stone-900 transition-all duration-500 shadow-2xl hover:scale-105 active:scale-95 group">
+                      {content.hero_button_text} <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                    </Link>
+                  </div>
+                </div>
+              </section>
+            );
+          }
+
+          if (section.type === 'about') {
+            return (
+              <section key="about" className="py-24 bg-white relative flex items-center h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none">
+                <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 items-center w-full">
+                  <div className="space-y-6">
+                    <h2 className="text-4xl font-extrabold text-stone-900">{content.about_title}</h2>
+                    <div className="text-lg text-stone-600 leading-relaxed whitespace-pre-wrap font-medium">
+                      {content.about_text}
+                    </div>
+                  </div>
+                  {content.about_image_url ? (
+                    <div className="rounded-[3rem] overflow-hidden shadow-2xl aspect-[4/5] md:aspect-auto md:h-[600px] relative">
+                      <img src={content.about_image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${content.about_image_url}` : content.about_image_url} alt="Sobre Mí" className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="rounded-[3rem] bg-stone-100 aspect-[4/5] md:aspect-auto md:h-[600px] flex flex-col items-center justify-center text-stone-400 border-2 border-dashed border-stone-200">
+                      <span className="text-4xl mb-4">📷</span>
+                      <p className="font-bold">Añade tu foto desde el CMS</p>
+                    </div>
+                  )}
+                </div>
+              </section>
+            );
+          }
+
+          if (section.type === 'category') {
+            const category = section.data;
+            const categoryServices = services.filter((s: any) => s.category_id === category.id && s.is_active);
+            if (categoryServices.length === 0) return null;
+
+            // Alternamos el fondo basado en el índice para crear contraste visual
+            const isEven = index % 2 === 0;
+
+            return (
+              <section key={`cat-${category.id}`} className={`w-full pt-20 pb-8 md:py-24 overflow-hidden flex flex-col h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none ${isEven ? 'bg-white' : 'bg-[#F7F7F5]'}`}>
+                <div className="w-full max-w-7xl mx-auto px-6 mb-6 flex-shrink-0 flex justify-between items-end gap-8">
+                  <div className="max-w-2xl">
+                    <h2 className="text-4xl md:text-5xl font-serif font-extrabold text-stone-900 mb-4">{category.name}</h2>
+                    <p className="hidden md:block text-lg md:text-xl text-stone-500">{category.description || 'Descubre nuestros tratamientos exclusivos diseñados para resaltar tu belleza natural.'}</p>
+                  </div>
+                  <Link href={`/tratamientos#${category.id}`} className="hidden md:inline-flex items-center gap-2 font-bold text-[#d4af37] hover:text-stone-900 transition-colors uppercase tracking-widest text-sm">
+                    Ver Catálogo <span className="text-xl">→</span>
+                  </Link>
+                </div>
+
+                <div className="hidden md:block w-full max-w-7xl mx-auto px-6 mb-8">
+                  {categoryServices.length === 1 && (
+                    <div className="w-full">
+                      <ServiceCard service={categoryServices[0]} className="w-full aspect-[16/9] md:h-[500px]" />
+                    </div>
+                  )}
+                  {categoryServices.length === 2 && (
+                    <div className="flex justify-center gap-8">
+                      {categoryServices.map((svc: any) => (
+                        <ServiceCard key={svc.id} service={svc} className="w-[372px] h-[662px]" />
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {categoryServices.length >= 3 && (
+                  <div className="hidden md:block">
+                    <TreatmentCarousel servicios={categoryServices} />
                   </div>
                 )}
-                {categoryServices.length === 2 && (
-                  <div className="flex justify-center gap-8">
-                    {categoryServices.map((svc: any) => (
-                      <ServiceCard
-                        key={svc.id}
-                        service={svc}
-                        className="w-[372px] h-[662px]"
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
 
-              {categoryServices.length >= 3 && (
-                <div className="hidden md:block">
-                  <TreatmentCarousel servicios={categoryServices} />
+                <div className="md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-6 items-center flex-1 min-h-0">
+                  {categoryServices.map((svc: any) => (
+                    <ServiceCard key={svc.id} service={svc} className="w-[75vw] h-full snap-center snap-stop-always" />
+                  ))}
                 </div>
-              )}
+              </section>
+            );
+          }
 
-              <div className="md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-6 items-center flex-1 min-h-0">
-                {categoryServices.map((svc: any) => (
-                  <ServiceCard key={svc.id} service={svc} className="w-[75vw] h-full snap-center snap-stop-always" />
-                ))}
-              </div>
-            </section>
-          );
+          if (section.type === 'cta') {
+            return (
+              <section key="cta" className="flex flex-col justify-center w-full py-24 bg-[#d4af37] text-stone-900 text-center px-6 h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none">
+                <div className="max-w-3xl mx-auto space-y-8 animate-in zoom-in-95 duration-700 w-full">
+                  <h2 className="text-5xl md:text-6xl font-extrabold tracking-tight">{content.cta_title}</h2>
+                  <p className="text-xl md:text-2xl font-medium opacity-90">{content.cta_subtitle}</p>
+                  <div className="pt-6">
+                    <a href={content.cta_button_link} className="inline-block bg-stone-900 text-white px-12 py-6 rounded-full font-bold text-xl hover:bg-stone-800 transition-all shadow-xl hover:scale-105">
+                      {content.cta_button_text}
+                    </a>
+                  </div>
+
+                  {settings && (
+                    <div className="mt-16 pt-12 border-t border-stone-900/10 grid grid-cols-1 md:grid-cols-3 gap-8 text-sm font-semibold">
+                      <div>
+                        <span className="block opacity-60 mb-2 uppercase tracking-widest text-xs">Ubicación</span>
+                        <span className="opacity-90">{settings.clinic_address || 'Dirección no configurada'}</span>
+                      </div>
+                      <div>
+                        <span className="block opacity-60 mb-2 uppercase tracking-widest text-xs">Contacto Telefónico</span>
+                        <span className="opacity-90">{settings.clinic_phone || 'Teléfono no configurado'}</span>
+                      </div>
+                      <div>
+                        <span className="block opacity-60 mb-2 uppercase tracking-widest text-xs">WhatsApp Directo</span>
+                        <span className="opacity-90">{settings.whatsapp_number || 'No configurado'}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </section>
+            );
+          }
+
+          return null;
         })}
-
-        {/* CTA FINAL SECTION */}
-        <section className="flex flex-col justify-center w-full py-24 bg-[#d4af37] text-stone-900 text-center px-6 h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none">
-          <div className="max-w-3xl mx-auto space-y-8 animate-in zoom-in-95 duration-700 w-full">
-            <h2 className="text-5xl md:text-6xl font-extrabold tracking-tight">{content.cta_title}</h2>
-            <p className="text-xl md:text-2xl font-medium opacity-90">{content.cta_subtitle}</p>
-            <div className="pt-6">
-              <a href={content.cta_button_link} className="inline-block bg-stone-900 text-white px-12 py-6 rounded-full font-bold text-xl hover:bg-stone-800 transition-all shadow-xl hover:scale-105">
-                {content.cta_button_text}
-              </a>
-            </div>
-
-            {settings && (
-              <div className="mt-16 pt-12 border-t border-stone-900/10 grid grid-cols-1 md:grid-cols-3 gap-8 text-sm font-semibold">
-                <div>
-                  <span className="block opacity-60 mb-2 uppercase tracking-widest text-xs">Ubicación</span>
-                  <span className="opacity-90">{settings.clinic_address || 'Dirección no configurada'}</span>
-                </div>
-                <div>
-                  <span className="block opacity-60 mb-2 uppercase tracking-widest text-xs">Contacto Telefónico</span>
-                  <span className="opacity-90">{settings.clinic_phone || 'Teléfono no configurado'}</span>
-                </div>
-                <div>
-                  <span className="block opacity-60 mb-2 uppercase tracking-widest text-xs">WhatsApp Directo</span>
-                  <span className="opacity-90">{settings.whatsapp_number || 'No configurado'}</span>
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
 
         <div className="snap-start snap-stop-always md:snap-none w-full">
           <Footer />

@@ -6,7 +6,7 @@ def get_service_category(db: Session, category_id: str):
     return db.query(models.ServiceCategory).filter(models.ServiceCategory.id == category_id).first()
 
 def get_service_categories(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.ServiceCategory).offset(skip).limit(limit).all()
+    return db.query(models.ServiceCategory).order_by(models.ServiceCategory.order_index).offset(skip).limit(limit).all()
 
 def create_service_category(db: Session, category: schemas.ServiceCategoryCreate):
     db_category = models.ServiceCategory(**category.model_dump())
