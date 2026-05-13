@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import HomeBuilderLayout from '@/components/cms/HomeBuilderLayout';
 import HomeBuilderPreview from '@/components/cms/HomeBuilderPreview';
 import { Reorder } from 'framer-motion';
-import { GripVertical, Camera, Trash2, Image as ImageIcon } from 'lucide-react';
+import { GripVertical, Camera, Trash2, Image as ImageIcon, Sparkles } from 'lucide-react';
 
 const TABS = ['HERO', 'SOBRE MÍ', 'CATEGORÍAS', 'CTA', 'SEO'];
 
