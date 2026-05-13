@@ -89,7 +89,7 @@ export default async function Home() {
           
           if (section.type === 'hero') {
             return (
-              <section key="hero" className={`relative h-[100dvh] min-h-[600px] w-full flex snap-start snap-stop-always md:snap-none ${content.hero_alignment === 'top' ? 'items-start pt-48' : content.hero_alignment === 'bottom' ? 'items-end pb-32' : 'items-center'} justify-center p-6 md:p-12 overflow-hidden mt-0`}>
+              <section key="hero" className={`relative h-[100dvh] min-h-[600px] w-full flex snap-start snap-stop-always md:snap-none ${content.hero_alignment === 'top' ? 'items-start pt-48' : content.hero_alignment === 'bottom' ? 'items-end pb-32' : 'items-center'} ${content.hero_horizontal_alignment === 'left' ? 'justify-start' : content.hero_horizontal_alignment === 'right' ? 'justify-end' : 'justify-center'} p-6 md:p-12 overflow-hidden mt-0`}>
                 <div className="absolute top-0 left-0 w-full z-[100]">
                   <PublicNavbar />
                 </div>
@@ -110,18 +110,27 @@ export default async function Home() {
                   <div className="absolute inset-0 z-0 bg-stone-900"></div>
                 )}
 
-                <div className="relative z-10 max-w-5xl mx-auto text-center space-y-6 animate-in slide-in-from-bottom-8 fade-in duration-1000">
+                <div className={`relative z-10 max-w-7xl w-full animate-in slide-in-from-bottom-8 fade-in duration-1000 ${
+                  content.hero_horizontal_alignment === 'left' ? 'text-left px-6 md:px-12 lg:px-24 ml-0 mr-auto' : 
+                  content.hero_horizontal_alignment === 'right' ? 'text-right px-6 md:px-12 lg:px-24 mr-0 ml-auto' : 
+                  'text-center px-6 mx-auto'
+                }`}>
                   <h1 className="text-6xl md:text-8xl lg:text-[7rem] leading-none font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
                     {content.hero_title}
                   </h1>
-                  <p className="text-xl md:text-3xl text-white/90 max-w-3xl mx-auto font-medium font-sans tracking-wide leading-relaxed drop-shadow-md">
+                  <p className={`text-xl md:text-3xl text-white/90 font-medium font-sans tracking-wide leading-relaxed drop-shadow-md mt-6 ${
+                    content.hero_horizontal_alignment === 'center' ? 'max-w-3xl mx-auto' : 'max-w-3xl'
+                  } ${content.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''}`}>
                     {content.hero_subtitle}
                   </p>
-                  <div className="pt-8">
-                    <Link href={content.hero_button_link} className="inline-block bg-white/10 backdrop-blur-md border border-white/20 text-white px-12 py-5 rounded-full font-bold text-lg hover:bg-white hover:text-stone-900 transition-all duration-500 shadow-2xl hover:scale-105 active:scale-95 group">
-                      {content.hero_button_text} <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">→</span>
-                    </Link>
-                  </div>
+                  
+                  {content.hero_show_button !== false && (
+                    <div className="pt-8">
+                      <Link href={content.hero_button_link || "#"} className="inline-block bg-white/10 backdrop-blur-md border border-white/20 text-white px-12 py-5 rounded-full font-bold text-lg hover:bg-white hover:text-stone-900 transition-all duration-500 shadow-2xl hover:scale-105 active:scale-95 group">
+                        {content.hero_button_text} <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </section>
             );
@@ -130,16 +139,24 @@ export default async function Home() {
           if (section.type === 'about') {
             return (
               <section key="about" className="py-24 bg-white relative flex items-center h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none">
-                <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 items-center w-full">
-                  <div className="space-y-6">
-                    <h2 className="text-4xl font-extrabold text-stone-900">{content.about_title}</h2>
+                <div className={`max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 items-center w-full ${content.about_layout === 'left' ? 'md:flex-row-reverse' : ''}`}>
+                  <div className="space-y-8">
+                    <h2 className="text-4xl font-serif font-extrabold text-stone-900 leading-tight">{content.about_title}</h2>
                     <div className="text-lg text-stone-600 leading-relaxed whitespace-pre-wrap font-medium">
                       {content.about_text}
                     </div>
+                    {content.about_show_button && (
+                      <div className="pt-4">
+                        <Link href={content.about_button_link || "#"} className="inline-block border-2 border-stone-200 text-stone-800 px-10 py-4 rounded-full font-bold text-sm uppercase tracking-widest hover:bg-stone-900 hover:text-white hover:border-stone-900 transition-all duration-500">
+                          {content.about_button_text}
+                        </Link>
+                      </div>
+                    )}
                   </div>
                   {content.about_image_url ? (
-                    <div className="rounded-[3rem] overflow-hidden shadow-2xl aspect-[4/5] md:aspect-auto md:h-[600px] relative">
-                      <img src={content.about_image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${content.about_image_url}` : content.about_image_url} alt="Sobre Mí" className="w-full h-full object-cover" />
+                    <div className="rounded-[3rem] overflow-hidden shadow-2xl aspect-[4/5] md:aspect-auto md:h-[600px] relative group">
+                      <img src={content.about_image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${content.about_image_url}` : content.about_image_url} alt="Sobre Mí" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                      <div className="absolute inset-0 bg-stone-900/10 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     </div>
                   ) : (
                     <div className="rounded-[3rem] bg-stone-100 aspect-[4/5] md:aspect-auto md:h-[600px] flex flex-col items-center justify-center text-stone-400 border-2 border-dashed border-stone-200">

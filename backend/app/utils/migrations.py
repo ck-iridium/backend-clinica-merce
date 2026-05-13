@@ -58,7 +58,16 @@ def run_auto_migrations():
             # ── Home Builder (Ordenamiento CMS) ──────────────────────────────────
             "ALTER TABLE service_categories ADD COLUMN order_index INTEGER DEFAULT 0",
             "ALTER TABLE service_categories ADD COLUMN description TEXT",
-            "ALTER TABLE site_content ADD COLUMN home_sections_order TEXT"
+            "ALTER TABLE site_content ADD COLUMN home_sections_order TEXT",
+            # ── CMS: Visibilidad de categorías en Home ─────────────────────────────
+            "ALTER TABLE service_categories ADD COLUMN is_active BOOLEAN DEFAULT TRUE",
+            # ── CMS: Personalización Hero & Sobre Mí ─────────────────────────────
+            "ALTER TABLE site_content ADD COLUMN hero_show_button BOOLEAN DEFAULT TRUE",
+            "ALTER TABLE site_content ADD COLUMN hero_horizontal_alignment VARCHAR DEFAULT 'center'",
+            "ALTER TABLE site_content ADD COLUMN about_layout VARCHAR DEFAULT 'right'",
+            "ALTER TABLE site_content ADD COLUMN about_show_button BOOLEAN DEFAULT FALSE",
+            "ALTER TABLE site_content ADD COLUMN about_button_text VARCHAR DEFAULT 'Saber Más'",
+            "ALTER TABLE site_content ADD COLUMN about_button_link VARCHAR DEFAULT '/contacto'"
         ]
         
         for m in migrations:

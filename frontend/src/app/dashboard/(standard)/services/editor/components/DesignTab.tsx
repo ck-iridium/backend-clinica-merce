@@ -309,24 +309,6 @@ export default function DesignTab({ formValues, register, control, setValue, set
         </div>
       </div>
 
-      <div className="flex items-center gap-4 p-5 bg-stone-50 border border-stone-200 rounded-[2rem] shadow-sm">
-        <div className="relative flex items-center justify-center">
-          <input
-            type="checkbox"
-            {...register('is_featured')}
-            id="is_featured"
-            className="peer w-6 h-6 accent-[#d4af37] rounded-lg opacity-0 absolute inset-0 cursor-pointer z-10"
-          />
-          <div className="w-6 h-6 border-2 border-stone-200 rounded-lg bg-white peer-checked:bg-[#d4af37] peer-checked:border-[#d4af37] transition-all flex items-center justify-center text-white">
-            <Sparkles size={12} fill="currentColor" />
-          </div>
-        </div>
-        <label htmlFor="is_featured" className="cursor-pointer select-none">
-          <p className="text-sm font-bold text-stone-800">Servicio Destacado</p>
-          <p className="text-[10px] text-stone-400 font-black uppercase tracking-widest mt-0.5">Mostrar en slider principal</p>
-        </label>
-      </div>
-
       <AIImageGeneratorModal
         open={showAIImageModal}
         onClose={() => setShowAIImageModal(false)}

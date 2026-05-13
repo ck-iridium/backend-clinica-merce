@@ -63,6 +63,7 @@ class ServiceCategory(Base):
     name = Column(String, nullable=False, unique=True)
     description = Column(Text, nullable=True)
     image_url = Column(String, nullable=True)
+    is_active = Column(Boolean, default=True)
     order_index = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -224,16 +225,22 @@ class SiteContent(Base):
     # Hero Section
     hero_title = Column(String, default="Descubre tu mejor versión")
     hero_subtitle = Column(String, default="Tratamientos estéticos avanzados y personalizados para resaltar tu belleza natural.")
+    hero_show_button = Column(Boolean, default=True)
     hero_button_text = Column(String, default="Reservar Cita")
     hero_button_link = Column(String, default="/reservar")
     hero_image_url = Column(String, nullable=True)
     hero_video_url = Column(String, nullable=True)
     hero_alignment = Column(String, default="center") # top, center, bottom
+    hero_horizontal_alignment = Column(String, default="center") # left, center, right
     
     # About Section
     about_title = Column(String, default="Sobre Merce Estética")
     about_text = Column(Text, default="Nuestra pasión es cuidar de ti y de tu piel con los tratamientos más innovadores.")
     about_image_url = Column(String, nullable=True)
+    about_layout = Column(String, default="right") # left, right (imagen a la izq o der)
+    about_show_button = Column(Boolean, default=False)
+    about_button_text = Column(String, default="Saber Más")
+    about_button_link = Column(String, default="/contacto")
     
     # CTA Section
     cta_title = Column(String, default="¿Lista para empezar a cuidarte?")

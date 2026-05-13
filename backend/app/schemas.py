@@ -52,6 +52,7 @@ class ServiceCategoryBase(BaseModel):
     name: str
     description: Optional[str] = None
     image_url: Optional[str] = None
+    is_active: bool = True
     order_index: Optional[int] = 0
 
 class CategoryReorderItem(BaseModel):
@@ -423,15 +424,21 @@ class DirectSaleRequest(BaseModel):
 class SiteContentBase(BaseModel):
     hero_title: Optional[str] = None
     hero_subtitle: Optional[str] = None
+    hero_show_button: Optional[bool] = True
     hero_button_text: Optional[str] = None
     hero_button_link: Optional[str] = None
     hero_image_url: Optional[str] = None
     hero_video_url: Optional[str] = None
     hero_alignment: Optional[str] = "center"
+    hero_horizontal_alignment: Optional[str] = "center"
     
     about_title: Optional[str] = None
     about_text: Optional[str] = None
     about_image_url: Optional[str] = None
+    about_layout: Optional[str] = "right"
+    about_show_button: Optional[bool] = False
+    about_button_text: Optional[str] = "Saber Más"
+    about_button_link: Optional[str] = "/contacto"
     
     cta_title: Optional[str] = None
     cta_subtitle: Optional[str] = None
@@ -447,15 +454,21 @@ class SiteContentBase(BaseModel):
 class SiteContentUpdate(BaseModel):
     hero_title: Optional[str] = None
     hero_subtitle: Optional[str] = None
+    hero_show_button: Optional[bool] = None
     hero_button_text: Optional[str] = None
     hero_button_link: Optional[str] = None
     hero_image_url: Optional[str] = None
     hero_video_url: Optional[str] = None
     hero_alignment: Optional[str] = None
+    hero_horizontal_alignment: Optional[str] = None
     
     about_title: Optional[str] = None
     about_text: Optional[str] = None
     about_image_url: Optional[str] = None
+    about_layout: Optional[str] = None
+    about_show_button: Optional[bool] = None
+    about_button_text: Optional[str] = None
+    about_button_link: Optional[str] = None
     
     cta_title: Optional[str] = None
     cta_subtitle: Optional[str] = None
