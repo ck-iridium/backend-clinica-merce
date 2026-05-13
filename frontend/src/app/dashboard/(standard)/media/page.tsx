@@ -40,25 +40,40 @@ export default function MediaGalleryPage() {
   // ── Data fetching ──
   const fetchData = useCallback(async () => {
     setLoading(true);
+    console.log("FETCH: Iniciando carga de medios...");
+    
     try {
-      const [filesRes, quotaRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/all`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/quota`),
-      ]);
+      // 1. Cargar Archivos (Prioritario)
+      try {
+        const filesRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/all`);
+        if (filesRes.ok) {
+          const data = await filesRes.json();
+          setFiles(data || []);
+          console.log(`FETCH: ${data.length} archivos cargados.`);
+        } else {
+          console.error("FETCH: Error cargando archivos", filesRes.status);
+        }
+      } catch (e) {
+        console.error("FETCH: Fallo de red en media/all", e);
+      }
+
+      // 2. Cargar Cuota (Opcional, no debe bloquear la galería)
+      try {
+        const quotaRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/quota`);
+        if (quotaRes.ok) {
+          const qData = await quotaRes.json();
+          setQuota(qData);
+          console.log("FETCH: Cuota cargada.");
+        }
+      } catch (e) {
+        console.warn("FETCH: Error no crítico en cuota", e);
+      }
       
-      if (filesRes.ok) {
-        const data = await filesRes.json();
-        setFiles(data || []);
-      }
-      if (quotaRes.ok) {
-        const qData = await quotaRes.json();
-        setQuota(qData);
-      }
     } catch (e) {
-      console.error("Error fetching media:", e);
-      // No usamos showFeedback aquí para evitar dependencias circulares/bucles
+      console.error("FETCH: Error crítico en fetchData", e);
     } finally {
       setLoading(false);
+      console.log("FETCH: Finalizado.");
     }
   }, []); // Sin dependencias para que sea estable
 
