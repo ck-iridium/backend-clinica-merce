@@ -380,51 +380,7 @@ export default function CMSPage() {
       );
     }
 
-    if (activeTab === 'DESTACADOS') {
-      return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div className="mb-2">
-             <h2 className="text-lg font-serif font-bold text-stone-900 leading-tight">Servicios Destacados</h2>
-             <p className="text-[10px] text-stone-400 uppercase tracking-widest font-medium">Gestiona qué tratamientos aparecen en portada</p>
-          </div>
 
-          <div className="grid grid-cols-1 gap-3">
-            {services.map((svc) => (
-              <div key={svc.id} className="p-4 rounded-2xl bg-white border border-stone-100 shadow-sm flex items-center justify-between hover:border-stone-200 transition-all">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-stone-50 overflow-hidden border border-stone-100 shrink-0">
-                    {svc.image_url ? (
-                      <img src={svc.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${svc.image_url}` : svc.image_url} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-stone-200">
-                        <Sparkles size={16} />
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-stone-800 leading-tight">{svc.name}</p>
-                    <p className="text-[10px] text-stone-400 font-medium">{categories.find(c => c.id === svc.category_id)?.name || 'Sin categoría'}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                   {/* Toggle Destacado */}
-                   <div className="flex flex-col items-end gap-1">
-                      <span className="text-[8px] font-black uppercase tracking-tighter text-stone-400">Destacar</span>
-                      <button 
-                        onClick={() => handleServiceToggle(svc.id, 'is_featured')}
-                        className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none ${svc.is_featured ? 'bg-[#d4af37]' : 'bg-stone-200'}`}
-                      >
-                        <span className={`pointer-events-none block h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-transform ${svc.is_featured ? 'translate-x-[20px]' : 'translate-x-1'}`} />
-                      </button>
-                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      );
-    }
 
     if (activeTab === 'CATEGORÍAS') {
       return (
