@@ -31,7 +31,7 @@ async function getRelatedServices(currentServiceId: number) {
   });
   if (!res.ok) return [];
   const services = await res.json();
-  return services.filter((s: any) => s.id !== currentServiceId && s.is_active).slice(0, 12);
+  return services.filter((s: any) => s.id !== currentServiceId && s.is_active).slice(0, 24);
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
