@@ -21,7 +21,7 @@ export const viewport: Viewport = {
 export async function generateMetadata(): Promise<Metadata> {
   let allowIndexing = false;
   let seoData: any = {
-    title: "Clínica Mercè | Estética y Láser",
+    title: "Estetica Merce | Estética y Láser",
     description: "Tratamientos de estética avanzada y depilación láser.",
     keywords: [],
     ogImage: ""

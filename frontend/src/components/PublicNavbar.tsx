@@ -170,7 +170,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
               </Link>
             ) : (
               <Link href="/" onClick={() => setIsOpen(false)} className={`font-extrabold text-2xl tracking-tighter transition-colors ${!useTransparent ? 'text-[#d4af37]' : 'text-white hover:text-[#d4af37]'}`}>
-                {settings?.clinic_name || "Merce"}
+                {settings?.clinic_name || "Estetica Merce"}
               </Link>
             )}
           </div>

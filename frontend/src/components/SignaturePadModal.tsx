@@ -148,7 +148,7 @@ export function SignaturePadModal({ isOpen, onClose, onSave, clientName }: Signa
           <div className="bg-stone-50 border border-stone-200 rounded-2xl p-6 h-48 overflow-y-auto mb-6 text-xs text-stone-500 text-justify leading-relaxed">
             <p className="font-bold text-stone-700 mb-2">DECLARACIÓN DEL PACIENTE:</p>
             <p className="mb-2">Don/Doña <strong>{clientName}</strong> manifiesto que he sido debidamente informado/a y he comprendido la naturaleza y propósito del tratamiento seleccionado, así como las posibles complicaciones, riesgos generales e infrecuentes asociados al mismo.</p>
-            <p className="mb-2">Adicionalmente, presto mi consentimiento EXPRESO, de acuerdo a la Ley Orgánica 3/2018 de Protección de Datos Personales y garantía de los derechos digitales (LOPDGDD) y el Reglamento (UE) 2016/679 (RGPD), para el uso, tratamiento y archivo de mis datos personales, historial clínico y fotografías con fines de diagnóstico y evolución médica, a favor de <strong>Clínica Mercè</strong>.</p>
+            <p className="mb-2">Adicionalmente, presto mi consentimiento EXPRESO, de acuerdo a la Ley Orgánica 3/2018 de Protección de Datos Personales y garantía de los derechos digitales (LOPDGDD) y el Reglamento (UE) 2016/679 (RGPD), para el uso, tratamiento y archivo de mis datos personales, historial clínico y fotografías con fines de diagnóstico y evolución médica, a favor de <strong>Estetica Merce</strong>.</p>
             <p>Con la firma del presente documento, asumo que he tenido la oportunidad de aclarar dudas y realizo la aceptación del tratamiento propuesto de forma libre y voluntaria.</p>
           </div>
 

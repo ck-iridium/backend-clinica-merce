@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: { params: { category_slug: st
   if (!category) return { title: 'Categoría no encontrada' };
 
   return {
-    title: `${category.name} | Clínica de Estética`,
+    title: `${category.name} | Estetica Merce`,
     description: category.seo_description || category.description || `Descubre nuestra categoría de ${category.name}.`,
   };
 }
@@ -67,7 +67,7 @@ export default async function CategoryDynamicPage({ params }: { params: { catego
 
 Utilizamos aparatología de vanguardia combinada con técnicas manuales exclusivas, creando una sinergia perfecta que no solo embellece, sino que también promueve la salud integral desde el interior.
 
-Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos potenciar tu bienestar con la máxima discreción y profesionalidad que caracteriza a la Clínica Mercè.`;
+Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos potenciar tu bienestar con la máxima discreción y profesionalidad que caracteriza a Estetica Merce.`;
 
   return (
     <div className="min-h-screen bg-stone-50 font-sans text-stone-900 selection:bg-[#d4af37]/30">
@@ -143,13 +143,13 @@ Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos p
         </div>
       </section>
 
-      {/* 4. NAVEGACIÓN BENTO GRID (Fondo claro, layout adaptativo) */}
+      {/* 4. NAVEGACIÓN BENTO GRID (Fondo crema premium, layout adaptativo) */}
       {otherCategories.length > 0 && (
-        <section className="py-24 bg-stone-50 border-t border-stone-100">
+        <section className="py-24 md:py-32 bg-[#FDFCFB] border-t border-stone-200/40">
           <div className="max-w-7xl mx-auto px-6 w-full">
             <div className="text-center mb-16">
-              <h3 className="text-xs font-black uppercase tracking-[0.3em] text-stone-400 mb-3">Sigue explorando</h3>
-              <h2 className="text-4xl font-serif font-bold text-stone-800">Otras especialidades</h2>
+              <h3 className="text-xs font-black uppercase tracking-[0.4em] text-stone-400 mb-3">Sigue explorando</h3>
+              <h2 className="text-4xl md:text-5xl font-serif font-bold text-stone-800">Otras especialidades</h2>
             </div>
 
             {/* Grid adaptativo según el número de categorías (1-4) */}
@@ -161,7 +161,7 @@ Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos p
               }}
             >
               {otherCategories.map((other: any, i: number) => {
-                let gridClasses = "relative rounded-3xl overflow-hidden group block shadow-sm hover:shadow-xl transition-all duration-500 h-full";
+                let gridClasses = "relative rounded-[2rem] overflow-hidden group block shadow-luxury transition-all duration-700 h-full bg-white";
                 
                 // Lógica de recolocación para terminar los espacios (Bento Style)
                 if (otherCategories.length === 4) {
@@ -183,37 +183,37 @@ Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos p
                     className={gridClasses}
                   >
                     {/* Imagen de fondo */}
-                    <div className="absolute inset-0 bg-stone-200">
+                    <div className="absolute inset-0 bg-[#F2F0ED]">
                       {other.image_url ? (
                         <img 
                           src={getFullUrl(other.image_url)} 
                           alt={other.name} 
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          className="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-110 group-hover:rotate-1"
                         />
                       ) : (
-                        <div className="w-full h-full bg-stone-300 flex items-center justify-center italic text-stone-400">Sin imagen</div>
+                        <div className="w-full h-full bg-[#E5E1DA] flex items-center justify-center italic text-stone-400 font-serif">Estetica Merce</div>
                       )}
                     </div>
                     
-                    {/* Overlays */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-stone-900/90 via-stone-900/20 to-transparent transition-opacity duration-500 group-hover:opacity-40"></div>
+                    {/* Overlay Beige Soft (Quiet Luxury) */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#2C241E]/80 via-[#2C241E]/20 to-transparent transition-opacity duration-700 group-hover:opacity-60"></div>
                     
-                    {/* Glassmorphism Blur en Hover */}
-                    <div className="absolute inset-0 bg-stone-900/20 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-center p-6 text-center">
-                      <h3 className="text-2xl md:text-3xl font-serif font-bold text-white translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-75">
-                        {other.name}
-                      </h3>
-                      <span className="mt-4 text-[#d4af37] font-bold tracking-widest uppercase text-xs opacity-0 group-hover:opacity-100 transition-all duration-500 delay-150">
-                        Explorar →
-                      </span>
+                    {/* Contenido en la esquina inferior izquierda */}
+                    <div className="absolute bottom-0 left-0 p-8 md:p-10 w-full flex flex-col items-start justify-end h-full">
+                      <div className="transform transition-all duration-500 ease-out translate-y-4 group-hover:translate-y-0">
+                        <h3 className="text-2xl md:text-3xl font-serif font-bold text-white mb-2 drop-shadow-md">
+                          {other.name}
+                        </h3>
+                        <div className="overflow-hidden h-6">
+                          <span className="text-[#d4af37] font-bold tracking-[0.2em] uppercase text-[10px] block transform translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 delay-100">
+                            Explorar especialidad →
+                          </span>
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Título visible por defecto */}
-                    <div className="absolute bottom-8 left-8 right-8 transition-opacity duration-300 group-hover:opacity-0">
-                      <h3 className="text-xl md:text-2xl font-bold text-white drop-shadow-md">
-                        {other.name}
-                      </h3>
-                    </div>
+                    {/* Sutil brillo beige en hover */}
+                    <div className="absolute inset-0 bg-[#FDFCFB]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
                   </Link>
                 );
               })}

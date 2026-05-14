@@ -54,7 +54,7 @@ export default function LoginPage() {
             <span className="text-2xl">🔐</span>
           </div>
           <h1 className="text-3xl font-bold text-stone-900 mb-2">Panel Administrativo</h1>
-          <p className="text-stone-500 font-medium">Clínica Mercè</p>
+          <p className="text-stone-500 font-medium">Estetica Merce</p>
         </div>
 
         {error && (
