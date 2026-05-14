@@ -140,7 +140,16 @@ export default function BookingPage() {
       }
 
       if (!res.ok) throw new Error("Error al confirmar la reserva");
-      setStep(4);
+      
+      const data = await res.json();
+      
+      // Si el backend devuelve una URL de checkout (fianza requerida), redirigir
+      if (data.checkout_url) {
+        window.location.href = data.checkout_url;
+      } else {
+        // Reserva normal sin fianza
+        setStep(4);
+      }
     } catch (err) {
       setBookingError("Oops, ha ocurrido un error. Inténtalo de nuevo o llama a la clínica.");
       console.error(err);

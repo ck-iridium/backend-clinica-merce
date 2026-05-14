@@ -105,6 +105,30 @@ export default function GeneralTab({
           <input type="number" step="15" {...register('duration_minutes', { required: true, valueAsNumber: true })} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" />
         </div>
       </div>
+
+      {/* STRIPE FIANZA CONFIGURATION */}
+      <div className="p-4 bg-stone-50 border border-stone-200 rounded-xl space-y-4">
+        <div className="flex items-center gap-3">
+          <input type="checkbox" {...register('requires_deposit')} className="w-5 h-5 accent-[#d4af37] rounded cursor-pointer" />
+          <div>
+            <p className="text-sm font-bold text-stone-700">Requiere Fianza Online</p>
+            <p className="text-[10px] text-stone-500 uppercase tracking-widest">Cobrar mediante Stripe al reservar</p>
+          </div>
+        </div>
+        {formValues.requires_deposit && (
+          <div className="pt-3 border-t border-stone-200 mt-2">
+            <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Importe Fianza (€) *</label>
+            <input 
+              type="number" 
+              step="0.01" 
+              {...register('deposit_amount', { required: formValues.requires_deposit, valueAsNumber: true })} 
+              className="w-full sm:w-1/2 px-4 py-3 rounded-xl border border-stone-200 bg-white focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" 
+            />
+            <p className="text-[10px] text-stone-400 mt-1">Este importe se cobrará automáticamente y bloqueará el slot por 15 mins.</p>
+          </div>
+        )}
+      </div>
+
       <div>
         <div className="flex items-center justify-between mb-1.5">
           <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest">Descripción Corta</label>

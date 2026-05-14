@@ -42,6 +42,8 @@ export interface ServiceFormData {
     headerStyle: 'split_image' | 'split_video';
     accentColor: string;
   };
+  requires_deposit: boolean;
+  deposit_amount: number;
 }
 
 const DEFAULT_FORM_DATA: ServiceFormData = {
@@ -63,7 +65,9 @@ const DEFAULT_FORM_DATA: ServiceFormData = {
     alignment: 'left',
     headerStyle: 'split_image',
     accentColor: '#d4af37'
-  }
+  },
+  requires_deposit: false,
+  deposit_amount: 0
 };
 
 export default function ServiceEditor({ initialData, serviceId }: { initialData?: any, serviceId?: string }) {
@@ -99,6 +103,8 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
         seo_title: initialData.seo_title || '',
         seo_description: initialData.seo_description || '',
         seo_keywords: initialData.seo_keywords || '',
+        requires_deposit: initialData.requires_deposit || false,
+        deposit_amount: initialData.deposit_amount || 0,
         layout_preferences: initialData.layout_preferences || DEFAULT_FORM_DATA.layout_preferences
       };
 

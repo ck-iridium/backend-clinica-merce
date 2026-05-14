@@ -91,6 +91,8 @@ class ServiceBase(BaseModel):
     seo_description: Optional[str] = None
     seo_keywords: Optional[str] = None
     layout_preferences: Optional[Dict[str, Any]] = None
+    requires_deposit: bool = False
+    deposit_amount: Optional[float] = None
 
 class ServiceCreate(ServiceBase):
     pass
@@ -111,6 +113,8 @@ class ServiceUpdate(BaseModel):
     seo_description: Optional[str] = None
     seo_keywords: Optional[str] = None
     layout_preferences: Optional[Dict[str, Any]] = None
+    requires_deposit: Optional[bool] = None
+    deposit_amount: Optional[float] = None
 
 class ServiceResponse(ServiceBase):
     id: str
@@ -148,6 +152,8 @@ class ClinicSettingsBase(BaseModel):
     instagram_url: Optional[str] = None
     maps_url: Optional[str] = None
     allow_search_engine_indexing: bool = False
+    stripe_account_id: Optional[str] = None
+    stripe_charges_enabled: bool = False
     whatsapp_number: Optional[str] = None
     booking_margin_hours: float = 2.0
     open_time: str = "09:00"
@@ -189,6 +195,8 @@ class ClinicSettingsUpdate(BaseModel):
     instagram_url: Optional[str] = None
     maps_url: Optional[str] = None
     allow_search_engine_indexing: Optional[bool] = None
+    stripe_account_id: Optional[str] = None
+    stripe_charges_enabled: Optional[bool] = None
     whatsapp_number: Optional[str] = None
     booking_margin_hours: Optional[float] = None
     open_time: Optional[str] = None
@@ -259,6 +267,9 @@ class AppointmentBase(BaseModel):
     start_time: datetime
     end_time: datetime
     status: str = "pending"
+    payment_status: str = "pending"
+    stripe_payment_intent_id: Optional[str] = None
+    stripe_checkout_session_id: Optional[str] = None
     notes: Optional[str] = None
     reminder_sent: bool = False
 
@@ -271,6 +282,9 @@ class AppointmentUpdate(BaseModel):
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
     status: Optional[str] = None
+    payment_status: Optional[str] = None
+    stripe_payment_intent_id: Optional[str] = None
+    stripe_checkout_session_id: Optional[str] = None
     notes: Optional[str] = None
 
 class AppointmentResponse(AppointmentBase):
@@ -388,6 +402,7 @@ class PublicBookingResponse(BaseModel):
     start_time: datetime
     end_time: datetime
     status: str
+    checkout_url: Optional[str] = None
 
 class AvailabilityResponse(BaseModel):
     date: str

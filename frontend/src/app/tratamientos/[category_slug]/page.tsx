@@ -73,7 +73,7 @@ Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos p
     <div className="min-h-screen bg-stone-50 font-sans text-stone-900 selection:bg-[#d4af37]/30">
 
       {/* 1. HERO DE CATEGORÍA (40vh) — Navbar DENTRO de la sección (estilo Home) */}
-      <section className="relative w-full h-[50vh] overflow-hidden flex flex-col justify-end">
+      <section className="relative w-full h-[45vh] overflow-hidden flex flex-col justify-end">
         {/* Navbar absoluto arriba */}
         <div className="absolute top-0 left-0 w-full z-50">
           <PublicNavbar transparent={true} />
@@ -111,8 +111,8 @@ Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos p
 
       {/* 2. SLIDER DE TRATAMIENTOS — loop={false} para evitar duplicados */}
       {categoryServices.length > 0 && (
-        <section className="relative z-20 w-full overflow-hidden">
-          <div className="bg-[#F5F2EE] pt-12 md:pt-20 pb-16">
+        <section className="relative z-20 -mt-10 md:-mt-14 w-full overflow-hidden">
+          <div className="bg-[#F5F2EE] rounded-t-[2.5rem] pt-12 md:pt-20 pb-16">
             <div className="max-w-7xl mx-auto px-6 mb-8 flex justify-between items-end">
               <div>
                 <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-800">
@@ -161,7 +161,7 @@ Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos p
               }}
             >
               {otherCategories.map((other: any, i: number) => {
-                let gridClasses = "relative rounded-none overflow-hidden group block shadow-luxury transition-all duration-700 h-full bg-white";
+                let gridClasses = "relative rounded-[2rem] overflow-hidden group block shadow-luxury transition-all duration-700 h-full bg-white";
 
                 // Lógica de recolocación para terminar los espacios (Bento Style)
                 if (otherCategories.length === 4) {

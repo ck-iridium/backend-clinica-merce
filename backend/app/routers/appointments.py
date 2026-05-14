@@ -2,9 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks, R
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import date as DateType
-from .. import schemas, database
+from .. import schemas, database, models
 from ..crud import appointments as crud
 from ..limiter import limiter
+from ..crud.settings import get_clinic_settings
+from ..scheduler import scheduler
+import stripe
+import os
+from datetime import datetime, timedelta
 
 
 router = APIRouter(
@@ -55,6 +60,64 @@ def public_booking(request: Request, booking: schemas.PublicBookingRequest, back
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
+    service = db.query(models.Service).filter(models.Service.id == booking.service_id).first()
+    settings = get_clinic_settings(db)
+    checkout_url = None
+
+    if service and service.requires_deposit and service.deposit_amount and settings.stripe_account_id and settings.stripe_charges_enabled:
+        stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
+        frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
+        
+        try:
+            session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[{
+                    'price_data': {
+                        'currency': 'eur',
+                        'unit_amount': int(service.deposit_amount * 100),
+                        'product_data': {
+                            'name': f"Fianza - {service.name}",
+                            'description': f"Reserva {appt.start_time.strftime('%d/%m/%Y %H:%M')}",
+                        },
+                    },
+                    'quantity': 1,
+                }],
+                mode='payment',
+                success_url=f"{frontend_url}/reserva/exito?session_id={{CHECKOUT_SESSION_ID}}",
+                cancel_url=f"{frontend_url}/reserva/cancelada",
+                client_reference_id=appt.id,
+                stripe_account=settings.stripe_account_id # Cargo directo en cuenta conectada
+            )
+            
+            appt.status = "awaiting_payment"
+            appt.payment_status = "awaiting_payment"
+            db.commit()
+            
+            checkout_url = session.url
+            
+            # Programar la liberación del slot a los 15 minutos
+            def release_unpaid_slot(appt_id):
+                from ..database import SessionLocal
+                from ..models import Appointment
+                db_local = SessionLocal()
+                try:
+                    appointment = db_local.query(Appointment).filter(Appointment.id == appt_id).first()
+                    if appointment and appointment.payment_status == "awaiting_payment":
+                        appointment.status = "cancelled"
+                        appointment.notes = (appointment.notes or "") + "\n[Sistema] Cita cancelada por falta de pago (fianza expirada)."
+                        db_local.commit()
+                        print(f"Slot liberado: Cita {appt_id} cancelada tras 15 min sin pago.")
+                finally:
+                    db_local.close()
+
+            run_date = datetime.now() + timedelta(minutes=15)
+            scheduler.add_job(release_unpaid_slot, 'date', run_date=run_date, args=[appt.id])
+
+        except Exception as e:
+            print(f"Error creando sesión de Stripe: {e}")
+            # Si falla Stripe, permitimos la reserva normal web_pending
+            pass
+
     return schemas.PublicBookingResponse(
         appointment_id=appt.id,
         client_id=client.id,
@@ -62,6 +125,7 @@ def public_booking(request: Request, booking: schemas.PublicBookingRequest, back
         start_time=appt.start_time,
         end_time=appt.end_time,
         status=appt.status,
+        checkout_url=checkout_url
     )
 
 

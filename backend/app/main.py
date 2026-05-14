@@ -7,7 +7,8 @@ from slowapi.errors import RateLimitExceeded
 from fastapi.staticfiles import StaticFiles
 import os
 from .database import engine, Base
-from .routers import clients, services, appointments, vouchers, invoices, settings, users, voucher_templates, time_blocks, automation, service_categories, site_content, uploads, backups, media, ai
+from .routers import clients, services, appointments, vouchers, invoices, settings, users, voucher_templates, time_blocks, automation, service_categories, site_content, uploads, backups, media, ai, stripe_payments
+from .scheduler import scheduler
 
 # Crear las tablas en la base de datos (Nota: en producción mejor usar Alembic)
 Base.metadata.create_all(bind=engine)
@@ -102,6 +103,17 @@ app.include_router(uploads.router)
 app.include_router(backups.router)
 app.include_router(media.router)
 app.include_router(ai.router)
+app.include_router(stripe_payments.router)
+
+@app.on_event("startup")
+async def startup_event():
+    scheduler.start()
+    print("APScheduler iniciado.")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    scheduler.shutdown()
+    print("APScheduler detenido.")
 # Serve static files for uploads
 os.makedirs("uploads", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")

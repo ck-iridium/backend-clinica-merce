@@ -89,6 +89,8 @@ class Service(Base):
     seo_description = Column(Text, nullable=True)
     seo_keywords = Column(String, nullable=True)
     layout_preferences = Column(JSONB, default=dict, nullable=True)
+    requires_deposit = Column(Boolean, default=False)
+    deposit_amount = Column(Numeric(10, 2), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
@@ -113,7 +115,10 @@ class Appointment(Base):
     service_id = Column(String(36), ForeignKey("services.id"), nullable=False)
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=False)
-    status = Column(String, default="pending") # pending, confirmed, completed, cancelled
+    status = Column(String, default="pending") # pending, confirmed, completed, cancelled, awaiting_payment
+    payment_status = Column(String, default="pending") # pending, awaiting_payment, deposit_paid, fully_paid, refunded
+    stripe_payment_intent_id = Column(String, nullable=True)
+    stripe_checkout_session_id = Column(String, nullable=True)
     notes = Column(Text, nullable=True)
     reminder_sent = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -197,6 +202,10 @@ class ClinicSettings(Base):
     
     default_image_shot = Column(String, default="conceptual")
     default_image_style = Column(String, default="luxury")
+
+    # Stripe Connect Configuration
+    stripe_account_id = Column(String, nullable=True)
+    stripe_charges_enabled = Column(Boolean, default=False)
 
 class Invoice(Base):
     __tablename__ = "invoices"

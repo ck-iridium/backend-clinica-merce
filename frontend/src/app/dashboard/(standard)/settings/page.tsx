@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useAuthRole } from '@/hooks/useAuthRole';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Save, Building2, SearchCode, ImageIcon, Hash, Clock, Calendar, Trash2 } from 'lucide-react';
+import { Save, Building2, SearchCode, ImageIcon, Hash, Clock, Calendar, Trash2, CreditCard } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -20,6 +20,7 @@ import AgendaTab from './tabs/AgendaTab';
 import BillingTab from './tabs/BillingTab';
 import BrandingTab from './tabs/BrandingTab';
 import AdvancedTab from './tabs/AdvancedTab';
+import PaymentsTab from './tabs/PaymentsTab';
 
 export default function SettingsPage() {
   const { showFeedback } = useFeedback();
@@ -215,6 +216,7 @@ export default function SettingsPage() {
               { id: 'general', label: 'General', icon: Building2 },
               { id: 'agenda', label: 'Agenda', icon: Clock },
               { id: 'billing', label: 'Facturación', icon: Hash },
+              { id: 'payments', label: 'Pagos', icon: CreditCard },
               { id: 'branding', label: 'Branding', icon: ImageIcon },
               { id: 'advanced', label: 'Avanzado', icon: SearchCode },
             ].map((tab) => (
@@ -277,6 +279,7 @@ export default function SettingsPage() {
               handleImageUpload={handleImageUpload}
             />
           )}
+          {activeTab === 'payments' && <PaymentsTab settings={settings} setSettings={setSettings} />}
           {activeTab === 'advanced' && <AdvancedTab settings={settings} setSettings={setSettings} />}
         </div>
       </div>
