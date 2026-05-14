@@ -12,8 +12,8 @@ interface BotonReservaProProps {
   color?: string;
 }
 
-export default function BotonReservaPro({ 
-  texto = "RESERVAR CITA", 
+export default function BotonReservaPro({
+  texto = "RESERVAR CITA",
   onClick,
   href,
   className = "",
@@ -26,17 +26,17 @@ export default function BotonReservaPro({
   };
 
   const content = (
-    <div 
+    <div
       style={gradientStyle}
       className="relative px-8 py-3.5 rounded-full flex items-center justify-center
-                    shadow-[inset_0_2px_4px_rgba(255,255,255,0.5),inset_0_-2px_4px_rgba(0,0,0,0.2)]
-                    group-hover:shadow-[inset_0_2px_6px_rgba(255,255,255,0.7),inset_0_-2px_4px_rgba(0,0,0,0.3),0_10px_20px_-5px_rgba(0,0,0,0.2)]
+                    shadow-[inset_0_4px_8px_rgba(255,255,255,0.7),inset_0_-1px_2px_rgba(0,0,0,0.1)]
+                    group-hover:shadow-[inset_0_6px_12px_rgba(255,255,255,0.8),inset_0_-1px_2px_rgba(0,0,0,0.2),0_10px_20px_-5px_rgba(0,0,0,0.1)]
                     transition-all duration-500 overflow-hidden border border-black/5"
     >
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
-      <span className="relative z-10 text-[11px] font-black uppercase tracking-[0.4em] text-white 
-                     [text-shadow:_0_1px_2px_rgba(0,0,0,0.8),_0_0_10px_rgba(0,0,0,0.3)]
-                     filter group-hover:brightness-110 transition-all duration-300">
+      <span className="relative z-10 text-[16px] font-black capitalize tracking-[0.15em] text-stone-950
+                     [text-shadow:_0_1px_1px_rgba(255,255,255,0.4),_0_-1px_1px_rgba(0,0,0,0.2)]
+                     filter group-hover:brightness-125 transition-all duration-300">
         {texto}
       </span>
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[35%] bg-gradient-to-b from-white/30 to-transparent rounded-full blur-[1px]" />
@@ -49,7 +49,8 @@ export default function BotonReservaPro({
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-[-150%] bg-[conic-gradient(from_0deg,transparent_0deg,transparent_120deg,rgba(0,0,0,0.3)_180deg,transparent_240deg,transparent_360deg)] opacity-40 group-hover:opacity-100"
+          style={{ background: `conic-gradient(from 0deg, transparent 0deg, transparent 150deg, ${color} 180deg, transparent 210deg, transparent 360deg)` }}
+          className="absolute inset-[-150%] opacity-100"
         />
         {content}
       </Link>
@@ -66,8 +67,9 @@ export default function BotonReservaPro({
     >
       <motion.div
         animate={{ rotate: 360 }}
-        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-        className="absolute inset-[-150%] bg-[conic-gradient(from_0deg,transparent_0deg,transparent_120deg,rgba(0,0,0,0.3)_180deg,transparent_240deg,transparent_360deg)] opacity-40 group-hover:opacity-100"
+        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+        style={{ background: `conic-gradient(from 0deg, transparent 0deg, transparent 150deg, ${color} 180deg, transparent 210deg, transparent 360deg)` }}
+        className="absolute inset-[-150%] opacity-100"
       />
       {content}
     </motion.button>
