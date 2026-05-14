@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%; /* #FAFAFA - Crema muy claro */
+    --background: 40 15% 99%; /* #FDFCFB - Blanco Roto Premium */
     --foreground: 24 10% 10%; /* #1c1917 - Antracita */
 
     --card: 0 0% 100%; /* #FFFFFF - Blanco puro */
@@ -14,13 +14,13 @@
     --popover-foreground: 24 10% 10%;
  
     --primary: 46 65% 52%; /* #D4AF37 - Dorado refinado */
-    --primary-foreground: 0 0% 98%; /* #FAFAFA */
+    --primary-foreground: 40 15% 99%;
  
-    --secondary: 40 100% 98%; /* #FFFBF5 - Crema cálido */
+    --secondary: 35 25% 94%; /* #F5F2EE - Beige Linen Premium */
     --secondary-foreground: 24 10% 10%;
  
-    --muted: 60 5% 96%; /* stone-100 */
-    --muted-foreground: 25 5% 45%; /* stone-500 */
+    --muted: 40 30% 95%; /* Beige Soft */
+    --muted-foreground: 25 15% 45%; /* Marrón suave */
  
     --accent: 40 100% 98%; /* #FFFBF5 */
     --accent-foreground: 24 10% 10%;
@@ -28,8 +28,8 @@
     --destructive: 0 84% 60%; /* red-500 */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 60 5% 90%; /* stone-200 */
-    --input: 60 5% 90%;
+    --border: 40 20% 92%; /* Borde Beige */
+    --input: 40 20% 92%;
     --ring: 46 65% 52%; /* Dorado */
  
     --radius: 1rem; /* rounded-2xl base roughly */

@@ -112,7 +112,7 @@ Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos p
       {/* 2. SLIDER DE TRATAMIENTOS — loop={false} para evitar duplicados */}
       {categoryServices.length > 0 && (
         <section className="relative z-20 -mt-10 md:-mt-14 w-full overflow-hidden">
-          <div className="bg-stone-50 rounded-t-[2.5rem] pt-12 md:pt-20 pb-16">
+          <div className="bg-[#F5F2EE] rounded-t-[2.5rem] pt-12 md:pt-20 pb-16">
             <div className="max-w-7xl mx-auto px-6 mb-8 flex justify-between items-end">
               <div>
                 <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-800">
@@ -145,7 +145,7 @@ Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos p
 
       {/* 4. NAVEGACIÓN BENTO GRID (Fondo crema premium, layout adaptativo) */}
       {otherCategories.length > 0 && (
-        <section className="py-24 md:py-32 bg-[#FDFCFB] border-t border-stone-200/40">
+        <section className="py-24 md:py-32 bg-[#F5F2EE] border-t border-border/40">
           <div className="max-w-7xl mx-auto px-6 w-full">
             <div className="text-center mb-16">
               <h3 className="text-xs font-black uppercase tracking-[0.4em] text-stone-400 mb-3">Sigue explorando</h3>
@@ -183,7 +183,7 @@ Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos p
                     className={gridClasses}
                   >
                     {/* Imagen de fondo */}
-                    <div className="absolute inset-0 bg-[#F2F0ED]">
+                    <div className="absolute inset-0 bg-[#EBE7E0]">
                       {other.image_url ? (
                         <img 
                           src={getFullUrl(other.image_url)} 

@@ -159,7 +159,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
 
   return (
     <>
-      <nav className={`w-full z-[100] transition-all duration-500 ease-in-out ${!useTransparent ? 'bg-white/90 backdrop-blur-xl border-b border-stone-200/50 shadow-sm py-0 sticky top-0' : 'bg-transparent border-transparent py-2 absolute top-0 left-0'}`}>
+      <nav className={`w-full z-[100] transition-all duration-500 ease-in-out ${!useTransparent ? 'bg-white/90 backdrop-blur-xl border-b border-border/50 shadow-sm py-0 sticky top-0' : 'bg-transparent border-transparent py-2 absolute top-0 left-0'}`}>
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between relative">
 
           {/* LOGO */}

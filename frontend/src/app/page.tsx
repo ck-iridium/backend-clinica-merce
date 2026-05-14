@@ -178,7 +178,7 @@ export default async function Home() {
             const isEven = index % 2 === 0;
 
             return (
-              <section key={`cat-${category.id}`} className={`w-full pt-20 pb-8 md:py-24 overflow-hidden flex flex-col h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none ${isEven ? 'bg-white' : 'bg-[#F7F7F5]'}`}>
+              <section key={`cat-${category.id}`} className={`w-full pt-20 pb-8 md:py-24 overflow-hidden flex flex-col h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none ${isEven ? 'bg-white' : 'bg-[#F5F2EE]'}`}>
                 <div className="w-full max-w-7xl mx-auto px-6 mb-6 flex-shrink-0 flex justify-between items-end gap-8">
                   <div className="max-w-2xl">
                     <h2 className="text-4xl md:text-5xl font-serif font-extrabold text-stone-900 mb-4">{category.name}</h2>
