@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import BotonReservaPro from './BotonReservaPro';
 
 function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen }: { svc: any, getFullUrl: (url: string) => string, onClick: () => void, isLarge?: boolean, isParentOpen: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -176,9 +177,11 @@ export default function PublicNavbar() {
             </div>
 
             <Link href="/contacto" className={`transition-colors ${pathname === '/contacto' ? 'text-[#d4af37]' : !isHome ? 'text-stone-800 hover:text-[#d4af37]' : 'text-white hover:text-[#d4af37]'}`}>Contacto</Link>
-            <a href={btnLink} className="bg-stone-900 text-white px-6 py-3 rounded-full hover:bg-[#d4af37] transition-all shadow-md active:scale-95">
-              {btnText}
-            </a>
+            <BotonReservaPro 
+              texto={btnText} 
+              href={btnLink}
+              className="scale-90 origin-right"
+            />
           </div>
 
           {/* MEGA MENU (Full width relative to container) */}
@@ -301,9 +304,12 @@ export default function PublicNavbar() {
 
           <div className="w-full h-px bg-stone-100 my-2 max-w-[150px] mx-auto"></div>
 
-          <a href={btnLink} onClick={() => setIsOpen(false)} className="bg-[#d4af37] text-white px-10 py-5 rounded-full hover:bg-stone-900 transition-all shadow-2xl text-2xl w-full max-w-xs mx-auto active:scale-95">
-            {btnText}
-          </a>
+          <BotonReservaPro 
+            texto={btnText} 
+            href={btnLink}
+            onClick={() => setIsOpen(false)}
+            className="w-full max-w-xs mx-auto"
+          />
 
           {/* Información de contacto */}
           {settings?.clinic_phone && (

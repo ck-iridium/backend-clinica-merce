@@ -10,6 +10,7 @@ import {
   Share2
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import BotonReservaPro from '@/components/BotonReservaPro';
 
 const DAYS_MAP: Record<number, string> = {
   1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado', 7: 'Domingo'
@@ -183,22 +184,11 @@ export default function ContactoPage() {
                   <label className="absolute left-0 top-4 text-stone-300 text-xl pointer-events-none transition-all peer-focus:-top-6 peer-focus:text-[10px] peer-focus:font-black peer-focus:uppercase peer-focus:tracking-widest peer-focus:text-[#d4af37] peer-[:not(:placeholder-shown)]:-top-6 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-[#d4af37]">¿En qué podemos ayudarte?</label>
                 </div>
 
-                <button 
+                <BotonReservaPro 
                   type="submit"
-                  disabled={formState !== 'idle'}
-                  className="group flex items-center gap-8 text-stone-900 disabled:opacity-50"
-                >
-                  <div className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-700 shadow-xl
-                    ${formState === 'sent' ? 'bg-emerald-500 text-white' : 'bg-stone-900 text-white group-hover:bg-[#d4af37]'}`}>
-                    <ChevronRight size={28} strokeWidth={1} className={formState === 'idle' ? 'group-hover:translate-x-2 transition-transform duration-500' : ''} />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-stone-400 group-hover:text-[#d4af37] transition-colors">Enviar formulario</p>
-                    <p className="text-xl font-serif font-bold italic">
-                      {formState === 'idle' ? 'Iniciar contacto' : formState === 'sending' ? 'Procesando...' : '¡Recibido!'}
-                    </p>
-                  </div>
-                </button>
+                  texto={formState === 'idle' ? 'Enviar Consulta' : formState === 'sending' ? 'Enviando...' : 'Mensaje Recibido'}
+                  className="w-full md:w-auto"
+                />
               </form>
             </motion.div>
 

@@ -11,6 +11,7 @@ import TreatmentScrollHandler from '@/components/TreatmentScrollHandler';
 import ScrollIndicator from '@/components/ScrollIndicator';
 import Footer from '@/components/Footer';
 import PublicNavbar from '@/components/PublicNavbar';
+import BotonReservaPro from '@/components/BotonReservaPro';
 
 async function getServiceData(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/slug/${slug}`, {
@@ -153,16 +154,12 @@ export default async function TreatmentDynamicPage({ params }: { params: { slug:
                 </div>
 
                 <div className="lg:ml-auto w-full lg:w-auto">
-                  <Link
+                  <BotonReservaPro 
+                    texto="Reservar Ahora"
+                    color={layoutPreferences.accentColor}
                     href={`/reservar?servicio=${service.id}&nombre=${encodeURIComponent(service.name)}`}
-                    className="animate-shine relative inline-flex items-center justify-center w-full lg:w-auto px-10 py-6 rounded-2xl font-bold text-white shadow-[0_10px_30px_-10px_rgba(212,175,55,0.5)] transition-all hover:scale-[1.02] active:scale-95 group overflow-hidden"
-                    style={{ backgroundColor: layoutPreferences.accentColor || '#d4af37' }}
-                  >
-                    <span className="relative z-10 flex items-center gap-3 text-lg">
-                      Reservar Ahora
-                      <ArrowLeft className="w-5 h-5 rotate-180 transition-transform group-hover:translate-x-1" />
-                    </span>
-                  </Link>
+                    className="w-full lg:w-auto"
+                  />
                 </div>
               </div>
 
