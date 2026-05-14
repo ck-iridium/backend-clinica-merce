@@ -50,7 +50,9 @@ class ClientResponse(ClientBase):
 # --- Service Categories ---
 class ServiceCategoryBase(BaseModel):
     name: str
+    slug: Optional[str] = None
     description: Optional[str] = None
+    seo_description: Optional[str] = None
     image_url: Optional[str] = None
     is_active: bool = True
     order_index: Optional[int] = 0
@@ -114,6 +116,7 @@ class ServiceResponse(ServiceBase):
     id: str
     created_at: datetime
     category: Optional['ServiceCategoryResponse'] = None
+    category_slug: Optional[str] = None
     
     class Config:
         from_attributes = True

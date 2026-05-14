@@ -1,19 +1,29 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from .. import models, schemas
 
 # Services
 def get_service(db: Session, service_id: str):
-    return db.query(models.Service).filter(models.Service.id == service_id).first()
+    service = db.query(models.Service).options(joinedload(models.Service.category)).filter(models.Service.id == service_id).first()
+    if service and service.category:
+        service.category_slug = service.category.slug
+    return service
 
 def get_service_by_slug(db: Session, slug: str):
-    service = db.query(models.Service).filter(models.Service.slug == slug).first()
+    service = db.query(models.Service).options(joinedload(models.Service.category)).filter(models.Service.slug == slug).first()
     if not service:
         # Fallback para servicios antiguos sin slug (buscar por ID si es un UUID válido)
-        service = db.query(models.Service).filter(models.Service.id == slug).first()
+        service = db.query(models.Service).options(joinedload(models.Service.category)).filter(models.Service.id == slug).first()
+    
+    if service and service.category:
+        service.category_slug = service.category.slug
     return service
 
 def get_services(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Service).offset(skip).limit(limit).all()
+    services = db.query(models.Service).options(joinedload(models.Service.category)).offset(skip).limit(limit).all()
+    for s in services:
+        if s.category:
+            s.category_slug = s.category.slug
+    return services
 
 def create_service(db: Session, service: schemas.ServiceCreate):
     db_service = models.Service(**service.model_dump())

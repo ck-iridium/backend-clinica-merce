@@ -67,14 +67,17 @@ export default async function CatalogPage() {
                 <section key={catName} className="max-w-7xl mx-auto px-6">
                   {/* Category Header */}
                   <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-10 border-b border-stone-200 pb-8">
-                    <div className="w-24 h-24 sm:w-32 sm:h-32 shrink-0 rounded-[1.5rem] overflow-hidden shadow-lg border border-stone-100 bg-white">
+                    <Link href={`/tratamientos/${categoryInfo?.slug || categoryInfo?.id}`} className="w-24 h-24 sm:w-32 sm:h-32 shrink-0 rounded-[1.5rem] overflow-hidden shadow-lg border border-stone-100 bg-white group relative block">
+                      <div className="absolute inset-0 bg-stone-900/10 group-hover:bg-stone-900/0 transition-colors z-10 pointer-events-none"></div>
                       <CategoryImage 
                         src={categoryInfo?.image_url?.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${categoryInfo.image_url}` : categoryInfo?.image_url} 
                         alt={catName} 
                       />
-                    </div>
+                    </Link>
                     <div>
-                      <h2 className="text-3xl md:text-4xl font-extrabold text-stone-800 tracking-tight">{catName}</h2>
+                      <Link href={`/tratamientos/${categoryInfo?.slug || categoryInfo?.id}`} className="hover:text-[#d4af37] transition-colors">
+                        <h2 className="text-3xl md:text-4xl font-extrabold text-stone-800 tracking-tight">{catName}</h2>
+                      </Link>
                       <p className="text-stone-500 font-semibold mt-2">{svcs.length} tratamientos disponibles</p>
                     </div>
                   </div>
@@ -82,7 +85,8 @@ export default async function CatalogPage() {
                   {/* Services Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {svcs.map((svc: any) => {
-                       const serviceLink = `/tratamientos/${svc.slug || svc.id}`;
+                       const catSlug = categoryInfo?.slug || categoryInfo?.id || 'general';
+                       const serviceLink = `/tratamientos/${catSlug}/${svc.slug || svc.id}`;
                        return (
                          <Link href={serviceLink} key={svc.id} className="bg-white p-8 rounded-[2.5rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-stone-100 flex flex-col relative group overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-yellow-50 to-transparent rounded-bl-[4rem] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>

@@ -4,10 +4,15 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import BotonReservaPro from './BotonReservaPro';
 
-function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen }: { svc: any, getFullUrl: (url: string) => string, onClick: () => void, isLarge?: boolean, isParentOpen: boolean }) {
+function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen, categories }: { svc: any, getFullUrl: (url: string) => string, onClick: () => void, isLarge?: boolean, isParentOpen: boolean, categories: any[] }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
+
+  // Buscar el slug de la categoría para construir la URL Silo
+  const category = categories.find(c => c.id === svc.category_id);
+  const categorySlug = category?.slug || category?.id || 'general';
+  const serviceLink = `/tratamientos/${categorySlug}/${svc.slug || svc.id}`;
 
   useEffect(() => {
     if (videoRef.current) {
@@ -27,7 +32,7 @@ function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen }
 
   return (
     <Link
-      href={`/tratamientos/${svc.slug || svc.id}`}
+      href={serviceLink}
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -88,7 +93,7 @@ function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen }
   );
 }
 
-export default function PublicNavbar() {
+export default function PublicNavbar({ transparent = false }: { transparent?: boolean }) {
   const pathname = usePathname();
   const isDashboard = pathname?.startsWith('/dashboard');
   const [isOpen, setIsOpen] = useState(false);
@@ -115,7 +120,6 @@ export default function PublicNavbar() {
       .then(data => setSettings(data))
       .catch(() => { });
 
-    // Fetch site content just for button link
     fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/site-content/`)
       .then(res => res.json())
       .then(data => {
@@ -124,7 +128,6 @@ export default function PublicNavbar() {
       })
       .catch(() => { });
 
-    // Fetch categories and services for Mega Menu
     if (!isDashboard) {
       fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/service-categories/`)
         .then(res => res.json())
@@ -140,7 +143,6 @@ export default function PublicNavbar() {
     }
   }, [isDashboard]);
 
-  // Bloqueo de scroll cuando el menú móvil está abierto para aislar la experiencia
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -153,40 +155,40 @@ export default function PublicNavbar() {
   if (isDashboard) return null;
 
   const isHome = pathname === '/';
+  const useTransparent = transparent || isHome;
 
   return (
     <>
-      <nav className={`sticky top-0 w-full z-[100] transition-all duration-500 ease-in-out translate-y-0 ${!isHome ? 'bg-white/90 backdrop-blur-xl border-b border-stone-200/50 shadow-sm py-0' : 'bg-transparent border-transparent py-2'}`}>
+      <nav className={`w-full z-[100] transition-all duration-500 ease-in-out ${!useTransparent ? 'bg-white/90 backdrop-blur-xl border-b border-stone-200/50 shadow-sm py-0 sticky top-0' : 'bg-transparent border-transparent py-2 absolute top-0 left-0'}`}>
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between relative">
 
-          {/* LOGO - z-index alto para estar sobre el overlay si es necesario */}
+          {/* LOGO */}
           <div className="flex items-center gap-4 z-[110] relative">
             {settings?.logo_app_b64 ? (
               <Link href="/" onClick={() => setIsOpen(false)}>
                 <img src={settings.logo_app_b64} alt="Logo" className="h-10" />
               </Link>
             ) : (
-              <Link href="/" onClick={() => setIsOpen(false)} className={`font-extrabold text-2xl tracking-tighter transition-colors ${!isHome ? 'text-[#d4af37]' : 'text-white hover:text-[#d4af37]'}`}>
+              <Link href="/" onClick={() => setIsOpen(false)} className={`font-extrabold text-2xl tracking-tighter transition-colors ${!useTransparent ? 'text-[#d4af37]' : 'text-white hover:text-[#d4af37]'}`}>
                 {settings?.clinic_name || "Merce"}
               </Link>
             )}
           </div>
 
           <div className="hidden md:flex items-center gap-8 font-bold text-sm">
-            <Link href="/" className={`transition-colors ${pathname === '/' ? 'text-[#d4af37]' : (!isHome ? 'text-stone-800 hover:text-[#d4af37]' : 'text-white hover:text-[#d4af37]')}`}>Inicio</Link>
+            <Link href="/" className={`transition-colors ${pathname === '/' ? 'text-[#d4af37]' : (!useTransparent ? 'text-stone-800 hover:text-[#d4af37]' : 'text-white hover:text-[#d4af37]')}`}>Inicio</Link>
 
-            {/* Tratamientos Wrapper */}
             <div
               className="h-20 flex items-center"
               onMouseEnter={() => setShowMegaMenu(true)}
               onMouseLeave={() => setShowMegaMenu(false)}
             >
-              <Link href="/tratamientos" className={`transition-colors flex items-center gap-1 ${pathname === '/tratamientos' ? 'text-[#d4af37]' : !isHome ? 'text-stone-800 hover:text-[#d4af37]' : 'text-white hover:text-[#d4af37]'}`}>
+              <Link href="/tratamientos" className={`transition-colors flex items-center gap-1 ${pathname === '/tratamientos' ? 'text-[#d4af37]' : !useTransparent ? 'text-stone-800 hover:text-[#d4af37]' : 'text-white hover:text-[#d4af37]'}`}>
                 Tratamientos
               </Link>
             </div>
 
-            <Link href="/contacto" className={`transition-colors ${pathname === '/contacto' ? 'text-[#d4af37]' : !isHome ? 'text-stone-800 hover:text-[#d4af37]' : 'text-white hover:text-[#d4af37]'}`}>Contacto</Link>
+            <Link href="/contacto" className={`transition-colors ${pathname === '/contacto' ? 'text-[#d4af37]' : !useTransparent ? 'text-stone-800 hover:text-[#d4af37]' : 'text-white hover:text-[#d4af37]'}`}>Contacto</Link>
             <BotonReservaPro 
               texto={btnText} 
               href={btnLink}
@@ -209,7 +211,7 @@ export default function PublicNavbar() {
                     <li key={cat.id}>
                       <button
                         onMouseEnter={() => setActiveCategory(cat.id)}
-                        onClick={() => { setShowMegaMenu(false); window.location.href = `/tratamientos#${cat.id}` }}
+                        onClick={() => { setShowMegaMenu(false); window.location.href = `/tratamientos/${cat.slug || cat.id}` }}
                         className={`w-full text-left px-6 py-3 transition-all font-serif text-xl whitespace-nowrap relative ${activeCategory === cat.id
                             ? 'bg-white text-[#d4af37] font-semibold rounded-l-2xl -mr-[1px] z-10 shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.02)] after:absolute after:top-0 after:-right-[1px] after:w-[2px] after:h-full after:bg-white after:z-20'
                             : 'text-stone-200 hover:text-white rounded-2xl mr-4 hover:bg-white/5'
@@ -241,6 +243,7 @@ export default function PublicNavbar() {
                           getFullUrl={getFullUrl}
                           onClick={() => setShowMegaMenu(false)}
                           isParentOpen={showMegaMenu}
+                          categories={categories}
                         />
                       ))}
                       {activeServices.length === 0 && (
@@ -255,7 +258,7 @@ export default function PublicNavbar() {
 
           {/* MOBILE MENU BUTTON - z-index máximo para control total */}
           <button
-            className={`md:hidden z-[110] relative p-2 focus:outline-none transition-colors ${(!isHome || isOpen) ? 'text-stone-800' : 'text-white'}`}
+            className={`md:hidden z-[110] relative p-2 focus:outline-none transition-colors ${(!useTransparent || isOpen) ? 'text-stone-800' : 'text-white'}`}
             onClick={() => setIsOpen(!isOpen)}
             aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
           >
@@ -303,7 +306,7 @@ export default function PublicNavbar() {
                 Ver Todos
               </Link>
               {categories.map(cat => (
-                <Link key={cat.id} href={`/tratamientos#${cat.id}`} onClick={() => setIsOpen(false)} className="text-xl font-serif font-normal text-stone-500 hover:text-stone-800 transition-colors">
+                <Link key={cat.id} href={`/tratamientos/${cat.slug || cat.id}`} onClick={() => setIsOpen(false)} className="text-xl font-serif font-normal text-stone-500 hover:text-stone-800 transition-colors">
                   {cat.name}
                 </Link>
               ))}

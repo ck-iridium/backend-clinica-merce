@@ -31,6 +31,13 @@ def update_service_category(category_id: str, category: schemas.ServiceCategoryU
 def read_service_categories(skip: int = 0, limit: int = 100, db: Session = Depends(database.get_db)):
     return crud.get_service_categories(db, skip=skip, limit=limit)
 
+@router.get("/slug/{slug}", response_model=schemas.ServiceCategoryResponse)
+def read_service_category_by_slug(slug: str, db: Session = Depends(database.get_db)):
+    db_category = crud.get_service_category_by_slug(db, slug=slug)
+    if db_category is None:
+        raise HTTPException(status_code=404, detail="Service Category not found")
+    return db_category
+
 @router.delete("/{category_id}", response_model=schemas.ServiceCategoryResponse)
 def delete_service_category(category_id: str, db: Session = Depends(database.get_db)):
     db_category = crud.delete_service_category(db, category_id=category_id)

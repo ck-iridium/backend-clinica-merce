@@ -35,8 +35,8 @@ async function getRelatedServices(currentServiceId: number) {
   return services.filter((s: any) => s.id !== currentServiceId && s.is_active).slice(0, 24);
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const service = await getServiceData(params.slug);
+export async function generateMetadata({ params }: { params: { treatment_slug: string } }): Promise<Metadata> {
+  const service = await getServiceData(params.treatment_slug);
   if (!service) return { title: 'Tratamiento no encontrado' };
 
   return {
@@ -46,8 +46,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default async function TreatmentDynamicPage({ params }: { params: { slug: string } }) {
-  const service = await getServiceData(params.slug);
+export default async function TreatmentDynamicPage({ params }: { params: { treatment_slug: string } }) {
+  const service = await getServiceData(params.treatment_slug);
 
   if (!service) {
     notFound();

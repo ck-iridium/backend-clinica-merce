@@ -61,7 +61,9 @@ class ServiceCategory(Base):
     __tablename__ = "service_categories"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     name = Column(String, nullable=False, unique=True)
+    slug = Column(String(255), nullable=True, unique=True, index=True)
     description = Column(Text, nullable=True)
+    seo_description = Column(Text, nullable=True)
     image_url = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
     order_index = Column(Integer, default=0)

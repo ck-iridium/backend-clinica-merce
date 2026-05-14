@@ -184,7 +184,7 @@ export default async function Home() {
                     <h2 className="text-4xl md:text-5xl font-serif font-extrabold text-stone-900 mb-4">{category.name}</h2>
                     <p className="hidden md:block text-lg md:text-xl text-stone-500">{category.description || 'Descubre nuestros tratamientos exclusivos diseñados para resaltar tu belleza natural.'}</p>
                   </div>
-                  <Link href={`/tratamientos#${category.id}`} className="hidden md:inline-flex items-center gap-2 font-bold text-[#d4af37] hover:text-stone-900 transition-colors uppercase tracking-widest text-sm">
+                  <Link href={`/tratamientos/${category.slug || category.id}`} className="hidden md:inline-flex items-center gap-2 font-bold text-[#d4af37] hover:text-stone-900 transition-colors uppercase tracking-widest text-sm">
                     Ver Catálogo <span className="text-xl">→</span>
                   </Link>
                 </div>
