@@ -48,9 +48,12 @@ export default function ContactoPage() {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { staggerChildren: 0.1, delayChildren: 0.1 }
-    }
-  };
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.3,
+      },
+    },
+  } as const;
 
   const itemVariants = {
     hidden: { opacity: 0, y: 40 },
@@ -59,7 +62,7 @@ export default function ContactoPage() {
       y: 0,
       transition: { duration: 0.8, ease: "easeOut" }
     }
-  };
+  } as const;
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] pt-32 pb-24 md:pt-48 md:pb-32 overflow-hidden relative">
