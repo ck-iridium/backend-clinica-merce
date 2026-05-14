@@ -231,22 +231,7 @@ export default async function Home() {
                     </a>
                   </div>
 
-                  {settings && (
-                    <div className="mt-16 pt-12 border-t border-stone-900/10 grid grid-cols-1 md:grid-cols-3 gap-8 text-sm font-semibold">
-                      <div>
-                        <span className="block opacity-60 mb-2 uppercase tracking-widest text-xs">Ubicación</span>
-                        <span className="opacity-90">{settings.clinic_address || 'Dirección no configurada'}</span>
-                      </div>
-                      <div>
-                        <span className="block opacity-60 mb-2 uppercase tracking-widest text-xs">Contacto Telefónico</span>
-                        <span className="opacity-90">{settings.clinic_phone || 'Teléfono no configurado'}</span>
-                      </div>
-                      <div>
-                        <span className="block opacity-60 mb-2 uppercase tracking-widest text-xs">WhatsApp Directo</span>
-                        <span className="opacity-90">{settings.whatsapp_number || 'No configurado'}</span>
-                      </div>
-                    </div>
-                  )}
+
                 </div>
               </section>
             );

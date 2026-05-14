@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Image as ImageIcon, Pipette, Sparkles, Video, Trash2, Loader2 } from 'lucide-react';
+import { Image as ImageIcon, Pipette, Sparkles, Video, Trash2, Loader2, RotateCcw } from 'lucide-react';
 import { UseFormRegister, Control, UseFormSetValue } from 'react-hook-form';
 import { processVideo } from '@/lib/videoProcessor';
 import { cn } from '@/lib/utils';
@@ -305,6 +305,17 @@ export default function DesignTab({ formValues, register, control, setValue, set
               </div>
             </div>
             <span className="text-[11px] font-mono text-stone-500 font-bold uppercase ml-1">{formValues.layout_preferences.accentColor}</span>
+            
+            {formValues.layout_preferences.accentColor !== '#d4af37' && (
+              <button
+                type="button"
+                onClick={() => setValue('layout_preferences.accentColor', '#d4af37', { shouldDirty: true })}
+                className="ml-auto p-2 text-stone-400 hover:text-[#d4af37] hover:bg-stone-50 rounded-xl transition-all"
+                title="Restablecer al dorado por defecto"
+              >
+                <RotateCcw size={14} />
+              </button>
+            )}
           </div>
         </div>
       </div>
