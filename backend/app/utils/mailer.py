@@ -27,7 +27,7 @@ def send_email(to_email: str, subject: str, body_html: str, settings=None):
             }
             
             data = {
-                "from": "Merce Estética <info@esteticamerce.com>",
+                "from": "Estética Merce <info@esteticamerce.com>",
                 "to": [to_email],
                 "subject": subject,
                 "html": body_html
@@ -97,7 +97,7 @@ def send_email(to_email: str, subject: str, body_html: str, settings=None):
             return False
 
 def get_html_template(content_html, clinic_name, clinic_phone):
-    """Plantilla base para correos corporativos de Merce Estética"""
+    """Plantilla base para correos corporativos de Estética Merce"""
     return f"""
     <html>
     <body style="margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #fcfaf9;">

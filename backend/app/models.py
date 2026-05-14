@@ -141,7 +141,7 @@ class ClinicSettings(Base):
     id = Column(Integer, primary_key=True, default=1) # Singleton
 
     # Company Details
-    clinic_name = Column(String, default="Clínica Merce")
+    clinic_name = Column(String, default="Estética Mercè")
     clinic_nif = Column(String, default="")
     clinic_address = Column(String, default="")
     clinic_phone = Column(String, default="")
@@ -234,7 +234,7 @@ class SiteContent(Base):
     hero_horizontal_alignment = Column(String, default="center") # left, center, right
     
     # About Section
-    about_title = Column(String, default="Sobre Merce Estética")
+    about_title = Column(String, default="Sobre Estética Merce")
     about_text = Column(Text, default="Nuestra pasión es cuidar de ti y de tu piel con los tratamientos más innovadores.")
     about_image_url = Column(String, nullable=True)
     about_layout = Column(String, default="right") # left, right (imagen a la izq o der)
