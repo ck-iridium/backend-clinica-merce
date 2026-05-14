@@ -31,7 +31,7 @@ function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen }
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`group relative rounded-3xl overflow-hidden border border-stone-100 block bg-stone-50 transition-all duration-500 ${isLarge ? 'h-full' : 'aspect-video shadow-sm hover:shadow-xl hover:scale-[1.02]'}`}
+      className={`group relative rounded-3xl overflow-hidden border border-stone-100 block bg-stone-50 transition-all duration-500 ${isLarge ? 'h-full' : 'aspect-video shadow-sm hover:shadow-xl'}`}
     >
       {/* Imagen Principal - Siempre visible en el fondo para evitar el flash */}
       {svc.image_url ? (
@@ -67,11 +67,21 @@ function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen }
         </div>
       )}
 
-      {/* Info Overlay */}
-      <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-20 flex items-end p-6 transition-opacity ${isHovered ? 'opacity-100 duration-300' : 'opacity-0 duration-0'}`}>
-        <div className={`text-white w-full transition-transform duration-500 ${isHovered ? 'translate-y-0' : 'translate-y-4'}`}>
-          <h5 className="font-serif font-bold leading-tight line-clamp-2 text-xl">{svc.name}</h5>
-          <p className="text-[#d4af37] text-[10px] font-black uppercase tracking-[0.2em]">{svc.duration_minutes} min</p>
+      {/* Info Overlay - Degradado suavizado para dejar ver la imagen */}
+      <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-20 flex items-end p-6 transition-all duration-500`}>
+        <div className="text-white w-full">
+          <h5 className="font-serif font-bold leading-tight line-clamp-2 text-lg [text-shadow:_0_-1px_4px_rgba(0,0,0,0.6)]">
+            {svc.name}
+          </h5>
+        </div>
+      </div>
+
+      {/* Floating Duration Badge - Top Right */}
+      <div className={`absolute top-4 right-4 z-30 transition-all duration-500 ${isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
+        <div className="bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 shadow-xl">
+          <span className="text-[#d4af37] text-[12px] font-black uppercase tracking-[0.1em]">
+            {svc.duration_minutes} min
+          </span>
         </div>
       </div>
     </Link>
@@ -188,12 +198,12 @@ export default function PublicNavbar() {
           <div
             onMouseEnter={() => setShowMegaMenu(true)}
             onMouseLeave={() => setShowMegaMenu(false)}
-            className={`absolute top-full left-6 right-6 bg-white rounded-3xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] border border-stone-100 overflow-hidden transition-all duration-300 origin-top ${showMegaMenu ? 'opacity-100 scale-y-100 translate-y-0' : 'opacity-0 scale-y-95 -translate-y-2 pointer-events-none'}`}
+            className={`absolute top-[calc(100%-8px)] left-6 right-6 bg-white rounded-3xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] overflow-hidden transition-all duration-300 origin-top ${showMegaMenu ? 'opacity-100 scale-y-100 translate-y-0' : 'opacity-0 scale-y-95 -translate-y-2 pointer-events-none'}`}
           >
             <div className="flex h-[380px]">
               {/* Left Panel: Categories */}
-              <div className="w-[280px] shrink-0 bg-[#F7F7F5] py-6 pl-8 pr-0 border-r border-stone-100 relative">
-                <h4 className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-6">Categorías</h4>
+              <div className="w-[280px] shrink-0 bg-stone-900 py-6 pl-8 pr-0 border-r border-stone-800 relative">
+                <h4 className="text-[14px] font-black uppercase tracking-[0.3em] text-stone-300 mb-8">Categorías</h4>
                 <ul className="space-y-1">
                   {categories.filter(c => c.name.toUpperCase() !== 'GENERAL').map(cat => (
                     <li key={cat.id}>
@@ -202,7 +212,7 @@ export default function PublicNavbar() {
                         onClick={() => { setShowMegaMenu(false); window.location.href = `/tratamientos#${cat.id}` }}
                         className={`w-full text-left px-6 py-3 transition-all font-serif text-xl whitespace-nowrap relative ${activeCategory === cat.id
                             ? 'bg-white text-[#d4af37] font-semibold rounded-l-2xl -mr-[1px] z-10 shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.02)] after:absolute after:top-0 after:-right-[1px] after:w-[2px] after:h-full after:bg-white after:z-20'
-                            : 'text-stone-500 hover:text-stone-800 rounded-2xl mr-4'
+                            : 'text-stone-200 hover:text-white rounded-2xl mr-4 hover:bg-white/5'
                           }`}
                       >
                         {cat.name}
