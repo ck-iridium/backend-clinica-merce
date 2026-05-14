@@ -48,7 +48,7 @@ export default function BotonReservaPro({
       <Link href={href} className={`block relative p-[2px] overflow-hidden rounded-full group ${className}`}>
         <motion.div
           animate={{ rotate: 360 }}
-          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+          transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
           className="absolute inset-[-150%] bg-[conic-gradient(from_0deg,transparent_0deg,transparent_120deg,rgba(0,0,0,0.3)_180deg,transparent_240deg,transparent_360deg)] opacity-40 group-hover:opacity-100"
         />
         {content}
