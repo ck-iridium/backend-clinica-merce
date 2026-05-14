@@ -6,26 +6,143 @@ import { Skeleton } from "@/components/ui/skeleton";
 import HomeBuilderLayout from '@/components/cms/HomeBuilderLayout';
 import HomeBuilderPreview from '@/components/cms/HomeBuilderPreview';
 import { Reorder } from 'framer-motion';
-import { GripVertical, Camera, Trash2, Image as ImageIcon, Sparkles } from 'lucide-react';
+import { GripVertical, Camera, Trash2, Image as ImageIcon, Sparkles, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { processVideo } from '@/lib/videoProcessor';
 
 const TABS = ['HERO', 'SOBRE MÍ', 'CATEGORÍAS', 'CTA', 'SEO'];
 
 // Componente interno reutilizable para cualquier imagen (Fuera de los componentes para ser accesible por todos)
-const ImageUploadBlock = ({ label, value, onSelect, onClear }: { label: string, value: string | null, onSelect: () => void, onClear: () => void }) => {
+const ImageUploadBlock = ({ label, value, onSelect, onClear, onUpload }: { label: string, value: string | null, onSelect: () => void, onClear: () => void, onUpload: (url: string) => void }) => {
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [processingProgress, setProcessingProgress] = useState(0);
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+
+    const isVideo = file.type.startsWith('video/');
+    const isImage = file.type.startsWith('image/');
+
+    if (!isImage && !isVideo) {
+      toast.error("El archivo debe ser una imagen o un vídeo");
+      return;
+    }
+
+    setIsUploading(true);
+    setProcessingProgress(0);
+
+    try {
+      let fileToUpload: File | Blob = file;
+
+      if (isVideo) {
+        toast.info("Optimizando vídeo para la web...");
+        try {
+          fileToUpload = await processVideo(file, (progress) => {
+            setProcessingProgress(progress);
+          });
+        } catch (err) {
+          console.error("Error procesando video", err);
+          toast.error("Error al procesar el vídeo, se subirá el original.");
+        }
+      }
+
+      const formData = new FormData();
+      formData.append('file', fileToUpload, isVideo ? `video_${Date.now()}.mp4` : file.name);
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        onUpload(data.url);
+        toast.success("Archivo subido correctamente");
+      } else {
+        toast.error("Error al subir el archivo");
+      }
+    } catch (err) {
+      toast.error("Error de conexión");
+    } finally {
+      setIsUploading(false);
+      setProcessingProgress(0);
+    }
+  };
+
   return (
     <div className="space-y-2">
       <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-2">{label}</label>
-      <div className="relative group w-full aspect-video rounded-2xl overflow-hidden bg-stone-50 border border-stone-200 shadow-sm transition-all hover:border-stone-300">
-        {value ? (
-          <img src={value && value.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${value}` : value || ""} alt="Preview" className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center text-stone-200">
-             <ImageIcon size={40} strokeWidth={1} />
-             <span className="text-[10px] font-bold uppercase tracking-widest mt-2 opacity-50">Sin imagen</span>
+      <div 
+        onDragOver={handleDragOver}
+        onDragEnter={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        className={`relative group w-full aspect-video rounded-2xl overflow-hidden bg-stone-50 border transition-all duration-300 ${isDragging ? 'border-[#d4af37] ring-4 ring-[#d4af37]/10 bg-[#d4af37]/5 scale-[0.98] shadow-inner' : 'border-stone-200 shadow-sm hover:border-stone-300'}`}
+      >
+        {/* Overlay invisible para capturar eventos sin interferencias de hijos */}
+        {isDragging && (
+          <div className="absolute inset-0 z-[60] bg-transparent" />
+        )}
+
+        {isUploading && (
+          <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center bg-white/90 backdrop-blur-md z-50">
+             <div className="relative w-16 h-16 flex items-center justify-center mb-4">
+                <Loader2 size={32} className="text-[#d4af37] animate-spin absolute" />
+                {processingProgress > 0 && (
+                  <span className="text-[10px] font-bold text-[#d4af37]">{processingProgress}%</span>
+                )}
+             </div>
+             <span className="text-[10px] font-black uppercase tracking-widest text-[#d4af37]">
+                {processingProgress > 0 ? 'Optimizando...' : 'Subiendo...'}
+             </span>
           </div>
         )}
 
-        <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-3">
+        <div className={`w-full h-full transition-all duration-500 ${isDragging ? 'blur-sm scale-110 grayscale opacity-30' : ''}`}>
+          {value ? (
+            value.toLowerCase().endsWith('.mp4') || value.toLowerCase().endsWith('.webm') ? (
+              <video src={value && value.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${value}` : value || ""} className="w-full h-full object-cover" autoPlay muted loop />
+            ) : (
+              <img src={value && value.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${value}` : value || ""} alt="Preview" className="w-full h-full object-cover" />
+            )
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center text-stone-200">
+               <ImageIcon size={40} strokeWidth={1} />
+               <span className="text-[10px] font-bold uppercase tracking-widest mt-2 opacity-50">Sin medios</span>
+               <span className="text-[9px] font-medium text-stone-400 mt-1 italic">o arrastra un archivo aquí</span>
+            </div>
+          )}
+        </div>
+
+        {/* Capa de Drop Visual */}
+        {isDragging && (
+          <div className="absolute inset-0 z-[55] flex flex-col items-center justify-center pointer-events-none animate-in fade-in zoom-in duration-300">
+             <div className="w-16 h-16 bg-[#d4af37] rounded-full flex items-center justify-center shadow-2xl mb-4">
+                <Sparkles size={32} className="text-white animate-bounce" />
+             </div>
+             <span className="text-xs font-black uppercase tracking-widest text-[#d4af37]">¡Suelta para subir!</span>
+          </div>
+        )}
+
+        <div className={`absolute inset-0 bg-stone-900/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-3 ${isDragging ? 'hidden' : ''}`}>
           <button
             type="button"
             onClick={onSelect}
@@ -252,6 +369,7 @@ export default function CMSPage() {
             value={formData.hero_image_url} 
             onSelect={() => setPickerTarget({ type: 'form', field: 'hero_image_url' })} 
             onClear={() => setFormData({...formData, hero_image_url: ''})} 
+            onUpload={(url) => setFormData({...formData, hero_image_url: url})}
           />
           <div className="space-y-6">
             <div>
@@ -312,6 +430,7 @@ export default function CMSPage() {
               value={formData.hero_video_url} 
               onSelect={() => setPickerTarget({ type: 'form', field: 'hero_video_url' })} 
               onClear={() => setFormData({...formData, hero_video_url: ''})} 
+              onUpload={(url) => setFormData({...formData, hero_video_url: url})}
             />
           </div>
         </div>
@@ -330,6 +449,7 @@ export default function CMSPage() {
             value={formData.about_image_url} 
             onSelect={() => setPickerTarget({ type: 'form', field: 'about_image_url' })} 
             onClear={() => setFormData({...formData, about_image_url: ''})} 
+            onUpload={(url) => setFormData({...formData, about_image_url: url})}
           />
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-6">
@@ -523,6 +643,7 @@ const CategoriesTab = memo(({
                value={selectedCategory.image_url} 
                onSelect={() => setPickerTarget({ type: 'category', id: selectedCategory.id, field: 'image_url' })}
                onClear={() => handleCategoryChange(selectedCategory.id, 'image_url', '')}
+               onUpload={(url) => handleCategoryChange(selectedCategory.id, 'image_url', url)}
              />
            </div>
            

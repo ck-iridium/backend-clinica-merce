@@ -381,9 +381,9 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
             {/* Layout para modo SPLIT (Nuevo diseño Editorial) */}
             <div className="flex flex-col md:flex-row min-h-full relative w-full">
               {/* Columna Izquierda: Visual (Sticky 9:16) */}
-              <div className={`w-full md:w-[45%] lg:w-[43%] md:h-[calc(100vh-48px)] md:sticky md:top-0 overflow-hidden bg-stone-100 flex items-center justify-end ${formValues.layout_preferences.headerStyle === 'split_video' ? 'py-[25px] pr-[25px]' : ''}`}>
+              <div className={`w-full md:w-[45%] lg:w-[43%] md:h-[calc(100vh-48px)] md:sticky md:top-0 overflow-hidden bg-white flex items-center justify-end ${formValues.layout_preferences.headerStyle === 'split_video' ? 'py-[25px] pr-[25px]' : ''}`}>
                 {formValues.layout_preferences.headerStyle === 'split_video' && formValues.video_url ? (
-                  <div className="relative h-full aspect-[9/16] rounded-[2rem] overflow-hidden shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)] bg-stone-200">
+                  <div className="relative h-full aspect-[9/16] rounded-[2rem] overflow-hidden shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)] bg-white">
                     <video
                       src={formValues.video_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${formValues.video_url}` : formValues.video_url}
                       className="w-full h-full object-cover"

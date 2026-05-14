@@ -72,8 +72,8 @@ Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos p
   return (
     <div className="min-h-screen bg-stone-50 font-sans text-stone-900 selection:bg-[#d4af37]/30">
 
-      {/* 1. HERO DE CATEGORÍA (65vh) — Navbar DENTRO de la sección (estilo Home) */}
-      <section className="relative w-full h-[65vh] overflow-hidden flex flex-col justify-end">
+      {/* 1. HERO DE CATEGORÍA (40vh) — Navbar DENTRO de la sección (estilo Home) */}
+      <section className="relative w-full h-[50vh] overflow-hidden flex flex-col justify-end">
         {/* Navbar absoluto arriba */}
         <div className="absolute top-0 left-0 w-full z-50">
           <PublicNavbar transparent={true} />
@@ -111,8 +111,8 @@ Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos p
 
       {/* 2. SLIDER DE TRATAMIENTOS — loop={false} para evitar duplicados */}
       {categoryServices.length > 0 && (
-        <section className="relative z-20 -mt-10 md:-mt-14 w-full overflow-hidden">
-          <div className="bg-[#F5F2EE] rounded-t-[2.5rem] pt-12 md:pt-20 pb-16">
+        <section className="relative z-20 w-full overflow-hidden">
+          <div className="bg-[#F5F2EE] pt-12 md:pt-20 pb-16">
             <div className="max-w-7xl mx-auto px-6 mb-8 flex justify-between items-end">
               <div>
                 <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-800">
@@ -153,60 +153,60 @@ Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos p
             </div>
 
             {/* Grid adaptativo según el número de categorías (1-4) */}
-            <div 
+            <div
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              style={{ 
+              style={{
                 gridAutoRows: 'minmax(250px, auto)',
                 gridTemplateRows: otherCategories.length >= 3 ? '300px 300px' : 'auto'
               }}
             >
               {otherCategories.map((other: any, i: number) => {
-                let gridClasses = "relative rounded-[2rem] overflow-hidden group block shadow-luxury transition-all duration-700 h-full bg-white";
-                
+                let gridClasses = "relative rounded-none overflow-hidden group block shadow-luxury transition-all duration-700 h-full bg-white";
+
                 // Lógica de recolocación para terminar los espacios (Bento Style)
                 if (otherCategories.length === 4) {
-                   if (i === 0) gridClasses += " md:row-span-2 md:col-span-1";
-                   if (i === 3) gridClasses += " md:col-span-2";
+                  if (i === 0) gridClasses += " md:row-span-2 md:col-span-1";
+                  if (i === 3) gridClasses += " md:col-span-2";
                 } else if (otherCategories.length === 3) {
-                   if (i === 0) gridClasses += " md:row-span-2 md:col-span-1";
-                   if (i === 1 || i === 2) gridClasses += " md:col-span-2 lg:col-span-2";
+                  if (i === 0) gridClasses += " md:row-span-2 md:col-span-1";
+                  if (i === 1 || i === 2) gridClasses += " md:col-span-2 lg:col-span-2";
                 } else if (otherCategories.length === 2) {
-                   gridClasses += " md:col-span-1";
+                  gridClasses += " md:col-span-1";
                 } else if (otherCategories.length === 1) {
-                   gridClasses += " md:col-span-2 lg:col-span-3";
+                  gridClasses += " md:col-span-2 lg:col-span-3";
                 }
 
                 return (
-                  <Link 
-                    href={`/tratamientos/${other.slug || other.id}`} 
+                  <Link
+                    href={`/tratamientos/${other.slug || other.id}`}
                     key={other.id}
                     className={gridClasses}
                   >
                     {/* Imagen de fondo */}
                     <div className="absolute inset-0 bg-[#EBE7E0]">
                       {other.image_url ? (
-                        <img 
-                          src={getFullUrl(other.image_url)} 
-                          alt={other.name} 
+                        <img
+                          src={getFullUrl(other.image_url)}
+                          alt={other.name}
                           className="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-110 group-hover:rotate-1"
                         />
                       ) : (
                         <div className="w-full h-full bg-[#E5E1DA] flex items-center justify-center italic text-stone-400 font-serif">Estetica Merce</div>
                       )}
                     </div>
-                    
+
                     {/* Overlay Beige Soft (Quiet Luxury) */}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#2C241E]/80 via-[#2C241E]/20 to-transparent transition-opacity duration-700 group-hover:opacity-60"></div>
-                    
+
                     {/* Contenido en la esquina inferior izquierda */}
                     <div className="absolute bottom-0 left-0 p-8 md:p-10 w-full flex flex-col items-start justify-end h-full">
                       <div className="transform transition-all duration-500 ease-out translate-y-4 group-hover:translate-y-0">
                         <h3 className="text-2xl md:text-3xl font-serif font-bold text-white mb-2 drop-shadow-md">
                           {other.name}
                         </h3>
-                        <div className="overflow-hidden h-6">
-                          <span className="text-[#d4af37] font-bold tracking-[0.2em] uppercase text-[10px] block transform translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 delay-100">
-                            Explorar especialidad →
+                        <div className="overflow-hidden h-8">
+                          <span className="text-[#d4af37] font-black tracking-[0.3em] uppercase text-xs md:text-sm block transform translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 delay-100">
+                            EXPLORAR →
                           </span>
                         </div>
                       </div>

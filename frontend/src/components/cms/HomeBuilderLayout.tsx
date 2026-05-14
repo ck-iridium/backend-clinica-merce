@@ -35,7 +35,7 @@ export default function HomeBuilderLayout({ tabs, activeTab, onTabChange, panel,
               disabled={isSaving}
               className="bg-stone-900 hover:bg-[#d4af37] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-30 shadow-sm"
             >
-              {isSaving ? 'Guardando...' : 'Guardar y salir'}
+              {isSaving ? 'Guardando...' : 'Guardar'}
             </button>
           </div>
         </div>

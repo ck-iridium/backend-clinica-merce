@@ -75,7 +75,7 @@ export default function TreatmentCarousel({ servicios, loop = false }: Treatment
       <style dangerouslySetInnerHTML={{ __html: '.hide-scroll-desktop::-webkit-scrollbar { display: none; } .hide-scroll-desktop { -ms-overflow-style: none; scrollbar-width: none; }' }} />
       <div
         ref={scrollContainerRef}
-        className="flex overflow-x-auto hide-scroll-desktop gap-6 py-12 snap-x mandatory scroll-smooth"
+        className="flex overflow-x-auto hide-scroll-desktop gap-6 py-8 md:py-12 snap-x snap-mandatory"
         style={{
           paddingLeft: 'max(1.5rem, calc((100% - 1280px) / 2 + 1.5rem))',
           paddingRight: 'max(1.5rem, calc((100% - 1280px) / 2 + 1.5rem))',
@@ -83,7 +83,10 @@ export default function TreatmentCarousel({ servicios, loop = false }: Treatment
         }}
       >
         {displayItems.map((s, idx) => (
-          <div key={`${s.id}-${idx}`} className="w-[372px] h-[662px] shrink-0 snap-start">
+          <div 
+            key={`${s.id}-${idx}`} 
+            className="w-[85vw] md:w-[372px] h-[550px] md:h-[662px] shrink-0 snap-start snap-stop-always"
+          >
             <ServiceCard service={s} className="w-full h-full" />
           </div>
         ))}
