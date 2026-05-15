@@ -99,7 +99,7 @@ def public_booking(request: Request, booking: schemas.PublicBookingRequest, back
             
             checkout_url = session.url
             
-            # Programar la liberación del slot a los 15 minutos
+            # Programar la liberación del slot a los 10 minutos
             def release_unpaid_slot(appt_id):
                 from ..database import SessionLocal
                 from ..models import Appointment
@@ -110,12 +110,16 @@ def public_booking(request: Request, booking: schemas.PublicBookingRequest, back
                         appointment.status = "cancelled"
                         appointment.notes = (appointment.notes or "") + "\n[Sistema] Cita cancelada por falta de pago (fianza expirada)."
                         db_local.commit()
-                        print(f"Slot liberado: Cita {appt_id} cancelada tras 15 min sin pago.")
+                        print(f"Slot liberado: Cita {appt_id} cancelada tras 10 min sin pago.")
                 finally:
                     db_local.close()
 
-            run_date = datetime.now() + timedelta(minutes=15)
+            run_date = datetime.now() + timedelta(minutes=10)
             scheduler.add_job(release_unpaid_slot, 'date', run_date=run_date, args=[appt.id])
+
+            # RESTAURAR NOTIFICACIÓN INICIAL (Para que suene el sonido en el panel)
+            from ..crud.appointments import notify_admin_new_appointment
+            notify_admin_new_appointment(db, appt)
 
         except Exception as e:
             print(f"Error creando sesión de Stripe: {e}")

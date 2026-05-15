@@ -86,6 +86,8 @@ async def stripe_webhook(request: Request, db: Session = Depends(database.get_db
         data_object = event['data']['object']
         event_type = getattr(event, 'type', None)
         
+        print(f"🔔 Evento de Stripe recibido: {event_type}")
+        
         # --- PROCESAMIENTO ---
         if event_type == 'checkout.session.completed':
             # ACCESO SEGURO CON getattr
