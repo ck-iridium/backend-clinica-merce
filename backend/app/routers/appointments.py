@@ -7,6 +7,7 @@ from ..crud import appointments as crud
 from ..limiter import limiter
 from ..crud.settings import get_clinic_settings
 from ..scheduler import scheduler
+from ..utils import mailer
 import stripe
 import os
 from datetime import datetime, timedelta
@@ -58,14 +59,10 @@ def public_booking(request: Request, booking: schemas.PublicBookingRequest, back
     service = db.query(models.Service).filter(models.Service.id == booking.service_id).first()
     settings = get_clinic_settings(db)
     
-    # Si el servicio requiere fianza, evitamos el email de verificación inicial 
-    # (ya que Stripe enviará el de 'confirmada' automáticamente al pagar)
-    send_initial_email = True
-    if service and service.requires_deposit and settings.stripe_account_id and settings.stripe_charges_enabled:
-        send_initial_email = False
-
+    # Creamos la cita inicialmente SIN enviar email. 
+    # Decidiremos si enviarlo después de intentar generar el pago de Stripe.
     try:
-        appt, client, is_new = crud.create_public_appointment(db, booking, background_tasks=background_tasks, send_email=send_initial_email)
+        appt, client, is_new = crud.create_public_appointment(db, booking, background_tasks=background_tasks, send_email=False)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
@@ -124,6 +121,11 @@ def public_booking(request: Request, booking: schemas.PublicBookingRequest, back
             print(f"Error creando sesión de Stripe: {e}")
             # Si falla Stripe, permitimos la reserva normal web_pending
             pass
+
+    # Si al final no hay checkout_url (porque no se requiere fianza o falló Stripe),
+    # enviamos el correo de verificación inicial ahora.
+    if not checkout_url:
+        background_tasks.add_task(mailer.send_appointment_notification, appt.id, 'verification_email')
 
     return schemas.PublicBookingResponse(
         appointment_id=appt.id,
