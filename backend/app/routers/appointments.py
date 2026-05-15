@@ -110,6 +110,17 @@ def public_booking(request: Request, booking: schemas.PublicBookingRequest, back
                         appointment.status = "cancelled"
                         appointment.notes = (appointment.notes or "") + "\n[Sistema] Cita cancelada por falta de pago (fianza expirada)."
                         db_local.commit()
+                        
+                        # Notificar cancelación al panel
+                        from ..utils.notifications import create_admin_notification
+                        create_admin_notification(
+                            db_local,
+                            title="⏰ Reserva Expirada",
+                            description=f"Cita de {appointment.client.name} cancelada por falta de pago.",
+                            type="warning",
+                            metadata={"appointment_id": appt_id}
+                        )
+                        
                         print(f"Slot liberado: Cita {appt_id} cancelada tras 10 min sin pago.")
                 finally:
                     db_local.close()
@@ -118,8 +129,14 @@ def public_booking(request: Request, booking: schemas.PublicBookingRequest, back
             scheduler.add_job(release_unpaid_slot, 'date', run_date=run_date, args=[appt.id])
 
             # RESTAURAR NOTIFICACIÓN INICIAL (Para que suene el sonido en el panel)
-            from ..crud.appointments import notify_admin_new_appointment
-            notify_admin_new_appointment(db, appt)
+            from ..utils.notifications import create_admin_notification
+            create_admin_notification(
+                db, 
+                title="✨ Nueva Reserva Web", 
+                description=f"Cita de {client.name} para {appt.start_time.strftime('%H:%M')}",
+                type="info",
+                metadata={"appointment_id": appt.id}
+            )
 
         except Exception as e:
             print(f"Error creando sesión de Stripe: {e}")
