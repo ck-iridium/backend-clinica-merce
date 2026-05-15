@@ -178,11 +178,16 @@ def get_availability_slots(db: Session, target_date: date, service_id: str) -> L
 
     day_start = datetime(target_date.year, target_date.month, target_date.day, 0, 0, 0)
     day_end   = datetime(target_date.year, target_date.month, target_date.day, 23, 59, 59)
-    existing_appts = db.query(models.Appointment).filter(
+    # 1. Obtener citas (ignorando las canceladas)
+    query_appts = db.query(models.Appointment).filter(
         models.Appointment.start_time >= day_start,
         models.Appointment.start_time <= day_end,
         models.Appointment.status != "cancelled",
     ).all()
+
+    # 2. Las citas pendientes de pago (awaiting_payment) también bloquean la agenda
+    # hasta que el cronjob (Barrendero) las cancele oficialmente.
+    existing_appts = query_appts
 
     existing_blocks = db.query(models.TimeBlock).filter(
         models.TimeBlock.start_time >= day_start,
@@ -191,6 +196,7 @@ def get_availability_slots(db: Session, target_date: date, service_id: str) -> L
 
     available = []
     step = timedelta(minutes=_SLOT_STEP_MINUTES)
+    now_spain = get_spain_now()
 
     for (sh, sm, eh, em) in schedule_blocks:
         block_start = datetime(target_date.year, target_date.month, target_date.day, sh, sm)
@@ -200,27 +206,38 @@ def get_availability_slots(db: Session, target_date: date, service_id: str) -> L
         while slot + duration <= block_end:
             slot_end = slot + duration
             overlaps = False
+
+            # 1. Comprobar citas (incluyendo las pendientes de pago)
             for appt in existing_appts:
-                if max(slot, appt.start_time) < min(slot_end, appt.end_time):
+                a_start = appt.start_time.replace(tzinfo=None) if appt.start_time.tzinfo else appt.start_time
+                a_end   = appt.end_time.replace(tzinfo=None) if appt.end_time.tzinfo else appt.end_time
+                if max(slot, a_start) < min(slot_end, a_end):
                     overlaps = True
                     break
+            
+            # 2. Comprobar bloqueos manuales
             if not overlaps:
                 for block in existing_blocks:
-                    if max(slot, block.start_time) < min(slot_end, block.end_time):
+                    b_start = block.start_time.replace(tzinfo=None) if block.start_time.tzinfo else block.start_time
+                    b_end   = block.end_time.replace(tzinfo=None) if block.end_time.tzinfo else block.end_time
+                    if max(slot, b_start) < min(slot_end, b_end):
                         overlaps = True
                         break
+            
+            # 3. Comprobar margen de antelación
             if not overlaps:
-                now_spain = get_spain_now()
                 if slot.date() == now_spain.date():
                     if slot < now_spain + timedelta(hours=margin_hours):
                         overlaps = True
+
             if not overlaps:
                 available.append(slot.strftime("%H:%M"))
+
             slot += step
 
     return available
 
-def create_public_appointment(db: Session, booking: schemas.PublicBookingRequest, background_tasks: any = None):
+def create_public_appointment(db: Session, booking: schemas.PublicBookingRequest, background_tasks: any = None, send_email: bool = True):
     """Idempotent public booking: find-or-create client, then create appointment."""
     client, is_new = find_or_create_client(
         db,
@@ -251,9 +268,10 @@ def create_public_appointment(db: Session, booking: schemas.PublicBookingRequest
     db.commit()
     db.refresh(appt)
 
-    if background_tasks:
-        background_tasks.add_task(mailer.send_appointment_notification, appt.id, 'verification_email')
-    else:
-        mailer.send_appointment_notification(appt.id, 'verification_email')
+    if send_email:
+        if background_tasks:
+            background_tasks.add_task(mailer.send_appointment_notification, appt.id, 'verification_email')
+        else:
+            mailer.send_appointment_notification(appt.id, 'verification_email')
 
     return appt, client, is_new

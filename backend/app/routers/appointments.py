@@ -43,7 +43,7 @@ def get_availability(
 
 
 @router.post("/public", response_model=schemas.PublicBookingResponse, status_code=201)
-@limiter.limit("3/hour")
+# @limiter.limit("3/hour")
 def public_booking(request: Request, booking: schemas.PublicBookingRequest, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
     """
     Landing page booking endpoint.
@@ -55,13 +55,20 @@ def public_booking(request: Request, booking: schemas.PublicBookingRequest, back
             status_code=422,
             detail="Provide at least one of: client_email, client_phone"
         )
+    service = db.query(models.Service).filter(models.Service.id == booking.service_id).first()
+    settings = get_clinic_settings(db)
+    
+    # Si el servicio requiere fianza, evitamos el email de verificación inicial 
+    # (ya que Stripe enviará el de 'confirmada' automáticamente al pagar)
+    send_initial_email = True
+    if service and service.requires_deposit and settings.stripe_account_id and settings.stripe_charges_enabled:
+        send_initial_email = False
+
     try:
-        appt, client, is_new = crud.create_public_appointment(db, booking, background_tasks=background_tasks)
+        appt, client, is_new = crud.create_public_appointment(db, booking, background_tasks=background_tasks, send_email=send_initial_email)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
-    service = db.query(models.Service).filter(models.Service.id == booking.service_id).first()
-    settings = get_clinic_settings(db)
     checkout_url = None
 
     if service and service.requires_deposit and service.deposit_amount and settings.stripe_account_id and settings.stripe_charges_enabled:

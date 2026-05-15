@@ -29,7 +29,9 @@ def update_service_category(category_id: str, category: schemas.ServiceCategoryU
 
 @router.get("/", response_model=List[schemas.ServiceCategoryResponse])
 def read_service_categories(skip: int = 0, limit: int = 100, db: Session = Depends(database.get_db)):
-    return crud.get_service_categories(db, skip=skip, limit=limit)
+    categories = crud.get_service_categories(db, skip=skip, limit=limit)
+    print(f"DEBUG: Enviando {len(categories)} categorías al frontend.")
+    return categories
 
 @router.get("/slug/{slug}", response_model=schemas.ServiceCategoryResponse)
 def read_service_category_by_slug(slug: str, db: Session = Depends(database.get_db)):

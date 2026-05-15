@@ -43,6 +43,30 @@ function CalendarContent() {
     }
   }, [c.loading]);
 
+  // AUTO-REFRESCO: Polling cada 60s y refresco al recuperar el foco
+  useEffect(() => {
+    // 1. Polling cada 60 segundos
+    const intervalId = setInterval(() => {
+      console.log("Auto-refrescando agenda (polling)...");
+      c.fetchData();
+    }, 60000);
+
+    // 2. Refresco al recuperar el foco de la pestaña
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log("Auto-refrescando agenda (tab active)...");
+        c.fetchData();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [c]);
+
   if (c.loading) {
     return (
       <div className="flex flex-col items-center justify-center py-32 animate-pulse">

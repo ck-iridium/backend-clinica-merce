@@ -280,3 +280,16 @@ class Media(Base):
     
     service = relationship("Service")
 
+class Notification(Base):
+    __tablename__ = "notifications"
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
+    title = Column(String, nullable=False)
+    description = Column(String, nullable=False)
+    type = Column(String, default="info") # success, error, warning, info
+    read = Column(Boolean, default=False)
+    extra_metadata = Column("metadata", JSONB, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User")
+

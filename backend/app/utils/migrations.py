@@ -67,7 +67,9 @@ def run_auto_migrations():
             "ALTER TABLE site_content ADD COLUMN about_layout VARCHAR DEFAULT 'right'",
             "ALTER TABLE site_content ADD COLUMN about_show_button BOOLEAN DEFAULT FALSE",
             "ALTER TABLE site_content ADD COLUMN about_button_text VARCHAR DEFAULT 'Saber Más'",
-            "ALTER TABLE site_content ADD COLUMN about_button_link VARCHAR DEFAULT '/contacto'"
+            "ALTER TABLE site_content ADD COLUMN about_button_link VARCHAR DEFAULT '/contacto'",
+            # ── Notificaciones en tiempo real ─────────────────────────────────────
+            "CREATE TABLE IF NOT EXISTS notifications (id VARCHAR(36) PRIMARY KEY, user_id VARCHAR(36), title VARCHAR, description VARCHAR, type VARCHAR, read BOOLEAN DEFAULT FALSE, metadata JSON, created_at TIMESTAMP)"
         ]
         
         for m in migrations:

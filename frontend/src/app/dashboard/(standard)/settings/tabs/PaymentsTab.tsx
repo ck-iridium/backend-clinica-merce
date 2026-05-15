@@ -1,9 +1,36 @@
-import { CreditCard, CheckCircle2, AlertCircle, ExternalLink } from 'lucide-react';
-import { useState } from 'react';
+import { CreditCard, CheckCircle2, AlertCircle, ExternalLink, RefreshCw } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 
 export default function PaymentsTab({ settings, setSettings }: { settings: any, setSettings: any }) {
   const [connecting, setConnecting] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefreshStatus = async () => {
+    setRefreshing(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/stripe/refresh-status`);
+      const data = await res.json();
+      if (res.ok) {
+        setSettings({ ...settings, stripe_charges_enabled: data.charges_enabled });
+        if (data.charges_enabled) {
+          toast.success("¡Cuenta sincronizada! Pagos activados.");
+        } else {
+          toast.info("Cuenta sincronizada. Aún falta completar información en Stripe.");
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    if (settings?.stripe_account_id && !settings?.stripe_charges_enabled) {
+      handleRefreshStatus();
+    }
+  }, []);
 
   const handleConnectStripe = async () => {
     setConnecting(true);
@@ -86,6 +113,17 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
                  {connecting ? 'Cargando...' : 'Completar Perfil'}
                </button>
               )}
+            </div>
+            
+            <div className="flex justify-end">
+              <button 
+                onClick={handleRefreshStatus}
+                disabled={refreshing}
+                className="text-stone-400 hover:text-stone-600 text-xs font-bold flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-stone-50 transition-all"
+              >
+                <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
+                Sincronizar estado con Stripe
+              </button>
             </div>
             
             {/* Opciones Adicionales de Pago */}

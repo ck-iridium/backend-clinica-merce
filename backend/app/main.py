@@ -44,9 +44,7 @@ def run_auto_migrations_wrapper():
     from .utils.migrations import run_auto_migrations
     run_auto_migrations()
 
-# Ejecutar procesos de inicio
-seed_admin_user()
-run_auto_migrations_wrapper()
+# Ejecutar procesos de inicio se harán en startup_event
 
 # Verificación de API Key de Resend (Solo primeros 4 caracteres)
 resend_key = os.environ.get("RESEND_API_KEY", "").strip()
@@ -107,8 +105,15 @@ app.include_router(stripe_payments.router)
 
 @app.on_event("startup")
 async def startup_event():
+    # La semilla y migraciones se ejecutarán de forma externa o bajo demanda para evitar bloqueos
+    # seed_admin_user()
+    # run_auto_migrations_wrapper()
+    
+    from .tasks import cleanup_expired_appointments
+    # Añadimos la tarea de limpieza cada 5 minutos
+    scheduler.add_job(cleanup_expired_appointments, 'interval', minutes=5, id='cleanup_expired_appts')
     scheduler.start()
-    print("APScheduler iniciado.")
+    print("APScheduler iniciado con tarea de limpieza (cada 5 min).")
 
 @app.on_event("shutdown")
 async def shutdown_event():

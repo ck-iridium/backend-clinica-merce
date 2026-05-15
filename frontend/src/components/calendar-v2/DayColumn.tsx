@@ -171,7 +171,7 @@ export function DayColumn({
       })}
 
       {/* Citas (Porcentual) con Efecto Spotlight */}
-      {!isClosed && isWorkingDay && appointments.map(appt => {
+      {!isClosed && isWorkingDay && appointments.filter(a => a.status !== 'cancelled').map(appt => {
         let tS = appt.start_time;
         let tE = appt.end_time;
         if (tS.endsWith('Z')) tS = tS.slice(0, -1);
@@ -198,7 +198,7 @@ export function DayColumn({
         // 1. Filtro por Estado 
         if (activeFilter !== 'ALL') {
           if (activeFilter === 'CONFIRMADA' && appt.status !== 'confirmed') isHighlighted = false;
-          if (activeFilter === 'PENDIENTE' && (appt.status !== 'web_pending' && appt.status !== 'pending')) isHighlighted = false;
+          if (activeFilter === 'PENDIENTE' && (appt.status !== 'web_pending' && appt.status !== 'pending' && appt.status !== 'pending_verification')) isHighlighted = false;
           if (activeFilter === 'PAGADA' && appt.status !== 'completed') isHighlighted = false;
         }
 

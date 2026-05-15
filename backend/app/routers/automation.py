@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, date
 from .. import models
 from ..database import get_db
 from ..utils.mailer import send_appointment_notification
+from ..utils.notifications import create_admin_notification
 import logging
 import json
 from .settings import export_database
@@ -189,6 +190,15 @@ def verify_appointment(
     # Verify and confirm
     appt.status = 'confirmed'
     db.commit()
+
+    # Generar notificación para el equipo
+    create_admin_notification(
+        db,
+        title="🔔 Cita Web Verificada",
+        description=f"La cita de {appt.client.name} ha sido verificada y confirmada.",
+        type="success",
+        metadata={"appointment_id": appt.id}
+    )
     
     # Notify Admin that it is a verified web booking
     background_tasks.add_task(send_appointment_notification, appt.id, 'new_web_booking')

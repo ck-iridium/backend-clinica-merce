@@ -29,6 +29,7 @@ const getStatusColors = (status: string) => {
     case 'no_show': 
       return 'bg-stone-50 border-stone-200 text-stone-900 grayscale opacity-60';
     case 'web_pending': 
+    case 'pending_verification': 
       return 'bg-amber-50 border-amber-200 text-amber-900';
     case 'confirmed': 
       return 'bg-blue-50 border-blue-200 text-blue-900';
@@ -96,7 +97,7 @@ export function AppointmentCard({
       onMouseLeave={onMouseLeave}
       className={`absolute w-full left-0 border-l-[4px] border-y shadow-sm px-2.5 pt-2 pb-1 z-20 overflow-hidden rounded-none hover:brightness-95 hover:scale-[1.02] hover:shadow-md hover:z-30 transition-all cursor-pointer flex flex-col justify-start
         ${appointment.status === 'confirmed' ? 'border-l-blue-500' : 
-          appointment.status === 'pending' || appointment.status === 'web_pending' ? 'border-l-orange-500' :
+          appointment.status === 'pending' || appointment.status === 'web_pending' || appointment.status === 'pending_verification' ? 'border-l-orange-500' :
           appointment.status === 'completed' ? 'border-l-emerald-500' :
           'border-l-stone-200/50'
         } border-y-stone-200/50 ${colors} ${!isHighlighted ? 'opacity-20 grayscale pointer-events-none' : ''}`}
@@ -123,7 +124,7 @@ export function AppointmentCard({
         <div className="flex items-center gap-1 mt-auto pb-1">
           <div className={`w-1.5 h-1.5 rounded-full ${appointment.status === 'confirmed' ? 'bg-blue-400' : 'bg-orange-400'}`}></div>
           <span className="text-[9px] font-black uppercase tracking-widest opacity-70">
-            {appointment.status === 'confirmed' ? 'Confirmada' : (appointment.status === 'web_pending' ? 'Web Pendiente' : 'Pendiente')}
+            {appointment.status === 'confirmed' ? 'Confirmada' : (appointment.status === 'pending_verification' || appointment.status === 'web_pending' ? 'Web Pendiente' : 'Pendiente')}
           </span>
         </div>
       )}

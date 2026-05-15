@@ -55,21 +55,43 @@ export function EditAppointmentModal({
       <DialogContent className="p-0 border-none w-[95vw] sm:max-w-[340px] lg:max-w-[35em] h-fit max-h-[100dvh] sm:max-h-[calc(100vh-2rem)] rounded-xl">
         <DialogHeader className="sticky top-0 z-30 shrink-0 p-8 border-b border-stone-100 bg-white/95 backdrop-blur-md">
           <div className="flex flex-col gap-2">
-            {selectedAppt && (
-              <span className={`px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider border w-fit
-                ${selectedAppt.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                  selectedAppt.status === 'cancelled' ? 'bg-[#fef2f2] text-[#991b1b] border-[#fee2e2]' :
-                    selectedAppt.status === 'web_pending' ? 'bg-orange-50 text-orange-600 border-orange-200' :
-                      selectedAppt.status === 'pending' ? 'bg-[#fffbeb] text-[#92400e] border-[#fef3c7]' :
-                        'bg-[#f0f9f4] text-[#2d6a4f] border-[#d8f3dc]'}
-              `}>
-                {selectedAppt.status === 'web_pending' ? 'Web' :
-                  selectedAppt.status === 'completed' ? 'Realizada' :
-                    selectedAppt.status === 'cancelled' ? 'Cancelada' :
-                      selectedAppt.status === 'pending' ? 'Pendiente' :
-                        'Confirmada'}
-              </span>
-            )}
+            {selectedAppt && (() => {
+              const status = (selectedAppt.status || 'pending').toLowerCase().trim();
+              let label = 'Pendiente';
+              let colorClasses = 'bg-[#fffbeb] text-[#92400e] border-[#fef3c7]';
+
+              if (status === 'completed') {
+                label = 'Realizada';
+                colorClasses = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+              } else if (status === 'cancelled') {
+                label = 'Cancelada';
+                colorClasses = 'bg-[#fef2f2] text-[#991b1b] border-[#fee2e2]';
+              } else if (status === 'web_pending') {
+                label = 'Reserva Web';
+                colorClasses = 'bg-orange-50 text-orange-600 border-orange-200';
+              } else if (status === 'awaiting_payment') {
+                label = 'Pago Pendiente';
+                colorClasses = 'bg-amber-50 text-amber-600 border-amber-200';
+              } else if (status === 'pending_verification') {
+                label = 'Pendiente (Web)';
+                colorClasses = 'bg-[#fffbeb] text-[#92400e] border-[#fef3c7]';
+              } else if (status === 'pending') {
+                label = 'Pendiente (Manual)';
+                colorClasses = 'bg-[#fffbeb] text-[#92400e] border-[#fef3c7]';
+              } else if (status === 'confirmed') {
+                label = 'Confirmada';
+                colorClasses = 'bg-[#f0f9f4] text-[#2d6a4f] border-[#d8f3dc]';
+              } else if (status === 'no_show') {
+                label = 'No Asistió';
+                colorClasses = 'bg-stone-50 text-stone-600 border-stone-200';
+              }
+
+              return (
+                <span className={`px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider border w-fit ${colorClasses}`}>
+                  {label}
+                </span>
+              );
+            })()}
             <DialogTitle className="text-2xl md:text-3xl font-serif italic font-black text-stone-800 leading-tight">
               {selectedAppt ? clientMap.get(selectedAppt.client_id)?.name : 'Detalle Cita'}
             </DialogTitle>
@@ -154,22 +176,32 @@ export function EditAppointmentModal({
 
               <div className="flex-1">
                 <Select
-                  value={selectedAppt?.status}
+                  value={(selectedAppt?.status || 'pending').toLowerCase().trim()}
                   onValueChange={(val) => handleStatusChange(val)}
                   disabled={updatingStatus}
                 >
-                  <SelectTrigger className={`w-full h-12 rounded-xl font-bold border transition-all text-[11px]
-                    ${selectedAppt?.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
-                      selectedAppt?.status === 'cancelled' ? 'bg-[#fef2f2] text-[#991b1b] border-[#fee2e2]' :
-                        selectedAppt?.status === 'web_pending' ? 'bg-orange-50 text-orange-700 border-orange-300' :
-                          selectedAppt?.status === 'pending' ? 'bg-[#fffbeb] text-[#92400e] border-[#fef3c7]' :
-                            selectedAppt?.status === 'confirmed' ? 'bg-[#f0f9f4] text-[#2d6a4f] border-[#d8f3dc]' :
-                              'bg-stone-50 text-stone-600 border-stone-100'}
-                  `}>
-                    <SelectValue />
-                  </SelectTrigger>
+                  {(() => {
+                    const status = (selectedAppt?.status || 'pending').toLowerCase().trim();
+                    let colorClasses = 'bg-[#fffbeb] text-[#92400e] border-[#fef3c7]'; // Default to pending
+
+                    if (status === 'completed') colorClasses = 'bg-emerald-50 text-emerald-700 border-emerald-300';
+                    else if (status === 'cancelled') colorClasses = 'bg-[#fef2f2] text-[#991b1b] border-[#fee2e2]';
+                    else if (status === 'web_pending') colorClasses = 'bg-orange-50 text-orange-700 border-orange-300';
+                    else if (status === 'confirmed') colorClasses = 'bg-[#f0f9f4] text-[#2d6a4f] border-[#d8f3dc]';
+                    else if (status === 'awaiting_payment') colorClasses = 'bg-amber-50 text-amber-700 border-amber-300';
+                    else if (status === 'no_show') colorClasses = 'bg-stone-50 text-stone-600 border-stone-200';
+
+                    return (
+                      <SelectTrigger className={`w-full h-12 rounded-xl font-bold border transition-all text-[11px] ${colorClasses}`}>
+                        <SelectValue placeholder="Seleccionar estado..." />
+                      </SelectTrigger>
+                    );
+                  })()}
                   <SelectContent className="rounded-xl border-none shadow-2xl">
-                    <SelectItem value="pending">⏳ Pendiente</SelectItem>
+                    <SelectItem value="pending">⏳ Pendiente (Manual)</SelectItem>
+                    <SelectItem value="pending_verification">🌐 Pendiente (Web)</SelectItem>
+                    <SelectItem value="web_pending">🌐 Reserva Web</SelectItem>
+                    <SelectItem value="awaiting_payment">💳 Esperando Pago</SelectItem>
                     <SelectItem value="confirmed" className="font-bold text-[#2d6a4f]">✨ Confirmada</SelectItem>
                     <SelectItem value="completed" className="font-bold text-emerald-600">✅ Realizada</SelectItem>
                     <SelectItem value="no_show">No Asistió</SelectItem>

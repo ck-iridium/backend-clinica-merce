@@ -15,6 +15,7 @@ def send_email(to_email: str, subject: str, body_html: str, settings=None):
     """
     Envía un correo electrónico usando la API de Resend o SMTP como fallback.
     """
+    # 1. Prioridad: Resend API si existe la KEY
     api_key = os.environ.get("RESEND_API_KEY", "").strip()
     
     if api_key:
@@ -40,61 +41,55 @@ def send_email(to_email: str, subject: str, body_html: str, settings=None):
                 method="POST"
             )
             
-            try:
-                with urllib.request.urlopen(req, timeout=12) as response:
-                    if response.status in [200, 201]:
-                        logger.info(f"✅ Email enviado con éxito a {to_email} vía Resend")
-                        return True
-                    return False
-            except urllib.error.HTTPError as http_err:
-                error_body = http_err.read().decode('utf-8')
-                logger.error(f"❌ Error Resend API ({http_err.code}): {error_body}")
+            with urllib.request.urlopen(req, timeout=12) as response:
+                if response.status in [200, 201]:
+                    logger.info(f"✅ Email enviado vía Resend a {to_email}")
+                    return True
                 return False
-                
         except Exception as e:
-            logger.error(f"❌ Fallo crítico en mailer (Resend): {str(e)}")
-            return False
-    else:
-        # Fallback a SMTP
+            logger.warning(f"⚠️ Resend falló, intentando SMTP: {str(e)}")
+
+    # 2. Fallback: SMTP (Gmail u otros)
+    try:
+        # Cargamos configuración de DB si no se pasa por parámetro
         if not settings:
-            try:
-                from ..database import SessionLocal
-                db = SessionLocal()
-                settings = db.query(models.ClinicSettings).first()
-                db.close()
-            except Exception:
-                pass
-                
-        smtp_host = os.environ.get("SMTP_HOST") or (settings.smtp_host if settings else None)
-        smtp_port = os.environ.get("SMTP_PORT") or (settings.smtp_port if settings else None)
+            from ..database import SessionLocal
+            db = SessionLocal()
+            settings = db.query(models.ClinicSettings).first()
+            db.close()
+
+        # Variables desde .env con fallback a la base de datos
+        smtp_host = os.environ.get("SMTP_HOST") or (settings.smtp_host if settings else "smtp.gmail.com")
+        smtp_port = int(os.environ.get("SMTP_PORT") or (settings.smtp_port if settings else 587))
         smtp_user = os.environ.get("SMTP_USER") or (settings.smtp_user if settings else None)
         smtp_password = os.environ.get("SMTP_PASSWORD") or (settings.smtp_password if settings else None)
-        smtp_from = os.environ.get("SMTP_FROM_EMAIL") or (settings.smtp_from_email if settings else None)
+        smtp_from = os.environ.get("SMTP_FROM_EMAIL") or (settings.smtp_from_email if settings else smtp_user)
+        use_tls = os.environ.get("SMTP_USE_TLS", "True").lower() == "true"
 
-        if not smtp_host or not smtp_user or not smtp_password:
-             logger.error("❌ Fallo: No hay configuración SMTP válida ni RESEND_API_KEY.")
-             return False
-             
-        try:
-            msg = MIMEMultipart("alternative")
-            msg['Subject'] = subject
-            msg['From'] = smtp_from or "info@esteticamerce.com"
-            msg['To'] = to_email
-            
-            part_html = MIMEText(body_html, 'html')
-            msg.attach(part_html)
-            
-            server = smtplib.SMTP(smtp_host, int(smtp_port))
-            server.starttls()
-            server.login(smtp_user, smtp_password)
-            server.sendmail(msg['From'], to_email, msg.as_string())
-            server.quit()
-            
-            logger.info(f"✅ Email enviado con éxito a {to_email} vía SMTP")
-            return True
-        except Exception as e:
-            logger.error(f"❌ Fallo al enviar email vía SMTP: {str(e)}")
+        if not smtp_user or not smtp_password:
+            logger.error("❌ Fallo crítico: No hay credenciales SMTP configuradas.")
             return False
+
+        msg = MIMEMultipart("alternative")
+        msg['Subject'] = subject
+        msg['From'] = f"Estética Merce <{smtp_from}>"
+        msg['To'] = to_email
+        msg.attach(MIMEText(body_html, 'html'))
+
+        # Conexión SMTP
+        server = smtplib.SMTP(smtp_host, smtp_port, timeout=15)
+        if use_tls:
+            server.starttls()
+        
+        server.login(smtp_user, smtp_password)
+        server.sendmail(smtp_from, to_email, msg.as_string())
+        server.quit()
+        
+        logger.info(f"✅ Email enviado vía SMTP a {to_email}")
+        return True
+    except Exception as e:
+        logger.error(f"❌ ERROR TOTAL EN MAILER: {str(e)}")
+        return False
 
 def get_html_template(content_html, clinic_name, clinic_phone):
     """Plantilla base para correos corporativos de Estética Merce"""
@@ -212,7 +207,10 @@ def send_appointment_notification(appointment_id: str, type: str):
                 </div>
                 """
                 verify_url = f"{frontend_url}/reservar/verificar?id={appointment.id}"
-                print(f"\n[DEBUG] URL DE CONFIRMACION PARA {client.name}: {verify_url}\n")
+                print("\n" + "="*60)
+                print(f"🆔 CONFIRMACIÓN DE CITA PARA: {client.name}")
+                print(f"🔗 URL: {verify_url}")
+                print("="*60 + "\n")
                 send_email(client.email, subject, get_html_template(content, clinic_name, settings.clinic_phone), settings=settings)
 
         elif type == 'confirmation':
