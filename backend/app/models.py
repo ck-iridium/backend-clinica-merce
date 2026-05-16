@@ -206,6 +206,7 @@ class ClinicSettings(Base):
     # Stripe Connect Configuration
     stripe_account_id = Column(String, nullable=True)
     stripe_charges_enabled = Column(Boolean, default=False)
+    cancellation_margin_hours = Column(Integer, default=24)
 
 class Invoice(Base):
     __tablename__ = "invoices"

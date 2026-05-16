@@ -58,12 +58,15 @@ export default function Footer() {
               Especialistas en medicina estética avanzada y bienestar. Un refugio de lujo diseñado para resaltar tu belleza natural con la tecnología más innovadora.
             </p>
             <div className="flex items-center gap-4 pt-2">
-              <a href="#" className="w-10 h-10 rounded-full bg-stone-900 border border-stone-800 flex items-center justify-center text-white hover:text-[#d4af37] hover:border-[#d4af37] transition-all duration-300">
+              <a 
+                href={settings?.instagram_url || "https://instagram.com"} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-stone-900 border border-stone-800 flex items-center justify-center text-white hover:text-[#d4af37] hover:border-[#d4af37] transition-all duration-300"
+              >
                 <Camera size={18} />
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-stone-900 border border-stone-800 flex items-center justify-center text-white hover:text-[#d4af37] hover:border-[#d4af37] transition-all duration-300">
-                <Share2 size={18} />
-              </a>
+              <span className="text-[10px] font-bold uppercase tracking-widest opacity-30">Siguenos en redes</span>
             </div>
           </div>
 
@@ -170,13 +173,21 @@ export default function Footer() {
             © {new Date().getFullYear()} {settings?.clinic_name || 'Estética Merce'}. Todos los derechos reservados.
           </div>
 
-          <nav className="flex items-center gap-8">
+          <nav className="flex flex-wrap items-center justify-center md:justify-end gap-x-8 gap-y-4">
+            <Link href="/privacidad" className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-500 hover:text-white transition-colors">
+              Privacidad
+            </Link>
             <Link href="/cookies" className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-500 hover:text-white transition-colors">
-              Política de Cookies
+              Cookies
             </Link>
             <Link href="/aviso-legal" className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-500 hover:text-white transition-colors">
               Aviso Legal
             </Link>
+            {settings?.stripe_charges_enabled && (
+              <Link href="/condiciones-reserva" className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#d4af37] hover:text-white transition-colors">
+                Condiciones de Reserva
+              </Link>
+            )}
           </nav>
         </div>
 

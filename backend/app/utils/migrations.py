@@ -69,7 +69,9 @@ def run_auto_migrations():
             "ALTER TABLE site_content ADD COLUMN about_button_text VARCHAR DEFAULT 'Saber Más'",
             "ALTER TABLE site_content ADD COLUMN about_button_link VARCHAR DEFAULT '/contacto'",
             # ── Notificaciones en tiempo real ─────────────────────────────────────
-            "CREATE TABLE IF NOT EXISTS notifications (id VARCHAR(36) PRIMARY KEY, user_id VARCHAR(36), title VARCHAR, description VARCHAR, type VARCHAR, read BOOLEAN DEFAULT FALSE, metadata JSON, created_at TIMESTAMP)"
+            "CREATE TABLE IF NOT EXISTS notifications (id VARCHAR(36) PRIMARY KEY, user_id VARCHAR(36), title VARCHAR, description VARCHAR, type VARCHAR, read BOOLEAN DEFAULT FALSE, metadata JSON, created_at TIMESTAMP)",
+            # ── Margen de cancelación ──────────────────────────────────────────────
+            "ALTER TABLE clinic_settings ADD COLUMN cancellation_margin_hours INTEGER DEFAULT 24"
         ]
         
         for m in migrations:

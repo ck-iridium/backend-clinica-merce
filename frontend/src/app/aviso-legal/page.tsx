@@ -17,7 +17,7 @@ export default function AvisoLegalPage() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-20 animate-in fade-in duration-700">
       <nav className="mb-12">
-        <Link href="/" className="text-sm font-bold text-[#d9777f] hover:underline flex items-center gap-2">
+        <Link href="/" className="text-sm font-bold text-[#d4af37] hover:underline flex items-center gap-2">
           ← Volver a la web
         </Link>
       </nav>
@@ -52,7 +52,7 @@ export default function AvisoLegalPage() {
         <section>
           <h2 className="text-xl font-bold text-stone-800 mb-4 uppercase tracking-wider text-sm">3. Protección de Datos de Carácter Personal</h2>
           <p>
-            Puede consultar toda la información relativa al tratamiento de sus datos personales accediendo a nuestra <Link href="/privacidad" className="text-[#d9777f] font-bold underline">Política de Privacidad</Link>.
+            Puede consultar toda la información relativa al tratamiento de sus datos personales accediendo a nuestra <Link href="/privacidad" className="text-[#d4af37] font-bold underline">Política de Privacidad</Link>.
           </p>
         </section>
 

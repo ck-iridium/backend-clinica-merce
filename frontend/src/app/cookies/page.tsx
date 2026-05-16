@@ -17,7 +17,7 @@ export default function CookiesPage() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-20 animate-in fade-in duration-700">
       <nav className="mb-12">
-        <Link href="/" className="text-sm font-bold text-[#d9777f] hover:underline flex items-center gap-2">
+        <Link href="/" className="text-sm font-bold text-[#d4af37] hover:underline flex items-center gap-2">
           ← Volver a la web
         </Link>
       </nav>

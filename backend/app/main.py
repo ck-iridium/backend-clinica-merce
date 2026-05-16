@@ -105,9 +105,9 @@ app.include_router(stripe_payments.router)
 
 @app.on_event("startup")
 async def startup_event():
-    # La semilla y migraciones se ejecutarán de forma externa o bajo demanda para evitar bloqueos
-    # seed_admin_user()
-    # run_auto_migrations_wrapper()
+    # La semilla y migraciones se ejecutarán para asegurar la integridad de la DB
+    seed_admin_user()
+    run_auto_migrations_wrapper()
     
     from .tasks import cleanup_expired_appointments
     # Añadimos la tarea de limpieza cada 5 minutos

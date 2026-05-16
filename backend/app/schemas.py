@@ -161,6 +161,7 @@ class ClinicSettingsBase(BaseModel):
     lunch_start: Optional[str] = None
     lunch_end: Optional[str] = None
     working_days: Optional[List[int]] = None
+    cancellation_margin_hours: int = 24
 
     ai_provider: Optional[str] = "gemini"
     gemini_api_key: Optional[str] = None
@@ -204,6 +205,7 @@ class ClinicSettingsUpdate(BaseModel):
     lunch_start: Optional[str] = None
     lunch_end: Optional[str] = None
     working_days: Optional[List[int]] = None
+    cancellation_margin_hours: Optional[int] = None
     ai_provider: Optional[str] = None
     gemini_api_key: Optional[str] = None
     openai_api_key: Optional[str] = None

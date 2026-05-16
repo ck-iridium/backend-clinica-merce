@@ -127,18 +127,37 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
             </div>
             
             {/* Opciones Adicionales de Pago */}
-            <div className="grid gap-6 md:grid-cols-2 pt-4 border-t border-stone-100">
-               <div>
-                  <h3 className="font-bold text-stone-800 text-sm mb-2">Bloqueo de Slots</h3>
-                  <p className="text-xs text-stone-500 bg-stone-50 p-4 rounded-xl border border-stone-100">
-                    El sistema bloquea automáticamente los slots durante 15 minutos cuando un cliente inicia el proceso de pago de una fianza. Si no se completa, el slot se libera.
-                  </p>
+            <div className="grid gap-6 md:grid-cols-2 pt-6 border-t border-stone-100">
+               <div className="space-y-4">
+                  <div>
+                    <h3 className="font-bold text-stone-800 text-sm mb-2">Bloqueo de Slots</h3>
+                    <p className="text-xs text-stone-500 bg-stone-50 p-4 rounded-xl border border-stone-100">
+                      El sistema bloquea automáticamente los slots durante 10 minutos cuando un cliente inicia el proceso de pago de una fianza. Si no se completa, el slot se libera.
+                    </p>
+                  </div>
+                  <div className="bg-[#fcf8e5] p-4 rounded-xl border border-[#e5e1cc]">
+                    <label className="block text-xs font-bold text-stone-700 mb-2 uppercase tracking-wider">Margen de Cancelación (Horas)</label>
+                    <div className="flex items-center gap-3">
+                      <input 
+                        type="number" 
+                        value={settings?.cancellation_margin_hours || 24} 
+                        onChange={(e) => setSettings({ ...settings, cancellation_margin_hours: parseInt(e.target.value) })}
+                        className="w-24 px-3 py-2 bg-white border border-stone-200 rounded-lg focus:border-[#d4af37] outline-none font-bold text-stone-800"
+                        min="1"
+                        max="720"
+                      />
+                      <span className="text-xs font-medium text-stone-500">Horas de antelación para aviso.</span>
+                    </div>
+                  </div>
                </div>
                <div>
                   <h3 className="font-bold text-stone-800 text-sm mb-2">Fianzas por Servicio</h3>
                   <p className="text-xs text-stone-500 bg-stone-50 p-4 rounded-xl border border-stone-100">
                     Puedes configurar qué tratamientos requieren fianza y su importe exacto directamente desde el <strong>Editor de Servicios</strong>.
                   </p>
+                  <div className="mt-4 p-4 bg-stone-50 rounded-xl border border-stone-100 italic text-[10px] text-stone-400">
+                    * Este margen de {settings?.cancellation_margin_hours || 24}h se mostrará automáticamente en tus páginas legales para informar al cliente.
+                  </div>
                </div>
             </div>
           </div>
