@@ -1,7 +1,7 @@
 "use client"
 import { LayoutTemplate, Grip, List as ListIcon, Smartphone } from 'lucide-react';
 
-interface BookingStyleTabProps {
+interface BookingLayoutTabProps {
   settings: any;
   setSettings: (s: any) => void;
 }
