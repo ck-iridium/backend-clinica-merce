@@ -51,13 +51,13 @@ export default async function Home() {
   if (content.home_sections_order) {
     try {
       const savedOrder = JSON.parse(content.home_sections_order);
-      
+
       // Filtrar y ordenar según el JSON
       savedOrder.forEach((id: string) => {
         const found = allAvailable.find(s => s.id === id);
         if (found) orderedSections.push(found); // Si no existe (Fantasma), se ignora
       });
-      
+
       // Añadir cualquier sección nueva que no estuviera en el JSON
       allAvailable.forEach(s => {
         if (!orderedSections.find(o => o.id === s.id)) orderedSections.push(s);
@@ -83,10 +83,10 @@ export default async function Home() {
       `}} />
 
       <main className="w-full h-[100dvh] overflow-y-auto snap-y-mandatory md:h-auto md:overflow-visible md:snap-none scroll-smooth-premium relative">
-        
+
         {/* RENDERIZADO DINÁMICO DE SECCIONES */}
         {finalOrder.map((section, index) => {
-          
+
           if (section.type === 'hero') {
             return (
               <section key="hero" className={`relative h-[100dvh] min-h-[600px] w-full flex snap-start snap-stop-always md:snap-none ${content.hero_alignment === 'top' ? 'items-start pt-48' : content.hero_alignment === 'bottom' ? 'items-end pb-32' : 'items-center'} ${content.hero_horizontal_alignment === 'left' ? 'justify-start' : content.hero_horizontal_alignment === 'right' ? 'justify-end' : 'justify-center'} p-6 md:p-12 overflow-hidden mt-0`}>
@@ -110,20 +110,18 @@ export default async function Home() {
                   <div className="absolute inset-0 z-0 bg-stone-900"></div>
                 )}
 
-                <div className={`relative z-10 max-w-7xl w-full animate-in slide-in-from-bottom-8 fade-in duration-1000 ${
-                  content.hero_horizontal_alignment === 'left' ? 'text-left px-6 md:px-12 lg:px-24 ml-0 mr-auto' : 
-                  content.hero_horizontal_alignment === 'right' ? 'text-right px-6 md:px-12 lg:px-24 mr-0 ml-auto' : 
-                  'text-center px-6 mx-auto'
-                }`}>
+                <div className={`relative z-10 max-w-7xl w-full animate-in slide-in-from-bottom-8 fade-in duration-1000 ${content.hero_horizontal_alignment === 'left' ? 'text-left px-6 md:px-12 lg:px-24 ml-0 mr-auto' :
+                  content.hero_horizontal_alignment === 'right' ? 'text-right px-6 md:px-12 lg:px-24 mr-0 ml-auto' :
+                    'text-center px-6 mx-auto'
+                  }`}>
                   <h1 className="text-6xl md:text-8xl lg:text-[7rem] leading-none font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
                     {content.hero_title}
                   </h1>
-                  <p className={`text-xl md:text-3xl text-white/90 font-medium font-sans tracking-wide leading-relaxed drop-shadow-md mt-6 ${
-                    content.hero_horizontal_alignment === 'center' ? 'max-w-3xl mx-auto' : 'max-w-3xl'
-                  } ${content.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''}`}>
+                  <p className={`text-xl md:text-3xl text-white/90 font-medium font-sans tracking-wide leading-relaxed drop-shadow-md mt-6 ${content.hero_horizontal_alignment === 'center' ? 'max-w-3xl mx-auto' : 'max-w-3xl'
+                    } ${content.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''}`}>
                     {content.hero_subtitle}
                   </p>
-                  
+
                   {content.hero_show_button !== false && (
                     <div className="pt-8">
                       <Link href={content.hero_button_link || "#"} className="inline-block bg-white/10 backdrop-blur-md border border-white/20 text-white px-12 py-5 rounded-full font-bold text-lg hover:bg-white hover:text-stone-900 transition-all duration-500 shadow-2xl hover:scale-105 active:scale-95 group">
@@ -138,32 +136,38 @@ export default async function Home() {
 
           if (section.type === 'about') {
             return (
-              <section key="about" className="py-24 bg-white relative flex items-center h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none">
-                <div className={`max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 items-center w-full ${content.about_layout === 'left' ? 'md:flex-row-reverse' : ''}`}>
-                  <div className="space-y-8">
-                    <h2 className="text-4xl font-serif font-extrabold text-stone-900 leading-tight">{content.about_title}</h2>
-                    <div className="text-lg text-stone-600 leading-relaxed whitespace-pre-wrap font-medium">
+              <section key="about" className="bg-[#F5F2EE] relative flex items-start h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none pt-20 md:pt-24 overflow-hidden">
+                <style dangerouslySetInnerHTML={{
+                  __html: `
+                  @media (max-height: 700px) and (max-width: 640px) {
+                    .about-container { gap: 2.5rem !important; height: 100% !important; padding-bottom: 3rem !important; }
+                    .about-title { font-size: 1.8rem !important; margin-bottom: 0.5rem !important; }
+                    .about-text { font-size: 1rem !important; line-height: 1.4 !important; }
+                    .about-btn { padding: 0.75rem 1.75rem !important; font-size: 11px !important; }
+                  }
+                `}} />
+                <div className="about-container max-w-7xl mx-auto px-6 flex flex-col md:grid md:grid-cols-2 gap-10 md:gap-16 items-center w-full h-full pb-16">
+                  <div className="space-y-4 md:space-y-8 flex flex-col items-center text-center md:items-start md:text-left flex-shrink-0">
+                    <h2 className="about-title text-3xl md:text-5xl font-serif font-extrabold text-stone-900 leading-tight">{content.about_title}</h2>
+                    <div className="about-text text-base md:text-xl text-stone-600 leading-relaxed whitespace-pre-wrap font-medium max-w-md">
                       {content.about_text}
                     </div>
                     {content.about_show_button && (
                       <div className="pt-4">
-                        <Link href={content.about_button_link || "#"} className="inline-block border-2 border-stone-200 text-stone-800 px-10 py-4 rounded-full font-bold text-sm uppercase tracking-widest hover:bg-stone-900 hover:text-white hover:border-stone-900 transition-all duration-500">
+                        <Link href={content.about_button_link || "#"} className="about-btn inline-block border-2 border-stone-200 text-stone-800 px-8 py-3.5 md:px-12 md:py-5 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-stone-900 hover:text-white hover:border-stone-900 transition-all duration-500">
                           {content.about_button_text}
                         </Link>
                       </div>
                     )}
                   </div>
-                  {content.about_image_url ? (
-                    <div className="rounded-[3rem] overflow-hidden shadow-2xl aspect-[4/5] md:aspect-auto md:h-[600px] relative group">
+                  <div className="about-img-container rounded-[2.5rem] md:rounded-[3rem] overflow-hidden shadow-2xl relative group w-full flex-1 min-h-0 md:h-[600px] max-w-[340px] md:max-w-none">
+                    {content.about_image_url ? (
                       <img src={content.about_image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${content.about_image_url}` : content.about_image_url} alt="Sobre Mí" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                      <div className="absolute inset-0 bg-stone-900/10 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    </div>
-                  ) : (
-                    <div className="rounded-[3rem] bg-stone-100 aspect-[4/5] md:aspect-auto md:h-[600px] flex flex-col items-center justify-center text-stone-400 border-2 border-dashed border-stone-200">
-                      <span className="text-4xl mb-4">📷</span>
-                      <p className="font-bold">Añade tu foto desde el CMS</p>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="w-full h-full bg-stone-100 flex items-center justify-center text-stone-400">📷</div>
+                    )}
+                    <div className="absolute inset-0 bg-stone-900/10 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  </div>
                 </div>
               </section>
             );
@@ -178,27 +182,33 @@ export default async function Home() {
             const isEven = index % 2 === 0;
 
             return (
-              <section key={`cat-${category.id}`} className={`w-full pt-20 pb-8 md:py-24 overflow-hidden flex flex-col h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none ${isEven ? 'bg-white' : 'bg-[#F5F2EE]'}`}>
-                <div className="w-full max-w-7xl mx-auto px-6 mb-6 flex-shrink-0 flex justify-between items-end gap-8">
+              <section key={`cat-${category.id}`} className={`w-full pt-10 pb-[10vh] md:py-24 overflow-hidden flex flex-col h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none ${isEven ? 'bg-white' : 'bg-[#F5F2EE]'}`}>
+                <div className="w-full max-w-7xl mx-auto px-6 mb-6 flex-shrink-0 flex flex-col md:flex-row md:justify-between md:items-end gap-3 md:gap-8">
                   <div className="max-w-2xl">
-                    <h2 className="text-4xl md:text-5xl font-serif font-extrabold text-stone-900 mb-4">{category.name}</h2>
-                    <p className="hidden md:block text-lg md:text-xl text-stone-500">{category.description || 'Descubre nuestros tratamientos exclusivos diseñados para resaltar tu belleza natural.'}</p>
+                    <h2 className="text-3xl md:text-5xl font-serif font-extrabold text-stone-900 leading-tight">{category.name}</h2>
+                    <p className="hidden md:block text-lg md:text-xl text-stone-500 mt-2">{category.description || 'Descubre nuestros tratamientos exclusivos diseñados para resaltar tu belleza natural.'}</p>
                   </div>
-                  <Link href={`/tratamientos/${category.slug || category.id}`} className="hidden md:inline-flex items-center gap-2 font-bold text-[#d4af37] hover:text-stone-900 transition-colors uppercase tracking-widest text-sm">
-                    Ver Catálogo <span className="text-xl">→</span>
+                  <Link href={`/tratamientos/${category.slug || category.id}`} className="self-end md:self-auto inline-flex items-center gap-2 font-bold text-[#d4af37] hover:text-stone-900 transition-colors uppercase tracking-widest text-[10px] md:text-sm">
+                    <span className="hidden md:inline">Ver Catálogo</span>
+                    <span className="md:hidden">Ver todo</span>
+                    <span className="text-xl">→</span>
                   </Link>
                 </div>
 
-                <div className="hidden md:block w-full max-w-7xl mx-auto px-6 mb-8">
+                {/* DESKTOP VIEW */}
+                <div className="hidden md:block w-full max-w-7xl mx-auto px-6 mb-8 flex-1 flex flex-col justify-center">
                   {categoryServices.length === 1 && (
                     <div className="w-full">
-                      <ServiceCard service={categoryServices[0]} className="w-full aspect-[16/9] md:h-[500px]" />
+                      <ServiceCard 
+                        service={categoryServices[0]} 
+                        className="!w-full !md:w-full !h-[600px] !md:h-[600px]" 
+                      />
                     </div>
                   )}
                   {categoryServices.length === 2 && (
                     <div className="flex justify-center gap-8">
                       {categoryServices.map((svc: any) => (
-                        <ServiceCard key={svc.id} service={svc} className="w-[372px] h-[662px]" />
+                        <ServiceCard key={svc.id} service={svc} className="!w-[420px] !h-[700px]" />
                       ))}
                     </div>
                   )}
@@ -210,9 +220,10 @@ export default async function Home() {
                   </div>
                 )}
 
-                <div className="md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-6 items-center flex-1 min-h-0">
+                {/* MOBILE VIEW — FLUID & ADAPTIVE */}
+                <div className={`md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-6 items-center flex-1 min-h-0 w-full ${categoryServices.length <= 1 ? 'justify-center' : 'justify-start'}`}>
                   {categoryServices.map((svc: any) => (
-                    <ServiceCard key={svc.id} service={svc} className="w-[75vw] h-full snap-center snap-stop-always" />
+                    <ServiceCard key={svc.id} service={svc} className="w-[85vw] h-full snap-center snap-stop-always" />
                   ))}
                 </div>
               </section>

@@ -12,15 +12,27 @@ export default function TreatmentCarousel({ servicios, loop = false }: Treatment
   const [isReady, setIsReady] = useState(false);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
 
+  const [mounted, setMounted] = useState(false);
+  const [paddingStyles, setPaddingStyles] = useState<any>({});
+
   // Triplicamos los servicios para el efecto infinito si está activado
   const displayItems = loop ? [...servicios, ...servicios, ...servicios] : servicios;
 
-  // Posicionamiento inicial: Siempre en 0
+  // Lógica de montaje y estilos dinámicos (evita Hydration Error)
   useEffect(() => {
+    setMounted(true);
+    const isMobile = window.innerWidth < 768;
+    const desktopPadding = 'max(1.5rem, calc((100% - 1280px) / 2 + 1.5rem))';
+    
+    setPaddingStyles({
+      paddingLeft: isMobile ? '1.5rem' : desktopPadding,
+      paddingRight: isMobile ? '1.5rem' : desktopPadding,
+      scrollPaddingLeft: isMobile ? '0' : desktopPadding
+    });
+
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollLeft = 0;
     }
-    setIsReady(true);
   }, []);
 
   // Lógica de Scroll: Control de flecha y Teletransporte
@@ -42,7 +54,6 @@ export default function TreatmentCarousel({ servicios, loop = false }: Treatment
 
       // 2. Teletransporte infinito (solo si loop está activo)
       if (loop) {
-        // Si llegamos cerca del final del tercer set, saltamos al inicio del segundo set
         if (scrollLeft >= totalWidth * 2 + 100) {
           container.style.scrollBehavior = 'auto';
           container.scrollLeft -= totalWidth;
@@ -71,21 +82,17 @@ export default function TreatmentCarousel({ servicios, loop = false }: Treatment
   };
 
   return (
-    <div className={`w-full flex flex-col group/carousel transition-opacity duration-500 ${isReady ? 'opacity-100' : 'opacity-0'}`}>
+    <div className="w-full flex flex-col group/carousel">
       <style dangerouslySetInnerHTML={{ __html: '.hide-scroll-desktop::-webkit-scrollbar { display: none; } .hide-scroll-desktop { -ms-overflow-style: none; scrollbar-width: none; }' }} />
       <div
         ref={scrollContainerRef}
-        className="flex overflow-x-auto hide-scroll-desktop gap-6 py-8 md:py-12 snap-x snap-mandatory"
-        style={{
-          paddingLeft: 'max(1.5rem, calc((100% - 1280px) / 2 + 1.5rem))',
-          paddingRight: 'max(1.5rem, calc((100% - 1280px) / 2 + 1.5rem))',
-          scrollPaddingLeft: 'max(1.5rem, calc((100% - 1280px) / 2 + 1.5rem))'
-        }}
+        className={`flex overflow-x-auto hide-scroll-desktop gap-4 md:gap-6 py-8 md:py-12 snap-x snap-mandatory px-6 md:px-0 h-full ${servicios.length <= 1 ? 'justify-center' : 'justify-start'}`}
+        style={mounted ? paddingStyles : {}}
       >
         {displayItems.map((s, idx) => (
           <div 
             key={`${s.id}-${idx}`} 
-            className="w-[85vw] md:w-[372px] h-[550px] md:h-[662px] shrink-0 snap-start snap-stop-always"
+            className="w-[85vw] md:w-[372px] h-full md:h-[662px] shrink-0 snap-center md:snap-start snap-stop-always"
           >
             <ServiceCard service={s} className="w-full h-full" />
           </div>

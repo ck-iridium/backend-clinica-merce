@@ -4,7 +4,9 @@ import Link from 'next/link';
 
 import PublicNavbar from '@/components/PublicNavbar';
 import TreatmentCarousel from '@/components/TreatmentCarousel';
+import ServiceCard from '@/components/ServiceCard';
 import Footer from '@/components/Footer';
+import CategoryHero from '@/components/CategoryHero';
 
 // Helpers to get data
 async function getCategoryData(slug: string) {
@@ -72,157 +74,149 @@ Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos p
   return (
     <div className="min-h-screen bg-stone-50 font-sans text-stone-900 selection:bg-[#d4af37]/30">
 
-      {/* 1. HERO DE CATEGORÍA (40vh) — Navbar DENTRO de la sección (estilo Home) */}
-      <section className="relative w-full h-[45vh] overflow-hidden flex flex-col justify-end">
-        {/* Navbar absoluto arriba */}
-        <div className="absolute top-0 left-0 w-full z-50">
-          <PublicNavbar transparent={true} />
-        </div>
+      {/* CONTENEDOR MAESTRO DE SNAP (Móvil) */}
+      <main className="w-full h-[100dvh] overflow-y-auto snap-y-mandatory md:h-auto md:overflow-visible md:snap-none scroll-smooth-premium relative">
 
-        {/* Background Image full-bleed */}
-        <div className="absolute inset-0 z-0 bg-stone-900">
-          {category.image_url && (
-            <img
-              src={getFullUrl(category.image_url)}
-              alt={category.name}
-              className="w-full h-full object-cover object-center"
-            />
-          )}
-          {/* Capas de overlay para legibilidad */}
-          <div className="absolute inset-0 bg-stone-900/35"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-stone-900/75 via-transparent to-transparent"></div>
-        </div>
+        {/* 1. HERO DE CATEGORÍA CINEMATOGRÁFICO */}
+        <section className="h-[100dvh] snap-start snap-stop-always md:h-[65vh] md:snap-none">
+          <CategoryHero category={category} />
+        </section>
 
-        {/* Texto del Hero — Alineado con márgenes estándar */}
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 pb-16 md:pb-20 animate-in slide-in-from-bottom-8 duration-1000">
-          <span className="text-xs md:text-sm font-black uppercase tracking-[0.3em] text-[#d4af37] mb-4 block drop-shadow-md">
-            Colección de Tratamientos
-          </span>
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-extrabold text-white leading-none drop-shadow-lg mb-5">
-            {category.name}
-          </h1>
-          {category.description && (
-            <p className="text-lg md:text-2xl text-white/90 font-medium max-w-2xl leading-relaxed drop-shadow-md">
-              {category.description}
-            </p>
-          )}
-        </div>
-      </section>
+        {/* 2. SLIDER DE TRATAMIENTOS */}
+        {categoryServices.length > 0 && (
+          <section id="treatment-content" className="relative z-20 w-full overflow-hidden h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none flex flex-col bg-[#F5F2EE]">
+            <style dangerouslySetInnerHTML={{ __html: '.hide-scroll::-webkit-scrollbar { display: none; } .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }' }} />
+            <div className="pt-16 md:pt-24 pb-8 flex-1 flex flex-col min-h-0">
+              <div className="max-w-7xl mx-auto px-6 mb-4 flex flex-col md:flex-row md:justify-between md:items-end gap-2 md:gap-8 flex-shrink-0">
+                <div>
+                  <h2 className="text-2xl md:text-4xl font-serif font-bold text-stone-800">
+                    Catálogo de {category.name}
+                  </h2>
+                  <p className="text-stone-400 font-medium text-xs md:text-base">{categoryServices.length} opciones disponibles</p>
+                </div>
+                <Link href="/tratamientos" className="self-end md:self-auto inline-flex items-center gap-2 font-bold text-[#d4af37] hover:text-stone-900 transition-colors uppercase tracking-widest text-[10px] md:text-sm">
+                  <span className="hidden md:inline">Ver todos los tratamientos</span>
+                  <span className="md:hidden">Ver todos</span>
+                  <span className="text-xl">→</span>
+                </Link>
+              </div>
 
-      {/* 2. SLIDER DE TRATAMIENTOS — loop={false} para evitar duplicados */}
-      {categoryServices.length > 0 && (
-        <section className="relative z-20 -mt-10 md:-mt-14 w-full overflow-hidden">
-          <div className="bg-[#F5F2EE] rounded-t-[2.5rem] pt-12 md:pt-20 pb-16">
-            <div className="max-w-7xl mx-auto px-6 mb-8 flex justify-between items-end">
-              <div>
-                <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-800">
-                  Catálogo de {category.name}
-                </h2>
-                <p className="text-stone-500 font-medium mt-2">{categoryServices.length} opciones disponibles</p>
+              <div className="md:block hidden flex-1 min-h-0 flex flex-col justify-center">
+                {categoryServices.length === 1 ? (
+                  <div className="max-w-7xl mx-auto px-6 w-full">
+                    <div className="w-full">
+                      <ServiceCard
+                        service={categoryServices[0]}
+                        className="!w-full !md:w-full !h-[600px] !md:h-[600px]"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <TreatmentCarousel servicios={categoryServices} loop={false} />
+                )}
+              </div>
+
+              {/* MOBILE VIEW — INFALIBLE & SMART */}
+              <div id="mobile-slider-category" className="md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-6 items-center w-full flex-1 min-h-0 pb-8">
+                {categoryServices.map((svc: any) => (
+                  <ServiceCard key={svc.id} service={svc} className="snap-stop-always" />
+                ))}
               </div>
             </div>
-            <TreatmentCarousel servicios={categoryServices} loop={false} />
+          </section>
+        )}
+
+        {/* 3. SECCIÓN SEO EDITORIAL (Imantada) */}
+        <section className="pt-16 pb-24 md:py-32 bg-white min-h-[100dvh] snap-start snap-stop-always md:min-h-0 md:snap-none flex flex-col justify-center">
+          <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-24 items-start">
+            <div className="md:col-span-4 md:sticky md:top-32">
+              <div className="w-16 h-1 bg-[#d4af37] mb-6 rounded-full"></div>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-extrabold text-stone-900 leading-tight">
+                Excelencia en <br /> <span className="text-[#d4af37]">{category.name}</span>
+              </h2>
+            </div>
+            <div className="md:col-span-8">
+              <div className="prose prose-stone lg:prose-lg max-w-none text-stone-600 leading-relaxed whitespace-pre-line font-medium">
+                {editorialText}
+              </div>
+            </div>
           </div>
         </section>
-      )}
 
-      {/* 3. SECCIÓN SEO EDITORIAL (1280px) */}
-      <section className="py-24 md:py-32 bg-white">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-24 items-start">
-          <div className="md:col-span-4 md:sticky md:top-32">
-            <div className="w-16 h-1 bg-[#d4af37] mb-6 rounded-full"></div>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-extrabold text-stone-900 leading-tight">
-              Excelencia en <br /> <span className="text-[#d4af37]">{category.name}</span>
-            </h2>
-          </div>
-          <div className="md:col-span-8">
-            <div className="prose prose-stone lg:prose-lg max-w-none text-stone-600 leading-relaxed whitespace-pre-line font-medium">
-              {editorialText}
-            </div>
-          </div>
-        </div>
-      </section>
+        {/* 4. DESCUBRE OTRAS CATEGORÍAS (Bento Grid) */}
+        {otherCategories.length > 0 && (
+          <section className="pt-16 pb-24 md:py-32 bg-[#F5F2EE] min-h-[100dvh] snap-start snap-stop-always md:min-h-0 md:snap-none flex flex-col justify-center">
+            <div className="w-full max-w-7xl mx-auto px-6">
+              <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 mb-10">
+                <div>
+                  <h2 className="text-2xl md:text-5xl font-serif font-extrabold text-stone-900">Otras Categorías</h2>
+                  <p className="text-stone-500 mt-2 text-sm md:text-lg">Explora más servicios de medicina estética avanzada.</p>
+                </div>
+                <Link href="/tratamientos" className="text-[#d4af37] font-bold uppercase tracking-widest text-[10px] md:text-sm hover:text-stone-900 transition-colors">
+                  Ver todo el catálogo →
+                </Link>
+              </div>
 
-      {/* 4. NAVEGACIÓN BENTO GRID (Fondo crema premium, layout adaptativo) */}
-      {otherCategories.length > 0 && (
-        <section className="py-24 md:py-32 bg-[#F5F2EE] border-t border-border/40">
-          <div className="max-w-7xl mx-auto px-6 w-full">
-            <div className="text-center mb-16">
-              <h3 className="text-xs font-black uppercase tracking-[0.4em] text-stone-400 mb-3">Sigue explorando</h3>
-              <h2 className="text-4xl md:text-5xl font-serif font-bold text-stone-800">Otras especialidades</h2>
-            </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-6 h-auto md:h-[600px]">
+                {otherCategories.map((other: any, idx: number) => {
+                  let gridClasses = "";
+                  
+                  if (otherCategories.length === 3) {
+                    if (idx === 0) gridClasses = "md:col-span-2 md:row-span-2 h-[400px] md:h-full";
+                    else gridClasses = "md:col-span-2 md:row-span-1 h-[300px] md:h-full";
+                  } else if (otherCategories.length === 2) {
+                    gridClasses = "md:col-span-2 md:row-span-2 h-[400px] md:h-full";
+                  } else {
+                    if (idx === 0) gridClasses = "md:col-span-2 md:row-span-2 h-[400px] md:h-full";
+                    else if (idx === 1) gridClasses = "md:col-span-2 md:row-span-1 h-[300px] md:h-full";
+                    else gridClasses = "md:col-span-1 md:row-span-1 h-[300px] md:h-full";
+                  }
 
-            {/* Grid adaptativo según el número de categorías (1-4) */}
-            <div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              style={{
-                gridAutoRows: 'minmax(250px, auto)',
-                gridTemplateRows: otherCategories.length >= 3 ? '300px 300px' : 'auto'
-              }}
-            >
-              {otherCategories.map((other: any, i: number) => {
-                let gridClasses = "relative rounded-[2rem] overflow-hidden group block shadow-luxury transition-all duration-700 h-full bg-white";
-
-                // Lógica de recolocación para terminar los espacios (Bento Style)
-                if (otherCategories.length === 4) {
-                  if (i === 0) gridClasses += " md:row-span-2 md:col-span-1";
-                  if (i === 3) gridClasses += " md:col-span-2";
-                } else if (otherCategories.length === 3) {
-                  if (i === 0) gridClasses += " md:row-span-2 md:col-span-1";
-                  if (i === 1 || i === 2) gridClasses += " md:col-span-2 lg:col-span-2";
-                } else if (otherCategories.length === 2) {
-                  gridClasses += " md:col-span-1";
-                } else if (otherCategories.length === 1) {
-                  gridClasses += " md:col-span-2 lg:col-span-3";
-                }
-
-                return (
-                  <Link
-                    href={`/tratamientos/${other.slug || other.id}`}
-                    key={other.id}
-                    className={gridClasses}
-                  >
-                    {/* Imagen de fondo */}
-                    <div className="absolute inset-0 bg-[#EBE7E0]">
-                      {other.image_url ? (
+                  return (
+                    <Link
+                      key={other.id}
+                      href={`/tratamientos/${other.slug || other.id}`}
+                      className={`group relative rounded-[2.5rem] overflow-hidden shadow-luxury hover:shadow-2xl transition-all duration-700 block ${gridClasses}`}
+                    >
+                      {/* Imagen de Fondo */}
+                      <div className="absolute inset-0 transition-transform duration-1000 group-hover:scale-110">
                         <img
-                          src={getFullUrl(other.image_url)}
+                          src={other.image_url?.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${other.image_url}` : other.image_url}
                           alt={other.name}
-                          className="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-110 group-hover:rotate-1"
+                          className="w-full h-full object-cover"
                         />
-                      ) : (
-                        <div className="w-full h-full bg-[#E5E1DA] flex items-center justify-center italic text-stone-400 font-serif">Estetica Merce</div>
-                      )}
-                    </div>
+                      </div>
 
-                    {/* Overlay Beige Soft (Quiet Luxury) */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#2C241E]/80 via-[#2C241E]/20 to-transparent transition-opacity duration-700 group-hover:opacity-60"></div>
+                      {/* Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-stone-900/20 to-transparent transition-opacity duration-700 group-hover:opacity-60"></div>
 
-                    {/* Contenido en la esquina inferior izquierda */}
-                    <div className="absolute bottom-0 left-0 p-8 md:p-10 w-full flex flex-col items-start justify-end h-full">
-                      <div className="transform transition-all duration-500 ease-out translate-y-4 group-hover:translate-y-0">
-                        <h3 className="text-2xl md:text-3xl font-serif font-bold text-white mb-2 drop-shadow-md">
-                          {other.name}
-                        </h3>
-                        <div className="overflow-hidden h-8">
-                          <span className="text-[#d4af37] font-black tracking-[0.3em] uppercase text-xs md:text-sm block transform translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 delay-100">
-                            EXPLORAR →
-                          </span>
+                      {/* Contenido Sincronizado */}
+                      <div className="absolute bottom-0 left-0 p-8 w-full z-10">
+                        <div className="transform transition-transform duration-500 group-hover:-translate-y-6">
+                          <h3 className={`${(otherCategories.length === 3 && idx === 0) || otherCategories.length === 2 ? 'text-3xl md:text-5xl' : 'text-xl md:text-2xl'} font-serif font-bold text-white mb-2 leading-tight`}>
+                            {other.name}
+                          </h3>
+                          <div className="opacity-0 group-hover:opacity-100 transition-all duration-500 absolute top-full left-0 mt-2">
+                            <span className="text-[#d4af37] font-black uppercase text-[10px] tracking-[0.3em] flex items-center gap-2">
+                              Explorar <span className="text-lg transition-transform group-hover:translate-x-1">→</span>
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-
-                    {/* Sutil brillo beige en hover */}
-                    <div className="absolute inset-0 bg-[#FDFCFB]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
-                  </Link>
-                );
-              })}
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        </section>
-      )}
+          </section>
+        )}
 
-      <Footer />
+        {/* 5. FOOTER (Imantado) */}
+        <div className="snap-start snap-stop-always">
+          <Footer />
+        </div>
+
+      </main>
     </div>
   );
 }

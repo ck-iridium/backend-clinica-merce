@@ -100,18 +100,20 @@ export default async function TreatmentDynamicPage({ params }: { params: { treat
 
       <section className="relative w-full snap-start snap-stop-always">
         {/* BLOQUE STICKY SINCRONIZADO: Header + Media */}
-        <div className="md:sticky md:top-0 z-[100] h-0 md:h-screen w-full pointer-events-none">
+        <div className="md:sticky md:top-0 z-[100] h-auto md:h-screen w-full pointer-events-none">
           <div className="pointer-events-auto">
             <PublicNavbar />
           </div>
 
-          <div className={`w-full md:w-[42%] lg:w-[40%] h-[75vh] md:h-[calc(100vh-80px)] pointer-events-auto flex items-center justify-center md:justify-end px-6 md:px-0 ${layoutPreferences.headerStyle === 'split_video' ? 'md:py-[20px] md:pr-4' : ''} relative group`}>
+          <div className={`w-full md:w-[42%] lg:w-[40%] h-[75vh] md:h-[calc(100vh-80px)] -mt-10 md:mt-0 pointer-events-auto flex items-center justify-center md:justify-end px-[20px] md:px-0 ${layoutPreferences.headerStyle === 'split_video' ? 'md:py-[20px] md:pr-4' : ''} relative group`}>
             <TreatmentMedia
               imageUrl={getFullUrl(service.image_url)}
               videoUrl={service.video_url ? getFullUrl(service.video_url) : undefined}
               headerStyle={layoutPreferences.headerStyle}
             />
-            <ScrollIndicator />
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-12 z-50 md:hidden">
+              <ScrollIndicator />
+            </div>
           </div>
         </div>
 
@@ -154,7 +156,7 @@ export default async function TreatmentDynamicPage({ params }: { params: { treat
                 </div>
 
                 <div className="lg:ml-auto w-full lg:w-auto">
-                  <BotonReservaPro 
+                  <BotonReservaPro
                     texto="Reservar Ahora"
                     color={layoutPreferences.accentColor}
                     href={`/reservar?servicio=${service.id}&nombre=${encodeURIComponent(service.name)}`}
@@ -182,18 +184,19 @@ export default async function TreatmentDynamicPage({ params }: { params: { treat
 
       {/* SECCIÓN 2: CROSS-SELLING */}
       {relatedServices.length > 0 && (
-        <section className="w-full bg-stone-50 pt-16 pb-24 md:py-32 border-t border-stone-100 overflow-hidden snap-start snap-stop-always scroll-mt-0 flex flex-col min-h-screen">
-          <div className="w-full max-w-7xl mx-auto px-6 mb-12 flex flex-col md:flex-row justify-between items-end gap-6 flex-shrink-0">
+        <section className="w-full bg-stone-50 h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none flex flex-col pt-16 md:pt-32 border-t border-stone-100 overflow-hidden">
+          <style dangerouslySetInnerHTML={{ __html: '.hide-scroll::-webkit-scrollbar { display: none; } .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }' }} />
+          <div className="w-full max-w-7xl mx-auto px-6 mb-8 flex flex-col md:flex-row justify-between items-end gap-4 flex-shrink-0">
             <div className="max-w-xl">
-              <h2 className="text-3xl md:text-5xl font-serif text-stone-800 mb-4">Tratamientos Complementarios</h2>
-              <p className="text-stone-500">Descubre otras experiencias diseñadas para potenciar tu bienestar y belleza natural en nuestra clínica.</p>
+              <h2 className="text-2xl md:text-5xl font-serif text-stone-800 mb-2">Tratamientos Complementarios</h2>
+              <p className="text-stone-400 text-xs md:text-base">Descubre otras experiencias diseñadas para potenciar tu bienestar.</p>
             </div>
             <Link href="/tratamientos" className="hidden md:inline-flex text-sm font-bold uppercase tracking-widest text-[#d4af37] border-b-2 border-[#d4af37]/20 pb-1 hover:border-[#d4af37] transition-all">
               Ver catálogo completo
             </Link>
           </div>
 
-          <div className="w-full flex-1 min-h-0 flex flex-col justify-center">
+          <div className="w-full flex-1 min-h-0 flex flex-col justify-center pb-8">
             <div className="hidden md:block">
               {relatedServices.length === 1 && (
                 <div className="max-w-7xl mx-auto px-6">
@@ -210,9 +213,11 @@ export default async function TreatmentDynamicPage({ params }: { params: { treat
                 <TreatmentCarousel servicios={relatedServices} loop={true} />
               )}
             </div>
-            <div className="md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-6 items-center flex-1">
+
+            {/* MOBILE VIEW — INFALIBLE & SMART */}
+            <div id="mobile-slider-related" className="md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-6 items-center w-full flex-1 min-h-0 pb-8">
               {relatedServices.map((svc: any) => (
-                <ServiceCard key={svc.id} service={svc} className="w-[75vw] aspect-[9/16] snap-center snap-stop-always flex-shrink-0" />
+                <ServiceCard key={svc.id} service={svc} className="snap-stop-always" />
               ))}
             </div>
           </div>

@@ -13,12 +13,27 @@ export default function ScrollIndicator() {
   return (
     <button 
       onClick={scrollToContent}
-      className="absolute bottom-8 left-1/2 -translate-x-1/2 md:hidden z-30 group"
+      className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 group"
     >
-      <div className="flex flex-col items-center gap-2 bg-stone-900/40 backdrop-blur-md px-5 py-3 rounded-full border border-white/20 animate-bounce group-hover:bg-stone-900/60 transition-all">
-        <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white">Descubrir</span>
-        <ChevronDown size={14} className="text-white" />
+      <div className="relative w-[28px] h-[50px] rounded-full border border-white/20 backdrop-blur-md bg-stone-900/40 flex justify-center overflow-hidden shadow-2xl">
+        {/* La "Gota de Luz" Dorada */}
+        <div className="w-[4px] h-[8px] bg-[#d4af37] rounded-full mt-2 animate-liquid-drop shadow-[0_0_10px_#d4af37]"></div>
+        
+        {/* Sutil resplandor interno */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none"></div>
       </div>
+
+      <style jsx global>{`
+        @keyframes liquid-drop {
+          0% { transform: translateY(-15px); opacity: 0; }
+          20% { opacity: 1; }
+          80% { opacity: 1; }
+          100% { transform: translateY(35px); opacity: 0; }
+        }
+        .animate-liquid-drop {
+          animation: liquid-drop 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+      `}</style>
     </button>
   );
 }
