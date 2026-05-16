@@ -17,10 +17,11 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
 
   const isHome = pathname === '/';
   const isTreatmentDetail = pathname?.startsWith('/tratamientos/');
+  const isBooking = pathname === '/reservar';
   
-  // En Home y Tratamientos el Navbar y Footer se gestionan internamente 
-  // para integrarse con el sistema de scroll/snap
-  const useInternalUI = isHome || isTreatmentDetail;
+  // En Home, Tratamientos y Reservar el Navbar y Footer se gestionan internamente 
+  // para integrarse con el sistema de scroll/snap o inmersión app
+  const useInternalUI = isHome || isTreatmentDetail || isBooking;
 
   return (
     <>
@@ -29,7 +30,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
         {children}
       </main>
       {!useInternalUI && <Footer />}
-      <ScrollToTop />
+      {!isBooking && <ScrollToTop />}
       <CookieBanner />
     </>
   );

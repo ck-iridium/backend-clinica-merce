@@ -178,6 +178,9 @@ class ClinicSettings(Base):
 
     # Horario Base (Agenda)
     open_time = Column(String, default="09:00")
+    
+    # UI Preferences
+    booking_layout = Column(String, default="grid")
     close_time = Column(String, default="19:30")
     lunch_start = Column(String, nullable=True)
     lunch_end = Column(String, nullable=True)

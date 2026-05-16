@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useAuthRole } from '@/hooks/useAuthRole';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Save, Building2, SearchCode, ImageIcon, Hash, Clock, Calendar, Trash2, CreditCard } from 'lucide-react';
+import { Save, Building2, SearchCode, ImageIcon, Hash, Clock, Calendar, Trash2, CreditCard, LayoutTemplate } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -21,6 +21,7 @@ import BillingTab from './tabs/BillingTab';
 import BrandingTab from './tabs/BrandingTab';
 import AdvancedTab from './tabs/AdvancedTab';
 import PaymentsTab from './tabs/PaymentsTab';
+import BookingLayoutTab from './tabs/BookingLayoutTab';
 
 export default function SettingsPage() {
   const { showFeedback } = useFeedback();
@@ -218,6 +219,7 @@ export default function SettingsPage() {
               { id: 'billing', label: 'Facturación', icon: Hash },
               { id: 'payments', label: 'Pagos', icon: CreditCard },
               { id: 'branding', label: 'Branding', icon: ImageIcon },
+              { id: 'booking_ui', label: 'Diseño de Reserva', icon: LayoutTemplate },
               { id: 'advanced', label: 'Avanzado', icon: SearchCode },
             ].map((tab) => (
               <button
@@ -280,6 +282,7 @@ export default function SettingsPage() {
             />
           )}
           {activeTab === 'payments' && <PaymentsTab settings={settings} setSettings={setSettings} />}
+          {activeTab === 'booking_ui' && <BookingLayoutTab settings={settings} setSettings={setSettings} />}
           {activeTab === 'advanced' && <AdvancedTab settings={settings} setSettings={setSettings} />}
         </div>
       </div>

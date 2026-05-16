@@ -99,7 +99,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
   const [isOpen, setIsOpen] = useState(false);
   const [settings, setSettings] = useState<any>(null);
   const [btnText, setBtnText] = useState('Reservar Cita');
-  const [btnLink, setBtnLink] = useState('/contacto');
+  const [btnLink, setBtnLink] = useState('/reservar');
 
   // States for Phase 1
   const [categories, setCategories] = useState<any[]>([]);
