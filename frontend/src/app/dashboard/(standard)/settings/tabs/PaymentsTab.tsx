@@ -1,8 +1,10 @@
-import { CreditCard, CheckCircle2, AlertCircle, ExternalLink, RefreshCw } from 'lucide-react';
+import { CreditCard, CheckCircle2, AlertCircle, ExternalLink, RefreshCw, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { useFeedback } from '@/app/contexts/FeedbackContext';
 
 export default function PaymentsTab({ settings, setSettings }: { settings: any, setSettings: any }) {
+  const { showFeedback } = useFeedback();
   const [connecting, setConnecting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -32,6 +34,33 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
     }
   }, []);
 
+  const handleDisconnect = () => {
+    showFeedback({
+      type: 'confirm',
+      title: 'Desconectar Stripe',
+      message: '¿Estás seguro de que deseas desconectar la cuenta de Stripe de esta clínica? Los pagos online y fianzas dejarán de funcionar inmediatamente.',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              stripe_account_id: null,
+              stripe_charges_enabled: false
+            })
+          });
+          if (res.ok) {
+            setSettings({ ...settings, stripe_account_id: null, stripe_charges_enabled: false });
+            toast.success("Cuenta de Stripe desconectada correctamente.");
+          }
+        } catch (e) {
+          console.error(e);
+          toast.error("Error al desconectar la cuenta.");
+        }
+      }
+    });
+  };
+
   const handleConnectStripe = async () => {
     setConnecting(true);
     try {
@@ -45,7 +74,7 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
         toast.error("Error al conectar con Stripe: " + (data.detail || "Inténtalo de nuevo más tarde"));
       }
     } catch (e) {
-      console.error(e);
+      error(e);
       toast.error("Error de red al conectar con Stripe.");
     } finally {
       setConnecting(false);
@@ -86,43 +115,69 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
             </button>
           </div>
         ) : (
-          <div className="space-y-6">
-            <div className={`border rounded-2xl p-6 flex items-center justify-between ${settings.stripe_charges_enabled ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'}`}>
-              <div className="flex items-center gap-4">
-                {settings.stripe_charges_enabled ? (
-                  <CheckCircle2 className="w-8 h-8 text-green-600" />
-                ) : (
-                  <AlertCircle className="w-8 h-8 text-orange-600" />
-                )}
-                <div>
-                  <h3 className={`font-bold ${settings.stripe_charges_enabled ? 'text-green-900' : 'text-orange-900'}`}>
-                    {settings.stripe_charges_enabled ? 'Cuenta Conectada y Activa' : 'Onboarding Incompleto'}
-                  </h3>
-                  <p className={`text-sm ${settings.stripe_charges_enabled ? 'text-green-700' : 'text-orange-700'}`}>
-                    ID de Cuenta: <span className="font-mono">{settings.stripe_account_id}</span>
-                  </p>
+          <div className="space-y-8">
+            {/* Status Card */}
+            <div className={`relative overflow-hidden border rounded-3xl p-8 transition-all ${settings.stripe_charges_enabled ? 'bg-white border-stone-200' : 'bg-orange-50/50 border-orange-100'}`}>
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="flex items-center gap-5">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm ${settings.stripe_charges_enabled ? 'bg-green-50 text-green-600' : 'bg-orange-100 text-orange-600'}`}>
+                    {settings.stripe_charges_enabled ? <CheckCircle2 size={28} /> : <AlertCircle size={28} />}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-stone-800 text-lg">
+                        {settings.stripe_charges_enabled ? 'Cuenta Conectada y Activa' : 'Onboarding Incompleto'}
+                      </h3>
+                      {settings.stripe_charges_enabled && (
+                        <span className="bg-green-100 text-green-700 text-[10px] font-black uppercase px-2 py-0.5 rounded-full tracking-wider animate-pulse">Live</span>
+                      )}
+                    </div>
+                    <p className="text-stone-500 text-sm font-medium mt-0.5">
+                      ID: <span className="font-mono text-stone-400">{settings.stripe_account_id}</span>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <a 
+                    href="https://dashboard.stripe.com/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex-1 md:flex-none px-6 py-3 bg-stone-900 hover:bg-[#d4af37] text-white rounded-xl font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2"
+                  >
+                    <ExternalLink size={16} />
+                    Gestionar en Stripe
+                  </a>
+                  
+                  <button 
+                    onClick={handleRefreshStatus}
+                    disabled={refreshing}
+                    className="p-3 bg-stone-50 hover:bg-stone-100 text-stone-500 rounded-xl border border-stone-100 transition-all"
+                    title="Sincronizar"
+                  >
+                    <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
+                  </button>
                 </div>
               </div>
+
               {!settings.stripe_charges_enabled && (
-                 <button
-                 onClick={handleConnectStripe}
-                 disabled={connecting}
-                 className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold shadow-sm transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-50"
-               >
-                 <ExternalLink size={16} />
-                 {connecting ? 'Cargando...' : 'Completar Perfil'}
-               </button>
+                <div className="mt-6 p-4 bg-orange-100/50 rounded-2xl border border-orange-200 flex items-start gap-3">
+                  <AlertCircle className="text-orange-600 shrink-0 mt-0.5" size={18} />
+                  <div className="text-sm text-orange-800">
+                    <p className="font-bold">Acción requerida</p>
+                    <p className="opacity-80">Stripe necesita más información para habilitar los cobros. Haz clic en gestionar para completar tu perfil.</p>
+                  </div>
+                </div>
               )}
             </div>
             
-            <div className="flex justify-end">
+            <div className="flex justify-end px-2">
               <button 
-                onClick={handleRefreshStatus}
-                disabled={refreshing}
-                className="text-stone-400 hover:text-stone-600 text-xs font-bold flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-stone-50 transition-all"
+                onClick={handleDisconnect}
+                className="text-[10px] font-bold text-red-500 hover:text-red-700 uppercase tracking-widest transition-all flex items-center gap-2 group"
               >
-                <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
-                Sincronizar estado con Stripe
+                <Trash2 size={12} />
+                Desconectar de Stripe
               </button>
             </div>
             
