@@ -43,7 +43,7 @@ export default function BookingPage() {
   const [step, setStep] = useState(1);
   const [services, setServices] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState<any>(null);
   const [settings, setSettings] = useState<any>(null);
   const [appointments, setAppointments] = useState<any[]>([]);
 
