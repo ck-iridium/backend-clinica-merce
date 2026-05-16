@@ -74,7 +74,7 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
         toast.error("Error al conectar con Stripe: " + (data.detail || "Inténtalo de nuevo más tarde"));
       }
     } catch (e) {
-      error(e);
+      console.error(e);
       toast.error("Error de red al conectar con Stripe.");
     } finally {
       setConnecting(false);
