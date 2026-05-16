@@ -1,6 +1,6 @@
 "use client"
 import React from 'react';
-import { ChevronLeft, Clock } from 'lucide-react';
+import { ChevronLeft, Clock, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Step1Treatments({
@@ -31,7 +31,7 @@ export default function Step1Treatments({
   };
 
   return (
-    <div className="w-full flex flex-col flex-grow min-h-0 relative">
+    <div className="w-full flex flex-col flex-grow min-h-0 relative bg-[#F7F7F5]">
       <AnimatePresence mode="wait">
         {!activeCategory ? (
           <motion.div 
@@ -40,46 +40,51 @@ export default function Step1Treatments({
             animate="visible"
             exit="exit"
             variants={containerVariants}
-            className="flex flex-col flex-grow min-h-0 px-4 pt-6"
+            className="flex flex-col flex-grow min-h-0"
           >
-            <motion.h1 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="text-2xl font-serif text-stone-800 mb-6 tracking-tight shrink-0"
-            >
-              ¿Qué zona deseas tratar?
-            </motion.h1>
-            
-            <div className="flex-grow overflow-y-auto pb-32 px-1 custom-scrollbar space-y-3">
-              {categories.map(cat => (
-                <motion.button
-                  key={cat.id}
-                  variants={itemVariants}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setActiveCategory(cat)}
-                  className="relative w-full h-24 rounded-2xl overflow-hidden group shadow-sm border border-stone-200/50 shrink-0"
-                >
-                  {cat.image_url ? (
-                    <img 
-                      src={cat.image_url} 
-                      alt={cat.name} 
-                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                    />
-                  ) : (
-                    <div className="absolute inset-0 bg-stone-800" />
-                  )}
-                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors" />
-                  
-                  <div className="relative z-10 h-full flex items-center justify-center">
-                    <h2 className="text-white font-serif text-xl tracking-wide group-hover:scale-105 transition-transform duration-500">
-                      {cat.name}
-                    </h2>
-                  </div>
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-[#d4af37] transition-colors">
-                    <ChevronLeft size={20} className="rotate-180" />
-                  </div>
-                </motion.button>
-              ))}
+            {/* Header Compacto */}
+            <div className="shrink-0 px-6 pt-3 pb-2 z-30 bg-[#F7F7F5]">
+              <h1 className="text-2xl font-serif text-stone-800 tracking-tight">¿Qué zona deseas tratar?</h1>
+              <p className="text-[11px] text-stone-500 mt-1 uppercase tracking-widest font-medium">
+                Selecciona una categoría para ver servicios
+              </p>
+            </div>
+
+            <div className="flex flex-col flex-grow min-h-0 relative">
+              {/* Degradado superior de inmersión */}
+              <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-[#F7F7F5] to-transparent z-20 pointer-events-none" />
+              
+              <div className="flex-grow overflow-y-auto custom-scrollbar px-6 pt-6 pb-6 space-y-3">
+                {categories.map(cat => (
+                  <motion.button
+                    key={cat.id}
+                    variants={itemVariants}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setActiveCategory(cat)}
+                    className="relative w-full h-24 rounded-2xl overflow-hidden group shadow-sm border border-stone-200/50 shrink-0"
+                  >
+                    {cat.image_url ? (
+                      <img 
+                        src={cat.image_url} 
+                        alt={cat.name} 
+                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-stone-800" />
+                    )}
+                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors" />
+                    
+                    <div className="relative z-10 h-full flex items-center justify-center">
+                      <h2 className="text-white font-serif text-xl tracking-wide group-hover:scale-105 transition-transform duration-500">
+                        {cat.name}
+                      </h2>
+                    </div>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-[#d4af37] transition-colors">
+                      <ChevronRight size={20} />
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
             </div>
           </motion.div>
         ) : (
@@ -94,13 +99,13 @@ export default function Step1Treatments({
             <motion.div 
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className="absolute top-0 left-0 right-0 z-20 px-4 pt-4"
+              className="absolute top-0 left-0 right-0 z-20 px-4 pt-3"
             >
               <div className="bg-white rounded-2xl overflow-hidden border border-stone-200/60 shadow-lg relative h-20 flex items-center px-4">
                 {activeCategory.image_url && (
                   <img 
                     src={activeCategory.image_url} 
-                    className="absolute inset-0 w-full h-full object-cover opacity-90" 
+                    className="absolute inset-0 w-full h-full object-cover opacity-80" 
                     style={{ 
                       maskImage: 'linear-gradient(to right, transparent 50%, black 95%)', 
                       WebkitMaskImage: 'linear-gradient(to right, transparent 50%, black 95%)' 
@@ -129,7 +134,7 @@ export default function Step1Treatments({
               variants={containerVariants}
               initial="hidden"
               animate="visible"
-              className="flex-grow overflow-y-auto pt-28 pb-44 px-4 custom-scrollbar grid grid-cols-2 gap-4 content-start auto-rows-max"
+              className="flex-grow overflow-y-auto pt-28 pb-10 px-4 custom-scrollbar grid grid-cols-2 gap-4 content-start auto-rows-max"
             >
               {services.filter(s => String(s.category_id) === String(activeCategory.id)).length === 0 ? (
                 <div className="col-span-2 py-10 text-center text-stone-400 text-sm font-medium">

@@ -94,9 +94,9 @@ export default function Step2DateTime({
             className="flex flex-col flex-grow min-h-0"
           >
             <div className="shrink-0 px-6 pt-3 pb-2 z-30 bg-[#F7F7F5]">
-              <h1 className="text-2xl font-serif text-stone-800 tracking-tight">Selecciona el día</h1>
-              <p className="text-[11px] text-stone-500 mt-1 uppercase tracking-widest font-medium">
-                Cita para: <span className="text-stone-900 font-bold">{selectedService?.name}</span>
+              <h1 className="text-lg font-serif text-stone-800 tracking-tight">Selecciona el día</h1>
+              <p className="text-[13px] text-stone-500 mt-1 uppercase tracking-widest font-bold">
+                CITA PARA: <span className="text-stone-900">{selectedService?.name}</span>
               </p>
             </div>
 

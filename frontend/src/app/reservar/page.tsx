@@ -96,7 +96,6 @@ export default function BookingPage() {
           const cats = await catRes.json();
           const validCats = cats.filter((c: any) => c.name.toUpperCase() !== 'GENERAL');
           setCategories(validCats);
-          if (validCats.length > 0) setActiveCategory(validCats[0].id);
         }
 
         if (srvRes.ok) {
@@ -293,7 +292,7 @@ export default function BookingPage() {
       {step < 4 && (
         <footer className="shrink-0 bg-white border-t border-stone-200/60 p-4 md:px-8 z-50">
           <div className="max-w-2xl mx-auto flex gap-3">
-            {step === 1 && (activeCategory || selectedService) && (
+            {step === 1 && (activeCategory?.name || selectedService) && (
                <div className="flex-grow flex flex-col justify-center overflow-hidden">
                   <p className="text-[10px] font-bold text-stone-400 uppercase truncate">
                     {selectedService ? 'Tratamiento' : 'Zona'}
