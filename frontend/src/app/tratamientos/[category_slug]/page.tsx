@@ -160,7 +160,7 @@ Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos p
               <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-6 h-auto md:h-[600px]">
                 {otherCategories.map((other: any, idx: number) => {
                   let gridClasses = "";
-                  
+
                   if (otherCategories.length === 3) {
                     if (idx === 0) gridClasses = "md:col-span-2 md:row-span-2 h-[400px] md:h-full";
                     else gridClasses = "md:col-span-2 md:row-span-1 h-[300px] md:h-full";
@@ -193,7 +193,7 @@ Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos p
                       {/* Contenido Sincronizado */}
                       <div className="absolute bottom-0 left-0 p-8 w-full z-10">
                         <div className="transform transition-transform duration-500 group-hover:-translate-y-6">
-                          <h3 className={`${(otherCategories.length === 3 && idx === 0) || otherCategories.length === 2 ? 'text-3xl md:text-5xl' : 'text-xl md:text-2xl'} font-serif font-bold text-white mb-2 leading-tight`}>
+                          <h3 className={`${(otherCategories.length === 3 && idx === 0) || otherCategories.length === 2 ? 'text-2xl md:text-4xl' : 'text-xl md:text-2xl'} font-serif font-bold text-white mb-2 leading-tight`}>
                             {other.name}
                           </h3>
                           <div className="opacity-0 group-hover:opacity-100 transition-all duration-500 absolute top-full left-0 mt-2">
