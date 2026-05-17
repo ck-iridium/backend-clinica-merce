@@ -35,11 +35,14 @@ export default function Step2DateTime({
 
   // Lógica de días laborables
   const getWorkingDays = (): number[] => {
+    if (settings?.working_days && Array.isArray(settings.working_days)) {
+      return settings.working_days;
+    }
     if (typeof window === 'undefined') return [1, 2, 3, 4, 5];
     try {
       const saved = localStorage.getItem('mercestetica_working_days');
-      return saved ? JSON.parse(saved) : [1, 2, 3, 4, 5, 6];
-    } catch { return [1, 2, 3, 4, 5, 6]; }
+      return saved ? JSON.parse(saved) : [1, 2, 3, 4, 5];
+    } catch { return [1, 2, 3, 4, 5]; }
   };
   const toWeekDayIndex = (jsDay: number) => jsDay === 0 ? 7 : jsDay;
 

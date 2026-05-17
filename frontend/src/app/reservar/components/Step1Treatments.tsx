@@ -3,6 +3,26 @@ import React from 'react';
 import { ChevronLeft, Clock, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+function LazyPremiumImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
+  const [loaded, setLoaded] = React.useState(false);
+  return (
+    <div className="absolute inset-0 w-full h-full overflow-hidden bg-stone-100">
+      {/* Premium Pulse Skeleton Placeholder */}
+      {!loaded && (
+        <div className="absolute inset-0 w-full h-full bg-gradient-to-tr from-stone-200/50 via-stone-100 to-stone-200/50 animate-pulse" />
+      )}
+      <img
+        src={src}
+        alt={alt}
+        onLoad={() => setLoaded(true)}
+        className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out ${
+          loaded ? 'opacity-100 scale-100 blur-0' : 'opacity-0 scale-95 blur-sm'
+        } ${className || ''}`}
+      />
+    </div>
+  );
+}
+
 export default function Step1Treatments({
   categories,
   services,
@@ -66,10 +86,10 @@ export default function Step1Treatments({
                     className="relative w-full h-28 md:h-36 rounded-2xl overflow-hidden group shadow-sm border border-stone-200/50 shrink-0"
                   >
                     {cat.image_url ? (
-                      <img 
+                      <LazyPremiumImage 
                         src={cat.image_url} 
                         alt={cat.name} 
-                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                        className="group-hover:scale-105 transition-all duration-700" 
                       />
                     ) : (
                       <div className="absolute inset-0 bg-stone-800" />
@@ -105,15 +125,19 @@ export default function Step1Treatments({
             >
               <div className="bg-white rounded-2xl overflow-hidden border border-stone-200/60 shadow-lg relative h-20 md:h-24 flex items-center px-4 md:px-6">
                 {activeCategory.image_url && (
-                  <img 
-                    src={activeCategory.image_url} 
-                    className="absolute inset-0 w-full h-full object-cover opacity-80" 
+                  <div 
+                    className="absolute inset-0 w-full h-full pointer-events-none"
                     style={{ 
                       maskImage: 'linear-gradient(to right, transparent 50%, black 95%)', 
                       WebkitMaskImage: 'linear-gradient(to right, transparent 50%, black 95%)' 
                     }}
-                    alt=""
-                  />
+                  >
+                    <LazyPremiumImage 
+                      src={activeCategory.image_url} 
+                      alt="" 
+                      className="opacity-80"
+                    />
+                  </div>
                 )}
                 
                 <div className="relative z-10 flex items-center gap-4 w-full">
@@ -154,10 +178,10 @@ export default function Step1Treatments({
                         className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden group border border-stone-200/50 shadow-sm active:scale-95 transition-transform bg-white shrink-0"
                       >
                         {srv.image_url ? (
-                          <img 
+                          <LazyPremiumImage 
                             src={srv.image_url} 
                             alt={srv.name} 
-                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                            className="group-hover:scale-110 transition-all duration-700" 
                           />
                         ) : (
                           <div className="absolute inset-0 bg-stone-100" />
@@ -207,11 +231,12 @@ export default function Step1Treatments({
                         {/* Left Side: Image + Full Wrapping Title */}
                         <div className="flex items-center gap-3.5 md:gap-4.5 min-w-0 flex-grow">
                           {srv.image_url ? (
-                            <img 
-                              src={srv.image_url} 
-                              alt={srv.name} 
-                              className="w-14 h-14 md:w-16 md:h-16 rounded-xl object-cover overflow-hidden shrink-0 border border-stone-100" 
-                            />
+                            <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl overflow-hidden shrink-0 border border-stone-100 relative">
+                              <LazyPremiumImage 
+                                src={srv.image_url} 
+                                alt={srv.name} 
+                              />
+                            </div>
                           ) : (
                             <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl bg-gradient-to-tr from-[#d4af37]/5 to-[#d4af37]/20 flex items-center justify-center shrink-0 border border-stone-100">
                               <span className="text-xs md:text-sm text-[#d4af37] font-serif font-bold">M</span>
