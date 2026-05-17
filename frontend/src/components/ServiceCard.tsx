@@ -47,18 +47,27 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={`
-        group relative rounded-3xl overflow-hidden border border-stone-100 block bg-stone-50 transition-all duration-500 ease-out shadow-sm hover:shadow-xl md:hover:scale-[1.03]
+        group relative rounded-3xl overflow-hidden border border-stone-100 block bg-stone-50 transition-all duration-500 ease-out shadow-sm hover:shadow-xl
         flex-shrink-0 w-[85vw] md:w-[372px] h-full md:h-[662px] snap-center md:snap-align-none
         ${className}
       `}
+      style={{
+        transform: 'translateZ(0)',
+        backfaceVisibility: 'hidden',
+        willChange: 'transform'
+      }}
     >
         {/* Imagen Estática con Lazy Loading - Siempre visible de fondo para evitar flash */}
-        <div className="absolute inset-0 bg-stone-200 z-0">
+        <div className="absolute inset-0 bg-stone-200 z-0 overflow-hidden">
           {service.image_url ? (
             <img 
               src={service.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${service.image_url}` : service.image_url} 
               alt={service.name} 
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+              style={{
+                transform: 'translateZ(0)',
+                willChange: 'transform'
+              }}
               loading="lazy"
             />
           ) : (
@@ -69,14 +78,18 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
         </div>
         
         {/* Vídeo / Imagen Secundaria Hover - CON PRE-CARGA Y CONTROL DE OPACIDAD SIN RE-MONTAR */}
-        <div className={`absolute inset-0 z-10 transition-opacity duration-700 ${shouldShowVideo ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`absolute inset-0 z-10 transition-opacity duration-700 ${shouldShowVideo ? 'opacity-100' : 'opacity-0'} overflow-hidden`}>
           {videoUrl ? (
             <video 
               ref={videoRef}
               loop 
               muted 
               playsInline 
-              className={`w-full h-full object-cover absolute inset-0 transition-opacity duration-500 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
+              className={`w-full h-full object-cover absolute inset-0 transition-all duration-700 ease-out ${videoLoaded ? 'opacity-100' : 'opacity-0'} group-hover:scale-105`}
+              style={{
+                transform: 'translateZ(0)',
+                willChange: 'transform'
+              }}
               onCanPlay={() => setVideoLoaded(true)}
               src={videoUrl}
             />
@@ -84,7 +97,11 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
              <img 
               src={service.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${service.image_url}` : service.image_url} 
               alt={service.name} 
-              className="w-full h-full object-cover opacity-40 mix-blend-overlay absolute inset-0"
+              className="w-full h-full object-cover opacity-40 mix-blend-overlay absolute inset-0 transition-transform duration-700 ease-out group-hover:scale-105"
+              style={{
+                transform: 'translateZ(0)',
+                willChange: 'transform'
+              }}
               loading="lazy"
             />
           ) : null}
