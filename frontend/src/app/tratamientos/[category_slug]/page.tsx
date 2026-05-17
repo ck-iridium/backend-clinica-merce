@@ -49,32 +49,66 @@ const categoryPageTranslations: Record<string, Record<string, string>> = {
   }
 };
 
-// Helpers to get data
+// Helpers to get data with crash protection and timeouts
 async function getCategoryData(slug: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/service-categories/slug/${slug}`, {
-    next: { revalidate: 60 }
-  });
-  if (!res.ok) {
-    if (res.status === 404) return null;
-    throw new Error('Failed to fetch category data');
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 segundos
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/service-categories/slug/${slug}`, {
+      next: { revalidate: 60 },
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      if (res.status === 404) return null;
+      console.warn(`[Category Fetch Warning] Slug ${slug} returned status: ${res.status}`);
+      return null;
+    }
+    return await res.json();
+  } catch (error: any) {
+    console.error(`[Category Fetch Error] Failed to fetch category ${slug}:`, error.message || error);
+    return null;
   }
-  return res.json();
 }
 
 async function getAllCategories() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/service-categories/`, {
-    next: { revalidate: 60 }
-  });
-  if (!res.ok) return [];
-  return res.json();
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/service-categories/`, {
+      next: { revalidate: 60 },
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) return [];
+    return await res.json();
+  } catch (error: any) {
+    console.error(`[Categories List Fetch Error] Failed to fetch service categories:`, error.message || error);
+    return [];
+  }
 }
 
 async function getServices() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/`, {
-    next: { revalidate: 60 }
-  });
-  if (!res.ok) return [];
-  return res.json();
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/`, {
+      next: { revalidate: 60 },
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) return [];
+    return await res.json();
+  } catch (error: any) {
+    console.error(`[Services List Fetch Error] Failed to fetch services:`, error.message || error);
+    return [];
+  }
 }
 
 const getFullUrl = (url: string) => {

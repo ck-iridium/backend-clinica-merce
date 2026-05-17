@@ -1,3 +1,4 @@
+"use client";
 import Link from 'next/link';
 import ServiceCard from '@/components/ServiceCard';
 import TreatmentCarousel from '@/components/TreatmentCarousel';

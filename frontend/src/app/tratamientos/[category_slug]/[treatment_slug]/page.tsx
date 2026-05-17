@@ -15,25 +15,46 @@ import PublicNavbar from '@/components/PublicNavbar';
 import BotonReservaPro from '@/components/BotonReservaPro';
 
 async function getServiceData(slug: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/slug/${slug}`, {
-    cache: 'no-store'
-  });
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 segundos
 
-  if (!res.ok) {
-    if (res.status === 404) return null;
-    throw new Error('Failed to fetch service data');
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/slug/${slug}`, {
+      cache: 'no-store',
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      if (res.status === 404) return null;
+      console.warn(`[Service Fetch Warning] Service slug ${slug} returned status: ${res.status}`);
+      return null;
+    }
+    return await res.json();
+  } catch (error: any) {
+    console.error(`[Service Fetch Error] Failed to fetch service details for ${slug}:`, error.message || error);
+    return null;
   }
-
-  return res.json();
 }
 
 async function getRelatedServices(currentServiceId: number) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/`, {
-    cache: 'no-store'
-  });
-  if (!res.ok) return [];
-  const services = await res.json();
-  return services.filter((s: any) => s.id !== currentServiceId && s.is_active).slice(0, 24);
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/`, {
+      cache: 'no-store',
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) return [];
+    const services = await res.json();
+    return services.filter((s: any) => s.id !== currentServiceId && s.is_active).slice(0, 24);
+  } catch (error: any) {
+    console.error(`[Related Services Fetch Error] Failed to fetch services for cross-selling:`, error.message || error);
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: { params: { treatment_slug: string } }): Promise<Metadata> {

@@ -37,6 +37,13 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('preferred_language', lang);
     if (typeof window !== 'undefined') {
       document.cookie = `preferred_language=${lang}; path=/; max-age=31536000; SameSite=Lax`;
+      
+      // Evitamos reiniciar en el flujo de reserva (para no perder el paso actual) ni en el panel de control.
+      // Para páginas públicas (Home, Categorías, Contacto), recargamos para que Next.js Server Components
+      // reconstruyan todo el contenido traducido desde la base de datos de manera impecable.
+      if (!window.location.pathname.startsWith('/reservar') && !window.location.pathname.startsWith('/dashboard')) {
+        window.location.reload();
+      }
     }
   };
 

@@ -7,17 +7,37 @@ export const metadata: Metadata = {
 };
 
 async function getData() {
-  const [contentRes, settingsRes, servicesRes, categoriesRes] = await Promise.all([
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/site-content/`, { cache: 'no-store' }),
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/settings/`, { cache: 'no-store' }),
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/`, { cache: 'no-store' }),
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/service-categories/`, { cache: 'no-store' })
-  ]);
+  const fetchSafe = async (url: string, defaultValue: any) => {
+    try {
+      // Usamos AbortSignal.timeout si está disponible para evitar colgar la request en producción
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 segundos de timeout
 
-  const content = contentRes.ok ? await contentRes.json() : null;
-  const settings = settingsRes.ok ? await settingsRes.json() : null;
-  const services = servicesRes.ok ? await servicesRes.json() : [];
-  const categories = categoriesRes.ok ? await categoriesRes.json() : [];
+      const res = await fetch(url, { 
+        cache: 'no-store',
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        return await res.json();
+      }
+      console.warn(`[API Warning] Request to ${url} returned status: ${res.status}`);
+      return defaultValue;
+    } catch (error: any) {
+      console.error(`[API Error] Failed to fetch from ${url}:`, error.message || error);
+      return defaultValue;
+    }
+  };
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+  const [content, settings, services, categories] = await Promise.all([
+    fetchSafe(`${apiUrl}/site-content/`, null),
+    fetchSafe(`${apiUrl}/settings/`, null),
+    fetchSafe(`${apiUrl}/services/`, []),
+    fetchSafe(`${apiUrl}/service-categories/`, [])
+  ]);
 
   return { content, settings, services, categories };
 }
