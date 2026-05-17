@@ -136,7 +136,7 @@ export default function Step1Treatments({
             <motion.div 
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className="absolute top-0 left-0 right-0 z-20 px-4 pt-3"
+              className="absolute top-0 left-0 right-0 z-40 px-4 pt-3"
             >
               <div className="bg-white rounded-2xl overflow-hidden border border-stone-200/60 shadow-lg relative h-20 md:h-24 flex items-center px-4 md:px-6">
                 {activeCategory.image_url && (
@@ -203,12 +203,22 @@ export default function Step1Treatments({
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
                         
+                        {/* Top-Right Badge: Fianza */}
+                        {(() => {
+                          const dep = getServiceDepositInfo(srv);
+                          return dep.required ? (
+                            <span className="absolute top-3 right-3 z-10 text-[9px] md:text-[10px] text-white font-sans font-bold bg-black/60 px-2.5 py-1 rounded-full backdrop-blur-md border border-white/10 uppercase tracking-wider">
+                              fianza {dep.amount}€
+                            </span>
+                          ) : null;
+                        })()}
+
                         <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 flex flex-col items-start text-left">
                           <h3 className="text-white font-serif text-sm md:text-lg lg:text-xl leading-snug mb-3 group-hover:text-[#d4af37] transition-colors line-clamp-2">
                             {srv.name}
                           </h3>
-                          <div className="flex items-center justify-between w-full mt-auto">
-                            <div className="flex items-center gap-1.5 md:gap-2.5 text-xs md:text-base text-stone-300 font-semibold">
+                          <div className="flex items-end justify-between w-full mt-auto">
+                            <div className="flex items-center gap-1.5 md:gap-2.5 text-xs md:text-base text-stone-300 font-semibold mb-1">
                               <Clock size={12} className="text-[#d4af37] md:scale-150" />
                               <span>{srv.duration_minutes}m</span>
                             </div>
@@ -216,14 +226,6 @@ export default function Step1Treatments({
                               <span className="text-sm md:text-lg lg:text-xl font-bold text-[#d4af37] bg-black/60 px-3 py-1 md:px-5 md:py-2 rounded-full backdrop-blur-sm">
                                 {srv.price}€
                               </span>
-                              {(() => {
-                                const dep = getServiceDepositInfo(srv);
-                                return dep.required ? (
-                                  <span className="text-[9px] md:text-[10px] text-stone-300 font-sans font-medium bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-[2px]">
-                                    fianza {dep.amount}€
-                                  </span>
-                                ) : null;
-                              })()}
                             </div>
                           </div>
                         </div>
@@ -239,13 +241,14 @@ export default function Step1Treatments({
                 animate="visible"
                 className="flex-grow overflow-y-auto pt-32 md:pt-36 pb-10 px-4 custom-scrollbar flex flex-col gap-3 content-start"
               >
-                {services.filter(s => String(s.category_id) === String(activeCategory.id)).length === 0 ? (
+                {services.filter(s => !activeCategory || String(s.category_id) === String(activeCategory.id)).length === 0 ? (
                   <div className="py-10 text-center text-stone-400 text-sm font-medium">
                     No hay servicios disponibles.
                   </div>
                 ) : (
                   services
-                    .filter(s => String(s.category_id) === String(activeCategory.id))
+
+                    .filter(srv => !activeCategory || String(srv.category_id) === String(activeCategory.id))
                     .map(srv => (
                       <motion.button
                         key={srv.id}
@@ -274,24 +277,23 @@ export default function Step1Treatments({
                           </div>
                         </div>
 
-                        {/* Right Side: Stacked Price & Duration + Chevron */}
                         <div className="flex items-center gap-3 md:gap-4 shrink-0 pl-2">
-                          <div className="flex flex-col items-end text-right">
-                            <span className="text-sm md:text-lg font-bold text-[#d4af37]">
-                              {srv.price}€
-                            </span>
-                            <div className="flex items-center gap-1.5 text-[10px] md:text-xs text-stone-400 mt-1">
-                              <Clock size={11} className="text-stone-300 shrink-0" />
-                              <span>{srv.duration_minutes} min</span>
-                            </div>
+                          <div className="flex flex-col items-end text-right justify-center">
                             {(() => {
                               const dep = getServiceDepositInfo(srv);
                               return dep.required ? (
-                                <span className="text-[9px] md:text-[10px] text-[#d4af37] font-sans font-bold mt-1 bg-amber-50/50 border border-amber-100/50 px-1.5 py-0.5 rounded-md">
+                                <span className="text-[9px] md:text-[10px] text-[#d4af37] font-sans font-bold uppercase tracking-wider mb-1 leading-none">
                                   fianza {dep.amount}€
                                 </span>
                               ) : null;
                             })()}
+                            <span className="text-sm md:text-lg font-bold text-[#d4af37] leading-none py-0.5">
+                              {srv.price}€
+                            </span>
+                            <div className="flex items-center gap-1 text-[10px] md:text-xs text-stone-400 mt-1 leading-none">
+                              <Clock size={11} className="text-stone-300 shrink-0" />
+                              <span>{srv.duration_minutes} min</span>
+                            </div>
                           </div>
                           <span className="text-stone-300 group-hover:text-[#d4af37] transition-colors text-lg md:text-xl font-bold shrink-0">›</span>
                         </div>
