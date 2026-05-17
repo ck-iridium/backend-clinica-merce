@@ -97,12 +97,31 @@ export default function SettingsPage() {
     setSaving(true);
     try {
       const { id, ...payload } = settings;
+      
+      // Sanitizar valores vacíos o NaN antes de enviarlos al backend
+      if (payload.cancellation_margin_hours === "" || payload.cancellation_margin_hours === null || isNaN(payload.cancellation_margin_hours)) {
+        payload.cancellation_margin_hours = 24;
+      }
+      if (payload.global_deposit_amount === "" || payload.global_deposit_amount === null || isNaN(payload.global_deposit_amount)) {
+        payload.global_deposit_amount = 0;
+      }
+      if (payload.invoice_next_number === "" || payload.invoice_next_number === null || isNaN(payload.invoice_next_number)) {
+        payload.invoice_next_number = 1;
+      }
+      if (payload.default_tax_rate === "" || payload.default_tax_rate === null || isNaN(payload.default_tax_rate)) {
+        payload.default_tax_rate = 21;
+      }
+      if (payload.booking_margin_hours === "" || payload.booking_margin_hours === null || isNaN(payload.booking_margin_hours)) {
+        payload.booking_margin_hours = 2.0;
+      }
+
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      setOriginalSettings(JSON.parse(JSON.stringify(settings)));
+      setSettings({ ...settings, ...payload });
+      setOriginalSettings(JSON.parse(JSON.stringify({ ...settings, ...payload })));
       setHasChanges(false);
       toast.success('Ajustes actualizados correctamente');
     } catch (e) {

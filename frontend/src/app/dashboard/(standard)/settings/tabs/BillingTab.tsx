@@ -35,11 +35,30 @@ export default function BillingTab({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-stone-500 mb-2">Sig. Nº Factura</label>
-              <input type="number" min="1" value={settings.invoice_next_number} onChange={e => setSettings({...settings, invoice_next_number: parseInt(e.target.value)})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono font-bold outline-none" />
+              <input 
+                type="number" 
+                min="1" 
+                value={settings.invoice_next_number === undefined || settings.invoice_next_number === null ? "" : settings.invoice_next_number} 
+                onChange={e => {
+                  const val = e.target.value;
+                  setSettings({...settings, invoice_next_number: val === "" ? "" : parseInt(val) });
+                }} 
+                className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono font-bold outline-none" 
+              />
             </div>
             <div>
               <label className="block text-xs font-bold text-stone-500 mb-2">IVA (%)</label>
-              <input type="number" min="0" step="0.5" value={settings.default_tax_rate || 21} onChange={e => setSettings({...settings, default_tax_rate: parseFloat(e.target.value)})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono font-bold outline-none" />
+              <input 
+                type="number" 
+                min="0" 
+                step="0.5" 
+                value={settings.default_tax_rate === undefined || settings.default_tax_rate === null ? "" : settings.default_tax_rate} 
+                onChange={e => {
+                  const val = e.target.value;
+                  setSettings({...settings, default_tax_rate: val === "" ? "" : parseFloat(val) });
+                }} 
+                className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono font-bold outline-none" 
+              />
             </div>
           </div>
           <div className="md:col-span-2 p-4 bg-[#fcf8e5] rounded-xl border border-[#f5efd5]">

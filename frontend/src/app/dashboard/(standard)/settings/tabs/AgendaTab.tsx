@@ -137,7 +137,17 @@ export default function AgendaTab({
         </div>
         <div className="p-4 bg-orange-50/50 border border-orange-100 rounded-2xl">
           <label className="block text-xs font-bold text-orange-700 mb-2">Margen de antelación para hoy (Horas)</label>
-          <input type="number" min="0" step="0.5" value={settings.booking_margin_hours ?? 2.0} onChange={e => setSettings({...settings, booking_margin_hours: parseFloat(e.target.value) || 0})} className="w-full md:w-1/2 p-4 bg-white border border-orange-200 rounded-xl focus:border-orange-400 font-mono font-bold text-orange-800 outline-none" />
+          <input 
+            type="number" 
+            min="0" 
+            step="0.5" 
+            value={settings.booking_margin_hours === undefined || settings.booking_margin_hours === null ? "" : settings.booking_margin_hours} 
+            onChange={e => {
+              const val = e.target.value;
+              setSettings({...settings, booking_margin_hours: val === "" ? "" : parseFloat(val) });
+            }} 
+            className="w-full md:w-1/2 p-4 bg-white border border-orange-200 rounded-xl focus:border-orange-400 font-mono font-bold text-orange-800 outline-none" 
+          />
           <p className="text-[10px] text-orange-600/80 mt-2">Determina el tiempo mínimo antes de una cita para que un cliente pueda reservar online el mismo día.</p>
         </div>
       </div>

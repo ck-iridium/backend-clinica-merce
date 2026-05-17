@@ -195,8 +195,11 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
                     <div className="flex items-center gap-3">
                       <input 
                         type="number" 
-                        value={settings?.cancellation_margin_hours || 24} 
-                        onChange={(e) => setSettings({ ...settings, cancellation_margin_hours: parseInt(e.target.value) })}
+                        value={settings?.cancellation_margin_hours === undefined || settings?.cancellation_margin_hours === null ? "" : settings.cancellation_margin_hours} 
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setSettings({ ...settings, cancellation_margin_hours: val === "" ? "" : parseInt(val) });
+                        }}
                         className="w-24 px-3 py-2 bg-white border border-stone-200 rounded-lg focus:border-[#d4af37] outline-none font-bold text-stone-800"
                         min="1"
                         max="720"
@@ -242,8 +245,11 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
                             <span className="absolute left-3 text-xs font-bold text-stone-400">€</span>
                             <input 
                               type="number" 
-                              value={settings?.global_deposit_amount ?? 0} 
-                              onChange={(e) => setSettings({ ...settings, global_deposit_amount: parseFloat(e.target.value) || 0 })}
+                              value={settings?.global_deposit_amount === undefined || settings?.global_deposit_amount === null ? "" : settings.global_deposit_amount} 
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setSettings({ ...settings, global_deposit_amount: val === "" ? "" : parseFloat(val) });
+                              }}
                               className="w-full pl-7 pr-3 py-2 bg-white border border-stone-200 rounded-lg focus:border-[#d4af37] outline-none font-bold text-stone-800 text-sm"
                               min="0"
                               max="10000"
