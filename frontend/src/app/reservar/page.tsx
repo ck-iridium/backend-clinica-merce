@@ -39,9 +39,23 @@ export default function BookingPage() {
       if (workingDays.includes(toWeekDayIndex(d.getDay()))) return d;
       d = new Date(d);
       d.setDate(d.getDate() + 1);
-      d.setHours(0, 0, 0, 0);
     }
     return new Date();
+  };
+
+  const getServiceDepositInfo = (srv: any) => {
+
+    if (!srv) return { required: false, amount: 0 };
+    if (srv.requires_deposit && srv.deposit_amount && srv.deposit_amount > 0) {
+      return { required: true, amount: srv.deposit_amount };
+    }
+    if (settings?.global_deposit_required && settings?.global_deposit_amount && settings?.global_deposit_amount > 0) {
+      const isExempt = srv.deposit_amount !== null && srv.deposit_amount !== undefined && parseFloat(srv.deposit_amount) === 0.0;
+      if (!isExempt) {
+        return { required: true, amount: settings.global_deposit_amount };
+      }
+    }
+    return { required: false, amount: 0 };
   };
 
   const [step, setStep] = useState(1);
@@ -256,6 +270,7 @@ export default function BookingPage() {
                   activeCategory={activeCategory}
                   setActiveCategory={setActiveCategory}
                   bookingLayout={settings?.booking_layout || 'grid'}
+                  settings={settings}
                   onSelectService={(srv) => { 
                     setSelectedService(srv); 
                     setStep(2); 
@@ -290,6 +305,7 @@ export default function BookingPage() {
                   selectedService={selectedService}
                   privacyAccepted={privacyAccepted}
                   setPrivacyAccepted={setPrivacyAccepted}
+                  settings={settings}
                 />
               )}
 
@@ -376,7 +392,12 @@ export default function BookingPage() {
                   }}
                   className="flex-grow bg-stone-900 text-[#d4af37] py-4 md:py-5 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm uppercase tracking-widest shadow-xl active:scale-95 transition-all disabled:opacity-30 disabled:grayscale"
                 >
-                  {saving ? 'Procesando...' : step === 3 ? 'Confirmar Reserva' : 'Siguiente'}
+                  {saving ? 'Procesando...' : step === 3 ? (() => {
+                    const dep = getServiceDepositInfo(selectedService);
+                    return dep.required 
+                      ? `Proceder al Pago Seguro de ${dep.amount}€` 
+                      : 'Confirmar Reserva';
+                  })() : 'Siguiente'}
                 </button>
               )
             )}

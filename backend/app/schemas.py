@@ -163,6 +163,8 @@ class ClinicSettingsBase(BaseModel):
     working_days: Optional[List[int]] = None
     booking_layout: Optional[str] = "grid"
     cancellation_margin_hours: int = 24
+    global_deposit_required: Optional[bool] = False
+    global_deposit_amount: Optional[float] = None
 
     ai_provider: Optional[str] = "gemini"
     gemini_api_key: Optional[str] = None
@@ -208,6 +210,8 @@ class ClinicSettingsUpdate(BaseModel):
     working_days: Optional[List[int]] = None
     booking_layout: Optional[str] = None
     cancellation_margin_hours: Optional[int] = None
+    global_deposit_required: Optional[bool] = None
+    global_deposit_amount: Optional[float] = None
     ai_provider: Optional[str] = None
     gemini_api_key: Optional[str] = None
     openai_api_key: Optional[str] = None

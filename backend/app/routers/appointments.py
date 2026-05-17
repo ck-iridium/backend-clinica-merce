@@ -68,7 +68,22 @@ def public_booking(request: Request, booking: schemas.PublicBookingRequest, back
 
     checkout_url = None
 
-    if service and service.requires_deposit and service.deposit_amount and settings.stripe_account_id and settings.stripe_charges_enabled:
+    # ── Calcular importe de fianza con lógica de sobrescritura ──
+    deposit_amount = 0.0
+    requires_payment = False
+    
+    if service:
+        if service.requires_deposit and service.deposit_amount and service.deposit_amount > 0:
+            deposit_amount = float(service.deposit_amount)
+            requires_payment = True
+        elif settings.global_deposit_required and settings.global_deposit_amount and settings.global_deposit_amount > 0:
+            # Si el servicio no tiene fianza individual y no está exento explícitamente (deposit_amount == 0)
+            is_exempt = service.deposit_amount is not None and float(service.deposit_amount) == 0.0
+            if not is_exempt:
+                deposit_amount = float(settings.global_deposit_amount)
+                requires_payment = True
+
+    if requires_payment and settings.stripe_account_id and settings.stripe_charges_enabled:
         stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
         frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
         
@@ -78,7 +93,7 @@ def public_booking(request: Request, booking: schemas.PublicBookingRequest, back
                 line_items=[{
                     'price_data': {
                         'currency': 'eur',
-                        'unit_amount': int(service.deposit_amount * 100),
+                        'unit_amount': int(deposit_amount * 100),
                         'product_data': {
                             'name': f"Fianza - {service.name}",
                             'description': f"Reserva {appt.start_time.strftime('%d/%m/%Y %H:%M')}",

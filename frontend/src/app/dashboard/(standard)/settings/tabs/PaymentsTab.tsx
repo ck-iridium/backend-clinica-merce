@@ -205,13 +205,58 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
                     </div>
                   </div>
                </div>
-               <div>
-                  <h3 className="font-bold text-stone-800 text-sm mb-2">Fianzas por Servicio</h3>
-                  <p className="text-xs text-stone-500 bg-stone-50 p-4 rounded-xl border border-stone-100">
-                    Puedes configurar qué tratamientos requieren fianza y su importe exacto directamente desde el <strong>Editor de Servicios</strong>.
-                  </p>
-                  <div className="mt-4 p-4 bg-stone-50 rounded-xl border border-stone-100 italic text-[10px] text-stone-400">
-                    * Este margen de {settings?.cancellation_margin_hours || 24}h se mostrará automáticamente en tus páginas legales para informar al cliente.
+               <div className="space-y-4">
+                  <div>
+                    <h3 className="font-bold text-stone-800 text-sm mb-2">Políticas de Fianza</h3>
+                    <p className="text-xs text-stone-500 bg-stone-50 p-4 rounded-xl border border-stone-100 mb-3">
+                      Puedes configurar qué tratamientos requieren fianza y su importe exacto individual en el <strong>Editor de Servicios</strong>.
+                    </p>
+                  </div>
+
+                  {/* Fianza Global Card */}
+                  <div className={`p-5 rounded-2xl border transition-all duration-300 ${settings?.global_deposit_required ? 'bg-stone-50/70 border-stone-200 shadow-sm' : 'bg-stone-50/30 border-stone-100'}`}>
+                    <label className="flex items-center justify-between cursor-pointer">
+                      <div className="pr-4">
+                        <span className="text-xs font-bold text-stone-800 uppercase tracking-wider block">Fianza Global Activa</span>
+                        <span className="text-[10px] text-stone-400 font-medium block mt-0.5 leading-relaxed">
+                          Aplica un cobro de fianza predeterminado a todos los tratamientos activos de la clínica.
+                        </span>
+                      </div>
+                      <div className="relative shrink-0">
+                        <input 
+                          type="checkbox" 
+                          checked={settings?.global_deposit_required || false} 
+                          onChange={(e) => setSettings({ ...settings, global_deposit_required: e.target.checked })} 
+                          className="sr-only" 
+                        />
+                        <div className={`block w-10 h-6 rounded-full transition-colors duration-300 ${settings?.global_deposit_required ? 'bg-[#d4af37]' : 'bg-stone-300'}`}></div>
+                        <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 ${settings?.global_deposit_required ? 'translate-x-4' : ''}`}></div>
+                      </div>
+                    </label>
+
+                    {settings?.global_deposit_required && (
+                      <div className="mt-4 pt-4 border-t border-stone-200/50 flex items-center gap-3 animate-in fade-in slide-in-from-top-1 duration-300">
+                        <div className="w-full">
+                          <label className="block text-[10px] font-black text-stone-500 uppercase tracking-wider mb-1.5">Importe de la Fianza Global (€)</label>
+                          <div className="relative flex items-center">
+                            <span className="absolute left-3 text-xs font-bold text-stone-400">€</span>
+                            <input 
+                              type="number" 
+                              value={settings?.global_deposit_amount ?? 0} 
+                              onChange={(e) => setSettings({ ...settings, global_deposit_amount: parseFloat(e.target.value) || 0 })}
+                              className="w-full pl-7 pr-3 py-2 bg-white border border-stone-200 rounded-lg focus:border-[#d4af37] outline-none font-bold text-stone-800 text-sm"
+                              min="0"
+                              max="10000"
+                              step="0.5"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-4 bg-stone-50/50 rounded-xl border border-stone-100/70 italic text-[10px] text-stone-400 leading-relaxed">
+                    * Nota: Si un tratamiento tiene una fianza individual configurada en su ficha, este valor sobrescribirá la fianza global. Para eximir un servicio, establécelo en 0€ en su editor.
                   </div>
                </div>
             </div>

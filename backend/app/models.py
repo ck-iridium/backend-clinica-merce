@@ -211,6 +211,10 @@ class ClinicSettings(Base):
     stripe_charges_enabled = Column(Boolean, default=False)
     cancellation_margin_hours = Column(Integer, default=24)
 
+    # Global Deposit Configuration
+    global_deposit_required = Column(Boolean, default=False)
+    global_deposit_amount = Column(Numeric(10, 2), nullable=True, default=0.0)
+
 class Invoice(Base):
     __tablename__ = "invoices"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))

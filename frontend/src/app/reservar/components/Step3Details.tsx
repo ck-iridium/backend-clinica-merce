@@ -10,7 +10,8 @@ export default function Step3Details({
   selectedTime,
   selectedService,
   privacyAccepted,
-  setPrivacyAccepted
+  setPrivacyAccepted,
+  settings
 }: {
   formData: { name: string; email: string; phone: string };
   setFormData: (d: any) => void;
@@ -19,7 +20,22 @@ export default function Step3Details({
   selectedService: any;
   privacyAccepted: boolean;
   setPrivacyAccepted: (v: boolean) => void;
+  settings?: any;
 }) {
+  const getServiceDepositInfo = (srv: any) => {
+    if (!srv) return { required: false, amount: 0 };
+    if (srv.requires_deposit && srv.deposit_amount && srv.deposit_amount > 0) {
+      return { required: true, amount: srv.deposit_amount };
+    }
+    if (settings?.global_deposit_required && settings?.global_deposit_amount && settings?.global_deposit_amount > 0) {
+      const isExempt = srv.deposit_amount !== null && srv.deposit_amount !== undefined && parseFloat(srv.deposit_amount) === 0.0;
+      if (!isExempt) {
+        return { required: true, amount: settings.global_deposit_amount };
+      }
+    }
+    return { required: false, amount: 0 };
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, x: 20 }}
@@ -52,6 +68,43 @@ export default function Step3Details({
             <p className="text-2xl md:text-3xl font-serif text-stone-900 font-bold">{selectedService?.price}€</p>
           </div>
         </div>
+
+        {(() => {
+          const dep = getServiceDepositInfo(selectedService);
+          if (!dep.required) return null;
+          
+          const remaining = Math.max(0, parseFloat(selectedService?.price || 0) - dep.amount);
+          
+          return (
+            <div className="bg-[#fcf8e5]/40 border border-[#e5e1cc]/45 rounded-2xl p-4 md:p-5 flex flex-col gap-3.5 shadow-sm animate-in fade-in slide-in-from-top-1 duration-300">
+              <div className="flex items-start gap-3">
+                <ShieldCheck className="text-[#d4af37] w-5 h-5 shrink-0 mt-0.5" />
+                <div className="space-y-0.5">
+                  <h4 className="text-xs font-bold text-stone-850 uppercase tracking-wider">Desglose de Pago Seguro</h4>
+                  <p className="text-[11px] text-stone-500 font-medium leading-relaxed">
+                    Esta reserva requiere el pago anticipado de una fianza online segura mediante tarjeta de crédito/débito.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="border-t border-[#e5e1cc]/30 pt-3 flex flex-col gap-2">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-stone-500 font-medium">Importe Fianza (Online ahora):</span>
+                  <span className="font-bold text-[#d4af37] bg-white border border-[#e5e1cc]/45 px-2.5 py-0.5 rounded-md">
+                    {dep.amount}€
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-stone-500 font-medium">Importe Restante (A abonar en clínica):</span>
+                  <span className="font-bold text-stone-800">
+                    {remaining}€
+                  </span>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Formulario Compacto pero legible */}
         <div className="space-y-4">

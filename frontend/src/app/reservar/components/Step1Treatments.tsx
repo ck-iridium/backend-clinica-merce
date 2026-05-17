@@ -29,6 +29,7 @@ export default function Step1Treatments({
   activeCategory,
   setActiveCategory,
   bookingLayout = 'grid',
+  settings,
   onSelectService
 }: {
   categories: any[];
@@ -36,8 +37,22 @@ export default function Step1Treatments({
   activeCategory: any;
   setActiveCategory: (cat: any) => void;
   bookingLayout?: string;
+  settings?: any;
   onSelectService: (srv: any) => void;
 }) {
+  const getServiceDepositInfo = (srv: any) => {
+    if (srv.requires_deposit && srv.deposit_amount && srv.deposit_amount > 0) {
+      return { required: true, amount: srv.deposit_amount };
+    }
+    if (settings?.global_deposit_required && settings?.global_deposit_amount && settings?.global_deposit_amount > 0) {
+      const isExempt = srv.deposit_amount !== null && srv.deposit_amount !== undefined && parseFloat(srv.deposit_amount) === 0.0;
+      if (!isExempt) {
+        return { required: true, amount: settings.global_deposit_amount };
+      }
+    }
+    return { required: false, amount: 0 };
+  };
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { 
@@ -197,9 +212,19 @@ export default function Step1Treatments({
                               <Clock size={12} className="text-[#d4af37] md:scale-150" />
                               <span>{srv.duration_minutes}m</span>
                             </div>
-                            <span className="text-sm md:text-lg lg:text-xl font-bold text-[#d4af37] bg-black/60 px-3 py-1 md:px-5 md:py-2 rounded-full backdrop-blur-sm">
-                              {srv.price}€
-                            </span>
+                            <div className="flex flex-col items-end gap-1">
+                              <span className="text-sm md:text-lg lg:text-xl font-bold text-[#d4af37] bg-black/60 px-3 py-1 md:px-5 md:py-2 rounded-full backdrop-blur-sm">
+                                {srv.price}€
+                              </span>
+                              {(() => {
+                                const dep = getServiceDepositInfo(srv);
+                                return dep.required ? (
+                                  <span className="text-[9px] md:text-[10px] text-stone-300 font-sans font-medium bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-[2px]">
+                                    fianza {dep.amount}€
+                                  </span>
+                                ) : null;
+                              })()}
+                            </div>
                           </div>
                         </div>
                       </motion.button>
@@ -259,6 +284,14 @@ export default function Step1Treatments({
                               <Clock size={11} className="text-stone-300 shrink-0" />
                               <span>{srv.duration_minutes} min</span>
                             </div>
+                            {(() => {
+                              const dep = getServiceDepositInfo(srv);
+                              return dep.required ? (
+                                <span className="text-[9px] md:text-[10px] text-[#d4af37] font-sans font-bold mt-1 bg-amber-50/50 border border-amber-100/50 px-1.5 py-0.5 rounded-md">
+                                  fianza {dep.amount}€
+                                </span>
+                              ) : null;
+                            })()}
                           </div>
                           <span className="text-stone-300 group-hover:text-[#d4af37] transition-colors text-lg md:text-xl font-bold shrink-0">›</span>
                         </div>
