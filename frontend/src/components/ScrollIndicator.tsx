@@ -13,7 +13,7 @@ export default function ScrollIndicator() {
   return (
     <button 
       onClick={scrollToContent}
-      className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 group"
+      className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 group md:hidden"
     >
       <div className="relative w-[28px] h-[50px] rounded-full border border-white/20 backdrop-blur-md bg-stone-900/40 flex justify-center overflow-hidden shadow-2xl">
         {/* La "Gota de Luz" Dorada */}

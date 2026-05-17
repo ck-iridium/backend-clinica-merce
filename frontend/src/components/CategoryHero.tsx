@@ -78,20 +78,20 @@ export default function CategoryHero({ category }: CategoryHeroProps) {
 
       {/* Texto del Hero — Con entrada animada */}
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 pb-16 md:pb-20">
-        <div className="overflow-hidden mb-4">
+        <div className="overflow-hidden mb-4 py-2 -my-2 px-2 -mx-2">
           <span className="text-xs md:text-sm font-black uppercase tracking-[0.4em] text-[#d4af37] block animate-reveal-up drop-shadow-md">
             {subtitle}
           </span>
         </div>
-        <div className="overflow-hidden">
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-extrabold text-white leading-none drop-shadow-2xl animate-reveal-up animation-delay-200">
+        <div className="overflow-hidden py-4 -my-4 px-2 -mx-2">
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-extrabold text-white leading-tight drop-shadow-2xl animate-reveal-up animation-delay-200 py-1">
             {translatedName}
           </h1>
         </div>
 
         {translatedDesc && (
-          <div className="overflow-hidden mt-6">
-            <p className="text-lg md:text-2xl text-white/90 font-medium max-w-2xl leading-relaxed drop-shadow-md animate-reveal-up animation-delay-400">
+          <div className="overflow-hidden mt-6 py-2 -my-2 px-2 -mx-2">
+            <p className="text-lg md:text-2xl text-white/90 font-medium max-w-2xl leading-relaxed drop-shadow-md animate-reveal-up animation-delay-400 py-1">
               {translatedDesc}
             </p>
           </div>
