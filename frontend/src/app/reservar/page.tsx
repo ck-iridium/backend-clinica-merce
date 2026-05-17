@@ -252,6 +252,7 @@ export default function BookingPage() {
                   services={services}
                   activeCategory={activeCategory}
                   setActiveCategory={setActiveCategory}
+                  bookingLayout={settings?.booking_layout || 'grid'}
                   onSelectService={(srv) => { 
                     setSelectedService(srv); 
                     setStep(2); 

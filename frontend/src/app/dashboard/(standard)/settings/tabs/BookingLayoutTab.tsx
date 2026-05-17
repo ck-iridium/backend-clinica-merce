@@ -73,19 +73,103 @@ export default function BookingLayoutTab({ settings, setSettings }: BookingLayou
           </div>
 
           {/* Placeholder Vista Previa Móvil */}
-          <div className="bg-[#F7F7F5] rounded-[2.5rem] border border-stone-200 p-8 flex flex-col items-center justify-center min-h-[400px] relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4">
+          <div className="bg-[#F7F7F5] rounded-[2.5rem] border border-stone-200 p-8 flex flex-col items-center justify-center min-h-[500px] relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 z-20">
               <span className="bg-stone-900 text-[#d4af37] text-[10px] uppercase font-black px-3 py-1 rounded-full tracking-widest shadow-sm">
                 Vista Previa
               </span>
             </div>
             
-            <div className="w-[220px] h-[450px] border-[6px] border-stone-200 rounded-[2.5rem] bg-white shadow-xl relative flex flex-col items-center justify-center opacity-80">
-              <div className="w-20 h-1 bg-stone-200 rounded-full absolute top-3"></div>
-              <Smartphone size={48} className="text-stone-300 mb-4" />
-              <p className="text-stone-400 text-sm font-medium text-center px-6 leading-tight">
-                Simulador de Móvil<br/>en construcción
-              </p>
+            <div className="w-[250px] h-[480px] border-[8px] border-stone-900 rounded-[2.5rem] bg-white shadow-2xl relative flex flex-col overflow-hidden">
+              {/* Notch */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-4 bg-stone-900 rounded-b-2xl z-30 flex items-center justify-center">
+                <div className="w-1.5 h-1.5 rounded-full bg-stone-850"></div>
+              </div>
+              
+              {/* Mini Status Bar */}
+              <div className="h-6 bg-white shrink-0 pt-1 px-4 flex justify-between items-center text-[8px] font-bold text-stone-400 select-none z-20">
+                <span>09:41</span>
+                <div className="flex items-center gap-1">
+                  <span>5G</span>
+                  <div className="w-3.5 h-2 border border-stone-300 rounded-sm p-0.5 flex items-center">
+                    <div className="w-full h-full bg-stone-400 rounded-[1px]"></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mini App Content (Scrollable) */}
+              <div className="flex-grow overflow-y-auto custom-scrollbar p-3 pt-2 bg-[#F7F7F5] select-none text-left">
+                {/* Mini Title */}
+                <div className="mb-3">
+                  <h5 className="text-[11px] font-serif font-bold text-stone-800 tracking-wide">Tratamientos</h5>
+                  <p className="text-[7px] text-[#d4af37] font-bold uppercase tracking-widest mt-0.5">Clínica Mercè</p>
+                </div>
+
+                {currentLayout === 'grid' ? (
+                  /* Boutique Grid (2 Columnas) Mockup */
+                  <div className="grid grid-cols-2 gap-2 animate-in fade-in duration-300">
+                    {[
+                      { name: 'Lifting de Pestañas', price: '45€', duration: '45 min' },
+                      { name: 'Higiene Facial', price: '60€', duration: '60 min' },
+                      { name: 'Microblading', price: '120€', duration: '90 min' },
+                      { name: 'Láser Diodo', price: '80€', duration: '30 min' },
+                    ].map((item, idx) => (
+                      <div key={idx} className="bg-white rounded-xl border border-stone-100/60 p-2 flex flex-col justify-between shadow-[0_2px_6px_rgba(0,0,0,0.02)]">
+                        <div>
+                          {/* Luxury image placeholder */}
+                          <div className="w-full h-12 rounded-lg bg-gradient-to-tr from-[#d4af37]/5 to-[#d4af37]/20 flex items-center justify-center mb-1.5">
+                            <span className="text-[9px] text-[#d4af37] font-serif font-bold">M</span>
+                          </div>
+                          <h6 className="text-[8px] font-bold text-stone-850 leading-tight line-clamp-2">{item.name}</h6>
+                        </div>
+                        <div className="mt-2 flex items-baseline justify-between border-t border-stone-50 pt-1">
+                          <span className="text-[6px] text-stone-400">{item.duration}</span>
+                          <span className="text-[8px] font-bold text-[#d4af37]">{item.price}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  /* Lista Elegante (Filas) Mockup */
+                  <div className="space-y-1.5 animate-in fade-in duration-300">
+                    {[
+                      { name: 'Lifting de Pestañas', price: '45€', duration: '45 min' },
+                      { name: 'Higiene Facial Premium', price: '60€', duration: '60 min' },
+                      { name: 'Microblading Cejas', price: '120€', duration: '90 min' },
+                      { name: 'Depilación Láser Diodo', price: '80€', duration: '30 min' },
+                    ].map((item, idx) => (
+                      <div key={idx} className="bg-white rounded-xl border border-stone-100/60 p-2 flex items-center justify-between shadow-[0_2px_4px_rgba(0,0,0,0.01)] gap-2">
+                        <div className="flex items-center gap-2 min-w-0 flex-grow">
+                          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#d4af37]/5 to-[#d4af37]/20 flex items-center justify-center shrink-0">
+                            <span className="text-[8px] text-[#d4af37] font-serif font-bold">M</span>
+                          </div>
+                          <h6 className="text-[8px] font-bold text-stone-850 leading-tight break-words">{item.name}</h6>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0 pl-1">
+                          <div className="flex flex-col items-end text-right">
+                            <span className="text-[8px] font-bold text-[#d4af37]">{item.price}</span>
+                            <span className="text-[5px] text-stone-400 mt-0.5">{item.duration}</span>
+                          </div>
+                          <span className="text-stone-300 text-[8px] font-black">›</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Footer simulation */}
+                <div className="mt-4 pt-2 border-t border-stone-200/40 flex items-center justify-between text-[6px] text-stone-400">
+                  <span>Paso 1 de 3</span>
+                  <div className="w-12 h-3.5 bg-stone-900 rounded-md flex items-center justify-center text-[5px] text-[#d4af37] font-bold uppercase tracking-wider">
+                    Siguiente
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Home Indicator */}
+              <div className="h-4 bg-[#F7F7F5] shrink-0 pb-1.5 flex items-center justify-center select-none z-20">
+                <div className="w-20 h-1 bg-stone-300 rounded-full"></div>
+              </div>
             </div>
           </div>
 
