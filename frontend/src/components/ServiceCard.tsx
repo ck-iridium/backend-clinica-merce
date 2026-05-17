@@ -36,10 +36,6 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
         videoRef.current.pause();
       }
     }
-    // Reset inmediato del estado del vídeo cuando se deja de mostrar
-    if (!shouldShowVideo) {
-      setVideoLoaded(false);
-    }
   }, [shouldShowVideo]);
 
   const videoUrl = service.video_url?.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${service.video_url}` : service.video_url;
@@ -57,7 +53,7 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
       `}
     >
         {/* Imagen Estática con Lazy Loading - Siempre visible de fondo para evitar flash */}
-        <div className="absolute inset-0 bg-stone-200">
+        <div className="absolute inset-0 bg-stone-200 z-0">
           {service.image_url ? (
             <img 
               src={service.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${service.image_url}` : service.image_url} 
@@ -72,19 +68,26 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
           )}
         </div>
         
-        {/* Vídeo / Imagen Secundaria Hover - CARGA BAJO DEMANDA */}
-        <div className={`absolute inset-0 transition-opacity ${shouldShowVideo ? 'opacity-100 duration-700' : 'opacity-0 duration-0'}`}>
-          {videoUrl && shouldShowVideo && (
+        {/* Vídeo / Imagen Secundaria Hover - CON PRE-CARGA Y CONTROL DE OPACIDAD SIN RE-MONTAR */}
+        <div className={`absolute inset-0 z-10 transition-opacity duration-700 ${shouldShowVideo ? 'opacity-100' : 'opacity-0'}`}>
+          {videoUrl ? (
             <video 
               ref={videoRef}
               loop 
               muted 
               playsInline 
-              className={`w-full h-full object-cover transition-opacity duration-500 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
+              className={`w-full h-full object-cover absolute inset-0 transition-opacity duration-500 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
               onCanPlay={() => setVideoLoaded(true)}
               src={videoUrl}
             />
-          )}
+          ) : service.image_url ? (
+             <img 
+              src={service.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${service.image_url}` : service.image_url} 
+              alt={service.name} 
+              className="w-full h-full object-cover opacity-40 mix-blend-overlay absolute inset-0"
+              loading="lazy"
+            />
+          ) : null}
           
           {/* Spinner de carga minimalista - BLANCO */}
           {videoUrl && shouldShowVideo && !videoLoaded && (
@@ -92,22 +95,13 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
               <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
             </div>
           )}
-
-          {!service.video_url && service.image_url && (
-             <img 
-              src={service.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${service.image_url}` : service.image_url} 
-              alt={service.name} 
-              className="w-full h-full object-cover opacity-40 mix-blend-overlay"
-              loading="lazy"
-            />
-          )}
         </div>
 
-        {/* Gradiente Protector para el texto */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10"></div>
+        {/* Gradiente Protector para el texto - Capa z-20 para asegurar que esté sobre el vídeo */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-20"></div>
 
-        {/* CONTENEDOR DE TEXTO PEGADO ABAJO */}
-        <div className="absolute bottom-0 left-0 w-full p-8 z-20 flex flex-col justify-end">
+        {/* CONTENEDOR DE TEXTO PEGADO ABAJO - Capa z-30 sobre el gradiente y el vídeo */}
+        <div className="absolute bottom-0 left-0 w-full p-8 z-30 flex flex-col justify-end">
           
           {/* Título y precio (Siempre visibles) */}
           <div className="transform transition-transform duration-500 group-hover:-translate-y-2">
