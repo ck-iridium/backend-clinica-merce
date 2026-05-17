@@ -1,6 +1,6 @@
 "use client"
 import React from 'react';
-import { User, Mail, Phone, ShieldCheck } from 'lucide-react';
+import { User, Mail, Phone, ShieldCheck, Info, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Step3Details({
@@ -22,6 +22,8 @@ export default function Step3Details({
   setPrivacyAccepted: (v: boolean) => void;
   settings?: any;
 }) {
+  const [showFianzaInfo, setShowFianzaInfo] = React.useState(false);
+
   const getServiceDepositInfo = (srv: any) => {
     if (!srv) return { required: false, amount: 0 };
     if (srv.requires_deposit && srv.deposit_amount && srv.deposit_amount > 0) {
@@ -40,7 +42,7 @@ export default function Step3Details({
     <motion.div 
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
-      className="w-full flex flex-col flex-grow bg-[#F7F7F5]"
+      className="w-full flex flex-col flex-grow min-h-0 bg-[#F7F7F5]"
     >
       {/* Header Equilibrado */}
       <div className="shrink-0 px-6 pt-4 pb-2 z-30 bg-[#F7F7F5]">
@@ -63,48 +65,43 @@ export default function Step3Details({
             <p className="text-xs md:text-sm font-bold text-stone-400 mt-0.5">A las {selectedTime}h</p>
           </div>
 
-          <div className="text-right relative z-10">
+          <div className="text-right relative z-10 flex flex-col items-end">
             <p className="text-[10px] md:text-xs font-black uppercase text-stone-300 tracking-widest mb-0.5">Total</p>
             <p className="text-2xl md:text-3xl font-serif text-stone-900 font-bold">{selectedService?.price}€</p>
-          </div>
-        </div>
-
-        {(() => {
-          const dep = getServiceDepositInfo(selectedService);
-          if (!dep.required) return null;
-          
-          const remaining = Math.max(0, parseFloat(selectedService?.price || 0) - dep.amount);
-          
-          return (
-            <div className="bg-[#fcf8e5]/40 border border-[#e5e1cc]/45 rounded-2xl p-4 md:p-5 flex flex-col gap-3.5 shadow-sm animate-in fade-in slide-in-from-top-1 duration-300">
-              <div className="flex items-start gap-3">
-                <ShieldCheck className="text-[#d4af37] w-5 h-5 shrink-0 mt-0.5" />
-                <div className="space-y-0.5">
-                  <h4 className="text-xs font-bold text-stone-850 uppercase tracking-wider">Desglose de Pago Seguro</h4>
-                  <p className="text-[11px] text-stone-500 font-medium leading-relaxed">
-                    Esta reserva requiere el pago anticipado de una fianza online segura mediante tarjeta de crédito/débito.
-                  </p>
-                </div>
-              </div>
-              
-              <div className="border-t border-[#e5e1cc]/30 pt-3 flex flex-col gap-2">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-stone-500 font-medium">Importe Fianza (Online ahora):</span>
-                  <span className="font-bold text-[#d4af37] bg-white border border-[#e5e1cc]/45 px-2.5 py-0.5 rounded-md">
+            {(() => {
+              const dep = getServiceDepositInfo(selectedService);
+              if (!dep.required) return null;
+              return (
+                <div className="flex items-center gap-1.5 mt-1.5 justify-end">
+                  <motion.button 
+                    type="button" 
+                    onClick={() => setShowFianzaInfo(true)}
+                    animate={{ 
+                      scale: [1, 1.12, 1],
+                      boxShadow: ["0px 0px 0px rgba(59, 130, 246, 0)", "0px 0px 8px rgba(59, 130, 246, 0.45)", "0px 0px 0px rgba(59, 130, 246, 0)"]
+                    }}
+                    transition={{ 
+                      duration: 2.2, 
+                      repeat: Infinity, 
+                      ease: "easeInOut" 
+                    }}
+                    className="text-blue-500 hover:text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors p-1 rounded-full focus:outline-none flex items-center justify-center shrink-0 shadow-sm border border-blue-100/50 mr-0.5"
+                    title="Más información sobre la fianza"
+                  >
+                    <Info size={13} className="shrink-0" />
+                  </motion.button>
+                  <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-stone-400">
+                    FIANZA
+                  </span>
+                  <span className="text-xs md:text-sm font-bold text-[#d4af37]">
                     {dep.amount}€
                   </span>
                 </div>
-                
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-stone-500 font-medium">Importe Restante (A abonar en clínica):</span>
-                  <span className="font-bold text-stone-800">
-                    {remaining}€
-                  </span>
-                </div>
-              </div>
-            </div>
-          );
-        })()}
+              );
+            })()}
+          </div>
+        </div>
+
 
         {/* Formulario Compacto pero legible */}
         <div className="space-y-4">
@@ -226,6 +223,86 @@ export default function Step3Details({
           </div>
         </div>
       </div>
+
+      {/* Pop-up Modal Explicativo de Fianza */}
+      <AnimatePresence>
+        {showFianzaInfo && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowFianzaInfo(false)}
+              className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm"
+            />
+            
+            {/* Modal Box */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="relative w-full max-w-sm bg-white rounded-[2rem] p-6 md:p-8 border border-stone-100 shadow-xl z-10 flex flex-col gap-5 overflow-hidden"
+            >
+              {/* Decorative Accent */}
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#d4af37]/80 to-[#d4af37]" />
+              
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="text-[#d4af37] w-5 h-5 shrink-0" />
+                  <h3 className="text-stone-850 font-serif text-lg font-bold leading-tight">Política de Fianza</h3>
+                </div>
+                <button 
+                  onClick={() => setShowFianzaInfo(false)}
+                  className="text-stone-400 hover:text-stone-800 transition-colors p-1 rounded-full hover:bg-stone-50"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="space-y-3.5 text-xs text-stone-600 leading-relaxed">
+                <p>
+                  Para garantizar la disponibilidad de tu cita y mantener la excelencia en nuestro servicio, solicitamos un depósito anticipado en concepto de fianza segura.
+                </p>
+                
+                {(() => {
+                  const dep = getServiceDepositInfo(selectedService);
+                  const remaining = Math.max(0, parseFloat(selectedService?.price || 0) - dep.amount);
+                  return (
+                    <div className="bg-stone-50 rounded-xl p-3 border border-stone-100 flex flex-col gap-2 font-medium">
+                      <div className="flex justify-between items-center text-[11px]">
+                        <span className="text-stone-400">Total Tratamiento:</span>
+                        <span className="font-bold text-stone-800">{selectedService?.price}€</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[11px] text-[#d4af37]">
+                        <span>Fianza (Pago online hoy):</span>
+                        <span className="font-bold">{dep.amount}€</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[11px]">
+                        <span className="text-stone-400">Restante (En clínica):</span>
+                        <span className="font-bold text-stone-800">{remaining}€</span>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                <p>
+                  <strong>¿Necesitas cancelar o cambiar tu cita?</strong><br />
+                  Puedes hacerlo sin coste alguno con hasta **{settings?.cancellation_margin_hours || 24} horas** de antelación y tu fianza será reembolsada automáticamente de forma íntegra.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setShowFianzaInfo(false)}
+                className="w-full bg-stone-900 hover:bg-stone-800 active:scale-98 transition-all text-[#d4af37] py-3 rounded-xl font-bold uppercase tracking-wider text-xs"
+              >
+                Entendido
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
