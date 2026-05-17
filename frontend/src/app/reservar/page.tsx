@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import Step1Treatments from './components/Step1Treatments';
 import Step2DateTime from './components/Step2DateTime';
@@ -52,6 +53,8 @@ export default function BookingPage() {
   // Initialize to NEXT WORKING DAY
   const [selectedDate, setSelectedDate] = useState<Date>(getNextWorkingDay());
   const [selectedTime, setSelectedTime] = useState<string>('');
+  const [dateTimePhase, setDateTimePhase] = useState<1 | 2>(1);
+  const [currentMonthOffset, setCurrentMonthOffset] = useState(0);
 
   const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
   const [loading, setLoading] = useState(true);
@@ -200,6 +203,7 @@ export default function BookingPage() {
               <button 
                 onClick={() => {
                   if (step === 1 && activeCategory) setActiveCategory(null);
+                  else if (step === 2 && dateTimePhase === 2) setDateTimePhase(1);
                   else if (step > 1) setStep(step - 1);
                 }} 
                 className="text-stone-400 hover:text-stone-800 transition-colors text-xs md:text-sm font-bold uppercase tracking-widest w-20 text-left"
@@ -266,6 +270,10 @@ export default function BookingPage() {
                   selectedService={selectedService}
                   settings={settings}
                   onShowFeedback={showFeedback}
+                  dateTimePhase={dateTimePhase}
+                  setDateTimePhase={setDateTimePhase}
+                  currentMonthOffset={currentMonthOffset}
+                  setCurrentMonthOffset={setCurrentMonthOffset}
                 />
               )}
 
@@ -308,21 +316,65 @@ export default function BookingPage() {
                   </p>
                </div>
             )}
-            {step !== 1 && (
-              <button
-                disabled={
-                  step === 2 ? !selectedTime :
-                  step === 3 ? (!privacyAccepted || !formData.name || !formData.email || !formData.phone || saving) :
-                  false
-                }
-                onClick={() => {
-                  if (step === 3) handleBooking();
-                  else { setStep(step + 1); window.scrollTo({ top: 0 }); }
-                }}
-                className="flex-grow bg-stone-900 text-[#d4af37] py-4 md:py-5 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm uppercase tracking-widest shadow-xl active:scale-95 transition-all disabled:opacity-30 disabled:grayscale"
-              >
-                {saving ? 'Procesando...' : step === 3 ? 'Confirmar Reserva' : 'Siguiente'}
-              </button>
+            {step === 2 && dateTimePhase === 1 ? (
+              <div className="flex-grow flex items-center justify-between py-1 px-2 select-none">
+                <button
+                  disabled={currentMonthOffset === 0}
+                  onClick={() => {
+                    const nextOffset = currentMonthOffset - 1;
+                    setCurrentMonthOffset(nextOffset);
+                    const now = new Date();
+                    const targetMonth = new Date(now.getFullYear(), now.getMonth() + nextOffset, 1).getMonth();
+                    const element = document.getElementById(`month-header-${targetMonth}`);
+                    if (element) {
+                      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                  }}
+                  className={`w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full border border-stone-200 bg-white shadow-sm active:scale-90 transition-all
+                    ${currentMonthOffset === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-stone-50'}`}
+                >
+                  <ChevronLeft size={18} className="text-stone-600 md:scale-125" />
+                </button>
+                
+                <span className="text-sm md:text-lg font-serif font-bold text-stone-800 tracking-wide capitalize select-none">
+                  {new Date(new Date().getFullYear(), new Date().getMonth() + currentMonthOffset, 1).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
+                </span>
+                
+                <button
+                  disabled={currentMonthOffset === 3}
+                  onClick={() => {
+                    const nextOffset = currentMonthOffset + 1;
+                    setCurrentMonthOffset(nextOffset);
+                    const now = new Date();
+                    const targetMonth = new Date(now.getFullYear(), now.getMonth() + nextOffset, 1).getMonth();
+                    const element = document.getElementById(`month-header-${targetMonth}`);
+                    if (element) {
+                      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                  }}
+                  className={`w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full border border-stone-200 bg-white shadow-sm active:scale-90 transition-all
+                    ${currentMonthOffset === 3 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-stone-50'}`}
+                >
+                  <ChevronRight size={18} className="text-stone-600 md:scale-125" />
+                </button>
+              </div>
+            ) : (
+              step !== 1 && (
+                <button
+                  disabled={
+                    step === 2 ? !selectedTime :
+                    step === 3 ? (!privacyAccepted || !formData.name || !formData.email || !formData.phone || saving) :
+                    false
+                  }
+                  onClick={() => {
+                    if (step === 3) handleBooking();
+                    else { setStep(step + 1); window.scrollTo({ top: 0 }); }
+                  }}
+                  className="flex-grow bg-stone-900 text-[#d4af37] py-4 md:py-5 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm uppercase tracking-widest shadow-xl active:scale-95 transition-all disabled:opacity-30 disabled:grayscale"
+                >
+                  {saving ? 'Procesando...' : step === 3 ? 'Confirmar Reserva' : 'Siguiente'}
+                </button>
+              )
             )}
           </div>
         </footer>
