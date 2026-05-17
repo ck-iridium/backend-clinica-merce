@@ -258,7 +258,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                         <button
                           onMouseEnter={() => setActiveCategory(cat.id)}
                           onClick={() => { setShowMegaMenu(false); window.location.href = `/tratamientos/${cat.slug || cat.id}` }}
-                          className={`w-full text-left px-6 py-3 transition-all font-serif text-xl whitespace-nowrap relative ${activeCategory === cat.id
+                          className={`w-full text-left px-6 py-2.5 transition-all font-serif text-lg md:text-xl leading-tight whitespace-normal relative ${activeCategory === cat.id
                               ? 'bg-white text-[#d4af37] font-semibold rounded-l-2xl -mr-[1px] z-10 shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.02)] after:absolute after:top-0 after:-right-[1px] after:w-[2px] after:h-full after:bg-white after:z-20'
                               : 'text-stone-200 hover:text-white rounded-2xl mr-4 hover:bg-white/5'
                             }`}
