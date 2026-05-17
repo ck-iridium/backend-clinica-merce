@@ -70,6 +70,7 @@ class ServiceCategoryUpdate(ServiceCategoryBase):
 class ServiceCategoryResponse(ServiceCategoryBase):
     id: str
     created_at: datetime
+    translations: Optional[Dict[str, Any]] = None
     
     class Config:
         from_attributes = True
@@ -121,6 +122,7 @@ class ServiceResponse(ServiceBase):
     created_at: datetime
     category: Optional['ServiceCategoryResponse'] = None
     category_slug: Optional[str] = None
+    translations: Optional[Dict[str, Any]] = None
     
     class Config:
         from_attributes = True
@@ -476,6 +478,7 @@ class SiteContentBase(BaseModel):
     seo_keywords: Optional[str] = None
 
     home_sections_order: Optional[str] = None
+    translations: Optional[Dict[str, Any]] = None
 
 class SiteContentUpdate(BaseModel):
     hero_title: Optional[str] = None
@@ -506,6 +509,7 @@ class SiteContentUpdate(BaseModel):
     seo_keywords: Optional[str] = None
     
     home_sections_order: Optional[str] = None
+    translations: Optional[Dict[str, Any]] = None
 
 class SiteContentResponse(SiteContentBase):
     id: int

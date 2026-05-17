@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Clock, Tag } from 'lucide-react';
+import { cookies } from 'next/headers';
 
 import ServiceCard from '@/components/ServiceCard';
 import TreatmentCarousel from '@/components/TreatmentCarousel';
@@ -15,7 +16,7 @@ import BotonReservaPro from '@/components/BotonReservaPro';
 
 async function getServiceData(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/slug/${slug}`, {
-    next: { revalidate: 60 }
+    cache: 'no-store'
   });
 
   if (!res.ok) {
@@ -28,7 +29,7 @@ async function getServiceData(slug: string) {
 
 async function getRelatedServices(currentServiceId: number) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/`, {
-    next: { revalidate: 60 }
+    cache: 'no-store'
   });
   if (!res.ok) return [];
   const services = await res.json();
@@ -39,10 +40,32 @@ export async function generateMetadata({ params }: { params: { treatment_slug: s
   const service = await getServiceData(params.treatment_slug);
   if (!service) return { title: 'Tratamiento no encontrado' };
 
+  const cookieStore = cookies();
+  const lang = (cookieStore.get('preferred_language')?.value || 'es') as 'es' | 'en' | 'fr';
+
+  const translateServer = (spanishText: string, translations: any, field: string) => {
+    if (!translations) return spanishText;
+    let parsed = translations;
+    if (typeof translations === 'string') {
+      try { parsed = JSON.parse(translations); } catch { return spanishText; }
+    }
+    return parsed?.[lang]?.[field] || spanishText;
+  };
+
+  const name = translateServer(service.name, service.translations, 'name');
+  const description = translateServer(service.description, service.translations, 'description');
+
+  const seoTranslations: Record<string, Record<string, string>> = {
+    es: { suffix: '| Clínica de Estética', defaultDesc: `Descubre más sobre nuestro tratamiento ${name}.`, keywords: 'tratamiento, estética, clínica' },
+    en: { suffix: '| Aesthetic Clinic', defaultDesc: `Discover more about our ${name} treatment.`, keywords: 'treatment, aesthetics, clinic' },
+    fr: { suffix: '| Clinique d\'Esthétique', defaultDesc: `Découvrez-en plus sur notre soin ${name}.`, keywords: 'soin, esthétique, clinique' }
+  };
+  const seoT = seoTranslations[lang] || seoTranslations.es;
+
   return {
-    title: service.seo_title || `${service.name} | Clínica de Estética`,
-    description: service.seo_description || service.description || `Descubre más sobre nuestro tratamiento ${service.name}.`,
-    keywords: service.seo_keywords || 'tratamiento, estética, clínica',
+    title: service.seo_title || `${name} ${seoT.suffix}`,
+    description: service.seo_description || description || seoT.defaultDesc,
+    keywords: service.seo_keywords || seoT.keywords,
   };
 }
 
@@ -53,6 +76,33 @@ export default async function TreatmentDynamicPage({ params }: { params: { treat
     notFound();
   }
 
+  const cookieStore = cookies();
+  const lang = (cookieStore.get('preferred_language')?.value || 'es') as 'es' | 'en' | 'fr';
+
+  const translateServer = (spanishText: string, translations: any, field: string) => {
+    if (!translations) return spanishText;
+    let parsed = translations;
+    if (typeof translations === 'string') {
+      try { parsed = JSON.parse(translations); } catch { return spanishText; }
+    }
+    return parsed?.[lang]?.[field] || spanishText;
+  };
+
+  const translatedName = translateServer(service.name, service.translations, 'name');
+  const translatedDescription = translateServer(service.description, service.translations, 'description');
+  const translatedContentHtml = translateServer(service.content_html, service.translations, 'content_html');
+  
+  const categoryName = service.category 
+    ? translateServer(service.category.name, service.category.translations, 'name') 
+    : (service.category_name || 'Tratamiento Especializado');
+
+  const pageTranslations: Record<string, Record<string, string>> = {
+    es: { duration: 'Duración', price: 'Precio', book_now: 'Reservar Ahora', complementary: 'Tratamientos Complementarios', discover: 'Descubre otras experiencias diseñadas para potenciar tu bienestar.', see_catalog: 'Ver catálogo completo' },
+    en: { duration: 'Duration', price: 'Price', book_now: 'Book Now', complementary: 'Complementary Treatments', discover: 'Discover other experiences designed to enhance your well-being.', see_catalog: 'See full catalog' },
+    fr: { duration: 'Durée', price: 'Prix', book_now: 'Réserver Maintenant', complementary: 'Soins Complémentaires', discover: 'Découvrez d\'autres expériences conçues pour améliorer votre bien-être.', see_catalog: 'Voir le catalogue complet' }
+  };
+  const pageT = pageTranslations[lang] || pageTranslations.es;
+
   const layoutPreferences = service.layout_preferences || {
     alignment: 'left',
     headerStyle: 'split',
@@ -60,6 +110,11 @@ export default async function TreatmentDynamicPage({ params }: { params: { treat
   };
 
   const relatedServices = await getRelatedServices(service.id);
+  const translatedRelated = relatedServices.map((s: any) => ({
+    ...s,
+    name: translateServer(s.name, s.translations, 'name'),
+    description: translateServer(s.description, s.translations, 'description')
+  }));
 
   const getFullUrl = (url: string) => {
     if (!url) return '';
@@ -125,10 +180,10 @@ export default async function TreatmentDynamicPage({ params }: { params: { treat
           <div id="treatment-content" className="w-full md:w-[58%] lg:w-[60%] flex flex-col pt-12 md:pt-32 pb-24 px-6 md:pl-8 md:pr-12 lg:pl-16 lg:pr-24">
             <div className="max-w-3xl">
               <span className="text-xs font-black uppercase tracking-[0.2em] text-[#d4af37] mb-4 block">
-                {service.category_name || 'Tratamiento Especializado'}
+                {categoryName}
               </span>
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-stone-900 mb-10 leading-[1.1]">
-                {service.name}
+                {translatedName}
               </h1>
 
               {/* SECCIÓN META */}
@@ -139,7 +194,7 @@ export default async function TreatmentDynamicPage({ params }: { params: { treat
                       <Clock className="w-5 h-5 text-stone-400" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-0.5">Duración</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-0.5">{pageT.duration}</p>
                       <p className="text-2xl md:text-3xl font-bold text-stone-800 whitespace-nowrap">{service.duration_minutes} min</p>
                     </div>
                   </div>
@@ -149,7 +204,7 @@ export default async function TreatmentDynamicPage({ params }: { params: { treat
                       <Tag className="w-5 h-5 text-stone-400" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-0.5">Precio</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-0.5">{pageT.price}</p>
                       <p className="text-2xl md:text-3xl font-bold text-stone-800 whitespace-nowrap">{service.price} €</p>
                     </div>
                   </div>
@@ -157,66 +212,66 @@ export default async function TreatmentDynamicPage({ params }: { params: { treat
 
                 <div className="lg:ml-auto w-full lg:w-auto">
                   <BotonReservaPro
-                    texto="Reservar Ahora"
+                    texto={pageT.book_now}
                     color={layoutPreferences.accentColor}
-                    href={`/reservar?servicio=${service.id}&nombre=${encodeURIComponent(service.name)}`}
+                    href={`/reservar?servicio=${service.id}&nombre=${encodeURIComponent(translatedName)}`}
                     className="w-full lg:w-auto"
                   />
                 </div>
               </div>
 
               <p className="text-xl md:text-2xl text-stone-500 font-sans leading-relaxed mb-16 italic">
-                "{service.description}"
+                "{translatedDescription}"
               </p>
 
-              {service.content_html && (
+              {translatedContentHtml && (
                 <div
                   className="prose prose-stone lg:prose-xl max-w-none prose-headings:font-serif prose-headings:font-normal prose-p:leading-relaxed prose-a:text-[#d4af37] prose-img:rounded-3xl mb-16"
-                  dangerouslySetInnerHTML={{ __html: service.content_html }}
+                  dangerouslySetInnerHTML={{ __html: translatedContentHtml }}
                 />
               )}
 
-              <TreatmentActions serviceName={service.name} />
+              <TreatmentActions serviceName={translatedName} />
             </div>
           </div>
         </div>
       </section>
 
       {/* SECCIÓN 2: CROSS-SELLING */}
-      {relatedServices.length > 0 && (
+      {translatedRelated.length > 0 && (
         <section className="w-full bg-stone-50 h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none flex flex-col pt-16 md:pt-32 border-t border-stone-100 overflow-hidden">
           <style dangerouslySetInnerHTML={{ __html: '.hide-scroll::-webkit-scrollbar { display: none; } .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }' }} />
           <div className="w-full max-w-7xl mx-auto px-6 mb-8 flex flex-col md:flex-row justify-between items-end gap-4 flex-shrink-0">
             <div className="max-w-xl">
-              <h2 className="text-2xl md:text-5xl font-serif text-stone-800 mb-2">Tratamientos Complementarios</h2>
-              <p className="text-stone-400 text-xs md:text-base">Descubre otras experiencias diseñadas para potenciar tu bienestar.</p>
+              <h2 className="text-2xl md:text-5xl font-serif text-stone-800 mb-2">{pageT.complementary}</h2>
+              <p className="text-stone-400 text-xs md:text-base">{pageT.discover}</p>
             </div>
             <Link href="/tratamientos" className="hidden md:inline-flex text-sm font-bold uppercase tracking-widest text-[#d4af37] border-b-2 border-[#d4af37]/20 pb-1 hover:border-[#d4af37] transition-all">
-              Ver catálogo completo
+              {pageT.see_catalog}
             </Link>
           </div>
 
           <div className="w-full flex-1 min-h-0 flex flex-col justify-center pb-8">
             <div className="hidden md:block">
-              {relatedServices.length === 1 && (
+              {translatedRelated.length === 1 && (
                 <div className="max-w-7xl mx-auto px-6">
-                  <div className="w-full aspect-[16/9] md:h-[500px]"><ServiceCard service={relatedServices[0]} className="w-full h-full" /></div>
+                  <div className="w-full aspect-[16/9] md:h-[500px]"><ServiceCard service={translatedRelated[0]} className="w-full h-full" /></div>
                 </div>
               )}
-              {relatedServices.length === 2 && (
+              {translatedRelated.length === 2 && (
                 <div className="max-w-7xl mx-auto px-6 flex justify-center gap-8">
-                  <div className="w-[372px] h-[662px]"><ServiceCard service={relatedServices[0]} className="w-full h-full" /></div>
-                  <div className="w-[372px] h-[662px]"><ServiceCard service={relatedServices[1]} className="w-full h-full" /></div>
+                  <div className="w-[372px] h-[662px]"><ServiceCard service={translatedRelated[0]} className="w-full h-full" /></div>
+                  <div className="w-[372px] h-[662px]"><ServiceCard service={translatedRelated[1]} className="w-full h-full" /></div>
                 </div>
               )}
-              {relatedServices.length >= 3 && (
-                <TreatmentCarousel servicios={relatedServices} loop={true} />
+              {translatedRelated.length >= 3 && (
+                <TreatmentCarousel servicios={translatedRelated} loop={true} />
               )}
             </div>
 
             {/* MOBILE VIEW — INFALIBLE & SMART */}
             <div id="mobile-slider-related" className="md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-6 items-center w-full flex-1 min-h-0 pb-8">
-              {relatedServices.map((svc: any) => (
+              {translatedRelated.map((svc: any) => (
                 <ServiceCard key={svc.id} service={svc} className="snap-stop-always" />
               ))}
             </div>

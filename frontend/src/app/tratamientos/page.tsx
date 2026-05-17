@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
+import { cookies } from 'next/headers';
 import CategoryImage from '@/components/CategoryImage';
 
 export const metadata: Metadata = {
@@ -9,9 +10,9 @@ export const metadata: Metadata = {
 
 async function getData() {
   const [categoriesRes, servicesRes, settingsRes] = await Promise.all([
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/service-categories/`, { next: { revalidate: 60 } }),
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/`, { next: { revalidate: 60 } }),
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/settings/`, { next: { revalidate: 60 } })
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/service-categories/`, { cache: 'no-store' }),
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/`, { cache: 'no-store' }),
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/settings/`, { cache: 'no-store' })
   ]);
   
   const categories = categoriesRes.ok ? await categoriesRes.json() : [];
@@ -23,15 +24,67 @@ async function getData() {
 
 export default async function CatalogPage() {
   const { categories, services, settings } = await getData();
+
+  const cookieStore = cookies();
+  const lang = (cookieStore.get('preferred_language')?.value || 'es') as 'es' | 'en' | 'fr';
+
+  const translateServer = (spanishText: string, translations: any, field: string) => {
+    if (!translations) return spanishText;
+    let parsed = translations;
+    if (typeof translations === 'string') {
+      try { parsed = JSON.parse(translations); } catch { return spanishText; }
+    }
+    return parsed?.[lang]?.[field] || spanishText;
+  };
+
+  // Traducción estática
+  const contentMap = {
+    es: {
+      title: 'Catálogo de Tratamientos',
+      subtitle: 'Explora todos nuestros servicios diseñados para realzar tu belleza. Selecciona una categoría para ver los detalles.',
+      no_treatments: 'No hay tratamientos disponibles en este momento.',
+      treatments_count: 'tratamientos disponibles',
+      details: 'Ver detalles'
+    },
+    en: {
+      title: 'Treatment Catalog',
+      subtitle: 'Explore all our aesthetic services designed to enhance your natural beauty. Select a category to view details.',
+      no_treatments: 'No treatments available at this moment.',
+      treatments_count: 'treatments available',
+      details: 'View details'
+    },
+    fr: {
+      title: 'Catalogue de Soins',
+      subtitle: 'Explorez tous nos soins esthétiques conçus pour sublimer votre beauté naturelle. Sélectionnez une catégorie pour voir les détails.',
+      no_treatments: 'Aucun soin disponible pour le moment.',
+      treatments_count: 'soins disponibles',
+      details: 'Voir les détails'
+    }
+  };
+
+  const t = contentMap[lang] || contentMap.es;
+
+  // Traducir dinámicamente servicios y categorías
+  const translatedCategories = categories.map((c: any) => ({
+    ...c,
+    name: translateServer(c.name, c.translations, 'name'),
+    description: translateServer(c.description, c.translations, 'description')
+  }));
+
+  const translatedServices = services.map((s: any) => ({
+    ...s,
+    name: translateServer(s.name, s.translations, 'name'),
+    description: translateServer(s.description, s.translations, 'description')
+  }));
   
   // Filtrar solo activos
-  const activeServices = services.filter((s: any) => s.is_active);
+  const activeServices = translatedServices.filter((s: any) => s.is_active);
 
   // Agrupar servicios por categoría
   const groupedServices = activeServices.reduce((acc: Record<string, any[]>, svc: any) => {
     // Buscar la categoría completa o asignar "General" si no existe
-    const category = categories.find((c: any) => c.id === svc.category_id);
-    const catName = category ? category.name : "Tratamientos Generales";
+    const category = translatedCategories.find((c: any) => c.id === svc.category_id);
+    const catName = category ? category.name : (lang === 'fr' ? "Soins Généraux" : lang === 'en' ? "General Treatments" : "Tratamientos Generales");
     
     if (!acc[catName]) acc[catName] = [];
     acc[catName].push({ ...svc, categoryInfo: category });
@@ -43,19 +96,17 @@ export default async function CatalogPage() {
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 font-sans mt-16 md:mt-0">
-      {/* HEADER ELIMINADO (Se usa PublicNavbar desde layout) */}
-
       <main className="pt-32 pb-24">
         <div className="max-w-7xl mx-auto px-6 mb-16 animate-in slide-in-from-bottom-4 duration-700">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-stone-900">Catálogo de Tratamientos</h1>
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-stone-900">{t.title}</h1>
           <p className="text-lg md:text-xl text-stone-500 mt-4 max-w-2xl font-medium">
-            Explora todos nuestros servicios diseñados para realzar tu belleza. Selecciona una categoría para ver los detalles.
+            {t.subtitle}
           </p>
         </div>
 
         {sortedCategoryNames.length === 0 ? (
           <div className="max-w-7xl mx-auto px-6 py-20 text-center text-stone-400 font-bold border-2 border-dashed border-stone-200 rounded-[3rem]">
-            No hay tratamientos disponibles en este momento.
+            {t.no_treatments}
           </div>
         ) : (
           <div className="space-y-24">
@@ -78,7 +129,7 @@ export default async function CatalogPage() {
                       <Link href={`/tratamientos/${categoryInfo?.slug || categoryInfo?.id}`} className="hover:text-[#d4af37] transition-colors">
                         <h2 className="text-3xl md:text-4xl font-extrabold text-stone-800 tracking-tight">{catName}</h2>
                       </Link>
-                      <p className="text-stone-500 font-semibold mt-2">{svcs.length} tratamientos disponibles</p>
+                      <p className="text-stone-500 font-semibold mt-2">{svcs.length} {t.treatments_count}</p>
                     </div>
                   </div>
 
@@ -107,7 +158,7 @@ export default async function CatalogPage() {
                                  <span className="text-[#d4af37] text-lg leading-none">⏱</span> {svc.duration_minutes} min
                               </span>
                               <span className="text-sm font-bold text-[#d4af37] opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                                Ver detalles <span className="text-lg leading-none">→</span>
+                                {t.details} <span className="text-lg leading-none">→</span>
                               </span>
                             </div>
                          </Link>

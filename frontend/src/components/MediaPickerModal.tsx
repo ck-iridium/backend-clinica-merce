@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, forwardRef } from 'react';
+import React, { useState, useEffect, forwardRef, useRef } from 'react';
 import CropImageModal from '@/components/CropImageModal';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { processVideo } from '@/lib/videoProcessor';
@@ -40,18 +40,31 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
     const [processingProgress, setProcessingProgress] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
 
+    const dragCounter = useRef(0);
+
     const onDragOver = (e: React.DragEvent) => {
       e.preventDefault();
-      setIsDragging(true);
+    };
+
+    const onDragEnter = (e: React.DragEvent) => {
+      e.preventDefault();
+      dragCounter.current++;
+      if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+        setIsDragging(true);
+      }
     };
 
     const onDragLeave = () => {
-      setIsDragging(false);
+      dragCounter.current--;
+      if (dragCounter.current === 0) {
+        setIsDragging(false);
+      }
     };
 
     const onDrop = async (e: React.DragEvent) => {
       e.preventDefault();
       setIsDragging(false);
+      dragCounter.current = 0;
       const files = e.dataTransfer.files;
       if (files && files.length > 0) {
         // Simular el evento para reutilizar la lógica de handleFileInput
@@ -98,8 +111,11 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
       const file = e.target.files?.[0];
       if (!file) return;
       
+      const name = file.name.toLowerCase();
+      const isVideo = file.type.startsWith('video/') || /\.(mp4|webm|mov|avi|mkv|3gp|quicktime)$/i.test(name);
+      
       // Si es video, optimizar antes de subir
-      if (file.type.startsWith('video/')) {
+      if (isVideo) {
         setIsProcessing(true);
         setProcessingProgress(0);
         try {
@@ -352,6 +368,7 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                                             )}
                                             onClick={(e) => e.stopPropagation()}
                                             onDragOver={onDragOver}
+                                            onDragEnter={onDragEnter}
                                             onDragLeave={onDragLeave}
                                             onDrop={onDrop}
                                         >

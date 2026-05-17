@@ -27,6 +27,22 @@ def create_service_category(db: Session, category: schemas.ServiceCategoryCreate
         category_data["slug"] = slugify(category_data["name"])
         
     db_category = models.ServiceCategory(**category_data)
+    
+    try:
+        from ..utils.translator import translate_fields
+        to_translate = {}
+        if db_category.name:
+            to_translate["name"] = db_category.name
+        if db_category.description:
+            to_translate["description"] = db_category.description
+            
+        if to_translate:
+            new_translations = translate_fields(to_translate, db)
+            if new_translations:
+                db_category.translations = new_translations
+    except Exception as e:
+        print(f"Error in category auto-translation: {e}")
+        
     db.add(db_category)
     db.commit()
     db.refresh(db_category)
@@ -36,8 +52,29 @@ def update_service_category(db: Session, category_id: str, category: schemas.Ser
     db_category = db.query(models.ServiceCategory).filter(models.ServiceCategory.id == category_id).first()
     if db_category:
         update_data = category.model_dump(exclude_unset=True)
+        
+        name_changed = "name" in update_data and update_data["name"] != db_category.name
+        desc_changed = "description" in update_data and update_data["description"] != db_category.description
+        
         for key, value in update_data.items():
             setattr(db_category, key, value)
+            
+        if name_changed or desc_changed or not db_category.translations:
+            try:
+                from ..utils.translator import translate_fields
+                to_translate = {}
+                if db_category.name:
+                    to_translate["name"] = db_category.name
+                if db_category.description:
+                    to_translate["description"] = db_category.description
+                    
+                if to_translate:
+                    new_translations = translate_fields(to_translate, db)
+                    if new_translations:
+                        db_category.translations = new_translations
+            except Exception as e:
+                print(f"Error in category auto-translation: {e}")
+                
         db.commit()
         db.refresh(db_category)
     return db_category

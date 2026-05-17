@@ -1,12 +1,53 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { cookies } from 'next/headers';
 
 import PublicNavbar from '@/components/PublicNavbar';
 import TreatmentCarousel from '@/components/TreatmentCarousel';
 import ServiceCard from '@/components/ServiceCard';
 import Footer from '@/components/Footer';
 import CategoryHero from '@/components/CategoryHero';
+
+// Local static translations
+const categoryPageTranslations: Record<string, Record<string, string>> = {
+  es: {
+    'page.catalog_of': 'Catálogo de',
+    'page.options_available': 'opciones disponibles',
+    'page.see_all_treatments': 'Ver todos los tratamientos',
+    'page.see_all': 'Ver todos',
+    'page.excellence_in': 'Excelencia en',
+    'page.other_categories': 'Otras Categorías',
+    'page.explore_more': 'Explora más servicios de medicina estética avanzada.',
+    'page.see_full_catalog': 'Ver todo el catálogo',
+    'page.explore': 'Explorar',
+    'page.not_found': 'Categoría no encontrada'
+  },
+  en: {
+    'page.catalog_of': 'Catalog of',
+    'page.options_available': 'options available',
+    'page.see_all_treatments': 'See all treatments',
+    'page.see_all': 'See all',
+    'page.excellence_in': 'Excellence in',
+    'page.other_categories': 'Other Categories',
+    'page.explore_more': 'Explore more advanced medical aesthetic services.',
+    'page.see_full_catalog': 'See full catalog',
+    'page.explore': 'Explore',
+    'page.not_found': 'Category not found'
+  },
+  fr: {
+    'page.catalog_of': 'Catalogue de',
+    'page.options_available': 'options disponibles',
+    'page.see_all_treatments': 'Voir tous les soins',
+    'page.see_all': 'Voir tous',
+    'page.excellence_in': 'Excellence en',
+    'page.other_categories': 'Autres Catégories',
+    'page.explore_more': 'Explorez d\'autres services d\'esthétique médicale avancée.',
+    'page.see_full_catalog': 'Voir tout le catalogue',
+    'page.explore': 'Explorer',
+    'page.not_found': 'Catégorie non trouvée'
+  }
+};
 
 // Helpers to get data
 async function getCategoryData(slug: string) {
@@ -41,13 +82,39 @@ const getFullUrl = (url: string) => {
   return url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${url}` : url;
 };
 
+// Helper for translations on the server side
+const translateField = (fieldVal: string, translations: any, fieldKey: string, lang: string) => {
+  if (lang === 'es' || !translations) return fieldVal;
+  
+  let parsedTrans = translations;
+  if (typeof translations === 'string') {
+    try {
+      parsedTrans = JSON.parse(translations);
+    } catch {
+      parsedTrans = {};
+    }
+  }
+  
+  const langTrans = parsedTrans[lang];
+  if (langTrans && langTrans[fieldKey]) {
+    return langTrans[fieldKey];
+  }
+  
+  return fieldVal;
+};
+
 export async function generateMetadata({ params }: { params: { category_slug: string } }): Promise<Metadata> {
   const category = await getCategoryData(params.category_slug);
   if (!category) return { title: 'Categoría no encontrada' };
 
+  const cookieStore = cookies();
+  const lang = cookieStore.get('preferred_language')?.value || 'es';
+  const translatedName = translateField(category.name, category.translations, 'name', lang);
+  const translatedDesc = translateField(category.seo_description || category.description, category.translations, 'seo_description', lang) || `Descubre nuestra categoría de ${translatedName}.`;
+
   return {
-    title: `${category.name} | Estetica Merce`,
-    description: category.seo_description || category.description || `Descubre nuestra categoría de ${category.name}.`,
+    title: `${translatedName} | Estetica Merce`,
+    description: translatedDesc,
   };
 }
 
@@ -60,16 +127,56 @@ export default async function CategoryDynamicPage({ params }: { params: { catego
     getServices()
   ]);
 
+  const cookieStore = cookies();
+  const lang = cookieStore.get('preferred_language')?.value || 'es';
+
+  const t = (key: string, defaultValue: string) => {
+    return categoryPageTranslations[lang]?.[key] || defaultValue;
+  };
+
+  const translate = (fieldVal: string, translations: any, fieldKey: string) => {
+    return translateField(fieldVal, translations, fieldKey, lang);
+  };
+
+  const translatedCategoryName = translate(category.name, category.translations, 'name');
+  
   const categoryServices = allServices.filter((s: any) => s.category_id === category.id && s.is_active);
   // Máximo 4 categorías para el Bento Grid
   const otherCategories = allCategories.filter((c: any) => c.id !== category.id && c.is_active).slice(0, 4);
 
-  // Fallback LOREM IPSUM para SEO description si no hay texto editorial
-  const editorialText = category.seo_description || `El enfoque de nuestra clínica hacia los tratamientos de ${category.name.toLowerCase()} se basa en la excelencia, la personalización y los resultados naturales. Comprendemos que cada piel y cada cuerpo cuentan una historia única, por lo que nuestras especialistas realizan un diagnóstico exhaustivo antes de recomendar cualquier protocolo.
+  // Translate services list
+  const translatedCategoryServices = categoryServices.map((s: any) => ({
+    ...s,
+    name: translate(s.name, s.translations, 'name'),
+    description: translate(s.description, s.translations, 'description')
+  }));
+
+  // Translate other categories list
+  const translatedOtherCategories = otherCategories.map((c: any) => ({
+    ...c,
+    name: translate(c.name, c.translations, 'name'),
+    description: translate(c.description, c.translations, 'description')
+  }));
+
+  // Fallback localized editorial text
+  const translatedEditorialText = translate(category.seo_description, category.translations, 'seo_description') || 
+    (lang === 'fr' 
+      ? `L'approche de notre clinique pour les soins de ${translatedCategoryName.toLowerCase()} est basée sur l'excellence, la personnalisation et les résultats naturels. Nous comprenons que chaque peau et chaque corps racontent une histoire unique, c'est pourquoi nos spécialistes réalisent un diagnostic approfondi avant de recommander tout protocole.
+
+Nous utilisons des technologies de pointe associées à des techniques manuelles exclusives, créant une synergie parfaite qui non seulement embellit, mais favorise également une santé globale de l'intérieur.
+
+Laissez-vous conseiller par notre équipe médico-esthétique et découvrez comment nous pouvons améliorer votre bien-être avec la discrétion et le professionnalisme maximums qui caractérisent Estetica Merce.`
+      : lang === 'en'
+        ? `Our clinic's approach to ${translatedCategoryName.toLowerCase()} treatments is based on excellence, personalization, and natural results. We understand that every skin and every body tells a unique story, which is why our specialists perform a comprehensive diagnosis before recommending any protocol.
+
+We use state-of-the-art technology combined with exclusive manual techniques, creating a perfect synergy that not only beautifies but also promotes overall health from within.
+
+Let our medical-aesthetic team advise you and discover how we can enhance your well-being with the maximum discretion and professionalism that characterizes Estetica Merce.`
+        : `El enfoque de nuestra clínica hacia los tratamientos de ${translatedCategoryName.toLowerCase()} se basa en la excelencia, la personalización y los resultados naturales. Comprendemos que cada piel y cada cuerpo cuentan una historia única, por lo que nuestras especialistas realizan un diagnóstico exhaustivo antes de recomendar cualquier protocolo.
 
 Utilizamos aparatología de vanguardia combinada con técnicas manuales exclusivas, creando una sinergia perfecta que no solo embellece, sino que también promueve la salud integral desde el interior.
 
-Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos potenciar tu bienestar con la máxima discreción y profesionalidad que caracteriza a Estetica Merce.`;
+Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos potenciar tu bienestar con la máxima discreción y profesionalidad que caracteriza a Estetica Merce.`);
 
   return (
     <div className="min-h-screen bg-stone-50 font-sans text-stone-900 selection:bg-[#d4af37]/30">
@@ -83,42 +190,42 @@ Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos p
         </section>
 
         {/* 2. SLIDER DE TRATAMIENTOS */}
-        {categoryServices.length > 0 && (
+        {translatedCategoryServices.length > 0 && (
           <section id="treatment-content" className="relative z-20 w-full overflow-hidden h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none flex flex-col bg-[#F5F2EE]">
             <style dangerouslySetInnerHTML={{ __html: '.hide-scroll::-webkit-scrollbar { display: none; } .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }' }} />
             <div className="pt-16 md:pt-24 pb-8 flex-1 flex flex-col min-h-0">
               <div className="max-w-7xl mx-auto px-6 mb-4 flex flex-col md:flex-row md:justify-between md:items-end gap-2 md:gap-8 flex-shrink-0">
                 <div>
                   <h2 className="text-2xl md:text-4xl font-serif font-bold text-stone-800">
-                    Catálogo de {category.name}
+                    {t('page.catalog_of', 'Catálogo de')} {translatedCategoryName}
                   </h2>
-                  <p className="text-stone-400 font-medium text-xs md:text-base">{categoryServices.length} opciones disponibles</p>
+                  <p className="text-stone-400 font-medium text-xs md:text-base">{translatedCategoryServices.length} {t('page.options_available', 'opciones disponibles')}</p>
                 </div>
                 <Link href="/tratamientos" className="self-end md:self-auto inline-flex items-center gap-2 font-bold text-[#d4af37] hover:text-stone-900 transition-colors uppercase tracking-widest text-[10px] md:text-sm">
-                  <span className="hidden md:inline">Ver todos los tratamientos</span>
-                  <span className="md:hidden">Ver todos</span>
+                  <span className="hidden md:inline">{t('page.see_all_treatments', 'Ver todos los tratamientos')}</span>
+                  <span className="md:hidden">{t('page.see_all', 'Ver todos')}</span>
                   <span className="text-xl">→</span>
                 </Link>
               </div>
 
               <div className="md:block hidden flex-1 min-h-0 flex flex-col justify-center">
-                {categoryServices.length === 1 ? (
+                {translatedCategoryServices.length === 1 ? (
                   <div className="max-w-7xl mx-auto px-6 w-full">
                     <div className="w-full">
                       <ServiceCard
-                        service={categoryServices[0]}
+                        service={translatedCategoryServices[0]}
                         className="!w-full !md:w-full !h-[600px] !md:h-[600px]"
                       />
                     </div>
                   </div>
                 ) : (
-                  <TreatmentCarousel servicios={categoryServices} loop={false} />
+                  <TreatmentCarousel servicios={translatedCategoryServices} loop={false} />
                 )}
               </div>
 
-              {/* MOBILE VIEW — INFALIBLE & SMART */}
+              {/* MOBILE VIEW */}
               <div id="mobile-slider-category" className="md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-6 items-center w-full flex-1 min-h-0 pb-8">
-                {categoryServices.map((svc: any) => (
+                {translatedCategoryServices.map((svc: any) => (
                   <ServiceCard key={svc.id} service={svc} className="snap-stop-always" />
                 ))}
               </div>
@@ -132,39 +239,39 @@ Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos p
             <div className="md:col-span-4 md:sticky md:top-32">
               <div className="w-16 h-1 bg-[#d4af37] mb-6 rounded-full"></div>
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-extrabold text-stone-900 leading-tight">
-                Excelencia en <br /> <span className="text-[#d4af37]">{category.name}</span>
+                {t('page.excellence_in', 'Excelencia en')} <br /> <span className="text-[#d4af37]">{translatedCategoryName}</span>
               </h2>
             </div>
             <div className="md:col-span-8">
               <div className="prose prose-stone lg:prose-lg max-w-none text-stone-600 leading-relaxed whitespace-pre-line font-medium">
-                {editorialText}
+                {translatedEditorialText}
               </div>
             </div>
           </div>
         </section>
 
         {/* 4. DESCUBRE OTRAS CATEGORÍAS (Bento Grid) */}
-        {otherCategories.length > 0 && (
+        {translatedOtherCategories.length > 0 && (
           <section className="pt-16 pb-24 md:py-32 bg-[#F5F2EE] min-h-[100dvh] snap-start snap-stop-always md:min-h-0 md:snap-none flex flex-col justify-center">
             <div className="w-full max-w-7xl mx-auto px-6">
               <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 mb-10">
                 <div>
-                  <h2 className="text-2xl md:text-5xl font-serif font-extrabold text-stone-900">Otras Categorías</h2>
-                  <p className="text-stone-500 mt-2 text-sm md:text-lg">Explora más servicios de medicina estética avanzada.</p>
+                  <h2 className="text-2xl md:text-5xl font-serif font-extrabold text-stone-900">{t('page.other_categories', 'Otras Categorías')}</h2>
+                  <p className="text-stone-500 mt-2 text-sm md:text-lg">{t('page.explore_more', 'Explora más servicios de medicina estética avanzada.')}</p>
                 </div>
                 <Link href="/tratamientos" className="text-[#d4af37] font-bold uppercase tracking-widest text-[10px] md:text-sm hover:text-stone-900 transition-colors">
-                  Ver todo el catálogo →
+                  {t('page.see_full_catalog', 'Ver todo el catálogo')} →
                 </Link>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-6 h-auto md:h-[600px]">
-                {otherCategories.map((other: any, idx: number) => {
+                {translatedOtherCategories.map((other: any, idx: number) => {
                   let gridClasses = "";
 
-                  if (otherCategories.length === 3) {
+                  if (translatedOtherCategories.length === 3) {
                     if (idx === 0) gridClasses = "md:col-span-2 md:row-span-2 h-[400px] md:h-full";
                     else gridClasses = "md:col-span-2 md:row-span-1 h-[300px] md:h-full";
-                  } else if (otherCategories.length === 2) {
+                  } else if (translatedOtherCategories.length === 2) {
                     gridClasses = "md:col-span-2 md:row-span-2 h-[400px] md:h-full";
                   } else {
                     if (idx === 0) gridClasses = "md:col-span-2 md:row-span-2 h-[400px] md:h-full";
@@ -193,12 +300,12 @@ Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos p
                       {/* Contenido Sincronizado */}
                       <div className="absolute bottom-0 left-0 p-8 w-full z-10">
                         <div className="transform transition-transform duration-500 group-hover:-translate-y-6">
-                          <h3 className={`${(otherCategories.length === 3 && idx === 0) || otherCategories.length === 2 ? 'text-2xl md:text-4xl' : 'text-xl md:text-2xl'} font-serif font-bold text-white mb-2 leading-tight`}>
+                          <h3 className={`${(translatedOtherCategories.length === 3 && idx === 0) || translatedOtherCategories.length === 2 ? 'text-2xl md:text-4xl' : 'text-xl md:text-2xl'} font-serif font-bold text-white mb-2 leading-tight`}>
                             {other.name}
                           </h3>
                           <div className="opacity-0 group-hover:opacity-100 transition-all duration-500 absolute top-full left-0 mt-2">
                             <span className="text-[#d4af37] font-black uppercase text-[10px] tracking-[0.3em] flex items-center gap-2">
-                              Explorar <span className="text-lg transition-transform group-hover:translate-x-1">→</span>
+                              {t('page.explore', 'Explorar')} <span className="text-lg transition-transform group-hover:translate-x-1">→</span>
                             </span>
                           </div>
                         </div>
@@ -211,7 +318,7 @@ Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos p
           </section>
         )}
 
-        {/* 5. FOOTER (Imantado) */}
+        {/* 5. FOOTER */}
         <div className="snap-start snap-stop-always">
           <Footer />
         </div>

@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect, useMemo, memo } from 'react';
+import React, { useState, useEffect, useMemo, memo, useRef } from 'react';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import MediaPickerModal from '@/components/MediaPickerModal';
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,36 +12,74 @@ import { processVideo } from '@/lib/videoProcessor';
 
 const TABS = ['HERO', 'SOBRE MÍ', 'CATEGORÍAS', 'CTA', 'SEO'];
 
-// Componente interno reutilizable para cualquier imagen (Fuera de los componentes para ser accesible por todos)
-const ImageUploadBlock = ({ label, value, onSelect, onClear, onUpload }: { label: string, value: string | null, onSelect: () => void, onClear: () => void, onUpload: (url: string) => void }) => {
+// Componente interno reutilizable para cualquier imagen o vídeo (Fuera de los componentes para ser accesible por todos)
+const ImageUploadBlock = ({ 
+  label, 
+  value, 
+  onSelect, 
+  onClear, 
+  onUpload, 
+  accepts = 'both' 
+}: { 
+  label: string, 
+  value: string | null, 
+  onSelect: () => void, 
+  onClear: () => void, 
+  onUpload: (url: string) => void,
+  accepts?: 'image' | 'video' | 'both'
+}) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [processingProgress, setProcessingProgress] = useState(0);
+  const dragCounter = useRef(0);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsDragging(true);
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current++;
+    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+      setIsDragging(true);
+    }
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsDragging(false);
+    dragCounter.current--;
+    if (dragCounter.current === 0) {
+      setIsDragging(false);
+    }
   };
 
   const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
+    dragCounter.current = 0;
     
     const file = e.dataTransfer.files?.[0];
     if (!file) return;
 
-    const isVideo = file.type.startsWith('video/');
-    const isImage = file.type.startsWith('image/');
+    const name = file.name.toLowerCase();
+    const isImage = file.type.startsWith('image/') || /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(name);
+    const isVideo = file.type.startsWith('video/') || /\.(mp4|webm|mov|avi|mkv|3gp|quicktime)$/i.test(name);
 
-    if (!isImage && !isVideo) {
+    if (accepts === 'image' && !isImage) {
+      toast.error("El archivo debe ser una imagen (webp, png, jpg, svg, gif)");
+      return;
+    }
+
+    if (accepts === 'video' && !isVideo) {
+      toast.error("El archivo debe ser un vídeo (mp4, webm, mov, avi)");
+      return;
+    }
+
+    if (accepts === 'both' && !isImage && !isVideo) {
       toast.error("El archivo debe ser una imagen o un vídeo");
       return;
     }
@@ -92,7 +130,7 @@ const ImageUploadBlock = ({ label, value, onSelect, onClear, onUpload }: { label
       <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-2">{label}</label>
       <div 
         onDragOver={handleDragOver}
-        onDragEnter={handleDragOver}
+        onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={`relative group w-full aspect-video rounded-2xl overflow-hidden bg-stone-50 border transition-all duration-300 ${isDragging ? 'border-[#d4af37] ring-4 ring-[#d4af37]/10 bg-[#d4af37]/5 scale-[0.98] shadow-inner' : 'border-stone-200 shadow-sm hover:border-stone-300'}`}
@@ -370,6 +408,7 @@ export default function CMSPage() {
             onSelect={() => setPickerTarget({ type: 'form', field: 'hero_image_url' })} 
             onClear={() => setFormData({...formData, hero_image_url: ''})} 
             onUpload={(url) => setFormData({...formData, hero_image_url: url})}
+            accepts="image"
           />
           <div className="space-y-6">
             <div>
@@ -431,6 +470,7 @@ export default function CMSPage() {
               onSelect={() => setPickerTarget({ type: 'form', field: 'hero_video_url' })} 
               onClear={() => setFormData({...formData, hero_video_url: ''})} 
               onUpload={(url) => setFormData({...formData, hero_video_url: url})}
+              accepts="video"
             />
           </div>
         </div>
@@ -450,6 +490,7 @@ export default function CMSPage() {
             onSelect={() => setPickerTarget({ type: 'form', field: 'about_image_url' })} 
             onClear={() => setFormData({...formData, about_image_url: ''})} 
             onUpload={(url) => setFormData({...formData, about_image_url: url})}
+            accepts="image"
           />
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-6">
@@ -600,6 +641,7 @@ export default function CMSPage() {
         <MediaPickerModal
           onClose={() => setPickerTarget(null)}
           onImageSelected={handleImageSelected}
+          mediaType={pickerTarget.field === 'hero_video_url' ? 'video' : 'image'}
         />
       )}
     </div>
@@ -644,6 +686,7 @@ const CategoriesTab = memo(({
                onSelect={() => setPickerTarget({ type: 'category', id: selectedCategory.id, field: 'image_url' })}
                onClear={() => handleCategoryChange(selectedCategory.id, 'image_url', '')}
                onUpload={(url) => handleCategoryChange(selectedCategory.id, 'image_url', url)}
+               accepts="image"
              />
            </div>
            

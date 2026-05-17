@@ -2,6 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { Calendar as CalendarIcon, Clock, ChevronRight, ChevronLeft, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 export default function Step2DateTime({
   selectedDate,
@@ -32,6 +33,7 @@ export default function Step2DateTime({
   currentMonthOffset: number;
   setCurrentMonthOffset: (o: number) => void;
 }) {
+  const { language, t, translate } = useLanguage();
 
   // Lógica de días laborables
   const getWorkingDays = (): number[] => {
@@ -89,7 +91,7 @@ export default function Step2DateTime({
   const handleDateSelect = (date: Date) => {
     const dayIndex = toWeekDayIndex(date.getDay());
     if (!getWorkingDays().includes(dayIndex)) {
-      onShowFeedback({ type: 'info', title: 'Cerrado', message: "Lo sentimos, no abrimos este día." });
+      onShowFeedback({ type: 'info', title: t('wizard.closed_dialog_title'), message: t('wizard.closed_dialog_msg') });
       return;
     }
     setSelectedDate(date);
@@ -109,9 +111,9 @@ export default function Step2DateTime({
             className="flex flex-col flex-grow min-h-0"
           >
             <div className="shrink-0 px-6 pt-3 pb-2 z-30 bg-[#F7F7F5]">
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-serif text-stone-800 tracking-tight">Selecciona el día</h1>
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-serif text-stone-800 tracking-tight">{t('wizard.select_day')}</h1>
               <p className="text-[11px] md:text-xs lg:text-sm text-stone-500 mt-1 uppercase tracking-[0.15em] font-medium">
-                CITA PARA: <span className="text-[#d4af37] font-bold">{selectedService?.name}</span>
+                {t('wizard.appointment_for')} <span className="text-[#d4af37] font-bold">{translate(selectedService?.name, selectedService?.translations, 'name')}</span>
               </p>
             </div>
 
@@ -124,18 +126,19 @@ export default function Step2DateTime({
                   const isOpen = getWorkingDays().includes(dayIndex);
                   const isSelected = date.toDateString() === selectedDate.toDateString();
                   const isToday = date.toDateString() === new Date().toDateString();
-                  
+
                   const prevDate = i > 0 ? nextDays[i - 1] : null;
                   const showHeader = !prevDate || date.getMonth() !== prevDate.getMonth();
+                  const localeStr = language === 'es' ? 'es-ES' : language === 'en' ? 'en-US' : 'fr-FR';
 
                   return (
                     <React.Fragment key={i}>
                       {showHeader && (
                         <div
                           id={`month-header-${date.getMonth()}`}
-                          className="pt-8 pb-3 text-center md:text-left text-[11px] md:text-xs font-bold uppercase text-[#d4af37] tracking-[0.25em] scroll-mt-6 font-serif border-b border-[#d4af37]/10 mb-4 first:pt-2"
+                          className="pt-8 pb-3 text-center md:text-left text-[11px] md:text-xs font-bold uppercase text-[#d4af37] tracking-[0.25em] scroll-mt-6 font-serif border-b border-[#d4af37]/10 mb-4 first:pt-2 capitalize"
                         >
-                          {date.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
+                          {date.toLocaleDateString(localeStr, { month: 'long', year: 'numeric' })}
                         </div>
                       )}
                       <motion.button
@@ -160,7 +163,7 @@ export default function Step2DateTime({
                                 : 'bg-stone-50 border-stone-100'}`}>
                             <span className={`text-[10px] md:text-[11px] uppercase font-black tracking-wider
                               ${isSelected ? 'text-white/60' : !isOpen ? 'text-red-300' : 'text-stone-400'}`}>
-                              {date.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '')}
+                              {date.toLocaleDateString(localeStr, { month: 'short' }).replace('.', '')}
                             </span>
                             <span className={`text-lg md:text-2xl font-serif font-bold leading-none mt-0.5
                               ${isSelected ? 'text-[#d4af37]' : !isOpen ? 'text-red-400' : 'text-stone-800'}`}>
@@ -169,7 +172,7 @@ export default function Step2DateTime({
                           </div>
                           <div className="flex flex-col items-start">
                             <span className={`text-sm md:text-xl font-bold capitalize ${isSelected ? 'text-white' : !isOpen ? 'text-red-800/40' : 'text-stone-800'}`}>
-                              {date.toLocaleDateString('es-ES', { weekday: 'long' })}
+                              {date.toLocaleDateString(localeStr, { weekday: 'long' })}
                             </span>
                             <span className={`text-[11px] md:text-sm mt-0.5 ${isSelected ? 'text-white/50' : !isOpen ? 'text-red-300' : 'text-stone-400'}`}>
                               {date.getFullYear()}
@@ -180,11 +183,11 @@ export default function Step2DateTime({
                         <div className="flex items-center gap-3 md:gap-5">
                           {isToday && (
                             <span className="text-[11px] md:text-xs font-light text-[#d4af37] uppercase tracking-widest bg-[#d4af37]/5 px-2 py-0.5 md:px-3 md:py-1 rounded-full border border-[#d4af37]/10">
-                              Hoy
+                              {t('wizard.today')}
                             </span>
                           )}
                           {!isOpen ? (
-                            <span className="text-[9px] md:text-xs font-black text-red-400 uppercase tracking-wider">Cerrado</span>
+                            <span className="text-[9px] md:text-xs font-black text-red-400 uppercase tracking-wider">{t('wizard.closed')}</span>
                           ) : (
                             <ChevronRight size={16} className={`transition-transform md:scale-125 ${isSelected ? 'text-[#d4af37]' : 'text-stone-200'}`} />
                           )}
@@ -207,9 +210,9 @@ export default function Step2DateTime({
             <div className="shrink-0 px-6 pt-3 pb-2 z-30 bg-[#F7F7F5]">
               <div className="flex items-center justify-between gap-4 mb-2">
                 <div className="flex flex-col">
-                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-serif text-stone-800 tracking-tight leading-tight">Selecciona hora</h1>
+                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-serif text-stone-800 tracking-tight leading-tight">{t('wizard.select_time_title')}</h1>
                   <p className="text-[11px] md:text-xs lg:text-sm text-stone-500 mt-1 uppercase tracking-[0.15em] font-medium">
-                    PARA EL <span className="text-[#d4af37] font-bold">{selectedDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}</span>
+                    {t('wizard.for_date')} <span className="text-[#d4af37] font-bold">{selectedDate.toLocaleDateString(language === 'es' ? 'es-ES' : language === 'en' ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'long' })}</span>
                   </p>
                 </div>
                 <button
@@ -217,7 +220,7 @@ export default function Step2DateTime({
                   className="flex items-center gap-2 px-4 py-3 md:px-6 md:py-4.5 rounded-2xl md:rounded-3xl bg-[#d4af37] hover:bg-[#bfa032] text-white transition-all shadow-md hover:shadow-lg active:scale-95 group shrink-0"
                 >
                   <CalendarIcon size={16} className="text-white md:scale-125" />
-                  <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-white">Cambiar día</span>
+                  <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-white">{t('wizard.change_day')}</span>
                 </button>
               </div>
             </div>
@@ -229,12 +232,12 @@ export default function Step2DateTime({
                 {loadingSlots ? (
                   <div className="flex flex-col items-center justify-center h-60 gap-3">
                     <div className="w-10 h-10 border-2 border-stone-200 border-t-[#d4af37] rounded-full animate-spin"></div>
-                    <p className="text-[10px] uppercase font-bold text-stone-300 tracking-widest">Calculando huecos...</p>
+                    <p className="text-[10px] uppercase font-bold text-stone-300 tracking-widest">{t('wizard.calculating_slots')}</p>
                   </div>
                 ) : fullSchedule.length === 0 ? (
                   <div className="bg-white rounded-3xl p-10 border border-stone-200 text-center shadow-sm">
                     <Clock size={32} className="text-stone-200 mx-auto mb-4" />
-                    <p className="text-sm text-stone-400 italic font-serif">Sin disponibilidad para esta fecha.</p>
+                    <p className="text-sm text-stone-400 italic font-serif">{t('wizard.no_availability')}</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 content-start">

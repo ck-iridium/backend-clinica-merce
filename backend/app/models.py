@@ -36,6 +36,7 @@ class Client(Base):
     address = Column(String, nullable=True)
     medical_history = Column(Text, nullable=True)
     allergies = Column(Text, nullable=True)
+    preferred_language = Column(String, default="es")
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -67,6 +68,7 @@ class ServiceCategory(Base):
     image_url = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
     order_index = Column(Integer, default=0)
+    translations = Column(JSONB, default=dict, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     services = relationship("Service", back_populates="category")
@@ -91,6 +93,7 @@ class Service(Base):
     layout_preferences = Column(JSONB, default=dict, nullable=True)
     requires_deposit = Column(Boolean, default=False)
     deposit_amount = Column(Numeric(10, 2), nullable=True)
+    translations = Column(JSONB, default=dict, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
@@ -274,6 +277,7 @@ class SiteContent(Base):
     seo_title = Column(String, nullable=True)
     seo_description = Column(Text, nullable=True)
     seo_keywords = Column(String, nullable=True)
+    translations = Column(JSONB, default=dict, nullable=True)
 
 class Media(Base):
     __tablename__ = "media"

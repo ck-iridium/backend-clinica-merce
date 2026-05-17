@@ -3,8 +3,11 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import BotonReservaPro from './BotonReservaPro';
+import LanguageSelector from './LanguageSelector';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen, categories }: { svc: any, getFullUrl: (url: string) => string, onClick: () => void, isLarge?: boolean, isParentOpen: boolean, categories: any[] }) {
+  const { language } = useLanguage();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
@@ -28,6 +31,17 @@ function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen, 
     }
   }, [isHovered, isParentOpen]);
 
+  const translateClient = (spanishText: string, translations: any, field: string) => {
+    if (!translations) return spanishText;
+    let parsed = translations;
+    if (typeof translations === 'string') {
+      try { parsed = JSON.parse(translations); } catch { return spanishText; }
+    }
+    return parsed?.[language]?.[field] || spanishText;
+  };
+
+  const translatedName = translateClient(svc.name, svc.translations, 'name');
+
   const shouldLoadVideo = isParentOpen && isHovered;
 
   return (
@@ -42,7 +56,7 @@ function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen, 
       {svc.image_url ? (
         <img
           src={getFullUrl(svc.image_url)}
-          alt={svc.name}
+          alt={translatedName}
           className="absolute inset-0 w-full h-full object-cover"
           loading="lazy"
         />
@@ -76,7 +90,7 @@ function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen, 
       <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-20 flex items-end p-6 transition-all duration-500`}>
         <div className="text-white w-full">
           <h5 className="font-serif font-bold leading-tight line-clamp-2 text-lg [text-shadow:_0_-1px_4px_rgba(0,0,0,0.6)]">
-            {svc.name}
+            {translatedName}
           </h5>
         </div>
       </div>
@@ -95,10 +109,11 @@ function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen, 
 
 export default function PublicNavbar({ transparent = false }: { transparent?: boolean }) {
   const pathname = usePathname();
+  const { language } = useLanguage();
   const isDashboard = pathname?.startsWith('/dashboard');
   const [isOpen, setIsOpen] = useState(false);
   const [settings, setSettings] = useState<any>(null);
-  const [btnText, setBtnText] = useState('Reservar Cita');
+  const [siteContent, setSiteContent] = useState<any>(null);
   const [btnLink, setBtnLink] = useState('/reservar');
 
   // States for Phase 1
@@ -113,6 +128,27 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
     return url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${url}` : url;
   };
 
+  const translateClient = (spanishText: string, translations: any, field: string) => {
+    if (!translations) return spanishText;
+    let parsed = translations;
+    if (typeof translations === 'string') {
+      try { parsed = JSON.parse(translations); } catch { return spanishText; }
+    }
+    return parsed?.[language]?.[field] || spanishText;
+  };
+
+  const navTranslations: Record<string, Record<string, string>> = {
+    es: { home: 'Inicio', treatments: 'Tratamientos', contact: 'Contacto', categories: 'Categorías', no_featured: 'No hay tratamientos destacados en esta categoría.', close_menu: 'Cerrar menú', open_menu: 'Abrir menú', phone_booking: 'Reserva telefónica', see_all: 'Ver Todos' },
+    en: { home: 'Home', treatments: 'Treatments', contact: 'Contact', categories: 'Categories', no_featured: 'No featured treatments in this category.', close_menu: 'Close menu', open_menu: 'Open menu', phone_booking: 'Phone booking', see_all: 'See All' },
+    fr: { home: 'Accueil', treatments: 'Soins', contact: 'Contact', categories: 'Catégories', no_featured: 'Aucun soin vedette dans cette catégorie.', close_menu: 'Fermer le menu', open_menu: 'Ouvrir le menu', phone_booking: 'Réservation par téléphone', see_all: 'Voir Tout' }
+  };
+  const navT = navTranslations[language] || navTranslations.es;
+
+  const fallbackBtnText = language === 'fr' ? 'Réserver un soin' : language === 'en' ? 'Book Appointment' : 'Reservar Cita';
+  const btnText = siteContent 
+    ? translateClient(siteContent.hero_button_text || fallbackBtnText, siteContent.translations, 'hero_button_text')
+    : fallbackBtnText;
+
   useEffect(() => {
     if (isDashboard) return;
     fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/settings/`)
@@ -123,7 +159,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
     fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/site-content/`)
       .then(res => res.json())
       .then(data => {
-        if (data.hero_button_text) setBtnText(data.hero_button_text);
+        setSiteContent(data);
         if (data.hero_button_link) setBtnLink(data.hero_button_link);
       })
       .catch(() => { });
@@ -157,6 +193,11 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
   const isHome = pathname === '/';
   const useTransparent = transparent || isHome;
 
+  const translatedCategories = categories.map((c: any) => ({
+    ...c,
+    name: translateClient(c.name, c.translations, 'name')
+  }));
+
   return (
     <>
       <nav className={`w-full z-[100] transition-all duration-500 ease-in-out ${!useTransparent ? 'bg-white/90 backdrop-blur-xl border-b border-border/50 shadow-sm py-0 sticky top-0' : 'bg-transparent border-transparent py-2 absolute top-0 left-0'}`}>
@@ -176,7 +217,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
           </div>
 
           <div className="hidden md:flex items-center gap-8 font-bold text-sm">
-            <Link href="/" className={`transition-colors ${pathname === '/' ? 'text-[#d4af37]' : (!useTransparent ? 'text-stone-800 hover:text-[#d4af37]' : 'text-white hover:text-[#d4af37]')}`}>Inicio</Link>
+            <Link href="/" className={`transition-colors ${pathname === '/' ? 'text-[#d4af37]' : (!useTransparent ? 'text-stone-800 hover:text-[#d4af37]' : 'text-white hover:text-[#d4af37]')}`}>{navT.home}</Link>
 
             <div
               className="h-20 flex items-center"
@@ -184,16 +225,19 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
               onMouseLeave={() => setShowMegaMenu(false)}
             >
               <Link href="/tratamientos" className={`transition-colors flex items-center gap-1 ${pathname === '/tratamientos' ? 'text-[#d4af37]' : !useTransparent ? 'text-stone-800 hover:text-[#d4af37]' : 'text-white hover:text-[#d4af37]'}`}>
-                Tratamientos
+                {navT.treatments}
               </Link>
             </div>
 
-            <Link href="/contacto" className={`transition-colors ${pathname === '/contacto' ? 'text-[#d4af37]' : !useTransparent ? 'text-stone-800 hover:text-[#d4af37]' : 'text-white hover:text-[#d4af37]'}`}>Contacto</Link>
-            <BotonReservaPro 
-              texto={btnText} 
-              href={btnLink}
-              className="scale-90 origin-right"
-            />
+            <Link href="/contacto" className={`transition-colors ${pathname === '/contacto' ? 'text-[#d4af37]' : !useTransparent ? 'text-stone-800 hover:text-[#d4af37]' : 'text-white hover:text-[#d4af37]'}`}>{navT.contact}</Link>
+            <div className="flex items-center gap-4">
+              <LanguageSelector />
+              <BotonReservaPro 
+                texto={btnText} 
+                href={btnLink}
+                className="scale-90 origin-right"
+              />
+            </div>
           </div>
 
           {/* MEGA MENU (Full width relative to container) */}
@@ -205,22 +249,25 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
             <div className="flex h-[380px]">
               {/* Left Panel: Categories */}
               <div className="w-[280px] shrink-0 bg-stone-900 py-6 pl-8 pr-0 border-r border-stone-800 relative">
-                <h4 className="text-[14px] font-black uppercase tracking-[0.3em] text-stone-300 mb-8">Categorías</h4>
+                <h4 className="text-[14px] font-black uppercase tracking-[0.3em] text-stone-300 mb-8">{navT.categories}</h4>
                 <ul className="space-y-1">
-                  {categories.filter(c => c.name.toUpperCase() !== 'GENERAL').map(cat => (
-                    <li key={cat.id}>
-                      <button
-                        onMouseEnter={() => setActiveCategory(cat.id)}
-                        onClick={() => { setShowMegaMenu(false); window.location.href = `/tratamientos/${cat.slug || cat.id}` }}
-                        className={`w-full text-left px-6 py-3 transition-all font-serif text-xl whitespace-nowrap relative ${activeCategory === cat.id
-                            ? 'bg-white text-[#d4af37] font-semibold rounded-l-2xl -mr-[1px] z-10 shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.02)] after:absolute after:top-0 after:-right-[1px] after:w-[2px] after:h-full after:bg-white after:z-20'
-                            : 'text-stone-200 hover:text-white rounded-2xl mr-4 hover:bg-white/5'
-                          }`}
-                      >
-                        {cat.name}
-                      </button>
-                    </li>
-                  ))}
+                  {categories.filter(c => c.name.toUpperCase() !== 'GENERAL').map(cat => {
+                    const translatedCatName = translateClient(cat.name, cat.translations, 'name');
+                    return (
+                      <li key={cat.id}>
+                        <button
+                          onMouseEnter={() => setActiveCategory(cat.id)}
+                          onClick={() => { setShowMegaMenu(false); window.location.href = `/tratamientos/${cat.slug || cat.id}` }}
+                          className={`w-full text-left px-6 py-3 transition-all font-serif text-xl whitespace-nowrap relative ${activeCategory === cat.id
+                              ? 'bg-white text-[#d4af37] font-semibold rounded-l-2xl -mr-[1px] z-10 shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.02)] after:absolute after:top-0 after:-right-[1px] after:w-[2px] after:h-full after:bg-white after:z-20'
+                              : 'text-stone-200 hover:text-white rounded-2xl mr-4 hover:bg-white/5'
+                            }`}
+                        >
+                          {translatedCatName}
+                        </button>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
 
@@ -247,7 +294,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                         />
                       ))}
                       {activeServices.length === 0 && (
-                        <p className="text-stone-400 font-medium text-sm col-span-3 text-center py-20 animate-in fade-in duration-1000">No hay tratamientos destacados en esta categoría.</p>
+                        <p className="text-stone-400 font-medium text-sm col-span-3 text-center py-20 animate-in fade-in duration-1000">{navT.no_featured}</p>
                       )}
                     </div>
                   );
@@ -260,7 +307,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
           <button
             className={`md:hidden z-[110] relative p-2 focus:outline-none transition-colors ${(!useTransparent || isOpen) ? 'text-stone-800' : 'text-white'}`}
             onClick={() => setIsOpen(!isOpen)}
-            aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
+            aria-label={isOpen ? navT.close_menu : navT.open_menu}
           >
             <div className="w-6 h-5 flex flex-col justify-between">
               <span className={`block w-full h-[2px] bg-current transition-all duration-300 ${isOpen ? 'rotate-45 translate-y-[9px]' : ''}`}></span>
@@ -292,20 +339,20 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
           </button>
 
           {/* Enlaces */}
-          <Link href="/" onClick={() => setIsOpen(false)} className={`transition-all duration-300 active:scale-95 ${pathname === '/' ? 'text-[#d4af37]' : 'hover:text-[#d4af37]'}`}>Inicio</Link>
+          <Link href="/" onClick={() => setIsOpen(false)} className={`transition-all duration-300 active:scale-95 ${pathname === '/' ? 'text-[#d4af37]' : 'hover:text-[#d4af37]'}`}>{navT.home}</Link>
 
           {/* Acordeón Móvil Tratamientos */}
           <div className="w-full flex flex-col items-center">
             <div className="flex items-center gap-2 cursor-pointer" onClick={() => setMobileAccordionOpen(!mobileAccordionOpen)}>
-              <span className={`transition-all duration-300 active:scale-95 ${pathname === '/tratamientos' ? 'text-[#d4af37]' : 'hover:text-[#d4af37]'}`}>Tratamientos</span>
+              <span className={`transition-all duration-300 active:scale-95 ${pathname === '/tratamientos' ? 'text-[#d4af37]' : 'hover:text-[#d4af37]'}`}>{navT.treatments}</span>
               <span className={`text-sm text-[#d4af37] transition-transform duration-300 ${mobileAccordionOpen ? 'rotate-180' : ''}`}>▼</span>
             </div>
 
             <div className={`flex flex-col items-center gap-4 overflow-hidden transition-all duration-500 ease-in-out ${mobileAccordionOpen ? 'max-h-[500px] mt-6 opacity-100' : 'max-h-0 opacity-0 mt-0'}`}>
               <Link href="/tratamientos" onClick={() => setIsOpen(false)} className="text-xl font-serif text-[#d4af37] italic hover:text-stone-900 transition-colors">
-                Ver Todos
+                {navT.see_all}
               </Link>
-              {categories.map(cat => (
+              {translatedCategories.map(cat => (
                 <Link key={cat.id} href={`/tratamientos/${cat.slug || cat.id}`} onClick={() => setIsOpen(false)} className="text-xl font-serif font-normal text-stone-500 hover:text-stone-800 transition-colors">
                   {cat.name}
                 </Link>
@@ -313,21 +360,24 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
             </div>
           </div>
 
-          <Link href="/contacto" onClick={() => setIsOpen(false)} className={`transition-all duration-300 active:scale-95 ${pathname === '/contacto' ? 'text-[#d4af37]' : 'hover:text-[#d4af37]'}`}>Contacto</Link>
+          <Link href="/contacto" onClick={() => setIsOpen(false)} className={`transition-all duration-300 active:scale-95 ${pathname === '/contacto' ? 'text-[#d4af37]' : 'hover:text-[#d4af37]'}`}>{navT.contact}</Link>
 
           <div className="w-full h-px bg-stone-100 my-2 max-w-[150px] mx-auto"></div>
 
-          <BotonReservaPro 
-            texto={btnText} 
-            href={btnLink}
-            onClick={() => setIsOpen(false)}
-            className="w-full max-w-xs mx-auto"
-          />
+          <div className="flex flex-col items-center gap-4 w-full">
+            <LanguageSelector />
+            <BotonReservaPro 
+              texto={btnText} 
+              href={btnLink}
+              onClick={() => setIsOpen(false)}
+              className="w-full max-w-xs mx-auto"
+            />
+          </div>
 
           {/* Información de contacto */}
           {settings?.clinic_phone && (
             <div className="mt-auto pb-12">
-              <p className="text-xs text-stone-400 uppercase tracking-widest font-bold mb-2">Reserva telefónica</p>
+              <p className="text-xs text-stone-400 uppercase tracking-widest font-bold mb-2">{navT.phone_booking}</p>
               <p className="text-xl font-bold text-stone-600">{settings.clinic_phone}</p>
             </div>
           )}

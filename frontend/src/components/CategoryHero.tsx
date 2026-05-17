@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import PublicNavbar from './PublicNavbar';
 import ScrollIndicator from './ScrollIndicator';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 interface CategoryHeroProps {
   category: any;
@@ -11,6 +12,7 @@ interface CategoryHeroProps {
 
 export default function CategoryHero({ category }: CategoryHeroProps) {
   const [scrollY, setScrollY] = useState(0);
+  const { language } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,8 +28,21 @@ export default function CategoryHero({ category }: CategoryHeroProps) {
     return url.startsWith('/') ? `${apiUrl}${url}` : url;
   };
 
+  const translateClient = (spanishText: string, translations: any, field: string) => {
+    if (!translations || language === 'es') return spanishText;
+    let parsed = translations;
+    if (typeof translations === 'string') {
+      try { parsed = JSON.parse(translations); } catch { return spanishText; }
+    }
+    return parsed?.[language]?.[field] || spanishText;
+  };
+
   const parallaxOffset = scrollY * 0.4;
   const imageUrl = getFullUrl(category.image_url);
+
+  const translatedName = translateClient(category.name, category.translations, 'name');
+  const translatedDesc = translateClient(category.description, category.translations, 'description');
+  const subtitle = language === 'fr' ? 'Collection de Soins' : language === 'en' ? 'Treatment Collection' : 'Colección de Tratamientos';
 
   return (
     <section className="relative w-full h-full overflow-hidden flex flex-col justify-end bg-stone-900">
@@ -48,7 +63,7 @@ export default function CategoryHero({ category }: CategoryHeroProps) {
           {imageUrl && (
             <Image
               src={imageUrl}
-              alt={category.name}
+              alt={translatedName}
               fill
               priority
               className="object-cover object-center animate-slow-zoom"
@@ -65,19 +80,19 @@ export default function CategoryHero({ category }: CategoryHeroProps) {
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 pb-16 md:pb-20">
         <div className="overflow-hidden mb-4">
           <span className="text-xs md:text-sm font-black uppercase tracking-[0.4em] text-[#d4af37] block animate-reveal-up drop-shadow-md">
-            Colección de Tratamientos
+            {subtitle}
           </span>
         </div>
         <div className="overflow-hidden">
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-extrabold text-white leading-none drop-shadow-2xl animate-reveal-up animation-delay-200">
-            {category.name}
+            {translatedName}
           </h1>
         </div>
 
-        {category.description && (
+        {translatedDesc && (
           <div className="overflow-hidden mt-6">
             <p className="text-lg md:text-2xl text-white/90 font-medium max-w-2xl leading-relaxed drop-shadow-md animate-reveal-up animation-delay-400">
-              {category.description}
+              {translatedDesc}
             </p>
           </div>
         )}

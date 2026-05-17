@@ -2,6 +2,7 @@
 import React from 'react';
 import { User, Mail, Phone, ShieldCheck, Info, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 export default function Step3Details({
   formData,
@@ -22,6 +23,7 @@ export default function Step3Details({
   setPrivacyAccepted: (v: boolean) => void;
   settings?: any;
 }) {
+  const { language, t, translate } = useLanguage();
   const [showFianzaInfo, setShowFianzaInfo] = React.useState(false);
 
   const getServiceDepositInfo = (srv: any) => {
@@ -46,9 +48,9 @@ export default function Step3Details({
     >
       {/* Header Equilibrado */}
       <div className="shrink-0 px-6 pt-4 pb-2 z-30 bg-[#F7F7F5]">
-        <h1 className="text-2xl md:text-3xl lg:text-4xl font-serif text-stone-800 tracking-tight">Tus datos</h1>
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-serif text-stone-800 tracking-tight">{t('wizard.fill_details')}</h1>
         <p className="text-[11px] md:text-xs lg:text-sm text-stone-500 mt-1 uppercase tracking-[0.15em] font-medium truncate">
-          Finaliza tu reserva para <span className="text-[#d4af37] font-bold">{selectedService?.name}</span>
+          {t('wizard.finish_booking_for')} <span className="text-[#d4af37] font-bold">{translate(selectedService?.name, selectedService?.translations, 'name')}</span>
         </p>
       </div>
 
@@ -58,15 +60,15 @@ export default function Step3Details({
           <div className="absolute top-0 right-0 w-24 h-24 bg-[#d4af37]/5 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
           
           <div className="relative z-10">
-            <p className="text-[10px] md:text-xs font-black uppercase text-[#d4af37] tracking-[0.2em] mb-0.5">Cita para el</p>
+            <p className="text-[10px] md:text-xs font-black uppercase text-[#d4af37] tracking-[0.2em] mb-0.5">{t('wizard.appointment_for_date')}</p>
             <p className="text-base md:text-xl font-serif text-stone-800 leading-tight">
-              {selectedDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
+              {selectedDate.toLocaleDateString(language === 'es' ? 'es-ES' : language === 'en' ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'long' })}
             </p>
-            <p className="text-xs md:text-sm font-bold text-stone-400 mt-0.5">A las {selectedTime}h</p>
+            <p className="text-xs md:text-sm font-bold text-stone-400 mt-0.5">{t('wizard.at_time').replace('{time}', selectedTime)}</p>
           </div>
 
           <div className="text-right relative z-10 flex flex-col items-end">
-            <p className="text-[10px] md:text-xs font-black uppercase text-stone-300 tracking-widest mb-0.5">Total</p>
+            <p className="text-[10px] md:text-xs font-black uppercase text-stone-300 tracking-widest mb-0.5">{t('wizard.total')}</p>
             <p className="text-2xl md:text-3xl font-serif text-stone-900 font-bold">{selectedService?.price}€</p>
             {(() => {
               const dep = getServiceDepositInfo(selectedService);
@@ -86,12 +88,12 @@ export default function Step3Details({
                       ease: "easeInOut" 
                     }}
                     className="text-blue-500 hover:text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors p-1 rounded-full focus:outline-none flex items-center justify-center shrink-0 shadow-sm border border-blue-100/50 mr-0.5"
-                    title="Más información sobre la fianza"
+                    title={t('wizard.deposit_info_title')}
                   >
                     <Info size={13} className="shrink-0" />
                   </motion.button>
                   <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-stone-400">
-                    FIANZA
+                    {t('wizard.fianza')}
                   </span>
                   <span className="text-xs md:text-sm font-bold text-[#d4af37]">
                     {dep.amount}€
@@ -108,7 +110,7 @@ export default function Step3Details({
           <div className="space-y-3.5 md:space-y-5">
             <div className="group">
               <label className="block text-[10px] md:text-xs font-black uppercase tracking-[0.12em] text-stone-400 mb-1.5 ml-1 group-focus-within:text-[#d4af37] transition-colors">
-                Nombre Completo
+                {t('wizard.full_name')}
               </label>
               <div className="relative">
                 <div className="absolute left-4 md:left-5 top-1/2 -translate-y-1/2 text-stone-300 group-focus-within:text-[#d4af37] transition-colors">
@@ -120,14 +122,14 @@ export default function Step3Details({
                   value={formData.name} 
                   onChange={e => setFormData({ ...formData, name: e.target.value })} 
                   className="w-full bg-white border border-stone-100 rounded-xl md:rounded-2xl py-3.5 md:py-4.5 pl-12 md:pl-16 pr-4 text-sm md:text-base font-bold text-stone-800 placeholder:text-stone-200 focus:ring-2 focus:ring-[#d4af37]/10 focus:border-[#d4af37] transition-all shadow-sm outline-none" 
-                  placeholder="Ej: María García" 
+                  placeholder={t('wizard.full_name_placeholder')} 
                 />
               </div>
             </div>
 
             <div className="group">
               <label className="block text-[10px] md:text-xs font-black uppercase tracking-[0.12em] text-stone-400 mb-1.5 ml-1 group-focus-within:text-[#d4af37] transition-colors">
-                Correo Electrónico
+                {t('wizard.email')}
               </label>
               <div className="relative">
                 <div className="absolute left-4 md:left-5 top-1/2 -translate-y-1/2 text-stone-300 group-focus-within:text-[#d4af37] transition-colors">
@@ -146,7 +148,7 @@ export default function Step3Details({
 
             <div className="group">
               <label className="block text-[10px] md:text-xs font-black uppercase tracking-[0.12em] text-stone-400 mb-1.5 ml-1 group-focus-within:text-[#d4af37] transition-colors">
-                Teléfono
+                {t('wizard.phone')}
               </label>
               <div className="relative">
                 <div className="absolute left-4 md:left-5 top-1/2 -translate-y-1/2 text-stone-300 group-focus-within:text-[#d4af37] transition-colors">
@@ -206,7 +208,7 @@ export default function Step3Details({
               </div>
               <div className="flex flex-col">
                 <span className="text-[11px] md:text-sm font-bold text-stone-600 group-hover:text-stone-900 transition-colors">
-                  Acepto la{' '}
+                  {t('wizard.accept_privacy')}{' '}
                   <a 
                     href="/privacidad" 
                     target="_blank" 
@@ -214,10 +216,10 @@ export default function Step3Details({
                     onClick={(e) => e.stopPropagation()}
                     className="underline text-[#d4af37] hover:text-[#b4902a] transition-colors"
                   >
-                    política de privacidad
+                    {t('wizard.privacy_policy')}
                   </a>
                 </span>
-                <span className="text-[9px] md:text-xs text-stone-400 uppercase tracking-widest mt-0.5 font-medium">Tus datos están seguros y cifrados</span>
+                <span className="text-[9px] md:text-xs text-stone-400 uppercase tracking-widest mt-0.5 font-medium">{t('wizard.secure_data')}</span>
               </div>
             </label>
           </div>
@@ -251,7 +253,7 @@ export default function Step3Details({
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="text-[#d4af37] w-5 h-5 shrink-0" />
-                  <h3 className="text-stone-850 font-serif text-lg font-bold leading-tight">Política de Fianza</h3>
+                  <h3 className="text-stone-850 font-serif text-lg font-bold leading-tight">{t('wizard.deposit_policy')}</h3>
                 </div>
                 <button 
                   onClick={() => setShowFianzaInfo(false)}
@@ -263,7 +265,7 @@ export default function Step3Details({
 
               <div className="space-y-3.5 text-xs text-stone-600 leading-relaxed">
                 <p>
-                  Para garantizar la disponibilidad de tu cita y mantener la excelencia en nuestro servicio, solicitamos un depósito anticipado en concepto de fianza segura.
+                  {t('wizard.deposit_policy_desc')}
                 </p>
                 
                 {(() => {
@@ -272,15 +274,15 @@ export default function Step3Details({
                   return (
                     <div className="bg-stone-50 rounded-xl p-3 border border-stone-100 flex flex-col gap-2 font-medium">
                       <div className="flex justify-between items-center text-[11px]">
-                        <span className="text-stone-400">Total Tratamiento:</span>
+                        <span className="text-stone-400">{t('wizard.total_treatment')}</span>
                         <span className="font-bold text-stone-800">{selectedService?.price}€</span>
                       </div>
                       <div className="flex justify-between items-center text-[11px] text-[#d4af37]">
-                        <span>Fianza (Pago online hoy):</span>
+                        <span>{t('wizard.deposit_online_today')}</span>
                         <span className="font-bold">{dep.amount}€</span>
                       </div>
                       <div className="flex justify-between items-center text-[11px]">
-                        <span className="text-stone-400">Restante (En clínica):</span>
+                        <span className="text-stone-400">{t('wizard.remaining_at_clinic')}</span>
                         <span className="font-bold text-stone-800">{remaining}€</span>
                       </div>
                     </div>
@@ -288,8 +290,8 @@ export default function Step3Details({
                 })()}
 
                 <p>
-                  <strong>¿Necesitas cancelar o cambiar tu cita?</strong><br />
-                  Puedes hacerlo sin coste alguno con hasta **{settings?.cancellation_margin_hours || 24} horas** de antelación y tu fianza será reembolsada automáticamente de forma íntegra.
+                  <strong>{t('wizard.need_to_cancel_title')}</strong><br />
+                  {t('wizard.need_to_cancel_desc').replace('{hours}', (settings?.cancellation_margin_hours || 24).toString())}
                 </p>
               </div>
 
@@ -297,7 +299,7 @@ export default function Step3Details({
                 onClick={() => setShowFianzaInfo(false)}
                 className="w-full bg-stone-900 hover:bg-stone-800 active:scale-98 transition-all text-[#d4af37] py-3 rounded-xl font-bold uppercase tracking-wider text-xs"
               >
-                Entendido
+                {t('common.understood')}
               </button>
             </motion.div>
           </div>

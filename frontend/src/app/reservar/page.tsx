@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
+import { useLanguage } from '@/app/contexts/LanguageContext';
+import LanguageSelector from '@/components/LanguageSelector';
 import Step1Treatments from './components/Step1Treatments';
 import Step2DateTime from './components/Step2DateTime';
 import Step3Details from './components/Step3Details';
@@ -16,6 +18,7 @@ const formatLocalISO = (date: Date) => {
 
 export default function BookingPage() {
   const { showFeedback } = useFeedback();
+  const { t } = useLanguage();
   
   // Días laborables desde backend/settings (con localStorage y fallback seguro)
   const getWorkingDays = (): number[] => {
@@ -223,9 +226,9 @@ export default function BookingPage() {
                   else if (step === 2 && dateTimePhase === 2) setDateTimePhase(1);
                   else if (step > 1) setStep(step - 1);
                 }} 
-                className="text-stone-400 hover:text-stone-800 transition-colors text-xs md:text-sm font-bold uppercase tracking-widest w-20 text-left"
+                className="text-stone-400 hover:text-stone-800 transition-colors text-xs md:text-sm font-bold uppercase tracking-widest w-20 text-left font-bold"
               >
-                ATRAS
+                {t('common.back')}
               </button>
             ) : (
               <div className="w-20" />
@@ -239,16 +242,19 @@ export default function BookingPage() {
                   />
                </div>
                <p className="text-[10px] md:text-xs uppercase tracking-widest text-stone-400 font-bold mt-1.5 text-center">
-                 Paso {step} de 3
+                 {t('wizard.step_indicator').replace('{step}', step.toString())}
                </p>
             </div>
 
-            <Link 
-              href="/" 
-              className="text-stone-400 hover:text-stone-800 transition-colors text-xs md:text-sm font-bold uppercase tracking-widest w-20 text-right"
-            >
-              SALIR
-            </Link>
+            <div className="flex items-center gap-3.5 w-24 justify-end shrink-0">
+               <LanguageSelector />
+               <Link 
+                 href="/" 
+                 className="text-stone-400 hover:text-stone-800 transition-colors text-xs md:text-sm font-bold uppercase tracking-widest text-right"
+               >
+                 {t('common.exit')}
+               </Link>
+            </div>
           </div>
         </header>
       )}
@@ -259,7 +265,7 @@ export default function BookingPage() {
           {loading ? (
             <div className="m-auto text-center">
               <div className="w-8 h-8 border-2 border-stone-200 border-t-[#d4af37] rounded-full animate-spin mb-3 mx-auto"></div>
-              <p className="text-stone-400 font-bold tracking-widest uppercase text-[10px]">Cargando...</p>
+              <p className="text-stone-400 font-bold tracking-widest uppercase text-[10px]">{t('common.loading')}</p>
             </div>
           ) : (
             <>

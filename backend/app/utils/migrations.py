@@ -74,7 +74,9 @@ def run_auto_migrations():
             "ALTER TABLE clinic_settings ADD COLUMN cancellation_margin_hours INTEGER DEFAULT 24",
             # ── Fianza global opcional ──────────────────────────────────────────────
             "ALTER TABLE clinic_settings ADD COLUMN global_deposit_required BOOLEAN DEFAULT FALSE",
-            "ALTER TABLE clinic_settings ADD COLUMN global_deposit_amount DECIMAL(10, 2) DEFAULT 0.0"
+            "ALTER TABLE clinic_settings ADD COLUMN global_deposit_amount DECIMAL(10, 2) DEFAULT 0.0",
+            # ── CMS: Soporte multidioma en la Home ──────────────────────────────────
+            "ALTER TABLE site_content ADD COLUMN translations JSONB DEFAULT '{}'"
         ]
         
         for m in migrations:
