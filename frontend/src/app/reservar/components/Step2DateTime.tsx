@@ -94,9 +94,9 @@ export default function Step2DateTime({
             className="flex flex-col flex-grow min-h-0"
           >
             <div className="shrink-0 px-6 pt-3 pb-2 z-30 bg-[#F7F7F5]">
-              <h1 className="text-lg font-serif text-stone-800 tracking-tight">Selecciona el día</h1>
-              <p className="text-[13px] text-stone-500 mt-1 uppercase tracking-widest font-bold">
-                CITA PARA: <span className="text-stone-900">{selectedService?.name}</span>
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-serif text-stone-800 tracking-tight">Selecciona el día</h1>
+              <p className="text-[11px] md:text-xs lg:text-sm text-stone-500 mt-1 uppercase tracking-[0.15em] font-medium">
+                CITA PARA: <span className="text-[#d4af37] font-bold">{selectedService?.name}</span>
               </p>
             </div>
 
@@ -118,49 +118,49 @@ export default function Step2DateTime({
                       transition={{ delay: i * 0.02 }}
                       disabled={!isOpen}
                       onClick={() => handleDateSelect(date)}
-                      className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all active:scale-[0.98]
+                      className={`w-full flex items-center justify-between p-4 md:p-6 md:px-8 rounded-2xl md:rounded-[1.75rem] border transition-all active:scale-[0.98]
                         ${isSelected
                           ? 'bg-stone-900 border-stone-900 shadow-lg'
                           : !isOpen
                             ? 'bg-red-50/20 border-red-100 opacity-60'
                             : 'bg-white border-stone-100 shadow-sm hover:border-stone-300'}`}
                     >
-                      <div className="flex items-center gap-4">
-                        <div className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center border
+                      <div className="flex items-center gap-4 md:gap-6">
+                        <div className={`w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl flex flex-col items-center justify-center border
                           ${isSelected
                             ? 'bg-white/10 border-white/20'
                             : !isOpen
                               ? 'bg-red-50 border-red-100'
                               : 'bg-stone-50 border-stone-100'}`}>
-                          <span className={`text-[10px] uppercase font-black 
+                          <span className={`text-[10px] md:text-[11px] uppercase font-black tracking-wider
                             ${isSelected ? 'text-white/60' : !isOpen ? 'text-red-300' : 'text-stone-400'}`}>
                             {date.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '')}
                           </span>
-                          <span className={`text-lg font-serif font-bold 
+                          <span className={`text-lg md:text-2xl font-serif font-bold leading-none mt-0.5
                             ${isSelected ? 'text-[#d4af37]' : !isOpen ? 'text-red-400' : 'text-stone-800'}`}>
                             {date.getDate()}
                           </span>
                         </div>
                         <div className="flex flex-col items-start">
-                          <span className={`text-sm font-bold capitalize ${isSelected ? 'text-white' : !isOpen ? 'text-red-800/40' : 'text-stone-800'}`}>
+                          <span className={`text-sm md:text-xl font-bold capitalize ${isSelected ? 'text-white' : !isOpen ? 'text-red-800/40' : 'text-stone-800'}`}>
                             {date.toLocaleDateString('es-ES', { weekday: 'long' })}
                           </span>
-                          <span className={`text-[11px] ${isSelected ? 'text-white/50' : !isOpen ? 'text-red-300' : 'text-stone-400'}`}>
+                          <span className={`text-[11px] md:text-sm mt-0.5 ${isSelected ? 'text-white/50' : !isOpen ? 'text-red-300' : 'text-stone-400'}`}>
                             {date.getFullYear()}
                           </span>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 md:gap-5">
                         {isToday && (
-                          <span className="text-[11px] font-light text-[#d4af37] uppercase tracking-widest bg-[#d4af37]/5 px-2 py-0.5 rounded-full border border-[#d4af37]/10">
+                          <span className="text-[11px] md:text-xs font-light text-[#d4af37] uppercase tracking-widest bg-[#d4af37]/5 px-2 py-0.5 md:px-3 md:py-1 rounded-full border border-[#d4af37]/10">
                             Hoy
                           </span>
                         )}
                         {!isOpen ? (
-                          <span className="text-[9px] font-black text-red-400 uppercase tracking-tighter">Cerrado</span>
+                          <span className="text-[9px] md:text-xs font-black text-red-400 uppercase tracking-wider">Cerrado</span>
                         ) : (
-                          <ChevronRight size={16} className={isSelected ? 'text-[#d4af37]' : 'text-stone-200'} />
+                          <ChevronRight size={16} className={`transition-transform md:scale-125 ${isSelected ? 'text-[#d4af37]' : 'text-stone-200'}`} />
                         )}
                       </div>
                     </motion.button>
@@ -177,20 +177,20 @@ export default function Step2DateTime({
             exit={{ opacity: 0, x: -20 }}
             className="flex flex-col flex-grow min-h-0"
           >
-            <div className="shrink-0 px-6 pt-3 pb-1 z-30 bg-[#F7F7F5]">
-              <div className="flex items-center justify-between mb-2">
+            <div className="shrink-0 px-6 pt-3 pb-2 z-30 bg-[#F7F7F5]">
+              <div className="flex items-center justify-between gap-4 mb-2">
                 <div className="flex flex-col">
-                  <h1 className="text-lg font-serif text-stone-800 tracking-tight leading-tight">Selecciona hora</h1>
-                  <p className="text-xs text-stone-500 uppercase tracking-widest font-bold mt-1.5">
-                    PARA EL <span className="text-[#d4af37]">{selectedDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}</span>
+                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-serif text-stone-800 tracking-tight leading-tight">Selecciona hora</h1>
+                  <p className="text-[11px] md:text-xs lg:text-sm text-stone-500 mt-1 uppercase tracking-[0.15em] font-medium">
+                    PARA EL <span className="text-[#d4af37] font-bold">{selectedDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}</span>
                   </p>
                 </div>
                 <button
                   onClick={() => setPhase(1)}
-                  className="flex items-center gap-2 px-4 py-4 rounded-2xl bg-white border border-stone-200 text-stone-600 hover:text-stone-900 transition-all shadow-sm active:scale-95 group"
+                  className="flex items-center gap-2 px-4 py-4 md:px-6 md:py-4.5 rounded-2xl md:rounded-3xl bg-white border border-stone-200 text-stone-600 hover:text-stone-900 transition-all shadow-sm active:scale-95 group shrink-0"
                 >
-                  <CalendarIcon size={16} className="text-stone-400 group-hover:text-[#d4af37]" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Cambiar día</span>
+                  <CalendarIcon size={16} className="text-stone-400 group-hover:text-[#d4af37] md:scale-125" />
+                  <span className="text-[10px] md:text-xs font-black uppercase tracking-widest">Cambiar día</span>
                 </button>
               </div>
             </div>
@@ -223,7 +223,7 @@ export default function Step2DateTime({
                           transition={{ delay: i * 0.01 }}
                           disabled={!isAvailable}
                           onClick={() => setSelectedTime(slot)}
-                          className={`min-h-[56px] py-4 rounded-2xl text-sm font-bold transition-all border shadow-sm relative flex items-center justify-center
+                          className={`min-h-[56px] md:min-h-[72px] py-4 md:py-6 rounded-2xl text-sm md:text-lg lg:text-xl font-bold transition-all border shadow-sm relative flex items-center justify-center
                             ${!isAvailable
                               ? 'bg-red-50/40 border-red-100 text-red-300 opacity-60 cursor-not-allowed'
                               : isSelected
@@ -232,8 +232,8 @@ export default function Step2DateTime({
                         >
                           <span className={!isAvailable ? 'line-through decoration-red-300/50' : ''}>{slot}</span>
                           {!isAvailable && (
-                            <div className="absolute top-1 right-2">
-                              <Lock size={8} className="text-red-200" />
+                            <div className="absolute top-1 right-2 md:top-2 md:right-3">
+                              <Lock size={8} className="text-red-200 md:scale-125" />
                             </div>
                           )}
                         </motion.button>

@@ -194,35 +194,41 @@ export default function BookingPage() {
       
       {/* APP HEADER (FIXED) */}
       {step < 4 && (
-        <header className="shrink-0 bg-white border-b border-stone-200/60 px-6 py-4 flex items-center justify-between z-50">
-          <button 
-            onClick={() => {
-              if (step === 1 && activeCategory) setActiveCategory(null);
-              else if (step > 1) setStep(step - 1);
-            }} 
-            className="text-stone-400 hover:text-stone-800 transition-colors text-[10px] font-bold uppercase tracking-widest w-16 text-left"
-          >
-            ATRAS
-          </button>
-          
-          <div className="flex-grow max-w-[140px]">
-             <div className="h-1 bg-stone-100 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-[#d4af37] transition-all duration-700 ease-out" 
-                  style={{ width: step === 1 ? '25%' : step === 2 ? '50%' : '75%' }} 
-                />
-             </div>
-             <p className="text-[9px] uppercase tracking-widest text-stone-400 font-bold mt-1.5 text-center">
-               Paso {step} de 3
-             </p>
-          </div>
+        <header className="shrink-0 bg-white border-b border-stone-200/60 z-50">
+          <div className="max-w-2xl mx-auto w-full px-8 py-4 md:py-5 flex items-center justify-between">
+            {!(step === 1 && !activeCategory) ? (
+              <button 
+                onClick={() => {
+                  if (step === 1 && activeCategory) setActiveCategory(null);
+                  else if (step > 1) setStep(step - 1);
+                }} 
+                className="text-stone-400 hover:text-stone-800 transition-colors text-xs md:text-sm font-bold uppercase tracking-widest w-20 text-left"
+              >
+                ATRAS
+              </button>
+            ) : (
+              <div className="w-20" />
+            )}
+            
+            <div className="flex-grow max-w-[180px] md:max-w-[200px]">
+               <div className="h-2 bg-stone-100 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-[#d4af37] transition-all duration-700 ease-out" 
+                    style={{ width: step === 1 ? '25%' : step === 2 ? '50%' : '75%' }} 
+                  />
+               </div>
+               <p className="text-[10px] md:text-xs uppercase tracking-widest text-stone-400 font-bold mt-1.5 text-center">
+                 Paso {step} de 3
+               </p>
+            </div>
 
-          <Link 
-            href="/" 
-            className="text-stone-400 hover:text-stone-800 transition-colors text-[10px] font-bold uppercase tracking-widest w-16 text-right"
-          >
-            SALIR
-          </Link>
+            <Link 
+              href="/" 
+              className="text-stone-400 hover:text-stone-800 transition-colors text-xs md:text-sm font-bold uppercase tracking-widest w-20 text-right"
+            >
+              SALIR
+            </Link>
+          </div>
         </header>
       )}
 
@@ -290,14 +296,14 @@ export default function BookingPage() {
 
       {/* ACTION FOOTER (FIXED) */}
       {step < 4 && (
-        <footer className="shrink-0 bg-white border-t border-stone-200/60 p-4 md:px-8 z-50">
+        <footer className="shrink-0 bg-white border-t border-stone-200/60 p-4 md:py-6 md:px-8 z-50">
           <div className="max-w-2xl mx-auto flex gap-3">
             {step === 1 && (activeCategory?.name || selectedService) && (
                <div className="flex-grow flex flex-col justify-center overflow-hidden">
-                  <p className="text-[10px] font-bold text-stone-400 uppercase truncate">
+                  <p className="text-[10px] md:text-xs font-bold text-stone-400 uppercase tracking-wider truncate">
                     {selectedService ? 'Tratamiento' : 'Zona'}
                   </p>
-                  <p className="text-xs font-bold text-stone-800 truncate">
+                  <p className="text-xs md:text-base font-bold text-stone-800 truncate mt-0.5">
                     {selectedService ? selectedService.name : activeCategory?.name}
                   </p>
                </div>
@@ -313,7 +319,7 @@ export default function BookingPage() {
                   if (step === 3) handleBooking();
                   else { setStep(step + 1); window.scrollTo({ top: 0 }); }
                 }}
-                className="flex-grow bg-stone-900 text-[#d4af37] py-4 rounded-xl font-bold text-xs uppercase tracking-widest shadow-xl active:scale-95 transition-all disabled:opacity-30 disabled:grayscale"
+                className="flex-grow bg-stone-900 text-[#d4af37] py-4 md:py-5 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm uppercase tracking-widest shadow-xl active:scale-95 transition-all disabled:opacity-30 disabled:grayscale"
               >
                 {saving ? 'Procesando...' : step === 3 ? 'Confirmar Reserva' : 'Siguiente'}
               </button>
