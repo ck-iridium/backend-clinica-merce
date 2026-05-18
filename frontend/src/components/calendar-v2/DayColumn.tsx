@@ -1,5 +1,6 @@
 import React from 'react';
 import { Lock, CalendarOff } from 'lucide-react';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 import { EmptySlot } from './EmptySlot';
 import { AppointmentCard } from './AppointmentCard';
 
@@ -24,7 +25,7 @@ interface DayColumnProps {
   onApptMouseMove?: (e: React.MouseEvent) => void;
   onApptMouseLeave?: () => void;
   
-  // Logic helpers (pasados desde el hook de datos)
+  // Logic helpers
   checkIsLunch: (h: number, m: number) => boolean;
   checkIsDisabled: (h: number, m: number) => boolean;
   
@@ -67,6 +68,7 @@ export function DayColumn({
   searchTerm = '',
   activeFilter = 'ALL'
 }: DayColumnProps) {
+  const { t } = useLanguage();
 
   return (
     <div className={`relative flex-1 border-r border-stone-200 last:border-r-0 group h-full min-h-full ${!isWorkingDay ? 'bg-stone-50/30' : ''}`}>
@@ -84,9 +86,9 @@ export function DayColumn({
             <CalendarOff size={32} className="text-stone-300" strokeWidth={1.5} />
           </div>
           <span className="text-stone-400 font-black uppercase tracking-[0.3em] text-[11px]">
-            Día Libre
+            {t('dashboard.calendar.day_off') || 'Día Libre'}
           </span>
-          <p className="text-[9px] text-stone-300 mt-2 font-bold uppercase tracking-wider">Centro Cerrado</p>
+          <p className="text-[9px] text-stone-300 mt-2 font-bold uppercase tracking-wider">{t('dashboard.calendar.center_closed') || 'Centro Cerrado'}</p>
         </div>
       )}
 
@@ -103,10 +105,10 @@ export function DayColumn({
             <Lock size={viewType === 'mobile' ? 32 : 24} className="text-[#d9777f]" strokeWidth={2} />
           </div>
           <span className="text-stone-800 font-black uppercase tracking-widest text-xs">
-            {closedReason || 'CERRADO'}
+            {closedReason || (t('dashboard.calendar.closed') || 'CERRADO')}
           </span>
           <p className="text-[10px] text-stone-400 mt-2 font-bold opacity-0 group-hover/closed:opacity-100 transition-opacity">
-            Hacer click para gestionar bloqueo
+            {t('dashboard.calendar.click_to_manage_block') || 'Hacer click para gestionar bloqueo'}
           </p>
         </div>
       )}
@@ -164,7 +166,7 @@ export function DayColumn({
             }}
           >
             <span className="text-[10px] font-black text-stone-400 uppercase tracking-tighter opacity-60 text-center px-1">
-              {block.reason || 'HORARIO BLOQUEADO'}
+              {block.reason || (t('dashboard.calendar.time_blocked') || 'HORARIO BLOQUEADO')}
             </span>
           </div>
         );
@@ -189,7 +191,7 @@ export function DayColumn({
         const duration = (end.getTime() - start.getTime()) / 60000;
         const heightPercent = (duration / totalMins) * 100;
 
-        // Lógica de Spotlight (Refinada con Null Safety y mapeo de nombres)
+        // Lógica de Spotlight
         const client = clientMap?.get(appt.client_id);
         const service = serviceMap?.get(appt.service_id);
         
@@ -202,7 +204,7 @@ export function DayColumn({
           if (activeFilter === 'PAGADA' && appt.status !== 'completed') isHighlighted = false;
         }
 
-        // 2. Filtro por Búsqueda (Case-Insensitive sobre nombres resueltos)
+        // 2. Filtro por Búsqueda
         if (isHighlighted && searchTerm && searchTerm.trim() !== '') {
           const query = searchTerm.toLowerCase();
           const clientName = client?.name?.toLowerCase() || '';

@@ -1,10 +1,12 @@
-"use client"
+"use client";
+
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 export default function ConsentPreviewPage() {
+  const { t, language } = useLanguage();
   const { showFeedback } = useFeedback();
   const { id: clientId, consent_id: consentId } = useParams();
   const router = useRouter();
@@ -31,7 +33,11 @@ export default function ConsentPreviewPage() {
       if (sRes.ok) setSettings(await sRes.json());
     } catch (e) {
       console.error(e);
-      showFeedback({ type: 'error', title: 'Error', message: 'Error cargando la vista del documento legal' });
+      showFeedback({ 
+        type: 'error', 
+        title: t('common.error') || 'Error', 
+        message: t('dashboard.clients.error_loading_consent') || 'Error cargando la vista del documento legal' 
+      });
     } finally {
       setLoading(false);
     }
@@ -45,12 +51,20 @@ export default function ConsentPreviewPage() {
     return (
         <div className="text-center py-32">
           <div className="inline-block w-8 h-8 border-4 border-[#d4af37] border-t-[#d9777f] rounded-full animate-spin mb-4"></div>
-          <p className="text-stone-500 font-medium tracking-widest uppercase text-xs">Cargando documento...</p>
+          <p className="text-stone-500 font-medium tracking-widest uppercase text-xs">
+            {t('dashboard.clients.loading_consent') || 'Cargando documento...'}
+          </p>
         </div>
     );
   }
 
-  if (!consent || !client) return <div className="p-10 text-center font-bold text-stone-500">Documento legal no disponible.</div>;
+  if (!consent || !client) return (
+    <div className="p-10 text-center font-bold text-stone-500">
+      {t('dashboard.clients.consent_not_available') || 'Documento legal no disponible.'}
+    </div>
+  );
+
+  const dateLocale = language === 'es' ? 'es-ES' : language === 'en' ? 'en-US' : 'fr-FR';
 
   return (
     <div className="animate-in fade-in duration-500 pb-20 max-w-[1400px] mx-auto print:p-0 print:max-w-none">
@@ -64,7 +78,7 @@ export default function ConsentPreviewPage() {
            <div>
               <h1 className="text-3xl font-extrabold text-[#d9777f] drop-shadow-sm flex items-center gap-3">
                 <span className="text-2xl">⚖️</span>
-                Visor Legal
+                {t('dashboard.clients.legal_viewer') || 'Visor Legal'}
               </h1>
               <p className="text-stone-500 font-medium">{consent.document_title}</p>
            </div>
@@ -76,7 +90,7 @@ export default function ConsentPreviewPage() {
              onClick={handlePrint}
              className="px-6 py-3 font-extrabold text-white bg-[#d9777f] hover:bg-[#c6646b] rounded-xl shadow-lg hover:shadow-xl transition-all border border-[#c6646b] flex items-center gap-2"
            >
-             <span>🖨️</span> Imprimir Documento (A4)
+             <span>🖨️</span> {t('dashboard.clients.print_document_a4') || 'Imprimir Documento (A4)'}
            </button>
         </div>
       </div>
@@ -97,94 +111,99 @@ export default function ConsentPreviewPage() {
           <div className="relative z-10">
              {/* CABECERA LEGAL */}
              <div className="flex justify-between items-start border-b-2 border-stone-800 pb-8 mb-8">
-                <div>
-                   {settings?.logo_pdf_b64 ? (
-                      <img src={settings.logo_pdf_b64} alt="Logo" className="h-20 object-contain mb-4" />
-                   ) : settings?.logo_app_b64 ? (
-                      <img src={settings.logo_app_b64} alt="Logo" className="h-20 object-contain mb-4" />
-                   ) : (
-                      <div className="h-20 flex items-center font-extrabold text-2xl text-stone-800 tracking-tight">{settings?.clinic_name || 'CLÍNICA MERCE'}</div>
-                   )}
-                   <p className="text-xs font-bold text-stone-500 tracking-widest uppercase">Documento Confidencial Médio-Legal</p>
-                </div>
-                <div className="text-right max-w-[250px]">
-                   <p className="font-extrabold text-stone-800 tracking-tight mb-2 uppercase break-words">{settings?.clinic_name || 'Clínica Mercè'}</p>
-                   <p className="text-xs text-stone-400 font-medium">
-                     {settings?.clinic_address || 'Dirección de la clínica no configurada'}
-                   </p>
-                   <p className="text-xs text-stone-400 font-medium">NIF: {settings?.clinic_nif || '---'}</p>
-                   <p className="text-xs font-bold border border-stone-200 bg-stone-50 rounded-lg px-2 py-1 mt-4 inline-block text-stone-500">
-                     Ref: {consent.id.split('-')[0].toUpperCase()}
-                   </p>
-                </div>
+                 <div>
+                    {settings?.logo_pdf_b64 ? (
+                       <img src={settings.logo_pdf_b64} alt="Logo" className="h-20 object-contain mb-4" />
+                    ) : settings?.logo_app_b64 ? (
+                       <img src={settings.logo_app_b64} alt="Logo" className="h-20 object-contain mb-4" />
+                    ) : (
+                       <div className="h-20 flex items-center font-extrabold text-2xl text-stone-800 tracking-tight">{settings?.clinic_name || 'CLÍNICA MERCE'}</div>
+                    )}
+                    <p className="text-xs font-bold text-stone-500 tracking-widest uppercase">
+                      {t('dashboard.clients.confidential_legal_doc') || 'Documento Confidencial Médio-Legal'}
+                    </p>
+                 </div>
+                 <div className="text-right max-w-[250px]">
+                    <p className="font-extrabold text-stone-800 tracking-tight mb-2 uppercase break-words">{settings?.clinic_name || 'Clínica Mercè'}</p>
+                    <p className="text-xs text-stone-400 font-medium">
+                      {settings?.clinic_address || (t('dashboard.clients.address_not_configured') || 'Dirección de la clínica no configurada')}
+                    </p>
+                    <p className="text-xs text-stone-400 font-medium">NIF: {settings?.clinic_nif || '---'}</p>
+                    <p className="text-xs font-bold border border-stone-200 bg-stone-50 rounded-lg px-2 py-1 mt-4 inline-block text-stone-500">
+                      Ref: {consent.id.split('-')[0].toUpperCase()}
+                    </p>
+                 </div>
              </div>
 
              {/* BLOQUE DE IDENTIFICACIÓN PACIENTE */}
              <div className="bg-stone-50 border border-stone-200 p-6 rounded-2xl mb-8 flex flex-col gap-2">
-                <h3 className="text-xs font-bold text-stone-400 uppercase tracking-widest border-b border-stone-200 pb-2 mb-2">
-                  Datos del Cliente
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                   <div>
-                     <p className="text-xs text-stone-500 mb-1">Nombre Completo:</p>
-                     <p className="font-extrabold text-stone-800">{client.name}</p>
-                   </div>
-                   {client.dni && (
-                     <div>
-                       <p className="text-xs text-stone-500 mb-1">DNI / NIE / Pasaporte:</p>
-                       <p className="font-bold text-stone-700">{client.dni}</p>
-                     </div>
-                   )}
-                   {client.address && (
-                     <div className="col-span-2">
-                       <p className="text-xs text-stone-500 mb-1">Dirección de Residencia:</p>
-                       <p className="font-bold text-stone-700">{client.address}</p>
-                     </div>
-                   )}
-                </div>
+                 <h3 className="text-xs font-bold text-stone-400 uppercase tracking-widest border-b border-stone-200 pb-2 mb-2">
+                   {t('dashboard.clients.client_details') || 'Datos del Cliente'}
+                 </h3>
+                 <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-stone-500 mb-1">{t('dashboard.clients.full_name_colon') || 'Nombre Completo:'}</p>
+                      <p className="font-extrabold text-stone-800">{client.name}</p>
+                    </div>
+                    {client.dni && (
+                      <div>
+                        <p className="text-xs text-stone-500 mb-1">{t('dashboard.clients.dni_colon') || 'DNI / NIE / Pasaporte:'}</p>
+                        <p className="font-bold text-stone-700">{client.dni}</p>
+                      </div>
+                    )}
+                    {client.address && (
+                      <div className="col-span-2">
+                        <p className="text-xs text-stone-500 mb-1">{t('dashboard.clients.address_colon') || 'Dirección de Residencia:'}</p>
+                        <p className="font-bold text-stone-700">{client.address}</p>
+                      </div>
+                    )}
+                 </div>
              </div>
 
              {/* CUERPO DEL TEXTO LEGAL */}
              <div className="mb-12">
-               <h2 className="text-xl font-extrabold text-stone-800 mb-6 text-center underline decoration-stone-300 underline-offset-4">
-                 {consent.document_title}
-               </h2>
-               <div className="text-sm text-stone-700 leading-relaxed text-justify space-y-4">
-                 {/* Al haber guardado el body en el panel frontal con párrafos simples, los renderizamos tal cual */}
-                 {consent.document_body.split('\n\n').map((paragraph: string, i: number) => (
-                    <p key={i}>{paragraph}</p>
-                 ))}
-               </div>
+                <h2 className="text-xl font-extrabold text-stone-800 mb-6 text-center underline decoration-stone-300 underline-offset-4">
+                  {consent.document_title}
+                </h2>
+                <div className="text-sm text-stone-700 leading-relaxed text-justify space-y-4">
+                  {consent.document_body.split('\n\n').map((paragraph: string, i: number) => (
+                     <p key={i}>{paragraph}</p>
+                  ))}
+                </div>
              </div>
           </div>
 
           {/* PIE DE FIRMAS (Footer) */}
           <div className="relative z-10 border-t border-stone-200 pt-8 mt-auto flex justify-between items-end">
              <div className="max-w-[300px]">
-                <p className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-2">Clínica / Facultativo</p>
-                {settings?.signature_b64 ? (
-                   <img src={settings.signature_b64} alt="Sello y Firma Clínica" className="h-16 object-contain mix-blend-multiply opacity-50 mb-2 grayscale" />
-                ) : (
-                   <div className="h-16"></div>
-                )}
-                <p className="text-xs font-extrabold text-stone-800">{settings?.clinic_name || 'Clínica Mercè'}</p>
+                 <p className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-2">
+                   {t('dashboard.clients.clinic_practitioner') || 'Clínica / Facultativo'}
+                 </p>
+                 {settings?.signature_b64 ? (
+                    <img src={settings.signature_b64} alt="Sello y Firma Clínica" className="h-16 object-contain mix-blend-multiply opacity-50 mb-2 grayscale" />
+                 ) : (
+                    <div className="h-16"></div>
+                 )}
+                 <p className="text-xs font-extrabold text-stone-800">{settings?.clinic_name || 'Clínica Mercè'}</p>
              </div>
 
              <div className="text-right flex flex-col items-center border border-stone-300 rounded-2xl p-4 bg-stone-50/50 min-w-[250px]">
-                <p className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-4 w-full text-left border-b border-stone-200 pb-2">
-                  Firma del Cliente
-                </p>
-                <img 
-                   src={consent.signature_b64} 
-                   alt="Firma del Cliente" 
-                   className="h-24 object-contain mix-blend-multiply drop-shadow-sm mb-4" 
-                />
-                <div className="w-full text-left">
-                   <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1">Firmado digitalmente el:</p>
-                   <p className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-3 py-1.5 rounded-lg inline-block shadow-sm">
-                     {new Date(consent.signed_at).toLocaleString('es-ES', { dateStyle: 'long', timeStyle: 'medium' })}
-                   </p>
-                </div>
+                 <p className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-4 w-full text-left border-b border-stone-200 pb-2">
+                   {t('dashboard.clients.client_signature') || 'Firma del Cliente'}
+                 </p>
+                 <img 
+                    src={consent.signature_b64} 
+                    alt="Firma del Cliente" 
+                    className="h-24 object-contain mix-blend-multiply drop-shadow-sm mb-4" 
+                 />
+                 <div className="w-full text-left">
+                    <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1">
+                      {t('dashboard.clients.digitally_signed_on') || 'Firmado digitalmente el:'}
+                    </p>
+                    <p className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-3 py-1.5 rounded-lg inline-block shadow-sm">
+                      {new Date(consent.signed_at).toLocaleString(dateLocale, { dateStyle: 'long', timeStyle: 'medium' })}
+                    </p>
+                 </div>
              </div>
           </div>
 

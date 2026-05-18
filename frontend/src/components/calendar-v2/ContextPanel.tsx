@@ -2,14 +2,7 @@
 
 import React, { useState } from 'react';
 import { Search, ChevronLeft, ChevronRight, CheckCircle2, Clock, PanelLeftClose } from 'lucide-react';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 interface ContextPanelProps {
     clinicName?: string;
@@ -47,6 +40,7 @@ export function ContextPanel({
     setActiveFilter,
     onClose
 }: ContextPanelProps) {
+    const { t, language } = useLanguage();
     // Estado para la vista del mes en el mini-calendario (independiente de la fecha seleccionada)
     const [viewDate, setViewDate] = useState(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1));
 
@@ -59,7 +53,15 @@ export function ContextPanel({
     };
 
     // Lógica para generar los días del mes actual
-    const daysOfWeek = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+    const daysOfWeek = [
+        t('dashboard.settings.calendar.days.mon')?.[0] || 'L',
+        t('dashboard.settings.calendar.days.tue')?.[0] || 'M',
+        t('dashboard.settings.calendar.days.wed')?.[0] || 'X',
+        t('dashboard.settings.calendar.days.thu')?.[0] || 'J',
+        t('dashboard.settings.calendar.days.fri')?.[0] || 'V',
+        t('dashboard.settings.calendar.days.sat')?.[0] || 'S',
+        t('dashboard.settings.calendar.days.sun')?.[0] || 'D'
+    ];
 
     const getDaysInMonth = () => {
         const year = viewDate.getFullYear();
@@ -83,7 +85,7 @@ export function ContextPanel({
             days.push({ day: i, currentMonth: true, date: new Date(year, month, i) });
         }
 
-        // Días del mes siguiente (relleno opcional para completar la grilla de 6 semanas si se desea, aquí solo hasta 42)
+        // Días del mes siguiente (relleno opcional)
         const remainingCells = 42 - days.length;
         for (let i = 1; i <= remainingCells; i++) {
             days.push({ day: i, currentMonth: false, date: new Date(year, month + 1, i) });
@@ -94,19 +96,23 @@ export function ContextPanel({
 
     const calendarDays = getDaysInMonth();
 
+    const getLocaleString = () => {
+        return language === 'es' ? 'es-ES' : language === 'en' ? 'en-US' : 'fr-FR';
+    };
+
     return (
         <aside className="w-full h-full flex flex-col bg-white border-r border-stone-100 flex-shrink-0 animate-in fade-in slide-in-from-left duration-500">
 
-            {/* Botón de Cierre — ahora integrado en la fila de búsqueda para ahorrar espacio vertical */}
+            {/* Botón de Cierre */}
             <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-6">
                 
-                {/* 2. BÚSQUEDA Y COLAPSAR: Compactados en una sola fila */}
+                {/* 2. BÚSQUEDA Y COLAPSAR */}
                 <div className="flex items-center gap-2">
                     <div className="relative flex-1 group">
                         <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-[#d9777f] transition-colors" />
                         <input
                             type="text"
-                            placeholder="Buscar..."
+                            placeholder={t('dashboard.calendar.search_placeholder')}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-11 pr-4 py-3 bg-stone-50 border border-stone-100 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-[#f3c7cb] focus:bg-white outline-none transition-all shadow-sm"
@@ -116,7 +122,7 @@ export function ContextPanel({
                         <button
                             onClick={onClose}
                             className="p-3 rounded-2xl bg-stone-50 border border-stone-100 text-stone-500 active:scale-95 transition-all hover:bg-rose-50 hover:text-[#d9777f] hover:border-rose-100 shrink-0"
-                            aria-label="Cerrar panel"
+                            aria-label={t('dashboard.calendar.close_panel')}
                         >
                             <PanelLeftClose size={20} />
                         </button>
@@ -131,10 +137,10 @@ export function ContextPanel({
                                 onClick={handlePrevMonth}
                                 className="p-1.5 rounded-lg hover:bg-stone-50 text-stone-400 transition-colors"
                             >
-                                <ChevronLeft size={18} />
+                               <ChevronLeft size={18} />
                             </button>
                             <p className="font-serif italic font-bold text-stone-800 capitalize text-sm">
-                                {viewDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
+                                {viewDate.toLocaleDateString(getLocaleString(), { month: 'long', year: 'numeric' })}
                             </p>
                             <button
                                 onClick={handleNextMonth}
@@ -176,7 +182,7 @@ export function ContextPanel({
                             <button 
                                 onClick={onPrev}
                                 className="p-2 rounded-lg hover:bg-stone-50 text-stone-400 hover:text-[#d9777f] transition-all"
-                                title="Día Anterior"
+                                title={t('dashboard.calendar.prev_day')}
                             >
                                 <ChevronLeft size={18} />
                             </button>
@@ -184,12 +190,12 @@ export function ContextPanel({
                                 onClick={onToday}
                                 className="px-4 py-1.5 rounded-lg bg-stone-50 border border-stone-100 text-stone-600 font-black text-[10px] uppercase tracking-widest hover:bg-[#fdf2f3] hover:text-[#d9777f] hover:border-[#f3c7cb] transition-all"
                             >
-                                Hoy
+                                {t('dashboard.calendar.today')}
                             </button>
                             <button 
                                 onClick={onNext}
                                 className="p-2 rounded-lg hover:bg-stone-50 text-stone-400 hover:text-[#d9777f] transition-all"
-                                title="Día Siguiente"
+                                title={t('dashboard.calendar.next_day')}
                             >
                                 <ChevronRight size={18} />
                             </button>
@@ -199,7 +205,7 @@ export function ContextPanel({
 
                 {/* 4. FILTROS VISUALES */}
                 <div className="space-y-3">
-                    <p className="text-[10px] font-black text-stone-300 uppercase tracking-[0.2em] ml-1">Filtros</p>
+                    <p className="text-[10px] font-black text-stone-300 uppercase tracking-[0.2em] ml-1">{t('dashboard.calendar.filters')}</p>
                     <div className="space-y-2">
                         <button
                             onClick={() => setActiveFilter(activeFilter === 'CONFIRMADA' ? 'ALL' : 'CONFIRMADA')}
@@ -209,7 +215,7 @@ export function ContextPanel({
                         >
                             <div className="flex items-center gap-3">
                                 <CheckCircle2 size={16} />
-                                <span className="text-xs font-bold uppercase tracking-wider">Confirmadas</span>
+                                <span className="text-xs font-bold uppercase tracking-wider">{t('dashboard.calendar.filter_confirmed')}</span>
                             </div>
                             <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${activeFilter === 'CONFIRMADA' ? 'bg-white/50' : 'bg-stone-50'}`}>{confirmedCount}</span>
                         </button>
@@ -222,7 +228,7 @@ export function ContextPanel({
                         >
                             <div className="flex items-center gap-3">
                                 <Clock size={16} />
-                                <span className="text-xs font-bold uppercase tracking-wider">Pendientes</span>
+                                <span className="text-xs font-bold uppercase tracking-wider">{t('dashboard.calendar.filter_pending')}</span>
                             </div>
                             <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${activeFilter === 'PENDIENTE' ? 'bg-white/50' : 'bg-stone-50'}`}>{pendingCount}</span>
                         </button>
@@ -235,7 +241,7 @@ export function ContextPanel({
                         >
                             <div className="flex items-center gap-3">
                                 <div className={`w-4 h-4 rounded-full border-2 ${activeFilter === 'PAGADA' ? 'border-emerald-500 bg-emerald-100' : 'border-emerald-400'}`}></div>
-                                <span className="text-xs font-bold uppercase tracking-wider">Pagadas</span>
+                                <span className="text-xs font-bold uppercase tracking-wider">{t('dashboard.calendar.filter_paid')}</span>
                             </div>
                         </button>
                     </div>

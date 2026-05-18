@@ -1,22 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, Unlock, Sparkles, Trash2, AlertTriangle, Phone, Save, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useLanguage } from '@/app/contexts/LanguageContext';
 import { EditAppointmentModal } from './modals/EditAppointmentModal';
 import { CreateAppointmentModal } from './modals/CreateAppointmentModal';
 import { DeleteBlockConfirm } from './modals/DeleteBlockConfirm';
@@ -75,9 +60,10 @@ export function CalendarModals({
   fetchData,
   openWhatsApp
 }: CalendarModalsProps) {
+  const { t } = useLanguage();
   const { showFeedback } = useFeedback();
 
-  // Estados para Edición (necesarios para los handlers del Orquestador)
+  // Estados para Edición
   const [editNotes, setEditNotes] = useState('');
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
@@ -103,12 +89,12 @@ export function CalendarModals({
       if (res.ok) {
         await fetchData();
         setShowEditModal(false);
-        toast.success('Estado actualizado');
+        toast.success(t('dashboard.calendar.toast.status_updated') || 'Estado actualizado');
       } else {
-        toast.error('Error al actualizar');
+        toast.error(t('dashboard.calendar.toast.update_error') || 'Error al actualizar');
       }
     } catch (e) {
-      toast.error('Error de conexión');
+      toast.error(t('dashboard.calendar.toast.connection_error') || 'Error de conexión');
     } finally {
       setUpdatingStatus(false);
     }
@@ -126,12 +112,12 @@ export function CalendarModals({
       if (res.ok) {
         await fetchData();
         setSelectedAppt({ ...selectedAppt, notes: editNotes });
-        toast.success('Nota guardada');
+        toast.success(t('dashboard.calendar.toast.note_saved') || 'Nota guardada');
       } else {
-        toast.error('Error al guardar nota');
+        toast.error(t('dashboard.calendar.toast.save_note_error') || 'Error al guardar nota');
       }
     } catch (e) {
-      toast.error('Error de conexión');
+      toast.error(t('dashboard.calendar.toast.connection_error') || 'Error de conexión');
     } finally {
       setUpdatingStatus(false);
     }
@@ -141,8 +127,8 @@ export function CalendarModals({
     if (!selectedAppt) return;
     showFeedback({
       type: 'confirm',
-      title: 'Eliminar Cita',
-      message: '¿Estás seguro de que deseas eliminar esta cita? Esta acción no se puede deshacer.',
+      title: t('dashboard.calendar.modal.delete_title') || 'Eliminar Cita',
+      message: t('dashboard.calendar.modal.delete_message') || '¿Estás seguro de que deseas eliminar esta cita? Esta acción no se puede deshacer.',
       onConfirm: async () => {
         setUpdatingStatus(true);
         try {
@@ -152,21 +138,18 @@ export function CalendarModals({
           if (res.ok) {
             await fetchData();
             setShowEditModal(false);
-            toast.success('Cita eliminada');
+            toast.success(t('dashboard.calendar.toast.deleted') || 'Cita eliminada');
           } else {
-            toast.error('Error al eliminar');
+            toast.error(t('dashboard.calendar.toast.delete_error') || 'Error al eliminar');
           }
         } catch (e) {
-          toast.error('Error de conexión');
+          toast.error(t('dashboard.calendar.toast.connection_error') || 'Error de conexión');
         } finally {
+          setUpdatingStatus(true); // Keep in state if needed or false
           setUpdatingStatus(false);
         }
       }
     });
-  };
-
-  const handleDeleteBlock = () => {
-    // La lógica se ha movido al componente modular DeleteBlockConfirm
   };
 
   return (

@@ -10,6 +10,7 @@ import { ContextPanel } from '@/components/calendar-v2/ContextPanel';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { TimeIndicator } from '@/components/calendar-v2/TimeIndicator';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,14 +18,9 @@ export const dynamic = 'force-dynamic';
  * CalendarContent
  * Componente principal refactorizado (v2).
  * Orquesta los componentes modulares y utiliza useCalendarData para la gestión del estado.
- *
- * ARQUITECTURA MÓVIL:
- * - La vista móvil es hermana directa de la "isla" desktop (hidden md:flex).
- * - Ningún ancestro de la vista móvil tiene overflow-hidden → sticky funciona.
- * - pb-[75px] en el contenedor raíz móvil hace que el scrollbar termine antes del BottomNav fijo.
- * - overflow-y-visible en el carrusel evita recortar el scale-105 del día activo.
  */
 function CalendarContent() {
+  const { t, language } = useLanguage();
   const c = useCalendarData();
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false);
@@ -71,13 +67,17 @@ function CalendarContent() {
     return (
       <div className="flex flex-col items-center justify-center py-32 animate-pulse">
         <div className="w-12 h-12 border-4 border-[#f3c7cb] border-t-[#d9777f] rounded-full animate-spin mb-6"></div>
-        <p className="text-stone-500 font-serif italic text-lg">Cargando tu agenda...</p>
+        <p className="text-stone-500 font-serif italic text-lg">{t('dashboard.calendar.loading_agenda')}</p>
       </div>
     );
   }
 
   const confirmedCount = c.appointments.filter(a => a.status === 'confirmed').length;
   const pendingCount = c.appointments.filter(a => a.status === 'web_pending').length;
+
+  const getLocaleString = () => {
+    return language === 'es' ? 'es-ES' : language === 'en' ? 'en-US' : 'fr-FR';
+  };
 
   return (
     <div className="flex flex-row h-full w-full overflow-hidden bg-stone-50/50">
@@ -146,7 +146,7 @@ function CalendarContent() {
             hidden md:flex absolute top-5 left-[50px] -translate-x-1/2 z-50 p-2.5 rounded-full border border-stone-200 shadow-xl transition-all duration-300 group items-center justify-center
             ${isPanelOpen ? 'bg-white/40 backdrop-blur-sm text-stone-500 hover:text-stone-800' : 'bg-white text-stone-900 hover:scale-110'}
           `}
-          title={isPanelOpen ? 'Cerrar Panel' : 'Abrir Panel'}
+          title={isPanelOpen ? t('dashboard.calendar.close_panel') : t('dashboard.calendar.open_panel')}
         >
           {isPanelOpen ? (
             <PanelLeftClose size={18} className="group-hover:-translate-x-0.5 transition-transform" />
@@ -175,7 +175,7 @@ function CalendarContent() {
             {c.days.map((date, i) => (
               <div key={i} className="py-3 px-4 text-center border-r border-stone-200 last:border-r-0">
                 <p className="text-[10px] font-black text-[#d9777f] uppercase tracking-[0.2em] mb-0.5">
-                  {date.toLocaleDateString('es-ES', { weekday: 'short' })}
+                  {date.toLocaleDateString(getLocaleString(), { weekday: 'short' })}
                 </p>
                 <p className="text-2xl font-serif italic font-black text-stone-900">
                   {date.getDate()}
@@ -238,13 +238,7 @@ function CalendarContent() {
           </div>
         </div>
 
-        {/*
-          ── MÓVIL: Flex pura dentro del layout (h-[100dvh] overflow-hidden) ──
-          - El contenedor raíz es flex-col, ocupa todo el espacio disponible menos el BottomNav.
-          - No usamos fixed aquí para evitar conflictos con el layout padre.
-          - overflow-x-hidden elimina el scroll horizontal.
-          - Solo la grilla interna tiene overflow-y-auto.
-        */}
+        {/* ── MÓVIL: Flex pura dentro del layout (h-[100dvh] overflow-hidden) ── */}
         <div className="md:hidden flex-1 flex flex-col overflow-hidden bg-white min-h-0">
 
           {/* 1. Header estático anclado (nunca se mueve) */}
@@ -261,7 +255,7 @@ function CalendarContent() {
 
             {/* Carrusel de días con degradado */}
             <div className="flex-1 relative overflow-hidden">
-              {/* Degradado (Fade Out) para suavizar la entrada de los días bajo el botón */}
+              {/* Degradado (Fade Out) */}
               <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white via-white/80 to-transparent pointer-events-none z-20" />
 
               <div
@@ -283,7 +277,7 @@ function CalendarContent() {
                       `}
                     >
                       <span className={`text-[8px] font-bold uppercase tracking-wider ${isSelected ? 'text-[#d9777f]' : 'text-stone-300'}`}>
-                        {date.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '')}
+                        {date.toLocaleDateString(getLocaleString(), { weekday: 'short' }).replace('.', '')}
                       </span>
                       <span className={`text-base font-serif italic font-black ${isSelected ? 'text-stone-800' : 'text-stone-400'}`}>
                         {date.getDate()}
@@ -295,7 +289,7 @@ function CalendarContent() {
             </div>
           </div>
 
-          {/* 2. Grilla con scroll interno — pb-[56px] para que el footer no tape las últimas horas */}
+          {/* 2. Grilla con scroll interno */}
           <div ref={mobileGridRef} className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden bg-white pb-[56px]">
             <div
               className="flex relative"
@@ -396,13 +390,13 @@ function CalendarContent() {
               <div className="flex flex-col gap-5">
                 <div>
                   <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-1.5 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-stone-300" /> Cliente
+                    <span className="w-1.5 h-1.5 rounded-full bg-stone-300" /> {t('dashboard.calendar.client')}
                   </p>
                   <p className="font-extrabold text-stone-900 text-[22px] leading-tight pr-20">{c.clientMap.get(c.hoveredAppt.client_id)?.name || 'Desconocido'}</p>
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-1.5 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-stone-300" /> Servicio / Tratamiento
+                    <span className="w-1.5 h-1.5 rounded-full bg-stone-300" /> {t('dashboard.calendar.service')}
                   </p>
                   <p className={`font-black text-[17px] leading-tight ${c.hoveredAppt.status === 'confirmed' ? 'text-blue-600' :
                     c.hoveredAppt.status === 'completed' ? 'text-emerald-600' :
@@ -410,7 +404,7 @@ function CalendarContent() {
                     }`}>{c.serviceMap.get(c.hoveredAppt.service_id)?.name || 'Sin especificar'}</p>
                 </div>
                 <div className="flex justify-between items-center bg-stone-50/50 p-4 rounded-2xl border border-stone-100 mt-1">
-                  <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em]">Estado Actual</p>
+                  <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em]">{t('dashboard.calendar.current_status')}</p>
                   <span className={`text-[11px] font-black px-3 py-1.5 rounded-xl uppercase tracking-wider
                     ${c.hoveredAppt.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
                       c.hoveredAppt.status === 'cancelled' ? 'bg-red-100 text-red-700' :
@@ -418,18 +412,18 @@ function CalendarContent() {
                           c.hoveredAppt.status === 'confirmed' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
                             'bg-slate-100 text-slate-700'
                     }`}>
-                    {c.hoveredAppt.status === 'completed' ? 'Realizada' :
-                      c.hoveredAppt.status === 'cancelled' ? 'Cancelada' :
-                        c.hoveredAppt.status === 'web_pending' ? 'Pte. Confirmar' :
-                          c.hoveredAppt.status === 'confirmed' ? 'Confirmada' :
-                            c.hoveredAppt.status === 'no_show' ? 'No Asistió' :
-                              'Pendiente'}
+                    {c.hoveredAppt.status === 'completed' ? t('dashboard.calendar.completed') :
+                      c.hoveredAppt.status === 'cancelled' ? t('dashboard.calendar.cancelled') :
+                        c.hoveredAppt.status === 'web_pending' ? t('dashboard.calendar.web_pending') :
+                          c.hoveredAppt.status === 'confirmed' ? t('dashboard.calendar.confirmed') :
+                            c.hoveredAppt.status === 'no_show' ? t('dashboard.calendar.no_show') :
+                              t('dashboard.calendar.pending')}
                   </span>
                 </div>
                 <div className="mt-1 bg-[#fefefe] p-4 rounded-2xl border border-stone-50 shadow-sm">
-                  <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-2">Notas del Profesional</p>
+                  <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-2">{t('dashboard.calendar.notes')}</p>
                   <p className="text-[13px] text-stone-600 font-medium italic leading-relaxed line-clamp-4">
-                    {c.hoveredAppt.notes || 'Sin observaciones registradas...'}
+                    {c.hoveredAppt.notes || t('dashboard.calendar.no_notes')}
                   </p>
                 </div>
               </div>
@@ -442,11 +436,12 @@ function CalendarContent() {
 }
 
 export default function CalendarPage() {
+  const { t } = useLanguage();
   return (
     <Suspense fallback={
       <div className="flex flex-col items-center justify-center py-32">
         <div className="w-8 h-8 border-4 border-[#f3c7cb] border-t-[#d9777f] rounded-full animate-spin mb-4"></div>
-        <p className="text-stone-500 font-medium">Cargando orquestador...</p>
+        <p className="text-stone-500 font-medium">{t('dashboard.calendar.loading_orchestrator')}</p>
       </div>
     }>
       <CalendarContent />

@@ -1,9 +1,11 @@
-"use client"
+"use client";
+
 import { useState, useEffect } from 'react';
 import { SignaturePadModal } from '@/components/SignaturePadModal';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { toast } from 'sonner';
 import { useAuthRole } from '@/hooks/useAuthRole';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 import {
   Dialog,
   DialogContent,
@@ -14,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 
 export default function ClientProfilePage({ params }: { params: { id: string } }) {
+  const { t, language } = useLanguage();
   const { role } = useAuthRole();
   const isEspecialista = role?.toLowerCase() === 'especialista';
   const { showFeedback } = useFeedback();
@@ -86,12 +89,12 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
         const updated = await res.json();
         setClient(updated);
         setIsEditing(false);
-        toast.success('Ficha de cliente actualizada');
+        toast.success(t('dashboard.clients.client_updated') || 'Ficha de cliente actualizada');
       } else {
-        toast.error('Error al guardar los cambios');
+        toast.error(t('dashboard.clients.error_saving') || 'Error al guardar los cambios');
       }
     } catch (err) {
-      toast.error('Error de conexión fallida');
+      toast.error(t('dashboard.clients.connection_failed') || 'Error de conexión fallida');
     } finally {
       setSaving(false);
     }
@@ -126,13 +129,13 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
         const newConsent = await res.json();
         setConsents([newConsent, ...consents]);
         setIsSignatureModalOpen(false);
-        toast.success('Consentimiento guardado y firmado');
+        toast.success(t('dashboard.clients.consent_signed') || 'Consentimiento guardado y firmado');
       } else {
-        toast.error('Error al guardar el documento legal');
+        toast.error(t('dashboard.clients.consent_error') || 'Error al guardar el documento legal');
       }
     } catch (e) {
       console.error(e);
-      toast.error('Error de conexión al servidor');
+      toast.error(t('dashboard.clients.server_connection_error') || 'Error de conexión al servidor');
     }
   };
 
@@ -159,12 +162,12 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
       if (res.ok) {
         setShowPayModal(false);
         fetchClient(); // refresh specific client data
-        toast.success('Cobro registrado correctamente');
+        toast.success(t('dashboard.clients.payment_registered') || 'Cobro registrado correctamente');
       } else {
-        toast.error('Error al registrar el pago');
+        toast.error(t('dashboard.clients.payment_register_error') || 'Error al registrar el pago');
       }
     } catch (e) {
-      toast.error('Error de conexión');
+      toast.error(t('dashboard.clients.connection_error') || 'Error de conexión');
     } finally {
       setPaying(false);
     }
@@ -173,16 +176,22 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
   if (loading) return (
     <div className="p-20 text-center">
       <div className="inline-block w-8 h-8 border-4 border-[#f3c7cb] border-t-[#d9777f] rounded-full animate-spin mb-4"></div>
-      <p className="text-stone-500 font-medium">Leyendo historial médico...</p>
+      <p className="text-stone-500 font-medium">{t('dashboard.clients.loading_medical_history') || 'Leyendo historial médico...'}</p>
     </div>
   );
   
-  if (!client) return <div className="p-10 text-stone-500 text-center font-bold text-xl">Cliente no encontrado</div>;
+  if (!client) return (
+    <div className="p-10 text-stone-500 text-center font-bold text-xl">
+      {t('dashboard.clients.client_not_found') || 'Cliente no encontrado'}
+    </div>
+  );
+
+  const dateLocale = language === 'es' ? 'es-ES' : language === 'en' ? 'en-US' : 'fr-FR';
 
   return (
     <div className="animate-in fade-in duration-500">
       <a href="/dashboard/clients" className="text-sm font-semibold text-stone-400 hover:text-[#d9777f] mb-6 inline-flex items-center transition-colors">
-        ← Volver al directorio
+        {t('dashboard.clients.back_to_directory') || '← Volver al directorio'}
       </a>
 
       {/* Header Profile */}
@@ -193,43 +202,57 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
         </div>
         <div className="z-10 flex-1 w-full">
           {isEditing ? (
-            <form onSubmit={handleUpdate} className="space-y-4">
+            <form onSubmit={handleUpdate} className="space-y-4 bg-white">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-stone-500 uppercase tracking-widest mb-1">Nombre</label>
+                  <label className="block text-xs font-semibold text-stone-500 uppercase tracking-widest mb-1">
+                    {t('dashboard.clients.name_label_short') || 'Nombre'}
+                  </label>
                   <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none disabled:bg-stone-50 disabled:text-stone-400" required disabled={isEspecialista} />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-stone-500 uppercase tracking-widest mb-1">Email</label>
+                  <label className="block text-xs font-semibold text-stone-500 uppercase tracking-widest mb-1">
+                    {t('dashboard.clients.email_label_short') || 'Email'}
+                  </label>
                   <input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none disabled:bg-stone-50 disabled:text-stone-400" required disabled={isEspecialista} />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-stone-500 uppercase tracking-widest mb-1">Teléfono</label>
+                  <label className="block text-xs font-semibold text-stone-500 uppercase tracking-widest mb-1">
+                    {t('dashboard.clients.phone_label_short') || 'Teléfono'}
+                  </label>
                   <input type="tel" value={formData.phone || ''} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none disabled:bg-stone-50 disabled:text-stone-400" disabled={isEspecialista} />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-stone-500 uppercase tracking-widest mb-1">Alergias</label>
-                  <input type="text" value={formData.allergies || ''} onChange={e => setFormData({...formData, allergies: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none" placeholder="Sin alergias" />
+                  <label className="block text-xs font-semibold text-stone-500 uppercase tracking-widest mb-1">
+                    {t('dashboard.clients.allergies_label_short') || 'Alergias'}
+                  </label>
+                  <input type="text" value={formData.allergies || ''} onChange={e => setFormData({...formData, allergies: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none" placeholder={t('dashboard.clients.no_allergies_placeholder') || 'Sin alergias'} />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-stone-500 uppercase tracking-widest mb-1">DNI / NIF</label>
-                  <input type="text" value={formData.dni || ''} onChange={e => setFormData({...formData, dni: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none disabled:bg-stone-50 disabled:text-stone-400" placeholder="Opcional" disabled={isEspecialista} />
+                  <label className="block text-xs font-semibold text-stone-500 uppercase tracking-widest mb-1">
+                    {t('dashboard.clients.dni_label') || 'DNI / NIF'}
+                  </label>
+                  <input type="text" value={formData.dni || ''} onChange={e => setFormData({...formData, dni: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none disabled:bg-stone-50 disabled:text-stone-400" placeholder={t('dashboard.clients.optional') || 'Opcional'} disabled={isEspecialista} />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-semibold text-stone-500 uppercase tracking-widest mb-1">Dirección Fiscal</label>
-                  <input type="text" value={formData.address || ''} onChange={e => setFormData({...formData, address: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none disabled:bg-stone-50 disabled:text-stone-400" placeholder="Opcional" disabled={isEspecialista} />
+                  <label className="block text-xs font-semibold text-stone-500 uppercase tracking-widest mb-1">
+                    {t('dashboard.clients.address_label_short') || 'Dirección Fiscal'}
+                  </label>
+                  <input type="text" value={formData.address || ''} onChange={e => setFormData({...formData, address: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none disabled:bg-stone-50 disabled:text-stone-400" placeholder={t('dashboard.clients.optional') || 'Opcional'} disabled={isEspecialista} />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-semibold text-stone-500 uppercase tracking-widest mb-1">Historial y Observaciones</label>
-                  <textarea value={formData.medical_history || ''} onChange={e => setFormData({...formData, medical_history: e.target.value})} rows={3} className="w-full px-4 py-2 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none" placeholder="Añadir notas médicas..."></textarea>
+                  <label className="block text-xs font-semibold text-stone-500 uppercase tracking-widest mb-1">
+                    {t('dashboard.clients.medical_history_label') || 'Historial y Observaciones'}
+                  </label>
+                  <textarea value={formData.medical_history || ''} onChange={e => setFormData({...formData, medical_history: e.target.value})} rows={3} className="w-full px-4 py-2 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none" placeholder={t('dashboard.clients.medical_history_placeholder') || 'Añadir notas médicas...'}></textarea>
                 </div>
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="submit" disabled={saving} className="bg-[#d9777f] text-white px-6 py-2.5 rounded-xl font-bold hover:bg-[#c6646b] transition-all disabled:opacity-50">
-                  {saving ? 'Guardando...' : 'Guardar Cambios'}
+                  {saving ? (t('dashboard.clients.saving') || 'Guardando...') : (t('dashboard.clients.save_changes') || 'Guardar Cambios')}
                 </button>
                 <button type="button" onClick={() => {setIsEditing(false); setFormData(client);}} className="bg-stone-100 text-stone-600 px-6 py-2.5 rounded-xl font-bold hover:bg-stone-200 transition-all">
-                  Cancelar
+                  {t('dashboard.clients.cancel') || 'Cancelar'}
                 </button>
               </div>
             </form>
@@ -245,10 +268,10 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
 
               <div className="mt-6 flex flex-wrap gap-4">
                 <a href={`/dashboard/calendar?client_id=${params.id}`} className="bg-[#d9777f] text-white px-6 py-2.5 rounded-xl font-bold hover:bg-[#c6646b] shadow-md transition-all active:scale-95 border border-transparent inline-block text-center cursor-pointer">
-                  Reservar Cita
+                  {t('dashboard.clients.book_appointment') || 'Reservar Cita'}
                 </a>
                 <button onClick={() => setIsEditing(true)} className="bg-stone-50 text-stone-600 px-6 py-2.5 rounded-xl font-bold hover:bg-stone-100 border border-stone-200 transition-all active:scale-95 shadow-sm">
-                  {isEspecialista ? 'Añadir Notas Médicas' : 'Editar Ficha'}
+                  {isEspecialista ? (t('dashboard.clients.add_medical_notes') || 'Añadir Notas Médicas') : (t('dashboard.clients.edit_record') || 'Editar Ficha')}
                 </button>
               </div>
             </>
@@ -266,12 +289,16 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
               <div className="mb-8">
                 <h3 className="text-lg font-bold text-stone-800 mb-4 flex items-center gap-2">
                   <span className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 shadow-sm border border-rose-100">💰</span>
-                  Deuda Pendiente
+                  {t('dashboard.clients.pending_debt') || 'Deuda Pendiente'}
                 </h3>
                 <div className="p-5 bg-rose-50 border border-rose-200 rounded-2xl flex flex-col items-center justify-center shadow-inner">
-                  <span className="text-xs uppercase font-extrabold text-rose-500 tracking-widest mb-1">Monto a abonar</span>
+                  <span className="text-xs uppercase font-extrabold text-rose-500 tracking-widest mb-1">
+                    {t('dashboard.clients.amount_to_pay') || 'Monto a abonar'}
+                  </span>
                   <span className="text-4xl font-extrabold text-rose-600">{totalDebt}€</span>
-                  <p className="text-xs text-rose-400 font-medium text-center mt-2 leading-tight">El cliente mantiene bonos asignados sin haber completado el pago.</p>
+                  <p className="text-xs text-rose-400 font-medium text-center mt-2 leading-tight">
+                    {t('dashboard.clients.vouchers_debt_desc') || 'El cliente mantiene bonos asignados sin haber completado el pago.'}
+                  </p>
                 </div>
               </div>
             );
@@ -280,7 +307,7 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
 
           <h3 className="text-lg font-bold text-stone-800 mb-4 flex items-center gap-2">
             <span className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-red-500 shadow-sm border border-red-100">⚠️</span>
-            Alertas Médicas
+            {t('dashboard.clients.medical_alerts') || 'Alertas Médicas'}
           </h3>
           {client.allergies ? (
             <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-800 font-medium">
@@ -288,16 +315,16 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
             </div>
           ) : (
             <div className="p-4 bg-green-50 border border-green-100 rounded-2xl text-green-700 font-medium text-center">
-              Sin alergias o precauciones registradas.
+              {t('dashboard.clients.no_allergies_registered') || 'Sin alergias o precauciones registradas.'}
             </div>
           )}
           
           <h3 className="text-lg font-bold text-stone-800 mb-4 mt-8 flex items-center gap-2">
             <span className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 shadow-sm border border-blue-100">📝</span>
-            Observaciones Libres
+            {t('dashboard.clients.free_observations') || 'Observaciones Libres'}
           </h3>
           <p className="text-stone-500 text-sm leading-relaxed bg-stone-50 p-5 rounded-2xl border border-stone-100 shadow-inner min-h-[100px] whitespace-pre-wrap">
-            {client.medical_history || 'No hay historial médico redactado aún.'}
+            {client.medical_history || (t('dashboard.clients.no_medical_history') || 'No hay historial médico redactado aún.')}
           </p>
         </div>
 
@@ -308,13 +335,17 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
           {/* Vouchers */}
           <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-stone-100">
             <h3 className="text-xl font-bold text-stone-800 mb-6 border-b border-stone-50 pb-4 flex justify-between items-center">
-              <span>🎟️ Bonos Adquiridos</span>
+              <span>{t('dashboard.clients.acquired_vouchers') || '🎟️ Bonos Adquiridos'}</span>
               {!isEspecialista && (
-                <a href="/dashboard/vouchers" className="text-sm font-semibold text-[#d9777f] bg-[#fdf2f3] px-3 py-1 rounded-lg hover:bg-[#f3c7cb] transition-colors">Vender Bono</a>
+                <a href="/dashboard/vouchers" className="text-sm font-semibold text-[#d9777f] bg-[#fdf2f3] px-3 py-1 rounded-lg hover:bg-[#f3c7cb] transition-colors">
+                  {t('dashboard.clients.sell_voucher') || 'Vender Bono'}
+                </a>
               )}
             </h3>
             {vouchers.length === 0 ? (
-              <p className="text-stone-400 text-sm italic">Este cliente no tiene bonos en su cuenta.</p>
+              <p className="text-stone-400 text-sm italic">
+                {t('dashboard.clients.no_vouchers') || 'Este cliente no tiene bonos en su cuenta.'}
+              </p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {vouchers.map(v => {
@@ -329,27 +360,33 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
                         <div className="flex justify-between items-start mb-2 gap-2">
                           <p className="font-extrabold text-stone-700 text-sm leading-tight">{service?.name || 'Servicio...'}</p>
                           <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-stone-200 text-stone-500'}`}>
-                            {isActive ? 'Activo' : 'Cerrado'}
+                            {isActive ? (t('dashboard.clients.active') || 'Activo') : (t('dashboard.clients.closed') || 'Cerrado')}
                           </span>
                         </div>
-                        <p className="text-xs font-semibold text-stone-500 mb-4">⏳ Vence: {new Date(v.expiration_date).toLocaleDateString()}</p>
+                        <p className="text-xs font-semibold text-stone-500 mb-4">
+                          {t('dashboard.clients.expires') || '⏳ Vence: '}{new Date(v.expiration_date).toLocaleDateString(dateLocale)}
+                        </p>
                       </div>
 
                       <div>
                         {/* Financial Area */}
                         {(v.payment_status === 'partial' || v.payment_status === 'pending') ? (
-                          <div className="mb-4 bg-white/60 p-2.5 rounded-lg border border-rose-100 flex items-center justify-between">
-                            <div>
-                               <span className="text-[10px] uppercase font-bold text-rose-400 block mb-0.5">Deuda</span>
-                               <span className="text-sm font-extrabold text-rose-600">{v.total_price - v.amount_paid}€</span>
-                            </div>
-                            <button onClick={() => handleOpenPayModal(v)} className="bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold px-3 py-1.5 rounded-md text-xs transition-colors shadow-sm focus:outline-none">
-                              Cobrar
-                            </button>
-                          </div>
+                           <div className="mb-4 bg-white/60 p-2.5 rounded-lg border border-rose-100 flex items-center justify-between">
+                             <div>
+                                <span className="text-[10px] uppercase font-bold text-rose-400 block mb-0.5">
+                                  {t('dashboard.clients.debt') || 'Deuda'}
+                                </span>
+                                <span className="text-sm font-extrabold text-rose-600">{v.total_price - v.amount_paid}€</span>
+                             </div>
+                             <button onClick={() => handleOpenPayModal(v)} className="bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold px-3 py-1.5 rounded-md text-xs transition-colors shadow-sm focus:outline-none">
+                               {t('dashboard.clients.collect') || 'Cobrar'}
+                             </button>
+                           </div>
                         ) : (
                           <div className="mb-4 bg-emerald-50/50 p-2 rounded-lg border border-emerald-100 flex items-center justify-center">
-                            <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">✓ Pagado Totalmente</span>
+                            <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
+                              {t('dashboard.clients.fully_paid') || '✓ Pagado Totalmente'}
+                            </span>
                           </div>
                         )}
 
@@ -370,20 +407,24 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
           {/* Documentos Legales y RGPD */}
           <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-stone-100">
             <h3 className="text-xl font-bold text-stone-800 mb-6 border-b border-stone-50 pb-4 flex items-center justify-between">
-              <span>📄 Documentos Legales y Firmas</span>
+              <span>{t('dashboard.clients.legal_docs_signatures') || '📄 Documentos Legales y Firmas'}</span>
               <button 
                 onClick={() => setIsSignatureModalOpen(true)}
                 className="text-sm font-semibold text-emerald-700 bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-100 hover:bg-emerald-100 transition-colors shadow-sm"
               >
-                + Nuevo Consentimiento
+                {t('dashboard.clients.new_consent') || '+ Nuevo Consentimiento'}
               </button>
             </h3>
             
             {consents.length === 0 ? (
               <div className="text-center py-8">
                 <span className="text-stone-300 text-4xl mb-4 block">⚖️</span>
-                <p className="text-stone-500 font-medium">No hay documentos firmados.</p>
-                <p className="text-stone-400 text-sm mt-1">El cliente no ha firmado todavía el consentimiento RGPD básico.</p>
+                <p className="text-stone-500 font-medium">
+                  {t('dashboard.clients.no_signed_docs') || 'No hay documentos firmados.'}
+                </p>
+                <p className="text-stone-400 text-sm mt-1">
+                  {t('dashboard.clients.no_signed_docs_desc') || 'El cliente no ha firmado todavía el consentimiento RGPD básico.'}
+                </p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -395,14 +436,14 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
                     <div className="flex-1">
                        <p className="font-bold text-stone-800 text-sm">{c.document_title}</p>
                        <p className="text-xs text-stone-500 font-medium mt-0.5">
-                         Firmado el: {new Date(c.signed_at).toLocaleString('es-ES', { dateStyle: 'long', timeStyle: 'short' })}
+                         {t('dashboard.clients.signed_on') || 'Firmado el: '}{new Date(c.signed_at).toLocaleString(dateLocale, { dateStyle: 'long', timeStyle: 'short' })}
                        </p>
                     </div>
                     <a
                       href={`/dashboard/clients/${params.id}/consents/${c.id}`}
                       className="w-full sm:w-auto text-center px-4 py-2 bg-white border border-stone-200 text-stone-600 font-bold text-xs rounded-lg shadow-sm hover:border-[#d9777f] hover:text-[#d9777f] transition-colors"
                     >
-                      Ver / Imprimir
+                      {t('dashboard.clients.view_print') || 'Ver / Imprimir'}
                     </a>
                   </div>
                 ))}
@@ -412,13 +453,19 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
 
           {/* Treatment History */}
           <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-stone-100">
-            <h3 className="text-xl font-bold text-stone-800 mb-6 border-b border-stone-50 pb-4">Historial de Tratamientos Finalizados</h3>
+            <h3 className="text-xl font-bold text-stone-800 mb-6 border-b border-stone-50 pb-4">
+              {t('dashboard.clients.completed_treatments_history') || 'Historial de Tratamientos Finalizados'}
+            </h3>
             
             {appointments.length === 0 ? (
               <div className="text-center py-10 bg-stone-50/50 rounded-2xl border border-stone-100 border-dashed">
                 <span className="text-stone-300 text-5xl mb-4 block inline-block transform -rotate-6">📅</span>
-                <p className="text-stone-500 font-medium text-lg">Cero tratamientos finalizados.</p>
-                <p className="text-stone-400 text-sm mt-1">Acude a la agenda para marcar citas como completadas.</p>
+                <p className="text-stone-500 font-medium text-lg">
+                  {t('dashboard.clients.zero_completed_treatments') || 'Cero tratamientos finalizados.'}
+                </p>
+                <p className="text-stone-400 text-sm mt-1">
+                  {t('dashboard.clients.complete_appointments_in_calendar') || 'Acude a la agenda para marcar citas como completadas.'}
+                </p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -433,11 +480,11 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
                       <div>
                         <p className="font-bold text-stone-800">{s?.name || 'Tratamiento Desconocido'}</p>
                         <p className="text-xs font-semibold text-stone-500 flex items-center gap-1.5">
-                          <span className="text-[#d9777f]">📅</span> {dateInfo.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}
+                          <span className="text-[#d9777f]">📅</span> {dateInfo.toLocaleDateString(dateLocale, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}
                         </p>
                       </div>
                       <div className="ml-auto text-xs font-bold text-stone-400 bg-white px-3 py-1.5 rounded-lg border border-stone-200 uppercase tracking-widest hidden sm:block">
-                        Finalizado
+                        {t('dashboard.clients.completed') || 'Finalizado'}
                       </div>
                     </div>
                   )
@@ -447,7 +494,7 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
             
             <div className="mt-6 text-center">
               <a href={`/dashboard/calendar?client_id=${params.id}`} className="inline-block text-[#d9777f] font-bold text-sm bg-white px-5 py-2.5 rounded-xl border border-stone-200 shadow-sm hover:border-[#f3c7cb] transition-colors cursor-pointer">
-                + Ir a la Agenda
+                {t('dashboard.clients.go_to_calendar') || '+ Ir a la Agenda'}
               </a>
             </div>
           </div>
@@ -464,22 +511,26 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
 
       {/* --- Modal de Saldar Deuda --- */}
       <Dialog open={showPayModal} onOpenChange={setShowPayModal}>
-        <DialogContent className="p-0 border-none max-w-sm">
+        <DialogContent className="p-0 border-none max-w-sm bg-white rounded-2xl overflow-hidden">
           <DialogHeader className="p-6 border-b border-stone-50 bg-white rounded-t-xl">
-            <DialogTitle className="text-xl font-extrabold text-stone-800">Añadir Pago</DialogTitle>
+            <DialogTitle className="text-xl font-extrabold text-stone-800">
+              {t('dashboard.clients.add_payment') || 'Añadir Pago'}
+            </DialogTitle>
             <DialogDescription className="text-stone-400 text-xs mt-1">
-              Registra un cobro parcial o total sobre la deuda del bono del paciente.
+              {t('dashboard.clients.add_payment_desc') || 'Registra un cobro parcial o total sobre la deuda del bono del paciente.'}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="p-6 pb-32">
+          <div className="p-6 pb-32 bg-white">
             <form id="pay-debt-form-profile" onSubmit={handlePayDebt}>
               <p className="text-sm text-stone-500 mb-4 bg-stone-50 p-3 rounded-lg border border-stone-100">
-                La deuda actual de este bono es de <strong className="text-rose-500">{currentDebt}€</strong>.
+                {t('dashboard.clients.current_debt_is') || 'La deuda actual de este bono es de '}<strong className="text-rose-500">{currentDebt}€</strong>.
               </p>
               
               <div>
-                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Monto abonado HOY (€)</label>
+                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">
+                  {t('dashboard.clients.amount_paid_today') || 'Monto abonado HOY (€)'}
+                </label>
                 <input 
                   required 
                   type="number" 
@@ -489,15 +540,19 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
                   onChange={e => setPayAmount(Number(e.target.value))} 
                   className="w-full p-4 bg-white border border-stone-200 border-l-4 border-l-[#d9777f] rounded-xl font-extrabold text-stone-800 outline-none text-xl" 
                 />
-                <p className="text-[10px] text-stone-400 mt-1">Este importe cerrará parcialmente o totalmente la deuda, actualizando la factura pendiente.</p>
+                <p className="text-[10px] text-stone-400 mt-1">
+                  {t('dashboard.clients.payment_update_desc') || 'Este importe cerrará parcialmente o totalmente la deuda, actualizando la factura pendiente.'}
+                </p>
               </div>
             </form>
           </div>
 
-          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 border-t border-stone-100 bg-gradient-to-t from-white via-white to-white/0 flex gap-3 rounded-b-2xl z-20">
-             <button type="button" onClick={() => setShowPayModal(false)} className="flex-1 py-3 text-stone-600 font-bold border border-stone-200 rounded-xl hover:bg-stone-50">Cancelar</button>
+          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 border-t border-stone-100 bg-white flex gap-3 rounded-b-2xl z-20">
+             <button type="button" onClick={() => setShowPayModal(false)} className="flex-1 py-3 text-stone-600 font-bold border border-stone-200 rounded-xl hover:bg-stone-50">
+               {t('dashboard.clients.cancel') || 'Cancelar'}
+             </button>
              <button form="pay-debt-form-profile" type="submit" disabled={paying} className="flex-1 py-3 text-white bg-[#d9777f] font-bold rounded-xl hover:bg-[#c6646b] shadow-md flex justify-center items-center">
-               {paying ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : 'Confirmar Cobro'}
+               {paying ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : (t('dashboard.clients.confirm_payment') || 'Confirmar Cobro')}
              </button>
           </DialogFooter>
         </DialogContent>

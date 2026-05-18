@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 interface EmptySlotProps {
   hour: number;
@@ -21,8 +22,9 @@ export function EmptySlot({
   onClick,
   viewType = 'desktop'
 }: EmptySlotProps) {
+  const { t } = useLanguage();
   const isLastSlotOfHour = minute === 45;
-  const borderClass = !isLastSlotOfHour ? (viewType === 'desktop' ? 'border-b border-dashed border-stone-200' : 'border-b border-dashed border-stone-200') : '';
+  const borderClass = !isLastSlotOfHour ? 'border-b border-dashed border-stone-200' : '';
   
   const bgImage = isDisabled
     ? 'repeating-linear-gradient(45deg, #f5f5f4, #f5f5f4 8px, #eeeeee 8px, #eeeeee 16px)'
@@ -47,7 +49,7 @@ export function EmptySlot({
       {isLunch && ((viewType === 'desktop' && minute === 0) || (viewType === 'mobile' && minute === 15)) && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <span className="text-[8px] font-bold text-stone-300 uppercase tracking-widest leading-none">
-            {viewType === 'mobile' ? 'Cerrado / Lunch' : 'Descanso'}
+            {viewType === 'mobile' ? (t('dashboard.calendar.lunch_mobile') || 'Cerrado / Lunch') : (t('dashboard.calendar.lunch_desktop') || 'Descanso')}
           </span>
         </div>
       )}

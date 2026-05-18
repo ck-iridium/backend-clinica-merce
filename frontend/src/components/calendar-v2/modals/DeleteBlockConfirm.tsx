@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Unlock } from 'lucide-react';
 import { toast } from 'sonner';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 import {
   Dialog,
   DialogContent,
@@ -27,6 +28,7 @@ export function DeleteBlockConfirm({
   selectedBlock,
   fetchData,
 }: DeleteBlockConfirmProps) {
+  const { t } = useLanguage();
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
   const handleDeleteBlock = async () => {
@@ -39,12 +41,12 @@ export function DeleteBlockConfirm({
       if (res.ok) {
         await fetchData();
         setShowBlockDeleteModal(false);
-        toast.success('Horario liberado');
+        toast.success(t('dashboard.calendar.toast.block_released') || 'Horario liberado');
       } else {
-        toast.error('Error al liberar');
+        toast.error(t('dashboard.calendar.toast.release_error') || 'Error al liberar');
       }
     } catch (err) {
-      toast.error('Error de conexión');
+      toast.error(t('dashboard.calendar.toast.connection_error') || 'Error de conexión');
     } finally {
       setUpdatingStatus(false);
     }
@@ -58,9 +60,9 @@ export function DeleteBlockConfirm({
             <Unlock size={32} strokeWidth={1.5} />
           </div>
           <DialogHeader className="p-0">
-            <DialogTitle className="text-xl font-extrabold text-stone-800 mb-2">Liberar Horario</DialogTitle>
+            <DialogTitle className="text-xl font-extrabold text-stone-800 mb-2">{t('dashboard.calendar.modal.release_title') || 'Liberar Horario'}</DialogTitle>
             <DialogDescription className="text-stone-500 text-sm">
-              ¿Deseas eliminar este bloqueo y permitir nuevas citas en este hueco?
+              {t('dashboard.calendar.modal.release_desc') || '¿Deseas eliminar este bloqueo y permitir nuevas citas en este hueco?'}
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -70,13 +72,13 @@ export function DeleteBlockConfirm({
             disabled={updatingStatus}
             className="w-full bg-stone-900 text-white py-4 rounded-xl font-bold hover:bg-black transition-all active:scale-95"
           >
-            {updatingStatus ? 'Liberando...' : 'Sí, Eliminar Bloqueo'}
+            {updatingStatus ? (t('dashboard.calendar.modal.releasing') || 'Liberando...') : (t('dashboard.calendar.modal.confirm_release') || 'Sí, Eliminar Bloqueo')}
           </button>
           <button
             onClick={() => setShowBlockDeleteModal(false)}
             className="w-full bg-stone-50 text-stone-500 py-3 rounded-xl font-bold hover:bg-stone-100 transition-all"
           >
-            Cancelar
+            {t('dashboard.calendar.modal.cancel') || 'Cancelar'}
           </button>
         </DialogFooter>
       </DialogContent>

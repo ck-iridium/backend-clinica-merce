@@ -7,8 +7,10 @@ import { useRouter } from 'next/navigation';
 import { useAuthRole } from '@/hooks/useAuthRole';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 export default function POSPage() {
+  const { t } = useLanguage();
   const { showFeedback } = useFeedback();
   const router = useRouter();
   const { role, loading: loadingRole } = useAuthRole();
@@ -33,12 +35,12 @@ export default function POSPage() {
       
       if (!hasAccess) {
         router.replace('/dashboard');
-        toast.error("Acceso denegado: No tienes permisos para realizar ventas.");
+        toast.error(t('dashboard.pos.access_denied') || "Acceso denegado: No tienes permisos para realizar ventas.");
       } else {
         fetchData();
       }
     }
-  }, [role, loadingRole, router]);
+  }, [role, loadingRole, router, t]);
 
   const fetchData = async () => {
     try {
@@ -85,7 +87,7 @@ export default function POSPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          client_id: isSimplified ? 'simplified' : selectedClientId, // Backend handles 'simplified' via flag
+          client_id: isSimplified ? 'simplified' : selectedClientId,
           service_id: selectedServiceId,
           final_price: Number(finalPrice),
           payment_method: paymentMethod,
@@ -97,7 +99,7 @@ export default function POSPage() {
         const invoice = await res.json();
         setLastInvoice(invoice);
       } else {
-        showFeedback({ type: 'error', title: 'Error', message: 'Error al procesar la venta' });
+        showFeedback({ type: 'error', title: 'Error', message: t('dashboard.pos.sale_error') || 'Error al procesar la venta' });
       }
     } catch (e) {
       console.error(e);
@@ -132,29 +134,33 @@ export default function POSPage() {
       <header className="mb-10 text-center md:text-left">
         <h1 className="text-4xl font-black text-stone-800 tracking-tight flex items-center justify-center md:justify-start gap-4">
           <span className="bg-stone-900 text-white w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-xl">🏷️</span>
-          Venta Rápida
+          {t('dashboard.pos.quick_sale') || 'Venta Rápida'}
         </h1>
-        <p className="text-stone-500 font-medium mt-2">Módulo de cobro directo sin cita previa.</p>
+        <p className="text-stone-500 font-medium mt-2">{t('dashboard.pos.direct_billing_desc') || 'Módulo de cobro directo sin cita previa.'}</p>
       </header>
 
       {lastInvoice ? (
         <div className="bg-white rounded-[2.5rem] p-12 shadow-2xl border border-emerald-100 text-center animate-in zoom-in-95 duration-300">
           <div className="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-5xl mx-auto mb-6">✅</div>
-          <h2 className="text-3xl font-black text-stone-800 mb-2">¡Cobro Realizado!</h2>
-          <p className="text-stone-500 mb-10 font-medium">La factura <span className="text-stone-800 font-bold">#{lastInvoice.id}</span> se ha generado como PAGADA.</p>
+          <h2 className="text-3xl font-black text-stone-800 mb-2">{t('dashboard.pos.sale_completed') || '¡Cobro Realizado!'}</h2>
+          <p className="text-stone-500 mb-10 font-medium">
+            {t('dashboard.pos.invoice_generated') || 'La factura '}
+            <span className="text-stone-800 font-bold">#{lastInvoice.id}</span>
+            {t('dashboard.pos.generated_as_paid') || ' se ha generado como PAGADA.'}
+          </p>
           
           <div className="flex flex-col md:flex-row gap-4 justify-center">
             <Link 
               href={`/dashboard/invoices`} 
               className="bg-stone-900 text-white px-10 py-5 rounded-2xl font-bold hover:bg-black transition-all shadow-xl shadow-stone-900/20 active:scale-95"
             >
-              Ver Todas las Facturas
+              {t('dashboard.pos.view_all_invoices') || 'Ver Todas las Facturas'}
             </Link>
             <button 
               onClick={resetForm}
               className="bg-stone-100 text-stone-600 px-10 py-5 rounded-2xl font-bold hover:bg-stone-200 transition-all active:scale-95 border border-stone-200"
             >
-              Nueva Venta 🏷️
+              {t('dashboard.pos.new_sale') || 'Nueva Venta 🏷️'}
             </button>
           </div>
         </div>
@@ -164,22 +170,26 @@ export default function POSPage() {
           {/* SECCIÓN 1: CLIENTE Y SERVICIO */}
           <div className="bg-white rounded-[2rem] p-8 shadow-xl border border-stone-100 space-y-6">
             <div className="flex justify-between items-center mb-2">
-              <h3 className="text-xs font-black text-[#d9777f] uppercase tracking-[0.2em]">1. Identificación</h3>
+              <h3 className="text-xs font-black text-[#d9777f] uppercase tracking-[0.2em]">{t('dashboard.pos.step_identification') || '1. Identificación'}</h3>
               <button 
                 onClick={() => { setIsSimplified(!isSimplified); if (!isSimplified) { setSelectedClientId(''); setSearchTerm(''); } }}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all border-2 ${isSimplified ? 'bg-stone-800 border-stone-800 text-white' : 'bg-white border-stone-100 text-stone-400 hover:border-stone-200'}`}
               >
-                <span className="text-[10px] font-black uppercase tracking-tighter">{isSimplified ? 'Modo Ticket ✅' : 'Factura Nomminal'}</span>
+                <span className="text-[10px] font-black uppercase tracking-tighter">
+                  {isSimplified ? (t('dashboard.pos.ticket_mode') || 'Modo Ticket ✅') : (t('dashboard.pos.nominal_invoice') || 'Factura Nominal')}
+                </span>
                 <div className={`w-3 h-3 rounded-full ${isSimplified ? 'bg-emerald-400 animate-pulse' : 'bg-stone-200'}`}></div>
               </button>
             </div>
             
             {/* Buscador de Cliente */}
             <div className={`relative transition-opacity duration-300 ${isSimplified ? 'opacity-30 pointer-events-none grayscale' : 'opacity-100'}`}>
-              <label className="block text-sm font-bold text-stone-700 mb-2">{isSimplified ? 'Venta al Portador' : 'Buscar Cliente'}</label>
+              <label className="block text-sm font-bold text-stone-700 mb-2">
+                {isSimplified ? (t('dashboard.pos.carrier_sale') || 'Venta al Portador') : (t('dashboard.pos.search_client') || 'Buscar Cliente')}
+              </label>
               <input 
                 type="text"
-                placeholder={isSimplified ? "Identificación no necesaria" : "Nombre, email o teléfono..."}
+                placeholder={isSimplified ? (t('dashboard.pos.id_not_required') || "Identificación no necesaria") : (t('dashboard.pos.client_search_placeholder') || "Nombre, email o teléfono...")}
                 disabled={isSimplified}
                 value={searchTerm}
                 onChange={e => { setSearchTerm(e.target.value); setSelectedClientId(''); }}
@@ -203,13 +213,13 @@ export default function POSPage() {
 
             {/* Selector de Servicio */}
             <div>
-              <label className="block text-sm font-bold text-stone-700 mb-2">Servicio Prestado</label>
+              <label className="block text-sm font-bold text-stone-700 mb-2">{t('dashboard.pos.service_rendered') || 'Servicio Prestado'}</label>
               <select 
                 value={selectedServiceId} 
                 onChange={e => handleServiceChange(e.target.value)}
                 className="w-full px-5 py-4 rounded-2xl border border-stone-100 bg-stone-50 focus:ring-2 focus:ring-[#d9777f] outline-none font-bold text-stone-800"
               >
-                <option value="">-- Selecciona el servicio --</option>
+                <option value="">{t('dashboard.pos.select_service') || '-- Selecciona el servicio --'}</option>
                 {services.map(s => <option key={s.id} value={s.id}>{s.name} ({s.price}€)</option>)}
               </select>
             </div>
@@ -218,11 +228,11 @@ export default function POSPage() {
           {/* SECCIÓN 2: COBRO Y PAGO */}
           <div className="bg-stone-900 text-white rounded-[2rem] p-8 shadow-2xl space-y-6 relative overflow-hidden">
             <div className="absolute top-[-20px] right-[-20px] w-40 h-40 bg-white/5 rounded-full blur-3xl"></div>
-            <h3 className="text-xs font-black text-white/40 uppercase tracking-[0.2em] mb-2">2. Resumen y Pago</h3>
+            <h3 className="text-xs font-black text-white/40 uppercase tracking-[0.2em] mb-2">{t('dashboard.pos.step_summary_payment') || '2. Resumen y Pago'}</h3>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-bold text-white/70 mb-2">Importe a Cobrar (€)</label>
+                <label className="block text-sm font-bold text-white/70 mb-2">{t('dashboard.pos.amount_to_charge') || 'Importe a Cobrar (€)'}</label>
                 <input 
                   type="number"
                   step="0.01"
@@ -233,7 +243,7 @@ export default function POSPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-white/70 mb-4">Método de Pago</label>
+                <label className="block text-sm font-bold text-white/70 mb-4">{t('dashboard.pos.payment_method') || 'Método de Pago'}</label>
                 <div className="grid grid-cols-2 gap-3">
                   {['Tarjeta', 'Efectivo'].map(method => (
                     <button 
@@ -241,7 +251,7 @@ export default function POSPage() {
                       onClick={() => setPaymentMethod(method)}
                       className={`py-4 rounded-2xl font-black text-sm transition-all border-2 ${paymentMethod === method ? 'bg-white text-stone-900 border-white shadow-lg' : 'bg-transparent border-white/20 text-white/60 hover:border-white/40'}`}
                     >
-                      {method === 'Tarjeta' ? '💳 Tarjeta' : '💵 Efectivo'}
+                      {method === 'Tarjeta' ? (t('dashboard.pos.card') || '💳 Tarjeta') : (t('dashboard.pos.cash') || '💵 Efectivo')}
                     </button>
                   ))}
                 </div>
@@ -254,9 +264,9 @@ export default function POSPage() {
                 disabled={(!isSimplified && !selectedClientId) || !selectedServiceId || isProcessing}
                 className="w-full bg-white text-stone-900 px-8 py-6 rounded-2xl font-black text-xl hover:bg-stone-100 transition-all disabled:opacity-30 active:scale-95 shadow-xl md:py-5"
               >
-                {isProcessing ? 'Procesando...' : 'Confirmar y Cobrar'}
+                {isProcessing ? (t('dashboard.pos.processing') || 'Procesando...') : (t('dashboard.pos.confirm_and_charge') || 'Confirmar y Cobrar')}
               </button>
-              {!isSimplified && !selectedClientId && searchTerm && <p className="text-[10px] text-white/40 mt-4 text-center">Debes seleccionar un cliente de la lista</p>}
+              {!isSimplified && !selectedClientId && searchTerm && <p className="text-[10px] text-white/40 mt-4 text-center">{t('dashboard.pos.must_select_client') || 'Debes seleccionar un cliente de la lista'}</p>}
             </div>
           </div>
 
@@ -267,8 +277,7 @@ export default function POSPage() {
       <div className="mt-12 p-6 bg-stone-100/50 rounded-2xl border border-stone-100 flex items-center gap-4 text-stone-500">
         <span className="text-2xl">ℹ️</span>
         <p className="text-xs font-medium leading-relaxed">
-          Este módulo genera automáticamente una factura firmada y marcada como sujeta a IVA (21%). 
-          La venta quedará vinculada al historial del cliente pero <strong>no genera reserva en el calendario</strong>.
+          {t('dashboard.pos.disclaimer') || 'Este módulo genera automáticamente una factura firmada y marcada como sujeta a IVA (21%). La venta quedará vinculada al historial del cliente pero no genera reserva en el calendario.'}
         </p>
       </div>
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 /**
  * Propiedades del componente AppointmentCard.
@@ -55,19 +56,19 @@ export function AppointmentCard({
   isHighlighted = true,
   style
 }: AppointmentCardProps) {
+  const { t } = useLanguage();
   const colors = getStatusColors(appointment.status);
   const heightValue = style.height?.toString() || '0';
   const isPercentage = heightValue.endsWith('%');
   const heightNum = parseFloat(heightValue);
 
   // Umbrales de visibilidad adaptados
-  // En modelo proporcional, un bloque de 15min es ~2.5% de una jornada de 10h.
   const showService = isPercentage ? heightNum >= 4 : heightNum >= 30;
   const showNote = isPercentage ? heightNum >= 7 : heightNum >= 55; // ~45 min
   const showStatus = isPercentage ? heightNum >= 5.5 : heightNum >= 45; // ~30-45 min
   const useSmallText = isPercentage ? heightNum < 3 : heightNum < 25;
 
-  // RENDER MÓVIL (Basado en la lógica del bloque md:hidden)
+  // RENDER MÓVIL
   if (isMobile) {
     return (
       <div 
@@ -77,18 +78,18 @@ export function AppointmentCard({
       >
         <div className={`font-extrabold text-[12px] tracking-tight leading-none mb-[2px] ${appointment.status === 'cancelled' || appointment.status === 'no_show' ? 'text-current line-through opacity-70' : 'text-stone-800'}`}>
           {appointment.status === 'web_pending' && <span className="text-orange-600 mr-1">[WEB]</span>}
-          {client?.name || 'Cliente Desconocido'}
+          {client?.name || (t('dashboard.calendar.unknown_client') || 'Cliente Desconocido')}
         </div>
         {showService && (
           <div className={`text-[10px] font-semibold truncate leading-tight opacity-90`}>
-            {service?.name || 'Servicio...'}
+            {service?.name || (t('dashboard.calendar.service_placeholder') || 'Servicio...')}
           </div>
         )}
       </div>
     );
   }
 
-  // RENDER DESKTOP (Basado en la lógica del bloque md:block)
+  // RENDER DESKTOP
   return (
     <div 
       onClick={(e) => onClick(e, appointment)}
@@ -105,12 +106,12 @@ export function AppointmentCard({
     >
       <div className={`font-black truncate leading-tight mb-0.5 ${useSmallText ? 'text-[11px]' : 'text-[13px]'} ${appointment.status === 'cancelled' || appointment.status === 'no_show' ? 'text-current line-through' : 'text-stone-900'}`}>
         {appointment.status === 'web_pending' && <span className="text-orange-600 mr-1">[WEB]</span>}
-        {client?.name || 'Cliente'}
+        {client?.name || (t('dashboard.calendar.client') || 'Cliente')}
       </div>
       
       {showService && (
         <div className={`text-[11px] font-bold truncate leading-none mb-1 ${appointment.status === 'completed' ? 'text-emerald-700' : (appointment.status === 'confirmed' ? 'text-blue-700' : (appointment.status === 'pending' ? 'text-orange-700' : 'text-stone-500'))}`}>
-          {service?.name || 'Sin Servicio'}
+          {service?.name || (t('dashboard.calendar.no_service') || 'Sin Servicio')}
         </div>
       )}
 
@@ -124,7 +125,7 @@ export function AppointmentCard({
         <div className="flex items-center gap-1 mt-auto pb-1">
           <div className={`w-1.5 h-1.5 rounded-full ${appointment.status === 'confirmed' ? 'bg-blue-400' : 'bg-orange-400'}`}></div>
           <span className="text-[9px] font-black uppercase tracking-widest opacity-70">
-            {appointment.status === 'confirmed' ? 'Confirmada' : (appointment.status === 'pending_verification' || appointment.status === 'web_pending' ? 'Web Pendiente' : 'Pendiente')}
+            {appointment.status === 'confirmed' ? (t('dashboard.calendar.confirmed') || 'Confirmada') : (appointment.status === 'pending_verification' || appointment.status === 'web_pending' ? (t('dashboard.calendar.web_pending') || 'Web Pendiente') : (t('dashboard.calendar.pending') || 'Pendiente'))}
           </span>
         </div>
       )}

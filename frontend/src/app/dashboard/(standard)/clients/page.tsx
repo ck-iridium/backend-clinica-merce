@@ -1,5 +1,21 @@
-"use client"
+"use client";
+
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { toast } from 'sonner';
+import { Eye, UserPlus } from "lucide-react";
+import { useFeedback } from '@/app/contexts/FeedbackContext';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useLanguage } from '@/app/contexts/LanguageContext';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 interface Client {
   id: string;
@@ -10,33 +26,12 @@ interface Client {
   dni?: string | null;
   address?: string | null;
 }
-import { useFeedback } from '@/app/contexts/FeedbackContext';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Eye, UserPlus } from "lucide-react";
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { toast } from 'sonner';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
 
 export default function ClientsPage() {
+  const { t } = useLanguage();
   const { showFeedback } = useFeedback();
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Validation and Data States
@@ -64,13 +59,13 @@ export default function ClientsPage() {
     const newErrors = { name: '', email: '' };
     
     if (!formData.name.trim()) { 
-      newErrors.name = 'El nombre completo es obligatorio'; 
+      newErrors.name = t('dashboard.clients.name_required') || 'El nombre completo es obligatorio'; 
       valid = false; 
     }
     
     const emailPattern = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
     if (!formData.email.trim() || !emailPattern.test(formData.email)) {
-      newErrors.email = 'Introduce un correo válido'; 
+      newErrors.email = t('dashboard.clients.email_invalid') || 'Introduce un correo válido'; 
       valid = false;
     }
     
@@ -90,14 +85,14 @@ export default function ClientsPage() {
         body: JSON.stringify(formData)
       });
       
-      if (!res.ok) throw new Error("Error en el servidor al guardar");
+      if (!res.ok) throw new Error(t('dashboard.clients.server_error') || "Error en el servidor al guardar");
       
       await fetchClients(); // Recargar datos
       setIsModalOpen(false);
       setFormData({ name: '', email: '', phone: '', allergies: '', dni: '', address: '' });
-      toast.success('Cliente registrado correctamente');
+      toast.success(t('dashboard.clients.client_registered') || 'Cliente registrado correctamente');
     } catch (err) {
-      toast.error("No se pudo guardar la ficha. Verifica la conexión.");
+      toast.error(t('dashboard.clients.save_error') || "No se pudo guardar la ficha. Verifica la conexión.");
     } finally {
       setSaving(false);
     }
@@ -108,32 +103,38 @@ export default function ClientsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
         <div>
-          <h1 className="text-4xl font-serif font-light text-stone-800 tracking-tight">Directorio de Clientes</h1>
-          <p className="text-stone-400 mt-1.5 text-sm font-medium">Gestión de fichas médicas e historiales</p>
+          <h1 className="text-4xl font-serif font-light text-stone-800 tracking-tight">
+            {t('dashboard.clients.directory_title') || 'Directorio de Clientes'}
+          </h1>
+          <p className="text-stone-400 mt-1.5 text-sm font-medium">
+            {t('dashboard.clients.directory_subtitle') || 'Gestión de fichas médicas e historiales'}
+          </p>
         </div>
         
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogTrigger asChild>
             <button className="bg-stone-900 text-white px-8 py-3 rounded-full text-sm font-bold hover:bg-[#d9777f] transition-all active:scale-95 shadow-lg shadow-stone-200 flex items-center gap-2 group">
               <UserPlus size={18} className="group-hover:rotate-12 transition-transform" />
-              Añadir Cliente
+              {t('dashboard.clients.add_client') || 'Añadir Cliente'}
             </button>
           </DialogTrigger>
-          <DialogContent className="p-0 border-none max-w-2xl">
+          <DialogContent className="p-0 border-none max-w-2xl bg-white rounded-2xl overflow-hidden">
             <DialogHeader className="p-8 md:p-10 pb-6 border-b border-stone-100 bg-white relative z-10 rounded-t-xl">
               <DialogTitle className="text-3xl font-serif font-light text-stone-800 tracking-tight">
-                Nueva Ficha Médica
+                {t('dashboard.clients.new_medical_record') || 'Nueva Ficha Médica'}
               </DialogTitle>
               <DialogDescription className="text-stone-400 text-sm mt-1">
-                Completa los datos para dar de alta al cliente en el sistema.
+                {t('dashboard.clients.new_medical_record_desc') || 'Completa los datos para dar de alta al cliente en el sistema.'}
               </DialogDescription>
             </DialogHeader>
 
-            <form id="client-form" onSubmit={handleSubmit} className="flex flex-col">
-              <div className="px-8 md:px-10 py-6 pb-32">
+            <form id="client-form" onSubmit={handleSubmit} className="flex flex-col bg-white">
+              <div className="px-8 md:px-10 py-6 pb-32 max-h-[60vh] overflow-y-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">Nombre completo *</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">
+                      {t('dashboard.clients.full_name_label') || 'Nombre completo *'}
+                    </label>
                     <input 
                       type="text" 
                       value={formData.name} 
@@ -145,7 +146,9 @@ export default function ClientsPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">Correo electrónico *</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">
+                      {t('dashboard.clients.email_label') || 'Correo electrónico *'}
+                    </label>
                     <input 
                       type="email" 
                       value={formData.email} 
@@ -157,7 +160,9 @@ export default function ClientsPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">Teléfono móvil</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">
+                      {t('dashboard.clients.phone_label') || 'Teléfono móvil'}
+                    </label>
                     <input 
                       type="tel" 
                       value={formData.phone} 
@@ -168,54 +173,60 @@ export default function ClientsPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">DNI / NIF</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">
+                      {t('dashboard.clients.dni_label') || 'DNI / NIF'}
+                    </label>
                     <input 
                       type="text" 
                       value={formData.dni} 
                       onChange={e => setFormData({...formData, dni: e.target.value})} 
                       className="w-full px-6 py-4 rounded-2xl border border-stone-100 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-stone-100 transition-all" 
-                      placeholder="00000000X (Opcional)" 
+                      placeholder={t('dashboard.clients.dni_placeholder') || "00000000X (Opcional)"} 
                     />
                   </div>
 
                   <div className="md:col-span-2 space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">Dirección Fiscal Completa</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">
+                      {t('dashboard.clients.address_label') || 'Dirección Fiscal Completa'}
+                    </label>
                     <input 
                       type="text" 
                       value={formData.address} 
                       onChange={e => setFormData({...formData, address: e.target.value})} 
                       className="w-full px-6 py-4 rounded-2xl border border-stone-100 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-stone-100 transition-all" 
-                      placeholder="Calle Ejemplar 123, Madrid (Opcional)" 
+                      placeholder={t('dashboard.clients.address_placeholder') || "Calle Ejemplar 123, Madrid (Opcional)"} 
                     />
                   </div>
 
                   <div className="md:col-span-2 space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">Alergias / Notas críticas</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-1">
+                      {t('dashboard.clients.allergies_label') || 'Alergias / Notas críticas'}
+                    </label>
                     <input 
                       type="text" 
                       value={formData.allergies} 
                       onChange={e => setFormData({...formData, allergies: e.target.value})} 
                       className="w-full px-6 py-4 rounded-2xl border border-stone-100 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-stone-100 transition-all" 
-                      placeholder="Alergia al látex, medicamentos..." 
+                      placeholder={t('dashboard.clients.allergies_placeholder') || "Alergia al látex, medicamentos..."} 
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="sticky bottom-0 left-0 w-full flex justify-end gap-3 p-8 md:p-10 py-6 border-t border-stone-100 bg-gradient-to-t from-white via-white to-white/0 rounded-b-2xl z-20">
+              <div className="sticky bottom-0 left-0 w-full flex justify-end gap-3 p-8 md:p-10 py-6 border-t border-stone-100 bg-white rounded-b-2xl z-20">
                 <button 
                   type="button" 
                   onClick={() => setIsModalOpen(false)}
                   className="px-8 py-4 rounded-full text-xs font-bold text-stone-400 hover:text-stone-600 transition-all"
                 >
-                  Cancelar
+                  {t('dashboard.clients.cancel') || 'Cancelar'}
                 </button>
                 <button 
                   disabled={saving} 
                   type="submit" 
                   className="bg-[#bf7d6b] hover:bg-[#a66a5a] disabled:opacity-50 text-white px-10 py-4 rounded-full text-xs font-bold uppercase tracking-widest transition-all shadow-lg shadow-[#bf7d6b]/20 active:scale-95"
                 >
-                  {saving ? 'Registrando...' : 'Registrar Ficha'}
+                  {saving ? (t('dashboard.clients.registering') || 'Registrando...') : (t('dashboard.clients.register_record') || 'Registrar Ficha')}
                 </button>
               </div>
             </form>
@@ -224,15 +235,15 @@ export default function ClientsPage() {
       </div>
 
       {/* Table Section (SaaS Island) */}
-      <div className="bg-card rounded-[2rem] shadow-sm overflow-hidden border border-border/40">
+      <div className="bg-card rounded-[2rem] shadow-sm overflow-hidden border border-border/40 bg-white">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse font-sans">
             <thead>
               <tr className="bg-muted/50 border-b border-border/50 text-muted-foreground text-xs font-bold tracking-widest uppercase">
-                <th className="px-8 py-4 font-semibold">Cliente</th>
-                <th className="px-8 py-4 font-semibold">Contacto</th>
-                <th className="px-8 py-4 font-semibold">Alertas Médicas</th>
-                <th className="px-8 py-4 font-semibold text-right">Acciones</th>
+                <th className="px-8 py-4 font-semibold">{t('dashboard.clients.client') || 'Cliente'}</th>
+                <th className="px-8 py-4 font-semibold">{t('dashboard.clients.contact') || 'Contacto'}</th>
+                <th className="px-8 py-4 font-semibold">{t('dashboard.clients.medical_alerts') || 'Alertas Médicas'}</th>
+                <th className="px-8 py-4 font-semibold text-right">{t('dashboard.clients.actions') || 'Acciones'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/30">
@@ -259,7 +270,11 @@ export default function ClientsPage() {
                   </tr>
                 ))
               ) : clients.length === 0 ? (
-                <tr><td colSpan={4} className="text-center py-24 text-muted-foreground font-medium text-sm">Aún no hay clientes registrados en el sistema.</td></tr>
+                <tr>
+                  <td colSpan={4} className="text-center py-24 text-muted-foreground font-medium text-sm">
+                    {t('dashboard.clients.no_clients') || 'Aún no hay clientes registrados en el sistema.'}
+                  </td>
+                </tr>
               ) : (
                 clients
                   .filter(c => c.email !== 'contado@clinica-mercedes.com')
@@ -277,14 +292,16 @@ export default function ClientsPage() {
                           {client.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <div className="font-bold text-foreground text-sm">{client.name}</div>
-                          <div className="text-[11px] text-muted-foreground mt-0.5 font-mono">ID: {client.id.split('-')[0]}</div>
+                          <div className="font-bold text-stone-800 text-sm">{client.name}</div>
+                          <div className="text-[11px] text-stone-400 mt-0.5 font-mono">ID: {client.id.split('-')[0]}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-8 py-5">
                       <div className="text-stone-700 font-medium text-sm">{client.email}</div>
-                      <div className="text-muted-foreground text-xs mt-0.5">{client.phone || 'Sin teléfono'}</div>
+                      <div className="text-stone-400 text-xs mt-0.5">
+                        {client.phone || (t('dashboard.clients.no_phone') || 'Sin teléfono')}
+                      </div>
                     </td>
                     <td className="px-8 py-5">
                       {client.allergies ? (
@@ -294,7 +311,7 @@ export default function ClientsPage() {
                         </span>
                       ) : (
                         <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-sm">
-                          Ninguna
+                          {t('dashboard.clients.none') || 'Ninguna'}
                         </span>
                       )}
                     </td>
@@ -302,7 +319,7 @@ export default function ClientsPage() {
                       <Link 
                         href={`/dashboard/clients/${client.id}`}
                         className="p-2.5 rounded-xl hover:bg-stone-100 text-stone-400 hover:text-[#d9777f] transition-all border border-transparent hover:border-stone-100 inline-flex items-center justify-center group/eye"
-                        title="Ver ficha completa"
+                        title={t('dashboard.clients.view_full_record') || "Ver ficha completa"}
                       >
                         <Eye size={18} strokeWidth={1.5} className="group-hover/eye:scale-110 transition-transform" />
                       </Link>

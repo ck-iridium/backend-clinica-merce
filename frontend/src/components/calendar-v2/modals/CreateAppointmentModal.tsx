@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar, Clock, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 import {
   Dialog,
   DialogContent,
@@ -52,6 +53,8 @@ export function CreateAppointmentModal({
   getBlocksForDay,
   fetchData
 }: CreateAppointmentModalProps) {
+  const { t, language } = useLanguage();
+
   // Estados internos del formulario
   const [modalType, setModalType] = useState<'appointment' | 'block'>('appointment');
   const [selectedClientId, setSelectedClientId] = useState('');
@@ -65,6 +68,10 @@ export function CreateAppointmentModal({
   const formatLocalISO = (date: Date) => {
     const pad = (n: number) => n.toString().padStart(2, '0');
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:00`;
+  };
+
+  const getLocaleString = () => {
+    return language === 'es' ? 'es-ES' : language === 'en' ? 'en-US' : 'fr-FR';
   };
 
   /**
@@ -102,13 +109,13 @@ export function CreateAppointmentModal({
         setSelectedClientId('');
         setSelectedServiceId('');
         setAppointmentNotes('');
-        toast.success('Cita agendada correctamente');
+        toast.success(t('dashboard.calendar.toast.appt_scheduled') || 'Cita agendada correctamente');
       } else {
         const err = await res.json();
         toast.error(`Error: ${err.detail || "No se pudo reservar"}`);
       }
     } catch (err) {
-      toast.error('Error de conexión');
+      toast.error(t('dashboard.calendar.toast.connection_error') || 'Error de conexión');
     } finally {
       setSaving(false);
     }
@@ -143,12 +150,12 @@ export function CreateAppointmentModal({
         await fetchData();
         setShowModal(false);
         setBlockReason('');
-        toast.success('Horario bloqueado');
+        toast.success(t('dashboard.calendar.toast.slot_blocked') || 'Horario bloqueado');
       } else {
-        toast.error('Error al bloquear horario');
+        toast.error(t('dashboard.calendar.toast.block_error') || 'Error al bloquear horario');
       }
     } catch (err) {
-      toast.error('Error de conexión');
+      toast.error(t('dashboard.calendar.toast.connection_error') || 'Error de conexión');
     } finally {
       setSaving(false);
     }
@@ -163,20 +170,25 @@ export function CreateAppointmentModal({
               onClick={() => setModalType('appointment')}
               className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${modalType === 'appointment' ? 'bg-white text-stone-800 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
             >
-              Nueva Cita
+              {t('dashboard.calendar.new_appointment') || 'Nueva Cita'}
             </button>
             <button
               onClick={() => setModalType('block')}
               className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${modalType === 'block' ? 'bg-stone-800 text-white shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
             >
-              Bloqueo
+              {t('dashboard.calendar.modal.block') || 'Bloqueo'}
             </button>
           </div>
           <DialogTitle className="text-2xl font-extrabold text-stone-800">
-            {modalType === 'appointment' ? 'Asignar Cita' : 'Bloquear Horario'}
+            {modalType === 'appointment' ? (t('dashboard.calendar.modal.assign_appt') || 'Asignar Cita') : (t('dashboard.calendar.modal.block_slot') || 'Bloquear Horario')}
           </DialogTitle>
           <DialogDescription className="text-[#d9777f] font-bold flex items-center gap-2 mt-1">
-            <Calendar size={16} strokeWidth={1.5} /> {selectedSlot && `${selectedSlot.date.toLocaleDateString('es-ES')} a las ${selectedSlot.hour.toString().padStart(2, '0')}:${selectedMinutes.toString().padStart(2, '0')} h`}
+            <Calendar size={16} strokeWidth={1.5} />
+            {selectedSlot && (
+              language === 'es' ? `${selectedSlot.date.toLocaleDateString('es-ES')} a las ${selectedSlot.hour.toString().padStart(2, '0')}:${selectedMinutes.toString().padStart(2, '0')} h` :
+              language === 'en' ? `${selectedSlot.date.toLocaleDateString('en-US')} at ${selectedSlot.hour.toString().padStart(2, '0')}:${selectedMinutes.toString().padStart(2, '0')}` :
+              `${selectedSlot.date.toLocaleDateString('fr-FR')} à ${selectedSlot.hour.toString().padStart(2, '0')}:${selectedMinutes.toString().padStart(2, '0')}`
+            )}
           </DialogDescription>
         </DialogHeader>
 
@@ -225,9 +237,9 @@ export function CreateAppointmentModal({
 
                 return (
                   <div className="mb-4">
-                    <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Hueco Disponible</p>
+                    <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">{t('dashboard.calendar.modal.available_slot') || 'Hueco Disponible'}</p>
                     <p className="text-xs font-bold text-stone-600 flex items-center gap-1">
-                      <Clock size={14} strokeWidth={1.5} /> {gapMinutes} minutos libres
+                      <Clock size={14} strokeWidth={1.5} /> {gapMinutes} {t('dashboard.calendar.modal.free_minutes') || 'minutos libres'}
                     </p>
                   </div>
                 );
@@ -235,10 +247,10 @@ export function CreateAppointmentModal({
 
               <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">Cliente *</label>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">{t('dashboard.calendar.modal.client_req') || 'Cliente *'}</label>
                   <Select required value={selectedClientId} onValueChange={setSelectedClientId}>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="-- Elige un cliente --" />
+                      <SelectValue placeholder={t('dashboard.calendar.modal.choose_client') || '-- Elige un cliente --'} />
                     </SelectTrigger>
                     <SelectContent>
                       {clients
@@ -249,10 +261,10 @@ export function CreateAppointmentModal({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">Tratamiento *</label>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">{t('dashboard.calendar.modal.treatment_req') || 'Tratamiento *'}</label>
                   <Select value={selectedServiceId} onValueChange={setSelectedServiceId}>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="-- Selecciona el servicio --" />
+                      <SelectValue placeholder={t('dashboard.calendar.modal.select_service') || '-- Selecciona el servicio --'} />
                     </SelectTrigger>
                     <SelectContent>
                       {(() => {
@@ -269,7 +281,7 @@ export function CreateAppointmentModal({
                         const gapMinutes = Math.floor((limitDate.getTime() - s_time.getTime()) / 60000);
                         return services.map(s => (
                           <SelectItem key={s.id} value={s.id} disabled={s.duration_minutes > gapMinutes}>
-                            {s.name} ({s.duration_minutes} min) {s.duration_minutes > gapMinutes ? '⚠️ EXCEDIDO' : ''}
+                            {s.name} ({s.duration_minutes} min) {s.duration_minutes > gapMinutes ? `⚠️ ${t('dashboard.calendar.modal.exceeded') || 'EXCEDIDO'}` : ''}
                           </SelectItem>
                         ));
                       })()}
@@ -278,11 +290,11 @@ export function CreateAppointmentModal({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">Notas</label>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">{t('dashboard.calendar.notes') || 'Notas'}</label>
                   <textarea
                     value={appointmentNotes}
                     onChange={e => setAppointmentNotes(e.target.value)}
-                    placeholder="Observaciones de la cita..."
+                    placeholder={t('dashboard.calendar.modal.appt_obs') || 'Observaciones de la cita...'}
                     className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50 min-h-[100px] resize-none text-sm"
                   />
                 </div>
@@ -291,18 +303,18 @@ export function CreateAppointmentModal({
           ) : (
             <form id="block-form" onSubmit={handleBlockSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">Motivo</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t('dashboard.calendar.modal.reason') || 'Motivo'}</label>
                 <input
                   type="text"
                   value={blockReason}
                   onChange={e => setBlockReason(e.target.value)}
-                  placeholder="Ej: Descanso, Formación..."
+                  placeholder={t('dashboard.calendar.modal.reason_placeholder') || 'Ej: Descanso, Formación...'}
                   className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-stone-800 outline-none bg-stone-50"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">Duración</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t('dashboard.calendar.modal.duration') || 'Duración'}</label>
                 <div className="grid grid-cols-3 gap-2">
                   {[30, 60, 120, 240, -1].map(mins => (
                     <button
@@ -311,7 +323,7 @@ export function CreateAppointmentModal({
                       onClick={() => setBlockDuration(mins)}
                       className={`py-3 rounded-xl font-bold text-[10px] transition-all border-2 ${blockDuration === mins ? 'bg-stone-800 border-stone-800 text-white' : 'bg-white border-stone-100 text-stone-500 hover:border-stone-300'}`}
                     >
-                      {mins === -1 ? 'Día Completo' : (mins >= 60 ? `${mins / 60}h` : `${mins}min`)}
+                      {mins === -1 ? (t('dashboard.calendar.modal.full_day') || 'Día Completo') : (mins >= 60 ? `${mins / 60}h` : `${mins}min`)}
                     </button>
                   ))}
                 </div>
@@ -322,7 +334,7 @@ export function CreateAppointmentModal({
 
         <DialogFooter className="sticky bottom-0 left-0 w-full p-6 pt-12 bg-gradient-to-t from-white via-white/95 to-transparent flex flex-row gap-3 rounded-b-xl z-20 pointer-events-none">
           <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-4 rounded-xl font-bold text-stone-600 bg-white border border-stone-100 hover:bg-stone-50 shadow-sm transition-all pointer-events-auto">
-            Cancelar
+            {t('dashboard.calendar.modal.cancel') || 'Cancelar'}
           </button>
           <button
             form={modalType === 'appointment' ? 'appointment-form' : 'block-form'}
@@ -330,7 +342,7 @@ export function CreateAppointmentModal({
             type="submit"
             className={`flex-1 ${modalType === 'appointment' ? 'bg-stone-900 border-stone-900' : 'bg-stone-800 border-stone-800'} text-white px-6 py-4 rounded-xl font-bold transition-all disabled:opacity-50 active:scale-95 shadow-lg shadow-stone-900/10 border pointer-events-auto`}
           >
-            {saving ? 'Guardando...' : (modalType === 'appointment' ? 'Agendar' : 'Bloquear')}
+            {saving ? (t('dashboard.calendar.modal.saving') || 'Guardando...') : (modalType === 'appointment' ? (t('dashboard.calendar.modal.schedule') || 'Agendar') : (t('dashboard.calendar.modal.block_btn') || 'Bloquear'))}
           </button>
         </DialogFooter>
       </DialogContent>

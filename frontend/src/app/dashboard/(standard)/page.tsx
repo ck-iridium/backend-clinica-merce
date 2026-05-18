@@ -4,8 +4,10 @@ import { useRouter } from 'next/navigation';
 import { CalendarDays, Users, Banknote, Activity, Plus, UserPlus, Zap, ChevronRight, CalendarCheck } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthRole } from '@/hooks/useAuthRole';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 export default function DashboardPage() {
+  const { t, language } = useLanguage();
   const { role, userName: authUserName, loading: loadingRole } = useAuthRole();
   const [clients, setClients] = useState<any[]>([]);
   const [appointments, setAppointments] = useState<any[]>([]);
@@ -49,8 +51,6 @@ export default function DashboardPage() {
     fetchData();
   }, [router]);
 
-  const upcomingAppointments = appointments.filter((a: any) => a.status === 'pending');
-
   // Citas de HOY ordenadas por hora
   const todayStr = new Date().toDateString();
   const todayAppointments = appointments
@@ -65,39 +65,48 @@ export default function DashboardPage() {
 
   const metrics = [
     {
-      label: 'Citas de Hoy',
-      value: '8',
+      id: 'today_appointments',
+      label: t('dashboard.home.today_appointments'),
+      value: todayAppointments.length.toString(),
       icon: CalendarDays,
       color: 'text-[#d9777f]',
       bg: 'bg-[#fdf2f3]',
     },
     {
-      label: 'Nuevos Clientes',
+      id: 'new_clients',
+      label: t('dashboard.home.new_clients'),
       value: clients.length.toString(),
       icon: Users,
       color: 'text-sky-600',
       bg: 'bg-sky-50',
     },
     {
-      label: 'Ingresos Estimados',
+      id: 'estimated_revenue',
+      label: t('dashboard.home.estimated_revenue'),
       value: '450 €',
       icon: Banknote,
       color: 'text-emerald-600',
       bg: 'bg-emerald-50',
     },
     {
-      label: 'Tasa de Ocupación',
+      id: 'occupancy_rate',
+      label: t('dashboard.home.occupancy_rate'),
       value: '85%',
       icon: Activity,
-      color: 'text-amber-600',
+      color: 'text-[#d4af37]',
       bg: 'bg-amber-50',
     },
   ].filter(m => {
     if (role?.toLowerCase() === 'especialista') {
-      return m.label !== 'Ingresos Estimados';
+      return m.id !== 'estimated_revenue';
     }
     return true;
   });
+
+  const getFormattedDate = () => {
+    const locale = language === 'es' ? 'es-ES' : language === 'en' ? 'en-US' : 'fr-FR';
+    return new Date().toLocaleDateString(locale, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  };
 
   return (
     <div className="animate-in fade-in duration-500">
@@ -105,12 +114,12 @@ export default function DashboardPage() {
       {/* ── Bienvenida ── */}
       <div className="mb-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-1">Panel de Control</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-1">{t('dashboard.home.control_panel')}</p>
           <h1 className="text-4xl md:text-5xl font-serif font-semibold text-stone-800 leading-tight">
-            Bienvenido/a de nuevo, {userName}
+            {t('dashboard.home.welcome')}, {userName}
           </h1>
-          <p className="text-stone-400 font-medium mt-2 text-sm">
-            {new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          <p className="text-stone-400 font-medium mt-2 text-sm capitalize">
+            {getFormattedDate()}
           </p>
         </div>
 
@@ -121,14 +130,14 @@ export default function DashboardPage() {
             className="flex items-center gap-2 bg-stone-900 hover:bg-[#d9777f] text-white px-5 py-3 rounded-2xl font-bold text-sm shadow-sm transition-all active:scale-95"
           >
             <Plus size={18} strokeWidth={1.5} />
-            Nueva Cita
+            {t('dashboard.home.new_appointment')}
           </button>
           <button
             onClick={() => router.push('/dashboard/clients')}
             className="flex items-center gap-2 bg-white hover:bg-stone-50 text-stone-700 border border-stone-200 px-5 py-3 rounded-2xl font-bold text-sm shadow-sm transition-all active:scale-95"
           >
             <UserPlus size={18} strokeWidth={1.5} />
-            Nuevo Cliente
+            {t('dashboard.home.new_client')}
           </button>
           
           {(role?.toLowerCase() !== 'especialista') && (
@@ -137,7 +146,7 @@ export default function DashboardPage() {
               className="flex items-center gap-2 bg-white hover:bg-stone-50 text-stone-700 border border-stone-200 px-5 py-3 rounded-2xl font-bold text-sm shadow-sm transition-all active:scale-95"
             >
               <Zap size={18} strokeWidth={1.5} />
-              Cobro Rápido
+              {t('dashboard.home.quick_sale')}
             </button>
           )}
         </div>
@@ -181,9 +190,9 @@ export default function DashboardPage() {
           {/* ── Panel Tu Día de un Vistazo ── */}
           <div className="mt-8 bg-white rounded-[2.5rem] border border-stone-100 shadow-sm p-8">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-serif font-semibold text-stone-800">Tu Día de un Vistazo</h2>
+              <h2 className="text-2xl font-serif font-semibold text-stone-800">{t('dashboard.home.day_at_glance')}</h2>
               <span className="text-xs font-bold text-stone-400 uppercase tracking-widest">
-                {todayAppointments.length} citas hoy
+                {todayAppointments.length} {t('dashboard.home.citas_hoy')}
               </span>
             </div>
 
@@ -192,14 +201,14 @@ export default function DashboardPage() {
               <div className="flex flex-col items-center justify-center py-16 gap-4">
                 <CalendarCheck size={72} strokeWidth={1} className="text-stone-200" />
                 <p className="text-stone-400 font-semibold text-base text-center max-w-xs">
-                  No tienes próximas citas.<br />
-                  <span className="text-stone-300 font-medium text-sm">¡Aprovecha para descansar o gestionar la clínica!</span>
+                  {t('dashboard.home.no_appointments')}<br />
+                  <span className="text-stone-300 font-medium text-sm">{t('dashboard.home.rest_or_manage')}</span>
                 </p>
                 <button
                   onClick={() => router.push('/dashboard/calendar')}
                   className="mt-2 flex items-center gap-2 bg-stone-900 hover:bg-[#d9777f] text-white px-5 py-2.5 rounded-2xl font-bold text-sm transition-all active:scale-95"
                 >
-                  <Plus size={16} strokeWidth={1.5} /> Nueva Cita
+                  <Plus size={16} strokeWidth={1.5} /> {t('dashboard.home.new_appointment')}
                 </button>
               </div>
             ) : (
@@ -207,7 +216,7 @@ export default function DashboardPage() {
               <div className="divide-y divide-stone-100">
                 {todayAppointments.map((appt: any) => {
                   const apptDate = new Date(appt.start_time.endsWith('Z') ? appt.start_time.slice(0, -1) : appt.start_time);
-                  const hora = apptDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                  const hora = apptDate.toLocaleTimeString(language === 'es' ? 'es-ES' : language === 'en' ? 'en-US' : 'fr-FR', { hour: '2-digit', minute: '2-digit' });
                   const clientName = clientMap.get(appt.client_id) || 'Cliente desconocido';
                   const serviceName = serviceMap.get(appt.service_id) || 'Tratamiento';
                   return (
@@ -236,9 +245,9 @@ export default function DashboardPage() {
                         ${ appt.status === 'confirmed' ? 'bg-[#fdf2f3] text-[#d9777f]'
                           : appt.status === 'web_pending' ? 'bg-orange-50 text-orange-500'
                           : 'bg-stone-100 text-stone-400'}`}>
-                        {appt.status === 'confirmed' ? 'Confirmada'
-                          : appt.status === 'web_pending' ? 'Web'
-                          : 'Pendiente'}
+                        {appt.status === 'confirmed' ? t('dashboard.home.confirmed')
+                          : appt.status === 'web_pending' ? t('dashboard.home.web')
+                          : t('dashboard.home.pending')}
                       </span>
 
                       {/* Chevron */}
