@@ -57,7 +57,7 @@ async function getRelatedServices(currentServiceId: number) {
   }
 }
 
-export async function generateMetadata({ params }: { params: { treatment_slug: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: { category_slug: string; treatment_slug: string } }): Promise<Metadata> {
   const service = await getServiceData(params.treatment_slug);
   if (!service) return { title: 'Tratamiento no encontrado' };
 
@@ -83,10 +83,44 @@ export async function generateMetadata({ params }: { params: { treatment_slug: s
   };
   const seoT = seoTranslations[lang] || seoTranslations.es;
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://clinicamerce.com';
+  const rawImageUrl = service.image_url || '';
+  const imageUrl = rawImageUrl.startsWith('http') 
+    ? rawImageUrl 
+    : rawImageUrl.startsWith('/') 
+      ? `${siteUrl}${rawImageUrl}` 
+      : `${siteUrl}/${rawImageUrl}`;
+
+  const shareUrl = `${siteUrl}/tratamientos/${params.category_slug}/${params.treatment_slug}`;
+  const finalTitle = service.seo_title || `${name} ${seoT.suffix}`;
+  const finalDesc = service.seo_description || description || seoT.defaultDesc;
+
   return {
-    title: service.seo_title || `${name} ${seoT.suffix}`,
-    description: service.seo_description || description || seoT.defaultDesc,
+    title: finalTitle,
+    description: finalDesc,
     keywords: service.seo_keywords || seoT.keywords,
+    openGraph: {
+      title: finalTitle,
+      description: finalDesc,
+      url: shareUrl,
+      siteName: 'Clínica Mercè',
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: name,
+        },
+      ],
+      locale: lang === 'es' ? 'es_ES' : lang === 'fr' ? 'fr_FR' : 'en_US',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: finalTitle,
+      description: finalDesc,
+      images: [imageUrl],
+    }
   };
 }
 

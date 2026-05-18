@@ -1,11 +1,61 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import es from '../locales/es.json';
-import en from '../locales/en.json';
-import fr from '../locales/fr.json';
+import esCommon from '../locales/es/common.json';
+import esDashboard from '../locales/es/dashboard.json';
+import esClients from '../locales/es/clients.json';
+import esInvoices from '../locales/es/invoices.json';
+import esVouchers from '../locales/es/vouchers.json';
+import esServices from '../locales/es/services.json';
+
+import enCommon from '../locales/en/common.json';
+import enDashboard from '../locales/en/dashboard.json';
+import enClients from '../locales/en/clients.json';
+import enInvoices from '../locales/en/invoices.json';
+import enVouchers from '../locales/en/vouchers.json';
+import enServices from '../locales/en/services.json';
+
+import frCommon from '../locales/fr/common.json';
+import frDashboard from '../locales/fr/dashboard.json';
+import frClients from '../locales/fr/clients.json';
+import frInvoices from '../locales/fr/invoices.json';
+import frVouchers from '../locales/fr/vouchers.json';
+import frServices from '../locales/fr/services.json';
 
 export type Language = 'es' | 'en' | 'fr';
+
+const es = {
+  ...esCommon,
+  dashboard: {
+    ...esDashboard,
+    clients: esClients,
+    invoices: esInvoices,
+    vouchers: esVouchers,
+    services: esServices
+  }
+};
+
+const en = {
+  ...enCommon,
+  dashboard: {
+    ...enDashboard,
+    clients: enClients,
+    invoices: enInvoices,
+    vouchers: enVouchers,
+    services: enServices
+  }
+};
+
+const fr = {
+  ...frCommon,
+  dashboard: {
+    ...frDashboard,
+    clients: frClients,
+    invoices: frInvoices,
+    vouchers: frVouchers,
+    services: frServices
+  }
+};
 
 const dictionaries = { es, en, fr };
 
