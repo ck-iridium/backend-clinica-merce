@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import CategoryImage from '@/components/CategoryImage';
 
 export const metadata: Metadata = {
@@ -8,11 +8,20 @@ export const metadata: Metadata = {
   description: 'Descubre todos nuestros tratamientos estéticos y servicios.',
 };
 
-async function getData() {
+async function getData(tenantId: string) {
   const [categoriesRes, servicesRes, settingsRes] = await Promise.all([
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/service-categories/`, { cache: 'no-store' }),
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/`, { cache: 'no-store' }),
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/settings/`, { cache: 'no-store' })
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/service-categories/`, { 
+      cache: 'no-store',
+      headers: { "X-Tenant-ID": tenantId }
+    }),
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/`, { 
+      cache: 'no-store',
+      headers: { "X-Tenant-ID": tenantId }
+    }),
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/settings/`, { 
+      cache: 'no-store',
+      headers: { "X-Tenant-ID": tenantId }
+    })
   ]);
   
   const categories = categoriesRes.ok ? await categoriesRes.json() : [];
@@ -23,7 +32,9 @@ async function getData() {
 }
 
 export default async function CatalogPage() {
-  const { categories, services, settings } = await getData();
+  const requestHeaders = headers();
+  const tenantId = requestHeaders.get('x-tenant-id') || '00000000-0000-0000-0000-000000000001';
+  const { categories, services, settings } = await getData(tenantId);
 
   const cookieStore = cookies();
   const lang = (cookieStore.get('preferred_language')?.value || 'es') as 'es' | 'en' | 'fr';

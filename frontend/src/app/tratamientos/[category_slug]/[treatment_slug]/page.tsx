@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Clock, Tag } from 'lucide-react';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 
 import ServiceCard from '@/components/ServiceCard';
 import TreatmentCarousel from '@/components/TreatmentCarousel';
@@ -14,14 +14,15 @@ import Footer from '@/components/Footer';
 import PublicNavbar from '@/components/PublicNavbar';
 import BotonReservaPro from '@/components/BotonReservaPro';
 
-async function getServiceData(slug: string) {
+async function getServiceData(slug: string, tenantId: string) {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 segundos
 
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/slug/${slug}`, {
       cache: 'no-store',
-      signal: controller.signal
+      signal: controller.signal,
+      headers: { "X-Tenant-ID": tenantId }
     });
     clearTimeout(timeoutId);
 
@@ -37,14 +38,15 @@ async function getServiceData(slug: string) {
   }
 }
 
-async function getRelatedServices(currentServiceId: number) {
+async function getRelatedServices(currentServiceId: number, tenantId: string) {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
 
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/`, {
       cache: 'no-store',
-      signal: controller.signal
+      signal: controller.signal,
+      headers: { "X-Tenant-ID": tenantId }
     });
     clearTimeout(timeoutId);
 
@@ -58,7 +60,9 @@ async function getRelatedServices(currentServiceId: number) {
 }
 
 export async function generateMetadata({ params }: { params: { category_slug: string; treatment_slug: string } }): Promise<Metadata> {
-  const service = await getServiceData(params.treatment_slug);
+  const requestHeaders = headers();
+  const tenantId = requestHeaders.get('x-tenant-id') || '00000000-0000-0000-0000-000000000001';
+  const service = await getServiceData(params.treatment_slug, tenantId);
   if (!service) return { title: 'Tratamiento no encontrado' };
 
   const cookieStore = cookies();
@@ -125,7 +129,9 @@ export async function generateMetadata({ params }: { params: { category_slug: st
 }
 
 export default async function TreatmentDynamicPage({ params }: { params: { treatment_slug: string } }) {
-  const service = await getServiceData(params.treatment_slug);
+  const requestHeaders = headers();
+  const tenantId = requestHeaders.get('x-tenant-id') || '00000000-0000-0000-0000-000000000001';
+  const service = await getServiceData(params.treatment_slug, tenantId);
 
   if (!service) {
     notFound();
@@ -164,7 +170,7 @@ export default async function TreatmentDynamicPage({ params }: { params: { treat
     accentColor: '#d4af37'
   };
 
-  const relatedServices = await getRelatedServices(service.id);
+  const relatedServices = await getRelatedServices(service.id, tenantId);
   const translatedRelated = relatedServices.map((s: any) => ({
     ...s,
     name: translateServer(s.name, s.translations, 'name'),

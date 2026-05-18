@@ -5,9 +5,19 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 from .database import Base
 
+class Tenant(Base):
+    __tablename__ = "tenants"
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = Column(String, nullable=False)
+    slug = Column(String, unique=True, index=True, nullable=False)
+    stripe_customer_id = Column(String, nullable=True)
+    subscription_status = Column(String, default="active")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
 class User(Base):
     __tablename__ = "users"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     role = Column(String, default="client")
@@ -16,6 +26,7 @@ class User(Base):
 class Profile(Base):
     __tablename__ = "profiles"
     id = Column(String(36), primary_key=True)
+    tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
     full_name = Column(String, nullable=True)
     avatar_url = Column(String, nullable=True)
     role = Column(String, nullable=True)
@@ -28,6 +39,7 @@ class Profile(Base):
 class Client(Base):
     __tablename__ = "clients"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
     user_id = Column(String(36), ForeignKey("users.id"), nullable=True)
     name = Column(String, index=True)
     email = Column(String, unique=True, index=True)
@@ -41,7 +53,7 @@ class Client(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    user = relationship("User")
+    user = relationship("User", foreign_keys=[user_id])
     appointments = relationship("Appointment", back_populates="client")
     vouchers = relationship("Voucher", back_populates="client")
     consents = relationship("Consent", back_populates="client")
@@ -49,6 +61,7 @@ class Client(Base):
 class Consent(Base):
     __tablename__ = "consents"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
     client_id = Column(String(36), ForeignKey("clients.id"), nullable=False)
     document_type = Column(String, nullable=False)
     document_title = Column(String, nullable=False)
@@ -61,8 +74,9 @@ class Consent(Base):
 class ServiceCategory(Base):
     __tablename__ = "service_categories"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    name = Column(String, nullable=False, unique=True)
-    slug = Column(String(255), nullable=True, unique=True, index=True)
+    tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
+    name = Column(String, nullable=False)
+    slug = Column(String(255), nullable=True, index=True)
     description = Column(Text, nullable=True)
     seo_description = Column(Text, nullable=True)
     image_url = Column(String, nullable=True)
@@ -71,14 +85,20 @@ class ServiceCategory(Base):
     translations = Column(JSONB, default=dict, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+    __table_args__ = (
+        UniqueConstraint('tenant_id', 'slug', name='uq_service_categories_tenant_slug'),
+        UniqueConstraint('tenant_id', 'name', name='uq_service_categories_tenant_name'),
+    )
+
     services = relationship("Service", back_populates="category")
 
 class Service(Base):
     __tablename__ = "services"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
     category_id = Column(String(36), ForeignKey("service_categories.id"), nullable=True)
     name = Column(String, nullable=False)
-    slug = Column(String(255), nullable=True, unique=True, index=True)
+    slug = Column(String(255), nullable=True, index=True)
     description = Column(Text, nullable=True)
     content_html = Column(Text, nullable=True)
     duration_minutes = Column(Integer, nullable=False)
@@ -96,6 +116,10 @@ class Service(Base):
     translations = Column(JSONB, default=dict, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+    __table_args__ = (
+        UniqueConstraint('tenant_id', 'slug', name='uq_services_tenant_slug'),
+    )
+
     # Relationships
     category = relationship("ServiceCategory", back_populates="services")
     voucher_templates = relationship("VoucherTemplate", back_populates="service")
@@ -103,6 +127,7 @@ class Service(Base):
 class VoucherTemplate(Base):
     __tablename__ = "voucher_templates"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
     name = Column(String, nullable=False)
     service_id = Column(String(36), ForeignKey("services.id"), nullable=False)
     total_sessions = Column(Integer, nullable=False)
@@ -114,6 +139,7 @@ class VoucherTemplate(Base):
 class Appointment(Base):
     __tablename__ = "appointments"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
     client_id = Column(String(36), ForeignKey("clients.id"), nullable=False)
     service_id = Column(String(36), ForeignKey("services.id"), nullable=False)
     start_time = Column(DateTime, nullable=False)
@@ -132,6 +158,7 @@ class Appointment(Base):
 class Voucher(Base):
     __tablename__ = "vouchers"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
     client_id = Column(String(36), ForeignKey("clients.id"), nullable=False)
     service_id = Column(String(36), ForeignKey("services.id"), nullable=False)
     total_sessions = Column(Integer, nullable=False)
@@ -147,8 +174,8 @@ class Voucher(Base):
 
 class ClinicSettings(Base):
     __tablename__ = "clinic_settings"
-
-    id = Column(Integer, primary_key=True, default=1) # Singleton
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, unique=True, index=True)
 
     # Company Details
     clinic_name = Column(String, default="Estética Mercè")
@@ -221,6 +248,7 @@ class ClinicSettings(Base):
 class Invoice(Base):
     __tablename__ = "invoices"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
     client_id = Column(String(36), ForeignKey("clients.id"), nullable=False)
     amount = Column(Numeric(10, 2), nullable=False)
     concept = Column(String, nullable=False)
@@ -234,6 +262,7 @@ class Invoice(Base):
 class TimeBlock(Base):
     __tablename__ = "time_blocks"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=False)
     reason = Column(String, nullable=True)
@@ -242,7 +271,8 @@ class TimeBlock(Base):
 
 class SiteContent(Base):
     __tablename__ = "site_content"
-    id = Column(Integer, primary_key=True, default=1)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, unique=True, index=True)
     
     # Hero Section
     hero_title = Column(String, default="Descubre tu mejor versión")
@@ -282,6 +312,7 @@ class SiteContent(Base):
 class Media(Base):
     __tablename__ = "media"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
     filename = Column(String, nullable=False)
     url = Column(String, nullable=False)
     file_type = Column(String, nullable=False) # image, video
@@ -295,6 +326,7 @@ class Media(Base):
 class Notification(Base):
     __tablename__ = "notifications"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
     user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
     title = Column(String, nullable=False)
     description = Column(String, nullable=False)
@@ -303,5 +335,5 @@ class Notification(Base):
     extra_metadata = Column("metadata", JSONB, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    user = relationship("User")
+    user = relationship("User", foreign_keys=[user_id])
 

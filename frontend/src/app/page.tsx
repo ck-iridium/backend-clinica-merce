@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+import { headers } from 'next/headers';
 import ClientHome from './ClientHome';
 
 export const metadata: Metadata = {
@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: 'Tratamientos estéticos avanzados y personalizados para resaltar tu belleza natural.',
 };
 
-async function getData() {
+async function getData(tenantId: string) {
   const fetchSafe = async (url: string, defaultValue: any) => {
     try {
       // Usamos AbortSignal.timeout si está disponible para evitar colgar la request en producción
@@ -15,7 +15,10 @@ async function getData() {
 
       const res = await fetch(url, { 
         cache: 'no-store',
-        signal: controller.signal
+        signal: controller.signal,
+        headers: {
+          "X-Tenant-ID": tenantId
+        }
       });
       clearTimeout(timeoutId);
 
@@ -43,6 +46,8 @@ async function getData() {
 }
 
 export default async function Home() {
-  const data = await getData();
+  const requestHeaders = headers();
+  const tenantId = requestHeaders.get('x-tenant-id') || '00000000-0000-0000-0000-000000000001';
+  const data = await getData(tenantId);
   return <ClientHome {...data} />;
 }

@@ -28,7 +28,8 @@ def seed_admin_user():
             new_user = User(
                 email=admin_email,
                 hashed_password=hashed_pw,
-                role="admin"
+                role="admin",
+                tenant_id="00000000-0000-0000-0000-000000000001"
             )
             db.add(new_user)
             db.commit()
@@ -58,6 +59,63 @@ app = FastAPI(
     description="Backend API para la gestión de Clínica de Estética",
     version="1.0.0"
 )
+
+# ---------------------------------------------------------------------
+# MIDDLEWARE DE AISLAMIENTO MULTI-TENANT (RESOLUCIÓN DE CONTEXTO)
+# ---------------------------------------------------------------------
+import base64
+import json
+from .database import current_tenant_var
+
+def get_tenant_id_from_token(auth_header: str) -> str:
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return None
+    token = auth_header.split(" ")[1]
+    try:
+        parts = token.split(".")
+        if len(parts) != 3:
+            return None
+        payload_b64 = parts[1]
+        payload_b64 += "=" * ((4 - len(payload_b64) % 4) % 4)
+        payload_json = base64.b64decode(payload_b64).decode("utf-8")
+        payload = json.loads(payload_json)
+        
+        # Intentar extraer del JWT de Supabase
+        app_metadata = payload.get("app_metadata", {})
+        tenant_id = app_metadata.get("tenant_id")
+        if not tenant_id:
+            tenant_id = payload.get("tenant_id")
+        return tenant_id
+    except Exception:
+        return None
+
+@app.middleware("http")
+async def resolve_tenant_middleware(request, call_next):
+    # 1. Intentar cabecera personalizada X-Tenant-ID
+    tenant_id = request.headers.get("X-Tenant-ID")
+    
+    # 2. Intentar cabecera Authorization (Bearer Token JWT)
+    if not tenant_id:
+        auth_header = request.headers.get("Authorization")
+        if auth_header:
+            tenant_id = get_tenant_id_from_token(auth_header)
+            
+    # 3. Intentar parámetro en URL query
+    if not tenant_id:
+        tenant_id = request.query_params.get("tenant_id")
+        
+    # 4. Fallback retrocompatible por defecto a Clínica Mercè (Tenant 1)
+    if not tenant_id:
+        tenant_id = "00000000-0000-0000-0000-000000000001"
+        
+    # Asignar variable de contexto de manera segura contra peticiones concurrentes
+    token = current_tenant_var.set(tenant_id)
+    try:
+        response = await call_next(request)
+        response.headers["X-Resolved-Tenant"] = tenant_id
+        return response
+    finally:
+        current_tenant_var.reset(token)
 
 # Configurar Rate Limiter Global
 from .limiter import limiter
@@ -146,7 +204,8 @@ def force_seed():
             new_user = User(
                 email=email,
                 hashed_password=hashed_pw,
-                role="admin"
+                role="admin",
+                tenant_id="00000000-0000-0000-0000-000000000001"
             )
             db.add(new_user)
             db.commit()

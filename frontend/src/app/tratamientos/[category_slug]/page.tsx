@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 
 import PublicNavbar from '@/components/PublicNavbar';
 import TreatmentCarousel from '@/components/TreatmentCarousel';
@@ -38,7 +38,7 @@ const categoryPageTranslations: Record<string, Record<string, string>> = {
   fr: {
     'page.catalog_of': 'Catalogue de',
     'page.options_available': 'options disponibles',
-    'page.see_all_treatments': 'Voir tous les soins',
+    'page.see_all_treatments': 'Voir tous los soins',
     'page.see_all': 'Voir tous',
     'page.excellence_in': 'Excellence en',
     'page.other_categories': 'Autres Catégories',
@@ -50,14 +50,15 @@ const categoryPageTranslations: Record<string, Record<string, string>> = {
 };
 
 // Helpers to get data with crash protection and timeouts
-async function getCategoryData(slug: string) {
+async function getCategoryData(slug: string, tenantId: string) {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 segundos
 
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/service-categories/slug/${slug}`, {
       next: { revalidate: 60 },
-      signal: controller.signal
+      signal: controller.signal,
+      headers: { "X-Tenant-ID": tenantId }
     });
     clearTimeout(timeoutId);
 
@@ -73,14 +74,15 @@ async function getCategoryData(slug: string) {
   }
 }
 
-async function getAllCategories() {
+async function getAllCategories(tenantId: string) {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
 
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/service-categories/`, {
       next: { revalidate: 60 },
-      signal: controller.signal
+      signal: controller.signal,
+      headers: { "X-Tenant-ID": tenantId }
     });
     clearTimeout(timeoutId);
 
@@ -92,14 +94,15 @@ async function getAllCategories() {
   }
 }
 
-async function getServices() {
+async function getServices(tenantId: string) {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
 
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/`, {
       next: { revalidate: 60 },
-      signal: controller.signal
+      signal: controller.signal,
+      headers: { "X-Tenant-ID": tenantId }
     });
     clearTimeout(timeoutId);
 
@@ -138,7 +141,9 @@ const translateField = (fieldVal: string, translations: any, fieldKey: string, l
 };
 
 export async function generateMetadata({ params }: { params: { category_slug: string } }): Promise<Metadata> {
-  const category = await getCategoryData(params.category_slug);
+  const requestHeaders = headers();
+  const tenantId = requestHeaders.get('x-tenant-id') || '00000000-0000-0000-0000-000000000001';
+  const category = await getCategoryData(params.category_slug, tenantId);
   if (!category) return { title: 'Categoría no encontrada' };
 
   const cookieStore = cookies();
@@ -153,12 +158,15 @@ export async function generateMetadata({ params }: { params: { category_slug: st
 }
 
 export default async function CategoryDynamicPage({ params }: { params: { category_slug: string } }) {
-  const category = await getCategoryData(params.category_slug);
+  const requestHeaders = headers();
+  const tenantId = requestHeaders.get('x-tenant-id') || '00000000-0000-0000-0000-000000000001';
+
+  const category = await getCategoryData(params.category_slug, tenantId);
   if (!category) notFound();
 
   const [allCategories, allServices] = await Promise.all([
-    getAllCategories(),
-    getServices()
+    getAllCategories(tenantId),
+    getServices(tenantId)
   ]);
 
   const cookieStore = cookies();

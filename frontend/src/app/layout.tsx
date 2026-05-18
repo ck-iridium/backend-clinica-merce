@@ -18,6 +18,8 @@ export const viewport: Viewport = {
 };
 
 
+import { headers } from "next/headers";
+
 export async function generateMetadata(): Promise<Metadata> {
   let allowIndexing = false;
   let seoData: any = {
@@ -28,9 +30,14 @@ export async function generateMetadata(): Promise<Metadata> {
   };
   
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const requestHeaders = headers();
+  const tenantId = requestHeaders.get("x-tenant-id") || '00000000-0000-0000-0000-000000000001';
 
   try {
-    const resSettings = await fetch(`${baseUrl}/settings/`, { next: { revalidate: 60 } });
+    const resSettings = await fetch(`${baseUrl}/settings/`, { 
+      next: { revalidate: 60 },
+      headers: { "X-Tenant-ID": tenantId }
+    });
     if (resSettings.ok) {
       const data = await resSettings.json();
       allowIndexing = data.allow_search_engine_indexing;
@@ -38,7 +45,10 @@ export async function generateMetadata(): Promise<Metadata> {
   } catch(e) {}
 
   try {
-    const resContent = await fetch(`${baseUrl}/site-content/`, { next: { revalidate: 60 } });
+    const resContent = await fetch(`${baseUrl}/site-content/`, { 
+      next: { revalidate: 60 },
+      headers: { "X-Tenant-ID": tenantId }
+    });
     if (resContent.ok) {
       const data = await resContent.json();
       if (data.seo_title) seoData.title = data.seo_title;
@@ -66,6 +76,7 @@ export async function generateMetadata(): Promise<Metadata> {
 import LayoutWrapper from "@/components/LayoutWrapper";
 import { Providers } from "@/components/Providers";
 import InviteHandler from "@/components/InviteHandler";
+import TenantInitializer from "@/components/TenantInitializer";
 
 
 export default function RootLayout({
@@ -77,6 +88,7 @@ export default function RootLayout({
     <html lang="es" suppressHydrationWarning className={`${inter.variable} ${cormorantGaramond.variable}`}>
       <body className="antialiased bg-background text-foreground flex flex-col min-h-screen">
         <Providers>
+          <TenantInitializer />
           <InviteHandler />
           <LayoutWrapper>
             {children}
