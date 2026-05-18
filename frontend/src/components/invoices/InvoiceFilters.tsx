@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { InvoiceFilters as FiltersType } from '@/lib/types';
-import { Search, Calendar as CalendarIcon, Filter } from 'lucide-react';
+import { Search, Calendar as CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 import {
   Select,
   SelectContent,
@@ -17,6 +18,7 @@ interface Props {
 }
 
 export default function InvoiceFilters({ filters, onFilterChange, onSearch }: Props) {
+  const { t } = useLanguage();
   const [localSearch, setLocalSearch] = useState(filters.search || '');
 
   // Debounce para la búsqueda
@@ -62,9 +64,9 @@ export default function InvoiceFilters({ filters, onFilterChange, onSearch }: Pr
       {/* Tabs de Estado */}
       <div className="flex p-1 bg-stone-100 rounded-2xl w-full md:w-auto">
         {[
-          { id: 'all', label: 'Todas' },
-          { id: 'paid', label: 'Pagadas' },
-          { id: 'pending', label: 'Pendientes' }
+          { id: 'all', label: t('dashboard.invoices.all') || 'Todas' },
+          { id: 'paid', label: t('dashboard.invoices.only_paid') || 'Pagadas' },
+          { id: 'pending', label: t('dashboard.invoices.only_pending') || 'Pendientes' }
         ].map((tab) => (
           <button
             key={tab.id}
@@ -88,14 +90,14 @@ export default function InvoiceFilters({ filters, onFilterChange, onSearch }: Pr
             <SelectTrigger className="h-11 rounded-xl bg-stone-50 border-stone-200 focus:ring-[#d4af37]">
               <div className="flex items-center gap-2 font-bold text-stone-600">
                 <CalendarIcon size={16} />
-                <SelectValue placeholder="Fechas" />
+                <SelectValue placeholder={t('dashboard.invoices.dates_filter') || "Fechas"} />
               </div>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Siempre</SelectItem>
-              <SelectItem value="today">Hoy</SelectItem>
-              <SelectItem value="month">Este Mes</SelectItem>
-              <SelectItem value="year">Este Año</SelectItem>
+              <SelectItem value="all">{t('dashboard.invoices.always') || 'Siempre'}</SelectItem>
+              <SelectItem value="today">{t('dashboard.invoices.today') || 'Hoy'}</SelectItem>
+              <SelectItem value="month">{t('dashboard.invoices.this_month') || 'Este Mes'}</SelectItem>
+              <SelectItem value="year">{t('dashboard.invoices.this_year') || 'Este Año'}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -107,7 +109,7 @@ export default function InvoiceFilters({ filters, onFilterChange, onSearch }: Pr
           </div>
           <input
             type="text"
-            placeholder="Buscar concepto o cliente..."
+            placeholder={t('dashboard.invoices.search_placeholder') || "Buscar concepto o cliente..."}
             value={localSearch}
             onChange={(e) => setLocalSearch(e.target.value)}
             className="w-full pl-10 pr-4 h-11 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all font-medium text-stone-700 placeholder:text-stone-400"

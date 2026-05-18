@@ -1,5 +1,6 @@
 import { Sparkles, Bold, Italic, List, ListOrdered, Heading2 } from 'lucide-react';
 import { Editor, EditorContent } from '@tiptap/react';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 interface ContentTabProps {
   editor: Editor | null;
@@ -32,25 +33,26 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
 };
 
 export default function ContentTab({ editor, setShowAIModal }: ContentTabProps) {
+  const { t } = useLanguage();
   return (
     <div className="space-y-4">
       <div>
         <div className="flex items-center justify-between mb-1.5">
-          <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest">Contenido Enriquecido</label>
+          <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest">{t('dashboard.services.rich_content_label')}</label>
           <button 
             type="button" 
             onClick={() => setShowAIModal('rich_content')}
             className="flex items-center gap-1.5 text-xs font-bold text-[#d4af37] hover:bg-yellow-50/50 px-2.5 py-1 rounded-lg border border-yellow-100 transition-colors shadow-sm"
           >
             <Sparkles size={12} strokeWidth={2} />
-            Generar con IA
+            {t('dashboard.services.generate_ai')}
           </button>
         </div>
         <div className="flex flex-col shadow-sm rounded-xl">
           <MenuBar editor={editor} />
           <EditorContent editor={editor} />
         </div>
-        <p className="text-[10px] text-stone-400 mt-2">Usa este editor para añadir títulos, listas y dar formato al contenido principal de la página del tratamiento.</p>
+        <p className="text-[10px] text-stone-400 mt-2">{t('dashboard.services.rich_content_help')}</p>
       </div>
     </div>
   );

@@ -22,6 +22,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLanguage } from '@/app/contexts/LanguageContext';
 import {
   Dialog,
   DialogContent,
@@ -40,6 +41,7 @@ import {
 } from "@/components/ui/select";
 
 export default function ServicesPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const { role, loading: loadingRole } = useAuthRole();
   const { showFeedback } = useFeedback();
@@ -69,7 +71,7 @@ export default function ServicesPage() {
     if (!loadingRole) {
       const currentRole = role?.toLowerCase();
       if (currentRole !== 'administrador' && currentRole !== 'admin') {
-        toast.error("Acceso denegado: No tienes permisos para gestionar servicios.");
+        toast.error(t('dashboard.services.access_denied'));
         router.replace('/dashboard');
       } else {
         fetchServices();
@@ -123,7 +125,7 @@ export default function ServicesPage() {
     if (!formData.name) return;
 
     if (formData.duration_minutes < 15 || formData.duration_minutes % 15 !== 0) {
-      toast.error('La duración debe ser en intervalos de 15 minutos');
+      toast.error(t('dashboard.services.duration_error'));
       return;
     }
     
@@ -142,13 +144,13 @@ export default function ServicesPage() {
       if (res.ok) {
         await fetchServices();
         handleCancel();
-        toast.success(editingId ? 'Servicio actualizado' : 'Servicio creado con éxito');
+        toast.success(editingId ? t('dashboard.services.service_updated') : t('dashboard.services.service_created'));
       } else {
         const errorData = await res.json();
-        toast.error(`Error: ${errorData.detail || 'No se pudo guardar el servicio'}`);
+        toast.error(t('dashboard.services.save_error', { error: errorData.detail || 'No se pudo guardar el servicio' }));
       }
     } catch (err) {
-      toast.error('Error de conexión con el servidor');
+      toast.error(t('dashboard.services.connection_error'));
     } finally {
       setSaving(false);
     }
@@ -159,8 +161,8 @@ export default function ServicesPage() {
     
     showFeedback({
       type: 'confirm',
-      title: 'Eliminar Servicio',
-      message: '¿Estás seguro de que deseas eliminar este servicio? Esta acción no se puede deshacer y borrará también su foto.',
+      title: t('dashboard.services.delete_modal_title'),
+      message: t('dashboard.services.delete_modal_desc'),
       onConfirm: async () => {
         try {
           const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/${editingId}`, {
@@ -173,12 +175,12 @@ export default function ServicesPage() {
           } else if (res.ok) {
             await fetchServices();
             handleCancel();
-            toast.success('Servicio eliminado correctamente');
+            toast.success(t('dashboard.services.service_deleted'));
           } else {
-            toast.error('No se pudo eliminar el servicio');
+            toast.error(t('dashboard.services.error_deleting_service'));
           }
         } catch (err) {
-          toast.error('Error de conexión al servidor');
+          toast.error(t('dashboard.services.connection_error'));
         }
       }
     });
@@ -197,13 +199,13 @@ export default function ServicesPage() {
         setNewCategoryName('');
         setShowCategoryModal(false);
         fetchCategories();
-        toast.success('Categoría creada');
+        toast.success(t('dashboard.services.category_created'));
       } else {
         const errorData = await res.json();
-        toast.error(`Error: ${errorData.detail || 'No se pudo crear la categoría'}`);
+        toast.error(t('dashboard.services.category_created_error', { error: errorData.detail || 'No se pudo crear la categoría' }));
       }
     } catch (err) {
-      toast.error('Error de conexión al crear categoría');
+      toast.error(t('dashboard.services.category_connection_error'));
     }
   };
 
@@ -222,12 +224,12 @@ export default function ServicesPage() {
         setEditingCategoryImage(null);
         fetchCategories();
         fetchServices();
-        toast.success('Categoría actualizada');
+        toast.success(t('dashboard.services.category_updated'));
       } else {
-        toast.error('No se pudo actualizar la categoría');
+        toast.error(t('dashboard.services.category_updated_error'));
       }
     } catch (err) {
-      toast.error('Error de conexión al actualizar categoría');
+      toast.error(t('dashboard.services.category_update_connection_error'));
     }
   };
 
@@ -245,12 +247,12 @@ export default function ServicesPage() {
       if (res.ok) {
         const data = await res.json();
         setEditingCategoryImage(data.url);
-        toast.success('Imagen subida');
+        toast.success(t('dashboard.services.image_uploaded'));
       } else {
-        toast.error('Error al subir la imagen');
+        toast.error(t('dashboard.services.image_upload_error'));
       }
     } catch (err) {
-      toast.error('Error de conexión');
+      toast.error(t('dashboard.services.connection_error'));
     }
   };
 
@@ -281,12 +283,12 @@ export default function ServicesPage() {
       if (res.ok) {
         const data = await res.json();
         setFormData(prev => ({ ...prev, image_url: data.url }));
-        toast.success('Imagen recortada y guardada');
+        toast.success(t('dashboard.services.image_cropped'));
       } else {
-        toast.error('Error al procesar el recorte');
+        toast.error(t('dashboard.services.image_crop_error'));
       }
     } catch (err) {
-      toast.error('Error de conexión');
+      toast.error(t('dashboard.services.connection_error'));
     } finally {
       setUploadingImage(false);
     }
@@ -295,14 +297,14 @@ export default function ServicesPage() {
   const handleDeleteCategory = async (catId: string) => {
     const hasServices = services.some(s => s.category_id === catId);
     if (hasServices) {
-      showFeedback({ type: 'error', title: 'Conflicto', message: 'No puedes borrar una categoría con servicios asignados. Mueve los servicios a otra categoría primero.' });
+      showFeedback({ type: 'error', title: 'Conflicto', message: t('dashboard.services.delete_category_conflict') });
       return;
     }
 
     showFeedback({
       type: 'confirm',
-      title: 'Eliminar Categoría',
-      message: '¿Estás seguro de que deseas eliminar esta categoría?',
+      title: t('dashboard.services.delete_category_title'),
+      message: t('dashboard.services.delete_category_desc'),
       onConfirm: async () => {
         try {
           const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/service-categories/${catId}`, {
@@ -310,12 +312,12 @@ export default function ServicesPage() {
           });
           if (res.ok) {
             fetchCategories();
-            toast.success('Categoría eliminada');
+            toast.success(t('dashboard.services.category_deleted'));
           } else {
-            toast.error('Error al eliminar categoría');
+            toast.error(t('dashboard.services.error_deleting_category'));
           }
         } catch (err) {
-          toast.error('Error de conexión');
+          toast.error(t('dashboard.services.connection_error'));
         }
       }
     });
@@ -338,25 +340,25 @@ export default function ServicesPage() {
     <div className="animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-stone-800">Catálogo de Servicios</h1>
-          <p className="text-stone-500 mt-1 font-medium">Tratamientos, tiempos estimativos y tarifas base</p>
+          <h1 className="text-3xl font-extrabold text-stone-800">{t('dashboard.services.title')}</h1>
+          <p className="text-stone-500 mt-1 font-medium">{t('dashboard.services.subtitle')}</p>
         </div>
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setShowArchived(!showArchived)}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${showArchived ? 'bg-stone-800 text-white border-stone-800' : 'bg-white text-stone-500 border-stone-200 hover:border-stone-400'}`}>
-            {showArchived ? 'Ocultar Archivados' : 'Ver Archivados'}
+            {showArchived ? t('dashboard.services.hide_archived') : t('dashboard.services.show_archived')}
           </button>
           <button 
             onClick={() => setShowManageCategoriesModal(true)}
             className="px-4 py-3 rounded-xl bg-white text-stone-600 border border-stone-200 font-bold transition-all hover:bg-stone-50 active:scale-95 shadow-sm flex items-center gap-2">
-            <Settings2 size={18} strokeWidth={1.5} className="text-stone-400" /> <span className="hidden sm:inline">Categorías</span>
+            <Settings2 size={18} strokeWidth={1.5} className="text-stone-400" /> <span className="hidden sm:inline">{t('dashboard.services.categories')}</span>
           </button>
           <Link 
             href="/dashboard/services/new"
             className="px-6 py-3 rounded-xl font-bold transition-all shadow-md active:scale-95 flex items-center gap-2 bg-[#d4af37] hover:bg-[#b08e23] border border-transparent text-white">
             <Plus size={18} strokeWidth={1.5} />
-            Nuevo Servicio
+            {t('dashboard.services.new_service')}
           </Link>
         </div>
       </div>
@@ -417,7 +419,7 @@ export default function ServicesPage() {
         </div>
       ) : filteredServices.length === 0 ? (
         <div className="text-center py-24 text-stone-400 bg-stone-50/50 rounded-[2rem] border border-stone-200 border-dashed">
-          {showArchived ? 'No hay servicios en el catálogo.' : 'No tienes servicios activos actualmente. Activa alguno o crea uno nuevo.'}
+          {showArchived ? t('dashboard.services.no_services') : t('dashboard.services.no_active_services')}
         </div>
       ) : (
         <div className="space-y-12">
@@ -436,8 +438,8 @@ export default function ServicesPage() {
                     
                     <div className="flex justify-between items-start mb-4 relative z-10">
                       <div>
-                        {!svc.is_active && <span className="inline-block bg-stone-100 text-stone-500 text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full mb-1">Archivado</span>}
-                        {svc.is_featured && <span className="inline-block bg-yellow-100 text-yellow-700 text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full mb-1 ml-1">⭐ Portada</span>}
+                        {!svc.is_active && <span className="inline-block bg-stone-100 text-stone-500 text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full mb-1">{t('dashboard.services.archived')}</span>}
+                        {svc.is_featured && <span className="inline-block bg-yellow-100 text-yellow-700 text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full mb-1 ml-1">{t('dashboard.services.featured_cover')}</span>}
                         <h4 className={`text-xl font-bold pr-4 leading-tight ${svc.is_active ? 'text-stone-800' : 'text-stone-500'}`}>{svc.name}</h4>
                       </div>
                       <span className="bg-[#fcf8e5] text-[#b08e23] font-bold px-3 py-1.5 rounded-xl text-sm shrink-0 whitespace-nowrap shadow-sm border border-yellow-100">
@@ -446,15 +448,15 @@ export default function ServicesPage() {
                     </div>
                     
                     <p className="text-stone-500 text-sm mb-8 line-clamp-3 min-h-[4rem] relative z-10 font-medium">
-                      {svc.description || 'Tratamiento genérico en clínica. Sin especificaciones adicionales.'}
+                      {svc.description || t('dashboard.services.generic_description')}
                     </p>
                     
                     <div className="flex justify-between items-center border-t border-stone-100 pt-4 mt-auto relative z-10">
                       <div className="flex items-center gap-2 text-stone-400 text-sm font-semibold bg-stone-50 px-3 py-1.5 rounded-lg border border-stone-100">
-                        <Clock size={16} strokeWidth={1.5} className="text-[#d4af37]" /> {svc.duration_minutes} min
+                        <Clock size={16} strokeWidth={1.5} className="text-[#d4af37]" /> {t('dashboard.services.duration_mins', { minutes: svc.duration_minutes })}
                       </div>
                       <button onClick={() => handleEditClick(svc)} className="text-stone-400 hover:text-stone-800 font-bold text-sm bg-white border border-stone-200 px-3 py-1.5 rounded-lg shadow-sm active:scale-95 transition-all flex items-center gap-1.5">
-                        <Pencil size={14} strokeWidth={1.5} /> Editar
+                        <Pencil size={14} strokeWidth={1.5} /> {t('dashboard.services.edit')}
                       </button>
                     </div>
                   </div>
@@ -469,9 +471,9 @@ export default function ServicesPage() {
       <Dialog open={showCategoryModal} onOpenChange={setShowCategoryModal}>
         <DialogContent className="p-0 border-none max-w-md">
           <DialogHeader className="p-8 border-b border-stone-50 bg-white rounded-t-xl">
-            <DialogTitle className="text-xl font-extrabold text-stone-800">Nueva Categoría</DialogTitle>
+            <DialogTitle className="text-xl font-extrabold text-stone-800">{t('dashboard.services.new_category')}</DialogTitle>
             <DialogDescription className="text-stone-500 text-sm">
-              Añade una agrupación para tus servicios.
+              {t('dashboard.services.new_category_desc')}
             </DialogDescription>
           </DialogHeader>
 
@@ -482,7 +484,7 @@ export default function ServicesPage() {
                 type="text" 
                 value={newCategoryName} 
                 onChange={(e) => setNewCategoryName(e.target.value)} 
-                placeholder="Ej: Depilación Láser, Faciales..." 
+                placeholder={t('dashboard.services.new_category_placeholder')} 
                 className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all" 
               />
             </form>
@@ -490,10 +492,10 @@ export default function ServicesPage() {
 
           <DialogFooter className="sticky bottom-0 left-0 w-full p-6 pt-12 bg-gradient-to-t from-white via-white/95 to-transparent flex gap-3 rounded-b-xl z-20">
             <button type="button" onClick={() => setShowCategoryModal(false)} className="flex-1 px-6 py-4 rounded-xl font-bold text-stone-600 bg-white border border-stone-100 hover:bg-stone-50 transition-all">
-              Cancelar
+              {t('dashboard.services.cancel')}
             </button>
             <button form="new-category-form" type="submit" className="flex-1 bg-stone-900 hover:bg-[#d4af37] text-white px-6 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95 border border-stone-800">
-              Crear
+              {t('dashboard.services.create')}
             </button>
           </DialogFooter>
         </DialogContent>
@@ -505,16 +507,16 @@ export default function ServicesPage() {
           <DialogHeader className="p-8 border-b border-stone-50 bg-white rounded-t-xl">
             <div className="flex justify-between items-start">
               <div>
-                <DialogTitle className="text-2xl font-extrabold text-stone-800">Gestionar Categorías</DialogTitle>
+                <DialogTitle className="text-2xl font-extrabold text-stone-800">{t('dashboard.services.manage_categories')}</DialogTitle>
                 <DialogDescription className="text-stone-400 text-sm mt-1">
-                  Organiza las agrupaciones de tratamientos y sus imágenes de portada.
+                  {t('dashboard.services.manage_categories_desc')}
                 </DialogDescription>
               </div>
               <button 
                 onClick={() => setShowCategoryModal(true)}
                 className="bg-[#d4af37] text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md hover:bg-[#b08e23] transition-all active:scale-95 flex items-center gap-2"
               >
-                <Plus size={16} strokeWidth={2} /> Nueva
+                <Plus size={16} strokeWidth={2} /> {t('dashboard.services.new')}
               </button>
             </div>
           </DialogHeader>
@@ -528,7 +530,7 @@ export default function ServicesPage() {
                       <form onSubmit={handleUpdateCategory} className="flex-1 flex flex-col gap-3">
                         <div className="flex flex-col gap-4">
                           <div>
-                            <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1.5 block">Nombre Categoría</label>
+                            <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1.5 block">{t('dashboard.services.category_name_label')}</label>
                             <input 
                               autoFocus
                               type="text" 
@@ -543,7 +545,7 @@ export default function ServicesPage() {
                               <img src={editingCategoryImage.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${editingCategoryImage}` : editingCategoryImage} className="w-12 h-12 object-cover rounded-xl shadow-sm border border-stone-100" alt="cat" />
                             )}
                             <div className="flex-1">
-                              <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1.5 block">Imagen de Portada</label>
+                              <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1.5 block">{t('dashboard.services.category_cover_label')}</label>
                               <div className="flex gap-2">
                                 <button
                                   type="button"
@@ -551,11 +553,11 @@ export default function ServicesPage() {
                                   className="flex items-center gap-2 px-3 py-2 rounded-lg bg-stone-50 hover:bg-stone-100 text-stone-600 text-xs font-bold transition-all border border-stone-200"
                                 >
                                   <ImageIcon size={14} strokeWidth={1.5} />
-                                  {editingCategoryImage ? 'Mofificar' : 'Galería'}
+                                  {editingCategoryImage ? t('dashboard.services.modify') : t('dashboard.services.gallery')}
                                 </button>
                                 {editingCategoryImage && (
                                   <button type="button" onClick={() => setEditingCategoryImage('')} className="text-[10px] text-red-500 font-bold px-3 py-2 rounded-lg bg-red-50 hover:bg-red-100 transition-all uppercase tracking-widest">
-                                    Quitar
+                                    {t('dashboard.services.remove')}
                                   </button>
                                 )}
                               </div>
@@ -563,8 +565,8 @@ export default function ServicesPage() {
                           </div>
 
                           <div className="grid grid-cols-2 gap-2 mt-2">
-                            <button type="button" onClick={() => {setEditingCategoryId(null); setEditingCategoryImage(null);}} className="bg-stone-200 text-stone-600 px-4 py-3 rounded-xl font-bold text-xs uppercase hover:bg-stone-300 transition-all">Cancelar</button>
-                            <button type="submit" className="bg-[#d4af37] border border-[#b08e23] text-white px-4 py-3 rounded-xl font-bold text-xs uppercase shadow-md hover:bg-[#b08e23] transition-all">Guardar</button>
+                            <button type="button" onClick={() => {setEditingCategoryId(null); setEditingCategoryImage(null);}} className="bg-stone-200 text-stone-600 px-4 py-3 rounded-xl font-bold text-xs uppercase hover:bg-stone-300 transition-all">{t('dashboard.services.cancel')}</button>
+                            <button type="submit" className="bg-[#d4af37] border border-[#b08e23] text-white px-4 py-3 rounded-xl font-bold text-xs uppercase shadow-md hover:bg-[#b08e23] transition-all">{t('dashboard.services.save')}</button>
                           </div>
                         </div>
                       </form>
@@ -584,14 +586,14 @@ export default function ServicesPage() {
                           <button 
                             onClick={() => { setEditingCategoryId(cat.id); setEditingCategoryName(cat.name); setEditingCategoryImage(cat.image_url || null); }}
                             className="p-2 text-stone-400 hover:text-stone-800 hover:bg-white rounded-lg transition-all"
-                            title="Editar"
+                            title={t('dashboard.services.edit')}
                           >
                             <Pencil size={16} strokeWidth={1.5} />
                           </button>
                           <button 
                             onClick={() => handleDeleteCategory(cat.id)}
                             className="p-2 text-stone-300 hover:text-red-500 hover:bg-white rounded-lg transition-all"
-                            title="Eliminar categoría"
+                            title={t('dashboard.services.delete_category')}
                           >
                             <Trash2 size={16} strokeWidth={1.5} />
                           </button>
@@ -605,7 +607,7 @@ export default function ServicesPage() {
           </div>
 
           <DialogFooter className="sticky bottom-0 left-0 w-full p-6 border-t border-stone-100 bg-white italic text-stone-400 text-[10px] text-center block rounded-b-xl z-20">
-            Las categorías que tengan servicios asignados no podrán ser eliminadas por seguridad.
+            {t('dashboard.services.category_delete_safety_desc')}
           </DialogFooter>
         </DialogContent>
       </Dialog>

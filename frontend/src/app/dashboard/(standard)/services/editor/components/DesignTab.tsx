@@ -14,6 +14,7 @@ import {
 import { Controller } from 'react-hook-form';
 import type { ServiceFormData } from '@/components/cms/ServiceEditor';
 import AIImageGeneratorModal from '@/components/cms/AIImageGeneratorModal';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 interface DesignTabProps {
   formValues: ServiceFormData;
@@ -24,6 +25,7 @@ interface DesignTabProps {
 }
 
 export default function DesignTab({ formValues, register, control, setValue, setMediaPickerSlot }: DesignTabProps) {
+  const { t } = useLanguage();
   const [showAIImageModal, setShowAIImageModal] = useState(false);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [isProcessingVideo, setIsProcessingVideo] = useState(false);
@@ -56,13 +58,13 @@ export default function DesignTab({ formValues, register, control, setValue, set
         if (res.ok) {
           const data = await res.json();
           setValue('video_url', data.url, { shouldDirty: true });
-          toast.success('Vídeo optimizado y subido correctamente');
+          toast.success(t('dashboard.services.video_uploaded'));
         } else {
-          toast.error('Error al subir el vídeo');
+          toast.error(t('dashboard.services.error_uploading_video'));
         }
       } catch (err) {
         console.error(err);
-        toast.error('Error al procesar el vídeo');
+        toast.error(t('dashboard.services.error_processing_video'));
       } finally {
         setIsProcessingVideo(false);
         setProcessingProgress(0);
@@ -81,18 +83,18 @@ export default function DesignTab({ formValues, register, control, setValue, set
         if (res.ok) {
           const data = await res.json();
           setValue('image_url', data.url, { shouldDirty: true });
-          toast.success('Imagen subida correctamente');
+          toast.success(t('dashboard.services.image_uploaded'));
         } else {
-          toast.error('Error al subir la imagen');
+          toast.error(t('dashboard.services.error_uploading_image'));
         }
       } catch (err) {
         console.error(err);
-        toast.error('Error al subir la imagen');
+        toast.error(t('dashboard.services.error_uploading_image'));
       } finally {
         setIsProcessingImage(false);
       }
     } else {
-      toast.error(`Formato de archivo no válido para ${type === 'image' ? 'imagen' : 'vídeo'}`);
+      toast.error(type === 'image' ? t('dashboard.services.invalid_image_format') : t('dashboard.services.invalid_video_format'));
     }
   };
 
@@ -121,14 +123,14 @@ export default function DesignTab({ formValues, register, control, setValue, set
       {/* SECCIÓN: IMAGEN PRINCIPAL */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <label className="block text-xs font-bold text-stone-500 uppercase tracking-[0.15em]">Imagen Principal</label>
+          <label className="block text-xs font-bold text-stone-500 uppercase tracking-[0.15em]">{t('dashboard.services.main_image_label')}</label>
           <button
             type="button"
             onClick={() => setShowAIImageModal(true)}
             className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[#d4af37] hover:bg-yellow-50/50 px-2.5 py-1.5 rounded-lg border border-yellow-100 transition-all shadow-sm"
           >
             <Sparkles size={12} strokeWidth={2.5} />
-            Generar con IA
+            {t('dashboard.services.generate_ai')}
           </button>
         </div>
 
@@ -144,7 +146,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
           {isProcessingImage ? (
             <div className="flex flex-col items-center justify-center p-8 w-full border-2 border-dashed border-[#d4af37] bg-[#fcf8e5] rounded-2xl min-h-[140px]">
               <Loader2 className="w-8 h-8 text-[#d4af37] animate-spin mb-3" strokeWidth={1.5} />
-              <p className="text-[10px] font-black uppercase tracking-widest text-stone-500 animate-pulse">Subiendo...</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-stone-500 animate-pulse">{t('dashboard.services.uploading')}</p>
             </div>
           ) : formValues.image_url ? (
             <div className={cn(
@@ -158,13 +160,13 @@ export default function DesignTab({ formValues, register, control, setValue, set
                   onClick={() => setMediaPickerSlot('image')}
                   className="px-4 py-2 bg-white text-stone-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#d4af37] hover:text-white transition-all shadow-xl active:scale-95"
                 >
-                  Cambiar
+                  {t('dashboard.services.change')}
                 </button>
                 <button
                   type="button"
                   onClick={() => setValue('image_url', '', { shouldDirty: true })}
                   className="p-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all shadow-xl active:scale-95"
-                  title="Eliminar imagen"
+                  title={t('dashboard.services.remove_image')}
                 >
                   <Trash2 size={16} />
                 </button>
@@ -183,7 +185,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
                 <ImageIcon size={24} strokeWidth={1.5} />
               </div>
               <span className="text-xs font-bold uppercase tracking-widest">
-                {isDraggingImage ? '¡Suéltalo aquí!' : 'Seleccionar Imagen'}
+                {isDraggingImage ? t('dashboard.services.drag_drop_release') : t('dashboard.services.select_image_label')}
               </span>
             </button>
           )}
@@ -193,7 +195,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
       {/* SECCIÓN: VÍDEO DE PORTADA (HOVER) */}
       <div className="space-y-3 pt-2">
         <div className="flex items-center justify-between">
-          <label className="block text-xs font-bold text-stone-500 uppercase tracking-[0.15em]">Vídeo de Portada (Hover)</label>
+          <label className="block text-xs font-bold text-stone-500 uppercase tracking-[0.15em]">{t('dashboard.services.hover_video_label')}</label>
         </div>
 
         <div
@@ -213,7 +215,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
                   <span className="text-sm font-black text-[#d4af37]">{processingProgress}%</span>
                 </div>
               </div>
-              <p className="text-xs font-black uppercase tracking-widest text-stone-500 animate-pulse">Optimizando vídeo...</p>
+              <p className="text-xs font-black uppercase tracking-widest text-stone-500 animate-pulse">{t('dashboard.services.optimizing_video')}</p>
             </div>
           ) : formValues.video_url ? (
             <div className="relative group rounded-2xl overflow-hidden border border-stone-200 aspect-video shadow-sm">
@@ -229,13 +231,13 @@ export default function DesignTab({ formValues, register, control, setValue, set
                   onClick={() => setMediaPickerSlot('video')}
                   className="px-4 py-2 bg-white text-stone-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#d4af37] hover:text-white transition-all shadow-xl active:scale-95"
                 >
-                  Cambiar Vídeo
+                  {t('dashboard.services.change_video')}
                 </button>
                 <button
                   type="button"
                   onClick={() => setValue('video_url', '', { shouldDirty: true })}
                   className="p-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all shadow-xl active:scale-95"
-                  title="Eliminar vídeo"
+                  title={t('dashboard.services.remove_video')}
                 >
                   <Trash2 size={16} />
                 </button>
@@ -251,9 +253,9 @@ export default function DesignTab({ formValues, register, control, setValue, set
                 <Video size={24} strokeWidth={1.5} />
               </div>
               <span className="text-xs font-bold uppercase tracking-widest">
-                {isDraggingVideo ? '¡Suéltalo aquí!' : 'Seleccionar o Arrastrar Vídeo'}
+                {isDraggingVideo ? t('dashboard.services.drag_drop_release') : t('dashboard.services.select_video_label')}
               </span>
-              <p className="text-[10px] mt-2 opacity-60">Se optimizará automáticamente para la web</p>
+              <p className="text-[10px] mt-2 opacity-60">{t('dashboard.services.video_optimize_help')}</p>
             </button>
           )}
         </div>
@@ -261,7 +263,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
 
       <div className="grid grid-cols-1 gap-6 border-t border-stone-200 pt-8">
         <div>
-          <label className="block text-xs font-bold text-stone-500 uppercase tracking-[0.15em] mb-3">Estilo Cabecera</label>
+          <label className="block text-xs font-bold text-stone-500 uppercase tracking-[0.15em] mb-3">{t('dashboard.services.header_style_label')}</label>
           <Controller
             name="layout_preferences.headerStyle"
             control={control}
@@ -271,8 +273,8 @@ export default function DesignTab({ formValues, register, control, setValue, set
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl shadow-xl border-stone-200">
-                  <SelectItem value="split_image" className="text-sm py-2.5">Imagen Estática (Split)</SelectItem>
-                  <SelectItem value="split_video" className="text-sm py-2.5">Vídeo Vertical (Split)</SelectItem>
+                  <SelectItem value="split_image" className="text-sm py-2.5">{t('dashboard.services.header_style_static_image')}</SelectItem>
+                  <SelectItem value="split_video" className="text-sm py-2.5">{t('dashboard.services.header_style_vertical_video')}</SelectItem>
                 </SelectContent>
               </Select>
             )}
@@ -280,17 +282,17 @@ export default function DesignTab({ formValues, register, control, setValue, set
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-stone-500 uppercase tracking-[0.15em] mb-4">Color de Acento</label>
+          <label className="block text-xs font-bold text-stone-500 uppercase tracking-[0.15em] mb-4">{t('dashboard.services.accent_color_label')}</label>
           <div className="flex flex-wrap gap-3 items-center bg-white p-3 rounded-2xl border border-stone-100 shadow-sm">
             <button
               type="button"
               onClick={() => setValue('layout_preferences.accentColor', '#d4af37', { shouldDirty: true })}
               className={`w-9 h-9 rounded-full border-2 transition-all ${formValues.layout_preferences.accentColor === '#d4af37' ? 'border-stone-800 scale-110 shadow-lg' : 'border-transparent hover:scale-105 shadow-sm'}`}
               style={{ backgroundColor: '#d4af37' }}
-              title="Dorado Corporativo"
+              title={t('dashboard.services.corporate_gold')}
             />
             <div className="w-px h-6 bg-stone-200 mx-1" />
-            <div className="relative group" title="Color Personalizado">
+            <div className="relative group" title={t('dashboard.services.custom_color')}>
               <input
                 type="color"
                 value={formValues.layout_preferences.accentColor}
@@ -311,7 +313,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
                 type="button"
                 onClick={() => setValue('layout_preferences.accentColor', '#d4af37', { shouldDirty: true })}
                 className="ml-auto p-2 text-stone-400 hover:text-[#d4af37] hover:bg-stone-50 rounded-xl transition-all"
-                title="Restablecer al dorado por defecto"
+                title={t('dashboard.services.reset_default')}
               >
                 <RotateCcw size={14} />
               </button>

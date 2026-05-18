@@ -14,6 +14,7 @@ import MediaPickerModal from '@/components/MediaPickerModal';
 import FeedbackModal from '@/components/FeedbackModal';
 import AIGeneratorModal from './AIGeneratorModal';
 import { useAIImage } from '@/app/contexts/AIImageContext';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 // Tabs
 import GeneralTab from '@/app/dashboard/(standard)/services/editor/components/GeneralTab';
@@ -71,6 +72,7 @@ const DEFAULT_FORM_DATA: ServiceFormData = {
 };
 
 export default function ServiceEditor({ initialData, serviceId }: { initialData?: any, serviceId?: string }) {
+  const { t } = useLanguage();
   const router = useRouter();
   const isNew = !serviceId;
   const [categories, setCategories] = useState<any[]>([]);
@@ -164,7 +166,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
       const method = isNew ? 'POST' : 'PATCH';
 
       if (!data.category_id) {
-        toast.error("Por favor, selecciona una categoría.");
+        toast.error(t('dashboard.services.category_required'));
         setSaving(false);
         return;
       }
@@ -182,7 +184,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
 
       if (res.ok) {
         const savedData = await res.json();
-        toast.success(isNew ? 'Servicio creado con éxito' : 'Servicio actualizado');
+        toast.success(isNew ? t('dashboard.services.service_created') : t('dashboard.services.service_updated'));
 
         if (exitAfterSave) {
           router.push('/dashboard/services');
@@ -192,10 +194,10 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
         }
       } else {
         const errorData = await res.json();
-        toast.error(`Error: ${errorData.detail || 'No se pudo guardar el servicio.'}`);
+        toast.error(t('dashboard.services.save_error', { error: errorData.detail || 'No se pudo guardar el servicio.' }));
       }
     } catch (err) {
-      toast.error('Error de conexión con el servidor');
+      toast.error(t('dashboard.services.connection_error'));
     } finally {
       setSaving(false);
     }
@@ -209,13 +211,13 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
       });
 
       if (res.ok) {
-        toast.success("Servicio eliminado correctamente");
+        toast.success(t('dashboard.services.service_deleted'));
         router.push('/dashboard/services');
       } else {
-        toast.error("Error al eliminar el servicio");
+        toast.error(t('dashboard.services.error_deleting_service'));
       }
     } catch (err) {
-      toast.error("Error de conexión");
+      toast.error(t('dashboard.services.connection_error'));
     } finally {
       setIsDeleting(false);
       setShowDeleteModal(false);
@@ -242,10 +244,10 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
               </div>
               <div>
                 <h2 className="font-serif text-lg font-semibold text-stone-800 leading-tight">
-                  {isNew ? 'Nuevo Servicio' : 'Editar Servicio'}
+                  {isNew ? t('dashboard.services.new_service') : t('dashboard.services.edit_service')}
                 </h2>
                 <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">
-                  {isGeneratingAI ? 'Generando imagen...' : 'CMS Visual'}
+                  {isGeneratingAI ? t('dashboard.services.generating_image') : t('dashboard.services.visual_cms')}
                 </p>
               </div>
             </div>
@@ -255,28 +257,28 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
                 disabled={saving || isGeneratingAI || (!isDirty && !isNew)}
                 onClick={() => setExitAfterSave(false)}
                 className="bg-stone-100 hover:bg-stone-200 text-stone-700 px-4 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-30 disabled:grayscale shadow-sm"
-                title={isGeneratingAI ? "No puedes guardar mientras se genera la imagen" : ""}
+                title={isGeneratingAI ? t('dashboard.services.no_save_ai_generating') : ""}
               >
-                {saving && !exitAfterSave ? '...' : 'Guardar cambios'}
+                {saving && !exitAfterSave ? '...' : t('dashboard.services.save_changes')}
               </button>
               <button
                 type="submit"
                 disabled={saving || isGeneratingAI || (!isDirty && !isNew)}
                 onClick={() => setExitAfterSave(true)}
                 className="bg-stone-900 hover:bg-[#d4af37] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-30 disabled:grayscale shadow-sm"
-                title={isGeneratingAI ? "No puedes guardar mientras se genera la imagen" : ""}
+                title={isGeneratingAI ? t('dashboard.services.no_save_ai_generating') : ""}
               >
-                {saving && exitAfterSave ? 'Guardando...' : 'Guardar y salir'}
+                {saving && exitAfterSave ? t('dashboard.services.saving') : t('dashboard.services.save_exit')}
               </button>
             </div>
           </div>
 
           {/* Pestañas de Navegación */}
           <div className="flex px-6 pt-4 gap-4 border-b border-stone-100 shrink-0">
-            <button type="button" onClick={() => setActiveTab('general')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'general' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>General</button>
-            <button type="button" onClick={() => setActiveTab('content')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'content' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>Contenido</button>
-            <button type="button" onClick={() => setActiveTab('design')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'design' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>Diseño</button>
-            <button type="button" onClick={() => setActiveTab('seo')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'seo' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>SEO</button>
+            <button type="button" onClick={() => setActiveTab('general')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'general' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tab_general')}</button>
+            <button type="button" onClick={() => setActiveTab('content')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'content' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tab_content')}</button>
+            <button type="button" onClick={() => setActiveTab('design')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'design' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tab_design')}</button>
+            <button type="button" onClick={() => setActiveTab('seo')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'seo' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tab_seo')}</button>
           </div>
 
           {/* Cuerpo del Formulario */}
@@ -337,7 +339,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
                   disabled={isGeneratingAI}
                   onClick={() => setShowDeleteModal(true)}
                   className="w-12 h-12 flex items-center justify-center rounded-xl bg-white border border-stone-200 text-red-400 hover:text-red-600 hover:border-red-100 hover:bg-red-50 transition-all shrink-0 disabled:opacity-30 disabled:grayscale"
-                  title="Eliminar Servicio"
+                  title={t('dashboard.services.delete_service')}
                 >
                   <Trash2 size={18} />
                 </button>
@@ -347,13 +349,13 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
                 onClick={(e) => {
                   if (isGeneratingAI) {
                     e.preventDefault();
-                    toast.warning("Espera a que la IA termine antes de salir.");
+                    toast.warning(t('dashboard.services.wait_ai_warning'));
                   }
                 }}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white border border-stone-200 text-stone-600 font-bold text-sm hover:bg-stone-50 hover:border-stone-300 transition-all shadow-sm ${isGeneratingAI ? 'opacity-30 grayscale cursor-not-allowed' : ''}`}
               >
                 <ArrowLeft size={15} strokeWidth={2} />
-                Cancelar
+                {t('dashboard.services.cancel')}
               </Link>
             </div>
           </div>
@@ -369,7 +371,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
             <Eye size={14} strokeWidth={1.75} className="text-stone-500" />
           </div>
           <span className="text-xs font-black uppercase tracking-widest text-stone-500">
-            Vista Previa en Vivo: {formValues.slug ? `/tratamientos/${formValues.slug}` : 'URL pendiente'}
+            {t('dashboard.services.live_preview')}: {formValues.slug ? `/tratamientos/${formValues.slug}` : t('dashboard.services.pending_url')}
           </span>
           <div className="ml-auto flex gap-1.5 items-center">
             <div className="w-2.5 h-2.5 rounded-full bg-stone-300" />
@@ -413,38 +415,38 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
               <div className="w-full md:w-[55%] lg:w-[57%] flex flex-col pt-12 pb-24 px-6 md:pl-10 md:pr-12 lg:pl-16 lg:pr-24">
                 <div className="max-w-2xl">
                   <span className="text-xs font-black uppercase tracking-[0.2em] text-[#d4af37] mb-4 block">
-                    Tratamiento Especializado
+                    {t('dashboard.services.specialized_treatment')}
                   </span>
                   <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-stone-900 mb-8 leading-[1.1]">
-                    {formValues.name || 'Título del Tratamiento'}
+                    {formValues.name || t('dashboard.services.treatment_title')}
                   </h1>
 
                   {/* Pricing & Time Card */}
                   <div className="flex flex-wrap gap-4 items-center mb-10 p-6 bg-stone-50 rounded-3xl border border-stone-100 shadow-sm">
                     <div className="px-6 border-r border-stone-200">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1">Duración</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1">{t('dashboard.services.duration')}</p>
                       <p className="text-lg font-bold text-stone-800">{formValues.duration_minutes} min</p>
                     </div>
                     <div className="px-6">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1">Inversión desde</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1">{t('dashboard.services.investment_from')}</p>
                       <p className="text-lg font-bold text-stone-800">{formValues.price} €</p>
                     </div>
                     <div className="ml-auto">
                       <button disabled className="px-6 py-3 rounded-2xl font-bold text-white shadow-lg" style={{ backgroundColor: formValues.layout_preferences.accentColor }}>
-                        Reservar Ahora
+                        {t('dashboard.services.book_now')}
                       </button>
                     </div>
                   </div>
 
                   {/* Short Description */}
                   <p className="text-lg md:text-xl text-stone-500 font-sans leading-relaxed mb-12 italic">
-                    "{formValues.description || 'La descripción corta aparecerá aquí...'}"
+                    "{formValues.description || t('dashboard.services.short_desc_placeholder')}"
                   </p>
 
                   {/* Content Rich Text (Sync with Tiptap) */}
                   <div
                     className="prose prose-stone max-w-none prose-headings:font-serif prose-headings:font-normal prose-p:leading-relaxed prose-a:text-[#d4af37] prose-img:rounded-3xl"
-                    dangerouslySetInnerHTML={{ __html: formValues.content_html || '<p class="text-stone-300 italic">El contenido detallado aparecerá aquí...</p>' }}
+                    dangerouslySetInnerHTML={{ __html: formValues.content_html || `<p class="text-stone-300 italic">${t('dashboard.services.rich_content_placeholder')}</p>` }}
                   />
                 </div>
               </div>
@@ -471,12 +473,12 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
       {showDeleteModal && (
         <FeedbackModal
           type="confirm"
-          title="¿Eliminar este servicio?"
-          message="Esta acción es irreversible. El servicio desaparecerá del catálogo público y del dashboard."
+          title={t('dashboard.services.delete_modal_title')}
+          message={t('dashboard.services.delete_modal_desc')}
           onClose={() => setShowDeleteModal(false)}
           onConfirmHandler={handleDelete}
-          confirmText={isDeleting ? "Eliminando..." : "Sí, eliminar"}
-          cancelText="Cancelar"
+          confirmText={isDeleting ? t('dashboard.services.deleting') : t('dashboard.services.confirm_delete')}
+          cancelText={t('dashboard.services.cancel')}
         />
       )}
 

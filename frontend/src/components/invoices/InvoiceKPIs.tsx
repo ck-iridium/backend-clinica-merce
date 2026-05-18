@@ -2,6 +2,7 @@ import React from 'react';
 import { InvoiceKPIs as KPISType } from '@/lib/types';
 import { Banknote, ReceiptText, Calculator } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 interface Props {
   kpis: KPISType;
@@ -9,8 +10,11 @@ interface Props {
 }
 
 export default function InvoiceKPIs({ kpis, loading }: Props) {
+  const { t, language } = useLanguage();
+
   const formatEuro = (amount: number) => {
-    return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount);
+    const locale = language === 'es' ? 'es-ES' : language === 'en' ? 'en-US' : 'fr-FR';
+    return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR' }).format(amount);
   };
 
   if (loading) {
@@ -30,7 +34,9 @@ export default function InvoiceKPIs({ kpis, loading }: Props) {
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-bl-[4rem] pointer-events-none transition-transform group-hover:scale-110"></div>
         <div className="p-6 relative z-10 flex flex-col justify-between h-full min-h-[8rem]">
           <div className="flex justify-between items-start mb-2">
-            <span className="text-stone-400 font-bold text-xs uppercase tracking-widest">Total Bruto</span>
+            <span className="text-stone-400 font-bold text-xs uppercase tracking-widest">
+              {t('dashboard.invoices.total_gross') || 'Total Bruto'}
+            </span>
             <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
               <Banknote size={20} className="text-[#d4af37]" />
             </div>
@@ -47,7 +53,9 @@ export default function InvoiceKPIs({ kpis, loading }: Props) {
       <div className="rounded-[2rem] border border-stone-200 shadow-sm bg-white overflow-hidden relative group">
         <div className="p-6 relative z-10 flex flex-col justify-between h-full min-h-[8rem]">
           <div className="flex justify-between items-start mb-2">
-            <span className="text-stone-500 font-bold text-xs uppercase tracking-widest">Base Imponible</span>
+            <span className="text-stone-500 font-bold text-xs uppercase tracking-widest">
+              {t('dashboard.invoices.taxable_base') || 'Base Imponible'}
+            </span>
             <div className="w-10 h-10 rounded-full bg-stone-50 flex items-center justify-center border border-stone-100">
               <ReceiptText size={20} className="text-stone-600" />
             </div>
@@ -64,7 +72,9 @@ export default function InvoiceKPIs({ kpis, loading }: Props) {
       <div className="rounded-[2rem] border border-stone-200 shadow-sm bg-white overflow-hidden relative group">
         <div className="p-6 relative z-10 flex flex-col justify-between h-full min-h-[8rem]">
           <div className="flex justify-between items-start mb-2">
-            <span className="text-stone-500 font-bold text-xs uppercase tracking-widest">Cuota de IVA</span>
+            <span className="text-stone-500 font-bold text-xs uppercase tracking-widest">
+              {t('dashboard.invoices.vat_quota') || 'Cuota de IVA'}
+            </span>
             <div className="w-10 h-10 rounded-full bg-stone-50 flex items-center justify-center border border-stone-100">
               <Calculator size={20} className="text-stone-600" />
             </div>

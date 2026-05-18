@@ -31,8 +31,11 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
+import { useLanguage } from '@/app/contexts/LanguageContext';
+
 export default function VouchersPage() {
   const router = useRouter();
+  const { t, language } = useLanguage();
   const { role, loading: loadingRole } = useAuthRole();
   const { showFeedback } = useFeedback();
   const [activeTab, setActiveTab] = useState<'catalogo' | 'vendidos'>('vendidos');
@@ -75,7 +78,7 @@ export default function VouchersPage() {
     if (!loadingRole) {
       const currentRole = role?.toLowerCase();
       if (currentRole === 'especialista') {
-        toast.error("Acceso denegado: No tienes permisos para gestionar bonos.");
+        toast.error(t('dashboard.vouchers.access_denied') || "Acceso denegado: No tienes permisos para gestionar bonos.");
         router.replace('/dashboard');
       } else {
         fetchData();
@@ -138,12 +141,12 @@ export default function VouchersPage() {
         setTemplateServiceId('');
         setTemplatePrice('');
         fetchData();
-        toast.success('Plantilla de bono creada');
+        toast.success(t('dashboard.vouchers.template_created') || 'Plantilla de bono creada');
       } else {
-        toast.error('Error al crear plantilla');
+        toast.error(t('dashboard.vouchers.error_creating_template') || 'Error al crear plantilla');
       }
     } catch (e) {
-      toast.error('Error de conexión');
+      toast.error(t('dashboard.vouchers.connection_error') || 'Error de conexión');
     } finally {
       setSaving(false);
     }
@@ -157,19 +160,19 @@ export default function VouchersPage() {
   const handleDeleteTemplate = async (id: string) => {
     showFeedback({
       type: 'confirm',
-      title: 'Eliminar plantilla',
-      message: '¿Seguro que deseas eliminar esta plantilla?',
+      title: t('dashboard.vouchers.delete_template_title') || 'Eliminar plantilla',
+      message: t('dashboard.vouchers.delete_template_desc') || '¿Seguro que deseas eliminar esta plantilla?',
       onConfirm: async () => {
         try {
           const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/voucher_templates/${id}`, { method: 'DELETE' });
           if (res.ok) {
               fetchData();
-              toast.success('Plantilla eliminada correctamente');
+              toast.success(t('dashboard.vouchers.template_deleted') || 'Plantilla eliminada correctamente');
           } else {
-              toast.error('Error al eliminar plantilla');
+              toast.error(t('dashboard.vouchers.error_deleting_template') || 'Error al eliminar plantilla');
           }
         } catch (e) {
-          toast.error('Error de conexión');
+          toast.error(t('dashboard.vouchers.connection_error') || 'Error de conexión');
         }
       }
     });
@@ -208,12 +211,12 @@ export default function VouchersPage() {
       if (res.ok) {
         setShowPayModal(false);
         fetchData();
-        toast.success('Pago registrado correctamente');
+        toast.success(t('dashboard.vouchers.payment_registered') || 'Pago registrado correctamente');
       } else {
-        toast.error('Error al registrar el pago');
+        toast.error(t('dashboard.vouchers.error_registering_payment') || 'Error al registrar el pago');
       }
     } catch (e) {
-      toast.error('Error de conexión');
+      toast.error(t('dashboard.vouchers.connection_error') || 'Error de conexión');
     } finally {
       setPaying(false);
     }
@@ -222,7 +225,7 @@ export default function VouchersPage() {
   const handleAssignVoucher = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedTemplateId) {
-       toast.error('Debes seleccionar una plantilla');
+       toast.error(t('dashboard.vouchers.must_select_template') || 'Debes seleccionar una plantilla');
        return;
     }
     setSaving(true);
@@ -257,12 +260,12 @@ export default function VouchersPage() {
         setAssignPrice('');
         setAssignAmountPaid('');
         fetchData();
-        toast.success('Bono emitido y asignado');
+        toast.success(t('dashboard.vouchers.voucher_assigned') || 'Bono emitido y asignado');
       } else {
-        toast.error('Error emitiendo el bono');
+        toast.error(t('dashboard.vouchers.error_assigning_voucher') || 'Error emitiendo el bono');
       }
     } catch (e) {
-      toast.error('Error de conexión');
+      toast.error(t('dashboard.vouchers.connection_error') || 'Error de conexión');
     } finally {
       setSaving(false);
     }
@@ -271,19 +274,19 @@ export default function VouchersPage() {
   const handleDeleteVoucher = async (id: string) => {
     showFeedback({
       type: 'confirm',
-      title: 'Anular Bono',
-      message: '¿Seguro que deseas anular este bono? Se perderán las sesiones restantes.',
+      title: t('dashboard.vouchers.annul_voucher_title') || 'Anular Bono',
+      message: t('dashboard.vouchers.annul_voucher_desc') || '¿Seguro que deseas anular este bono? Se perderán las sesiones restantes.',
       onConfirm: async () => {
         try {
           const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vouchers/${id}`, { method: 'DELETE' });
           if (res.ok) {
               fetchData();
-              toast.success('Bono anulado correctamente');
+              toast.success(t('dashboard.vouchers.voucher_annulled') || 'Bono anulado correctamente');
           } else {
-              toast.error('Error al anular el bono');
+              toast.error(t('dashboard.vouchers.error_annulling_voucher') || 'Error al anular el bono');
           }
         } catch (e) {
-          toast.error('Error de conexión');
+          toast.error(t('dashboard.vouchers.connection_error') || 'Error de conexión');
         }
       }
     });
@@ -355,8 +358,8 @@ export default function VouchersPage() {
       
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-stone-800">Dirección de Bonos</h1>
-          <p className="text-stone-500 mt-1 font-medium">Control de tratamientos emitidos y catálogo de bonos base</p>
+          <h1 className="text-3xl font-extrabold text-stone-800">{t('dashboard.vouchers.title') || 'Dirección de Bonos'}</h1>
+          <p className="text-stone-500 mt-1 font-medium">{t('dashboard.vouchers.subtitle') || 'Control de tratamientos emitidos y catálogo de bonos base'}</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex bg-white border border-stone-200 p-1 rounded-xl shadow-sm">
@@ -364,20 +367,20 @@ export default function VouchersPage() {
               onClick={() => setActiveTab('vendidos')}
               className={`px-4 py-2 rounded-lg font-bold text-xs transition-all ${activeTab === 'vendidos' ? 'bg-stone-900 text-white shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
             >
-               Emitidos
+               {t('dashboard.vouchers.tab_issued') || 'Emitidos'}
             </button>
             <button 
               onClick={() => setActiveTab('catalogo')}
               className={`px-4 py-2 rounded-lg font-bold text-xs transition-all ${activeTab === 'catalogo' ? 'bg-stone-900 text-white shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
             >
-               Catálogo
+               {t('dashboard.vouchers.tab_catalog') || 'Catálogo'}
             </button>
           </div>
           <button 
             onClick={() => activeTab === 'vendidos' ? setShowAssignModal(true) : setShowTemplateModal(true)}
             className="px-6 py-3 rounded-xl bg-[#d4af37] hover:bg-[#b08e23] border border-transparent text-white font-bold transition-all shadow-md active:scale-95 flex items-center gap-2"
           >
-            <span className="text-lg">+</span> {activeTab === 'vendidos' ? 'Emitir Bono' : 'Nueva Plantilla'}
+            <span className="text-lg">+</span> {activeTab === 'vendidos' ? (t('dashboard.vouchers.emit_voucher') || 'Emitir Bono') : (t('dashboard.vouchers.new_template') || 'Nueva Plantilla')}
           </button>
         </div>
       </div>
@@ -386,7 +389,7 @@ export default function VouchersPage() {
       {activeTab === 'vendidos' && (
         <>
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-bold text-stone-700 ml-1">Bonos activos en pacientes</h2>
+            <h2 className="text-lg font-bold text-stone-700 ml-1">{t('dashboard.vouchers.active_in_patients') || 'Bonos activos en pacientes'}</h2>
           </div>
 
           <motion.div 
@@ -415,11 +418,11 @@ export default function VouchersPage() {
                     <div className="flex items-center gap-2">
                       {active ? (
                         <span className="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[10px] font-black border border-emerald-100 uppercase tracking-widest">
-                          Activo
+                          {t('dashboard.vouchers.active') || 'Activo'}
                         </span>
                       ) : (
                         <span className="bg-stone-50 text-stone-400 px-3 py-1 rounded-full text-[10px] font-black border border-stone-100 uppercase tracking-widest">
-                          {isEmpty ? 'Agotado' : 'Caducado'}
+                          {isEmpty ? (t('dashboard.vouchers.depleted') || 'Agotado') : (t('dashboard.vouchers.expired') || 'Caducado')}
                         </span>
                       )}
 
@@ -430,21 +433,21 @@ export default function VouchersPage() {
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuLabel>Acciones del Bono</DropdownMenuLabel>
+                          <DropdownMenuLabel>{t('dashboard.vouchers.actions_title') || 'Acciones del Bono'}</DropdownMenuLabel>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem asChild>
                             <Link href={`/dashboard/clients/${v.client_id}`} className="cursor-pointer">
-                              Ver Ficha Cliente
+                              {t('dashboard.vouchers.view_client_file') || 'Ver Ficha Cliente'}
                             </Link>
                           </DropdownMenuItem>
                           {v.payment_status !== 'paid' && (
                             <DropdownMenuItem onClick={() => handleOpenPayModal(v)} className="text-amber-600 font-bold">
-                              Cobrar Pendiente
+                              {t('dashboard.vouchers.collect_pending') || 'Cobrar Pendiente'}
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => handleDeleteVoucher(v.id)} className="text-rose-600">
-                            Anular Bono
+                            {t('dashboard.vouchers.annul_voucher') || 'Anular Bono'}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -458,26 +461,28 @@ export default function VouchersPage() {
                     'bg-rose-50/30 border-rose-100/50'
                   }`}>
                     <div>
-                      <p className="text-[9px] uppercase font-black text-stone-400 tracking-wider mb-0.5">Estado Financiero</p>
+                      <p className="text-[9px] uppercase font-black text-stone-400 tracking-wider mb-0.5">{t('dashboard.vouchers.financial_status') || 'Estado Financiero'}</p>
                       <div className="text-xs font-bold">
-                        {v.payment_status === 'paid' && <span className="text-emerald-700">✓ Completado</span>}
+                        {v.payment_status === 'paid' && <span className="text-emerald-700">{t('dashboard.vouchers.financial_completed') || '✓ Completado'}</span>}
                         {v.payment_status === 'partial' && (
-                          <span className="text-amber-600">⚠️ Deuda: {v.total_price - v.amount_paid}€</span>
+                          <span className="text-amber-600">
+                            {(t('dashboard.vouchers.financial_debt') || '⚠️ Deuda: {debt}€').replace('{debt}', (v.total_price - v.amount_paid).toString())}
+                          </span>
                         )}
                         {v.payment_status === 'pending' && (
-                          <span className="text-rose-600">✕ Sin Cobrar</span>
+                          <span className="text-rose-600">{t('dashboard.vouchers.financial_unpaid') || '✕ Sin Cobrar'}</span>
                         )}
                       </div>
                     </div>
                      <div className="text-right">
-                       <p className="text-[9px] uppercase font-black text-stone-400 tracking-wider mb-0.5">Inversión</p>
+                       <p className="text-[9px] uppercase font-black text-stone-400 tracking-wider mb-0.5">{t('dashboard.vouchers.investment') || 'Inversión'}</p>
                        <p className="text-base font-black text-stone-800">{v.total_price}€</p>
                      </div>
                   </div>
 
                   <div className="mb-6">
                     <div className="flex justify-between text-[11px] font-black uppercase tracking-widest mb-2">
-                      <span className="text-stone-400">Progreso Sesiones</span>
+                      <span className="text-stone-400">{t('dashboard.vouchers.sessions_progress') || 'Progreso Sesiones'}</span>
                       <span className="text-stone-900">{v.used_sessions} / {v.total_sessions}</span>
                     </div>
                     <div className="h-3 w-full bg-stone-100 rounded-full overflow-hidden border border-stone-200/30 p-0.5">
@@ -492,7 +497,10 @@ export default function VouchersPage() {
 
                   <div className="flex items-center gap-2 text-[10px] font-bold text-stone-400 uppercase tracking-wider">
                     <span className="w-1.5 h-1.5 rounded-full bg-stone-200"></span>
-                    <span>Vence el {new Date(v.expiration_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
+                    <span>
+                      {(t('dashboard.vouchers.expires_on') || 'Vence el {date}')
+                        .replace('{date}', new Date(v.expiration_date).toLocaleDateString(language === 'es' ? 'es-ES' : language === 'en' ? 'en-US' : 'fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }))}
+                    </span>
                   </div>
                 </motion.div>
               );
@@ -501,7 +509,7 @@ export default function VouchersPage() {
             {vouchers.length === 0 && (
               <div className="col-span-full py-24 text-center border-2 border-dashed border-stone-200 rounded-[2.5rem] bg-stone-50/30">
                 <span className="text-4xl block mb-4 opacity-20">🎟️</span>
-                <p className="text-stone-400 font-bold">No hay bonos activos asignados a clientes.</p>
+                <p className="text-stone-400 font-bold">{t('dashboard.vouchers.no_active_vouchers') || 'No hay bonos activos asignados a clientes.'}</p>
               </div>
             )}
           </motion.div>
@@ -512,30 +520,30 @@ export default function VouchersPage() {
       {activeTab === 'catalogo' && (
         <>
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-bold text-stone-700 ml-1">Modelos de bonos configurados</h2>
+            <h2 className="text-lg font-bold text-stone-700 ml-1">{t('dashboard.vouchers.configured_models') || 'Modelos de bonos configurados'}</h2>
           </div>
           
           <div className="bg-white rounded-[2rem] border border-stone-100 shadow-sm overflow-hidden">
              <table className="w-full text-left border-collapse">
                 <thead>
                    <tr className="bg-stone-50/50 border-b border-stone-100 text-[10px] uppercase tracking-[0.15em] font-black text-stone-400">
-                      <th className="px-8 py-5">Nombre de la Plantilla</th>
-                      <th className="px-8 py-5">Tratamiento Válido</th>
-                      <th className="px-8 py-5 text-center">Nº Sesiones</th>
-                      <th className="px-8 py-5">Precio Sugerido</th>
-                      <th className="px-8 py-5 text-right">Acciones</th>
+                      <th className="px-8 py-5">{t('dashboard.vouchers.table_template_name') || 'Nombre de la Plantilla'}</th>
+                      <th className="px-8 py-5">{t('dashboard.vouchers.table_valid_service') || 'Tratamiento Válido'}</th>
+                      <th className="px-8 py-5 text-center">{t('dashboard.vouchers.table_sessions_count') || 'Nº Sesiones'}</th>
+                      <th className="px-8 py-5">{t('dashboard.vouchers.table_suggested_price') || 'Precio Sugerido'}</th>
+                      <th className="px-8 py-5 text-right">{t('dashboard.vouchers.table_actions') || 'Acciones'}</th>
                    </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-100">
                    {templates.length === 0 ? (
-                      <tr><td colSpan={5} className="p-16 text-center text-stone-400 font-bold">El catálogo está vacío. Crea tu primer bono base.</td></tr>
+                      <tr><td colSpan={5} className="p-16 text-center text-stone-400 font-bold">{t('dashboard.vouchers.empty_catalog') || 'El catálogo está vacío. Crea tu primer bono base.'}</td></tr>
                    ) : templates.map(t => (
                       <tr key={t.id} className="hover:bg-stone-50/80 transition-colors group">
                          <td className="px-8 py-6 font-extrabold text-stone-900">{t.name}</td>
                          <td className="px-8 py-6 font-medium text-stone-500 text-sm">{getServiceName(t.service_id)}</td>
                          <td className="px-8 py-6 text-center">
                             <span className="inline-block bg-primary/5 text-primary font-black text-[10px] px-3 py-1 rounded-full uppercase tracking-tighter">
-                              {t.total_sessions} sesiones
+                              {(t('dashboard.vouchers.sessions_plural') || '{sessions} sesiones').replace('{sessions}', t.total_sessions.toString())}
                             </span>
                          </td>
                          <td className="px-8 py-6 font-black text-stone-900">{t.price} €</td>
@@ -543,7 +551,7 @@ export default function VouchersPage() {
                             <button 
                               onClick={() => handleDeleteTemplate(t.id)}
                               className="w-10 h-10 rounded-xl bg-white border border-stone-100 flex items-center justify-center text-stone-400 hover:border-rose-200 hover:text-rose-600 hover:bg-rose-50 transition-all ml-auto opacity-0 group-hover:opacity-100 active:scale-95 shadow-sm"
-                              title="Eliminar plantilla"
+                              title={t('dashboard.vouchers.delete_template_title') || "Eliminar plantilla"}
                             >
                               <span className="text-xl leading-none">×</span>
                             </button>
@@ -560,9 +568,9 @@ export default function VouchersPage() {
       <Dialog open={showAssignModal} onOpenChange={setShowAssignModal}>
         <DialogContent className="p-0 border-none max-w-lg">
           <DialogHeader className="p-8 border-b border-stone-100 bg-stone-50 rounded-t-xl">
-            <DialogTitle className="text-xl font-extrabold text-stone-800">Emitir / Vender Bono</DialogTitle>
+            <DialogTitle className="text-xl font-extrabold text-stone-800">{t('dashboard.vouchers.modal_emit_title') || 'Emitir / Vender Bono'}</DialogTitle>
             <DialogDescription className="text-stone-400 text-sm">
-              Asigna un bono del catálogo a un cliente y define las condiciones de pago.
+              {t('dashboard.vouchers.modal_emit_desc') || 'Asigna un bono del catálogo a un cliente y define las condiciones de pago.'}
             </DialogDescription>
           </DialogHeader>
 
@@ -570,10 +578,10 @@ export default function VouchersPage() {
             <form id="assign-voucher-form" onSubmit={handleAssignVoucher}>
               {/* 1. Seleccionar Cliente */}
               <div className="mb-5">
-                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Cliente Receptor</label>
+                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">{t('dashboard.vouchers.client_receptor') || 'Cliente Receptor'}</label>
                 <Select required value={selectedClientId} onValueChange={setSelectedClientId}>
                   <SelectTrigger className="w-full bg-stone-50 border-stone-200 uppercase tracking-tighter shadow-sm font-bold">
-                    <SelectValue placeholder="Selecciona cliente..." />
+                    <SelectValue placeholder={t('dashboard.vouchers.select_client_placeholder') || "Selecciona cliente..."} />
                   </SelectTrigger>
                   <SelectContent>
                     {clients
@@ -585,18 +593,18 @@ export default function VouchersPage() {
 
               {/* 2. Seleccionar Plantilla con Buscador */}
               <div className="mb-6 p-4 bg-stone-50 border border-stone-200 rounded-2xl relative">
-                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Elegir Plantilla del Catálogo</label>
+                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">{t('dashboard.vouchers.choose_template') || 'Elegir Plantilla del Catálogo'}</label>
                 {!selectedTemplateId ? (
                    <>
                       <input 
                         type="text" 
-                        placeholder="Buscar plantilla..." 
+                        placeholder={t('dashboard.vouchers.search_template_placeholder') || "Buscar plantilla..."} 
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                         className="w-full p-3 mb-2 bg-white border border-stone-200 rounded-xl text-sm outline-none"
                       />
                       <div className="max-h-40 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
-                         {filteredTemplates.length === 0 && <p className="text-xs text-stone-400">No se encontraron plantillas.</p>}
+                         {filteredTemplates.length === 0 && <p className="text-xs text-stone-400">{t('dashboard.vouchers.no_templates_found') || 'No se encontraron plantillas.'}</p>}
                          {filteredTemplates.map(t => (
                             <div 
                               key={t.id} 
@@ -605,7 +613,7 @@ export default function VouchersPage() {
                             >
                                <div>
                                  <p className="font-bold text-stone-700 text-sm">{t.name}</p>
-                                 <p className="text-xs text-stone-400">{t.total_sessions} Sesiones</p>
+                                 <p className="text-xs text-stone-400">{(t('dashboard.vouchers.sessions_count_plural') || '{sessions} Sesiones').replace('{sessions}', t.total_sessions.toString())}</p>
                                </div>
                                <span className="font-extrabold text-[#d9777f]">{t.price}€</span>
                             </div>
@@ -616,13 +624,15 @@ export default function VouchersPage() {
                    <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-[#f3c7cb] shadow-inner">
                       <div>
                          <p className="font-bold text-stone-800 text-sm">{templates.find(t => t.id === selectedTemplateId)?.name}</p>
-                         <p className="text-xs text-[#d9777f] font-semibold mt-0.5">{templates.find(t => t.id === selectedTemplateId)?.total_sessions} Sesiones a consumir</p>
+                         <p className="text-xs text-[#d9777f] font-semibold mt-0.5">
+                           {(t('dashboard.vouchers.sessions_to_consume') || '{sessions} Sesiones a consumir').replace('{sessions}', (templates.find(t => t.id === selectedTemplateId)?.total_sessions || 0).toString())}
+                         </p>
                       </div>
                       <button 
                         type="button" 
                         onClick={() => setSelectedTemplateId('')}
                         className="text-xs font-bold text-stone-400 underline hover:text-stone-600"
-                      >Cambiar</button>
+                      >{t('dashboard.vouchers.change') || 'Cambiar'}</button>
                    </div>
                 )}
               </div>
@@ -630,7 +640,7 @@ export default function VouchersPage() {
               {/* 3. Condiciones Financieras */}
               <div className={`grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 transition-all duration-300 ${selectedTemplateId ? 'opacity-100' : 'opacity-40 grayscale pointer-events-none'}`}>
                 <div>
-                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5 ml-1">Precio Final Pactado (€)</label>
+                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5 ml-1">{t('dashboard.vouchers.final_price') || 'Precio Final Pactado (€)'}</label>
                   <input 
                     type="number" step="0.01" required 
                     value={assignPrice} onChange={e => setAssignPrice(Number(e.target.value))}
@@ -639,7 +649,7 @@ export default function VouchersPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-emerald-600 tracking-wide mb-1">Pago Inicial Hoy (€)</label>
+                  <label className="block text-xs font-bold text-emerald-600 tracking-wide mb-1">{t('dashboard.vouchers.initial_payment') || 'Pago Inicial Hoy (€)'}</label>
                   <input 
                     type="number" step="0.01" required min="0" max={Number(assignPrice)}
                     value={assignAmountPaid} onChange={e => setAssignAmountPaid(Number(e.target.value))}
@@ -648,16 +658,16 @@ export default function VouchersPage() {
                 </div>
 
                 <div className="md:col-span-2">
-                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Caducidad del Bono</label>
+                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">{t('dashboard.vouchers.voucher_expiration') || 'Caducidad del Bono'}</label>
                     <Select value={expirationMonths.toString()} onValueChange={(val) => setExpirationMonths(Number(val))}>
                       <SelectTrigger className="w-full bg-white border border-stone-200 rounded-xl font-semibold text-stone-700">
-                        <SelectValue placeholder="Selecciona caducidad..." />
+                        <SelectValue placeholder={t('dashboard.vouchers.select_expiration') || "Selecciona caducidad..."} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="3">3 meses desde la compra</SelectItem>
-                        <SelectItem value="6">6 meses desde la compra</SelectItem>
-                        <SelectItem value="12">12 meses desde la compra</SelectItem>
-                        <SelectItem value="24">2 años desde la compra</SelectItem>
+                        <SelectItem value="3">{t('dashboard.vouchers.expiration_3_months') || '3 meses desde la compra'}</SelectItem>
+                        <SelectItem value="6">{t('dashboard.vouchers.expiration_6_months') || '6 meses desde la compra'}</SelectItem>
+                        <SelectItem value="12">{t('dashboard.vouchers.expiration_12_months') || '12 meses desde la compra'}</SelectItem>
+                        <SelectItem value="24">{t('dashboard.vouchers.expiration_24_months') || '2 años desde la compra'}</SelectItem>
                       </SelectContent>
                     </Select>
                 </div>
@@ -672,7 +682,7 @@ export default function VouchersPage() {
               disabled={saving || !selectedTemplateId} 
               className="w-full py-4 bg-stone-800 text-white font-extrabold rounded-xl hover:bg-stone-900 transition-all flex justify-center items-center shadow-lg disabled:opacity-50"
             >
-              {saving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : "Crear y Asignar Bono"}
+              {saving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : (t('dashboard.vouchers.emit_confirm') || "Crear y Asignar Bono")}
             </button>
           </DialogFooter>
         </DialogContent>
@@ -682,9 +692,9 @@ export default function VouchersPage() {
       <Dialog open={showTemplateModal} onOpenChange={setShowTemplateModal}>
         <DialogContent className="p-0 border-none max-w-sm">
           <DialogHeader className="p-6 border-b border-stone-50 bg-white rounded-t-xl">
-            <DialogTitle className="text-xl font-extrabold text-stone-800">Crear Plantilla</DialogTitle>
+            <DialogTitle className="text-xl font-extrabold text-stone-800">{t('dashboard.vouchers.modal_template_title') || 'Crear Plantilla'}</DialogTitle>
             <DialogDescription className="text-stone-400 text-xs mt-1">
-              Define los parámetros básicos para una nueva plantilla de bono.
+              {t('dashboard.vouchers.modal_template_desc') || 'Define los parámetros básicos para una nueva plantilla de bono.'}
             </DialogDescription>
           </DialogHeader>
 
@@ -692,17 +702,17 @@ export default function VouchersPage() {
             <form id="template-form" onSubmit={handleCreateTemplate}>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Nombre (Ej: Bono 5 Ses. Axilas)</label>
+                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.vouchers.template_name_label') || 'Nombre (Ej: Bono 5 Ses. Axilas)'}</label>
                   <input required type="text" value={templateName} onChange={e => setTemplateName(e.target.value)} className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-semibold" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Servicio / Tratamiento base</label>
+                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.vouchers.base_service_label') || 'Servicio / Tratamiento base'}</label>
                   <Select value={templateServiceId} onValueChange={(val) => {
                     setTemplateServiceId(val);
                     calculateTemplateDefaultPrice(val, templateSessions);
                   }}>
                     <SelectTrigger className="w-full bg-stone-50 border-stone-200 font-bold">
-                      <SelectValue placeholder="-- Elige técnica --" />
+                      <SelectValue placeholder={t('dashboard.vouchers.choose_technique') || "-- Elige técnica --"} />
                     </SelectTrigger>
                     <SelectContent>
                       {services.filter(s => s.is_active).map(s => <SelectItem key={s.id} value={s.id}>{s.name} ({s.price}€/sesión)</SelectItem>)}
@@ -710,7 +720,7 @@ export default function VouchersPage() {
                   </Select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Nº de Sesiones / Usos</label>
+                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.vouchers.sessions_count_label') || 'Nº de Sesiones / Usos'}</label>
                   <input 
                     required type="number" min="1"
                     value={templateSessions} 
@@ -723,7 +733,7 @@ export default function VouchersPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Precio de Venta Sugerido (€)</label>
+                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.vouchers.suggested_price_label') || 'Precio de Venta Sugerido (€)'}</label>
                   <input required type="number" step="0.01" value={templatePrice} onChange={e => setTemplatePrice(Number(e.target.value))} className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-bold text-[#b08e23]" />
                 </div>
               </div>
@@ -732,7 +742,7 @@ export default function VouchersPage() {
 
           <DialogFooter className="sticky bottom-0 left-0 w-full p-6 border-t border-stone-50 bg-gradient-to-t from-white via-white to-white/0 rounded-b-2xl z-20">
             <button form="template-form" type="submit" disabled={saving} className="w-full py-4 bg-[#bf7d6b] text-white font-extrabold rounded-xl hover:bg-[#a66a5a] transition-all flex justify-center items-center shadow-lg shadow-[#bf7d6b]/20 active:scale-95">
-              {saving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : "Guardar Plantilla"}
+              {saving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : (t('dashboard.vouchers.save_template') || "Guardar Plantilla")}
             </button>
           </DialogFooter>
         </DialogContent>
@@ -742,20 +752,21 @@ export default function VouchersPage() {
       <Dialog open={showPayModal} onOpenChange={setShowPayModal}>
         <DialogContent className="p-0 border-none max-w-sm">
           <DialogHeader className="p-6 border-b border-stone-50 bg-white rounded-t-xl">
-            <DialogTitle className="text-xl font-extrabold text-stone-800">Añadir Pago</DialogTitle>
+            <DialogTitle className="text-xl font-extrabold text-stone-800">{t('dashboard.vouchers.modal_pay_title') || 'Añadir Pago'}</DialogTitle>
             <DialogDescription className="text-stone-400 text-xs mt-1">
-              Registra un cobro parcial o total sobre la deuda del bono.
+              {t('dashboard.vouchers.modal_pay_desc') || 'Registra un cobro parcial o total sobre la deuda del bono.'}
             </DialogDescription>
           </DialogHeader>
 
           <div className="p-6 pb-32">
             <form id="pay-debt-form" onSubmit={handlePayDebt}>
               <p className="text-sm text-stone-500 mb-4 bg-stone-50 p-3 rounded-lg border border-stone-100">
-                La deuda actual de este bono es de <strong className="text-rose-500">{currentDebt}€</strong>.
+                {(t('dashboard.vouchers.current_debt_desc') || 'La deuda actual de este bono es de {debt}€.')
+                  .replace('{debt}', currentDebt.toString())}
               </p>
               
               <div>
-                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Monto abonado HOY (€)</label>
+                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.vouchers.amount_paid_today') || 'Monto abonado HOY (€)'}</label>
                 <input 
                   required 
                   type="number" 
@@ -765,15 +776,15 @@ export default function VouchersPage() {
                   onChange={e => setPayAmount(Number(e.target.value))} 
                   className="w-full p-4 bg-stone-50 border border-stone-200 border-l-4 border-l-[#d9777f] rounded-xl font-extrabold text-stone-800 outline-none text-xl" 
                 />
-                <p className="text-[10px] text-stone-400 mt-1">Este importe se sumará al saldo pagado.</p>
+                <p className="text-[10px] text-stone-400 mt-1">{t('dashboard.vouchers.amount_paid_helper') || 'Este importe se sumará al saldo pagado.'}</p>
               </div>
             </form>
           </div>
 
           <DialogFooter className="sticky bottom-0 left-0 w-full p-6 border-t border-stone-100 bg-gradient-to-t from-white via-white to-white/0 flex gap-3 rounded-b-2xl z-20">
-            <button type="button" onClick={() => setShowPayModal(false)} className="flex-1 py-3 text-stone-600 font-bold border border-stone-200 rounded-xl hover:bg-stone-50 bg-white">Cancelar</button>
+            <button type="button" onClick={() => setShowPayModal(false)} className="flex-1 py-3 text-stone-600 font-bold border border-stone-200 rounded-xl hover:bg-stone-50 bg-white">{t('dashboard.vouchers.cancel') || 'Cancelar'}</button>
             <button form="pay-debt-form" type="submit" disabled={paying} className="flex-1 py-3 text-white bg-[#d9777f] font-bold rounded-xl hover:bg-[#c6646b] shadow-md flex justify-center items-center">
-              {paying ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : 'Confirmar'}
+              {paying ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : (t('dashboard.vouchers.confirm') || 'Confirmar')}
             </button>
           </DialogFooter>
         </DialogContent>
