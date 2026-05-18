@@ -245,7 +245,7 @@ class ConsentResponse(ConsentBase):
 from pydantic import field_validator
 
 class ClinicSettingsResponse(ClinicSettingsBase):
-    id: int
+    id: str
 
     @field_validator('working_days', mode='before')
     @classmethod
@@ -512,7 +512,7 @@ class SiteContentUpdate(BaseModel):
     translations: Optional[Dict[str, Any]] = None
 
 class SiteContentResponse(SiteContentBase):
-    id: int
+    id: str
     
     class Config:
         from_attributes = True
