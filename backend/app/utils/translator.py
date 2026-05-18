@@ -98,3 +98,75 @@ def translate_fields(fields: dict, db: Session) -> dict:
     except Exception as e:
         logger.error(f"❌ Error durante la auto-traducción por IA: {e}")
         return {}
+
+def translate_html_content(html_text: str, target_lang: str, db: Session) -> str:
+    """
+    Traduce contenido HTML manteniendo intactas todas las etiquetas, clases y estructuras de diseño
+    utilizando el proveedor de IA configurado en la clínica (Gemini o OpenAI).
+    """
+    if not html_text or not html_text.strip():
+        return html_text
+
+    # Obtener configuración de la clínica
+    settings = db.query(models.ClinicSettings).first()
+    if not settings:
+        return html_text
+
+    ai_provider = settings.ai_provider or "gemini"
+    lang_name = "English" if target_lang == "en" else "French"
+    
+    prompt = (
+        f"You are a professional luxury translator for a high-end wellness & aesthetic clinic.\n"
+        f"Translate the following Spanish HTML content into {lang_name}.\n"
+        f"Maintain a sophisticated, elegant, and subtle tone ('Quiet Luxury').\n"
+        f"Keep all HTML tags, structure, classes, and attributes EXACTLY as they are in the input. Translate ONLY the actual text content inside the HTML elements.\n"
+        f"Do not translate or alter HTML attribute names or values.\n"
+        f"Return ONLY the translated HTML content without any markdown blocks, intro, explanation, or code indicators. Just the raw HTML.\n\n"
+        f"Input HTML:\n{html_text}"
+    )
+
+    try:
+        result_text = None
+        if ai_provider == "gemini":
+            import google.generativeai as genai
+            api_key = settings.gemini_api_key or os.getenv("GEMINI_API_KEY")
+            if not api_key:
+                return html_text
+            
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel('gemini-2.5-flash')
+            response = model.generate_content(prompt)
+            result_text = response.text
+            
+        elif ai_provider == "openai":
+            from openai import OpenAI
+            api_key = settings.openai_api_key or os.getenv("OPENAI_API_KEY")
+            if not api_key:
+                return html_text
+                
+            client = OpenAI(api_key=api_key)
+            response = client.chat.completions.create(
+                model=settings.openai_model_text or "gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "You are a professional HTML translator."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            result_text = response.choices[0].message.content
+
+        if result_text:
+            cleaned = result_text.strip()
+            if cleaned.startswith("```"):
+                lines = cleaned.splitlines()
+                if lines[0].startswith("```"):
+                    lines = lines[1:]
+                if lines and lines[-1].startswith("```"):
+                    lines = lines[:-1]
+                cleaned = "\n".join(lines).strip()
+            return cleaned
+            
+    except Exception as e:
+        logger.error(f"❌ Error al traducir HTML a {target_lang}: {e}")
+        
+    return html_text
+

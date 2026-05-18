@@ -29,17 +29,27 @@ def create_service(db: Session, service: schemas.ServiceCreate):
     db_service = models.Service(**service.model_dump())
     
     try:
-        from ..utils.translator import translate_fields
+        from ..utils.translator import translate_fields, translate_html_content
         to_translate = {}
         if db_service.name:
             to_translate["name"] = db_service.name
         if db_service.description:
             to_translate["description"] = db_service.description
             
+        new_translations = {}
         if to_translate:
-            new_translations = translate_fields(to_translate, db)
-            if new_translations:
-                db_service.translations = new_translations
+            new_translations = translate_fields(to_translate, db) or {}
+            
+        if db_service.content_html:
+            en_html = translate_html_content(db_service.content_html, "en", db)
+            fr_html = translate_html_content(db_service.content_html, "fr", db)
+            if "en" not in new_translations: new_translations["en"] = {}
+            if "fr" not in new_translations: new_translations["fr"] = {}
+            new_translations["en"]["content_html"] = en_html
+            new_translations["fr"]["content_html"] = fr_html
+            
+        if new_translations:
+            db_service.translations = new_translations
     except Exception as e:
         print(f"Error in service auto-translation: {e}")
         
@@ -55,23 +65,53 @@ def update_service(db: Session, service_id: str, service: schemas.ServiceUpdate)
         
         name_changed = "name" in update_data and update_data["name"] != db_service.name
         desc_changed = "description" in update_data and update_data["description"] != db_service.description
+        content_html_changed = "content_html" in update_data and update_data["content_html"] != db_service.content_html
         
         for key, value in update_data.items():
             setattr(db_service, key, value)
             
-        if name_changed or desc_changed or not db_service.translations:
+        if name_changed or desc_changed or content_html_changed or not db_service.translations:
             try:
-                from ..utils.translator import translate_fields
-                to_translate = {}
-                if db_service.name:
-                    to_translate["name"] = db_service.name
-                if db_service.description:
-                    to_translate["description"] = db_service.description
-                    
-                if to_translate:
-                    new_translations = translate_fields(to_translate, db)
-                    if new_translations:
-                        db_service.translations = new_translations
+                from ..utils.translator import translate_fields, translate_html_content
+                current_trans = db_service.translations or {}
+                if isinstance(current_trans, str):
+                    import json
+                    try: current_trans = json.loads(current_trans)
+                    except: current_trans = {}
+                
+                # Traducir nombre y descripción si es necesario
+                if name_changed or desc_changed or not current_trans:
+                    to_translate = {}
+                    if db_service.name:
+                        to_translate["name"] = db_service.name
+                    if db_service.description:
+                        to_translate["description"] = db_service.description
+                        
+                    if to_translate:
+                        new_fields = translate_fields(to_translate, db)
+                        if new_fields:
+                            for lang in ["en", "fr"]:
+                                if lang not in current_trans:
+                                    current_trans[lang] = {}
+                                if lang in new_fields:
+                                    current_trans[lang].update(new_fields[lang])
+                
+                # Traducir content_html si cambió o si falta en las traducciones
+                if content_html_changed or (db_service.content_html and (not current_trans.get("en", {}).get("content_html") or not current_trans.get("fr", {}).get("content_html"))):
+                    if db_service.content_html:
+                        en_html = translate_html_content(db_service.content_html, "en", db)
+                        fr_html = translate_html_content(db_service.content_html, "fr", db)
+                        
+                        if "en" not in current_trans: current_trans["en"] = {}
+                        if "fr" not in current_trans: current_trans["fr"] = {}
+                        
+                        current_trans["en"]["content_html"] = en_html
+                        current_trans["fr"]["content_html"] = fr_html
+                
+                import copy
+                from sqlalchemy.orm.attributes import flag_modified
+                db_service.translations = copy.deepcopy(current_trans)
+                flag_modified(db_service, "translations")
             except Exception as e:
                 print(f"Error in service auto-translation: {e}")
                 

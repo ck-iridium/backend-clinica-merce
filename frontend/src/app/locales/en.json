@@ -686,6 +686,7 @@
       "based_on_content": "Based on detailed treatment content",
       "meta_description_placeholder": "Write a compelling meta description for Google...",
       "meta_keywords_placeholder": "E.g.: lash lift, long lashes, beauty clinic",
+      "seo_title_placeholder": "E.g.: {name} | Clinic",
       "creating": "Creating..."
     },
     "settings": {

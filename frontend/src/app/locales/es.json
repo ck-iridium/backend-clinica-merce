@@ -697,6 +697,7 @@
       "based_on_content": "Basado en el contenido detallado del tratamiento",
       "meta_description_placeholder": "Escribe una descripción meta convincente para Google...",
       "meta_keywords_placeholder": "Ej: lifting de pestañas, pestañas largas, clinica de belleza",
+      "seo_title_placeholder": "Ej: {name} | Clínica",
       "creating": "Creando..."
     },
     "settings": {

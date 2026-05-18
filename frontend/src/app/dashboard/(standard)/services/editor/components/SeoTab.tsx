@@ -86,7 +86,12 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
       </div>
       <div>
         <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.seo_title_label')}</label>
-        <input {...register('seo_title')} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" placeholder={`Ej: ${formValues.name || t('dashboard.services.category_label')} | Clínica`} />
+        <input 
+          {...register('seo_title')} 
+          className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" 
+          placeholder={(t('dashboard.services.seo_title_placeholder') || 'Ej: {name} | Clínica')
+            .replace('{name}', formValues.name || t('dashboard.services.placeholder_title'))} 
+        />
       </div>
       <div>
         <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.seo_description_label')}</label>

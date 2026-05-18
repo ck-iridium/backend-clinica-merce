@@ -683,6 +683,7 @@
       "based_on_content": "Basé sur le contenu détaillé du soin",
       "meta_description_placeholder": "Rédigez une description meta attrayante pour Google...",
       "meta_keywords_placeholder": "Ex: rehaussement de cils, cils longs, clinique de beaute",
+      "seo_title_placeholder": "Ex : {name} | Clinique",
       "creating": "Création..."
     },
     "settings": {

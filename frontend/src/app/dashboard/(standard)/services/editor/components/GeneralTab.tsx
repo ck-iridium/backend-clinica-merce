@@ -41,11 +41,11 @@ export default function GeneralTab({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.service_name_label')} *</label>
+        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.service_name_label')}</label>
         <input {...register('name', { required: true })} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" placeholder={t('dashboard.services.service_name_placeholder')} />
       </div>
       <div className="relative group">
-        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.slug_label')} *</label>
+        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.slug_label')}</label>
         <div className="relative">
           <input 
             {...register('slug', { required: true })} 
@@ -65,7 +65,7 @@ export default function GeneralTab({
       </div>
       <div>
         <div className="flex items-center justify-between mb-1.5">
-          <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest">{t('dashboard.services.category_label')} *</label>
+          <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest">{t('dashboard.services.category_label')}</label>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex-1">
@@ -99,11 +99,11 @@ export default function GeneralTab({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.price_label')} *</label>
+          <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.price_label')}</label>
           <input type="number" step="0.01" {...register('price', { required: true, valueAsNumber: true })} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" />
         </div>
         <div>
-          <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.duration_label')} *</label>
+          <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.duration_label')}</label>
           <input type="number" step="15" {...register('duration_minutes', { required: true, valueAsNumber: true })} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" />
         </div>
       </div>
@@ -119,7 +119,7 @@ export default function GeneralTab({
         </div>
         {formValues.requires_deposit && (
           <div className="pt-3 border-t border-stone-200 mt-2">
-            <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.deposit_amount_label')} *</label>
+            <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.deposit_amount_label')}</label>
             <input 
               type="number" 
               step="0.01" 
