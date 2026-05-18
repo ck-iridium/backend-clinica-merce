@@ -7,7 +7,7 @@ from slowapi.errors import RateLimitExceeded
 from fastapi.staticfiles import StaticFiles
 import os
 from .database import engine, Base
-from .routers import clients, services, appointments, vouchers, invoices, settings, users, voucher_templates, time_blocks, automation, service_categories, site_content, uploads, backups, media, ai, stripe_payments
+from .routers import clients, services, appointments, vouchers, invoices, settings, users, voucher_templates, time_blocks, automation, service_categories, site_content, uploads, backups, media, ai, stripe_payments, super_admin
 from .scheduler import scheduler
 
 # Crear las tablas en la base de datos (Nota: en producción mejor usar Alembic)
@@ -108,6 +108,34 @@ async def resolve_tenant_middleware(request, call_next):
     if not tenant_id:
         tenant_id = "00000000-0000-0000-0000-000000000001"
         
+    # 5. Comprobar si el inquilino está suspendido (excepto para rutas globales de control o públicas)
+    path = request.url.path
+    is_global_path = any(path.startswith(prefix) for prefix in [
+        "/stripe/webhook",
+        "/super-admin",
+        "/docs",
+        "/openapi.json",
+        "/redoc"
+    ])
+    
+    if not is_global_path:
+        from .database import SessionLocal
+        from .models import Tenant
+        from fastapi.responses import JSONResponse
+        
+        db = SessionLocal()
+        try:
+            tenant = db.query(Tenant).filter(Tenant.id == tenant_id).first()
+            if tenant and tenant.subscription_status in ("suspended", "inactive"):
+                return JSONResponse(
+                    status_code=402,
+                    content={
+                        "detail": f"Acceso Restringido: La suscripción de la clínica '{tenant.name}' ha sido suspendida. Por favor, regularice su pago."
+                    }
+                )
+        finally:
+            db.close()
+        
     # Asignar variable de contexto de manera segura contra peticiones concurrentes
     token = current_tenant_var.set(tenant_id)
     try:
@@ -160,6 +188,7 @@ app.include_router(backups.router)
 app.include_router(media.router)
 app.include_router(ai.router)
 app.include_router(stripe_payments.router)
+app.include_router(super_admin.router)
 
 @app.on_event("startup")
 async def startup_event():
