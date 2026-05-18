@@ -41,7 +41,7 @@ export default function CreateCategoryInlineModal({ open, onOpenChange, onCreate
         onOpenChange(false);
       } else {
         const errorData = await res.json();
-        toast.error(t('dashboard.services.category_create_error', { error: errorData.detail || 'No se pudo crear la categoría' }));
+        toast.error(t('dashboard.services.category_created_error', { error: errorData.detail || 'No se pudo crear la categoría' }));
       }
     } catch (error) {
       toast.error(t('dashboard.services.connection_error'));
@@ -56,7 +56,7 @@ export default function CreateCategoryInlineModal({ open, onOpenChange, onCreate
         <DialogHeader className="p-6 border-b border-stone-50 bg-white rounded-t-xl">
           <DialogTitle className="text-xl font-extrabold text-stone-800">{t('dashboard.services.new_category')}</DialogTitle>
           <DialogDescription className="text-stone-500 text-xs">
-            {t('dashboard.services.new_category_inline_desc')}
+            {t('dashboard.services.new_category_desc')}
           </DialogDescription>
         </DialogHeader>
 

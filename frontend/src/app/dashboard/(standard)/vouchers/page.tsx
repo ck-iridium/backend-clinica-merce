@@ -605,17 +605,17 @@ export default function VouchersPage() {
                       />
                       <div className="max-h-40 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
                          {filteredTemplates.length === 0 && <p className="text-xs text-stone-400">{t('dashboard.vouchers.no_templates_found') || 'No se encontraron plantillas.'}</p>}
-                         {filteredTemplates.map(t => (
+                         {filteredTemplates.map(tmpl => (
                             <div 
-                              key={t.id} 
-                              onClick={() => handleSelectTemplateForAssignment(t.id)}
+                              key={tmpl.id} 
+                              onClick={() => handleSelectTemplateForAssignment(tmpl.id)}
                               className="p-3 bg-white border border-stone-100 rounded-xl hover:border-[#d9777f] hover:shadow-sm cursor-pointer transition-all flex justify-between items-center"
                             >
                                <div>
-                                 <p className="font-bold text-stone-700 text-sm">{t.name}</p>
-                                 <p className="text-xs text-stone-400">{(t('dashboard.vouchers.sessions_count_plural') || '{sessions} Sesiones').replace('{sessions}', t.total_sessions.toString())}</p>
+                                 <p className="font-bold text-stone-700 text-sm">{tmpl.name}</p>
+                                 <p className="text-xs text-stone-400">{(t('dashboard.vouchers.sessions_count_plural') || '{sessions} Sesiones').replace('{sessions}', tmpl.total_sessions.toString())}</p>
                                </div>
-                               <span className="font-extrabold text-[#d9777f]">{t.price}€</span>
+                               <span className="font-extrabold text-[#d9777f]">{tmpl.price}€</span>
                             </div>
                          ))}
                       </div>

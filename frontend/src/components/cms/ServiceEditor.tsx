@@ -244,7 +244,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
               </div>
               <div>
                 <h2 className="font-serif text-lg font-semibold text-stone-800 leading-tight">
-                  {isNew ? t('dashboard.services.new_service') : t('dashboard.services.edit_service')}
+                  {isNew ? t('dashboard.services.editor_title_new') : t('dashboard.services.editor_title_edit')}
                 </h2>
                 <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">
                   {isGeneratingAI ? t('dashboard.services.generating_image') : t('dashboard.services.visual_cms')}
@@ -268,17 +268,17 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
                 className="bg-stone-900 hover:bg-[#d4af37] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-30 disabled:grayscale shadow-sm"
                 title={isGeneratingAI ? t('dashboard.services.no_save_ai_generating') : ""}
               >
-                {saving && exitAfterSave ? t('dashboard.services.saving') : t('dashboard.services.save_exit')}
+                {saving && exitAfterSave ? t('dashboard.services.saving') : t('dashboard.services.save_and_exit')}
               </button>
             </div>
           </div>
 
           {/* Pestañas de Navegación */}
           <div className="flex px-6 pt-4 gap-4 border-b border-stone-100 shrink-0">
-            <button type="button" onClick={() => setActiveTab('general')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'general' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tab_general')}</button>
-            <button type="button" onClick={() => setActiveTab('content')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'content' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tab_content')}</button>
-            <button type="button" onClick={() => setActiveTab('design')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'design' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tab_design')}</button>
-            <button type="button" onClick={() => setActiveTab('seo')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'seo' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tab_seo')}</button>
+            <button type="button" onClick={() => setActiveTab('general')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'general' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tabs.general')}</button>
+            <button type="button" onClick={() => setActiveTab('content')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'content' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tabs.content')}</button>
+            <button type="button" onClick={() => setActiveTab('design')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'design' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tabs.design')}</button>
+            <button type="button" onClick={() => setActiveTab('seo')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'seo' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tabs.seo')}</button>
           </div>
 
           {/* Cuerpo del Formulario */}

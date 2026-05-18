@@ -113,8 +113,8 @@ export default function GeneralTab({
         <div className="flex items-center gap-3">
           <input type="checkbox" {...register('requires_deposit')} className="w-5 h-5 accent-[#d4af37] rounded cursor-pointer" />
           <div>
-            <p className="text-sm font-bold text-stone-700">{t('dashboard.services.requires_deposit_label')}</p>
-            <p className="text-[10px] text-stone-500 uppercase tracking-widest">{t('dashboard.services.requires_deposit_desc')}</p>
+            <p className="text-sm font-bold text-stone-700">{t('dashboard.services.requires_deposit_title')}</p>
+            <p className="text-[10px] text-stone-500 uppercase tracking-widest">{t('dashboard.services.requires_deposit_helper')}</p>
           </div>
         </div>
         {formValues.requires_deposit && (
@@ -126,14 +126,14 @@ export default function GeneralTab({
               {...register('deposit_amount', { required: formValues.requires_deposit, valueAsNumber: true })} 
               className="w-full sm:w-1/2 px-4 py-3 rounded-xl border border-stone-200 bg-white focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" 
             />
-            <p className="text-[10px] text-stone-400 mt-1">{t('dashboard.services.deposit_amount_help')}</p>
+            <p className="text-[10px] text-stone-400 mt-1">{t('dashboard.services.deposit_amount_helper')}</p>
           </div>
         )}
       </div>
 
       <div>
         <div className="flex items-center justify-between mb-1.5">
-          <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest">{t('dashboard.services.short_desc_label')}</label>
+          <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest">{t('dashboard.services.short_description_label')}</label>
           <button 
             type="button" 
             onClick={() => setShowAIModal('short_description')}
@@ -143,14 +143,14 @@ export default function GeneralTab({
             {t('dashboard.services.generate_ai')}
           </button>
         </div>
-        <textarea {...register('description')} rows={3} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:ring-2 focus:ring-[#d4af37] outline-none transition-all text-sm resize-none" placeholder={t('dashboard.services.short_desc_placeholder')} />
+        <textarea {...register('description')} rows={3} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:ring-2 focus:ring-[#d4af37] outline-none transition-all text-sm resize-none" placeholder={t('dashboard.services.short_description_placeholder')} />
       </div>
       
       <div className="flex items-center gap-3 p-4 bg-white border border-stone-200 rounded-xl">
         <input type="checkbox" {...register('is_active')} className="w-5 h-5 accent-[#d4af37] rounded" />
         <div>
-          <p className="text-sm font-bold text-stone-700">{t('dashboard.services.active_label')}</p>
-          <p className="text-[10px] text-stone-500 uppercase tracking-widest">{t('dashboard.services.active_desc')}</p>
+          <p className="text-sm font-bold text-stone-700">{t('dashboard.services.active_service_title')}</p>
+          <p className="text-[10px] text-stone-500 uppercase tracking-widest">{t('dashboard.services.active_service_helper')}</p>
         </div>
       </div>
 

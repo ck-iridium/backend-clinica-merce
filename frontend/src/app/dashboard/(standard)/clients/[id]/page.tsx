@@ -108,9 +108,9 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
         'botulinum_toxin': 'Consentimiento: Toxina Botulínica',
         'facial_fillers': 'Consentimiento: Rellenos Faciales'
       };
-      const title = docTitles[docType] || 'Consentimiento Médico';
+      const title = t(`dashboard.clients.consent_agreements.${docType}`) || docTitles[docType] || 'Consentimiento Médico';
 
-      const fakeBody = `DECLARACIÓN DEL PACIENTE: Don/Doña ${client.name} manifiesto que he sido debidamente informado/a y he comprendido la naturaleza y propósito del tratamiento seleccionado, así como las posibles complicaciones, riesgos generales e infrecuentes asociados al mismo. Adicionalmente, presto mi consentimiento EXPRESO, de acuerdo a la Ley Orgánica 3/2018 (LOPDGDD) y el Reglamento (UE) 2016/679 (RGPD), para el uso, tratamiento y archivo de mis datos personales, historial clínico y fotografías con fines de diagnóstico y evolución médica, a favor de Clínica Mercè. Con la firma del presente documento, asumo que he tenido la oportunidad de aclarar dudas y realizo la aceptación del tratamiento propuesto de forma libre y voluntaria.`;
+      const fakeBody = `DECLARACIÓN DEL PACIENTE:\n\n${t('dashboard.clients.consent_declaration_body', { name: client.name })}`;
 
       const payload = {
         client_id: params.id,

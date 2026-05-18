@@ -85,15 +85,15 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
         <p className="text-[10px] text-stone-400 text-center mt-2 uppercase tracking-widest font-semibold">{t('dashboard.services.based_on_content')}</p>
       </div>
       <div>
-        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.meta_title_label')}</label>
-        <input {...register('seo_title')} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" placeholder={`Ej: ${formValues.name || t('dashboard.services.service_label')} | Clínica`} />
+        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.seo_title_label')}</label>
+        <input {...register('seo_title')} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" placeholder={`Ej: ${formValues.name || t('dashboard.services.category_label')} | Clínica`} />
       </div>
       <div>
-        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.meta_description_label')}</label>
+        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.seo_description_label')}</label>
         <textarea {...register('seo_description')} rows={3} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:ring-2 focus:ring-[#d4af37] outline-none transition-all text-sm resize-none" placeholder={t('dashboard.services.meta_description_placeholder')} />
       </div>
       <div>
-        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.meta_keywords_label')}</label>
+        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.seo_keywords_label')}</label>
         <input {...register('seo_keywords')} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:ring-2 focus:ring-[#d4af37] outline-none transition-all text-sm" placeholder={t('dashboard.services.meta_keywords_placeholder')} />
       </div>
     </div>
