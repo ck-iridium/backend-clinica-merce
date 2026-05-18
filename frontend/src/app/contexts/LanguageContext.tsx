@@ -12,7 +12,7 @@ const dictionaries = { es, en, fr };
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: string) => string;
+  t: (key: string, variables?: Record<string, string | number>) => string;
   translate: (spanishText: string, translations: any, field: string) => string;
 }
 
@@ -48,7 +48,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Función t(key) para parsear claves anidadas con puntos (ej. 'booking.next')
-  const t = (key: string): string => {
+  const t = (key: string, variables?: Record<string, string | number>): string => {
     const keys = key.split('.');
     
     // 1. Buscar en el diccionario activo
@@ -57,18 +57,29 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       value = value?.[k];
     }
     
-    if (typeof value === 'string') return value;
-
-    // 2. Fallback al diccionario en Español si no se encuentra
-    let fallbackValue: any = dictionaries['es'];
-    for (const k of keys) {
-      fallbackValue = fallbackValue?.[k];
+    let result = '';
+    if (typeof value === 'string') {
+      result = value;
+    } else {
+      // 2. Fallback al diccionario en Español si no se encuentra
+      let fallbackValue: any = dictionaries['es'];
+      for (const k of keys) {
+        fallbackValue = fallbackValue?.[k];
+      }
+      if (typeof fallbackValue === 'string') {
+        result = fallbackValue;
+      } else {
+        result = key;
+      }
     }
 
-    if (typeof fallbackValue === 'string') return fallbackValue;
+    if (variables && result) {
+      Object.entries(variables).forEach(([k, v]) => {
+        result = result.replace(new RegExp(`{${k}}`, 'g'), String(v));
+      });
+    }
 
-    // 3. Devolver la clave original si todo lo demás falla
-    return key;
+    return result;
   };
 
   // Función para traducir contenido dinámico (Servicios, Categorías)
