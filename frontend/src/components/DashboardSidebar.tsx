@@ -393,7 +393,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-stone-800" />
                 <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-stone-500 px-4 py-2">
-                  {language === 'es' ? 'Idioma' : language === 'fr' ? 'Langue' : 'Language'}
+                  {t('dashboard.menu.language')}
                 </DropdownMenuLabel>
                 <div className="grid grid-cols-3 gap-1 px-2 pb-2">
                   {(['es', 'en', 'fr'] as const).map((lang) => (

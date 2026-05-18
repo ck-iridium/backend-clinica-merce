@@ -120,8 +120,8 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-    const generatedOnLabel = language === 'es' ? 'Generado el' : language === 'en' ? 'Generated on' : 'Généré le';
-    const pageLabel = language === 'es' ? 'Página' : 'Page';
+    const generatedOnLabel = t('dashboard.invoices.generated_on');
+    const pageLabel = t('dashboard.invoices.page_pdf');
     doc.text(`${generatedOnLabel} ${new Date().toLocaleDateString(dateLocale)} - ${pageLabel} ${pagination.page}`, 20, 32);
 
     // Totals (KPIs) of current page invoices

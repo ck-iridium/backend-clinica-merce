@@ -12,7 +12,7 @@ interface CategoryHeroProps {
 
 export default function CategoryHero({ category }: CategoryHeroProps) {
   const [scrollY, setScrollY] = useState(0);
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -42,7 +42,7 @@ export default function CategoryHero({ category }: CategoryHeroProps) {
 
   const translatedName = translateClient(category.name, category.translations, 'name');
   const translatedDesc = translateClient(category.description, category.translations, 'description');
-  const subtitle = language === 'fr' ? 'Collection de Soins' : language === 'en' ? 'Treatment Collection' : 'Colección de Tratamientos';
+  const subtitle = t('common.treatment_collection');
 
   return (
     <section className="relative w-full h-full overflow-hidden flex flex-col justify-end bg-stone-900">

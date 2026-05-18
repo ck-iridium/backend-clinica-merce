@@ -5,9 +5,9 @@
     "cancel": "Annuler",
     "error": "Erreur",
     "success": "Succès",
-    "loading": "Chargement...",
-    "exit": "Quitter",
-    "understood": "Compris"
+    "understood": "Compris",
+    "treatment_collection": "Collection de Soins",
+    "book_appointment": "Réserver un soin"
   },
   "wizard": {
     "step_indicator": "Étape {step} sur 3",
@@ -96,7 +96,8 @@
       "logout": "Se Déconnecter",
       "management": "Gestion",
       "configuration": "Configuration",
-      "search_placeholder": "Rechercher (Ctrl K)"
+      "search_placeholder": "Rechercher (Ctrl K)",
+      "language": "Langue"
     },
     "general": {
       "save": "Enregistrer",
@@ -445,7 +446,9 @@
       "confirm_delete_desc": "Êtes-vous sûr de vouloir supprimer définitivement cet enregistrement de facturation?",
       "page_info": "Page {page} sur {pages}",
       "records_count": "({total} enregistrements)",
-      "unknown_client": "Client Inconnu"
+      "unknown_client": "Client Inconnu",
+      "generated_on": "Généré le",
+      "page_pdf": "Page"
     },
     "vouchers": {
       "access_denied": "Accès refusé: Vous n'avez pas les autorisations nécessaires pour gérer les bons.",

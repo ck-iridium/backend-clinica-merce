@@ -10,7 +10,9 @@
     "understood": "Entendido",
     "date": "Fecha",
     "time": "Hora",
-    "treatment": "Tratamiento"
+    "treatment": "Tratamiento",
+    "treatment_collection": "Colección de Tratamientos",
+    "book_appointment": "Reservar Cita"
   },
   "wizard": {
     "step_indicator": "Paso {step} de 3",
@@ -108,7 +110,8 @@
       "logout": "Cerrar Sesión",
       "management": "Gestión",
       "configuration": "Configuración",
-      "search_placeholder": "Buscar (Ctrl K)"
+      "search_placeholder": "Buscar (Ctrl K)",
+      "language": "Idioma"
     },
     "general": {
       "save": "Guardar",
@@ -457,7 +460,9 @@
       "confirm_delete_desc": "¿Seguro que deseas eliminar este registro de facturación de forma permanente?",
       "page_info": "Página {page} de {pages}",
       "records_count": "({total} registros)",
-      "unknown_client": "Cliente Desconocido"
+      "unknown_client": "Cliente Desconocido",
+      "generated_on": "Generado el",
+      "page_pdf": "Página"
     },
     "vouchers": {
       "access_denied": "Acceso denegado: No tienes permisos para gestionar bonos.",

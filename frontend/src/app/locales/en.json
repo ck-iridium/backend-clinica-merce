@@ -5,9 +5,9 @@
     "cancel": "Cancel",
     "error": "Error",
     "success": "Success",
-    "loading": "Loading...",
-    "exit": "Exit",
-    "understood": "Understood"
+    "understood": "Understood",
+    "treatment_collection": "Treatment Collection",
+    "book_appointment": "Book Appointment"
   },
   "wizard": {
     "step_indicator": "Step {step} of 3",
@@ -99,7 +99,8 @@
       "logout": "Log Out",
       "management": "Management",
       "configuration": "Configuration",
-      "search_placeholder": "Search (Ctrl K)"
+      "search_placeholder": "Search (Ctrl K)",
+      "language": "Language"
     },
     "general": {
       "save": "Save",
@@ -448,7 +449,9 @@
       "confirm_delete_desc": "Are you sure you want to delete this billing record permanently?",
       "page_info": "Page {page} of {pages}",
       "records_count": "({total} records)",
-      "unknown_client": "Unknown Client"
+      "unknown_client": "Unknown Client",
+      "generated_on": "Generated on",
+      "page_pdf": "Page"
     },
     "vouchers": {
       "access_denied": "Access Denied: You do not have permissions to manage vouchers.",

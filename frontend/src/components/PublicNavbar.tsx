@@ -109,7 +109,7 @@ function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen, 
 
 export default function PublicNavbar({ transparent = false }: { transparent?: boolean }) {
   const pathname = usePathname();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const isDashboard = pathname?.startsWith('/dashboard');
   const [isOpen, setIsOpen] = useState(false);
   const [settings, setSettings] = useState<any>(null);
@@ -144,7 +144,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
   };
   const navT = navTranslations[language] || navTranslations.es;
 
-  const fallbackBtnText = language === 'fr' ? 'Réserver un soin' : language === 'en' ? 'Book Appointment' : 'Reservar Cita';
+  const fallbackBtnText = t('common.book_appointment');
   const btnText = siteContent 
     ? translateClient(siteContent.hero_button_text || fallbackBtnText, siteContent.translations, 'hero_button_text')
     : fallbackBtnText;
