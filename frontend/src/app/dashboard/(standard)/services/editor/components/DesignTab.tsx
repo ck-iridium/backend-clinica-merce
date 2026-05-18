@@ -130,7 +130,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
             className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[#d4af37] hover:bg-yellow-50/50 px-2.5 py-1.5 rounded-lg border border-yellow-100 transition-all shadow-sm"
           >
             <Sparkles size={12} strokeWidth={2.5} />
-            {t('dashboard.services.generate_ai')}
+            {t('dashboard.services.generate_ia')}
           </button>
         </div>
 

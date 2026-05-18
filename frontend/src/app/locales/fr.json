@@ -599,7 +599,7 @@
         "seo": "SEO"
       },
       "ia_wait_warning": "Veuillez patienter pendant la génération par l'IA.",
-      "live_preview": "Aperçu en Direct: {slug}",
+      "live_preview": "Aperçu en Direct",
       "pending_url": "URL en attente",
       "specialized_treatment": "Soin Spécialisé",
       "placeholder_title": "Titre du Traitement",
@@ -812,6 +812,80 @@
         "treatments": "Soins",
         "step_info": "Étape 1 sur 3",
         "next_btn": "Suivant"
+      }
+    },
+    "cms": {
+      "edit_homepage": "Modifier la Page d'Accueil",
+      "visual_cms": "CMS Visuel",
+      "save": "Enregistrer",
+      "saving": "Enregistrement...",
+      "live_preview": "Aperçu en Direct: Réordonnancement Structurel",
+      "no_background_defined": "Aucun fond défini",
+      "section_image": "Image de la section",
+      "treatment": "Soin {i}",
+      "tabs": {
+        "hero": "Hero",
+        "about": "À Propos",
+        "categories": "Catégories",
+        "cta": "CTA",
+        "seo": "SEO"
+      },
+      "hero": {
+        "main_image": "Image Principale (Arrière-plan)",
+        "main_title": "Titre Principal (H1)",
+        "subtitle": "Sous-titre",
+        "action_button": "Bouton d'Action",
+        "button_text": "Texte du Bouton",
+        "button_link": "Lien du Bouton",
+        "vertical_alignment": "Alignement Vertical",
+        "horizontal_alignment": "Alignement Horizontal",
+        "alignment_top": "Supérieur",
+        "alignment_center": "Centré",
+        "alignment_bottom": "Inférieur",
+        "alignment_left": "Gauche",
+        "alignment_right": "Droite",
+        "bg_video": "Vidéo d'Arrière-plan (Optionnel - Remplace l'image)"
+      },
+      "about": {
+        "title": "À Propos de la Clinique",
+        "subtitle": "Instaurez la confiance en expliquant votre philosophie ou en présentant votre équipe.",
+        "image_label": "Photo de Profil / Clinique",
+        "image_position": "Position de l'Image",
+        "img_left": "Image à Gauche",
+        "img_right": "Image à Droite",
+        "section_title": "Titre de la Section",
+        "bio_philosophy": "Biographie / Philosophie",
+        "action_button_opt": "Bouton d'Action (Optionnel)",
+        "button_text": "Texte du Bouton",
+        "button_link": "Lien du Bouton"
+      },
+      "categories": {
+        "title": "Édition des Catégories",
+        "subtitle": "Gérez le contenu et l'ordre",
+        "bg_image": "Image d'Arrière-plan",
+        "public_name": "Nom Public",
+        "short_description": "Description Courte",
+        "desc_placeholder": "Ex : Spécialistes pour sublimer votre regard naturel...",
+        "order_title": "Ordre des Catégories",
+        "editing": "En cours d'édition",
+        "visible": "Visible",
+        "hidden": "Masquée"
+      },
+      "cta": {
+        "title": "Appel à l'Action (CTA)",
+        "subtitle": "Le bloc de fermeture de votre site, juste avant le pied de page.",
+        "cta_title": "Titre CTA",
+        "cta_subtitle": "Sous-titre CTA",
+        "button_text": "Texte du Bouton",
+        "link": "Lien"
+      },
+      "seo": {
+        "title": "Métadonnées SEO",
+        "subtitle": "Configuration invisible lue par les moteurs de recherche comme Google ou lors des partages sur WhatsApp.",
+        "page_title": "Titre de la Page (H1 Global)",
+        "placeholder": "Ex : Clínica Merce | Médecine Esthétique Avancée",
+        "description": "Description (Extrait)",
+        "keywords": "Mots-Clés (Séparés par des virgules)"
       }
     },
     "team": {

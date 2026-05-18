@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 interface HomeBuilderLayoutProps {
   tabs: string[];
@@ -11,6 +12,12 @@ interface HomeBuilderLayoutProps {
 }
 
 export default function HomeBuilderLayout({ tabs, activeTab, onTabChange, panel, preview, onSave, isSaving }: HomeBuilderLayoutProps) {
+  const { t } = useLanguage();
+  
+  const titleText = t('cms.edit_homepage');
+  const subtitleText = t('cms.visual_cms');
+  const saveBtnText = isSaving ? t('cms.saving') : t('cms.save');
+
   return (
     <div className="flex flex-col md:flex-row h-screen overflow-hidden bg-[#FAFAFA] w-full animate-in fade-in duration-300">
       
@@ -22,10 +29,10 @@ export default function HomeBuilderLayout({ tabs, activeTab, onTabChange, panel,
           <div className="flex items-center gap-3">
             <div>
               <h2 className="font-serif text-lg font-semibold text-stone-800 leading-tight">
-                Editar Portada
+                {titleText}
               </h2>
               <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">
-                CMS Visual
+                {subtitleText}
               </p>
             </div>
           </div>
@@ -35,10 +42,11 @@ export default function HomeBuilderLayout({ tabs, activeTab, onTabChange, panel,
               disabled={isSaving}
               className="bg-stone-900 hover:bg-[#d4af37] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-30 shadow-sm"
             >
-              {isSaving ? 'Guardando...' : 'Guardar'}
+              {saveBtnText}
             </button>
           </div>
         </div>
+
 
         {/* Navegación por Pestañas */}
         <div className="flex px-6 pt-4 gap-4 border-b border-stone-100 shrink-0 overflow-x-auto hide-scroll">
@@ -52,7 +60,17 @@ export default function HomeBuilderLayout({ tabs, activeTab, onTabChange, panel,
                   : 'border-transparent text-stone-400 hover:text-stone-600'
               }`}
             >
-              {tab}
+              {tab === 'HERO' 
+                ? t('cms.tabs.hero')
+                : tab === 'SOBRE MÍ' 
+                ? t('cms.tabs.about') 
+                : tab === 'CATEGORÍAS' 
+                ? t('cms.tabs.categories') 
+                : tab === 'CTA'
+                ? t('cms.tabs.cta')
+                : tab === 'SEO'
+                ? t('cms.tabs.seo')
+                : tab}
             </button>
           ))}
         </div>
@@ -69,7 +87,7 @@ export default function HomeBuilderLayout({ tabs, activeTab, onTabChange, panel,
         {/* Barra Superior del Preview */}
         <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-stone-200 px-8 py-3 flex items-center gap-3 shadow-sm">
           <span className="text-xs font-black uppercase tracking-widest text-stone-500">
-            Vista Previa en Vivo: Reordenamiento Estructural
+            {t('cms.live_preview')}
           </span>
           <div className="ml-auto flex gap-1.5 items-center">
             <div className="w-2.5 h-2.5 rounded-full bg-stone-300" />

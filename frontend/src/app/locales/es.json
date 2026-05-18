@@ -611,7 +611,7 @@
         "seo": "SEO"
       },
       "ia_wait_warning": "Espera a que la IA termine antes de salir.",
-      "live_preview": "Vista Previa en Vivo: {slug}",
+      "live_preview": "Vista Previa en Vivo",
       "pending_url": "URL pendiente",
       "specialized_treatment": "Tratamiento Especializado",
       "placeholder_title": "Título del Tratamiento",
@@ -824,6 +824,80 @@
         "treatments": "Tratamientos",
         "step_info": "Paso 1 de 3",
         "next_btn": "Siguiente"
+      }
+    },
+    "cms": {
+      "edit_homepage": "Editar Portada",
+      "visual_cms": "CMS Visual",
+      "save": "Guardar",
+      "saving": "Guardando...",
+      "live_preview": "Vista Previa en Vivo: Reordenamiento Estructural",
+      "no_background_defined": "Sin Fondo Definido",
+      "section_image": "Imagen de la Sección",
+      "treatment": "Tratamiento {i}",
+      "tabs": {
+        "hero": "Hero",
+        "about": "Sobre Mí",
+        "categories": "Categorías",
+        "cta": "CTA",
+        "seo": "SEO"
+      },
+      "hero": {
+        "main_image": "Imagen Principal (Fondo)",
+        "main_title": "Título Principal (H1)",
+        "subtitle": "Subtítulo",
+        "action_button": "Botón de Acción",
+        "button_text": "Texto Botón",
+        "button_link": "Enlace Botón",
+        "vertical_alignment": "Alineación Vertical",
+        "horizontal_alignment": "Alineación Horizontal",
+        "alignment_top": "Superior",
+        "alignment_center": "Centrado",
+        "alignment_bottom": "Inferior",
+        "alignment_left": "Izquierda",
+        "alignment_right": "Derecha",
+        "bg_video": "Video de Fondo (Opcional - Reemplaza la imagen)"
+      },
+      "about": {
+        "title": "Sobre la Clínica",
+        "subtitle": "Construye confianza explicando tu filosofía o presentando a tu equipo.",
+        "image_label": "Fotografía de Perfil / Clínica",
+        "image_position": "Posición Imagen",
+        "img_left": "Imagen a la Izquierda",
+        "img_right": "Imagen a la Derecha",
+        "section_title": "Título de la Sección",
+        "bio_philosophy": "Biografía / Filosofía",
+        "action_button_opt": "Botón de Acción (Opcional)",
+        "button_text": "Texto Botón",
+        "button_link": "Enlace Botón"
+      },
+      "categories": {
+        "title": "Edición de Categorías",
+        "subtitle": "Gestiona el contenido y el orden",
+        "bg_image": "Imagen de Fondo",
+        "public_name": "Nombre Público",
+        "short_description": "Descripción Corta",
+        "desc_placeholder": "Ej: Especialistas en potenciar tu mirada natural...",
+        "order_title": "Orden de Categorías",
+        "editing": "Editando",
+        "visible": "Visible",
+        "hidden": "Oculta"
+      },
+      "cta": {
+        "title": "Llamada a la Acción (CTA)",
+        "subtitle": "El bloque de cierre de tu web, justo antes del footer.",
+        "cta_title": "Título CTA",
+        "cta_subtitle": "Subtítulo CTA",
+        "button_text": "Texto Botón",
+        "link": "Enlace"
+      },
+      "seo": {
+        "title": "Metadatos SEO",
+        "subtitle": "Configuración invisible que leen los buscadores como Google o al compartir en WhatsApp.",
+        "page_title": "Título de la Página (H1 Global)",
+        "placeholder": "Ej: Clínica Merce | Medicina Estética Avanzada",
+        "description": "Descripción (Extracto)",
+        "keywords": "Palabras Clave (Separadas por comas)"
       }
     },
     "team": {

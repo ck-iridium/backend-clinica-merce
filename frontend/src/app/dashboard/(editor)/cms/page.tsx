@@ -1,209 +1,17 @@
 "use client"
-import React, { useState, useEffect, useMemo, memo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import MediaPickerModal from '@/components/MediaPickerModal';
 import { Skeleton } from "@/components/ui/skeleton";
 import HomeBuilderLayout from '@/components/cms/HomeBuilderLayout';
 import HomeBuilderPreview from '@/components/cms/HomeBuilderPreview';
-import { Reorder } from 'framer-motion';
-import { GripVertical, Camera, Trash2, Image as ImageIcon, Sparkles, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
-import { processVideo } from '@/lib/videoProcessor';
+import HeroTab from './components/HeroTab';
+import AboutTab from './components/AboutTab';
+import CategoriesTab from './components/CategoriesTab';
+import CtaTab from './components/CtaTab';
+import SeoTab from './components/SeoTab';
 
 const TABS = ['HERO', 'SOBRE MÍ', 'CATEGORÍAS', 'CTA', 'SEO'];
-
-// Componente interno reutilizable para cualquier imagen o vídeo (Fuera de los componentes para ser accesible por todos)
-const ImageUploadBlock = ({ 
-  label, 
-  value, 
-  onSelect, 
-  onClear, 
-  onUpload, 
-  accepts = 'both' 
-}: { 
-  label: string, 
-  value: string | null, 
-  onSelect: () => void, 
-  onClear: () => void, 
-  onUpload: (url: string) => void,
-  accepts?: 'image' | 'video' | 'both'
-}) => {
-  const [isDragging, setIsDragging] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [processingProgress, setProcessingProgress] = useState(0);
-  const dragCounter = useRef(0);
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDragEnter = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dragCounter.current++;
-    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
-      setIsDragging(true);
-    }
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dragCounter.current--;
-    if (dragCounter.current === 0) {
-      setIsDragging(false);
-    }
-  };
-
-  const handleDrop = async (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    dragCounter.current = 0;
-    
-    const file = e.dataTransfer.files?.[0];
-    if (!file) return;
-
-    const name = file.name.toLowerCase();
-    const isImage = file.type.startsWith('image/') || /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(name);
-    const isVideo = file.type.startsWith('video/') || /\.(mp4|webm|mov|avi|mkv|3gp|quicktime)$/i.test(name);
-
-    if (accepts === 'image' && !isImage) {
-      toast.error("El archivo debe ser una imagen (webp, png, jpg, svg, gif)");
-      return;
-    }
-
-    if (accepts === 'video' && !isVideo) {
-      toast.error("El archivo debe ser un vídeo (mp4, webm, mov, avi)");
-      return;
-    }
-
-    if (accepts === 'both' && !isImage && !isVideo) {
-      toast.error("El archivo debe ser una imagen o un vídeo");
-      return;
-    }
-
-    setIsUploading(true);
-    setProcessingProgress(0);
-
-    try {
-      let fileToUpload: File | Blob = file;
-
-      if (isVideo) {
-        toast.info("Optimizando vídeo para la web...");
-        try {
-          fileToUpload = await processVideo(file, (progress) => {
-            setProcessingProgress(progress);
-          });
-        } catch (err) {
-          console.error("Error procesando video", err);
-          toast.error("Error al procesar el vídeo, se subirá el original.");
-        }
-      }
-
-      const formData = new FormData();
-      formData.append('file', fileToUpload, isVideo ? `video_${Date.now()}.mp4` : file.name);
-
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/`, {
-        method: 'POST',
-        body: formData
-      });
-      
-      if (res.ok) {
-        const data = await res.json();
-        onUpload(data.url);
-        toast.success("Archivo subido correctamente");
-      } else {
-        toast.error("Error al subir el archivo");
-      }
-    } catch (err) {
-      toast.error("Error de conexión");
-    } finally {
-      setIsUploading(false);
-      setProcessingProgress(0);
-    }
-  };
-
-  return (
-    <div className="space-y-2">
-      <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-2">{label}</label>
-      <div 
-        onDragOver={handleDragOver}
-        onDragEnter={handleDragEnter}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        className={`relative group w-full aspect-video rounded-2xl overflow-hidden bg-stone-50 border transition-all duration-300 ${isDragging ? 'border-[#d4af37] ring-4 ring-[#d4af37]/10 bg-[#d4af37]/5 scale-[0.98] shadow-inner' : 'border-stone-200 shadow-sm hover:border-stone-300'}`}
-      >
-        {/* Overlay invisible para capturar eventos sin interferencias de hijos */}
-        {isDragging && (
-          <div className="absolute inset-0 z-[60] bg-transparent" />
-        )}
-
-        {isUploading && (
-          <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center bg-white/90 backdrop-blur-md z-50">
-             <div className="relative w-16 h-16 flex items-center justify-center mb-4">
-                <Loader2 size={32} className="text-[#d4af37] animate-spin absolute" />
-                {processingProgress > 0 && (
-                  <span className="text-[10px] font-bold text-[#d4af37]">{processingProgress}%</span>
-                )}
-             </div>
-             <span className="text-[10px] font-black uppercase tracking-widest text-[#d4af37]">
-                {processingProgress > 0 ? 'Optimizando...' : 'Subiendo...'}
-             </span>
-          </div>
-        )}
-
-        <div className={`w-full h-full transition-all duration-500 ${isDragging ? 'blur-sm scale-110 grayscale opacity-30' : ''}`}>
-          {value ? (
-            value.toLowerCase().endsWith('.mp4') || value.toLowerCase().endsWith('.webm') ? (
-              <video src={value && value.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${value}` : value || ""} className="w-full h-full object-cover" autoPlay muted loop />
-            ) : (
-              <img src={value && value.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${value}` : value || ""} alt="Preview" className="w-full h-full object-cover" />
-            )
-          ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center text-stone-200">
-               <ImageIcon size={40} strokeWidth={1} />
-               <span className="text-[10px] font-bold uppercase tracking-widest mt-2 opacity-50">Sin medios</span>
-               <span className="text-[9px] font-medium text-stone-400 mt-1 italic">o arrastra un archivo aquí</span>
-            </div>
-          )}
-        </div>
-
-        {/* Capa de Drop Visual */}
-        {isDragging && (
-          <div className="absolute inset-0 z-[55] flex flex-col items-center justify-center pointer-events-none animate-in fade-in zoom-in duration-300">
-             <div className="w-16 h-16 bg-[#d4af37] rounded-full flex items-center justify-center shadow-2xl mb-4">
-                <Sparkles size={32} className="text-white animate-bounce" />
-             </div>
-             <span className="text-xs font-black uppercase tracking-widest text-[#d4af37]">¡Suelta para subir!</span>
-          </div>
-        )}
-
-        <div className={`absolute inset-0 bg-stone-900/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-3 ${isDragging ? 'hidden' : ''}`}>
-          <button
-            type="button"
-            onClick={onSelect}
-            className="bg-white text-stone-900 px-4 py-2 rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-xl hover:scale-105 transition-transform flex items-center gap-2"
-          >
-            <Camera size={14} />
-            <span>{value ? 'Cambiar' : 'Seleccionar'}</span>
-          </button>
-          {value && (
-            <button
-              type="button"
-              onClick={onClear}
-              className="w-10 h-10 bg-rose-500 text-white rounded-xl flex items-center justify-center shadow-xl hover:bg-rose-600 hover:scale-105 transition-all"
-              title="Eliminar"
-            >
-              <Trash2 size={16} />
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
 
 export default function CMSPage() {
   const { showFeedback } = useFeedback();
@@ -397,222 +205,52 @@ export default function CMSPage() {
     }
   };
 
-
   const renderActiveTabContent = () => {
-    if (activeTab === 'HERO') {
-      return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <ImageUploadBlock 
-            label="Imagen Principal (Fondo)" 
-            value={formData.hero_image_url} 
-            onSelect={() => setPickerTarget({ type: 'form', field: 'hero_image_url' })} 
-            onClear={() => setFormData({...formData, hero_image_url: ''})} 
-            onUpload={(url) => setFormData({...formData, hero_image_url: url})}
-            accepts="image"
+    switch (activeTab) {
+      case 'HERO':
+        return (
+          <HeroTab 
+            formData={formData} 
+            setFormData={setFormData} 
+            setPickerTarget={setPickerTarget} 
           />
-          <div className="space-y-6">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Título Principal (H1)</label>
-              <input type="text" value={formData.hero_title || ""} onChange={e => setFormData({...formData, hero_title: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-border/50 bg-stone-50 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 transition-all font-serif font-bold text-lg" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Subtítulo</label>
-              <textarea rows={2} value={formData.hero_subtitle || ""} onChange={e => setFormData({...formData, hero_subtitle: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-border/50 bg-stone-50 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 transition-all font-medium text-sm" />
-            </div>
-            <div className="p-5 bg-stone-50 rounded-2xl border border-stone-200">
-              <div className="flex items-center justify-between mb-4">
-                <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Botón de Acción</label>
-                <button 
-                  onClick={() => setFormData({...formData, hero_show_button: !formData.hero_show_button})}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.hero_show_button ? 'bg-[#d4af37]' : 'bg-stone-300'}`}
-                >
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.hero_show_button ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
-              </div>
-              
-              {formData.hero_show_button && (
-                <div className="grid grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-300">
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-stone-400 mb-2">Texto Botón</label>
-                    <input type="text" value={formData.hero_button_text || ""} onChange={e => setFormData({...formData, hero_button_text: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 text-sm font-bold" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-stone-400 mb-2">Enlace Botón</label>
-                    <input type="text" value={formData.hero_button_link || ""} onChange={e => setFormData({...formData, hero_button_link: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 text-sm" />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Alineación Vertical</label>
-                <select value={formData.hero_alignment || "center"} onChange={e => setFormData({...formData, hero_alignment: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-border/50 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 text-sm font-bold">
-                  <option value="top">Superior</option>
-                  <option value="center">Centrado</option>
-                  <option value="bottom">Inferior</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Alineación Horizontal</label>
-                <select value={formData.hero_horizontal_alignment || "center"} onChange={e => setFormData({...formData, hero_horizontal_alignment: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-border/50 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 text-sm font-bold">
-                  <option value="left">Izquierda</option>
-                  <option value="center">Centro</option>
-                  <option value="right">Derecha</option>
-                </select>
-              </div>
-            </div>
-          </div>
-          <div className="pt-8 border-t border-border/30 mt-8">
-            <ImageUploadBlock 
-              label="Video de Fondo (Opcional - Reemplaza la imagen)" 
-              value={formData.hero_video_url} 
-              onSelect={() => setPickerTarget({ type: 'form', field: 'hero_video_url' })} 
-              onClear={() => setFormData({...formData, hero_video_url: ''})} 
-              onUpload={(url) => setFormData({...formData, hero_video_url: url})}
-              accepts="video"
-            />
-          </div>
-        </div>
-      );
-    }
-    
-    if (activeTab === 'SOBRE MÍ') {
-      return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div className="mb-6">
-             <h2 className="text-2xl font-serif font-bold text-stone-900 mb-2">Sobre la Clínica</h2>
-             <p className="text-stone-500">Construye confianza explicando tu filosofía o presentando a tu equipo.</p>
-          </div>
-          <ImageUploadBlock 
-            label="Fotografía de Perfil / Clínica" 
-            value={formData.about_image_url} 
-            onSelect={() => setPickerTarget({ type: 'form', field: 'about_image_url' })} 
-            onClear={() => setFormData({...formData, about_image_url: ''})} 
-            onUpload={(url) => setFormData({...formData, about_image_url: url})}
-            accepts="image"
+        );
+      case 'SOBRE MÍ':
+        return (
+          <AboutTab 
+            formData={formData} 
+            setFormData={setFormData} 
+            setPickerTarget={setPickerTarget} 
           />
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-6">
-               <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Posición Imagen</label>
-                  <select value={formData.about_layout || "right"} onChange={e => setFormData({...formData, about_layout: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-border/50 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 text-sm font-bold">
-                    <option value="left">Imagen a la Izquierda</option>
-                    <option value="right">Imagen a la Derecha</option>
-                  </select>
-               </div>
-               <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Título de la Sección</label>
-                  <input type="text" value={formData.about_title || ""} onChange={e => setFormData({...formData, about_title: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-border/50 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 text-sm font-bold" />
-               </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Biografía / Filosofía</label>
-              <textarea rows={8} value={formData.about_text || ""} onChange={e => setFormData({...formData, about_text: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-border/50 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 text-sm font-medium leading-relaxed" />
-            </div>
-
-            <div className="p-5 bg-stone-50 rounded-2xl border border-stone-200">
-              <div className="flex items-center justify-between mb-4">
-                <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Botón de Acción (Opcional)</label>
-                <button 
-                  onClick={() => setFormData({...formData, about_show_button: !formData.about_show_button})}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.about_show_button ? 'bg-[#d4af37]' : 'bg-stone-300'}`}
-                >
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.about_show_button ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
-              </div>
-              
-              {formData.about_show_button && (
-                <div className="grid grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-300">
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-stone-400 mb-2">Texto Botón</label>
-                    <input type="text" value={formData.about_button_text || ""} onChange={e => setFormData({...formData, about_button_text: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 text-sm font-bold" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-stone-400 mb-2">Enlace Botón</label>
-                    <input type="text" value={formData.about_button_link || ""} onChange={e => setFormData({...formData, about_button_link: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 text-sm" />
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      );
+        );
+      case 'CATEGORÍAS':
+        return (
+          <CategoriesTab 
+            initialCategories={categories}
+            setCategories={setCategories}
+            selectedCategoryId={selectedCategoryId}
+            setSelectedCategoryId={setSelectedCategoryId}
+            setPickerTarget={setPickerTarget}
+            handleCategoryChange={handleCategoryChange}
+          />
+        );
+      case 'CTA':
+        return (
+          <CtaTab 
+            formData={formData} 
+            setFormData={setFormData} 
+          />
+        );
+      case 'SEO':
+        return (
+          <SeoTab 
+            formData={formData} 
+            setFormData={setFormData} 
+          />
+        );
+      default:
+        return null;
     }
-
-
-
-    if (activeTab === 'CATEGORÍAS') {
-      return (
-        <CategoriesTab 
-          initialCategories={categories}
-          setCategories={setCategories}
-          selectedCategoryId={selectedCategoryId}
-          setSelectedCategoryId={setSelectedCategoryId}
-          setPickerTarget={setPickerTarget}
-          handleCategoryChange={handleCategoryChange}
-        />
-      );
-    }
-
-    if (activeTab === 'CTA') {
-      return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div className="mb-6">
-             <h2 className="text-2xl font-serif font-bold text-stone-900 mb-2">Llamada a la Acción (CTA)</h2>
-             <p className="text-stone-500">El bloque de cierre de tu web, justo antes del footer.</p>
-          </div>
-          <div className="space-y-6">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Título CTA</label>
-              <input type="text" value={formData.cta_title || ""} onChange={e => setFormData({...formData, cta_title: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-border/50 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 text-sm font-bold" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Subtítulo CTA</label>
-              <input type="text" value={formData.cta_subtitle || ""} onChange={e => setFormData({...formData, cta_subtitle: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-border/50 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 text-sm font-medium" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Texto Botón</label>
-                <input type="text" value={formData.cta_button_text || ""} onChange={e => setFormData({...formData, cta_button_text: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-border/50 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 text-sm font-bold" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Enlace</label>
-                <input type="text" value={formData.cta_button_link || ""} onChange={e => setFormData({...formData, cta_button_link: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-border/50 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 text-sm" />
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    if (activeTab === 'SEO') {
-      return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div className="mb-6">
-             <h2 className="text-2xl font-serif font-bold text-stone-900 mb-2">Metadatos SEO</h2>
-             <p className="text-stone-500">Configuración invisible que leen los buscadores como Google o al compartir en WhatsApp.</p>
-          </div>
-          <div className="space-y-6">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Título de la Página (H1 Global)</label>
-              <input type="text" value={formData.seo_title || ""} onChange={e => setFormData({...formData, seo_title: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-border/50 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 text-sm font-bold" placeholder="Ej: Clínica Merce | Medicina Estética Avanzada" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Descripción (Extracto)</label>
-              <textarea rows={4} value={formData.seo_description || ""} onChange={e => setFormData({...formData, seo_description: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-border/50 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 text-sm font-medium" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Palabras Clave (Separadas por comas)</label>
-              <input type="text" value={formData.seo_keywords || ""} onChange={e => setFormData({...formData, seo_keywords: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-border/50 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 text-sm font-medium" />
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    return null;
   };
 
   if (loading) {
@@ -647,103 +285,3 @@ export default function CMSPage() {
     </div>
   );
 }
-
-// Componente Aislado para la pestaña de categorías (Soluciona LAG y OFFSET)
-const CategoriesTab = memo(({ 
-  initialCategories, 
-  setCategories, 
-  selectedCategoryId, 
-  setSelectedCategoryId, 
-  setPickerTarget, 
-  handleCategoryChange 
-}: any) => {
-  // El estado vive AQUÍ, totalmente aislado del padre durante el drag
-  const [localItems, setLocalItems] = useState(initialCategories);
-
-  // Sincronizar si las categorías cambian externamente (ej: al cargar)
-  useEffect(() => {
-    setLocalItems(initialCategories);
-  }, [initialCategories]);
-
-  const selectedCategory = localItems.find((c: any) => c.id === selectedCategoryId) || localItems[0];
-
-  return (
-    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-
-      <div className="mb-0">
-         <h2 className="text-lg font-serif font-bold text-stone-900 leading-tight">Edición de Categorías</h2>
-         <p className="text-[10px] text-stone-400 uppercase tracking-widest font-medium">Gestiona el contenido y el orden</p>
-      </div>
-      
-      {selectedCategory && (
-        <div className="p-5 border border-stone-100 rounded-3xl bg-[#F7F7F5] shadow-sm space-y-4 relative overflow-hidden">
-           <div className="absolute top-0 left-0 w-1 h-full bg-[#d4af37]"></div>
-           
-           <div className="space-y-1">
-             <ImageUploadBlock 
-               label="Imagen de Fondo" 
-               value={selectedCategory.image_url} 
-               onSelect={() => setPickerTarget({ type: 'category', id: selectedCategory.id, field: 'image_url' })}
-               onClear={() => handleCategoryChange(selectedCategory.id, 'image_url', '')}
-               onUpload={(url) => handleCategoryChange(selectedCategory.id, 'image_url', url)}
-               accepts="image"
-             />
-           </div>
-           
-           <div>
-              <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400 mb-2">Nombre Público</label>
-              <input type="text" value={selectedCategory.name || ""} onChange={e => handleCategoryChange(selectedCategory.id, 'name', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 text-sm font-bold shadow-sm transition-all" />
-           </div>
-           
-           <div>
-              <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400 mb-2">Descripción Corta</label>
-              <textarea rows={3} value={selectedCategory.description || ""} onChange={e => handleCategoryChange(selectedCategory.id, 'description', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 text-xs font-medium shadow-sm leading-relaxed transition-all" placeholder="Ej: Especialistas en potenciar tu mirada natural..." />
-           </div>
-        </div>
-      )}
-
-      <div className="pt-4 border-t border-stone-200">
-         <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-stone-400 mb-4">Orden de Categorías</h3>
-         <Reorder.Group axis="y" values={localItems} onReorder={setLocalItems} className="flex flex-col gap-2">
-            {localItems.map((cat: any) => (
-              <Reorder.Item 
-                key={cat.id} 
-                value={cat}
-                onDragEnd={() => setCategories(localItems)} // Sincronizar con preview SOLO al soltar
-                className={`p-4 rounded-2xl border flex items-center justify-between cursor-grab active:cursor-grabbing ${selectedCategoryId === cat.id ? 'border-[#d4af37] bg-white shadow-md' : 'border-stone-100 bg-stone-50/30 hover:bg-white hover:border-stone-200'}`}
-                onClick={() => setSelectedCategoryId(cat.id)}
-              >
-                <div className="flex items-center gap-6">
-                  <GripVertical size={16} className="text-stone-300" />
-                  <span className={`font-bold text-sm tracking-tight ${selectedCategoryId === cat.id ? 'text-stone-900' : 'text-stone-500'}`}>{cat.name}</span>
-                </div>
-
-                <div className="flex items-center gap-6">
-                  {selectedCategoryId === cat.id && (
-                    <span className="text-[9px] font-black uppercase tracking-widest text-[#d4af37] bg-[#d4af37]/5 px-3 py-1 rounded-full">
-                      Editando
-                    </span>
-                  )}
-                  
-                  <div className="flex items-center gap-2 border-l border-stone-100 pl-4">
-                    <span className={`text-[9px] font-bold uppercase tracking-tighter ${cat.is_active ? 'text-emerald-500' : 'text-stone-300'}`}>
-                      {cat.is_active ? 'Visible' : 'Oculta'}
-                    </span>
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCategoryChange(cat.id, 'is_active', !cat.is_active);
-                      }}
-                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none ${cat.is_active ? 'bg-emerald-500' : 'bg-stone-200'}`}
-                    >
-                      <span className={`pointer-events-none block h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-transform ${cat.is_active ? 'translate-x-[20px]' : 'translate-x-1'}`} />
-                    </button>
-                  </div>
-                </div>
-              </Reorder.Item>
-            ))}
-         </Reorder.Group>
-      </div>
-    </div>
-  );
-});

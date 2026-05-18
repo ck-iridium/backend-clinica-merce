@@ -62,7 +62,7 @@ export default function TeamPage() {
       const currentRole = role?.toLowerCase();
       if (currentRole !== 'administrador' && currentRole !== 'admin') {
         router.replace('/dashboard');
-        toast.error(t('team.access_denied_admin') || "Acceso denegado: Solo los administradores pueden gestionar el equipo.");
+        toast.error(t('dashboard.team.access_denied_admin') || "Acceso denegado: Solo los administradores pueden gestionar el equipo.");
       }
     }
   }, [role, loadingRole, router]);
@@ -75,7 +75,7 @@ export default function TeamPage() {
       setMembers(data || []);
     } catch (err) {
       console.error("Error crítico cargando miembros del equipo:", err);
-      toast.error(t('team.server_connection_error') || "Error al conectar con el servidor de equipo.");
+      toast.error(t('dashboard.team.server_connection_error') || "Error al conectar con el servidor de equipo.");
       setMembers([]);
     } finally {
       setLoading(false);
@@ -87,7 +87,7 @@ export default function TeamPage() {
     if (!loadingRole) {
       const currentRole = role?.toLowerCase();
       if (currentRole !== 'administrador' && currentRole !== 'admin') {
-        toast.error(t('team.access_denied_admin') || "Acceso denegado: Solo el Administrador puede gestionar el equipo.");
+        toast.error(t('dashboard.team.access_denied_admin') || "Acceso denegado: Solo el Administrador puede gestionar el equipo.");
         router.replace('/dashboard');
       } else {
         fetchMembers();
@@ -107,7 +107,7 @@ export default function TeamPage() {
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.full_name || !formData.email || !formData.role) {
-      toast.error(t('team.invite_fields_required') || "Por favor completa todos los campos");
+      toast.error(t('dashboard.team.invite_fields_required') || "Por favor completa todos los campos");
       return;
     }
 
@@ -116,29 +116,29 @@ export default function TeamPage() {
     setIsSubmitting(false);
 
     if (result.success) {
-      toast.success((t('team.invite_success') || 'Invitación enviada a {email}').replace('{email}', formData.email));
+      toast.success((t('dashboard.team.invite_success') || 'Invitación enviada a {email}').replace('{email}', formData.email));
       setIsInviteModalOpen(false);
       setFormData({ full_name: '', email: '', role: 'Recepción' });
       fetchMembers();
     } else {
-      toast.error(result.error || t('team.invite_error') || "Error al invitar al usuario");
+      toast.error(result.error || t('dashboard.team.invite_error') || "Error al invitar al usuario");
     }
   };
 
   const handleDelete = (userId: string, userName: string) => {
     showFeedback({
       type: 'confirm',
-      title: t('team.delete_member_title') || 'Confirmar Eliminación',
-      message: (t('team.delete_member_desc') || '¿Estás seguro de que deseas eliminar a {name} de la clínica? Esta acción es irreversible.').replace('{name}', userName),
-      confirmText: t('team.delete_member_btn') || 'Eliminar Miembro',
-      cancelText: t('team.cancel_btn') || 'Cancelar',
+      title: t('dashboard.team.delete_member_title') || 'Confirmar Eliminación',
+      message: (t('dashboard.team.delete_member_desc') || '¿Estás seguro de que deseas eliminar a {name} de la clínica? Esta acción es irreversible.').replace('{name}', userName),
+      confirmText: t('dashboard.team.delete_member_btn') || 'Eliminar Miembro',
+      cancelText: t('dashboard.team.cancel_btn') || 'Cancelar',
       onConfirm: async () => {
         const result = await deleteTeamMember(userId);
         if (result.success) {
-          toast.success((t('team.delete_success') || '{name} ha sido eliminado correctamente.').replace('{name}', userName));
+          toast.success((t('dashboard.team.delete_success') || '{name} ha sido eliminado correctamente.').replace('{name}', userName));
           fetchMembers();
         } else {
-          toast.error(result.error || t('team.delete_error') || "Error al eliminar al usuario.");
+          toast.error(result.error || t('dashboard.team.delete_error') || "Error al eliminar al usuario.");
         }
       }
     });
@@ -153,11 +153,11 @@ export default function TeamPage() {
     setIsEditing(false);
 
     if (result.success) {
-      toast.success(t('team.role_update_success') || "Rol actualizado correctamente.");
+      toast.success(t('dashboard.team.role_update_success') || "Rol actualizado correctamente.");
       setIsEditModalOpen(false);
       fetchMembers();
     } else {
-      toast.error(result.error || t('team.role_update_error') || "Error al actualizar el rol.");
+      toast.error(result.error || t('dashboard.team.role_update_error') || "Error al actualizar el rol.");
     }
   };
 
@@ -180,10 +180,10 @@ export default function TeamPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-2">
           <h1 className="text-5xl font-serif font-semibold text-stone-800 tracking-tight">
-            {t('team.team_title') || "Gestión de Equipo"}
+            {t('dashboard.team.team_title') || "Gestión de Equipo"}
           </h1>
           <p className="text-stone-400 font-medium max-w-lg">
-            {t('team.team_subtitle') || "Administra los perfiles de los profesionales y personal de recepción de la clínica."}
+            {t('dashboard.team.team_subtitle') || "Administra los perfiles de los profesionales y personal de recepción de la clínica."}
           </p>
         </div>
 
@@ -192,58 +192,58 @@ export default function TeamPage() {
             <DialogTrigger asChild>
               <button className="flex items-center gap-2.5 bg-stone-900 hover:bg-[#d9777f] text-white px-6 py-3.5 rounded-2xl font-bold text-sm transition-all shadow-lg shadow-stone-200 active:scale-95">
                 <UserPlus size={18} strokeWidth={1.5} />
-                {t('team.add_member_btn') || "Añadir Miembro"}
+                {t('dashboard.team.add_member_btn') || "Añadir Miembro"}
               </button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px] rounded-[2rem] p-6 bg-white border-stone-100 shadow-2xl">
               <DialogHeader className="mb-4">
-                <DialogTitle className="font-serif italic text-2xl text-stone-800">{t('team.invite_modal_title') || "Invitar al Equipo"}</DialogTitle>
+                <DialogTitle className="font-serif italic text-2xl text-stone-800">{t('dashboard.team.invite_modal_title') || "Invitar al Equipo"}</DialogTitle>
                 <DialogDescription className="text-stone-500">
-                  {t('team.invite_modal_desc') || "Enviaremos un correo de invitación para que el usuario configure su contraseña."}
+                  {t('dashboard.team.invite_modal_desc') || "Enviaremos un correo de invitación para que el usuario configure su contraseña."}
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleInvite} className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-[11px] font-black uppercase tracking-widest text-stone-400">
-                    {t('team.full_name_label') || "Nombre Completo"}
+                    {t('dashboard.team.full_name_label') || "Nombre Completo"}
                   </label>
                   <input
                     type="text"
                     value={formData.full_name}
                     onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                     className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d9777f]/20 focus:border-[#d9777f] transition-all"
-                    placeholder={t('team.full_name_placeholder') || "Ej. Dra. Laura Gil"}
+                    placeholder={t('dashboard.team.full_name_placeholder') || "Ej. Dra. Laura Gil"}
                     required
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[11px] font-black uppercase tracking-widest text-stone-400">
-                    {t('team.email_label') || "Correo Electrónico"}
+                    {t('dashboard.team.email_label') || "Correo Electrónico"}
                   </label>
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d9777f]/20 focus:border-[#d9777f] transition-all"
-                    placeholder={t('team.email_placeholder') || "laura@clinicamerce.com"}
+                    placeholder={t('dashboard.team.email_placeholder') || "laura@clinicamerce.com"}
                     required
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[11px] font-black uppercase tracking-widest text-stone-400">
-                    {t('team.role_label') || "Rol"}
+                    {t('dashboard.team.role_label') || "Rol"}
                   </label>
                   <Select
                     value={formData.role}
                     onValueChange={(val) => setFormData({ ...formData, role: val })}
                   >
                     <SelectTrigger className="w-full bg-stone-50 border-stone-200 rounded-xl px-4 py-3 h-auto text-sm focus:ring-[#d9777f]/20 focus:border-[#d9777f]">
-                      <SelectValue placeholder={t('team.select_role_placeholder') || "Selecciona un rol"} />
+                      <SelectValue placeholder={t('dashboard.team.select_role_placeholder') || "Selecciona un rol"} />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl border-stone-100 shadow-xl">
-                      <SelectItem value="Administrador" className="rounded-lg">{t('team.roles.admin') || "Administrador"}</SelectItem>
-                      <SelectItem value="Especialista" className="rounded-lg">{t('team.roles.specialist') || "Especialista"}</SelectItem>
-                      <SelectItem value="Recepción" className="rounded-lg">{t('team.roles.reception') || "Recepción"}</SelectItem>
+                      <SelectItem value="Administrador" className="rounded-lg">{t('dashboard.team.roles.admin') || "Administrador"}</SelectItem>
+                      <SelectItem value="Especialista" className="rounded-lg">{t('dashboard.team.roles.specialist') || "Especialista"}</SelectItem>
+                      <SelectItem value="Recepción" className="rounded-lg">{t('dashboard.team.roles.reception') || "Recepción"}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -254,7 +254,7 @@ export default function TeamPage() {
                     className="px-5 py-2.5 rounded-xl font-bold text-stone-500 hover:bg-stone-100 transition-colors text-sm"
                     disabled={isSubmitting}
                   >
-                    {t('team.cancel_btn') || "Cancelar"}
+                    {t('dashboard.team.cancel_btn') || "Cancelar"}
                   </button>
                   <button
                     type="submit"
@@ -262,7 +262,7 @@ export default function TeamPage() {
                     className="flex items-center gap-2 bg-stone-900 hover:bg-[#d9777f] text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
                   >
                     {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <UserPlus size={16} />}
-                    {isSubmitting ? (t('team.sending_invite') || "Enviando...") : (t('team.send_invite_btn') || "Enviar Invitación")}
+                    {isSubmitting ? (t('dashboard.team.sending_invite') || "Enviando...") : (t('dashboard.team.send_invite_btn') || "Enviar Invitación")}
                   </button>
                 </DialogFooter>
               </form>
@@ -271,7 +271,7 @@ export default function TeamPage() {
         ) : (
           <div className="bg-stone-50 border border-stone-100 px-5 py-3 rounded-2xl">
             <p className="text-stone-400 text-xs font-semibold">
-              {t('team.only_admin_msg') || "Solo los administradores pueden gestionar el equipo."}
+              {t('dashboard.team.only_admin_msg') || "Solo los administradores pueden gestionar el equipo."}
             </p>
           </div>
         )}
@@ -285,11 +285,11 @@ export default function TeamPage() {
           <table className="w-full text-left border-collapse min-w-[600px]">
             <thead>
               <tr className="border-b border-stone-50">
-                <th className="pb-5 px-4 text-[11px] font-black uppercase tracking-widest text-stone-300">{t('team.table_header_member') || "Miembro"}</th>
-                <th className="pb-5 px-4 text-[11px] font-black uppercase tracking-widest text-stone-300">{t('team.table_header_role') || "Rol"}</th>
-                <th className="pb-5 px-4 text-[11px] font-black uppercase tracking-widest text-stone-300">{t('team.table_header_status') || "Estado"}</th>
-                <th className="pb-5 px-4 text-[11px] font-black uppercase tracking-widest text-stone-300">{t('team.table_header_email') || "Email"}</th>
-                <th className="pb-5 px-4 text-right text-[11px] font-black uppercase tracking-widest text-stone-300">{t('team.table_header_actions') || "Acciones"}</th>
+                <th className="pb-5 px-4 text-[11px] font-black uppercase tracking-widest text-stone-300">{t('dashboard.team.table_header_member') || "Miembro"}</th>
+                <th className="pb-5 px-4 text-[11px] font-black uppercase tracking-widest text-stone-300">{t('dashboard.team.table_header_role') || "Rol"}</th>
+                <th className="pb-5 px-4 text-[11px] font-black uppercase tracking-widest text-stone-300">{t('dashboard.team.table_header_status') || "Estado"}</th>
+                <th className="pb-5 px-4 text-[11px] font-black uppercase tracking-widest text-stone-300">{t('dashboard.team.table_header_email') || "Email"}</th>
+                <th className="pb-5 px-4 text-right text-[11px] font-black uppercase tracking-widest text-stone-300">{t('dashboard.team.table_header_actions') || "Acciones"}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-50">
@@ -321,7 +321,7 @@ export default function TeamPage() {
               ) : members.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-12 text-center text-stone-400 font-medium">
-                    {t('team.empty_team') || "No hay miembros en el equipo aún."}
+                    {t('dashboard.team.empty_team') || "No hay miembros en el equipo aún."}
                   </td>
                 </tr>
               ) : members.map((member) => (
@@ -338,14 +338,14 @@ export default function TeamPage() {
                   </td>
                   <td className="py-5 px-4">
                     <span className="text-sm font-semibold text-stone-500">
-                      {t(`team.roles.${member.role === 'Administrador' ? 'admin' : member.role === 'Especialista' ? 'specialist' : 'reception'}`) || member.role}
+                      {t(`dashboard.team.roles.${member.role === 'Administrador' ? 'admin' : member.role === 'Especialista' ? 'specialist' : 'reception'}`) || member.role}
                     </span>
                   </td>
                   <td className="py-5 px-4">
                     <div className="flex items-center gap-2">
                       <div className={`w-1.5 h-1.5 rounded-full ${member.status === 'Activo' ? 'bg-green-500 animate-pulse' : 'bg-stone-300'}`} />
                       <span className={`text-[10px] font-black uppercase tracking-widest ${member.status === 'Activo' ? 'text-green-600' : 'text-stone-400'}`}>
-                        {t(`team.statuses.${member.status === 'Activo' ? 'active' : 'invited'}`) || member.status}
+                        {t(`dashboard.team.statuses.${member.status === 'Activo' ? 'active' : 'invited'}`) || member.status}
                       </span>
                     </div>
                   </td>
@@ -361,14 +361,14 @@ export default function TeamPage() {
                           setIsEditModalOpen(true);
                         }}
                         className="p-2.5 rounded-xl hover:bg-white hover:shadow-md text-stone-400 hover:text-stone-800 transition-all border border-transparent hover:border-stone-100"
-                        title={t('team.edit_role_title') || "Editar Rol"}
+                        title={t('dashboard.team.edit_role_title') || "Editar Rol"}
                       >
                         <Edit2 size={16} strokeWidth={1.5} />
                       </button>
                       <button
                         onClick={() => handleDelete(member.id, member.full_name)}
                         className="p-2.5 rounded-xl hover:bg-white hover:shadow-md text-stone-400 hover:text-red-500 transition-all border border-transparent hover:border-stone-100"
-                        title={t('team.delete_member_btn') || "Eliminar Miembro"}
+                        title={t('dashboard.team.delete_member_btn') || "Eliminar Miembro"}
                       >
                         <Trash2 size={16} strokeWidth={1.5} />
                       </button>
@@ -387,9 +387,9 @@ export default function TeamPage() {
           <ShieldCheck size={18} strokeWidth={1.5} />
         </div>
         <div>
-          <h4 className="font-bold text-[#d9777f] text-sm">{t('team.security_permissions_title') || "Seguridad y Permisos"}</h4>
+          <h4 className="font-bold text-[#d9777f] text-sm">{t('dashboard.team.security_permissions_title') || "Seguridad y Permisos"}</h4>
           <p className="text-stone-400 text-sm font-medium leading-relaxed">
-            {t('team.security_permissions_desc') || "Recuerda que los Miembros con rol 'Especialista' solo pueden ver su propia agenda, mientras que los 'Administradores' tienen acceso total a la facturación y ajustes de la clínica."}
+            {t('dashboard.team.security_permissions_desc') || "Recuerda que los Miembros con rol 'Especialista' solo pueden ver su propia agenda, mientras que los 'Administradores' tienen acceso total a la facturación y ajustes de la clínica."}
           </p>
         </div>
       </div>
@@ -398,16 +398,16 @@ export default function TeamPage() {
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent className="sm:max-w-[425px] rounded-[2rem] p-6 bg-white border-stone-100 shadow-2xl">
           <DialogHeader className="mb-4">
-            <DialogTitle className="font-serif italic text-2xl text-stone-800">{t('team.edit_role_title') || "Editar Rol"}</DialogTitle>
+            <DialogTitle className="font-serif italic text-2xl text-stone-800">{t('dashboard.team.edit_role_title') || "Editar Rol"}</DialogTitle>
             <DialogDescription className="text-stone-500">
-              {t('team.edit_role_desc') || "Modifica los permisos de acceso para este miembro."}
+              {t('dashboard.team.edit_role_desc') || "Modifica los permisos de acceso para este miembro."}
             </DialogDescription>
           </DialogHeader>
           {memberToEdit && (
             <form onSubmit={handleEditSubmit} className="space-y-4">
               <div className="space-y-2">
                 <label className="text-[11px] font-black uppercase tracking-widest text-stone-400">
-                  {t('team.full_name_label') || "Nombre Completo"}
+                  {t('dashboard.team.full_name_label') || "Nombre Completo"}
                 </label>
                 <input
                   type="text"
@@ -418,7 +418,7 @@ export default function TeamPage() {
               </div>
               <div className="space-y-2">
                 <label className="text-[11px] font-black uppercase tracking-widest text-stone-400">
-                  {t('team.email_label') || "Correo Electrónico"}
+                  {t('dashboard.team.email_label') || "Correo Electrónico"}
                 </label>
                 <input
                   type="email"
@@ -429,19 +429,19 @@ export default function TeamPage() {
               </div>
               <div className="space-y-2">
                 <label className="text-[11px] font-black uppercase tracking-widest text-stone-400">
-                  {t('team.role_label') || "Rol"}
+                  {t('dashboard.team.role_label') || "Rol"}
                 </label>
                 <Select
                   value={editRole}
                   onValueChange={setEditRole}
                 >
                   <SelectTrigger className="w-full bg-stone-50 border-stone-200 rounded-xl px-4 py-3 h-auto text-sm focus:ring-[#d9777f]/20 focus:border-[#d9777f]">
-                    <SelectValue placeholder={t('team.select_role_placeholder') || "Selecciona un rol"} />
+                    <SelectValue placeholder={t('dashboard.team.select_role_placeholder') || "Selecciona un rol"} />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-stone-100 shadow-xl">
-                    <SelectItem value="Administrador" className="rounded-lg">{t('team.roles.admin') || "Administrador"}</SelectItem>
-                    <SelectItem value="Especialista" className="rounded-lg">{t('team.roles.specialist') || "Especialista"}</SelectItem>
-                    <SelectItem value="Recepción" className="rounded-lg">{t('team.roles.reception') || "Recepción"}</SelectItem>
+                    <SelectItem value="Administrador" className="rounded-lg">{t('dashboard.team.roles.admin') || "Administrador"}</SelectItem>
+                    <SelectItem value="Especialista" className="rounded-lg">{t('dashboard.team.roles.specialist') || "Especialista"}</SelectItem>
+                    <SelectItem value="Recepción" className="rounded-lg">{t('dashboard.team.roles.reception') || "Recepción"}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -452,7 +452,7 @@ export default function TeamPage() {
                   className="px-5 py-2.5 rounded-xl font-bold text-stone-500 hover:bg-stone-100 transition-colors text-sm"
                   disabled={isEditing}
                 >
-                  {t('team.cancel_btn') || "Cancelar"}
+                  {t('dashboard.team.cancel_btn') || "Cancelar"}
                 </button>
                 <button
                   type="submit"
@@ -460,7 +460,7 @@ export default function TeamPage() {
                   className="flex items-center gap-2 bg-stone-900 hover:bg-[#d9777f] text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
                 >
                   {isEditing ? <Loader2 size={16} className="animate-spin" /> : <Edit2 size={16} />}
-                  {isEditing ? (t('team.saving_btn') || "Guardando...") : (t('team.save_changes_btn') || "Guardar Cambios")}
+                  {isEditing ? (t('dashboard.team.saving_btn') || "Guardando...") : (t('dashboard.team.save_changes_btn') || "Guardar Cambios")}
                 </button>
               </DialogFooter>
             </form>

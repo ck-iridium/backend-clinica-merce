@@ -38,14 +38,14 @@ export default function ContentTab({ editor, setShowAIModal }: ContentTabProps) 
     <div className="space-y-4">
       <div>
         <div className="flex items-center justify-between mb-1.5">
-          <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest">{t('dashboard.services.rich_content_label')}</label>
+          <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest">{t('dashboard.services.rich_content_title')}</label>
           <button 
             type="button" 
             onClick={() => setShowAIModal('rich_content')}
             className="flex items-center gap-1.5 text-xs font-bold text-[#d4af37] hover:bg-yellow-50/50 px-2.5 py-1 rounded-lg border border-yellow-100 transition-colors shadow-sm"
           >
             <Sparkles size={12} strokeWidth={2} />
-            {t('dashboard.services.generate_ai')}
+            {t('dashboard.services.generate_ia')}
           </button>
         </div>
         <div className="flex flex-col shadow-sm rounded-xl">

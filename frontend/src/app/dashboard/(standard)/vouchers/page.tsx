@@ -33,6 +33,12 @@ import {
 
 import { useLanguage } from '@/app/contexts/LanguageContext';
 
+import ActiveVouchersList from './components/ActiveVouchersList';
+import TemplatesCatalog from './components/TemplatesCatalog';
+import AssignVoucherModal from './components/AssignVoucherModal';
+import CreateTemplateModal from './components/CreateTemplateModal';
+import PayDebtModal from './components/PayDebtModal';
+
 export default function VouchersPage() {
   const router = useRouter();
   const { t, language } = useLanguage();
@@ -300,58 +306,44 @@ export default function VouchersPage() {
     const isServiceActive = service ? service.is_active : true;
     return isServiceActive && t.name.toLowerCase().includes(searchTerm.toLowerCase());
   });
-
-  if (loading) return (
-    <div className="space-y-10 animate-pulse">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-stone-100 pb-4">
-        <div className="space-y-2">
-          <Skeleton className="h-10 w-64" />
-          <Skeleton className="h-4 w-96" />
-        </div>
-        <Skeleton className="h-12 w-48 rounded-xl" />
-      </div>
-
-      <div className="flex justify-between items-center mb-6">
-        <Skeleton className="h-8 w-40" />
-        <Skeleton className="h-10 w-44 rounded-xl" />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="bg-white rounded-2xl p-6 border border-stone-100 space-y-4">
-            <div className="flex justify-between">
-              <div className="space-y-2">
-                <Skeleton className="h-5 w-32" />
-                <Skeleton className="h-3 w-20" />
-              </div>
-              <Skeleton className="h-6 w-16 rounded-lg" />
-            </div>
-            <Skeleton className="h-14 w-full rounded-xl" />
-            <div className="space-y-2">
-              <Skeleton className="h-3 w-full" />
-              <Skeleton className="h-2.5 w-full rounded-full" />
-            </div>
-            <Skeleton className="h-4 w-32" />
+  if (loading) {
+    return (
+      <div className="space-y-10 animate-pulse">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-stone-100 pb-4">
+          <div className="space-y-2">
+            <Skeleton className="h-10 w-64" />
+            <Skeleton className="h-4 w-96" />
           </div>
-        ))}
+          <Skeleton className="h-12 w-48 rounded-xl" />
+        </div>
+
+        <div className="flex justify-between items-center mb-6">
+          <Skeleton className="h-8 w-40" />
+          <Skeleton className="h-10 w-44 rounded-xl" />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="bg-white rounded-2xl p-6 border border-stone-100 space-y-4">
+              <div className="flex justify-between">
+                <div className="space-y-2">
+                  <Skeleton className="h-5 w-32" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+                <Skeleton className="h-6 w-16 rounded-lg" />
+              </div>
+              <Skeleton className="h-14 w-full rounded-xl" />
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-2.5 w-full rounded-full" />
+              </div>
+              <Skeleton className="h-4 w-32" />
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
-  );
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 10 },
-    show: { opacity: 1, y: 0 }
-  };
+    );
+  }
 
   return (
     <div className="animate-in fade-in duration-500">
@@ -387,409 +379,74 @@ export default function VouchersPage() {
 
       {/* ======================= TAB: BONOS VENDIDOS ======================= */}
       {activeTab === 'vendidos' && (
-        <>
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-bold text-stone-700 ml-1">{t('dashboard.vouchers.active_in_patients') || 'Bonos activos en pacientes'}</h2>
-          </div>
-
-          <motion.div 
-            variants={containerVariants}
-            initial="hidden"
-            animate="show"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-          >
-            {vouchers.map(v => {
-              const expired = isExpired(v.expiration_date);
-              const isEmpty = v.used_sessions >= v.total_sessions;
-              const active = !expired && !isEmpty;
-
-              return (
-                <motion.div 
-                  key={v.id} 
-                  variants={itemVariants}
-                  className={`bg-white rounded-[2rem] p-7 border transition-all relative overflow-hidden ${active ? 'border-primary/10 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] hover:scale-[1.01] group' : 'border-stone-100 opacity-60'}`}
-                >
-                  <div className="flex justify-between items-start mb-5">
-                    <div>
-                      <h3 className="font-extrabold text-stone-900 text-lg leading-tight">{getClientName(v.client_id)}</h3>
-                      <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mt-1.5">{getServiceName(v.service_id)}</p>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      {active ? (
-                        <span className="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[10px] font-black border border-emerald-100 uppercase tracking-widest">
-                          {t('dashboard.vouchers.active') || 'Activo'}
-                        </span>
-                      ) : (
-                        <span className="bg-stone-50 text-stone-400 px-3 py-1 rounded-full text-[10px] font-black border border-stone-100 uppercase tracking-widest">
-                          {isEmpty ? (t('dashboard.vouchers.depleted') || 'Agotado') : (t('dashboard.vouchers.expired') || 'Caducado')}
-                        </span>
-                      )}
-
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button className="w-8 h-8 rounded-full border border-stone-100 flex items-center justify-center text-stone-400 hover:text-stone-900 hover:bg-stone-50 transition-all focus:outline-none">
-                            <span className="text-lg leading-none mb-1">...</span>
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuLabel>{t('dashboard.vouchers.actions_title') || 'Acciones del Bono'}</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem asChild>
-                            <Link href={`/dashboard/clients/${v.client_id}`} className="cursor-pointer">
-                              {t('dashboard.vouchers.view_client_file') || 'Ver Ficha Cliente'}
-                            </Link>
-                          </DropdownMenuItem>
-                          {v.payment_status !== 'paid' && (
-                            <DropdownMenuItem onClick={() => handleOpenPayModal(v)} className="text-amber-600 font-bold">
-                              {t('dashboard.vouchers.collect_pending') || 'Cobrar Pendiente'}
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => handleDeleteVoucher(v.id)} className="text-rose-600">
-                            {t('dashboard.vouchers.annul_voucher') || 'Anular Bono'}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </div>
-                  
-                  {/* Financial Status Indicator */}
-                  <div className={`mb-6 p-4 rounded-2xl border flex justify-between items-center ${
-                    v.payment_status === 'paid' ? 'bg-emerald-50/30 border-emerald-100/50' : 
-                    v.payment_status === 'partial' ? 'bg-amber-50/30 border-amber-100/50' : 
-                    'bg-rose-50/30 border-rose-100/50'
-                  }`}>
-                    <div>
-                      <p className="text-[9px] uppercase font-black text-stone-400 tracking-wider mb-0.5">{t('dashboard.vouchers.financial_status') || 'Estado Financiero'}</p>
-                      <div className="text-xs font-bold">
-                        {v.payment_status === 'paid' && <span className="text-emerald-700">{t('dashboard.vouchers.financial_completed') || '✓ Completado'}</span>}
-                        {v.payment_status === 'partial' && (
-                          <span className="text-amber-600">
-                            {(t('dashboard.vouchers.financial_debt') || '⚠️ Deuda: {debt}€').replace('{debt}', (v.total_price - v.amount_paid).toString())}
-                          </span>
-                        )}
-                        {v.payment_status === 'pending' && (
-                          <span className="text-rose-600">{t('dashboard.vouchers.financial_unpaid') || '✕ Sin Cobrar'}</span>
-                        )}
-                      </div>
-                    </div>
-                     <div className="text-right">
-                       <p className="text-[9px] uppercase font-black text-stone-400 tracking-wider mb-0.5">{t('dashboard.vouchers.investment') || 'Inversión'}</p>
-                       <p className="text-base font-black text-stone-800">{v.total_price}€</p>
-                     </div>
-                  </div>
-
-                  <div className="mb-6">
-                    <div className="flex justify-between text-[11px] font-black uppercase tracking-widest mb-2">
-                      <span className="text-stone-400">{t('dashboard.vouchers.sessions_progress') || 'Progreso Sesiones'}</span>
-                      <span className="text-stone-900">{v.used_sessions} / {v.total_sessions}</span>
-                    </div>
-                    <div className="h-3 w-full bg-stone-100 rounded-full overflow-hidden border border-stone-200/30 p-0.5">
-                      <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: `${Math.min((v.used_sessions / v.total_sessions) * 100, 100)}%` }}
-                        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                        className={`h-full rounded-full ${active ? 'bg-gradient-to-r from-primary/80 to-primary' : 'bg-stone-300'}`} 
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-[10px] font-bold text-stone-400 uppercase tracking-wider">
-                    <span className="w-1.5 h-1.5 rounded-full bg-stone-200"></span>
-                    <span>
-                      {(t('dashboard.vouchers.expires_on') || 'Vence el {date}')
-                        .replace('{date}', new Date(v.expiration_date).toLocaleDateString(language === 'es' ? 'es-ES' : language === 'en' ? 'en-US' : 'fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }))}
-                    </span>
-                  </div>
-                </motion.div>
-              );
-            })}
-            
-            {vouchers.length === 0 && (
-              <div className="col-span-full py-24 text-center border-2 border-dashed border-stone-200 rounded-[2.5rem] bg-stone-50/30">
-                <span className="text-4xl block mb-4 opacity-20">🎟️</span>
-                <p className="text-stone-400 font-bold">{t('dashboard.vouchers.no_active_vouchers') || 'No hay bonos activos asignados a clientes.'}</p>
-              </div>
-            )}
-          </motion.div>
-        </>
+        <ActiveVouchersList 
+          vouchers={vouchers}
+          getClientName={getClientName}
+          getServiceName={getServiceName}
+          isExpired={isExpired}
+          handleOpenPayModal={handleOpenPayModal}
+          handleDeleteVoucher={handleDeleteVoucher}
+        />
       )}
 
       {/* ======================= TAB: CATÁLOGO PLANTILLAS ======================= */}
       {activeTab === 'catalogo' && (
-        <>
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-bold text-stone-700 ml-1">{t('dashboard.vouchers.configured_models') || 'Modelos de bonos configurados'}</h2>
-          </div>
-          
-          <div className="bg-white rounded-[2rem] border border-stone-100 shadow-sm overflow-hidden">
-             <table className="w-full text-left border-collapse">
-                <thead>
-                   <tr className="bg-stone-50/50 border-b border-stone-100 text-[10px] uppercase tracking-[0.15em] font-black text-stone-400">
-                      <th className="px-8 py-5">{t('dashboard.vouchers.table_template_name') || 'Nombre de la Plantilla'}</th>
-                      <th className="px-8 py-5">{t('dashboard.vouchers.table_valid_service') || 'Tratamiento Válido'}</th>
-                      <th className="px-8 py-5 text-center">{t('dashboard.vouchers.table_sessions_count') || 'Nº Sesiones'}</th>
-                      <th className="px-8 py-5">{t('dashboard.vouchers.table_suggested_price') || 'Precio Sugerido'}</th>
-                      <th className="px-8 py-5 text-right">{t('dashboard.vouchers.table_actions') || 'Acciones'}</th>
-                   </tr>
-                </thead>
-                <tbody className="divide-y divide-stone-100">
-                   {templates.length === 0 ? (
-                      <tr><td colSpan={5} className="p-16 text-center text-stone-400 font-bold">{t('dashboard.vouchers.empty_catalog') || 'El catálogo está vacío. Crea tu primer bono base.'}</td></tr>
-                   ) : templates.map(t => (
-                      <tr key={t.id} className="hover:bg-stone-50/80 transition-colors group">
-                         <td className="px-8 py-6 font-extrabold text-stone-900">{t.name}</td>
-                         <td className="px-8 py-6 font-medium text-stone-500 text-sm">{getServiceName(t.service_id)}</td>
-                         <td className="px-8 py-6 text-center">
-                            <span className="inline-block bg-primary/5 text-primary font-black text-[10px] px-3 py-1 rounded-full uppercase tracking-tighter">
-                              {(t('dashboard.vouchers.sessions_plural') || '{sessions} sesiones').replace('{sessions}', t.total_sessions.toString())}
-                            </span>
-                         </td>
-                         <td className="px-8 py-6 font-black text-stone-900">{t.price} €</td>
-                         <td className="px-8 py-6 text-right">
-                            <button 
-                              onClick={() => handleDeleteTemplate(t.id)}
-                              className="w-10 h-10 rounded-xl bg-white border border-stone-100 flex items-center justify-center text-stone-400 hover:border-rose-200 hover:text-rose-600 hover:bg-rose-50 transition-all ml-auto opacity-0 group-hover:opacity-100 active:scale-95 shadow-sm"
-                              title={t('dashboard.vouchers.delete_template_title') || "Eliminar plantilla"}
-                            >
-                              <span className="text-xl leading-none">×</span>
-                            </button>
-                         </td>
-                      </tr>
-                   ))}
-                </tbody>
-             </table>
-          </div>
-        </>
+        <TemplatesCatalog 
+          templates={templates}
+          getServiceName={getServiceName}
+          handleDeleteTemplate={handleDeleteTemplate}
+        />
       )}
 
-      {/* ======================= MODAL: EMITIR BONO (ASSIGNMENT) ======================= */}
-      <Dialog open={showAssignModal} onOpenChange={setShowAssignModal}>
-        <DialogContent className="p-0 border-none max-w-lg">
-          <DialogHeader className="p-8 border-b border-stone-100 bg-stone-50 rounded-t-xl">
-            <DialogTitle className="text-xl font-extrabold text-stone-800">{t('dashboard.vouchers.modal_emit_title') || 'Emitir / Vender Bono'}</DialogTitle>
-            <DialogDescription className="text-stone-400 text-sm">
-              {t('dashboard.vouchers.modal_emit_desc') || 'Asigna un bono del catálogo a un cliente y define las condiciones de pago.'}
-            </DialogDescription>
-          </DialogHeader>
+      <AssignVoucherModal 
+        showAssignModal={showAssignModal}
+        setShowAssignModal={setShowAssignModal}
+        handleAssignVoucher={handleAssignVoucher}
+        selectedClientId={selectedClientId}
+        setSelectedClientId={setSelectedClientId}
+        clients={clients}
+        selectedTemplateId={selectedTemplateId}
+        setSelectedTemplateId={setSelectedTemplateId}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        filteredTemplates={filteredTemplates}
+        handleSelectTemplateForAssignment={handleSelectTemplateForAssignment}
+        templates={templates}
+        assignPrice={assignPrice}
+        setAssignPrice={setAssignPrice}
+        assignAmountPaid={assignAmountPaid}
+        setAssignAmountPaid={setAssignAmountPaid}
+        expirationMonths={expirationMonths}
+        setExpirationMonths={setExpirationMonths}
+        saving={saving}
+      />
 
-          <div className="p-8">
-            <form id="assign-voucher-form" onSubmit={handleAssignVoucher}>
-              {/* 1. Seleccionar Cliente */}
-              <div className="mb-5">
-                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">{t('dashboard.vouchers.client_receptor') || 'Cliente Receptor'}</label>
-                <Select required value={selectedClientId} onValueChange={setSelectedClientId}>
-                  <SelectTrigger className="w-full bg-stone-50 border-stone-200 uppercase tracking-tighter shadow-sm font-bold">
-                    <SelectValue placeholder={t('dashboard.vouchers.select_client_placeholder') || "Selecciona cliente..."} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clients
-                      .filter(c => c.email !== 'contado@clinica-mercedes.com')
-                      .map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
+      <CreateTemplateModal 
+        showTemplateModal={showTemplateModal}
+        setShowTemplateModal={setShowTemplateModal}
+        handleCreateTemplate={handleCreateTemplate}
+        templateName={templateName}
+        setTemplateName={setTemplateName}
+        templateServiceId={templateServiceId}
+        setTemplateServiceId={setTemplateServiceId}
+        services={services}
+        templateSessions={templateSessions}
+        setTemplateSessions={setTemplateSessions}
+        calculateTemplateDefaultPrice={calculateTemplateDefaultPrice}
+        templatePrice={templatePrice}
+        setTemplatePrice={setTemplatePrice}
+        saving={saving}
+      />
 
-              {/* 2. Seleccionar Plantilla con Buscador */}
-              <div className="mb-6 p-4 bg-stone-50 border border-stone-200 rounded-2xl relative">
-                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">{t('dashboard.vouchers.choose_template') || 'Elegir Plantilla del Catálogo'}</label>
-                {!selectedTemplateId ? (
-                   <>
-                      <input 
-                        type="text" 
-                        placeholder={t('dashboard.vouchers.search_template_placeholder') || "Buscar plantilla..."} 
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        className="w-full p-3 mb-2 bg-white border border-stone-200 rounded-xl text-sm outline-none"
-                      />
-                      <div className="max-h-40 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
-                         {filteredTemplates.length === 0 && <p className="text-xs text-stone-400">{t('dashboard.vouchers.no_templates_found') || 'No se encontraron plantillas.'}</p>}
-                         {filteredTemplates.map(tmpl => (
-                            <div 
-                              key={tmpl.id} 
-                              onClick={() => handleSelectTemplateForAssignment(tmpl.id)}
-                              className="p-3 bg-white border border-stone-100 rounded-xl hover:border-[#d9777f] hover:shadow-sm cursor-pointer transition-all flex justify-between items-center"
-                            >
-                               <div>
-                                 <p className="font-bold text-stone-700 text-sm">{tmpl.name}</p>
-                                 <p className="text-xs text-stone-400">{(t('dashboard.vouchers.sessions_count_plural') || '{sessions} Sesiones').replace('{sessions}', tmpl.total_sessions.toString())}</p>
-                               </div>
-                               <span className="font-extrabold text-[#d9777f]">{tmpl.price}€</span>
-                            </div>
-                         ))}
-                      </div>
-                   </>
-                ) : (
-                   <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-[#f3c7cb] shadow-inner">
-                      <div>
-                         <p className="font-bold text-stone-800 text-sm">{templates.find(t => t.id === selectedTemplateId)?.name}</p>
-                         <p className="text-xs text-[#d9777f] font-semibold mt-0.5">
-                           {(t('dashboard.vouchers.sessions_to_consume') || '{sessions} Sesiones a consumir').replace('{sessions}', (templates.find(t => t.id === selectedTemplateId)?.total_sessions || 0).toString())}
-                         </p>
-                      </div>
-                      <button 
-                        type="button" 
-                        onClick={() => setSelectedTemplateId('')}
-                        className="text-xs font-bold text-stone-400 underline hover:text-stone-600"
-                      >{t('dashboard.vouchers.change') || 'Cambiar'}</button>
-                   </div>
-                )}
-              </div>
-
-              {/* 3. Condiciones Financieras */}
-              <div className={`grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 transition-all duration-300 ${selectedTemplateId ? 'opacity-100' : 'opacity-40 grayscale pointer-events-none'}`}>
-                <div>
-                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5 ml-1">{t('dashboard.vouchers.final_price') || 'Precio Final Pactado (€)'}</label>
-                  <input 
-                    type="number" step="0.01" required 
-                    value={assignPrice} onChange={e => setAssignPrice(Number(e.target.value))}
-                    className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-extrabold text-[#b08e23] outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-emerald-600 tracking-wide mb-1">{t('dashboard.vouchers.initial_payment') || 'Pago Inicial Hoy (€)'}</label>
-                  <input 
-                    type="number" step="0.01" required min="0" max={Number(assignPrice)}
-                    value={assignAmountPaid} onChange={e => setAssignAmountPaid(Number(e.target.value))}
-                    className="w-full p-3 bg-white border border-stone-200 border-l-4 border-l-emerald-400 rounded-xl font-extrabold text-stone-800 outline-none focus:border-l-emerald-600 focus:bg-emerald-50/30"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">{t('dashboard.vouchers.voucher_expiration') || 'Caducidad del Bono'}</label>
-                    <Select value={expirationMonths.toString()} onValueChange={(val) => setExpirationMonths(Number(val))}>
-                      <SelectTrigger className="w-full bg-white border border-stone-200 rounded-xl font-semibold text-stone-700">
-                        <SelectValue placeholder={t('dashboard.vouchers.select_expiration') || "Selecciona caducidad..."} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="3">{t('dashboard.vouchers.expiration_3_months') || '3 meses desde la compra'}</SelectItem>
-                        <SelectItem value="6">{t('dashboard.vouchers.expiration_6_months') || '6 meses desde la compra'}</SelectItem>
-                        <SelectItem value="12">{t('dashboard.vouchers.expiration_12_months') || '12 meses desde la compra'}</SelectItem>
-                        <SelectItem value="24">{t('dashboard.vouchers.expiration_24_months') || '2 años desde la compra'}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                </div>
-              </div>
-            </form>
-          </div>
-
-          <DialogFooter className="sticky bottom-0 left-0 w-full p-8 border-t border-stone-100 bg-gradient-to-t from-white via-white to-white/0 rounded-b-2xl z-20">
-            <button 
-              form="assign-voucher-form"
-              type="submit" 
-              disabled={saving || !selectedTemplateId} 
-              className="w-full py-4 bg-stone-800 text-white font-extrabold rounded-xl hover:bg-stone-900 transition-all flex justify-center items-center shadow-lg disabled:opacity-50"
-            >
-              {saving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : (t('dashboard.vouchers.emit_confirm') || "Crear y Asignar Bono")}
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ======================= MODAL: CREAR PLANTILLA ======================= */}
-      <Dialog open={showTemplateModal} onOpenChange={setShowTemplateModal}>
-        <DialogContent className="p-0 border-none max-w-sm">
-          <DialogHeader className="p-6 border-b border-stone-50 bg-white rounded-t-xl">
-            <DialogTitle className="text-xl font-extrabold text-stone-800">{t('dashboard.vouchers.modal_template_title') || 'Crear Plantilla'}</DialogTitle>
-            <DialogDescription className="text-stone-400 text-xs mt-1">
-              {t('dashboard.vouchers.modal_template_desc') || 'Define los parámetros básicos para una nueva plantilla de bono.'}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="p-6 pb-32">
-            <form id="template-form" onSubmit={handleCreateTemplate}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.vouchers.template_name_label') || 'Nombre (Ej: Bono 5 Ses. Axilas)'}</label>
-                  <input required type="text" value={templateName} onChange={e => setTemplateName(e.target.value)} className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-semibold" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.vouchers.base_service_label') || 'Servicio / Tratamiento base'}</label>
-                  <Select value={templateServiceId} onValueChange={(val) => {
-                    setTemplateServiceId(val);
-                    calculateTemplateDefaultPrice(val, templateSessions);
-                  }}>
-                    <SelectTrigger className="w-full bg-stone-50 border-stone-200 font-bold">
-                      <SelectValue placeholder={t('dashboard.vouchers.choose_technique') || "-- Elige técnica --"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {services.filter(s => s.is_active).map(s => <SelectItem key={s.id} value={s.id}>{s.name} ({s.price}€/sesión)</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.vouchers.sessions_count_label') || 'Nº de Sesiones / Usos'}</label>
-                  <input 
-                    required type="number" min="1"
-                    value={templateSessions} 
-                    onChange={e => {
-                      const sess = Number(e.target.value);
-                      setTemplateSessions(sess);
-                      calculateTemplateDefaultPrice(templateServiceId, sess);
-                    }} 
-                    className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-800" 
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.vouchers.suggested_price_label') || 'Precio de Venta Sugerido (€)'}</label>
-                  <input required type="number" step="0.01" value={templatePrice} onChange={e => setTemplatePrice(Number(e.target.value))} className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-bold text-[#b08e23]" />
-                </div>
-              </div>
-            </form>
-          </div>
-
-          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 border-t border-stone-50 bg-gradient-to-t from-white via-white to-white/0 rounded-b-2xl z-20">
-            <button form="template-form" type="submit" disabled={saving} className="w-full py-4 bg-[#bf7d6b] text-white font-extrabold rounded-xl hover:bg-[#a66a5a] transition-all flex justify-center items-center shadow-lg shadow-[#bf7d6b]/20 active:scale-95">
-              {saving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : (t('dashboard.vouchers.save_template') || "Guardar Plantilla")}
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ======================= MODAL: SALDAR DEUDA ======================= */}
-      <Dialog open={showPayModal} onOpenChange={setShowPayModal}>
-        <DialogContent className="p-0 border-none max-w-sm">
-          <DialogHeader className="p-6 border-b border-stone-50 bg-white rounded-t-xl">
-            <DialogTitle className="text-xl font-extrabold text-stone-800">{t('dashboard.vouchers.modal_pay_title') || 'Añadir Pago'}</DialogTitle>
-            <DialogDescription className="text-stone-400 text-xs mt-1">
-              {t('dashboard.vouchers.modal_pay_desc') || 'Registra un cobro parcial o total sobre la deuda del bono.'}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="p-6 pb-32">
-            <form id="pay-debt-form" onSubmit={handlePayDebt}>
-              <p className="text-sm text-stone-500 mb-4 bg-stone-50 p-3 rounded-lg border border-stone-100">
-                {(t('dashboard.vouchers.current_debt_desc') || 'La deuda actual de este bono es de {debt}€.')
-                  .replace('{debt}', currentDebt.toString())}
-              </p>
-              
-              <div>
-                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.vouchers.amount_paid_today') || 'Monto abonado HOY (€)'}</label>
-                <input 
-                  required 
-                  type="number" 
-                  step="0.01" 
-                  max={currentDebt}
-                  value={payAmount} 
-                  onChange={e => setPayAmount(Number(e.target.value))} 
-                  className="w-full p-4 bg-stone-50 border border-stone-200 border-l-4 border-l-[#d9777f] rounded-xl font-extrabold text-stone-800 outline-none text-xl" 
-                />
-                <p className="text-[10px] text-stone-400 mt-1">{t('dashboard.vouchers.amount_paid_helper') || 'Este importe se sumará al saldo pagado.'}</p>
-              </div>
-            </form>
-          </div>
-
-          <DialogFooter className="sticky bottom-0 left-0 w-full p-6 border-t border-stone-100 bg-gradient-to-t from-white via-white to-white/0 flex gap-3 rounded-b-2xl z-20">
-            <button type="button" onClick={() => setShowPayModal(false)} className="flex-1 py-3 text-stone-600 font-bold border border-stone-200 rounded-xl hover:bg-stone-50 bg-white">{t('dashboard.vouchers.cancel') || 'Cancelar'}</button>
-            <button form="pay-debt-form" type="submit" disabled={paying} className="flex-1 py-3 text-white bg-[#d9777f] font-bold rounded-xl hover:bg-[#c6646b] shadow-md flex justify-center items-center">
-              {paying ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : (t('dashboard.vouchers.confirm') || 'Confirmar')}
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
+      <PayDebtModal 
+        showPayModal={showPayModal}
+        setShowPayModal={setShowPayModal}
+        handlePayDebt={handlePayDebt}
+        currentDebt={currentDebt}
+        payAmount={payAmount}
+        setPayAmount={setPayAmount}
+        paying={paying}
+      />
     </div>
   );
 }

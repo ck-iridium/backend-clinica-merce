@@ -140,7 +140,7 @@ export default function GeneralTab({
             className="flex items-center gap-1.5 text-xs font-bold text-[#d4af37] hover:bg-yellow-50/50 px-2.5 py-1 rounded-lg border border-yellow-100 transition-colors shadow-sm"
           >
             <Sparkles size={12} strokeWidth={2} />
-            {t('dashboard.services.generate_ai')}
+            {t('dashboard.services.generate_ia')}
           </button>
         </div>
         <textarea {...register('description')} rows={3} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:ring-2 focus:ring-[#d4af37] outline-none transition-all text-sm resize-none" placeholder={t('dashboard.services.short_description_placeholder')} />

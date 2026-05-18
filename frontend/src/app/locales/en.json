@@ -602,7 +602,7 @@
         "seo": "SEO"
       },
       "ia_wait_warning": "Wait for AI to finish before exiting.",
-      "live_preview": "Live Preview: {slug}",
+      "live_preview": "Live Preview",
       "pending_url": "Pending URL",
       "specialized_treatment": "Specialized Treatment",
       "placeholder_title": "Treatment Title",
@@ -815,6 +815,80 @@
         "treatments": "Treatments",
         "step_info": "Step 1 of 3",
         "next_btn": "Next"
+      }
+    },
+    "cms": {
+      "edit_homepage": "Edit Homepage",
+      "visual_cms": "Visual CMS",
+      "save": "Save",
+      "saving": "Saving...",
+      "live_preview": "Live Preview: Structural Reordering",
+      "no_background_defined": "No background defined",
+      "section_image": "Section Image",
+      "treatment": "Treatment {i}",
+      "tabs": {
+        "hero": "Hero",
+        "about": "About",
+        "categories": "Categories",
+        "cta": "CTA",
+        "seo": "SEO"
+      },
+      "hero": {
+        "main_image": "Main Image (Background)",
+        "main_title": "Main Title (H1)",
+        "subtitle": "Subtitle",
+        "action_button": "Action Button",
+        "button_text": "Button Text",
+        "button_link": "Button Link",
+        "vertical_alignment": "Vertical Alignment",
+        "horizontal_alignment": "Horizontal Alignment",
+        "alignment_top": "Top",
+        "alignment_center": "Center",
+        "alignment_bottom": "Bottom",
+        "alignment_left": "Left",
+        "alignment_right": "Right",
+        "bg_video": "Background Video (Optional - Replaces the image)"
+      },
+      "about": {
+        "title": "About the Clinic",
+        "subtitle": "Build trust by explaining your philosophy or introducing your team.",
+        "image_label": "Profile / Clinic Photo",
+        "image_position": "Image Position",
+        "img_left": "Image on the Left",
+        "img_right": "Image on the Right",
+        "section_title": "Section Title",
+        "bio_philosophy": "Biography / Philosophy",
+        "action_button_opt": "Action Button (Optional)",
+        "button_text": "Button Text",
+        "button_link": "Button Link"
+      },
+      "categories": {
+        "title": "Edit Categories",
+        "subtitle": "Manage content and order",
+        "bg_image": "Background Image",
+        "public_name": "Public Name",
+        "short_description": "Short Description",
+        "desc_placeholder": "e.g. Specialists in enhancing your natural look...",
+        "order_title": "Categories Order",
+        "editing": "Editing",
+        "visible": "Visible",
+        "hidden": "Hidden"
+      },
+      "cta": {
+        "title": "Call to Action (CTA)",
+        "subtitle": "The closing block of your site, just before the footer.",
+        "cta_title": "CTA Title",
+        "cta_subtitle": "CTA Subtitle",
+        "button_text": "Button Text",
+        "link": "Link"
+      },
+      "seo": {
+        "title": "SEO Metadata",
+        "subtitle": "Invisible configuration read by search engines like Google or when sharing on WhatsApp.",
+        "page_title": "Page Title (Global H1)",
+        "placeholder": "e.g. Clínica Merce | Advanced Aesthetic Medicine",
+        "description": "Description (Excerpt)",
+        "keywords": "Keywords (Comma separated)"
       }
     },
     "team": {
