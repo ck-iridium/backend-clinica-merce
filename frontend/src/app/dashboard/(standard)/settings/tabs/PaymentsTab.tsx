@@ -2,8 +2,10 @@ import { CreditCard, CheckCircle2, AlertCircle, ExternalLink, RefreshCw, Trash2 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 export default function PaymentsTab({ settings, setSettings }: { settings: any, setSettings: any }) {
+  const { t } = useLanguage();
   const { showFeedback } = useFeedback();
   const [connecting, setConnecting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -16,9 +18,9 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
       if (res.ok) {
         setSettings({ ...settings, stripe_charges_enabled: data.charges_enabled });
         if (data.charges_enabled) {
-          toast.success("¡Cuenta sincronizada! Pagos activados.");
+          toast.success(t('dashboard.settings.payments.toasts.sync_active'));
         } else {
-          toast.info("Cuenta sincronizada. Aún falta completar información en Stripe.");
+          toast.info(t('dashboard.settings.payments.toasts.sync_incomplete'));
         }
       }
     } catch (e) {
@@ -37,8 +39,8 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
   const handleDisconnect = () => {
     showFeedback({
       type: 'confirm',
-      title: 'Desconectar Stripe',
-      message: '¿Estás seguro de que deseas desconectar la cuenta de Stripe de esta clínica? Los pagos online y fianzas dejarán de funcionar inmediatamente.',
+      title: t('dashboard.settings.payments.toasts.disconnect_title'),
+      message: t('dashboard.settings.payments.toasts.disconnect_msg'),
       onConfirm: async () => {
         try {
           const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/`, {
@@ -51,11 +53,11 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
           });
           if (res.ok) {
             setSettings({ ...settings, stripe_account_id: null, stripe_charges_enabled: false });
-            toast.success("Cuenta de Stripe desconectada correctamente.");
+            toast.success(t('dashboard.settings.payments.toasts.disconnect_success'));
           }
         } catch (e) {
           console.error(e);
-          toast.error("Error al desconectar la cuenta.");
+          toast.error(t('dashboard.settings.payments.toasts.disconnect_error'));
         }
       }
     });
@@ -71,11 +73,11 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
       if (res.ok && data.url) {
         window.location.href = data.url;
       } else {
-        toast.error("Error al conectar con Stripe: " + (data.detail || "Inténtalo de nuevo más tarde"));
+        toast.error(t('dashboard.settings.payments.toasts.connect_error') + (data.detail || "Inténtalo de nuevo más tarde"));
       }
     } catch (e) {
       console.error(e);
-      toast.error("Error de red al conectar con Stripe.");
+      toast.error(t('dashboard.settings.payments.toasts.network_error'));
     } finally {
       setConnecting(false);
     }
@@ -88,9 +90,9 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
         
         <div className="flex items-start justify-between mb-8">
           <div>
-            <h2 className="text-xl md:text-2xl font-serif font-semibold text-stone-800">Conexión con Stripe</h2>
+            <h2 className="text-xl md:text-2xl font-serif font-semibold text-stone-800">{t('dashboard.settings.payments.stripe_connection')}</h2>
             <p className="text-stone-500 text-sm mt-1 max-w-xl">
-              Configura tu cuenta de Stripe para procesar cobros y fianzas online. El 100% de los ingresos irán directamente a tu cuenta conectada.
+              {t('dashboard.settings.payments.stripe_desc')}
             </p>
           </div>
           <div className="hidden md:flex w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl items-center justify-center">
@@ -101,9 +103,9 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
         {!settings?.stripe_account_id ? (
           <div className="bg-stone-50 border border-stone-100 rounded-2xl p-6 text-center">
             <CreditCard className="w-12 h-12 text-stone-300 mx-auto mb-4" />
-            <h3 className="font-bold text-stone-800 mb-2">Aún no has conectado tu cuenta</h3>
+            <h3 className="font-bold text-stone-800 mb-2">{t('dashboard.settings.payments.not_connected')}</h3>
             <p className="text-sm text-stone-500 mb-6 max-w-sm mx-auto">
-              Para empezar a cobrar fianzas en tus reservas online, debes completar el proceso de onboarding seguro con Stripe.
+              {t('dashboard.settings.payments.onboarding_desc')}
             </p>
             <button
               onClick={handleConnectStripe}
@@ -111,7 +113,7 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
               className="px-6 py-3 bg-[#635BFF] hover:bg-[#4B45C6] text-white rounded-xl font-bold shadow-sm transition-colors flex items-center justify-center gap-2 mx-auto disabled:opacity-50"
             >
               <CreditCard size={18} />
-              {connecting ? 'Conectando...' : 'Conectar con Stripe'}
+              {connecting ? t('dashboard.settings.payments.connecting') : t('dashboard.settings.payments.connect_btn')}
             </button>
           </div>
         ) : (
@@ -126,7 +128,7 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="font-bold text-stone-800 text-lg">
-                        {settings.stripe_charges_enabled ? 'Cuenta Conectada y Activa' : 'Onboarding Incompleto'}
+                        {settings.stripe_charges_enabled ? t('dashboard.settings.payments.connected_active') : t('dashboard.settings.payments.onboarding_incomplete')}
                       </h3>
                       {settings.stripe_charges_enabled && (
                         <span className="bg-green-100 text-green-700 text-[10px] font-black uppercase px-2 py-0.5 rounded-full tracking-wider animate-pulse">Live</span>
@@ -146,7 +148,7 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
                     className="flex-1 md:flex-none px-6 py-3 bg-stone-900 hover:bg-[#d4af37] text-white rounded-xl font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2"
                   >
                     <ExternalLink size={16} />
-                    Gestionar en Stripe
+                    {t('dashboard.settings.payments.manage_stripe')}
                   </a>
                   
                   <button 
@@ -164,8 +166,8 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
                 <div className="mt-6 p-4 bg-orange-100/50 rounded-2xl border border-orange-200 flex items-start gap-3">
                   <AlertCircle className="text-orange-600 shrink-0 mt-0.5" size={18} />
                   <div className="text-sm text-orange-800">
-                    <p className="font-bold">Acción requerida</p>
-                    <p className="opacity-80">Stripe necesita más información para habilitar los cobros. Haz clic en gestionar para completar tu perfil.</p>
+                    <p className="font-bold">{t('dashboard.settings.payments.action_required')}</p>
+                    <p className="opacity-80">{t('dashboard.settings.payments.stripe_needed_info')}</p>
                   </div>
                 </div>
               )}
@@ -177,7 +179,7 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
                 className="text-[10px] font-bold text-red-500 hover:text-red-700 uppercase tracking-widest transition-all flex items-center gap-2 group"
               >
                 <Trash2 size={12} />
-                Desconectar de Stripe
+                {t('dashboard.settings.payments.disconnect')}
               </button>
             </div>
             
@@ -185,13 +187,13 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
             <div className="grid gap-6 md:grid-cols-2 pt-6 border-t border-stone-100">
                <div className="space-y-4">
                   <div>
-                    <h3 className="font-bold text-stone-800 text-sm mb-2">Bloqueo de Slots</h3>
+                    <h3 className="font-bold text-stone-800 text-sm mb-2">{t('dashboard.settings.payments.slot_blocking')}</h3>
                     <p className="text-xs text-stone-500 bg-stone-50 p-4 rounded-xl border border-stone-100">
-                      El sistema bloquea automáticamente los slots durante 10 minutos cuando un cliente inicia el proceso de pago de una fianza. Si no se completa, el slot se libera.
+                      {t('dashboard.settings.payments.slot_blocking_desc')}
                     </p>
                   </div>
                   <div className="bg-[#fcf8e5] p-4 rounded-xl border border-[#e5e1cc]">
-                    <label className="block text-xs font-bold text-stone-700 mb-2 uppercase tracking-wider">Margen de Cancelación (Horas)</label>
+                    <label className="block text-xs font-bold text-stone-700 mb-2 uppercase tracking-wider">{t('dashboard.settings.payments.cancellation_margin')}</label>
                     <div className="flex items-center gap-3">
                       <input 
                         type="number" 
@@ -204,15 +206,15 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
                         min="1"
                         max="720"
                       />
-                      <span className="text-xs font-medium text-stone-500">Horas de antelación para aviso.</span>
+                      <span className="text-xs font-medium text-stone-500">{t('dashboard.settings.payments.cancellation_margin_desc')}</span>
                     </div>
                   </div>
                </div>
                <div className="space-y-4">
                   <div>
-                    <h3 className="font-bold text-stone-800 text-sm mb-2">Políticas de Fianza</h3>
+                    <h3 className="font-bold text-stone-800 text-sm mb-2">{t('dashboard.settings.payments.deposit_policies')}</h3>
                     <p className="text-xs text-stone-500 bg-stone-50 p-4 rounded-xl border border-stone-100 mb-3">
-                      Puedes configurar qué tratamientos requieren fianza y su importe exacto individual en el <strong>Editor de Servicios</strong>.
+                      {t('dashboard.settings.payments.deposit_policies_desc')}
                     </p>
                   </div>
 
@@ -220,9 +222,9 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
                   <div className={`p-5 rounded-2xl border transition-all duration-300 ${settings?.global_deposit_required ? 'bg-stone-50/70 border-stone-200 shadow-sm' : 'bg-stone-50/30 border-stone-100'}`}>
                     <label className="flex items-center justify-between cursor-pointer">
                       <div className="pr-4">
-                        <span className="text-xs font-bold text-stone-800 uppercase tracking-wider block">Fianza Global Activa</span>
+                        <span className="text-xs font-bold text-stone-800 uppercase tracking-wider block">{t('dashboard.settings.payments.global_deposit')}</span>
                         <span className="text-[10px] text-stone-400 font-medium block mt-0.5 leading-relaxed">
-                          Aplica un cobro de fianza predeterminado a todos los tratamientos activos de la clínica.
+                          {t('dashboard.settings.payments.global_deposit_desc')}
                         </span>
                       </div>
                       <div className="relative shrink-0">
@@ -240,7 +242,7 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
                     {settings?.global_deposit_required && (
                       <div className="mt-4 pt-4 border-t border-stone-200/50 flex items-center gap-3 animate-in fade-in slide-in-from-top-1 duration-300">
                         <div className="w-full">
-                          <label className="block text-[10px] font-black text-stone-500 uppercase tracking-wider mb-1.5">Importe de la Fianza Global (€)</label>
+                          <label className="block text-[10px] font-black text-stone-500 uppercase tracking-wider mb-1.5">{t('dashboard.settings.payments.global_deposit_amount')}</label>
                           <div className="relative flex items-center">
                             <span className="absolute left-3 text-xs font-bold text-stone-400">€</span>
                             <input 
@@ -248,7 +250,7 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
                               value={settings?.global_deposit_amount === undefined || settings?.global_deposit_amount === null ? "" : settings.global_deposit_amount} 
                               onChange={(e) => {
                                 const val = e.target.value;
-                                setSettings({ ...settings, global_deposit_amount: val === "" ? "" : parseFloat(val) });
+                                  setSettings({ ...settings, global_deposit_amount: val === "" ? "" : parseFloat(val) });
                               }}
                               className="w-full pl-7 pr-3 py-2 bg-white border border-stone-200 rounded-lg focus:border-[#d4af37] outline-none font-bold text-stone-800 text-sm"
                               min="0"
@@ -262,7 +264,7 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
                   </div>
 
                   <div className="p-4 bg-stone-50/50 rounded-xl border border-stone-100/70 italic text-[10px] text-stone-400 leading-relaxed">
-                    * Nota: Si un tratamiento tiene una fianza individual configurada en su ficha, este valor sobrescribirá la fianza global. Para eximir un servicio, establécelo en 0€ en su editor.
+                    {t('dashboard.settings.payments.global_deposit_note')}
                   </div>
                </div>
             </div>

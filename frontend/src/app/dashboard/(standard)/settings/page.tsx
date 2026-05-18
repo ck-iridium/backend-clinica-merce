@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useAuthRole } from '@/hooks/useAuthRole';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Save, Building2, SearchCode, ImageIcon, Hash, Clock, Calendar, Trash2, CreditCard, LayoutTemplate } from 'lucide-react';
 import {
   Dialog,
@@ -24,6 +25,7 @@ import PaymentsTab from './tabs/PaymentsTab';
 import BookingLayoutTab from './tabs/BookingLayoutTab';
 
 export default function SettingsPage() {
+  const { t } = useLanguage();
   const { showFeedback } = useFeedback();
   const router = useRouter();
   const { role, loading: loadingRole } = useAuthRole();
@@ -224,8 +226,8 @@ export default function SettingsPage() {
     <div className="animate-in fade-in duration-500 max-w-[1200px] mx-auto px-0 sm:px-4 md:px-8 pt-4 md:pt-0 pb-32 md:pb-20">
       {/* CABECERA (Desktop & Mobile) */}
       <div className="mb-3 md:mb-8 px-3 sm:px-0">
-        <h1 className="text-3xl md:text-4xl font-serif font-semibold text-stone-800 tracking-tight">Ajustes</h1>
-        <p className="text-xs md:text-base text-stone-400 font-medium mt-1">Configura la identidad y operativa de tu clínica.</p>
+        <h1 className="text-3xl md:text-4xl font-serif font-semibold text-stone-800 tracking-tight">{t('dashboard.settings.title')}</h1>
+        <p className="text-xs md:text-base text-stone-400 font-medium mt-1">{t('dashboard.settings.subtitle')}</p>
       </div>
 
       <div className="flex flex-col md:flex-row gap-2 md:gap-8 items-start relative px-1 sm:px-0">
@@ -233,13 +235,13 @@ export default function SettingsPage() {
         <aside className="w-full md:w-64 shrink-0 z-40 sticky top-1 md:top-24 bg-white border border-stone-100 rounded-2xl md:rounded-[2rem] p-1.5 md:p-3 shadow-sm">
           <nav className="flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-x-visible scrollbar-hide">
             {[
-              { id: 'general', label: 'General', icon: Building2 },
-              { id: 'agenda', label: 'Agenda', icon: Clock },
-              { id: 'billing', label: 'Facturación', icon: Hash },
-              { id: 'payments', label: 'Pagos', icon: CreditCard },
-              { id: 'branding', label: 'Branding', icon: ImageIcon },
-              { id: 'booking_ui', label: 'Diseño de Reserva', icon: LayoutTemplate },
-              { id: 'advanced', label: 'Avanzado', icon: SearchCode },
+              { id: 'general', label: t('dashboard.settings.tabs.general'), icon: Building2 },
+              { id: 'agenda', label: t('dashboard.settings.tabs.agenda'), icon: Clock },
+              { id: 'billing', label: t('dashboard.settings.tabs.billing'), icon: Hash },
+              { id: 'payments', label: t('dashboard.settings.tabs.payments'), icon: CreditCard },
+              { id: 'branding', label: t('dashboard.settings.tabs.branding'), icon: ImageIcon },
+              { id: 'booking_ui', label: t('dashboard.settings.tabs.booking_ui'), icon: LayoutTemplate },
+              { id: 'advanced', label: t('dashboard.settings.tabs.advanced'), icon: SearchCode },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -266,9 +268,9 @@ export default function SettingsPage() {
                   : 'bg-stone-100 text-stone-300 cursor-not-allowed'}`}
             >
               <Save size={18} strokeWidth={1.5} />
-              {saving ? 'Guardando...' : 'Guardar Cambios'}
+              {saving ? t('dashboard.settings.saving') : t('dashboard.settings.save_changes')}
             </button>
-            {!hasChanges && <p className="text-[10px] text-stone-300 text-center mt-2 font-medium italic">No hay cambios pendientes</p>}
+            {!hasChanges && <p className="text-[10px] text-stone-300 text-center mt-2 font-medium italic">{t('dashboard.settings.no_changes')}</p>}
           </div>
         </aside>
 
@@ -314,7 +316,7 @@ export default function SettingsPage() {
           className="px-6 py-4 rounded-full font-bold bg-stone-900 text-white flex items-center justify-center gap-2 shadow-[0_8px_30px_rgb(0,0,0,0.2)] active:scale-95 transition-transform"
         >
           <Save size={18} strokeWidth={1.5} />
-          {saving ? 'Guardando...' : 'Guardar'}
+          {saving ? t('dashboard.settings.saving') : t('dashboard.general.save')}
         </button>
       </div>
 
@@ -325,24 +327,24 @@ export default function SettingsPage() {
         <DialogContent className="sm:max-w-[425px] rounded-[2rem] p-0 overflow-hidden border-0 shadow-2xl">
           <div className="bg-[#fcf8e5] p-6 pb-4 border-b border-stone-100">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-serif text-stone-800">Añadir Nueva Ausencia</DialogTitle>
+              <DialogTitle className="text-2xl font-serif text-stone-800">{t('dashboard.settings.absences.add_title')}</DialogTitle>
               <DialogDescription className="text-stone-500 font-medium pt-1">
-                Bloquea la agenda para festivos o vacaciones.
+                {t('dashboard.settings.absences.add_desc')}
               </DialogDescription>
             </DialogHeader>
           </div>
           <form onSubmit={handleAddBlock} className="p-6 pt-4 bg-white grid gap-5">
             <div className="grid gap-2">
-              <label className="text-xs font-bold text-stone-500">Motivo (Ej. Vacaciones de Verano)</label>
+              <label className="text-xs font-bold text-stone-500">{t('dashboard.settings.absences.reason')}</label>
               <input required type="text" value={newBlock.reason} onChange={e => setNewBlock({ ...newBlock, reason: e.target.value })} className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] transition-all outline-none" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <label className="text-xs font-bold text-stone-500">Inicio</label>
+                <label className="text-xs font-bold text-stone-500">{t('dashboard.settings.absences.start')}</label>
                 <input required type="date" value={newBlock.start_time} onChange={e => setNewBlock({ ...newBlock, start_time: e.target.value })} className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono text-sm outline-none" />
               </div>
               <div className="grid gap-2">
-                <label className="text-xs font-bold text-stone-500">Fin</label>
+                <label className="text-xs font-bold text-stone-500">{t('dashboard.settings.absences.end')}</label>
                 <input required type="date" value={newBlock.end_time} onChange={e => setNewBlock({ ...newBlock, end_time: e.target.value })} className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono text-sm outline-none" />
               </div>
             </div>
@@ -352,12 +354,12 @@ export default function SettingsPage() {
                 <div className={`block w-10 h-6 rounded-full transition-colors ${newBlock.is_annual_holiday ? 'bg-[#d4af37]' : 'bg-stone-300'}`}></div>
                 <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${newBlock.is_annual_holiday ? 'translate-x-4' : ''}`}></div>
               </div>
-              <span className="text-xs font-bold text-stone-700">Se repite anualmente</span>
+              <span className="text-xs font-bold text-stone-700">{t('dashboard.settings.absences.repeat_annually')}</span>
             </label>
             <div className="flex justify-end gap-3 mt-4">
-              <button type="button" onClick={() => setShowBlockModal(false)} className="px-4 py-2 text-stone-500 font-bold hover:bg-stone-100 rounded-xl transition-colors">Cancelar</button>
+              <button type="button" onClick={() => setShowBlockModal(false)} className="px-4 py-2 text-stone-500 font-bold hover:bg-stone-100 rounded-xl transition-colors">{t('dashboard.general.cancel')}</button>
               <button type="submit" disabled={addingBlock} className="px-6 py-2 bg-stone-900 text-white font-bold rounded-xl shadow-sm hover:bg-stone-800 transition-colors disabled:opacity-50">
-                {addingBlock ? 'Guardando...' : 'Añadir Ausencia'}
+                {addingBlock ? t('dashboard.settings.saving') : t('dashboard.settings.absences.add_btn')}
               </button>
             </div>
           </form>

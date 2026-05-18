@@ -31,6 +31,7 @@ import { useAuthRole } from '@/hooks/useAuthRole';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAIImage } from '@/app/contexts/AIImageContext';
 import { toast } from 'sonner';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 
 interface DashboardSidebarProps {
@@ -54,6 +55,26 @@ export const navLinks = [
 ];
 
 export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSidebarProps) {
+  const { t, language, setLanguage } = useLanguage();
+
+  const getTranslatedLabel = (href: string, fallback: string) => {
+    switch (href) {
+      case '/dashboard/pos': return t('dashboard.menu.pos');
+      case '/dashboard': return t('dashboard.menu.home');
+      case '/dashboard/clients': return t('dashboard.menu.clients');
+      case '/dashboard/team': return t('dashboard.menu.team');
+      case '/dashboard/services': return t('dashboard.menu.services');
+      case '/dashboard/vouchers': return t('dashboard.menu.vouchers');
+      case '/dashboard/invoices': return t('dashboard.menu.invoices');
+      case '/dashboard/calendar': return t('dashboard.menu.calendar');
+      case '/dashboard/settings': return t('dashboard.menu.settings');
+      case '/dashboard/backups': return t('dashboard.menu.backups');
+      case '/dashboard/media': return t('dashboard.menu.media');
+      case '/dashboard/cms': return t('dashboard.menu.cms');
+      default: return fallback;
+    }
+  };
+
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isDesktopExpanded, setIsDesktopExpanded] = useState(false);
   const pathname = usePathname();
@@ -194,7 +215,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
         >
           <Search size={22} strokeWidth={1.5} />
           <span className="absolute left-full top-1/2 -translate-y-1/2 ml-5 px-4 py-2 bg-stone-800 text-white text-[12px] font-black uppercase tracking-[0.15em] rounded-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-300 whitespace-nowrap z-[110] shadow-2xl border border-stone-700 translate-x-[-15px] group-hover/item:translate-x-0 pointer-events-none">
-            Buscar (Ctrl K)
+            {t('dashboard.menu.search_placeholder')}
           </span>
         </button>
 
@@ -234,7 +255,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
                 <Icon size={22} className={iconClasses} strokeWidth={active ? 2.5 : 1.5} />
               </div>
               <span className="absolute left-full top-1/2 -translate-y-1/2 ml-5 px-4 py-2 bg-stone-800 text-white text-[12px] font-black uppercase tracking-[0.15em] rounded-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-300 whitespace-nowrap z-[110] shadow-2xl border border-stone-700 translate-x-[-15px] group-hover/item:translate-x-0 pointer-events-none">
-                {link.label}
+                {getTranslatedLabel(link.href, link.label)}
               </span>
               {active && (
                 <div className="absolute -left-1 w-1 h-6 bg-white rounded-r-full shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
@@ -252,7 +273,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
                   <Briefcase size={22} strokeWidth={1.5} />
                 </div>
                 <span className="absolute left-full top-1/2 -translate-y-1/2 ml-5 px-4 py-2 bg-stone-800 text-white text-[12px] font-black uppercase tracking-[0.15em] rounded-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-300 whitespace-nowrap z-[110] shadow-2xl border border-stone-700 translate-x-[-15px] group-hover/item:translate-x-0 pointer-events-none">
-                  Gestión
+                  {t('dashboard.menu.management')}
                 </span>
                 {filteredGestion.some(l => isActive(l.href)) && (
                   <div className="absolute -left-1 w-1 h-6 bg-white rounded-r-full shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
@@ -261,7 +282,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" side="right" className="w-56 ml-4 rounded-[1.5rem] bg-stone-900 border-stone-800 text-white shadow-2xl p-2 animate-in slide-in-from-left-2 duration-200">
               <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-stone-500 px-4 py-3">
-                Gestión
+                {t('dashboard.menu.management')}
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-stone-800" />
               {filteredGestion.map((link) => {
@@ -274,7 +295,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
                     className={`flex items-center gap-3 px-4 py-3 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer ${active ? 'bg-stone-800 text-white' : 'text-stone-400'}`}
                   >
                     <Icon size={18} strokeWidth={active ? 2.5 : 1.5} />
-                    <span className="font-bold text-sm">{link.label}</span>
+                    <span className="font-bold text-sm">{getTranslatedLabel(link.href, link.label)}</span>
                   </DropdownMenuItem>
                 );
               })}
@@ -291,7 +312,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
                   <Settings size={22} strokeWidth={1.5} />
                 </div>
                 <span className="absolute left-full top-1/2 -translate-y-1/2 ml-5 px-4 py-2 bg-stone-800 text-white text-[12px] font-black uppercase tracking-[0.15em] rounded-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-300 whitespace-nowrap z-[110] shadow-2xl border border-stone-700 translate-x-[-15px] group-hover/item:translate-x-0 pointer-events-none">
-                  Configuración
+                  {t('dashboard.menu.configuration')}
                 </span>
                 {filteredConfig.some(l => isActive(l.href)) && (
                   <div className="absolute -left-1 w-1 h-6 bg-white rounded-r-full shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
@@ -300,7 +321,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" side="right" className="w-56 ml-4 rounded-[1.5rem] bg-stone-900 border-stone-800 text-white shadow-2xl p-2 animate-in slide-in-from-left-2 duration-200">
               <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-stone-500 px-4 py-3">
-                Configuración
+                {t('dashboard.menu.configuration')}
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-stone-800" />
               {filteredConfig.map((link) => {
@@ -313,7 +334,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
                     className={`flex items-center gap-3 px-4 py-3 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer ${active ? 'bg-stone-800 text-white' : 'text-stone-400'}`}
                   >
                     <Icon size={18} strokeWidth={active ? 2.5 : 1.5} />
-                    <span className="font-bold text-sm">{link.label}</span>
+                    <span className="font-bold text-sm">{getTranslatedLabel(link.href, link.label)}</span>
                   </DropdownMenuItem>
                 );
               })}
@@ -364,12 +385,31 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
                 <DropdownMenuSeparator className="bg-stone-800" />
                 <DropdownMenuItem onClick={() => router.push('/dashboard/profile')} className="flex items-center gap-3 px-4 py-3 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer">
                   <User size={16} />
-                  <span className="font-bold text-sm">Mi Perfil</span>
+                  <span className="font-bold text-sm">{t('dashboard.menu.profile')}</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 rounded-xl text-rose-400 focus:bg-rose-950 focus:text-rose-300 cursor-pointer">
                   <LogOut size={16} />
-                  <span className="font-bold text-sm">Cerrar Sesión</span>
+                  <span className="font-bold text-sm">{t('dashboard.menu.logout')}</span>
                 </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-stone-800" />
+                <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-stone-500 px-4 py-2">
+                  {language === 'es' ? 'Idioma' : language === 'fr' ? 'Langue' : 'Language'}
+                </DropdownMenuLabel>
+                <div className="grid grid-cols-3 gap-1 px-2 pb-2">
+                  {(['es', 'en', 'fr'] as const).map((lang) => (
+                    <button
+                      key={lang}
+                      onClick={() => setLanguage(lang)}
+                      className={`py-1.5 text-[10px] font-black rounded-xl transition-all ${
+                        language === lang
+                          ? 'bg-[#d4af37] text-stone-950 shadow-md'
+                          : 'text-stone-400 hover:bg-stone-800 hover:text-white'
+                      }`}
+                    >
+                      {lang.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
