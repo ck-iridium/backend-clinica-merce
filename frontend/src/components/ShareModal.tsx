@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Copy, Check, Mail } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { toast } from 'sonner';
@@ -15,13 +16,20 @@ interface ShareModalProps {
 export default function ShareModal({ isOpen, onClose, serviceName, url }: ShareModalProps) {
   const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Garantizar montaje en cliente para SSR seguro con Portals
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   // Cerrar al pulsar Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
-    if (isOpen) {
+    if (isOpen && mounted) {
       window.addEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'hidden';
     }
@@ -29,9 +37,9 @@ export default function ShareModal({ isOpen, onClose, serviceName, url }: ShareM
       window.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'unset';
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, mounted]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const handleCopy = async () => {
     try {
@@ -50,16 +58,16 @@ export default function ShareModal({ isOpen, onClose, serviceName, url }: ShareM
   const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(serviceName)}`;
   const emailUrl = `mailto:?subject=${encodeURIComponent(serviceName)}&body=${encodeURIComponent(`Hola, te comparto este tratamiento exclusivo de Clínica Mercè: ${serviceName}\n\nEnlace: ${url}`)}`;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
       {/* Fondo translúcido con desenfoque de lujo */}
       <div 
-        className="absolute inset-0 bg-stone-900/30 backdrop-blur-md transition-opacity duration-300"
+        className="absolute inset-0 bg-stone-900/40 backdrop-blur-md transition-opacity duration-300"
         onClick={onClose}
       />
 
       {/* Tarjeta del Modal (Estética Bento / Quiet Luxury) */}
-      <div className="relative w-full max-w-md overflow-hidden bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-stone-100/60 z-10 transform scale-100 transition-transform duration-300 animate-in fade-in zoom-in-95">
+      <div className="relative w-full max-w-md overflow-hidden bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-[0_30px_70px_rgba(0,0,0,0.15)] border border-stone-100/60 z-10 transform scale-100 transition-transform duration-300 animate-in fade-in zoom-in-95">
         
         {/* Botón de Cerrar */}
         <button 
@@ -88,9 +96,9 @@ export default function ShareModal({ isOpen, onClose, serviceName, url }: ShareM
             rel="noopener noreferrer"
             className="flex items-center gap-3 p-4 bg-stone-50 hover:bg-stone-100/70 rounded-2xl transition-all duration-300 group"
           >
-            <div className="p-2 bg-green-50 rounded-xl text-green-600 transition-colors group-hover:bg-green-100/70">
+            <div className="p-2 bg-emerald-500 rounded-xl transition-colors group-hover:bg-emerald-600 flex items-center justify-center text-white">
               <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.965C16.528 2.008 14.07 1.01 11.478 1.01 6.046 1.01 1.62 5.379 1.617 10.806c-.001 1.69.444 3.34 1.29 4.81l-.969 3.537 3.709-.969zm13.724-5.67c-.324-.162-1.92-.949-2.217-1.058-.297-.108-.513-.162-.73.162-.216.324-.837 1.058-1.026 1.275-.189.217-.378.243-.702.081-.324-.162-1.37-.504-2.611-1.611-.965-.86-1.617-1.923-1.806-2.247-.189-.325-.02-.5-.181-.661-.147-.146-.324-.379-.486-.569-.163-.189-.216-.324-.324-.54-.108-.217-.054-.407-.027-.57.027-.162.216-.513.324-.676.108-.162.144-.27.216-.405.072-.135.036-.254-.009-.379-.045-.125-.513-1.246-.703-1.706-.185-.445-.37-.383-.513-.39l-.438-.01c-.152 0-.401.057-.611.287-.21.23-.8.78-.8 1.901 0 1.12.81 2.202.922 2.261.113.06 1.594 2.435 3.862 3.414.54.233 1.015.373 1.36.483.54.172 1.03.148 1.417.09.431-.064 1.92-.787 2.19-1.505.27-.717.27-1.328.189-1.455-.08-.126-.297-.215-.621-.377z" />
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.452 5.709 1.453h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
               </svg>
             </div>
             <span className="font-sans text-xs font-semibold text-stone-700 tracking-wide">
@@ -105,9 +113,9 @@ export default function ShareModal({ isOpen, onClose, serviceName, url }: ShareM
             rel="noopener noreferrer"
             className="flex items-center gap-3 p-4 bg-stone-50 hover:bg-stone-100/70 rounded-2xl transition-all duration-300 group"
           >
-            <div className="p-2 bg-blue-50 rounded-xl text-blue-600 transition-colors group-hover:bg-blue-100/70">
+            <div className="p-2 bg-[#1877F2] rounded-xl transition-colors group-hover:bg-[#166FE5] flex items-center justify-center text-white">
               <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z" />
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
               </svg>
             </div>
             <span className="font-sans text-xs font-semibold text-stone-700 tracking-wide">
@@ -122,8 +130,7 @@ export default function ShareModal({ isOpen, onClose, serviceName, url }: ShareM
             rel="noopener noreferrer"
             className="flex items-center gap-3 p-4 bg-stone-50 hover:bg-stone-100/70 rounded-2xl transition-all duration-300 group"
           >
-            <div className="p-2 bg-stone-100 rounded-xl text-stone-900 transition-colors group-hover:bg-stone-200/50">
-              {/* Icono X minimalista */}
+            <div className="p-2 bg-stone-900 rounded-xl transition-colors group-hover:bg-stone-950 flex items-center justify-center text-white">
               <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
               </svg>
@@ -138,7 +145,7 @@ export default function ShareModal({ isOpen, onClose, serviceName, url }: ShareM
             href={emailUrl}
             className="flex items-center gap-3 p-4 bg-stone-50 hover:bg-stone-100/70 rounded-2xl transition-all duration-300 group"
           >
-            <div className="p-2 bg-stone-100 rounded-xl text-stone-600 transition-colors group-hover:bg-stone-200/50">
+            <div className="p-2 bg-stone-100 rounded-xl transition-colors group-hover:bg-stone-200/50 flex items-center justify-center text-stone-600">
               <Mail size={20} />
             </div>
             <span className="font-sans text-xs font-semibold text-stone-700 tracking-wide">
@@ -174,6 +181,7 @@ export default function ShareModal({ isOpen, onClose, serviceName, url }: ShareM
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
