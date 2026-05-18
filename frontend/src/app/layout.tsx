@@ -21,6 +21,18 @@ export const viewport: Viewport = {
 import { headers } from "next/headers";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const requestHeaders = headers();
+  const tenantSlug = requestHeaders.get("x-tenant-slug") || "";
+  const isMarketing = !tenantSlug || tenantSlug === "www";
+
+  if (isMarketing) {
+    return {
+      title: "Clínica Mercè SaaS - Software de Gestión para Clínicas de Estética Premium",
+      description: "Eleva la experiencia de tu clínica estética. Gestión de agenda, expedientes médicos, consentimientos digitales y facturación con diseño Quiet Luxury.",
+      robots: "index, follow",
+    };
+  }
+
   let allowIndexing = false;
   let seoData: any = {
     title: "Estetica Merce | Estética y Láser",
@@ -30,7 +42,6 @@ export async function generateMetadata(): Promise<Metadata> {
   };
   
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-  const requestHeaders = headers();
   const tenantId = requestHeaders.get("x-tenant-id") || '00000000-0000-0000-0000-000000000001';
 
   try {
@@ -84,6 +95,22 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const requestHeaders = headers();
+  const tenantSlug = requestHeaders.get("x-tenant-slug") || "";
+  const isMarketing = !tenantSlug || tenantSlug === "www";
+
+  if (isMarketing) {
+    return (
+      <html lang="es" suppressHydrationWarning className={`${inter.variable}`}>
+        <body className="antialiased bg-[#F7F7F5] text-[#1F2937] flex flex-col min-h-screen">
+          <Providers>
+            {children}
+          </Providers>
+        </body>
+      </html>
+    );
+  }
+
   return (
     <html lang="es" suppressHydrationWarning className={`${inter.variable} ${cormorantGaramond.variable}`}>
       <body className="antialiased bg-background text-foreground flex flex-col min-h-screen">
