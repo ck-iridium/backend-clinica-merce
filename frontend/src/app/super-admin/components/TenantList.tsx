@@ -8,6 +8,9 @@ interface Tenant {
   slug: string;
   stripe_customer_id: string | null;
   subscription_status: string;
+  stripe_subscription_id?: string | null;
+  plan_type?: string;
+  subscription_expires_at?: string | null;
   created_at: string | null;
 }
 

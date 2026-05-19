@@ -17,6 +17,9 @@ interface Tenant {
   slug: string;
   stripe_customer_id: string | null;
   subscription_status: string;
+  stripe_subscription_id?: string | null;
+  plan_type?: string;
+  subscription_expires_at?: string | null;
   created_at: string | null;
 }
 
@@ -167,8 +170,13 @@ export default function TenantDetail({ tenant, onUpdateStatus }: TenantDetailPro
                   <div className="space-y-1">
                     <span className="text-stone-400 text-xs font-bold uppercase tracking-wider">Plan Comercial</span>
                     <p className="text-stone-900 font-bold text-base flex items-center gap-2">
-                      🥇 Elite Gold Plan 
-                      <span className="bg-[#fcf8e5] text-[#d4af37] px-2 py-0.5 rounded text-[9px] font-black uppercase">PRO</span>
+                      {tenant.plan_type === 'gold' && '🥇 Elite Gold Plan'}
+                      {tenant.plan_type === 'pro' && '🥈 Pro Premium Plan'}
+                      {tenant.plan_type === 'basic' && '🥉 Basic Plan'}
+                      {(!tenant.plan_type || tenant.plan_type === 'free') && '🌱 Free Trial Plan'}
+                      <span className="bg-[#fcf8e5] text-[#d4af37] px-2 py-0.5 rounded text-[9px] font-black uppercase">
+                        {tenant.plan_type || 'FREE'}
+                      </span>
                     </p>
                   </div>
                   <div className="space-y-1">
@@ -180,8 +188,18 @@ export default function TenantDetail({ tenant, onUpdateStatus }: TenantDetailPro
                     </p>
                   </div>
                   <div className="space-y-1">
-                    <span className="text-stone-400 text-xs font-bold uppercase tracking-wider">Acciones Disponibles</span>
-                    <p className="text-stone-850 font-medium">Acción de control manual superadmin autorizada</p>
+                    <span className="text-stone-400 text-xs font-bold uppercase tracking-wider">Renovación / Expiración</span>
+                    <p className="text-stone-850 font-medium font-mono text-xs">
+                      {tenant.subscription_expires_at 
+                        ? new Date(tenant.subscription_expires_at).toLocaleDateString('es-ES', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })
+                        : 'Sin fecha de expiración activa'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -204,7 +222,17 @@ export default function TenantDetail({ tenant, onUpdateStatus }: TenantDetailPro
                       <p className="text-xs text-stone-400 mt-0.5">Enlazado a la cuenta principal del SaaS</p>
                     </div>
                     <span className="font-mono bg-white px-3 py-1.5 rounded-lg border border-stone-200/50 text-xs font-bold text-stone-700">
-                      {tenant.stripe_customer_id || 'No disponible'}
+                      {tenant.stripe_customer_id || 'Sin vincular'}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center bg-stone-50 p-4 rounded-xl text-sm border border-stone-100">
+                    <div>
+                      <p className="font-bold text-stone-900">ID de Suscripción Stripe</p>
+                      <p className="text-xs text-stone-400 mt-0.5">Identificador de facturación recurrente activa</p>
+                    </div>
+                    <span className="font-mono bg-white px-3 py-1.5 rounded-lg border border-stone-200/50 text-xs font-bold text-stone-700">
+                      {tenant.stripe_subscription_id || 'Sin suscripción activa'}
                     </span>
                   </div>
 

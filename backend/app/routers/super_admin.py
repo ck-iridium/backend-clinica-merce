@@ -21,6 +21,9 @@ class TenantOut(BaseModel):
     slug: str
     stripe_customer_id: Optional[str] = None
     subscription_status: str
+    stripe_subscription_id: Optional[str] = None
+    plan_type: str
+    subscription_expires_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
 
     class Config:

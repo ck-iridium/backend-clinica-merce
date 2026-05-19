@@ -12,6 +12,9 @@ class Tenant(Base):
     slug = Column(String, unique=True, index=True, nullable=False)
     stripe_customer_id = Column(String, nullable=True)
     subscription_status = Column(String, default="active")
+    stripe_subscription_id = Column(String, nullable=True)
+    plan_type = Column(String, default="free", nullable=False)
+    subscription_expires_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 class User(Base):
