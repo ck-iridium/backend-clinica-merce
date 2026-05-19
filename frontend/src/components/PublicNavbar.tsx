@@ -274,7 +274,8 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
               {/* Right Panel: Bento Grid Highlights */}
               <div className="flex-1 py-6 px-8 bg-white overflow-hidden">
                 {(() => {
-                  const activeServices = services.filter(s => s.category_id === activeCategory).slice(0, 6);
+                  const servicesList = Array.isArray(services) ? services : [];
+                  const activeServices = servicesList.filter(s => s.category_id === activeCategory).slice(0, 6);
                   const isFew = activeServices.length <= 3;
 
                   return (
