@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import { useRouter } from 'next/navigation';
 
 // Utilidad simple para leer cookies en el cliente
 function getCookie(name: string): string | null {
@@ -12,6 +14,19 @@ function getCookie(name: string): string | null {
 }
 
 export default function TenantInitializer() {
+  const router = useRouter();
+
+  useEffect(() => {
+    // 1. Interceptar recuperación de contraseña mediante hash directo en URL para evitar desincronización de eventos
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash;
+      if (hash && (hash.includes('type=recovery') || hash.includes('recovery_token=') || hash.includes('access_token='))) {
+        console.log('[Auth] Recovery hash detected on client mount. Redirecting to /restablecer-contrasena...');
+        router.push('/restablecer-contrasena' + hash);
+      }
+    }
+  }, [router]);
+
   useEffect(() => {
     if (typeof window !== 'undefined' && !(window as any).__tenant_fetch_patched) {
       (window as any).__tenant_fetch_patched = true;

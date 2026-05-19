@@ -47,13 +47,8 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // D. Fallback a cookie de inquilino para desarrollo local (permite persistir la sesión sin subdominios DNS locales)
-  if (!subdomain && (cleanHost === "localhost" || cleanHost === "probookia.com" || cleanHost === "www.probookia.com") && url.pathname !== "/marketing") {
-    subdomain = request.cookies.get("tenant_slug")?.value || "";
-  }
-
-  // E. Forzar limpieza de subdominio si acceden a la raíz de los dominios corporativos para mostrar la Landing limpia
-  if ((cleanHost === "probookia.com" || cleanHost === "www.probookia.com") && !url.searchParams.has("tenant") && url.pathname === "/") {
+  // D. Forzar limpieza de subdominio si acceden a la raíz de los dominios corporativos para mostrar la Landing limpia
+  if ((cleanHost === "probookia.com" || cleanHost === "www.probookia.com" || cleanHost === "localhost") && !url.searchParams.has("tenant") && url.pathname === "/") {
     subdomain = "";
   }
 
@@ -98,7 +93,22 @@ export function middleware(request: NextRequest) {
     return response;
   } else {
     // 5. Dominio Principal (Marketing & Registro SaaS B2B)
-    // Si acceden a la raíz del dominio principal, los redirigimos/reescribimos a la Landing Page (/marketing)
+    // Redirigir si intentan acceder a una ruta específica de clínica sin inquilino activo
+    const isGlobalSassPath = 
+      url.pathname === "/" ||
+      url.pathname === "/marketing" ||
+      url.pathname === "/onboarding" ||
+      url.pathname === "/login" ||
+      url.pathname === "/aviso-legal" ||
+      url.pathname === "/privacidad" ||
+      url.pathname === "/cookies" ||
+      url.pathname.startsWith("/super-admin");
+
+    if (!isGlobalSassPath) {
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
+
     if (url.pathname === "/") {
       url.pathname = "/marketing";
       return NextResponse.rewrite(url);

@@ -160,11 +160,16 @@ origins = [
     "https://clinica-merce.vercel.app",
     "https://www.esteticamerce.com",
     "https://esteticamerce.com",
+    "http://probookia.com",
+    "https://probookia.com",
+    "http://www.probookia.com",
+    "https://www.probookia.com",
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=r"https?://([a-zA-Z0-9_-]+\.)?localhost:3000|https?://([a-zA-Z0-9_-]+\.)?probookia\.com|https?://([a-zA-Z0-9_-]+\.)?esteticamerce\.com",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
