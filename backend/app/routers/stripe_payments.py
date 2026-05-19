@@ -81,6 +81,86 @@ def create_onboarding_session(request: OnboardingSessionRequest):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+class CreateSubscriptionSessionRequest(BaseModel):
+    tenant_id: str
+    plan_type: str  # "basic", "pro", "gold"
+
+@router.post("/create-subscription-session")
+def create_subscription_session(request: CreateSubscriptionSessionRequest, db: Session = Depends(database.get_db)):
+    stripe.api_key = get_stripe_key()
+    frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
+    
+    # 1. Buscar Tenant en DB
+    tenant = db.query(models.Tenant).filter(models.Tenant.id == request.tenant_id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Inquilino no encontrado")
+        
+    # 2. Configurar detalles de precio e info del plan
+    plan_details = {
+        "basic": {
+            "name": "Plan Básico - Clínica Mercè SaaS",
+            "description": "Acceso estándar y agenda clínica para equipos pequeños",
+            "amount": 2900,  # 29.00 EUR
+        },
+        "pro": {
+            "name": "Plan Pro - Clínica Mercè SaaS",
+            "description": "Suscripción mensual de gestión clínica avanzada",
+            "amount": 5900,  # 59.00 EUR
+        },
+        "gold": {
+            "name": "Plan Elite Gold - Clínica Mercè SaaS",
+            "description": "Acceso premium total con asistentes de Inteligencia Artificial",
+            "amount": 9900,  # 99.00 EUR
+        }
+    }
+    
+    selected_plan = request.plan_type.lower()
+    if selected_plan not in plan_details:
+        raise HTTPException(status_code=400, detail="Tipo de plan no válido. Debe ser basic, pro o gold")
+        
+    details = plan_details[selected_plan]
+    
+    # 3. Construir parámetros para la sesión
+    session_params = {
+        "payment_method_types": ["card"],
+        "line_items": [{
+            "price_data": {
+                "currency": "eur",
+                "product_data": {
+                    "name": details["name"],
+                    "description": details["description"],
+                },
+                "unit_amount": details["amount"],
+                "recurring": {"interval": "month"}
+            },
+            "quantity": 1,
+        }],
+        "mode": "subscription",
+        "subscription_data": {
+            "metadata": {
+                "plan_type": selected_plan,
+                "tenant_id": request.tenant_id
+            }
+        },
+        "success_url": f"{frontend_url}/super-admin?session_id={{CHECKOUT_SESSION_ID}}&tenant_id={request.tenant_id}&billing_success=true",
+        "cancel_url": f"{frontend_url}/super-admin?tenant_id={request.tenant_id}&billing_cancel=true",
+        "metadata": {
+            "type": "saas_subscription_update",
+            "tenant_id": request.tenant_id,
+            "plan_type": selected_plan
+        }
+    }
+    
+    # Si el Tenant ya tiene un stripe_customer_id, lo enlazamos para evitar duplicados
+    if tenant.stripe_customer_id:
+        session_params["customer"] = tenant.stripe_customer_id
+    
+    try:
+        session = stripe.checkout.Session.create(**session_params)
+        return {"url": session.url}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 @router.post("/connect")
 def connect_stripe_account(db: Session = Depends(database.get_db)):
     stripe.api_key = get_stripe_key()
@@ -290,7 +370,33 @@ async def stripe_webhook(request: Request, db: Session = Depends(database.get_db
                 db.commit()
                 print(f"[PROVISIONING] [SUCCESS] Nuevo Tenant '{tenant_slug}' aprovisionado completamente con exito.")
                 
-            # --- CASO B: CITA TRADICIONAL ---
+            elif metadata.get("type") == "saas_subscription_update":
+                tenant_id = metadata.get("tenant_id")
+                plan_type = metadata.get("plan_type")
+                customer_id = get_val(data_object, 'customer', None)
+                subscription_id = get_val(data_object, 'subscription', None)
+                
+                print(f"[BILLING] Pago de suscripción completado para Tenant ID: {tenant_id} | Cust ID: {customer_id} | Sub ID: {subscription_id}")
+                
+                tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
+                if tenant:
+                    tenant.stripe_customer_id = customer_id
+                    tenant.stripe_subscription_id = subscription_id
+                    tenant.plan_type = plan_type
+                    tenant.subscription_status = "active"
+                    db.commit()
+                    print(f"[BILLING] [SUCCESS] Inquilino '{tenant.name}' actualizado al plan {plan_type} de forma inmediata.")
+                    
+                    # Invalidador de caché en tiempo real
+                    try:
+                        from ..main import TENANT_STATUS_CACHE
+                        if tenant.id in TENANT_STATUS_CACHE:
+                            del TENANT_STATUS_CACHE[tenant.id]
+                            print(f"[CACHE] Invalidador de caché activado para tenant: {tenant.id}")
+                    except Exception as e:
+                        print(f"[CACHE] [WARNING] Error al invalidar caché: {e}")
+
+            # --- CASO C: CITA TRADICIONAL ---
             else:
                 appointment_id = get_val(data_object, 'client_reference_id', None)
                 print(f"[STRIPE] Pago recibido. Cita ID: {appointment_id}")

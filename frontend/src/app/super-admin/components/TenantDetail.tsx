@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { 
   Power, 
   CheckCircle2, 
@@ -30,6 +31,41 @@ interface TenantDetailProps {
 
 export default function TenantDetail({ tenant, onUpdateStatus }: TenantDetailProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'stripe' | 'config'>('overview');
+  const [redirectingPlan, setRedirectingPlan] = useState<string | null>(null);
+
+  const handleSubscribe = async (plan: string) => {
+    setRedirectingPlan(plan);
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    try {
+      const response = await fetch(`${API_URL}/stripe/create-subscription-session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tenant_id: tenant.id,
+          plan_type: plan
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al generar la sesión de pago de Stripe');
+      }
+
+      const data = await response.json();
+      if (data.url) {
+        toast.success(`Redirigiendo a la pasarela de pago para el plan ${plan.toUpperCase()}...`);
+        window.location.href = data.url;
+      } else {
+        throw new Error('No se recibió la URL de redirección');
+      }
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || 'Error al iniciar la pasarela de pago.');
+    } finally {
+      setRedirectingPlan(null);
+    }
+  };
 
   return (
     <section className="flex-1 bg-[#FAFAFA] p-8 overflow-y-auto space-y-8">
@@ -206,7 +242,7 @@ export default function TenantDetail({ tenant, onUpdateStatus }: TenantDetailPro
             )}
 
             {activeTab === 'stripe' && (
-              <div className="space-y-6">
+              <div className="space-y-8">
                 <div className="flex justify-between items-center border-b border-stone-100 pb-2">
                   <h3 className="text-lg font-bold font-serif text-stone-900">
                     Detalles de Pasarela de Pagos
@@ -215,6 +251,7 @@ export default function TenantDetail({ tenant, onUpdateStatus }: TenantDetailPro
                     Stripe Connected
                   </span>
                 </div>
+                
                 <div className="space-y-4">
                   <div className="flex justify-between items-center bg-stone-50 p-4 rounded-xl text-sm border border-stone-100">
                     <div>
@@ -244,6 +281,128 @@ export default function TenantDetail({ tenant, onUpdateStatus }: TenantDetailPro
                     <button className="text-xs font-bold text-[#d4af37] hover:underline focus:outline-none">
                       Ver en Stripe Dashboard →
                     </button>
+                  </div>
+                </div>
+
+                {/* Sección de Selección de Planes */}
+                <div className="space-y-6 pt-4">
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-bold font-serif text-stone-900">
+                      Contratar o Cambiar Plan Comercial
+                    </h4>
+                    <p className="text-xs text-stone-400 font-sans">
+                      Selecciona un plan premium para redirigir a la pasarela de pago recurrente y segura de Stripe.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Plan Básico */}
+                    <div className={`p-6 rounded-2xl border bg-white flex flex-col justify-between transition-all duration-300 hover:shadow-luxury hover:-translate-y-0.5 ${
+                      tenant.plan_type === 'basic' ? 'border-[#d4af37]' : 'border-stone-200/40'
+                    }`}>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[9px] font-black uppercase tracking-wider text-stone-400 font-sans">Básico</span>
+                          {tenant.plan_type === 'basic' && (
+                            <span className="bg-[#fcf8e5] text-[#d4af37] text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">Activo</span>
+                          )}
+                        </div>
+                        <h5 className="text-sm font-bold font-serif text-stone-950">Plan Básico</h5>
+                        <p className="text-[11px] text-stone-400 font-sans leading-relaxed">Agenda estándar para equipos pequeños.</p>
+                        <div className="pt-1 flex items-baseline gap-0.5">
+                          <span className="text-xl font-bold text-stone-900 font-serif">29€</span>
+                          <span className="text-[10px] text-stone-400 font-sans">/ mes</span>
+                        </div>
+                        <ul className="text-[10px] text-stone-500 font-sans space-y-1 pt-2 border-t border-stone-100">
+                          <li>✓ Citas y Clientes Ilimitados</li>
+                          <li>✓ Hasta 2 Profesionales</li>
+                          <li>✓ Agenda Interactiva</li>
+                        </ul>
+                      </div>
+                      <button
+                        onClick={() => handleSubscribe('basic')}
+                        disabled={redirectingPlan !== null || tenant.plan_type === 'basic'}
+                        className={`mt-5 w-full py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-300 focus:outline-none ${
+                          tenant.plan_type === 'basic'
+                            ? 'bg-stone-50 text-stone-400 border border-stone-200/50 cursor-default'
+                            : 'bg-white border border-stone-200 text-stone-950 hover:border-[#d4af37] hover:text-[#d4af37]'
+                        }`}
+                      >
+                        {redirectingPlan === 'basic' ? 'Cargando...' : tenant.plan_type === 'basic' ? 'Plan Actual' : 'Contratar'}
+                      </button>
+                    </div>
+
+                    {/* Plan Pro */}
+                    <div className={`p-6 rounded-2xl border bg-white flex flex-col justify-between transition-all duration-300 hover:shadow-luxury hover:-translate-y-0.5 ${
+                      tenant.plan_type === 'pro' || (!tenant.plan_type || tenant.plan_type === 'free') ? 'border-[#d4af37]' : 'border-stone-200/40'
+                    }`}>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[9px] font-black uppercase tracking-wider text-stone-400 font-sans">Profesional</span>
+                          {(tenant.plan_type === 'pro' || (!tenant.plan_type || tenant.plan_type === 'free')) && (
+                            <span className="bg-[#fcf8e5] text-[#d4af37] text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">Activo</span>
+                          )}
+                        </div>
+                        <h5 className="text-sm font-bold font-serif text-stone-950">Plan Pro Premium</h5>
+                        <p className="text-[11px] text-stone-400 font-sans leading-relaxed">Para clínicas de estética de alto crecimiento.</p>
+                        <div className="pt-1 flex items-baseline gap-0.5">
+                          <span className="text-xl font-bold text-stone-900 font-serif">59€</span>
+                          <span className="text-[10px] text-stone-400 font-sans">/ mes</span>
+                        </div>
+                        <ul className="text-[10px] text-stone-500 font-sans space-y-1 pt-2 border-t border-stone-100">
+                          <li>✓ Todo lo del Plan Básico</li>
+                          <li>✓ Hasta 10 Profesionales</li>
+                          <li>✓ Venta Rápida y Bonos</li>
+                        </ul>
+                      </div>
+                      <button
+                        onClick={() => handleSubscribe('pro')}
+                        disabled={redirectingPlan !== null || tenant.plan_type === 'pro'}
+                        className={`mt-5 w-full py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-300 focus:outline-none ${
+                          tenant.plan_type === 'pro'
+                            ? 'bg-stone-50 text-stone-400 border border-stone-200/50 cursor-default'
+                            : 'bg-stone-950 text-white hover:bg-stone-850 hover:shadow-md'
+                        }`}
+                      >
+                        {redirectingPlan === 'pro' ? 'Cargando...' : tenant.plan_type === 'pro' ? 'Plan Actual' : 'Contratar'}
+                      </button>
+                    </div>
+
+                    {/* Plan Elite Gold */}
+                    <div className={`p-6 rounded-2xl border bg-white flex flex-col justify-between transition-all duration-300 hover:shadow-luxury hover:-translate-y-0.5 ${
+                      tenant.plan_type === 'gold' ? 'border-[#d4af37]' : 'border-stone-200/40'
+                    }`}>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[9px] font-black uppercase tracking-wider text-stone-400 font-sans">Elite</span>
+                          {tenant.plan_type === 'gold' && (
+                            <span className="bg-[#fcf8e5] text-[#d4af37] text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">Activo</span>
+                          )}
+                        </div>
+                        <h5 className="text-sm font-bold font-serif text-stone-950">Plan Elite Gold</h5>
+                        <p className="text-[11px] text-stone-400 font-sans leading-relaxed">Asistentes de IA ilimitados y multi-local.</p>
+                        <div className="pt-1 flex items-baseline gap-0.5">
+                          <span className="text-xl font-bold text-stone-900 font-serif">99€</span>
+                          <span className="text-[10px] text-stone-400 font-sans">/ mes</span>
+                        </div>
+                        <ul className="text-[10px] text-stone-500 font-sans space-y-1 pt-2 border-t border-stone-100">
+                          <li>✓ Profesionales Ilimitados</li>
+                          <li>✓ IA Avanzada Ilimitada</li>
+                          <li>✓ Soporte Personalizado 24/7</li>
+                        </ul>
+                      </div>
+                      <button
+                        onClick={() => handleSubscribe('gold')}
+                        disabled={redirectingPlan !== null || tenant.plan_type === 'gold'}
+                        className={`mt-5 w-full py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-300 focus:outline-none ${
+                          tenant.plan_type === 'gold'
+                            ? 'bg-stone-50 text-stone-400 border border-stone-200/50 cursor-default'
+                            : 'bg-white border border-stone-200 text-stone-950 hover:border-[#d4af37] hover:text-[#d4af37]'
+                        }`}
+                      >
+                        {redirectingPlan === 'gold' ? 'Cargando...' : tenant.plan_type === 'gold' ? 'Plan Actual' : 'Contratar'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
