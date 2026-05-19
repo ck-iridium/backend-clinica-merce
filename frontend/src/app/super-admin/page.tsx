@@ -9,6 +9,7 @@ import { ChevronRight, Globe, ShieldCheck, Loader2, TrendingUp, Users, Sparkles,
 import SuperAdminSidebar from './components/SuperAdminSidebar';
 import TenantList from './components/TenantList';
 import TenantDetail from './components/TenantDetail';
+import AdminProfile from './components/AdminProfile';
 
 interface Tenant {
   id: string;
@@ -34,11 +35,6 @@ export default function SuperAdminPage() {
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [profileName, setProfileName] = useState('');
-  const [profileAvatar, setProfileAvatar] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [updatingPassword, setUpdatingPassword] = useState(false);
-  const [updatingProfile, setUpdatingProfile] = useState(false);
   const router = useRouter();
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -65,8 +61,6 @@ export default function SuperAdminPage() {
                 full_name: fullName,
                 avatar_url: avatarUrl
               });
-              setProfileName(fullName);
-              setProfileAvatar(avatarUrl);
               fetchTenants(session.access_token);
               fetchSaasSettings(session.access_token);
             } else {
@@ -203,58 +197,7 @@ export default function SuperAdminPage() {
     }
   }
 
-  // 2.4. Actualizar contraseña del Super Admin
-  async function handleUpdatePassword(e: React.FormEvent) {
-    e.preventDefault();
-    if (!newPassword) {
-      toast.error('Por favor, introduce una contraseña válida.');
-      return;
-    }
-    if (newPassword.length < 6) {
-      toast.error('La contraseña debe tener al menos 6 caracteres.');
-      return;
-    }
-    setUpdatingPassword(true);
-    const loadingToast = toast.loading('Actualizando contraseña de Super Admin...');
-    try {
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
-      if (error) throw error;
-      
-      toast.success('Contraseña de Super Admin actualizada con éxito', { id: loadingToast });
-      setNewPassword('');
-    } catch (err: any) {
-      toast.error(err.message || 'Error al actualizar la contraseña', { id: loadingToast });
-    } finally {
-      setUpdatingPassword(false);
-    }
-  }
-
-  // 2.5. Actualizar perfil del Super Admin (Nombre y Avatar)
-  async function handleUpdateProfile(e: React.FormEvent) {
-    e.preventDefault();
-    setUpdatingProfile(true);
-    const loadingToast = toast.loading('Actualizando perfil de soporte...');
-    try {
-      const { error, data } = await supabase.auth.updateUser({
-        data: {
-          full_name: profileName,
-          avatar_url: profileAvatar
-        }
-      });
-      if (error) throw error;
-      
-      setUser((prev: any) => ({
-        ...prev,
-        full_name: data.user?.user_metadata?.full_name || '',
-        avatar_url: data.user?.user_metadata?.avatar_url || ''
-      }));
-      toast.success('Perfil administrativo de soporte actualizado con éxito', { id: loadingToast });
-    } catch (err: any) {
-      toast.error(err.message || 'Error al actualizar el perfil de soporte', { id: loadingToast });
-    } finally {
-      setUpdatingProfile(false);
-    }
-  }
+  // Perfil administrativo ahora se maneja modularmente en el componente <AdminProfile />
 
   // Carga inicial
   if (loadingSession) {
@@ -346,6 +289,12 @@ export default function SuperAdminPage() {
                   <ChevronRight className="w-3 h-3 text-stone-300" />
                   <span className="text-[#d4af37] font-bold">Ajustes Globales</span>
                 </>
+              ) : activeTab === 'profile' ? (
+                <>
+                  <span>Mi Perfil</span>
+                  <ChevronRight className="w-3 h-3 text-stone-300" />
+                  <span className="text-[#d4af37] font-bold">Administrador</span>
+                </>
               ) : activeTab === 'analytics' ? (
                 <>
                   <span>Monitoreo</span>
@@ -369,6 +318,8 @@ export default function SuperAdminPage() {
             <h1 className="text-2xl font-bold font-serif text-stone-900">
               {activeTab === 'settings' 
                 ? 'Configuración Global del SaaS' 
+                : activeTab === 'profile'
+                ? 'Mi Perfil Administrativo'
                 : activeTab === 'analytics' 
                 ? 'Rendimiento y Métricas del Sistema' 
                 : activeTab === 'finance'
@@ -377,7 +328,11 @@ export default function SuperAdminPage() {
             </h1>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div 
+            onClick={() => setActiveTab('profile')}
+            className="flex items-center gap-4 cursor-pointer hover:opacity-85 active:scale-95 transition-all select-none"
+            title="Mi Perfil Administrativo"
+          >
             <div className="hidden md:flex flex-col text-right">
               <span className="text-xs font-bold text-stone-850">{user.full_name || 'Administrador Global'}</span>
               <span className="text-[10px] text-stone-400 font-medium">{user.email}</span>
@@ -463,117 +418,9 @@ export default function SuperAdminPage() {
                 </div>
               )}
             </div>
-
-            {/* Bento Card: Mi Perfil Administrativo */}
-            <div className="bg-white rounded-3xl md:rounded-[2.5rem] border border-stone-100 p-6 md:p-10 shadow-sm relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#d4af37]"></div>
-              
-              <div className="flex items-center gap-4 mb-8 pb-5 border-b border-stone-100">
-                <span className="w-12 h-12 rounded-2xl bg-[#fcf8e5] text-[#b08e23] flex items-center justify-center">
-                  <User className="w-6 h-6" />
-                </span>
-                <div>
-                  <h3 className="text-2xl font-serif font-semibold text-stone-800">Mi Perfil Administrativo</h3>
-                  <span className="text-[10px] text-stone-400 font-medium uppercase tracking-widest block mt-0.5">Seguridad y Personalización de Soporte</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                {/* Columna 1: Datos Personales e Imagen de Soporte */}
-                <form onSubmit={handleUpdateProfile} className="space-y-6">
-                  <h4 className="text-sm font-bold uppercase tracking-wider text-stone-400 font-sans flex items-center gap-2">
-                    <Award className="w-4 h-4 text-[#d4af37]" /> Datos de Identidad
-                  </h4>
-
-                  <div className="flex items-center gap-4 p-4 bg-stone-50 rounded-[2rem] border border-stone-100">
-                    <div className="w-16 h-16 rounded-2xl bg-white border border-stone-150 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
-                      {profileAvatar ? (
-                        <img src={profileAvatar} alt="Avatar" className="w-full h-full object-cover" onError={(e) => { (e.target as any).src = ''; }} />
-                      ) : (
-                        <span className="text-stone-400 font-serif font-bold text-lg">SA</span>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <span className="text-xs font-bold text-stone-850 block truncate">{profileName || 'Administrador Global'}</span>
-                      <span className="text-[10px] text-stone-400 font-medium truncate block">{user.email}</span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-stone-700 block">Nombre de Soporte</label>
-                    <input 
-                      type="text" 
-                      value={profileName} 
-                      onChange={(e) => setProfileName(e.target.value)}
-                      placeholder="Ej. Juan - Soporte Máster"
-                      className="w-full bg-stone-50 border border-stone-200 focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] rounded-xl px-4 py-3 text-sm transition-all outline-none"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-stone-700 block">URL de Imagen de Perfil (Avatar)</label>
-                    <input 
-                      type="text" 
-                      value={profileAvatar} 
-                      onChange={(e) => setProfileAvatar(e.target.value)}
-                      placeholder="https://ejemplo.com/tu-foto.jpg"
-                      className="w-full bg-stone-50 border border-stone-200 focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] rounded-xl px-4 py-3 text-sm transition-all outline-none font-mono"
-                    />
-                  </div>
-
-                  <button 
-                    type="submit" 
-                    disabled={updatingProfile}
-                    className="w-full bg-stone-900 hover:bg-[#d4af37] hover:text-stone-950 text-white font-bold py-3 px-6 rounded-xl text-sm transition-all duration-300 shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    {updatingProfile ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" /> Guardando...
-                      </>
-                    ) : (
-                      'Actualizar Identidad'
-                    )}
-                  </button>
-                </form>
-
-                {/* Columna 2: Seguridad y Cambio de Contraseña */}
-                <form onSubmit={handleUpdatePassword} className="space-y-6">
-                  <h4 className="text-sm font-bold uppercase tracking-wider text-stone-400 font-sans flex items-center gap-2">
-                    <Lock className="w-4 h-4 text-[#d4af37]" /> Credenciales de Acceso
-                  </h4>
-
-                  <p className="text-xs text-stone-500 leading-relaxed">
-                    Cambia la contraseña maestra de acceso para este panel técnico. Se actualizará en tiempo real en los servidores de Supabase Auth.
-                  </p>
-
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-stone-700 block">Nueva Contraseña</label>
-                    <input 
-                      type="password" 
-                      value={newPassword} 
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="Mínimo 6 caracteres"
-                      className="w-full bg-stone-50 border border-stone-200 focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] rounded-xl px-4 py-3 text-sm transition-all outline-none"
-                    />
-                  </div>
-
-                  <button 
-                    type="submit" 
-                    disabled={updatingPassword}
-                    className="w-full bg-[#d4af37] hover:bg-[#c29f2e] text-stone-950 font-bold py-3 px-6 rounded-xl text-sm transition-all duration-300 shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    {updatingPassword ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" /> Actualizando...
-                      </>
-                    ) : (
-                      'Actualizar Contraseña'
-                    )}
-                  </button>
-                </form>
-              </div>
-            </div>
           </div>
+        ) : activeTab === 'profile' ? (
+          <AdminProfile user={user} setUser={setUser} />
         ) : activeTab === 'analytics' ? (
           <div className="flex-1 p-6 md:p-12 overflow-y-auto space-y-8 max-w-[1000px] mx-auto w-full animate-in fade-in duration-300">
             {/* Bento Matrix: Tarjetas de Rendimiento */}

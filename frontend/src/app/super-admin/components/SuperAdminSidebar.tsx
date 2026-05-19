@@ -1,6 +1,6 @@
 "use client"
 
-import { Building, Activity, DollarSign, Settings, LogOut } from 'lucide-react';
+import { Building, Activity, DollarSign, Settings, LogOut, User } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 
@@ -57,6 +57,13 @@ export default function SuperAdminSidebar({ activeTab, setActiveTab }: SuperAdmi
             title="Configuración Global SaaS"
           >
             <Settings className="w-5 h-5" />
+          </button>
+          <button 
+            onClick={() => setActiveTab('profile')}
+            className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${activeTab === 'profile' ? 'text-[#d4af37] bg-[#fcf8e5] shadow-sm' : 'text-stone-400 hover:text-stone-900 hover:bg-stone-50'}`} 
+            title="Mi Perfil Administrativo"
+          >
+            <User className="w-5 h-5" />
           </button>
         </nav>
       </div>
