@@ -77,6 +77,37 @@ def generate_content(request: schemas.AIGenerationRequest, db: Session = Depends
     ai_provider = settings.ai_provider or "gemini"
     system_prompt = SYSTEM_PROMPT_TEMPLATE.format(tone=request.tone)
     
+    if request.type == "short_description":
+        system_prompt += (
+            "\nINSTRUCCIÓN CRÍTICA DE FORMATO:\n"
+            "- Debes escribir únicamente una descripción corta de 1 o 2 frases (máximo 40 palabras).\n"
+            "- El resultado debe ser texto plano directo y elegante.\n"
+            "- NO incluyas introducciones como 'Aquí tienes...', NO incluyas saludos, NO incluyas títulos, NO incluyas subtítulos, NO incluyas listas de viñetas, NO incluyas formato Markdown, NO utilices negritas o cursivas, ni líneas horizontales, ni comillas iniciales/finales.\n"
+            "- Enfócate en el beneficio premium y el confort de forma muy sintetizada.\n"
+            "- Escribe SOLO la descripción, nada más."
+        )
+    elif request.type == "rich_content":
+        system_prompt += (
+            "\nINSTRUCCIÓN CRÍTICA DE FORMATO:\n"
+            "- Debes escribir el contenido detallado del tratamiento en formato HTML semántico.\n"
+            "- Utiliza párrafos (<p>), listas (<ul> y <li>) y énfasis sutiles (<strong>, <em>) para estructurar el texto de manera premium.\n"
+            "- NO incluyas títulos principales (como <h1> o <h2>) ni títulos sugeridos de página, ya que la plataforma ya renderiza el título por su cuenta.\n"
+            "- NO incluyas introducciones conversacionales ni comentarios iniciales o finales (como 'Aquí tienes una propuesta' o 'Este texto busca evocar...').\n"
+            "- NO incluyas secciones de SEO ni listas de palabras clave al final.\n"
+            "- Enfócate 100% en la experiencia sensorial, la tecnología de vanguardia y el bienestar del cliente.\n"
+            "- El resultado debe ser únicamente el HTML limpio y pulido listo para insertar."
+        )
+    elif request.type == "seo":
+        system_prompt += (
+            "\nINSTRUCCIÓN CRÍTICA DE FORMATO:\n"
+            "- Debes generar metadatos SEO premium para buscadores.\n"
+            "- Es obligatorio que respondas únicamente con un objeto JSON válido con las siguientes claves: 'seo_title', 'seo_description', 'seo_keywords'.\n"
+            "- 'seo_title': Un título optimizado de alta gama de entre 50 y 60 caracteres.\n"
+            "- 'seo_description': Una meta descripción convincente e inspiradora de entre 150 y 160 caracteres.\n"
+            "- 'seo_keywords': Una lista de palabras clave relevantes separadas por comas (ej. 'depilacion laser, clinica estetica, triple onda').\n"
+            "- NO rodees el JSON con bloques de código markdown, responde SOLO el JSON directo."
+        )
+
     try:
         if ai_provider == "gemini":
             api_key = settings.gemini_api_key or os.getenv("GEMINI_API_KEY")
@@ -92,6 +123,43 @@ def generate_content(request: schemas.AIGenerationRequest, db: Session = Depends
             )
             result_text = response.choices[0].message.content
         
+        if request.type == "seo":
+            try:
+                cleaned_text = result_text.strip()
+                if cleaned_text.startswith("```json"):
+                    cleaned_text = cleaned_text[7:]
+                elif cleaned_text.startswith("```"):
+                    cleaned_text = cleaned_text[3:]
+                if cleaned_text.endswith("```"):
+                    cleaned_text = cleaned_text[:-3]
+                cleaned_text = cleaned_text.strip()
+                
+                seo_json = json.loads(cleaned_text)
+                return {
+                    "seo_title": seo_json.get("seo_title", ""),
+                    "seo_description": seo_json.get("seo_description", ""),
+                    "seo_keywords": seo_json.get("seo_keywords", "")
+                }
+            except Exception as json_err:
+                logger.error(f"Error parsing SEO JSON: {json_err}. Text: {result_text}")
+                # Fallback parser
+                lines = result_text.split("\n")
+                title = ""
+                desc = ""
+                keywords = ""
+                for line in lines:
+                    if "title" in line.lower() or "titulo" in line.lower():
+                        title = line.split(":", 1)[-1].strip().strip('"').strip('{},')
+                    elif "description" in line.lower() or "descripcion" in line.lower():
+                        desc = line.split(":", 1)[-1].strip().strip('"').strip('{},')
+                    elif "keywords" in line.lower() or "palabras" in line.lower():
+                        keywords = line.split(":", 1)[-1].strip().strip('"').strip('{},')
+                return {
+                    "seo_title": title or "Tratamiento Premium",
+                    "seo_description": desc or "Descubre la experiencia exclusiva en nuestra clínica.",
+                    "seo_keywords": keywords or "medicina estetica, lujo, cuidado facial"
+                }
+
         return {"content": result_text.strip()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
