@@ -61,6 +61,11 @@ def create_onboarding_session(request: OnboardingSessionRequest):
                 "quantity": 1,
             }],
             mode="subscription",
+            subscription_data={
+                "metadata": {
+                    "plan_type": "pro"
+                }
+            },
             success_url=f"{frontend_url}/onboarding/success?session_id={{CHECKOUT_SESSION_ID}}",
             cancel_url=f"{frontend_url}/marketing",
             metadata={
@@ -190,6 +195,8 @@ async def stripe_webhook(request: Request, db: Session = Depends(database.get_db
                     name=tenant_name,
                     slug=tenant_slug,
                     stripe_customer_id=get_val(data_object, 'customer', None),
+                    stripe_subscription_id=get_val(data_object, 'subscription', None),
+                    plan_type="pro",
                     subscription_status="active"
                 )
                 db.add(new_tenant)
@@ -330,6 +337,57 @@ async def stripe_webhook(request: Request, db: Session = Depends(database.get_db
                 settings.stripe_charges_enabled = get_val(data_object, 'charges_enabled', False)
                 db.commit()
                 print(f"[STRIPE] [SUCCESS] Cuenta {acc_id} actualizada.")
+
+        elif event_type in ['customer.subscription.created', 'customer.subscription.updated', 'customer.subscription.deleted']:
+            sub_id = get_val(data_object, 'id', None)
+            cust_id = get_val(data_object, 'customer', None)
+            sub_status = get_val(data_object, 'status', 'active')
+            expires_timestamp = get_val(data_object, 'current_period_end', None)
+            metadata = get_val(data_object, 'metadata', {}) or {}
+            
+            # Extraer plan_type de metadata (por defecto 'pro')
+            plan_type = metadata.get("plan_type", "pro")
+            if not plan_type or plan_type == "":
+                plan_type = "pro"
+
+            print(f"[STRIPE] Webhook de Suscripción recibido: {event_type} | Sub ID: {sub_id} | Cust ID: {cust_id} | Status: {sub_status}")
+
+            # Buscar inquilino
+            tenant = db.query(models.Tenant).filter(
+                (models.Tenant.stripe_subscription_id == sub_id) |
+                (models.Tenant.stripe_customer_id == cust_id)
+            ).first()
+
+            if tenant:
+                # Sincronizar campos
+                tenant.stripe_subscription_id = sub_id
+                
+                # Stripe states: active, trialing -> active
+                # past_due, unpaid, canceled, etc. -> suspended
+                if sub_status in ['active', 'trialing']:
+                    tenant.subscription_status = 'active'
+                else:
+                    tenant.subscription_status = 'suspended'
+                
+                tenant.plan_type = plan_type
+                
+                if expires_timestamp:
+                    from datetime import datetime
+                    tenant.subscription_expires_at = datetime.utcfromtimestamp(expires_timestamp)
+                
+                db.commit()
+                print(f"[STRIPE] [SUCCESS] Inquilino '{tenant.name}' actualizado en DB. Status: {tenant.subscription_status} | Plan: {tenant.plan_type}")
+
+                # Invalidar caché en memoria del middleware para que el cambio aplique en tiempo real
+                try:
+                    from ..main import TENANT_STATUS_CACHE
+                    if tenant.id in TENANT_STATUS_CACHE:
+                        del TENANT_STATUS_CACHE[tenant.id]
+                        print(f"[CACHE] Invalidador de caché activado para tenant: {tenant.id}")
+                except Exception as e:
+                    print(f"[CACHE] [WARNING] Error al invalidar caché: {e}")
+            else:
+                print(f"[STRIPE] [WARNING] Inquilino no encontrado para Sub ID: {sub_id} o Cust ID: {cust_id}")
 
         return {"status": "success"}
 
