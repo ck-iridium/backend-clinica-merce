@@ -89,6 +89,10 @@ def get_tenant_id_from_token(auth_header: str) -> str:
     except Exception:
         return None
 
+# Caché en memoria para evitar consultas reiteradas a la base de datos en peticiones concurrentes
+import time
+TENANT_STATUS_CACHE = {} # {tenant_id: {"status": str, "name": str, "timestamp": float}}
+
 @app.middleware("http")
 async def resolve_tenant_middleware(request, call_next):
     # 1. Intentar cabecera personalizada X-Tenant-ID
@@ -123,18 +127,40 @@ async def resolve_tenant_middleware(request, call_next):
         from .models import Tenant
         from fastapi.responses import JSONResponse
         
-        db = SessionLocal()
-        try:
-            tenant = db.query(Tenant).filter(Tenant.id == tenant_id).first()
-            if tenant and tenant.subscription_status in ("suspended", "inactive"):
-                return JSONResponse(
-                    status_code=402,
-                    content={
-                        "detail": f"Acceso Restringido: La suscripción de la clínica '{tenant.name}' ha sido suspendida. Por favor, regularice su pago."
+        now = time.time()
+        cached = TENANT_STATUS_CACHE.get(tenant_id)
+        
+        if cached and (now - cached["timestamp"] < 60):
+            status = cached["status"]
+            name = cached["name"]
+        else:
+            db = SessionLocal()
+            try:
+                tenant = db.query(Tenant).filter(Tenant.id == tenant_id).first()
+                if tenant:
+                    status = tenant.subscription_status
+                    name = tenant.name
+                    TENANT_STATUS_CACHE[tenant_id] = {
+                        "status": status,
+                        "name": name,
+                        "timestamp": now
                     }
-                )
-        finally:
-            db.close()
+                else:
+                    status = "active"
+                    name = "Clínica"
+            except Exception:
+                status = "active"
+                name = "Clínica"
+            finally:
+                db.close()
+        
+        if status in ("suspended", "inactive"):
+            return JSONResponse(
+                status_code=402,
+                content={
+                    "detail": f"Acceso Restringido: La suscripción de la clínica '{name}' ha sido suspendida. Por favor, regularice su pago."
+                }
+            )
         
     # Asignar variable de contexto de manera segura contra peticiones concurrentes
     token = current_tenant_var.set(tenant_id)

@@ -12,9 +12,17 @@ SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./clinica_v2.db")
 # Ajuste necesario para SQLite en SQLAlchemy (check_same_thread)
 connect_args = {"check_same_thread": False} if SQLALCHEMY_DATABASE_URL.startswith("sqlite") else {}
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args=connect_args
-)
+# Configuración del pool de conexiones para evitar agotamiento en alta concurrencia
+engine_args = {"connect_args": connect_args}
+if not SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
+    engine_args.update({
+        "pool_size": 25,
+        "max_overflow": 35,
+        "pool_recycle": 1800,
+        "pool_pre_ping": True
+    })
+
+engine = create_engine(SQLALCHEMY_DATABASE_URL, **engine_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()

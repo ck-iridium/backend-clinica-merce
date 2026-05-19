@@ -1,5 +1,6 @@
 "use client"
-import { useState } from 'react';
+
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
@@ -10,7 +11,25 @@ export default function LoginPage() {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [tenantName, setTenantName] = useState('Probookia');
   const router = useRouter();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname.toLowerCase();
+      if (hostname.includes('.localhost') && hostname !== 'localhost') {
+        const sub = hostname.split('.')[0];
+        setTenantName(sub === 'merce' ? 'Estética Mercè' : sub.charAt(0).toUpperCase() + sub.slice(1));
+      } else if (hostname.endsWith('.probookia.com')) {
+        const sub = hostname.replace('.probookia.com', '');
+        setTenantName(sub === 'merce' ? 'Estética Mercè' : sub.charAt(0).toUpperCase() + sub.slice(1));
+      } else if (hostname.includes('esteticamerce.com')) {
+        setTenantName('Estética Mercè');
+      } else {
+        setTenantName('Probookia SaaS');
+      }
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,8 +53,14 @@ export default function LoginPage() {
         access_token: data.session.access_token
       };
       
+      const role = data.user.app_metadata?.role || data.user.user_metadata?.role;
       localStorage.setItem('user', JSON.stringify(userPayload));
-      router.push('/dashboard');
+      
+      if (role === 'super_admin') {
+        router.push('/super-admin');
+      } else {
+        router.push('/dashboard');
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -81,7 +106,7 @@ export default function LoginPage() {
           <h1 className="text-3xl font-bold text-stone-900 mb-2">
             {isForgotPassword ? 'Recuperar Contraseña' : 'Panel Administrativo'}
           </h1>
-          <p className="text-stone-500 font-medium">Estetica Merce</p>
+          <p className="text-stone-500 font-medium">{tenantName}</p>
         </div>
 
         {error && (

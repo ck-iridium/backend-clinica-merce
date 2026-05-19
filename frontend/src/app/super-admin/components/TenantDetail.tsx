@@ -1,0 +1,264 @@
+"use client"
+
+import { useState } from 'react';
+import { 
+  Power, 
+  CheckCircle2, 
+  AlertTriangle, 
+  Layers, 
+  DollarSign, 
+  Globe, 
+  Shield 
+} from 'lucide-react';
+
+interface Tenant {
+  id: string;
+  name: string;
+  slug: string;
+  stripe_customer_id: string | null;
+  subscription_status: string;
+  created_at: string | null;
+}
+
+interface TenantDetailProps {
+  tenant: Tenant;
+  onUpdateStatus: (tenantId: string, status: 'active' | 'suspended') => Promise<void>;
+}
+
+export default function TenantDetail({ tenant, onUpdateStatus }: TenantDetailProps) {
+  const [activeTab, setActiveTab] = useState<'overview' | 'stripe' | 'config'>('overview');
+
+  return (
+    <section className="flex-1 bg-[#FAFAFA] p-8 overflow-y-auto space-y-8">
+      <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
+        
+        {/* 1. FICHA SUPERIOR (Logo + Título + Status) */}
+        <div className="bg-white rounded-[2rem] border border-stone-200/30 p-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="flex items-center gap-5">
+            <div className="w-16 h-16 rounded-2xl bg-stone-50 border border-stone-200/50 flex items-center justify-center text-3xl font-serif shadow-inner">
+              🏢
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold font-serif text-stone-900 mb-1">
+                {tenant.name}
+              </h2>
+              <p className="text-xs font-bold text-stone-400 font-mono">
+                Subdominio: {tenant.slug}.probookia.com
+              </p>
+            </div>
+          </div>
+
+          {/* Acciones principales de control del tenant */}
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            {tenant.subscription_status === 'active' ? (
+              <button
+                onClick={() => onUpdateStatus(tenant.id, 'suspended')}
+                className="w-full md:w-auto bg-stone-900 focus:outline-none hover:bg-red-600 hover:shadow-md text-white text-xs font-bold px-6 py-3.5 rounded-xl shadow transition-all duration-300 flex items-center justify-center gap-2"
+              >
+                <Power className="w-4 h-4" />
+                Suspender Acceso
+              </button>
+            ) : (
+              <button
+                onClick={() => onUpdateStatus(tenant.id, 'active')}
+                className="w-full md:w-auto bg-white border border-stone-200 text-stone-950 hover:border-[#d4af37] hover:text-[#d4af37] text-xs font-bold px-6 py-3.5 rounded-xl shadow-sm transition-all duration-300 flex items-center justify-center gap-2"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                Reactivar Acceso
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* 2. GRID BENTO DE KPI CARDS */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Tarjeta 1: Estado de Suscripción */}
+          <div className="bg-white p-6 rounded-[1.75rem] border border-stone-200/30 shadow-sm flex flex-col justify-between h-36">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Suscripción B2B</p>
+            <div className="flex items-center gap-2">
+              <div className={`w-3 h-3 rounded-full ${
+                tenant.subscription_status === 'active' ? 'bg-[#d4af37] animate-pulse' : 'bg-red-500'
+              }`}></div>
+              <span className="text-xl font-bold font-serif text-stone-900 capitalize">
+                {tenant.subscription_status === 'active' ? 'Activo' : 'Suspendido'}
+              </span>
+            </div>
+            <span className="text-xxs text-stone-400 font-medium">Control de acceso activo en middleware</span>
+          </div>
+
+          {/* Tarjeta 2: ID de Cliente Stripe */}
+          <div className="bg-white p-6 rounded-[1.75rem] border border-stone-200/30 shadow-sm flex flex-col justify-between h-36">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Stripe Billing</p>
+            <span className="text-sm font-bold font-mono text-stone-700 truncate">
+              {tenant.stripe_customer_id || 'Sin vincular'}
+            </span>
+            <span className="text-xxs text-stone-400 font-medium">Pasarela recurrente de facturas</span>
+          </div>
+
+          {/* Tarjeta 3: Fecha de Registro */}
+          <div className="bg-white p-6 rounded-[1.75rem] border border-stone-200/30 shadow-sm flex flex-col justify-between h-36">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Registro Inicial</p>
+            <span className="text-base font-bold text-stone-850">
+              {tenant.created_at ? new Date(tenant.created_at).toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+              }) : 'Semilla de Sistema'}
+            </span>
+            <span className="text-xxs text-stone-400 font-medium">Fecha oficial de creación</span>
+          </div>
+        </div>
+
+        {/* 3. ALERTA O PRECAUCIÓN DE SUSPENSIÓN SI CORRESPONDE */}
+        {tenant.subscription_status !== 'active' && (
+          <div className="bg-red-50 border border-red-100 rounded-2xl p-5 flex items-start gap-4">
+            <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+            <div>
+              <h4 className="text-sm font-bold text-red-800">Clínica Suspendida</h4>
+              <p className="text-xs text-red-600 mt-1 leading-relaxed">
+                El acceso público a esta clínica y a su panel de gestión está actualmente restringido. Los usuarios recibirán una pantalla de "Servicio Suspendido (Código 402)" al intentar acceder.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* 4. SECCIÓN DE TABS INTERACTIVAS (Detalle Avanzado) */}
+        <div className="bg-white rounded-[2rem] border border-stone-200/30 overflow-hidden shadow-sm">
+          
+          {/* Pestañas horizontales */}
+          <div className="flex border-b border-stone-100 bg-[#FAFAFA]/50">
+            {[
+              { id: 'overview', label: 'Resumen', icon: Layers },
+              { id: 'stripe', label: 'Pasarela Stripe', icon: DollarSign },
+              { id: 'config', label: 'Configuración', icon: Globe }
+            ].map(tab => {
+              const IconComp = tab.icon;
+              const isActive = activeTab === tab.id;
+              
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`flex-1 md:flex-none px-6 py-4 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all border-b-2 ${
+                    isActive 
+                      ? 'border-[#d4af37] text-stone-900 bg-white' 
+                      : 'border-transparent text-stone-400 hover:text-stone-700 bg-transparent'
+                  }`}
+                >
+                  <IconComp className="w-4 h-4" />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Contenido de la pestaña activa */}
+          <div className="p-8 space-y-6">
+            {activeTab === 'overview' && (
+              <div className="space-y-6">
+                <h3 className="text-lg font-bold font-serif text-stone-900 border-b border-stone-100 pb-2">
+                  Información General del Inquilino
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                  <div className="space-y-1">
+                    <span className="text-stone-400 text-xs font-bold uppercase tracking-wider">ID Único</span>
+                    <p className="font-mono text-stone-700 font-semibold">{tenant.id}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-stone-400 text-xs font-bold uppercase tracking-wider">Plan Comercial</span>
+                    <p className="text-stone-900 font-bold text-base flex items-center gap-2">
+                      🥇 Elite Gold Plan 
+                      <span className="bg-[#fcf8e5] text-[#d4af37] px-2 py-0.5 rounded text-[9px] font-black uppercase">PRO</span>
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-stone-400 text-xs font-bold uppercase tracking-wider">Estado en Middleware</span>
+                    <p className="text-stone-850 font-medium">
+                      {tenant.subscription_status === 'active' 
+                        ? 'Permitido y desbloqueado en capas de API globales' 
+                        : 'Acceso denegado con cabecera de suspensión activa'}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-stone-400 text-xs font-bold uppercase tracking-wider">Acciones Disponibles</span>
+                    <p className="text-stone-850 font-medium">Acción de control manual superadmin autorizada</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'stripe' && (
+              <div className="space-y-6">
+                <div className="flex justify-between items-center border-b border-stone-100 pb-2">
+                  <h3 className="text-lg font-bold font-serif text-stone-900">
+                    Detalles de Pasarela de Pagos
+                  </h3>
+                  <span className="text-xs bg-[#fcf8e5] text-[#d4af37] px-3 py-1 rounded-full font-bold uppercase">
+                    Stripe Connected
+                  </span>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center bg-stone-50 p-4 rounded-xl text-sm border border-stone-100">
+                    <div>
+                      <p className="font-bold text-stone-900">Identificador de Cliente</p>
+                      <p className="text-xs text-stone-400 mt-0.5">Enlazado a la cuenta principal del SaaS</p>
+                    </div>
+                    <span className="font-mono bg-white px-3 py-1.5 rounded-lg border border-stone-200/50 text-xs font-bold text-stone-700">
+                      {tenant.stripe_customer_id || 'No disponible'}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center bg-stone-50 p-4 rounded-xl text-sm border border-stone-100">
+                    <div>
+                      <p className="font-bold text-stone-900">Historial de Pagos B2B</p>
+                      <p className="text-xs text-stone-400 mt-0.5">Control directo de cobros por suscripción mensual</p>
+                    </div>
+                    <button className="text-xs font-bold text-[#d4af37] hover:underline focus:outline-none">
+                      Ver en Stripe Dashboard →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'config' && (
+              <div className="space-y-6">
+                <h3 className="text-lg font-bold font-serif text-stone-900 border-b border-stone-100 pb-2">
+                  Estructura de Ruteo e Infraestructura
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center bg-[#FAFAFA] p-4 rounded-xl text-sm border border-stone-200/30">
+                    <div className="flex items-center gap-3">
+                      <Globe className="w-5 h-5 text-stone-400" />
+                      <div>
+                        <p className="font-bold text-stone-900">Dominios Personalizados</p>
+                        <p className="text-xs text-stone-400">Mapeo DNS activo en plataforma</p>
+                      </div>
+                    </div>
+                    <span className="bg-[#fcf8e5] text-[#d4af37] border border-[#d4af37]/20 px-3 py-1 rounded-full text-xxs font-black uppercase">
+                      Activo
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center bg-[#FAFAFA] p-4 rounded-xl text-sm border border-stone-200/30">
+                    <div className="flex items-center gap-3">
+                      <Shield className="w-5 h-5 text-stone-400" />
+                      <div>
+                        <p className="font-bold text-stone-900">Políticas RLS en Base de Datos</p>
+                        <p className="text-xs text-stone-400">Aislamiento por Row Level Security (RLS) habilitado</p>
+                      </div>
+                    </div>
+                    <span className="bg-green-50 text-green-600 border border-green-100 px-3 py-1 rounded-full text-xxs font-black uppercase">
+                      Protegido
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+      </div>
+    </section>
+  );
+}
