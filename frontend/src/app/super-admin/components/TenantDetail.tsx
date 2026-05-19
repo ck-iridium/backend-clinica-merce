@@ -32,6 +32,71 @@ interface TenantDetailProps {
 export default function TenantDetail({ tenant, onUpdateStatus }: TenantDetailProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'stripe' | 'config'>('overview');
   const [redirectingPlan, setRedirectingPlan] = useState<string | null>(null);
+  const [impersonating, setImpersonating] = useState(false);
+
+  const handleImpersonate = async () => {
+    setImpersonating(true);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      
+      // Intentar recuperar el token de Supabase del localStorage
+      let jwtToken = '';
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.includes('-auth-token')) {
+          const val = localStorage.getItem(key);
+          if (val) {
+            try {
+              const parsed = JSON.parse(val);
+              jwtToken = parsed.access_token || '';
+            } catch {}
+          }
+        }
+      }
+
+      if (!jwtToken) {
+        // Fallback a cookies o token por defecto si no lo encuentra en localStorage
+        const match = document.cookie.match(/sb-[a-zA-Z0-9]+-auth-token/);
+        if (match) {
+          const val = localStorage.getItem(match[0]);
+          if (val) {
+            jwtToken = JSON.parse(val).access_token || '';
+          }
+        }
+      }
+
+      const res = await fetch(`${API_URL}/super-admin/impersonate/${tenant.id}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${jwtToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error('No se pudo generar el token de impersonación.');
+      }
+
+      const data = await res.json();
+      if (data.success && data.token) {
+        // Establecer cookies de impersonación por 2 horas
+        document.cookie = `is_impersonating=true; path=/; max-age=7200; sameSite=lax`;
+        document.cookie = `impersonate_tenant_id=${data.tenant_id}; path=/; max-age=7200; sameSite=lax`;
+        document.cookie = `impersonate_tenant_slug=${data.slug}; path=/; max-age=7200; sameSite=lax`;
+        document.cookie = `impersonate_tenant_name=${encodeURIComponent(data.name)}; path=/; max-age=7200; sameSite=lax`;
+
+        toast.success(`Iniciando Modo Soporte: ${data.name}...`);
+        
+        // Redirigir al dashboard de la clínica
+        window.location.href = `/dashboard`;
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Error al entrar como soporte.');
+    } finally {
+      setImpersonating(false);
+    }
+  };
 
   const handleSubscribe = async (plan: string) => {
     setRedirectingPlan(plan);
@@ -89,6 +154,13 @@ export default function TenantDetail({ tenant, onUpdateStatus }: TenantDetailPro
 
           {/* Acciones principales de control del tenant */}
           <div className="flex items-center gap-3 w-full md:w-auto">
+            <button
+              onClick={handleImpersonate}
+              disabled={impersonating}
+              className="w-full md:w-auto bg-[#d4af37] focus:outline-none hover:bg-[#b08e23] hover:shadow-md text-white text-xs font-bold px-6 py-3.5 rounded-xl shadow transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-55 active:scale-95"
+            >
+              🏢 {impersonating ? 'Iniciando...' : 'Entrar como'}
+            </button>
             {tenant.subscription_status === 'active' ? (
               <button
                 onClick={() => onUpdateStatus(tenant.id, 'suspended')}

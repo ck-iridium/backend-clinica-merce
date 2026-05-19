@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 
+import ImpersonationBanner from '@/components/ImpersonationBanner';
 import MobileBottomBar from '@/components/MobileBottomBar';
 
 export default async function StandardLayout({ children }: { children: React.ReactNode }) {
@@ -21,6 +22,7 @@ export default async function StandardLayout({ children }: { children: React.Rea
 
   return (
     <>
+    <ImpersonationBanner />
     <div className="min-h-screen bg-[#FAFAFA]">
       <div className="pt-8 pb-28 md:pt-4 md:pb-8 px-4 md:px-8 max-w-[1400px] mx-auto z-10 relative space-y-6 w-full">
         {children}

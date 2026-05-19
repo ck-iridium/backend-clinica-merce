@@ -1,6 +1,14 @@
 import { useState, useEffect } from 'react';
 import { getUserRoleByEmail, getUserProfile } from '@/app/actions/profile';
 
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+}
+
 export function useAuthRole() {
   const [role, setRole] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
@@ -9,6 +17,16 @@ export function useAuthRole() {
   useEffect(() => {
     const fetchAuthData = async () => {
       try {
+        // Impersonación (Modo Soporte)
+        const isImpersonating = getCookie('is_impersonating') === 'true';
+        if (isImpersonating) {
+          const impersonateName = getCookie('impersonate_tenant_name') || 'Soporte';
+          setRole('administrador');
+          setUserName(`Modo Soporte: ${decodeURIComponent(impersonateName)}`);
+          setLoading(false);
+          return;
+        }
+
         const userStr = localStorage.getItem('user');
         if (userStr) {
           const user = JSON.parse(userStr);

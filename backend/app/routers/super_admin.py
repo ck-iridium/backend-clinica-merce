@@ -100,3 +100,55 @@ def update_tenant_status(
     db.commit()
     db.refresh(tenant)
     return tenant
+
+# ---------------------------------------------------------------------
+# IMPERSONACIÓN (MODO SOPORTE)
+# ---------------------------------------------------------------------
+import hmac
+import hashlib
+import os
+from datetime import timedelta
+
+def generate_impersonation_token(tenant_id: str, slug: str, name: str) -> str:
+    secret = os.environ.get("JWT_SECRET_KEY", "super-admin-secret-key-123")
+    payload = {
+        "impersonate": "true",
+        "tenant_id": tenant_id,
+        "slug": slug,
+        "name": name,
+        "exp": (datetime.utcnow() + timedelta(hours=2)).isoformat()
+    }
+    
+    # Base64 encode header and payload
+    header = {"alg": "HS256", "typ": "JWT"}
+    header_b64 = base64.urlsafe_b64encode(json.dumps(header).encode()).decode().rstrip("=")
+    payload_b64 = base64.urlsafe_b64encode(json.dumps(payload).encode()).decode().rstrip("=")
+    
+    # Create signature
+    message = f"{header_b64}.{payload_b64}"
+    sig = hmac.new(secret.encode(), message.encode(), hashlib.sha256).digest()
+    sig_b64 = base64.urlsafe_b64encode(sig).decode().rstrip("=")
+    
+    return f"{message}.{sig_b64}"
+
+@router.post("/impersonate/{tenant_id}")
+def impersonate_tenant(
+    tenant_id: str,
+    db: Session = Depends(database.get_db),
+    admin_payload: dict = Depends(verify_super_admin)
+):
+    """
+    Genera un token de impersonación firmado para un tenant específico (Modo Soporte).
+    """
+    tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Inquilino no encontrado")
+        
+    token = generate_impersonation_token(tenant.id, tenant.slug, tenant.name)
+    return {
+        "success": True,
+        "token": token,
+        "tenant_id": tenant.id,
+        "slug": tenant.slug,
+        "name": tenant.name
+    }

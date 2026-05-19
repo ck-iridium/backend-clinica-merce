@@ -55,7 +55,16 @@ export function middleware(request: NextRequest) {
   // 4. Resolver tenant_id para el subdominio
   let tenantId = "00000000-0000-0000-0000-000000000001"; // Fallback por defecto a Clínica Mercè
 
-  if (subdomain && subdomain !== "www") {
+  // Impersonación (Modo Soporte)
+  const isImpersonating = request.cookies.get("is_impersonating")?.value === "true";
+  const impersonateTenantId = request.cookies.get("impersonate_tenant_id")?.value;
+  const impersonateTenantSlug = request.cookies.get("impersonate_tenant_slug")?.value;
+  const isSuperAdminPath = url.pathname.startsWith('/super-admin');
+
+  if (isImpersonating && impersonateTenantId && impersonateTenantSlug && !isSuperAdminPath) {
+    tenantId = impersonateTenantId;
+    subdomain = impersonateTenantSlug;
+  } else if (subdomain && subdomain !== "www") {
     // Mapeo básico para el Cliente Nº 1
     if (subdomain === "merce") {
       tenantId = "00000000-0000-0000-0000-000000000001";
