@@ -17,9 +17,15 @@ export function middleware(request: NextRequest) {
   }
 
   // 2. Limpiar el hostname de puertos (ej. localhost:3000 -> localhost)
-  const cleanHost = hostname.split(':')[0];
+  const cleanHost = hostname.split(':')[0].toLowerCase();
 
-  // 3. Detectar subdominio, parámetro query 'tenant' o cookie
+  // Mapeo de Dominios Personalizados (Custom Domains) a Slugs de Inquilinos
+  const customDomainMapping: Record<string, string> = {
+    "esteticamerce.com": "merce",
+    "www.esteticamerce.com": "merce",
+  };
+
+  // 3. Detectar subdominio o inquilino activo según la estructura de host
   let subdomain = url.searchParams.get("tenant") || "";
   
   if (subdomain === "clear") {
@@ -27,20 +33,28 @@ export function middleware(request: NextRequest) {
   }
 
   if (!subdomain) {
-    if (cleanHost.endsWith(".localhost")) {
+    // A. Comprobar si es un Dominio Personalizado
+    if (customDomainMapping[cleanHost]) {
+      subdomain = customDomainMapping[cleanHost];
+    }
+    // B. Comprobar si es un subdominio de la plataforma principal (ej. pepe.probookia.com)
+    else if (cleanHost.endsWith(".probookia.com") && cleanHost !== "www.probookia.com" && cleanHost !== "probookia.com") {
+      subdomain = cleanHost.replace(".probookia.com", "");
+    }
+    // C. Comprobar si es un subdominio en localhost para desarrollo (ej. pepe.localhost)
+    else if (cleanHost.endsWith(".localhost")) {
       subdomain = cleanHost.replace(".localhost", "");
-    } else {
-      const parts = cleanHost.split(".");
-      // En producción (ej: merce.tu-saas.com), si hay más de 2 partes y no es 'www', el primero es el subdominio
-      if (parts.length > 2 && parts[0] !== 'www') {
-        subdomain = parts[0];
-      }
     }
   }
 
-  // Fallback a cookie de inquilino para desarrollo local (permite persistir la sesión sin subdominios DNS locales)
-  if (!subdomain && cleanHost === "localhost" && url.pathname !== "/marketing") {
+  // D. Fallback a cookie de inquilino para desarrollo local (permite persistir la sesión sin subdominios DNS locales)
+  if (!subdomain && (cleanHost === "localhost" || cleanHost === "probookia.com" || cleanHost === "www.probookia.com") && url.pathname !== "/marketing") {
     subdomain = request.cookies.get("tenant_slug")?.value || "";
+  }
+
+  // E. Forzar limpieza de subdominio si acceden a la raíz de los dominios corporativos para mostrar la Landing limpia
+  if ((cleanHost === "probookia.com" || cleanHost === "www.probookia.com") && !url.searchParams.has("tenant") && url.pathname === "/") {
+    subdomain = "";
   }
 
   // 4. Resolver tenant_id para el subdominio
