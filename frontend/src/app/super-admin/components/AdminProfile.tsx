@@ -31,7 +31,7 @@ export default function AdminProfile({ user, setUser }: AdminProfileProps) {
   const [updatingPassword, setUpdatingPassword] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
-  // 1. Upload Avatar Image to FastAPI
+  // 1. Upload Avatar Image to FastAPI with Client-side Compression to WebP (1:1 aspect ratio)
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -42,11 +42,57 @@ export default function AdminProfile({ user, setUser }: AdminProfileProps) {
     }
 
     setUploadingAvatar(true);
-    const loadingToast = toast.loading('Subiendo imagen de perfil al servidor...');
+    const loadingToast = toast.loading('Comprimiendo y optimizando imagen a WebP...');
 
     try {
+      // Crear objeto de imagen
+      const img = new Image();
+      img.src = URL.createObjectURL(file);
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+      });
+
+      // Dimensionar a 300x300 en un canvas de alto rendimiento (relación de aspecto 1:1)
+      const canvas = document.createElement('canvas');
+      const size = 300;
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) {
+        throw new Error('No se pudo inicializar el procesador de imágenes.');
+      }
+
+      // Calcular recorte de aspecto cuadrado centrado (cover)
+      const srcWidth = img.width;
+      const srcHeight = img.height;
+      let srcX = 0;
+      let srcY = 0;
+      let drawSize = srcWidth;
+
+      if (srcWidth > srcHeight) {
+        drawSize = srcHeight;
+        srcX = (srcWidth - srcHeight) / 2;
+      } else {
+        drawSize = srcWidth;
+        srcY = (srcHeight - srcWidth) / 2;
+      }
+
+      ctx.drawImage(img, srcX, srcY, drawSize, drawSize, 0, 0, size, size);
+
+      // Convertir a blob en formato moderno WebP
+      const blob = await new Promise<Blob | null>((resolve) => {
+        canvas.toBlob((b) => resolve(b), 'image/webp', 0.82);
+      });
+
+      if (!blob) {
+        throw new Error('Error al comprimir la imagen de perfil.');
+      }
+
+      const compressedFile = new File([blob], 'avatar.webp', { type: 'image/webp' });
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', compressedFile);
 
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       const res = await fetch(`${API_URL}/upload/`, {
@@ -60,7 +106,7 @@ export default function AdminProfile({ user, setUser }: AdminProfileProps) {
 
       const data = await res.json();
       setProfileAvatar(data.url);
-      toast.success('Imagen de perfil subida con éxito', { id: loadingToast });
+      toast.success('Imagen optimizada y subida con éxito en formato WebP', { id: loadingToast });
     } catch (err: any) {
       toast.error(err.message || 'Error al conectar con el servidor de subida', { id: loadingToast });
     } finally {
@@ -227,23 +273,23 @@ export default function AdminProfile({ user, setUser }: AdminProfileProps) {
               <div className="xl:col-span-4 bg-white rounded-3xl border border-stone-200/30 p-10 shadow-sm flex flex-col items-center text-center relative overflow-hidden w-full transition-all duration-300 hover:shadow-luxury">
                 <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#d4af37]"></div>
                 
-                {/* Gran Avatar con Anillo de Lujo */}
-                <div className="w-32 h-32 rounded-3xl overflow-hidden border-2 border-[#d4af37]/45 p-1 bg-stone-50 shadow-inner mb-6 relative group">
+                {/* Avatar con Anillo de Lujo Compacto */}
+                <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-[#d4af37]/45 p-1 bg-stone-50 shadow-inner mb-4 relative group">
                   {user?.avatar_url ? (
                     <img 
                       src={user.avatar_url} 
                       alt="Avatar Super Admin" 
-                      className="w-full h-full object-cover rounded-[1.25rem] transition-transform duration-300 group-hover:scale-105" 
+                      className="w-full h-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-105" 
                       onError={(e) => { (e.target as any).src = ''; }}
                     />
                   ) : (
-                    <div className="w-full h-full rounded-[1.25rem] bg-[#fcf8e5] text-[#d4af37] flex items-center justify-center font-bold text-4xl font-serif">
+                    <div className="w-full h-full rounded-xl bg-[#fcf8e5] text-[#d4af37] flex items-center justify-center font-bold text-2.5xl font-serif">
                       SA
                     </div>
                   )}
                 </div>
 
-                <h3 className="text-2.5xl font-bold font-serif text-stone-900 leading-tight w-full truncate px-1">
+                <h3 className="text-xl font-bold font-serif text-stone-900 leading-tight w-full truncate px-1">
                   {user?.full_name || 'Administrador Global'}
                 </h3>
                 
@@ -378,27 +424,8 @@ export default function AdminProfile({ user, setUser }: AdminProfileProps) {
                 </div>
               </div>
 
-              <form onSubmit={handleUpdateProfile} className="space-y-8">
+              <form onSubmit={handleUpdateProfile} className="space-y-6">
                 
-                {/* Resumen de Cuenta Rápido */}
-                <div className="flex items-center gap-5 p-6 bg-stone-50 rounded-2xl border border-stone-100 w-full">
-                  <div className="w-18 h-18 rounded-2xl bg-white border border-stone-200/50 flex items-center justify-center overflow-hidden shrink-0 shadow-inner relative">
-                    {uploadingAvatar ? (
-                      <div className="w-full h-full bg-[#fcf8e5] text-[#d4af37] flex items-center justify-center">
-                        <Loader2 className="w-6 h-6 animate-spin" />
-                      </div>
-                    ) : profileAvatar ? (
-                      <img src={profileAvatar} alt="Avatar de Soporte" className="w-full h-full object-cover" onError={(e) => { (e.target as any).src = ''; }} />
-                    ) : (
-                      <span className="text-[#d4af37] font-serif font-bold text-xl">SA</span>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="text-sm font-bold text-stone-900 block truncate">{profileName || 'Administrador Global'}</span>
-                    <span className="text-[11px] text-stone-400 font-medium truncate block font-mono mt-1">{user?.email}</span>
-                  </div>
-                </div>
-
                 {/* Campo de Nombre */}
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-stone-700 block uppercase tracking-wider">Nombre de Soporte Técnico</label>
@@ -413,12 +440,12 @@ export default function AdminProfile({ user, setUser }: AdminProfileProps) {
                 </div>
 
                 {/* Subidor de Imagen de Avatar Interactivo */}
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <label className="text-xs font-bold text-stone-700 block uppercase tracking-wider">Imagen de Perfil (Avatar)</label>
-                  <div className="flex flex-col sm:flex-row items-center gap-8 p-8 bg-stone-50 rounded-2xl border border-stone-200/50 w-full">
+                  <div className="flex flex-col sm:flex-row items-center gap-6 p-6 bg-stone-50 rounded-2xl border border-stone-200/50 w-full">
                     
-                    {/* Gran Visualizador */}
-                    <div className="w-24 h-24 rounded-2xl overflow-hidden border border-[#d4af37]/45 bg-white shadow-sm shrink-0 flex items-center justify-center relative">
+                    {/* Visualizador Compacto */}
+                    <div className="w-20 h-20 rounded-2xl overflow-hidden border border-[#d4af37]/45 bg-white shadow-sm shrink-0 flex items-center justify-center relative">
                       {uploadingAvatar ? (
                         <div className="w-full h-full bg-[#fcf8e5] text-[#d4af37] flex flex-col items-center justify-center gap-1.5">
                           <Loader2 className="w-6 h-6 animate-spin" />
@@ -426,12 +453,12 @@ export default function AdminProfile({ user, setUser }: AdminProfileProps) {
                       ) : profileAvatar ? (
                         <img src={profileAvatar} alt="Avatar de Soporte" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-[#d4af37] font-serif font-bold text-2xl">SA</span>
+                        <span className="text-[#d4af37] font-serif font-bold text-2xl font-sans">SA</span>
                       )}
                     </div>
 
                     {/* Controles de carga */}
-                    <div className="flex-1 space-y-3.5 text-center sm:text-left w-full">
+                    <div className="flex-1 space-y-3 text-center sm:text-left w-full">
                       <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4">
                         <label className={`bg-stone-950 hover:bg-[#d4af37] hover:text-stone-950 text-white font-bold py-3 px-5 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 shadow-sm cursor-pointer inline-flex items-center gap-2 ${uploadingAvatar ? 'opacity-50 pointer-events-none' : ''}`}>
                           <input 
