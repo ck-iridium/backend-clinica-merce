@@ -10,10 +10,8 @@ import {
   ShieldCheck, 
   Loader2, 
   Layers, 
-  Activity, 
   KeyRound, 
-  Terminal, 
-  RefreshCw 
+  Upload 
 } from 'lucide-react';
 
 interface AdminProfileProps {
@@ -31,8 +29,46 @@ export default function AdminProfile({ user, setUser }: AdminProfileProps) {
   
   const [updatingProfile, setUpdatingProfile] = useState(false);
   const [updatingPassword, setUpdatingPassword] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
-  // 1. Update Profile (Identity/Avatar)
+  // 1. Upload Avatar Image to FastAPI
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Por favor, selecciona un archivo de imagen válido.');
+      return;
+    }
+
+    setUploadingAvatar(true);
+    const loadingToast = toast.loading('Subiendo imagen de perfil al servidor...');
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const res = await fetch(`${API_URL}/upload/`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        throw new Error('Error al subir el archivo al servidor');
+      }
+
+      const data = await res.json();
+      setProfileAvatar(data.url);
+      toast.success('Imagen de perfil subida con éxito', { id: loadingToast });
+    } catch (err: any) {
+      toast.error(err.message || 'Error al conectar con el servidor de subida', { id: loadingToast });
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  // 2. Update Profile (Identity/Avatar)
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setUpdatingProfile(true);
@@ -59,7 +95,7 @@ export default function AdminProfile({ user, setUser }: AdminProfileProps) {
     }
   };
 
-  // 2. Update Password (Credentials)
+  // 3. Update Password (Credentials)
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPassword) {
@@ -86,64 +122,113 @@ export default function AdminProfile({ user, setUser }: AdminProfileProps) {
   };
 
   return (
-    <section className="flex-1 bg-[#FAFAFA] p-6 md:p-12 overflow-y-auto">
-      <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
-        
-        {/* Breadcrumb e Header de la Pestaña */}
-        <div className="flex justify-between items-start md:items-center flex-col md:flex-row gap-4 border-b border-stone-150 pb-6">
+    <section className="flex-1 w-full min-h-screen bg-[#FAFAFA] flex flex-col lg:flex-row p-0 overflow-hidden select-none">
+      
+      {/* Menú Lateral Izquierdo de Pestañas (Pegado a la barra de accesos principal de la app) */}
+      <aside className="w-full lg:w-80 shrink-0 bg-white border-r border-stone-200/50 flex flex-col p-8 justify-between lg:min-h-screen lg:h-full">
+        <div className="space-y-10">
+          
+          {/* Cabecera del Panel de Control */}
           <div>
-            <h2 className="text-3xl font-serif font-bold text-stone-900 tracking-tight">
-              Mi Cuenta Administrativa
+            <span className="text-[10px] font-bold text-[#d4af37] tracking-widest uppercase block mb-1.5 font-sans">
+              Consola SaaS
+            </span>
+            <h2 className="text-2.5xl font-serif font-black text-stone-900 tracking-tight leading-none">
+              Mi Cuenta
             </h2>
-            <p className="text-xs font-sans text-stone-400 mt-1 uppercase tracking-widest font-semibold">
-              Consola global de seguridad y personalización de soporte técnico
+            <p className="text-[11px] font-sans text-stone-400 mt-2 font-medium leading-relaxed">
+              Configuración y credenciales de soporte técnico global.
             </p>
           </div>
-          <div className="bg-[#fcf8e5] text-[#d4af37] border border-[#d4af37]/20 px-4 py-2 rounded-2xl text-xs font-bold font-sans shadow-sm flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4" />
+
+          {/* Listado de Pestañas Elegantes */}
+          <nav className="space-y-2">
+            {[
+              { id: 'overview', label: 'Resumen General', description: 'Vista global y privilegios', icon: Layers },
+              { id: 'identity', label: 'Identidad del Perfil', description: 'Nombre y avatar de soporte', icon: User },
+              { id: 'security', label: 'Seguridad y Acceso', description: 'Credenciales del Super-Admin', icon: Lock }
+            ].map(tab => {
+              const IconComp = tab.icon;
+              const isActive = activeSubTab === tab.id;
+              
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveSubTab(tab.id as any)}
+                  className={`w-full text-left p-4 flex items-start gap-4 transition-all duration-300 rounded-2xl ${
+                    isActive 
+                      ? 'bg-[#fcf8e5] text-stone-900 shadow-sm' 
+                      : 'text-stone-400 hover:text-stone-700 hover:bg-stone-50/50 bg-transparent'
+                  }`}
+                >
+                  <span className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                    isActive ? 'bg-[#d4af37] text-white shadow-sm' : 'bg-stone-100 text-stone-400'
+                  }`}>
+                    <IconComp className="w-4 h-4" />
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <span className={`text-xs uppercase tracking-wider block font-bold ${isActive ? 'text-stone-900 font-extrabold' : 'text-stone-500'}`}>
+                      {tab.label}
+                    </span>
+                    <span className="text-[10px] text-stone-400 block mt-0.5 truncate font-medium">
+                      {tab.description}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Badge de Seguridad e Info del Rol en la parte inferior */}
+        <div className="mt-10 lg:mt-0 pt-6 border-t border-stone-100 flex flex-col gap-4">
+          <div className="bg-[#fcf8e5] text-[#d4af37] border border-[#d4af37]/20 px-4 py-3 rounded-2xl text-[10px] font-bold font-sans shadow-sm flex items-center justify-center gap-2 w-full uppercase tracking-wider">
+            <ShieldCheck className="w-4 h-4 shrink-0" />
             Acceso Super Admin
           </div>
+          <div className="text-center">
+            <p className="text-[9px] text-stone-400 font-mono tracking-widest uppercase">
+              Clínica Mercè v2.5.0
+            </p>
+          </div>
+        </div>
+      </aside>
+
+      {/* Contenedor del Contenido Dinámico a la Derecha (Con Máximo Oxígeno y Espacios) */}
+      <div className="flex-1 overflow-y-auto bg-[#FAFAFA] pt-8 px-8 md:px-14 lg:px-20 xl:px-24 pb-12 md:pb-16 lg:pb-24 space-y-12 min-w-0">
+        
+        {/* Cabecera Activa con Animación sutil */}
+        <div className="space-y-2 border-b border-stone-200/40 pb-8 animate-in fade-in duration-300">
+          <span className="text-[10px] font-bold text-[#d4af37] tracking-widest uppercase block font-mono">
+            {activeSubTab === 'overview' && 'Dashboard de Soporte'}
+            {activeSubTab === 'identity' && 'Identidad Corporativa'}
+            {activeSubTab === 'security' && 'Credenciales Globales'}
+          </span>
+          <h1 className="text-4xl font-serif font-bold text-stone-900 leading-tight">
+            {activeSubTab === 'overview' && 'Resumen General'}
+            {activeSubTab === 'identity' && 'Datos de Identidad'}
+            {activeSubTab === 'security' && 'Seguridad de Consola'}
+          </h1>
+          <p className="text-sm font-sans text-stone-500 font-medium max-w-3xl leading-relaxed">
+            {activeSubTab === 'overview' && 'Monitoreo en vivo de privilegios operacionales del sistema, estado de sesión actual y metadatos de identidad del Super Administrador.'}
+            {activeSubTab === 'identity' && 'Actualice su nombre público de soporte técnico y su avatar de representación. Estos datos se utilizarán para la impersonación segura de clínicas.'}
+            {activeSubTab === 'security' && 'Configure la contraseña maestra del Super Administrador para accesos futuros y mantenga la cuenta con los más altos estándares de protección.'}
+          </p>
         </div>
 
-        {/* Barra de Sub-Pestañas Superior Estilo SaaS Premium */}
-        <div className="bg-white rounded-2xl border border-stone-200/30 overflow-hidden shadow-sm flex">
-          {[
-            { id: 'overview', label: 'Resumen', icon: Layers },
-            { id: 'identity', label: 'Identidad del Perfil', icon: User },
-            { id: 'security', label: 'Seguridad y Acceso', icon: Lock }
-          ].map(tab => {
-            const IconComp = tab.icon;
-            const isActive = activeSubTab === tab.id;
-            
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveSubTab(tab.id as any)}
-                className={`flex-1 px-4 py-4 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2.5 transition-all border-b-2 ${
-                  isActive 
-                    ? 'border-[#d4af37] text-stone-900 bg-stone-50/40 font-extrabold' 
-                    : 'border-transparent text-stone-400 hover:text-stone-700 bg-transparent font-medium'
-                }`}
-              >
-                <IconComp className="w-4 h-4" />
-                <span className="hidden sm:inline">{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Contenido Dinámico de Sub-Pestañas */}
-        <div className="space-y-6">
+        {/* Contenido Dinámico por pestaña */}
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
           
-          {/* TAB 1: OVERVIEW / RESUMEN */}
+          {/* TAB 1: OVERVIEW */}
           {activeSubTab === 'overview' && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-10 items-start w-full">
+              
               {/* Tarjeta de Cuenta Premium */}
-              <div className="md:col-span-1 bg-white rounded-3xl border border-stone-200/30 p-8 shadow-sm flex flex-col items-center text-center relative overflow-hidden h-fit">
+              <div className="xl:col-span-4 bg-white rounded-3xl border border-stone-200/30 p-10 shadow-sm flex flex-col items-center text-center relative overflow-hidden w-full transition-all duration-300 hover:shadow-luxury">
                 <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#d4af37]"></div>
                 
-                {/* Gran Avatar con Anillo Dorado de Lujo */}
-                <div className="w-24 h-24 rounded-3xl overflow-hidden border-2 border-[#d4af37]/45 p-1 bg-stone-50 shadow-inner mb-5 relative group">
+                {/* Gran Avatar con Anillo de Lujo */}
+                <div className="w-32 h-32 rounded-3xl overflow-hidden border-2 border-[#d4af37]/45 p-1 bg-stone-50 shadow-inner mb-6 relative group">
                   {user?.avatar_url ? (
                     <img 
                       src={user.avatar_url} 
@@ -152,23 +237,28 @@ export default function AdminProfile({ user, setUser }: AdminProfileProps) {
                       onError={(e) => { (e.target as any).src = ''; }}
                     />
                   ) : (
-                    <div className="w-full h-full rounded-[1.25rem] bg-[#fcf8e5] text-[#d4af37] flex items-center justify-center font-bold text-2xl font-serif">
+                    <div className="w-full h-full rounded-[1.25rem] bg-[#fcf8e5] text-[#d4af37] flex items-center justify-center font-bold text-4xl font-serif">
                       SA
                     </div>
                   )}
                 </div>
 
-                <h3 className="text-xl font-bold font-serif text-stone-900 leading-tight">
+                <h3 className="text-2.5xl font-bold font-serif text-stone-900 leading-tight w-full truncate px-1">
                   {user?.full_name || 'Administrador Global'}
                 </h3>
-                <span className="text-xxs font-black text-stone-400 uppercase tracking-widest mt-1 block">
+                
+                {/* Correo con Fuente Inteligente para Evitar Desbordes */}
+                <span 
+                  className="text-xs font-semibold text-stone-500 font-mono break-all leading-normal text-center w-full px-2 mt-3 select-all hover:text-stone-800 transition-colors block"
+                  title={user?.email}
+                >
                   {user?.email}
                 </span>
 
-                <div className="w-full border-t border-stone-100 my-6 pt-5 space-y-4 text-left">
+                <div className="w-full border-t border-stone-100 mt-8 pt-6 space-y-4 text-left">
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-stone-400 font-bold uppercase tracking-wider">Rol de Sistema</span>
-                    <span className="bg-stone-900 text-white px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider">
+                    <span className="bg-stone-900 text-white px-2.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider">
                       SUPERADMIN
                     </span>
                   </div>
@@ -178,72 +268,74 @@ export default function AdminProfile({ user, setUser }: AdminProfileProps) {
                   </div>
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-stone-400 font-bold uppercase tracking-wider">Estado de Sesión</span>
-                    <span className="text-emerald-600 font-bold flex items-center gap-1">
+                    <span className="text-emerald-600 font-bold flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Activo
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Mosaico Bento de Privilegios y Alerta de Seguridad */}
-              <div className="md:col-span-2 space-y-6">
-                <div className="bg-white rounded-3xl border border-stone-200/30 p-8 shadow-sm space-y-6 relative overflow-hidden">
+              {/* Bento Grid de Privilegios y Alertas de Seguridad */}
+              <div className="xl:col-span-8 space-y-8 w-full">
+                
+                {/* Bento Grid de Privilegios */}
+                <div className="bg-white rounded-3xl border border-stone-200/30 p-10 shadow-sm space-y-8 relative overflow-hidden transition-all duration-300 hover:shadow-luxury">
                   <div className="absolute top-0 left-0 right-0 h-1.5 bg-stone-900"></div>
                   
                   <div>
                     <h3 className="text-xl font-serif font-bold text-stone-900 flex items-center gap-2">
                       <Award className="w-5 h-5 text-[#d4af37]" /> Privilegios Globales Habilitados
                     </h3>
-                    <p className="text-xs text-stone-400 font-sans mt-0.5">
-                      Capacidades operacionales asociadas a tu rol de administración global
+                    <p className="text-xs text-stone-400 font-sans mt-1">
+                      Capacidades operacionales asociadas a tu rol de administración global.
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                     
-                    <div className="p-5 bg-stone-50 rounded-2xl border border-stone-100/50 flex gap-4">
-                      <span className="w-10 h-10 rounded-xl bg-white border border-stone-250 flex items-center justify-center text-stone-700 shrink-0 shadow-sm">
+                    <div className="p-6 bg-stone-50 rounded-2xl border border-stone-100 flex gap-4 transition-all duration-300 hover:bg-white hover:shadow-sm">
+                      <span className="w-12 h-12 rounded-xl bg-white border border-stone-200/40 flex items-center justify-center text-stone-700 shrink-0 shadow-sm text-xl">
                         🏢
                       </span>
-                      <div className="space-y-1">
-                        <h4 className="text-xs font-bold text-stone-850">Impersonación de Clínicas</h4>
-                        <p className="text-[10px] text-stone-500 leading-relaxed">
+                      <div className="space-y-1 flex-1">
+                        <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wide">Impersonación de Clínicas</h4>
+                        <p className="text-[11px] text-stone-500 leading-relaxed font-medium">
                           Habilidad para ingresar en modo soporte a cualquier inquilino del SaaS para solventar incidencias en vivo.
                         </p>
                       </div>
                     </div>
 
-                    <div className="p-5 bg-stone-50 rounded-2xl border border-stone-100/50 flex gap-4">
-                      <span className="w-10 h-10 rounded-xl bg-white border border-stone-250 flex items-center justify-center text-stone-700 shrink-0 shadow-sm">
+                    <div className="p-6 bg-stone-50 rounded-2xl border border-stone-100 flex gap-4 transition-all duration-300 hover:bg-white hover:shadow-sm">
+                      <span className="w-12 h-12 rounded-xl bg-white border border-stone-200/40 flex items-center justify-center text-stone-700 shrink-0 shadow-sm text-xl">
                         🛡️
                       </span>
-                      <div className="space-y-1">
-                        <h4 className="text-xs font-bold text-stone-850">Ajustes del Core</h4>
-                        <p className="text-[10px] text-stone-500 leading-relaxed">
+                      <div className="space-y-1 flex-1">
+                        <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wide">Ajustes del Core</h4>
+                        <p className="text-[11px] text-stone-500 leading-relaxed font-medium">
                           Control de indexación global en buscadores de la landing corporativa y configuraciones estructurales.
                         </p>
                       </div>
                     </div>
 
-                    <div className="p-5 bg-stone-50 rounded-2xl border border-stone-100/50 flex gap-4">
-                      <span className="w-10 h-10 rounded-xl bg-white border border-stone-250 flex items-center justify-center text-stone-700 shrink-0 shadow-sm">
+                    <div className="p-6 bg-stone-50 rounded-2xl border border-stone-100 flex gap-4 transition-all duration-300 hover:bg-white hover:shadow-sm">
+                      <span className="w-12 h-12 rounded-xl bg-white border border-stone-200/40 flex items-center justify-center text-stone-700 shrink-0 shadow-sm text-xl">
                         📊
                       </span>
-                      <div className="space-y-1">
-                        <h4 className="text-xs font-bold text-stone-850">Finanzas Globales</h4>
-                        <p className="text-[10px] text-stone-500 leading-relaxed">
+                      <div className="space-y-1 flex-1">
+                        <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wide">Finanzas Globales</h4>
+                        <p className="text-[11px] text-stone-500 leading-relaxed font-medium">
                           Acceso total al MRR estimado, ARPU del SaaS, y pasarela de cobros en Stripe de los clientes.
                         </p>
                       </div>
                     </div>
 
-                    <div className="p-5 bg-stone-50 rounded-2xl border border-stone-100/50 flex gap-4">
-                      <span className="w-10 h-10 rounded-xl bg-white border border-stone-250 flex items-center justify-center text-stone-700 shrink-0 shadow-sm">
+                    <div className="p-6 bg-stone-50 rounded-2xl border border-stone-100 flex gap-4 transition-all duration-300 hover:bg-white hover:shadow-sm">
+                      <span className="w-12 h-12 rounded-xl bg-white border border-stone-200/40 flex items-center justify-center text-stone-700 shrink-0 shadow-sm text-xl">
                         ⚙️
                       </span>
-                      <div className="space-y-1">
-                        <h4 className="text-xs font-bold text-stone-850">Seguridad Total</h4>
-                        <p className="text-[10px] text-stone-500 leading-relaxed">
+                      <div className="space-y-1 flex-1">
+                        <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wide">Seguridad Total</h4>
+                        <p className="text-[11px] text-stone-500 leading-relaxed font-medium">
                           Derechos absolutos para restablecer credenciales y administrar la infraestructura B2B.
                         </p>
                       </div>
@@ -252,28 +344,29 @@ export default function AdminProfile({ user, setUser }: AdminProfileProps) {
                   </div>
                 </div>
 
-                {/* Banner de Recomendación Premium (Quiet Luxury Alert) */}
-                <div className="bg-[#fcf8e5]/40 border border-[#d4af37]/20 rounded-3xl p-6 flex gap-4 items-start">
-                  <span className="w-8 h-8 rounded-full bg-[#fcf8e5] text-[#d4af37] flex items-center justify-center shrink-0 text-sm font-semibold">
+                {/* Banner de Recomendación Premium */}
+                <div className="bg-[#fcf8e5]/40 border border-[#d4af37]/20 rounded-3xl p-8 flex gap-5 items-start w-full">
+                  <span className="w-10 h-10 rounded-full bg-[#fcf8e5] text-[#d4af37] flex items-center justify-center shrink-0 text-md font-bold shadow-sm">
                     !
                   </span>
-                  <div className="space-y-1">
-                    <h4 className="text-xs font-bold text-stone-900 font-serif">Aviso de Seguridad de Soporte</h4>
-                    <p className="text-[10px] text-stone-600 leading-relaxed">
+                  <div className="space-y-1.5 flex-1">
+                    <h4 className="text-xs font-bold text-stone-900 font-serif uppercase tracking-wider">Aviso de Seguridad de Soporte</h4>
+                    <p className="text-[11px] text-stone-600 leading-relaxed font-medium">
                       Al actuar como personal técnico para las clínicas asociadas, tu nombre y foto de perfil de soporte se usarán para identificarte en registros de auditoría y soporte directo. Mantén estos datos actualizados para proyectar una imagen profesional y de confianza.
                     </p>
                   </div>
                 </div>
               </div>
+
             </div>
           )}
 
-          {/* TAB 2: IDENTITY / IDENTIDAD */}
+          {/* TAB 2: IDENTITY */}
           {activeSubTab === 'identity' && (
-            <div className="bg-white rounded-3xl border border-stone-200/30 p-8 md:p-10 shadow-sm relative overflow-hidden max-w-2xl mx-auto">
+            <div className="bg-white rounded-3xl border border-stone-200/30 p-10 md:p-12 shadow-sm relative overflow-hidden max-w-3xl w-full">
               <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#d4af37]"></div>
               
-              <div className="flex items-center gap-4 mb-8 pb-5 border-b border-stone-100">
+              <div className="flex items-center gap-4 mb-10 pb-6 border-b border-stone-100">
                 <span className="w-12 h-12 rounded-2xl bg-[#fcf8e5] text-[#b08e23] flex items-center justify-center shrink-0">
                   <User className="w-6 h-6" />
                 </span>
@@ -285,69 +378,126 @@ export default function AdminProfile({ user, setUser }: AdminProfileProps) {
                 </div>
               </div>
 
-              <form onSubmit={handleUpdateProfile} className="space-y-6">
+              <form onSubmit={handleUpdateProfile} className="space-y-8">
                 
-                <div className="flex items-center gap-4 p-5 bg-stone-50 rounded-2xl border border-stone-100">
-                  <div className="w-16 h-16 rounded-2xl bg-white border border-stone-200/50 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
-                    {profileAvatar ? (
+                {/* Resumen de Cuenta Rápido */}
+                <div className="flex items-center gap-5 p-6 bg-stone-50 rounded-2xl border border-stone-100 w-full">
+                  <div className="w-18 h-18 rounded-2xl bg-white border border-stone-200/50 flex items-center justify-center overflow-hidden shrink-0 shadow-inner relative">
+                    {uploadingAvatar ? (
+                      <div className="w-full h-full bg-[#fcf8e5] text-[#d4af37] flex items-center justify-center">
+                        <Loader2 className="w-6 h-6 animate-spin" />
+                      </div>
+                    ) : profileAvatar ? (
                       <img src={profileAvatar} alt="Avatar de Soporte" className="w-full h-full object-cover" onError={(e) => { (e.target as any).src = ''; }} />
                     ) : (
-                      <span className="text-[#d4af37] font-serif font-bold text-lg">SA</span>
+                      <span className="text-[#d4af37] font-serif font-bold text-xl">SA</span>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <span className="text-xs font-bold text-stone-850 block truncate">{profileName || 'Administrador Global'}</span>
-                    <span className="text-[10px] text-stone-400 font-medium truncate block">{user?.email}</span>
+                    <span className="text-sm font-bold text-stone-900 block truncate">{profileName || 'Administrador Global'}</span>
+                    <span className="text-[11px] text-stone-400 font-medium truncate block font-mono mt-1">{user?.email}</span>
                   </div>
                 </div>
 
+                {/* Campo de Nombre */}
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-stone-700 block">Nombre de Soporte Técnico</label>
+                  <label className="text-xs font-bold text-stone-700 block uppercase tracking-wider">Nombre de Soporte Técnico</label>
                   <input 
                     type="text" 
                     value={profileName} 
                     onChange={(e) => setProfileName(e.target.value)}
                     placeholder="Ej. Juan - Soporte Clínico"
-                    className="w-full bg-stone-50 border border-stone-200 focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] rounded-xl px-4 py-3 text-xs font-medium outline-none transition-all"
+                    className="w-full bg-stone-50 border border-stone-200 focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] rounded-xl px-5 py-4 text-xs font-medium outline-none transition-all animate-none"
                   />
-                  <span className="text-[9px] text-stone-400 font-sans block">Este nombre aparecerá cuando asistas a clínicas de forma impersonada.</span>
+                  <span className="text-[10px] text-stone-400 font-sans block mt-1">Este nombre aparecerá cuando asistas a clínicas de forma impersonada.</span>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-stone-700 block">URL de Imagen de Perfil (Avatar)</label>
-                  <input 
-                    type="text" 
-                    value={profileAvatar} 
-                    onChange={(e) => setProfileAvatar(e.target.value)}
-                    placeholder="https://ejemplo.com/tu-avatar.jpg"
-                    className="w-full bg-stone-50 border border-stone-200 focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] rounded-xl px-4 py-3 text-xs font-mono outline-none transition-all"
-                  />
-                  <span className="text-[9px] text-stone-400 font-sans block">Introduce un enlace HTTP directo a una imagen PNG/JPG.</span>
+                {/* Subidor de Imagen de Avatar Interactivo */}
+                <div className="space-y-4">
+                  <label className="text-xs font-bold text-stone-700 block uppercase tracking-wider">Imagen de Perfil (Avatar)</label>
+                  <div className="flex flex-col sm:flex-row items-center gap-8 p-8 bg-stone-50 rounded-2xl border border-stone-200/50 w-full">
+                    
+                    {/* Gran Visualizador */}
+                    <div className="w-24 h-24 rounded-2xl overflow-hidden border border-[#d4af37]/45 bg-white shadow-sm shrink-0 flex items-center justify-center relative">
+                      {uploadingAvatar ? (
+                        <div className="w-full h-full bg-[#fcf8e5] text-[#d4af37] flex flex-col items-center justify-center gap-1.5">
+                          <Loader2 className="w-6 h-6 animate-spin" />
+                        </div>
+                      ) : profileAvatar ? (
+                        <img src={profileAvatar} alt="Avatar de Soporte" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-[#d4af37] font-serif font-bold text-2xl">SA</span>
+                      )}
+                    </div>
+
+                    {/* Controles de carga */}
+                    <div className="flex-1 space-y-3.5 text-center sm:text-left w-full">
+                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4">
+                        <label className={`bg-stone-950 hover:bg-[#d4af37] hover:text-stone-950 text-white font-bold py-3 px-5 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 shadow-sm cursor-pointer inline-flex items-center gap-2 ${uploadingAvatar ? 'opacity-50 pointer-events-none' : ''}`}>
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            onChange={handleAvatarUpload} 
+                            className="sr-only" 
+                            disabled={uploadingAvatar}
+                          />
+                          <Upload className="w-4 h-4" />
+                          <span>Subir Archivo</span>
+                        </label>
+                        
+                        {profileAvatar && (
+                          <button
+                            type="button"
+                            onClick={() => setProfileAvatar('')}
+                            className="border border-stone-200 bg-white hover:bg-stone-50 text-stone-500 hover:text-stone-700 font-bold py-3 px-5 rounded-xl text-xs uppercase tracking-wider transition-all duration-300"
+                          >
+                            Eliminar
+                          </button>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-stone-400 font-sans leading-normal">
+                        Soporta imágenes PNG, JPG o WEBP. Conexión automática con el servidor FastAPI de la clínica.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Respaldo manual por URL si el usuario lo necesita */}
+                  <div className="space-y-2 pt-4 border-t border-stone-100 w-full">
+                    <label className="text-[10px] font-bold text-stone-450 block uppercase tracking-wider">O introduce una URL manual</label>
+                    <input 
+                      type="text" 
+                      value={profileAvatar} 
+                      onChange={(e) => setProfileAvatar(e.target.value)}
+                      placeholder="https://ejemplo.com/tu-avatar.jpg"
+                      className="w-full bg-stone-50 border border-stone-200 focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] rounded-xl px-5 py-4 text-xs font-mono outline-none transition-all animate-none"
+                    />
+                  </div>
                 </div>
 
+                {/* Botón de Enviar */}
                 <button 
                   type="submit" 
-                  disabled={updatingProfile}
-                  className="w-full bg-stone-900 hover:bg-[#d4af37] hover:text-stone-950 text-white font-bold py-3.5 px-6 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 shadow-sm disabled:opacity-50 flex items-center justify-center gap-2 active:scale-98"
+                  disabled={updatingProfile || uploadingAvatar}
+                  className="w-full bg-stone-950 hover:bg-[#d4af37] hover:text-stone-950 text-white font-bold py-4 px-6 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 shadow-sm disabled:opacity-50 flex items-center justify-center gap-2 active:scale-98"
                 >
                   {updatingProfile ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" /> Guardando Cambios...
                     </>
                   ) : (
-                    'Actualizar Datos'
+                    'Actualizar Datos de Identidad'
                   )}
                 </button>
               </form>
             </div>
           )}
 
-          {/* TAB 3: SECURITY / SEGURIDAD */}
+          {/* TAB 3: SECURITY */}
           {activeSubTab === 'security' && (
-            <div className="bg-white rounded-3xl border border-stone-200/30 p-8 md:p-10 shadow-sm relative overflow-hidden max-w-2xl mx-auto">
+            <div className="bg-white rounded-3xl border border-stone-200/30 p-10 md:p-12 shadow-sm relative overflow-hidden max-w-3xl w-full">
               <div className="absolute top-0 left-0 right-0 h-1.5 bg-stone-900"></div>
               
-              <div className="flex items-center gap-4 mb-8 pb-5 border-b border-stone-100">
+              <div className="flex items-center gap-4 mb-10 pb-6 border-b border-stone-100">
                 <span className="w-12 h-12 rounded-2xl bg-[#fcf8e5] text-[#b08e23] flex items-center justify-center shrink-0">
                   <Lock className="w-6 h-6" />
                 </span>
@@ -359,33 +509,33 @@ export default function AdminProfile({ user, setUser }: AdminProfileProps) {
                 </div>
               </div>
 
-              <form onSubmit={handleUpdatePassword} className="space-y-6">
-                <div className="p-5 bg-stone-50 rounded-2xl border border-stone-100 flex gap-4">
-                  <KeyRound className="w-5 h-5 text-stone-400 shrink-0 mt-0.5" />
+              <form onSubmit={handleUpdatePassword} className="space-y-8 animate-none">
+                <div className="p-6 bg-stone-50 rounded-2xl border border-stone-100 flex gap-4 w-full">
+                  <KeyRound className="w-6 h-6 text-stone-400 shrink-0 mt-0.5 animate-none" />
                   <div>
-                    <h4 className="text-xs font-bold text-stone-900">Credenciales del Super-Admin</h4>
-                    <p className="text-[10px] text-stone-500 leading-relaxed mt-1">
+                    <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider">Credenciales del Super-Admin</h4>
+                    <p className="text-[11px] text-stone-500 leading-relaxed mt-1 font-medium">
                       Al actualizar la contraseña maestra, tu sesión se mantendrá activa pero los futuros inicios de sesión en dispositivos nuevos requerirán la nueva clave. Se actualizará en tiempo real en los servidores globales de Supabase Auth.
                     </p>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-stone-700 block">Nueva Contraseña Maestra</label>
+                <div className="space-y-2 w-full">
+                  <label className="text-xs font-bold text-stone-700 block uppercase tracking-wider">Nueva Contraseña Maestra</label>
                   <input 
                     type="password" 
                     value={newPassword} 
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Mínimo 6 caracteres"
-                    className="w-full bg-stone-50 border border-stone-200 focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] rounded-xl px-4 py-3 text-xs font-medium outline-none transition-all animate-none"
+                    className="w-full bg-stone-50 border border-stone-200 focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] rounded-xl px-5 py-4 text-xs font-medium outline-none transition-all animate-none"
                   />
-                  <span className="text-[9px] text-stone-400 font-sans block">Por favor, usa una clave segura con números, letras y caracteres especiales.</span>
+                  <span className="text-[10px] text-stone-400 font-sans block mt-1">Por favor, usa una clave segura con números, letras y caracteres especiales.</span>
                 </div>
 
                 <button 
                   type="submit" 
                   disabled={updatingPassword}
-                  className="w-full bg-[#d4af37] hover:bg-[#b08e23] text-stone-950 hover:text-white font-bold py-3.5 px-6 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 shadow-sm disabled:opacity-50 flex items-center justify-center gap-2 active:scale-98"
+                  className="w-full bg-[#d4af37] hover:bg-[#b08e23] text-stone-950 hover:text-white font-bold py-4 px-6 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 shadow-sm disabled:opacity-50 flex items-center justify-center gap-2 active:scale-98"
                 >
                   {updatingPassword ? (
                     <>
@@ -402,6 +552,7 @@ export default function AdminProfile({ user, setUser }: AdminProfileProps) {
         </div>
 
       </div>
+
     </section>
   );
 }
