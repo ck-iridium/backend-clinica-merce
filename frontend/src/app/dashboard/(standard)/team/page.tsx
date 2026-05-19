@@ -33,6 +33,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+} from "@/components/ui/select"
 import { useLanguage } from "@/app/contexts/LanguageContext"
 import PlanLimitsCard from "@/components/PlanLimitsCard"
 
