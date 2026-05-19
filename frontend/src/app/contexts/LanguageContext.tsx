@@ -26,6 +26,7 @@ export type Language = 'es' | 'en' | 'fr';
 
 const es = {
   ...esCommon,
+  ...esDashboard,
   dashboard: {
     ...esDashboard,
     clients: esClients,
@@ -37,6 +38,7 @@ const es = {
 
 const en = {
   ...enCommon,
+  ...enDashboard,
   dashboard: {
     ...enDashboard,
     clients: enClients,
@@ -48,6 +50,7 @@ const en = {
 
 const fr = {
   ...frCommon,
+  ...frDashboard,
   dashboard: {
     ...frDashboard,
     clients: frClients,

@@ -93,7 +93,7 @@ export default function MarketingPage() {
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-xl md:text-2xl font-serif tracking-widest text-[#1F2937] font-bold">
-              CLÍNICA MERCÈ <span className="text-[#d4af37] font-sans text-xs font-black tracking-widest uppercase ml-1">SaaS</span>
+              PROBOOKIA <span className="text-[#d4af37] font-sans text-xs font-black tracking-widest uppercase ml-1">SaaS</span>
             </span>
           </div>
           
@@ -102,7 +102,7 @@ export default function MarketingPage() {
               href="/login" 
               className="px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold bg-white text-[#1F2937] border border-stone-200 shadow-sm hover:border-[#d4af37] hover:text-[#d4af37] transition-all duration-300 active:scale-95"
             >
-              Acceso Clínicas
+              Acceso Centros
             </Link>
             <button 
               onClick={() => setIsModalOpen(true)}
@@ -118,15 +118,15 @@ export default function MarketingPage() {
       <section className="relative pt-20 pb-16 md:pt-32 md:pb-28 bg-gradient-to-b from-white to-[#F7F7F5]">
         <div className="max-w-7xl mx-auto px-6 relative z-10 text-center animate-in fade-in slide-in-from-bottom-6 duration-1000">
           <div className="inline-flex items-center gap-2 bg-[#fcf8e5] text-[#b08e23] px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase mb-8 shadow-sm border border-yellow-100/50 font-sans">
-            <Sparkles className="w-3.5 h-3.5" /> El Nuevo Estándar de Gestión para Clínicas Médicas
+            <Sparkles className="w-3.5 h-3.5" /> El Nuevo Estándar de Gestión para Centros y Negocios de Lujo
           </div>
           
           <h1 className="text-4xl md:text-7xl font-serif font-extrabold text-[#1F2937] tracking-tight leading-[1.1] max-w-5xl mx-auto mb-8">
-            La elegancia de la alta estética <br className="hidden md:block"/> traducida en un <span className="text-[#d4af37]">SaaS de Lujo</span>
+            La elegancia de tu negocio <br className="hidden md:block"/> traducida en un <span className="text-[#d4af37]">SaaS de Lujo</span>
           </h1>
           
           <p className="text-lg md:text-xl text-stone-500 font-medium max-w-3xl mx-auto mb-12 leading-relaxed font-sans">
-            Diseñado exclusivamente para clínicas estéticas independientes y centros de bienestar de alto nivel. Agendas fluidas, expedientes médicos seguros, consentimiento digital inteligente y facturación integrada en una experiencia borderless sublime.
+            Diseñado exclusivamente para centros de estética, spas, salones de belleza y barberías premium independientes. Agendas fluidas, expedientes personalizados seguros, consentimiento digital inteligente y facturación integrada en una experiencia borderless sublime.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -311,9 +311,9 @@ export default function MarketingPage() {
       <footer className="bg-[#1F2937] text-white py-16">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8 border-b border-white/5 pb-12 mb-12">
           <div>
-            <span className="text-xl font-serif tracking-widest text-white block mb-2">CLÍNICA MERCÈ SaaS</span>
+            <span className="text-xl font-serif tracking-widest text-white block mb-2">PROBOOKIA SaaS</span>
             <p className="text-stone-400 text-sm max-w-sm leading-relaxed">
-              La plataforma definitiva para elevar la gestión operativa y estética de las clínicas más selectas del mundo.
+              La plataforma definitiva para elevar la gestión de citas, reservas y clientes de los centros y negocios más selectos.
             </p>
           </div>
           <div className="flex gap-8 text-sm font-semibold text-stone-400">
@@ -323,7 +323,7 @@ export default function MarketingPage() {
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-6 text-center text-xs text-stone-500 font-semibold">
-          &copy; {new Date().getFullYear()} Clínica Mercè. Todos los derechos reservados. Estándares SaaS Quiet Luxury 2026.
+          &copy; {new Date().getFullYear()} Probookia. Todos los derechos reservados. Estándares SaaS Quiet Luxury 2026.
         </div>
       </footer>
 
@@ -342,9 +342,9 @@ export default function MarketingPage() {
 
             <div className="mb-8">
               <span className="text-[10px] font-bold uppercase tracking-widest text-[#d4af37] block mb-2">Registro Premium</span>
-              <h2 className="text-3xl font-serif font-bold text-stone-900 leading-tight">Configura tu Clínica</h2>
+              <h2 className="text-3xl font-serif font-bold text-stone-900 leading-tight">Configura tu Negocio</h2>
               <p className="text-stone-500 text-sm mt-2 leading-relaxed">
-                Rellena la información inicial para crear la base de datos de tu clínica e iniciar tu prueba gratuita de 14 días.
+                Rellena la información inicial para crear tu base de datos y comenzar tu prueba gratuita de 14 días.
               </p>
             </div>
 
@@ -352,7 +352,7 @@ export default function MarketingPage() {
               
               {/* Sección Clínica */}
               <div className="space-y-4">
-                <h3 className="text-xs font-extrabold uppercase tracking-widest text-stone-400 pb-1 border-b border-stone-200/40">Datos de la Clínica</h3>
+                <h3 className="text-xs font-extrabold uppercase tracking-widest text-stone-400 pb-1 border-b border-stone-200/40">Datos del Centro / Negocio</h3>
                 
                 <div>
                   <label className="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-2">Nombre Comercial</label>
@@ -360,7 +360,7 @@ export default function MarketingPage() {
                     type="text" 
                     name="tenant_name"
                     required
-                    placeholder="Ej. Clínica Jade"
+                    placeholder="Ej. Salón Jade, Barbería Luxury, Spazio Wellness"
                     value={formData.tenant_name}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3.5 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-1 focus:ring-[#d4af37] focus:border-transparent transition-all text-sm"
@@ -374,18 +374,18 @@ export default function MarketingPage() {
                       type="text" 
                       name="tenant_slug"
                       required
-                      placeholder="ej-clinica-jade"
+                      placeholder="ej-salon-jade"
                       value={formData.tenant_slug}
                       onChange={handleInputChange}
                       className="w-full pl-4 pr-32 py-3.5 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-1 focus:ring-[#d4af37] focus:border-transparent transition-all text-sm font-mono"
                     />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-stone-400 font-sans pointer-events-none">
-                      .tu-saas.com
+                      .probookia.com
                     </span>
                   </div>
                   {formData.tenant_slug && (
                     <span className="block text-xxs text-[#d4af37] mt-2 font-semibold tracking-wide">
-                      Dirección de acceso: <span className="font-mono text-stone-600 font-bold">https://{formData.tenant_slug}.tu-saas.com</span>
+                      Dirección de acceso: <span className="font-mono text-stone-600 font-bold">https://{formData.tenant_slug}.probookia.com</span>
                     </span>
                   )}
                 </div>
@@ -401,7 +401,7 @@ export default function MarketingPage() {
                     type="text" 
                     name="admin_name"
                     required
-                    placeholder="Ej. Dra. Sofía Valenzuela"
+                    placeholder="Ej. Dra. Sofía Valenzuela o Juan Pérez"
                     value={formData.admin_name}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3.5 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-1 focus:ring-[#d4af37] focus:border-transparent transition-all text-sm"
@@ -414,7 +414,7 @@ export default function MarketingPage() {
                     type="email" 
                     name="admin_email"
                     required
-                    placeholder="sofia@clinicajade.com"
+                    placeholder="contacto@salonjade.com"
                     value={formData.admin_email}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3.5 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-1 focus:ring-[#d4af37] focus:border-transparent transition-all text-sm"

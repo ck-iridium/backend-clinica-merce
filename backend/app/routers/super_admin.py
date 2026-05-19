@@ -152,3 +152,44 @@ def impersonate_tenant(
         "slug": tenant.slug,
         "name": tenant.name
     }
+
+class SaasSettingsUpdate(BaseModel):
+    allow_search_engine_indexing: bool
+
+@router.get("/settings")
+def get_saas_settings(
+    db: Session = Depends(database.get_db),
+    admin_payload: dict = Depends(verify_super_admin)
+):
+    """
+    Obtiene los ajustes globales del SaaS (Tenant por defecto).
+    """
+    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == "00000000-0000-0000-0000-000000000001").first()
+    if not settings:
+        settings = models.ClinicSettings(tenant_id="00000000-0000-0000-0000-000000000001")
+        db.add(settings)
+        db.commit()
+        db.refresh(settings)
+    return {
+        "allow_search_engine_indexing": settings.allow_search_engine_indexing
+    }
+
+@router.patch("/settings")
+def update_saas_settings(
+    payload: SaasSettingsUpdate,
+    db: Session = Depends(database.get_db),
+    admin_payload: dict = Depends(verify_super_admin)
+):
+    """
+    Actualiza los ajustes globales del SaaS.
+    """
+    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == "00000000-0000-0000-0000-000000000001").first()
+    if not settings:
+        settings = models.ClinicSettings(tenant_id="00000000-0000-0000-0000-000000000001")
+        db.add(settings)
+    settings.allow_search_engine_indexing = payload.allow_search_engine_indexing
+    db.commit()
+    db.refresh(settings)
+    return {
+        "allow_search_engine_indexing": settings.allow_search_engine_indexing
+    }

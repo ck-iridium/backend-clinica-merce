@@ -26,10 +26,23 @@ export async function generateMetadata(): Promise<Metadata> {
   const isMarketing = !tenantSlug || tenantSlug === "www";
 
   if (isMarketing) {
+    let allowSaasIndexing = false;
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const resSettings = await fetch(`${baseUrl}/settings/`, { 
+        next: { revalidate: 60 },
+        headers: { "X-Tenant-ID": "00000000-0000-0000-0000-000000000001" }
+      });
+      if (resSettings.ok) {
+        const data = await resSettings.json();
+        allowSaasIndexing = data.allow_search_engine_indexing;
+      }
+    } catch(e) {}
+
     return {
-      title: "Clínica Mercè SaaS - Software de Gestión para Clínicas de Estética Premium",
-      description: "Eleva la experiencia de tu clínica estética. Gestión de agenda, expedientes médicos, consentimientos digitales y facturación con diseño Quiet Luxury.",
-      robots: "index, follow",
+      title: "Probookia | Software de Gestión Premium para Negocios y Centros de Estética, Wellness y Belleza",
+      description: "Eleva la experiencia de tu negocio premium. Gestión inteligente de citas, expedientes, consentimientos digitales y facturación integrada con diseño Quiet Luxury.",
+      robots: allowSaasIndexing ? "index, follow" : "noindex, nofollow",
     };
   }
 
