@@ -55,7 +55,7 @@ def optimize_prompt(request: schemas.OptimizePromptRequest, db: Session = Depend
         if ai_provider == "gemini":
             api_key = settings.gemini_api_key or os.getenv("GEMINI_API_KEY")
             genai.configure(api_key=api_key)
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            model = genai.GenerativeModel('gemini-2.5-flash')
             response = model.generate_content(system_prompt + f"\n\nContext: {request.service_name}, {request.description}")
             return {"prompt": response.text.strip()}
         elif ai_provider == "openai":
@@ -81,7 +81,7 @@ def generate_content(request: schemas.AIGenerationRequest, db: Session = Depends
         if ai_provider == "gemini":
             api_key = settings.gemini_api_key or os.getenv("GEMINI_API_KEY")
             genai.configure(api_key=api_key)
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            model = genai.GenerativeModel('gemini-2.5-flash')
             response = model.generate_content(system_prompt + "\n\n" + request.prompt)
             result_text = response.text
         elif ai_provider == "openai":
@@ -101,7 +101,7 @@ def ai_enhance_image_prompt_sync(user_prompt: str, shot_type: str, visual_style:
     try:
         genai.configure(api_key=api_key)
         # Usamos pro o flash normal sin suffixes raros
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-2.5-flash')
         
         instruct = (
             "You are a professional photography director. Refine the user prompt into a technical commercial photography prompt in English.\n"
