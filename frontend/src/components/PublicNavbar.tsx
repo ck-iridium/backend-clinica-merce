@@ -193,7 +193,8 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
   const isHome = pathname === '/';
   const useTransparent = transparent || isHome;
 
-  const translatedCategories = categories.map((c: any) => ({
+  const categoriesList = Array.isArray(categories) ? categories : [];
+  const translatedCategories = categoriesList.map((c: any) => ({
     ...c,
     name: translateClient(c.name, c.translations, 'name')
   }));
@@ -251,8 +252,8 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
               <div className="w-[280px] shrink-0 bg-stone-900 py-6 pl-8 pr-0 border-r border-stone-800 relative">
                 <h4 className="text-[14px] font-black uppercase tracking-[0.3em] text-stone-300 mb-8">{navT.categories}</h4>
                 <ul className="space-y-1">
-                  {categories.filter(c => c.name.toUpperCase() !== 'GENERAL').map(cat => {
-                    const translatedCatName = translateClient(cat.name, cat.translations, 'name');
+                  {translatedCategories.filter(c => c.name.toUpperCase() !== 'GENERAL').map(cat => {
+                    const translatedCatName = cat.name;
                     return (
                       <li key={cat.id}>
                         <button
