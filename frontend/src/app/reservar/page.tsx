@@ -16,6 +16,15 @@ const formatLocalISO = (date: Date) => {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:00`;
 };
 
+// Helper for reading tenant cookies in client side
+const getTenantId = () => {
+  if (typeof document === 'undefined') return '00000000-0000-0000-0000-000000000001';
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; tenant_id=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || '00000000-0000-0000-0000-000000000001';
+  return '00000000-0000-0000-0000-000000000001';
+};
+
 export default function BookingPage() {
   const { showFeedback } = useFeedback();
   const { t } = useLanguage();
@@ -104,11 +113,12 @@ export default function BookingPage() {
   useEffect(() => {
     const fetchBaseData = async () => {
       try {
+        const tenantId = getTenantId();
         const [catRes, srvRes, apptRes, settingsRes] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/service-categories/`),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/`),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/`),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/`)
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/service-categories/`, { headers: { 'X-Tenant-ID': tenantId } }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/`, { headers: { 'X-Tenant-ID': tenantId } }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/`, { headers: { 'X-Tenant-ID': tenantId } }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/`, { headers: { 'X-Tenant-ID': tenantId } })
         ]);
 
         if (settingsRes.ok) {
@@ -161,7 +171,9 @@ export default function BookingPage() {
     setLoadingSlots(true);
     setSelectedTime('');
     const dateStr = selectedDate.toLocaleDateString('en-CA'); // YYYY-MM-DD in local tz
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/availability?date=${dateStr}&service_id=${selectedService.id}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/availability?date=${dateStr}&service_id=${selectedService.id}`, {
+      headers: { 'X-Tenant-ID': getTenantId() }
+    })
       .then(r => r.json())
       .then(data => setAvailableSlots(data.available_slots ?? []))
       .catch(() => setAvailableSlots([]))
@@ -178,7 +190,10 @@ export default function BookingPage() {
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/public`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Tenant-ID': getTenantId()
+        },
         body: JSON.stringify({
           client_name: formData.name,
           client_email: formData.email,
