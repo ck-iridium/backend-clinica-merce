@@ -7,7 +7,7 @@ import ScrollToTop from "./ScrollToTop";
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isDashboard = pathname?.startsWith('/dashboard');
+  const isDashboard = pathname?.startsWith('/dashboard') || pathname?.startsWith('/super-admin') || pathname === '/login';
 
   if (isDashboard) return (
     <>
