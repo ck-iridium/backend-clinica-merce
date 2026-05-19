@@ -6,6 +6,8 @@ from ..crud import services as crud
 import os
 from supabase import create_client, Client
 
+from ..limits import check_service_limit
+
 router = APIRouter(
     prefix="/services",
     tags=["services"],
@@ -13,6 +15,7 @@ router = APIRouter(
 
 @router.post("/", response_model=schemas.ServiceResponse)
 def create_service(service: schemas.ServiceCreate, db: Session = Depends(database.get_db)):
+    check_service_limit(db)
     return crud.create_service(db=db, service=service)
 
 @router.get("/", response_model=List[schemas.ServiceResponse])

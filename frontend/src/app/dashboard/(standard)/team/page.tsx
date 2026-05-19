@@ -33,8 +33,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
 import { useLanguage } from "@/app/contexts/LanguageContext"
+import PlanLimitsCard from "@/components/PlanLimitsCard"
 
 export default function TeamPage() {
   const { t } = useLanguage();
@@ -179,9 +179,12 @@ export default function TeamPage() {
       {/* Header Sección */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-2">
-          <h1 className="text-5xl font-serif font-semibold text-stone-800 tracking-tight">
-            {t('dashboard.team.team_title') || "Gestión de Equipo"}
-          </h1>
+          <div className="flex flex-wrap items-center gap-4">
+            <h1 className="text-5xl font-serif font-semibold text-stone-800 tracking-tight">
+              {t('dashboard.team.team_title') || "Gestión de Equipo"}
+            </h1>
+            <PlanLimitsCard type="specialists" />
+          </div>
           <p className="text-stone-400 font-medium max-w-lg">
             {t('dashboard.team.team_subtitle') || "Administra los perfiles de los profesionales y personal de recepción de la clínica."}
           </p>

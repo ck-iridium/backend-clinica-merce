@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { Settings2, Plus } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from 'sonner';
+import PlanLimitsCard from '@/components/PlanLimitsCard';
 import ServicesDataGrid from './components/ServicesDataGrid';
 import ManageCategoriesModal from './components/ManageCategoriesModal';
 
@@ -70,9 +71,12 @@ export default function ServicesPage() {
   return (
     <div className="animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-extrabold text-stone-800">{t('dashboard.services.title')}</h1>
-          <p className="text-stone-500 mt-1 font-medium">{t('dashboard.services.subtitle')}</p>
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-center gap-4">
+            <h1 className="text-3xl font-extrabold text-stone-800">{t('dashboard.services.title')}</h1>
+            <PlanLimitsCard type="services" />
+          </div>
+          <p className="text-stone-500 font-medium">{t('dashboard.services.subtitle')}</p>
         </div>
         <div className="flex items-center gap-3">
           <button 

@@ -14,6 +14,41 @@ router = APIRouter(
 def read_settings(db: Session = Depends(database.get_db)):
     return crud.get_clinic_settings(db)
 
+@router.get("/limits")
+def read_tenant_limits(db: Session = Depends(database.get_db)):
+    from ..database import current_tenant_var
+    tenant_id = current_tenant_var.get()
+    if not tenant_id:
+        raise HTTPException(status_code=400, detail="Tenant context not found")
+        
+    tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+        
+    plan = tenant.plan_type or "free"
+    from ..limits import get_tenant_limits
+    limits = get_tenant_limits(plan)
+    
+    # Contar uso actual
+    services_count = db.query(models.Service).filter(models.Service.tenant_id == tenant_id).count()
+    specialists_count = db.query(models.Profile).filter(
+        models.Profile.tenant_id == tenant_id,
+        models.Profile.role.in_(["specialist", "receptionist", "admin"])
+    ).count()
+    
+    return {
+        "tenant_id": tenant_id,
+        "plan_type": plan,
+        "limits": {
+            "specialists": limits["specialists"],
+            "services": limits["services"]
+        },
+        "usage": {
+            "specialists": specialists_count,
+            "services": services_count
+        }
+    }
+
 @router.patch("/", response_model=schemas.ClinicSettingsResponse)
 def update_settings(settings_update: schemas.ClinicSettingsUpdate, db: Session = Depends(database.get_db)):
     return crud.update_clinic_settings(db, update_data=settings_update)
