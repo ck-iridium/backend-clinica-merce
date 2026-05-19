@@ -3,8 +3,9 @@
 Este documento es obligatorio para el desarrollo y estructuración del frontend. Las siguientes reglas son estrictas y deben ser seguidas para asegurar la mantenibilidad y el patrón "Quiet Luxury" a largo plazo.
 
 ## 1. Límite de Tamaño de Archivo
-- **REGLA CRÍTICA:** Ningún componente funcional de React, incluidos los archivos de página (`page.tsx` o `page.jsx`), debe superar las **250-300 líneas de código**.
-- Si un archivo se acerca a este límite, es un claro indicador de que está asumiendo demasiadas responsabilidades y debe dividirse inmediatamente.
+- **Límite para Orquestadores (`page.tsx`):** Un archivo de enrutamiento u orquestador principal de Next.js no debe superar las **500-600 líneas de código**. Esto proporciona suficiente margen para la importación, inicialización de estados, fetching de datos y estructura de pestañas sin saturar el archivo.
+- **Límite para Componentes de Presentación / UI:** Los componentes visuales individuales en `/components` deben mantenerse preferiblemente por debajo de las **300-400 líneas**.
+- **Límite Crítico (Alerta Roja):** Cualquier archivo que supere las **700 líneas** es considerado monolítico y requiere obligatoriamente una refactorización inmediata dividiéndolo en archivos más pequeños.
 
 ## 2. Separación Contenedor vs. Presentación
 - Los archivos de nivel superior de las rutas de Next.js (`page.tsx`) deben actuar **únicamente como orquestadores**.
