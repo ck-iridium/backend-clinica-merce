@@ -19,16 +19,28 @@ export function middleware(request: NextRequest) {
   // 2. Limpiar el hostname de puertos (ej. localhost:3000 -> localhost)
   const cleanHost = hostname.split(':')[0];
 
-  // 3. Detectar subdominio
-  let subdomain = "";
-  if (cleanHost.endsWith(".localhost")) {
-    subdomain = cleanHost.replace(".localhost", "");
-  } else {
-    const parts = cleanHost.split(".");
-    // En producción (ej: merce.tu-saas.com), si hay más de 2 partes y no es 'www', el primero es el subdominio
-    if (parts.length > 2 && parts[0] !== 'www') {
-      subdomain = parts[0];
+  // 3. Detectar subdominio, parámetro query 'tenant' o cookie
+  let subdomain = url.searchParams.get("tenant") || "";
+  
+  if (subdomain === "clear") {
+    subdomain = "";
+  }
+
+  if (!subdomain) {
+    if (cleanHost.endsWith(".localhost")) {
+      subdomain = cleanHost.replace(".localhost", "");
+    } else {
+      const parts = cleanHost.split(".");
+      // En producción (ej: merce.tu-saas.com), si hay más de 2 partes y no es 'www', el primero es el subdominio
+      if (parts.length > 2 && parts[0] !== 'www') {
+        subdomain = parts[0];
+      }
     }
+  }
+
+  // Fallback a cookie de inquilino para desarrollo local (permite persistir la sesión sin subdominios DNS locales)
+  if (!subdomain && cleanHost === "localhost" && url.pathname !== "/marketing") {
+    subdomain = request.cookies.get("tenant_slug")?.value || "";
   }
 
   // 4. Resolver tenant_id para el subdominio
