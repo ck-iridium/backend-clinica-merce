@@ -260,7 +260,9 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
         public_url = supabase.storage.from_("media").get_public_url(filename)
         
         # Guardar en DB
+        tenant_id = database.current_tenant_var.get() or "00000000-0000-0000-0000-000000000001"
         new_media = models.Media(
+            tenant_id=tenant_id,
             filename=filename,
             url=public_url,
             file_type="image",
