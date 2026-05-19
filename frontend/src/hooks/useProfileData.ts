@@ -8,6 +8,14 @@ import { toast } from 'sonner';
 import { useAuthRole } from '@/hooks/useAuthRole';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+}
+
 export function useProfileData() {
   const router = useRouter();
   const { role, loading: loadingRole } = useAuthRole();
@@ -57,6 +65,27 @@ export function useProfileData() {
           return;
         }
         setUser(session.user);
+
+        // Impersonación (Modo Soporte)
+        const isImpersonating = getCookie('is_impersonating') === 'true';
+        if (isImpersonating) {
+          const tenantName = getCookie('impersonate_tenant_name') || 'Clínica';
+          const mockProfile = {
+            id: session.user.id,
+            full_name: `Soporte Técnico`,
+            avatar_url: null,
+            receive_email_appointments: true,
+            receive_agenda_reminders: true
+          };
+          setProfile(mockProfile);
+          setFullName(mockProfile.full_name);
+          setPendingAvatarUrl(null);
+          setReceiveEmailAppointments(true);
+          setReceiveAgendaReminders(true);
+          setLoading(false);
+          return;
+        }
+
         const { success, profile: profileData } = await getUserProfile(session.user.id);
         if (success && profileData) {
           setProfile(profileData);
