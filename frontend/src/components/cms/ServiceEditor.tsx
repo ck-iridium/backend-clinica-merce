@@ -84,13 +84,30 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
   const [isDeleting, setIsDeleting] = useState(false);
   const [showAIModal, setShowAIModal] = useState<'short_description' | 'rich_content' | null>(null);
 
-  const { register, handleSubmit, watch, setValue, control, reset, formState: { isDirty } } = useForm<ServiceFormData>({
+  const { register, handleSubmit, watch, setValue, control, reset, formState: { isDirty, errors } } = useForm<ServiceFormData>({
     defaultValues: initialData ? {
       ...DEFAULT_FORM_DATA,
       ...initialData,
       layout_preferences: initialData.layout_preferences || DEFAULT_FORM_DATA.layout_preferences
     } : DEFAULT_FORM_DATA
   });
+
+  const formValues = watch();
+  const serviceName = formValues.name;
+
+  // Generación automática del slug a partir del nombre
+  useEffect(() => {
+    if (isNew && slugLocked && serviceName) {
+      const generatedSlug = serviceName
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // remover acentos
+        .replace(/[^a-z0-9\s-]/g, "")    // remover caracteres especiales
+        .trim()
+        .replace(/\s+/g, "-");           // reemplazar espacios por guiones
+      setValue('slug', generatedSlug, { shouldDirty: true });
+    }
+  }, [serviceName, isNew, slugLocked, setValue]);
 
   // Sincronizar formulario cuando cargan los datos iniciales
   useEffect(() => {
@@ -120,7 +137,25 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
     }
   }, [initialData, reset]);
 
-  const formValues = watch();
+  const onInvalid = (formErrors: any) => {
+    console.error("Form Validation Errors:", formErrors);
+    
+    // Diccionario de campos para traducirlos a etiquetas amigables
+    const fieldNames: Record<string, string> = {
+      name: t('dashboard.services.service_name_label') || "Nombre del Servicio",
+      slug: t('dashboard.services.slug_label') || "Slug",
+      category_id: t('dashboard.services.category_label') || "Categoría",
+      price: t('dashboard.services.price_label') || "Precio",
+      duration_minutes: t('dashboard.services.duration_label') || "Duración",
+      deposit_amount: t('dashboard.services.deposit_amount_label') || "Monto de la Fianza"
+    };
+
+    const firstErrorKey = Object.keys(formErrors)[0];
+    if (firstErrorKey) {
+      const friendlyName = fieldNames[firstErrorKey] || firstErrorKey;
+      toast.error(`${t('dashboard.services.field_required') || 'El campo es obligatorio'}: ${friendlyName}`);
+    }
+  };
 
   const fetchCategories = () => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/service-categories/`)
@@ -230,7 +265,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
     <div className="flex flex-col md:flex-row h-screen overflow-hidden bg-[#FAFAFA]">
       {/* ─── PANEL IZQUIERDO: Configuración (100% móvil, 30% desktop) ─────────────────────────────── */}
       <aside className="w-full md:w-[30%] md:min-w-[350px] md:max-w-[450px] h-full bg-white border-r border-stone-200 flex flex-col shadow-sm overflow-hidden shrink-0 z-20">
-        <form id="service-editor-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full">
+        <form id="service-editor-form" onSubmit={handleSubmit(onSubmit, onInvalid)} className="flex flex-col h-full">
 
           {/* Cabecera del Panel */}
           <div className="px-6 py-5 border-b border-stone-100 flex items-center justify-between shrink-0">
