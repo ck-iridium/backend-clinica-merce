@@ -74,6 +74,7 @@ export function middleware(request: NextRequest) {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-tenant-id", tenantId);
     requestHeaders.set("x-tenant-slug", subdomain);
+    requestHeaders.set("x-pathname", url.pathname);
 
     // Reescribimos la petición con los encabezados modificados para que Server Components los lean
     const response = NextResponse.rewrite(url, {

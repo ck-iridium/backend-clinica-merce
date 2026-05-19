@@ -99,10 +99,12 @@ export default async function RootLayout({
 }) {
   const requestHeaders = headers();
   const tenantSlug = requestHeaders.get("x-tenant-slug") || "";
+  const pathname = requestHeaders.get("x-pathname") || "";
   const isMarketing = !tenantSlug || tenantSlug === "www";
+  const isBypassRoute = pathname.startsWith("/super-admin") || pathname.startsWith("/login");
 
   let isSuspended = false;
-  if (!isMarketing) {
+  if (!isMarketing && !isBypassRoute) {
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       const tenantId = requestHeaders.get("x-tenant-id") || '00000000-0000-0000-0000-000000000001';
