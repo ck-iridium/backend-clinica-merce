@@ -36,14 +36,15 @@ async function getData(tenantId: string) {
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-  const [content, settings, services, categories] = await Promise.all([
+  const [content, settings, services, categories, blocks] = await Promise.all([
     fetchSafe(`${apiUrl}/site-content/`, null),
     fetchSafe(`${apiUrl}/settings/`, null),
     fetchSafe(`${apiUrl}/services/`, []),
-    fetchSafe(`${apiUrl}/service-categories/`, [])
+    fetchSafe(`${apiUrl}/service-categories/`, []),
+    fetchSafe(`${apiUrl}/cms/blocks/home`, [])
   ]);
 
-  return { content, settings, services, categories };
+  return { content, settings, services, categories, blocks };
 }
 
 export default async function Home() {

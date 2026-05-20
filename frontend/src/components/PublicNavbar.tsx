@@ -115,13 +115,12 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
   const [settings, setSettings] = useState<any>(null);
   const [siteContent, setSiteContent] = useState<any>(null);
   const [btnLink, setBtnLink] = useState('/reservar');
-
-  // States for Phase 1
   const [categories, setCategories] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [showMegaMenu, setShowMegaMenu] = useState(false);
   const [mobileAccordionOpen, setMobileAccordionOpen] = useState(false);
+  const [navigationItems, setNavigationItems] = useState<any[]>([]);
 
   const getFullUrl = (url: string) => {
     if (!url) return '';
@@ -140,7 +139,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
   const navTranslations: Record<string, Record<string, string>> = {
     es: { home: 'Inicio', treatments: 'Tratamientos', contact: 'Contacto', categories: 'Categorías', no_featured: 'No hay tratamientos destacados en esta categoría.', close_menu: 'Cerrar menú', open_menu: 'Abrir menú', phone_booking: 'Reserva telefónica', see_all: 'Ver Todos' },
     en: { home: 'Home', treatments: 'Treatments', contact: 'Contact', categories: 'Categories', no_featured: 'No featured treatments in this category.', close_menu: 'Close menu', open_menu: 'Open menu', phone_booking: 'Phone booking', see_all: 'See All' },
-    fr: { home: 'Accueil', treatments: 'Soins', contact: 'Contact', categories: 'Catégories', no_featured: 'Aucun soin vedette dans cette catégorie.', close_menu: 'Fermer le menu', open_menu: 'Ouvrir le menu', phone_booking: 'Réservation par téléphone', see_all: 'Voir Tout' }
+    fr: { home: 'Accueil', treatments: 'Soins', contact: 'Contact', categories: 'Catégories', no_featured: 'Aucun soin vedette dans cette categoría.', close_menu: 'Fermer le menu', open_menu: 'Ouvrir le menu', phone_booking: 'Réservation par teléfono', see_all: 'Voir Tout' }
   };
   const navT = navTranslations[language] || navTranslations.es;
 
@@ -165,6 +164,23 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
       .catch(() => { });
 
     if (!isDashboard) {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/cms/navigation`)
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            setNavigationItems(data.filter((item: any) => item.is_visible));
+          } else {
+            throw new Error("Invalid nav data");
+          }
+        })
+        .catch(() => {
+          setNavigationItems([
+            { id: '1', label: 'Inicio', path: '/' },
+            { id: '2', label: 'Tratamientos', path: '/tratamientos' },
+            { id: '3', label: 'Contacto', path: '/contacto' }
+          ]);
+        });
+
       fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/service-categories/`)
         .then(res => res.json())
         .then(data => {
@@ -218,19 +234,53 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
           </div>
 
           <div className="hidden md:flex items-center gap-8 font-bold text-sm">
-            <Link href="/" className={`transition-colors ${pathname === '/' ? 'text-[#d4af37]' : (!useTransparent ? 'text-stone-800 hover:text-[#d4af37]' : 'text-white hover:text-[#d4af37]')}`}>{navT.home}</Link>
+            {navigationItems.map((item) => {
+              const isServices = item.path === '/services' || item.path === '/tratamientos';
+              const isActive = pathname === item.path;
+              const label = item.path === '/' 
+                ? navT.home 
+                : (item.path === '/services' || item.path === '/tratamientos' ? navT.treatments : (item.path === '/contacto' ? navT.contact : item.label));
+              
+              if (isServices) {
+                return (
+                  <div
+                    key={item.id || item.path}
+                    className="h-20 flex items-center"
+                    onMouseEnter={() => setShowMegaMenu(true)}
+                    onMouseLeave={() => setShowMegaMenu(false)}
+                  >
+                    <Link
+                      href={item.path}
+                      className={`transition-colors flex items-center gap-1 ${
+                        isActive
+                          ? 'text-[#d4af37]'
+                          : !useTransparent
+                          ? 'text-stone-800 hover:text-[#d4af37]'
+                          : 'text-white hover:text-[#d4af37]'
+                      }`}
+                    >
+                      {label}
+                    </Link>
+                  </div>
+                );
+              }
 
-            <div
-              className="h-20 flex items-center"
-              onMouseEnter={() => setShowMegaMenu(true)}
-              onMouseLeave={() => setShowMegaMenu(false)}
-            >
-              <Link href="/tratamientos" className={`transition-colors flex items-center gap-1 ${pathname === '/tratamientos' ? 'text-[#d4af37]' : !useTransparent ? 'text-stone-800 hover:text-[#d4af37]' : 'text-white hover:text-[#d4af37]'}`}>
-                {navT.treatments}
-              </Link>
-            </div>
-
-            <Link href="/contacto" className={`transition-colors ${pathname === '/contacto' ? 'text-[#d4af37]' : !useTransparent ? 'text-stone-800 hover:text-[#d4af37]' : 'text-white hover:text-[#d4af37]'}`}>{navT.contact}</Link>
+              return (
+                <Link
+                  key={item.id || item.path}
+                  href={item.path}
+                  className={`transition-colors ${
+                    isActive
+                      ? 'text-[#d4af37]'
+                      : !useTransparent
+                      ? 'text-stone-800 hover:text-[#d4af37]'
+                      : 'text-white hover:text-[#d4af37]'
+                  }`}
+                >
+                  {label}
+                </Link>
+              );
+            })}
             <div className="flex items-center gap-4">
               <LanguageSelector />
               <BotonReservaPro 
@@ -340,29 +390,47 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
             </div>
           </button>
 
-          {/* Enlaces */}
-          <Link href="/" onClick={() => setIsOpen(false)} className={`transition-all duration-300 active:scale-95 ${pathname === '/' ? 'text-[#d4af37]' : 'hover:text-[#d4af37]'}`}>{navT.home}</Link>
+          {/* Enlaces Dinámicos */}
+          {navigationItems.map((item) => {
+            const isServices = item.path === '/services' || item.path === '/tratamientos';
+            const isActive = pathname === item.path;
+            const label = item.path === '/' 
+              ? navT.home 
+              : (item.path === '/services' || item.path === '/tratamientos' ? navT.treatments : (item.path === '/contacto' ? navT.contact : item.label));
 
-          {/* Acordeón Móvil Tratamientos */}
-          <div className="w-full flex flex-col items-center">
-            <div className="flex items-center gap-2 cursor-pointer" onClick={() => setMobileAccordionOpen(!mobileAccordionOpen)}>
-              <span className={`transition-all duration-300 active:scale-95 ${pathname === '/tratamientos' ? 'text-[#d4af37]' : 'hover:text-[#d4af37]'}`}>{navT.treatments}</span>
-              <span className={`text-sm text-[#d4af37] transition-transform duration-300 ${mobileAccordionOpen ? 'rotate-180' : ''}`}>▼</span>
-            </div>
+            if (isServices) {
+              return (
+                <div key={item.id || item.path} className="w-full flex flex-col items-center">
+                  <div className="flex items-center gap-2 cursor-pointer" onClick={() => setMobileAccordionOpen(!mobileAccordionOpen)}>
+                    <span className={`transition-all duration-300 active:scale-95 ${isActive ? 'text-[#d4af37]' : 'hover:text-[#d4af37]'}`}>{label}</span>
+                    <span className={`text-sm text-[#d4af37] transition-transform duration-300 ${mobileAccordionOpen ? 'rotate-180' : ''}`}>▼</span>
+                  </div>
 
-            <div className={`flex flex-col items-center gap-4 overflow-hidden transition-all duration-500 ease-in-out ${mobileAccordionOpen ? 'max-h-[500px] mt-6 opacity-100' : 'max-h-0 opacity-0 mt-0'}`}>
-              <Link href="/tratamientos" onClick={() => setIsOpen(false)} className="text-xl font-serif text-[#d4af37] italic hover:text-stone-900 transition-colors">
-                {navT.see_all}
+                  <div className={`flex flex-col items-center gap-4 overflow-hidden transition-all duration-500 ease-in-out ${mobileAccordionOpen ? 'max-h-[500px] mt-6 opacity-100' : 'max-h-0 opacity-0 mt-0'}`}>
+                    <Link href={item.path} onClick={() => setIsOpen(false)} className="text-xl font-serif text-[#d4af37] italic hover:text-stone-900 transition-colors">
+                      {navT.see_all}
+                    </Link>
+                    {translatedCategories.map(cat => (
+                      <Link key={cat.id} href={`/tratamientos/${cat.slug || cat.id}`} onClick={() => setIsOpen(false)} className="text-xl font-serif font-normal text-stone-500 hover:text-stone-800 transition-colors">
+                        {cat.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <Link
+                key={item.id || item.path}
+                href={item.path}
+                onClick={() => setIsOpen(false)}
+                className={`transition-all duration-300 active:scale-95 ${isActive ? 'text-[#d4af37]' : 'hover:text-[#d4af37]'}`}
+              >
+                {label}
               </Link>
-              {translatedCategories.map(cat => (
-                <Link key={cat.id} href={`/tratamientos/${cat.slug || cat.id}`} onClick={() => setIsOpen(false)} className="text-xl font-serif font-normal text-stone-500 hover:text-stone-800 transition-colors">
-                  {cat.name}
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <Link href="/contacto" onClick={() => setIsOpen(false)} className={`transition-all duration-300 active:scale-95 ${pathname === '/contacto' ? 'text-[#d4af37]' : 'hover:text-[#d4af37]'}`}>{navT.contact}</Link>
+            );
+          })}
 
           <div className="w-full h-px bg-stone-100 my-2 max-w-[150px] mx-auto"></div>
 
