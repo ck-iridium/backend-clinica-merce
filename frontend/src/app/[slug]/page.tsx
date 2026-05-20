@@ -2,8 +2,9 @@ import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import FlexCustomBlock from '@/components/blocks/FlexCustomBlock';
 import TitleHeadingBlock from '@/components/blocks/TitleHeadingBlock';
+import BentoGridServices from '@/components/blocks/BentoGridServices';
 
-// Registro del motor de bloques
+// Registro del motor de bloques estándar
 const BLOCK_COMPONENTS: Record<string, React.FC<any>> = {
   text_image_cta: FlexCustomBlock,
   title_heading: TitleHeadingBlock,
@@ -12,7 +13,7 @@ const BLOCK_COMPONENTS: Record<string, React.FC<any>> = {
 // Tipos
 interface Block {
   id: string;
-  block_type: string;
+  block_type: 'title_heading' | 'text_image_cta' | 'atomic_image' | 'atomic_category';
   content_data: Record<string, any>;
   order_index: number;
 }
@@ -94,6 +95,20 @@ export default async function CustomPage({ params }: PageProps) {
     // Devuelve vacío, se muestra el estado vacío elegante
   }
 
+  // 3. Cargar los datos del negocio para renderizar las categorías y tratamientos
+  let dbCategories: any[] = [];
+  let dbServices: any[] = [];
+  try {
+    const [resCat, resSvc] = await Promise.all([
+      fetch(`${baseUrl}/service-categories/`, { headers: { 'X-Tenant-ID': tenantId } }),
+      fetch(`${baseUrl}/services/`, { headers: { 'X-Tenant-ID': tenantId } })
+    ]);
+    if (resCat.ok) dbCategories = await resCat.json();
+    if (resSvc.ok) dbServices = await resSvc.json();
+  } catch {
+    // Silencioso
+  }
+
   return (
     <>
       <main className="w-full min-h-screen bg-[#FAFAFA] pt-20">
@@ -102,6 +117,84 @@ export default async function CustomPage({ params }: PageProps) {
         {blocks.length > 0 ? (
           <div className="flex flex-col w-full">
             {blocks.map((block) => {
+              // Bloque Atómico de Imagen / Vídeo Loop
+              if (block.block_type === 'atomic_image') {
+                const data = block.content_data;
+                if (!data.image_url) return null;
+
+                const isVideo = data.image_url?.includes('.mp4') || data.image_url?.includes('.webm') || data.image_url?.includes('video_');
+                const alignmentClass = 
+                  data.alignment === 'left' ? 'justify-start text-left' : 
+                  data.alignment === 'right' ? 'justify-end text-right' : 
+                  'justify-center text-center';
+                
+                const isFullWidth = data.alignment === 'full_width';
+
+                return (
+                  <section key={block.id} className={`w-full py-12 ${isFullWidth ? 'px-0' : 'px-6'} flex justify-center bg-[#FAFAFA]`}>
+                    <div className={`w-full flex ${alignmentClass}`}>
+                      <div 
+                        className={`rounded-[2rem] overflow-hidden shadow-luxury border border-stone-100/50 bg-white ${isFullWidth ? 'w-full max-w-none rounded-none border-none p-0' : 'p-4'}`}
+                        style={{ maxWidth: isFullWidth ? '100%' : (data.max_width || '800px') }}
+                      >
+                        {isVideo ? (
+                          <video 
+                            src={data.image_url} 
+                            autoPlay 
+                            loop 
+                            muted 
+                            playsInline 
+                            className={`w-full object-cover rounded-2xl ${isFullWidth ? 'h-[60vh] rounded-none' : ''}`} 
+                          />
+                        ) : (
+                          <img 
+                            src={data.image_url} 
+                            alt={data.caption || 'Imagen'} 
+                            className={`w-full h-auto rounded-2xl ${isFullWidth ? 'rounded-none' : ''}`} 
+                          />
+                        )}
+                        {data.caption && (
+                          <p className={`mt-4 text-xs font-semibold text-stone-500 italic ${isFullWidth ? 'px-6' : ''}`}>
+                            {data.caption}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </section>
+                );
+              }
+
+              // Bloque Atómico de Tratamientos de una Categoría
+              if (block.block_type === 'atomic_category') {
+                const data = block.content_data;
+                const category = dbCategories.find(c => c.id === data.category_id);
+                let filteredServices = dbServices.filter(svc => svc.category_id === data.category_id && svc.is_active);
+                
+                // Filtrado específico de tratamientos por id si se eligieron en el editor
+                if (data.selected_treatment_ids && data.selected_treatment_ids.length > 0) {
+                  filteredServices = filteredServices.filter(svc => data.selected_treatment_ids.includes(svc.id));
+                }
+
+                if (data.max_items) {
+                  filteredServices = filteredServices.slice(0, data.max_items);
+                }
+
+                if (filteredServices.length === 0) return null;
+
+                return (
+                  <section key={block.id} className="w-full bg-[#FAFAFA] -mt-10">
+                    <BentoGridServices 
+                      data={{ 
+                        title: category?.name || 'Nuestros Tratamientos', 
+                        subtitle: category?.description || 'Tratamientos de alta gama adaptados a ti.' 
+                      }} 
+                      services={filteredServices} 
+                    />
+                  </section>
+                );
+              }
+
+              // Renderizado de bloques estándar (FlexCustomBlock, TitleHeadingBlock)
               const Component = BLOCK_COMPONENTS[block.block_type];
               if (!Component) return null;
               return (
