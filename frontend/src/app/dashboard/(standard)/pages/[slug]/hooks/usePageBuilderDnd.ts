@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { toast } from 'sonner';
 import {
@@ -40,6 +40,7 @@ const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export function usePageBuilderDnd(slug: string | string[]) {
   const { showFeedback } = useFeedback();
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [pageTitle, setPageTitle] = useState<string>('');
   const [sections, setSections] = useState<SectionBlock[]>([]);
@@ -58,6 +59,12 @@ export function usePageBuilderDnd(slug: string | string[]) {
   const [editingBlock, setEditingBlock] = useState<any>(null);
   const [savingBlock, setSavingBlock] = useState(false);
   const [editFormData, setEditFormData] = useState<Record<string, any>>({});
+
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  const handleDragStart = (event: any) => {
+    setActiveId(event.active.id as string);
+  };
 
   // Selección de archivos en galería
   const [showGallery, setShowGallery] = useState(false);
@@ -289,22 +296,28 @@ export function usePageBuilderDnd(slug: string | string[]) {
     }
   };
 
-  // Sincronizar sección individual con Supabase
-  const saveSectionToBackend = async (section: SectionBlock) => {
-    const promise = fetch(`${API}/cms/blocks/${section.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        block_type: 'section',
-        content_data: section.content_data
-      })
-    });
+  // Sincronizar sección individual con Supabase con Debounce integrado
+  const saveSectionToBackend = (section: SectionBlock) => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
 
-    toast.promise(promise, {
-      loading: 'Guardando cambios estructurales...',
-      success: 'Sección sincronizada',
-      error: 'Error al sincronizar con Supabase'
-    });
+    saveTimeoutRef.current = setTimeout(async () => {
+      const promise = fetch(`${API}/cms/blocks/${section.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          block_type: 'section',
+          content_data: section.content_data
+        })
+      });
+
+      toast.promise(promise, {
+        loading: 'Sincronizando con Supabase...',
+        success: 'Cambios sincronizados correctamente',
+        error: 'Error al sincronizar con Supabase'
+      });
+    }, 800); // 800ms de debounce
   };
 
   // Abrir modal de añadir bloque
@@ -449,13 +462,87 @@ export function usePageBuilderDnd(slug: string | string[]) {
     }
   };
 
-  // Soltar bloque arrastrado (DND-kit)
   const handleDragEnd = (event: DragEndEvent) => {
+    setActiveId(null);
     const { active, over } = event;
     if (!over) return;
 
     const activeId = active.id as string;
     const overId = over.id as string;
+
+    // ──── CASO A: ARRASTRE DESDE EL PANEL LATERAL (CREATOR SIDEBAR) ──
+    if (activeId.startsWith('library-')) {
+      const blockType = activeId.replace('library-', '');
+      
+      let targetSectionId = '';
+      let targetColumnId = '';
+      
+      sections.forEach(sec => {
+        sec.content_data.columns.forEach(col => {
+          if (col.id === overId) {
+            targetSectionId = sec.id;
+            targetColumnId = col.id;
+          } else {
+            const found = col.blocks.find(b => b.id === overId);
+            if (found) {
+              targetSectionId = sec.id;
+              targetColumnId = col.id;
+            }
+          }
+        });
+      });
+
+      if (!targetColumnId) return;
+
+      // Crear content_data por defecto según el tipo
+      let defaultContent = {};
+      if (blockType === 'title_heading') {
+        defaultContent = { title: 'Nuevo Título Atómico', title_tag: 'h2', alignment: 'center' };
+      } else if (blockType === 'atomic_text') {
+        defaultContent = { html: '<p>Escribe tu párrafo de texto aquí...</p>' };
+      } else if (blockType === 'atomic_image') {
+        defaultContent = { image_url: '', caption: 'Pie de foto', alignment: 'center', max_width: '800px' };
+      } else if (blockType === 'text_image_cta') {
+        defaultContent = { title: 'Contenido Atómico', description: 'Escribe aquí un párrafo persuasivo.', image_url: '', image_position: 'left' };
+      } else if (blockType === 'atomic_button') {
+        defaultContent = { text: 'Acción', url: '#', style: 'gold_solid', alignment: 'center' };
+      } else if (blockType === 'atomic_category') {
+        defaultContent = { category_id: dbCategories[0]?.id || '', selected_treatment_ids: [], layout: 'grid', max_items: 4 };
+      }
+
+      const newBlock: AtomicBlock = {
+        id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        block_type: blockType as any,
+        content_data: defaultContent
+      };
+
+      const updatedSections = sections.map(sec => {
+        if (sec.id !== targetSectionId) return sec;
+        const struct = sec.content_data;
+        const updatedCols = struct.columns.map(col => {
+          if (col.id !== targetColumnId) return col;
+          
+          const currentBlocks = [...col.blocks];
+          let insertIndex = currentBlocks.findIndex(b => b.id === overId);
+          if (insertIndex === -1) {
+            insertIndex = currentBlocks.length;
+          }
+          
+          currentBlocks.splice(insertIndex, 0, newBlock);
+          return { ...col, blocks: currentBlocks };
+        });
+        return { ...sec, content_data: { ...struct, columns: updatedCols } };
+      });
+
+      setSections(updatedSections);
+      toast.success('¡Bloque añadido desde la biblioteca!');
+      
+      const targetSec = updatedSections.find(s => s.id === targetSectionId);
+      if (targetSec) {
+        saveSectionToBackend(targetSec);
+      }
+      return;
+    }
 
     let sourceSectionId = '';
     let sourceColumnId = '';
@@ -606,5 +693,7 @@ export function usePageBuilderDnd(slug: string | string[]) {
     handleDragEnd,
     handleImageSelected,
     openGalleryFor,
+    activeId,
+    handleDragStart,
   };
 }
