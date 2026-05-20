@@ -140,9 +140,7 @@ export function usePageBuilderDnd(slug: string | string[]) {
                     blocks: [
                       {
                         id: `atomic-${block.id}`,
-                        block_type: block.block_type.startsWith('atomic_') 
-                          ? block.block_type 
-                          : `atomic_${block.block_type}`,
+                        block_type: block.block_type,
                         content_data: block.content_data
                       }
                     ]
@@ -321,7 +319,7 @@ export function usePageBuilderDnd(slug: string | string[]) {
     setAdding(true);
 
     let defaultContent = {};
-    const normalizedType = type.startsWith('atomic_') ? type : `atomic_${type}`;
+    const normalizedType = type;
 
     if (type === 'title_heading') {
       defaultContent = {

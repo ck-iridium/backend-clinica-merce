@@ -111,6 +111,7 @@ export default function CustomPageEditor() {
             onDeleteBlock={handleDeleteBlockFromColumn}
             onOpenAddBlockModal={handleOpenAddBlockForColumn}
             dbCategories={dbCategories}
+            dbServices={dbServices}
             onAddNewSection={handleAddNewSection}
           />
         </div>

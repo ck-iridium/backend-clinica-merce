@@ -40,6 +40,7 @@ interface BlockListProps {
   onDeleteBlock: (blockId: string, sectionId: string, columnId: string) => void;
   onOpenAddBlockModal: (sectionId: string, columnId: string) => void;
   dbCategories: any[];
+  dbServices: any[];
   onAddNewSection: () => void;
 }
 
@@ -53,6 +54,7 @@ export default function BlockList({
   onDeleteBlock,
   onOpenAddBlockModal,
   dbCategories,
+  dbServices,
   onAddNewSection,
 }: BlockListProps) {
 
@@ -178,6 +180,7 @@ export default function BlockList({
                     onEdit={(block) => onEditBlock(block, section.id, col.id)}
                     onDelete={(blockId) => onDeleteBlock(blockId, section.id, col.id)}
                     dbCategories={dbCategories}
+                    dbServices={dbServices}
                   />
                   
                   {/* Botón Añadir Bloque en Columna */}

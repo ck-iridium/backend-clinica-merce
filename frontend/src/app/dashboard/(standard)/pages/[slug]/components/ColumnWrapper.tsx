@@ -17,6 +17,7 @@ interface ColumnWrapperProps {
   onEdit: (block: any) => void;
   onDelete: (blockId: string, columnId: string) => void;
   dbCategories: any[];
+  dbServices: any[];
 }
 
 export default function ColumnWrapper({
@@ -26,6 +27,7 @@ export default function ColumnWrapper({
   onEdit,
   onDelete,
   dbCategories,
+  dbServices,
 }: ColumnWrapperProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: id,
@@ -54,6 +56,7 @@ export default function ColumnWrapper({
               onEdit={onEdit}
               onDelete={onDelete}
               dbCategories={dbCategories}
+              dbServices={dbServices}
             />
           ))}
         </SortableContext>

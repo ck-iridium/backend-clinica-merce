@@ -33,6 +33,8 @@ export default function BlockEditorModal({
   dbServices,
   openGalleryFor,
 }: BlockEditorModalProps) {
+  const selectClass = "w-full border border-stone-200/80 rounded-2xl px-4 py-3.5 text-sm focus:outline-none focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/10 bg-white shadow-sm hover:shadow-md font-sans font-bold text-stone-700 transition-all duration-300 hover:border-stone-300 cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M7%209l3%203%203-3%22%20stroke%3D%22%236b7280%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_1.25rem_center] bg-[size:1.5em_1.5em] bg-no-repeat pr-12";
+
   if (!isOpen || !editingBlock) return null;
 
   return (
@@ -82,7 +84,7 @@ export default function BlockEditorModal({
                   <select
                     value={editFormData.title_tag || 'h2'}
                     onChange={e => onChangeFormData({ ...editFormData, title_tag: e.target.value })}
-                    className="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none bg-transparent"
+                    className={selectClass}
                   >
                     <option value="h1">H1 (Principal)</option>
                     <option value="h2">H2 (Sección)</option>
@@ -95,7 +97,7 @@ export default function BlockEditorModal({
                   <select
                     value={editFormData.alignment || 'center'}
                     onChange={e => onChangeFormData({ ...editFormData, alignment: e.target.value })}
-                    className="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none bg-transparent"
+                    className={selectClass}
                   >
                     <option value="left">Izquierda</option>
                     <option value="center">Centro</option>
@@ -166,7 +168,7 @@ export default function BlockEditorModal({
                   <select
                     value={editFormData.image_position || 'left'}
                     onChange={e => onChangeFormData({ ...editFormData, image_position: e.target.value })}
-                    className="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none bg-transparent"
+                    className={selectClass}
                   >
                     <option value="left">A la izquierda</option>
                     <option value="right">A la derecha</option>
@@ -184,7 +186,7 @@ export default function BlockEditorModal({
                         style: e.target.value
                       }
                     })}
-                    className="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none bg-transparent"
+                    className={selectClass}
                   >
                     <option value="gold_solid">Dorado Sólido</option>
                     <option value="gold_outline">Dorado Borde</option>
@@ -270,7 +272,7 @@ export default function BlockEditorModal({
                   <select
                     value={editFormData.alignment || 'center'}
                     onChange={e => onChangeFormData({ ...editFormData, alignment: e.target.value })}
-                    className="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none bg-transparent"
+                    className={selectClass}
                   >
                     <option value="left">Izquierda</option>
                     <option value="center">Centro</option>
@@ -308,7 +310,7 @@ export default function BlockEditorModal({
                       selected_treatment_ids: [] // Reiniciar seleccionados al cambiar categoría
                     });
                   }}
-                  className="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none bg-transparent"
+                  className={selectClass}
                 >
                   <option value="" disabled>Selecciona una categoría...</option>
                   {dbCategories.map(cat => (
@@ -359,7 +361,7 @@ export default function BlockEditorModal({
                   <select
                     value={editFormData.layout || 'grid'}
                     onChange={e => onChangeFormData({ ...editFormData, layout: e.target.value })}
-                    className="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none bg-transparent"
+                    className={selectClass}
                   >
                     <option value="grid">Bento Grid Dinámico</option>
                     <option value="slider">Slider Cards Deslizable</option>
