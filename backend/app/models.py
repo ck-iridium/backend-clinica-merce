@@ -248,6 +248,13 @@ class ClinicSettings(Base):
     global_deposit_required = Column(Boolean, default=False)
     global_deposit_amount = Column(Numeric(10, 2), nullable=True, default=0.0)
 
+    # Design & Onboarding Tokens
+    branding_font_headings = Column(String, default="Playfair Display")
+    branding_font_body = Column(String, default="Inter")
+    onboarding_completed = Column(Boolean, default=False)
+    theme_palette = Column(String, default="charcoal-gold")
+
+
 class Invoice(Base):
     __tablename__ = "invoices"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -339,4 +346,28 @@ class Notification(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User", foreign_keys=[user_id])
+
+
+class SiteNavigation(Base):
+    __tablename__ = "site_navigation"
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
+    label = Column(String(100), nullable=False)
+    path = Column(String(255), nullable=False)
+    is_visible = Column(Boolean, default=True)
+    order_index = Column(Integer, default=0)
+    is_custom = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class SiteBlock(Base):
+    __tablename__ = "site_blocks"
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
+    page_slug = Column(String(100), default="home")
+    block_type = Column(String(50), nullable=False)
+    content_data = Column(JSONB, nullable=False)
+    order_index = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
 

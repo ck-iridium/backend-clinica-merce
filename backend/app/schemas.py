@@ -168,7 +168,14 @@ class ClinicSettingsBase(BaseModel):
     global_deposit_required: Optional[bool] = False
     global_deposit_amount: Optional[float] = None
 
+    # Design & Onboarding Tokens
+    branding_font_headings: Optional[str] = "Playfair Display"
+    branding_font_body: Optional[str] = "Inter"
+    onboarding_completed: bool = False
+    theme_palette: Optional[str] = "charcoal-gold"
+
     ai_provider: Optional[str] = "gemini"
+
     gemini_api_key: Optional[str] = None
     openai_api_key: Optional[str] = None
     gemini_model_text: Optional[str] = None
@@ -223,6 +230,11 @@ class ClinicSettingsUpdate(BaseModel):
     openai_model_image: Optional[str] = None
     default_image_shot: Optional[str] = None
     default_image_style: Optional[str] = None
+    branding_font_headings: Optional[str] = None
+    branding_font_body: Optional[str] = None
+    onboarding_completed: Optional[bool] = None
+    theme_palette: Optional[str] = None
+
 
 # --- Consents ---
 class ConsentBase(BaseModel):
@@ -536,5 +548,55 @@ class OptimizePromptRequest(BaseModel):
     service_name: str
     description: Optional[str] = ""
     content_html: Optional[str] = ""
+
+
+# --- CMS Navigation ---
+class NavigationItemBase(BaseModel):
+    label: str
+    path: str
+    is_visible: bool = True
+    order_index: int = 0
+    is_custom: bool = False
+
+class NavigationItemOut(NavigationItemBase):
+    id: str
+    tenant_id: str
+
+    class Config:
+        from_attributes = True
+
+class NavigationReorderRequest(BaseModel):
+    ids: List[str]
+
+class NavigationUpdateRequest(BaseModel):
+    label: Optional[str] = None
+    is_visible: Optional[bool] = None
+
+
+# --- CMS Modular Blocks ---
+class SiteBlockBase(BaseModel):
+    page_slug: str = "home"
+    block_type: str
+    content_data: Dict[str, Any]
+    order_index: int = 0
+
+class SiteBlockOut(SiteBlockBase):
+    id: str
+    tenant_id: str
+
+    class Config:
+        from_attributes = True
+
+
+# --- Onboarding Wizard ---
+class OnboardingSetupRequest(BaseModel):
+    clinic_name: str
+    logo_app_b64: Optional[str] = None
+    industry: str = Field(..., description="Estética y Bienestar, Medicina Estética, Clínicas de Salud, Salones y Barberías")
+    open_time: str = "09:00"
+    close_time: str = "19:00"
+    working_days: List[int] = [1, 2, 3, 4, 5]
+    load_demo_data: bool = True
+
 
 
