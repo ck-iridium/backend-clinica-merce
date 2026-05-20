@@ -1,20 +1,33 @@
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
-import FlexCustomBlock from '@/components/blocks/FlexCustomBlock';
-import TitleHeadingBlock from '@/components/blocks/TitleHeadingBlock';
 import BentoGridServices from '@/components/blocks/BentoGridServices';
+import Link from 'next/link';
 
-// Registro del motor de bloques estándar
-const BLOCK_COMPONENTS: Record<string, React.FC<any>> = {
-  text_image_cta: FlexCustomBlock,
-  title_heading: TitleHeadingBlock,
-};
-
-// Tipos
-interface Block {
+// Tipos estructurales del Page Builder
+interface AtomicBlock {
   id: string;
-  block_type: 'title_heading' | 'text_image_cta' | 'atomic_image' | 'atomic_category';
+  block_type: 'atomic_title' | 'atomic_text' | 'atomic_image' | 'atomic_button' | 'atomic_category' | 'title_heading' | 'text_image_cta';
   content_data: Record<string, any>;
+}
+
+interface ColumnStructure {
+  id: string;
+  width: string;
+  blocks: AtomicBlock[];
+}
+
+interface SectionStructure {
+  id: string;
+  columns_count: number;
+  py_spacing?: string;
+  bg_color?: string;
+  columns: ColumnStructure[];
+}
+
+interface SectionBlock {
+  id: string;
+  block_type: 'section';
+  content_data: SectionStructure;
   order_index: number;
 }
 
@@ -30,7 +43,6 @@ export async function generateMetadata({ params }: PageProps) {
   const tenantId = requestHeaders.get('x-tenant-id') || '00000000-0000-0000-0000-000000000001';
 
   try {
-    // Comprobamos si la página existe en site_navigation
     const res = await fetch(`${baseUrl}/cms/navigation`, {
       next: { revalidate: 60 },
       headers: { 'X-Tenant-ID': tenantId },
@@ -81,19 +93,54 @@ export default async function CustomPage({ params }: PageProps) {
     notFound();
   }
 
-  // 2. Cargar los bloques de esta página
-  let blocks: Block[] = [];
+  // 2. Cargar los bloques y normalizarlos de forma retrocompatible
+  let rawBlocks: any[] = [];
   try {
     const resBlocks = await fetch(`${baseUrl}/cms/blocks/${slug}`, {
       next: { revalidate: 30 },
       headers: { 'X-Tenant-ID': tenantId },
     });
     if (resBlocks.ok) {
-      blocks = await resBlocks.json();
+      rawBlocks = await resBlocks.json();
     }
   } catch {
-    // Devuelve vacío, se muestra el estado vacío elegante
+    // Silencioso
   }
+
+  // Normalización defensiva para páginas con bloques antiguos/planos
+  const sections: SectionBlock[] = rawBlocks.map((block: any, idx: number) => {
+    if (block.block_type === 'section') {
+      return block;
+    } else {
+      return {
+        id: block.id,
+        page_slug: slug,
+        block_type: 'section',
+        order_index: block.order_index ?? idx,
+        content_data: {
+          id: block.id,
+          columns_count: 1,
+          py_spacing: 'py-24',
+          bg_color: 'cream',
+          columns: [
+            {
+              id: `col-${block.id}-0`,
+              width: 'w-full',
+              blocks: [
+                {
+                  id: `atomic-${block.id}`,
+                  block_type: block.block_type.startsWith('atomic_') 
+                    ? block.block_type 
+                    : `atomic_${block.block_type}`,
+                  content_data: block.content_data
+                } as any
+              ]
+            }
+          ]
+        }
+      };
+    }
+  });
 
   // 3. Cargar los datos del negocio para renderizar las categorías y tratamientos
   let dbCategories: any[] = [];
@@ -113,93 +160,174 @@ export default async function CustomPage({ params }: PageProps) {
     <>
       <main className="w-full min-h-screen bg-[#FAFAFA] pt-20">
 
-        {/* Motor de bloques */}
-        {blocks.length > 0 ? (
+        {sections.length > 0 ? (
           <div className="flex flex-col w-full">
-            {blocks.map((block) => {
-              // Bloque Atómico de Imagen / Vídeo Loop
-              if (block.block_type === 'atomic_image') {
-                const data = block.content_data;
-                if (!data.image_url) return null;
+            {sections.map((section) => {
+              const struct = section.content_data || { columns_count: 1, columns: [] };
+              const columnsCount = struct.columns_count || 1;
+              const columns = struct.columns || [];
 
-                const isVideo = data.image_url?.includes('.mp4') || data.image_url?.includes('.webm') || data.image_url?.includes('video_');
-                const alignmentClass = 
-                  data.alignment === 'left' ? 'justify-start text-left' : 
-                  data.alignment === 'right' ? 'justify-end text-right' : 
-                  'justify-center text-center';
-                
-                const isFullWidth = data.alignment === 'full_width';
+              // Clases CSS Grid según el conteo de columnas
+              let gridClass = 'grid-cols-1';
+              if (columnsCount === 2) gridClass = 'grid-cols-1 md:grid-cols-2 gap-8 md:gap-12';
+              if (columnsCount === 3) gridClass = 'grid-cols-1 md:grid-cols-3 gap-6 md:gap-8';
+              if (columnsCount === 4) gridClass = 'grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6';
 
-                return (
-                  <section key={block.id} className={`w-full py-12 ${isFullWidth ? 'px-0' : 'px-6'} flex justify-center bg-[#FAFAFA]`}>
-                    <div className={`w-full flex ${alignmentClass}`}>
-                      <div 
-                        className={`rounded-[2rem] overflow-hidden shadow-luxury border border-stone-100/50 bg-white ${isFullWidth ? 'w-full max-w-none rounded-none border-none p-0' : 'p-4'}`}
-                        style={{ maxWidth: isFullWidth ? '100%' : (data.max_width || '800px') }}
-                      >
-                        {isVideo ? (
-                          <video 
-                            src={data.image_url} 
-                            autoPlay 
-                            loop 
-                            muted 
-                            playsInline 
-                            className={`w-full object-cover rounded-2xl ${isFullWidth ? 'h-[60vh] rounded-none' : ''}`} 
-                          />
-                        ) : (
-                          <img 
-                            src={data.image_url} 
-                            alt={data.caption || 'Imagen'} 
-                            className={`w-full h-auto rounded-2xl ${isFullWidth ? 'rounded-none' : ''}`} 
-                          />
-                        )}
-                        {data.caption && (
-                          <p className={`mt-4 text-xs font-semibold text-stone-500 italic ${isFullWidth ? 'px-6' : ''}`}>
-                            {data.caption}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </section>
-                );
-              }
+              // Espaciados Quiet Luxury y fondos
+              const pySpacing = struct.py_spacing || 'py-24';
+              const bgColor = struct.bg_color === 'white' ? 'bg-white' : 'bg-[#FAFAFA]';
 
-              // Bloque Atómico de Tratamientos de una Categoría
-              if (block.block_type === 'atomic_category') {
-                const data = block.content_data;
-                const category = dbCategories.find(c => c.id === data.category_id);
-                let filteredServices = dbServices.filter(svc => svc.category_id === data.category_id && svc.is_active);
-                
-                // Filtrado específico de tratamientos por id si se eligieron en el editor
-                if (data.selected_treatment_ids && data.selected_treatment_ids.length > 0) {
-                  filteredServices = filteredServices.filter(svc => data.selected_treatment_ids.includes(svc.id));
-                }
-
-                if (data.max_items) {
-                  filteredServices = filteredServices.slice(0, data.max_items);
-                }
-
-                if (filteredServices.length === 0) return null;
-
-                return (
-                  <section key={block.id} className="w-full bg-[#FAFAFA] -mt-10">
-                    <BentoGridServices 
-                      data={{ 
-                        title: category?.name || 'Nuestros Tratamientos', 
-                        subtitle: category?.description || 'Tratamientos de alta gama adaptados a ti.' 
-                      }} 
-                      services={filteredServices} 
-                    />
-                  </section>
-                );
-              }
-
-              // Renderizado de bloques estándar (FlexCustomBlock, TitleHeadingBlock)
-              const Component = BLOCK_COMPONENTS[block.block_type];
-              if (!Component) return null;
               return (
-                <section key={block.id} className="w-full transition-all duration-300">
-                  <Component data={block.content_data} />
+                <section
+                  key={section.id}
+                  className={`w-full ${pySpacing} ${bgColor} px-6 md:px-12 transition-all duration-300 border-b border-stone-100/30`}
+                >
+                  <div className={`max-w-7xl mx-auto grid ${gridClass}`}>
+                    {columns.map((col) => (
+                      <div key={col.id} className="flex flex-col gap-6 justify-center">
+                        {(col.blocks || []).map((block) => {
+                          const data = block.content_data || {};
+
+                          // ──── RENDER: ATOMIC TITLE ────
+                          if (block.block_type === 'atomic_title' || block.block_type === 'title_heading') {
+                            const Tag = data.title_tag || 'h2';
+                            const alignment = data.alignment || 'center';
+                            const alignClass = 
+                              alignment === 'left' ? 'text-left' : 
+                              alignment === 'right' ? 'text-right' : 
+                              'text-center';
+
+                            return (
+                              <div key={block.id} className={`w-full ${alignClass} py-3`}>
+                                <Tag className={`font-serif text-3xl md:text-4xl font-extrabold text-stone-800 leading-tight`}>
+                                  {data.title}
+                                </Tag>
+                                {data.show_divider !== false && (
+                                  <div className={`w-12 h-[2px] bg-[#d4af37] mt-4 rounded-full inline-block`} />
+                                )}
+                                {data.subtitle && (
+                                  <p className="text-stone-400 text-sm mt-3 font-sans max-w-lg mx-auto">
+                                    {data.subtitle}
+                                  </p>
+                                )}
+                              </div>
+                            );
+                          }
+
+                          // ──── RENDER: ATOMIC TEXT ────
+                          if (block.block_type === 'atomic_text') {
+                            return (
+                              <div
+                                key={block.id}
+                                className="prose prose-stone max-w-none text-stone-600 font-sans text-base leading-relaxed py-2"
+                                dangerouslySetInnerHTML={{ __html: data.html || '' }}
+                              />
+                            );
+                          }
+
+                          // ──── RENDER: ATOMIC IMAGE / TEXT_IMAGE_CTA ────
+                          if (block.block_type === 'atomic_image' || block.block_type === 'text_image_cta') {
+                            if (!data.image_url) return null;
+                            const isVideo = data.image_url.includes('.mp4') || data.image_url.includes('.webm') || data.image_url.includes('video_');
+                            const alignment = data.alignment || 'center';
+                            const isFullWidth = alignment === 'full_width';
+
+                            return (
+                              <div key={block.id} className={`w-full py-4 flex ${
+                                alignment === 'left' ? 'justify-start' : 
+                                alignment === 'right' ? 'justify-end' : 
+                                'justify-center'
+                              }`}>
+                                <div 
+                                  className={`rounded-[2rem] overflow-hidden shadow-luxury border border-stone-100/50 bg-white ${isFullWidth ? 'w-full rounded-none border-none p-0' : 'p-3'}`}
+                                  style={{ maxWidth: isFullWidth ? '100%' : (data.max_width || '800px') }}
+                                >
+                                  {isVideo ? (
+                                    <video
+                                      src={data.image_url}
+                                      autoPlay
+                                      loop
+                                      muted
+                                      playsInline
+                                      className={`w-full object-cover rounded-2xl ${isFullWidth ? 'h-[50vh] rounded-none' : ''}`}
+                                    />
+                                  ) : (
+                                    <img
+                                      src={data.image_url}
+                                      alt={data.caption || 'Imagen'}
+                                      className={`w-full h-auto rounded-2xl ${isFullWidth ? 'rounded-none' : ''}`}
+                                    />
+                                  )}
+                                  {data.caption && (
+                                    <p className="mt-3 text-xs font-semibold text-stone-500 italic text-center px-4">
+                                      {data.caption}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          // ──── RENDER: ATOMIC BUTTON ────
+                          if (block.block_type === 'atomic_button') {
+                            const btnAlign = data.alignment || 'left';
+                            const alignClass = 
+                              btnAlign === 'left' ? 'justify-start' : 
+                              btnAlign === 'right' ? 'justify-end' : 
+                              'justify-center';
+
+                            const styleClass = 
+                              data.style === 'gold_outline' 
+                                ? 'border border-[#d4af37] text-[#d4af37] bg-transparent hover:bg-[#d4af37] hover:text-white' 
+                                : data.style === 'dark_solid' 
+                                ? 'bg-stone-900 text-white hover:bg-stone-800' 
+                                : 'bg-[#d4af37] text-white hover:bg-[#b08e23]';
+
+                            return (
+                              <div key={block.id} className={`w-full flex ${alignClass} py-3`}>
+                                <Link
+                                  href={data.url || '#'}
+                                  className={`px-7 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 shadow-sm active:scale-95 ${styleClass}`}
+                                >
+                                  {data.text || 'Acción'}
+                                </Link>
+                              </div>
+                            );
+                          }
+
+                          // ──── RENDER: ATOMIC CATEGORY ────
+                          if (block.block_type === 'atomic_category') {
+                            const category = dbCategories.find(c => c.id === data.category_id);
+                            let filteredServices = dbServices.filter(svc => svc.category_id === data.category_id && svc.is_active);
+
+                            if (data.selected_treatment_ids && data.selected_treatment_ids.length > 0) {
+                              filteredServices = filteredServices.filter(svc => data.selected_treatment_ids.includes(svc.id));
+                            }
+
+                            if (data.max_items) {
+                              filteredServices = filteredServices.slice(0, data.max_items);
+                            }
+
+                            if (filteredServices.length === 0) return null;
+
+                            return (
+                              <div key={block.id} className="w-full py-4 -mx-6 md:-mx-12">
+                                <BentoGridServices
+                                  data={{
+                                    title: category?.name || 'Nuestros Tratamientos',
+                                    subtitle: category?.description || 'Nuestros tratamientos insignia.'
+                                  }}
+                                  services={filteredServices}
+                                />
+                              </div>
+                            );
+                          }
+
+                          return null;
+                        })}
+                      </div>
+                    ))}
+                  </div>
                 </section>
               );
             })}
@@ -207,7 +335,6 @@ export default async function CustomPage({ params }: PageProps) {
         ) : (
           /* Estado vacío elegante */
           <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center">
-            {/* Decoración dorada */}
             <div className="w-16 h-[2px] bg-[#d4af37] rounded-full mb-10" />
 
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#d4af37] block mb-4">
