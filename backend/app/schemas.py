@@ -598,6 +598,39 @@ class SiteBlockOut(SiteBlockBase):
     class Config:
         from_attributes = True
 
+class SiteBlockCreate(BaseModel):
+    page_slug: str
+    block_type: str
+    content_data: Dict[str, Any]
+    order_index: Optional[int] = None
+
+class SiteBlockUpdate(BaseModel):
+    block_type: Optional[str] = None
+    content_data: Optional[Dict[str, Any]] = None
+    order_index: Optional[int] = None
+
+class BlockReorderRequest(BaseModel):
+    ids: List[str]
+
+
+# --- CMS Custom Pages ---
+class CustomPageCreate(BaseModel):
+    title: str                   # Ej: "Política de Privacidad"
+    slug: str                    # Ej: "politica-privacidad" → genera la ruta /politica-privacidad
+    is_visible: bool = True      # Si aparece en el menú de navegación
+
+class CustomPageOut(BaseModel):
+    id: str
+    tenant_id: str
+    label: str                   # Mapeado desde label en SiteNavigation
+    path: str                    # La ruta: /slug
+    is_visible: bool
+    order_index: int
+    is_custom: bool
+
+    class Config:
+        from_attributes = True
+
 
 # --- Onboarding Wizard ---
 class OnboardingSetupRequest(BaseModel):
@@ -608,6 +641,5 @@ class OnboardingSetupRequest(BaseModel):
     close_time: str = "19:00"
     working_days: List[int] = [1, 2, 3, 4, 5]
     load_demo_data: bool = True
-
 
 

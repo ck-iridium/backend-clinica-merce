@@ -1,5 +1,6 @@
 "use client"
 import React, { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import MediaPickerModal from '@/components/MediaPickerModal';
 import { Skeleton } from "@/components/ui/skeleton";
@@ -454,25 +455,31 @@ export default function CMSPage() {
           </div>
 
           {/* Card 4: Páginas Independientes */}
-          <div className="bg-[#F2F2EF]/40 rounded-3xl p-8 border border-stone-100 flex flex-col justify-between h-[280px] relative group overflow-hidden">
+          <Link
+            href="/dashboard/pages"
+            className="bg-white rounded-3xl p-8 border border-stone-100 shadow-[0_10px_35px_-10px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-500 flex flex-col justify-between h-[280px] cursor-pointer group relative overflow-hidden"
+          >
             <div>
               <div className="flex items-center justify-between mb-4">
-                <span className="text-[9px] font-black bg-stone-100 text-stone-400 px-3 py-1 rounded-full uppercase tracking-widest">
+                <span className="text-[10px] font-bold text-[#d4af37] bg-amber-50 px-3 py-1 rounded-full uppercase tracking-wider">
                   Gestor Headless
                 </span>
-                <span className="text-[9px] font-black uppercase tracking-[0.1em] text-[#d4af37]">
-                  PROXIMAMENTE
-                </span>
+                <svg className="w-5 h-5 text-stone-300 group-hover:text-[#d4af37] transition-colors" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                </svg>
               </div>
-              <h3 className="font-serif text-xl font-bold text-stone-500 mb-2">
+              <h3 className="font-serif text-2xl font-bold text-stone-800 mb-3 group-hover:text-[#d4af37] transition-colors">
                 Páginas del Sitio
               </h3>
-              <p className="text-stone-400 font-sans text-xs leading-relaxed max-w-sm">
+              <p className="text-stone-500 font-sans text-xs md:text-sm leading-relaxed max-w-sm">
                 Crea nuevas páginas autónomas para tu portal como políticas de privacidad, landing pages estacionales o secciones de promociones.
               </p>
             </div>
-            <div className="w-12 h-1 bg-stone-200/50 rounded-full" />
-          </div>
+            <div className="flex items-center gap-2 text-stone-800 font-bold text-xs uppercase tracking-wider">
+              <span>Gestionar Páginas</span>
+              <span className="transform group-hover:translate-x-1 transition-transform duration-300">→</span>
+            </div>
+          </Link>
 
         </div>
 

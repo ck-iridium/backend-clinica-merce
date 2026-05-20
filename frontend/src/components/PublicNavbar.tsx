@@ -237,9 +237,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
             {navigationItems.map((item) => {
               const isServices = item.path === '/services' || item.path === '/tratamientos';
               const isActive = pathname === item.path;
-              const label = item.path === '/' 
-                ? navT.home 
-                : (item.path === '/services' || item.path === '/tratamientos' ? navT.treatments : (item.path === '/contacto' ? navT.contact : item.label));
+              const label = item.label;
               
               if (isServices) {
                 return (
@@ -394,9 +392,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
           {navigationItems.map((item) => {
             const isServices = item.path === '/services' || item.path === '/tratamientos';
             const isActive = pathname === item.path;
-            const label = item.path === '/' 
-              ? navT.home 
-              : (item.path === '/services' || item.path === '/tratamientos' ? navT.treatments : (item.path === '/contacto' ? navT.contact : item.label));
+            const label = item.label;
 
             if (isServices) {
               return (
