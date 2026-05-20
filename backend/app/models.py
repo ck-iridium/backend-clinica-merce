@@ -312,6 +312,8 @@ class SiteContent(Base):
 
     # Orden dinámico de la Home
     home_sections_order = Column(Text, nullable=True)
+    # Diseño global de las secciones de categorías: 'cards_slider' | 'bento_grid'
+    layout_style = Column(String(20), default="cards_slider", nullable=True)
 
     # SEO Dinámico
     seo_title = Column(String, nullable=True)

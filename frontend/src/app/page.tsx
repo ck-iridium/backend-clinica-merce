@@ -10,22 +10,17 @@ export const metadata: Metadata = {
 async function getData(tenantId: string) {
   const fetchSafe = async (url: string, defaultValue: any) => {
     try {
-      // Usamos AbortSignal.timeout si está disponible para evitar colgar la request en producción
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 segundos de timeout
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
 
       const res = await fetch(url, { 
         cache: 'no-store',
         signal: controller.signal,
-        headers: {
-          "X-Tenant-ID": tenantId
-        }
+        headers: { "X-Tenant-ID": tenantId }
       });
       clearTimeout(timeoutId);
 
-      if (res.ok) {
-        return await res.json();
-      }
+      if (res.ok) return await res.json();
       console.warn(`[API Warning] Request to ${url} returned status: ${res.status}`);
       return defaultValue;
     } catch (error: any) {
@@ -36,15 +31,14 @@ async function getData(tenantId: string) {
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-  const [content, settings, services, categories, blocks] = await Promise.all([
+  const [content, settings, services, categories] = await Promise.all([
     fetchSafe(`${apiUrl}/site-content/`, null),
     fetchSafe(`${apiUrl}/settings/`, null),
     fetchSafe(`${apiUrl}/services/`, []),
     fetchSafe(`${apiUrl}/service-categories/`, []),
-    fetchSafe(`${apiUrl}/cms/blocks/home`, [])
   ]);
 
-  return { content, settings, services, categories, blocks };
+  return { content, settings, services, categories };
 }
 
 export default async function Home() {

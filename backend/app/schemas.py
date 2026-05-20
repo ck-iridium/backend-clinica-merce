@@ -490,6 +490,7 @@ class SiteContentBase(BaseModel):
     seo_keywords: Optional[str] = None
 
     home_sections_order: Optional[str] = None
+    layout_style: Optional[str] = "cards_slider"  # 'cards_slider' | 'bento_grid'
     translations: Optional[Dict[str, Any]] = None
 
 class SiteContentUpdate(BaseModel):
@@ -521,6 +522,7 @@ class SiteContentUpdate(BaseModel):
     seo_keywords: Optional[str] = None
     
     home_sections_order: Optional[str] = None
+    layout_style: Optional[str] = None  # 'cards_slider' | 'bento_grid'
     translations: Optional[Dict[str, Any]] = None
 
 class SiteContentResponse(SiteContentBase):

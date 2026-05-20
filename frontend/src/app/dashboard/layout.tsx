@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import DashboardSidebar from '@/components/DashboardSidebar';
 import RouteGuard from '@/components/RouteGuard';
+import OnboardingGuard from '@/components/OnboardingGuard';
 import { AIImageProvider } from '@/app/contexts/AIImageContext';
 import AIGenerationFloatingCard from '@/components/cms/AIGenerationFloatingCard';
 
@@ -27,6 +28,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <AIImageProvider>
       <div className="min-h-screen bg-background md:flex font-sans text-foreground print:bg-white">
         <RouteGuard />
+        <OnboardingGuard />
 
         {/* Sidebar: Siempre visible para todas las rutas del dashboard */}
         <DashboardSidebar clinicName={clinicName} logoUrl={logoUrl} />

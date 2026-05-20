@@ -142,17 +142,26 @@ def get_blocks(page_slug: str, db: Session = Depends(database.get_db)):
                 }
             },
             {
-                "block_type": "bento_grid",
+                # Carrusel premium con ServiceCard (vídeo hover) — diseño original restaurado
+                "block_type": "slider_cards_video",
                 "order_index": 1,
                 "content_data": {
-                    "title": "Nuestros Tratamientos Insignia",
+                    "title": "Nuestros Tratamientos",
+                    "subtitle": "Descubre nuestra selección de tratamientos exclusivos."
+                }
+            },
+            {
+                "block_type": "bento_grid",
+                "order_index": 2,
+                "content_data": {
+                    "title": "Tratamientos Insignia",
                     "subtitle": "Excelencia y tecnología médica estética de vanguardia.",
                     "max_services": 4
                 }
             },
             {
                 "block_type": "faq_accordion",
-                "order_index": 2,
+                "order_index": 3,
                 "content_data": {
                     "title": "Preguntas Frecuentes",
                     "subtitle": "Resolvemos todas tus dudas previas al tratamiento.",

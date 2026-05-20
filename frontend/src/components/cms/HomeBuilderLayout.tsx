@@ -9,9 +9,10 @@ interface HomeBuilderLayoutProps {
   preview: React.ReactNode;
   onSave: () => void;
   isSaving: boolean;
+  onBack?: () => void;
 }
 
-export default function HomeBuilderLayout({ tabs, activeTab, onTabChange, panel, preview, onSave, isSaving }: HomeBuilderLayoutProps) {
+export default function HomeBuilderLayout({ tabs, activeTab, onTabChange, panel, preview, onSave, isSaving, onBack }: HomeBuilderLayoutProps) {
   const { t } = useLanguage();
   
   const titleText = t('cms.edit_homepage');
@@ -25,18 +26,27 @@ export default function HomeBuilderLayout({ tabs, activeTab, onTabChange, panel,
       <aside className="w-full md:w-[30%] md:min-w-[350px] md:max-w-[450px] h-full bg-white border-r border-stone-200 flex flex-col shadow-sm overflow-hidden shrink-0 z-20">
         
         {/* Cabecera del Panel */}
-        <div className="px-6 py-5 border-b border-stone-100 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <div>
-              <h2 className="font-serif text-lg font-semibold text-stone-800 leading-tight">
-                {titleText}
-              </h2>
-              <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">
-                {subtitleText}
-              </p>
-            </div>
+        <div className="px-6 py-5 border-b border-stone-100 flex items-center gap-4 shrink-0">
+          {onBack && (
+            <button 
+              onClick={onBack}
+              className="text-stone-400 hover:text-stone-800 transition-colors p-1.5 rounded-xl hover:bg-stone-50 border border-transparent hover:border-stone-100 shrink-0"
+              title="Volver al panel"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+              </svg>
+            </button>
+          )}
+          <div className="flex-1 min-w-0">
+            <h2 className="font-serif text-lg font-semibold text-stone-800 leading-tight truncate">
+              {titleText}
+            </h2>
+            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest truncate">
+              {subtitleText}
+            </p>
           </div>
-          <div className="flex gap-2">
+          <div className="shrink-0 flex gap-2">
             <button
               onClick={onSave}
               disabled={isSaving}

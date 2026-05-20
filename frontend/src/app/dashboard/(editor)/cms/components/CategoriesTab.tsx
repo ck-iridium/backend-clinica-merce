@@ -11,14 +11,18 @@ const CategoriesTab = memo(({
   selectedCategoryId, 
   setSelectedCategoryId, 
   setPickerTarget, 
-  handleCategoryChange 
+  handleCategoryChange,
+  formData,
+  setFormData,
 }: {
   initialCategories: any[],
   setCategories: React.Dispatch<React.SetStateAction<any[]>>,
   selectedCategoryId: string | null,
   setSelectedCategoryId: React.Dispatch<React.SetStateAction<string | null>>,
   setPickerTarget: React.Dispatch<React.SetStateAction<any>>,
-  handleCategoryChange: (id: string, field: string, value: any) => void
+  handleCategoryChange: (id: string, field: string, value: any) => void,
+  formData: any,
+  setFormData: React.Dispatch<React.SetStateAction<any>>,
 }) => {
   const { t } = useLanguage();
 
@@ -74,6 +78,37 @@ const CategoriesTab = memo(({
             </div>
          </div>
       )}
+
+      {/* ─── Selector de Diseño Global ─────────────────────────────── */}
+      <div className="p-5 border border-stone-100 rounded-3xl bg-white shadow-sm">
+        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-3">
+          Diseño de Secciones de Categorías
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { value: 'cards_slider', label: 'Carrusel de Tarjetas', desc: 'Scroll horizontal con vídeo al hover', icon: '🎞️' },
+            { value: 'bento_grid', label: 'Mosaico Bento', desc: 'Cuadrícula visual asimétrica', icon: '⊞' },
+          ].map(opt => {
+            const isSelected = (formData?.layout_style || 'cards_slider') === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setFormData((prev: any) => ({ ...prev, layout_style: opt.value }))}
+                className={`p-4 rounded-2xl border text-left transition-all duration-300 ${
+                  isSelected
+                    ? 'bg-amber-50/60 border-[#d4af37] shadow-sm'
+                    : 'bg-stone-50/30 border-stone-100 hover:bg-stone-50'
+                }`}
+              >
+                <span className="text-xl block mb-1">{opt.icon}</span>
+                <span className="font-bold text-stone-800 text-xs block">{opt.label}</span>
+                <span className="text-[10px] text-stone-400 font-medium">{opt.desc}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       <div className="pt-4 border-t border-stone-200">
          <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-stone-400 mb-4">
