@@ -56,6 +56,7 @@ class ServiceCategoryBase(BaseModel):
     image_url: Optional[str] = None
     is_active: bool = True
     order_index: Optional[int] = 0
+    layout_preferences: Optional[Dict[str, Any]] = None
 
 class CategoryReorderItem(BaseModel):
     id: str
@@ -64,13 +65,21 @@ class CategoryReorderItem(BaseModel):
 class ServiceCategoryCreate(ServiceCategoryBase):
     pass
 
-class ServiceCategoryUpdate(ServiceCategoryBase):
-    pass
+class ServiceCategoryUpdate(BaseModel):
+    name: Optional[str] = None
+    slug: Optional[str] = None
+    description: Optional[str] = None
+    seo_description: Optional[str] = None
+    image_url: Optional[str] = None
+    is_active: Optional[bool] = None
+    order_index: Optional[int] = None
+    layout_preferences: Optional[Dict[str, Any]] = None
 
 class ServiceCategoryResponse(ServiceCategoryBase):
     id: str
     created_at: datetime
     translations: Optional[Dict[str, Any]] = None
+    layout_preferences: Optional[Dict[str, Any]] = None
     
     class Config:
         from_attributes = True

@@ -86,6 +86,7 @@ class ServiceCategory(Base):
     is_active = Column(Boolean, default=True)
     order_index = Column(Integer, default=0)
     translations = Column(JSONB, default=dict, nullable=True)
+    layout_preferences = Column(JSONB, default=dict, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     __table_args__ = (

@@ -179,7 +179,8 @@ export default function CMSPage() {
              name: cat.name,
              description: cat.description,
              image_url: cat.image_url,
-             is_active: cat.is_active
+             is_active: cat.is_active,
+             layout_preferences: cat.layout_preferences
           })
         })
       );

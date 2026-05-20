@@ -62,7 +62,43 @@ const CategoriesTab = memo(({
                 accepts="image"
               />
             </div>
-            
+
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400 mb-2">
+                Diseño de Visualización
+              </label>
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  { value: 'cards_slider', label: 'Slider', icon: '🎞️', tooltip: 'Slider 9:16' },
+                  { value: 'bento_grid', label: 'Bento', icon: '⊞', tooltip: 'Bento Grid' },
+                  { value: 'traditional_grid', label: 'Grid', icon: '▦', tooltip: 'Grid Tradicional' },
+                  { value: 'minimalist_list', label: 'Lista', icon: '☰', tooltip: 'Lista Minimalista' }
+                ].map(opt => {
+                  const currentStyle = selectedCategory.layout_preferences?.layout_style || 'cards_slider';
+                  const isSelected = currentStyle === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => {
+                        const newPrefs = { ...(selectedCategory.layout_preferences || {}), layout_style: opt.value };
+                        handleCategoryChange(selectedCategory.id, 'layout_preferences', newPrefs);
+                      }}
+                      title={opt.tooltip}
+                      className={`py-2 px-1.5 rounded-xl border flex flex-col items-center justify-center transition-all duration-300 ${
+                        isSelected 
+                          ? 'bg-stone-900 border-stone-900 text-[#d4af37] shadow-sm'
+                          : 'bg-white border-stone-200 text-stone-500 hover:bg-stone-50 hover:text-stone-800'
+                      }`}
+                    >
+                      <span className="text-base mb-1">{opt.icon}</span>
+                      <span className="text-[9px] font-bold tracking-tight leading-none uppercase">{opt.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <div>
                <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400 mb-2">
                  {t('cms.categories.public_name')}
@@ -78,37 +114,6 @@ const CategoriesTab = memo(({
             </div>
          </div>
       )}
-
-      {/* ─── Selector de Diseño Global ─────────────────────────────── */}
-      <div className="p-5 border border-stone-100 rounded-3xl bg-white shadow-sm">
-        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-3">
-          Diseño de Secciones de Categorías
-        </label>
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { value: 'cards_slider', label: 'Carrusel de Tarjetas', desc: 'Scroll horizontal con vídeo al hover', icon: '🎞️' },
-            { value: 'bento_grid', label: 'Mosaico Bento', desc: 'Cuadrícula visual asimétrica', icon: '⊞' },
-          ].map(opt => {
-            const isSelected = (formData?.layout_style || 'cards_slider') === opt.value;
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => setFormData((prev: any) => ({ ...prev, layout_style: opt.value }))}
-                className={`p-4 rounded-2xl border text-left transition-all duration-300 ${
-                  isSelected
-                    ? 'bg-amber-50/60 border-[#d4af37] shadow-sm'
-                    : 'bg-stone-50/30 border-stone-100 hover:bg-stone-50'
-                }`}
-              >
-                <span className="text-xl block mb-1">{opt.icon}</span>
-                <span className="font-bold text-stone-800 text-xs block">{opt.label}</span>
-                <span className="text-[10px] text-stone-400 font-medium">{opt.desc}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
 
       <div className="pt-4 border-t border-stone-200">
          <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-stone-400 mb-4">
