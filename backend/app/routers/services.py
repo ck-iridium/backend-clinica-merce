@@ -45,7 +45,11 @@ def update_service(service_id: str, service_update: schemas.ServiceUpdate, db: S
 
 @router.delete("/{service_id}")
 def delete_service(service_id: str, db: Session = Depends(database.get_db)):
-    service = db.query(models.Service).filter(models.Service.id == service_id).first()
+    tenant_id = database.current_tenant_var.get()
+    service = db.query(models.Service).filter(
+        models.Service.id == service_id,
+        models.Service.tenant_id == tenant_id
+    ).first()
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
         

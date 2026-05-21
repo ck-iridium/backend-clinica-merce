@@ -15,8 +15,12 @@ def create_service_category(category: schemas.ServiceCategoryCreate, db: Session
 
 @router.post("/reorder")
 def reorder_categories(items: List[schemas.CategoryReorderItem], db: Session = Depends(database.get_db)):
+    tenant_id = database.current_tenant_var.get()
     for item in items:
-        db.query(models.ServiceCategory).filter(models.ServiceCategory.id == item.id).update({"order_index": item.order_index})
+        db.query(models.ServiceCategory).filter(
+            models.ServiceCategory.id == item.id,
+            models.ServiceCategory.tenant_id == tenant_id
+        ).update({"order_index": item.order_index})
     db.commit()
     return {"status": "ok"}
 

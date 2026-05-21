@@ -60,8 +60,8 @@ def execute_cloud_backup(
 ):
     """
     Endpoint protected by X-Cron-Key.
-    Generates a full database JSON export, uploads it to Supabase Storage,
-    and enforces a retention policy of a maximum of 7 backups.
+    Iterates over all active tenants and generates a per-tenant JSON backup,
+    uploading each to Supabase Storage. Enforces a retention of max 7 backups per tenant.
     """
     secret_key = os.environ.get("CRON_SECRET_KEY", "dev_secret")
     if x_cron_key != secret_key:
@@ -74,45 +74,55 @@ def execute_cloud_backup(
         logger.error("No Supabase configuration found to perform backup.")
         raise HTTPException(status_code=500, detail="Supabase Storage no configurado.")
 
-    try:
-        supabase: Client = create_client(supabase_url, supabase_key)
-        
-        # 1. Extraer BD
-        data = export_database(db)
-        # Usamos default=str para serializar Decimal (precios) y dates que no hayan sido convertidos
-        json_str = json.dumps(data, default=str)
-        
-        # 2. Subir nuevo archivo (backup_YYYY_MM_DD.json)
-        now = datetime.utcnow()
-        filename = f"backup_{now.strftime('%Y_%m_%d')}.json"
-        
-        # Opcional: manejar si ya existe el de hoy para no fallar
-        res = supabase.storage.from_("backups").upload(
-            file=json_str.encode('utf-8'),
-            path=filename,
-            file_options={"content-type": "application/json", "upsert": "true"}
-        )
-        
-        # 3. Retención máxima de 7 archivos
-        files_res = supabase.storage.from_("backups").list()
-        # sort explicitly by name ascending (older dates first)
-        valid_files = [f for f in files_res if f['name'].startswith('backup_')]
-        valid_files.sort(key=lambda x: x['name'])
-        
-        deleted_count = 0
-        if len(valid_files) > 7:
-            # Seleccionar los más antiguos (sobrantes)
-            excess = len(valid_files) - 7
-            to_delete = [f['name'] for f in valid_files[:excess]]
-            supabase.storage.from_("backups").remove(to_delete)
-            deleted_count = len(to_delete)
-            
-        logger.info(f"Cloud backup successful: {filename}. Deleted old: {deleted_count}.")
-        return {"status": "success", "file": filename, "deleted_old": deleted_count}
-        
-    except Exception as e:
-        logger.error(f"Error during cloud backup: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    from ..database import current_tenant_var
+    from ..models import Tenant
+
+    tenants = db.query(Tenant).all()
+    supabase: Client = create_client(supabase_url, supabase_key)
+    now = datetime.utcnow()
+    results = []
+
+    for tenant in tenants:
+        try:
+            # Set tenant context so export_database scopes queries correctly
+            token = current_tenant_var.set(tenant.id)
+            try:
+                data = export_database(db)
+            finally:
+                current_tenant_var.reset(token)
+
+            json_str = json.dumps(data, default=str)
+            filename = f"backup_{tenant.slug}_{now.strftime('%Y_%m_%d')}.json"
+
+            supabase.storage.from_("backups").upload(
+                file=json_str.encode('utf-8'),
+                path=filename,
+                file_options={"content-type": "application/json", "upsert": "true"}
+            )
+
+            # Retención: máximo 7 backups por tenant
+            files_res = supabase.storage.from_("backups").list()
+            tenant_files = [
+                f for f in files_res
+                if f['name'].startswith(f"backup_{tenant.slug}_")
+            ]
+            tenant_files.sort(key=lambda x: x['name'])
+
+            deleted_count = 0
+            if len(tenant_files) > 7:
+                excess = len(tenant_files) - 7
+                to_delete = [f['name'] for f in tenant_files[:excess]]
+                supabase.storage.from_("backups").remove(to_delete)
+                deleted_count = len(to_delete)
+
+            results.append({"tenant": tenant.slug, "file": filename, "deleted_old": deleted_count})
+            logger.info(f"Backup OK for tenant '{tenant.slug}': {filename}")
+
+        except Exception as e:
+            logger.error(f"Backup FAILED for tenant '{tenant.slug}': {e}")
+            results.append({"tenant": tenant.slug, "error": str(e)})
+
+    return {"status": "success", "results": results}
 
 
 @router.post("/cleanup-unverified")
