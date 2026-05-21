@@ -282,6 +282,15 @@ export default function BlockEditorModal({
                 blockId={editingBlock.id}
               />
             </div>
+            <div>
+              <label className={labelClass}>Alineación del Texto</label>
+              <select className={selectClass} value={editFormData.alignment || 'left'} onChange={e => set('alignment', e.target.value)}>
+                <option value="left">Izquierda</option>
+                <option value="center">Centro</option>
+                <option value="right">Derecha</option>
+                <option value="justify">Justificado</option>
+              </select>
+            </div>
           </>)}
 
           {/* ── IMAGEN ── */}
@@ -313,6 +322,16 @@ export default function BlockEditorModal({
                 <option value="center">Centro</option>
                 <option value="right">Derecha</option>
                 <option value="full_width">Ancho completo</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelClass}>Altura de Imagen / Vídeo</label>
+              <select className={selectClass} value={editFormData.height_preset || 'auto'} onChange={e => set('height_preset', e.target.value)}>
+                <option value="auto">Automático (Original)</option>
+                <option value="small">Pequeño (250px)</option>
+                <option value="medium">Mediano (400px)</option>
+                <option value="large">Grande (550px)</option>
+                <option value="screen">Pantalla Completa (750px)</option>
               </select>
             </div>
             
@@ -366,6 +385,38 @@ export default function BlockEditorModal({
                 })}
               </div>
             </div>
+
+            {blockType === 'text_image_cta' && (
+              <div className="border-t border-stone-150 pt-5 mt-5 space-y-4">
+                <span className="text-[10px] font-black uppercase tracking-widest text-[#d4af37]">Contenido de Texto y Acción</span>
+                <div>
+                  <label className={labelClass}>Título</label>
+                  <input className={inputClass} value={editFormData.heading || ''} onChange={e => set('heading', e.target.value)} placeholder="Ej: Tratamiento rejuvenecedor..." />
+                </div>
+                <div>
+                  <label className={labelClass}>Texto descriptivo</label>
+                  <textarea className={`${inputClass} min-h-[80px]`} value={editFormData.subheading || ''} onChange={e => set('subheading', e.target.value)} placeholder="Escribe el texto descriptivo del bloque..." />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={labelClass}>Texto del Botón CTA (Opcional)</label>
+                    <input className={inputClass} value={editFormData.cta_text || ''} onChange={e => set('cta_text', e.target.value)} placeholder="Ej: Reservar ahora" />
+                  </div>
+                  <div>
+                    <label className={labelClass}>URL del Botón CTA (Opcional)</label>
+                    <input className={inputClass} value={editFormData.cta_url || ''} onChange={e => set('cta_url', e.target.value)} placeholder="Ej: /reservar" />
+                  </div>
+                </div>
+                <div>
+                  <label className={labelClass}>Disposición de la Imagen</label>
+                  <select className={selectClass} value={editFormData.alignment || 'left'} onChange={e => set('alignment', e.target.value)}>
+                    <option value="left">Imagen a la izquierda, texto a la derecha</option>
+                    <option value="right">Imagen a la derecha, texto a la izquierda</option>
+                    <option value="center">Imagen arriba, texto abajo</option>
+                  </select>
+                </div>
+              </div>
+            )}
           </>)}
 
           {/* ── BOTÓN ── */}
@@ -458,6 +509,15 @@ export default function BlockEditorModal({
                 <select className={selectClass} value={editFormData.max_items || 4} onChange={e => set('max_items', parseInt(e.target.value))}>
                   {[2,3,4,6,8].map(n => <option key={n} value={n}>{n} tratamientos</option>)}
                 </select>
+              </div>
+              <div>
+                <label className={labelClass}>Texto del enlace de acción (ej: "Ver Tratamiento", "Reservar")</label>
+                <input
+                  className={inputClass}
+                  value={editFormData.link_text || ''}
+                  onChange={e => set('link_text', e.target.value)}
+                  placeholder="Por defecto: Ver tratamiento"
+                />
               </div>
             </>)}
           </>)}

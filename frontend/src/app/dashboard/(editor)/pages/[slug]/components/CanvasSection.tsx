@@ -4,6 +4,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import BentoGridServices from '@/components/blocks/BentoGridServices';
+import ServiceCard from '@/components/ServiceCard';
 import Link from 'next/link';
 import type { AtomicBlock, SectionBlock } from '../hooks/usePageBuilder';
 
@@ -75,19 +76,25 @@ function RenderBlock({ block, dbCategories, dbServices }: {
 
   // TEXT
   if (block.block_type === 'atomic_text') {
+    const alignClass = 
+      data.alignment === 'center' ? 'text-center' :
+      data.alignment === 'right' ? 'text-right' :
+      data.alignment === 'justify' ? 'text-justify' :
+      'text-left';
     return (
       <div
-        className="prose prose-stone max-w-none text-stone-600 font-sans text-base leading-relaxed py-2"
+        className={`prose prose-stone max-w-none text-stone-600 font-sans text-base leading-relaxed py-2 ${alignClass}`}
         dangerouslySetInnerHTML={{ __html: data.html || '<p>Sin contenido</p>' }}
       />
     );
   }
 
-  // IMAGE / VIDEO + TEXT-IMAGE-CTA
-  if (block.block_type === 'atomic_image' || block.block_type === 'text_image_cta') {
+  // IMAGE / VIDEO ONLY
+  if (block.block_type === 'atomic_image') {
     const isVideo = data.image_url && (data.image_url.includes('.mp4') || data.image_url.includes('.webm') || data.image_url.includes('video_'));
     const isFull = data.alignment === 'full_width';
     const fitMode = data.object_fit || 'cover';
+    const heightStyle = data.height_preset === 'small' ? '250px' : data.height_preset === 'medium' ? '400px' : data.height_preset === 'large' ? '550px' : data.height_preset === 'screen' ? '750px' : (fitMode !== 'none' ? '380px' : 'auto');
 
     return (
       <div className={`w-full py-4 flex ${data.alignment === 'left' ? 'justify-start' : data.alignment === 'right' ? 'justify-end' : 'justify-center'}`}>
@@ -105,8 +112,7 @@ function RenderBlock({ block, dbCategories, dbServices }: {
                   className="w-full" 
                   style={{ 
                     objectFit: fitMode,
-                    height: fitMode !== 'none' ? '380px' : 'auto',
-                    aspectRatio: fitMode === 'none' ? 'auto' : '16/9'
+                    height: heightStyle
                   }} 
                 />
               ) : (
@@ -116,8 +122,7 @@ function RenderBlock({ block, dbCategories, dbServices }: {
                   className="w-full"
                   style={{ 
                     objectFit: fitMode,
-                    height: fitMode !== 'none' ? '380px' : 'auto',
-                    aspectRatio: fitMode === 'none' ? 'auto' : '16/9'
+                    height: heightStyle
                   }} 
                 />
               )}
@@ -133,6 +138,86 @@ function RenderBlock({ block, dbCategories, dbServices }: {
             <span className="text-[10px] text-stone-400 font-sans mt-1">Configura este bloque en las propiedades</span>
           </div>
         )}
+      </div>
+    );
+  }
+
+  // TEXT & IMAGE CTA (Imagen + Texto)
+  if (block.block_type === 'text_image_cta') {
+    const isVideo = data.image_url && (data.image_url.includes('.mp4') || data.image_url.includes('.webm') || data.image_url.includes('video_'));
+    const fitMode = data.object_fit || 'cover';
+    const heightStyle = data.height_preset === 'small' ? '250px' : data.height_preset === 'medium' ? '400px' : data.height_preset === 'large' ? '550px' : data.height_preset === 'screen' ? '750px' : '380px';
+    const align = data.alignment || 'left';
+
+    const layoutClass = align === 'right' 
+      ? 'flex flex-col md:flex-row-reverse gap-8 md:gap-12 items-center'
+      : align === 'center'
+      ? 'flex flex-col gap-6'
+      : 'flex flex-col md:flex-row gap-8 md:gap-12 items-center';
+
+    return (
+      <div className="w-full py-8">
+        <div className={`w-full max-w-7xl mx-auto ${layoutClass}`}>
+          {/* Lado Imagen */}
+          <div className={`w-full ${align === 'center' ? 'max-w-4xl mx-auto' : 'md:w-1/2'} shrink-0 rounded-[2rem] overflow-hidden shadow-luxury border border-stone-100 p-3 bg-white`}>
+            {data.image_url ? (
+              <div className="relative overflow-hidden rounded-2xl w-full">
+                {isVideo ? (
+                  <video
+                    src={data.image_url}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full"
+                    style={{ objectFit: fitMode, height: heightStyle }}
+                  />
+                ) : (
+                  <img
+                    src={data.image_url}
+                    alt={data.caption || data.heading || ''}
+                    className="w-full"
+                    style={{ objectFit: fitMode, height: heightStyle }}
+                  />
+                )}
+              </div>
+            ) : (
+              <div className="w-full h-full min-h-[220px] border-2 border-dashed border-stone-200 hover:border-[#d4af37]/40 rounded-[2rem] flex flex-col items-center justify-center bg-stone-50/50 py-10 px-4 text-center">
+                <span className="text-2xl mb-1">🖼️</span>
+                <span className="text-xs text-stone-500 font-black uppercase tracking-wider">Imagen del Bloque</span>
+              </div>
+            )}
+            {data.caption && (
+              <p className="text-xs text-stone-400 font-sans italic text-center mt-2.5">{data.caption}</p>
+            )}
+          </div>
+
+          {/* Lado Texto */}
+          <div className={`w-full ${align === 'center' ? 'max-w-3xl mx-auto text-center' : 'md:w-1/2 text-left'} flex flex-col justify-center space-y-4`}>
+            {data.heading && (
+              <h3 className="font-serif text-2xl md:text-3xl lg:text-4xl font-extrabold text-stone-850 leading-tight">
+                {data.heading}
+              </h3>
+            )}
+            {data.subheading && (
+              <p className="text-stone-600 font-sans text-sm md:text-base leading-relaxed whitespace-pre-line">
+                {data.subheading}
+              </p>
+            )}
+            {data.cta_text && (
+              <div className={`pt-2 ${align === 'center' ? 'flex justify-center' : ''}`}>
+                <span className="inline-block bg-stone-900 text-white text-[10px] font-black uppercase tracking-widest px-7 py-3.5 rounded-xl shadow-md cursor-default">
+                  {data.cta_text}
+                </span>
+              </div>
+            )}
+            {!data.heading && !data.subheading && !data.cta_text && (
+              <div className="border border-dashed border-stone-200 rounded-2xl p-6 text-center text-stone-400 text-xs">
+                Bloque Imagen + Texto sin contenido de texto configurado.
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     );
   }
@@ -174,30 +259,18 @@ function RenderBlock({ block, dbCategories, dbServices }: {
     return (
       <div className="w-full py-4">
         {layoutStyle === 'cards_slider' && (
-          <div className="flex gap-4 overflow-x-auto pb-4 hide-scroll select-none pointer-events-none">
+          <div className="w-full overflow-x-auto snap-x snap-mandatory hide-scroll flex gap-6 pb-6 select-none pointer-events-none" style={{ scrollSnapType: 'x mandatory' }}>
             {services.map((service: any) => {
-              const isVid = service.image_url && (service.image_url.includes('.mp4') || service.image_url.includes('.webm') || service.image_url.includes('video_'));
-              const mediaSrc = service.image_url && (service.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${service.image_url}` : service.image_url);
-
+              const preparedSvc = {
+                ...service,
+                video_url: service.video_url || (service.image_url?.includes('.mp4') || service.image_url?.includes('.webm') || service.image_url?.includes('video_') ? service.image_url : '')
+              };
               return (
-                <div key={service.id} className="w-[180px] shrink-0 aspect-[3/4] bg-stone-100 rounded-2xl overflow-hidden shadow-sm border border-stone-100 relative group">
-                  {mediaSrc ? (
-                    isVid ? (
-                      <video src={mediaSrc} autoPlay loop muted playsInline className="w-full h-full object-cover" />
-                    ) : (
-                      <img src={mediaSrc} alt={service.name} className="w-full h-full object-cover" />
-                    )
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-stone-50 p-4 text-center">
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-stone-300 leading-tight">{service.name}</span>
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <p className="text-[11px] font-bold text-white truncate leading-tight uppercase tracking-wide">{service.name}</p>
-                    <p className="text-[9px] text-white/60 font-medium">{service.duration_minutes} min</p>
-                  </div>
-                </div>
+                <ServiceCard
+                  key={service.id}
+                  service={preparedSvc}
+                  className="snap-center snap-stop-always"
+                />
               );
             })}
           </div>
@@ -211,53 +284,48 @@ function RenderBlock({ block, dbCategories, dbServices }: {
         )}
 
         {layoutStyle === 'traditional_grid' && (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 select-none pointer-events-none">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 select-none pointer-events-none">
             {services.map((service: any) => {
-              const isVid = service.image_url && (service.image_url.includes('.mp4') || service.image_url.includes('.webm') || service.image_url.includes('video_'));
-              const mediaSrc = service.image_url && (service.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${service.image_url}` : service.image_url);
-
+              const preparedSvc = {
+                ...service,
+                video_url: service.video_url || (service.image_url?.includes('.mp4') || service.image_url?.includes('.webm') || service.image_url?.includes('video_') ? service.image_url : '')
+              };
               return (
-                <div key={service.id} className="aspect-[3/4] bg-stone-100 rounded-2xl overflow-hidden shadow-sm border border-stone-100 relative group">
-                  {mediaSrc ? (
-                    isVid ? (
-                      <video src={mediaSrc} autoPlay loop muted playsInline className="w-full h-full object-cover" />
-                    ) : (
-                      <img src={mediaSrc} alt={service.name} className="w-full h-full object-cover" />
-                    )
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-stone-50 p-4 text-center">
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-stone-300 leading-tight">{service.name}</span>
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <p className="text-[11px] font-bold text-white truncate leading-tight uppercase tracking-wide">{service.name}</p>
-                    <p className="text-[9px] text-white/60 font-medium">{service.duration_minutes} min</p>
-                  </div>
-                </div>
+                <ServiceCard
+                  key={service.id}
+                  service={preparedSvc}
+                  className="w-full aspect-square h-auto md:h-auto"
+                />
               );
             })}
           </div>
         )}
 
         {layoutStyle === 'minimalist_list' && (
-          <div className="flex flex-col divide-y divide-stone-100 select-none pointer-events-none">
-            {services.map((service: any, idx: number) => (
-              <div key={service.id} className="flex items-center justify-between py-4">
-                <div>
-                  <span className="text-[#d4af37] text-[9px] font-bold uppercase tracking-wider block mb-1">
-                    0{idx + 1} · {service.duration_minutes} min
-                  </span>
-                  <h4 className="text-sm font-serif font-bold text-stone-850">
-                    {service.name}
-                  </h4>
-                  <p className="text-[10px] text-stone-400 mt-1 max-w-xl truncate leading-normal">
-                    {service.description}
-                  </p>
+          <div className="flex flex-col divide-y divide-stone-200/60 border-t border-b border-stone-200/50 select-none pointer-events-none">
+            {services.map((service: any, idx: number) => {
+              return (
+                <div key={service.id} className="flex items-center justify-between py-6 group">
+                  <div className="pr-4">
+                    <span className="text-[#d4af37] text-[10px] font-bold uppercase tracking-wider block mb-1">
+                      0{idx + 1} · {service.duration_minutes} min
+                    </span>
+                    <h4 className="text-base font-serif font-bold text-stone-850 leading-tight">
+                      {service.name}
+                    </h4>
+                    <p className="text-xs text-stone-400 mt-1.5 max-w-2xl leading-relaxed">
+                      {service.description}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-6 shrink-0">
+                    <span className="text-stone-700 text-sm font-black">{service.price} €</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-[#d4af37] pb-0.5">
+                      {data.link_text || 'Ver'} →
+                    </span>
+                  </div>
                 </div>
-                <span className="text-stone-600 text-xs font-bold shrink-0">{service.price} €</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -288,34 +356,38 @@ function SortableCanvasBlock({ block, sectionId, columnId, onEdit, onDelete, dbC
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="relative group/block">
+    <div 
+      ref={setNodeRef} 
+      style={style} 
+      className="relative group/block hover:ring-2 hover:ring-[#d4af37]/60 hover:bg-stone-50/15 rounded-3xl p-2.5 transition-all duration-300"
+    >
       {/* Controles del bloque — aparecen al hover */}
-      <div className="absolute top-1 right-1 z-30 flex items-center gap-1 opacity-0 group-hover/block:opacity-100 transition-opacity duration-200">
+      <div className="absolute top-4 right-4 z-50 flex items-center gap-1.5 opacity-0 group-hover/block:opacity-100 transition-opacity duration-200">
         <div
           {...attributes}
           {...listeners}
-          className="p-1.5 bg-white/90 backdrop-blur-sm border border-stone-200 rounded-lg cursor-grab active:cursor-grabbing text-stone-400 hover:text-stone-700 shadow-sm"
+          className="p-2 bg-white/95 backdrop-blur-sm border border-stone-200 rounded-xl cursor-grab active:cursor-grabbing text-stone-400 hover:text-stone-700 shadow-md hover:scale-105 transition-all"
           title="Mover bloque"
         >
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v.008h-.008V3.75h.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM12 3.75v.008H11.99V3.75h.01zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.875 0v.008h-.008V3.75h.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12v.008h-.008V12h.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM12 12v.008H11.99V12h.01zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.875 0v.008h-.008V12h.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-16.5 8.25v.008h-.008v-.008h.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.875 0v.008H11.99v-.008h.01zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.875 0v.008h-.008v-.008h.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
           </svg>
         </div>
         <button
           onClick={() => onEdit({ ...block, sectionId, columnId })}
-          className="p-1.5 bg-white/90 backdrop-blur-sm border border-stone-200 rounded-lg text-stone-400 hover:text-stone-900 shadow-sm transition-colors"
+          className="p-2 bg-white/95 backdrop-blur-sm border border-stone-200 rounded-xl text-stone-400 hover:text-stone-900 shadow-md hover:scale-105 transition-all"
           title="Editar bloque"
         >
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
           </svg>
         </button>
         <button
           onClick={() => onDelete(block.id, sectionId, columnId)}
-          className="p-1.5 bg-white/90 backdrop-blur-sm border border-red-100 rounded-lg text-stone-300 hover:text-red-500 shadow-sm transition-colors"
+          className="p-2 bg-white/95 backdrop-blur-sm border border-red-100 rounded-xl text-stone-300 hover:text-red-500 shadow-md hover:scale-105 transition-all"
           title="Eliminar bloque"
         >
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
@@ -344,7 +416,7 @@ function CanvasColumn({ col, sectionId, columnsCount, onEdit, onDelete, onAddBlo
   return (
     <div
       ref={setNodeRef}
-      className={`flex-1 min-h-[80px] relative transition-all duration-200 ${
+      className={`flex-1 min-w-0 min-h-[80px] relative transition-all duration-200 ${
         isOver ? 'ring-2 ring-[#d4af37]/50 ring-inset rounded-sm bg-amber-50/10' : ''
       }`}
     >
