@@ -106,7 +106,7 @@ export function middleware(request: NextRequest) {
     const isGlobalSassPath = 
       url.pathname === "/" ||
       url.pathname === "/marketing" ||
-      url.pathname === "/onboarding" ||
+      url.pathname.startsWith("/onboarding") ||
       url.pathname === "/login" ||
       url.pathname === "/aviso-legal" ||
       url.pathname === "/privacidad" ||

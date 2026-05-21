@@ -108,10 +108,6 @@ async def resolve_tenant_middleware(request, call_next):
     if not tenant_id:
         tenant_id = request.query_params.get("tenant_id")
         
-    # 4. Fallback retrocompatible por defecto a Clínica Mercè (Tenant 1)
-    if not tenant_id:
-        tenant_id = "00000000-0000-0000-0000-000000000001"
-        
     # 5. Comprobar si el inquilino está suspendido (excepto para rutas globales de control o públicas)
     path = request.url.path
     is_global_path = any(path.startswith(prefix) for prefix in [
@@ -123,9 +119,15 @@ async def resolve_tenant_middleware(request, call_next):
     ])
     
     if not is_global_path:
+        from fastapi.responses import JSONResponse
+        if not tenant_id:
+            return JSONResponse(
+                status_code=400,
+                content={"detail": "Tenant ID missing or invalid"}
+            )
+            
         from .database import SessionLocal
         from .models import Tenant
-        from fastapi.responses import JSONResponse
         
         now = time.time()
         cached = TENANT_STATUS_CACHE.get(tenant_id)
@@ -166,7 +168,8 @@ async def resolve_tenant_middleware(request, call_next):
     token = current_tenant_var.set(tenant_id)
     try:
         response = await call_next(request)
-        response.headers["X-Resolved-Tenant"] = tenant_id
+        if tenant_id:
+            response.headers["X-Resolved-Tenant"] = tenant_id
         return response
     finally:
         current_tenant_var.reset(token)
