@@ -115,7 +115,7 @@ async def resolve_tenant_middleware(request, call_next):
     # 5. Comprobar si el inquilino está suspendido (excepto para rutas globales de control o públicas)
     path = request.url.path
     is_global_path = any(path.startswith(prefix) for prefix in [
-        "/stripe/",
+        "/stripe",
         "/super-admin",
         "/docs",
         "/openapi.json",

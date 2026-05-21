@@ -19,6 +19,68 @@ def get_stripe_key():
         raise HTTPException(status_code=500, detail="Falta STRIPE_SECRET_KEY")
     return key
 
+def extract_and_fallback_onboarding_data(session, metadata):
+    import re
+    
+    def get_val(obj, key, default=None):
+        if isinstance(obj, dict):
+            return obj.get(key, default)
+        return getattr(obj, key, default)
+
+    # 1. Email del administrador
+    admin_email = get_val(metadata, "admin_email") or getattr(session, "customer_email", None) or get_val(session, "customer_email", None)
+    if not admin_email and getattr(session, "customer_details", None):
+        admin_email = getattr(session.customer_details, "email", None)
+    if not admin_email and get_val(session, "customer_details", None):
+        admin_email = get_val(get_val(session, "customer_details"), "email", None)
+    if not admin_email:
+        admin_email = "admin@probookia.com"
+    
+    # 2. Nombre del negocio
+    tenant_name = get_val(metadata, "tenant_name")
+    if not tenant_name or str(tenant_name).strip() == "":
+        if getattr(session, "customer_details", None) and getattr(session.customer_details, "name", None):
+            tenant_name = session.customer_details.name
+        elif get_val(session, "customer_details", None) and get_val(get_val(session, "customer_details"), "name", None):
+            tenant_name = get_val(get_val(session, "customer_details"), "name")
+        else:
+            tenant_name = admin_email.split("@")[0].replace(".", " ").replace("-", " ").title()
+            if not tenant_name or str(tenant_name).strip() == "":
+                tenant_name = "Mi Negocio ProBookia"
+
+    # 3. Slug único
+    tenant_slug = get_val(metadata, "tenant_slug")
+    if not tenant_slug or str(tenant_slug).strip() == "":
+        clean_name = re.sub(r'[^a-z0-9]+', '-', str(tenant_name).lower()).strip('-')
+        if not clean_name:
+            clean_name = "clinica"
+        tenant_slug = f"{clean_name}-{uuid.uuid4().hex[:6]}"
+    else:
+        tenant_slug = re.sub(r'[^a-z0-9-]+', '-', str(tenant_slug).lower()).strip('-')
+
+    # 4. Nombre del administrador
+    admin_name = get_val(metadata, "admin_name")
+    if not admin_name or str(admin_name).strip() == "":
+        if getattr(session, "customer_details", None) and getattr(session.customer_details, "name", None):
+            admin_name = session.customer_details.name
+        elif get_val(session, "customer_details", None) and get_val(get_val(session, "customer_details"), "name", None):
+            admin_name = get_val(get_val(session, "customer_details"), "name")
+        else:
+            admin_name = admin_email.split("@")[0].title()
+
+    # 5. Contraseña
+    admin_password = get_val(metadata, "admin_password")
+    if not admin_password or str(admin_password).strip() == "":
+        admin_password = f"ProBookia-{uuid.uuid4().hex[:8]}!"
+
+    return {
+        "tenant_name": str(tenant_name),
+        "tenant_slug": str(tenant_slug),
+        "admin_email": str(admin_email),
+        "admin_name": str(admin_name),
+        "admin_password": str(admin_password)
+    }
+
 class OnboardingSessionRequest(BaseModel):
     tenant_name: str = Field(..., min_length=2)
     tenant_slug: str = Field(..., min_length=2, pattern=r"^[a-z0-9-]+$")
@@ -58,8 +120,8 @@ def create_onboarding_session(request: OnboardingSessionRequest, req: Request):
                 "price_data": {
                     "currency": "eur",
                     "product_data": {
-                        "name": "Plan Platinum - Clínica Mercè SaaS",
-                        "description": "Suscripción mensual de gestión clínica premium",
+                        "name": "Plan Platinum - ProBookia SaaS",
+                        "description": "Suscripción mensual de gestión y reservas premium",
                     },
                     "unit_amount": 9900,  # 99.00 EUR
                     "recurring": {"interval": "month"}
@@ -258,125 +320,134 @@ async def stripe_webhook(request: Request, db: Session = Depends(database.get_db
             
             # --- CASO A: ONBOARDING DE NUEVO TENANT SaaS B2B ---
             if metadata.get("type") == "saas_onboarding":
-                tenant_name = metadata.get("tenant_name")
-                tenant_slug = metadata.get("tenant_slug")
-                admin_email = metadata.get("admin_email")
-                admin_name = metadata.get("admin_name")
-                admin_password = metadata.get("admin_password")
+                # Extraer metadatos con lógica robusta de fallbacks automáticos para evitar errores de slug nulo
+                onboarding_data = extract_and_fallback_onboarding_data(data_object, metadata)
+                tenant_name = onboarding_data["tenant_name"]
+                tenant_slug = onboarding_data["tenant_slug"]
+                admin_email = onboarding_data["admin_email"]
+                admin_name = onboarding_data["admin_name"]
+                admin_password = onboarding_data["admin_password"]
                 
                 print(f"[PROVISIONING] Iniciando aprovisionamiento del Tenant SaaS: {tenant_slug} ({tenant_name})")
                 
-                # 1. Crear el Tenant en Base de Datos Relacional
-                tenant_id = str(uuid.uuid4())
-                
-                # Sincronizar ContextVar y variable local de sesión de PostgreSQL para RLS
-                from ..database import current_tenant_var
-                from sqlalchemy import text
-                current_tenant_var.set(tenant_id)
-                db.execute(
-                    text("SET LOCAL app.current_tenant_id = :tenant_id"),
-                    {"tenant_id": tenant_id}
-                )
-                
-                new_tenant = models.Tenant(
-                    id=tenant_id,
-                    name=tenant_name,
-                    slug=tenant_slug,
-                    stripe_customer_id=get_val(data_object, 'customer', None),
-                    stripe_subscription_id=get_val(data_object, 'subscription', None),
-                    plan_type="pro",
-                    subscription_status="active"
-                )
-                db.add(new_tenant)
-                db.flush()  # Para que el tenant_id exista para claves foráneas
-                
-                # 2. Inicializar Configuración por Defecto
-                default_settings = models.ClinicSettings(
-                    id=str(uuid.uuid4()),
-                    tenant_id=tenant_id,
-                    clinic_name=tenant_name,
-                    clinic_email=admin_email,
-                    clinic_phone="",
-                    clinic_address="",
-                    maps_url="",
-                    instagram_url="",
-                    allow_search_engine_indexing=False
-                )
-                db.add(default_settings)
-                
-                default_content = models.SiteContent(
-                    id=str(uuid.uuid4()),
-                    tenant_id=tenant_id,
-                    hero_title=f"Bienvenidos a {tenant_name}",
-                    hero_subtitle="Estética avanzada y cuidado personalizado.",
-                    about_text="Nos dedicamos a ofrecer los mejores tratamientos de estética y salud para resaltar tu bienestar.",
-                    about_title=f"Sobre {tenant_name}"
-                )
-                db.add(default_content)
-                
-                # 3. Crear el usuario en Supabase Auth
-                supabase_user_id = None
-                supabase_url = os.environ.get("SUPABASE_URL")
-                supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
-                
-                if supabase_url and supabase_key:
-                    try:
-                        from supabase import create_client
-                        supabase_client = create_client(supabase_url, supabase_key)
-                        
-                        # Crear el usuario administrador en Supabase con su tenant_id en app_metadata!
-                        auth_user = supabase_client.auth.admin.create_user({
-                            "email": admin_email,
-                            "password": admin_password,
-                            "email_confirm": True,
-                            "user_metadata": {"full_name": admin_name},
-                            "app_metadata": {"tenant_id": tenant_id, "role": "admin"}
-                        })
-                        
-                        # Extraer el ID devuelto por Supabase Auth de forma segura
-                        if hasattr(auth_user, 'user') and auth_user.user:
-                            supabase_user_id = auth_user.user.id
-                        elif isinstance(auth_user, dict) and 'user' in auth_user:
-                            supabase_user_id = auth_user['user']['id']
-                        elif hasattr(auth_user, 'id'):
-                            supabase_user_id = auth_user.id
-                        
-                        print(f"[SUPABASE] Usuario creado en Supabase Auth. ID: {supabase_user_id}")
-                    except Exception as sb_err:
-                        print(f"[SUPABASE] [WARNING] Error al crear usuario en Supabase Auth: {sb_err}")
-                
-                # Fallback de ID si Supabase no está configurado o falla
-                if not supabase_user_id:
-                    supabase_user_id = str(uuid.uuid4())
-                    print(f"[PROVISIONING] [WARNING] Usando UUID generado localmente para el usuario: {supabase_user_id}")
-                
-                # 4. Crear el usuario en la base de datos relacional
-                from .users import pwd_context
-                hashed_pw = pwd_context.hash(admin_password)
-                
-                new_user = models.User(
-                    id=supabase_user_id,
-                    email=admin_email,
-                    hashed_password=hashed_pw,
-                    role="admin",
-                    tenant_id=tenant_id
-                )
-                db.add(new_user)
-                db.flush()
-                
-                # 5. Crear el perfil correspondiente en base de datos
-                new_profile = models.Profile(
-                    id=supabase_user_id,
-                    tenant_id=tenant_id,
-                    full_name=admin_name,
-                    role="admin",
-                    email=admin_email,
-                    status="active"
-                )
-                db.add(new_profile)
-                
-                db.commit()
-                print(f"[PROVISIONING] [SUCCESS] Nuevo Tenant '{tenant_slug}' aprovisionado completamente con exito.")
+                try:
+                    # 1. Crear el Tenant en Base de Datos Relacional
+                    tenant_id = str(uuid.uuid4())
+                    
+                    # Sincronizar ContextVar y variable local de sesión de PostgreSQL para RLS
+                    from ..database import current_tenant_var
+                    from sqlalchemy import text
+                    current_tenant_var.set(tenant_id)
+                    db.execute(
+                        text("SET LOCAL app.current_tenant_id = :tenant_id"),
+                        {"tenant_id": tenant_id}
+                    )
+                    
+                    new_tenant = models.Tenant(
+                        id=tenant_id,
+                        name=tenant_name,
+                        slug=tenant_slug,
+                        stripe_customer_id=get_val(data_object, 'customer', None),
+                        stripe_subscription_id=get_val(data_object, 'subscription', None),
+                        plan_type="pro",
+                        subscription_status="active"
+                    )
+                    db.add(new_tenant)
+                    db.flush()  # Para que el tenant_id exista para claves foráneas
+                    
+                    # 2. Inicializar Configuración por Defecto
+                    default_settings = models.ClinicSettings(
+                        id=str(uuid.uuid4()),
+                        tenant_id=tenant_id,
+                        clinic_name=tenant_name,
+                        clinic_email=admin_email,
+                        clinic_phone="",
+                        clinic_address="",
+                        maps_url="",
+                        instagram_url="",
+                        allow_search_engine_indexing=False
+                    )
+                    db.add(default_settings)
+                    
+                    default_content = models.SiteContent(
+                        id=str(uuid.uuid4()),
+                        tenant_id=tenant_id,
+                        hero_title=f"Bienvenidos a {tenant_name}",
+                        hero_subtitle="Estética avanzada y cuidado personalizado.",
+                        about_text="Nos dedicamos a ofrecer los mejores tratamientos de estética y salud para resaltar tu bienestar.",
+                        about_title=f"Sobre {tenant_name}"
+                    )
+                    db.add(default_content)
+                    
+                    # 3. Crear el usuario en Supabase Auth
+                    supabase_user_id = None
+                    supabase_url = os.environ.get("SUPABASE_URL")
+                    supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+                    
+                    if supabase_url and supabase_key:
+                        try:
+                            from supabase import create_client
+                            supabase_client = create_client(supabase_url, supabase_key)
+                            
+                            # Crear el usuario administrador en Supabase con su tenant_id en app_metadata!
+                            auth_user = supabase_client.auth.admin.create_user({
+                                "email": admin_email,
+                                "password": admin_password,
+                                "email_confirm": True,
+                                "user_metadata": {"full_name": admin_name},
+                                "app_metadata": {"tenant_id": tenant_id, "role": "admin"}
+                            })
+                            
+                            # Extraer el ID devuelto por Supabase Auth de forma segura
+                            if hasattr(auth_user, 'user') and auth_user.user:
+                                supabase_user_id = auth_user.user.id
+                            elif isinstance(auth_user, dict) and 'user' in auth_user:
+                                supabase_user_id = auth_user['user']['id']
+                            elif hasattr(auth_user, 'id'):
+                                supabase_user_id = auth_user.id
+                            
+                            print(f"[SUPABASE] Usuario creado en Supabase Auth. ID: {supabase_user_id}")
+                        except Exception as sb_err:
+                            print(f"[SUPABASE] [WARNING] Error al crear usuario en Supabase Auth: {sb_err}")
+                    
+                    # Fallback de ID si Supabase no está configurado o falla
+                    if not supabase_user_id:
+                        supabase_user_id = str(uuid.uuid4())
+                        print(f"[PROVISIONING] [WARNING] Usando UUID generado localmente para el usuario: {supabase_user_id}")
+                    
+                    # 4. Crear el usuario en la base de datos relacional
+                    from .users import pwd_context
+                    hashed_pw = pwd_context.hash(admin_password)
+                    
+                    new_user = models.User(
+                        id=supabase_user_id,
+                        email=admin_email,
+                        hashed_password=hashed_pw,
+                        role="admin",
+                        tenant_id=tenant_id
+                    )
+                    db.add(new_user)
+                    db.flush()
+                    
+                    # 5. Crear el perfil correspondiente en base de datos
+                    new_profile = models.Profile(
+                        id=supabase_user_id,
+                        tenant_id=tenant_id,
+                        full_name=admin_name,
+                        role="admin",
+                        email=admin_email,
+                        status="active"
+                    )
+                    db.add(new_profile)
+                    
+                    db.commit()
+                    print(f"[PROVISIONING] [SUCCESS] Nuevo Tenant '{tenant_slug}' aprovisionado completamente con exito.")
+                except Exception as db_err:
+                    import traceback
+                    print(f"[PROVISIONING ERROR] Fallo crítico al aprovisionar tenant en base de datos:")
+                    traceback.print_exc()
+                    db.rollback()
+                    raise HTTPException(status_code=500, detail=f"Error interno durante el aprovisionamiento: {str(db_err)}")
                 
             elif metadata.get("type") == "saas_subscription_update":
                 tenant_id = metadata.get("tenant_id")
@@ -572,125 +643,134 @@ def onboarding_session_status(session_id: str, db: Session = Depends(database.ge
         if metadata.get("type") != "saas_onboarding":
             raise HTTPException(status_code=400, detail="Esta sesión de Stripe no corresponde a un onboarding de plataforma")
 
-        tenant_slug = metadata.get("tenant_slug")
-        tenant_name = metadata.get("tenant_name")
-        admin_email = metadata.get("admin_email")
-        admin_name = metadata.get("admin_name")
-        admin_password = metadata.get("admin_password")
+        # Usar extractor con lógica de fallbacks robustos
+        onboarding_data = extract_and_fallback_onboarding_data(session, metadata)
+        tenant_name = onboarding_data["tenant_name"]
+        tenant_slug = onboarding_data["tenant_slug"]
+        admin_email = onboarding_data["admin_email"]
+        admin_name = onboarding_data["admin_name"]
+        admin_password = onboarding_data["admin_password"]
 
         # Buscar si ya fue aprovisionado por el webhook
         tenant = db.query(models.Tenant).filter(models.Tenant.slug == tenant_slug).first()
         
         if not tenant:
             print(f"[ONBOARDING STATUS fallback] Realizando aprovisionamiento síncrono para {tenant_slug}")
-            # Aprovisionamiento Síncrono en caso de que el webhook no haya llegado todavía (condición de carrera)
-            tenant_id = str(uuid.uuid4())
-            
-            # Sincronizar contexto para RLS
-            from ..database import current_tenant_var
-            from sqlalchemy import text
-            current_tenant_var.set(tenant_id)
-            db.execute(
-                text("SET LOCAL app.current_tenant_id = :tenant_id"),
-                {"tenant_id": tenant_id}
-            )
-            
-            tenant = models.Tenant(
-                id=tenant_id,
-                name=tenant_name,
-                slug=tenant_slug,
-                stripe_customer_id=session.get('customer'),
-                stripe_subscription_id=session.get('subscription'),
-                plan_type="pro",
-                subscription_status="active"
-            )
-            db.add(tenant)
-            db.flush()
-
-            # Configuración base
-            default_settings = models.ClinicSettings(
-                id=str(uuid.uuid4()),
-                tenant_id=tenant_id,
-                clinic_name=tenant_name,
-                clinic_email=admin_email,
-                clinic_phone="",
-                clinic_address="",
-                maps_url="",
-                instagram_url="",
-                allow_search_engine_indexing=False,
-                onboarding_completed=False
-            )
-            db.add(default_settings)
-
-            default_content = models.SiteContent(
-                id=str(uuid.uuid4()),
-                tenant_id=tenant_id,
-                hero_title=f"Bienvenidos a {tenant_name}",
-                hero_subtitle="Estética avanzada y cuidado personalizado.",
-                about_text="Nos dedicamos a ofrecer los mejores tratamientos de estética y salud para resaltar tu bienestar.",
-                about_title=f"Sobre {tenant_name}"
-            )
-            db.add(default_content)
-
-            # Supabase Auth
-            supabase_user_id = None
-            supabase_url = os.environ.get("SUPABASE_URL")
-            supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
-            
-            if supabase_url and supabase_key:
-                try:
-                    from supabase import create_client
-                    supabase_client = create_client(supabase_url, supabase_key)
-                    
-                    auth_user = supabase_client.auth.admin.create_user({
-                        "email": admin_email,
-                        "password": admin_password,
-                        "email_confirm": True,
-                        "user_metadata": {"full_name": admin_name},
-                        "app_metadata": {"tenant_id": tenant_id, "role": "admin"}
-                    })
-                    
-                    if hasattr(auth_user, 'user') and auth_user.user:
-                        supabase_user_id = auth_user.user.id
-                    elif isinstance(auth_user, dict) and 'user' in auth_user:
-                        supabase_user_id = auth_user['user']['id']
-                    elif hasattr(auth_user, 'id'):
-                        supabase_user_id = auth_user.id
-                except Exception as sb_err:
-                    print(f"[SB FALLBACK ERROR] {sb_err}")
-
-            if not supabase_user_id:
-                supabase_user_id = str(uuid.uuid4())
-
-            # User relacional
-            from .users import pwd_context
-            hashed_pw = pwd_context.hash(admin_password)
-
-            # Verificar si el usuario ya existe en DB relacional
-            existing_user = db.query(models.User).filter(models.User.email == admin_email).first()
-            if not existing_user:
-                new_user = models.User(
-                    id=supabase_user_id,
-                    email=admin_email,
-                    hashed_password=hashed_pw,
-                    role="admin",
-                    tenant_id=tenant_id
-                )
-                db.add(new_user)
-                db.flush()
+            try:
+                # Aprovisionamiento Síncrono en caso de que el webhook no haya llegado todavía (condición de carrera)
+                tenant_id = str(uuid.uuid4())
                 
-                new_profile = models.Profile(
-                    id=supabase_user_id,
-                    tenant_id=tenant_id,
-                    full_name=admin_name,
-                    role="admin",
-                    email=admin_email,
-                    status="active"
+                # Sincronizar contexto para RLS
+                from ..database import current_tenant_var
+                from sqlalchemy import text
+                current_tenant_var.set(tenant_id)
+                db.execute(
+                    text("SET LOCAL app.current_tenant_id = :tenant_id"),
+                    {"tenant_id": tenant_id}
                 )
-                db.add(new_profile)
+                
+                tenant = models.Tenant(
+                    id=tenant_id,
+                    name=tenant_name,
+                    slug=tenant_slug,
+                    stripe_customer_id=session.get('customer') or get_val(session, 'customer', None),
+                    stripe_subscription_id=session.get('subscription') or get_val(session, 'subscription', None),
+                    plan_type="pro",
+                    subscription_status="active"
+                )
+                db.add(tenant)
+                db.flush()
 
-            db.commit()
-            print(f"[ONBOARDING STATUS fallback] Aprovisionamiento completado con éxito")
+                # Configuración base
+                default_settings = models.ClinicSettings(
+                    id=str(uuid.uuid4()),
+                    tenant_id=tenant_id,
+                    clinic_name=tenant_name,
+                    clinic_email=admin_email,
+                    clinic_phone="",
+                    clinic_address="",
+                    maps_url="",
+                    instagram_url="",
+                    allow_search_engine_indexing=False,
+                    onboarding_completed=False
+                )
+                db.add(default_settings)
+
+                default_content = models.SiteContent(
+                    id=str(uuid.uuid4()),
+                    tenant_id=tenant_id,
+                    hero_title=f"Bienvenidos a {tenant_name}",
+                    hero_subtitle="Estética avanzada y cuidado personalizado.",
+                    about_text="Nos dedicamos a ofrecer los mejores tratamientos de estética y salud para resaltar tu bienestar.",
+                    about_title=f"Sobre {tenant_name}"
+                )
+                db.add(default_content)
+
+                # Supabase Auth
+                supabase_user_id = None
+                supabase_url = os.environ.get("SUPABASE_URL")
+                supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+                
+                if supabase_url and supabase_key:
+                    try:
+                        from supabase import create_client
+                        supabase_client = create_client(supabase_url, supabase_key)
+                        
+                        auth_user = supabase_client.auth.admin.create_user({
+                            "email": admin_email,
+                            "password": admin_password,
+                            "email_confirm": True,
+                            "user_metadata": {"full_name": admin_name},
+                            "app_metadata": {"tenant_id": tenant_id, "role": "admin"}
+                        })
+                        
+                        if hasattr(auth_user, 'user') and auth_user.user:
+                            supabase_user_id = auth_user.user.id
+                        elif isinstance(auth_user, dict) and 'user' in auth_user:
+                            supabase_user_id = auth_user['user']['id']
+                        elif hasattr(auth_user, 'id'):
+                            supabase_user_id = auth_user.id
+                    except Exception as sb_err:
+                        print(f"[SB FALLBACK ERROR] {sb_err}")
+
+                if not supabase_user_id:
+                    supabase_user_id = str(uuid.uuid4())
+
+                # User relacional
+                from .users import pwd_context
+                hashed_pw = pwd_context.hash(admin_password)
+
+                # Verificar si el usuario ya existe en DB relacional
+                existing_user = db.query(models.User).filter(models.User.email == admin_email).first()
+                if not existing_user:
+                    new_user = models.User(
+                        id=supabase_user_id,
+                        email=admin_email,
+                        hashed_password=hashed_pw,
+                        role="admin",
+                        tenant_id=tenant_id
+                    )
+                    db.add(new_user)
+                    db.flush()
+                    
+                    new_profile = models.Profile(
+                        id=supabase_user_id,
+                        tenant_id=tenant_id,
+                        full_name=admin_name,
+                        role="admin",
+                        email=admin_email,
+                        status="active"
+                    )
+                    db.add(new_profile)
+
+                db.commit()
+                print(f"[ONBOARDING STATUS fallback] Aprovisionamiento completado con éxito")
+            except Exception as e:
+                import traceback
+                print(f"[ONBOARDING STATUS ERROR] Fallo crítico al aprovisionar de forma síncrona:")
+                traceback.print_exc()
+                db.rollback()
+                raise HTTPException(status_code=500, detail=f"Error al aprovisionar base de datos síncronamente: {str(e)}")
         
         return {
             "status": "complete",
