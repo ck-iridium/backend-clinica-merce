@@ -330,6 +330,15 @@ async def stripe_webhook(request: Request, db: Session = Depends(database.get_db
                 
                 print(f"[PROVISIONING] Iniciando aprovisionamiento del Tenant SaaS: {tenant_slug} ({tenant_name})")
                 
+                # Cortafuegos estricto: evitar colisión de identidad y contaminación cruzada de datos
+                existing_user = db.query(models.User).filter(models.User.email == admin_email).first()
+                if existing_user:
+                    print(f"[PROVISIONING ERROR] El correo {admin_email} ya está en uso. Abortando registro de nuevo Tenant.")
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Este correo ya está en uso. Por favor, utiliza un correo diferente para registrar una nueva clínica."
+                    )
+                
                 try:
                     # 1. Crear el Tenant en Base de Datos Relacional
                     tenant_id = str(uuid.uuid4())
@@ -666,6 +675,14 @@ def onboarding_session_status(session_id: str, db: Session = Depends(database.ge
         tenant = db.query(models.Tenant).filter(models.Tenant.slug == tenant_slug).first()
         
         if not tenant:
+            # Cortafuegos estricto: evitar colisión de identidad y contaminación cruzada de datos
+            existing_user = db.query(models.User).filter(models.User.email == admin_email).first()
+            if existing_user:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Este correo ya está en uso. Por favor, utiliza un correo diferente para registrar una nueva clínica."
+                )
+
             print(f"[ONBOARDING STATUS fallback] Realizando aprovisionamiento síncrono para {tenant_slug}")
             try:
                 # Aprovisionamiento Síncrono en caso de que el webhook no haya llegado todavía (condición de carrera)
@@ -759,28 +776,25 @@ def onboarding_session_status(session_id: str, db: Session = Depends(database.ge
                 from .users import pwd_context
                 hashed_pw = pwd_context.hash(admin_password)
 
-                # Verificar si el usuario ya existe en DB relacional
-                existing_user = db.query(models.User).filter(models.User.email == admin_email).first()
-                if not existing_user:
-                    new_user = models.User(
-                        id=supabase_user_id,
-                        email=admin_email,
-                        hashed_password=hashed_pw,
-                        role="admin",
-                        tenant_id=tenant_id
-                    )
-                    db.add(new_user)
-                    db.flush()
-                    
-                    new_profile = models.Profile(
-                        id=supabase_user_id,
-                        tenant_id=tenant_id,
-                        full_name=admin_name,
-                        role="admin",
-                        email=admin_email,
-                        status="active"
-                    )
-                    db.add(new_profile)
+                new_user = models.User(
+                    id=supabase_user_id,
+                    email=admin_email,
+                    hashed_password=hashed_pw,
+                    role="admin",
+                    tenant_id=tenant_id
+                )
+                db.add(new_user)
+                db.flush()
+                
+                new_profile = models.Profile(
+                    id=supabase_user_id,
+                    tenant_id=tenant_id,
+                    full_name=admin_name,
+                    role="admin",
+                    email=admin_email,
+                    status="active"
+                )
+                db.add(new_profile)
 
                 db.commit()
                 print(f"[ONBOARDING STATUS fallback] Aprovisionamiento completado con éxito")
