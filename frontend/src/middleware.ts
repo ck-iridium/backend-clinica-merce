@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const hostname = request.headers.get("host") || "";
 
@@ -69,9 +69,27 @@ export function middleware(request: NextRequest) {
     if (subdomain === "merce") {
       tenantId = "00000000-0000-0000-0000-000000000001";
     } else {
-      // En una fase posterior se resolverá dinámicamente desde la DB de Supabase.
-      // Por ahora, se asocia al mismo ID para desarrollo y testing de otros subdominios.
-      tenantId = "00000000-0000-0000-0000-000000000001"; 
+      // Intentar resolver dinámicamente usando las cookies del navegador para evitar peticiones redundantes
+      const cachedId = request.cookies.get("cached_tenant_id")?.value;
+      const cachedSlug = request.cookies.get("cached_tenant_slug")?.value;
+
+      if (cachedSlug === subdomain && cachedId) {
+        tenantId = cachedId;
+      } else {
+        // Consultar a la API del backend para resolver el subdominio de forma real
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        try {
+          const res = await fetch(`${apiUrl}/stripe/resolve-tenant/${subdomain}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.tenant_id) {
+              tenantId = data.tenant_id;
+            }
+          }
+        } catch (err) {
+          console.error("[MIDDLEWARE RESOLVE ERROR]", err);
+        }
+      }
     }
 
     // Clonamos la petición para inyectar cabeceras y cookies del inquilino activo
@@ -97,6 +115,18 @@ export function middleware(request: NextRequest) {
       path: "/",
       httpOnly: false,
       sameSite: "lax",
+    });
+    response.cookies.set("cached_tenant_id", tenantId, {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 3600 * 24, // 24 horas
+    });
+    response.cookies.set("cached_tenant_slug", subdomain, {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 3600 * 24, // 24 horas
     });
 
     return response;

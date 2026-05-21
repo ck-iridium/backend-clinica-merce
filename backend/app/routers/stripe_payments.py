@@ -640,7 +640,18 @@ def onboarding_session_status(session_id: str, db: Session = Depends(database.ge
 
         metadata = session.metadata or {}
         # Validar que es una sesión de onboarding válida
-        if metadata.get("type") != "saas_onboarding":
+        metadata_type = None
+        if isinstance(metadata, dict):
+            metadata_type = metadata.get("type")
+        else:
+            metadata_type = getattr(metadata, "type", None)
+            if not metadata_type:
+                try:
+                    metadata_type = metadata["type"]
+                except Exception:
+                    pass
+
+        if metadata_type != "saas_onboarding":
             raise HTTPException(status_code=400, detail="Esta sesión de Stripe no corresponde a un onboarding de plataforma")
 
         # Usar extractor con lógica de fallbacks robustos
@@ -889,3 +900,15 @@ def onboarding_complete_setup(request: OnboardingCompleteSetupRequest, db: Sessi
     # Obtener el slug para redirigir
     tenant = db.query(models.Tenant).filter(models.Tenant.id == request.tenant_id).first()
     return {"status": "success", "tenant_slug": tenant.slug if tenant else "general"}
+
+@router.get("/resolve-tenant/{slug}")
+def resolve_tenant(slug: str, db: Session = Depends(database.get_db)):
+    tenant = db.query(models.Tenant).filter(models.Tenant.slug == slug.lower()).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    return {
+        "tenant_id": tenant.id,
+        "tenant_name": tenant.name,
+        "tenant_slug": tenant.slug,
+        "subscription_status": tenant.subscription_status
+    }
