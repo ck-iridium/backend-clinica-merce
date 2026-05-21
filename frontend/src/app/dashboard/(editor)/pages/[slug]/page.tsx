@@ -6,7 +6,7 @@ import {
   DragOverlay,
   closestCorners,
 } from '@dnd-kit/core';
-import { restrictToWindowEdges } from '@dnd-kit/modifiers';
+import { restrictToWindowEdges, snapCenterToCursor } from '@dnd-kit/modifiers';
 import MediaPickerModal from '@/components/MediaPickerModal';
 
 import { usePageBuilder } from './hooks/usePageBuilder';
@@ -166,7 +166,7 @@ export default function PageEditor() {
         </main>
 
         {/* ── DragOverlay — FUERA de cualquier contenedor con overflow ─ */}
-        <DragOverlay dropAnimation={null} modifiers={[restrictToWindowEdges]}>
+        <DragOverlay dropAnimation={null} modifiers={[restrictToWindowEdges, snapCenterToCursor]}>
           {activeId ? (
             <div className="bg-white border-2 border-[#d4af37] rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] p-4 max-w-[240px] flex items-center gap-3 select-none pointer-events-none opacity-95 rotate-1">
               <div className="w-8 h-8 bg-amber-50 rounded-xl border border-amber-100 flex items-center justify-center text-[#d4af37] shrink-0">

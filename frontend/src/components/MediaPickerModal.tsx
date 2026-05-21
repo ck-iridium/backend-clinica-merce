@@ -28,6 +28,7 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
   ({ onClose, onImageSelected, forceAspect, maxResolution, mediaType = 'image' }, ref) => {
     const { showFeedback } = useFeedback();
     const [activeTab, setActiveTab] = useState<'upload' | 'gallery'>('gallery');
+    const [mediaFilter, setMediaFilter] = useState<'all' | 'image' | 'video'>('all');
 
     const [galleryFiles, setGalleryFiles] = useState<MediaFile[]>([]);
     const [galleryLoading, setGalleryLoading] = useState(false);
@@ -267,69 +268,105 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                     {/* Content area con scroll interno PROPIO */}
                     <div className="flex-1 overflow-y-auto custom-scrollbar bg-stone-50/30 relative">
                         <div className="p-6">
-                            {activeTab === 'gallery' && (
-                                <div className="h-full">
-                                    {galleryLoading ? (
-                                        <div className="flex flex-col items-center justify-center h-full min-h-[300px] gap-4">
-                                            <div className="w-10 h-10 border-4 border-stone-200 border-t-[#d4af37] rounded-full animate-spin" />
-                                            <p className="text-stone-400 text-sm font-medium tracking-widest uppercase">Cargando...</p>
-                                        </div>
-                                    ) : galleryFiles.length === 0 ? (
-                                        <div className="flex flex-col items-center justify-center h-full min-h-[300px] gap-4 text-center">
-                                            <span className="text-5xl opacity-40">{mediaType === 'video' ? '🎥' : '🖼️'}</span>
-                                            <p className="text-stone-500 font-medium">No hay {mediaType === 'video' ? 'vídeos' : 'imágenes'}.</p>
-                                        </div>
-                                    ) : (
-                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 pb-24">
-                                            {galleryFiles.map(file => (
-                                                <button
-                                                    type="button"
-                                                    key={file.url}
-                                                    onClick={(e) => safeSelectImage(e, file.url)}
-                                                    className="group relative rounded-2xl overflow-hidden aspect-square bg-stone-100 border border-stone-200 hover:border-[#d4af37] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-left"
-                                                >
-                                                    {isVideo(file.content_type) ? (
-                                                      <div className="w-full h-full relative flex items-center justify-center bg-stone-900">
-                                                        <video src={file.url} className="w-full h-full object-cover opacity-60" crossOrigin="anonymous" />
-                                                        <div className="absolute inset-0 flex items-center justify-center">
-                                                          <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-lg">
-                                                            <Play fill="white" size={16} className="text-white ml-1" />
-                                                          </div>
-                                                        </div>
-                                                      </div>
-                                                    ) : (
-                                                      <img
-                                                          src={file.url}
-                                                          alt={file.name}
-                                                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                          loading="lazy"
-                                                          crossOrigin="anonymous"
-                                                      />
-                                                    )}
-                                                    
-                                                    <div className="absolute top-2 left-2 z-10 px-2 py-1 bg-black/50 backdrop-blur-md rounded-lg text-[8px] font-black text-white uppercase tracking-widest">
-                                                      {formatBytes(file.size)}
-                                                    </div>
+                            {activeTab === 'gallery' && (() => {
+                                const displayedFiles = galleryFiles.filter(file => {
+                                    const isVidFile = isVideo(file.content_type);
+                                    if (mediaFilter === 'image') return !isVidFile;
+                                    if (mediaFilter === 'video') return isVidFile;
+                                    return true;
+                                });
 
-                                                    {file.status === 'in_use' && (
-                                                        <div className="absolute top-2 right-2 z-10">
-                                                            <span className="flex h-3 w-3 relative">
-                                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                                                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 shadow-sm border border-white"></span>
-                                                            </span>
+                                return (
+                                    <div className="h-full flex flex-col gap-5">
+                                        {mediaType === 'all' && (
+                                            <div className="flex items-center gap-1.5 shrink-0 select-none pb-1">
+                                                {[
+                                                    { id: 'all', label: 'Todos', count: galleryFiles.length },
+                                                    { id: 'image', label: 'Imágenes', count: galleryFiles.filter(f => !isVideo(f.content_type)).length },
+                                                    { id: 'video', label: 'Vídeos', count: galleryFiles.filter(f => isVideo(f.content_type)).length }
+                                                ].map(pill => (
+                                                    <button
+                                                        type="button"
+                                                        key={pill.id}
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            setMediaFilter(pill.id as any);
+                                                        }}
+                                                        className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${
+                                                            mediaFilter === pill.id
+                                                                ? 'bg-stone-900 border-stone-900 text-white shadow-sm'
+                                                                : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
+                                                        }`}
+                                                    >
+                                                        {pill.label} ({pill.count})
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {galleryLoading ? (
+                                            <div className="flex flex-col items-center justify-center h-full min-h-[300px] gap-4">
+                                                <div className="w-10 h-10 border-4 border-stone-200 border-t-[#d4af37] rounded-full animate-spin" />
+                                                <p className="text-stone-400 text-sm font-medium tracking-widest uppercase">Cargando...</p>
+                                            </div>
+                                        ) : displayedFiles.length === 0 ? (
+                                            <div className="flex flex-col items-center justify-center h-full min-h-[300px] gap-4 text-center">
+                                                <span className="text-5xl opacity-40">{mediaFilter === 'video' ? '🎥' : '🖼️'}</span>
+                                                <p className="text-stone-500 font-medium">No hay {mediaFilter === 'video' ? 'vídeos' : mediaFilter === 'image' ? 'imágenes' : 'medios'} disponibles.</p>
+                                            </div>
+                                        ) : (
+                                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 pb-24">
+                                                {displayedFiles.map(file => (
+                                                    <button
+                                                        type="button"
+                                                        key={file.url}
+                                                        onClick={(e) => safeSelectImage(e, file.url)}
+                                                        className="group relative rounded-2xl overflow-hidden aspect-square bg-stone-100 border border-stone-200 hover:border-[#d4af37] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-left"
+                                                    >
+                                                        {isVideo(file.content_type) ? (
+                                                          <div className="w-full h-full relative flex items-center justify-center bg-stone-900">
+                                                            <video src={file.url} className="w-full h-full object-cover opacity-60" crossOrigin="anonymous" />
+                                                            <div className="absolute inset-0 flex items-center justify-center">
+                                                              <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-lg">
+                                                                <Play fill="white" size={16} className="text-white ml-1" />
+                                                              </div>
+                                                            </div>
+                                                          </div>
+                                                        ) : (
+                                                          <img
+                                                              src={file.url}
+                                                              alt={file.name}
+                                                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                              loading="lazy"
+                                                              crossOrigin="anonymous"
+                                                          />
+                                                        )}
+                                                        
+                                                        <div className="absolute top-2 left-2 z-10 px-2 py-1 bg-black/50 backdrop-blur-md rounded-lg text-[8px] font-black text-white uppercase tracking-widest">
+                                                          {formatBytes(file.size)}
                                                         </div>
-                                                    )}
-                                                    <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/30 transition-all flex items-center justify-center">
-                                                        <div className="opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all bg-[#d4af37] text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg">
-                                                            Elegir
+
+                                                        {file.status === 'in_use' && (
+                                                            <div className="absolute top-2 right-2 z-10">
+                                                                <span className="flex h-3 w-3 relative">
+                                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 shadow-sm border border-white"></span>
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                        <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/30 transition-all flex items-center justify-center">
+                                                            <div className="opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all bg-[#d4af37] text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg">
+                                                                Elegir
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })()}
 
                             {activeTab === 'upload' && (
                                 <div className="flex flex-col items-center justify-center min-h-[300px] h-full pb-24">

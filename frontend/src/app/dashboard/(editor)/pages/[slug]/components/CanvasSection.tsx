@@ -169,28 +169,37 @@ function RenderBlock({ block, dbCategories, dbServices }: {
       </div>
     );
 
-    const layoutStyle = data.layout || 'traditional_grid';
+    const layoutStyle = data.layout === 'grid' ? 'traditional_grid' : (data.layout || 'traditional_grid');
 
     return (
       <div className="w-full py-4">
         {layoutStyle === 'cards_slider' && (
           <div className="flex gap-4 overflow-x-auto pb-4 hide-scroll select-none pointer-events-none">
-            {services.map((service: any) => (
-              <div key={service.id} className="w-[180px] shrink-0 aspect-[3/4] bg-stone-100 rounded-2xl overflow-hidden shadow-sm border border-stone-100 relative group">
-                {service.image_url ? (
-                  <img src={service.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${service.image_url}` : service.image_url} alt={service.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-stone-50 p-4 text-center">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-stone-300 leading-tight">{service.name}</span>
+            {services.map((service: any) => {
+              const isVid = service.image_url && (service.image_url.includes('.mp4') || service.image_url.includes('.webm') || service.image_url.includes('video_'));
+              const mediaSrc = service.image_url && (service.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${service.image_url}` : service.image_url);
+
+              return (
+                <div key={service.id} className="w-[180px] shrink-0 aspect-[3/4] bg-stone-100 rounded-2xl overflow-hidden shadow-sm border border-stone-100 relative group">
+                  {mediaSrc ? (
+                    isVid ? (
+                      <video src={mediaSrc} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+                    ) : (
+                      <img src={mediaSrc} alt={service.name} className="w-full h-full object-cover" />
+                    )
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-stone-50 p-4 text-center">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-stone-300 leading-tight">{service.name}</span>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <p className="text-[11px] font-bold text-white truncate leading-tight uppercase tracking-wide">{service.name}</p>
+                    <p className="text-[9px] text-white/60 font-medium">{service.duration_minutes} min</p>
                   </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
-                <div className="absolute bottom-4 left-4 right-4">
-                  <p className="text-[11px] font-bold text-white truncate leading-tight uppercase tracking-wide">{service.name}</p>
-                  <p className="text-[9px] text-white/60 font-medium">{service.duration_minutes} min</p>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -203,22 +212,31 @@ function RenderBlock({ block, dbCategories, dbServices }: {
 
         {layoutStyle === 'traditional_grid' && (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 select-none pointer-events-none">
-            {services.map((service: any) => (
-              <div key={service.id} className="aspect-[3/4] bg-stone-100 rounded-2xl overflow-hidden shadow-sm border border-stone-100 relative group">
-                {service.image_url ? (
-                  <img src={service.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${service.image_url}` : service.image_url} alt={service.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-stone-50 p-4 text-center">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-stone-300 leading-tight">{service.name}</span>
+            {services.map((service: any) => {
+              const isVid = service.image_url && (service.image_url.includes('.mp4') || service.image_url.includes('.webm') || service.image_url.includes('video_'));
+              const mediaSrc = service.image_url && (service.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${service.image_url}` : service.image_url);
+
+              return (
+                <div key={service.id} className="aspect-[3/4] bg-stone-100 rounded-2xl overflow-hidden shadow-sm border border-stone-100 relative group">
+                  {mediaSrc ? (
+                    isVid ? (
+                      <video src={mediaSrc} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+                    ) : (
+                      <img src={mediaSrc} alt={service.name} className="w-full h-full object-cover" />
+                    )
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-stone-50 p-4 text-center">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-stone-300 leading-tight">{service.name}</span>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <p className="text-[11px] font-bold text-white truncate leading-tight uppercase tracking-wide">{service.name}</p>
+                    <p className="text-[9px] text-white/60 font-medium">{service.duration_minutes} min</p>
                   </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
-                <div className="absolute bottom-4 left-4 right-4">
-                  <p className="text-[11px] font-bold text-white truncate leading-tight uppercase tracking-wide">{service.name}</p>
-                  <p className="text-[9px] text-white/60 font-medium">{service.duration_minutes} min</p>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
