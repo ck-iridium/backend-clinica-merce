@@ -27,9 +27,15 @@ class OnboardingSessionRequest(BaseModel):
     admin_password: str
 
 @router.post("/create-onboarding-session")
-def create_onboarding_session(request: OnboardingSessionRequest):
+def create_onboarding_session(request: OnboardingSessionRequest, req: Request):
     stripe.api_key = get_stripe_key()
-    frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
+    
+    # Determinar base URL dinámicamente detectando origen de petición
+    origin = req.headers.get("origin") or req.headers.get("referer")
+    if not origin or "localhost" not in origin:
+        frontend_url = "https://www.probookia.com"
+    else:
+        frontend_url = origin.rstrip("/")
     
     # 1. Validar colisión de subdominios
     db = database.SessionLocal()
@@ -63,13 +69,15 @@ def create_onboarding_session(request: OnboardingSessionRequest):
             mode="subscription",
             subscription_data={
                 "metadata": {
-                    "plan_type": "pro"
+                    "plan_type": "pro",
+                    "is_platform_onboarding": "true"
                 }
             },
             success_url=f"{frontend_url}/onboarding/success?session_id={{CHECKOUT_SESSION_ID}}",
             cancel_url=f"{frontend_url}/marketing",
             metadata={
                 "type": "saas_onboarding",
+                "is_platform_onboarding": "true",
                 "tenant_name": request.tenant_name,
                 "tenant_slug": request.tenant_slug,
                 "admin_email": request.admin_email,
@@ -550,3 +558,246 @@ def get_appointment_by_stripe_session(session_id: str, db: Session = Depends(dat
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/onboarding-session-status/{session_id}")
+def onboarding_session_status(session_id: str, db: Session = Depends(database.get_db)):
+    stripe.api_key = get_stripe_key()
+    try:
+        session = stripe.checkout.Session.retrieve(session_id)
+        if session.payment_status != "paid" and session.status != "complete":
+            raise HTTPException(status_code=400, detail="El pago no ha sido completado todavía en Stripe")
+
+        metadata = session.metadata or {}
+        # Validar que es una sesión de onboarding válida
+        if metadata.get("type") != "saas_onboarding":
+            raise HTTPException(status_code=400, detail="Esta sesión de Stripe no corresponde a un onboarding de plataforma")
+
+        tenant_slug = metadata.get("tenant_slug")
+        tenant_name = metadata.get("tenant_name")
+        admin_email = metadata.get("admin_email")
+        admin_name = metadata.get("admin_name")
+        admin_password = metadata.get("admin_password")
+
+        # Buscar si ya fue aprovisionado por el webhook
+        tenant = db.query(models.Tenant).filter(models.Tenant.slug == tenant_slug).first()
+        
+        if not tenant:
+            print(f"[ONBOARDING STATUS fallback] Realizando aprovisionamiento síncrono para {tenant_slug}")
+            # Aprovisionamiento Síncrono en caso de que el webhook no haya llegado todavía (condición de carrera)
+            tenant_id = str(uuid.uuid4())
+            
+            # Sincronizar contexto para RLS
+            from ..database import current_tenant_var
+            from sqlalchemy import text
+            current_tenant_var.set(tenant_id)
+            db.execute(
+                text("SET LOCAL app.current_tenant_id = :tenant_id"),
+                {"tenant_id": tenant_id}
+            )
+            
+            tenant = models.Tenant(
+                id=tenant_id,
+                name=tenant_name,
+                slug=tenant_slug,
+                stripe_customer_id=session.get('customer'),
+                stripe_subscription_id=session.get('subscription'),
+                plan_type="pro",
+                subscription_status="active"
+            )
+            db.add(tenant)
+            db.flush()
+
+            # Configuración base
+            default_settings = models.ClinicSettings(
+                id=str(uuid.uuid4()),
+                tenant_id=tenant_id,
+                clinic_name=tenant_name,
+                clinic_email=admin_email,
+                clinic_phone="",
+                clinic_address="",
+                maps_url="",
+                instagram_url="",
+                allow_search_engine_indexing=False,
+                onboarding_completed=False
+            )
+            db.add(default_settings)
+
+            default_content = models.SiteContent(
+                id=str(uuid.uuid4()),
+                tenant_id=tenant_id,
+                hero_title=f"Bienvenidos a {tenant_name}",
+                hero_subtitle="Estética avanzada y cuidado personalizado.",
+                about_text="Nos dedicamos a ofrecer los mejores tratamientos de estética y salud para resaltar tu bienestar.",
+                about_title=f"Sobre {tenant_name}"
+            )
+            db.add(default_content)
+
+            # Supabase Auth
+            supabase_user_id = None
+            supabase_url = os.environ.get("SUPABASE_URL")
+            supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+            
+            if supabase_url and supabase_key:
+                try:
+                    from supabase import create_client
+                    supabase_client = create_client(supabase_url, supabase_key)
+                    
+                    auth_user = supabase_client.auth.admin.create_user({
+                        "email": admin_email,
+                        "password": admin_password,
+                        "email_confirm": True,
+                        "user_metadata": {"full_name": admin_name},
+                        "app_metadata": {"tenant_id": tenant_id, "role": "admin"}
+                    })
+                    
+                    if hasattr(auth_user, 'user') and auth_user.user:
+                        supabase_user_id = auth_user.user.id
+                    elif isinstance(auth_user, dict) and 'user' in auth_user:
+                        supabase_user_id = auth_user['user']['id']
+                    elif hasattr(auth_user, 'id'):
+                        supabase_user_id = auth_user.id
+                except Exception as sb_err:
+                    print(f"[SB FALLBACK ERROR] {sb_err}")
+
+            if not supabase_user_id:
+                supabase_user_id = str(uuid.uuid4())
+
+            # User relacional
+            from .users import pwd_context
+            hashed_pw = pwd_context.hash(admin_password)
+
+            # Verificar si el usuario ya existe en DB relacional
+            existing_user = db.query(models.User).filter(models.User.email == admin_email).first()
+            if not existing_user:
+                new_user = models.User(
+                    id=supabase_user_id,
+                    email=admin_email,
+                    hashed_password=hashed_pw,
+                    role="admin",
+                    tenant_id=tenant_id
+                )
+                db.add(new_user)
+                db.flush()
+                
+                new_profile = models.Profile(
+                    id=supabase_user_id,
+                    tenant_id=tenant_id,
+                    full_name=admin_name,
+                    role="admin",
+                    email=admin_email,
+                    status="active"
+                )
+                db.add(new_profile)
+
+            db.commit()
+            print(f"[ONBOARDING STATUS fallback] Aprovisionamiento completado con éxito")
+        
+        return {
+            "status": "complete",
+            "tenant_id": tenant.id,
+            "tenant_slug": tenant.slug,
+            "tenant_name": tenant.name,
+            "admin_email": admin_email,
+            "admin_name": admin_name,
+            "admin_password": admin_password
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+class OnboardingCompleteSetupRequest(BaseModel):
+    tenant_id: str
+    clinic_name: str
+    sector: str
+    logo_app_b64: str | None = None
+    open_time: str
+    close_time: str
+    working_days: str # "[1,2,3,4,5]"
+    initial_service: dict # { name, price, duration_minutes }
+
+@router.post("/onboarding-complete-setup")
+def onboarding_complete_setup(request: OnboardingCompleteSetupRequest, db: Session = Depends(database.get_db)):
+    # Asegurar RLS pasándole el tenant_id
+    from ..database import current_tenant_var
+    from sqlalchemy import text
+    current_tenant_var.set(request.tenant_id)
+    db.execute(
+        text("SET LOCAL app.current_tenant_id = :tenant_id"),
+        {"tenant_id": request.tenant_id}
+    )
+    
+    # 1. Recuperar ClinicSettings
+    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == request.tenant_id).first()
+    if not settings:
+        raise HTTPException(status_code=404, detail="Configuración clínica no encontrada")
+    
+    settings.clinic_name = request.clinic_name
+    settings.open_time = request.open_time
+    settings.close_time = request.close_time
+    settings.working_days = request.working_days
+    settings.logo_app_b64 = request.logo_app_b64
+    settings.onboarding_completed = True
+    
+    # 2. Crear categoría de servicio inicial
+    category_slug = "general"
+    category = db.query(models.ServiceCategory).filter(
+        models.ServiceCategory.tenant_id == request.tenant_id,
+        models.ServiceCategory.slug == category_slug
+    ).first()
+    
+    if not category:
+        category = models.ServiceCategory(
+            id=str(uuid.uuid4()),
+            tenant_id=request.tenant_id,
+            name="General",
+            slug=category_slug,
+            description="Tratamientos generales iniciales",
+            is_active=True
+        )
+        db.add(category)
+        db.flush()
+    
+    # 3. Crear servicio inicial
+    service_name = request.initial_service.get("name", "Servicio Inicial")
+    service_price = request.initial_service.get("price", 50.0)
+    service_duration = request.initial_service.get("duration_minutes", 60)
+    
+    import re
+    service_slug = re.sub(r'[^a-z0-9]+', '-', service_name.lower()).strip('-')
+    if not service_slug:
+        service_slug = "servicio-inicial"
+        
+    # Evitar colisión de slug de servicio
+    existing_svc = db.query(models.Service).filter(
+        models.Service.tenant_id == request.tenant_id,
+        models.Service.slug == service_slug
+    ).first()
+    if existing_svc:
+        service_slug = f"{service_slug}-{uuid.uuid4().hex[:4]}"
+        
+    initial_service = models.Service(
+        id=str(uuid.uuid4()),
+        tenant_id=request.tenant_id,
+        category_id=category.id,
+        name=service_name,
+        slug=service_slug,
+        description=f"Nuestros tratamientos de {service_name} con dedicación exclusiva y técnicas avanzadas.",
+        duration_minutes=service_duration,
+        price=service_price,
+        is_active=True,
+        is_featured=True
+    )
+    db.add(initial_service)
+    
+    # Actualizar SiteContent también si existe
+    content = db.query(models.SiteContent).filter(models.SiteContent.tenant_id == request.tenant_id).first()
+    if content:
+        content.hero_title = f"Bienvenidos a {request.clinic_name}"
+        content.about_title = f"Sobre {request.clinic_name}"
+        
+    db.commit()
+    
+    # Obtener el slug para redirigir
+    tenant = db.query(models.Tenant).filter(models.Tenant.id == request.tenant_id).first()
+    return {"status": "success", "tenant_slug": tenant.slug if tenant else "general"}
