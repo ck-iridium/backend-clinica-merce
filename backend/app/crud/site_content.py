@@ -1,34 +1,23 @@
 from sqlalchemy.orm import Session
 from .. import models, schemas
-import uuid
 
 # --- SITE CONTENT (CMS) ---
 def get_site_content(db: Session):
-    from ..database import current_tenant_var
-    
-    tenant_id = current_tenant_var.get()
-    
-    # 1. EL MURO: Si por algún motivo no hay tenant_id, devolvemos un cascarón vacío.
-    # NO GUARDAMOS NADA para no corromper la base de datos.
-    if not tenant_id:
-        return models.SiteContent(
-            hero_title="Bienvenidos",
-            hero_subtitle="Configura tu negocio en el panel de control.",
-            about_title="Sobre nosotros",
-            about_text="Texto pendiente de configuración."
-        )
-
-    # 2. FILTRO ESTRICTO: Buscamos SOLAMENTE el contenido del tenant actual.
     try:
-        content = db.query(models.SiteContent).filter(models.SiteContent.tenant_id == tenant_id).first()
+        content = db.query(models.SiteContent).first()
     except Exception:
         db.rollback()
         from ..utils.migrations import run_auto_migrations
         run_auto_migrations()
-        content = db.query(models.SiteContent).filter(models.SiteContent.tenant_id == tenant_id).first()
+        content = db.query(models.SiteContent).first()
 
-    # 3. ESTADO VACÍO DINÁMICO: Si el tenant es nuevo y no tiene contenido, se lo creamos a él.
     if not content:
+        from ..database import current_tenant_var
+        import uuid
+        tenant_id = current_tenant_var.get()
+        if not tenant_id:
+            tenant_id = "00000000-0000-0000-0000-000000000001"
+            
         tenant_name = "Nuestra Clínica"
         tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
         if tenant:
@@ -45,15 +34,10 @@ def get_site_content(db: Session):
         db.add(content)
         db.commit()
         db.refresh(content)
-        
     return content
 
 def update_site_content(db: Session, update_data: schemas.SiteContentUpdate):
     content = get_site_content(db)
-    
-    # Protección extra: No actualizar si es un cascarón vacío en memoria sin ID
-    if not getattr(content, 'id', None):
-        return content
     
     translatable_keys = [
         "hero_title", "hero_subtitle", "hero_button_text",

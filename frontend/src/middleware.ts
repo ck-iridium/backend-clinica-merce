@@ -53,7 +53,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // 4. Resolver tenant_id para el subdominio
-  let tenantId = "00000000-0000-0000-0000-000000000001"; // Fallback por defecto a Clínica Mercè
+  let tenantId = "";
 
   // Impersonación (Modo Soporte)
   const isImpersonating = request.cookies.get("is_impersonating")?.value === "true";
@@ -90,6 +90,10 @@ export async function middleware(request: NextRequest) {
           console.error("[MIDDLEWARE RESOLVE ERROR]", err);
         }
       }
+    }
+
+    if (!tenantId) {
+      return new NextResponse("Tenant ID missing or invalid", { status: 400 });
     }
 
     // Clonamos la petición para inyectar cabeceras y cookies del inquilino activo

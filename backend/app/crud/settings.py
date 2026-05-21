@@ -3,23 +3,25 @@ from .. import models, schemas
 
 # --- SETTINGS ---
 def get_clinic_settings(db: Session):
+    from ..database import current_tenant_var
+    tenant_id = current_tenant_var.get()
     try:
-        settings = db.query(models.ClinicSettings).first()
+        settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).first()
     except Exception:
         # Si hay un error de esquema (columnas faltantes), intentamos corregir al vuelo
         db.rollback()
         from ..utils.migrations import run_auto_migrations
         run_auto_migrations()
-        settings = db.query(models.ClinicSettings).first()
+        settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).first()
 
     if not settings:
         # Create default singleton settings if not exists
         settings = models.ClinicSettings(
-            id=1,
             clinic_name="Clínica Merce",
             invoice_prefix="FA-{YY}-",
             invoice_next_number=1,
-            default_tax_rate=21.0
+            default_tax_rate=21.0,
+            tenant_id=tenant_id
         )
         db.add(settings)
         db.commit()

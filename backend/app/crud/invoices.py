@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime, date
 from .. import models, schemas
 from .settings import get_clinic_settings
+from ..database import current_tenant_var
 
 # --- INVOICES ---
 
@@ -32,10 +33,14 @@ def generate_invoice_id(db: Session, target_date=None) -> str:
     return new_id
 
 def get_invoice(db: Session, invoice_id: str):
-    return db.query(models.Invoice).filter(models.Invoice.id == invoice_id).first()
+    return db.query(models.Invoice).filter(
+        models.Invoice.id == invoice_id,
+        models.Invoice.tenant_id == current_tenant_var.get()
+    ).first()
 
 def get_invoices(db: Session, page: int = 1, limit: int = 10, status: str = "all", start_date: str = None, end_date: str = None, search: str = None):
-    query = db.query(models.Invoice)
+    tenant_id = current_tenant_var.get()
+    query = db.query(models.Invoice).filter(models.Invoice.tenant_id == tenant_id)
     
     if status and status.lower() != "all" and status.lower() != "todas":
         # Convert "pagadas" to "paid" and "pendientes" to "pending" if they come in Spanish
@@ -52,6 +57,7 @@ def get_invoices(db: Session, page: int = 1, limit: int = 10, status: str = "all
     if search:
         search_term = f"%{search}%"
         query = query.join(models.Client, models.Invoice.client_id == models.Client.id, isouter=True)
+        query = query.filter(models.Client.tenant_id == tenant_id)
         query = query.filter(
             or_(
                 models.Invoice.concept.ilike(search_term),
@@ -84,8 +90,10 @@ def get_invoices(db: Session, page: int = 1, limit: int = 10, status: str = "all
     }
 
 def create_invoice(db: Session, invoice: schemas.InvoiceCreate):
+    tenant_id = current_tenant_var.get()
     invoice_dict = invoice.model_dump()
     invoice_dict["id"] = generate_invoice_id(db, invoice.date)
+    invoice_dict["tenant_id"] = tenant_id
     
     if "tax_rate" not in invoice_dict or invoice_dict["tax_rate"] is None or invoice_dict["tax_rate"] == 21.0:
         settings = get_clinic_settings(db)
@@ -98,7 +106,11 @@ def create_invoice(db: Session, invoice: schemas.InvoiceCreate):
     return db_invoice
 
 def update_invoice(db: Session, invoice_id: str, invoice: schemas.InvoiceUpdate):
-    db_invoice = db.query(models.Invoice).filter(models.Invoice.id == invoice_id).first()
+    tenant_id = current_tenant_var.get()
+    db_invoice = db.query(models.Invoice).filter(
+        models.Invoice.id == invoice_id,
+        models.Invoice.tenant_id == tenant_id
+    ).first()
     if db_invoice:
         update_data = invoice.model_dump(exclude_unset=True)
         for key, value in update_data.items():
@@ -108,24 +120,33 @@ def update_invoice(db: Session, invoice_id: str, invoice: schemas.InvoiceUpdate)
     return db_invoice
 
 def delete_invoice(db: Session, invoice_id: str):
-    db_invoice = db.query(models.Invoice).filter(models.Invoice.id == invoice_id).first()
+    tenant_id = current_tenant_var.get()
+    db_invoice = db.query(models.Invoice).filter(
+        models.Invoice.id == invoice_id,
+        models.Invoice.tenant_id == tenant_id
+    ).first()
     if db_invoice:
         db.delete(db_invoice)
         db.commit()
     return db_invoice
 
 def create_direct_sale(db: Session, sale: schemas.DirectSaleRequest):
+    tenant_id = current_tenant_var.get()
     # 1. Handle Simplified Mode (Ticket)
     effective_client_id = sale.client_id
     if sale.is_simplified:
         # Search or create "Cliente de Contado"
-        anon_client = db.query(models.Client).filter(models.Client.email == "contado@clinica-mercedes.com").first()
+        anon_client = db.query(models.Client).filter(
+            models.Client.email == "contado@clinica-mercedes.com",
+            models.Client.tenant_id == tenant_id
+        ).first()
         if not anon_client:
             anon_client = models.Client(
                 id=str(uuid.uuid4()),
                 name="Cliente de Contado",
                 email="contado@clinica-mercedes.com",
-                phone="000000000"
+                phone="000000000",
+                tenant_id=tenant_id
             )
             db.add(anon_client)
             db.commit()
@@ -133,7 +154,10 @@ def create_direct_sale(db: Session, sale: schemas.DirectSaleRequest):
         effective_client_id = anon_client.id
 
     # 2. Fetch service to get original name/concept
-    service = db.query(models.Service).filter(models.Service.id == sale.service_id).first()
+    service = db.query(models.Service).filter(
+        models.Service.id == sale.service_id,
+        models.Service.tenant_id == tenant_id
+    ).first()
     if not service:
         raise ValueError("Servicio no encontrado")
     
@@ -152,7 +176,8 @@ def create_direct_sale(db: Session, sale: schemas.DirectSaleRequest):
         date=today,
         status="paid",
         tax_rate=settings.default_tax_rate,
-        is_simplified=sale.is_simplified
+        is_simplified=sale.is_simplified,
+        tenant_id=tenant_id
     )
     db.add(db_invoice)
     db.commit()
