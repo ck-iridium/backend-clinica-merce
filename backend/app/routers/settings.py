@@ -55,14 +55,15 @@ def update_settings(settings_update: schemas.ClinicSettingsUpdate, db: Session =
 
 @router.get("/backup/export")
 def export_database(db: Session = Depends(database.get_db)):
-    # Export full DB to JSON
+    # Export only current tenant data
+    tenant_id = database.current_tenant_var.get()
     data = {
-        "settings": [s.__dict__ for s in db.query(models.ClinicSettings).all()],
-        "clients": [c.__dict__ for c in db.query(models.Client).all()],
-        "services": [s.__dict__ for s in db.query(models.Service).all()],
-        "appointments": [a.__dict__ for a in db.query(models.Appointment).all()],
-        "vouchers": [v.__dict__ for v in db.query(models.Voucher).all()],
-        "invoices": [i.__dict__ for i in db.query(models.Invoice).all()],
+        "settings": [s.__dict__ for s in db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).all()],
+        "clients": [c.__dict__ for c in db.query(models.Client).filter(models.Client.tenant_id == tenant_id).all()],
+        "services": [s.__dict__ for s in db.query(models.Service).filter(models.Service.tenant_id == tenant_id).all()],
+        "appointments": [a.__dict__ for a in db.query(models.Appointment).filter(models.Appointment.tenant_id == tenant_id).all()],
+        "vouchers": [v.__dict__ for v in db.query(models.Voucher).filter(models.Voucher.tenant_id == tenant_id).all()],
+        "invoices": [i.__dict__ for i in db.query(models.Invoice).filter(models.Invoice.tenant_id == tenant_id).all()],
     }
     # Clean up sqlalchemy state and dates
     for k in data.keys():
@@ -76,6 +77,10 @@ def export_database(db: Session = Depends(database.get_db)):
 @router.post("/backup/restore")
 async def restore_database(backup_data: Dict[str, Any], db: Session = Depends(database.get_db)):
     try:
+        tenant_id = database.current_tenant_var.get()
+        if not tenant_id:
+            raise HTTPException(status_code=400, detail="Tenant context required")
+
         # Detectar el tipo de base de datos
         is_sqlite = db.bind.dialect.name == "sqlite"
         
@@ -85,14 +90,14 @@ async def restore_database(backup_data: Dict[str, Any], db: Session = Depends(da
         else:
             db.execute(text("SET session_replication_role = 'replica';"))
         
-        db.query(models.Invoice).delete()
-        db.query(models.Appointment).delete()
-        db.query(models.Voucher).delete()
+        db.query(models.Invoice).filter(models.Invoice.tenant_id == tenant_id).delete()
+        db.query(models.Appointment).filter(models.Appointment.tenant_id == tenant_id).delete()
+        db.query(models.Voucher).filter(models.Voucher.tenant_id == tenant_id).delete()
         
         # We must clear Client and Service after tables that depend on them
-        db.query(models.Client).delete()
-        db.query(models.Service).delete()
-        db.query(models.ClinicSettings).delete()
+        db.query(models.Client).filter(models.Client.tenant_id == tenant_id).delete()
+        db.query(models.Service).filter(models.Service.tenant_id == tenant_id).delete()
+        db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).delete()
         db.commit()
 
         # Insert items back. 
@@ -109,14 +114,36 @@ async def restore_database(backup_data: Dict[str, Any], db: Session = Depends(da
                         pass
             return item
             
-        for s in backup_data.get("settings", []): db.add(models.ClinicSettings(**parse_dates(s)))
-        for c in backup_data.get("clients", []): db.add(models.Client(**parse_dates(c)))
-        for s in backup_data.get("services", []): db.add(models.Service(**parse_dates(s)))
+        for s in backup_data.get("settings", []):
+            item = parse_dates(s)
+            item["tenant_id"] = tenant_id
+            db.add(models.ClinicSettings(**item))
+            
+        for c in backup_data.get("clients", []):
+            item = parse_dates(c)
+            item["tenant_id"] = tenant_id
+            db.add(models.Client(**item))
+            
+        for s in backup_data.get("services", []):
+            item = parse_dates(s)
+            item["tenant_id"] = tenant_id
+            db.add(models.Service(**item))
         db.commit()
         
-        for a in backup_data.get("appointments", []): db.add(models.Appointment(**parse_dates(a)))
-        for v in backup_data.get("vouchers", []): db.add(models.Voucher(**parse_dates(v)))
-        for i in backup_data.get("invoices", []): db.add(models.Invoice(**parse_dates(i)))
+        for a in backup_data.get("appointments", []):
+            item = parse_dates(a)
+            item["tenant_id"] = tenant_id
+            db.add(models.Appointment(**item))
+            
+        for v in backup_data.get("vouchers", []):
+            item = parse_dates(v)
+            item["tenant_id"] = tenant_id
+            db.add(models.Voucher(**item))
+            
+        for i in backup_data.get("invoices", []):
+            item = parse_dates(i)
+            item["tenant_id"] = tenant_id
+            db.add(models.Invoice(**item))
         db.commit()
         
         # Volver al modo normal

@@ -3,21 +3,21 @@ from .. import models, schemas
 
 # --- SITE CONTENT (CMS) ---
 def get_site_content(db: Session):
+    from ..database import current_tenant_var
+    tenant_id = current_tenant_var.get()
+    if not tenant_id:
+        raise ValueError("Tenant ID is required but missing.")
+
     try:
-        content = db.query(models.SiteContent).first()
+        content = db.query(models.SiteContent).filter(models.SiteContent.tenant_id == tenant_id).first()
     except Exception:
         db.rollback()
         from ..utils.migrations import run_auto_migrations
         run_auto_migrations()
-        content = db.query(models.SiteContent).first()
+        content = db.query(models.SiteContent).filter(models.SiteContent.tenant_id == tenant_id).first()
 
     if not content:
-        from ..database import current_tenant_var
         import uuid
-        tenant_id = current_tenant_var.get()
-        if not tenant_id:
-            tenant_id = "00000000-0000-0000-0000-000000000001"
-            
         tenant_name = "Nuestra Clínica"
         tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
         if tenant:

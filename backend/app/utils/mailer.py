@@ -53,9 +53,9 @@ def send_email(to_email: str, subject: str, body_html: str, settings=None):
     try:
         # Cargamos configuración de DB si no se pasa por parámetro
         if not settings:
-            from ..database import SessionLocal
+            from ..database import SessionLocal, current_tenant_var
             db = SessionLocal()
-            settings = db.query(models.ClinicSettings).first()
+            settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == current_tenant_var.get()).first()
             db.close()
 
         # Variables desde .env con fallback a la base de datos
@@ -143,7 +143,7 @@ def send_appointment_notification(appointment_id: str, type: str):
             logger.error(f"Cita {appointment_id} no encontrada.")
             return
 
-        settings = db.query(models.ClinicSettings).first()
+        settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == appointment.tenant_id).first()
         
         frontend_url = os.environ.get("FRONTEND_URL")
         if not frontend_url:

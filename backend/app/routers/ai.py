@@ -39,7 +39,7 @@ Instrucciones obligatorias:
 
 @router.post("/optimize-prompt")
 def optimize_prompt(request: schemas.OptimizePromptRequest, db: Session = Depends(database.get_db)):
-    settings = db.query(models.ClinicSettings).first()
+    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == database.current_tenant_var.get()).first()
     if not settings:
         raise HTTPException(status_code=500, detail="Configuración no encontrada.")
 
@@ -71,7 +71,7 @@ def optimize_prompt(request: schemas.OptimizePromptRequest, db: Session = Depend
 
 @router.post("/generate")
 def generate_content(request: schemas.AIGenerationRequest, db: Session = Depends(database.get_db)):
-    settings = db.query(models.ClinicSettings).first()
+    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == database.current_tenant_var.get()).first()
     if not settings: raise HTTPException(status_code=500, detail="Configuración no encontrada.")
 
     ai_provider = settings.ai_provider or "gemini"
@@ -193,7 +193,7 @@ def ai_enhance_image_prompt_sync(user_prompt: str, shot_type: str, visual_style:
 @router.post("/generate-image")
 def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depends(database.get_db)):
     """Cambiado a síncrono (def) para que FastAPI lo gestione en threads separados."""
-    settings = db.query(models.ClinicSettings).first()
+    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == database.current_tenant_var.get()).first()
     if not settings: raise HTTPException(status_code=500, detail="Configuración no encontrada.")
 
     api_key = settings.gemini_api_key or os.getenv("GEMINI_API_KEY")
@@ -260,7 +260,9 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
         public_url = supabase.storage.from_("media").get_public_url(filename)
         
         # Guardar en DB
-        tenant_id = database.current_tenant_var.get() or "00000000-0000-0000-0000-000000000001"
+        tenant_id = database.current_tenant_var.get()
+        if not tenant_id:
+            raise ValueError("Tenant ID is required but missing.")
         new_media = models.Media(
             tenant_id=tenant_id,
             filename=filename,

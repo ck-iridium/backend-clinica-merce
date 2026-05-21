@@ -3,6 +3,7 @@ import json
 import logging
 from sqlalchemy.orm import Session
 from .. import models
+from ..database import current_tenant_var
 
 # Configurar logging
 logger = logging.getLogger("translator")
@@ -23,7 +24,7 @@ def translate_fields(fields: dict, db: Session) -> dict:
         return {}
 
     # Obtener configuración de la clínica
-    settings = db.query(models.ClinicSettings).first()
+    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == current_tenant_var.get()).first()
     if not settings:
         logger.warning("No se encontró la configuración de la clínica para la API Key de IA.")
         return {}
@@ -108,7 +109,7 @@ def translate_html_content(html_text: str, target_lang: str, db: Session) -> str
         return html_text
 
     # Obtener configuración de la clínica
-    settings = db.query(models.ClinicSettings).first()
+    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == current_tenant_var.get()).first()
     if not settings:
         return html_text
 

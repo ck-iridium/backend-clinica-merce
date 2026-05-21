@@ -80,7 +80,12 @@ async def upload_image(file: UploadFile = File(...)):
 
 @router.post("/cleanup")
 async def cleanup_orphaned_media(db: Session = Depends(get_db)):
-    """Cruza los datos de DB con los de Supabase media, y borra los archivos que no tengan uso."""
+    """Cruza los datos de DB con los de Supabase media para el tenant actual, y borra los archivos huérfanos que el tenant posee."""
+    from app.database import current_tenant_var
+    tenant_id = current_tenant_var.get()
+    if not tenant_id:
+        raise HTTPException(status_code=400, detail="Tenant context required")
+
     supabase_url = os.environ.get("SUPABASE_URL")
     supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
     
@@ -89,19 +94,22 @@ async def cleanup_orphaned_media(db: Session = Depends(get_db)):
         
     used_urls = set()
     
-    # 1. URLs de Servicios (Imágenes y Vídeos)
-    services = db.query(models.Service.image_url, models.Service.video_url).all()
+    # 1. URLs de Servicios del tenant
+    services = db.query(models.Service.image_url, models.Service.video_url).filter(models.Service.tenant_id == tenant_id).all()
     for img, vid in services:
         if img: used_urls.add(img.split('/')[-1])
         if vid: used_urls.add(vid.split('/')[-1])
         
-    # 2. URLs de Categorías
-    cats = db.query(models.ServiceCategory.image_url).filter(models.ServiceCategory.image_url.isnot(None)).all()
+    # 2. URLs de Categorías del tenant
+    cats = db.query(models.ServiceCategory.image_url).filter(
+        models.ServiceCategory.tenant_id == tenant_id,
+        models.ServiceCategory.image_url.isnot(None)
+    ).all()
     for c in cats:
         used_urls.add(c[0].split('/')[-1])
         
-    # 3. Contenido del Sitio (Hero Image/Video, About)
-    site = db.query(models.SiteContent).first()
+    # 3. Contenido del Sitio del tenant
+    site = db.query(models.SiteContent).filter(models.SiteContent.tenant_id == tenant_id).first()
     if site:
         if site.hero_image_url:
             used_urls.add(site.hero_image_url.split('/')[-1])
@@ -110,26 +118,33 @@ async def cleanup_orphaned_media(db: Session = Depends(get_db)):
         if site.about_image_url:
             used_urls.add(site.about_image_url.split('/')[-1])
 
-    # 4. Galería Multimedia (Todo lo que esté en la tabla Media debe preservarse)
-    gallery_items = db.query(models.Media.url).all()
-    for item in gallery_items:
-        if item[0]: used_urls.add(item[0].split('/')[-1])
+    # 4. Perfiles del tenant
+    profiles = db.query(models.Profile).filter(
+        models.Profile.tenant_id == tenant_id,
+        models.Profile.avatar_url.isnot(None)
+    ).all()
+    for p in profiles:
+        used_urls.add(p.avatar_url.split('/')[-1])
 
+    # 5. Media del tenant
+    # Solo podemos borrar archivos de Supabase si sabemos que pertenecen a este tenant.
+    # Por lo tanto, el tenant solo puede limpiar archivos huérfanos que estén registrados en su tabla `models.Media`.
+    tenant_media = db.query(models.Media).filter(models.Media.tenant_id == tenant_id).all()
+    
+    deleted_files = []
     try:
         supabase: Client = create_client(supabase_url, supabase_key)
-        res = supabase.storage.from_("media").list()
         
-        deleted_files = []
-        for file in res:
-            file_name = file.get("name")
-            if not file_name or file_name == ".emptyFolderPlaceholder":
-                continue
-            
-            if file_name not in used_urls:
-                supabase.storage.from_("media").remove([file_name])
-                deleted_files.append(file_name)
+        for media in tenant_media:
+            filename = media.filename
+            if filename not in used_urls:
+                supabase.storage.from_("media").remove([filename])
+                db.delete(media)
+                deleted_files.append(filename)
                 
-        return {"message": f"Limpieza completada. {len(deleted_files)} archivos huérfanos eliminados temporales.", "deleted": deleted_files}
+        db.commit()
+        return {"message": f"Limpieza completada. {len(deleted_files)} archivos huérfanos del inquilino eliminados.", "deleted": deleted_files}
         
     except Exception as e:
+        db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
