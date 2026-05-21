@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import BentoGridServices from '@/components/blocks/BentoGridServices';
@@ -6,7 +8,7 @@ import Link from 'next/link';
 // Tipos estructurales del Page Builder
 interface AtomicBlock {
   id: string;
-  block_type: 'atomic_title' | 'atomic_text' | 'atomic_image' | 'atomic_button' | 'atomic_category' | 'title_heading' | 'text_image_cta';
+  block_type: 'atomic_title' | 'atomic_text' | 'atomic_image' | 'atomic_button' | 'atomic_category' | 'title_heading' | 'text_image_cta' | 'hero';
   content_data: Record<string, any>;
 }
 
@@ -156,13 +158,18 @@ export default async function CustomPage({ params }: PageProps) {
     // Silencioso
   }
 
+  const firstSectionHasHero = sections[0]?.content_data?.columns?.some(
+    (col: any) => (col.blocks || []).some((b: any) => b.block_type === 'hero')
+  );
+  const mainPadding = firstSectionHasHero ? 'pt-0' : 'pt-20';
+
   return (
     <>
-      <main className="w-full min-h-screen bg-[#FAFAFA] pt-20">
+      <main className={`w-full min-h-screen bg-[#FAFAFA] ${mainPadding}`}>
 
         {sections.length > 0 ? (
           <div className="flex flex-col w-full">
-            {sections.map((section) => {
+            {sections.map((section, index) => {
               const struct = section.content_data || { columns_count: 1, columns: [] };
               const columnsCount = struct.columns_count || 1;
               const columns = struct.columns || [];
@@ -174,15 +181,20 @@ export default async function CustomPage({ params }: PageProps) {
               if (columnsCount === 4) gridClass = 'grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6';
 
               // Espaciados Quiet Luxury y fondos
-              const pySpacing = struct.py_spacing || 'py-24';
+              const hasHero = columns.some(col => (col.blocks || []).some(b => b.block_type === 'hero'));
+              const isFirstWithHero = index === 0 && hasHero;
+              const pySpacing = isFirstWithHero ? 'pt-0 pb-0' : (hasHero ? 'py-0' : (struct.py_spacing || 'py-24'));
               const bgColor = struct.bg_color === 'white' ? 'bg-white' : 'bg-[#FAFAFA]';
+              const paddingClass = hasHero ? 'p-0' : 'px-6 md:px-12';
+              const widthClass = hasHero ? 'w-full' : 'max-w-7xl mx-auto grid';
+              const verticalAlign = struct.vertical_alignment || 'items-start';
 
               return (
                 <section
                   key={section.id}
-                  className={`w-full ${pySpacing} ${bgColor} px-6 md:px-12 transition-all duration-300 border-b border-stone-100/30`}
+                  className={`w-full ${pySpacing} ${bgColor} ${paddingClass} transition-all duration-300 border-b border-stone-100/30`}
                 >
-                  <div className={`max-w-7xl mx-auto grid ${gridClass}`}>
+                  <div className={`${widthClass} ${hasHero ? '' : gridClass} ${verticalAlign}`}>
                     {columns.map((col) => (
                       <div key={col.id} className="flex flex-col gap-6 justify-center">
                         {(col.blocks || []).map((block) => {
@@ -295,6 +307,47 @@ export default async function CustomPage({ params }: PageProps) {
                             );
                           }
 
+                          // ──── RENDER: HERO ────
+                          if (block.block_type === 'hero') {
+                            const isVideo = data.image_url && (data.image_url.includes('.mp4') || data.image_url.includes('.webm') || data.image_url.includes('video_'));
+                            return (
+                              <div key={block.id} className="relative w-full min-h-[500px] md:min-h-[620px] flex items-center justify-center overflow-hidden w-full rounded-none shadow-luxury">
+                                {data.image_url ? (
+                                  isVideo ? (
+                                    <video src={data.image_url} autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover" />
+                                  ) : (
+                                    <img src={data.image_url} alt={data.heading} className="absolute inset-0 w-full h-full object-cover" />
+                                  )
+                                ) : (
+                                  <div className="absolute inset-0 bg-stone-900" />
+                                )}
+                                <div className="absolute inset-0 bg-black/40" />
+                                <div className="relative z-10 text-center px-6 max-w-4xl mx-auto space-y-4">
+                                  {data.heading && (
+                                    <h1 className="font-serif text-4xl md:text-6xl font-extrabold text-white leading-tight">
+                                      {data.heading}
+                                    </h1>
+                                  )}
+                                  {data.subheading && (
+                                    <p className="text-stone-200 text-lg md:text-xl font-sans max-w-2xl mx-auto leading-relaxed">
+                                      {data.subheading}
+                                    </p>
+                                  )}
+                                  {data.cta_text && (
+                                    <div className="pt-4">
+                                      <Link
+                                        href={data.cta_url || '#'}
+                                        className="inline-block bg-[#d4af37] text-white hover:bg-[#b08e23] px-8 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 shadow-md active:scale-95"
+                                      >
+                                        {data.cta_text}
+                                      </Link>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          }
+
                           // ──── RENDER: ATOMIC CATEGORY ────
                           if (block.block_type === 'atomic_category') {
                             const category = dbCategories.find(c => c.id === data.category_id);
@@ -310,15 +363,84 @@ export default async function CustomPage({ params }: PageProps) {
 
                             if (filteredServices.length === 0) return null;
 
+                            const layoutStyle = data.layout || 'traditional_grid';
+
                             return (
-                              <div key={block.id} className="w-full py-4 -mx-6 md:-mx-12">
-                                <BentoGridServices
-                                  data={{
-                                    title: category?.name || 'Nuestros Tratamientos',
-                                    subtitle: category?.description || 'Nuestros tratamientos insignia.'
-                                  }}
-                                  services={filteredServices}
-                                />
+                              <div key={block.id} className="w-full py-6">
+                                {layoutStyle === 'cards_slider' && (
+                                  <div className="flex gap-4 overflow-x-auto pb-4 hide-scroll">
+                                    {filteredServices.map((service: any) => (
+                                      <div key={service.id} className="w-[180px] shrink-0 aspect-[3/4] bg-stone-100 rounded-2xl overflow-hidden shadow-sm border border-stone-100 relative group">
+                                        {service.image_url ? (
+                                          <img src={service.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${service.image_url}` : service.image_url} alt={service.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                          <div className="w-full h-full flex items-center justify-center bg-stone-50 p-4 text-center">
+                                            <span className="text-[10px] font-bold uppercase tracking-widest text-stone-300 leading-tight">{service.name}</span>
+                                          </div>
+                                        )}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
+                                        <div className="absolute bottom-4 left-4 right-4">
+                                          <p className="text-[11px] font-bold text-white truncate leading-tight uppercase tracking-wide">{service.name}</p>
+                                          <p className="text-[9px] text-white/60 font-medium">{service.duration_minutes} min</p>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+
+                                {layoutStyle === 'bento_grid' && (
+                                  <div className="-mx-6 md:-mx-12">
+                                    <BentoGridServices
+                                      data={{
+                                        title: category?.name || 'Nuestros Tratamientos',
+                                        subtitle: category?.description || 'Nuestros tratamientos insignia.'
+                                      }}
+                                      services={filteredServices}
+                                    />
+                                  </div>
+                                )}
+
+                                {layoutStyle === 'traditional_grid' && (
+                                  <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                                    {filteredServices.map((service: any) => (
+                                      <div key={service.id} className="aspect-[3/4] bg-stone-100 rounded-2xl overflow-hidden shadow-sm border border-stone-100 relative group">
+                                        {service.image_url ? (
+                                          <img src={service.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${service.image_url}` : service.image_url} alt={service.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                          <div className="w-full h-full flex items-center justify-center bg-stone-50 p-4 text-center">
+                                            <span className="text-[10px] font-bold uppercase tracking-widest text-stone-300 leading-tight">{service.name}</span>
+                                          </div>
+                                        )}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
+                                        <div className="absolute bottom-4 left-4 right-4">
+                                          <p className="text-[11px] font-bold text-white truncate leading-tight uppercase tracking-wide">{service.name}</p>
+                                          <p className="text-[9px] text-white/60 font-medium">{service.duration_minutes} min</p>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+
+                                {layoutStyle === 'minimalist_list' && (
+                                  <div className="flex flex-col divide-y divide-stone-100">
+                                    {filteredServices.map((service: any, idx: number) => (
+                                      <div key={service.id} className="flex items-center justify-between py-4">
+                                        <div>
+                                          <span className="text-[#d4af37] text-[9px] font-bold uppercase tracking-wider block mb-1">
+                                            0{idx + 1} · {service.duration_minutes} min
+                                          </span>
+                                          <h4 className="text-sm font-serif font-bold text-stone-850">
+                                            {service.name}
+                                          </h4>
+                                          <p className="text-[10px] text-stone-400 mt-1 max-w-xl truncate leading-normal">
+                                            {service.description}
+                                          </p>
+                                        </div>
+                                        <span className="text-stone-600 text-xs font-bold shrink-0">{service.price} €</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
                             );
                           }

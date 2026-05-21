@@ -101,48 +101,73 @@ export default function CreatorSidebar({
   onAddSection,
 }: CreatorSidebarProps) {
   return (
-    <aside className="w-[220px] shrink-0 h-full flex flex-col bg-white border-r border-stone-150">
+    <aside className="w-[450px] shrink-0 h-full flex flex-col bg-white border-r border-stone-150 shadow-sm z-30">
       {/* ── Header ──────────────────────────────────────────────── */}
-      <div className="px-5 pt-5 pb-4 border-b border-stone-100">
+      <div className="px-6 pt-6 pb-5 border-b border-stone-100">
         {/* Volver */}
         <Link
           href="/dashboard/pages"
-          className="flex items-center gap-1.5 text-[10px] font-bold text-stone-400 hover:text-stone-600 transition-colors mb-4"
+          className="flex items-center gap-2 text-xs font-bold text-stone-400 hover:text-stone-600 transition-colors mb-5"
         >
-          <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
           </svg>
-          Páginas
+          Volver a Páginas
         </Link>
 
-        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#d4af37] block mb-1">
-          Librería de Bloques
+        <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#d4af37] block mb-1.5">
+          Diseñador Web
         </span>
-        <h2 className="font-serif text-[15px] font-bold text-stone-800 leading-tight truncate" title={pageTitle}>
+        <h2 className="font-serif text-xl font-bold text-stone-800 leading-snug truncate" title={pageTitle}>
           {pageTitle || slug}
         </h2>
 
-        {/* Botón Guardar */}
-        <button
-          onClick={onSave}
-          disabled={saving}
-          className="mt-3 w-full bg-stone-900 hover:bg-[#d4af37] disabled:opacity-60 text-white text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl transition-all duration-300 shadow-sm active:scale-95"
-        >
-          {saving ? 'Guardando...' : 'Guardar'}
-        </button>
+        {/* Botonera de Control */}
+        <div className="flex gap-2.5 mt-4">
+          <button
+            onClick={onSave}
+            disabled={saving}
+            className="flex-1 bg-stone-900 hover:bg-[#d4af37] disabled:opacity-60 text-white text-xs font-black uppercase tracking-widest py-3 px-4 rounded-xl transition-all duration-300 shadow-sm active:scale-95 flex items-center justify-center gap-2"
+          >
+            {saving ? (
+              <>
+                <svg className="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                <span>Guardando</span>
+              </>
+            ) : (
+              <span>Guardar</span>
+            )}
+          </button>
+
+          <button
+            onClick={() => window.open(`/${slug}`, '_blank')}
+            className="flex items-center justify-center gap-2 px-4 py-3 bg-stone-100 hover:bg-stone-200 border border-stone-200 text-stone-700 hover:text-stone-900 text-xs font-bold rounded-xl transition-all duration-300 active:scale-95 shadow-sm"
+            title="Vista Previa Pública"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.43 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span>Ver Web</span>
+          </button>
+        </div>
       </div>
 
       {/* ── Librería de Bloques ──────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto px-2 py-3">
-        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-stone-400 px-3 block mb-2">
-          Librería de Bloques
-        </span>
+      <div className="flex-1 overflow-y-auto px-4 py-5 space-y-4">
+        <div>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 block mb-2 px-1">
+            Biblioteca de Bloques
+          </span>
+          <p className="text-xs text-stone-400 font-sans px-1 leading-relaxed">
+            Arrastra cualquiera de estos elementos estructurales al lienzo de la derecha para dar vida a la página.
+          </p>
+        </div>
 
-        <p className="text-[9px] text-stone-400 font-sans px-3 mb-4 leading-relaxed">
-          Arrastra cualquier bloque de esta biblioteca lateral y suéltalo dentro de una columna del lienzo para insertarlo en tiempo real.
-        </p>
-
-        <div className="space-y-0.5">
+        <div className="space-y-1.5">
           {BLOCKS.map(b => (
             <DraggableItem key={b.id} id={b.id} label={b.label} desc={b.desc} />
           ))}
@@ -150,17 +175,17 @@ export default function CreatorSidebar({
       </div>
 
       {/* ── Footer: Añadir sección ───────────────────────────────── */}
-      <div className="p-3 border-t border-stone-100">
+      <div className="p-4 border-t border-stone-100 bg-stone-50/50">
         <button
           onClick={onAddSection}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-stone-200
-            hover:border-[#d4af37]/60 text-[10px] font-bold text-stone-400 hover:text-[#d4af37]
-            transition-all duration-300"
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-stone-300 bg-white
+            hover:border-[#d4af37]/60 hover:bg-amber-50/5 text-xs font-bold text-stone-500 hover:text-[#d4af37]
+            transition-all duration-300 shadow-sm"
         >
-          <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
-          Nueva Sección
+          Nueva Sección Estructural
         </button>
       </div>
     </aside>

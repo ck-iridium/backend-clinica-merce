@@ -96,6 +96,7 @@ export function usePageBuilder(slug: string | string[]) {
   // ── Gallery picker ──────────────────────────────────────────────
   const [showGallery, setShowGallery] = useState(false);
   const [galleryField, setGalleryField] = useState<string | null>(null);
+  const [galleryMediaType, setGalleryMediaType] = useState<'image' | 'video' | 'all'>('image');
 
   // ── Modal "add block" ───────────────────────────────────────────
   const [showAddModal, setShowAddModal] = useState(false);
@@ -304,6 +305,16 @@ export function usePageBuilder(slug: string | string[]) {
     if (sec) saveSectionToBackend(sec);
   };
 
+  const handleUpdateSectionMetadata = (sectionId: string, key: string, value: any) => {
+    const updated = sections.map(sec => {
+      if (sec.id !== sectionId) return sec;
+      return { ...sec, content_data: { ...sec.content_data, [key]: value } };
+    });
+    setSections(updated);
+    const sec = updated.find(s => s.id === sectionId);
+    if (sec) saveSectionToBackend(sec);
+  };
+
   // ── Bloques ────────────────────────────────────────────────────
   const handleAddBlockToColumn = async (blockType: string, sectionId: string, columnId: string) => {
     const newBlock: AtomicBlock = {
@@ -389,8 +400,9 @@ export function usePageBuilder(slug: string | string[]) {
   };
 
   // ── Gallery ────────────────────────────────────────────────────
-  const openGalleryFor = (field: string) => {
+  const openGalleryFor = (field: string, mediaType: 'image' | 'video' | 'all' = 'image') => {
     setGalleryField(field);
+    setGalleryMediaType(mediaType);
     setShowGallery(true);
   };
 
@@ -591,6 +603,7 @@ export function usePageBuilder(slug: string | string[]) {
     handleDeleteSection,
     handleReorderSections,
     handleUpdateSectionLayout,
+    handleUpdateSectionMetadata,
     handleSaveAll,
     // Blocks
     handleAddBlockToColumn,
@@ -611,6 +624,7 @@ export function usePageBuilder(slug: string | string[]) {
     // Gallery
     showGallery,
     setShowGallery,
+    galleryMediaType,
     openGalleryFor,
     handleImageSelected,
   };

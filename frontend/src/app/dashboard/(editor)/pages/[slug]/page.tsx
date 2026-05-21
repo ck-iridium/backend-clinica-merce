@@ -6,6 +6,7 @@ import {
   DragOverlay,
   closestCorners,
 } from '@dnd-kit/core';
+import { restrictToWindowEdges } from '@dnd-kit/modifiers';
 import MediaPickerModal from '@/components/MediaPickerModal';
 
 import { usePageBuilder } from './hooks/usePageBuilder';
@@ -36,6 +37,7 @@ export default function PageEditor() {
     handleDeleteSection,
     handleReorderSections,
     handleUpdateSectionLayout,
+    handleUpdateSectionMetadata,
     handleAddBlockToColumn,
     handleDeleteBlockFromColumn,
     handleStartEditBlock,
@@ -51,6 +53,7 @@ export default function PageEditor() {
     setEditFormData,
     showGallery,
     setShowGallery,
+    galleryMediaType,
     openGalleryFor,
     handleImageSelected,
   } = usePageBuilder(slugStr);
@@ -77,81 +80,93 @@ export default function PageEditor() {
         />
 
         {/* ── CANVAS DERECHO (WYSIWYG) ─────────────────────────── */}
-        <main className="flex-1 h-full overflow-y-auto">
+        <main className="flex-1 h-full overflow-y-auto bg-stone-50/50 flex flex-col">
 
           {/* Barra de título del canvas */}
-          <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-stone-200 px-8 py-3 flex items-center gap-3 shadow-sm">
-            <span className="text-xs font-black uppercase tracking-widest text-stone-500">
-              Vista previa en vivo · Reordenamiento Estructural
+          <div className="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-stone-200 px-8 py-3.5 flex items-center gap-3 shadow-sm shrink-0">
+            <span className="text-xs font-black uppercase tracking-widest text-[#d4af37]">
+              Vista previa en vivo
+            </span>
+            <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-stone-100 px-2.5 py-1 rounded-md border border-stone-200/40">
+              Escritorio (Ancho Máx: 1300px)
             </span>
             <div className="ml-auto flex gap-1.5 items-center">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-300" />
-              <div className="w-2.5 h-2.5 rounded-full bg-amber-300" />
-              <div className="w-2.5 h-2.5 rounded-full bg-green-300" />
+              <div className="w-2.5 h-2.5 rounded-full bg-red-400/80" />
+              <div className="w-2.5 h-2.5 rounded-full bg-amber-400/80" />
+              <div className="w-2.5 h-2.5 rounded-full bg-green-400/80" />
             </div>
           </div>
 
-          {/* ── Cuerpo del canvas ────────────────────────────── */}
-          {loading ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="space-y-4 w-full max-w-2xl mx-auto px-8">
-                {[1, 2].map(i => (
-                  <div key={i} className="h-48 bg-white/60 animate-pulse rounded-2xl" />
-                ))}
-              </div>
-            </div>
-          ) : sections.length === 0 ? (
-            <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-stone-400">
-                Lienzo vacío
-              </span>
-              <p className="text-sm text-stone-400 font-sans text-center max-w-xs">
-                Arrastra bloques desde el sidebar o añade una sección para comenzar.
-              </p>
-              <button
-                onClick={handleAddNewSection}
-                className="mt-2 bg-stone-900 hover:bg-[#d4af37] text-white text-xs font-black uppercase tracking-widest px-6 py-3 rounded-xl transition-all duration-300 shadow-md"
-              >
-                + Añadir primera sección
-              </button>
-            </div>
-          ) : (
-            <div className="divide-y divide-stone-200/60">
-              {sections.map((section, index) => (
-                <CanvasSection
-                  key={section.id}
-                  section={section}
-                  index={index}
-                  totalSections={sections.length}
-                  onReorder={handleReorderSections}
-                  onDelete={handleDeleteSection}
-                  onUpdateLayout={handleUpdateSectionLayout}
-                  onEditBlock={handleStartEditBlock}
-                  onDeleteBlock={handleDeleteBlockFromColumn}
-                  onAddBlock={handleOpenAddBlockForColumn}
-                  dbCategories={dbCategories}
-                  dbServices={dbServices}
-                />
-              ))}
+          {/* Contenedor del lienzo flotante */}
+          <div className="flex-1 p-6 md:p-12 overflow-y-auto flex justify-center items-start">
+            <div className="w-full max-w-[1300px] bg-white rounded-[2.5rem] shadow-[0_30px_70px_rgba(0,0,0,0.04)] border border-stone-200/50 overflow-hidden min-h-[85vh] flex flex-col relative">
+              
+              {loading ? (
+                <div className="flex-1 flex items-center justify-center p-12">
+                  <div className="space-y-6 w-full max-w-3xl mx-auto">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="h-32 bg-stone-50 animate-pulse rounded-2xl border border-stone-100" />
+                    ))}
+                  </div>
+                </div>
+              ) : sections.length === 0 ? (
+                <div className="flex-1 flex flex-col items-center justify-center min-h-[50vh] gap-4 p-8">
+                  <div className="w-16 h-16 rounded-full bg-stone-50 flex items-center justify-center text-2xl border border-stone-100">
+                    📄
+                  </div>
+                  <span className="text-xs font-black uppercase tracking-[0.25em] text-[#d4af37]">
+                    Lienzo en Blanco
+                  </span>
+                  <p className="text-xs text-stone-400 font-sans text-center max-w-xs leading-relaxed">
+                    Arrastra bloques desde el panel lateral o añade una primera sección estructural para comenzar a construir.
+                  </p>
+                  <button
+                    onClick={handleAddNewSection}
+                    className="mt-2 bg-stone-900 hover:bg-[#d4af37] text-white text-[10px] font-black uppercase tracking-widest px-6 py-3 rounded-xl transition-all duration-300 shadow-md active:scale-95"
+                  >
+                    + Añadir primera sección
+                  </button>
+                </div>
+              ) : (
+                <div className="divide-y divide-stone-200/60 flex-1">
+                  {sections.map((section, index) => (
+                    <CanvasSection
+                      key={section.id}
+                      section={section}
+                      index={index}
+                      totalSections={sections.length}
+                      onReorder={handleReorderSections}
+                      onDelete={handleDeleteSection}
+                      onUpdateLayout={handleUpdateSectionLayout}
+                      onUpdateSectionMetadata={handleUpdateSectionMetadata}
+                      onEditBlock={handleStartEditBlock}
+                      onDeleteBlock={handleDeleteBlockFromColumn}
+                      onAddBlock={handleOpenAddBlockForColumn}
+                      dbCategories={dbCategories}
+                      dbServices={dbServices}
+                    />
+                  ))}
 
-              {/* Zona de nueva sección al final */}
-              <div className="flex justify-center py-10">
-                <button
-                  onClick={handleAddNewSection}
-                  className="flex items-center gap-2 bg-white hover:bg-stone-50 border border-stone-200 hover:border-[#d4af37]/40 text-stone-500 hover:text-[#d4af37] text-xs font-bold uppercase tracking-widest px-8 py-4 rounded-2xl transition-all duration-300 shadow-sm"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                  </svg>
-                  Nueva Sección Estructural
-                </button>
-              </div>
+                  {/* Zona de nueva sección al final */}
+                  <div className="flex justify-center py-12 bg-stone-50/50">
+                    <button
+                      onClick={handleAddNewSection}
+                      className="flex items-center gap-2 bg-white hover:bg-stone-50 border border-stone-200 hover:border-[#d4af37]/40 text-stone-500 hover:text-[#d4af37] text-xs font-bold uppercase tracking-widest px-8 py-3.5 rounded-2xl transition-all duration-300 shadow-sm"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                      </svg>
+                      Nueva Sección Estructural
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </main>
 
         {/* ── DragOverlay — FUERA de cualquier contenedor con overflow ─ */}
-        <DragOverlay dropAnimation={null}>
+        <DragOverlay dropAnimation={null} modifiers={[restrictToWindowEdges]}>
           {activeId ? (
             <div className="bg-white border-2 border-[#d4af37] rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] p-4 max-w-[240px] flex items-center gap-3 select-none pointer-events-none opacity-95 rotate-1">
               <div className="w-8 h-8 bg-amber-50 rounded-xl border border-amber-100 flex items-center justify-center text-[#d4af37] shrink-0">
@@ -204,7 +219,7 @@ export default function PageEditor() {
         <MediaPickerModal
           onClose={() => setShowGallery(false)}
           onImageSelected={handleImageSelected}
-          mediaType="image"
+          mediaType={galleryMediaType}
         />
       )}
     </div>

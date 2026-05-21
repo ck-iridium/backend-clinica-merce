@@ -21,7 +21,7 @@ interface MediaPickerModalProps {
   onImageSelected: (url: string) => void;
   forceAspect?: number;
   maxResolution?: number;
-  mediaType?: 'image' | 'video';
+  mediaType?: 'image' | 'video' | 'all';
 }
 
 const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
@@ -242,7 +242,7 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                     <div className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-stone-100 bg-stone-50/80 shrink-0">
                         <div>
                             <h3 className="text-xl font-extrabold text-stone-800 tracking-tight text-left">
-                              {mediaType === 'video' ? 'Galería de Vídeos' : 'Galería de Imágenes'}
+                              {mediaType === 'video' ? 'Galería de Vídeos' : mediaType === 'all' ? 'Galería de Medios' : 'Galería de Imágenes'}
                             </h3>
                             <p className="text-xs text-stone-500 font-medium mt-1 text-left">Elige o sube contenido multimedia optimizado</p>
                         </div>
@@ -254,13 +254,13 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveTab('gallery'); }}
                             className={`px-6 py-4 text-sm font-bold border-b-[3px] transition-all flex-[0_0_auto] ${activeTab === 'gallery' ? 'border-[#d4af37] text-stone-900' : 'border-transparent text-stone-400 hover:text-stone-600'}`}
                         >
-                            {mediaType === 'video' ? 'Vídeos Disponibles' : 'Imágenes Disponibles'}
+                            {mediaType === 'video' ? 'Vídeos Disponibles' : mediaType === 'all' ? 'Medios Disponibles' : 'Imágenes Disponibles'}
                         </button>
                         <button
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveTab('upload'); }}
                             className={`px-6 py-4 text-sm font-bold border-b-[3px] transition-all flex-[0_0_auto] ${activeTab === 'upload' ? 'border-[#d4af37] text-stone-900' : 'border-transparent text-stone-400 hover:text-stone-600'}`}
                         >
-                            Subir {mediaType === 'video' ? 'Vídeo' : 'Imagen'}
+                            Subir {mediaType === 'video' ? 'Vídeo' : mediaType === 'all' ? 'Contenido' : 'Imagen'}
                         </button>
                     </div>
 
