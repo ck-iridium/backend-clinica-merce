@@ -669,12 +669,20 @@ def onboarding_session_status(session_id: str, db: Session = Depends(database.ge
                     {"tenant_id": tenant_id}
                 )
                 
+                stripe_cust_id = getattr(session, "customer", None)
+                if not stripe_cust_id and isinstance(session, dict):
+                    stripe_cust_id = session.get("customer")
+
+                stripe_sub_id = getattr(session, "subscription", None)
+                if not stripe_sub_id and isinstance(session, dict):
+                    stripe_sub_id = session.get("subscription")
+
                 tenant = models.Tenant(
                     id=tenant_id,
                     name=tenant_name,
                     slug=tenant_slug,
-                    stripe_customer_id=session.get('customer') or get_val(session, 'customer', None),
-                    stripe_subscription_id=session.get('subscription') or get_val(session, 'subscription', None),
+                    stripe_customer_id=stripe_cust_id,
+                    stripe_subscription_id=stripe_sub_id,
                     plan_type="pro",
                     subscription_status="active"
                 )
