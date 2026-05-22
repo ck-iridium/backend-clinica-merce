@@ -623,3 +623,69 @@ def resolve_tenant(slug: str, db: Session = Depends(database.get_db)):
         "tenant_slug": tenant.slug,
         "subscription_status": tenant.subscription_status
     }
+
+
+@router.get("/verify-checkout-session/{session_id}")
+def verify_checkout_session(session_id: str, db: Session = Depends(database.get_db)):
+    """
+    Endpoint para verificación activa desde el frontend.
+    Recupera la sesión de checkout de Stripe, comprueba el estado de pago,
+    sincroniza en la base de datos el nuevo plan del tenant, e invalida la caché.
+    """
+    try:
+        session = StripeService.retrieve_checkout_session(session_id)
+        
+        # Comprobar estado de pago
+        payment_status = getattr(session, "payment_status", None)
+        if not payment_status and isinstance(session, dict):
+            payment_status = session.get("payment_status")
+            
+        if payment_status != "paid":
+            raise HTTPException(status_code=400, detail="La sesión de Stripe no está pagada.")
+
+        # Extraer metadatos
+        metadata = getattr(session, "metadata", {}) or {}
+        if not isinstance(metadata, dict):
+            metadata = dict(metadata)
+            
+        tenant_id = metadata.get("tenant_id")
+        plan_type = metadata.get("plan_type")
+
+        if not tenant_id or not plan_type:
+            raise HTTPException(status_code=400, detail="Metadatos incompletos en la sesión de Stripe.")
+
+        # Realizar actualización en la base de datos
+        tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
+        if not tenant:
+            raise HTTPException(status_code=404, detail="Inquilino no encontrado")
+
+        stripe_cust_id = getattr(session, "customer", None)
+        stripe_sub_id = getattr(session, "subscription", None)
+
+        tenant.stripe_customer_id = stripe_cust_id
+        tenant.stripe_subscription_id = stripe_sub_id
+        tenant.plan_type = plan_type
+        tenant.subscription_status = "active"
+        db.commit()
+
+        # Invalidador de caché en tiempo real
+        try:
+            from ..main import TENANT_STATUS_CACHE
+            if tenant.id in TENANT_STATUS_CACHE:
+                del TENANT_STATUS_CACHE[tenant.id]
+                print(f"[CACHE] Invalidador de caché activado para tenant: {tenant.id}")
+        except Exception as e:
+            print(f"[CACHE] [WARNING] Error al invalidar caché: {e}")
+
+        return {
+            "status": "success",
+            "message": "Suscripción sincronizada correctamente",
+            "tenant_id": tenant.id,
+            "plan_type": tenant.plan_type,
+            "subscription_status": tenant.subscription_status
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al verificar la sesión de Stripe: {str(e)}")
+

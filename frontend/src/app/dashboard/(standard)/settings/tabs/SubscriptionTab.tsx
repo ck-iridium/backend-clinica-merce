@@ -24,8 +24,59 @@ export default function SubscriptionTab() {
     }
   };
 
+  const verifySession = async (sessionId: string) => {
+    const toastId = toast.loading('Verificando pago en Stripe y activando plan...');
+    try {
+      const userSession = localStorage.getItem('user');
+      let tenantId = '';
+      let authToken = '';
+      if (userSession) {
+        const parsed = JSON.parse(userSession);
+        tenantId = parsed.tenant_id || '';
+        authToken = parsed.token || '';
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/stripe/verify-checkout-session/${sessionId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Tenant-ID': tenantId,
+          'Authorization': authToken ? `Bearer ${authToken}` : ''
+        }
+      });
+      const result = await res.json();
+      if (res.ok) {
+        toast.success('¡Suscripción actualizada con éxito! Tu plan ya está activo.', { id: toastId });
+        
+        // Limpiar parámetros de la URL para evitar recargas erróneas
+        const url = new URL(window.location.href);
+        url.searchParams.delete('billing_success');
+        url.searchParams.delete('session_id');
+        window.history.replaceState({}, '', url.pathname + url.search);
+
+        // Forzar recarga de límites en la UI
+        fetchLimits();
+      } else {
+        toast.error(result.detail || 'Error al verificar el estado de la suscripción.', { id: toastId });
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error('Error de red al sincronizar tu plan.', { id: toastId });
+    }
+  };
+
   useEffect(() => {
     fetchLimits();
+
+    // Sincronización activa post-pago de Stripe
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const billingSuccess = params.get('billing_success');
+      const sessionId = params.get('session_id');
+
+      if (billingSuccess === 'true' && sessionId) {
+        verifySession(sessionId);
+      }
+    }
   }, []);
 
   const handleUpgrade = async (planType: string) => {
