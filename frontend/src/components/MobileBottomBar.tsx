@@ -42,12 +42,42 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
   const router = useRouter();
   const { role, userName: authUserName, loading } = useAuthRole();
   const [userName, setUserName] = useState<string>('');
+  const [planType, setPlanType] = useState<string | null>(null);
 
   useEffect(() => {
     if (authUserName) {
       setUserName(authUserName);
     }
   }, [authUserName]);
+
+  useEffect(() => {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const userObj = JSON.parse(userStr);
+        if (userObj.plan_type) {
+          setPlanType(userObj.plan_type.toLowerCase());
+        }
+      }
+    } catch (e) {
+      console.warn(e);
+    }
+
+    async function fetchPlan() {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const res = await fetch(`${API_URL}/settings/limits`);
+        if (res.ok) {
+          const limitsData = await res.json();
+          const pType = limitsData.plan_type?.toLowerCase() || 'free';
+          setPlanType(pType);
+        }
+      } catch (err) {
+        console.error("Error al obtener límites de plan en MobileBar:", err);
+      }
+    }
+    fetchPlan();
+  }, []);
 
 
   // Reiniciar el nivel de menú al cerrar
@@ -363,14 +393,25 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
                           exit={{ opacity: 0, y: 10, scale: 0.95 }}
                           transition={{ type: "spring", stiffness: 400, damping: 30 }}
                         >
-                          <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-stone-500 px-4 py-3">
-                            Gestión de Cuenta
+                          <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-stone-500 px-4 py-3 flex items-center justify-between gap-2">
+                            <span>Gestión de Cuenta</span>
+                            {planType && (
+                              <span className="bg-[#d4af37]/15 text-[#e4c257] text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border border-[#d4af37]/20 flex items-center gap-1 select-none shrink-0">
+                                {planType === 'gold' ? 'Gold' : planType === 'pro' ? 'Pro' : planType === 'basic' ? 'Básico' : 'Demo'}
+                              </span>
+                            )}
                           </DropdownMenuLabel>
                           <DropdownMenuSeparator className="bg-stone-800 mx-2" />
                           <DropdownMenuItem onClick={() => { setIsUserMenuOpen(false); router.push('/dashboard/profile'); }} className="flex items-center gap-3 px-4 py-3.5 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer transition-colors">
                             <User size={18} strokeWidth={1.5} className="text-stone-400" />
                             <span className="font-bold text-sm">Mi Perfil</span>
                           </DropdownMenuItem>
+                          {(role?.toLowerCase() === 'admin' || role?.toLowerCase() === 'administrador') && (
+                            <DropdownMenuItem onClick={() => { setIsUserMenuOpen(false); router.push('/dashboard/settings?tab=subscription'); }} className="flex items-center gap-3 px-4 py-3.5 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer text-[#d4af37] focus:text-[#e4c257] focus:bg-stone-800 transition-colors">
+                              <CreditCard size={18} strokeWidth={1.5} />
+                              <span className="font-bold text-sm">Plan & Suscripción</span>
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuItem onClick={() => { setIsUserMenuOpen(false); handleLogout(); }} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-rose-400 focus:bg-rose-950 focus:text-rose-300 cursor-pointer transition-colors">
                             <LogOut size={18} strokeWidth={1.5} />
                             <span className="font-bold text-sm">Cerrar Sesión</span>

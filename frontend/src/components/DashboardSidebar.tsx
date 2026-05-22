@@ -7,7 +7,7 @@ import {
   Ticket, Receipt, CalendarDays, Settings,
   Database, Image as ImageIcon, Globe, Tag,
   ShieldCheck, User, LogOut, Search, ChevronRight,
-  MoreHorizontal, Briefcase, FileText, Bot
+  MoreHorizontal, Briefcase, FileText, Bot, CreditCard
 } from 'lucide-react';
 import { GlobalSearch } from './GlobalSearch';
 import { NotificationCenter } from './NotificationCenter';
@@ -427,14 +427,28 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" side="right" className="w-56 ml-4 rounded-[1.5rem] bg-stone-900 border-stone-800 text-white shadow-2xl p-2 animate-in slide-in-from-left-2 duration-200">
-                <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-stone-500 px-4 py-3">
-                  {userName || 'Usuario'}: {role || 'Personal'}
+                <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-stone-500 px-4 py-3 flex items-center justify-between gap-2">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-white text-xs font-bold leading-tight truncate max-w-[110px]">{userName || 'Usuario'}</span>
+                    <span className="text-stone-500 text-[9px] leading-none truncate max-w-[110px]">{role || 'Personal'}</span>
+                  </div>
+                  {planType && (
+                    <span className="bg-[#d4af37]/15 text-[#e4c257] text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-md border border-[#d4af37]/20 flex items-center gap-1 select-none shrink-0">
+                      {planType === 'gold' ? 'Plan Gold' : planType === 'pro' ? 'Plan Pro' : planType === 'basic' ? 'Plan Básico' : 'Plan Demo'}
+                    </span>
+                  )}
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-stone-800" />
                 <DropdownMenuItem onClick={() => router.push('/dashboard/profile')} className="flex items-center gap-3 px-4 py-3 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer">
                   <User size={16} />
                   <span className="font-bold text-sm">{t('dashboard.menu.profile')}</span>
                 </DropdownMenuItem>
+                {(role?.toLowerCase() === 'admin' || role?.toLowerCase() === 'administrador') && (
+                  <DropdownMenuItem onClick={() => router.push('/dashboard/settings?tab=subscription')} className="flex items-center gap-3 px-4 py-3 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer text-[#d4af37] focus:text-[#e4c257] focus:bg-stone-800">
+                    <CreditCard size={16} />
+                    <span className="font-bold text-sm">Plan & Suscripción</span>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 rounded-xl text-rose-400 focus:bg-rose-950 focus:text-rose-300 cursor-pointer">
                   <LogOut size={16} />
                   <span className="font-bold text-sm">{t('dashboard.menu.logout')}</span>
