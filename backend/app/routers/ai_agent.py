@@ -363,7 +363,10 @@ def ai_webmaster_voice(request: schemas.AIVoiceRequest, db: Session = Depends(ge
         }
 
         # 7. Realizar una transcripción explícita del audio de forma fiel y rápida
-        transcription_model = genai.GenerativeModel("gemini-2.5-flash")
+        transcription_model = genai.GenerativeModel(
+            model_name="gemini-2.5-flash",
+            generation_config={"temperature": 0.0}
+        )
         transcription_prompt = (
             "Transcribe el siguiente audio a texto en español de la forma más exacta y fiel posible. "
             "Devuelve únicamente las palabras habladas por el usuario. "
