@@ -49,6 +49,25 @@ export default function AICopilotWidget() {
     }
   }, []);
 
+  // Sincronizar mensaje de bienvenida con el idioma global del Dashboard
+  useEffect(() => {
+    setMessages((prev) => {
+      if (prev.length === 1 && prev[0].role === 'model') {
+        return [
+          {
+            role: 'model',
+            content: language === 'fr' 
+              ? 'Bonjour, je suis votre Copilote ProBookia. Dites-moi où vous souhaitez naviguer ou quel traitement vous souhaitez créer.'
+              : language === 'en'
+                ? 'Hello, I am your ProBookia Copilot. Tell me where you want to navigate or what service you want to create.'
+                : 'Hola, soy tu Co-Piloto ProBookia. Dime a qué sección del panel deseas ir o qué tratamiento quieres crear hoy.',
+          },
+        ];
+      }
+      return prev;
+    });
+  }, [language]);
+
   // Auto-scroll inside messages
   useEffect(() => {
     if (isOpen) {
@@ -283,7 +302,7 @@ export default function AICopilotWidget() {
             
             {/* Botón de Voz Nativo */}
             <VoiceRecorderButton
-              onVoiceTranscribed={(txt) => handleSend(txt)}
+              onVoiceTranscribed={(txt) => handleSend(language === 'fr' ? `🎙️ [Voix]: "${txt}"` : language === 'en' ? `🎙️ [Voice]: "${txt}"` : `🎙️ [Voz]: "${txt}"`)}
               disabled={isLoading}
               lang={audioLanguage}
             />

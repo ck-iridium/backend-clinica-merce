@@ -87,7 +87,7 @@ export default function VoiceRecorderButton({
         } catch (e) {}
       }
     };
-  }, []); // Dependencias vacías: inicialización única y estable
+  }, [lang]); // Escuchar cambios en el idioma para re-inicializar el reconocimiento nativo si cambia
 
   const startListening = () => {
     if (disabled) return;
