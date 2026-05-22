@@ -100,6 +100,23 @@ export default function VoiceRecorderButton({
   const startListening = () => {
     if (disabled) return;
 
+    // Detectar proactivamente navegadores internos de redes sociales (Instagram/WhatsApp WebView) en iOS
+    const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+    const isInApp = /FBAN|FBAV|Instagram|Twitter|WhatsApp|Line/i.test(ua);
+    const isIOS = /iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream;
+
+    if (isInApp && isIOS) {
+      toast.error(
+        isFr 
+          ? "iOS: Veuillez ouvrir ce site directement dans Safari (bouton '...') pour utiliser les commandes vocales."
+          : isEn
+            ? "iOS Restriction: Please open this site directly in standard Safari browser (tap '...' button) to use voice features."
+            : "Restricción de iOS: Para usar las funciones de voz, por favor abre la web directamente en la app de Safari (pulsa el botón '...' de abajo).",
+        { duration: 8500 }
+      );
+      return;
+    }
+
     if (!recognitionRef.current) {
       toast.error('Tu navegador no soporta el reconocimiento de voz nativo.');
       return;
