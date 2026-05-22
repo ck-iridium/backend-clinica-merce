@@ -43,29 +43,59 @@ export default function ServicesPage() {
       if (editSlug) {
         const targetSlug = editSlug.toLowerCase().trim();
         
-        // Función premium de limpieza difusa para omitir preposiciones/conectores (ej. "de", "para")
+        // Función premium de limpieza difusa para omitir preposiciones/conectores (ej. "de", "para") y unificar encodados de la ñ
         const cleanSlug = (s: string) => 
           s.toLowerCase()
-           .replace(/[^a-z0-9]/g, '') // Quitar guiones y caracteres no alfanuméricos
+           .normalize("NFD")
+           .replace(/[\u0300-\u036f]/g, "") // Eliminar acentos y marcas
+           .replace(/ni-o/g, 'nino')        // Unificar el encodado particular 'ni-o' en la base de datos
+           .replace(/nio/g, 'nino')         // Unificar 'nio' a 'nino'
+           .replace(/[^a-z0-9]/g, '')       // Quitar guiones y caracteres no alfanuméricos
            .replace(/(para|de|el|la|los|las|un|una|unos|unas|y)/g, ''); // Omitir conectores comunes
 
         const targetClean = cleanSlug(targetSlug);
+
+        console.log("=== DEBUG COPILOT ROUTING ===");
+        console.log("Services loaded:", services.map((s) => ({ name: s.name, slug: s.slug, id: s.id })));
+        console.log("Target slug from URL:", targetSlug, "Clean target:", targetClean);
 
         // 1. Intentar coincidencia exacta primero
         let found = services.find(
           (s) => s.slug === targetSlug || s.slug.toLowerCase() === targetSlug
         );
 
+        if (found) {
+          console.log("Coincidencia exacta encontrada:", found.name, found.id);
+        }
+
         // 2. Intentar coincidencia difusa avanzada si no se encontró coincidencia exacta
         if (!found) {
-          found = services.find((s) => {
+          const candidates = services.map((s) => {
             const currentClean = cleanSlug(s.slug || '');
-            return currentClean === targetClean || currentClean.includes(targetClean) || targetClean.includes(currentClean);
-          });
+            let score = 0;
+            if (currentClean === targetClean) {
+              score = 100;
+            } else if (currentClean.includes(targetClean) || targetClean.includes(currentClean)) {
+              // Puntuación basada en similitud de longitud de caracteres para priorizar la coincidencia más específica
+              score = (Math.min(currentClean.length, targetClean.length) / Math.max(currentClean.length, targetClean.length)) * 90;
+            }
+            console.log(`Candidato difuso: "${s.name}" (slug: ${s.slug}) -> limpio: "${currentClean}" -> Score: ${score}`);
+            return { service: s, score };
+          }).filter((c) => c.score > 0);
+
+          if (candidates.length > 0) {
+            candidates.sort((a, b) => b.score - a.score);
+            found = candidates[0].service;
+            console.log("Coincidencia difusa elegida (mejor score):", found?.name, found?.id);
+          } else {
+            console.log("Ningún candidato difuso superó la puntuación mínima.");
+          }
         }
 
         if (found) {
           router.push(`/dashboard/services/${found.id}/edit`);
+        } else {
+          console.log("No se encontró ninguna coincidencia exacta o difusa para:", targetSlug);
         }
       }
     }
