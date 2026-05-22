@@ -1,95 +1,119 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { Mic, AlertCircle } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Mic } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface VoiceRecorderButtonProps {
-  onAudioRecorded?: (base64Audio: string, mimeType: string) => void;
+  onVoiceTranscribed?: (transcribedText: string) => void;
   disabled?: boolean;
 }
 
 export default function VoiceRecorderButton({
-  onAudioRecorded,
+  onVoiceTranscribed,
   disabled = false,
 }: VoiceRecorderButtonProps) {
   const [isRecording, setIsRecording] = useState(false);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
+  const recognitionRef = useRef<any>(null);
+  const onVoiceTranscribedRef = useRef(onVoiceTranscribed);
 
-  const startRecording = async () => {
+  // Mantener la referencia del callback siempre al día sin disparar re-renderizados
+  useEffect(() => {
+    onVoiceTranscribedRef.current = onVoiceTranscribed;
+  }, [onVoiceTranscribed]);
+
+  // Inicializar SpeechRecognition una sola vez al montar el componente
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const SpeechRecognitionClass =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognitionClass) {
+      console.warn('Este navegador no soporta la API nativa de reconocimiento de voz (SpeechRecognition).');
+      return;
+    }
+
+    const recognition = new SpeechRecognitionClass();
+    recognition.continuous = false; // Parar automáticamente al terminar de hablar
+    recognition.interimResults = false; // Solo resultados finales para máxima precisión
+    recognition.lang = 'es-ES'; // Español clínico y estético de alta precisión
+
+    recognition.onstart = () => {
+      setIsRecording(true);
+      toast.info('Escuchando voz... Habla ahora.');
+    };
+
+    recognition.onend = () => {
+      setIsRecording(false);
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error('Error en reconocimiento de voz nativo:', event.error);
+      setIsRecording(false);
+
+      if (event.error === 'not-allowed') {
+        toast.error('Acceso al micrófono denegado. Por favor, concede permisos en tu navegador.');
+      } else if (event.error === 'no-speech') {
+        toast.warning('No se detectó voz clara. Intenta hablar de nuevo.');
+      } else {
+        toast.error(`Error de voz: ${event.error}`);
+      }
+    };
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      if (transcript && transcript.trim()) {
+        toast.success('Audio transcrito con éxito.');
+        if (onVoiceTranscribedRef.current) {
+          onVoiceTranscribedRef.current(transcript);
+        }
+      } else {
+        toast.warning('No se pudo transcribir una frase clara.');
+      }
+    };
+
+    recognitionRef.current = recognition;
+
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.abort();
+        } catch (e) {}
+      }
+    };
+  }, []); // Dependencias vacías: inicialización única y estable
+
+  const startListening = () => {
     if (disabled) return;
-    audioChunksRef.current = [];
+
+    if (!recognitionRef.current) {
+      toast.error('Tu navegador no soporta el reconocimiento de voz nativo en español.');
+      return;
+    }
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        }
-      });
-      
-      // Determinar el mejor formato de audio soportado por el navegador
-      let mimeType = 'audio/webm';
-      if (MediaRecorder.isTypeSupported('audio/webm')) {
-        mimeType = 'audio/webm';
-      } else if (MediaRecorder.isTypeSupported('audio/ogg')) {
-        mimeType = 'audio/ogg';
-      } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
-        mimeType = 'audio/mp4';
-      } else if (MediaRecorder.isTypeSupported('audio/wav')) {
-        mimeType = 'audio/wav';
-      }
-
-      const mediaRecorder = new MediaRecorder(stream, { mimeType });
-      mediaRecorderRef.current = mediaRecorder;
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
-        
-        // Detener todos los tracks de audio para apagar el indicador del micrófono en el navegador
-        stream.getTracks().forEach((track) => track.stop());
-
-        // Convertir Blob a Base64
-        const reader = new FileReader();
-        reader.readAsDataURL(audioBlob);
-        reader.onloadend = () => {
-          const base64Data = reader.result as string;
-          if (onAudioRecorded) {
-            onAudioRecorded(base64Data, mimeType);
-          }
-        };
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-      toast.info('Grabando audio... Habla ahora.');
+      recognitionRef.current.start();
     } catch (err) {
-      console.error('Error al acceder al micrófono:', err);
-      toast.error('No se pudo acceder al micrófono. Por favor, concede permisos en tu navegador.');
+      console.error('Fallo al iniciar SpeechRecognition:', err);
     }
   };
 
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-      toast.success('Audio grabado correctamente. Procesando...');
+  const stopListening = () => {
+    if (!isRecording) return;
+
+    try {
+      recognitionRef.current.stop();
+    } catch (err) {
+      console.error('Fallo al detener SpeechRecognition:', err);
     }
   };
 
   const handleToggle = () => {
     if (isRecording) {
-      stopRecording();
+      stopListening();
     } else {
-      startRecording();
+      startListening();
     }
   };
 
@@ -107,7 +131,7 @@ export default function VoiceRecorderButton({
             ? 'bg-[#d4af37] text-stone-950 scale-105 shadow-[#d4af37]/20 border border-[#d4af37]'
             : 'bg-white hover:bg-stone-50 border border-stone-200 text-stone-500 hover:text-stone-800'
         } ${disabled ? 'opacity-40 cursor-not-allowed' : 'active:scale-95'}`}
-        title={isRecording ? 'Detener grabación de voz' : 'Grabar con voz'}
+        title={isRecording ? 'Detener escucha' : 'Hablar al Asistente'}
       >
         <Mic size={20} className={isRecording ? 'animate-pulse' : ''} strokeWidth={isRecording ? 2.5 : 1.8} />
       </button>

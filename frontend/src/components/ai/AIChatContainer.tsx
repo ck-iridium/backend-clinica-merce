@@ -201,120 +201,7 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
     }
   };
 
-  // Enviar mensaje de Voz (Base64)
-  const handleAudioRecorded = async (base64Audio: string, mimeType: string) => {
-    if (isLoading) return;
 
-    // 1. Obtener y validar credenciales antes de proceder
-    const userSession = localStorage.getItem('user');
-    let tenantId = getCookie('tenant_id') || '';
-    let authToken = '';
-    if (userSession) {
-      const parsed = JSON.parse(userSession);
-      if (!tenantId) {
-        tenantId = parsed.tenant_id || '';
-      }
-      authToken = parsed.access_token || parsed.token || '';
-    }
-
-    if (!tenantId) {
-      toast.error('Sesión no válida: Identificador de inquilino (Tenant ID) ausente. Por favor, inicia sesión nuevamente.');
-      return;
-    }
-
-    // 2. Añadir marcador temporal de mensaje de voz enviado
-    const userVoiceMessage: Message = {
-      role: 'user',
-      content: '🎙️ [Comando de voz enviado, transcribiendo...]',
-    };
-    const updatedMessages = [...messages, userVoiceMessage];
-    setMessages(updatedMessages);
-    setIsLoading(true);
-
-    try {
-      // 3. Realizar llamada POST al endpoint de voz multimodal
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/tenant/ai/voice`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Tenant-ID': tenantId,
-            Authorization: authToken ? `Bearer ${authToken}` : '',
-          },
-          body: JSON.stringify({
-            audio_base64: base64Audio,
-            mime_type: mimeType,
-            history: updatedMessages.slice(1, -1).map((msg) => ({
-              role: msg.role,
-              content: msg.content,
-            })),
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const errData = await response.json();
-        if (errData.detail === 'AI_LIMIT_BYOK_REQUIRED' || response.status === 403) {
-          throw new Error('AI_BYOK');
-        }
-        throw new Error(errData.detail || 'Error al procesar el audio.');
-      }
-
-      const data = await response.json();
-
-      // 4. Actualizar el marcador de voz con la transcripción real y agregar respuesta de la IA
-      setMessages((prev) => {
-        const updated = [...prev];
-        const lastUserIdx = [...updated].reverse().findIndex((msg) => msg.role === 'user');
-        if (lastUserIdx !== -1) {
-          const idx = updated.length - 1 - lastUserIdx;
-          if (data.transcript) {
-            updated[idx].content = `🎙️ [Voz]: "${data.transcript}"`;
-          } else {
-            updated[idx].content = `🎙️ [Comando de voz procesado]`;
-          }
-        }
-        return [...updated, { role: 'model', content: data.response }];
-      });
-
-      // 5. Leer respuesta en voz alta (Text-To-Speech)
-      speakText(data.response);
-
-      // 6. Notificar campos modificados para recargar iframe
-      if (data.updated_fields && data.updated_fields.length > 0) {
-        toast.success('¡Operación de voz ejecutada e iframe actualizado!');
-        if (onFieldsUpdated) {
-          onFieldsUpdated(data.updated_fields);
-        }
-      }
-    } catch (error: any) {
-      console.error('Error en Voz IA:', error);
-      let errMsg = 'Lo siento, ha ocurrido un error al procesar tu comando de voz.';
-      if (error.message === 'AI_BYOK') {
-        errMsg =
-          'Configura tu propia API Key de Google Gemini en Ajustes > Configuración de IA para utilizar los comandos de voz.';
-      } else if (error instanceof Error) {
-        errMsg = `Error: ${error.message}`;
-      }
-      
-      // Limpiar el marcador temporal en caso de error
-      setMessages((prev) => {
-        const updated = [...prev];
-        const lastUserIdx = [...updated].reverse().findIndex((msg) => msg.role === 'user');
-        if (lastUserIdx !== -1) {
-          const idx = updated.length - 1 - lastUserIdx;
-          updated[idx].content = `🎙️ [Fallo al enviar comando de voz]`;
-        }
-        return [...updated, { role: 'model', content: errMsg }];
-      });
-      
-      speakText(errMsg);
-      toast.error('Error al procesar el comando de voz.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -442,8 +329,8 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
       {/* Input de Envío */}
       <div className="p-5 bg-white border-t border-stone-200/60 shadow-md shrink-0">
         <div className="flex items-center gap-3">
-          {/* Botón de Grabación por Voz con Captura Real */}
-          <VoiceRecorderButton disabled={isLoading} onAudioRecorded={handleAudioRecorded} />
+          {/* Botón de Grabación por Voz NATIVA (SpeechRecognition) */}
+          <VoiceRecorderButton disabled={isLoading} onVoiceTranscribed={(text) => handleSend(`🎙️ [Voz]: "${text}"`)} />
 
           <div className="relative flex-1 flex items-center">
             <input
