@@ -321,7 +321,7 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
         "- Clientes o Fichas -> /dashboard/clients\n"
         "- Facturas o ingresos -> /dashboard/invoices\n"
         "- Venta rápida, POS, TPV, cobrar o vender -> /dashboard/pos\n"
-        "- Servicios, catálogo o tratamientos -> /dashboard/services\n"
+        "- Servicios, catálogo o tratamientos -> /dashboard/services (puedes añadir ?edit=slug-del-servicio como parámetro de consulta para abrir de forma directa y automática la ficha de edición de un servicio específico, por ejemplo: /dashboard/services?edit=corte-de-pelo)\n"
         "- Equipo, especialistas o personal -> /dashboard/team\n"
         "- Ajustes, configuración o perfil -> /dashboard/settings\n"
         "- Galería de fotos o multimedia -> /dashboard/media\n"

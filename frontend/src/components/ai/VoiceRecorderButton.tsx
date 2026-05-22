@@ -18,6 +18,9 @@ export default function VoiceRecorderButton({
   const [isRecording, setIsRecording] = useState(false);
   const recognitionRef = useRef<any>(null);
   const onVoiceTranscribedRef = useRef(onVoiceTranscribed);
+  
+  const isFr = lang.startsWith('fr');
+  const isEn = lang.startsWith('en');
 
   // Mantener la referencia del callback siempre al día sin disparar re-renderizados
   useEffect(() => {
@@ -40,9 +43,6 @@ export default function VoiceRecorderButton({
     recognition.continuous = false; // Parar automáticamente al terminar de hablar
     recognition.interimResults = false; // Solo resultados finales para máxima precisión
     recognition.lang = lang; // Asignación dinámica del idioma (es-ES, fr-FR, en-US)
-
-    const isFr = lang.startsWith('fr');
-    const isEn = lang.startsWith('en');
 
     recognition.onstart = () => {
       setIsRecording(true);

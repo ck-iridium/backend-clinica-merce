@@ -35,6 +35,32 @@ export default function ServicesPage() {
     }
   }, [role, loadingRole, router]);
 
+  // Redirección inteligente y automática si viene el parámetro ?edit=slug o ?slug=slug
+  useEffect(() => {
+    if (typeof window !== 'undefined' && services.length > 0) {
+      const params = new URLSearchParams(window.location.search);
+      const editSlug = params.get('edit') || params.get('slug');
+      if (editSlug) {
+        const targetSlug = editSlug.toLowerCase().trim();
+        const found = services.find(
+          (s) => s.slug === targetSlug || s.slug.toLowerCase() === targetSlug
+        );
+        if (found) {
+          router.push(`/dashboard/services/${found.id}/edit`);
+        } else {
+          // Intentar coincidencia parcial por si se aproxima el slug por voz
+          const partialFound = services.find((s) => 
+            s.slug.includes(targetSlug) || 
+            targetSlug.includes(s.slug)
+          );
+          if (partialFound) {
+            router.push(`/dashboard/services/${partialFound.id}/edit`);
+          }
+        }
+      }
+    }
+  }, [services, router]);
+
   const fetchCategories = async () => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/service-categories/`);
