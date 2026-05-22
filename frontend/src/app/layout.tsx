@@ -101,7 +101,6 @@ import LayoutWrapper from "@/components/LayoutWrapper";
 import { Providers } from "@/components/Providers";
 import InviteHandler from "@/components/InviteHandler";
 import TenantInitializer from "@/components/TenantInitializer";
-import AICopilotWidget from '@/components/ai/AICopilotWidget';
 
 
 import { CreditCard } from "lucide-react";
@@ -193,7 +192,6 @@ export default async function RootLayout({
           <LayoutWrapper>
             {children}
           </LayoutWrapper>
-          <AICopilotWidget />
         </Providers>
       </body>
     </html>
