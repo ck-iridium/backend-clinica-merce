@@ -202,6 +202,20 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
     if not tenant_id:
         raise HTTPException(status_code=400, detail="Falta la cabecera del identificador de inquilino (tenant_id)")
 
+    # Blindaje de Seguridad: Doble Verificación del Plan Gold o BYOK
+    tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Inquilino no encontrado")
+        
+    plan = (tenant.plan_type or "free").lower()
+    if plan != "gold":
+        settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).first()
+        if not settings or not settings.gemini_api_key or not settings.gemini_api_key.strip():
+            raise HTTPException(
+                status_code=403, 
+                detail="Se requiere Plan Gold o configuración de clave API de Gemini propia para usar el Co-Piloto de IA."
+            )
+
     # 1. Recuperar la clave API de Gemini del inquilino de forma segura
     try:
         api_key = get_tenant_ai_key(db, "gemini")

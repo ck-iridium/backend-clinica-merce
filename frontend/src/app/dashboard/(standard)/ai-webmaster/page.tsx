@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import AIChatContainer from '@/components/ai/AIChatContainer';
-import { RefreshCw, ExternalLink, Monitor, Smartphone, Globe } from 'lucide-react';
+import { RefreshCw, ExternalLink, Monitor, Smartphone, Globe, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AIWebmasterPage() {
@@ -10,8 +10,52 @@ export default function AIWebmasterPage() {
   const [iframeKey, setIframeKey] = useState(0);
   const [viewMode, setViewMode] = useState<'desktop' | 'mobile'>('desktop');
   const [isLoadingIframe, setIsLoadingIframe] = useState(true);
+  const [planType, setPlanType] = useState<string | null>(null);
+  const [checkingPlan, setCheckingPlan] = useState(true);
 
   useEffect(() => {
+    // 1. Intentar cargar rápido de localStorage
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const userObj = JSON.parse(userStr);
+        if (userObj.plan_type) {
+          setPlanType(userObj.plan_type.toLowerCase());
+          if (userObj.plan_type.toLowerCase() === 'gold') {
+            setCheckingPlan(false);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn(e);
+    }
+
+    // 2. Hacer fetch de la API real
+    async function fetchPlan() {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const res = await fetch(`${API_URL}/settings/limits`);
+        if (res.ok) {
+          const limitsData = await res.json();
+          const pType = limitsData.plan_type?.toLowerCase() || 'free';
+          setPlanType(pType);
+          
+          const userStr = localStorage.getItem('user');
+          if (userStr) {
+            const userObj = JSON.parse(userStr);
+            if (userObj.plan_type !== pType) {
+              localStorage.setItem('user', JSON.stringify({ ...userObj, plan_type: pType }));
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error al obtener límites de plan en AI Webmaster Page:", err);
+      } finally {
+        setCheckingPlan(false);
+      }
+    }
+    fetchPlan();
+
     if (typeof window !== 'undefined') {
       // Usar la raíz de la app actual (incluyendo subdominio de inquilino) para la vista previa
       const origin = window.location.origin;
@@ -30,6 +74,71 @@ export default function AIWebmasterPage() {
     setIsLoadingIframe(true);
     setIframeKey((prev) => prev + 1);
   };
+
+  if (checkingPlan) {
+    return (
+      <div className="absolute inset-0 bg-[#FAFAFA] flex flex-col items-center justify-center z-50">
+        <div className="flex flex-col items-center gap-3">
+          <div className="relative flex items-center justify-center">
+            <span className="absolute w-12 h-12 rounded-full border-2 border-stone-200/30" />
+            <span className="w-12 h-12 rounded-full border-2 border-t-[#d4af37] border-r-[#d4af37] animate-spin" />
+          </div>
+          <p className="text-[12px] font-bold text-stone-400 uppercase tracking-widest animate-pulse">
+            Verificando Credenciales...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (planType !== 'gold') {
+    return (
+      <div className="absolute inset-0 bg-[#FAFAFA] flex items-center justify-center p-6 z-50 overflow-auto">
+        <div className="w-full max-w-lg bg-white rounded-3xl p-8 md:p-10 border border-stone-200/60 shadow-xl text-center space-y-6 animate-in fade-in zoom-in-95 duration-300">
+          <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-[#1c1917] to-stone-800 flex items-center justify-center shadow-md">
+            <Sparkles size={28} className="text-[#d4af37] animate-pulse" />
+          </div>
+          
+          <div className="space-y-2">
+            <span className="inline-block bg-amber-50 text-[#b38f2b] text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border border-amber-200/50">
+              Módulo VIP Exclusivo
+            </span>
+            <h1 className="text-2xl md:text-3xl font-serif font-extrabold text-stone-900 tracking-tight">
+              Asistente IA Webmaster
+            </h1>
+            <p className="text-stone-500 text-sm leading-relaxed max-w-sm mx-auto">
+              La edición automatizada y el control conversacional de tu clínica a través de Inteligencia Artificial es una característica reservada para miembros del <span className="font-bold text-stone-800">Plan Gold Elite</span>.
+            </p>
+          </div>
+
+          <div className="bg-stone-50 border border-stone-200/50 rounded-2xl p-4 text-left space-y-2">
+            <h3 className="text-xs font-black uppercase tracking-widest text-[#d4af37] mb-1">¿Qué incluye el Plan Gold?</h3>
+            <ul className="text-xs text-stone-600 space-y-1.5 font-medium animate-in fade-in slide-in-from-bottom-1 duration-500 delay-100">
+              <li className="flex items-center gap-2">✨ Especialistas y servicios ilimitados sin restricciones</li>
+              <li className="flex items-center gap-2">🤖 Conversaciones por Voz y Texto con el Webmaster IA</li>
+              <li className="flex items-center gap-2">🔄 Generación de copias y redacción automatizada para tu web</li>
+              <li className="flex items-center gap-2">💼 Terminal POS de Venta Rápida y Facturación Deluxe</li>
+            </ul>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <button
+              onClick={() => window.location.href = '/dashboard/settings?tab=subscription'}
+              className="flex-1 bg-[#1c1917] hover:bg-[#d4af37] text-white hover:text-[#1c1917] py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 shadow-md hover:shadow-lg active:scale-95"
+            >
+              Mejorar Plan de Suscripción
+            </button>
+            <button
+              onClick={() => window.location.href = '/dashboard'}
+              className="sm:w-28 border border-stone-200 hover:bg-stone-50 text-stone-600 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 active:scale-95"
+            >
+              Volver
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="absolute inset-0 flex flex-col lg:flex-row overflow-hidden bg-white z-20">

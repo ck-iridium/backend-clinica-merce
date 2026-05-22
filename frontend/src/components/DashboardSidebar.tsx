@@ -79,6 +79,46 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
 
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isDesktopExpanded, setIsDesktopExpanded] = useState(false);
+  const [planType, setPlanType] = useState<string | null>(null);
+
+  useEffect(() => {
+    // 1. Intentar leer rápido de localStorage
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const userObj = JSON.parse(userStr);
+        if (userObj.plan_type) {
+          setPlanType(userObj.plan_type.toLowerCase());
+        }
+      }
+    } catch (e) {
+      console.warn(e);
+    }
+
+    // 2. Fetch de la API para asegurar frescura de los datos
+    async function fetchPlan() {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const res = await fetch(`${API_URL}/settings/limits`);
+        if (res.ok) {
+          const limitsData = await res.json();
+          const pType = limitsData.plan_type?.toLowerCase() || 'free';
+          setPlanType(pType);
+          
+          const userStr = localStorage.getItem('user');
+          if (userStr) {
+            const userObj = JSON.parse(userStr);
+            if (userObj.plan_type !== pType) {
+              localStorage.setItem('user', JSON.stringify({ ...userObj, plan_type: pType }));
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error al obtener límites de plan en Sidebar:", err);
+      }
+    }
+    fetchPlan();
+  }, []);
   const pathname = usePathname();
   const router = useRouter();
   const { role, userName: authUserName, loading } = useAuthRole();
@@ -183,6 +223,11 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
     const filterByRole = (links: typeof navLinks) => {
       const currentRole = role?.toLowerCase();
       return links.filter(link => {
+        // --- FEATURE FLAG PARA EL PLAN GOLD ---
+        if (link.href === '/dashboard/ai-webmaster' && planType !== 'gold') {
+          return false;
+        }
+
         if (currentRole === 'administrador' || currentRole === 'admin') return true;
 
         if (currentRole === 'recepción' || currentRole === 'recepcion') {
