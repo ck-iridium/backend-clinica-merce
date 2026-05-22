@@ -131,7 +131,7 @@ def create_onboarding_session(request: OnboardingSessionRequest, req: Request):
             mode="subscription",
             subscription_data={
                 "metadata": {
-                    "plan_type": "pro",
+                    "plan_type": "gold",
                     "is_platform_onboarding": "true"
                 }
             },
@@ -139,6 +139,7 @@ def create_onboarding_session(request: OnboardingSessionRequest, req: Request):
             cancel_url=f"{frontend_url}/marketing",
             metadata={
                 "type": "saas_onboarding",
+                "plan_type": "gold",
                 "is_platform_onboarding": "true",
                 "tenant_name": request.tenant_name,
                 "tenant_slug": request.tenant_slug,
@@ -352,13 +353,17 @@ async def stripe_webhook(request: Request, db: Session = Depends(database.get_db
                         {"tenant_id": tenant_id}
                     )
                     
+                    plan_type = metadata.get("plan_type", "pro")
+                    if not plan_type or plan_type == "":
+                        plan_type = "pro"
+                        
                     new_tenant = models.Tenant(
                         id=tenant_id,
                         name=tenant_name,
                         slug=tenant_slug,
                         stripe_customer_id=get_val(data_object, 'customer', None),
                         stripe_subscription_id=get_val(data_object, 'subscription', None),
-                        plan_type="pro",
+                        plan_type=plan_type,
                         subscription_status="active"
                     )
                     db.add(new_tenant)
@@ -705,13 +710,17 @@ def onboarding_session_status(session_id: str, db: Session = Depends(database.ge
                 if not stripe_sub_id and isinstance(session, dict):
                     stripe_sub_id = session.get("subscription")
 
+                plan_type = metadata.get("plan_type", "pro")
+                if not plan_type or plan_type == "":
+                    plan_type = "pro"
+                    
                 tenant = models.Tenant(
                     id=tenant_id,
                     name=tenant_name,
                     slug=tenant_slug,
                     stripe_customer_id=stripe_cust_id,
                     stripe_subscription_id=stripe_sub_id,
-                    plan_type="pro",
+                    plan_type=plan_type,
                     subscription_status="active"
                 )
                 db.add(tenant)
