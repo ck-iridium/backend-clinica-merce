@@ -96,15 +96,17 @@ def update_landing_config(
 def update_service_fields(
     service_slug: str,
     new_price: Optional[float] = None,
-    description: Optional[str] = None
+    description: Optional[str] = None,
+    content_html: Optional[str] = None
 ) -> str:
     """
-    Modifica de forma segura los campos de un servicio o tratamiento específico (como el precio o la descripción) usando su slug único.
+    Modifica de forma segura los campos de un servicio o tratamiento específico (como el precio, descripción corta o contenido detallado) usando su slug único.
 
     Args:
         service_slug: Slug identificativo del servicio (ej. 'depilacion-laser', 'botox').
         new_price: El nuevo precio decimal para el servicio en Euros (opcional).
-        description: La nueva descripción comercial detallada para el servicio (opcional).
+        description: La nueva descripción comercial corta del servicio (opcional).
+        content_html: El contenido largo y detallado (HTML o texto enriquecido) de la página del tratamiento (opcional).
     """
     db = SessionLocal()
     try:
@@ -129,7 +131,11 @@ def update_service_fields(
         
         if description is not None:
             service.description = description
-            updated_fields.append("descripción")
+            updated_fields.append("descripción corta")
+
+        if content_html is not None:
+            service.content_html = content_html
+            updated_fields.append("contenido detallado (largo)")
 
         if not updated_fields:
             return "No se ha modificado ningún campo porque no se enviaron nuevos valores."
@@ -328,8 +334,11 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
         "- Editor Web, CMS o diseño -> /dashboard/cms\n"
         "- Copias de seguridad o backups -> /dashboard/backups\n"
         "- Inicio o dashboard -> /dashboard\n"
-        "Asegúrate de asignar la propiedad 'route' y el 'message' en el idioma que corresponda al usuario.\n"
-        "9. GENERACIÓN DE DESCRIPCIONES DE SERVICIOS: Tienes la capacidad de redactar, mejorar y actualizar las descripciones de los servicios de la clínica. Si el usuario te pide una descripción (ej: 'genera una descripción para corte de pelo'), debes utilizar tu capacidad creativa como LLM para redactar un texto elegante, comercial y enfocado al sector estético (estilo Quiet Luxury), y acto seguido invocar la herramienta update_service_fields para guardar ese texto de forma automática en la base de datos."
+        "Asegúrate de asignar la propiedad 'route' and el 'message' en el idioma que corresponda al usuario.\n"
+        "9. GENERACIÓN DE DESCRIPCIONES (CORTAS Y DETALLADAS): Tienes la capacidad de redactar y actualizar dos tipos de descripciones para los servicios de la clínica:\n"
+        "   - DESCRIPCIÓN CORTA (campo 'description'): Es una presentación breve e inspiradora (1-2 párrafos sofisticados) que se muestra en las tarjetas generales del catálogo. Si el usuario pide 'una descripción', 'descripción corta' o similar, redáctala con un tono sofisticado (estilo Quiet Luxury) y guárdala en el argumento 'description'.\n"
+        "   - CONTENIDO LARGO Y DETALLADO (campo 'content_html'): Es el contenido comercial principal, explicativo y rico de la página completa del tratamiento. Si el usuario te pide 'genera el contenido largo', 'redacta el contenido de la página', 'contenido detallado' o similar, debes utilizar tu capacidad creativa como LLM para redactar un texto extenso, completo, sumamente estructurado y elegante en formato HTML premium (utilizando etiquetas <p>, <ul>, <li>, <strong>, subsecciones con buen espaciado y un enfoque comercial de lujo), y guardarlo en el argumento 'content_html'.\n"
+        "   - ACLARACIÓN DE BREVEDAD: La regla 6 (ser extremadamente breve) aplica UNICAMENTE al mensaje final de chat que el usuario ve/escucha en el globo de conversación (donde debes ser sofisticadamente conciso). Sin embargo, los textos que generas para guardar en la base de datos a través de 'update_service_fields' (tanto en 'description' como en 'content_html') DEBEN ser tan ricos, largos, persuasivos, descriptivos y extensos como sea necesario para lucir espectaculares en el catálogo público."
     )
 
     try:
