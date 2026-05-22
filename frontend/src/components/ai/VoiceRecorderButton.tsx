@@ -59,6 +59,14 @@ export default function VoiceRecorderButton({
 
       if (event.error === 'not-allowed') {
         toast.error(isFr ? 'Accès micro refusé. Veuillez accorder les permissions.' : isEn ? 'Microphone access denied. Please grant permissions.' : 'Acceso al micrófono denegado. Por favor, concede permisos en tu navegador.');
+      } else if (event.error === 'service-not-allowed') {
+        toast.error(
+          isFr 
+            ? "Erreur iOS: Assurez-vous d'activer le Dictée dans Réglages > Général > Claviers, ou d'ouvrir le site directement dans Safari." 
+            : isEn 
+              ? "iOS Restriction: Please enable 'Dictation' in iPhone Settings > General > Keyboard, or open this site directly in Safari (not inside WhatsApp)." 
+              : "Restricción de iOS: Por favor activa 'Dictado' en los Ajustes de tu iPhone > General > Teclado, o abre la web directamente en la app de Safari."
+        , { duration: 8000 });
       } else if (event.error === 'no-speech') {
         toast.warning(isFr ? 'Aucune voix détectée. Réessayez.' : isEn ? 'No speech detected. Try speaking again.' : 'No se detectó voz clara. Intenta hablar de nuevo.');
       } else {
