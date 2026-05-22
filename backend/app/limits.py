@@ -13,8 +13,8 @@ PLAN_LIMITS = {
         "services": 10
     },
     "pro": {
-        "specialists": 10,
-        "services": 999999  # Ilimitados en la práctica
+        "specialists": 5,
+        "services": 25
     },
     "gold": {
         "specialists": 999999,

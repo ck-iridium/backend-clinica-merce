@@ -32,6 +32,9 @@ class TenantOut(BaseModel):
 class StatusUpdate(BaseModel):
     status: str
 
+class PlanUpdate(BaseModel):
+    plan_type: str
+
 # ---------------------------------------------------------------------
 # VERIFICACIÓN DE ROL DE SUPER ADMIN
 # ---------------------------------------------------------------------
@@ -97,6 +100,29 @@ def update_tenant_status(
         raise HTTPException(status_code=404, detail="Inquilino no encontrado")
         
     tenant.subscription_status = payload.status
+    db.commit()
+    db.refresh(tenant)
+    return tenant
+
+@router.put("/tenants/{tenant_id}/plan", response_model=TenantOut)
+def update_tenant_plan(
+    tenant_id: str,
+    payload: PlanUpdate,
+    db: Session = Depends(database.get_db),
+    admin_payload: dict = Depends(verify_super_admin)
+):
+    """
+    Actualiza manualmente el tipo de plan de un inquilino.
+    """
+    plan = payload.plan_type.lower()
+    if plan not in ["free", "basic", "pro", "gold"]:
+        raise HTTPException(status_code=400, detail="Plan no permitido. Debe ser 'free', 'basic', 'pro' o 'gold'")
+    
+    tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Inquilino no encontrado")
+        
+    tenant.plan_type = plan
     db.commit()
     db.refresh(tenant)
     return tenant
