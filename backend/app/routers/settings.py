@@ -57,6 +57,11 @@ def update_settings(settings_update: schemas.ClinicSettingsUpdate, db: Session =
 def export_database(db: Session = Depends(database.get_db)):
     # Export only current tenant data
     tenant_id = database.current_tenant_var.get()
+    if not tenant_id:
+        import logging
+        logging.error("Seguridad: Intento de exportar base de datos sin tenant_id en el contexto")
+        raise HTTPException(status_code=400, detail="No autorizado. Inquilino no identificado.")
+
     data = {
         "settings": [s.__dict__ for s in db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).all()],
         "clients": [c.__dict__ for c in db.query(models.Client).filter(models.Client.tenant_id == tenant_id).all()],
@@ -79,7 +84,9 @@ async def restore_database(backup_data: Dict[str, Any], db: Session = Depends(da
     try:
         tenant_id = database.current_tenant_var.get()
         if not tenant_id:
-            raise HTTPException(status_code=400, detail="Tenant context required")
+            import logging
+            logging.error("Seguridad: Intento de restaurar base de datos sin tenant_id en el contexto")
+            raise HTTPException(status_code=400, detail="No autorizado. Inquilino no identificado.")
 
         # Detectar el tipo de base de datos
         is_sqlite = db.bind.dialect.name == "sqlite"

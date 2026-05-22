@@ -53,7 +53,7 @@ def extract_and_fallback_onboarding_data(session, metadata):
     if not tenant_slug or str(tenant_slug).strip() == "":
         clean_name = re.sub(r'[^a-z0-9]+', '-', str(tenant_name).lower()).strip('-')
         if not clean_name:
-            clean_name = "clinica"
+            clean_name = "negocio"
         tenant_slug = f"{clean_name}-{uuid.uuid4().hex[:6]}"
     else:
         tenant_slug = re.sub(r'[^a-z0-9-]+', '-', str(tenant_slug).lower()).strip('-')
@@ -168,17 +168,17 @@ def create_subscription_session(request: CreateSubscriptionSessionRequest, db: S
     # 2. Configurar detalles de precio e info del plan
     plan_details = {
         "basic": {
-            "name": "Plan Básico - Clínica Mercè SaaS",
-            "description": "Acceso estándar y agenda clínica para equipos pequeños",
+            "name": "Plan Básico - ProBookia SaaS",
+            "description": "Acceso estándar y agenda para equipos pequeños",
             "amount": 2900,  # 29.00 EUR
         },
         "pro": {
-            "name": "Plan Pro - Clínica Mercè SaaS",
-            "description": "Suscripción mensual de gestión clínica avanzada",
+            "name": "Plan Pro - ProBookia SaaS",
+            "description": "Suscripción mensual de gestión avanzada",
             "amount": 5900,  # 59.00 EUR
         },
         "gold": {
-            "name": "Plan Elite Gold - Clínica Mercè SaaS",
+            "name": "Plan Elite Gold - ProBookia SaaS",
             "description": "Acceso premium total con asistentes de Inteligencia Artificial",
             "amount": 9900,  # 99.00 EUR
         }
@@ -336,7 +336,7 @@ async def stripe_webhook(request: Request, db: Session = Depends(database.get_db
                     print(f"[PROVISIONING ERROR] El correo {admin_email} ya está en uso. Abortando registro de nuevo Tenant.")
                     raise HTTPException(
                         status_code=400,
-                        detail="Este correo ya está en uso. Por favor, utiliza un correo diferente para registrar una nueva clínica."
+                        detail="Este correo ya está en uso. Por favor, utiliza un correo diferente para registrar un nuevo negocio."
                     )
                 
                 try:
@@ -445,7 +445,7 @@ async def stripe_webhook(request: Request, db: Session = Depends(database.get_db
                         full_name=admin_name,
                         role="admin",
                         email=admin_email,
-                        status="active"
+                        status="Activo"
                     )
                     db.add(new_profile)
                     
@@ -680,7 +680,7 @@ def onboarding_session_status(session_id: str, db: Session = Depends(database.ge
             if existing_user:
                 raise HTTPException(
                     status_code=400,
-                    detail="Este correo ya está en uso. Por favor, utiliza un correo diferente para registrar una nueva clínica."
+                    detail="Este correo ya está en uso. Por favor, utiliza un correo diferente para registrar un nuevo negocio."
                 )
 
             print(f"[ONBOARDING STATUS fallback] Realizando aprovisionamiento síncrono para {tenant_slug}")
@@ -792,7 +792,7 @@ def onboarding_session_status(session_id: str, db: Session = Depends(database.ge
                     full_name=admin_name,
                     role="admin",
                     email=admin_email,
-                    status="active"
+                    status="Activo"
                 )
                 db.add(new_profile)
 
@@ -843,7 +843,7 @@ def onboarding_complete_setup(request: OnboardingCompleteSetupRequest, db: Sessi
     # 1. Recuperar ClinicSettings
     settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == request.tenant_id).first()
     if not settings:
-        raise HTTPException(status_code=404, detail="Configuración clínica no encontrada")
+        raise HTTPException(status_code=404, detail="Configuración del negocio no encontrada")
     
     settings.clinic_name = request.clinic_name
     settings.open_time = request.open_time

@@ -63,6 +63,22 @@ export default function DashboardPage() {
   const clientMap = new Map(clients.map((c: any) => [c.id, c.name]));
   const serviceMap = new Map(services.map((s: any) => [s.id, s.name]));
 
+  // Lógica dinámica de métricas aisladas por inquilino
+  const servicePriceMap = new Map(services.map((s: any) => [s.id, Number(s.price) || 0]));
+  const estimatedRevenueValue = todayAppointments.reduce((sum: number, appt: any) => {
+    const price = servicePriceMap.get(appt.service_id) || 0;
+    return sum + price;
+  }, 0);
+
+  const serviceDurationMap = new Map(services.map((s: any) => [s.id, Number(s.duration_minutes) || 0]));
+  const totalBookedMinutes = todayAppointments.reduce((sum: number, appt: any) => {
+    const duration = serviceDurationMap.get(appt.service_id) || 30;
+    return sum + duration;
+  }, 0);
+  
+  // Asumiendo una jornada laboral estándar de 8 horas (480 minutos)
+  const occupancyRateValue = totalBookedMinutes > 0 ? Math.min(100, Math.round((totalBookedMinutes / 480) * 100)) : 0;
+
   const metrics = [
     {
       id: 'today_appointments',
@@ -83,7 +99,7 @@ export default function DashboardPage() {
     {
       id: 'estimated_revenue',
       label: t('dashboard.home.estimated_revenue'),
-      value: '450 €',
+      value: `${estimatedRevenueValue} €`,
       icon: Banknote,
       color: 'text-emerald-600',
       bg: 'bg-emerald-50',
@@ -91,7 +107,7 @@ export default function DashboardPage() {
     {
       id: 'occupancy_rate',
       label: t('dashboard.home.occupancy_rate'),
-      value: '85%',
+      value: `${occupancyRateValue}%`,
       icon: Activity,
       color: 'text-[#d4af37]',
       bg: 'bg-amber-50',

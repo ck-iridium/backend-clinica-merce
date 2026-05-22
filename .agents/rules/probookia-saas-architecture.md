@@ -1,40 +1,30 @@
-# ARQUITECTURA SAAS MULTI-TENANT: PROBOOKIA.COM
+# 🛑 GLOBAL RULE: MULTI-TENANT SAAS ARCHITECTURE (PROBOOKIA) 🛑
 
-Este documento define la estructura y principios arquitectónicos obligatorios para el desarrollo de la plataforma SaaS **ProBookia.com**, previniendo la confusión entre el motor del SaaS y sus clientes (inquilinos / tenants).
+## Contexto del Proyecto:
+Eres un ingeniero de software senior desarrollando Probookia.com, un SaaS multi-tenant genérico para la gestión de reservas de múltiples tipos de negocios (peluquerías, salones, centros de estética, etc.). Múltiples negocios utilizan esta misma base de código y base de datos. El aislamiento de datos y la neutralidad del lenguaje son las prioridades número uno.
+
+## Reglas Estrictas de Desarrollo (DE CUMPLIMIENTO OBLIGATORIO):
+
+### 1. Aislamiento de Inquilino (Tenant Isolation) Obligatorio:
+Toda consulta a la base de datos (SELECT, UPDATE, DELETE, INSERT) debe incluir incondicionalmente un filtro por el ID del inquilino (ej. .eq('tenant_id', tenantId) en Supabase o .filter(Model.tenant_id == tenant_id) en SQLAlchemy).
+
+### 2. PROHIBIDO Hardcodear IDs y Fallbacks:
+Bajo ninguna circunstancia puedes dejar IDs hardcodeados como plan de rescate (ej. usar || '00000000-0000-0000-0000-000000000001'). Ninguna variable, constante o lógica de fallback debe hacer referencia a un negocio específico o un ID por defecto.
+
+### 3. Vocabulario Neutral y Escalable (Cero "Clínicas"):
+Está absolutamente prohibido hardcodear términos específicos de un sector en el código, mensajes de error, variables o UI.
+
+❌ NO uses: "clínica", "paciente", "médico", "doctor".
+
+✅ USA SIEMPRE: "negocio", "tenant", "cliente", "usuario", "especialista", "miembro del equipo".
+
+### 4. Fallo Seguro (Fail-Safe) por Defecto:
+Si el sistema intenta ejecutar una acción y el tenant_id no está disponible (ej. cookies vacías o indefinidas), el sistema NUNCA debe continuar la ejecución usando valores por defecto. Debe abortar inmediatamente, registrar un error de seguridad y devolver un resultado vacío ([]) o un error ({ success: false, error: "No autorizado" }).
+
+### 5. No Confíes en el Cliente (Zero Trust):
+Cuando uses clientes con privilegios de administrador (como getSupabaseAdmin()), asume que el sistema tiene acceso global a todos los negocios. Eres tú quien debe imponer los límites manualmente filtrando por tenant_id en cada consulta.
 
 ---
 
-## 1. Claridad Conceptual
-
-1. **La Plataforma SaaS**: **ProBookia.com**
-   - Es el producto SaaS multitenant de gestión de citas, agendas, ventas, consentimiento y CMS para clínicas, centros de estética, y negocios de bienestar.
-   - La arquitectura, el motor de base de datos, el panel de administración global (Super Admin) y la estructura de componentes compartidos pertenecen a **ProBookia.com**.
-
-2. **El Primer Cliente (Tenant #1)**: **Clínica Mercè**
-   - Es el inquilino inicial que utiliza ProBookia.com.
-   - Tiene el ID de tenant: `'00000000-0000-0000-0000-000000000001'` y slug `'merce'`.
-   - Utiliza la estética "Quiet Luxury" y sus propios colores/tipografías, definidos en `frontend-design-system.md` y `sistema-diseño.md`.
-
----
-
-## 2. Reglas de Desarrollo de Software
-
-### A. PROHIBIDO el Acoplamiento Fuerte (Hardcoding)
-- **Evitar nombres estáticos**: Nunca asumas que toda la plataforma se llama "Clínica Mercè" o que todo tenant comparte su estética.
-- **Configuración dinámica**: Los textos de la marca, logos, políticas de privacidad, teléfonos y datos de contacto deben obtenerse dinámicamente desde el backend o a través de la tabla `clinic_settings` o `tenants` filtrando por el tenant activo.
-- **Separación de Vistas**:
-  - Las landings de cara al cliente final (como la de reservas de Clínica Mercè) se nutren del contenido en `site_content` o de subcarpetas dinámicas basadas en el subdominio/slug.
-  - La landing page principal de la raíz (`src/app/page.tsx`) representa la landing general del SaaS **ProBookia.com**, a menos que se trate de un despliegue monomarca o se acceda mediante el slug/subdominio correspondiente.
-
-### B. Aislamiento de Datos (Multi-tenancy)
-- Cada consulta a la base de datos (tanto en backend como en frontend) **debe estar aislada** por el `tenant_id`.
-- En el backend y Supabase, las políticas de **Row-Level Security (RLS)** basadas en `current_setting('app.current_tenant_id')` aseguran que ningún tenant acceda a datos de otro.
-- Cualquier tabla transaccional nueva **DEBE** incluir:
-  ```sql
-  ALTER TABLE nombre_tabla ADD COLUMN tenant_id VARCHAR(36) REFERENCES tenants(id) DEFAULT current_setting('app.current_tenant_id', true);
-  ALTER TABLE nombre_tabla ENABLE ROW LEVEL SECURITY;
-  ```
-
-### C. Tematización y Diseño de Marca
-- Aunque el primer cliente (Clínica Mercè) requiera una estética minimalista "Quiet Luxury" con colores Crema, Oro y Antracita, los componentes base de la plataforma deben ser lo suficientemente flexibles como para recibir tokens de diseño dinámicos o clases de Tailwind parametrizadas si en el futuro se añade otro tenant.
-- Mantén los archivos de diseño de Clínica Mercè referenciados explícitamente como la tematización de este cliente (ej: `theme-merce`, o en variables cargadas de base de datos).
+### Instrucción Operativa:
+Antes de modificar cualquier archivo, verifica que el código resultante cumple al 100% con estas 5 reglas. Elimina cualquier rastro de IDs por defecto o lenguaje específico de sector ("clínica") en los archivos que edites.

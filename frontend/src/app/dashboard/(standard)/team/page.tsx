@@ -333,8 +333,8 @@ export default function TeamPage() {
                   <td className="py-5 px-4">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center text-stone-400 border border-white shadow-sm shrink-0">
-                        {member.role === 'Administrador' ? <ShieldCheck size={20} /> :
-                          member.role === 'Especialista' ? <Stethoscope size={20} /> :
+                        {member.role === 'Administrador' || member.role === 'admin' ? <ShieldCheck size={20} /> :
+                          member.role === 'Especialista' || member.role === 'specialist' ? <Stethoscope size={20} /> :
                             <UserCircle size={20} />}
                       </div>
                       <span className="font-bold text-stone-800">{member.full_name}</span>
@@ -342,14 +342,14 @@ export default function TeamPage() {
                   </td>
                   <td className="py-5 px-4">
                     <span className="text-sm font-semibold text-stone-500">
-                      {t(`dashboard.team.roles.${member.role === 'Administrador' ? 'admin' : member.role === 'Especialista' ? 'specialist' : 'reception'}`) || member.role}
+                      {t(`dashboard.team.roles.${(member.role === 'Administrador' || member.role === 'admin') ? 'admin' : (member.role === 'Especialista' || member.role === 'specialist') ? 'specialist' : 'reception'}`) || member.role}
                     </span>
                   </td>
                   <td className="py-5 px-4">
                     <div className="flex items-center gap-2">
-                      <div className={`w-1.5 h-1.5 rounded-full ${member.status === 'Activo' ? 'bg-green-500 animate-pulse' : 'bg-stone-300'}`} />
-                      <span className={`text-[10px] font-black uppercase tracking-widest ${member.status === 'Activo' ? 'text-green-600' : 'text-stone-400'}`}>
-                        {t(`dashboard.team.statuses.${member.status === 'Activo' ? 'active' : 'invited'}`) || member.status}
+                      <div className={`w-1.5 h-1.5 rounded-full ${(member.status === 'Activo' || member.status === 'active') ? 'bg-green-500 animate-pulse' : 'bg-stone-300'}`} />
+                      <span className={`text-[10px] font-black uppercase tracking-widest ${(member.status === 'Activo' || member.status === 'active') ? 'text-green-600' : 'text-stone-400'}`}>
+                        {t(`dashboard.team.statuses.${(member.status === 'Activo' || member.status === 'active') ? 'active' : 'invited'}`) || member.status}
                       </span>
                     </div>
                   </td>
