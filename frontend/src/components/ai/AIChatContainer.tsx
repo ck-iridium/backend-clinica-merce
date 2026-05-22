@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Send, Sparkles, User, Bot, RefreshCw, Volume2, VolumeX } from 'lucide-react';
 import VoiceRecorderButton from './VoiceRecorderButton';
 import { toast } from 'sonner';
+import FeedbackModal from '../FeedbackModal';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 
 // Utilidad simple para leer cookies en el cliente
@@ -40,6 +41,13 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
   const chatLanguage = language === 'fr' ? 'fr-FR' : language === 'en' ? 'en-US' : 'es-ES';
   const [voiceGender, setVoiceGender] = useState<'female' | 'male'>('female');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [confirmModal, setConfirmModal] = useState<{
+    show: boolean;
+    title: string;
+    message: string;
+    slug: string;
+    target: string;
+  } | null>(null);
 
   // Cargar foto de perfil real del usuario
   useEffect(() => {
@@ -208,11 +216,33 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
 
       const data = await response.json();
 
+      // Interceptar solicitud de confirmación de eliminación (escudo anti-destrucción)
+      let finalResponseText = data.response;
+      try {
+        const parsed = JSON.parse(data.response);
+        if (parsed && parsed.action === 'request_confirmation') {
+          setConfirmModal({
+            show: true,
+            title: language === 'fr' ? 'Confirmer la suppression' : language === 'en' ? 'Confirm Deletion' : 'Confirmar Eliminación',
+            message: parsed.message || '¿Estás seguro de que deseas eliminar este elemento?',
+            slug: parsed.slug,
+            target: parsed.target
+          });
+          finalResponseText = language === 'fr' 
+            ? `⚠️ Demande de confirmation de suppression en attente...` 
+            : language === 'en' 
+              ? `⚠️ Pending deletion confirmation...` 
+              : `⚠️ Solicitud de confirmación de eliminación pendiente...`;
+        }
+      } catch (e) {
+        // No es un JSON, usar de forma normal
+      }
+
       // 4. Añadir respuesta de la IA a la UI
-      setMessages((prev) => [...prev, { role: 'model', content: data.response }]);
+      setMessages((prev) => [...prev, { role: 'model', content: finalResponseText }]);
 
       // 5. Leer respuesta en voz alta
-      speakText(data.response);
+      speakText(finalResponseText);
 
       // 6. Notificar actualización de campos para recargar vista previa
       if (data.updated_fields && data.updated_fields.length > 0) {
@@ -409,6 +439,89 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
           </div>
         </div>
       </div>
+
+      {confirmModal && confirmModal.show && (
+        <FeedbackModal
+          type="confirm"
+          title={confirmModal.title}
+          message={confirmModal.message}
+          confirmText={language === 'fr' ? 'Oui, supprimer' : language === 'en' ? 'Yes, delete' : 'Sí, confirmar borrado'}
+          cancelText={language === 'fr' ? 'Annuler' : language === 'en' ? 'Cancel' : 'Cancelar'}
+          onClose={() => setConfirmModal(null)}
+          onConfirmHandler={async () => {
+            const slug = confirmModal.slug;
+            setConfirmModal(null);
+            setIsLoading(true);
+
+            // Obtener tenantId y token
+            const userSession = localStorage.getItem('user');
+            let tenantId = getCookie('tenant_id') || '';
+            let authToken = '';
+            if (userSession) {
+              const parsed = JSON.parse(userSession);
+              if (!tenantId) {
+                tenantId = parsed.tenant_id || '';
+              }
+              authToken = parsed.access_token || parsed.token || '';
+            }
+
+            try {
+              // 1. Obtener información del servicio por slug
+              const getServiceRes = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/slug/${slug}`,
+                {
+                  headers: {
+                    'X-Tenant-ID': tenantId,
+                    Authorization: authToken ? `Bearer ${authToken}` : '',
+                  }
+                }
+              );
+              if (!getServiceRes.ok) {
+                throw new Error(language === 'fr' ? 'Service introuvable.' : language === 'en' ? 'Service not found.' : 'No se pudo encontrar el servicio para eliminar.');
+              }
+              const serviceData = await getServiceRes.json();
+              const serviceId = serviceData.id;
+
+              // 2. Ejecutar DELETE seguro
+              const deleteRes = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/${serviceId}`,
+                {
+                  method: 'DELETE',
+                  headers: {
+                    'X-Tenant-ID': tenantId,
+                    Authorization: authToken ? `Bearer ${authToken}` : '',
+                  }
+                }
+              );
+              if (!deleteRes.ok) {
+                const errJson = await deleteRes.json();
+                throw new Error(errJson.detail || 'Error al eliminar el servicio.');
+              }
+              
+              toast.success(language === 'fr' ? 'Service supprimé.' : language === 'en' ? 'Service deleted.' : 'Servicio eliminado con éxito.');
+              setMessages((prev) => [
+                ...prev, 
+                { 
+                  role: 'model', 
+                  content: language === 'fr'
+                    ? `Succès: Le service avec le slug '${slug}' a été supprimé.`
+                    : language === 'en'
+                      ? `Success: The service with slug '${slug}' has been deleted.`
+                      : `Éxito: El servicio con slug '${slug}' ha sido eliminado correctamente.` 
+                }
+              ]);
+              if (onFieldsUpdated) {
+                onFieldsUpdated(['services']);
+              }
+            } catch (err: any) {
+              toast.error(err.message || 'Error.');
+              setMessages((prev) => [...prev, { role: 'model', content: `Error: ${err.message}` }]);
+            } finally {
+              setIsLoading(false);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

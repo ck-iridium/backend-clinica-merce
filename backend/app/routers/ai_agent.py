@@ -184,8 +184,58 @@ def get_daily_appointments(date_str: Optional[str] = None) -> str:
         db.close()
 
 
+def create_new_service(name: str, price: float, duration_minutes: Optional[int] = 30) -> str:
+    """
+    Crea un nuevo servicio o tratamiento en la base de datos de la clínica de forma segura.
+
+    Args:
+        name: El nombre del servicio o tratamiento (ej. 'Masaje Relajante', 'Peeling Químico').
+        price: El precio del servicio en Euros (ej. 75.0).
+        duration_minutes: Duración estimada del servicio en minutos. Por defecto es 30.
+    """
+    import re
+    import uuid
+    db = SessionLocal()
+    try:
+        tenant_id = current_tenant_var.get()
+        if not tenant_id:
+            return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
+
+        # Generar slug
+        slug = re.sub(r'[^a-z0-9]+', '-', name.lower()).strip('-')
+        
+        # Unicidad del slug
+        base_slug = slug
+        counter = 1
+        while db.query(models.Service).filter(
+            models.Service.tenant_id == tenant_id,
+            models.Service.slug == slug
+        ).first() is not None:
+            slug = f"{base_slug}-{counter}"
+            counter += 1
+
+        new_service = models.Service(
+            id=str(uuid.uuid4()),
+            tenant_id=tenant_id,
+            name=name,
+            price=price,
+            slug=slug,
+            duration_minutes=duration_minutes if duration_minutes else 30,
+            is_active=True
+        )
+        db.add(new_service)
+        db.commit()
+        return f"Éxito: Se ha creado el nuevo servicio '{name}' con precio de {price}€ y duración de {duration_minutes} minutos correctamente."
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error en create_new_service para tenant {current_tenant_var.get()}: {e}")
+        return f"Error al crear el nuevo servicio: {str(e)}"
+    finally:
+        db.close()
+
+
 # Lista de herramientas disponibles para Gemini
-AGENT_TOOLS = [update_landing_config, update_service_price, get_daily_appointments]
+AGENT_TOOLS = [update_landing_config, update_service_price, get_daily_appointments, create_new_service]
 
 # ---------------------------------------------------------------------
 # ENDPOINT DE CHAT
@@ -228,21 +278,25 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
     # 2. Configurar la API de Gemini
     genai.configure(api_key=api_key)
 
-    # 3. Inicializar el GenerativeModel con nuestras herramientas e instrucciones del sistema
     system_instruction = (
         "Eres el 'AI Webmaster & Voice Agent' oficial de ProBookia, un asistente virtual premium "
         "diseñado para clínicas de medicina estética y alta gama. Tienes acceso a herramientas avanzadas "
-        "para consultar citas de la agenda de hoy, cambiar precios de servicios y modificar el diseño visual "
+        "para consultar citas de la agenda de hoy, cambiar precios de servicios, crear nuevos servicios (create_new_service) y modificar el diseño visual "
         "y los textos principales de la landing page pública del inquilino actual.\n\n"
         "Reglas obligatorias de comportamiento:\n"
         "1. Mantén siempre un tono profesional, elegante y sofisticado (estilo 'Quiet Luxury').\n"
         "2. REGLA CRÍTICA DE IDIOMA: DEBES DETECTAR Y RESPONDER SIEMPRE EN EL MISMO IDIOMA QUE UTILIZA EL USUARIO EN SU MENSAJE o comando de voz. Si el usuario te habla en francés, responde en francés nativo y elegante. Si te habla en inglés, responde en inglés nativo y elegante. Si te habla en español, responde en español.\n"
         "3. Llama a las herramientas adecuadas de forma automática cuando el usuario solicite acciones. "
-        "Por ejemplo, si te dice 'Cambia el precio de botox a 190 euros', debes invocar 'update_service_price'.\n"
+        "Por ejemplo, si te dice 'Cambia el precio de botox a 190 euros', debes invocar 'update_service_price'. Si te dice 'Crea un servicio llamado Masaje Sueco a 80€', debes invocar 'create_new_service'.\n"
         "4. Siempre confirma el éxito o explica claramente cualquier error que devuelvan las herramientas.\n"
         "5. Tienes terminantemente prohibido acceder, mencionar o tratar de manipular datos de otros tenants.\n"
         "6. SÉ EXTREMADAMENTE BREVE, DIRECTO Y CONCISO. Evita explicaciones largas, rodeos o introducciones. "
-        "Responde en 1 o 2 frases breves y sofisticadas como máximo. El verdadero lujo habla poco y actúa rápido."
+        "Responde en 1 o 2 frases breves y sofisticadas como máximo. El verdadero lujo habla poco y actúa rápido.\n"
+        "7. ESCUDO ANTI-DESTRUCCIÓN CRÍTICO: Si el usuario te pide borrar, eliminar o suprimir un servicio (ej: 'Borra el servicio de masajes' o 'Elimina botox'), "
+        "NO tienes permitido realizar ninguna acción destructiva por ti mismo. En su lugar, DEBES responder OBLIGATORIAMENTE y ÚNICAMENTE "
+        "con un objeto JSON de confirmación estructurado EXACTAMENTE así, sin ningún otro texto acompañante ni bloques de markdown (sin ```json ni nada):\n"
+        "{\"action\": \"request_confirmation\", \"target\": \"service\", \"slug\": \"slug-del-servicio-a-borrar\", \"message\": \"¿Estás seguro de que deseas eliminar el servicio X? Esta acción no se puede deshacer.\"}\n"
+        "Asegúrate de deducir o inferir el 'slug' correcto basado en el nombre del servicio que te ha pedido borrar."
     )
 
     try:
@@ -282,6 +336,8 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
                         updated_fields.extend(args.keys())
                     elif name == "update_service_price":
                         updated_fields.append("price")
+                    elif name == "create_new_service":
+                        updated_fields.append("services")
 
         # Quitar duplicados en campos actualizados si existen
         updated_fields = list(set(updated_fields))
