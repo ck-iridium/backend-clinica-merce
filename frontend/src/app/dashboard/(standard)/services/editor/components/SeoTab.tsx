@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Sparkles } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Sparkles, Lock } from 'lucide-react';
 import { UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Editor } from '@tiptap/react';
@@ -17,7 +17,39 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
   const { t } = useLanguage();
   const [isGeneratingSEO, setIsGeneratingSEO] = useState(false);
 
+  // Límites de plan
+  const [limits, setLimits] = useState<{ ai_allowed: boolean; ai_requires_byok: boolean } | null>(null);
+  const [loadingLimits, setLoadingLimits] = useState(true);
+
+  useEffect(() => {
+    async function fetchLimits() {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const res = await fetch(`${API_URL}/settings/limits`);
+        if (res.ok) {
+          const limitsData = await res.json();
+          setLimits({
+            ai_allowed: limitsData.limits.ai_allowed,
+            ai_requires_byok: limitsData.limits.ai_requires_byok
+          });
+        }
+      } catch (err) {
+        console.error("Error al obtener límites de plan:", err);
+      } finally {
+        setLoadingLimits(false);
+      }
+    }
+    fetchLimits();
+  }, []);
+
+  const isBlocked = limits && !limits.ai_allowed;
+
   const handleGenerateSEO = async () => {
+    if (isBlocked) {
+      toast.error('Acción restringida. Habilite su propia clave de API o mejore su plan.');
+      return;
+    }
+
     const plainTextContent = editor?.getText() || '';
     const name = formValues.name || '';
     const description = formValues.description || '';
@@ -55,7 +87,11 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
       toast.success(t('dashboard.services.seo_generated'));
     } catch (error: any) {
       console.error(error);
-      toast.error(error.message);
+      if (error.message === "AI_LIMIT_BYOK_REQUIRED") {
+        toast.error("Requiere clave de API propia o mejorar su suscripción.");
+      } else {
+        toast.error(error.message);
+      }
     } finally {
       setIsGeneratingSEO(false);
     }
@@ -63,17 +99,46 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
 
   return (
     <div className="space-y-4">
+      {isBlocked && (
+        <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200/40 text-[11px] text-stone-500 mb-6 flex flex-col gap-2 font-sans animate-in fade-in duration-300">
+          <div className="flex items-center gap-1.5 text-stone-700 font-bold uppercase tracking-wider text-[10px]">
+            <Sparkles size={12} className="text-[#d4af37]" />
+            <span>Asistente de SEO Premium</span>
+          </div>
+          <p className="leading-relaxed">
+            La automatización de metadatos mediante IA está reservada para el <span className="font-bold text-stone-700">Plan Gold</span> o requiere que configure su propia <span className="font-bold text-stone-700">Clave de API</span> en Ajustes.
+          </p>
+          <div className="flex gap-2 mt-1">
+            <a href="/dashboard/settings" className="px-3 py-1.5 rounded-lg bg-white border border-stone-200 hover:bg-stone-50 text-stone-700 font-bold transition-all shadow-sm">
+              Configurar Clave
+            </a>
+            <a href="/dashboard/settings" className="px-3 py-1.5 rounded-lg bg-[#d4af37] text-white font-bold transition-all shadow-sm">
+              Mejorar Plan
+            </a>
+          </div>
+        </div>
+      )}
+
       <div className="mb-6">
         <button 
           type="button" 
           onClick={handleGenerateSEO}
-          disabled={isGeneratingSEO || (!formValues.name && !formValues.description && !editor?.getText())}
-          className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-stone-900 hover:bg-[#d4af37] text-white font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+          disabled={loadingLimits || isGeneratingSEO || (!isBlocked && !formValues.name && !formValues.description && !editor?.getText())}
+          className={`w-full h-12 flex items-center justify-center gap-2 rounded-xl font-bold transition-all shadow-md ${
+            isBlocked 
+              ? 'bg-stone-100 text-stone-400 border border-stone-200 cursor-not-allowed shadow-none' 
+              : 'bg-stone-900 hover:bg-[#d4af37] text-white disabled:opacity-50 disabled:cursor-not-allowed'
+          }`}
         >
           {isGeneratingSEO ? (
             <>
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               {t('dashboard.services.seo_optimizing')}
+            </>
+          ) : isBlocked ? (
+            <>
+              <Lock size={16} className="text-stone-400" />
+              <span>Optimización con IA Deshabilitada</span>
             </>
           ) : (
             <>
@@ -84,12 +149,13 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
         </button>
         <p className="text-[10px] text-stone-400 text-center mt-2 uppercase tracking-widest font-semibold">{t('dashboard.services.based_on_content')}</p>
       </div>
+
       <div>
         <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.seo_title_label')}</label>
         <input 
           {...register('seo_title')} 
           className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" 
-          placeholder={(t('dashboard.services.seo_title_placeholder') || 'Ej: {name} | Clínica')
+          placeholder={(t('dashboard.services.seo_title_placeholder') || 'Ej: {name} | Negocio')
             .replace('{name}', formValues.name || t('dashboard.services.placeholder_title'))} 
         />
       </div>
@@ -104,3 +170,4 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
     </div>
   );
 }
+

@@ -36,12 +36,25 @@ def read_tenant_limits(db: Session = Depends(database.get_db)):
         models.Profile.role.in_(["specialist", "receptionist", "admin"])
     ).count()
     
+    clinic_settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).first()
+    has_own_key = False
+    if clinic_settings:
+        provider = clinic_settings.ai_provider or "gemini"
+        key = clinic_settings.gemini_api_key if provider == "gemini" else clinic_settings.openai_api_key
+        has_own_key = bool(key and key.strip())
+        
+    is_gold = plan.lower() == "gold"
+    ai_allowed = is_gold or has_own_key
+    ai_requires_byok = not is_gold
+
     return {
         "tenant_id": tenant_id,
         "plan_type": plan,
         "limits": {
             "specialists": limits["specialists"],
-            "services": limits["services"]
+            "services": limits["services"],
+            "ai_allowed": ai_allowed,
+            "ai_requires_byok": ai_requires_byok
         },
         "usage": {
             "specialists": specialists_count,

@@ -15,6 +15,7 @@ import logging
 import time
 from typing import Optional
 from fastapi.concurrency import run_in_threadpool
+from ..limits import get_tenant_ai_key
 
 # Configurar log
 log_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'ai_generation.log')
@@ -53,19 +54,21 @@ def optimize_prompt(request: schemas.OptimizePromptRequest, db: Session = Depend
     
     try:
         if ai_provider == "gemini":
-            api_key = settings.gemini_api_key or os.getenv("GEMINI_API_KEY")
+            api_key = get_tenant_ai_key(db, "gemini")
             genai.configure(api_key=api_key)
             model = genai.GenerativeModel('gemini-2.5-flash')
             response = model.generate_content(system_prompt + f"\n\nContext: {request.service_name}, {request.description}")
             return {"prompt": response.text.strip()}
         elif ai_provider == "openai":
-            api_key = settings.openai_api_key or os.getenv("OPENAI_API_KEY")
+            api_key = get_tenant_ai_key(db, "openai")
             client = OpenAI(api_key=api_key)
             response = client.chat.completions.create(
                 model=settings.openai_model_text or "gpt-4o-mini",
                 messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": request.service_name}]
             )
             return {"prompt": response.choices[0].message.content.strip()}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -110,13 +113,14 @@ def generate_content(request: schemas.AIGenerationRequest, db: Session = Depends
 
     try:
         if ai_provider == "gemini":
-            api_key = settings.gemini_api_key or os.getenv("GEMINI_API_KEY")
+            api_key = get_tenant_ai_key(db, "gemini")
             genai.configure(api_key=api_key)
             model = genai.GenerativeModel('gemini-2.5-flash')
             response = model.generate_content(system_prompt + "\n\n" + request.prompt)
             result_text = response.text
         elif ai_provider == "openai":
-            client = OpenAI(api_key=settings.openai_api_key or os.getenv("OPENAI_API_KEY"))
+            api_key = get_tenant_ai_key(db, "openai")
+            client = OpenAI(api_key=api_key)
             response = client.chat.completions.create(
                 model=settings.openai_model_text or "gpt-4o-mini",
                 messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": request.prompt}]
@@ -196,20 +200,23 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
     settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == database.current_tenant_var.get()).first()
     if not settings: raise HTTPException(status_code=500, detail="Configuración no encontrada.")
 
-    api_key = settings.gemini_api_key or os.getenv("GEMINI_API_KEY")
-    if not api_key: raise HTTPException(status_code=400, detail="API Key no configurada.")
-
+    ai_provider = settings.ai_provider or "gemini"
+    
+    try:
+        gemini_key = get_tenant_ai_key(db, "gemini")
+    except HTTPException:
+        raise
+        
     logger.info(f"START GENERATION: {request.prompt[:50]}...")
     
     # 1. Mejorar el prompt (Síncrono)
-    refined_prompt = ai_enhance_image_prompt_sync(request.prompt, request.shot_type, request.visual_style, api_key, request.reference_image)
+    refined_prompt = ai_enhance_image_prompt_sync(request.prompt, request.shot_type, request.visual_style, gemini_key, request.reference_image)
     
     file_bytes = None
-    ai_provider = settings.ai_provider or "gemini"
 
     if ai_provider == "gemini":
         try:
-            genai.configure(api_key=api_key)
+            genai.configure(api_key=gemini_key)
             # Aseguramos el nombre del modelo de imagen correcto
             model_name = settings.gemini_model_image or "imagen-3.0-generate-001"
             model = genai.GenerativeModel(model_name)
@@ -231,9 +238,12 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
 
     elif ai_provider == "openai":
         try:
-            client = OpenAI(api_key=settings.openai_api_key or os.getenv("OPENAI_API_KEY"))
+            openai_key = get_tenant_ai_key(db, "openai")
+            client = OpenAI(api_key=openai_key)
             response = client.images.generate(model="dall-e-3", prompt=refined_prompt, n=1, quality="hd")
             file_bytes = requests.get(response.data[0].url).content
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
