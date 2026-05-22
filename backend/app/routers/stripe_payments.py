@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 from .. import models, database
 from ..crud.settings import get_clinic_settings
+from ..services.tenant_provisioner import provision_tenant
 
 router = APIRouter(
     prefix="/stripe",
@@ -329,139 +330,25 @@ async def stripe_webhook(request: Request, db: Session = Depends(database.get_db
                 admin_name = onboarding_data["admin_name"]
                 admin_password = onboarding_data["admin_password"]
                 
-                print(f"[PROVISIONING] Iniciando aprovisionamiento del Tenant SaaS: {tenant_slug} ({tenant_name})")
-                
-                # Cortafuegos estricto: evitar colisión de identidad y contaminación cruzada de datos
-                existing_user = db.query(models.User).filter(models.User.email == admin_email).first()
-                if existing_user:
-                    print(f"[PROVISIONING ERROR] El correo {admin_email} ya está en uso. Abortando registro de nuevo Tenant.")
-                    raise HTTPException(
-                        status_code=400,
-                        detail="Este correo ya está en uso. Por favor, utiliza un correo diferente para registrar un nuevo negocio."
-                    )
-                
-                try:
-                    # 1. Crear el Tenant en Base de Datos Relacional
-                    tenant_id = str(uuid.uuid4())
-                    
-                    # Sincronizar ContextVar y variable local de sesión de PostgreSQL para RLS
-                    from ..database import current_tenant_var
-                    from sqlalchemy import text
-                    current_tenant_var.set(tenant_id)
-                    db.execute(
-                        text("SET LOCAL app.current_tenant_id = :tenant_id"),
-                        {"tenant_id": tenant_id}
-                    )
-                    
-                    plan_type = metadata.get("plan_type", "pro")
-                    if not plan_type or plan_type == "":
-                        plan_type = "pro"
-                        
-                    new_tenant = models.Tenant(
-                        id=tenant_id,
-                        name=tenant_name,
-                        slug=tenant_slug,
-                        stripe_customer_id=get_val(data_object, 'customer', None),
-                        stripe_subscription_id=get_val(data_object, 'subscription', None),
-                        plan_type=plan_type,
-                        subscription_status="active"
-                    )
-                    db.add(new_tenant)
-                    db.flush()  # Para que el tenant_id exista para claves foráneas
-                    
-                    # 2. Inicializar Configuración por Defecto
-                    default_settings = models.ClinicSettings(
-                        id=str(uuid.uuid4()),
-                        tenant_id=tenant_id,
-                        clinic_name=tenant_name,
-                        clinic_email=admin_email,
-                        clinic_phone="",
-                        clinic_address="",
-                        maps_url="",
-                        instagram_url="",
-                        allow_search_engine_indexing=False
-                    )
-                    db.add(default_settings)
-                    
-                    default_content = models.SiteContent(
-                        id=str(uuid.uuid4()),
-                        tenant_id=tenant_id,
-                        hero_title=f"Bienvenidos a {tenant_name}",
-                        hero_subtitle="Estética avanzada y cuidado personalizado.",
-                        about_text="Nos dedicamos a ofrecer los mejores tratamientos de estética y salud para resaltar tu bienestar.",
-                        about_title=f"Sobre {tenant_name}"
-                    )
-                    db.add(default_content)
-                    
-                    # 3. Crear el usuario en Supabase Auth
-                    supabase_user_id = None
-                    supabase_url = os.environ.get("SUPABASE_URL")
-                    supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
-                    
-                    if supabase_url and supabase_key:
-                        try:
-                            from supabase import create_client
-                            supabase_client = create_client(supabase_url, supabase_key)
-                            
-                            # Crear el usuario administrador en Supabase con su tenant_id en app_metadata!
-                            auth_user = supabase_client.auth.admin.create_user({
-                                "email": admin_email,
-                                "password": admin_password,
-                                "email_confirm": True,
-                                "user_metadata": {"full_name": admin_name},
-                                "app_metadata": {"tenant_id": tenant_id, "role": "admin"}
-                            })
-                            
-                            # Extraer el ID devuelto por Supabase Auth de forma segura
-                            if hasattr(auth_user, 'user') and auth_user.user:
-                                supabase_user_id = auth_user.user.id
-                            elif isinstance(auth_user, dict) and 'user' in auth_user:
-                                supabase_user_id = auth_user['user']['id']
-                            elif hasattr(auth_user, 'id'):
-                                supabase_user_id = auth_user.id
-                            
-                            print(f"[SUPABASE] Usuario creado en Supabase Auth. ID: {supabase_user_id}")
-                        except Exception as sb_err:
-                            print(f"[SUPABASE] [WARNING] Error al crear usuario en Supabase Auth: {sb_err}")
-                    
-                    # Fallback de ID si Supabase no está configurado o falla
-                    if not supabase_user_id:
-                        supabase_user_id = str(uuid.uuid4())
-                        print(f"[PROVISIONING] [WARNING] Usando UUID generado localmente para el usuario: {supabase_user_id}")
-                    
-                    # 4. Crear el usuario en la base de datos relacional
-                    from .users import pwd_context
-                    hashed_pw = pwd_context.hash(admin_password)
-                    
-                    new_user = models.User(
-                        id=supabase_user_id,
-                        email=admin_email,
-                        hashed_password=hashed_pw,
-                        role="admin",
-                        tenant_id=tenant_id
-                    )
-                    db.add(new_user)
-                    db.flush()
-                    
-                    # 5. Crear el perfil correspondiente en base de datos
-                    new_profile = models.Profile(
-                        id=supabase_user_id,
-                        tenant_id=tenant_id,
-                        full_name=admin_name,
-                        role="admin",
-                        email=admin_email,
-                        status="Activo"
-                    )
-                    db.add(new_profile)
-                    
-                    db.commit()
-                    print(f"[PROVISIONING] [SUCCESS] Nuevo Tenant '{tenant_slug}' aprovisionado completamente con exito.")
-                except Exception as db_err:
-                    import traceback
-                    print(f"[PROVISIONING ERROR] Fallo crítico al aprovisionar tenant en base de datos:")
-                    traceback.print_exc()
-                    db.rollback()
-                    raise HTTPException(status_code=500, detail=f"Error interno durante el aprovisionamiento: {str(db_err)}")
+                plan_type = metadata.get("plan_type", "pro")
+                if not plan_type or plan_type == "":
+                    plan_type = "pro"
+
+                stripe_cust_id = get_val(data_object, 'customer', None)
+                stripe_sub_id = get_val(data_object, 'subscription', None)
+
+                # Delegar al provisionador atómico central
+                provision_tenant(
+                    db=db,
+                    tenant_name=tenant_name,
+                    tenant_slug=tenant_slug,
+                    admin_email=admin_email,
+                    admin_name=admin_name,
+                    admin_password=admin_password,
+                    stripe_customer_id=stripe_cust_id,
+                    stripe_subscription_id=stripe_sub_id,
+                    plan_type=plan_type
+                )
                 
             elif metadata.get("type") == "saas_subscription_update":
                 tenant_id = metadata.get("tenant_id")
@@ -676,143 +563,33 @@ def onboarding_session_status(session_id: str, db: Session = Depends(database.ge
         admin_name = onboarding_data["admin_name"]
         admin_password = onboarding_data["admin_password"]
 
-        # Buscar si ya fue aprovisionado por el webhook
-        tenant = db.query(models.Tenant).filter(models.Tenant.slug == tenant_slug).first()
-        
         if not tenant:
-            # Cortafuegos estricto: evitar colisión de identidad y contaminación cruzada de datos
-            existing_user = db.query(models.User).filter(models.User.email == admin_email).first()
-            if existing_user:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Este correo ya está en uso. Por favor, utiliza un correo diferente para registrar un nuevo negocio."
-                )
+            stripe_cust_id = getattr(session, "customer", None)
+            if not stripe_cust_id and isinstance(session, dict):
+                stripe_cust_id = session.get("customer")
+
+            stripe_sub_id = getattr(session, "subscription", None)
+            if not stripe_sub_id and isinstance(session, dict):
+                stripe_sub_id = session.get("subscription")
+
+            plan_type = metadata.get("plan_type", "pro")
+            if not plan_type or plan_type == "":
+                plan_type = "pro"
 
             print(f"[ONBOARDING STATUS fallback] Realizando aprovisionamiento síncrono para {tenant_slug}")
-            try:
-                # Aprovisionamiento Síncrono en caso de que el webhook no haya llegado todavía (condición de carrera)
-                tenant_id = str(uuid.uuid4())
-                
-                # Sincronizar contexto para RLS
-                from ..database import current_tenant_var
-                from sqlalchemy import text
-                current_tenant_var.set(tenant_id)
-                db.execute(
-                    text("SET LOCAL app.current_tenant_id = :tenant_id"),
-                    {"tenant_id": tenant_id}
-                )
-                
-                stripe_cust_id = getattr(session, "customer", None)
-                if not stripe_cust_id and isinstance(session, dict):
-                    stripe_cust_id = session.get("customer")
-
-                stripe_sub_id = getattr(session, "subscription", None)
-                if not stripe_sub_id and isinstance(session, dict):
-                    stripe_sub_id = session.get("subscription")
-
-                plan_type = metadata.get("plan_type", "pro")
-                if not plan_type or plan_type == "":
-                    plan_type = "pro"
-                    
-                tenant = models.Tenant(
-                    id=tenant_id,
-                    name=tenant_name,
-                    slug=tenant_slug,
-                    stripe_customer_id=stripe_cust_id,
-                    stripe_subscription_id=stripe_sub_id,
-                    plan_type=plan_type,
-                    subscription_status="active"
-                )
-                db.add(tenant)
-                db.flush()
-
-                # Configuración base
-                default_settings = models.ClinicSettings(
-                    id=str(uuid.uuid4()),
-                    tenant_id=tenant_id,
-                    clinic_name=tenant_name,
-                    clinic_email=admin_email,
-                    clinic_phone="",
-                    clinic_address="",
-                    maps_url="",
-                    instagram_url="",
-                    allow_search_engine_indexing=False,
-                    onboarding_completed=False
-                )
-                db.add(default_settings)
-
-                default_content = models.SiteContent(
-                    id=str(uuid.uuid4()),
-                    tenant_id=tenant_id,
-                    hero_title=f"Bienvenidos a {tenant_name}",
-                    hero_subtitle="Estética avanzada y cuidado personalizado.",
-                    about_text="Nos dedicamos a ofrecer los mejores tratamientos de estética y salud para resaltar tu bienestar.",
-                    about_title=f"Sobre {tenant_name}"
-                )
-                db.add(default_content)
-
-                # Supabase Auth
-                supabase_user_id = None
-                supabase_url = os.environ.get("SUPABASE_URL")
-                supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
-                
-                if supabase_url and supabase_key:
-                    try:
-                        from supabase import create_client
-                        supabase_client = create_client(supabase_url, supabase_key)
-                        
-                        auth_user = supabase_client.auth.admin.create_user({
-                            "email": admin_email,
-                            "password": admin_password,
-                            "email_confirm": True,
-                            "user_metadata": {"full_name": admin_name},
-                            "app_metadata": {"tenant_id": tenant_id, "role": "admin"}
-                        })
-                        
-                        if hasattr(auth_user, 'user') and auth_user.user:
-                            supabase_user_id = auth_user.user.id
-                        elif isinstance(auth_user, dict) and 'user' in auth_user:
-                            supabase_user_id = auth_user['user']['id']
-                        elif hasattr(auth_user, 'id'):
-                            supabase_user_id = auth_user.id
-                    except Exception as sb_err:
-                        print(f"[SB FALLBACK ERROR] {sb_err}")
-
-                if not supabase_user_id:
-                    supabase_user_id = str(uuid.uuid4())
-
-                # User relacional
-                from .users import pwd_context
-                hashed_pw = pwd_context.hash(admin_password)
-
-                new_user = models.User(
-                    id=supabase_user_id,
-                    email=admin_email,
-                    hashed_password=hashed_pw,
-                    role="admin",
-                    tenant_id=tenant_id
-                )
-                db.add(new_user)
-                db.flush()
-                
-                new_profile = models.Profile(
-                    id=supabase_user_id,
-                    tenant_id=tenant_id,
-                    full_name=admin_name,
-                    role="admin",
-                    email=admin_email,
-                    status="Activo"
-                )
-                db.add(new_profile)
-
-                db.commit()
-                print(f"[ONBOARDING STATUS fallback] Aprovisionamiento completado con éxito")
-            except Exception as e:
-                import traceback
-                print(f"[ONBOARDING STATUS ERROR] Fallo crítico al aprovisionar de forma síncrona:")
-                traceback.print_exc()
-                db.rollback()
-                raise HTTPException(status_code=500, detail=f"Error al aprovisionar base de datos síncronamente: {str(e)}")
+            
+            # Delegar al provisionador atómico central
+            tenant = provision_tenant(
+                db=db,
+                tenant_name=tenant_name,
+                tenant_slug=tenant_slug,
+                admin_email=admin_email,
+                admin_name=admin_name,
+                admin_password=admin_password,
+                stripe_customer_id=stripe_cust_id,
+                stripe_subscription_id=stripe_sub_id,
+                plan_type=plan_type
+            )
         
         return {
             "status": "complete",
