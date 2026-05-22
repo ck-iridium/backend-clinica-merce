@@ -1,6 +1,7 @@
 import os
 import logging
 import uuid
+import traceback
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
@@ -635,21 +636,17 @@ def verify_checkout_session(session_id: str, db: Session = Depends(database.get_
     try:
         session = StripeService.retrieve_checkout_session(session_id)
         
-        # Comprobar estado de pago
+        # Comprobar estado de pago usando getattr de forma 100% segura en StripeObject
         payment_status = getattr(session, "payment_status", None)
-        if not payment_status and isinstance(session, dict):
-            payment_status = session.get("payment_status")
             
         if payment_status != "paid":
             raise HTTPException(status_code=400, detail="La sesión de Stripe no está pagada.")
 
-        # Extraer metadatos
-        metadata = getattr(session, "metadata", {}) or {}
-        if not isinstance(metadata, dict):
-            metadata = dict(metadata)
+        # Extraer metadatos usando getattr de forma 100% segura en StripeObject
+        metadata = getattr(session, "metadata", None) or {}
             
-        tenant_id = metadata.get("tenant_id")
-        plan_type = metadata.get("plan_type")
+        tenant_id = metadata.get("tenant_id") if isinstance(metadata, dict) else getattr(metadata, "tenant_id", None)
+        plan_type = metadata.get("plan_type") if isinstance(metadata, dict) else getattr(metadata, "plan_type", None)
 
         if not tenant_id or not plan_type:
             raise HTTPException(status_code=400, detail="Metadatos incompletos en la sesión de Stripe.")
@@ -687,5 +684,9 @@ def verify_checkout_session(session_id: str, db: Session = Depends(database.get_
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al verificar la sesión de Stripe: {str(e)}")
+        error_trace = traceback.format_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error Crítico: {str(e)} | Traza: {error_trace}"
+        )
 

@@ -27,13 +27,23 @@ export default function SubscriptionTab() {
   const verifySession = async (sessionId: string) => {
     const toastId = toast.loading('Verificando pago en Stripe y activando plan...');
     try {
+      const getCookie = (name: string): string | null => {
+        if (typeof document === 'undefined') return null;
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+        return null;
+      };
+
       const userSession = localStorage.getItem('user');
-      let tenantId = '';
+      let tenantId = getCookie('tenant_id') || '';
       let authToken = '';
       if (userSession) {
         const parsed = JSON.parse(userSession);
-        tenantId = parsed.tenant_id || '';
-        authToken = parsed.token || '';
+        if (!tenantId) {
+          tenantId = parsed.tenant_id || '';
+        }
+        authToken = parsed.access_token || parsed.token || '';
       }
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/stripe/verify-checkout-session/${sessionId}`, {

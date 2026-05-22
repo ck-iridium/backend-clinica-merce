@@ -4,7 +4,7 @@ from sqlalchemy import create_engine, text, event
 from sqlalchemy.orm import sessionmaker, declarative_base
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 # Usar SQLite por defecto para desarrollo local si no se define DATABASE_URL
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./clinica_v2.db")

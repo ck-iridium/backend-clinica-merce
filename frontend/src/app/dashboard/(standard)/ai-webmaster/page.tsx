@@ -32,10 +32,10 @@ export default function AIWebmasterPage() {
   };
 
   return (
-    <div className="absolute inset-0 flex flex-col lg:flex-row overflow-hidden bg-[#FAFAFA] animate-in fade-in duration-500">
+    <div className="absolute inset-0 flex flex-col lg:flex-row overflow-hidden bg-white z-20">
       
-      {/* ── COLUMNA IZQUIERDA (40%): CHAT DE LA IA ── */}
-      <div className="w-full lg:w-[40%] h-[50vh] lg:h-full flex flex-col border-b lg:border-b-0 lg:border-r border-stone-200 shrink-0">
+      {/* ── COLUMNA IZQUIERDA: CHAT DE LA IA ── */}
+      <div className="w-full lg:w-[550px] h-[50vh] lg:h-full flex flex-col border-b lg:border-b-0 lg:border-r border-stone-200 shrink-0">
         <AIChatContainer onFieldsUpdated={handleFieldsUpdated} />
       </div>
 
@@ -43,7 +43,7 @@ export default function AIWebmasterPage() {
       <div className="flex-1 h-[50vh] lg:h-full flex flex-col bg-stone-50 overflow-hidden relative">
         
         {/* Cabecera de la Vista Previa (Quiet Luxury / Simulación de Navegador) */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-6 py-3.5 bg-white border-b border-stone-200/50 shrink-0 gap-3">
+        <div className="flex items-center justify-between px-6 bg-white border-b border-stone-200/50 shrink-0 gap-3 h-[72px]">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5 shrink-0">
               <span className="w-3 h-3 rounded-full bg-red-400/80" />
@@ -111,12 +111,12 @@ export default function AIWebmasterPage() {
         </div>
 
         {/* Iframe Viewport Container */}
-        <div className="flex-1 p-6 flex justify-center items-center overflow-auto bg-stone-100/60 shadow-inner">
+        <div className={`flex-1 overflow-auto bg-stone-100/60 flex items-start justify-start shadow-inner ${viewMode === 'mobile' ? 'p-6' : 'p-0'}`}>
           <div
-            className={`relative bg-white shadow-2xl border border-stone-200/80 transition-all duration-500 ease-out flex flex-col ${
+            className={`relative bg-white shadow-2xl border border-stone-200/80 transition-all duration-500 ease-out flex flex-col shrink-0 ${
               viewMode === 'mobile'
-                ? 'w-[375px] h-[667px] rounded-[2.5rem] border-[10px] border-stone-900 shadow-stone-400/50'
-                : 'w-full h-full rounded-xl'
+                ? 'w-[375px] h-[667px] rounded-[2.5rem] border-[10px] border-stone-900 shadow-stone-400/50 mx-auto'
+                : 'w-[1500px] h-full min-h-[750px] rounded-xl'
             }`}
           >
             {/* Pantalla del Iframe */}

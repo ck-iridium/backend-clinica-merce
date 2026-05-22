@@ -5,6 +5,15 @@ import { Send, Sparkles, User, Bot, RefreshCw, Volume2, VolumeX } from 'lucide-r
 import VoiceRecorderButton from './VoiceRecorderButton';
 import { toast } from 'sonner';
 
+// Utilidad simple para leer cookies en el cliente
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+}
+
 interface Message {
   role: 'user' | 'model';
   content: string;
@@ -25,7 +34,30 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Cargar foto de perfil real del usuario
+  useEffect(() => {
+    const fetchAvatar = async () => {
+      try {
+        const session = localStorage.getItem('user');
+        if (session) {
+          const parsed = JSON.parse(session);
+          if (parsed.id) {
+            const { getUserProfile } = await import('@/app/actions/profile');
+            const res = await getUserProfile(parsed.id);
+            if (res.success && res.profile?.avatar_url) {
+              setUserAvatar(res.profile.avatar_url);
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("No se pudo cargar el avatar del usuario:", e);
+      }
+    };
+    fetchAvatar();
+  }, []);
 
   // Auto scroll to bottom
   const scrollToBottom = () => {
@@ -82,26 +114,34 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
     const queryText = textToSend || input.trim();
     if (!queryText || isLoading) return;
 
+    // 1. Obtener y validar credenciales antes de proceder
+    const userSession = localStorage.getItem('user');
+    let tenantId = getCookie('tenant_id') || '';
+    let authToken = '';
+    if (userSession) {
+      const parsed = JSON.parse(userSession);
+      if (!tenantId) {
+        tenantId = parsed.tenant_id || '';
+      }
+      authToken = parsed.access_token || parsed.token || '';
+    }
+
+    if (!tenantId) {
+      toast.error('Sesión no válida: Identificador de inquilino (Tenant ID) ausente. Por favor, inicia sesión nuevamente.');
+      return;
+    }
+
     if (!textToSend) {
       setInput('');
     }
 
-    // 1. Añadir mensaje de usuario a la UI
+    // 2. Añadir mensaje de usuario a la UI
     const updatedMessages = [...messages, { role: 'user', content: queryText } as Message];
     setMessages(updatedMessages);
     setIsLoading(true);
 
     try {
-      const userSession = localStorage.getItem('user');
-      let tenantId = '';
-      let authToken = '';
-      if (userSession) {
-        const parsed = JSON.parse(userSession);
-        tenantId = parsed.tenant_id || '';
-        authToken = parsed.token || '';
-      }
-
-      // 2. Realizar llamada POST al endpoint de chat
+      // 3. Realizar llamada POST al endpoint de chat
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/tenant/ai/chat`,
         {
@@ -131,13 +171,13 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
 
       const data = await response.json();
 
-      // 3. Añadir respuesta de la IA a la UI
+      // 4. Añadir respuesta de la IA a la UI
       setMessages((prev) => [...prev, { role: 'model', content: data.response }]);
 
-      // 4. Leer respuesta en voz alta
+      // 5. Leer respuesta en voz alta
       speakText(data.response);
 
-      // 5. Notificar actualización de campos para recargar vista previa
+      // 6. Notificar actualización de campos para recargar vista previa
       if (data.updated_fields && data.updated_fields.length > 0) {
         toast.success('¡Cambios aplicados en tiempo real por el Asistente!');
         if (onFieldsUpdated) {
@@ -165,26 +205,34 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
   const handleAudioRecorded = async (base64Audio: string, mimeType: string) => {
     if (isLoading) return;
 
-    // 1. Añadir marcador de mensaje de voz enviado
+    // 1. Obtener y validar credenciales antes de proceder
+    const userSession = localStorage.getItem('user');
+    let tenantId = getCookie('tenant_id') || '';
+    let authToken = '';
+    if (userSession) {
+      const parsed = JSON.parse(userSession);
+      if (!tenantId) {
+        tenantId = parsed.tenant_id || '';
+      }
+      authToken = parsed.access_token || parsed.token || '';
+    }
+
+    if (!tenantId) {
+      toast.error('Sesión no válida: Identificador de inquilino (Tenant ID) ausente. Por favor, inicia sesión nuevamente.');
+      return;
+    }
+
+    // 2. Añadir marcador temporal de mensaje de voz enviado
     const userVoiceMessage: Message = {
       role: 'user',
-      content: '🎙️ [Comando de voz enviado]',
+      content: '🎙️ [Comando de voz enviado, transcribiendo...]',
     };
     const updatedMessages = [...messages, userVoiceMessage];
     setMessages(updatedMessages);
     setIsLoading(true);
 
     try {
-      const userSession = localStorage.getItem('user');
-      let tenantId = '';
-      let authToken = '';
-      if (userSession) {
-        const parsed = JSON.parse(userSession);
-        tenantId = parsed.tenant_id || '';
-        authToken = parsed.token || '';
-      }
-
-      // 2. Realizar llamada POST al endpoint de voz multimodal
+      // 3. Realizar llamada POST al endpoint de voz multimodal
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/tenant/ai/voice`,
         {
@@ -215,13 +263,25 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
 
       const data = await response.json();
 
-      // 3. Añadir respuesta de la IA
-      setMessages((prev) => [...prev, { role: 'model', content: data.response }]);
+      // 4. Actualizar el marcador de voz con la transcripción real y agregar respuesta de la IA
+      setMessages((prev) => {
+        const updated = [...prev];
+        const lastUserIdx = [...updated].reverse().findIndex((msg) => msg.role === 'user');
+        if (lastUserIdx !== -1) {
+          const idx = updated.length - 1 - lastUserIdx;
+          if (data.transcript) {
+            updated[idx].content = `🎙️ [Voz]: "${data.transcript}"`;
+          } else {
+            updated[idx].content = `🎙️ [Comando de voz procesado]`;
+          }
+        }
+        return [...updated, { role: 'model', content: data.response }];
+      });
 
-      // 4. Leer respuesta en voz alta (Text-To-Speech)
+      // 5. Leer respuesta en voz alta (Text-To-Speech)
       speakText(data.response);
 
-      // 5. Notificar campos modificados para recargar iframe
+      // 6. Notificar campos modificados para recargar iframe
       if (data.updated_fields && data.updated_fields.length > 0) {
         toast.success('¡Operación de voz ejecutada e iframe actualizado!');
         if (onFieldsUpdated) {
@@ -237,7 +297,18 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
       } else if (error instanceof Error) {
         errMsg = `Error: ${error.message}`;
       }
-      setMessages((prev) => [...prev, { role: 'model', content: errMsg }]);
+      
+      // Limpiar el marcador temporal en caso de error
+      setMessages((prev) => {
+        const updated = [...prev];
+        const lastUserIdx = [...updated].reverse().findIndex((msg) => msg.role === 'user');
+        if (lastUserIdx !== -1) {
+          const idx = updated.length - 1 - lastUserIdx;
+          updated[idx].content = `🎙️ [Fallo al enviar comando de voz]`;
+        }
+        return [...updated, { role: 'model', content: errMsg }];
+      });
+      
       speakText(errMsg);
       toast.error('Error al procesar el comando de voz.');
     } finally {
@@ -252,21 +323,21 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#fdfbf7] border-r border-stone-200/60 shadow-inner">
-      {/* Cabecera del Asistente */}
-      <div className="flex items-center justify-between px-6 py-4.5 bg-white border-b border-stone-200/50 shadow-sm shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#d4af37] to-[#1c1917] text-white shadow-md">
-            <Sparkles size={18} className="text-[#fdfbf7]" />
+    <div className="flex flex-col h-full bg-[#FCFAF6] border-r border-stone-200/80 shadow-inner">
+      {/* Cabecera del Asistente - Premium Styling */}
+      <div className="flex items-center justify-between px-6 bg-white border-b border-stone-200/60 shadow-sm shrink-0 h-[72px]">
+        <div className="flex items-center gap-3.5">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-stone-900 to-stone-850 text-white shadow-md border border-stone-800/20">
+            <Sparkles size={18} className="text-[#d4af37] animate-pulse" />
           </div>
           <div>
-            <h2 className="text-[15px] font-bold text-stone-800 tracking-tight">Co-Piloto ProBookia</h2>
-            <p className="text-[11px] font-medium text-stone-400">AI Webmaster en línea</p>
+            <h2 className="text-[14.5px] font-bold text-stone-900 tracking-tight font-serif">Co-Piloto ProBookia</h2>
+            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mt-0.5">AI Webmaster en línea</p>
           </div>
         </div>
         
         {/* Controles de Cabecera (Silencio y Reinicio) */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           <button
             onClick={() => {
               const nextMuted = !isMuted;
@@ -276,14 +347,14 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
               }
               toast.info(nextMuted ? 'Síntesis de voz silenciada' : 'Síntesis de voz activada');
             }}
-            className={`p-2 rounded-xl transition-all ${
+            className={`p-2.5 rounded-xl transition-all duration-300 ${
               isMuted
                 ? 'text-stone-300 hover:text-stone-500 hover:bg-stone-50'
                 : 'text-[#d4af37] hover:text-[#b38f2b] hover:bg-amber-50/50'
             }`}
             title={isMuted ? 'Activar lectura en voz alta' : 'Silenciar lectura'}
           >
-            {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
+            {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
           </button>
           
           <button
@@ -300,7 +371,7 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
               ]);
               toast.info('Conversación reiniciada');
             }}
-            className="p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-50 rounded-xl transition-all"
+            className="p-2.5 text-stone-400 hover:text-stone-700 hover:bg-stone-50 rounded-xl transition-all duration-300"
             title="Reiniciar chat"
           >
             <RefreshCw size={15} />
@@ -309,29 +380,37 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
       </div>
 
       {/* Cuerpo del Chat (Mensajes) */}
-      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-5 scrollbar-thin scrollbar-thumb-stone-200">
+      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 scrollbar-thin scrollbar-thumb-stone-200">
         {messages.map((msg, i) => {
           const isUser = msg.role === 'user';
           return (
             <div
               key={i}
-              className={`flex gap-3 max-w-[85%] ${
+              className={`flex gap-3.5 max-w-[85%] ${
                 isUser ? 'ml-auto flex-row-reverse' : 'mr-auto'
               } animate-in fade-in slide-in-from-bottom-2 duration-300`}
             >
               <div
-                className={`flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-lg shadow-sm border ${
+                className={`flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-lg shadow-sm border transition-all duration-300 overflow-hidden ${
                   isUser
-                    ? 'bg-stone-900 border-stone-800 text-white'
+                    ? 'bg-stone-900 border-stone-850 text-white'
                     : 'bg-white border-[#d4af37]/30 text-[#d4af37]'
                 }`}
               >
-                {isUser ? <User size={14} /> : <Bot size={14} />}
+                {isUser ? (
+                  userAvatar ? (
+                    <img src={userAvatar} alt="Usuario" className="w-full h-full object-cover" />
+                  ) : (
+                    <User size={13} />
+                  )
+                ) : (
+                  <Bot size={13} />
+                )}
               </div>
 
               <div className="flex flex-col gap-1">
                 <div
-                  className={`px-4.5 py-3 rounded-2xl text-[13.5px] leading-relaxed shadow-sm font-sans whitespace-pre-line transition-all duration-300 ${
+                  className={`px-5 py-3.5 rounded-2xl text-[13.5px] leading-relaxed shadow-sm font-sans whitespace-pre-line transition-all duration-300 ${
                     isUser
                       ? 'bg-stone-900 text-white rounded-tr-none'
                       : 'bg-white border border-stone-200/50 text-stone-800 rounded-tl-none'
@@ -345,15 +424,15 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
         })}
 
         {isLoading && (
-          <div className="flex gap-3 max-w-[85%] mr-auto animate-in fade-in duration-300">
+          <div className="flex gap-3.5 max-w-[85%] mr-auto animate-in fade-in duration-300">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white border border-[#d4af37]/30 text-[#d4af37] shadow-sm">
-              <Bot size={14} className="animate-spin text-[#d4af37]" />
+              <Bot size={13} className="animate-spin text-[#d4af37]" />
             </div>
-            <div className="px-4.5 py-3 rounded-2xl rounded-tl-none bg-white border border-stone-200/50 text-stone-400 text-[13px] italic flex items-center gap-2">
+            <div className="px-5 py-3.5 rounded-2xl rounded-tl-none bg-white border border-stone-200/50 text-stone-400 text-[13px] italic flex items-center gap-2 shadow-sm">
               <span className="flex h-1.5 w-1.5 rounded-full bg-[#d4af37] animate-bounce" style={{ animationDelay: '0ms' }} />
               <span className="flex h-1.5 w-1.5 rounded-full bg-[#d4af37] animate-bounce" style={{ animationDelay: '150ms' }} />
               <span className="flex h-1.5 w-1.5 rounded-full bg-[#d4af37] animate-bounce" style={{ animationDelay: '300ms' }} />
-              <span className="ml-1">Procesando...</span>
+              <span className="ml-1 text-[12.5px] font-medium text-stone-400">Procesando...</span>
             </div>
           </div>
         )}
@@ -361,8 +440,8 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
       </div>
 
       {/* Input de Envío */}
-      <div className="p-4 bg-white border-t border-stone-200/50 shadow-md shrink-0">
-        <div className="flex items-center gap-2">
+      <div className="p-5 bg-white border-t border-stone-200/60 shadow-md shrink-0">
+        <div className="flex items-center gap-3">
           {/* Botón de Grabación por Voz con Captura Real */}
           <VoiceRecorderButton disabled={isLoading} onAudioRecorded={handleAudioRecorded} />
 
@@ -374,14 +453,14 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
               onKeyDown={handleKeyDown}
               disabled={isLoading}
               placeholder="Pregúntame algo o envíame un comando de voz..."
-              className="w-full bg-stone-50 hover:bg-stone-50/50 focus:bg-white text-stone-800 placeholder-stone-400 text-[13.5px] rounded-xl border border-stone-200/60 pl-4 pr-11 py-3 focus:outline-none focus:ring-1 focus:ring-[#d4af37]/50 focus:border-[#d4af37] transition-all duration-300"
+              className="w-full bg-stone-50 hover:bg-stone-50/50 focus:bg-white text-stone-800 placeholder-stone-400 text-[13.5px] rounded-xl border border-stone-200/60 pl-4 pr-12 py-3.5 focus:outline-none focus:ring-1 focus:ring-[#d4af37]/50 focus:border-[#d4af37] transition-all duration-300 shadow-inner"
             />
             <button
               onClick={() => handleSend()}
               disabled={!input.trim() || isLoading}
-              className="absolute right-2.5 p-2 rounded-lg bg-stone-900 hover:bg-[#d4af37] text-white disabled:opacity-30 disabled:hover:bg-stone-900 transition-all duration-300 active:scale-95"
+              className="absolute right-2.5 p-2 rounded-lg bg-stone-900 hover:bg-[#d4af37] text-white disabled:opacity-30 disabled:hover:bg-stone-900 transition-all duration-300 active:scale-95 shadow-sm"
             >
-              <Send size={14} />
+              <Send size={13} />
             </button>
           </div>
         </div>

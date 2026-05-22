@@ -226,7 +226,9 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
         "3. Llama a las herramientas adecuadas de forma automática cuando el usuario solicite acciones. "
         "Por ejemplo, si te dice 'Cambia el precio de botox a 190 euros', debes invocar 'update_service_price'.\n"
         "4. Siempre confirma el éxito o explica claramente cualquier error que devuelvan las herramientas.\n"
-        "5. Tienes terminantemente prohibido acceder, mencionar o tratar de manipular datos de otros tenants."
+        "5. Tienes terminantemente prohibido acceder, mencionar o tratar de manipular datos de otros tenants.\n"
+        "6. SÉ EXTREMADAMENTE BREVE, DIRECTO Y CONCISO. Evita explicaciones largas, rodeos o introducciones. "
+        "Responde en 1 o 2 frases breves y sofisticadas como máximo. El verdadero lujo habla poco y actúa rápido."
     )
 
     try:
@@ -320,7 +322,9 @@ def ai_webmaster_voice(request: schemas.AIVoiceRequest, db: Session = Depends(ge
         "Escucha el audio adjunto, realiza las operaciones requeridas llamando a las herramientas adecuadas, "
         "y responde con elegancia y profesionalidad ('Quiet Luxury').\n"
         "2. Responde en el mismo idioma que el audio (por defecto Español).\n"
-        "3. Tienes terminantemente prohibido acceder, mencionar o tratar de manipular datos de otros tenants."
+        "3. Tienes terminantemente prohibido acceder, mencionar o tratar de manipular datos de otros tenants.\n"
+        "4. SÉ EXTREMADAMENTE BREVE, DIRECTO Y CONCISO. Evita explicaciones largas, rodeos o introducciones. "
+        "Responde en 1 o 2 frases breves y sofisticadas como máximo. El verdadero lujo habla poco y actúa rápido."
     )
 
     try:
@@ -358,10 +362,32 @@ def ai_webmaster_voice(request: schemas.AIVoiceRequest, db: Session = Depends(ge
             "data": audio_bytes
         }
 
-        # 7. Enviar el audio multimodal al chat
-        response = chat.send_message([audio_part, "Por favor, escucha este comando de voz y ejecútalo de forma automática."])
+        # 7. Realizar una transcripción explícita del audio de forma fiel y rápida
+        transcription_model = genai.GenerativeModel("gemini-2.5-flash")
+        transcription_prompt = (
+            "Transcribe el siguiente audio a texto en español de la forma más exacta y fiel posible. "
+            "Devuelve únicamente las palabras habladas por el usuario. "
+            "No agregues explicaciones, comentarios, notas o introducciones de ningún tipo. "
+            "Si no se escucha voz o solo hay silencio/ruido, devuelve una cadena vacía."
+        )
+        
+        try:
+            transcription_resp = transcription_model.generate_content([audio_part, transcription_prompt])
+            transcript_text = transcription_resp.text.strip() if transcription_resp.text else ""
+        except Exception as trans_err:
+            logger.error(f"Error al transcribir audio con Gemini: {trans_err}")
+            transcript_text = ""
 
-        # 8. Identificar qué campos/parámetros fueron modificados examinando los eventos de llamada a funciones
+        if not transcript_text:
+            transcript_text = "[Comando de voz inaudible o silencioso]"
+
+        # 8. Enviar el texto transcrito al chat para que llame a las herramientas y resuelva la intención
+        response = chat.send_message(
+            f"El usuario ha enviado un comando de voz. La transcripción exacta del audio es: '{transcript_text}'. "
+            f"Por favor, ejecuta las acciones que solicite utilizando las herramientas correspondientes y dale una respuesta sofisticada."
+        )
+
+        # 9. Identificar qué campos/parámetros fueron modificados examinando los eventos de llamada a funciones
         updated_fields = []
         for message in chat.history:
             for part in message.parts:
@@ -378,7 +404,7 @@ def ai_webmaster_voice(request: schemas.AIVoiceRequest, db: Session = Depends(ge
         updated_fields = list(set(updated_fields))
 
         return schemas.AIVoiceResponse(
-            transcript="[Audio procesado nativamente por Gemini]",
+            transcript=transcript_text,
             response=response.text.strip(),
             audio_response_base64=None,
             updated_fields=updated_fields if updated_fields else None
