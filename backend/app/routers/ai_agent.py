@@ -222,7 +222,7 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
         "y los textos principales de la landing page pública del inquilino actual.\n\n"
         "Reglas obligatorias de comportamiento:\n"
         "1. Mantén siempre un tono profesional, elegante y sofisticado (estilo 'Quiet Luxury').\n"
-        "2. Responde en el mismo idioma que te hable el usuario (por defecto Español).\n"
+        "2. REGLA CRÍTICA DE IDIOMA: DEBES DETECTAR Y RESPONDER SIEMPRE EN EL MISMO IDIOMA QUE UTILIZA EL USUARIO EN SU MENSAJE o comando de voz. Si el usuario te habla en francés, responde en francés nativo y elegante. Si te habla en inglés, responde en inglés nativo y elegante. Si te habla en español, responde en español.\n"
         "3. Llama a las herramientas adecuadas de forma automática cuando el usuario solicite acciones. "
         "Por ejemplo, si te dice 'Cambia el precio de botox a 190 euros', debes invocar 'update_service_price'.\n"
         "4. Siempre confirma el éxito o explica claramente cualquier error que devuelvan las herramientas.\n"

@@ -7,11 +7,13 @@ import { toast } from 'sonner';
 interface VoiceRecorderButtonProps {
   onVoiceTranscribed?: (transcribedText: string) => void;
   disabled?: boolean;
+  lang?: string;
 }
 
 export default function VoiceRecorderButton({
   onVoiceTranscribed,
   disabled = false,
+  lang = 'es-ES',
 }: VoiceRecorderButtonProps) {
   const [isRecording, setIsRecording] = useState(false);
   const recognitionRef = useRef<any>(null);
@@ -22,7 +24,7 @@ export default function VoiceRecorderButton({
     onVoiceTranscribedRef.current = onVoiceTranscribed;
   }, [onVoiceTranscribed]);
 
-  // Inicializar SpeechRecognition una sola vez al montar el componente
+  // Inicializar SpeechRecognition al montar o cuando cambia el idioma
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -37,7 +39,7 @@ export default function VoiceRecorderButton({
     const recognition = new SpeechRecognitionClass();
     recognition.continuous = false; // Parar automáticamente al terminar de hablar
     recognition.interimResults = false; // Solo resultados finales para máxima precisión
-    recognition.lang = 'es-ES'; // Español clínico y estético de alta precisión
+    recognition.lang = lang; // Asignación dinámica del idioma (es-ES, fr-FR, en-US)
 
     recognition.onstart = () => {
       setIsRecording(true);
@@ -88,11 +90,14 @@ export default function VoiceRecorderButton({
     if (disabled) return;
 
     if (!recognitionRef.current) {
-      toast.error('Tu navegador no soporta el reconocimiento de voz nativo en español.');
+      toast.error('Tu navegador no soporta el reconocimiento de voz nativo.');
       return;
     }
 
     try {
+      if (recognitionRef.current) {
+        recognitionRef.current.lang = lang; // Asignar el idioma actual al vuelo antes de arrancar
+      }
       recognitionRef.current.start();
     } catch (err) {
       console.error('Fallo al iniciar SpeechRecognition:', err);

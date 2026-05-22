@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Send, Sparkles, User, Bot, RefreshCw, Volume2, VolumeX } from 'lucide-react';
 import VoiceRecorderButton from './VoiceRecorderButton';
 import { toast } from 'sonner';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 // Utilidad simple para leer cookies en el cliente
 function getCookie(name: string): string | null {
@@ -35,6 +36,9 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
   const [isLoading, setIsLoading] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
+  const { language } = useLanguage();
+  const chatLanguage = language === 'fr' ? 'fr-FR' : language === 'en' ? 'en-US' : 'es-ES';
+  const [voiceGender, setVoiceGender] = useState<'female' | 'male'>('female');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Cargar foto de perfil real del usuario
@@ -75,7 +79,7 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
     }
   }, []);
 
-  // Web Speech API - Síntesis de voz (Text To Speech)
+  // Web Speech API - Síntesis de voz (Text To Speech) parametrizable y multilingüe
   const speakText = (text: string) => {
     if (isMuted || typeof window === 'undefined' || !window.speechSynthesis) return;
 
@@ -84,27 +88,45 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
 
     // Crear enunciado de lectura
     const utterance = new SpeechSynthesisUtterance(text);
-
-    // Seleccionar preferentemente una voz en español premium/femenina si está disponible
     const voices = window.speechSynthesis.getVoices();
-    let selectedVoice = voices.find(
-      (v) => v.lang.startsWith('es-ES') && v.name.toLowerCase().includes('google')
-    );
-    if (!selectedVoice) {
-      selectedVoice = voices.find(
-        (v) =>
-          v.lang.startsWith('es-ES') ||
-          v.lang.startsWith('es-MX') ||
-          v.lang.startsWith('es-')
-      );
+
+    // 1. Filtrar voces por el idioma activo (es, fr, en, etc.)
+    const langPrefix = chatLanguage.split('-')[0].toLowerCase();
+    const langVoices = voices.filter((v) => v.lang.toLowerCase().startsWith(langPrefix));
+
+    // 2. Intentar buscar por género preferido (Femenina o Masculina)
+    let selectedVoice = null;
+    if (langVoices.length > 0) {
+      if (voiceGender === 'female') {
+        selectedVoice = langVoices.find((v) => {
+          const name = v.name.toLowerCase();
+          return name.includes('female') || name.includes('zira') || name.includes('helena') || 
+                 name.includes('hortense') || name.includes('samantha') || name.includes('elene') || 
+                 name.includes('google') || name.includes('hazel') || name.includes('natural');
+        });
+      } else {
+        selectedVoice = langVoices.find((v) => {
+          const name = v.name.toLowerCase();
+          return name.includes('male') || name.includes('david') || name.includes('paul') || 
+                 name.includes('daniel') || name.includes('george') || name.includes('microsoft');
+        });
+      }
+      
+      // Fallback al primer idioma disponible si no coincide el género exacto
+      if (!selectedVoice) {
+        selectedVoice = langVoices[0];
+      }
     }
 
     if (selectedVoice) {
       utterance.voice = selectedVoice;
+      utterance.lang = selectedVoice.lang;
+    } else {
+      utterance.lang = chatLanguage;
     }
-    utterance.lang = selectedVoice?.lang || 'es-ES';
-    utterance.rate = 0.98; // Tono ligeramente pausado y sofisticado
-    utterance.pitch = 1.05; // Tono premium agradable
+
+    utterance.rate = 0.98; // Tono sofisticado premium
+    utterance.pitch = voiceGender === 'female' ? 1.12 : 0.88; // Tono agudo/grave según género
 
     window.speechSynthesis.speak(utterance);
   };
@@ -223,8 +245,22 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
           </div>
         </div>
         
-        {/* Controles de Cabecera (Silencio y Reinicio) */}
-        <div className="flex items-center gap-1.5">
+        {/* Controles de Cabecera (Voz, Silencio y Reinicio) */}
+        <div className="flex items-center gap-2">
+          {/* Selector de Género */}
+          <select
+            value={voiceGender}
+            onChange={(e) => {
+              setVoiceGender(e.target.value as 'female' | 'male');
+              toast.success(`Voz configurada: ${e.target.value === 'female' ? 'Femenina' : 'Masculina'}`);
+            }}
+            className="text-[11px] font-semibold bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-700 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#d4af37]/50 focus:border-[#d4af37] cursor-pointer transition-all duration-300"
+            title="Seleccionar género de voz"
+          >
+            <option value="female">👩 Voz</option>
+            <option value="male">👨 Voz</option>
+          </select>
+
           <button
             onClick={() => {
               const nextMuted = !isMuted;
@@ -330,7 +366,7 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
       <div className="p-5 bg-white border-t border-stone-200/60 shadow-md shrink-0">
         <div className="flex items-center gap-3">
           {/* Botón de Grabación por Voz NATIVA (SpeechRecognition) */}
-          <VoiceRecorderButton disabled={isLoading} onVoiceTranscribed={(text) => handleSend(`🎙️ [Voz]: "${text}"`)} />
+          <VoiceRecorderButton disabled={isLoading} lang={chatLanguage} onVoiceTranscribed={(text) => handleSend(`🎙️ [Voz]: "${text}"`)} />
 
           <div className="relative flex-1 flex items-center">
             <input
