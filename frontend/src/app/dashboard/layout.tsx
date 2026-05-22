@@ -5,7 +5,6 @@ import RouteGuard from '@/components/RouteGuard';
 import OnboardingGuard from '@/components/OnboardingGuard';
 import { AIImageProvider } from '@/app/contexts/AIImageContext';
 import AIGenerationFloatingCard from '@/components/cms/AIGenerationFloatingCard';
-import AICopilotWidget from '@/components/ai/AICopilotWidget';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   let settings = null;
@@ -40,7 +39,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </main>
       </div>
       <AIGenerationFloatingCard />
-      <AICopilotWidget />
     </AIImageProvider>
   );
 }

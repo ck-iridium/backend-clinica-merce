@@ -6,6 +6,7 @@ import { Sparkles, X, Send, Bot, User, Volume2, VolumeX, MessageSquare } from 'l
 import { toast } from 'sonner';
 import VoiceRecorderButton from './VoiceRecorderButton';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { useAuthRole } from '@/hooks/useAuthRole';
 
 // Simple helper to read cookies client-side
 function getCookie(name: string): string | null {
@@ -24,10 +25,13 @@ interface Message {
 export default function AICopilotWidget() {
   const router = useRouter();
   const { language, t } = useLanguage();
+  const { role, loading: loadingRole } = useAuthRole();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+
+  const isAuthorized = role ? ['admin', 'administrador', 'recepcion', 'especialista'].includes(role.toLowerCase()) : false;
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'model',
@@ -209,6 +213,8 @@ export default function AICopilotWidget() {
       handleSend();
     }
   };
+
+  if (loadingRole || !isAuthorized) return null;
 
   return (
     <div className="fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-3 font-sans">
