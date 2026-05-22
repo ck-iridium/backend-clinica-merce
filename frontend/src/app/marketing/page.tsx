@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 export default function MarketingPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<'free' | 'basic' | 'pro' | 'gold'>('pro');
   
   // Form state
   const [formData, setFormData] = useState({
@@ -55,7 +56,12 @@ export default function MarketingPage() {
     }
 
     setLoading(true);
-    const loadingToast = toast.loading('Verificando disponibilidad e iniciando pasarela...');
+    const isFree = selectedPlan === 'free';
+    const loadingMessage = isFree 
+      ? 'Verificando disponibilidad y creando tu cuenta gratuita...'
+      : 'Verificando disponibilidad e iniciando pasarela...';
+    
+    const loadingToast = toast.loading(loadingMessage);
 
     try {
       const response = await fetch(`${API_URL}/stripe/create-onboarding-session`, {
@@ -63,7 +69,10 @@ export default function MarketingPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          plan_type: selectedPlan
+        }),
       });
 
       if (!response.ok) {
@@ -72,9 +81,14 @@ export default function MarketingPage() {
       }
 
       const data = await response.json();
-      toast.success('¡Todo listo! Redirigiendo a la pasarela de pago seguro...', { id: loadingToast });
       
-      // Redirigir a la pasarela de Stripe Checkout
+      const successMessage = isFree
+        ? '¡Cuenta gratuita creada con éxito! Inicializando tu panel...'
+        : '¡Todo listo! Redirigiendo a la pasarela de pago seguro...';
+        
+      toast.success(successMessage, { id: loadingToast });
+      
+      // Redirigir a la pasarela de Stripe Checkout o directamente al Onboarding Success
       setTimeout(() => {
         window.location.href = data.url;
       }, 1000);
@@ -290,7 +304,10 @@ export default function MarketingPage() {
               </div>
 
               <button
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => {
+                  setSelectedPlan('basic');
+                  setIsModalOpen(true);
+                }}
                 className="w-full bg-stone-100 hover:bg-[#d4af37] hover:text-white text-stone-800 py-3.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 group active:scale-95 mt-auto"
               >
                 Comenzar Ahora <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -347,7 +364,10 @@ export default function MarketingPage() {
               </div>
 
               <button
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => {
+                  setSelectedPlan('pro');
+                  setIsModalOpen(true);
+                }}
                 className="w-full bg-[#d4af37] hover:bg-[#1F2937] text-white py-3.5 rounded-xl text-sm font-bold shadow-luxury transition-all duration-300 flex items-center justify-center gap-2 group active:scale-95 mt-auto"
               >
                 Comenzar Prueba <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -407,13 +427,34 @@ export default function MarketingPage() {
               </div>
 
               <button
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => {
+                  setSelectedPlan('gold');
+                  setIsModalOpen(true);
+                }}
                 className="w-full bg-[#d4af37] hover:bg-white hover:text-stone-900 text-white py-3.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 group active:scale-95 mt-auto"
               >
                 Comenzar Ahora <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
           </div>
+
+          {/* Enlace destacado Plan Gratuito */}
+          <div className="text-center mt-12 animate-in fade-in duration-700">
+            <p className="text-stone-500 text-sm font-medium">
+              ¿Eres autónomo o estás empezando?{" "}
+              <button
+                onClick={() => {
+                  setSelectedPlan('free');
+                  setIsModalOpen(true);
+                }}
+                className="text-[#d4af37] hover:text-[#1F2937] font-extrabold underline transition-all duration-300 active:scale-95 ml-1 inline-flex items-center gap-1 group"
+              >
+                Comienza con nuestro Plan Gratuito para siempre (1 especialista, 3 servicios)
+                <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </button>
+            </p>
+          </div>
+
         </div>
       </section>
 
@@ -451,10 +492,20 @@ export default function MarketingPage() {
             </button>
 
             <div className="mb-8">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#d4af37] block mb-2">Registro Premium</span>
-              <h2 className="text-3xl font-serif font-bold text-stone-900 leading-tight">Configura tu Negocio</h2>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#d4af37] block mb-2">
+                {selectedPlan === 'free' ? 'Plan Inicial' : 'Registro Premium'}
+              </span>
+              <h2 className="text-3xl font-serif font-bold text-stone-900 leading-tight">
+                {selectedPlan === 'free' && 'Configura tu Cuenta Gratuita'}
+                {selectedPlan === 'basic' && 'Configura tu Negocio - Plan Básico'}
+                {selectedPlan === 'pro' && 'Configura tu Negocio - Plan Pro'}
+                {selectedPlan === 'gold' && 'Configura tu Negocio - Plan Gold'}
+              </h2>
               <p className="text-stone-500 text-sm mt-2 leading-relaxed">
-                Rellena la información inicial para crear tu base de datos y comenzar tu prueba gratuita de 14 días.
+                {selectedPlan === 'free' 
+                  ? 'Rellena la información inicial para crear tu base de datos y comenzar con el Plan Gratuito para siempre (1 especialista, 3 servicios).'
+                  : `Rellena la información inicial para crear tu base de datos y comenzar tu prueba gratuita de 14 días en el Plan ${selectedPlan.toUpperCase()}.`
+                }
               </p>
             </div>
 
@@ -552,11 +603,11 @@ export default function MarketingPage() {
                 className="w-full bg-[#d4af37] text-white font-bold py-4 rounded-xl shadow-luxury hover:bg-[#1F2937] transition-all duration-300 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-sm">
                 {loading ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" /> Procesando con Stripe...
+                    <Loader2 className="w-4 h-4 animate-spin" /> {selectedPlan === 'free' ? 'Creando tu entorno...' : 'Procesando con Stripe...'}
                   </>
                 ) : (
                   <>
-                    Ir al Pago Seguro <ChevronRight className="w-4 h-4" />
+                    {selectedPlan === 'free' ? 'Crear Cuenta Gratuita' : 'Ir al Pago Seguro'} <ChevronRight className="w-4 h-4" />
                   </>
                 )}
               </button>

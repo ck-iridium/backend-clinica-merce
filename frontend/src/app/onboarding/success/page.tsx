@@ -53,6 +53,25 @@ function OnboardingContent() {
 
   // 1. Verify Stripe Checkout Session and Sync Tenant
   useEffect(() => {
+    const freeSuccess = searchParams.get('free_success');
+    
+    if (freeSuccess === 'true') {
+      const data = {
+        tenant_id: searchParams.get('tenant_id'),
+        tenant_slug: searchParams.get('tenant_slug'),
+        tenant_name: searchParams.get('tenant_name'),
+        admin_email: searchParams.get('admin_email'),
+        admin_name: searchParams.get('admin_name'),
+      };
+      setTenantData(data);
+      setClinicName(data.tenant_name || '');
+      setValidatingText('Inicializando tu base de datos gratuita...');
+      setTimeout(() => {
+        setLoading(false);
+      }, 1000);
+      return;
+    }
+
     if (!sessionId) {
       setError('No se ha proporcionado un identificador de sesión válido.');
       setLoading(false);
@@ -85,7 +104,7 @@ function OnboardingContent() {
     };
 
     verifyPaymentAndFetchTenant();
-  }, [sessionId]);
+  }, [sessionId, searchParams]);
 
   // Handle logo upload
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {

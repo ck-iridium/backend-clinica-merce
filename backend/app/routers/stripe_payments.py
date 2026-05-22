@@ -82,6 +82,7 @@ class OnboardingSessionRequest(BaseModel):
     admin_email: str
     admin_name: str
     admin_password: str
+    plan_type: str = "gold"  # free, basic, pro, gold
 
 @router.post("/create-onboarding-session")
 def create_onboarding_session(request: OnboardingSessionRequest, req: Request):
@@ -102,16 +103,38 @@ def create_onboarding_session(request: OnboardingSessionRequest, req: Request):
         existing_user = db.query(models.User).filter(models.User.email == request.admin_email).first()
         if existing_user:
             raise HTTPException(status_code=400, detail="El correo electrónico del administrador ya está registrado.")
+            
+        selected_plan = request.plan_type.lower()
+        
+        # 2. Si el plan es gratuito (free), aprovisionamos inmediatamente al instante
+        if selected_plan == "free":
+            print(f"[FREE REGISTRATION] Aprovisionando cuenta gratuita al instante para {request.tenant_slug}")
+            tenant = provision_tenant(
+                db=db,
+                tenant_name=request.tenant_name,
+                tenant_slug=request.tenant_slug,
+                admin_email=request.admin_email,
+                admin_name=request.admin_name,
+                admin_password=request.admin_password,
+                stripe_customer_id=None,
+                stripe_subscription_id=None,
+                plan_type="free"
+            )
+            redirect_url = f"{frontend_url}/onboarding/success?free_success=true&tenant_id={tenant.id}&tenant_slug={tenant.slug}&tenant_name={tenant.name}&admin_email={request.admin_email}&admin_name={request.admin_name}"
+            return {"url": redirect_url}
+            
     finally:
         db.close()
 
+    # 3. Si es plan de pago, iniciamos Checkout Session en Stripe
     url = StripeService.create_onboarding_session(
         tenant_name=request.tenant_name,
         tenant_slug=request.tenant_slug,
         admin_email=request.admin_email,
         admin_name=request.admin_name,
         admin_password=request.admin_password,
-        frontend_url=frontend_url
+        frontend_url=frontend_url,
+        plan_type=request.plan_type
     )
     return {"url": url}
 

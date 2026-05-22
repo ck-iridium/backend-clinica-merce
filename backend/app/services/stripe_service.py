@@ -24,12 +24,38 @@ class StripeService:
         admin_email: str,
         admin_name: str,
         admin_password: str,
-        frontend_url: str
+        frontend_url: str,
+        plan_type: str = "gold"
     ) -> str:
         """
-        Crea una Checkout Onboarding Session en Stripe para nuevos suscriptores.
+        Crea una Checkout Onboarding Session en Stripe para nuevos suscriptores con plan dinámico.
         """
         stripe.api_key = get_stripe_key()
+        
+        plan_details = {
+            "basic": {
+                "name": "Plan Básico - ProBookia SaaS",
+                "description": "Suscripción mensual de gestión estándar y agenda",
+                "amount": 2900,
+            },
+            "pro": {
+                "name": "Plan Pro - ProBookia SaaS",
+                "description": "Suscripción mensual de gestión avanzada de reservas",
+                "amount": 5900,
+            },
+            "gold": {
+                "name": "Plan Elite Gold - ProBookia SaaS",
+                "description": "Suscripción mensual de reservas premium con IA ilimitada",
+                "amount": 9900,
+            }
+        }
+        
+        selected_plan = plan_type.lower()
+        if selected_plan not in plan_details:
+            selected_plan = "gold"  # Fallback a gold por defecto
+            
+        details = plan_details[selected_plan]
+        
         try:
             session = stripe.checkout.Session.create(
                 payment_method_types=["card"],
@@ -37,10 +63,10 @@ class StripeService:
                     "price_data": {
                         "currency": "eur",
                         "product_data": {
-                            "name": "Plan Platinum - ProBookia SaaS",
-                            "description": "Suscripción mensual de gestión y reservas premium",
+                            "name": details["name"],
+                            "description": details["description"],
                         },
-                        "unit_amount": 9900,  # 99.00 EUR
+                        "unit_amount": details["amount"],
                         "recurring": {"interval": "month"}
                     },
                     "quantity": 1,
@@ -48,7 +74,7 @@ class StripeService:
                 mode="subscription",
                 subscription_data={
                     "metadata": {
-                        "plan_type": "gold",
+                        "plan_type": selected_plan,
                         "is_platform_onboarding": "true"
                     }
                 },
@@ -56,7 +82,7 @@ class StripeService:
                 cancel_url=f"{frontend_url}/marketing",
                 metadata={
                     "type": "saas_onboarding",
-                    "plan_type": "gold",
+                    "plan_type": selected_plan,
                     "is_platform_onboarding": "true",
                     "tenant_name": tenant_name,
                     "tenant_slug": tenant_slug,
