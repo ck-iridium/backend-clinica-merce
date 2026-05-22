@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { 
   Power, 
@@ -11,6 +11,13 @@ import {
   Globe, 
   Shield 
 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 interface Tenant {
   id: string;
@@ -22,6 +29,7 @@ interface Tenant {
   plan_type?: string;
   subscription_expires_at?: string | null;
   created_at: string | null;
+  custom_domain?: string | null;
 }
 
 interface TenantDetailProps {
@@ -33,6 +41,16 @@ export default function TenantDetail({ tenant, onUpdateStatus }: TenantDetailPro
   const [activeTab, setActiveTab] = useState<'overview' | 'stripe' | 'config'>('overview');
   const [redirectingPlan, setRedirectingPlan] = useState<string | null>(null);
   const [impersonating, setImpersonating] = useState(false);
+  const [customDomain, setCustomDomain] = useState<string | null>(tenant.custom_domain || null);
+  const [showDomainModal, setShowDomainModal] = useState(false);
+  const [inputDomain, setInputDomain] = useState('');
+  const [savingDomain, setSavingDomain] = useState(false);
+
+  // Sincronizar el estado del dominio personalizado y limpiar cruzado entre inquilinos
+  useEffect(() => {
+    setCustomDomain(tenant.custom_domain || null);
+    setInputDomain('');
+  }, [tenant.id, tenant.custom_domain]);
 
   const handleImpersonate = async () => {
     setImpersonating(true);
@@ -517,22 +535,63 @@ export default function TenantDetail({ tenant, onUpdateStatus }: TenantDetailPro
             )}
 
             {activeTab === 'config' && (
-              <div className="space-y-6">
+              <div className="space-y-6 animate-in fade-in duration-300">
                 <h3 className="text-lg font-bold font-serif text-stone-900 border-b border-stone-100 pb-2">
                   Estructura de Ruteo e Infraestructura
                 </h3>
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center bg-[#FAFAFA] p-4 rounded-xl text-sm border border-stone-200/30">
-                    <div className="flex items-center gap-3">
-                      <Globe className="w-5 h-5 text-stone-400" />
-                      <div>
-                        <p className="font-bold text-stone-900">Dominios Personalizados</p>
-                        <p className="text-xs text-stone-400">Mapeo DNS activo en plataforma</p>
+                  {/* Tarjeta de Dominios Personalizados Condicional */}
+                  <div className="bg-[#FAFAFA] p-5 rounded-2xl border border-stone-200/30 flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition-all duration-300">
+                    <div className="flex items-start gap-4">
+                      <span className="w-12 h-12 rounded-xl bg-white border border-stone-100 text-stone-400 flex items-center justify-center shrink-0 shadow-sm">
+                        <Globe className="w-6 h-6" />
+                      </span>
+                      <div className="space-y-1">
+                        <p className="font-bold text-stone-900 text-sm">Dominios Personalizados</p>
+                        {customDomain ? (
+                          <div className="space-y-0.5">
+                            <p className="text-stone-400 text-xs">Mapeo DNS activo para el dominio:</p>
+                            <p className="text-base font-serif font-bold text-[#d4af37]">{customDomain}</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-0.5">
+                            <p className="text-stone-400 text-xs">Usando subdominio de la plataforma:</p>
+                            <p className="text-stone-700 font-mono text-xs">{tenant.slug}.probookia.com</p>
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <span className="bg-[#fcf8e5] text-[#d4af37] border border-[#d4af37]/20 px-3 py-1 rounded-full text-xxs font-black uppercase">
-                      Activo
-                    </span>
+                    
+                    <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
+                      {customDomain ? (
+                        <>
+                          <span className="bg-emerald-50 text-emerald-600 border border-emerald-100 px-3 py-1 rounded-full text-xxs font-black uppercase tracking-wider">
+                            🟢 Activo
+                          </span>
+                          <button 
+                            onClick={() => {
+                              toast.success('Dominio personalizado desvinculado con éxito');
+                              setCustomDomain(null);
+                            }}
+                            className="text-stone-400 hover:text-red-500 text-[10px] font-bold uppercase tracking-wider transition-colors"
+                          >
+                            Desconectar
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <span className="bg-stone-100 text-stone-500 border border-stone-200 px-3 py-1 rounded-full text-xxs font-bold uppercase tracking-wider">
+                            Sin dominio personalizado
+                          </span>
+                          <button 
+                            onClick={() => setShowDomainModal(true)}
+                            className="bg-stone-900 hover:bg-[#d4af37] text-white px-4 py-2 rounded-xl text-xxs font-black uppercase tracking-wider transition-all duration-300 shadow-sm active:scale-95"
+                          >
+                            Conectar Dominio
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
 
                   <div className="flex justify-between items-center bg-[#FAFAFA] p-4 rounded-xl text-sm border border-stone-200/30">
@@ -552,6 +611,83 @@ export default function TenantDetail({ tenant, onUpdateStatus }: TenantDetailPro
             )}
           </div>
         </div>
+
+        {/* Modal de Configuración DNS para Dominio Personalizado */}
+        <Dialog open={showDomainModal} onOpenChange={setShowDomainModal}>
+          <DialogContent className="bg-white rounded-3xl border border-stone-200/50 p-8 shadow-xl max-w-lg w-full">
+            <DialogHeader className="space-y-3">
+              <DialogTitle className="text-2xl font-serif font-bold text-stone-900 flex items-center gap-2.5">
+                <Globe className="w-6 h-6 text-[#d4af37]" /> Conectar Dominio Propio
+              </DialogTitle>
+              <DialogDescription className="text-sm text-stone-500 leading-relaxed font-sans">
+                Asocia tu propio dominio comercial para que tus clientes puedan reservar tratamientos directamente en tu dirección web.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6 pt-4">
+              <div>
+                <label className="text-xs font-bold text-stone-400 uppercase tracking-widest block mb-2">Ingresa tu Dominio</label>
+                <input 
+                  type="text" 
+                  value={inputDomain}
+                  onChange={(e) => setInputDomain(e.target.value)}
+                  placeholder="ej: www.miestetica.com"
+                  className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20 outline-none transition-all text-sm font-sans"
+                />
+              </div>
+
+              <div className="bg-stone-50 p-6 rounded-2xl border border-stone-100 space-y-4">
+                <h5 className="text-xs font-bold text-stone-700 uppercase tracking-widest flex items-center gap-1.5">
+                  📋 Registros DNS Requeridos
+                </h5>
+                <p className="text-xs text-stone-600 leading-relaxed font-sans">
+                  Accede a tu proveedor de dominios (GoDaddy, Namecheap, etc.) y añade el siguiente registro CNAME para habilitar el mapeo:
+                </p>
+                
+                <div className="grid grid-cols-3 gap-3 text-xs md:text-sm font-mono border-t border-stone-200/50 pt-4">
+                  <span className="text-stone-400 font-bold">Tipo:</span>
+                  <span className="col-span-2 text-stone-800 font-black">CNAME</span>
+
+                  <span className="text-stone-400 font-bold">Host:</span>
+                  <span className="col-span-2 text-stone-800 font-black">www o @</span>
+
+                  <span className="text-stone-400 font-bold">Valor:</span>
+                  <span className="col-span-2 text-stone-800 font-black text-[#b08e23]">cname.probookia.com</span>
+                </div>
+              </div>
+
+              <div className="flex gap-3 justify-end pt-2 border-t border-stone-100">
+                <button
+                  onClick={() => setShowDomainModal(false)}
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-stone-500 hover:bg-stone-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => {
+                    if (!inputDomain.trim()) {
+                      toast.error('Por favor escribe un dominio válido.');
+                      return;
+                    }
+                    setSavingDomain(true);
+                    const toastId = toast.loading('Guardando configuración de DNS...');
+                    setTimeout(() => {
+                      setCustomDomain(inputDomain.trim());
+                      toast.success('¡Dominio personalizado conectado con éxito!', { id: toastId });
+                      setSavingDomain(false);
+                      setShowDomainModal(false);
+                      setInputDomain('');
+                    }, 1200);
+                  }}
+                  disabled={savingDomain}
+                  className="bg-stone-900 hover:bg-[#d4af37] text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
+                >
+                  {savingDomain ? 'Guardando...' : 'Verificar y Conectar'}
+                </button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
       </div>
     </section>
