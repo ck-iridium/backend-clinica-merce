@@ -42,20 +42,30 @@ export default function ServicesPage() {
       const editSlug = params.get('edit') || params.get('slug');
       if (editSlug) {
         const targetSlug = editSlug.toLowerCase().trim();
-        const found = services.find(
+        
+        // Función premium de limpieza difusa para omitir preposiciones/conectores (ej. "de", "para")
+        const cleanSlug = (s: string) => 
+          s.toLowerCase()
+           .replace(/[^a-z0-9]/g, '') // Quitar guiones y caracteres no alfanuméricos
+           .replace(/(para|de|el|la|los|las|un|una|unos|unas|y)/g, ''); // Omitir conectores comunes
+
+        const targetClean = cleanSlug(targetSlug);
+
+        // 1. Intentar coincidencia exacta primero
+        let found = services.find(
           (s) => s.slug === targetSlug || s.slug.toLowerCase() === targetSlug
         );
+
+        // 2. Intentar coincidencia difusa avanzada si no se encontró coincidencia exacta
+        if (!found) {
+          found = services.find((s) => {
+            const currentClean = cleanSlug(s.slug || '');
+            return currentClean === targetClean || currentClean.includes(targetClean) || targetClean.includes(currentClean);
+          });
+        }
+
         if (found) {
           router.push(`/dashboard/services/${found.id}/edit`);
-        } else {
-          // Intentar coincidencia parcial por si se aproxima el slug por voz
-          const partialFound = services.find((s) => 
-            s.slug.includes(targetSlug) || 
-            targetSlug.includes(s.slug)
-          );
-          if (partialFound) {
-            router.push(`/dashboard/services/${partialFound.id}/edit`);
-          }
         }
       }
     }

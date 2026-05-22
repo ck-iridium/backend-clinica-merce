@@ -80,8 +80,11 @@ export default function AICopilotWidget() {
   }, [messages, isOpen]);
 
   // Speak response out loud if not muted with proper native premium voice
-  const speakText = (text: string) => {
-    if (isMuted || typeof window === 'undefined' || !window.speechSynthesis) return;
+  const speakText = (text: string, onEndCallback?: () => void) => {
+    if (isMuted || typeof window === 'undefined' || !window.speechSynthesis) {
+      if (onEndCallback) onEndCallback();
+      return;
+    }
     try {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
@@ -112,9 +115,28 @@ export default function AICopilotWidget() {
 
       utterance.rate = 0.98; // Tono sofisticado, pausado y natural
       utterance.pitch = 1.12; // Femenino y elegante
+
+      if (onEndCallback) {
+        let called = false;
+        const triggerCallback = () => {
+          if (!called) {
+            called = true;
+            onEndCallback();
+          }
+        };
+        utterance.onend = triggerCallback;
+        utterance.onerror = triggerCallback;
+        
+        // Safety backup timer: ~180ms per word + 1s padding
+        const wordCount = text.split(/\s+/).length;
+        const backupDelay = Math.max(2000, wordCount * 180 + 1000);
+        setTimeout(triggerCallback, backupDelay);
+      }
+
       window.speechSynthesis.speak(utterance);
     } catch (e) {
       console.warn('Speech synthesis fail:', e);
+      if (onEndCallback) onEndCallback();
     }
   };
 
@@ -178,35 +200,35 @@ export default function AICopilotWidget() {
       let responseText = data.response;
 
       // 4. Check for structural JSON navigation instruction
+      let targetRoute: string | null = null;
       try {
         const parsed = JSON.parse(data.response);
         if (parsed && parsed.action === 'navigate' && parsed.route) {
           responseText = parsed.message || `Con gusto. Dirigiéndonos a ${parsed.route}...`;
-          
-          // Execute global route navigation with micro delay
-          setTimeout(() => {
-            router.push(parsed.route);
-            setIsOpen(false); // Close Copilot panel upon success
-            toast.success(language === 'fr' ? 'Navigation réussie' : language === 'en' ? 'Navigation successful' : 'Navegación completada con éxito.');
-          }, 600);
+          targetRoute = parsed.route;
         }
       } catch (e) {
         // Not a navigation instruction, handle as regular text
       }
 
-      // 5. Append AI Message and speak
+      // 5. Append AI Message
       setMessages((prev) => [...prev, { role: 'model', content: responseText }]);
-      speakText(responseText);
 
-      // 6. Si hubo cambios en base de datos, refrescar/recargar la página de forma inteligente
-      if (data.updated_fields && data.updated_fields.length > 0) {
-        router.refresh();
-        setTimeout(() => {
+      // 6. Speak response, then perform transitions (navigation or reload) ONLY after speaking completes
+      const shouldRefresh = data.updated_fields && data.updated_fields.length > 0;
+
+      speakText(responseText, () => {
+        if (targetRoute) {
+          router.push(targetRoute);
+          setIsOpen(false);
+          toast.success(language === 'fr' ? 'Navigation réussie' : language === 'en' ? 'Navigation successful' : 'Navegación completada con éxito.');
+        } else if (shouldRefresh) {
+          router.refresh();
           if (typeof window !== 'undefined') {
             window.location.reload();
           }
-        }, 1200);
-      }
+        }
+      });
 
     } catch (err: any) {
       console.error('Error in Copilot chat:', err);
