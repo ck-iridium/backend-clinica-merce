@@ -224,7 +224,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="animate-in fade-in duration-500 max-w-[1200px] mx-auto px-0 sm:px-4 md:px-8 pt-4 md:pt-0 pb-32 md:pb-20">
+    <div className="animate-in fade-in duration-500 max-w-[1400px] w-full px-0 sm:px-4 md:px-8 pt-4 md:pt-0 pb-32 md:pb-20">
       {/* CABECERA (Desktop & Mobile) */}
       <div className="mb-3 md:mb-8 px-3 sm:px-0">
         <h1 className="text-3xl md:text-4xl font-serif font-semibold text-stone-800 tracking-tight">{t('dashboard.settings.title')}</h1>
@@ -233,8 +233,8 @@ export default function SettingsPage() {
 
       <div className="flex flex-col md:flex-row gap-2 md:gap-8 items-start relative px-1 sm:px-0">
         {/* SIDEBAR (Desktop) / TOPBAR (Mobile) */}
-        <aside className="w-full md:w-64 shrink-0 z-40 sticky top-1 md:top-24 bg-white border border-stone-100 rounded-2xl md:rounded-[2rem] p-1.5 md:p-3 shadow-sm">
-          <nav className="flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-x-visible scrollbar-hide">
+        <aside className="w-full md:w-64 shrink-0 z-40 sticky top-1 md:top-6 bg-white border border-stone-200/50 rounded-2xl md:rounded-[2rem] p-3 shadow-sm md:shadow-none md:bg-transparent md:border-none md:p-0">
+          <nav className="flex flex-row md:flex-col gap-1.5 overflow-x-auto md:overflow-x-visible scrollbar-hide">
             {[
               { id: 'general', label: t('dashboard.settings.tabs.general'), icon: Building2 },
               { id: 'subscription', label: 'Plan & Suscripción', icon: CreditCard },
@@ -248,19 +248,19 @@ export default function SettingsPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 md:py-3 rounded-full md:rounded-2xl font-bold text-sm transition-all whitespace-nowrap
+                className={`flex items-center gap-3 px-4 py-2.5 md:py-3.5 rounded-full md:rounded-2xl font-bold text-sm transition-all duration-300 whitespace-nowrap md:w-full md:justify-start
                     ${activeTab === tab.id
-                    ? 'bg-stone-900 text-white shadow-md shadow-stone-200'
-                    : 'bg-stone-50 md:bg-transparent text-stone-500 hover:text-stone-700 hover:bg-stone-100 border border-stone-100 md:border-transparent'}`}
+                    ? 'bg-stone-900 text-white shadow-md shadow-stone-200/50 font-bold'
+                    : 'bg-stone-50 md:bg-transparent text-stone-500 hover:text-stone-700 hover:bg-stone-100 border border-stone-100 md:border-transparent font-medium'}`}
               >
-                <tab.icon size={16} strokeWidth={activeTab === tab.id ? 2 : 1.5} />
+                <tab.icon size={16} strokeWidth={activeTab === tab.id ? 2 : 1.5} className={activeTab === tab.id ? 'text-[#d4af37]' : 'text-stone-400'} />
                 {tab.label}
               </button>
             ))}
           </nav>
 
           {/* BOTÓN GUARDAR (Desktop) */}
-          <div className="hidden md:block mt-4 pt-4 border-t border-stone-50">
+          <div className="hidden md:block mt-4 pt-4 border-t border-stone-200/50">
             <button
               onClick={() => handleSave()}
               disabled={saving || !hasChanges}
