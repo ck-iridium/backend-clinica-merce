@@ -198,6 +198,16 @@ export default function AICopilotWidget() {
       setMessages((prev) => [...prev, { role: 'model', content: responseText }]);
       speakText(responseText);
 
+      // 6. Si hubo cambios en base de datos, refrescar/recargar la página de forma inteligente
+      if (data.updated_fields && data.updated_fields.length > 0) {
+        router.refresh();
+        setTimeout(() => {
+          if (typeof window !== 'undefined') {
+            window.location.reload();
+          }
+        }, 1200);
+      }
+
     } catch (err: any) {
       console.error('Error in Copilot chat:', err);
       const errMsg = 'Error en el asistente. Inténtalo de nuevo.';
