@@ -1,5 +1,4 @@
 import os
-import stripe
 import logging
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -8,17 +7,12 @@ from pydantic import BaseModel, Field
 from .. import models, database
 from ..crud.settings import get_clinic_settings
 from ..services.tenant_provisioner import provision_tenant
+from ..services.stripe_service import StripeService
 
 router = APIRouter(
     prefix="/stripe",
     tags=["stripe"],
 )
-
-def get_stripe_key():
-    key = os.environ.get("STRIPE_SECRET_KEY")
-    if not key:
-        raise HTTPException(status_code=500, detail="Falta STRIPE_SECRET_KEY")
-    return key
 
 def extract_and_fallback_onboarding_data(session, metadata):
     import re
@@ -91,8 +85,6 @@ class OnboardingSessionRequest(BaseModel):
 
 @router.post("/create-onboarding-session")
 def create_onboarding_session(request: OnboardingSessionRequest, req: Request):
-    stripe.api_key = get_stripe_key()
-    
     # Determinar base URL dinámicamente detectando origen de petición
     origin = req.headers.get("origin") or req.headers.get("referer")
     if not origin or "localhost" not in origin:
@@ -113,45 +105,15 @@ def create_onboarding_session(request: OnboardingSessionRequest, req: Request):
     finally:
         db.close()
 
-    try:
-        # 2. Crear Checkout Session en Stripe con metadatos completos para aprovisionamiento
-        session = stripe.checkout.Session.create(
-            payment_method_types=["card"],
-            line_items=[{
-                "price_data": {
-                    "currency": "eur",
-                    "product_data": {
-                        "name": "Plan Platinum - ProBookia SaaS",
-                        "description": "Suscripción mensual de gestión y reservas premium",
-                    },
-                    "unit_amount": 9900,  # 99.00 EUR
-                    "recurring": {"interval": "month"}
-                },
-                "quantity": 1,
-            }],
-            mode="subscription",
-            subscription_data={
-                "metadata": {
-                    "plan_type": "gold",
-                    "is_platform_onboarding": "true"
-                }
-            },
-            success_url=f"{frontend_url}/onboarding/success?session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=f"{frontend_url}/marketing",
-            metadata={
-                "type": "saas_onboarding",
-                "plan_type": "gold",
-                "is_platform_onboarding": "true",
-                "tenant_name": request.tenant_name,
-                "tenant_slug": request.tenant_slug,
-                "admin_email": request.admin_email,
-                "admin_name": request.admin_name,
-                "admin_password": request.admin_password,
-            }
-        )
-        return {"url": session.url}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    url = StripeService.create_onboarding_session(
+        tenant_name=request.tenant_name,
+        tenant_slug=request.tenant_slug,
+        admin_email=request.admin_email,
+        admin_name=request.admin_name,
+        admin_password=request.admin_password,
+        frontend_url=frontend_url
+    )
+    return {"url": url}
 
 class CreateSubscriptionSessionRequest(BaseModel):
     tenant_id: str
@@ -159,117 +121,44 @@ class CreateSubscriptionSessionRequest(BaseModel):
 
 @router.post("/create-subscription-session")
 def create_subscription_session(request: CreateSubscriptionSessionRequest, db: Session = Depends(database.get_db)):
-    stripe.api_key = get_stripe_key()
     frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
     
     # 1. Buscar Tenant en DB
     tenant = db.query(models.Tenant).filter(models.Tenant.id == request.tenant_id).first()
     if not tenant:
         raise HTTPException(status_code=404, detail="Inquilino no encontrado")
-        
-    # 2. Configurar detalles de precio e info del plan
-    plan_details = {
-        "basic": {
-            "name": "Plan Básico - ProBookia SaaS",
-            "description": "Acceso estándar y agenda para equipos pequeños",
-            "amount": 2900,  # 29.00 EUR
-        },
-        "pro": {
-            "name": "Plan Pro - ProBookia SaaS",
-            "description": "Suscripción mensual de gestión avanzada",
-            "amount": 5900,  # 59.00 EUR
-        },
-        "gold": {
-            "name": "Plan Elite Gold - ProBookia SaaS",
-            "description": "Acceso premium total con asistentes de Inteligencia Artificial",
-            "amount": 9900,  # 99.00 EUR
-        }
-    }
-    
-    selected_plan = request.plan_type.lower()
-    if selected_plan not in plan_details:
-        raise HTTPException(status_code=400, detail="Tipo de plan no válido. Debe ser basic, pro o gold")
-        
-    details = plan_details[selected_plan]
-    
-    # 3. Construir parámetros para la sesión
-    session_params = {
-        "payment_method_types": ["card"],
-        "line_items": [{
-            "price_data": {
-                "currency": "eur",
-                "product_data": {
-                    "name": details["name"],
-                    "description": details["description"],
-                },
-                "unit_amount": details["amount"],
-                "recurring": {"interval": "month"}
-            },
-            "quantity": 1,
-        }],
-        "mode": "subscription",
-        "subscription_data": {
-            "metadata": {
-                "plan_type": selected_plan,
-                "tenant_id": request.tenant_id
-            }
-        },
-        "success_url": f"{frontend_url}/super-admin?session_id={{CHECKOUT_SESSION_ID}}&tenant_id={request.tenant_id}&billing_success=true",
-        "cancel_url": f"{frontend_url}/super-admin?tenant_id={request.tenant_id}&billing_cancel=true",
-        "metadata": {
-            "type": "saas_subscription_update",
-            "tenant_id": request.tenant_id,
-            "plan_type": selected_plan
-        }
-    }
-    
-    # Si el Tenant ya tiene un stripe_customer_id, lo enlazamos para evitar duplicados
-    if tenant.stripe_customer_id:
-        session_params["customer"] = tenant.stripe_customer_id
-    
-    try:
-        session = stripe.checkout.Session.create(**session_params)
-        return {"url": session.url}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+
+    url = StripeService.create_subscription_session(
+        tenant_id=request.tenant_id,
+        plan_type=request.plan_type,
+        stripe_customer_id=tenant.stripe_customer_id,
+        frontend_url=frontend_url
+    )
+    return {"url": url}
 
 @router.post("/connect")
 def connect_stripe_account(db: Session = Depends(database.get_db)):
-    stripe.api_key = get_stripe_key()
     settings = get_clinic_settings(db)
     frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
     
     if not settings.stripe_account_id:
-        try:
-            account = stripe.Account.create(type="standard", country="ES", email=settings.clinic_email or None)
-            settings.stripe_account_id = account.id
-            db.commit()
-        except Exception as e:
-            raise HTTPException(status_code=400, detail=str(e))
+        account_id = StripeService.create_connect_account(settings.clinic_email or None)
+        settings.stripe_account_id = account_id
+        db.commit()
 
-    try:
-        account_link = stripe.AccountLink.create(
-            account=settings.stripe_account_id,
-            refresh_url=f"{frontend_url}/dashboard/settings?stripe_refresh=true",
-            return_url=f"{frontend_url}/dashboard/settings?stripe_return=true",
-            type="account_onboarding",
-        )
-        return {"url": account_link.url}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    url = StripeService.create_connect_account_link(settings.stripe_account_id, frontend_url)
+    return {"url": url}
 
 @router.get("/refresh-status")
 def refresh_stripe_status(db: Session = Depends(database.get_db)):
-    stripe.api_key = get_stripe_key()
     settings = get_clinic_settings(db)
-    if not settings.stripe_account_id: return {"status": "no_account"}
-    try:
-        account = stripe.Account.retrieve(settings.stripe_account_id)
-        settings.stripe_charges_enabled = account.charges_enabled
-        db.commit()
-        return {"charges_enabled": settings.stripe_charges_enabled}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    if not settings.stripe_account_id:
+        return {"status": "no_account"}
+        
+    charges_enabled = StripeService.retrieve_connect_account_charges_enabled(settings.stripe_account_id)
+    settings.stripe_charges_enabled = charges_enabled
+    db.commit()
+    return {"charges_enabled": settings.stripe_charges_enabled}
 
 @router.post("/webhook")
 async def stripe_webhook(request: Request, db: Session = Depends(database.get_db)):
@@ -277,25 +166,12 @@ async def stripe_webhook(request: Request, db: Session = Depends(database.get_db
     Webhook compatible con Stripe (Local y Producción). Blindado con getattr.
     """
     try:
-        stripe.api_key = get_stripe_key()
         payload = await request.body()
         sig_header = request.headers.get("stripe-signature")
-        webhook_secret = os.environ.get("STRIPE_WEBHOOK_SECRET")
-
-        if not sig_header or not webhook_secret:
+        
+        event = StripeService.construct_event(payload, sig_header)
+        if isinstance(event, dict) and event.get("status") == "ignored":
             return {"status": "ignored"}
-
-        try:
-            event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
-        except stripe.error.SignatureVerificationError:
-            connect_secret = os.environ.get("STRIPE_CONNECT_WEBHOOK_SECRET")
-            if connect_secret:
-                try:
-                    event = stripe.Webhook.construct_event(payload, sig_header, connect_secret)
-                except:
-                    raise HTTPException(status_code=400, detail="Invalid signature")
-            else:
-                raise HTTPException(status_code=400, detail="Invalid signature")
 
         # Extraemos el objeto de datos
         if isinstance(event, dict):
@@ -489,7 +365,6 @@ def get_appointment_by_stripe_session(session_id: str, db: Session = Depends(dat
     Recupera los detalles de la cita a partir de un session_id de Stripe.
     Resuelve condiciones de carrera si el webhook de Stripe aun no se ha procesado.
     """
-    stripe.api_key = get_stripe_key()
     try:
         # 1. Intentar buscar directamente por stripe_checkout_session_id en DB
         appointment = db.query(models.Appointment).filter(
@@ -499,7 +374,7 @@ def get_appointment_by_stripe_session(session_id: str, db: Session = Depends(dat
         # 2. Si no se encuentra, consultar a Stripe para obtener el client_reference_id (Appointment ID)
         if not appointment:
             try:
-                session = stripe.checkout.Session.retrieve(session_id)
+                session = StripeService.retrieve_checkout_session(session_id)
                 appointment_id = getattr(session, 'client_reference_id', None)
                 if appointment_id:
                     uuid.UUID(str(appointment_id))
@@ -533,9 +408,8 @@ def get_appointment_by_stripe_session(session_id: str, db: Session = Depends(dat
 
 @router.get("/onboarding-session-status/{session_id}")
 def onboarding_session_status(session_id: str, db: Session = Depends(database.get_db)):
-    stripe.api_key = get_stripe_key()
     try:
-        session = stripe.checkout.Session.retrieve(session_id)
+        session = StripeService.retrieve_checkout_session(session_id)
         if session.payment_status != "paid" and session.status != "complete":
             raise HTTPException(status_code=400, detail="El pago no ha sido completado todavía en Stripe")
 
@@ -562,6 +436,9 @@ def onboarding_session_status(session_id: str, db: Session = Depends(database.ge
         admin_email = onboarding_data["admin_email"]
         admin_name = onboarding_data["admin_name"]
         admin_password = onboarding_data["admin_password"]
+
+        # Buscar si ya fue aprovisionado por el webhook
+        tenant = db.query(models.Tenant).filter(models.Tenant.slug == tenant_slug).first()
 
         if not tenant:
             stripe_cust_id = getattr(session, "customer", None)
