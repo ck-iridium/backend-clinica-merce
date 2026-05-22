@@ -93,13 +93,18 @@ def update_landing_config(
         db.close()
 
 
-def update_service_price(service_slug: str, new_price: float) -> str:
+def update_service_fields(
+    service_slug: str,
+    new_price: Optional[float] = None,
+    description: Optional[str] = None
+) -> str:
     """
-    Modifica el precio de venta de un servicio o tratamiento específico usando su slug único.
+    Modifica de forma segura los campos de un servicio o tratamiento específico (como el precio o la descripción) usando su slug único.
 
     Args:
         service_slug: Slug identificativo del servicio (ej. 'depilacion-laser', 'botox').
-        new_price: El nuevo precio decimal para el servicio en Euros.
+        new_price: El nuevo precio decimal para el servicio en Euros (opcional).
+        description: La nueva descripción comercial detallada para el servicio (opcional).
     """
     db = SessionLocal()
     try:
@@ -116,14 +121,25 @@ def update_service_price(service_slug: str, new_price: float) -> str:
         if not service:
             return f"Error: No se ha encontrado ningún servicio con el slug '{service_slug}' en tu cuenta."
 
-        old_price = service.price
-        service.price = new_price
+        updated_fields = []
+        if new_price is not None:
+            old_price = service.price
+            service.price = new_price
+            updated_fields.append(f"precio (de {old_price}€ a {new_price}€)")
+        
+        if description is not None:
+            service.description = description
+            updated_fields.append("descripción")
+
+        if not updated_fields:
+            return "No se ha modificado ningún campo porque no se enviaron nuevos valores."
+
         db.commit()
-        return f"Éxito: El precio del servicio '{service.name}' ha sido modificado de {old_price}€ a {new_price}€ correctamente."
+        return f"Éxito: El servicio '{service.name}' ha sido actualizado correctamente: se modificó [{', '.join(updated_fields)}]."
     except Exception as e:
         db.rollback()
-        logger.error(f"Error en update_service_price para tenant {current_tenant_var.get()}: {e}")
-        return f"Error al actualizar el precio del servicio: {str(e)}"
+        logger.error(f"Error en update_service_fields para tenant {current_tenant_var.get()}: {e}")
+        return f"Error al actualizar los campos del servicio: {str(e)}"
     finally:
         db.close()
 
@@ -235,7 +251,7 @@ def create_new_service(name: str, price: float, duration_minutes: Optional[int] 
 
 
 # Lista de herramientas disponibles para Gemini
-AGENT_TOOLS = [update_landing_config, update_service_price, get_daily_appointments, create_new_service]
+AGENT_TOOLS = [update_landing_config, update_service_fields, get_daily_appointments, create_new_service]
 
 # ---------------------------------------------------------------------
 # ENDPOINT DE CHAT
@@ -281,13 +297,13 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
     system_instruction = (
         "Eres el 'AI Webmaster & Voice Agent' oficial de ProBookia, un asistente virtual premium "
         "diseñado para clínicas de medicina estética y alta gama. Tienes acceso a herramientas avanzadas "
-        "para consultar citas de la agenda de hoy, cambiar precios de servicios, crear nuevos servicios (create_new_service) y modificar el diseño visual "
+        "para consultar citas de la agenda de hoy, modificar precios o descripciones de servicios (update_service_fields), crear nuevos servicios (create_new_service) y modificar el diseño visual "
         "y los textos principales de la landing page pública del inquilino actual.\n\n"
         "Reglas obligatorias de comportamiento:\n"
         "1. Mantén siempre un tono profesional, elegante y sofisticado (estilo 'Quiet Luxury').\n"
         "2. REGLA CRÍTICA DE IDIOMA: DEBES DETECTAR Y RESPONDER SIEMPRE EN EL MISMO IDIOMA QUE UTILIZA EL USUARIO EN SU MENSAJE o comando de voz. Si el usuario te habla en francés, responde en francés nativo y elegante. Si te habla en inglés, responde en inglés nativo y elegante. Si te habla en español, responde en español.\n"
         "3. Llama a las herramientas adecuadas de forma automática cuando el usuario solicite acciones. "
-        "Por ejemplo, si te dice 'Cambia el precio de botox a 190 euros', debes invocar 'update_service_price'. Si te dice 'Crea un servicio llamado Masaje Sueco a 80€', debes invocar 'create_new_service'.\n"
+        "Por ejemplo, si te dice 'Cambia el precio de botox a 190 euros', debes invocar 'update_service_fields'. Si te dice 'Crea un servicio llamado Masaje Sueco a 80€', debes invocar 'create_new_service'.\n"
         "4. Siempre confirma el éxito o explica claramente cualquier error que devuelvan las herramientas.\n"
         "5. Tienes terminantemente prohibido acceder, mencionar o tratar de manipular datos de otros tenants.\n"
         "6. SÉ EXTREMADAMENTE BREVE, DIRECTO Y CONCISO. Evita explicaciones largas, rodeos o introducciones. "
@@ -312,7 +328,8 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
         "- Editor Web, CMS o diseño -> /dashboard/cms\n"
         "- Copias de seguridad o backups -> /dashboard/backups\n"
         "- Inicio o dashboard -> /dashboard\n"
-        "Asegúrate de asignar la propiedad 'route' y el 'message' en el idioma que corresponda al usuario."
+        "Asegúrate de asignar la propiedad 'route' y el 'message' en el idioma que corresponda al usuario.\n"
+        "9. GENERACIÓN DE DESCRIPCIONES DE SERVICIOS: Tienes la capacidad de redactar, mejorar y actualizar las descripciones de los servicios de la clínica. Si el usuario te pide una descripción (ej: 'genera una descripción para corte de pelo'), debes utilizar tu capacidad creativa como LLM para redactar un texto elegante, comercial y enfocado al sector estético (estilo Quiet Luxury), y acto seguido invocar la herramienta update_service_fields para guardar ese texto de forma automática en la base de datos."
     )
 
     try:
@@ -325,13 +342,10 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
         # 4. Formatear el historial de chat al formato del SDK de Google Gemini
         history_parts = []
         for msg in request.history:
-            role = "user" if msg.role == "user" else "model"
-            history_parts.append(
-                content_types.to_content({
-                    "role": role,
-                    "parts": [msg.content]
-                })
-            )
+            history_parts.append({
+                "role": "user" if msg.role == "user" else "model",
+                "parts": [msg.content]
+            })
 
         # 5. Iniciar sesión de chat con resolución automática de llamadas a funciones
         chat = model.start_chat(history=history_parts, enable_automatic_function_calling=True)
@@ -351,8 +365,10 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
                         args = fn_call.args
                         # args es un diccionario-like
                         updated_fields.extend(args.keys())
-                    elif name == "update_service_price":
-                        updated_fields.append("price")
+                    elif name == "update_service_fields":
+                        args = fn_call.args
+                        if args:
+                            updated_fields.extend(args.keys())
                     elif name == "create_new_service":
                         updated_fields.append("services")
                         args = fn_call.args
