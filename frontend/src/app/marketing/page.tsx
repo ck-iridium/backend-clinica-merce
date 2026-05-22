@@ -262,7 +262,58 @@ export default function MarketingPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+            {/* Card 0: Gratuito */}
+            <div className="bg-white rounded-3xl shadow-sm overflow-hidden border border-stone-200/60 p-8 md:p-10 relative flex flex-col justify-between hover:shadow-lg transition-all duration-300">
+              <div>
+                <div className="mb-6">
+                  <span className="text-stone-400 font-bold uppercase text-[10px] tracking-widest block mb-2">Para Autónomos</span>
+                  <h3 className="text-2xl font-serif font-bold text-[#1F2937]">Plan Inicial</h3>
+                  <div className="flex items-baseline mt-4">
+                    <span className="text-4xl font-serif font-extrabold text-[#1F2937]">0€</span>
+                    <span className="text-stone-400 text-sm font-semibold ml-2">/ siempre (sin tarjeta)</span>
+                  </div>
+                </div>
+
+                <div className="space-y-4 mb-8">
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
+                      <Check className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-sm font-semibold text-stone-600">1 especialista único</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
+                      <Check className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-sm font-semibold text-stone-600">Hasta 3 servicios</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
+                      <Check className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-sm font-semibold text-stone-600">Agenda inteligente interactiva</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
+                      <Check className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-sm font-semibold text-stone-600">Soporte por email</span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  setSelectedPlan('free');
+                  setIsModalOpen(true);
+                }}
+                className="w-full bg-[#1F2937] hover:bg-[#d4af37] text-white py-3.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 group active:scale-95 mt-auto"
+              >
+                Comenzar Gratis <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+
             {/* Card 1: Básico */}
             <div className="bg-white rounded-3xl shadow-sm overflow-hidden border border-stone-200/60 p-8 md:p-10 relative flex flex-col justify-between hover:shadow-lg transition-all duration-300">
               <div>
@@ -271,7 +322,7 @@ export default function MarketingPage() {
                   <h3 className="text-2xl font-serif font-bold text-[#1F2937]">Plan Básico</h3>
                   <div className="flex items-baseline mt-4">
                     <span className="text-4xl font-serif font-extrabold text-[#1F2937]">29€</span>
-                    <span className="text-stone-400 text-sm font-semibold ml-2">/ mes (IVA excl.)</span>
+                    <span className="text-stone-400 text-sm font-semibold ml-2">/ mes (excl. IVA)</span>
                   </div>
                 </div>
 
@@ -325,7 +376,7 @@ export default function MarketingPage() {
                   <h3 className="text-2xl font-serif font-bold text-[#1F2937]">Plan Pro</h3>
                   <div className="flex items-baseline mt-4">
                     <span className="text-4xl font-serif font-extrabold text-[#1F2937]">59€</span>
-                    <span className="text-stone-400 text-sm font-semibold ml-2">/ mes (IVA excl.)</span>
+                    <span className="text-stone-400 text-sm font-semibold ml-2">/ mes (excl. IVA)</span>
                   </div>
                 </div>
 
@@ -382,7 +433,7 @@ export default function MarketingPage() {
                   <h3 className="text-2xl font-serif font-bold">Plan Gold</h3>
                   <div className="flex items-baseline mt-4">
                     <span className="text-4xl font-serif font-extrabold">99€</span>
-                    <span className="text-stone-400 text-sm font-semibold ml-2">/ mes (IVA excl.)</span>
+                    <span className="text-stone-400 text-sm font-semibold ml-2">/ mes (excl. IVA)</span>
                   </div>
                 </div>
 
@@ -436,23 +487,6 @@ export default function MarketingPage() {
                 Comenzar Ahora <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
-          </div>
-
-          {/* Enlace destacado Plan Gratuito */}
-          <div className="text-center mt-12 animate-in fade-in duration-700">
-            <p className="text-stone-500 text-sm font-medium">
-              ¿Eres autónomo o estás empezando?{" "}
-              <button
-                onClick={() => {
-                  setSelectedPlan('free');
-                  setIsModalOpen(true);
-                }}
-                className="text-[#d4af37] hover:text-[#1F2937] font-extrabold underline transition-all duration-300 active:scale-95 ml-1 inline-flex items-center gap-1 group"
-              >
-                Comienza con nuestro Plan Gratuito para siempre (1 especialista, 3 servicios)
-                <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-              </button>
-            </p>
           </div>
 
         </div>

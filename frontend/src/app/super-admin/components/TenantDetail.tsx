@@ -134,7 +134,7 @@ export default function TenantDetail({ tenant, onUpdateStatus }: TenantDetailPro
 
   return (
     <section className="flex-1 bg-[#FAFAFA] p-8 overflow-y-auto space-y-8">
-      <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
+      <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
         
         {/* 1. FICHA SUPERIOR (Logo + Título + Status) */}
         <div className="bg-white rounded-[2rem] border border-stone-200/30 p-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">

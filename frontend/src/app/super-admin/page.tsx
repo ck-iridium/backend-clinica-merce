@@ -206,7 +206,7 @@ export default function SuperAdminPage() {
   if (loadingSession) {
     return (
       <div className="min-h-screen bg-[#F7F7F5] flex flex-col justify-center items-center py-24 px-8">
-        <div className="w-full max-w-5xl space-y-8">
+        <div className="w-full max-w-7xl space-y-8">
           <div className="h-10 w-64 bg-stone-200 animate-pulse rounded-xl"></div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="h-32 bg-stone-200 animate-pulse rounded-[2rem]"></div>
