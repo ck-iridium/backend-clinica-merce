@@ -24,6 +24,7 @@ class TenantOut(BaseModel):
     stripe_subscription_id: Optional[str] = None
     plan_type: str
     subscription_expires_at: Optional[datetime] = None
+    custom_domain: Optional[str] = None
     created_at: Optional[datetime] = None
 
     class Config:
@@ -219,3 +220,30 @@ def update_saas_settings(
     return {
         "allow_search_engine_indexing": settings.allow_search_engine_indexing
     }
+
+class TenantDomainUpdate(BaseModel):
+    custom_domain: Optional[str] = None
+
+@router.put("/tenants/{tenant_id}/domain", response_model=TenantOut)
+def update_tenant_domain(
+    tenant_id: str,
+    payload: TenantDomainUpdate,
+    db: Session = Depends(database.get_db),
+    admin_payload: dict = Depends(verify_super_admin)
+):
+    """
+    Actualiza el dominio personalizado de un inquilino de forma persistente.
+    """
+    tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Inquilino no encontrado")
+    
+    # Limpiar espacios en blanco
+    domain_value = payload.custom_domain.strip() if payload.custom_domain else None
+    if domain_value == "":
+        domain_value = None
+
+    tenant.custom_domain = domain_value
+    db.commit()
+    db.refresh(tenant)
+    return tenant

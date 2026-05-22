@@ -23,6 +23,7 @@ interface Tenant {
   stripe_subscription_id?: string | null;
   plan_type?: string;
   subscription_expires_at?: string | null;
+  custom_domain?: string | null;
   created_at: string | null;
 }
 
@@ -358,6 +359,10 @@ export default function SuperAdminPage() {
               <TenantDetail 
                 tenant={selectedTenant}
                 onUpdateStatus={updateTenantStatus}
+                onUpdateTenant={(updated) => {
+                  setTenants(prev => prev.map(t => t.id === updated.id ? updated : t));
+                  setSelectedTenant(updated);
+                }}
               />
             ) : (
               <section className="flex-1 bg-[#FAFAFA] flex items-center justify-center text-stone-400 font-serif text-lg">

@@ -35,9 +35,10 @@ interface Tenant {
 interface TenantDetailProps {
   tenant: Tenant;
   onUpdateStatus: (tenantId: string, status: 'active' | 'suspended') => Promise<void>;
+  onUpdateTenant?: (updatedTenant: Tenant) => void;
 }
 
-export default function TenantDetail({ tenant, onUpdateStatus }: TenantDetailProps) {
+export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant }: TenantDetailProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'stripe' | 'config'>('overview');
   const [redirectingPlan, setRedirectingPlan] = useState<string | null>(null);
   const [impersonating, setImpersonating] = useState(false);
@@ -52,36 +53,112 @@ export default function TenantDetail({ tenant, onUpdateStatus }: TenantDetailPro
     setInputDomain('');
   }, [tenant.id, tenant.custom_domain]);
 
+  const getJwtToken = (): string => {
+    let jwtToken = '';
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.includes('-auth-token')) {
+        const val = localStorage.getItem(key);
+        if (val) {
+          try {
+            const parsed = JSON.parse(val);
+            jwtToken = parsed.access_token || '';
+          } catch {}
+        }
+      }
+    }
+
+    if (!jwtToken) {
+      const match = document.cookie.match(/sb-[a-zA-Z0-9]+-auth-token/);
+      if (match) {
+        const val = localStorage.getItem(match[0]);
+        if (val) {
+          try {
+            jwtToken = JSON.parse(val).access_token || '';
+          } catch {}
+        }
+      }
+    }
+    return jwtToken;
+  };
+
+  const handleConnectDomain = async () => {
+    if (!inputDomain.trim()) {
+      toast.error('Por favor escribe un dominio válido.');
+      return;
+    }
+
+    setSavingDomain(true);
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const jwtToken = getJwtToken();
+    const loadingToast = toast.loading('Guardando configuración de DNS...');
+
+    try {
+      const res = await fetch(`${API_URL}/super-admin/tenants/${tenant.id}/domain`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${jwtToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ custom_domain: inputDomain.trim() })
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.detail || 'Error al conectar el dominio');
+      }
+
+      const updatedTenant = await res.json();
+      setCustomDomain(updatedTenant.custom_domain);
+      if (onUpdateTenant) {
+        onUpdateTenant(updatedTenant);
+      }
+      toast.success('¡Dominio personalizado conectado con éxito!', { id: loadingToast });
+      setShowDomainModal(false);
+      setInputDomain('');
+    } catch (err: any) {
+      toast.error(err.message || 'Error al conectar el dominio', { id: loadingToast });
+    } finally {
+      setSavingDomain(false);
+    }
+  };
+
+  const handleDisconnectDomain = async () => {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const jwtToken = getJwtToken();
+    const loadingToast = toast.loading('Desvinculando dominio personalizado...');
+
+    try {
+      const res = await fetch(`${API_URL}/super-admin/tenants/${tenant.id}/domain`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${jwtToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ custom_domain: null })
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.detail || 'Error al desconectar el dominio');
+      }
+
+      const updatedTenant = await res.json();
+      setCustomDomain(null);
+      if (onUpdateTenant) {
+        onUpdateTenant(updatedTenant);
+      }
+      toast.success('Dominio personalizado desvinculado con éxito', { id: loadingToast });
+    } catch (err: any) {
+      toast.error(err.message || 'Error al desvincular el dominio', { id: loadingToast });
+    }
+  };
+
   const handleImpersonate = async () => {
     setImpersonating(true);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      
-      // Intentar recuperar el token de Supabase del localStorage
-      let jwtToken = '';
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.includes('-auth-token')) {
-          const val = localStorage.getItem(key);
-          if (val) {
-            try {
-              const parsed = JSON.parse(val);
-              jwtToken = parsed.access_token || '';
-            } catch {}
-          }
-        }
-      }
-
-      if (!jwtToken) {
-        // Fallback a cookies o token por defecto si no lo encuentra en localStorage
-        const match = document.cookie.match(/sb-[a-zA-Z0-9]+-auth-token/);
-        if (match) {
-          const val = localStorage.getItem(match[0]);
-          if (val) {
-            jwtToken = JSON.parse(val).access_token || '';
-          }
-        }
-      }
+      const jwtToken = getJwtToken();
 
       const res = await fetch(`${API_URL}/super-admin/impersonate/${tenant.id}`, {
         method: 'POST',
@@ -569,10 +646,7 @@ export default function TenantDetail({ tenant, onUpdateStatus }: TenantDetailPro
                             🟢 Activo
                           </span>
                           <button 
-                            onClick={() => {
-                              toast.success('Dominio personalizado desvinculado con éxito');
-                              setCustomDomain(null);
-                            }}
+                            onClick={handleDisconnectDomain}
                             className="text-stone-400 hover:text-red-500 text-[10px] font-bold uppercase tracking-wider transition-colors"
                           >
                             Desconectar
@@ -664,21 +738,7 @@ export default function TenantDetail({ tenant, onUpdateStatus }: TenantDetailPro
                   Cancelar
                 </button>
                 <button
-                  onClick={() => {
-                    if (!inputDomain.trim()) {
-                      toast.error('Por favor escribe un dominio válido.');
-                      return;
-                    }
-                    setSavingDomain(true);
-                    const toastId = toast.loading('Guardando configuración de DNS...');
-                    setTimeout(() => {
-                      setCustomDomain(inputDomain.trim());
-                      toast.success('¡Dominio personalizado conectado con éxito!', { id: toastId });
-                      setSavingDomain(false);
-                      setShowDomainModal(false);
-                      setInputDomain('');
-                    }, 1200);
-                  }}
+                  onClick={handleConnectDomain}
                   disabled={savingDomain}
                   className="bg-stone-900 hover:bg-[#d4af37] text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
                 >

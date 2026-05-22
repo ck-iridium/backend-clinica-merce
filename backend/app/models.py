@@ -15,6 +15,7 @@ class Tenant(Base):
     stripe_subscription_id = Column(String, nullable=True)
     plan_type = Column(String, default="free", nullable=False)
     subscription_expires_at = Column(DateTime, nullable=True)
+    custom_domain = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 class User(Base):
