@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuthRole } from '@/hooks/useAuthRole';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/app/contexts/LanguageContext';
-import { Save, Building2, SearchCode, ImageIcon, Hash, Clock, Calendar, Trash2, CreditCard, LayoutTemplate } from 'lucide-react';
+import { Save, Building2, SearchCode, ImageIcon, Hash, Clock, Calendar, Trash2, CreditCard, LayoutTemplate, Wallet } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -17,6 +17,7 @@ import {
 
 // Importación de Pestañas
 import GeneralTab from './tabs/GeneralTab';
+import SubscriptionTab from './tabs/SubscriptionTab';
 import AgendaTab from './tabs/AgendaTab';
 import BillingTab from './tabs/BillingTab';
 import BrandingTab from './tabs/BrandingTab';
@@ -236,9 +237,10 @@ export default function SettingsPage() {
           <nav className="flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-x-visible scrollbar-hide">
             {[
               { id: 'general', label: t('dashboard.settings.tabs.general'), icon: Building2 },
+              { id: 'subscription', label: 'Plan & Suscripción', icon: CreditCard },
               { id: 'agenda', label: t('dashboard.settings.tabs.agenda'), icon: Clock },
               { id: 'billing', label: t('dashboard.settings.tabs.billing'), icon: Hash },
-              { id: 'payments', label: t('dashboard.settings.tabs.payments'), icon: CreditCard },
+              { id: 'payments', label: t('dashboard.settings.tabs.payments'), icon: Wallet },
               { id: 'branding', label: t('dashboard.settings.tabs.branding'), icon: ImageIcon },
               { id: 'booking_ui', label: t('dashboard.settings.tabs.booking_ui'), icon: LayoutTemplate },
               { id: 'advanced', label: t('dashboard.settings.tabs.advanced'), icon: SearchCode },
@@ -277,6 +279,7 @@ export default function SettingsPage() {
         {/* PANEL DINÁMICO */}
         <div className="flex-1 w-full mt-0 relative z-10">
           {activeTab === 'general' && <GeneralTab settings={settings} setSettings={setSettings} />}
+          {activeTab === 'subscription' && <SubscriptionTab />}
           {activeTab === 'agenda' && (
             <AgendaTab
               settings={settings}

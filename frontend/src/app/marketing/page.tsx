@@ -237,72 +237,182 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* 4. PRICING SECTION - STRIPE INTEGRATION */}
       <section id="pricing" className="py-24 bg-[#F7F7F5] border-t border-[#1F2937]/5">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-serif font-extrabold text-[#1F2937] tracking-tight">
-              Suscripción Platinum Todo Incluido
+              Planes de Suscripción Flexibles
             </h2>
             <p className="text-stone-500 text-lg mt-4 max-w-2xl mx-auto font-medium">
-              Accede a la plataforma líder de gestión estética sin sorpresas ni costes ocultos.
+              Elige el nivel perfecto para elevar la gestión y las reservas de tu negocio.
             </p>
           </div>
 
-          <div className="max-w-md mx-auto bg-white rounded-3xl shadow-luxury overflow-hidden border border-[#d4af37]/20 p-8 md:p-12 relative animate-in zoom-in duration-500">
-            <div className="absolute top-0 right-0 bg-[#d4af37] text-white px-5 py-1.5 rounded-bl-2xl text-xs font-black uppercase tracking-widest">
-              Recomendado
-            </div>
-            
-            <div className="mb-8">
-              <span className="text-stone-400 font-bold uppercase text-[10px] tracking-widest block mb-2">Plan Negocio Total</span>
-              <h3 className="text-3xl font-serif font-bold text-[#1F2937]">Plan Platinum</h3>
-              <div className="flex items-baseline mt-4">
-                <span className="text-5xl font-serif font-extrabold text-[#1F2937]">99€</span>
-                <span className="text-stone-400 text-sm font-semibold ml-2">/ mes (IVA excl.)</span>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {/* Card 1: Básico */}
+            <div className="bg-white rounded-3xl shadow-sm overflow-hidden border border-stone-200/60 p-8 md:p-10 relative flex flex-col justify-between hover:shadow-lg transition-all duration-300">
+              <div>
+                <div className="mb-6">
+                  <span className="text-stone-400 font-bold uppercase text-[10px] tracking-widest block mb-2">Para Negocios Emergentes</span>
+                  <h3 className="text-2xl font-serif font-bold text-[#1F2937]">Plan Básico</h3>
+                  <div className="flex items-baseline mt-4">
+                    <span className="text-4xl font-serif font-extrabold text-[#1F2937]">29€</span>
+                    <span className="text-stone-400 text-sm font-semibold ml-2">/ mes (IVA excl.)</span>
+                  </div>
+                </div>
+
+                <div className="space-y-4 mb-8">
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
+                      <Check className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-sm font-semibold text-stone-600">Hasta 2 especialistas</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
+                      <Check className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-sm font-semibold text-stone-600">Hasta 10 servicios</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
+                      <Check className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-sm font-semibold text-stone-600">Agenda inteligente interactiva</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
+                      <Check className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-sm font-semibold text-stone-600">Módulo POS y Facturación</span>
+                  </div>
+                </div>
               </div>
-              <p className="text-stone-400 text-sm mt-2 font-medium">Prueba gratuita de 14 días. Cancela cuando quieras.</p>
+
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="w-full bg-stone-100 hover:bg-[#d4af37] hover:text-white text-stone-800 py-3.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 group active:scale-95 mt-auto"
+              >
+                Comenzar Ahora <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
             </div>
 
-            <div className="space-y-4 mb-10">
-              <div className="flex items-center gap-3">
-                <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
-                  <Check className="w-3.5 h-3.5" />
-                </div>
-                <span className="text-sm font-semibold text-stone-600">Clientes ilimitados</span>
+            {/* Card 2: Pro */}
+            <div className="bg-white rounded-3xl shadow-luxury overflow-hidden border border-[#d4af37]/40 p-8 md:p-10 relative flex flex-col justify-between hover:shadow-xl transition-all duration-300 transform lg:-translate-y-2">
+              <div className="absolute top-0 right-0 bg-[#d4af37] text-white px-4 py-1 rounded-bl-2xl text-[9px] font-black uppercase tracking-widest">
+                Popular
               </div>
-              <div className="flex items-center gap-3">
-                <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
-                  <Check className="w-3.5 h-3.5" />
+              <div>
+                <div className="mb-6">
+                  <span className="text-[#d4af37] font-bold uppercase text-[10px] tracking-widest block mb-2">Crecimiento & Control</span>
+                  <h3 className="text-2xl font-serif font-bold text-[#1F2937]">Plan Pro</h3>
+                  <div className="flex items-baseline mt-4">
+                    <span className="text-4xl font-serif font-extrabold text-[#1F2937]">59€</span>
+                    <span className="text-stone-400 text-sm font-semibold ml-2">/ mes (IVA excl.)</span>
+                  </div>
                 </div>
-                <span className="text-sm font-semibold text-stone-600">Agenda inteligente interactiva</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
-                  <Check className="w-3.5 h-3.5" />
+
+                <div className="space-y-4 mb-8">
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
+                      <Check className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-sm font-semibold text-stone-600">Hasta 5 especialistas</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
+                      <Check className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-sm font-semibold text-stone-600">Hasta 25 servicios</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
+                      <Check className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-sm font-semibold text-stone-600">Agenda inteligente interactiva</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
+                      <Check className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-sm font-semibold text-stone-600">Fichas de clientes y fotos</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
+                      <Check className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-sm font-semibold text-stone-600">Módulo POS y Facturación</span>
+                  </div>
                 </div>
-                <span className="text-sm font-semibold text-stone-600">Módulo POS y Presupuestos Deluxe</span>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
-                  <Check className="w-3.5 h-3.5" />
-                </div>
-                <span className="text-sm font-semibold text-stone-600">Consentimiento informado digital</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
-                  <Check className="w-3.5 h-3.5" />
-                </div>
-                <span className="text-sm font-semibold text-stone-600">Multi-usuario (RBAC ilimitado)</span>
-              </div>
+
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="w-full bg-[#d4af37] hover:bg-[#1F2937] text-white py-3.5 rounded-xl text-sm font-bold shadow-luxury transition-all duration-300 flex items-center justify-center gap-2 group active:scale-95 mt-auto"
+              >
+                Comenzar Prueba <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
             </div>
 
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="w-full bg-[#d4af37] hover:bg-[#1F2937] text-white py-4 rounded-xl text-base font-bold shadow-luxury transition-all duration-300 flex items-center justify-center gap-2 group active:scale-95"
-            >
-              Comenzar Prueba Gratuita <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </button>
+            {/* Card 3: Gold */}
+            <div className="bg-[#1F2937] text-white rounded-3xl shadow-sm overflow-hidden border border-white/5 p-8 md:p-10 relative flex flex-col justify-between hover:shadow-lg transition-all duration-300">
+              <div>
+                <div className="mb-6">
+                  <span className="text-[#d4af37] font-bold uppercase text-[10px] tracking-widest block mb-2">Máximo Rendimiento & IA</span>
+                  <h3 className="text-2xl font-serif font-bold">Plan Gold</h3>
+                  <div className="flex items-baseline mt-4">
+                    <span className="text-4xl font-serif font-extrabold">99€</span>
+                    <span className="text-stone-400 text-sm font-semibold ml-2">/ mes (IVA excl.)</span>
+                  </div>
+                </div>
+
+                <div className="space-y-4 mb-8">
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[#d4af37]">
+                      <Check className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-sm font-semibold text-stone-200">Especialistas ilimitados</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[#d4af37]">
+                      <Check className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-sm font-semibold text-stone-200">Servicios ilimitados</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[#d4af37]">
+                      <Check className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-sm font-semibold text-stone-200">Agenda inteligente interactiva</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[#d4af37]">
+                      <Check className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-sm font-semibold text-stone-200">Fichas de clientes y fotos</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[#d4af37]">
+                      <Check className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-sm font-semibold text-stone-200">Facturación & POS Deluxe</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5]/10 flex items-center justify-center text-[#d4af37]">
+                      <Sparkles className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-sm font-semibold text-[#d4af37]">Acceso ilimitado a IA integrada</span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="w-full bg-[#d4af37] hover:bg-white hover:text-stone-900 text-white py-3.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 group active:scale-95 mt-auto"
+              >
+                Comenzar Ahora <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
           </div>
         </div>
       </section>
