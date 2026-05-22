@@ -39,7 +39,7 @@ export default function SaaSFinance({ tenants }: SaaSFinanceProps) {
   const formattedARR = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(annualRunRate);
 
   return (
-    <div className="flex-1 p-6 md:p-12 overflow-y-auto space-y-8 max-w-[1000px] mx-auto w-full animate-in fade-in duration-300">
+    <div className="flex-1 p-6 md:p-12 overflow-y-auto space-y-8 max-w-4xl w-full animate-in fade-in duration-300">
       {/* Bento Matrix: Financiera */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         

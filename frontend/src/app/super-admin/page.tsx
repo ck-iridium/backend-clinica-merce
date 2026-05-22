@@ -249,13 +249,13 @@ export default function SuperAdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F7F5] text-stone-850 flex">
+    <div className="h-screen overflow-hidden bg-[#F7F7F5] text-stone-850 flex">
       {/* Sidebar Modular */}
       <SuperAdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {/* Área Principal */}
-      <main className="flex-1 flex flex-col min-w-0">
-        <header className="h-20 bg-white border-b border-stone-200/50 px-8 flex items-center justify-between">
+      <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+        <header className="h-20 shrink-0 bg-white border-b border-stone-200/50 px-8 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-stone-400 font-sans">
               <span>Consola SaaS</span>

@@ -134,7 +134,7 @@ export default function TenantDetail({ tenant, onUpdateStatus }: TenantDetailPro
 
   return (
     <section className="flex-1 bg-[#FAFAFA] p-8 overflow-y-auto space-y-8">
-      <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
+      <div className="max-w-7xl space-y-8 animate-in fade-in duration-300">
         
         {/* 1. FICHA SUPERIOR (Logo + Título + Status) */}
         <div className="bg-white rounded-[2rem] border border-stone-200/30 p-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
@@ -367,7 +367,43 @@ export default function TenantDetail({ tenant, onUpdateStatus }: TenantDetailPro
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {/* Plan Gratuito */}
+                    <div className={`p-6 rounded-2xl border bg-white flex flex-col justify-between transition-all duration-300 hover:shadow-luxury hover:-translate-y-0.5 ${
+                      tenant.plan_type === 'free' || !tenant.plan_type ? 'border-[#d4af37]' : 'border-stone-200/40'
+                    }`}>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[9px] font-black uppercase tracking-wider text-stone-400 font-sans">Gratuito</span>
+                          {(tenant.plan_type === 'free' || !tenant.plan_type) && (
+                            <span className="bg-[#fcf8e5] text-[#d4af37] text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">Activo</span>
+                          )}
+                        </div>
+                        <h5 className="text-sm font-bold font-serif text-stone-950">Plan Gratuito</h5>
+                        <p className="text-[11px] text-stone-400 font-sans leading-relaxed">Agenda inicial para autónomos y pruebas.</p>
+                        <div className="pt-1 flex items-baseline gap-0.5">
+                          <span className="text-xl font-bold text-stone-900 font-serif">0€</span>
+                          <span className="text-[10px] text-stone-400 font-sans">/ siempre</span>
+                        </div>
+                        <ul className="text-[10px] text-stone-500 font-sans space-y-1 pt-2 border-t border-stone-100">
+                          <li>✓ 1 Profesional</li>
+                          <li>✓ Hasta 3 Servicios</li>
+                          <li>✓ Agenda Interactiva</li>
+                        </ul>
+                      </div>
+                      <button
+                        onClick={() => handleSubscribe('free')}
+                        disabled={redirectingPlan !== null || tenant.plan_type === 'free' || !tenant.plan_type}
+                        className={`mt-5 w-full py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-300 focus:outline-none ${
+                          tenant.plan_type === 'free' || !tenant.plan_type
+                            ? 'bg-stone-50 text-stone-400 border border-stone-200/50 cursor-default'
+                            : 'bg-white border border-stone-200 text-stone-950 hover:border-[#d4af37] hover:text-[#d4af37]'
+                        }`}
+                      >
+                        {redirectingPlan === 'free' ? 'Cargando...' : (tenant.plan_type === 'free' || !tenant.plan_type) ? 'Plan Actual' : 'Contratar'}
+                      </button>
+                    </div>
+
                     {/* Plan Básico */}
                     <div className={`p-6 rounded-2xl border bg-white flex flex-col justify-between transition-all duration-300 hover:shadow-luxury hover:-translate-y-0.5 ${
                       tenant.plan_type === 'basic' ? 'border-[#d4af37]' : 'border-stone-200/40'
@@ -406,12 +442,12 @@ export default function TenantDetail({ tenant, onUpdateStatus }: TenantDetailPro
 
                     {/* Plan Pro */}
                     <div className={`p-6 rounded-2xl border bg-white flex flex-col justify-between transition-all duration-300 hover:shadow-luxury hover:-translate-y-0.5 ${
-                      tenant.plan_type === 'pro' || (!tenant.plan_type || tenant.plan_type === 'free') ? 'border-[#d4af37]' : 'border-stone-200/40'
+                      tenant.plan_type === 'pro' ? 'border-[#d4af37]' : 'border-stone-200/40'
                     }`}>
                       <div className="space-y-3">
                         <div className="flex justify-between items-center">
                           <span className="text-[9px] font-black uppercase tracking-wider text-stone-400 font-sans">Profesional</span>
-                          {(tenant.plan_type === 'pro' || (!tenant.plan_type || tenant.plan_type === 'free')) && (
+                          {tenant.plan_type === 'pro' && (
                             <span className="bg-[#fcf8e5] text-[#d4af37] text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">Activo</span>
                           )}
                         </div>

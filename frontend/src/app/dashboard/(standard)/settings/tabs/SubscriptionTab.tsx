@@ -67,6 +67,13 @@ export default function SubscriptionTab() {
 
   const plansList = [
     {
+      id: 'free',
+      name: 'Plan Inicial Gratuito',
+      price: '0€',
+      limits: 'Hasta 1 especialista y 3 servicios.',
+      features: ['1 Especialista', '3 Servicios', 'Agenda interactiva', 'Soporte estándar']
+    },
+    {
       id: 'basic',
       name: 'Plan Básico',
       price: '29€',
@@ -177,7 +184,7 @@ export default function SubscriptionTab() {
           <h3 className="text-2xl font-serif font-semibold text-stone-800">Planes Disponibles</h3>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {plansList.map((plan) => {
             const isCurrent = currentPlan === plan.id;
             const canContratar = !isCurrent;

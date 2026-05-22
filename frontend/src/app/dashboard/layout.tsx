@@ -26,7 +26,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <AIImageProvider>
-      <div className="min-h-screen bg-background md:flex font-sans text-foreground print:bg-white">
+      <div className="h-screen overflow-hidden bg-background md:flex font-sans text-foreground print:bg-white">
         <RouteGuard />
         <OnboardingGuard />
 
@@ -34,7 +34,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <DashboardSidebar clinicName={clinicName} logoUrl={logoUrl} />
 
         {/* Área de Contenido Principal: El comportamiento (header, padding, scroll) se define en los layouts de grupo */}
-        <main className="flex-1 flex flex-col relative text-foreground w-full">
+        <main className="flex-1 flex flex-col relative text-foreground w-full h-full overflow-hidden">
           {children}
         </main>
       </div>

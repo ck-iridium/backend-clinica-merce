@@ -19,7 +19,7 @@ export default function SaaSGlobalSettings({
   onToggleIndexing,
 }: SaaSGlobalSettingsProps) {
   return (
-    <div className="flex-1 p-6 md:p-12 overflow-y-auto space-y-8 max-w-[800px] mx-auto w-full animate-in fade-in duration-300">
+    <div className="flex-1 p-6 md:p-12 overflow-y-auto space-y-8 max-w-xl w-full animate-in fade-in duration-300">
       {/* Bento Card: Indexación de Motores de Búsqueda */}
       <div className="bg-white rounded-3xl md:rounded-[2.5rem] border border-stone-100 p-6 md:p-10 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#d4af37]"></div>

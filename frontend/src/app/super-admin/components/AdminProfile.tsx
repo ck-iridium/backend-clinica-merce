@@ -168,10 +168,10 @@ export default function AdminProfile({ user, setUser }: AdminProfileProps) {
   };
 
   return (
-    <section className="flex-1 w-full min-h-screen bg-[#FAFAFA] flex flex-col lg:flex-row p-0 overflow-hidden select-none">
+    <section className="flex-1 w-full h-full bg-[#FAFAFA] flex flex-col lg:flex-row p-0 overflow-hidden select-none">
       
       {/* Menú Lateral Izquierdo de Pestañas (Pegado a la barra de accesos principal de la app) */}
-      <aside className="w-full lg:w-80 shrink-0 bg-white border-r border-stone-200/50 flex flex-col p-8 justify-between lg:min-h-screen lg:h-full">
+      <aside className="w-full lg:w-80 shrink-0 bg-white border-r border-stone-200/50 flex flex-col p-8 justify-between h-full">
         <div className="space-y-10">
           
           {/* Cabecera del Panel de Control */}
@@ -255,7 +255,7 @@ export default function AdminProfile({ user, setUser }: AdminProfileProps) {
             {activeSubTab === 'identity' && 'Datos de Identidad'}
             {activeSubTab === 'security' && 'Seguridad de Consola'}
           </h1>
-          <p className="text-sm font-sans text-stone-500 font-medium max-w-3xl leading-relaxed">
+          <p className="text-sm font-sans text-stone-500 font-medium max-w-xl leading-relaxed">
             {activeSubTab === 'overview' && 'Monitoreo en vivo de privilegios operacionales del sistema, estado de sesión actual y metadatos de identidad del Super Administrador.'}
             {activeSubTab === 'identity' && 'Actualice su nombre público de soporte técnico y su avatar de representación. Estos datos se utilizarán para la impersonación segura de clínicas.'}
             {activeSubTab === 'security' && 'Configure la contraseña maestra del Super Administrador para accesos futuros y mantenga la cuenta con los más altos estándares de protección.'}
@@ -409,7 +409,7 @@ export default function AdminProfile({ user, setUser }: AdminProfileProps) {
 
           {/* TAB 2: IDENTITY */}
           {activeSubTab === 'identity' && (
-            <div className="bg-white rounded-3xl border border-stone-200/30 p-10 md:p-12 shadow-sm relative overflow-hidden max-w-3xl w-full">
+            <div className="bg-white rounded-3xl border border-stone-200/30 p-10 md:p-12 shadow-sm relative overflow-hidden max-w-xl w-full">
               <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#d4af37]"></div>
               
               <div className="flex items-center gap-4 mb-10 pb-6 border-b border-stone-100">
@@ -521,7 +521,7 @@ export default function AdminProfile({ user, setUser }: AdminProfileProps) {
 
           {/* TAB 3: SECURITY */}
           {activeSubTab === 'security' && (
-            <div className="bg-white rounded-3xl border border-stone-200/30 p-10 md:p-12 shadow-sm relative overflow-hidden max-w-3xl w-full">
+            <div className="bg-white rounded-3xl border border-stone-200/30 p-10 md:p-12 shadow-sm relative overflow-hidden max-w-xl w-full">
               <div className="absolute top-0 left-0 right-0 h-1.5 bg-stone-900"></div>
               
               <div className="flex items-center gap-4 mb-10 pb-6 border-b border-stone-100">

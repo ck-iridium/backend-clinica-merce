@@ -23,9 +23,11 @@ export default async function StandardLayout({ children }: { children: React.Rea
   return (
     <>
     <ImpersonationBanner />
-    <div className="min-h-screen bg-[#FAFAFA]">
-      <div className="pt-8 pb-28 md:pt-4 md:pb-8 px-4 md:px-8 max-w-[1400px] mx-auto z-10 relative space-y-6 w-full">
-        {children}
+    <div className="flex-1 h-full overflow-hidden bg-[#FAFAFA] flex flex-col">
+      <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 z-10 relative w-full">
+        <div className="max-w-[1400px] space-y-6">
+          {children}
+        </div>
       </div>
       <MobileBottomBar />
     </div>
