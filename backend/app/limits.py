@@ -60,9 +60,13 @@ def check_specialist_limit(db: Session):
     max_specialists = limits["specialists"]
     
     # Contar los perfiles de equipo para este tenant_id
+    from sqlalchemy import func
     current_count = db.query(models.Profile).filter(
         models.Profile.tenant_id == tenant_id,
-        models.Profile.role.in_(["specialist", "receptionist", "admin"])
+        func.lower(models.Profile.role).in_([
+            "specialist", "receptionist", "admin",
+            "especialista", "recepcionist", "recepción", "recepcion", "administrador"
+        ])
     ).count()
     
     if current_count >= max_specialists:

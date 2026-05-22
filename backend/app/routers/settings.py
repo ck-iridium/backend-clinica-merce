@@ -30,10 +30,14 @@ def read_tenant_limits(db: Session = Depends(database.get_db)):
     limits = get_tenant_limits(plan)
     
     # Contar uso actual
+    from sqlalchemy import func
     services_count = db.query(models.Service).filter(models.Service.tenant_id == tenant_id).count()
     specialists_count = db.query(models.Profile).filter(
         models.Profile.tenant_id == tenant_id,
-        models.Profile.role.in_(["specialist", "receptionist", "admin"])
+        func.lower(models.Profile.role).in_([
+            "specialist", "receptionist", "admin",
+            "especialista", "recepcionist", "recepción", "recepcion", "administrador"
+        ])
     ).count()
     
     clinic_settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).first()

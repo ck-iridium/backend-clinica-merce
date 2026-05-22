@@ -46,7 +46,11 @@ export async function inviteTeamMember(data: { email: string, full_name: string,
        .from('profiles')
        .select('*', { count: 'exact', head: true })
        .eq('tenant_id', tenantId)
-       .in('role', ['specialist', 'receptionist', 'admin']);
+       .in('role', [
+          'specialist', 'receptionist', 'admin',
+          'especialista', 'recepcionist', 'recepción', 'recepcion', 'administrador',
+          'Especialista', 'Recepción', 'Recepcion', 'Administrador'
+        ]);
  
      if (countError) {
        console.error("Error contando perfiles del equipo:", countError);
