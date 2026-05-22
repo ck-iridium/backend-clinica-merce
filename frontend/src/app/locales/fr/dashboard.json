@@ -429,5 +429,18 @@
       "active": "Actif",
       "invited": "Invité"
     }
+  },
+  "ai_chat": {
+    "welcome_message": "Bonjour ! Je suis votre Assistant IA Webmaster. Je peux vous aider à gérer la clinique de manière conversationnelle : consultez les rendez-vous du jour, modifiez le prix de vos traitements ou mettez à jour le design visuel et les textes de votre site web public. Que souhaitez-vous faire aujourd'hui ?",
+    "input_placeholder": "Écrivez une commande de voix ou textuelle...",
+    "title": "Co-Pilote ProBookia",
+    "subtitle": "AI Webmaster en ligne",
+    "toast_connected": "Voix configurée",
+    "gender_female": "👩 Voix Féminine",
+    "gender_male": "👨 Voix Masculine",
+    "microphone_listening": "Écoute en cours... Parlez maintenant.",
+    "microphone_transcribed": "Audio transcrit avec succès.",
+    "microphone_warning": "Impossible de transcrire une phrase claire.",
+    "microphone_error": "Votre navigateur ne prend pas en charge la reconnaissance vocale native."
   }
 }

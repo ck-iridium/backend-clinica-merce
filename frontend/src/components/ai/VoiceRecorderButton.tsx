@@ -41,9 +41,12 @@ export default function VoiceRecorderButton({
     recognition.interimResults = false; // Solo resultados finales para máxima precisión
     recognition.lang = lang; // Asignación dinámica del idioma (es-ES, fr-FR, en-US)
 
+    const isFr = lang.startsWith('fr');
+    const isEn = lang.startsWith('en');
+
     recognition.onstart = () => {
       setIsRecording(true);
-      toast.info('Escuchando voz... Habla ahora.');
+      toast.info(isFr ? 'Écoute en cours... Parlez maintenant.' : isEn ? 'Listening... Speak now.' : 'Escuchando voz... Habla ahora.');
     };
 
     recognition.onend = () => {
@@ -55,23 +58,23 @@ export default function VoiceRecorderButton({
       setIsRecording(false);
 
       if (event.error === 'not-allowed') {
-        toast.error('Acceso al micrófono denegado. Por favor, concede permisos en tu navegador.');
+        toast.error(isFr ? 'Accès micro refusé. Veuillez accorder les permissions.' : isEn ? 'Microphone access denied. Please grant permissions.' : 'Acceso al micrófono denegado. Por favor, concede permisos en tu navegador.');
       } else if (event.error === 'no-speech') {
-        toast.warning('No se detectó voz clara. Intenta hablar de nuevo.');
+        toast.warning(isFr ? 'Aucune voix détectée. Réessayez.' : isEn ? 'No speech detected. Try speaking again.' : 'No se detectó voz clara. Intenta hablar de nuevo.');
       } else {
-        toast.error(`Error de voz: ${event.error}`);
+        toast.error(isFr ? `Erreur micro: ${event.error}` : isEn ? `Voice error: ${event.error}` : `Error de voz: ${event.error}`);
       }
     };
 
     recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript;
       if (transcript && transcript.trim()) {
-        toast.success('Audio transcrito con éxito.');
+        toast.success(isFr ? 'Audio transcrit avec succès.' : isEn ? 'Audio transcribed successfully.' : 'Audio transcrito con éxito.');
         if (onVoiceTranscribedRef.current) {
           onVoiceTranscribedRef.current(transcript);
         }
       } else {
-        toast.warning('No se pudo transcribir una frase clara.');
+        toast.warning(isFr ? 'Impossible de transcrire.' : isEn ? 'Could not transcribe clearly.' : 'No se pudo transcribir una frase clara.');
       }
     };
 

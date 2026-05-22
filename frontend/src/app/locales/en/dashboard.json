@@ -429,5 +429,18 @@
       "active": "Active",
       "invited": "Invited"
     }
+  },
+  "ai_chat": {
+    "welcome_message": "Hello! I am your AI Webmaster Assistant. I can help you manage the clinic conversationally: consult today's appointments, edit the price of your treatments, or update the visual design and texts of your public website. What would you like to do today?",
+    "input_placeholder": "Write a voice command or text...",
+    "title": "ProBookia Co-Pilot",
+    "subtitle": "AI Webmaster online",
+    "toast_connected": "Voice configured",
+    "gender_female": "👩 Female Voice",
+    "gender_male": "👨 Male Voice",
+    "microphone_listening": "Listening... Speak now.",
+    "microphone_transcribed": "Audio transcribed successfully.",
+    "microphone_warning": "Could not transcribe a clear phrase.",
+    "microphone_error": "Your browser does not support native speech recognition."
   }
 }

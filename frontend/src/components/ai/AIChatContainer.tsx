@@ -36,7 +36,7 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
   const [isLoading, setIsLoading] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const chatLanguage = language === 'fr' ? 'fr-FR' : language === 'en' ? 'en-US' : 'es-ES';
   const [voiceGender, setVoiceGender] = useState<'female' | 'male'>('female');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -62,6 +62,21 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
     };
     fetchAvatar();
   }, []);
+
+  // Sincronizar mensaje de bienvenida con el idioma global del Dashboard
+  useEffect(() => {
+    setMessages((prev) => {
+      if (prev.length === 1 && prev[0].role === 'model') {
+        return [
+          {
+            role: 'model',
+            content: t('ai_chat.welcome_message') || '¡Hola! Soy tu Asistente IA Webmaster. Puedo ayudarte a gestionar la clínica de forma conversacional: consulta las citas del día, edita el precio de tus tratamientos o actualiza el diseño visual y textos de tu web pública. ¿Qué deseas hacer hoy?',
+          },
+        ];
+      }
+      return prev;
+    });
+  }, [language, t]);
 
   // Auto scroll to bottom
   const scrollToBottom = () => {
@@ -240,8 +255,8 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
             <Sparkles size={18} className="text-[#d4af37] animate-pulse" />
           </div>
           <div>
-            <h2 className="text-[14.5px] font-bold text-stone-900 tracking-tight font-serif">Co-Piloto ProBookia</h2>
-            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mt-0.5">AI Webmaster en línea</p>
+            <h2 className="text-[14.5px] font-bold text-stone-900 tracking-tight font-serif">{t('ai_chat.title') || 'Co-Piloto ProBookia'}</h2>
+            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mt-0.5">{t('ai_chat.subtitle') || 'AI Webmaster en línea'}</p>
           </div>
         </div>
         
@@ -252,13 +267,13 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
             value={voiceGender}
             onChange={(e) => {
               setVoiceGender(e.target.value as 'female' | 'male');
-              toast.success(`Voz configurada: ${e.target.value === 'female' ? 'Femenina' : 'Masculina'}`);
+              toast.success(language === 'fr' ? 'Voix configurée' : language === 'en' ? 'Voice configured' : 'Voz configurada');
             }}
             className="text-[11px] font-semibold bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-700 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#d4af37]/50 focus:border-[#d4af37] cursor-pointer transition-all duration-300"
-            title="Seleccionar género de voz"
+            title={language === 'fr' ? 'Sélectionner le genre de voix' : language === 'en' ? 'Select voice gender' : 'Seleccionar género de voz'}
           >
-            <option value="female">👩 Voz</option>
-            <option value="male">👨 Voz</option>
+            <option value="female">{language === 'fr' ? '👩 Voix Féminine' : language === 'en' ? '👩 Female Voice' : '👩 Voz Femenina'}</option>
+            <option value="male">{language === 'fr' ? '👨 Voix Masculine' : language === 'en' ? '👨 Male Voice' : '👨 Voz Masculina'}</option>
           </select>
 
           <button
@@ -268,14 +283,17 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
               if (nextMuted && typeof window !== 'undefined' && window.speechSynthesis) {
                 window.speechSynthesis.cancel();
               }
-              toast.info(nextMuted ? 'Síntesis de voz silenciada' : 'Síntesis de voz activada');
+              toast.info(nextMuted 
+                ? (language === 'fr' ? 'Synthèse vocale coupée' : language === 'en' ? 'Text-to-speech muted' : 'Síntesis de voz silenciada') 
+                : (language === 'fr' ? 'Synthèse vocale activée' : language === 'en' ? 'Text-to-speech activated' : 'Síntesis de voz activada')
+              );
             }}
             className={`p-2.5 rounded-xl transition-all duration-300 ${
               isMuted
                 ? 'text-stone-300 hover:text-stone-500 hover:bg-stone-50'
                 : 'text-[#d4af37] hover:text-[#b38f2b] hover:bg-amber-50/50'
             }`}
-            title={isMuted ? 'Activar lectura en voz alta' : 'Silenciar lectura'}
+            title={isMuted ? (language === 'fr' ? 'Activer la lecture' : language === 'en' ? 'Unmute reading' : 'Activar lectura en voz alta') : (language === 'fr' ? 'Désactiver la lecture' : language === 'en' ? 'Mute reading' : 'Silenciar lectura')}
           >
             {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
           </button>
@@ -288,14 +306,17 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
               setMessages([
                 {
                   role: 'model',
-                  content:
-                    'Conversación reiniciada. ¿En qué puedo asistirte ahora con tu landing page o agenda?',
+                  content: language === 'fr' 
+                    ? 'Conversation réinitialisée. En quoi puis-je vous aider maintenant avec votre page d\'accueil ou votre agenda ?' 
+                    : language === 'en' 
+                      ? 'Conversation reset. How can I assist you now with your landing page or schedule?' 
+                      : 'Conversación reiniciada. ¿En qué puedo asistirte ahora con tu landing page o agenda?',
                 },
               ]);
-              toast.info('Conversación reiniciada');
+              toast.info(language === 'fr' ? 'Conversation réinitialisée' : language === 'en' ? 'Conversation reset' : 'Conversación reiniciada');
             }}
             className="p-2.5 text-stone-400 hover:text-stone-700 hover:bg-stone-50 rounded-xl transition-all duration-300"
-            title="Reiniciar chat"
+            title={language === 'fr' ? 'Réinitialiser la conversation' : language === 'en' ? 'Reset chat' : 'Reiniciar chat'}
           >
             <RefreshCw size={15} />
           </button>
@@ -355,7 +376,7 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
               <span className="flex h-1.5 w-1.5 rounded-full bg-[#d4af37] animate-bounce" style={{ animationDelay: '0ms' }} />
               <span className="flex h-1.5 w-1.5 rounded-full bg-[#d4af37] animate-bounce" style={{ animationDelay: '150ms' }} />
               <span className="flex h-1.5 w-1.5 rounded-full bg-[#d4af37] animate-bounce" style={{ animationDelay: '300ms' }} />
-              <span className="ml-1 text-[12.5px] font-medium text-stone-400">Procesando...</span>
+              <span className="ml-1 text-[12.5px] font-medium text-stone-400">{t('general.loading') || 'Procesando...'}</span>
             </div>
           </div>
         )}
@@ -375,7 +396,7 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               disabled={isLoading}
-              placeholder="Pregúntame algo o envíame un comando de voz..."
+              placeholder={t('ai_chat.input_placeholder') || 'Pregúntame algo o envíame un comando de voz...'}
               className="w-full bg-stone-50 hover:bg-stone-50/50 focus:bg-white text-stone-800 placeholder-stone-400 text-[13.5px] rounded-xl border border-stone-200/60 pl-4 pr-12 py-3.5 focus:outline-none focus:ring-1 focus:ring-[#d4af37]/50 focus:border-[#d4af37] transition-all duration-300 shadow-inner"
             />
             <button

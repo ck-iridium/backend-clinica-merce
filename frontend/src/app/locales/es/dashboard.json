@@ -429,5 +429,18 @@
       "active": "Activo",
       "invited": "Invitado"
     }
+  },
+  "ai_chat": {
+    "welcome_message": "¡Hola! Soy tu Asistente IA Webmaster. Puedo ayudarte a gestionar la clínica de forma conversacional: consulta las citas del día, edita el precio de tus tratamientos o actualiza el diseño visual y textos de tu web pública. ¿Qué deseas hacer hoy?",
+    "input_placeholder": "Escribe un comando de voz o texto...",
+    "title": "Co-Piloto ProBookia",
+    "subtitle": "AI Webmaster en línea",
+    "toast_connected": "Voz configurada",
+    "gender_female": "👩 Voz Femenina",
+    "gender_male": "👨 Voz Masculina",
+    "microphone_listening": "Escuchando voz... Habla ahora.",
+    "microphone_transcribed": "Audio transcrito con éxito.",
+    "microphone_warning": "No se pudo transcribir una frase clara.",
+    "microphone_error": "Tu navegador no soporta el reconocimiento de voz nativo."
   }
 }
