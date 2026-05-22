@@ -152,8 +152,8 @@ class StripeService:
                     "tenant_id": tenant_id
                 }
             },
-            "success_url": f"{frontend_url}/super-admin?session_id={{CHECKOUT_SESSION_ID}}&tenant_id={tenant_id}&billing_success=true",
-            "cancel_url": f"{frontend_url}/super-admin?tenant_id={tenant_id}&billing_cancel=true",
+            "success_url": f"{frontend_url}/dashboard/settings?billing_success=true&session_id={{CHECKOUT_SESSION_ID}}",
+            "cancel_url": f"{frontend_url}/dashboard/settings?billing_cancel=true",
             "metadata": {
                 "type": "saas_subscription_update",
                 "tenant_id": tenant_id,

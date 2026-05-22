@@ -143,8 +143,19 @@ class CreateSubscriptionSessionRequest(BaseModel):
     plan_type: str  # "basic", "pro", "gold"
 
 @router.post("/create-subscription-session")
-def create_subscription_session(request: CreateSubscriptionSessionRequest, db: Session = Depends(database.get_db)):
-    frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
+def create_subscription_session(
+    request: CreateSubscriptionSessionRequest,
+    req: Request,
+    db: Session = Depends(database.get_db)
+):
+    # Determinar base URL dinámicamente detectando origen de petición para evitar bloqueos cross-domain
+    origin = req.headers.get("origin") or req.headers.get("referer")
+    if origin:
+        from urllib.parse import urlparse
+        parsed = urlparse(origin)
+        frontend_url = f"{parsed.scheme}://{parsed.netloc}"
+    else:
+        frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
     
     # 1. Buscar Tenant en DB
     tenant = db.query(models.Tenant).filter(models.Tenant.id == request.tenant_id).first()
