@@ -42,6 +42,13 @@ export default function AICopilotWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const audioLanguage = language === 'fr' ? 'fr-FR' : language === 'en' ? 'en-US' : 'es-ES';
 
+  // Precalentar voces del navegador al montar
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.getVoices();
+    }
+  }, []);
+
   // Auto-scroll inside messages
   useEffect(() => {
     if (isOpen) {
@@ -49,17 +56,39 @@ export default function AICopilotWidget() {
     }
   }, [messages, isOpen]);
 
-  // Speak response out loud if not muted
+  // Speak response out loud if not muted with proper native premium voice
   const speakText = (text: string) => {
-    if (isMuted || typeof window === 'undefined') return;
+    if (isMuted || typeof window === 'undefined' || !window.speechSynthesis) return;
     try {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = audioLanguage;
+      
       const voices = window.speechSynthesis.getVoices();
-      const elegVoic = voices.find(v => v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('google'));
-      if (elegVoic) utterance.voice = elegVoic;
-      utterance.rate = 1.05;
+      const langPrefix = audioLanguage.split('-')[0].toLowerCase();
+      const langVoices = voices.filter((v) => v.lang.toLowerCase().startsWith(langPrefix));
+
+      let selectedVoice = null;
+      if (langVoices.length > 0) {
+        selectedVoice = langVoices.find((v) => {
+          const name = v.name.toLowerCase();
+          return name.includes('female') || name.includes('zira') || name.includes('helena') || 
+                 name.includes('hortense') || name.includes('samantha') || name.includes('elene') || 
+                 name.includes('google') || name.includes('hazel') || name.includes('natural');
+        });
+        if (!selectedVoice) {
+          selectedVoice = langVoices[0];
+        }
+      }
+
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+        utterance.lang = selectedVoice.lang;
+      } else {
+        utterance.lang = audioLanguage;
+      }
+
+      utterance.rate = 0.98; // Tono sofisticado, pausado y natural
+      utterance.pitch = 1.12; // Femenino y elegante
       window.speechSynthesis.speak(utterance);
     } catch (e) {
       console.warn('Speech synthesis fail:', e);
