@@ -1,5 +1,6 @@
 import base64
 import json
+import re
 from datetime import datetime
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Header
@@ -242,6 +243,19 @@ def update_tenant_domain(
     domain_value = payload.custom_domain.strip() if payload.custom_domain else None
     if domain_value == "":
         domain_value = None
+
+    # Validar formato de dominio si no es None
+    if domain_value is not None:
+        DOMAIN_REGEX = re.compile(
+            r'^(?:[a-zA-Z0-9]'
+            r'(?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+'
+            r'[a-zA-Z]{2,18}$'
+        )
+        if not DOMAIN_REGEX.match(domain_value):
+            raise HTTPException(
+                status_code=400,
+                detail=f"'{domain_value}' no es un formato de dominio válido. Debe incluir una extensión válida (ej: .com, .es)."
+            )
 
     tenant.custom_domain = domain_value
     db.commit()

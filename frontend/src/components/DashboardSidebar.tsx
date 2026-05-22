@@ -7,7 +7,7 @@ import {
   Ticket, Receipt, CalendarDays, Settings,
   Database, Image as ImageIcon, Globe, Tag,
   ShieldCheck, User, LogOut, Search, ChevronRight,
-  MoreHorizontal, Briefcase, FileText
+  MoreHorizontal, Briefcase, FileText, Bot
 } from 'lucide-react';
 import { GlobalSearch } from './GlobalSearch';
 import { NotificationCenter } from './NotificationCenter';
@@ -42,6 +42,7 @@ interface DashboardSidebarProps {
 export const navLinks = [
   { href: '/dashboard/pos', label: 'Venta Rápida', icon: Tag, style: 'accent' },
   { href: '/dashboard', label: 'Inicio', icon: LayoutDashboard, style: 'normal', exact: true },
+  { href: '/dashboard/ai-webmaster', label: 'Asistente Web IA', icon: Bot, style: 'highlight' },
   { href: '/dashboard/clients', label: 'Clientes', icon: Users, style: 'normal' },
   { href: '/dashboard/team', label: 'Equipo', icon: ShieldCheck, style: 'normal' },
   { href: '/dashboard/services', label: 'Servicios', icon: Sparkles, style: 'normal' },
@@ -61,6 +62,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
     switch (href) {
       case '/dashboard/pos': return t('dashboard.menu.pos');
       case '/dashboard': return t('dashboard.menu.home');
+      case '/dashboard/ai-webmaster': return t('dashboard.menu.ai_webmaster') || 'Asistente Web IA';
       case '/dashboard/clients': return t('dashboard.menu.clients');
       case '/dashboard/team': return t('dashboard.menu.team');
       case '/dashboard/services': return t('dashboard.menu.services');
@@ -158,6 +160,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
     const directLinksHrefs = [
       '/dashboard/pos', 
       '/dashboard', 
+      '/dashboard/ai-webmaster',
       '/dashboard/calendar', 
       '/dashboard/clients', 
       '/dashboard/invoices',
@@ -189,7 +192,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
         }
 
         if (currentRole === 'especialista') {
-          const allowed = ['/dashboard', '/dashboard/calendar', '/dashboard/clients'];
+          const allowed = ['/dashboard', '/dashboard/calendar', '/dashboard/clients', '/dashboard/ai-webmaster'];
           return allowed.includes(link.href);
         }
         return false;

@@ -104,8 +104,12 @@ export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant }:
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.detail || 'Error al conectar el dominio');
+        let errMsg = 'Error al conectar el dominio';
+        try {
+          const errorData = await res.json();
+          errMsg = errorData.detail || errMsg;
+        } catch {}
+        throw new Error(errMsg);
       }
 
       const updatedTenant = await res.json();
@@ -139,8 +143,12 @@ export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant }:
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.detail || 'Error al desconectar el dominio');
+        let errMsg = 'Error al desconectar el dominio';
+        try {
+          const errorData = await res.json();
+          errMsg = errorData.detail || errMsg;
+        } catch {}
+        throw new Error(errMsg);
       }
 
       const updatedTenant = await res.json();

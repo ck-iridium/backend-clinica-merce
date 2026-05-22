@@ -643,3 +643,29 @@ class OnboardingSetupRequest(BaseModel):
     load_demo_data: bool = True
 
 
+# --- AI Webmaster Assistant & Voice Agent ---
+class ChatMessage(BaseModel):
+    role: str  # "user" or "model"
+    content: str
+
+class AIChatRequest(BaseModel):
+    message: str
+    history: List[ChatMessage] = []
+
+class AIChatResponse(BaseModel):
+    response: str
+    updated_fields: Optional[List[str]] = None
+
+class AIVoiceRequest(BaseModel):
+    audio_base64: str
+    mime_type: str = "audio/webm"
+    history: List[ChatMessage] = []
+
+class AIVoiceResponse(BaseModel):
+    transcript: str
+    response: str
+    audio_response_base64: Optional[str] = None
+    updated_fields: Optional[List[str]] = None
+
+
+

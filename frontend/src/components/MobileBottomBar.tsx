@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Search, Plus, Menu, ChevronRight, ChevronLeft, ChevronUp, LogOut, User, LayoutDashboard, Users, Sparkles, Ticket, Receipt, CalendarDays, Settings, Database, Image as ImageIcon, Globe, Tag, ShieldCheck, Briefcase, FileText, MoreHorizontal } from 'lucide-react';
+import { Home, Search, Plus, Menu, ChevronRight, ChevronLeft, ChevronUp, LogOut, User, LayoutDashboard, Users, Sparkles, Ticket, Receipt, CalendarDays, Settings, Database, Image as ImageIcon, Globe, Tag, ShieldCheck, Briefcase, FileText, MoreHorizontal, Bot } from 'lucide-react';
 import { GlobalSearch } from './GlobalSearch';
 import { NotificationCenter } from './NotificationCenter';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -98,6 +98,7 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
   const navItemsMain = [
     { href: '/dashboard/pos', label: 'Venta Rápida', icon: Tag, isSubmenu: false, style: 'accent' },
     { href: '/dashboard', label: 'Inicio', icon: LayoutDashboard, isSubmenu: false, exact: true },
+    { href: '/dashboard/ai-webmaster', label: 'Asistente Web IA', icon: Bot, isSubmenu: false },
     { href: '/dashboard/calendar', label: 'Agenda', icon: CalendarDays, isSubmenu: false },
     { href: '/dashboard/clients', label: 'Clientes', icon: Users, isSubmenu: false },
     { href: '/dashboard/invoices', label: 'Facturas', icon: Receipt, isSubmenu: false },
@@ -109,15 +110,15 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
     if (!item.href) return true; // Los submenús no tienen href directo
     const currentRole = role?.toLowerCase();
 
-    // Especialista SOLO ve: Inicio, Agenda, Clientes.
+    // Especialista SOLO ve: Inicio, Agenda, Clientes, Asistente Web IA.
     if (currentRole === 'especialista') {
-      const allowed = ['/dashboard', '/dashboard/calendar', '/dashboard/clients'];
+      const allowed = ['/dashboard', '/dashboard/calendar', '/dashboard/clients', '/dashboard/ai-webmaster'];
       return allowed.includes(item.href || '');
     }
 
-    // Recepción ve Facturas, POS y Bonos como directos (porque no tiene submenús)
+    // Recepción ve Facturas, POS, Bonos y Asistente Web IA como directos
     if (currentRole === 'recepción' || currentRole === 'recepcion') {
-      const allowed = ['/dashboard', '/dashboard/calendar', '/dashboard/clients', '/dashboard/invoices', '/dashboard/pos', '/dashboard/vouchers'];
+      const allowed = ['/dashboard', '/dashboard/calendar', '/dashboard/clients', '/dashboard/invoices', '/dashboard/pos', '/dashboard/vouchers', '/dashboard/ai-webmaster'];
       return allowed.includes(item.href || '');
     }
 
