@@ -327,7 +327,7 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
         "- Clientes o Fichas -> /dashboard/clients\n"
         "- Facturas o ingresos -> /dashboard/invoices\n"
         "- Venta rápida, POS, TPV, cobrar o vender -> /dashboard/pos\n"
-        "- Servicios, catálogo o tratamientos -> /dashboard/services (puedes añadir ?edit=slug-del-servicio como parámetro de consulta para abrir de forma directa y automática la ficha de edición de un servicio específico, por ejemplo: /dashboard/services?edit=corte-de-pelo)\n"
+        "- Servicios, catálogo o tratamientos -> /dashboard/services (puedes añadir ?edit=slug-del-servicio como parámetro de consulta para abrir de forma directa y automática la ficha de edición de un servicio específico. Es OBLIGATORIO que deduzcas el 'slug-del-servicio' completo a partir de lo pedido por el usuario, convirtiendo espacios en guiones, quitando acentos y manteniéndolo en minúsculas. Por ejemplo, si te pide 'corte de pelo', el slug es 'corte-de-pelo'. Si te pide 'corte de pelo para niño', el slug DEBE ser 'corte-de-pelo-para-nino' o 'corte-de-pelo-nino'. ¡NUNCA trunques o acortes el slug ignorando palabras clave como 'niño' o 'niños', de lo contrario abrirás el servicio incorrecto!)\n"
         "- Equipo, especialistas o personal -> /dashboard/team\n"
         "- Ajustes, configuración o perfil -> /dashboard/settings\n"
         "- Galería de fotos o multimedia -> /dashboard/media\n"
