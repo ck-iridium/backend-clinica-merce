@@ -102,7 +102,7 @@ export default function MarketingPage() {
               href="/login" 
               className="px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold bg-white text-[#1F2937] border border-stone-200 shadow-sm hover:border-[#d4af37] hover:text-[#d4af37] transition-all duration-300 active:scale-95"
             >
-              Acceso Centros
+              Acceso Profesional
             </Link>
             <button 
               onClick={() => setIsModalOpen(true)}
@@ -126,7 +126,7 @@ export default function MarketingPage() {
           </h1>
           
           <p className="text-lg md:text-xl text-stone-500 font-medium max-w-3xl mx-auto mb-12 leading-relaxed font-sans">
-            Diseñado exclusivamente para centros de estética, spas, salones de belleza y barberías premium independientes. Agendas fluidas, expedientes personalizados seguros, consentimiento digital inteligente y facturación integrada en una experiencia borderless sublime.
+            Diseñado exclusivamente para centros de estética, spas, salones de belleza y barberías premium independientes. Agendas fluidas, fichas de clientes personalizadas y seguras, consentimiento digital inteligente y facturación integrada en una experiencia borderless sublime.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -189,10 +189,10 @@ export default function MarketingPage() {
               
               <div className="relative z-10 mt-auto">
                 <h3 className="text-2xl font-serif font-bold mb-3">
-                  Seguridad Médica & RBAC
+                  Seguridad de Datos & RBAC
                 </h3>
                 <p className="text-stone-300 font-medium leading-relaxed">
-                  Control de Acceso basado en Roles (RBAC). El personal médico accede a historiales, administración vende bonos y especialistas registran observaciones en estricta confidencialidad bajo estándares RGPD.
+                  Control de Acceso basado en Roles (RBAC). Los directores acceden a reportes, recepción vende bonos y especialistas registran observaciones en estricta confidencialidad bajo estándares RGPD.
                 </p>
               </div>
             </div>
@@ -215,7 +215,7 @@ export default function MarketingPage() {
               </div>
             </div>
 
-            {/* Bento Card 4: Fichas Clínicas */}
+            {/* Bento Card 4: Fichas de Clientes */}
             <div className="md:col-span-2 bg-[#F7F7F5] rounded-3xl p-8 md:p-12 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 relative group min-h-[350px] flex flex-col justify-between">
               <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-[#d4af37]/5 to-transparent rounded-tr-[16rem] group-hover:scale-110 transition-transform duration-700 pointer-events-none"></div>
               
@@ -225,10 +225,10 @@ export default function MarketingPage() {
               
               <div className="relative z-10 mt-auto">
                 <h3 className="text-2xl md:text-3xl font-serif font-bold text-[#1F2937] mb-3">
-                  Expediente Clínico & Consentimientos
+                  Ficha de Clientes & Consentimientos
                 </h3>
                 <p className="text-stone-500 font-medium leading-relaxed max-w-xl">
-                  Firma digital de consentimientos informados integrada en tablet o móvil. Registro cronológico de tratamientos, galería fotográfica evolutiva (antes/después) y alarmas médicas inteligentes.
+                  Firma digital de consentimientos informados integrada en tablet o móvil. Registro cronológico de servicios y tratamientos, galería fotográfica evolutiva (antes/después) y alertas inteligentes personalizadas.
                 </p>
               </div>
             </div>
@@ -255,7 +255,7 @@ export default function MarketingPage() {
             </div>
             
             <div className="mb-8">
-              <span className="text-stone-400 font-bold uppercase text-[10px] tracking-widest block mb-2">Plan Clínico Total</span>
+              <span className="text-stone-400 font-bold uppercase text-[10px] tracking-widest block mb-2">Plan Negocio Total</span>
               <h3 className="text-3xl font-serif font-bold text-[#1F2937]">Plan Platinum</h3>
               <div className="flex items-baseline mt-4">
                 <span className="text-5xl font-serif font-extrabold text-[#1F2937]">99€</span>
@@ -269,13 +269,13 @@ export default function MarketingPage() {
                 <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
                   <Check className="w-3.5 h-3.5" />
                 </div>
-                <span className="text-sm font-semibold text-stone-600">Pacientes ilimitados</span>
+                <span className="text-sm font-semibold text-stone-600">Clientes ilimitados</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
                   <Check className="w-3.5 h-3.5" />
                 </div>
-                <span className="text-sm font-semibold text-stone-600">Agenda médica interactiva</span>
+                <span className="text-sm font-semibold text-stone-600">Agenda inteligente interactiva</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
@@ -350,7 +350,7 @@ export default function MarketingPage() {
 
             <form onSubmit={handleOnboardingSubmit} className="space-y-6">
               
-              {/* Sección Clínica */}
+              {/* Sección Negocio */}
               <div className="space-y-4">
                 <h3 className="text-xs font-extrabold uppercase tracking-widest text-stone-400 pb-1 border-b border-stone-200/40">Datos del Centro / Negocio</h3>
                 
@@ -401,7 +401,7 @@ export default function MarketingPage() {
                     type="text" 
                     name="admin_name"
                     required
-                    placeholder="Ej. Dra. Sofía Valenzuela o Juan Pérez"
+                    placeholder="Ej. Sofía Valenzuela o Juan Pérez"
                     value={formData.admin_name}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3.5 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-1 focus:ring-[#d4af37] focus:border-transparent transition-all text-sm"
