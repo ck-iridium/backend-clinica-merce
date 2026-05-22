@@ -128,10 +128,26 @@ export async function generateMetadata({ params }: { params: { category_slug: st
   };
 }
 
+async function getSettings(tenantId: string) {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/settings/`, {
+      cache: 'no-store',
+      headers: { "X-Tenant-ID": tenantId }
+    });
+    if (res.ok) return await res.json();
+  } catch (e) {
+    console.error("Error fetching settings in TreatmentDynamicPage:", e);
+  }
+  return null;
+}
+
 export default async function TreatmentDynamicPage({ params }: { params: { treatment_slug: string } }) {
   const requestHeaders = headers();
   const tenantId = requestHeaders.get('x-tenant-id') || '00000000-0000-0000-0000-000000000001';
-  const service = await getServiceData(params.treatment_slug, tenantId);
+  const [service, settings] = await Promise.all([
+    getServiceData(params.treatment_slug, tenantId),
+    getSettings(tenantId)
+  ]);
 
   if (!service) {
     notFound();
@@ -226,6 +242,7 @@ export default async function TreatmentDynamicPage({ params }: { params: { treat
               imageUrl={getFullUrl(service.image_url)}
               videoUrl={service.video_url ? getFullUrl(service.video_url) : undefined}
               headerStyle={layoutPreferences.headerStyle}
+              clinicName={settings?.clinic_name || 'ProBookia'}
             />
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-12 z-50 md:hidden">
               <ScrollIndicator />

@@ -6,9 +6,10 @@ interface TreatmentMediaProps {
   imageUrl: string;
   videoUrl?: string;
   headerStyle: string;
+  clinicName?: string;
 }
 
-export default function TreatmentMedia({ imageUrl, videoUrl, headerStyle }: TreatmentMediaProps) {
+export default function TreatmentMedia({ imageUrl, videoUrl, headerStyle, clinicName }: TreatmentMediaProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -23,6 +24,8 @@ export default function TreatmentMedia({ imageUrl, videoUrl, headerStyle }: Trea
       setIsLoaded(true);
     }
   }, []);
+
+  const displayClinicName = clinicName || 'ProBookia';
 
   // Si es estilo video y tenemos URL, usamos el reproductor con poster
   if (headerStyle === 'split_video' && videoUrl) {
@@ -42,9 +45,12 @@ export default function TreatmentMedia({ imageUrl, videoUrl, headerStyle }: Trea
             onError={() => setHasError(true)}
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-stone-100 text-stone-400">
-            <span className="font-serif text-5xl italic mb-2">Merce</span>
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-60">Estética & Bienestar</span>
+          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-stone-50 to-stone-100/50 text-stone-400 border border-stone-200/40 rounded-[2rem] md:rounded-[3rem] p-8 text-center">
+            <div className="w-16 h-16 rounded-full bg-stone-100 border border-stone-200/50 flex items-center justify-center mb-4 shadow-sm">
+              <span className="font-serif text-[#d4af37] text-2xl italic">{displayClinicName.charAt(0).toUpperCase()}</span>
+            </div>
+            <h4 className="font-serif text-3xl italic text-stone-800 mb-1 leading-tight">{displayClinicName}</h4>
+            <span className="text-[9px] font-black uppercase tracking-[0.25em] text-stone-400/80">Estética Avanzada</span>
           </div>
         )}
       </div>
@@ -64,9 +70,12 @@ export default function TreatmentMedia({ imageUrl, videoUrl, headerStyle }: Trea
           onError={() => setHasError(true)}
         />
       ) : (
-        <div className="w-full h-full flex flex-col items-center justify-center bg-stone-50 text-stone-400">
-          <span className="font-serif text-5xl italic mb-2 text-stone-300">Merce</span>
-          <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-60">Estética & Bienestar</span>
+        <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-stone-50 to-stone-100/50 text-stone-400 border border-stone-200/40 rounded-[2rem] md:rounded-[3rem] p-8 text-center">
+          <div className="w-16 h-16 rounded-full bg-stone-100 border border-stone-200/50 flex items-center justify-center mb-4 shadow-sm">
+            <span className="font-serif text-[#d4af37] text-2xl italic">{displayClinicName.charAt(0).toUpperCase()}</span>
+          </div>
+          <h4 className="font-serif text-3xl italic text-stone-800 mb-1 leading-tight">{displayClinicName}</h4>
+          <span className="text-[9px] font-black uppercase tracking-[0.25em] text-stone-400/80">Estética Avanzada</span>
         </div>
       )}
     </div>

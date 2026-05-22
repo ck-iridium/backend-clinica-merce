@@ -22,7 +22,7 @@ interface Message {
 }
 
 interface AIChatContainerProps {
-  onFieldsUpdated?: (fields: string[]) => void;
+  onFieldsUpdated?: (fields: string[], redirectUrl?: string) => void;
 }
 
 export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProps) {
@@ -248,7 +248,7 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
       if (data.updated_fields && data.updated_fields.length > 0) {
         toast.success('¡Cambios aplicados en tiempo real por el Asistente!');
         if (onFieldsUpdated) {
-          onFieldsUpdated(data.updated_fields);
+          onFieldsUpdated(data.updated_fields, data.redirect_url);
         }
       }
     } catch (error: any) {

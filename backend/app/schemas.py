@@ -655,6 +655,7 @@ class AIChatRequest(BaseModel):
 class AIChatResponse(BaseModel):
     response: str
     updated_fields: Optional[List[str]] = None
+    redirect_url: Optional[str] = None
 
 class AIVoiceRequest(BaseModel):
     audio_base64: str

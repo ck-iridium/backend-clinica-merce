@@ -64,7 +64,11 @@ export default function AIWebmasterPage() {
     }
   }, []);
 
-  const handleFieldsUpdated = (updatedFields: string[]) => {
+  const handleFieldsUpdated = (updatedFields: string[], redirectUrl?: string) => {
+    if (redirectUrl) {
+      const origin = window.location.origin;
+      setIframeUrl(`${origin}${redirectUrl}`);
+    }
     // Si la IA modificó campos de la landing page, recargar el iframe automáticamente
     setIframeKey((prev) => prev + 1);
     toast.success('Recargando vista previa con los últimos cambios...');

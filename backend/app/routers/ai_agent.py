@@ -325,6 +325,7 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
 
         # 7. Identificar qué campos/parámetros fueron modificados examinando los eventos de llamada a funciones
         updated_fields = []
+        redirect_url = None
         for message in chat.history:
             for part in message.parts:
                 fn_call = getattr(part, 'function_call', None)
@@ -338,13 +339,20 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
                         updated_fields.append("price")
                     elif name == "create_new_service":
                         updated_fields.append("services")
+                        args = fn_call.args
+                        if args and 'name' in args:
+                            import re
+                            service_name = args['name']
+                            slug = re.sub(r'[^a-z0-9]+', '-', service_name.lower()).strip('-')
+                            redirect_url = f"/tratamientos/general/{slug}"
 
         # Quitar duplicados en campos actualizados si existen
         updated_fields = list(set(updated_fields))
 
         return schemas.AIChatResponse(
             response=response.text.strip(),
-            updated_fields=updated_fields if updated_fields else None
+            updated_fields=updated_fields if updated_fields else None,
+            redirect_url=redirect_url
         )
 
     except Exception as e:
