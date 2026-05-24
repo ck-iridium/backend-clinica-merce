@@ -651,16 +651,19 @@ class ChatMessage(BaseModel):
 class AIChatRequest(BaseModel):
     message: str
     history: List[ChatMessage] = []
+    voice_gender: Optional[str] = "female"
 
 class AIChatResponse(BaseModel):
     response: str
     updated_fields: Optional[List[str]] = None
     redirect_url: Optional[str] = None
+    audio_response_base64: Optional[str] = None
 
 class AIVoiceRequest(BaseModel):
     audio_base64: str
     mime_type: str = "audio/webm"
     history: List[ChatMessage] = []
+    voice_gender: Optional[str] = "female"
 
 class AIVoiceResponse(BaseModel):
     transcript: str

@@ -103,7 +103,29 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
   }, []);
 
   // Web Speech API - Síntesis de voz (Text To Speech) parametrizable y multilingüe
-  const speakText = (text: string) => {
+  const speakText = (text: string, audioBase64?: string | null) => {
+    if (isMuted || typeof window === 'undefined') return;
+
+    if (audioBase64) {
+      try {
+        if (window.speechSynthesis) {
+          window.speechSynthesis.cancel();
+        }
+        const audio = new Audio("data:audio/mp3;base64," + audioBase64);
+        audio.play().catch(err => {
+          console.warn("Fallo al reproducir audio nativo de Gemini, usando fallback de síntesis del navegador:", err);
+          fallbackSpeak(text);
+        });
+        return;
+      } catch (err) {
+        console.warn("Fallo al decodificar audio de Gemini:", err);
+      }
+    }
+
+    fallbackSpeak(text);
+  };
+
+  const fallbackSpeak = (text: string) => {
     if (isMuted || typeof window === 'undefined' || !window.speechSynthesis) return;
 
     // Cancelar lecturas activas previas para evitar superposición
@@ -123,18 +145,18 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
       if (voiceGender === 'female') {
         selectedVoice = langVoices.find((v) => {
           const name = v.name.toLowerCase();
-          return name.includes('female') || name.includes('zira') || name.includes('helena') || 
-                 name.includes('hortense') || name.includes('samantha') || name.includes('elene') || 
-                 name.includes('google') || name.includes('hazel') || name.includes('natural');
+          return name.includes('female') || name.includes('zira') || name.includes('helena') ||
+            name.includes('hortense') || name.includes('samantha') || name.includes('elene') ||
+            name.includes('google') || name.includes('hazel') || name.includes('natural');
         });
       } else {
         selectedVoice = langVoices.find((v) => {
           const name = v.name.toLowerCase();
-          return name.includes('male') || name.includes('david') || name.includes('paul') || 
-                 name.includes('daniel') || name.includes('george') || name.includes('microsoft');
+          return name.includes('male') || name.includes('david') || name.includes('paul') ||
+            name.includes('daniel') || name.includes('george') || name.includes('microsoft');
         });
       }
-      
+
       // Fallback al primer idioma disponible si no coincide el género exacto
       if (!selectedVoice) {
         selectedVoice = langVoices[0];
@@ -202,6 +224,7 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
               role: msg.role,
               content: msg.content,
             })),
+            voice_gender: voiceGender,
           }),
         }
       );
@@ -228,10 +251,10 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
             slug: parsed.slug,
             target: parsed.target
           });
-          finalResponseText = language === 'fr' 
-            ? `⚠️ Demande de confirmation de suppression en attente...` 
-            : language === 'en' 
-              ? `⚠️ Pending deletion confirmation...` 
+          finalResponseText = language === 'fr'
+            ? `⚠️ Demande de confirmation de suppression en attente...`
+            : language === 'en'
+              ? `⚠️ Pending deletion confirmation...`
               : `⚠️ Solicitud de confirmación de eliminación pendiente...`;
         }
       } catch (e) {
@@ -242,7 +265,7 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
       setMessages((prev) => [...prev, { role: 'model', content: finalResponseText }]);
 
       // 5. Leer respuesta en voz alta
-      speakText(finalResponseText);
+      speakText(finalResponseText, data.audio_response_base64);
 
       // 6. Notificar actualización de campos para recargar vista previa
       if (data.updated_fields && data.updated_fields.length > 0) {
@@ -289,7 +312,7 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
             <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mt-0.5">{t('ai_chat.subtitle') || 'AI Webmaster en línea'}</p>
           </div>
         </div>
-        
+
         {/* Controles de Cabecera (Voz, Silencio y Reinicio) */}
         <div className="flex items-center gap-2">
           {/* Selector de Género */}
@@ -313,21 +336,20 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
               if (nextMuted && typeof window !== 'undefined' && window.speechSynthesis) {
                 window.speechSynthesis.cancel();
               }
-              toast.info(nextMuted 
-                ? (language === 'fr' ? 'Synthèse vocale coupée' : language === 'en' ? 'Text-to-speech muted' : 'Síntesis de voz silenciada') 
+              toast.info(nextMuted
+                ? (language === 'fr' ? 'Synthèse vocale coupée' : language === 'en' ? 'Text-to-speech muted' : 'Síntesis de voz silenciada')
                 : (language === 'fr' ? 'Synthèse vocale activée' : language === 'en' ? 'Text-to-speech activated' : 'Síntesis de voz activada')
               );
             }}
-            className={`p-2.5 rounded-xl transition-all duration-300 ${
-              isMuted
+            className={`p-2.5 rounded-xl transition-all duration-300 ${isMuted
                 ? 'text-stone-300 hover:text-stone-500 hover:bg-stone-50'
                 : 'text-[#d4af37] hover:text-[#b38f2b] hover:bg-amber-50/50'
-            }`}
+              }`}
             title={isMuted ? (language === 'fr' ? 'Activer la lecture' : language === 'en' ? 'Unmute reading' : 'Activar lectura en voz alta') : (language === 'fr' ? 'Désactiver la lecture' : language === 'en' ? 'Mute reading' : 'Silenciar lectura')}
           >
             {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
           </button>
-          
+
           <button
             onClick={() => {
               if (typeof window !== 'undefined' && window.speechSynthesis) {
@@ -336,10 +358,10 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
               setMessages([
                 {
                   role: 'model',
-                  content: language === 'fr' 
-                    ? 'Conversation réinitialisée. En quoi puis-je vous aider maintenant avec votre page d\'accueil ou votre agenda ?' 
-                    : language === 'en' 
-                      ? 'Conversation reset. How can I assist you now with your landing page or schedule?' 
+                  content: language === 'fr'
+                    ? 'Conversation réinitialisée. En quoi puis-je vous aider maintenant avec votre page d\'accueil ou votre agenda ?'
+                    : language === 'en'
+                      ? 'Conversation reset. How can I assist you now with your landing page or schedule?'
                       : 'Conversación reiniciada. ¿En qué puedo asistirte ahora con tu landing page o agenda?',
                 },
               ]);
@@ -360,16 +382,14 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
           return (
             <div
               key={i}
-              className={`flex gap-3.5 max-w-[85%] ${
-                isUser ? 'ml-auto flex-row-reverse' : 'mr-auto'
-              } animate-in fade-in slide-in-from-bottom-2 duration-300`}
+              className={`flex gap-3.5 max-w-[85%] ${isUser ? 'ml-auto flex-row-reverse' : 'mr-auto'
+                } animate-in fade-in slide-in-from-bottom-2 duration-300`}
             >
               <div
-                className={`flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-lg shadow-sm border transition-all duration-300 overflow-hidden ${
-                  isUser
+                className={`flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-lg shadow-sm border transition-all duration-300 overflow-hidden ${isUser
                     ? 'bg-stone-900 border-stone-850 text-white'
                     : 'bg-white border-[#d4af37]/30 text-[#d4af37]'
-                }`}
+                  }`}
               >
                 {isUser ? (
                   userAvatar ? (
@@ -384,11 +404,10 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
 
               <div className="flex flex-col gap-1">
                 <div
-                  className={`px-5 py-3.5 rounded-2xl text-[13.5px] leading-relaxed shadow-sm font-sans whitespace-pre-line transition-all duration-300 ${
-                    isUser
+                  className={`px-5 py-3.5 rounded-2xl text-[13.5px] leading-relaxed shadow-sm font-sans whitespace-pre-line transition-all duration-300 ${isUser
                       ? 'bg-stone-900 text-white rounded-tr-none'
                       : 'bg-white border border-stone-200/50 text-stone-800 rounded-tl-none'
-                  }`}
+                    }`}
                 >
                   {msg.content}
                 </div>
@@ -497,17 +516,17 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
                 const errJson = await deleteRes.json();
                 throw new Error(errJson.detail || 'Error al eliminar el servicio.');
               }
-              
+
               toast.success(language === 'fr' ? 'Service supprimé.' : language === 'en' ? 'Service deleted.' : 'Servicio eliminado con éxito.');
               setMessages((prev) => [
-                ...prev, 
-                { 
-                  role: 'model', 
+                ...prev,
+                {
+                  role: 'model',
                   content: language === 'fr'
                     ? `Succès: Le service avec le slug '${slug}' a été supprimé.`
                     : language === 'en'
                       ? `Success: The service with slug '${slug}' has been deleted.`
-                      : `Éxito: El servicio con slug '${slug}' ha sido eliminado correctamente.` 
+                      : `Éxito: El servicio con slug '${slug}' ha sido eliminado correctamente.`
                 }
               ]);
               if (onFieldsUpdated) {

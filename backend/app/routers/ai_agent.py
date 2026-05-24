@@ -338,17 +338,20 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
         "9. GENERACIÓN DE DESCRIPCIONES (CORTAS Y DETALLADAS): Tienes la capacidad de redactar y actualizar dos tipos de descripciones para los servicios de la clínica:\n"
         "   - DESCRIPCIÓN CORTA (campo 'description'): Es una presentación breve e inspiradora (1-2 párrafos sofisticados) que se muestra en las tarjetas generales del catálogo. Si el usuario pide 'una descripción', 'descripción corta' o similar, redáctala con un tono sofisticado (estilo Quiet Luxury) y guárdala en el argumento 'description'.\n"
         "   - CONTENIDO LARGO Y DETALLADO (campo 'content_html'): Es el contenido comercial principal, explicativo y rico de la página completa del tratamiento. Si el usuario te pide 'genera el contenido largo', 'redacta el contenido de la página', 'contenido detallado' o similar, debes utilizar tu capacidad creativa como LLM para redactar un texto extenso, completo, sumamente estructurado y elegante en formato HTML premium (utilizando etiquetas <p>, <ul>, <li>, <strong>, subsecciones con buen espaciado y un enfoque comercial de lujo), y guardarlo en el argumento 'content_html'.\n"
-        "   - ACLARACIÓN DE BREVEDAD: La regla 6 (ser extremadamente breve) aplica UNICAMENTE al mensaje final de chat que el usuario ve/escucha en el globo de conversación (donde debes ser sofisticadamente conciso). Sin embargo, los textos que generas para guardar en la base de datos a través de 'update_service_fields' (tanto en 'description' como en 'content_html') DEBEN ser tan ricos, largos, persuasivos, descriptivos y extensos como sea necesario para lucir espectaculares en el catálogo público."
+        "   - ACLARACIÓN DE BREVEDAD: La regla 6 (ser extremadamente breve) aplica UNICAMENTE al mensaje final de chat que el usuario ve/escucha en el globo de conversación (donde debes ser sofisticadamente conciso). Sin embargo, los textos que generas para guardar en la base de datos a través de 'update_service_fields' (tanto en 'description' como en 'content_html') DEBEN ser tan ricos, largos, persuasivos, descriptivos y extensos como sea necesario para lucir espectaculares en el catálogo público.\n"
+        "   - Tienes la capacidad de redactar descripciones premium y sofisticadas (estilo Quiet Luxury) para los servicios. Si el usuario te pide generar una descripción, redáctala con elegancia en el idioma del usuario y guárdala inmediatamente invocando la herramienta correspondiente.\n"
+        "10. ETIQUETAS DE DIRECCIÓN DE VOZ (TTS PROMPTING): Al redactar tu respuesta de texto final (nunca dentro de los JSON estructurados, solo cuando sea lenguaje natural directo), debes guiar la locución intercalando ocasionalmente etiquetas de dirección de voz encerradas entre corchetes para modular la entonación y el ritmo de la voz. Queremos lograr una voz sumamente energética, ágil, fluida y concisa. Utiliza obligatoriamente etiquetas dinámicas como [fast], [fluent], [short pause], o [with enthusiasm] antes de tus frases importantes (ejemplo: '[with enthusiasm] ¡Excelente! [short pause] [fast] Lo tengo listo de inmediato.'). Evita por completo usar etiquetas lentas o pausadas como [slower] o [deliberate pause]. Mantén tu texto corto y directo al grano."
     )
 
     try:
-        model = genai.GenerativeModel(
+        # 1. EL CEREBRO (Gemini 2.5 Flash): Mantiene la sesión de chat con herramientas y multiturnos (100% estable)
+        model_brain = genai.GenerativeModel(
             model_name="gemini-2.5-flash",
             tools=AGENT_TOOLS,
             system_instruction=system_instruction
         )
 
-        # 4. Formatear el historial de chat al formato del SDK de Google Gemini
+        # Formatear el historial de chat al formato del SDK de Google Gemini
         history_parts = []
         for msg in request.history:
             history_parts.append({
@@ -356,13 +359,14 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
                 "parts": [msg.content]
             })
 
-        # 5. Iniciar sesión de chat con resolución automática de llamadas a funciones
-        chat = model.start_chat(history=history_parts, enable_automatic_function_calling=True)
+        # Iniciar sesión de chat con resolución automática de llamadas a funciones
+        chat = model_brain.start_chat(history=history_parts, enable_automatic_function_calling=True)
 
-        # 6. Enviar mensaje del inquilino
-        response = chat.send_message(request.message)
+        # Enviar mensaje del inquilino al cerebro
+        response_brain = chat.send_message(request.message)
+        brain_text = response_brain.text.strip()
 
-        # 7. Identificar qué campos/parámetros fueron modificados examinando los eventos de llamada a funciones
+        # 2. Identificar qué campos/parámetros fueron modificados examinando los eventos de llamada a funciones
         updated_fields = []
         redirect_url = None
         for message in chat.history:
@@ -372,7 +376,6 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
                     name = fn_call.name
                     if name == "update_landing_config":
                         args = fn_call.args
-                        # args es un diccionario-like
                         updated_fields.extend(args.keys())
                     elif name == "update_service_fields":
                         args = fn_call.args
@@ -390,10 +393,95 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
         # Quitar duplicados en campos actualizados si existen
         updated_fields = list(set(updated_fields))
 
+        # 3. LA VOZ (Gemini 3.1 Flash TTS): Convierte de forma secuencial el texto en voz hiperrealista (llamada single-turn)
+        audio_response_base64 = None
+        try:
+            # Seleccionar voz según la preferencia enviada por el frontend
+            voice_gender = getattr(request, 'voice_gender', 'female')
+            voice_name = "Algieba" if voice_gender == "male" else "Zephyr"
+
+            generation_config = {
+                "response_modalities": ["TEXT", "AUDIO"],
+                "speech_config": {
+                    "voice_config": {
+                        "prebuilt_voice_config": {
+                            "voice_name": voice_name
+                        }
+                    }
+                }
+            }
+            model_voice = genai.GenerativeModel(
+                model_name="gemini-3.1-flash-tts-preview",
+                generation_config=generation_config
+            )
+
+            # Formatear el prompt de locución estructurado (Director's Note + Audio Profile + Transcript)
+            prompt_voice = (
+                f"[Audio Profile]\n"
+                f"A highly professional, elegant, elite, and energetic native speaker from Madrid, Spain. "
+                f"Uses an authentic Peninsular Spanish accent with absolute naturalness, clarity, and sophistication. "
+                f"The voice gender is {'male' if voice_gender == 'male' else 'female'}.\n\n"
+                f"[Scene]\n"
+                f"A premium, fast-paced, high-end medical-aesthetic clinic. The atmosphere is warm, positive, dynamic, and prestigious.\n\n"
+                f"[Director's Note]\n"
+                f"Deliver this script with a crisp, clear, and energetic Peninsular Castilian accent (no seseo, clear distinction, genuine Madrid cadence). "
+                f"Speak very dynamically at a fast, fluent, active, and agile pace. Keep the delivery concise, lively, and highly convincing, avoiding any slow speech, artificial pauses, or sluggishness. "
+                f"Execute all formatting brackets like [fast] or [with enthusiasm] with natural vocal energy.\n\n"
+                f"[Transcript]\n"
+                f"{brain_text}"
+            )
+            # Llamada de una sola vuelta (single-turn) que es la que el modelo de voz soporta perfectamente
+            response_voice = model_voice.generate_content(prompt_voice)
+            
+            for candidate in response_voice.candidates:
+                content = getattr(candidate, 'content', None)
+                parts = getattr(content, 'parts', []) if content else []
+                for part in parts:
+                    inline_data = getattr(part, 'inline_data', None)
+                    if inline_data:
+                        mime_type = getattr(inline_data, 'mime_type', None)
+                        data_bytes = getattr(inline_data, 'data', None)
+                        if mime_type and data_bytes and mime_type.startswith("audio/"):
+                            import base64
+                            audio_bytes = data_bytes
+                            # Si es PCM raw (audio/l16), le añadimos la cabecera WAV de 44 bytes para que el navegador lo reconozca
+                            if "rate=24000" in mime_type or "l16" in mime_type or len(audio_bytes) > 1000:
+                                import struct
+                                # WAV header (44 bytes) for 24000Hz, 16-bit, Mono PCM
+                                channels = 1
+                                bit_depth = 16
+                                sample_rate = 24000
+                                header = b'RIFF'
+                                header += struct.pack('<I', 36 + len(audio_bytes))
+                                header += b'WAVEfmt '
+                                header += struct.pack('<I', 16)
+                                header += struct.pack('<H', 1)
+                                header += struct.pack('<H', channels)
+                                header += struct.pack('<I', sample_rate)
+                                header += struct.pack('<I', sample_rate * channels * (bit_depth // 8))
+                                header += struct.pack('<H', channels * (bit_depth // 8))
+                                header += struct.pack('<H', bit_depth)
+                                header += b'data'
+                                header += struct.pack('<I', len(audio_bytes))
+                                audio_bytes = header + audio_bytes
+                            audio_response_base64 = base64.b64encode(audio_bytes).decode("utf-8")
+                            break
+                if audio_response_base64:
+                    break
+        except Exception as voice_err:
+            logger.error(f"Error al generar audio en Gemini 3.1 TTS: {voice_err}")
+
+        # Limpiar las etiquetas de dirección de voz (como [warmly], [deliberate pause]) para el chat de texto de la UI
+        import re
+        clean_text = re.sub(r'\[.*?\]', '', brain_text).strip()
+        # Normalizar espacios duplicados que puedan haber quedado tras quitar las etiquetas
+        clean_text = re.sub(r'\s+', ' ', clean_text)
+
         return schemas.AIChatResponse(
-            response=response.text.strip(),
+            response=clean_text,
             updated_fields=updated_fields if updated_fields else None,
-            redirect_url=redirect_url
+            redirect_url=redirect_url,
+            audio_response_base64=audio_response_base64
         )
 
     except Exception as e:

@@ -80,7 +80,39 @@ export default function AICopilotWidget() {
   }, [messages, isOpen]);
 
   // Speak response out loud if not muted with proper native premium voice
-  const speakText = (text: string, onEndCallback?: () => void) => {
+  const speakText = (text: string, audioBase64?: string | null, onEndCallback?: () => void) => {
+    if (isMuted || typeof window === 'undefined') {
+      if (onEndCallback) onEndCallback();
+      return;
+    }
+
+    if (audioBase64) {
+      try {
+        if (window.speechSynthesis) {
+          window.speechSynthesis.cancel();
+        }
+        const audio = new Audio("data:audio/mp3;base64," + audioBase64);
+        audio.onended = () => {
+          if (onEndCallback) onEndCallback();
+        };
+        audio.onerror = () => {
+          console.warn("Fallo en la reproducción del audio nativo en copilot widget, fallback a síntesis");
+          fallbackSpeak(text, onEndCallback);
+        };
+        audio.play().catch(err => {
+          console.warn("Fallo al reproducir audio nativo de Gemini, usando fallback de síntesis del navegador:", err);
+          fallbackSpeak(text, onEndCallback);
+        });
+        return;
+      } catch (err) {
+        console.warn("Fallo al decodificar audio de Gemini:", err);
+      }
+    }
+
+    fallbackSpeak(text, onEndCallback);
+  };
+
+  const fallbackSpeak = (text: string, onEndCallback?: () => void) => {
     if (isMuted || typeof window === 'undefined' || !window.speechSynthesis) {
       if (onEndCallback) onEndCallback();
       return;
@@ -217,7 +249,7 @@ export default function AICopilotWidget() {
       // 6. Speak response, then perform transitions (navigation or reload) ONLY after speaking completes
       const shouldRefresh = data.updated_fields && data.updated_fields.length > 0;
 
-      speakText(responseText, () => {
+      speakText(responseText, data.audio_response_base64, () => {
         if (targetRoute) {
           router.push(targetRoute);
           setIsOpen(false);

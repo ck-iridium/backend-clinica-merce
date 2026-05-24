@@ -9,13 +9,15 @@ Antes de sugerir cualquier acción de Git, detectaré en qué modo estoy operand
 Está terminantemente prohibido ejecutar comandos por mí mismo o agruparlos en un solo bloque.
 FORMATO OBLIGATORIO: Proporcionaré los comandos en bloques de código separados por líneas bash, permitiendo el copiado individual.
 
-Formato de salida:
+Formato de salida en linea de commandos  con copiar y usar directamente en consola, por separado:
 
 🛠️ ¡Listo! Aquí tienes los comandos separados para tu terminal:
 
 Bash
 git add .
+
 Bash
 git commit -m "[mensaje]"
+
 Bash
 git push
