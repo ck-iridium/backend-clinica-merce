@@ -261,11 +261,11 @@ def move_service_to_category(
     category_slug: str
 ) -> str:
     """
-    Mueve un tratamiento o servicio a una categoría específica utilizando sus respectivos slugs.
+    Mueve un tratamiento o servicio a una categoría específica utilizando sus respectivos slugs o nombres aproximados.
     
     Args:
-        service_slug: El slug único del tratamiento/servicio que deseas mover (ej. 'botox', 'masaje-relajante').
-        category_slug: El slug único de la categoría de destino (ej. 'medicina-estetica', 'masajes').
+        service_slug: El slug único o nombre del tratamiento/servicio que deseas mover (ej. 'botox', 'masaje-relajante').
+        category_slug: El slug único o nombre de la categoría de destino (ej. 'medicina-estetica', 'masajes').
     """
     db = SessionLocal()
     try:
@@ -273,30 +273,62 @@ def move_service_to_category(
         if not tenant_id:
             return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
             
-        # 1. Buscar el servicio
+        # 1. Buscar el servicio de forma ultra-robusta (slug, nombre exacto, o parcial)
         service = db.query(models.Service).filter(
             models.Service.tenant_id == tenant_id,
             models.Service.slug == service_slug
         ).first()
         
         if not service:
-            return f"Error: No se encontró ningún servicio con el slug '{service_slug}' en esta clínica."
+            # Buscar por nombre exacto (case-insensitive)
+            service = db.query(models.Service).filter(
+                models.Service.tenant_id == tenant_id,
+                models.Service.name.ilike(service_slug)
+            ).first()
             
-        # 2. Buscar la categoría de destino
+        if not service:
+            # Búsqueda parcial por nombre
+            service = db.query(models.Service).filter(
+                models.Service.tenant_id == tenant_id,
+                models.Service.name.ilike(f"%{service_slug}%")
+            ).first()
+            
+        if not service:
+            # Convertir espacios en guiones
+            import re
+            converted_slug = re.sub(r'[^a-z0-9]+', '-', service_slug.lower()).strip('-')
+            service = db.query(models.Service).filter(
+                models.Service.tenant_id == tenant_id,
+                models.Service.slug == converted_slug
+            ).first()
+            
+        if not service:
+            return f"Error: No se encontró ningún servicio que coincida con '{service_slug}' en esta clínica."
+            
+        # 2. Buscar la categoría de destino de forma ultra-robusta
         category = db.query(models.ServiceCategory).filter(
             models.ServiceCategory.tenant_id == tenant_id,
             models.ServiceCategory.slug == category_slug
         ).first()
         
         if not category:
-            # Intentar búsqueda aproximada por nombre
+            # Búsqueda aproximada por nombre
             category = db.query(models.ServiceCategory).filter(
                 models.ServiceCategory.tenant_id == tenant_id,
                 models.ServiceCategory.name.ilike(f"%{category_slug}%")
             ).first()
             
         if not category:
-            return f"Error: No se encontró la categoría '{category_slug}'. Pídele al usuario que cree la categoría primero o especifique una válida."
+            # Convertir espacios en guiones
+            import re
+            converted_slug = re.sub(r'[^a-z0-9]+', '-', category_slug.lower()).strip('-')
+            category = db.query(models.ServiceCategory).filter(
+                models.ServiceCategory.tenant_id == tenant_id,
+                models.ServiceCategory.slug == converted_slug
+            ).first()
+            
+        if not category:
+            return f"Error: No se encontró la categoría '{category_slug}'."
             
         # 3. Asignar la categoría al servicio
         service.category_id = category.id
@@ -505,6 +537,42 @@ def list_services_in_category(category_slug: str) -> str:
         db.close()
 
 
+def list_all_services() -> str:
+    """
+    Obtiene el listado completo de todos los servicios o tratamientos de la clínica,
+    con sus precios, duración y categoría asignada.
+    """
+    db = SessionLocal()
+    try:
+        tenant_id = current_tenant_var.get()
+        if not tenant_id:
+            return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
+            
+        services = db.query(models.Service).filter(
+            models.Service.tenant_id == tenant_id,
+            models.Service.is_active == True
+        ).all()
+        
+        if not services:
+            return "No hay ningún servicio registrado en esta clínica todavía."
+            
+        result = ["Servicios registrados en la clínica:"]
+        for s in services:
+            cat_name = "Ninguna"
+            if s.category_id:
+                cat = db.query(models.ServiceCategory).filter(models.ServiceCategory.id == s.category_id).first()
+                if cat:
+                    cat_name = cat.name
+            result.append(f"- {s.name} (slug: '{s.slug}', precio: {s.price}€, duración: {s.duration_minutes} min, categoría: '{cat_name}')")
+            
+        return "\n".join(result)
+    except Exception as e:
+        logger.error(f"Error en list_all_services: {e}")
+        return f"Error al listar los servicios: {str(e)}"
+    finally:
+        db.close()
+
+
 # Lista de herramientas disponibles para Gemini
 AGENT_TOOLS = [
     update_landing_config, 
@@ -515,7 +583,8 @@ AGENT_TOOLS = [
     get_uncategorized_services_and_categories,
     create_new_category,
     list_all_categories,
-    list_services_in_category
+    list_services_in_category,
+    list_all_services
 ]
 
 # ---------------------------------------------------------------------

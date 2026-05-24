@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sparkles, X, Send, Bot, User, Volume2, VolumeX, MessageSquare } from 'lucide-react';
+import { Sparkles, X, Send, Bot, User, Volume2, VolumeX, MessageSquare, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import VoiceRecorderButton from './VoiceRecorderButton';
 import { useLanguage } from '@/app/contexts/LanguageContext';
@@ -72,6 +72,49 @@ export default function AICopilotWidget() {
       return prev;
     });
   }, [language]);
+
+  // Cargar historial persistido al montar (Hydration Safe)
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem('probookia_copilot_history');
+      if (saved) {
+        setMessages(JSON.parse(saved));
+      }
+    } catch (e) {
+      console.warn("Error al cargar historial del copilot:", e);
+    }
+  }, []);
+
+  // Guardar historial al actualizar mensajes
+  useEffect(() => {
+    if (messages.length > 1) {
+      try {
+        sessionStorage.setItem('probookia_copilot_history', JSON.stringify(messages));
+      } catch (e) {
+        console.warn("Error al guardar historial del copilot:", e);
+      }
+    }
+  }, [messages]);
+
+  // Reiniciar historial
+  const handleClearHistory = () => {
+    try {
+      sessionStorage.removeItem('probookia_copilot_history');
+      setMessages([
+        {
+          role: 'model',
+          content: language === 'fr' 
+            ? 'Bonjour, je suis votre Copilote ProBookia. Dites-moi où vous souhaitez naviguer ou quel traitement vous souhaitez créer.'
+            : language === 'en'
+              ? 'Hello, I am your ProBookia Copilot. Tell me where you want to navigate or what service you want to create.'
+              : 'Hola, soy tu Co-Piloto ProBookia. Dime a qué sección del panel deseas ir o qué tratamiento quieres crear hoy.',
+        },
+      ]);
+      toast.success('Historial de conversación reiniciado.');
+    } catch (e) {
+      console.warn("Error al borrar historial:", e);
+    }
+  };
 
   // Auto-scroll inside messages
   useEffect(() => {
@@ -309,6 +352,15 @@ export default function AICopilotWidget() {
                 title={isMuted ? 'Activar Voz' : 'Silenciar Voz'}
               >
                 {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
+              </button>
+              
+              {/* Botón Reiniciar Chat */}
+              <button
+                onClick={handleClearHistory}
+                className="p-1.5 rounded-lg text-stone-400 hover:text-red-400 hover:bg-stone-800 transition-all"
+                title="Reiniciar Conversación"
+              >
+                <RotateCcw size={15} />
               </button>
               
               {/* Botón Cerrar */}
