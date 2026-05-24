@@ -25,7 +25,8 @@ interface Message {
 export default function AICopilotWidget() {
   const router = useRouter();
   const { language, t } = useLanguage();
-  const { role, loading: loadingRole } = useAuthRole();
+  const { role, userName: authUserName, loading: loadingRole } = useAuthRole();
+  const firstName = authUserName ? authUserName.trim().split(' ')[0] : '';
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -220,6 +221,7 @@ export default function AICopilotWidget() {
               role: msg.role,
               content: msg.content,
             })),
+            user_name: firstName,
           }),
         }
       );

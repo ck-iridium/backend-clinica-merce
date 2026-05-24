@@ -256,8 +256,267 @@ def create_new_service(name: str, price: float, duration_minutes: Optional[int] 
         db.close()
 
 
+def move_service_to_category(
+    service_slug: str,
+    category_slug: str
+) -> str:
+    """
+    Mueve un tratamiento o servicio a una categoría específica utilizando sus respectivos slugs.
+    
+    Args:
+        service_slug: El slug único del tratamiento/servicio que deseas mover (ej. 'botox', 'masaje-relajante').
+        category_slug: El slug único de la categoría de destino (ej. 'medicina-estetica', 'masajes').
+    """
+    db = SessionLocal()
+    try:
+        tenant_id = current_tenant_var.get()
+        if not tenant_id:
+            return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
+            
+        # 1. Buscar el servicio
+        service = db.query(models.Service).filter(
+            models.Service.tenant_id == tenant_id,
+            models.Service.slug == service_slug
+        ).first()
+        
+        if not service:
+            return f"Error: No se encontró ningún servicio con el slug '{service_slug}' en esta clínica."
+            
+        # 2. Buscar la categoría de destino
+        category = db.query(models.ServiceCategory).filter(
+            models.ServiceCategory.tenant_id == tenant_id,
+            models.ServiceCategory.slug == category_slug
+        ).first()
+        
+        if not category:
+            # Intentar búsqueda aproximada por nombre
+            category = db.query(models.ServiceCategory).filter(
+                models.ServiceCategory.tenant_id == tenant_id,
+                models.ServiceCategory.name.ilike(f"%{category_slug}%")
+            ).first()
+            
+        if not category:
+            return f"Error: No se encontró la categoría '{category_slug}'. Pídele al usuario que cree la categoría primero o especifique una válida."
+            
+        # 3. Asignar la categoría al servicio
+        service.category_id = category.id
+        db.commit()
+        
+        return f"Éxito: El servicio '{service.name}' ha sido movido correctamente a la categoría '{category.name}'."
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error al mover servicio {service_slug} a categoría {category_slug}: {e}")
+        return f"Error al mover el servicio: {str(e)}"
+    finally:
+        db.close()
+
+
+def get_uncategorized_services_and_categories() -> str:
+    """
+    Obtiene el listado de servicios que no tienen categoría asignada (o están en la categoría por defecto 'General')
+    así como el listado de todas las categorías disponibles en la clínica para poder recomendar traslados.
+    """
+    db = SessionLocal()
+    try:
+        tenant_id = current_tenant_var.get()
+        if not tenant_id:
+            return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
+            
+        # 1. Obtener todas las categorías
+        categories = db.query(models.ServiceCategory).filter(
+            models.ServiceCategory.tenant_id == tenant_id,
+            models.ServiceCategory.is_active == True
+        ).all()
+        
+        cat_list = [f"- {c.name} (slug: {c.slug})" for c in categories]
+        cat_str = "\n".join(cat_list) if cat_list else "Ninguna categoría creada aún."
+        
+        # 2. Obtener servicios sin categoría (category_id es None)
+        uncategorized_services = db.query(models.Service).filter(
+            models.Service.tenant_id == tenant_id,
+            models.Service.category_id == None
+        ).all()
+        
+        # También buscar servicios en una categoría llamada 'general' o 'General'
+        general_cat = db.query(models.ServiceCategory).filter(
+            models.ServiceCategory.tenant_id == tenant_id,
+            models.ServiceCategory.name.ilike("general")
+        ).first()
+        
+        if general_cat:
+            services_in_general = db.query(models.Service).filter(
+                models.Service.tenant_id == tenant_id,
+                models.Service.category_id == general_cat.id
+            ).all()
+            # Unir listas
+            uncategorized_services.extend(services_in_general)
+            
+        # Quitar duplicados por ID
+        seen = set()
+        unique_services = []
+        for s in uncategorized_services:
+            if s.id not in seen:
+                seen.add(s.id)
+                unique_services.append(s)
+                
+        srv_list = [f"- {s.name} (slug: {s.slug})" for s in unique_services]
+        srv_str = "\n".join(srv_list) if srv_list else "Todos los servicios ya están categorizados correctamente."
+        
+        return (
+            f"--- CATEGORÍAS DISPONIBLES EN LA CLÍNICA ---\n{cat_str}\n\n"
+            f"--- SERVICIOS EN CATEGORÍA GENERAL O SIN ASIGNAR ---\n{srv_str}"
+        )
+    except Exception as e:
+        logger.error(f"Error en get_uncategorized_services_and_categories: {e}")
+        return f"Error al consultar servicios y categorías: {str(e)}"
+    finally:
+        db.close()
+
+
+def create_new_category(
+    name: str,
+    description: Optional[str] = None
+) -> str:
+    """
+    Crea una nueva categoría de tratamientos/servicios en la base de datos de la clínica.
+    
+    Args:
+        name: El nombre legible de la categoría (ej. 'Medicina Estética', 'Corporales').
+        description: Una descripción opcional sobre qué tratamientos incluye esta categoría.
+    """
+    import uuid
+    db = SessionLocal()
+    try:
+        tenant_id = current_tenant_var.get()
+        if not tenant_id:
+            return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
+            
+        import re
+        # Generar slug único
+        slug = re.sub(r'[^a-z0-9]+', '-', name.lower()).strip('-')
+        
+        # Verificar duplicado
+        existing = db.query(models.ServiceCategory).filter(
+            models.ServiceCategory.tenant_id == tenant_id,
+            models.ServiceCategory.slug == slug
+        ).first()
+        
+        if existing:
+            return f"Error: Ya existe una categoría con el nombre o slug '{name}'."
+            
+        new_cat = models.ServiceCategory(
+            id=str(uuid.uuid4()),
+            tenant_id=tenant_id,
+            name=name,
+            slug=slug,
+            description=description,
+            is_active=True
+        )
+        db.add(new_cat)
+        db.commit()
+        return f"Éxito: Se ha creado correctamente la nueva categoría '{name}' con el slug '{slug}'."
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error al crear categoría {name}: {e}")
+        return f"Error al crear la categoría: {str(e)}"
+    finally:
+        db.close()
+
+
+def list_all_categories() -> str:
+    """
+    Obtiene la lista completa de todas las categorías de servicios/tratamientos registradas en la clínica.
+    """
+    db = SessionLocal()
+    try:
+        tenant_id = current_tenant_var.get()
+        if not tenant_id:
+            return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
+            
+        categories = db.query(models.ServiceCategory).filter(
+            models.ServiceCategory.tenant_id == tenant_id,
+            models.ServiceCategory.is_active == True
+        ).order_by(models.ServiceCategory.order_index).all()
+        
+        if not categories:
+            return "No hay ninguna categoría registrada en esta clínica todavía."
+            
+        result = ["Categorías registradas en la clínica:"]
+        for c in categories:
+            desc = f" - Desc: {c.description}" if c.description else ""
+            result.append(f"- {c.name} (slug: '{c.slug}'){desc}")
+            
+        return "\n".join(result)
+    except Exception as e:
+        logger.error(f"Error en list_all_categories: {e}")
+        return f"Error al listar las categorías: {str(e)}"
+    finally:
+        db.close()
+
+
+def list_services_in_category(category_slug: str) -> str:
+    """
+    Lista todos los servicios o tratamientos que pertenecen a una categoría específica utilizando su slug o nombre aproximado.
+    
+    Args:
+        category_slug: El slug de la categoría a consultar (ej. 'medicina-estetica', 'faciales').
+    """
+    db = SessionLocal()
+    try:
+        tenant_id = current_tenant_var.get()
+        if not tenant_id:
+            return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
+            
+        # 1. Buscar la categoría
+        category = db.query(models.ServiceCategory).filter(
+            models.ServiceCategory.tenant_id == tenant_id,
+            models.ServiceCategory.slug == category_slug
+        ).first()
+        
+        if not category:
+            # Búsqueda aproximada por nombre
+            category = db.query(models.ServiceCategory).filter(
+                models.ServiceCategory.tenant_id == tenant_id,
+                models.ServiceCategory.name.ilike(f"%{category_slug}%")
+            ).first()
+            
+        if not category:
+            return f"Error: No se encontró la categoría '{category_slug}'."
+            
+        # 2. Buscar servicios asociados
+        services = db.query(models.Service).filter(
+            models.Service.tenant_id == tenant_id,
+            models.Service.category_id == category.id,
+            models.Service.is_active == True
+        ).all()
+        
+        if not services:
+            return f"La categoría '{category.name}' no tiene ningún servicio o tratamiento activo asignado actualmente."
+            
+        result = [f"Servicios en la categoría '{category.name}':"]
+        for s in services:
+            result.append(f"- {s.name} (slug: '{s.slug}', precio: {s.price}€, duración: {s.duration_minutes} min)")
+            
+        return "\n".join(result)
+    except Exception as e:
+        logger.error(f"Error en list_services_in_category para {category_slug}: {e}")
+        return f"Error al listar los servicios de la categoría: {str(e)}"
+    finally:
+        db.close()
+
+
 # Lista de herramientas disponibles para Gemini
-AGENT_TOOLS = [update_landing_config, update_service_fields, get_daily_appointments, create_new_service]
+AGENT_TOOLS = [
+    update_landing_config, 
+    update_service_fields, 
+    get_daily_appointments, 
+    create_new_service, 
+    move_service_to_category, 
+    get_uncategorized_services_and_categories,
+    create_new_category,
+    list_all_categories,
+    list_services_in_category
+]
 
 # ---------------------------------------------------------------------
 # ENDPOINT DE CHAT
@@ -300,10 +559,16 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
     # 2. Configurar la API de Gemini
     genai.configure(api_key=api_key)
 
+    user_name = getattr(request, 'user_name', None)
+    greeting_instruction = ""
+    if user_name and user_name.strip():
+        greeting_instruction = f"El usuario actual con el que estás hablando en la sesión de administración se llama '{user_name.strip()}'. Dirígete a él o ella de manera cordial y educada directamente por su nombre '{user_name.strip()}' a lo largo de tu conversación.\n\n"
+
     system_instruction = (
+        greeting_instruction +
         "Eres el 'AI Webmaster & Voice Agent' oficial de ProBookia, un asistente virtual premium "
         "diseñado para clínicas de medicina estética y alta gama. Tienes acceso a herramientas avanzadas "
-        "para consultar citas de la agenda de hoy, modificar precios o descripciones de servicios (update_service_fields), crear nuevos servicios (create_new_service) y modificar el diseño visual "
+        "para consultar citas de la agenda de hoy, modificar precios o descripciones de servicios (update_service_fields), crear nuevos servicios (create_new_service), mover servicios a categorías (move_service_to_category), recomendar reubicaciones de servicios sin categoría o en la categoría General (get_uncategorized_services_and_categories), y modificar el diseño visual "
         "y los textos principales de la landing page pública del inquilino actual.\n\n"
         "Reglas obligatorias de comportamiento:\n"
         "1. Mantén siempre un tono profesional, elegante y sofisticado (estilo 'Quiet Luxury').\n"
@@ -340,7 +605,8 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
         "   - CONTENIDO LARGO Y DETALLADO (campo 'content_html'): Es el contenido comercial principal, explicativo y rico de la página completa del tratamiento. Si el usuario te pide 'genera el contenido largo', 'redacta el contenido de la página', 'contenido detallado' o similar, debes utilizar tu capacidad creativa como LLM para redactar un texto extenso, completo, sumamente estructurado y elegante en formato HTML premium (utilizando etiquetas <p>, <ul>, <li>, <strong>, subsecciones con buen espaciado y un enfoque comercial de lujo), y guardarlo en el argumento 'content_html'.\n"
         "   - ACLARACIÓN DE BREVEDAD: La regla 6 (ser extremadamente breve) aplica UNICAMENTE al mensaje final de chat que el usuario ve/escucha en el globo de conversación (donde debes ser sofisticadamente conciso). Sin embargo, los textos que generas para guardar en la base de datos a través de 'update_service_fields' (tanto en 'description' como en 'content_html') DEBEN ser tan ricos, largos, persuasivos, descriptivos y extensos como sea necesario para lucir espectaculares en el catálogo público.\n"
         "   - Tienes la capacidad de redactar descripciones premium y sofisticadas (estilo Quiet Luxury) para los servicios. Si el usuario te pide generar una descripción, redáctala con elegancia en el idioma del usuario y guárdala inmediatamente invocando la herramienta correspondiente.\n"
-        "10. ETIQUETAS DE DIRECCIÓN DE VOZ (TTS PROMPTING): Al redactar tu respuesta de texto final (nunca dentro de los JSON estructurados, solo cuando sea lenguaje natural directo), debes guiar la locución intercalando ocasionalmente etiquetas de dirección de voz encerradas entre corchetes para modular la entonación y el ritmo de la voz. Queremos lograr una voz sumamente energética, ágil, fluida y concisa. Utiliza obligatoriamente etiquetas dinámicas como [fast], [fluent], [short pause], o [with enthusiasm] antes de tus frases importantes (ejemplo: '[with enthusiasm] ¡Excelente! [short pause] [fast] Lo tengo listo de inmediato.'). Evita por completo usar etiquetas lentas o pausadas como [slower] o [deliberate pause]. Mantén tu texto corto y directo al grano."
+        "10. ETIQUETAS DE DIRECCIÓN DE VOZ (TTS PROMPTING): Al redactar tu respuesta de texto final (nunca dentro de los JSON estructurados, solo cuando sea lenguaje natural directo), debes guiar la locución intercalando ocasionalmente etiquetas de dirección de voz encerradas entre corchetes para modular la entonación y el ritmo de la voz. Queremos lograr una voz sumamente energética, ágil, fluida y concisa. Utiliza obligatoriamente etiquetas dinámicas como [fast], [fluent], [short pause], o [with enthusiasm] antes de tus frases importantes (ejemplo: '[with enthusiasm] ¡Excelente! [short pause] [fast] Lo tengo listo de inmediato.'). Evita por completo usar etiquetas lentas o pausadas como [slower] o [deliberate pause]. Mantén tu texto corto y directo al grano.\n"
+        "11. RECOMENDACIÓN Y TRASLADO DE CATEGORÍAS (SERVICIO PROACTIVO): Tienes la capacidad de organizar los tratamientos de la clínica. Si detectas o consultas que hay servicios en la categoría por defecto 'General' o sin categoría asignada, puedes proponerle proactivamente al usuario moverlos a una categoría más oportuna diciendo algo como: 'Si quieres, puedo mover este servicio a la categoría X'. Utiliza 'get_uncategorized_services_and_categories' para consultar el estado actual de las categorías y tratamientos sin asignar, y llama a 'move_service_to_category' de forma automática para moverlos de inmediato tras la confirmación o petición del usuario y dirigiéndote a él por su nombre si está disponible."
     )
 
     try:
@@ -389,6 +655,10 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
                             service_name = args['name']
                             slug = re.sub(r'[^a-z0-9]+', '-', service_name.lower()).strip('-')
                             redirect_url = f"/tratamientos/general/{slug}"
+                    elif name == "move_service_to_category":
+                        updated_fields.append("services")
+                    elif name == "create_new_category":
+                        updated_fields.append("categories")
 
         # Quitar duplicados en campos actualizados si existen
         updated_fields = list(set(updated_fields))

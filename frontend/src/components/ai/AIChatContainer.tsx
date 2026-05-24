@@ -6,6 +6,7 @@ import VoiceRecorderButton from './VoiceRecorderButton';
 import { toast } from 'sonner';
 import FeedbackModal from '../FeedbackModal';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { useAuthRole } from '@/hooks/useAuthRole';
 
 // Utilidad simple para leer cookies en el cliente
 function getCookie(name: string): string | null {
@@ -40,6 +41,8 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
   const { language, t } = useLanguage();
   const chatLanguage = language === 'fr' ? 'fr-FR' : language === 'en' ? 'en-US' : 'es-ES';
   const [voiceGender, setVoiceGender] = useState<'female' | 'male'>('female');
+  const { userName: authUserName } = useAuthRole();
+  const firstName = authUserName ? authUserName.trim().split(' ')[0] : '';
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [confirmModal, setConfirmModal] = useState<{
     show: boolean;
@@ -225,6 +228,7 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
               content: msg.content,
             })),
             voice_gender: voiceGender,
+            user_name: firstName,
           }),
         }
       );
