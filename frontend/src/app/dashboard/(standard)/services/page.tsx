@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { useAuthRole } from '@/hooks/useAuthRole';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Settings2, Plus } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,6 +14,7 @@ import ManageCategoriesModal from './components/ManageCategoriesModal';
 export default function ServicesPage() {
   const { t } = useLanguage();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { role, loading: loadingRole } = useAuthRole();
   
   const [services, setServices] = useState<any[]>([]);
@@ -37,9 +38,8 @@ export default function ServicesPage() {
 
   // Redirección inteligente y automática si viene el parámetro ?edit=slug o ?slug=slug
   useEffect(() => {
-    if (typeof window !== 'undefined' && services.length > 0) {
-      const params = new URLSearchParams(window.location.search);
-      const editSlug = params.get('edit') || params.get('slug');
+    if (services.length > 0) {
+      const editSlug = searchParams.get('edit') || searchParams.get('slug');
       if (editSlug) {
         const targetSlug = editSlug.toLowerCase().trim();
         
@@ -99,7 +99,7 @@ export default function ServicesPage() {
         }
       }
     }
-  }, [services, router]);
+  }, [services, router, searchParams]);
 
   const fetchCategories = async () => {
     try {
