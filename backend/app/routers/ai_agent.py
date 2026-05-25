@@ -57,7 +57,8 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
     genai.configure(api_key=api_key)
 
     user_name = getattr(request, 'user_name', None)
-    system_instruction = ai_agent_service.build_system_instruction(user_name)
+    lang = getattr(request, 'language', 'es')
+    system_instruction = ai_agent_service.build_system_instruction(user_name, lang)
 
     try:
         # 1. EL CEREBRO (Gemini 2.5 Flash): Mantiene la sesión de chat con herramientas y multiturnos
@@ -118,7 +119,8 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
 
         # 3. LA VOZ (Gemini 3.1 Flash TTS): Convierte de forma secuencial el texto en voz hiperrealista
         voice_gender = getattr(request, 'voice_gender', 'female')
-        audio_response_base64 = ai_agent_service.generate_gemini_tts(brain_text, voice_gender, api_key)
+        lang = getattr(request, 'language', 'es')
+        audio_response_base64 = ai_agent_service.generate_gemini_tts(brain_text, voice_gender, api_key, lang)
 
         # Limpiar las etiquetas de dirección de voz (como [warmly], [deliberate pause]) para el chat de texto de la UI
         clean_text = re.sub(r'\[.*?\]', '', brain_text).strip()

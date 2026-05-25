@@ -270,7 +270,7 @@ export default function Step1Treatments({
                                 <LazyPremiumImage
                                   src={srv.image_url}
                                   alt={translatedName}
-                                 animate-pulse={false}
+                                  animate-pulse={false}
                                 />
                               </div>
                             ) : (

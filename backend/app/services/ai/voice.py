@@ -6,10 +6,10 @@ import google.generativeai as genai
 
 logger = logging.getLogger("ai_agent_voice")
 
-def generate_gemini_tts(text: str, voice_gender: str, api_key: str) -> Optional[str]:
+def generate_gemini_tts(text: str, voice_gender: str, api_key: str, lang: str = "es") -> Optional[str]:
     """
     Realiza una llamada single-turn a Gemini 3.1 Flash TTS para sintetizar texto
-    en un flujo de audio l16 / WAV altamente realista y con acento de Madrid.
+    en un flujo de audio l16 / WAV altamente realista con el acento del idioma seleccionado.
     """
     try:
         genai.configure(api_key=api_key)
@@ -31,17 +31,52 @@ def generate_gemini_tts(text: str, voice_gender: str, api_key: str) -> Optional[
             generation_config=generation_config
         )
 
+        # Configuración dinámica de perfiles e instrucciones según el idioma del cliente
+        gender_str = 'male' if voice_gender == 'male' else 'female'
+        lang_lower = str(lang).lower().strip()
+
+        if "fr" in lang_lower:
+            audio_profile = (
+                f"A highly professional, elegant, elite, and energetic native speaker from Paris, France. "
+                f"Speaks fluent, natural, and highly sophisticated French with perfect Parisian accentuation and rhythm. "
+                f"The voice gender is {gender_str}."
+            )
+            directors_note = (
+                f"Deliver this script with a crisp, clear, and energetic native French accent (clean Parisian pronunciation). "
+                f"Speak very dynamically at a fast, fluent, active, and agile pace. Keep the delivery concise, lively, and highly convincing, avoiding any slow speech, artificial pauses, or sluggishness. "
+                f"Execute all formatting brackets like [fast] or [with enthusiasm] with vocal energy."
+            )
+        elif "en" in lang_lower:
+            audio_profile = (
+                f"A highly professional, elegant, elite, and energetic native speaker from the United Kingdom (British RP) or the United States (Standard American English). "
+                f"Speaks fluent, clear, and highly sophisticated English. "
+                f"The voice gender is {gender_str}."
+            )
+            directors_note = (
+                f"Deliver this script with a crisp, clear, and energetic native English accent (no thick regional slang, elegant and clean tone). "
+                f"Speak very dynamically at a fast, fluent, active, and agile pace. Keep the delivery concise, lively, and highly convincing, avoiding any slow speech, artificial pauses, or sluggishness. "
+                f"Execute all formatting brackets like [fast] or [with enthusiasm] with vocal energy."
+            )
+        else:
+            # Por defecto: Español de España (Castellano de Madrid)
+            audio_profile = (
+                f"A highly professional, elegant, elite, and energetic native speaker from Madrid, Spain. "
+                f"Uses an authentic Peninsular Spanish accent with absolute naturalness, clarity, and sophistication. "
+                f"The voice gender is {gender_str}."
+            )
+            directors_note = (
+                f"Deliver this script with a crisp, clear, and energetic Peninsular Castilian accent (no seseo, clear distinction, genuine Madrid cadence). "
+                f"Speak very dynamically at a fast, fluent, active, and agile pace. Keep the delivery concise, lively, and highly convincing, avoiding any slow speech, artificial pauses, or sluggishness. "
+                f"Execute all formatting brackets like [fast] or [with enthusiasm] with vocal energy."
+            )
+
         prompt_voice = (
             f"[Audio Profile]\n"
-            f"A highly professional, elegant, elite, and energetic native speaker from Madrid, Spain. "
-            f"Uses an authentic Peninsular Spanish accent with absolute naturalness, clarity, and sophistication. "
-            f"The voice gender is {'male' if voice_gender == 'male' else 'female'}.\n\n"
+            f"{audio_profile}\n\n"
             f"[Scene]\n"
             f"A premium, fast-paced, high-end medical-aesthetic clinic. The atmosphere is warm, positive, dynamic, and prestigious.\n\n"
             f"[Director's Note]\n"
-            f"Deliver this script with a crisp, clear, and energetic Peninsular Castilian accent (no seseo, clear distinction, genuine Madrid cadence). "
-            f"Speak very dynamically at a fast, fluent, active, and agile pace. Keep the delivery concise, lively, and highly convincing, avoiding any slow speech, artificial pauses, or sluggishness. "
-            f"Execute all formatting brackets like [fast] or [with enthusiasm] with vocal energy.\n\n"
+            f"{directors_note}\n\n"
             f"[Transcript]\n"
             f"{text}"
         )

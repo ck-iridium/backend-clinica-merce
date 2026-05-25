@@ -229,6 +229,7 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
             })),
             voice_gender: voiceGender,
             user_name: firstName,
+            language: language,
           }),
         }
       );

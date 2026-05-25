@@ -23,7 +23,7 @@ export default function ServicesDataGrid({
   onEditClick,
   onRefresh,
 }: ServicesDataGridProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { showFeedback } = useFeedback();
 
   // Estados locales
@@ -347,7 +347,7 @@ export default function ServicesDataGrid({
                 : 'bg-stone-50 text-stone-500 hover:bg-stone-100'
             }`}
           >
-            Todos
+            {language === 'fr' ? 'Tous' : language === 'en' ? 'All' : 'Todos'}
           </button>
           {categories.map(cat => (
             <button
@@ -372,7 +372,7 @@ export default function ServicesDataGrid({
             type="text"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Buscar tratamientos..."
+            placeholder={language === 'fr' ? 'Rechercher des traitements...' : language === 'en' ? 'Search services...' : 'Buscar tratamientos...'}
             className="w-full pl-11 pr-4 py-2.5 bg-stone-50 hover:bg-stone-100/50 focus:bg-white border border-stone-200 focus:border-[#d4af37] rounded-xl text-xs font-medium text-stone-800 dark:text-stone-800 outline-none transition-all focus:ring-1 focus:ring-[#d4af37]"
           />
         </div>
@@ -386,7 +386,7 @@ export default function ServicesDataGrid({
               {selectedIds.size}
             </span>
             <span className="text-xs font-bold text-stone-300 tracking-wide">
-              servicios seleccionados para acción masiva
+              {language === 'fr' ? 'services sélectionnés pour action groupée' : language === 'en' ? 'services selected for bulk action' : 'servicios seleccionados para acción masiva'}
             </span>
           </div>
 
@@ -397,7 +397,7 @@ export default function ServicesDataGrid({
               onClick={() => handleBulkStatusChange(true)}
               className="px-4 py-2 bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 disabled:opacity-50"
             >
-              <Eye size={14} /> Activar Todos
+              <Eye size={14} /> {language === 'fr' ? 'Tout activer' : language === 'en' ? 'Activate All' : 'Activar Todos'}
             </button>
             <button
               type="button"
@@ -405,7 +405,7 @@ export default function ServicesDataGrid({
               onClick={() => handleBulkStatusChange(false)}
               className="px-4 py-2 bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 disabled:opacity-50"
             >
-              <EyeOff size={14} /> Desactivar Todos
+              <EyeOff size={14} /> {language === 'fr' ? 'Tout désactiver' : language === 'en' ? 'Deactivate All' : 'Desactivar Todos'}
             </button>
             <button
               type="button"
@@ -413,7 +413,7 @@ export default function ServicesDataGrid({
               onClick={handleBulkDelete}
               className="px-4 py-2 bg-rose-950 hover:bg-rose-900 border border-rose-800/40 text-rose-200 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 disabled:opacity-50"
             >
-              <Trash2 size={14} /> Eliminar Lote
+              <Trash2 size={14} /> {language === 'fr' ? 'Supprimer le lot' : language === 'en' ? 'Delete Bulk' : 'Eliminar Lote'}
             </button>
           </div>
         </div>
@@ -422,7 +422,7 @@ export default function ServicesDataGrid({
       {/* ── DATA TABLE DE SERVICIOS PREMIUM (Quiet Luxury + Compact) ── */}
       {filteredServices.length === 0 ? (
         <div className="text-center py-20 text-stone-400 bg-stone-50/50 rounded-2xl border border-stone-200 border-dashed">
-          No se encontraron tratamientos con los filtros actuales.
+          {language === 'fr' ? 'Aucun traitement trouvé avec los filtres actuels.' : language === 'en' ? 'No services found with current filters.' : 'No se encontraron tratamientos con los filtros actuales.'}
         </div>
       ) : (
         <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
@@ -449,11 +449,21 @@ export default function ServicesDataGrid({
                   </th>
 
                   {/* Cabeceras de Columnas */}
-                  <th className="p-4 text-xs font-black uppercase tracking-wider text-stone-400">Servicio / Tratamiento</th>
-                  <th className="p-4 text-xs font-black uppercase tracking-wider text-stone-400 w-32">Duración</th>
-                  <th className="p-4 text-xs font-black uppercase tracking-wider text-stone-400 w-36">Precio (€)</th>
-                  <th className="p-4 text-xs font-black uppercase tracking-wider text-stone-400 w-28 text-center">Estado</th>
-                  <th className="p-4 text-xs font-black uppercase tracking-wider text-stone-400 w-28 text-center">Acciones</th>
+                  <th className="p-4 text-xs font-black uppercase tracking-wider text-stone-400">
+                    {language === 'fr' ? 'Service / Traitement' : language === 'en' ? 'Service / Treatment' : 'Servicio / Tratamiento'}
+                  </th>
+                  <th className="p-4 text-xs font-black uppercase tracking-wider text-stone-400 w-32">
+                    {language === 'fr' ? 'Durée' : language === 'en' ? 'Duration' : 'Duración'}
+                  </th>
+                  <th className="p-4 text-xs font-black uppercase tracking-wider text-stone-400 w-36">
+                    {language === 'fr' ? 'Prix (€)' : language === 'en' ? 'Price (€)' : 'Precio (€)'}
+                  </th>
+                  <th className="p-4 text-xs font-black uppercase tracking-wider text-stone-400 w-28 text-center">
+                    {language === 'fr' ? 'Statut' : language === 'en' ? 'Status' : 'Estado'}
+                  </th>
+                  <th className="p-4 text-xs font-black uppercase tracking-wider text-stone-400 w-28 text-center">
+                    {language === 'fr' ? 'Actions' : language === 'en' ? 'Actions' : 'Acciones'}
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100">
@@ -501,7 +511,7 @@ export default function ServicesDataGrid({
                           </span>
                           {svc.is_featured && (
                             <span className="px-2 py-0.5 text-[9px] rounded-full font-black uppercase tracking-wider bg-yellow-50 text-yellow-700 border border-yellow-200">
-                              Destacado
+                              {language === 'fr' ? 'À la une' : language === 'en' ? 'Featured' : 'Destacado'}
                             </span>
                           )}
                         </div>
@@ -569,7 +579,7 @@ export default function ServicesDataGrid({
                             type="button"
                             onClick={() => onEditClick(svc)}
                             className="p-1.5 text-stone-400 hover:text-stone-700 bg-white border border-stone-200 hover:border-stone-400 rounded-lg shadow-sm active:scale-95 transition-all"
-                            title="Editar detalladamente"
+                            title={language === 'fr' ? 'Modifier en détail' : language === 'en' ? 'Edit details' : 'Editar detalladamente'}
                           >
                             <Pencil size={13} strokeWidth={1.5} />
                           </button>
@@ -577,7 +587,7 @@ export default function ServicesDataGrid({
                             type="button"
                             onClick={() => handleDeleteIndividual(svc.id, svc.name)}
                             className="p-1.5 text-rose-400 hover:text-rose-600 bg-white border border-stone-200 hover:border-rose-300 rounded-lg shadow-sm active:scale-95 transition-all"
-                            title="Eliminar permanentemente"
+                            title={language === 'fr' ? 'Supprimer définitivement' : language === 'en' ? 'Delete permanently' : 'Eliminar permanentemente'}
                           >
                             <Trash2 size={13} strokeWidth={1.5} />
                           </button>
@@ -594,11 +604,15 @@ export default function ServicesDataGrid({
           {/* Footer de la Tabla con recuento */}
           <div className="p-4 bg-stone-50 border-t border-stone-100 flex items-center justify-between text-xs text-stone-400 font-bold tracking-wide">
             <div>
-              Mostrando {filteredServices.length} de {services.length} tratamientos
+              {language === 'fr' 
+                ? `Affichage de ${filteredServices.length} sur ${services.length} traitements` 
+                : language === 'en' 
+                ? `Showing ${filteredServices.length} of ${services.length} services` 
+                : `Mostrando ${filteredServices.length} de ${services.length} tratamientos`}
             </div>
             {selectedIds.size > 0 && (
               <div className="text-[#d4af37]">
-                {selectedIds.size} seleccionados
+                {selectedIds.size} {language === 'fr' ? 'sélectionnés' : language === 'en' ? 'selected' : 'seleccionados'}
               </div>
             )}
           </div>

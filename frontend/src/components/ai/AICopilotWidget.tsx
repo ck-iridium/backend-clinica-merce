@@ -265,6 +265,7 @@ export default function AICopilotWidget() {
               content: msg.content,
             })),
             user_name: firstName,
+            language: language,
           }),
         }
       );
@@ -340,7 +341,9 @@ export default function AICopilotWidget() {
               </div>
               <div>
                 <h3 className="font-serif text-sm font-bold tracking-wide">Co-Piloto AI</h3>
-                <span className="text-[9px] text-primary font-black uppercase tracking-widest">Navegación Inteligente</span>
+                <span className="text-[9px] text-primary font-black uppercase tracking-widest">
+                  {language === 'fr' ? 'Navigation Intelligente' : language === 'en' ? 'Smart Navigation' : 'Navegación Inteligente'}
+                </span>
               </div>
             </div>
             

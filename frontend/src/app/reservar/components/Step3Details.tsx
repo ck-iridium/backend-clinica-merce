@@ -41,7 +41,7 @@ export default function Step3Details({
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       className="w-full flex flex-col flex-grow min-h-0 bg-[#F7F7F5]"
@@ -58,7 +58,7 @@ export default function Step3Details({
         {/* Card de Resumen con fuentes legibles */}
         <div className="bg-white rounded-luxury-card p-4 md:p-6 md:px-8 border border-stone-100 shadow-sm flex items-center justify-between relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
-          
+
           <div className="relative z-10">
             <p className="text-[10px] md:text-xs font-black uppercase text-primary tracking-[0.2em] mb-0.5">{t('wizard.appointment_for_date')}</p>
             <p className="text-base md:text-xl font-serif text-stone-800 leading-tight">
@@ -75,17 +75,17 @@ export default function Step3Details({
               if (!dep.required) return null;
               return (
                 <div className="flex items-center gap-1.5 mt-1.5 justify-end">
-                  <motion.button 
-                    type="button" 
+                  <motion.button
+                    type="button"
                     onClick={() => setShowFianzaInfo(true)}
-                    animate={{ 
+                    animate={{
                       scale: [1, 1.12, 1],
                       boxShadow: ["0px 0px 0px rgba(59, 130, 246, 0)", "0px 0px 8px rgba(59, 130, 246, 0.45)", "0px 0px 0px rgba(59, 130, 246, 0)"]
                     }}
-                    transition={{ 
-                      duration: 2.2, 
-                      repeat: Infinity, 
-                      ease: "easeInOut" 
+                    transition={{
+                      duration: 2.2,
+                      repeat: Infinity,
+                      ease: "easeInOut"
                     }}
                     className="text-blue-500 hover:text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors p-1 rounded-full focus:outline-none flex items-center justify-center shrink-0 shadow-sm border border-blue-100/50 mr-0.5"
                     title={t('wizard.deposit_info_title')}
@@ -116,13 +116,13 @@ export default function Step3Details({
                 <div className="absolute left-4 md:left-5 top-1/2 -translate-y-1/2 text-stone-300 group-focus-within:text-primary transition-colors">
                   <User size={18} className="md:scale-125" />
                 </div>
-                <input 
-                  required 
-                  type="text" 
-                  value={formData.name} 
-                  onChange={e => setFormData({ ...formData, name: e.target.value })} 
-                  className="w-full bg-white border border-stone-100 rounded-luxury-btn py-3.5 md:py-4.5 pl-12 md:pl-16 pr-4 text-sm md:text-base font-bold text-stone-800 placeholder:text-stone-200 focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all shadow-sm outline-none" 
-                  placeholder={t('wizard.full_name_placeholder')} 
+                <input
+                  required
+                  type="text"
+                  value={formData.name}
+                  onChange={e => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full bg-white border border-stone-100 rounded-luxury-btn py-3.5 md:py-4.5 pl-12 md:pl-16 pr-4 text-sm md:text-base font-bold text-stone-800 placeholder:text-stone-200 focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all shadow-sm outline-none"
+                  placeholder={t('wizard.full_name_placeholder')}
                 />
               </div>
             </div>
@@ -135,13 +135,13 @@ export default function Step3Details({
                 <div className="absolute left-4 md:left-5 top-1/2 -translate-y-1/2 text-stone-300 group-focus-within:text-primary transition-colors">
                   <Mail size={18} className="md:scale-125" />
                 </div>
-                <input 
-                  required 
-                  type="email" 
-                  value={formData.email} 
-                  onChange={e => setFormData({ ...formData, email: e.target.value })} 
-                  className="w-full bg-white border border-stone-100 rounded-luxury-btn py-3.5 md:py-4.5 pl-12 md:pl-16 pr-4 text-sm md:text-base font-bold text-stone-800 placeholder:text-stone-200 focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all shadow-sm outline-none" 
-                  placeholder="tu@email.com" 
+                <input
+                  required
+                  type="email"
+                  value={formData.email}
+                  onChange={e => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full bg-white border border-stone-100 rounded-luxury-btn py-3.5 md:py-4.5 pl-12 md:pl-16 pr-4 text-sm md:text-base font-bold text-stone-800 placeholder:text-stone-200 focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all shadow-sm outline-none"
+                  placeholder="tu@email.com"
                 />
               </div>
             </div>
@@ -154,13 +154,13 @@ export default function Step3Details({
                 <div className="absolute left-4 md:left-5 top-1/2 -translate-y-1/2 text-stone-300 group-focus-within:text-primary transition-colors">
                   <Phone size={18} className="md:scale-125" />
                 </div>
-                <input 
-                  required 
-                  type="tel" 
-                  value={formData.phone} 
-                  onChange={e => setFormData({ ...formData, phone: e.target.value })} 
-                  className="w-full bg-white border border-stone-100 rounded-luxury-btn py-3.5 md:py-4.5 pl-12 md:pl-16 pr-4 text-sm md:text-base font-bold text-stone-800 placeholder:text-stone-200 focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all shadow-sm outline-none" 
-                  placeholder="600 000 000" 
+                <input
+                  required
+                  type="tel"
+                  value={formData.phone}
+                  onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full bg-white border border-stone-100 rounded-luxury-btn py-3.5 md:py-4.5 pl-12 md:pl-16 pr-4 text-sm md:text-base font-bold text-stone-800 placeholder:text-stone-200 focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all shadow-sm outline-none"
+                  placeholder="600 000 000"
                 />
               </div>
             </div>
@@ -170,16 +170,16 @@ export default function Step3Details({
           <div className="pt-2 px-1">
             <label className="flex items-center gap-4 cursor-pointer group">
               <div className="relative shrink-0">
-                <input 
-                  type="checkbox" 
-                  checked={privacyAccepted} 
-                  onChange={e => setPrivacyAccepted(e.target.checked)} 
-                  className="peer sr-only" 
+                <input
+                  type="checkbox"
+                  checked={privacyAccepted}
+                  onChange={e => setPrivacyAccepted(e.target.checked)}
+                  className="peer sr-only"
                 />
                 <div className="w-6 h-6 md:w-8 md:h-8 border-2 border-stone-200 rounded-luxury-btn bg-white transition-all flex items-center justify-center text-white overflow-hidden relative shadow-sm">
                   <AnimatePresence>
                     {privacyAccepted && (
-                      <motion.div 
+                      <motion.div
                         initial={{ scale: 0, rotate: -15 }}
                         animate={{ scale: 1, rotate: 0 }}
                         exit={{ scale: 0, rotate: 15 }}
@@ -209,9 +209,9 @@ export default function Step3Details({
               <div className="flex flex-col">
                 <span className="text-[11px] md:text-sm font-bold text-stone-600 group-hover:text-stone-900 transition-colors">
                   {t('wizard.accept_privacy')}{' '}
-                  <a 
-                    href="/privacidad" 
-                    target="_blank" 
+                  <a
+                    href="/privacidad"
+                    target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
                     className="underline text-primary hover:text-primary/80 transition-colors"
@@ -231,16 +231,16 @@ export default function Step3Details({
         {showFianzaInfo && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* Backdrop */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowFianzaInfo(false)}
               className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm"
             />
-            
+
             {/* Modal Box */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
@@ -249,13 +249,13 @@ export default function Step3Details({
             >
               {/* Decorative Accent */}
               <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary/80 to-primary" />
-              
+
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="text-primary w-5 h-5 shrink-0" />
                   <h3 className="text-stone-850 font-serif text-lg font-bold leading-tight">{t('wizard.deposit_policy')}</h3>
                 </div>
-                <button 
+                <button
                   onClick={() => setShowFianzaInfo(false)}
                   className="text-stone-400 hover:text-stone-800 transition-colors p-1 rounded-full hover:bg-stone-50"
                 >
@@ -267,7 +267,7 @@ export default function Step3Details({
                 <p>
                   {t('wizard.deposit_policy_desc')}
                 </p>
-                
+
                 {(() => {
                   const dep = getServiceDepositInfo(selectedService);
                   const remaining = Math.max(0, parseFloat(selectedService?.price || 0) - dep.amount);

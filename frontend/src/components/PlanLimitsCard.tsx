@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { ShieldCheck, Info } from 'lucide-react';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 interface LimitsData {
   plan_type: string;
@@ -20,6 +21,7 @@ interface PlanLimitsCardProps {
 }
 
 export default function PlanLimitsCard({ type }: PlanLimitsCardProps) {
+  const { language } = useLanguage();
   const [data, setData] = useState<LimitsData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -56,6 +58,22 @@ export default function PlanLimitsCard({ type }: PlanLimitsCardProps) {
   const isUnlimited = limit >= 999999;
   const percentage = isUnlimited ? 0 : Math.min(100, (usage / limit) * 100);
 
+  const getLabel = () => {
+    if (type === 'services') {
+      return language === 'fr' ? 'Services' : language === 'en' ? 'Services' : 'Servicios';
+    } else {
+      return language === 'fr' ? 'Spécialistes' : language === 'en' ? 'Specialists' : 'Especialistas';
+    }
+  };
+
+  const getLimitReachedLabel = () => {
+    return language === 'fr' ? 'Limite Atteinte' : language === 'en' ? 'Limit Reached' : 'Límite Alcanzado';
+  };
+
+  const getUnlimitedLabel = () => {
+    return language === 'fr' ? 'Illimité' : language === 'en' ? 'Unlimited' : 'Ilimitado';
+  };
+
   return (
     <div className="flex items-center gap-4 bg-stone-50 border border-stone-200/40 px-4 py-2.5 rounded-2xl text-xs transition-all duration-300 hover:shadow-luxury">
       <div className="flex items-center gap-1.5">
@@ -68,7 +86,7 @@ export default function PlanLimitsCard({ type }: PlanLimitsCardProps) {
       <div className="flex flex-col gap-1">
         <div className="flex justify-between items-center gap-3">
           <span className="text-[10px] text-stone-500 font-sans font-bold uppercase tracking-wider">
-            {type === 'services' ? 'Servicios' : 'Especialistas'}: {usage} / {isUnlimited ? '∞' : limit}
+            {getLabel()}: {usage} / {isUnlimited ? '∞' : limit}
           </span>
         </div>
         {!isUnlimited && (
@@ -90,14 +108,14 @@ export default function PlanLimitsCard({ type }: PlanLimitsCardProps) {
       {percentage >= 100 && (
         <div className="flex items-center gap-1 text-red-500 font-bold text-[9px] uppercase tracking-wider pl-1">
           <Info size={11} strokeWidth={2.5} />
-          Límite Alcanzado
+          {getLimitReachedLabel()}
         </div>
       )}
 
       {isUnlimited && (
         <div className="flex items-center gap-1 text-[#d4af37] font-bold text-[9px] uppercase tracking-wider pl-1">
           <ShieldCheck size={11} strokeWidth={2.5} />
-          Ilimitado
+          {getUnlimitedLabel()}
         </div>
       )}
     </div>
