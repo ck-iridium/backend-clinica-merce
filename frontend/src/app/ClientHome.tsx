@@ -557,7 +557,7 @@ export default function ClientHome({ content, settings, services, categories }: 
                   </div>
                   <Link
                     href={`/tratamientos/${category.slug || category.id}`}
-                    className="self-end md:self-auto inline-flex items-center gap-2 font-bold text-[#d4af37] hover:text-stone-900 dark:hover:text-white transition-colors uppercase tracking-widest text-[10px] md:text-sm"
+                    className="self-end md:self-auto inline-flex items-center gap-2 font-bold text-primary hover:text-stone-900 dark:hover:text-white transition-colors uppercase tracking-widest text-[10px] md:text-sm"
                   >
                     <span className="hidden md:inline">{t('home.see_catalog', 'Ver Catálogo')}</span>
                     <span className="md:hidden">{t('home.see_all', 'Ver todo')}</span>

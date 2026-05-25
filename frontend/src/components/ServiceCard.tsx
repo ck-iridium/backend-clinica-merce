@@ -47,7 +47,7 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={`
-        group relative rounded-3xl overflow-hidden border border-stone-100 block bg-stone-50 transition-all duration-500 ease-out shadow-sm hover:shadow-xl
+        group relative rounded-3xl overflow-hidden border border-stone-100 dark:border-stone-850 block bg-stone-50 dark:bg-stone-900 transition-all duration-500 ease-out shadow-sm hover:shadow-xl
         flex-shrink-0 w-[85vw] md:w-[372px] h-full md:h-[662px] snap-center md:snap-align-none
         ${className}
       `}
@@ -58,7 +58,7 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
       }}
     >
       {/* Imagen Estática con Lazy Loading - Siempre visible de fondo para evitar flash */}
-      <div className="absolute inset-0 bg-stone-200 z-0 overflow-hidden">
+      <div className="absolute inset-0 bg-stone-200 dark:bg-stone-900 z-0 overflow-hidden">
         {service.image_url ? (
           <img
             src={service.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${service.image_url}` : service.image_url}
@@ -72,7 +72,7 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <span className="font-serif text-stone-400 text-xs italic">Sin Imagen</span>
+            <span className="font-serif text-stone-400 dark:text-stone-600 text-xs italic">Sin Imagen</span>
           </div>
         )}
       </div>

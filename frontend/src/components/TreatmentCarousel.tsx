@@ -103,11 +103,14 @@ export default function TreatmentCarousel({ servicios, loop = false }: Treatment
       <div className="max-w-7xl w-full mx-auto px-6 flex justify-end gap-4 -mt-4 mb-8 hidden md:flex">
         <button 
           onClick={() => handleScroll('left')} 
-          className={`w-12 h-12 rounded-full bg-white shadow-lg border border-gray-100 flex items-center justify-center text-gray-800 hover:scale-110 active:scale-95 transition-all z-30 ${!showLeftArrow ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+          className={`w-12 h-12 rounded-full bg-white dark:bg-stone-900 shadow-lg dark:shadow-none border border-gray-100 dark:border-stone-800 flex items-center justify-center text-gray-800 dark:text-stone-100 hover:scale-110 active:scale-95 transition-all z-30 ${!showLeftArrow ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
         </button>
-        <button onClick={() => handleScroll('right')} className="w-12 h-12 rounded-full bg-white shadow-lg border border-gray-100 flex items-center justify-center text-gray-800 hover:scale-110 active:scale-95 transition-all z-30">
+        <button 
+          onClick={() => handleScroll('right')} 
+          className="w-12 h-12 rounded-full bg-white dark:bg-stone-900 shadow-lg dark:shadow-none border border-gray-100 dark:border-stone-800 flex items-center justify-center text-gray-800 dark:text-stone-100 hover:scale-110 active:scale-95 transition-all z-30"
+        >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
         </button>
       </div>
