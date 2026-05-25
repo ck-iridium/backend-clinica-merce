@@ -34,9 +34,9 @@ export default function Step4Success({
           initial={{ opacity: 0 }}
           animate={{ opacity: [0, 1, 0] }}
           transition={{ duration: 2, repeat: Infinity }}
-          className="absolute inset-0 rounded-full bg-[#d4af37]/20 scale-150"
+          className="absolute inset-0 rounded-full bg-primary/20 scale-150"
         />
-        <Check size={40} className="text-[#d4af37] md:scale-125" />
+        <Check size={40} className="text-primary md:scale-125" />
       </motion.div>
 
       {/* Título Editorial */}
@@ -49,7 +49,7 @@ export default function Step4Success({
         <h1 className="text-3xl md:text-5xl font-serif text-stone-800 tracking-tight mb-2 md:mb-4">
           {t('success.title')}
         </h1>
-        <div className="flex items-center justify-center gap-2 md:gap-3 text-[10px] md:text-sm font-black uppercase tracking-[0.2em] text-[#d4af37]">
+        <div className="flex items-center justify-center gap-2 md:gap-3 text-[10px] md:text-sm font-black uppercase tracking-[0.2em] text-primary">
           <Sparkles size={12} className="md:scale-125" />
           <span>{t('success.subtitle')}</span>
         </div>
@@ -60,7 +60,7 @@ export default function Step4Success({
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="w-full max-w-sm md:max-w-xl bg-white rounded-3xl md:rounded-[2rem] border border-stone-100 shadow-xl overflow-hidden mb-8 md:mb-12"
+        className="w-full max-w-sm md:max-w-xl bg-white rounded-luxury-card border border-stone-100 shadow-xl overflow-hidden mb-8 md:mb-12"
       >
         <div className="p-6 md:p-8 md:px-10 border-b border-stone-50">
           <p className="text-[10px] md:text-xs font-black uppercase text-stone-400 tracking-widest mb-4 md:mb-6">
@@ -68,7 +68,7 @@ export default function Step4Success({
           </p>
           <div className="space-y-4 md:space-y-6">
             <div className="flex items-center gap-4 md:gap-6">
-              <div className="w-10 h-10 md:w-14 md:h-14 bg-stone-50 rounded-xl md:rounded-2xl flex items-center justify-center text-stone-400">
+              <div className="w-10 h-10 md:w-14 md:h-14 bg-stone-50 rounded-luxury-btn flex items-center justify-center text-stone-400">
                 <Calendar size={18} className="md:scale-125" />
               </div>
               <div>
@@ -80,7 +80,7 @@ export default function Step4Success({
             </div>
 
             <div className="flex items-center gap-4 md:gap-6">
-              <div className="w-10 h-10 md:w-14 md:h-14 bg-stone-50 rounded-xl md:rounded-2xl flex items-center justify-center text-stone-400">
+              <div className="w-10 h-10 md:w-14 md:h-14 bg-stone-50 rounded-luxury-btn flex items-center justify-center text-stone-400">
                 <Clock size={18} className="md:scale-125" />
               </div>
               <div>
@@ -110,7 +110,7 @@ export default function Step4Success({
         className="text-center max-w-xs md:max-w-md mb-10 md:mb-14 px-4"
       >
         <div className="inline-flex items-center gap-2 bg-white px-4 py-2 md:px-6 md:py-3 rounded-full border border-stone-100 shadow-sm mb-4">
-          <Mail size={14} className="text-[#d4af37] md:scale-125" />
+          <Mail size={14} className="text-primary md:scale-125" />
           <span className="text-[10px] md:text-xs font-bold text-stone-800">{formData.email}</span>
         </div>
         <p className="text-xs md:text-sm text-stone-500 leading-relaxed">
@@ -127,7 +127,7 @@ export default function Step4Success({
       >
         <Link
           href="/"
-          className="group w-full bg-stone-900 text-[#d4af37] py-4 md:py-5 rounded-2xl md:rounded-3xl font-black text-[10px] md:text-xs uppercase tracking-[0.2em] shadow-2xl flex items-center justify-center gap-3 active:scale-95 transition-all"
+          className="group w-full bg-primary text-primary-foreground py-4 md:py-5 rounded-luxury-btn font-black text-[10px] md:text-xs uppercase tracking-[0.2em] shadow-2xl flex items-center justify-center gap-3 active:scale-95 transition-all"
         >
           <span>{t('success.backHome')}</span>
           <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform md:scale-125" />

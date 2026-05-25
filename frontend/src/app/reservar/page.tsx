@@ -241,7 +241,7 @@ export default function BookingPage() {
   };
 
   return (
-    <div className="h-[100dvh] bg-[#F7F7F5] font-sans selection:bg-[#d4af37]/30 selection:text-stone-900 flex flex-col overflow-hidden">
+    <div className="h-[100dvh] bg-[#F7F7F5] font-sans selection:bg-primary/30 selection:text-stone-900 flex flex-col overflow-hidden">
       
       {/* APP HEADER (FIXED) */}
       {step < 4 && (
@@ -263,9 +263,9 @@ export default function BookingPage() {
             )}
             
             <div className="flex-grow max-w-[180px] md:max-w-[200px]">
-               <div className="h-2 bg-stone-100 rounded-full overflow-hidden">
+               <div className="h-2 bg-stone-100 rounded-luxury-btn overflow-hidden">
                   <div 
-                    className="h-full bg-[#d4af37] transition-all duration-700 ease-out" 
+                    className="h-full bg-primary transition-all duration-700 ease-out" 
                     style={{ width: step === 1 ? '25%' : step === 2 ? '50%' : '75%' }} 
                   />
                </div>
@@ -292,7 +292,7 @@ export default function BookingPage() {
         <div className="flex-grow max-w-2xl mx-auto w-full flex flex-col min-h-0">
           {loading ? (
             <div className="m-auto text-center">
-              <div className="w-8 h-8 border-2 border-stone-200 border-t-[#d4af37] rounded-full animate-spin mb-3 mx-auto"></div>
+              <div className="w-8 h-8 border-2 border-stone-200 border-t-primary rounded-full animate-spin mb-3 mx-auto"></div>
               <p className="text-stone-400 font-bold tracking-widest uppercase text-[10px]">{t('common.loading')}</p>
             </div>
           ) : (
@@ -424,7 +424,7 @@ export default function BookingPage() {
                     if (step === 3) handleBooking();
                     else { setStep(step + 1); window.scrollTo({ top: 0 }); }
                   }}
-                  className="flex-grow bg-stone-900 text-[#d4af37] py-4 md:py-5 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm uppercase tracking-widest shadow-xl active:scale-95 transition-all disabled:opacity-30 disabled:grayscale"
+                  className="flex-grow bg-primary text-primary-foreground py-4 md:py-5 rounded-luxury-btn font-bold text-xs md:text-sm uppercase tracking-widest shadow-xl active:scale-95 transition-all disabled:opacity-30 disabled:grayscale"
                 >
                   {saving ? 'Procesando...' : step === 3 ? (() => {
                     const dep = getServiceDepositInfo(selectedService);
