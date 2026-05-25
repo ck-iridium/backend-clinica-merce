@@ -26,7 +26,7 @@ interface ContextPanelProps {
  * Incluye perfil, notificaciones, buscador global, mini-calendario y filtros.
  */
 export function ContextPanel({
-    clinicName = "Clínica Merce",
+    clinicName = "Centro",
     selectedDate = new Date(),
     onDateChange,
     confirmedCount = 0,

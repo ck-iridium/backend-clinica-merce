@@ -231,7 +231,7 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
       }
     });
 
-    doc.save(`facturacion_merce_p${pagination.page}.pdf`);
+    doc.save(`facturacion_pagina_${pagination.page}.pdf`);
   };
 
   const handleDelete = (id: string) => {

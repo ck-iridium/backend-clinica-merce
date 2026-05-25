@@ -79,7 +79,7 @@
     "popup_deposit_title": "Pourquoi demandons-nous un acompte?",
     "popup_deposit_desc": "Nous demandons un acompte de garantie pour sécuriser votre créneau et éviter les annulations de dernière minute. Ce montant sera entièrement déduit du prix total du soin le jour de votre visite en clinique.",
     "success_title": "Rendez-vous Confirmé !",
-    "success_subtitle": "Votre réservation a été enregistrée avec succès. Merce vous attend.",
+    "success_subtitle": "Votre réservation a été enregistrée avec succès. Nous vous attendons.",
     "success_loading": "Vérification du Paiement",
     "success_loading_desc": "Nous synchronisons votre confirmation avec notre agenda...",
     "success_home": "Retour à l'Accueil",

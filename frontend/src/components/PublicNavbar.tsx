@@ -6,7 +6,7 @@ import BotonReservaPro from './BotonReservaPro';
 import LanguageSelector from './LanguageSelector';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 
-function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen, categories }: { svc: any, getFullUrl: (url: string) => string, onClick: () => void, isLarge?: boolean, isParentOpen: boolean, categories: any[] }) {
+function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen, categories, clinicName }: { svc: any, getFullUrl: (url: string) => string, onClick: () => void, isLarge?: boolean, isParentOpen: boolean, categories: any[], clinicName: string }) {
   const { language } = useLanguage();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -62,7 +62,7 @@ function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen, 
         />
       ) : (
         <div className="absolute inset-0 bg-stone-100 flex items-center justify-center">
-          <span className="font-serif text-stone-300 text-xs italic">Merce</span>
+          <span className="font-serif text-stone-300 text-xs italic">{clinicName}</span>
         </div>
       )}
 
@@ -386,6 +386,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                           onClick={() => setShowMegaMenu(false)}
                           isParentOpen={showMegaMenu}
                           categories={categories}
+                          clinicName={settings?.clinic_name || getFallbackClinicName()}
                         />
                       ))}
                       {activeServices.length === 0 && (

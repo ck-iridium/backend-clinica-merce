@@ -134,7 +134,7 @@ export default function CancelarPage() {
                                         ✓
                                     </div>
                                     <h1 className="text-3xl font-extrabold text-stone-800 mb-2 tracking-tight">Cita Cancelada</h1>
-                                    <p className="text-stone-500 font-medium mb-8">Tu solicitud se ha procesado correctamente. Merce ha sido notificada.</p>
+                                    <p className="text-stone-500 font-medium mb-8">Tu solicitud se ha procesado correctamente. El equipo ha sido notificado.</p>
                                     
                                     <div className="border-t border-stone-100 pt-8 pb-4">
                                         <h3 className="font-extrabold text-stone-800 mb-2">¿Quieres buscar otro hueco?</h3>

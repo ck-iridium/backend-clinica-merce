@@ -14,6 +14,7 @@ export default function VerificarPage() {
     const [verifying, setVerifying] = useState(false);
     const [appt, setAppt] = useState<any>(null);
     const [error, setError] = useState('');
+    const [settings, setSettings] = useState<any>(null);
 
     useEffect(() => {
         const queryParams = new URLSearchParams(window.location.search);
@@ -24,6 +25,11 @@ export default function VerificarPage() {
             return;
         }
         setId(urlId);
+
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/`)
+        .then(res => res.json())
+        .then(data => setSettings(data))
+        .catch(() => {});
 
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/automation/verify/${urlId}`)
         .then(res => {
@@ -67,7 +73,8 @@ export default function VerificarPage() {
         const start = formatLocalAsMadrid(appt.start_iso);
         const end = formatLocalAsMadrid(appt.end_iso);
         
-        return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=Cita+${encodeURIComponent(appt.service_name)}+en+Clínica+Merce&dates=${start}/${end}&ctz=Europe/Madrid&details=Tratamiento+de+estética+en+Clínica+Merce`;
+        const clinicName = settings?.clinic_name || 'nuestro centro';
+        return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=Cita+${encodeURIComponent(appt.service_name)}+en+${encodeURIComponent(clinicName)}&dates=${start}/${end}&ctz=Europe/Madrid&details=Reserva+de+cita+en+${encodeURIComponent(clinicName)}`;
     };
 
     return (

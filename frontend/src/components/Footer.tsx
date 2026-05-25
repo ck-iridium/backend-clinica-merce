@@ -145,7 +145,7 @@ export default function Footer() {
           {/* Columna 1: Identidad */}
           <div className="space-y-6">
               <Link href="/" className="inline-block text-2xl font-serif font-black text-white tracking-tighter hover:text-primary transition-colors">
-                 {settings?.clinic_name ? settings.clinic_name.toUpperCase() : 'ESTÉTICA MERCE'}
+                 {settings?.clinic_name ? settings.clinic_name.toUpperCase() : 'CENTRO'}
               </Link>
             <p className="text-sm font-medium leading-relaxed opacity-70 max-w-xs">
               {translateStatic('footer.about_text', "Especialistas en medicina estética avanzada y bienestar. Un refugio de lujo diseñado para resaltar tu belleza natural con la tecnología más innovadora.")}
@@ -185,8 +185,8 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-3">
                 <Mail size={18} className="text-primary shrink-0" />
-                <a href={`mailto:${settings?.clinic_email || 'hola@clinicamerce.com'}`} className="text-sm font-medium hover:text-primary transition-colors">
-                  {settings?.clinic_email || 'hola@clinicamerce.com'}
+                <a href={`mailto:${settings?.clinic_email || 'info@probookia.com'}`} className="text-sm font-medium hover:text-primary transition-colors">
+                  {settings?.clinic_email || 'info@probookia.com'}
                 </a>
               </li>
             </ul>
@@ -280,7 +280,7 @@ export default function Footer() {
         <div className="pt-10 border-t border-stone-800/50 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 text-center md:text-left">
             <div className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-40">
-              © {new Date().getFullYear()} {settings?.clinic_name || 'Estética Merce'}. {translateStatic('footer.rights_reserved', "Todos los derechos reservados.")}
+              © {new Date().getFullYear()} {settings?.clinic_name || 'Centro'}. {translateStatic('footer.rights_reserved', "Todos los derechos reservados.")}
             </div>
             <LanguageSelector upward={true} />
           </div>

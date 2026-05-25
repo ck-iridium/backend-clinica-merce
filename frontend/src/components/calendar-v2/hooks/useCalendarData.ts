@@ -274,7 +274,8 @@ export function useCalendarData() {
     if (!phone) return;
     const date = new Date(startTime.endsWith('Z') ? startTime.slice(0, -1) : startTime);
     const dateStr = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
-    const message = `¡Hola ${clientName}! Soy Merce de Estética Merce. Te escribo sobre tu cita para ${serviceName} el ${dateStr}.`;
+    const clinicName = settings?.clinic_name || 'nuestro centro';
+    const message = `¡Hola ${clientName}! Te escribo de ${clinicName} sobre tu cita para ${serviceName} el ${dateStr}.`;
     const encoded = encodeURIComponent(message);
     let cleanPhone = phone.replace(/\s+/g, '').replace('+', '');
     if (!cleanPhone.startsWith('34') && cleanPhone.length === 9) cleanPhone = '34' + cleanPhone;
