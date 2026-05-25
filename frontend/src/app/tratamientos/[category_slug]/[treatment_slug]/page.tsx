@@ -271,7 +271,7 @@ export default async function TreatmentDynamicPage({ params }: { params: { treat
           {/* Espaciador invisible para dejar hueco a la columna sticky en desktop */}
           <div className="hidden md:block md:w-[42%] lg:w-[40%] shrink-0" />
 
-          <div id="treatment-content" className="w-full md:w-[58%] lg:w-[60%] flex flex-col pt-12 md:pt-32 pb-24 px-6 md:pl-8 md:pr-12 lg:pl-16 lg:pr-24 bg-white dark:bg-stone-950">
+          <div id="treatment-content" className="w-full md:w-[58%] lg:w-[60%] flex flex-col pt-12 md:pt-32 pb-24 px-6 md:pl-8 md:pr-12 lg:pl-16 lg:pr-24 bg-white dark:bg-stone-950 min-h-[65vh] md:min-h-[100vh]">
             <div className="max-w-3xl">
               <span className="text-xs font-black uppercase tracking-[0.2em] text-[#d4af37] mb-4 block">
                 {categoryName}
