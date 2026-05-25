@@ -12,7 +12,7 @@ const DAYS_MAP: Record<number, string> = {
 
 const footerTranslations: Record<string, Record<string, string>> = {
   es: {
-    'footer.about_text': 'Especialistas en medicina estética avanzada y bienestar. Un refugio de lujo diseñado para resaltar tu belleza natural con la tecnología más innovadora.',
+    'footer.about_text': 'Tu centro de confianza para servicios personalizados y bienestar de primer nivel.',
     'footer.follow_us': 'Síguenos en redes',
     'footer.contact': 'Contacto',
     'footer.schedule': 'Horarios',
@@ -21,7 +21,7 @@ const footerTranslations: Record<string, Record<string, string>> = {
     'footer.sun': 'Domingos',
     'footer.navigation': 'Navegación',
     'footer.nav_home': 'Inicio',
-    'footer.nav_treatments': 'Tratamientos',
+    'footer.nav_treatments': 'Servicios',
     'footer.nav_contact': 'Contacto',
     'footer.nav_portal': 'Acceso Personal',
     'footer.rights_reserved': 'Todos los derechos reservados.',
@@ -39,7 +39,7 @@ const footerTranslations: Record<string, Record<string, string>> = {
     'common.days.7': 'Domingo'
   },
   en: {
-    'footer.about_text': 'Specialists in advanced medical aesthetics and well-being. A luxury sanctuary designed to enhance your natural beauty with the most innovative technology.',
+    'footer.about_text': 'Your trusted center for premium personalized services and well-being.',
     'footer.follow_us': 'Follow us on social media',
     'footer.contact': 'Contact',
     'footer.schedule': 'Opening Hours',
@@ -48,7 +48,7 @@ const footerTranslations: Record<string, Record<string, string>> = {
     'footer.sun': 'Sundays',
     'footer.navigation': 'Navigation',
     'footer.nav_home': 'Home',
-    'footer.nav_treatments': 'Treatments',
+    'footer.nav_treatments': 'Services',
     'footer.nav_contact': 'Contact',
     'footer.nav_portal': 'Staff Portal',
     'footer.rights_reserved': 'All rights reserved.',
@@ -66,7 +66,7 @@ const footerTranslations: Record<string, Record<string, string>> = {
     'common.days.7': 'Sunday'
   },
   fr: {
-    'footer.about_text': 'Spécialistes en esthétique médicale avancée et en bien-être. Un refuge de luxe conçu pour sublimer votre beauté naturelle avec la technologie la plus innovante.',
+    'footer.about_text': 'Votre centre de confiance pour des services personnalisés et de bien-être haut de gamme.',
     'footer.follow_us': 'Suivez-nous sur les réseaux',
     'footer.contact': 'Contact',
     'footer.schedule': 'Horaires d\'Ouverture',
@@ -75,7 +75,7 @@ const footerTranslations: Record<string, Record<string, string>> = {
     'footer.sun': 'Dimanches',
     'footer.navigation': 'Navigation',
     'footer.nav_home': 'Accueil',
-    'footer.nav_treatments': 'Soins',
+    'footer.nav_treatments': 'Services',
     'footer.nav_contact': 'Contact',
     'footer.nav_portal': 'Portail Personnel',
     'footer.rights_reserved': 'Tous droits réservés.',
@@ -105,12 +105,18 @@ export default function Footer() {
   const pathname = usePathname();
   const isDashboard = pathname?.startsWith('/dashboard');
   const [settings, setSettings] = useState<any>(null);
+  const [siteContent, setSiteContent] = useState<any>(null);
 
   useEffect(() => {
     if (isDashboard) return;
     fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/settings/`)
       .then(res => res.json())
       .then(data => setSettings(data))
+      .catch(() => { });
+
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/site-content/`)
+      .then(res => res.json())
+      .then(data => setSiteContent(data))
       .catch(() => { });
   }, [isDashboard]);
 
@@ -148,49 +154,59 @@ export default function Footer() {
                  {settings?.clinic_name ? settings.clinic_name.toUpperCase() : 'CENTRO'}
               </Link>
             <p className="text-sm font-medium leading-relaxed opacity-70 max-w-xs">
-              {translateStatic('footer.about_text', "Especialistas en medicina estética avanzada y bienestar. Un refugio de lujo diseñado para resaltar tu belleza natural con la tecnología más innovadora.")}
+              {settings?.clinic_description || siteContent?.about_text || translateStatic('footer.about_text', "Tu centro de confianza para servicios personalizados y bienestar de primer nivel.")}
             </p>
-            <div className="flex items-center gap-4 pt-2">
-              <a 
-                href={settings?.instagram_url || "https://instagram.com"} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-luxury-btn bg-stone-900 border border-stone-800 flex items-center justify-center text-white hover:text-primary hover:border-primary transition-all duration-300"
-              >
-                <Camera size={18} />
-              </a>
-              <span className="text-[10px] font-bold uppercase tracking-widest opacity-30">
-                {translateStatic('footer.follow_us', "Siguenos en redes")}
-              </span>
-            </div>
+            {settings?.instagram_url && (
+              <div className="flex items-center gap-4 pt-2">
+                <a 
+                  href={settings.instagram_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-luxury-btn bg-stone-900 border border-stone-800 flex items-center justify-center text-white hover:text-primary hover:border-primary transition-all duration-300"
+                >
+                  <Camera size={18} />
+                </a>
+                <span className="text-[10px] font-bold uppercase tracking-widest opacity-30">
+                  {translateStatic('footer.follow_us', "Síguenos en redes")}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Columna 2: Contacto */}
-          <div className="space-y-6">
-            <h4 className="text-primary font-bold text-xs uppercase tracking-[0.2em]">
-              {translateStatic('footer.contact', "Contacto")}
-            </h4>
-            <ul className="space-y-4">
-              <li className="flex items-start gap-3">
-                <MapPin size={18} className="text-primary shrink-0 mt-0.5" />
-                <span className="text-sm font-medium leading-snug">
-                  {settings?.clinic_address || 'Calle Favareta, 46, Alzira, Valencia'}
-                </span>
-              </li>
-              <li className="flex items-center gap-3">
-                <Phone size={18} className="text-primary shrink-0" />
-                <a href={`tel:${settings?.clinic_phone || '+34605407128'}`} className="text-sm font-bold text-white hover:text-primary transition-colors">
-                  {settings?.clinic_phone || '+34 605 40 71 28'}
-                </a>
-              </li>
-              <li className="flex items-center gap-3">
-                <Mail size={18} className="text-primary shrink-0" />
-                <a href={`mailto:${settings?.clinic_email || 'info@probookia.com'}`} className="text-sm font-medium hover:text-primary transition-colors">
-                  {settings?.clinic_email || 'info@probookia.com'}
-                </a>
-              </li>
-            </ul>
-          </div>
+          {(settings?.clinic_address || settings?.clinic_phone || settings?.clinic_email) && (
+            <div className="space-y-6">
+              <h4 className="text-primary font-bold text-xs uppercase tracking-[0.2em]">
+                {translateStatic('footer.contact', "Contacto")}
+              </h4>
+              <ul className="space-y-4">
+                {settings?.clinic_address && (
+                  <li className="flex items-start gap-3">
+                    <MapPin size={18} className="text-primary shrink-0 mt-0.5" />
+                    <span className="text-sm font-medium leading-snug">
+                      {settings.clinic_address}
+                    </span>
+                  </li>
+                )}
+                {settings?.clinic_phone && (
+                  <li className="flex items-center gap-3">
+                    <Phone size={18} className="text-primary shrink-0" />
+                    <a href={`tel:${settings.clinic_phone}`} className="text-sm font-bold text-white hover:text-primary transition-colors">
+                      {settings.clinic_phone}
+                    </a>
+                  </li>
+                )}
+                {settings?.clinic_email && (
+                  <li className="flex items-center gap-3">
+                    <Mail size={18} className="text-primary shrink-0" />
+                    <a href={`mailto:${settings.clinic_email}`} className="text-sm font-medium hover:text-primary transition-colors">
+                      {settings.clinic_email}
+                    </a>
+                  </li>
+                )}
+              </ul>
+            </div>
+          )}
 
           {/* Columna 3: Horarios Dinámicos */}
           <div className="space-y-6">

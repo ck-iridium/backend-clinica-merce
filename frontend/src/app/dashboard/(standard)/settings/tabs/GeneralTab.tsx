@@ -40,6 +40,10 @@ export default function GeneralTab({ settings, setSettings }: GeneralTabProps) {
             <label className="block text-xs font-bold text-stone-500 mb-2">{t('dashboard.settings.clinic_address')}</label>
             <input type="text" value={settings.clinic_address} onChange={e => setSettings({...settings, clinic_address: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all text-stone-800 dark:text-stone-800 outline-none" />
           </div>
+          <div className="md:col-span-2">
+            <label className="block text-xs font-bold text-stone-500 mb-2">Descripción del Negocio (Footer)</label>
+            <textarea rows={3} value={settings.clinic_description || ''} onChange={e => setSettings({...settings, clinic_description: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all text-stone-800 dark:text-stone-800 outline-none resize-none" placeholder="Ej: Tu centro de confianza para servicios personalizados y bienestar..." />
+          </div>
           <div>
             <label className="block text-xs font-bold text-stone-500 mb-2">{t('dashboard.settings.clinic_phone')}</label>
             <input type="text" value={settings.clinic_phone} onChange={e => setSettings({...settings, clinic_phone: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all text-stone-800 dark:text-stone-800 outline-none" />

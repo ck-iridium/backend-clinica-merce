@@ -144,6 +144,7 @@ class ClinicSettingsBase(BaseModel):
     clinic_phone: Optional[str] = ""
     clinic_email: Optional[str] = ""
     legal_name: str = ""
+    clinic_description: Optional[str] = "Tu centro de confianza para servicios personalizados y bienestar de primer nivel."
     sanitary_register: Optional[str] = None
     
     # SMTP Config

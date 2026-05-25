@@ -189,6 +189,7 @@ class ClinicSettings(Base):
     clinic_phone = Column(String, default="")
     clinic_email = Column(String, default="")
     legal_name = Column(String, default="")
+    clinic_description = Column(String, default="Tu centro de confianza para servicios personalizados y bienestar de primer nivel.")
     sanitary_register = Column(String, nullable=True)
 
     # SMTP Configuration
