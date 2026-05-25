@@ -571,7 +571,7 @@ export default function ClientHome({ content, settings, services, categories }: 
                 </div>
 
                 {/* ── RENDERIZADO CONDICIONAL POR layout_style DE LA CATEGORÍA ─ */}
-                <div className={isSlider ? "flex-1 flex items-center w-full py-4 overflow-hidden" : "w-full py-4"}>
+                <div className={isSlider ? "flex-1 flex items-stretch w-full py-4 overflow-hidden" : "w-full py-4"}>
                   {layoutStyle === 'cards_slider' && (
                     <div className="w-full flex-1 min-h-0 flex flex-col justify-center pb-8">
                       {/* DESKTOP */}
