@@ -58,7 +58,12 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
 
     user_name = getattr(request, 'user_name', None)
     lang = getattr(request, 'language', 'es')
-    system_instruction = ai_agent_service.build_system_instruction(user_name, lang)
+
+    # Obtener el nombre comercial del negocio configurado en los ajustes del inquilino
+    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).first()
+    clinic_name = settings.clinic_name if settings and settings.clinic_name else None
+
+    system_instruction = ai_agent_service.build_system_instruction(user_name, lang, clinic_name)
 
     try:
         # 1. EL CEREBRO (Gemini 2.5 Flash): Mantiene la sesión de chat con herramientas y multiturnos
