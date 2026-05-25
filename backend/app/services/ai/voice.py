@@ -12,6 +12,14 @@ def generate_gemini_tts(text: str, voice_gender: str, api_key: str, lang: str = 
     en un flujo de audio l16 / WAV altamente realista con el acento del idioma seleccionado.
     """
     try:
+        import re
+        # Limpiar texto para evitar que se pronuncien etiquetas de instrucción o formato markdown
+        text_clean = re.sub(r'\[.*?\]', '', text)
+        text_clean = re.sub(r'\*+', '', text_clean)
+        text_clean = re.sub(r'_+', '', text_clean)
+        text_clean = re.sub(r'#+', '', text_clean)
+        text_clean = re.sub(r'\s+', ' ', text_clean).strip()
+
         genai.configure(api_key=api_key)
         voice_name = "Algieba" if voice_gender == "male" else "Zephyr"
 
@@ -78,7 +86,7 @@ def generate_gemini_tts(text: str, voice_gender: str, api_key: str, lang: str = 
             f"[Director's Note]\n"
             f"{directors_note}\n\n"
             f"[Transcript]\n"
-            f"{text}"
+            f"{text_clean}"
         )
 
         response_voice = model_voice.generate_content(prompt_voice)
