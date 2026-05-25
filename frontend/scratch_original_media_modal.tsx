@@ -3,7 +3,6 @@
 import React, { useState, useEffect, forwardRef, useRef } from 'react';
 import CropImageModal from '@/components/CropImageModal';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
-import { useLanguage } from '@/app/contexts/LanguageContext';
 import { processVideo } from '@/lib/videoProcessor';
 import { type MediaFile, formatBytes } from '@/lib/mediaTypes';
 import { Loader2, Sparkles } from 'lucide-react';
@@ -28,7 +27,6 @@ interface MediaPickerModalProps {
 const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
   ({ onClose, onImageSelected, forceAspect, maxResolution, mediaType = 'image' }, ref) => {
     const { showFeedback } = useFeedback();
-    const { language } = useLanguage();
     const [activeTab, setActiveTab] = useState<'upload' | 'gallery'>('gallery');
     const [mediaFilter, setMediaFilter] = useState<'all' | 'image' | 'video'>('all');
 
@@ -237,27 +235,17 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                     </button>
 
                     <DialogHeader className="sr-only">
-                        <DialogTitle>
-                          {language === 'fr' ? 'Galerie de Sélection des Médias' : language === 'en' ? 'Media Selection Gallery' : 'Galería de Selección de Medios'}
-                        </DialogTitle>
-                        <DialogDescription>
-                          {language === 'fr' ? 'Sélectionnez ou téléchargez des images ou des vidéos.' : language === 'en' ? 'Select or upload images or videos.' : 'Selecciona o sube imágenes o vídeos para la clínica.'}
-                        </DialogDescription>
+                        <DialogTitle>Galería de Selección de Medios</DialogTitle>
+                        <DialogDescription>Selecciona o sube imágenes o vídeos para la clínica.</DialogDescription>
                     </DialogHeader>
 
                     {/* Header Interno */}
                     <div className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-stone-100 bg-stone-50/80 shrink-0">
                         <div>
                             <h3 className="text-xl font-extrabold text-stone-800 tracking-tight text-left">
-                              {mediaType === 'video' 
-                                ? (language === 'fr' ? 'Galerie de Vidéos' : language === 'en' ? 'Video Gallery' : 'Galería de Vídeos') 
-                                : mediaType === 'all' 
-                                ? (language === 'fr' ? 'Galerie de Médias' : language === 'en' ? 'Media Gallery' : 'Galería de Medios') 
-                                : (language === 'fr' ? "Galerie d'Images" : language === 'en' ? 'Image Gallery' : 'Galería de Imágenes')}
+                              {mediaType === 'video' ? 'Galería de Vídeos' : mediaType === 'all' ? 'Galería de Medios' : 'Galería de Imágenes'}
                             </h3>
-                            <p className="text-xs text-stone-500 font-medium mt-1 text-left">
-                              {language === 'fr' ? 'Choisissez ou téléchargez du contenu multimédia optimisé' : language === 'en' ? 'Choose or upload optimized multimedia content' : 'Elige o sube contenido multimedia optimizado'}
-                            </p>
+                            <p className="text-xs text-stone-500 font-medium mt-1 text-left">Elige o sube contenido multimedia optimizado</p>
                         </div>
                     </div>
 
@@ -265,24 +253,15 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                     <div className="flex border-b border-stone-100 px-6 sm:px-8 bg-white shrink-0">
                         <button
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveTab('gallery'); }}
-                            className={`px-6 py-4 text-sm font-bold border-b-[3px] transition-all flex-[0_0_auto] ${activeTab === 'gallery' ? 'border-primary text-stone-900' : 'border-transparent text-stone-400 hover:text-stone-600'}`}
+                            className={`px-6 py-4 text-sm font-bold border-b-[3px] transition-all flex-[0_0_auto] ${activeTab === 'gallery' ? 'border-[#d4af37] text-stone-900' : 'border-transparent text-stone-400 hover:text-stone-600'}`}
                         >
-                            {mediaType === 'video' 
-                              ? (language === 'fr' ? 'Vidéos Disponibles' : language === 'en' ? 'Available Videos' : 'Vídeos Disponibles') 
-                              : mediaType === 'all' 
-                              ? (language === 'fr' ? 'Médias Disponibles' : language === 'en' ? 'Available Media' : 'Medios Disponibles') 
-                              : (language === 'fr' ? 'Images Disponibles' : language === 'en' ? 'Available Images' : 'Imágenes Disponibles')}
+                            {mediaType === 'video' ? 'Vídeos Disponibles' : mediaType === 'all' ? 'Medios Disponibles' : 'Imágenes Disponibles'}
                         </button>
                         <button
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveTab('upload'); }}
-                            className={`px-6 py-4 text-sm font-bold border-b-[3px] transition-all flex-[0_0_auto] ${activeTab === 'upload' ? 'border-primary text-stone-900' : 'border-transparent text-stone-400 hover:text-stone-600'}`}
+                            className={`px-6 py-4 text-sm font-bold border-b-[3px] transition-all flex-[0_0_auto] ${activeTab === 'upload' ? 'border-[#d4af37] text-stone-900' : 'border-transparent text-stone-400 hover:text-stone-600'}`}
                         >
-                            {language === 'fr' ? 'Télécharger' : language === 'en' ? 'Upload' : 'Subir'}{' '}
-                            {mediaType === 'video' 
-                              ? (language === 'fr' ? 'Vidéo' : language === 'en' ? 'Video' : 'Vídeo') 
-                              : mediaType === 'all' 
-                              ? (language === 'fr' ? 'Contenu' : language === 'en' ? 'Content' : 'Contenido') 
-                              : (language === 'fr' ? 'Image' : language === 'en' ? 'Image' : 'Imagen')}
+                            Subir {mediaType === 'video' ? 'Vídeo' : mediaType === 'all' ? 'Contenido' : 'Imagen'}
                         </button>
                     </div>
 
@@ -302,9 +281,9 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                                         {mediaType === 'all' && (
                                             <div className="flex items-center gap-1.5 shrink-0 select-none pb-1">
                                                 {[
-                                                    { id: 'all', label: language === 'fr' ? 'Tous' : language === 'en' ? 'All' : 'Todos', count: galleryFiles.length },
-                                                    { id: 'image', label: language === 'fr' ? 'Images' : language === 'en' ? 'Images' : 'Imágenes', count: galleryFiles.filter(f => !isVideo(f.content_type)).length },
-                                                    { id: 'video', label: language === 'fr' ? 'Vidéos' : language === 'en' ? 'Videos' : 'Vídeos', count: galleryFiles.filter(f => isVideo(f.content_type)).length }
+                                                    { id: 'all', label: 'Todos', count: galleryFiles.length },
+                                                    { id: 'image', label: 'Imágenes', count: galleryFiles.filter(f => !isVideo(f.content_type)).length },
+                                                    { id: 'video', label: 'Vídeos', count: galleryFiles.filter(f => isVideo(f.content_type)).length }
                                                 ].map(pill => (
                                                     <button
                                                         type="button"
@@ -328,21 +307,13 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
 
                                         {galleryLoading ? (
                                             <div className="flex flex-col items-center justify-center h-full min-h-[300px] gap-4">
-                                                <div className="w-10 h-10 border-4 border-stone-200 border-t-primary rounded-full animate-spin" />
-                                                <p className="text-stone-400 text-sm font-medium tracking-widest uppercase">
-                                                    {language === 'fr' ? 'Chargement...' : language === 'en' ? 'Loading...' : 'Cargando...'}
-                                                </p>
+                                                <div className="w-10 h-10 border-4 border-stone-200 border-t-[#d4af37] rounded-full animate-spin" />
+                                                <p className="text-stone-400 text-sm font-medium tracking-widest uppercase">Cargando...</p>
                                             </div>
                                         ) : displayedFiles.length === 0 ? (
                                             <div className="flex flex-col items-center justify-center h-full min-h-[300px] gap-4 text-center">
                                                 <span className="text-5xl opacity-40">{mediaFilter === 'video' ? '🎥' : '🖼️'}</span>
-                                                <p className="text-stone-500 font-medium">
-                                                  {mediaFilter === 'video'
-                                                    ? (language === 'fr' ? 'Aucune vidéo disponible.' : language === 'en' ? 'No videos available.' : 'No hay vídeos disponibles.')
-                                                    : mediaFilter === 'image'
-                                                    ? (language === 'fr' ? 'Aucune image disponible.' : language === 'en' ? 'No images available.' : 'No hay imágenes disponibles.')
-                                                    : (language === 'fr' ? 'Aucun média disponible.' : language === 'en' ? 'No media available.' : 'No hay medios disponibles.')}
-                                                </p>
+                                                <p className="text-stone-500 font-medium">No hay {mediaFilter === 'video' ? 'vídeos' : mediaFilter === 'image' ? 'imágenes' : 'medios'} disponibles.</p>
                                             </div>
                                         ) : (
                                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 pb-24">
@@ -351,7 +322,7 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                                                         type="button"
                                                         key={file.url}
                                                         onClick={(e) => safeSelectImage(e, file.url)}
-                                                        className="group relative rounded-2xl overflow-hidden aspect-square bg-stone-100 border border-stone-200 hover:border-primary hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-left"
+                                                        className="group relative rounded-2xl overflow-hidden aspect-square bg-stone-100 border border-stone-200 hover:border-[#d4af37] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-left"
                                                     >
                                                         {isVideo(file.content_type) ? (
                                                           <div className="w-full h-full relative flex items-center justify-center bg-stone-900">
@@ -385,8 +356,8 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                                                             </div>
                                                         )}
                                                         <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/30 transition-all flex items-center justify-center">
-                                                            <div className="opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all bg-primary text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg">
-                                                                {language === 'fr' ? 'Choisir' : language === 'en' ? 'Choose' : 'Elegir'}
+                                                            <div className="opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all bg-[#d4af37] text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg">
+                                                                Elegir
                                                             </div>
                                                         </div>
                                                     </button>
@@ -402,7 +373,7 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                                     {(uploading || isProcessing) ? (
                                         <div className="flex flex-col items-center gap-6 p-12 bg-white rounded-3xl border border-stone-100 shadow-sm w-full max-w-sm">
                                             <div className="relative flex items-center justify-center">
-                                              <Loader2 size={48} className="text-primary animate-spin" />
+                                              <Loader2 size={48} className="text-[#d4af37] animate-spin" />
                                               {isProcessing && (
                                                 <div className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-stone-800">
                                                   {processingProgress}%
@@ -411,20 +382,16 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                                             </div>
                                             <div className="text-center">
                                               <p className="text-stone-800 font-black uppercase tracking-widest text-xs mb-1">
-                                                {isProcessing 
-                                                   ? (language === 'fr' ? 'Optimisation de la Vidéo' : language === 'en' ? 'Optimizing Video' : 'Optimizando Vídeo') 
-                                                   : (language === 'fr' ? 'Téléchargement vers le Nuage' : language === 'en' ? 'Uploading to Cloud' : 'Subiendo a la Nube')}
+                                                {isProcessing ? 'Optimizando Vídeo' : 'Subiendo a la Nube'}
                                               </p>
                                               <p className="text-stone-400 text-[10px] font-medium leading-relaxed">
-                                                {isProcessing 
-                                                   ? (language === 'fr' ? "Suppression de l'audio et compression..." : language === 'en' ? 'Removing audio and compressing...' : 'Eliminando audio y reduciendo tamaño...') 
-                                                   : (language === 'fr' ? 'Enregistrement du fichier...' : language === 'en' ? 'Saving file to server...' : 'Guardando archivo en el servidor...')}
+                                                {isProcessing ? 'Eliminando audio y reduciendo tamaño...' : 'Guardando archivo en el servidor...'}
                                               </p>
                                             </div>
                                             {isProcessing && (
                                               <div className="w-full bg-stone-100 rounded-full h-1.5 overflow-hidden">
                                                 <div 
-                                                  className="h-full bg-primary transition-all duration-300"
+                                                  className="h-full bg-[#d4af37] transition-all duration-300"
                                                   style={{ width: `${processingProgress}%` }}
                                                 />
                                               </div>
@@ -450,16 +417,14 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                                             />
                                             <div className={cn(
                                               "border-2 border-dashed rounded-3xl p-16 text-center transition-all bg-white shadow-sm group-hover:shadow-md",
-                                              isDragging ? "border-primary bg-primary/[0.03]" : "border-stone-300 group-hover:border-primary group-hover:bg-primary/[0.03]"
+                                              isDragging ? "border-[#d4af37] bg-[#fbf9f4]" : "border-stone-300 group-hover:border-[#d4af37] group-hover:bg-[#fbf9f4]"
                                             )}>
                                                 <div className="text-6xl mb-6 transform group-hover:scale-110 transition-transform duration-300">
                                                   {mediaType === 'video' ? '📹' : '🖼️'}
                                                 </div>
-                                                <p className="font-extrabold text-stone-800 text-xl mb-2">{language === 'fr' ? 'Télécharger' : language === 'en' ? 'Upload' : 'Subir'}{' '}{mediaType === 'video' ? (language === 'fr' ? 'Vidéo' : language === 'en' ? 'Video' : 'Vídeo') : (language === 'fr' ? 'une Photo' : language === 'en' ? 'a Photo' : 'Foto')}</p>
+                                                <p className="font-extrabold text-stone-800 text-xl mb-2">Subir {mediaType === 'video' ? 'Vídeo' : 'Foto'}</p>
                                                 <p className="text-sm text-stone-500 italic">
-                                                  {mediaType === 'video' 
-                                                    ? (language === 'fr' ? 'Formats suggérés: .mp4, .webm' : language === 'en' ? 'Suggested formats: .mp4, .webm' : 'Formatos sugeridos: .mp4, .webm') 
-                                                    : (language === 'fr' ? 'Formats suggérés: .webp, .jpg' : language === 'en' ? 'Suggested formats: .webp, .jpg' : 'Formatos sugeridos: .webp, .jpg')}
+                                                  {mediaType === 'video' ? 'Formatos sugeridos: .mp4, .webm' : 'Formatos sugeridos: .webp, .jpg'}
                                                 </p>
                                             </div>
                                         </label>

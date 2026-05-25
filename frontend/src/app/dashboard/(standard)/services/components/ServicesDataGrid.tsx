@@ -504,16 +504,22 @@ export default function ServicesDataGrid({
                   
                   {/* Columna Checkbox Maestro */}
                   <th className="p-4 w-12 text-center">
-                    <label className="relative flex items-center justify-center cursor-pointer">
+                    <label className="relative flex items-center justify-center cursor-pointer select-none">
                       <input
                         type="checkbox"
                         checked={isAllSelected}
                         onChange={handleSelectAllToggle}
-                        className="sr-only peer"
+                        className="sr-only"
                       />
-                      <div className="w-5 h-5 rounded-md border border-stone-300 bg-white peer-checked:bg-[#d4af37] peer-checked:border-[#d4af37] flex items-center justify-center transition-all">
+                      <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
+                        isAllSelected 
+                          ? 'bg-[#d4af37] border-[#d4af37]' 
+                          : 'border-stone-300 bg-white hover:border-stone-400'
+                      }`}>
                         {isAllSelected && (
-                          <span className="block w-2.5 h-2.5 bg-white rounded-sm"></span>
+                          <svg className="w-3.5 h-3.5 text-white animate-in zoom-in-50 duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
                         )}
                       </div>
                     </label>
@@ -565,16 +571,22 @@ export default function ServicesDataGrid({
                       
                       {/* Checkbox Fila */}
                       <td className="p-4 text-center">
-                        <label className="relative flex items-center justify-center cursor-pointer">
+                        <label className="relative flex items-center justify-center cursor-pointer select-none">
                           <input
                             type="checkbox"
                             checked={isChecked}
                             onChange={() => handleSelectRowToggle(svc.id)}
-                            className="sr-only peer"
+                            className="sr-only"
                           />
-                          <div className="w-5 h-5 rounded-md border border-stone-300 bg-white peer-checked:bg-[#d4af37] peer-checked:border-[#d4af37] flex items-center justify-center transition-all">
+                          <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
+                            isChecked 
+                              ? 'bg-[#d4af37] border-[#d4af37]' 
+                              : 'border-stone-300 bg-white hover:border-stone-400'
+                          }`}>
                             {isChecked && (
-                              <span className="block w-2.5 h-2.5 bg-white rounded-sm"></span>
+                              <svg className="w-3.5 h-3.5 text-white animate-in zoom-in-50 duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
                             )}
                           </div>
                         </label>
@@ -681,7 +693,7 @@ export default function ServicesDataGrid({
                       <td className="p-4 text-center">
                         <div className="flex justify-center items-center">
                           {isStatusUpdating ? (
-                            <Loader2 size={16} className="animate-spin text-[#d4af37]" />
+                            <Loader2 size={16} className="animate-spin text-primary" />
                           ) : (
                             <label className="relative inline-flex items-center cursor-pointer">
                               <input
@@ -690,7 +702,7 @@ export default function ServicesDataGrid({
                                 onChange={() => handleToggleStatus(svc)}
                                 className="sr-only peer"
                               />
-                              <div className="w-9 h-5 bg-stone-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#d4af37]"></div>
+                              <div className="w-9 h-5 bg-stone-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
                             </label>
                           )}
                         </div>

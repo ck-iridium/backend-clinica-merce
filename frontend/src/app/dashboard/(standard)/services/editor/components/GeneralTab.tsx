@@ -111,7 +111,24 @@ export default function GeneralTab({
       {/* STRIPE FIANZA CONFIGURATION */}
       <div className="p-4 bg-stone-50 border border-stone-200 rounded-xl space-y-4">
         <div className="flex items-center gap-3">
-          <input type="checkbox" {...register('requires_deposit')} className="w-5 h-5 accent-[#d4af37] rounded cursor-pointer" />
+          <label className="relative flex items-center justify-center cursor-pointer select-none">
+            <input 
+              type="checkbox" 
+              {...register('requires_deposit')} 
+              className="sr-only" 
+            />
+            <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
+              formValues.requires_deposit 
+                ? 'bg-[#d4af37] border-[#d4af37]' 
+                : 'border-stone-300 bg-white hover:border-stone-400'
+            }`}>
+              {formValues.requires_deposit && (
+                <svg className="w-3.5 h-3.5 text-white animate-in zoom-in-50 duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </div>
+          </label>
           <div>
             <p className="text-sm font-bold text-stone-700">{t('dashboard.services.requires_deposit_title')}</p>
             <p className="text-[10px] text-stone-500 uppercase tracking-widest">{t('dashboard.services.requires_deposit_helper')}</p>
@@ -147,7 +164,24 @@ export default function GeneralTab({
       </div>
       
       <div className="flex items-center gap-3 p-4 bg-white border border-stone-200 rounded-xl">
-        <input type="checkbox" {...register('is_active')} className="w-5 h-5 accent-[#d4af37] rounded" />
+        <label className="relative flex items-center justify-center cursor-pointer select-none">
+          <input 
+            type="checkbox" 
+            {...register('is_active')} 
+            className="sr-only" 
+          />
+          <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
+            formValues.is_active 
+              ? 'bg-[#d4af37] border-[#d4af37]' 
+              : 'border-stone-300 bg-white hover:border-stone-400'
+          }`}>
+            {formValues.is_active && (
+              <svg className="w-3.5 h-3.5 text-white animate-in zoom-in-50 duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            )}
+          </div>
+        </label>
         <div>
           <p className="text-sm font-bold text-stone-700">{t('dashboard.services.active_service_title')}</p>
           <p className="text-[10px] text-stone-500 uppercase tracking-widest">{t('dashboard.services.active_service_helper')}</p>

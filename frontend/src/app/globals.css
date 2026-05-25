@@ -145,10 +145,14 @@
 .text-\[\#d4af37\], .text-\[\#D4AF37\] {
   color: hsl(var(--primary)) !important;
 }
-.bg-\[\#d4af37\], .bg-\[\#D4AF37\] {
+.bg-\[\#d4af37\], .bg-\[\#D4AF37\], 
+.peer:checked ~ .peer-checked\:bg-\[\#d4af37\], 
+.peer:checked ~ .peer-checked\:bg-\[\#D4AF37\] {
   background-color: hsl(var(--primary)) !important;
 }
-.border-\[\#d4af37\], .border-\[\#D4AF37\] {
+.border-\[\#d4af37\], .border-\[\#D4AF37\],
+.peer:checked ~ .peer-checked\:border-\[\#d4af37\], 
+.peer:checked ~ .peer-checked\:border-\[\#D4AF37\] {
   border-color: hsl(var(--primary)) !important;
 }
 .focus-ring-\[\#d4af37\]:focus, .focus-ring-\[\#D4AF37\]:focus {
