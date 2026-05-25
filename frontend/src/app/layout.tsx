@@ -236,8 +236,10 @@ export default async function RootLayout({
     radiusBtn = "9999px";
   }
 
+  const isDashboardRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/super-admin') || pathname.startsWith('/login');
+
   return (
-    <html lang="es" suppressHydrationWarning className={`${inter.variable} ${cormorantGaramond.variable} ${isDark ? 'dark' : ''}`}>
+    <html lang="es" suppressHydrationWarning className={`${inter.variable} ${cormorantGaramond.variable} ${isDark && !isDashboardRoute ? 'dark' : ''}`}>
       <head>
         <link rel="icon" href={favicon} type="image/x-icon" />
         <style dangerouslySetInnerHTML={{ __html: `
