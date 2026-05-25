@@ -33,10 +33,10 @@ export default function LanguageSelector({ upward = false }: { upward?: boolean 
       {/* Selector Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 bg-stone-50/80 backdrop-blur-md border border-stone-200/50 hover:bg-stone-100/80 hover:border-stone-300/80 rounded-luxury-btn px-2.5 py-1 transition-all active:scale-95 shadow-luxury"
+        className="flex items-center gap-1.5 bg-stone-50/80 dark:bg-stone-900/80 backdrop-blur-md border border-stone-200/50 dark:border-stone-850 hover:bg-stone-100/80 dark:hover:bg-stone-800/80 hover:border-stone-300/80 rounded-luxury-btn px-2.5 py-1 transition-all active:scale-95 shadow-luxury"
       >
-        <Globe className="w-3.5 h-3.5 text-stone-400" />
-        <span className="text-[10px] md:text-xs font-extrabold text-stone-700 tracking-wider uppercase">
+        <Globe className="w-3.5 h-3.5 text-stone-400 dark:text-stone-500" />
+        <span className="text-[10px] md:text-xs font-extrabold text-stone-700 dark:text-stone-300 tracking-wider uppercase">
           {currentLang.code}
         </span>
         <ChevronDown className={`w-3 h-3 text-stone-400 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
@@ -50,23 +50,23 @@ export default function LanguageSelector({ upward = false }: { upward?: boolean 
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: upward ? -8 : 8, scale: 0.95 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className={`absolute right-0 w-32 bg-white/95 backdrop-blur-md border border-stone-200/60 rounded-luxury-card shadow-xl z-[999] overflow-hidden p-1.5 ${
+            className={`absolute right-0 w-32 bg-white/95 dark:bg-stone-950/95 backdrop-blur-md border border-stone-200/60 dark:border-stone-850 rounded-luxury-card shadow-xl z-[999] overflow-hidden p-1.5 ${
               upward ? "bottom-full mb-2" : "top-full mt-2"
             }`}
           >
             <div className="flex flex-col gap-0.5">
               {languages.map((lang) => (
                 <button
-                  key={lang.code}
-                  onClick={() => {
-                    setLanguage(lang.code);
-                    setIsOpen(false);
-                  }}
-                  className={`w-full flex items-center justify-between text-left px-3 py-2 rounded-luxury-btn text-xs font-bold transition-all ${
-                    language === lang.code
-                      ? "bg-primary/10 text-primary"
-                      : "text-stone-600 hover:bg-stone-50 hover:text-stone-900"
-                  }`}
+                   key={lang.code}
+                   onClick={() => {
+                     setLanguage(lang.code);
+                     setIsOpen(false);
+                   }}
+                   className={`w-full flex items-center justify-between text-left px-3 py-2 rounded-luxury-btn text-xs font-bold transition-all ${
+                     language === lang.code
+                       ? "bg-primary/10 text-primary"
+                       : "text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-900 hover:text-stone-900 dark:hover:text-stone-200"
+                   }`}
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-sm leading-none">{lang.flag}</span>

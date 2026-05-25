@@ -260,7 +260,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
 
   return (
     <>
-      <nav className={`w-full z-[100] transition-all duration-500 ease-in-out ${!useTransparent ? 'bg-white/90 backdrop-blur-xl border-b border-border/50 shadow-sm py-0 sticky top-0' : 'bg-transparent border-transparent py-2 absolute top-0 left-0'}`}>
+      <nav className={`w-full z-[100] transition-all duration-500 ease-in-out ${!useTransparent ? 'bg-white/90 dark:bg-stone-950/90 backdrop-blur-xl border-b border-stone-200/50 dark:border-stone-900/50 shadow-sm py-0 sticky top-0' : 'bg-transparent border-transparent py-2 absolute top-0 left-0'}`}>
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between relative">
 
           {/* LOGO */}
@@ -298,7 +298,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                         isActive
                           ? 'text-primary'
                           : !useTransparent
-                          ? 'text-stone-800 hover:text-primary'
+                          ? 'text-stone-800 dark:text-stone-200 hover:text-primary dark:hover:text-primary'
                           : 'text-white hover:text-primary'
                       }`}
                     >
@@ -316,7 +316,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                     isActive
                       ? 'text-primary'
                       : !useTransparent
-                      ? 'text-stone-800 hover:text-primary'
+                      ? 'text-stone-800 dark:text-stone-200 hover:text-primary dark:hover:text-primary'
                       : 'text-white hover:text-primary'
                   }`}
                 >
@@ -338,7 +338,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
           <div
             onMouseEnter={() => setShowMegaMenu(true)}
             onMouseLeave={() => setShowMegaMenu(false)}
-            className={`absolute top-[calc(100%-8px)] left-6 right-6 bg-white rounded-luxury-card shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] overflow-hidden transition-all duration-300 origin-top ${showMegaMenu ? 'opacity-100 scale-y-100 translate-y-0' : 'opacity-0 scale-y-95 -translate-y-2 pointer-events-none'}`}
+            className={`absolute top-[calc(100%-8px)] left-6 right-6 bg-white dark:bg-stone-950 rounded-luxury-card border border-stone-100 dark:border-stone-900 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] overflow-hidden transition-all duration-300 origin-top ${showMegaMenu ? 'opacity-100 scale-y-100 translate-y-0' : 'opacity-0 scale-y-95 -translate-y-2 pointer-events-none'}`}
           >
             <div className="flex h-[380px]">
               {/* Left Panel: Categories */}
@@ -353,7 +353,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                           onMouseEnter={() => setActiveCategory(cat.id)}
                           onClick={() => { setShowMegaMenu(false); window.location.href = `/tratamientos/${cat.slug || cat.id}` }}
                           className={`w-full text-left px-6 py-2.5 transition-all font-serif text-lg md:text-xl leading-tight whitespace-normal relative ${activeCategory === cat.id
-                              ? 'bg-white text-primary font-semibold rounded-l-luxury-card -mr-[1px] z-10 shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.02)] after:absolute after:top-0 after:-right-[1px] after:w-[2px] after:h-full after:bg-white after:z-20'
+                              ? 'bg-white dark:bg-stone-900 text-primary font-semibold rounded-l-luxury-card -mr-[1px] z-10 shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.02)] after:absolute after:top-0 after:-right-[1px] after:w-[2px] after:h-full after:bg-white dark:after:bg-stone-900 after:z-20'
                               : 'text-stone-200 hover:text-white rounded-luxury-btn mr-4 hover:bg-white/5'
                             }`}
                         >
@@ -366,7 +366,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
               </div>
 
               {/* Right Panel: Bento Grid Highlights */}
-              <div className="flex-1 py-6 px-8 bg-white overflow-hidden">
+              <div className="flex-1 py-6 px-8 bg-white dark:bg-stone-900 overflow-hidden">
                 {(() => {
                   const servicesList = Array.isArray(services) ? services : [];
                   const activeServices = servicesList.filter(s => s.category_id === activeCategory).slice(0, 6);
@@ -401,7 +401,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
 
           {/* MOBILE MENU BUTTON - z-index máximo para control total */}
           <button
-            className={`md:hidden z-[110] relative p-2 focus:outline-none transition-colors ${(!useTransparent || isOpen) ? 'text-stone-800' : 'text-white'}`}
+            className={`md:hidden z-[110] relative p-2 focus:outline-none transition-colors ${(!useTransparent || isOpen) ? 'text-stone-800 dark:text-stone-200' : 'text-white'}`}
             onClick={() => setIsOpen(!isOpen)}
             aria-label={isOpen ? navT.close_menu : navT.open_menu}
           >
@@ -417,14 +417,14 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
 
       {/* MOBILE MENU OVERLAY - Aislamiento total movido fuera del <nav> (para escapar del backdrop-filter) */}
       <div
-        className={`fixed inset-0 bg-white z-[120] transition-all duration-500 ease-in-out md:hidden ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'
+        className={`fixed inset-0 bg-white dark:bg-stone-950 z-[120] transition-all duration-500 ease-in-out md:hidden ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'
           }`}
       >
-        <div className="flex flex-col items-center justify-start pt-32 gap-12 font-black text-3xl text-stone-800 h-full overflow-y-auto w-full px-8 text-center bg-white relative">
+        <div className="flex flex-col items-center justify-start pt-32 gap-12 font-black text-3xl text-stone-800 dark:text-stone-100 h-full overflow-y-auto w-full px-8 text-center bg-white dark:bg-stone-950 relative">
 
           {/* Botón Cerrar (necesario ya que el nav z-110 original quedó debajo del overlay z-120) */}
           <button
-            className="absolute top-6 right-6 text-stone-800 p-2 focus:outline-none"
+            className="absolute top-6 right-6 text-stone-800 dark:text-stone-100 p-2 focus:outline-none"
             onClick={() => setIsOpen(false)}
           >
             <div className="w-6 h-5 flex flex-col justify-between">
