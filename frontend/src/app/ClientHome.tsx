@@ -540,10 +540,15 @@ export default function ClientHome({ content, settings, services, categories }: 
             const layoutStyle: 'cards_slider' | 'bento_grid' | 'traditional_grid' | 'minimalist_list' =
               category.layout_preferences?.layout_style || 'cards_slider';
 
+            const isSlider = layoutStyle === 'cards_slider';
+            const sectionClasses = isSlider
+              ? `w-full pt-10 pb-[10vh] md:py-24 overflow-hidden flex flex-col h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none`
+              : `w-full pt-12 pb-16 md:py-24 flex flex-col h-auto snap-start md:snap-none`;
+
             return (
               <section
                 key={`cat-${category.id}`}
-                className={`w-full pt-10 pb-[10vh] md:py-24 overflow-hidden flex flex-col h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none ${isEven ? 'bg-white dark:bg-stone-950' : 'bg-[#F5F2EE] dark:bg-stone-900/60'}`}
+                className={`${sectionClasses} ${isEven ? 'bg-white dark:bg-stone-950' : 'bg-[#F5F2EE] dark:bg-stone-900/60'}`}
               >
                 {/* Cabecera de la categoría */}
                 <div className="w-full max-w-7xl mx-auto px-6 mb-8 flex-shrink-0 flex flex-col md:flex-row md:justify-between md:items-end gap-3 md:gap-8">
@@ -566,7 +571,7 @@ export default function ClientHome({ content, settings, services, categories }: 
                 </div>
 
                 {/* ── RENDERIZADO CONDICIONAL POR layout_style DE LA CATEGORÍA ─ */}
-                <div className="flex-1 flex items-center w-full py-4 overflow-hidden">
+                <div className={isSlider ? "flex-1 flex items-center w-full py-4 overflow-hidden" : "w-full py-4"}>
                   {layoutStyle === 'cards_slider' && (
                     <div className="w-full flex-grow flex flex-col justify-center pb-8">
                       {/* DESKTOP */}
