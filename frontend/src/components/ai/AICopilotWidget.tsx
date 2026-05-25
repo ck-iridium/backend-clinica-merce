@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sparkles, X, Send, Bot, User, Volume2, VolumeX, MessageSquare, RotateCcw } from 'lucide-react';
+import { Sparkles, X, Send, Bot, User, Volume2, VolumeX, MessageSquare, RotateCcw, Paperclip, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import VoiceRecorderButton from './VoiceRecorderButton';
 import { useLanguage } from '@/app/contexts/LanguageContext';
@@ -37,6 +37,16 @@ export default function AICopilotWidget() {
   const [chatWidth, setChatWidth] = useState(384);
   const [chatHeight, setChatHeight] = useState(460);
   const isResizing = useRef(false);
+
+  // Estados para archivos adjuntos seguros
+  const [attachedFile, setAttachedFile] = useState<{
+    name: string;
+    content: string;
+    type: 'text' | 'image';
+    url?: string;
+  } | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isAuthorized = role ? ['admin', 'administrador', 'recepcion', 'especialista'].includes(role.toLowerCase()) : false;
   const [messages, setMessages] = useState<Message[]>([
@@ -283,9 +293,81 @@ export default function AICopilotWidget() {
     }
   };
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Límite de tamaño de 5MB
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('El archivo supera el límite de seguridad de 5MB.');
+      return;
+    }
+
+    const fileType = file.type;
+    const isImage = fileType.startsWith('image/');
+    
+    if (isImage) {
+      setIsUploading(true);
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/upload/`, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!res.ok) {
+          throw new Error('Error al subir la imagen.');
+        }
+
+        const data = await res.json();
+        setAttachedFile({
+          name: file.name,
+          content: data.url,
+          type: 'image',
+          url: data.url,
+        });
+        toast.success('Imagen subida y adjuntada correctamente.');
+      } catch (err) {
+        console.error(err);
+        toast.error('Fallo al subir la imagen.');
+      } finally {
+        setIsUploading(false);
+      }
+    } else {
+      // Archivos basados en texto (CSV, JSON, TXT)
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const text = event.target?.result as string;
+        setAttachedFile({
+          name: file.name,
+          content: text,
+          type: 'text',
+        });
+        toast.success(`Archivo "${file.name}" adjuntado.`);
+      };
+      reader.onerror = () => {
+        toast.error('Error al leer el archivo.');
+      };
+      reader.readAsText(file);
+    }
+  };
+
   const handleSend = async (textToSend?: string) => {
-    const queryText = textToSend || input.trim();
-    if (!queryText || isLoading) return;
+    let queryText = textToSend || input.trim();
+    if (!queryText && !attachedFile && !textToSend) return;
+    if (isLoading || isUploading) return;
+
+    // Si hay un archivo adjunto, agregarlo a la consulta de forma segura e inteligente
+    if (attachedFile && !textToSend) {
+      if (attachedFile.type === 'text') {
+        queryText = `[Archivo adjunto: "${attachedFile.name}"]\nContenido:\n"""\n${attachedFile.content}\n"""\n\n${queryText}`;
+      } else if (attachedFile.type === 'image' && attachedFile.url) {
+        queryText = `[Imagen adjunta: "${attachedFile.name}"]\nURL de la imagen: ${attachedFile.url}\n\n${queryText}`;
+      }
+      setAttachedFile(null); // Limpiar tras capturar
+    }
 
     if (!textToSend) {
       setInput('');
@@ -524,31 +606,80 @@ export default function AICopilotWidget() {
             <div ref={messagesEndRef} />
           </div>
 
+          {/* Vista previa de archivo adjunto seguro */}
+          {attachedFile && (
+            <div className="px-3.5 py-2 bg-stone-50 border-t border-stone-200/60 flex items-center justify-between gap-2 shrink-0 select-text">
+              <div className="flex items-center gap-2 text-stone-700 min-w-0">
+                {attachedFile.type === 'image' && attachedFile.url ? (
+                  <img src={attachedFile.url} className="w-8 h-8 rounded-lg object-cover border border-stone-200 shrink-0" alt="Preview" />
+                ) : (
+                  <FileText size={16} className="text-primary shrink-0" />
+                )}
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs font-semibold text-stone-700 truncate max-w-[180px]">
+                    {attachedFile.name}
+                  </span>
+                  <span className="text-[9px] text-stone-400 font-bold uppercase tracking-wider">
+                    {attachedFile.type === 'image' ? 'Imagen para servicio/categoría' : 'Documento seguro (CSV/TXT/JSON)'}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setAttachedFile(null)}
+                className="p-1 rounded-full text-stone-400 hover:text-stone-600 hover:bg-stone-200/50 transition-all shrink-0"
+                title="Quitar archivo"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          )}
+
           {/* Formulario de Entrada (Reutiliza el Micro e Input como TEXTAREA para Shift+Enter) */}
           <div className="p-3 bg-white border-t border-stone-200/80 flex items-center gap-2 shrink-0 select-text">
+            {/* Input de archivo oculto */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept=".txt,.csv,.json,.png,.jpg,.jpeg,.webp"
+              className="hidden"
+            />
+            
+            {/* Botón de Adjuntar */}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isLoading || isUploading}
+              className={`p-2 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-all shrink-0 relative ${
+                isUploading ? 'animate-pulse text-primary' : ''
+              }`}
+              title="Adjuntar archivo seguro (CSV, TXT, JSON, Imagen)"
+            >
+              <Paperclip size={16} />
+            </button>
+
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              disabled={isLoading}
+              disabled={isLoading || isUploading}
               rows={3}
-              placeholder={language === 'fr' ? 'Écrire ou parler...' : language === 'en' ? 'Type or speak...' : 'Escribe o habla...'}
+              placeholder={language === 'fr' ? 'Écrire ou parler...' : language === 'en' ? 'Type or speak...' : 'Escribe o habla o adjunta un archivo...'}
               className="flex-1 bg-stone-50 border border-stone-200/80 rounded-xl px-3 py-2 text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:border-primary transition-all font-medium resize-y min-h-[40px] max-h-48 overflow-y-auto"
             />
             
             {/* Botón de Voz Nativo */}
             <VoiceRecorderButton
               onVoiceTranscribed={(txt) => handleSend(language === 'fr' ? `🎙️ [Voix]: "${txt}"` : language === 'en' ? `🎙️ [Voice]: "${txt}"` : `🎙️ [Voz]: "${txt}"`)}
-              disabled={isLoading}
+              disabled={isLoading || isUploading}
               lang={audioLanguage}
             />
             
             {/* Botón Enviar */}
             <button
               onClick={() => handleSend()}
-              disabled={isLoading || !input.trim()}
+              disabled={isLoading || isUploading || (!input.trim() && !attachedFile)}
               className={`flex h-11 w-11 items-center justify-center rounded-luxury-btn bg-stone-900 text-white transition-all duration-300 border border-stone-800 shadow-md shrink-0 ${
-                isLoading || !input.trim() ? 'opacity-40 cursor-not-allowed' : 'hover:bg-primary hover:text-stone-900 hover:border-primary active:scale-95'
+                isLoading || isUploading || (!input.trim() && !attachedFile) ? 'opacity-40 cursor-not-allowed' : 'hover:bg-primary hover:text-stone-900 hover:border-primary active:scale-95'
               }`}
             >
               <Send size={16} />

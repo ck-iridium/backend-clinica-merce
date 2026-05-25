@@ -10,7 +10,8 @@ logger = logging.getLogger("ai_agent_tools_categories")
 
 def create_new_category(
     name: str,
-    description: Optional[str] = None
+    description: Optional[str] = None,
+    image_url: Optional[str] = None
 ) -> str:
     """
     Crea una nueva categoría de tratamientos/servicios en la base de datos de la clínica.
@@ -18,6 +19,7 @@ def create_new_category(
     Args:
         name: El nombre legible de la categoría (ej. 'Medicina Estética', 'Corporales').
         description: Una descripción opcional sobre qué tratamientos incluye esta categoría.
+        image_url: Opcional. La dirección URL de la imagen de portada de la categoría.
     """
     db = SessionLocal()
     try:
@@ -43,6 +45,7 @@ def create_new_category(
             name=name,
             slug=slug,
             description=description,
+            image_url=image_url,
             is_active=True
         )
         db.add(new_cat)

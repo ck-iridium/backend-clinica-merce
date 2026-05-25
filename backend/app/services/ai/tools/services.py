@@ -13,7 +13,9 @@ def update_service_fields(
     price: Optional[float] = None,
     duration_minutes: Optional[int] = None,
     description: Optional[str] = None,
-    content_html: Optional[str] = None
+    content_html: Optional[str] = None,
+    category_name_or_slug: Optional[str] = None,
+    image_url: Optional[str] = None
 ) -> str:
     """
     Actualiza campos específicos de un servicio o tratamiento existente en la clínica a partir de su slug.
@@ -25,6 +27,8 @@ def update_service_fields(
         duration_minutes: Duración del tratamiento en minutos.
         description: Breve descripción inspiradora de 1 o 2 párrafos sofisticados en texto plano.
         content_html: Texto comercial largo y detallado formateado en HTML limpio (<p>, <ul>, <li>, <strong>) listo para la web.
+        category_name_or_slug: Opcional. El nombre o slug de la nueva categoría a la cual reasignar este servicio.
+        image_url: Opcional. La nueva dirección URL de la imagen del servicio.
     """
     db = SessionLocal()
     try:
@@ -60,6 +64,47 @@ def update_service_fields(
         if content_html is not None:
             service.content_html = content_html
             updated_parts.append("contenido detallado HTML actualizado")
+        if image_url is not None:
+            service.image_url = image_url
+            updated_parts.append("imagen del servicio actualizada")
+
+        if category_name_or_slug is not None:
+            # Buscar la categoría
+            category = db.query(models.ServiceCategory).filter(
+                models.ServiceCategory.tenant_id == tenant_id,
+                models.ServiceCategory.slug == category_name_or_slug
+            ).first()
+
+            if not category:
+                category = db.query(models.ServiceCategory).filter(
+                    models.ServiceCategory.tenant_id == tenant_id,
+                    models.ServiceCategory.name.ilike(f"%{category_name_or_slug}%")
+                ).first()
+
+            if not category:
+                converted_slug = re.sub(r'[^a-z0-9]+', '-', category_name_or_slug.lower()).strip('-')
+                category = db.query(models.ServiceCategory).filter(
+                    models.ServiceCategory.tenant_id == tenant_id,
+                    models.ServiceCategory.slug == converted_slug
+                ).first()
+
+            if category:
+                service.category_id = category.id
+                updated_parts.append(f"categoría cambiada a '{category.name}'")
+            else:
+                # Crear categoría al vuelo
+                cat_slug = re.sub(r'[^a-z0-9]+', '-', category_name_or_slug.lower()).strip('-')
+                new_cat = models.ServiceCategory(
+                    id=str(uuid.uuid4()),
+                    tenant_id=tenant_id,
+                    name=category_name_or_slug,
+                    slug=cat_slug,
+                    is_active=True
+                )
+                db.add(new_cat)
+                db.flush()
+                service.category_id = new_cat.id
+                updated_parts.append(f"categoría al vuelo '{category_name_or_slug}' creada y asociada")
 
         if not updated_parts:
             return "No se ha proporcionado ningún campo válido para actualizar."
@@ -78,16 +123,21 @@ def create_new_service(
     name: str,
     price: float,
     duration_minutes: int,
-    description: Optional[str] = None
+    description: Optional[str] = None,
+    category_name_or_slug: Optional[str] = None,
+    image_url: Optional[str] = None
 ) -> str:
     """
     Crea y registra un nuevo servicio o tratamiento en el catálogo oficial de la clínica.
+    Si se proporciona una categoría (por nombre o slug), se asociará directamente de forma robusta.
 
     Args:
         name: El nombre legible del servicio (ej. 'Peeling Químico', 'Masaje Relajante').
         price: Precio base del tratamiento en euros (€).
         duration_minutes: Duración del tratamiento en minutos.
         description: Breve descripción inspiradora de la experiencia en la clínica.
+        category_name_or_slug: Opcional. El nombre o slug de la categoría a la cual asignar este servicio.
+        image_url: Opcional. La dirección URL de la imagen principal del servicio.
     """
     db = SessionLocal()
     try:
@@ -106,20 +156,64 @@ def create_new_service(
         if existing:
             return f"Error: Ya existe un servicio en tu catálogo con el nombre o slug '{name}'."
 
+        category_id = None
+        category_msg = ""
+        if category_name_or_slug:
+            # Buscar categoría por slug
+            category = db.query(models.ServiceCategory).filter(
+                models.ServiceCategory.tenant_id == tenant_id,
+                models.ServiceCategory.slug == category_name_or_slug
+            ).first()
+
+            if not category:
+                # Buscar por coincidencia parcial de nombre
+                category = db.query(models.ServiceCategory).filter(
+                    models.ServiceCategory.tenant_id == tenant_id,
+                    models.ServiceCategory.name.ilike(f"%{category_name_or_slug}%")
+                ).first()
+
+            if not category:
+                # Convertir espacios en guiones y buscar
+                converted_slug = re.sub(r'[^a-z0-9]+', '-', category_name_or_slug.lower()).strip('-')
+                category = db.query(models.ServiceCategory).filter(
+                    models.ServiceCategory.tenant_id == tenant_id,
+                    models.ServiceCategory.slug == converted_slug
+                ).first()
+
+            if category:
+                category_id = category.id
+                category_msg = f" y asociado a la categoría '{category.name}'"
+            else:
+                # Crear categoría al vuelo para máxima fluidez de importación
+                cat_slug = re.sub(r'[^a-z0-9]+', '-', category_name_or_slug.lower()).strip('-')
+                new_cat = models.ServiceCategory(
+                    id=str(uuid.uuid4()),
+                    tenant_id=tenant_id,
+                    name=category_name_or_slug,
+                    slug=cat_slug,
+                    is_active=True
+                )
+                db.add(new_cat)
+                db.flush()
+                category_id = new_cat.id
+                category_msg = f" y asociado a la nueva categoría creada al vuelo '{category_name_or_slug}'"
+
         new_service = models.Service(
             id=str(uuid.uuid4()),
             tenant_id=tenant_id,
+            category_id=category_id,
             name=name,
             slug=slug,
             price=price,
             duration_minutes=duration_minutes,
             description=description or "Tratamiento genérico en clínica. Sin especificaciones adicionales.",
+            image_url=image_url,
             is_active=True
         )
 
         db.add(new_service)
         db.commit()
-        return f"Éxito: Se ha creado el nuevo servicio '{name}' con precio de {price}€ y duración de {duration_minutes} minutos correctamente."
+        return f"Éxito: Se ha creado el nuevo servicio '{name}' con precio de {price}€ y duración de {duration_minutes} minutos correctamente{category_msg}."
     except Exception as e:
         db.rollback()
         logger.error(f"Error en create_new_service para tenant {current_tenant_var.get()}: {e}")
