@@ -144,7 +144,7 @@ export default function Footer() {
 
           {/* Columna 1: Identidad */}
           <div className="space-y-6">
-              <Link href="/" className="inline-block text-2xl font-serif font-black text-white tracking-tighter hover:text-[#d4af37] transition-colors">
+              <Link href="/" className="inline-block text-2xl font-serif font-black text-white tracking-tighter hover:text-primary transition-colors">
                  {settings?.clinic_name ? settings.clinic_name.toUpperCase() : 'ESTÉTICA MERCE'}
               </Link>
             <p className="text-sm font-medium leading-relaxed opacity-70 max-w-xs">
@@ -155,7 +155,7 @@ export default function Footer() {
                 href={settings?.instagram_url || "https://instagram.com"} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-stone-900 border border-stone-800 flex items-center justify-center text-white hover:text-[#d4af37] hover:border-[#d4af37] transition-all duration-300"
+                className="w-10 h-10 rounded-luxury-btn bg-stone-900 border border-stone-800 flex items-center justify-center text-white hover:text-primary hover:border-primary transition-all duration-300"
               >
                 <Camera size={18} />
               </a>
@@ -167,25 +167,25 @@ export default function Footer() {
 
           {/* Columna 2: Contacto */}
           <div className="space-y-6">
-            <h4 className="text-[#d4af37] font-bold text-xs uppercase tracking-[0.2em]">
+            <h4 className="text-primary font-bold text-xs uppercase tracking-[0.2em]">
               {translateStatic('footer.contact', "Contacto")}
             </h4>
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
-                <MapPin size={18} className="text-[#d4af37] shrink-0 mt-0.5" />
+                <MapPin size={18} className="text-primary shrink-0 mt-0.5" />
                 <span className="text-sm font-medium leading-snug">
                   {settings?.clinic_address || 'Calle Favareta, 46, Alzira, Valencia'}
                 </span>
               </li>
               <li className="flex items-center gap-3">
-                <Phone size={18} className="text-[#d4af37] shrink-0" />
-                <a href={`tel:${settings?.clinic_phone || '+34605407128'}`} className="text-sm font-bold text-white hover:text-[#d4af37] transition-colors">
+                <Phone size={18} className="text-primary shrink-0" />
+                <a href={`tel:${settings?.clinic_phone || '+34605407128'}`} className="text-sm font-bold text-white hover:text-primary transition-colors">
                   {settings?.clinic_phone || '+34 605 40 71 28'}
                 </a>
               </li>
               <li className="flex items-center gap-3">
-                <Mail size={18} className="text-[#d4af37] shrink-0" />
-                <a href={`mailto:${settings?.clinic_email || 'hola@clinicamerce.com'}`} className="text-sm font-medium hover:text-[#d4af37] transition-colors">
+                <Mail size={18} className="text-primary shrink-0" />
+                <a href={`mailto:${settings?.clinic_email || 'hola@clinicamerce.com'}`} className="text-sm font-medium hover:text-primary transition-colors">
                   {settings?.clinic_email || 'hola@clinicamerce.com'}
                 </a>
               </li>
@@ -194,12 +194,12 @@ export default function Footer() {
 
           {/* Columna 3: Horarios Dinámicos */}
           <div className="space-y-6">
-            <h4 className="text-[#d4af37] font-bold text-xs uppercase tracking-[0.2em]">
+            <h4 className="text-primary font-bold text-xs uppercase tracking-[0.2em]">
               {translateStatic('footer.schedule', "Horarios")}
             </h4>
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
-                <Clock size={18} className="text-[#d4af37] shrink-0 mt-0.5" />
+                <Clock size={18} className="text-primary shrink-0 mt-0.5" />
                 <div className="space-y-1">
                   <p className="text-sm font-bold text-white">{getWorkingDaysDisplay()}</p>
                   <p className="text-xs opacity-70">
@@ -244,31 +244,31 @@ export default function Footer() {
 
           {/* Columna 4: Navegación */}
           <div className="space-y-6">
-            <h4 className="text-[#d4af37] font-bold text-xs uppercase tracking-[0.2em]">
+            <h4 className="text-primary font-bold text-xs uppercase tracking-[0.2em]">
               {translateStatic('footer.navigation', "Navegación")}
             </h4>
             <ul className="space-y-3">
               <li>
                 <Link href="/" className="group flex items-center gap-2 text-sm font-medium hover:text-white transition-colors">
-                  <ChevronRight size={14} className="text-[#d4af37] opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all" />
+                  <ChevronRight size={14} className="text-primary opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all" />
                   {translateStatic('footer.nav_home', "Inicio")}
                 </Link>
               </li>
               <li>
                 <Link href="/tratamientos" className="group flex items-center gap-2 text-sm font-medium hover:text-white transition-colors">
-                  <ChevronRight size={14} className="text-[#d4af37] opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all" />
+                  <ChevronRight size={14} className="text-primary opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all" />
                   {translateStatic('footer.nav_treatments', "Tratamientos")}
                 </Link>
               </li>
               <li>
                 <Link href="/contacto" className="group flex items-center gap-2 text-sm font-medium hover:text-white transition-colors">
-                  <ChevronRight size={14} className="text-[#d4af37] opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all" />
+                  <ChevronRight size={14} className="text-primary opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all" />
                   {translateStatic('footer.nav_contact', "Contacto")}
                 </Link>
               </li>
               <li>
                 <Link href="/dashboard" className="group flex items-center gap-2 text-sm font-medium hover:text-white transition-colors">
-                  <ChevronRight size={14} className="text-[#d4af37] opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all" />
+                  <ChevronRight size={14} className="text-primary opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all" />
                   {translateStatic('footer.nav_portal', "Acceso Personal")}
                 </Link>
               </li>
@@ -296,7 +296,7 @@ export default function Footer() {
               {translateStatic('footer.legal', "Aviso Legal")}
             </Link>
             {settings?.stripe_charges_enabled && (
-              <Link href="/condiciones-reserva" className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#d4af37] hover:text-white transition-colors">
+              <Link href="/condiciones-reserva" className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary hover:text-white transition-colors">
                 {translateStatic('footer.booking_conditions', "Condiciones de Reserva")}
               </Link>
             )}

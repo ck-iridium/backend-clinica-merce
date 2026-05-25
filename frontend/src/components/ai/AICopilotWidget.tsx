@@ -330,17 +330,17 @@ export default function AICopilotWidget() {
       
       {/* ── PANEL DE COPILOTO (CREMA, ANTRACITA Y DORADO) ── */}
       {isOpen && (
-        <div className="w-80 sm:w-96 h-[460px] bg-white/95 backdrop-blur-md border border-stone-200/80 rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-300 ease-out">
+        <div className="w-80 sm:w-96 h-[460px] bg-white/95 backdrop-blur-md border border-stone-200/80 rounded-luxury-card shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-300 ease-out">
           
           {/* Cabecera Premium (Antracita + Oro) */}
           <div className="px-5 py-4 bg-stone-900 flex items-center justify-between text-white border-b border-stone-800">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-stone-800 to-stone-950 flex items-center justify-center border border-[#d4af37]/40 shadow-inner">
-                <Sparkles size={14} className="text-[#d4af37] animate-pulse" />
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-stone-800 to-stone-950 flex items-center justify-center border border-primary/40 shadow-inner">
+                <Sparkles size={14} className="text-primary animate-pulse" />
               </div>
               <div>
                 <h3 className="font-serif text-sm font-bold tracking-wide">Co-Piloto AI</h3>
-                <span className="text-[9px] text-[#d4af37] font-black uppercase tracking-widest">Navegación Inteligente</span>
+                <span className="text-[9px] text-primary font-black uppercase tracking-widest">Navegación Inteligente</span>
               </div>
             </div>
             
@@ -348,7 +348,7 @@ export default function AICopilotWidget() {
               {/* Botón de Silencio */}
               <button
                 onClick={() => setIsMuted(!isMuted)}
-                className="p-1.5 rounded-lg text-stone-400 hover:text-[#d4af37] hover:bg-stone-800 transition-all"
+                className="p-1.5 rounded-lg text-stone-400 hover:text-primary hover:bg-stone-800 transition-all"
                 title={isMuted ? 'Activar Voz' : 'Silenciar Voz'}
               >
                 {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
@@ -380,14 +380,14 @@ export default function AICopilotWidget() {
               return (
                 <div key={index} className={`flex gap-2.5 max-w-[85%] ${isAI ? 'self-start' : 'self-end ml-auto flex-row-reverse'}`}>
                   {isAI && (
-                    <div className="w-7 h-7 rounded-full bg-stone-900 border border-[#d4af37]/30 flex items-center justify-center text-white shrink-0 shadow-sm mt-0.5">
-                      <Bot size={12} className="text-[#d4af37]" />
+                    <div className="w-7 h-7 rounded-full bg-stone-900 border border-primary/30 flex items-center justify-center text-white shrink-0 shadow-sm mt-0.5">
+                      <Bot size={12} className="text-primary" />
                     </div>
                   )}
                   
-                  <div className={`p-3.5 rounded-2xl text-xs leading-relaxed shadow-sm transition-all duration-300 ${
+                  <div className={`p-3.5 rounded-luxury-card text-xs leading-relaxed shadow-sm transition-all duration-300 ${
                     isAI
-                      ? 'bg-white text-stone-850 border border-stone-200/50 rounded-tl-none font-medium'
+                      ? 'bg-white text-stone-800 border border-stone-200/50 rounded-tl-none font-medium'
                       : 'bg-stone-900 text-white rounded-tr-none font-bold'
                   }`}>
                     {msg.content}
@@ -398,13 +398,13 @@ export default function AICopilotWidget() {
             
             {isLoading && (
               <div className="flex gap-2.5 max-w-[85%] self-start animate-pulse">
-                <div className="w-7 h-7 rounded-full bg-stone-900 border border-[#d4af37]/30 flex items-center justify-center text-white shrink-0">
-                  <Bot size={12} className="text-[#d4af37]" />
+                <div className="w-7 h-7 rounded-full bg-stone-900 border border-primary/30 flex items-center justify-center text-white shrink-0">
+                  <Bot size={12} className="text-primary" />
                 </div>
-                <div className="p-3 bg-white border border-stone-200/50 rounded-2xl rounded-tl-none text-[10px] text-stone-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37] animate-bounce" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37] animate-bounce delay-100" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37] animate-bounce delay-200" />
+                <div className="p-3 bg-white border border-stone-200/50 rounded-luxury-card rounded-tl-none text-[10px] text-stone-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce delay-100" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce delay-200" />
                 </div>
               </div>
             )}
@@ -421,7 +421,7 @@ export default function AICopilotWidget() {
               onKeyDown={handleKeyDown}
               disabled={isLoading}
               placeholder={language === 'fr' ? 'Écrire ou parler...' : language === 'en' ? 'Type or speak...' : 'Escribe o habla...'}
-              className="flex-1 bg-stone-50 border border-stone-200/80 rounded-xl px-3.5 py-2.5 text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:border-[#d4af37] transition-all font-medium"
+              className="flex-1 bg-stone-50 border border-stone-200/80 rounded-luxury-btn px-3.5 py-2.5 text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:border-primary transition-all font-medium"
             />
             
             {/* Botón de Voz Nativo */}
@@ -435,8 +435,8 @@ export default function AICopilotWidget() {
             <button
               onClick={() => handleSend()}
               disabled={isLoading || !input.trim()}
-              className={`flex h-11 w-11 items-center justify-center rounded-xl bg-stone-900 text-white transition-all duration-300 border border-stone-800 shadow-md ${
-                isLoading || !input.trim() ? 'opacity-40 cursor-not-allowed' : 'hover:bg-[#d4af37] hover:text-stone-900 hover:border-[#d4af37] active:scale-95'
+              className={`flex h-11 w-11 items-center justify-center rounded-luxury-btn bg-stone-900 text-white transition-all duration-300 border border-stone-800 shadow-md ${
+                isLoading || !input.trim() ? 'opacity-40 cursor-not-allowed' : 'hover:bg-primary hover:text-stone-900 hover:border-primary active:scale-95'
               }`}
             >
               <Send size={16} />
@@ -448,18 +448,18 @@ export default function AICopilotWidget() {
       {/* ── BURBUJA FLOTANTE FIJA ── */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`h-14 w-14 rounded-full bg-stone-900 text-white shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center relative border border-[#d4af37]/40 z-10 group overflow-hidden ${
-          isOpen ? 'bg-[#d4af37] border-[#d4af37] text-stone-950 rotate-90' : 'hover:bg-stone-850'
+        className={`h-14 w-14 rounded-full bg-stone-900 text-white shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center relative border border-primary/40 z-10 group overflow-hidden ${
+          isOpen ? 'bg-primary border-primary text-primary-foreground rotate-90' : 'hover:bg-stone-800'
         }`}
         title="Copiloto de Navegación IA"
       >
         {/* Efecto de Brillo Circular en hover */}
-        <span className="absolute inset-0 bg-gradient-to-tr from-[#d4af37]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <span className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         
         {isOpen ? (
           <X size={22} className="text-white group-hover:text-stone-900 transition-colors" strokeWidth={2.2} />
         ) : (
-          <MessageSquare size={22} className="text-[#d4af37]" strokeWidth={1.8} />
+          <MessageSquare size={22} className="text-primary" strokeWidth={1.8} />
         )}
       </button>
 

@@ -68,7 +68,7 @@ export default function ContactoPage() {
     <div className="min-h-screen bg-[#FAFAFA] pt-32 pb-24 md:pt-48 md:pb-32 overflow-hidden relative">
       
       {/* Elementos decorativos de fondo para impacto visual */}
-      <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#d4af37]/3 rounded-full blur-[120px] -mr-[400px] -mt-[400px] pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/3 rounded-full blur-[120px] -mr-[400px] -mt-[400px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-stone-200/20 rounded-full blur-[100px] -ml-[300px] -mb-[300px] pointer-events-none" />
 
       <div className="max-w-[1280px] mx-auto px-6 relative z-10">
@@ -85,8 +85,8 @@ export default function ContactoPage() {
             
             <motion.div variants={itemVariants} className="space-y-8">
               <div className="inline-flex items-center gap-3">
-                <div className="w-8 h-px bg-[#d4af37]" />
-                <span className="text-[#d4af37] font-bold text-[10px] uppercase tracking-[0.5em] block">
+                <div className="w-8 h-px bg-primary" />
+                <span className="text-primary font-bold text-[10px] uppercase tracking-[0.5em] block">
                   Concierge & Care
                 </span>
               </div>
@@ -104,7 +104,7 @@ export default function ContactoPage() {
               
               {/* Ubicación Dinámica */}
               <div className="space-y-6 group">
-                <div className="w-12 h-12 rounded-2xl bg-white shadow-luxury flex items-center justify-center text-[#d4af37] group-hover:scale-110 transition-transform duration-500">
+                <div className="w-12 h-12 rounded-luxury-card bg-white shadow-luxury flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500">
                   <MapPin size={22} strokeWidth={1.5} />
                 </div>
                 <div className="space-y-2">
@@ -118,7 +118,7 @@ export default function ContactoPage() {
 
               {/* Horarios Dinámicos (Lógica Footer) */}
               <div className="space-y-6 group">
-                <div className="w-12 h-12 rounded-2xl bg-white shadow-luxury flex items-center justify-center text-[#d4af37] group-hover:scale-110 transition-transform duration-500">
+                <div className="w-12 h-12 rounded-luxury-card bg-white shadow-luxury flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500">
                   <Clock size={22} strokeWidth={1.5} />
                 </div>
                 <div className="space-y-2">
@@ -142,9 +142,9 @@ export default function ContactoPage() {
             <motion.div variants={itemVariants} className="flex flex-wrap gap-8">
               <a 
                 href={`https://wa.me/${settings?.whatsapp_number?.replace('+', '') || '34605407128'}`}
-                className="flex items-center gap-4 text-stone-900 hover:text-[#d4af37] transition-all group"
+                className="flex items-center gap-4 text-stone-900 hover:text-primary transition-all group"
               >
-                <div className="w-14 h-14 rounded-full border border-stone-200 flex items-center justify-center group-hover:border-[#d4af37] group-hover:bg-[#d4af37]/5 transition-all duration-500">
+                <div className="w-14 h-14 rounded-luxury-btn border border-stone-200 flex items-center justify-center group-hover:border-primary group-hover:bg-primary/5 transition-all duration-500">
                   <Share2 size={24} strokeWidth={1.2} />
                 </div>
                 <div>
@@ -154,9 +154,9 @@ export default function ContactoPage() {
               </a>
               <a 
                 href={`tel:${settings?.clinic_phone || '+34605407128'}`}
-                className="flex items-center gap-4 text-stone-900 hover:text-[#d4af37] transition-all group"
+                className="flex items-center gap-4 text-stone-900 hover:text-primary transition-all group"
               >
-                <div className="w-14 h-14 rounded-full border border-stone-200 flex items-center justify-center group-hover:border-[#d4af37] group-hover:bg-[#d4af37]/5 transition-all duration-500">
+                <div className="w-14 h-14 rounded-luxury-btn border border-stone-200 flex items-center justify-center group-hover:border-primary group-hover:bg-primary/5 transition-all duration-500">
                   <Phone size={24} strokeWidth={1.2} />
                 </div>
                 <div>
@@ -173,18 +173,18 @@ export default function ContactoPage() {
               <form onSubmit={handleSubmit} className="space-y-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
                   <div className="relative group">
-                    <input required type="text" placeholder=" " className="peer w-full bg-transparent border-b-2 border-stone-100 py-4 outline-none focus:border-[#d4af37] transition-all text-xl" />
-                    <label className="absolute left-0 top-4 text-stone-300 text-xl pointer-events-none transition-all peer-focus:-top-6 peer-focus:text-[10px] peer-focus:font-black peer-focus:uppercase peer-focus:tracking-widest peer-focus:text-[#d4af37] peer-[:not(:placeholder-shown)]:-top-6 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-[#d4af37]">Tu Nombre</label>
+                    <input required type="text" placeholder=" " className="peer w-full bg-transparent border-b-2 border-stone-100 py-4 outline-none focus:border-primary transition-all text-xl" />
+                    <label className="absolute left-0 top-4 text-stone-300 text-xl pointer-events-none transition-all peer-focus:-top-6 peer-focus:text-[10px] peer-focus:font-black peer-focus:uppercase peer-focus:tracking-widest peer-focus:text-primary peer-[:not(:placeholder-shown)]:-top-6 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-primary">Tu Nombre</label>
                   </div>
                   <div className="relative group">
-                    <input required type="email" placeholder=" " className="peer w-full bg-transparent border-b-2 border-stone-100 py-4 outline-none focus:border-[#d4af37] transition-all text-xl" />
-                    <label className="absolute left-0 top-4 text-stone-300 text-xl pointer-events-none transition-all peer-focus:-top-6 peer-focus:text-[10px] peer-focus:font-black peer-focus:uppercase peer-focus:tracking-widest peer-focus:text-[#d4af37] peer-[:not(:placeholder-shown)]:-top-6 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-[#d4af37]">Tu Email</label>
+                    <input required type="email" placeholder=" " className="peer w-full bg-transparent border-b-2 border-stone-100 py-4 outline-none focus:border-primary transition-all text-xl" />
+                    <label className="absolute left-0 top-4 text-stone-300 text-xl pointer-events-none transition-all peer-focus:-top-6 peer-focus:text-[10px] peer-focus:font-black peer-focus:uppercase peer-focus:tracking-widest peer-focus:text-primary peer-[:not(:placeholder-shown)]:-top-6 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-primary">Tu Email</label>
                   </div>
                 </div>
                 
                 <div className="relative group">
-                  <textarea required rows={1} placeholder=" " className="peer w-full bg-transparent border-b-2 border-stone-100 py-4 outline-none focus:border-[#d4af37] transition-all text-xl resize-none" />
-                  <label className="absolute left-0 top-4 text-stone-300 text-xl pointer-events-none transition-all peer-focus:-top-6 peer-focus:text-[10px] peer-focus:font-black peer-focus:uppercase peer-focus:tracking-widest peer-focus:text-[#d4af37] peer-[:not(:placeholder-shown)]:-top-6 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-[#d4af37]">¿En qué podemos ayudarte?</label>
+                  <textarea required rows={1} placeholder=" " className="peer w-full bg-transparent border-b-2 border-stone-100 py-4 outline-none focus:border-primary transition-all text-xl resize-none" />
+                  <label className="absolute left-0 top-4 text-stone-300 text-xl pointer-events-none transition-all peer-focus:-top-6 peer-focus:text-[10px] peer-focus:font-black peer-focus:uppercase peer-focus:tracking-widest peer-focus:text-primary peer-[:not(:placeholder-shown)]:-top-6 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-primary">¿En qué podemos ayudarte?</label>
                 </div>
 
                 <BotonReservaPro 
@@ -201,7 +201,7 @@ export default function ContactoPage() {
           <div className="lg:col-span-5 lg:sticky lg:top-32">
             <motion.div 
               variants={itemVariants}
-              className="relative aspect-[4/5] rounded-[3rem] overflow-hidden shadow-luxury border border-white group"
+              className="relative aspect-[4/5] rounded-luxury-card overflow-hidden shadow-luxury border border-white group"
             >
               {/* Mapa con filtro Dark/Muted reforzado */}
               <iframe 
@@ -215,9 +215,9 @@ export default function ContactoPage() {
               />
               
               {/* Float Glass Card */}
-              <div className="absolute inset-x-8 bottom-8 p-10 bg-white/70 backdrop-blur-2xl rounded-[2rem] border border-white/50 shadow-2xl translate-y-6 group-hover:translate-y-0 transition-all duration-700">
+              <div className="absolute inset-x-8 bottom-8 p-10 bg-white/70 backdrop-blur-2xl rounded-luxury-card border border-white/50 shadow-2xl translate-y-6 group-hover:translate-y-0 transition-all duration-700">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-2 h-2 rounded-full bg-[#d4af37] animate-pulse" />
+                  <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                   <span className="text-[9px] font-black uppercase tracking-[0.3em] text-stone-500">Estamos aquí</span>
                 </div>
                 <h4 className="font-serif font-bold text-stone-900 text-2xl mb-4 italic leading-tight">Alzira</h4>
@@ -226,7 +226,7 @@ export default function ContactoPage() {
                   href="https://www.google.com/maps/dir/?api=1&destination=Calle+Favareta+46+Alzira" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between group/link w-full bg-stone-900 text-white px-6 py-4 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-[#d4af37] transition-all"
+                  className="flex items-center justify-between group/link w-full bg-stone-900 text-white px-6 py-4 rounded-luxury-btn text-[10px] font-bold uppercase tracking-widest hover:bg-primary transition-all"
                 >
                   Cómo llegar <ChevronRight size={14} className="group-hover/link:translate-x-1 transition-transform" />
                 </a>
@@ -236,13 +236,13 @@ export default function ContactoPage() {
             {/* Redes Sociales con impacto */}
             <motion.div variants={itemVariants} className="mt-12 flex justify-center gap-10">
               <a href="#" className="flex flex-col items-center gap-3 group">
-                <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-stone-400 group-hover:text-[#d4af37] group-hover:shadow-md transition-all">
+                <div className="w-14 h-14 rounded-luxury-btn bg-white shadow-sm flex items-center justify-center text-stone-400 group-hover:text-primary group-hover:shadow-md transition-all">
                   <Camera size={24} strokeWidth={1.5} />
                 </div>
                 <span className="text-[8px] font-black uppercase tracking-widest opacity-40">Instagram</span>
               </a>
               <a href="#" className="flex flex-col items-center gap-3 group">
-                <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-stone-400 group-hover:text-[#d4af37] group-hover:shadow-md transition-all">
+                <div className="w-14 h-14 rounded-luxury-btn bg-white shadow-sm flex items-center justify-center text-stone-400 group-hover:text-primary group-hover:shadow-md transition-all">
                   <Mail size={24} strokeWidth={1.5} />
                 </div>
                 <span className="text-[8px] font-black uppercase tracking-widest opacity-40">Email</span>

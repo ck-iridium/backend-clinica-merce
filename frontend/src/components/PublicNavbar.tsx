@@ -50,7 +50,7 @@ function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen, 
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`group relative rounded-3xl overflow-hidden border border-stone-100 block bg-stone-50 transition-all duration-500 ${isLarge ? 'h-full' : 'aspect-video shadow-sm hover:shadow-xl'}`}
+      className={`group relative rounded-luxury-card overflow-hidden border border-stone-100 block bg-stone-50 transition-all duration-500 ${isLarge ? 'h-full' : 'aspect-video shadow-sm hover:shadow-xl'}`}
     >
       {/* Imagen Principal - Siempre visible en el fondo para evitar el flash */}
       {svc.image_url ? (
@@ -97,7 +97,7 @@ function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen, 
 
       {/* Floating Duration Badge - Top Right */}
       <div className={`absolute top-4 right-4 z-30 transition-all duration-500 ${isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
-        <div className="bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 shadow-xl">
+        <div className="bg-black/40 backdrop-blur-md px-3 py-1 rounded-luxury-btn border border-white/10 shadow-xl">
           <span className="text-primary text-[12px] font-black uppercase tracking-[0.1em]">
             {svc.duration_minutes} min
           </span>
@@ -331,7 +331,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
           <div
             onMouseEnter={() => setShowMegaMenu(true)}
             onMouseLeave={() => setShowMegaMenu(false)}
-            className={`absolute top-[calc(100%-8px)] left-6 right-6 bg-white rounded-3xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] overflow-hidden transition-all duration-300 origin-top ${showMegaMenu ? 'opacity-100 scale-y-100 translate-y-0' : 'opacity-0 scale-y-95 -translate-y-2 pointer-events-none'}`}
+            className={`absolute top-[calc(100%-8px)] left-6 right-6 bg-white rounded-luxury-card shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] overflow-hidden transition-all duration-300 origin-top ${showMegaMenu ? 'opacity-100 scale-y-100 translate-y-0' : 'opacity-0 scale-y-95 -translate-y-2 pointer-events-none'}`}
           >
             <div className="flex h-[380px]">
               {/* Left Panel: Categories */}
@@ -346,8 +346,8 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                           onMouseEnter={() => setActiveCategory(cat.id)}
                           onClick={() => { setShowMegaMenu(false); window.location.href = `/tratamientos/${cat.slug || cat.id}` }}
                           className={`w-full text-left px-6 py-2.5 transition-all font-serif text-lg md:text-xl leading-tight whitespace-normal relative ${activeCategory === cat.id
-                              ? 'bg-white text-primary font-semibold rounded-l-2xl -mr-[1px] z-10 shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.02)] after:absolute after:top-0 after:-right-[1px] after:w-[2px] after:h-full after:bg-white after:z-20'
-                              : 'text-stone-200 hover:text-white rounded-2xl mr-4 hover:bg-white/5'
+                              ? 'bg-white text-primary font-semibold rounded-l-luxury-card -mr-[1px] z-10 shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.02)] after:absolute after:top-0 after:-right-[1px] after:w-[2px] after:h-full after:bg-white after:z-20'
+                              : 'text-stone-200 hover:text-white rounded-luxury-btn mr-4 hover:bg-white/5'
                             }`}
                         >
                           {translatedCatName}

@@ -33,7 +33,7 @@ export default function LanguageSelector({ upward = false }: { upward?: boolean 
       {/* Selector Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 bg-stone-50/80 backdrop-blur-md border border-stone-200/50 hover:bg-stone-100/80 hover:border-stone-300/80 rounded-full px-2.5 py-1 transition-all active:scale-95 shadow-luxury"
+        className="flex items-center gap-1.5 bg-stone-50/80 backdrop-blur-md border border-stone-200/50 hover:bg-stone-100/80 hover:border-stone-300/80 rounded-luxury-btn px-2.5 py-1 transition-all active:scale-95 shadow-luxury"
       >
         <Globe className="w-3.5 h-3.5 text-stone-400" />
         <span className="text-[10px] md:text-xs font-extrabold text-stone-700 tracking-wider uppercase">
@@ -50,7 +50,7 @@ export default function LanguageSelector({ upward = false }: { upward?: boolean 
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: upward ? -8 : 8, scale: 0.95 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className={`absolute right-0 w-32 bg-white/95 backdrop-blur-md border border-stone-200/60 rounded-2xl shadow-xl z-[999] overflow-hidden p-1.5 ${
+            className={`absolute right-0 w-32 bg-white/95 backdrop-blur-md border border-stone-200/60 rounded-luxury-card shadow-xl z-[999] overflow-hidden p-1.5 ${
               upward ? "bottom-full mb-2" : "top-full mt-2"
             }`}
           >
@@ -62,9 +62,9 @@ export default function LanguageSelector({ upward = false }: { upward?: boolean 
                     setLanguage(lang.code);
                     setIsOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between text-left px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center justify-between text-left px-3 py-2 rounded-luxury-btn text-xs font-bold transition-all ${
                     language === lang.code
-                      ? "bg-[#d4af37]/10 text-[#d4af37]"
+                      ? "bg-primary/10 text-primary"
                       : "text-stone-600 hover:bg-stone-50 hover:text-stone-900"
                   }`}
                 >
