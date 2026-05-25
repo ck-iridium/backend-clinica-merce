@@ -542,7 +542,7 @@ export default function ClientHome({ content, settings, services, categories }: 
 
             const isSlider = layoutStyle === 'cards_slider';
             const sectionClasses = isSlider
-              ? `w-full pt-10 pb-[10vh] md:py-24 overflow-hidden flex flex-col h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none`
+              ? `w-full pt-10 pb-[3vh] md:py-24 overflow-hidden flex flex-col h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none`
               : `w-full pt-12 pb-16 md:py-24 flex flex-col h-auto snap-start md:snap-none`;
 
             return (
@@ -599,7 +599,7 @@ export default function ClientHome({ content, settings, services, categories }: 
                       </div>
 
                       {/* MOBILE VIEW */}
-                      <div className="md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-6 items-center w-full flex-1 min-h-0 pb-8">
+                      <div className="md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-6 items-stretch w-full flex-1 min-h-0 pb-4">
                         {categoryServices.map((svc: any) => (
                           <ServiceCard key={svc.id} service={svc} className="snap-stop-always" />
                         ))}
