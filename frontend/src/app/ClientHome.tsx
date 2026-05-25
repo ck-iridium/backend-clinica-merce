@@ -599,7 +599,7 @@ export default function ClientHome({ content, settings, services, categories }: 
                       </div>
 
                       {/* MOBILE VIEW */}
-                      <div className="md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-6 items-center w-full flex-grow min-h-0 pb-8">
+                      <div className="md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-6 items-center w-full h-[55vh] min-h-[460px] pb-8">
                         {categoryServices.map((svc: any) => (
                           <ServiceCard key={svc.id} service={svc} className="snap-stop-always" />
                         ))}
