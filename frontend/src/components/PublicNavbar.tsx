@@ -221,7 +221,14 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
         .then(res => res.json())
         .then(data => {
           setCategories(data);
-          if (data.length > 0) setActiveCategory(data[0].id);
+          if (data.length > 0) {
+            const firstNonGeneral = data.find((c: any) => c.name && c.name.trim().toUpperCase() !== 'GENERAL');
+            if (firstNonGeneral) {
+              setActiveCategory(firstNonGeneral.id);
+            } else {
+              setActiveCategory(data[0].id);
+            }
+          }
         }).catch(() => { });
 
       fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/`, { headers })
