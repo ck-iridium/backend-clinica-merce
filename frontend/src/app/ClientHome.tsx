@@ -428,7 +428,7 @@ export default function ClientHome({ content, settings, services, categories }: 
   const finalOrder = [hero, ...middle];
 
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-900 font-sans relative">
+    <div className="min-h-screen bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 font-sans relative">
       {/* Único Navbar dinámico del CMS en el contenedor superior */}
       <div className="absolute top-0 left-0 w-full z-[100]">
         <PublicNavbar />
@@ -497,18 +497,18 @@ export default function ClientHome({ content, settings, services, categories }: 
           // ── ABOUT ─────────────────────────────────────────────────────────
           if (section.type === 'about') {
             return (
-              <section key="about" className="bg-[#F5F2EE] relative flex items-start h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none pt-20 md:pt-24 overflow-hidden">
+              <section key="about" className="bg-[#F5F2EE] dark:bg-stone-950 relative flex items-start h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none pt-20 md:pt-24 overflow-hidden">
                 <div className="max-w-7xl mx-auto px-6 flex flex-col md:grid md:grid-cols-2 gap-10 md:gap-16 items-center w-full h-full pb-16">
                   <div className="space-y-4 md:space-y-8 flex flex-col items-center text-center md:items-start md:text-left flex-shrink-0">
-                    <h2 className="text-3xl md:text-5xl font-serif font-extrabold text-stone-900 leading-tight">
+                    <h2 className="text-3xl md:text-5xl font-serif font-extrabold text-stone-900 dark:text-stone-100 leading-tight">
                       {cleanTitle(translate(content.about_title, content.translations, 'about_title'))}
                     </h2>
-                    <div className="text-base md:text-xl text-stone-600 leading-relaxed whitespace-pre-wrap font-medium max-w-md">
+                    <div className="text-base md:text-xl text-stone-600 dark:text-stone-300 leading-relaxed whitespace-pre-wrap font-medium max-w-md">
                       {translate(content.about_text, content.translations, 'about_text')}
                     </div>
                     {content.about_show_button && (
                       <div className="pt-4">
-                        <Link href={content.about_button_link || '#'} className="inline-block border-2 border-stone-200 text-stone-800 px-8 py-3.5 md:px-12 md:py-5 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-stone-900 hover:text-white hover:border-stone-900 transition-all duration-500">
+                        <Link href={content.about_button_link || '#'} className="inline-block border-2 border-stone-200 dark:border-stone-850 text-stone-800 dark:text-stone-200 px-8 py-3.5 md:px-12 md:py-5 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-stone-900 dark:hover:bg-white dark:hover:text-stone-900 hover:text-white hover:border-stone-900 transition-all duration-500">
                           {translate(content.about_button_text, content.translations, 'about_button_text')}
                         </Link>
                       </div>
@@ -543,21 +543,21 @@ export default function ClientHome({ content, settings, services, categories }: 
             return (
               <section
                 key={`cat-${category.id}`}
-                className={`w-full pt-10 pb-[10vh] md:py-24 overflow-hidden flex flex-col h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none ${isEven ? 'bg-white' : 'bg-[#F5F2EE]'}`}
+                className={`w-full pt-10 pb-[10vh] md:py-24 overflow-hidden flex flex-col h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none ${isEven ? 'bg-white dark:bg-stone-950' : 'bg-[#F5F2EE] dark:bg-stone-900/60'}`}
               >
                 {/* Cabecera de la categoría */}
                 <div className="w-full max-w-7xl mx-auto px-6 mb-8 flex-shrink-0 flex flex-col md:flex-row md:justify-between md:items-end gap-3 md:gap-8">
                   <div className="max-w-2xl">
-                    <h2 className="text-3xl md:text-5xl font-serif font-extrabold text-stone-900 leading-tight">
+                    <h2 className="text-3xl md:text-5xl font-serif font-extrabold text-stone-900 dark:text-stone-100 leading-tight">
                       {cleanTitle(category.name)}
                     </h2>
-                    <p className="hidden md:block text-lg md:text-xl text-stone-500 mt-2">
+                    <p className="hidden md:block text-lg md:text-xl text-stone-500 dark:text-stone-400 mt-2">
                       {category.description || t('home.discover_treatments', 'Descubre nuestros tratamientos exclusivos.')}
                     </p>
                   </div>
                   <Link
                     href={`/tratamientos/${category.slug || category.id}`}
-                    className="self-end md:self-auto inline-flex items-center gap-2 font-bold text-[#d4af37] hover:text-stone-900 transition-colors uppercase tracking-widest text-[10px] md:text-sm"
+                    className="self-end md:self-auto inline-flex items-center gap-2 font-bold text-[#d4af37] hover:text-stone-900 dark:hover:text-white transition-colors uppercase tracking-widest text-[10px] md:text-sm"
                   >
                     <span className="hidden md:inline">{t('home.see_catalog', 'Ver Catálogo')}</span>
                     <span className="md:hidden">{t('home.see_all', 'Ver todo')}</span>

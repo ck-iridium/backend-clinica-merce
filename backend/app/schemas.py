@@ -182,6 +182,10 @@ class ClinicSettingsBase(BaseModel):
     branding_font_body: Optional[str] = "Inter"
     onboarding_completed: bool = False
     theme_palette: Optional[str] = "charcoal-gold"
+    accent_color: Optional[str] = "#D4AF37"
+    dark_mode_enabled: Optional[bool] = False
+    border_radius: Optional[str] = "suave"
+    favicon_b64: Optional[str] = None
 
     ai_provider: Optional[str] = "gemini"
 
@@ -243,6 +247,10 @@ class ClinicSettingsUpdate(BaseModel):
     branding_font_body: Optional[str] = None
     onboarding_completed: Optional[bool] = None
     theme_palette: Optional[str] = None
+    accent_color: Optional[str] = None
+    dark_mode_enabled: Optional[bool] = None
+    border_radius: Optional[str] = None
+    favicon_b64: Optional[str] = None
 
 
 # --- Consents ---

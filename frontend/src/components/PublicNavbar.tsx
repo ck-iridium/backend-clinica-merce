@@ -107,12 +107,36 @@ function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen, 
   );
 }
 
+// Helper for reading tenant cookies in client side
+const getTenantId = () => {
+  if (typeof document === 'undefined') return '';
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; tenant_id=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || '';
+  return '';
+};
+
+const getFallbackClinicName = () => {
+  if (typeof window === 'undefined') return 'Centro';
+  const host = window.location.hostname;
+  const parts = host.split('.');
+  if (parts.length > 1 && parts[0] !== 'www') {
+    return parts[0]
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+  return 'Centro';
+};
+
 export default function PublicNavbar({ transparent = false }: { transparent?: boolean }) {
   const pathname = usePathname();
   const { language, t } = useLanguage();
   const isDashboard = pathname?.startsWith('/dashboard');
   const [isOpen, setIsOpen] = useState(false);
   const [settings, setSettings] = useState<any>(null);
+  const [loadingSettings, setLoadingSettings] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const [siteContent, setSiteContent] = useState<any>(null);
   const [btnLink, setBtnLink] = useState('/reservar');
   const [categories, setCategories] = useState<any[]>([]);
@@ -149,13 +173,25 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
     : fallbackBtnText;
 
   useEffect(() => {
+    setMounted(true);
     if (isDashboard) return;
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/settings/`)
-      .then(res => res.json())
-      .then(data => setSettings(data))
-      .catch(() => { });
+    const tenantId = getTenantId();
+    const headers: any = {};
+    if (tenantId) {
+      headers['X-Tenant-ID'] = tenantId;
+    }
 
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/site-content/`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/settings/`, { headers })
+      .then(res => res.json())
+      .then(data => {
+        setSettings(data);
+        setLoadingSettings(false);
+      })
+      .catch(() => {
+        setLoadingSettings(false);
+      });
+
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/site-content/`, { headers })
       .then(res => res.json())
       .then(data => {
         setSiteContent(data);
@@ -164,7 +200,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
       .catch(() => { });
 
     if (!isDashboard) {
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/cms/navigation`)
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/cms/navigation`, { headers })
         .then(res => res.json())
         .then(data => {
           if (Array.isArray(data)) {
@@ -181,14 +217,14 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
           ]);
         });
 
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/service-categories/`)
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/service-categories/`, { headers })
         .then(res => res.json())
         .then(data => {
           setCategories(data);
           if (data.length > 0) setActiveCategory(data[0].id);
         }).catch(() => { });
 
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/`)
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/`, { headers })
         .then(res => res.json())
         .then(data => setServices(data))
         .catch(() => { });
@@ -222,13 +258,15 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
 
           {/* LOGO */}
           <div className="flex items-center gap-4 z-[110] relative">
-            {settings?.logo_app_b64 ? (
+            {!mounted || loadingSettings ? (
+              <div className="h-6 w-32 bg-stone-200/40 animate-pulse rounded-md" />
+            ) : settings?.logo_app_b64 ? (
               <Link href="/" onClick={() => setIsOpen(false)}>
                 <img src={settings.logo_app_b64} alt="Logo" className="h-10" />
               </Link>
             ) : (
               <Link href="/" onClick={() => setIsOpen(false)} className={`font-extrabold text-2xl tracking-tighter transition-colors ${!useTransparent ? 'text-[#d4af37]' : 'text-white hover:text-[#d4af37]'}`}>
-                {settings?.clinic_name || "Estetica Merce"}
+                {settings?.clinic_name || getFallbackClinicName()}
               </Link>
             )}
           </div>

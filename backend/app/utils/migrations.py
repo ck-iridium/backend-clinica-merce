@@ -78,7 +78,12 @@ def run_auto_migrations():
             # ── CMS: Soporte multidioma en la Home ──────────────────────────────────
             "ALTER TABLE site_content ADD COLUMN translations JSONB DEFAULT '{}'",
             # ── Dominios personalizados de inquilinos ────────────────────────────────
-            "ALTER TABLE tenants ADD COLUMN custom_domain VARCHAR"
+            "ALTER TABLE tenants ADD COLUMN custom_domain VARCHAR",
+            # ── Personalización visual de marca avanzada ──────────────────────────────
+            "ALTER TABLE clinic_settings ADD COLUMN accent_color VARCHAR DEFAULT '#D4AF37'",
+            "ALTER TABLE clinic_settings ADD COLUMN dark_mode_enabled BOOLEAN DEFAULT FALSE",
+            "ALTER TABLE clinic_settings ADD COLUMN border_radius VARCHAR DEFAULT 'suave'",
+            "ALTER TABLE clinic_settings ADD COLUMN favicon_b64 TEXT"
         ]
         
         for m in migrations:

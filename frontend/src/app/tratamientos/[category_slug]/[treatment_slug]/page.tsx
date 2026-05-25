@@ -15,11 +15,13 @@ import PublicNavbar from '@/components/PublicNavbar';
 import BotonReservaPro from '@/components/BotonReservaPro';
 
 async function getServiceData(slug: string, tenantId: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!baseUrl) return null;
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 segundos
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/slug/${slug}`, {
+    const res = await fetch(`${baseUrl}/services/slug/${slug}`, {
       cache: 'no-store',
       signal: controller.signal,
       headers: { "X-Tenant-ID": tenantId }
@@ -39,11 +41,13 @@ async function getServiceData(slug: string, tenantId: string) {
 }
 
 async function getRelatedServices(currentServiceId: number, tenantId: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!baseUrl) return [];
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/`, {
+    const res = await fetch(`${baseUrl}/services/`, {
       cache: 'no-store',
       signal: controller.signal,
       headers: { "X-Tenant-ID": tenantId }
@@ -61,7 +65,9 @@ async function getRelatedServices(currentServiceId: number, tenantId: string) {
 
 export async function generateMetadata({ params }: { params: { category_slug: string; treatment_slug: string } }): Promise<Metadata> {
   const requestHeaders = headers();
-  const tenantId = requestHeaders.get('x-tenant-id') || '00000000-0000-0000-0000-000000000001';
+  const tenantId = requestHeaders.get('x-tenant-id');
+  if (!tenantId) return { title: 'Centro no resuelto' };
+  
   const service = await getServiceData(params.treatment_slug, tenantId);
   if (!service) return { title: 'Tratamiento no encontrado' };
 
@@ -83,7 +89,7 @@ export async function generateMetadata({ params }: { params: { category_slug: st
   const seoTranslations: Record<string, Record<string, string>> = {
     es: { suffix: '| Clínica de Estética', defaultDesc: `Descubre más sobre nuestro tratamiento ${name}.`, keywords: 'tratamiento, estética, clínica' },
     en: { suffix: '| Aesthetic Clinic', defaultDesc: `Discover more about our ${name} treatment.`, keywords: 'treatment, aesthetics, clinic' },
-    fr: { suffix: '| Clinique d\'Esthétique', defaultDesc: `Découvrez-en plus sur notre soin ${name}.`, keywords: 'soin, esthétique, clinique' }
+    fr: { suffix: '| Clinique d\'Esthétique', defaultDesc: `Découvrez-en plus sur nuestro soin ${name}.`, keywords: 'soin, esthétique, clinique' }
   };
   const seoT = seoTranslations[lang] || seoTranslations.es;
 
@@ -129,8 +135,10 @@ export async function generateMetadata({ params }: { params: { category_slug: st
 }
 
 async function getSettings(tenantId: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!baseUrl) return null;
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/settings/`, {
+    const res = await fetch(`${baseUrl}/settings/`, {
       cache: 'no-store',
       headers: { "X-Tenant-ID": tenantId }
     });
@@ -143,7 +151,14 @@ async function getSettings(tenantId: string) {
 
 export default async function TreatmentDynamicPage({ params }: { params: { treatment_slug: string } }) {
   const requestHeaders = headers();
-  const tenantId = requestHeaders.get('x-tenant-id') || '00000000-0000-0000-0000-000000000001';
+  const tenantId = requestHeaders.get('x-tenant-id');
+  if (!tenantId) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#FDFCFB] text-stone-500 font-serif font-bold text-lg">
+        Contexto del Centro No Resuelto
+      </div>
+    );
+  }
   const [service, settings] = await Promise.all([
     getServiceData(params.treatment_slug, tenantId),
     getSettings(tenantId)
@@ -195,7 +210,8 @@ export default async function TreatmentDynamicPage({ params }: { params: { treat
 
   const getFullUrl = (url: string) => {
     if (!url) return '';
-    return url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${url}` : url;
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+    return url.startsWith('/') && baseUrl ? `${baseUrl}${url}` : url;
   };
 
   return (
@@ -251,39 +267,39 @@ export default async function TreatmentDynamicPage({ params }: { params: { treat
         </div>
 
         {/* CONTENIDO SCROLLABLE (Texto) */}
-        <div className="flex flex-col md:flex-row w-full relative z-0 md:-mt-[100vh]">
+        <div className="flex flex-col md:flex-row w-full relative z-0 md:-mt-[100vh] bg-white dark:bg-stone-950">
           {/* Espaciador invisible para dejar hueco a la columna sticky en desktop */}
           <div className="hidden md:block md:w-[42%] lg:w-[40%] shrink-0" />
 
-          <div id="treatment-content" className="w-full md:w-[58%] lg:w-[60%] flex flex-col pt-12 md:pt-32 pb-24 px-6 md:pl-8 md:pr-12 lg:pl-16 lg:pr-24">
+          <div id="treatment-content" className="w-full md:w-[58%] lg:w-[60%] flex flex-col pt-12 md:pt-32 pb-24 px-6 md:pl-8 md:pr-12 lg:pl-16 lg:pr-24 bg-white dark:bg-stone-950">
             <div className="max-w-3xl">
               <span className="text-xs font-black uppercase tracking-[0.2em] text-[#d4af37] mb-4 block">
                 {categoryName}
               </span>
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-stone-900 mb-10 leading-[1.1]">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-stone-900 dark:text-stone-100 mb-10 leading-[1.1]">
                 {translatedName}
               </h1>
 
               {/* SECCIÓN META */}
-              <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-8 mb-16 border-y border-stone-100 py-10">
+              <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-8 mb-16 border-y border-stone-100 dark:border-stone-800 py-10">
                 <div className="flex items-center gap-12">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-stone-50 flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 rounded-full bg-stone-50 dark:bg-stone-900 flex items-center justify-center flex-shrink-0">
                       <Clock className="w-5 h-5 text-stone-400" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-0.5">{pageT.duration}</p>
-                      <p className="text-2xl md:text-3xl font-bold text-stone-800 whitespace-nowrap">{service.duration_minutes} min</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 dark:text-stone-500 mb-0.5">{pageT.duration}</p>
+                      <p className="text-2xl md:text-3xl font-bold text-stone-800 dark:text-stone-100 whitespace-nowrap">{service.duration_minutes} min</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-stone-50 flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 rounded-full bg-stone-50 dark:bg-stone-900 flex items-center justify-center flex-shrink-0">
                       <Tag className="w-5 h-5 text-stone-400" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-0.5">{pageT.price}</p>
-                      <p className="text-2xl md:text-3xl font-bold text-stone-800 whitespace-nowrap">{service.price} €</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 dark:text-stone-500 mb-0.5">{pageT.price}</p>
+                      <p className="text-2xl md:text-3xl font-bold text-stone-800 dark:text-stone-100 whitespace-nowrap">{service.price} €</p>
                     </div>
                   </div>
                 </div>
@@ -298,13 +314,13 @@ export default async function TreatmentDynamicPage({ params }: { params: { treat
                 </div>
               </div>
 
-              <p className="text-xl md:text-2xl text-stone-500 font-sans leading-relaxed mb-16 italic">
+              <p className="text-xl md:text-2xl text-stone-500 dark:text-stone-400 font-sans leading-relaxed mb-16 italic">
                 "{translatedDescription}"
               </p>
 
               {translatedContentHtml && (
                 <div
-                  className="prose prose-stone lg:prose-xl max-w-none prose-headings:font-serif prose-headings:font-normal prose-p:leading-relaxed prose-a:text-[#d4af37] prose-img:rounded-3xl mb-16"
+                  className="prose prose-stone lg:prose-xl dark:prose-invert max-w-none prose-headings:font-serif prose-headings:font-normal prose-p:leading-relaxed prose-a:text-[#d4af37] prose-img:rounded-3xl mb-16 text-stone-700 dark:text-stone-300"
                   dangerouslySetInnerHTML={{ __html: translatedContentHtml }}
                 />
               )}
@@ -317,12 +333,12 @@ export default async function TreatmentDynamicPage({ params }: { params: { treat
 
       {/* SECCIÓN 2: CROSS-SELLING */}
       {translatedRelated.length > 0 && (
-        <section className="w-full bg-stone-50 h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none flex flex-col pt-16 md:pt-32 border-t border-stone-100 overflow-hidden">
+        <section className="w-full bg-stone-50 dark:bg-stone-900/60 h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none flex flex-col pt-16 md:pt-32 border-t border-stone-100 dark:border-stone-800 overflow-hidden">
           <style dangerouslySetInnerHTML={{ __html: '.hide-scroll::-webkit-scrollbar { display: none; } .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }' }} />
           <div className="w-full max-w-7xl mx-auto px-6 mb-8 flex flex-col md:flex-row justify-between items-end gap-4 flex-shrink-0">
             <div className="max-w-xl">
-              <h2 className="text-2xl md:text-5xl font-serif text-stone-800 mb-2">{pageT.complementary}</h2>
-              <p className="text-stone-400 text-xs md:text-base">{pageT.discover}</p>
+              <h2 className="text-2xl md:text-5xl font-serif text-stone-800 dark:text-stone-100 mb-2">{pageT.complementary}</h2>
+              <p className="text-stone-400 dark:text-stone-400 text-xs md:text-base">{pageT.discover}</p>
             </div>
             <Link href="/tratamientos" className="hidden md:inline-flex text-sm font-bold uppercase tracking-widest text-[#d4af37] border-b-2 border-[#d4af37]/20 pb-1 hover:border-[#d4af37] transition-all">
               {pageT.see_catalog}

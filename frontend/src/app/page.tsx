@@ -29,7 +29,11 @@ async function getData(tenantId: string) {
     }
   };
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) {
+    console.error("[page.tsx] process.env.NEXT_PUBLIC_API_URL is not defined.");
+    return { content: null, settings: null, services: [], categories: [] };
+  }
 
   const [content, settings, services, categories] = await Promise.all([
     fetchSafe(`${apiUrl}/site-content/`, null),
@@ -43,7 +47,16 @@ async function getData(tenantId: string) {
 
 export default async function Home() {
   const requestHeaders = headers();
-  const tenantId = requestHeaders.get('x-tenant-id') || '00000000-0000-0000-0000-000000000001';
+  const tenantId = requestHeaders.get('x-tenant-id');
+  
+  if (!tenantId) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#FDFCFB] text-stone-500 font-serif font-bold text-lg">
+        Contexto del Centro No Resuelto
+      </div>
+    );
+  }
+  
   const data = await getData(tenantId);
   return <ClientHome {...data} />;
 }

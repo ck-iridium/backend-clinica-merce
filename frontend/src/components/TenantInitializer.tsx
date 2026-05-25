@@ -47,13 +47,13 @@ export default function TenantInitializer() {
         
         // Si el destino es la API de nuestro backend, inyectamos la cabecera X-Tenant-ID
         if (url.startsWith(apiUrl)) {
-          const tenantId = getCookie('tenant_id') || '00000000-0000-0000-0000-000000000001';
+          const tenantId = getCookie('tenant_id');
           
           init = init || {};
           
           // Crear un objeto Headers para manejar de forma robusta mayúsculas/minúsculas
           const headers = new Headers(init.headers || {});
-          if (!headers.has('X-Tenant-ID')) {
+          if (tenantId && !headers.has('X-Tenant-ID')) {
             headers.set('X-Tenant-ID', tenantId);
           }
           

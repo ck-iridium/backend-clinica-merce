@@ -42,9 +42,11 @@ interface PageProps {
 // Metadata dinámica por página
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = params;
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
   const requestHeaders = headers();
-  const tenantId = requestHeaders.get('x-tenant-id') || '00000000-0000-0000-0000-000000000001';
+  const tenantId = requestHeaders.get('x-tenant-id');
+
+  if (!baseUrl || !tenantId) return {};
 
   try {
     const res = await fetch(`${baseUrl}/cms/navigation`, {
@@ -72,9 +74,13 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function CustomPage({ params }: PageProps) {
   const { slug } = params;
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
   const requestHeaders = headers();
-  const tenantId = requestHeaders.get('x-tenant-id') || '00000000-0000-0000-0000-000000000001';
+  const tenantId = requestHeaders.get('x-tenant-id');
+
+  if (!baseUrl || !tenantId) {
+    notFound();
+  }
 
   // 1. Verificar que la página existe y es custom
   let pageTitle = slug;

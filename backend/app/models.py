@@ -255,6 +255,10 @@ class ClinicSettings(Base):
     branding_font_body = Column(String, default="Inter")
     onboarding_completed = Column(Boolean, default=False)
     theme_palette = Column(String, default="charcoal-gold")
+    accent_color = Column(String, default="#D4AF37")
+    dark_mode_enabled = Column(Boolean, default=False)
+    border_radius = Column(String, default="suave")
+    favicon_b64 = Column(Text, nullable=True)
 
 
 class Invoice(Base):

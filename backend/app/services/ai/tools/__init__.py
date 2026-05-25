@@ -1,4 +1,5 @@
 from .landing import update_landing_config
+from .branding import update_tenant_branding
 from .services import (
     update_service_fields, 
     create_new_service, 
@@ -16,6 +17,7 @@ from .appointments import get_daily_appointments
 # Lista de herramientas unificada disponible para Gemini
 AGENT_TOOLS = [
     update_landing_config, 
+    update_tenant_branding,
     update_service_fields, 
     get_daily_appointments, 
     create_new_service, 

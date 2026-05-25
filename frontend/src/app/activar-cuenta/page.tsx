@@ -128,7 +128,7 @@ export default function ActivarCuentaPage() {
             Activa tu cuenta
           </h1>
           <p className="text-stone-500 font-medium text-sm px-2">
-            Establece una contraseña segura para acceder a tu panel de Estetica Merce.
+            Establece una contraseña segura para acceder a tu panel de gestión.
           </p>
         </div>
 

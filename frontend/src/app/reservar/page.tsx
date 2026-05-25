@@ -18,11 +18,11 @@ const formatLocalISO = (date: Date) => {
 
 // Helper for reading tenant cookies in client side
 const getTenantId = () => {
-  if (typeof document === 'undefined') return '00000000-0000-0000-0000-000000000001';
+  if (typeof document === 'undefined') return '';
   const value = `; ${document.cookie}`;
   const parts = value.split(`; tenant_id=`);
-  if (parts.length === 2) return parts.pop()?.split(';').shift() || '00000000-0000-0000-0000-000000000001';
-  return '00000000-0000-0000-0000-000000000001';
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || '';
+  return '';
 };
 
 export default function BookingPage() {
@@ -114,6 +114,12 @@ export default function BookingPage() {
     const fetchBaseData = async () => {
       try {
         const tenantId = getTenantId();
+        if (!tenantId) {
+          console.error("No tenant_id resolved in cookies.");
+          setBookingError("No se pudo resolver el identificador de la clínica.");
+          setLoading(false);
+          return;
+        }
         const [catRes, srvRes, apptRes, settingsRes] = await Promise.all([
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/service-categories/`, { headers: { 'X-Tenant-ID': tenantId } }),
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/`, { headers: { 'X-Tenant-ID': tenantId } }),
@@ -165,6 +171,8 @@ export default function BookingPage() {
   // Fetch availability from backend whenever date or service changes
   useEffect(() => {
     if (!selectedService || !selectedDate) return;
+    const tenantId = getTenantId();
+    if (!tenantId) return;
     const workingDays = getWorkingDays();
     const dayIndex = toWeekDayIndex(selectedDate.getDay());
     if (!workingDays.includes(dayIndex)) { setAvailableSlots([]); return; }
@@ -172,7 +180,7 @@ export default function BookingPage() {
     setSelectedTime('');
     const dateStr = selectedDate.toLocaleDateString('en-CA'); // YYYY-MM-DD in local tz
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/availability?date=${dateStr}&service_id=${selectedService.id}`, {
-      headers: { 'X-Tenant-ID': getTenantId() }
+      headers: { 'X-Tenant-ID': tenantId }
     })
       .then(r => r.json())
       .then(data => setAvailableSlots(data.available_slots ?? []))
@@ -181,6 +189,11 @@ export default function BookingPage() {
   }, [selectedDate, selectedService, settings]);
   const handleBooking = async (e?: React.FormEvent) => {
     e?.preventDefault();
+    const tenantId = getTenantId();
+    if (!tenantId) {
+      setBookingError("No se pudo resolver el identificador de la clínica.");
+      return;
+    }
     setSaving(true);
     setBookingError('');
     try {
@@ -192,7 +205,7 @@ export default function BookingPage() {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'X-Tenant-ID': getTenantId()
+          'X-Tenant-ID': tenantId
         },
         body: JSON.stringify({
           client_name: formData.name,

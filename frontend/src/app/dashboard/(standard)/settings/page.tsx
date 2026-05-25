@@ -301,6 +301,7 @@ export default function SettingsPage() {
           {activeTab === 'branding' && (
             <BrandingTab
               settings={settings}
+              setSettings={setSettings}
               logoAppRef={logoAppRef}
               handleImageUpload={handleImageUpload}
             />

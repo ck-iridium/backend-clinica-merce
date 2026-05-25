@@ -65,30 +65,29 @@ export async function middleware(request: NextRequest) {
     tenantId = impersonateTenantId;
     subdomain = impersonateTenantSlug;
   } else if (subdomain && subdomain !== "www") {
-    // Mapeo básico para el Cliente Nº 1
-    if (subdomain === "merce") {
-      tenantId = "00000000-0000-0000-0000-000000000001";
-    } else {
-      // Intentar resolver dinámicamente usando las cookies del navegador para evitar peticiones redundantes
-      const cachedId = request.cookies.get("cached_tenant_id")?.value;
-      const cachedSlug = request.cookies.get("cached_tenant_slug")?.value;
+    // Intentar resolver dinámicamente usando las cookies del navegador para evitar peticiones redundantes
+    const cachedId = request.cookies.get("cached_tenant_id")?.value;
+    const cachedSlug = request.cookies.get("cached_tenant_slug")?.value;
 
-      if (cachedSlug === subdomain && cachedId) {
-        tenantId = cachedId;
-      } else {
-        // Consultar a la API del backend para resolver el subdominio de forma real
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-        try {
-          const res = await fetch(`${apiUrl}/stripe/resolve-tenant/${subdomain}`);
-          if (res.ok) {
-            const data = await res.json();
-            if (data.tenant_id) {
-              tenantId = data.tenant_id;
-            }
+    if (cachedSlug === subdomain && cachedId) {
+      tenantId = cachedId;
+    } else {
+      // Consultar a la API del backend para resolver el subdominio de forma real
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (!apiUrl) {
+        console.error("[MIDDLEWARE ERROR] NEXT_PUBLIC_API_URL environment variable is not defined");
+        return new NextResponse("API URL not configured", { status: 500 });
+      }
+      try {
+        const res = await fetch(`${apiUrl}/stripe/resolve-tenant/${subdomain}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.tenant_id) {
+            tenantId = data.tenant_id;
           }
-        } catch (err) {
-          console.error("[MIDDLEWARE RESOLVE ERROR]", err);
         }
+      } catch (err) {
+        console.error("[MIDDLEWARE RESOLVE ERROR]", err);
       }
     }
 

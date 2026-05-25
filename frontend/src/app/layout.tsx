@@ -24,20 +24,31 @@ export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = headers();
   const tenantSlug = requestHeaders.get("x-tenant-slug") || "";
   const isMarketing = !tenantSlug || tenantSlug === "www";
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+
+  if (!baseUrl) {
+    console.warn("[layout.tsx] process.env.NEXT_PUBLIC_API_URL is not defined.");
+    return {
+      title: "Probookia | Software de Gestión Premium",
+      description: "Gestión inteligente de citas con diseño Quiet Luxury."
+    };
+  }
 
   if (isMarketing) {
     let allowSaasIndexing = false;
-    try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const resSettings = await fetch(`${baseUrl}/settings/`, { 
-        next: { revalidate: 60 },
-        headers: { "X-Tenant-ID": "00000000-0000-0000-0000-000000000001" }
-      });
-      if (resSettings.ok) {
-        const data = await resSettings.json();
-        allowSaasIndexing = data.allow_search_engine_indexing;
-      }
-    } catch(e) {}
+    const systemTenantId = process.env.NEXT_PUBLIC_SYSTEM_TENANT_ID;
+    if (systemTenantId) {
+      try {
+        const resSettings = await fetch(`${baseUrl}/settings/`, { 
+          next: { revalidate: 60 },
+          headers: { "X-Tenant-ID": systemTenantId }
+        });
+        if (resSettings.ok) {
+          const data = await resSettings.json();
+          allowSaasIndexing = data.allow_search_engine_indexing;
+        }
+      } catch(e) {}
+    }
 
     return {
       title: "Probookia | Software de Gestión Premium para Negocios y Centros de Estética, Wellness y Belleza",
@@ -46,43 +57,58 @@ export async function generateMetadata(): Promise<Metadata> {
     };
   }
 
+  const host = requestHeaders.get("host") || "";
+  const hostParts = host.split('.');
+  let resolvedTenantName = "Centro";
+  if (hostParts.length > 1 && hostParts[0] !== 'www') {
+    resolvedTenantName = hostParts[0]
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+
   let allowIndexing = false;
   let seoData: any = {
-    title: "Estetica Merce | Estética y Láser",
-    description: "Tratamientos de estética avanzada y depilación láser.",
+    title: `${resolvedTenantName} | Estética y Láser`,
+    description: `Tratamientos de estética avanzada y depilación láser en ${resolvedTenantName}.`,
     keywords: [],
     ogImage: ""
   };
   
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-  const tenantId = requestHeaders.get("x-tenant-id") || '00000000-0000-0000-0000-000000000001';
+  const tenantId = requestHeaders.get("x-tenant-id");
 
-  try {
-    const resSettings = await fetch(`${baseUrl}/settings/`, { 
-      next: { revalidate: 60 },
-      headers: { "X-Tenant-ID": tenantId }
-    });
-    if (resSettings.ok) {
-      const data = await resSettings.json();
-      allowIndexing = data.allow_search_engine_indexing;
-    }
-  } catch(e) {}
-
-  try {
-    const resContent = await fetch(`${baseUrl}/site-content/`, { 
-      next: { revalidate: 60 },
-      headers: { "X-Tenant-ID": tenantId }
-    });
-    if (resContent.ok) {
-      const data = await resContent.json();
-      if (data.seo_title) seoData.title = data.seo_title;
-      if (data.seo_description) seoData.description = data.seo_description;
-      if (data.seo_keywords) seoData.keywords = data.seo_keywords.split(',').map((k: string) => k.trim());
-      if (data.hero_image_url) {
-         seoData.ogImage = data.hero_image_url.startsWith('/') ? `${baseUrl}${data.hero_image_url}` : data.hero_image_url;
+  if (tenantId) {
+    try {
+      const resSettings = await fetch(`${baseUrl}/settings/`, { 
+        next: { revalidate: 60 },
+        headers: { "X-Tenant-ID": tenantId }
+      });
+      if (resSettings.ok) {
+        const data = await resSettings.json();
+        allowIndexing = data.allow_search_engine_indexing;
+        if (data.clinic_name) {
+          seoData.title = `${data.clinic_name} | Estética y Láser`;
+          seoData.description = `Tratamientos de estética avanzada y depilación láser en ${data.clinic_name}.`;
+        }
       }
-    }
-  } catch(e) {}
+    } catch(e) {}
+
+    try {
+      const resContent = await fetch(`${baseUrl}/site-content/`, { 
+        next: { revalidate: 60 },
+        headers: { "X-Tenant-ID": tenantId }
+      });
+      if (resContent.ok) {
+        const data = await resContent.json();
+        if (data.seo_title) seoData.title = data.seo_title;
+        if (data.seo_description) seoData.description = data.seo_description;
+        if (data.seo_keywords) seoData.keywords = data.seo_keywords.split(',').map((k: string) => k.trim());
+        if (data.hero_image_url) {
+           seoData.ogImage = data.hero_image_url.startsWith('/') ? `${baseUrl}${data.hero_image_url}` : data.hero_image_url;
+        }
+      }
+    } catch(e) {}
+  }
 
   return {
     title: seoData.title,
@@ -116,17 +142,21 @@ export default async function RootLayout({
   const isMarketing = !tenantSlug || tenantSlug === "www";
   const isBypassRoute = pathname.startsWith("/super-admin") || pathname.startsWith("/login");
 
+  let settings: any = null;
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  const tenantId = requestHeaders.get("x-tenant-id");
+
   let isSuspended = false;
-  if (!isMarketing && !isBypassRoute) {
+  if (baseUrl && tenantId && !isMarketing && !isBypassRoute) {
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const tenantId = requestHeaders.get("x-tenant-id") || '00000000-0000-0000-0000-000000000001';
       const resSettings = await fetch(`${baseUrl}/settings/`, {
-        cache: 'no-store', // Comprobar estado en vivo
+        cache: 'no-store', // Obtener ajustes en vivo para inyectar marca dinámicamente
         headers: { "X-Tenant-ID": tenantId }
       });
       if (resSettings.status === 402) {
         isSuspended = true;
+      } else if (resSettings.ok) {
+        settings = await resSettings.json();
       }
     } catch(e) {}
   }
@@ -183,8 +213,46 @@ export default async function RootLayout({
     );
   }
 
+  // ── CÁLCULO DE VALORES DE MARCA DINÁMICOS ──
+  const accentColor = settings?.accent_color || '#d4af37';
+  const primaryHsl = hexToHsl(accentColor);
+  const isDark = settings?.dark_mode_enabled || false;
+  const borderRadiusStyle = settings?.border_radius || 'suave';
+  const headingsFont = settings?.branding_font_headings || 'Playfair Display';
+  const bodyFont = settings?.branding_font_body || 'Inter';
+  const favicon = settings?.favicon_b64 || '/favicon.ico';
+
+  let radiusBase = "1rem";
+  let radiusCard = "1.5rem";
+  let radiusBtn = "0.75rem";
+
+  if (borderRadiusStyle === 'recto') {
+    radiusBase = "0px";
+    radiusCard = "0px";
+    radiusBtn = "0px";
+  } else if (borderRadiusStyle === 'organico') {
+    radiusBase = "1.5rem";
+    radiusCard = "2.5rem";
+    radiusBtn = "9999px";
+  }
+
   return (
-    <html lang="es" suppressHydrationWarning className={`${inter.variable} ${cormorantGaramond.variable}`}>
+    <html lang="es" suppressHydrationWarning className={`${inter.variable} ${cormorantGaramond.variable} ${isDark ? 'dark' : ''}`}>
+      <head>
+        <link rel="icon" href={favicon} type="image/x-icon" />
+        <style dangerouslySetInnerHTML={{ __html: `
+          :root {
+            --primary: ${primaryHsl} !important;
+            --ring: ${primaryHsl} !important;
+            --radius-base: ${radiusBase} !important;
+            --radius-card: ${radiusCard} !important;
+            --radius-btn: ${radiusBtn} !important;
+            --font-cormorant: '${headingsFont}', serif !important;
+            --font-playfair: '${headingsFont}', serif !important;
+            --font-inter: '${bodyFont}', sans-serif !important;
+          }
+        ` }} />
+      </head>
       <body className="antialiased bg-background text-foreground flex flex-col min-h-screen">
         <Providers>
           <TenantInitializer />
@@ -196,4 +264,45 @@ export default async function RootLayout({
       </body>
     </html>
   );
+}
+
+function hexToHsl(hex: string): string {
+  hex = hex.replace(/^#/, '');
+
+  if (!/^[0-9A-Fa-f]{6}$/.test(hex)) {
+    return "46 65% 52%";
+  }
+
+  let r = parseInt(hex.substring(0, 2), 16) / 255;
+  let g = parseInt(hex.substring(2, 4), 16) / 255;
+  let b = parseInt(hex.substring(4, 6), 16) / 255;
+
+  let max = Math.max(r, g, b);
+  let min = Math.min(r, g, b);
+  let h = 0;
+  let s = 0;
+  let l = (max + min) / 2;
+
+  if (max !== min) {
+    let d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r:
+        h = (g - b) / d + (g < b ? 6 : 0);
+        break;
+      case g:
+        h = (b - r) / d + 2;
+        break;
+      case b:
+        h = (r - g) / d + 4;
+        break;
+    }
+    h /= 6;
+  }
+
+  h = Math.round(h * 360);
+  s = Math.round(s * 100);
+  l = Math.round(l * 100);
+
+  return `${h} ${s}% ${l}%`;
 }

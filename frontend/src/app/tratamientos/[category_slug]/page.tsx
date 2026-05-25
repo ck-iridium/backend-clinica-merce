@@ -51,11 +51,13 @@ const categoryPageTranslations: Record<string, Record<string, string>> = {
 
 // Helpers to get data with crash protection and timeouts
 async function getCategoryData(slug: string, tenantId: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!baseUrl) return null;
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 segundos
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/service-categories/slug/${slug}`, {
+    const res = await fetch(`${baseUrl}/service-categories/slug/${slug}`, {
       next: { revalidate: 60 },
       signal: controller.signal,
       headers: { "X-Tenant-ID": tenantId }
@@ -74,12 +76,29 @@ async function getCategoryData(slug: string, tenantId: string) {
   }
 }
 
+async function getSettings(tenantId: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!baseUrl) return null;
+  try {
+    const res = await fetch(`${baseUrl}/settings/`, {
+      next: { revalidate: 60 },
+      headers: { "X-Tenant-ID": tenantId }
+    });
+    if (res.ok) return await res.json();
+  } catch (e) {
+    console.error("Error fetching settings:", e);
+  }
+  return null;
+}
+
 async function getAllCategories(tenantId: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!baseUrl) return [];
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/service-categories/`, {
+    const res = await fetch(`${baseUrl}/service-categories/`, {
       next: { revalidate: 60 },
       signal: controller.signal,
       headers: { "X-Tenant-ID": tenantId }
@@ -95,11 +114,13 @@ async function getAllCategories(tenantId: string) {
 }
 
 async function getServices(tenantId: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!baseUrl) return [];
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/`, {
+    const res = await fetch(`${baseUrl}/services/`, {
       next: { revalidate: 60 },
       signal: controller.signal,
       headers: { "X-Tenant-ID": tenantId }
@@ -116,7 +137,8 @@ async function getServices(tenantId: string) {
 
 const getFullUrl = (url: string) => {
   if (!url) return '';
-  return url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${url}` : url;
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  return url.startsWith('/') && baseUrl ? `${baseUrl}${url}` : url;
 };
 
 // Helper for translations on the server side
@@ -142,9 +164,16 @@ const translateField = (fieldVal: string, translations: any, fieldKey: string, l
 
 export async function generateMetadata({ params }: { params: { category_slug: string } }): Promise<Metadata> {
   const requestHeaders = headers();
-  const tenantId = requestHeaders.get('x-tenant-id') || '00000000-0000-0000-0000-000000000001';
-  const category = await getCategoryData(params.category_slug, tenantId);
+  const tenantId = requestHeaders.get('x-tenant-id');
+  if (!tenantId) return { title: 'Centro no resuelto' };
+  
+  const [category, settings] = await Promise.all([
+    getCategoryData(params.category_slug, tenantId),
+    getSettings(tenantId)
+  ]);
   if (!category) return { title: 'Categoría no encontrada' };
+
+  const clinicName = settings?.clinic_name || 'Estética';
 
   const cookieStore = cookies();
   const lang = cookieStore.get('preferred_language')?.value || 'es';
@@ -152,21 +181,29 @@ export async function generateMetadata({ params }: { params: { category_slug: st
   const translatedDesc = translateField(category.seo_description || category.description, category.translations, 'seo_description', lang) || `Descubre nuestra categoría de ${translatedName}.`;
 
   return {
-    title: `${translatedName} | Estetica Merce`,
+    title: `${translatedName} | ${clinicName}`,
     description: translatedDesc,
   };
 }
 
 export default async function CategoryDynamicPage({ params }: { params: { category_slug: string } }) {
   const requestHeaders = headers();
-  const tenantId = requestHeaders.get('x-tenant-id') || '00000000-0000-0000-0000-000000000001';
+  const tenantId = requestHeaders.get('x-tenant-id');
+  if (!tenantId) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#FDFCFB] text-stone-500 font-serif font-bold text-lg">
+        Contexto del Centro No Resuelto
+      </div>
+    );
+  }
 
   const category = await getCategoryData(params.category_slug, tenantId);
   if (!category) notFound();
 
-  const [allCategories, allServices] = await Promise.all([
+  const [allCategories, allServices, settings] = await Promise.all([
     getAllCategories(tenantId),
-    getServices(tenantId)
+    getServices(tenantId),
+    getSettings(tenantId)
   ]);
 
   const cookieStore = cookies();
@@ -201,24 +238,23 @@ export default async function CategoryDynamicPage({ params }: { params: { catego
   }));
 
   // Fallback localized editorial text
-  const translatedEditorialText = translate(category.seo_description, category.translations, 'seo_description') || 
+  const host = requestHeaders.get('host') || '';
+  const hostParts = host.split('.');
+  let resolvedTenantName = 'nuestro centro';
+  if (hostParts.length > 1 && hostParts[0] !== 'www') {
+    resolvedTenantName = hostParts[0]
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+  const clinicName = settings?.clinic_name || resolvedTenantName;
+  
+  const translatedEditorialText = translate(category.seo_description || category.description, category.translations, 'seo_description') || 
     (lang === 'fr' 
-      ? `L'approche de notre clinique pour les soins de ${translatedCategoryName.toLowerCase()} est basée sur l'excellence, la personnalisation et les résultats naturels. Nous comprenons que chaque peau et chaque corps racontent une histoire unique, c'est pourquoi nos spécialistes réalisent un diagnostic approfondi avant de recommander tout protocole.
-
-Nous utilisons des technologies de pointe associées à des techniques manuelles exclusives, créant une synergie parfaite qui non seulement embellit, mais favorise également une santé globale de l'intérieur.
-
-Laissez-vous conseiller par notre équipe médico-esthétique et découvrez comment nous pouvons améliorer votre bien-être avec la discrétion et le professionnalisme maximums qui caractérisent Estetica Merce.`
+      ? `Découvrez les services et prestations personnalisés haut de gamme de ${translatedCategoryName.toLowerCase()} chez ${clinicName}. Nous vous accueillons dans un cadre élégant dédié à votre bien-être.`
       : lang === 'en'
-        ? `Our clinic's approach to ${translatedCategoryName.toLowerCase()} treatments is based on excellence, personalization, and natural results. We understand that every skin and every body tells a unique story, which is why our specialists perform a comprehensive diagnosis before recommending any protocol.
-
-We use state-of-the-art technology combined with exclusive manual techniques, creating a perfect synergy that not only beautifies but also promotes overall health from within.
-
-Let our medical-aesthetic team advise you and discover how we can enhance your well-being with the maximum discretion and professionalism that characterizes Estetica Merce.`
-        : `El enfoque de nuestra clínica hacia los tratamientos de ${translatedCategoryName.toLowerCase()} se basa en la excelencia, la personalización y los resultados naturales. Comprendemos que cada piel y cada cuerpo cuentan una historia única, por lo que nuestras especialistas realizan un diagnóstico exhaustivo antes de recomendar cualquier protocolo.
-
-Utilizamos aparatología de vanguardia combinada con técnicas manuales exclusivas, creando una sinergia perfecta que no solo embellece, sino que también promueve la salud integral desde el interior.
-
-Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos potenciar tu bienestar con la máxima discreción y profesionalidad que caracteriza a Estetica Merce.`);
+        ? `Explore the high-end, customized ${translatedCategoryName.toLowerCase()} services and treatments at ${clinicName}. We welcome you to an elegant space dedicated to your wellness.`
+        : `Explore los servicios y tratamientos personalizados de alta gama de ${translatedCategoryName.toLowerCase()} en ${clinicName}. Le damos la bienvenida a un espacio elegante dedicado a su bienestar.`);
 
   return (
     <div className="min-h-screen bg-stone-50 font-sans text-stone-900 selection:bg-[#d4af37]/30">
@@ -233,17 +269,17 @@ Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos p
 
         {/* 2. SLIDER DE TRATAMIENTOS */}
         {translatedCategoryServices.length > 0 && (
-          <section id="treatment-content" className="relative z-20 w-full overflow-hidden h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none flex flex-col bg-[#F5F2EE]">
+          <section id="treatment-content" className="relative z-20 w-full overflow-hidden h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none flex flex-col bg-[#F5F2EE] dark:bg-stone-900">
             <style dangerouslySetInnerHTML={{ __html: '.hide-scroll::-webkit-scrollbar { display: none; } .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }' }} />
             <div className="pt-16 md:pt-24 pb-8 flex-1 flex flex-col min-h-0">
               <div className="max-w-7xl mx-auto px-6 mb-4 flex flex-col md:flex-row md:justify-between md:items-end gap-2 md:gap-8 flex-shrink-0">
                 <div>
-                  <h2 className="text-2xl md:text-4xl font-serif font-bold text-stone-800">
+                  <h2 className="text-2xl md:text-4xl font-serif font-bold text-stone-800 dark:text-stone-100">
                     {t('page.catalog_of', 'Catálogo de')} {translatedCategoryName}
                   </h2>
                   <p className="text-stone-400 font-medium text-xs md:text-base">{translatedCategoryServices.length} {t('page.options_available', 'opciones disponibles')}</p>
                 </div>
-                <Link href="/tratamientos" className="self-end md:self-auto inline-flex items-center gap-2 font-bold text-[#d4af37] hover:text-stone-900 transition-colors uppercase tracking-widest text-[10px] md:text-sm">
+                <Link href="/tratamientos" className="self-end md:self-auto inline-flex items-center gap-2 font-bold text-[#d4af37] hover:text-stone-900 dark:hover:text-white transition-colors uppercase tracking-widest text-[10px] md:text-sm">
                   <span className="hidden md:inline">{t('page.see_all_treatments', 'Ver todos los tratamientos')}</span>
                   <span className="md:hidden">{t('page.see_all', 'Ver todos')}</span>
                   <span className="text-xl">→</span>
@@ -276,16 +312,16 @@ Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos p
         )}
 
         {/* 3. SECCIÓN SEO EDITORIAL (Imantada) */}
-        <section className="pt-16 pb-24 md:py-32 bg-white min-h-[100dvh] snap-start snap-stop-always md:min-h-0 md:snap-none flex flex-col justify-center">
+        <section className="pt-16 pb-24 md:py-32 bg-white dark:bg-stone-950 min-h-[100dvh] snap-start snap-stop-always md:min-h-0 md:snap-none flex flex-col justify-center">
           <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-24 items-start">
             <div className="md:col-span-4 md:sticky md:top-32">
               <div className="w-16 h-1 bg-[#d4af37] mb-6 rounded-full"></div>
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-extrabold text-stone-900 leading-tight">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-extrabold text-stone-900 dark:text-stone-100 leading-tight">
                 {t('page.excellence_in', 'Excelencia en')} <br /> <span className="text-[#d4af37]">{translatedCategoryName}</span>
               </h2>
             </div>
             <div className="md:col-span-8">
-              <div className="prose prose-stone lg:prose-lg max-w-none text-stone-600 leading-relaxed whitespace-pre-line font-medium">
+              <div className="prose prose-stone lg:prose-lg max-w-none text-stone-600 dark:text-stone-300 leading-relaxed whitespace-pre-line font-medium">
                 {translatedEditorialText}
               </div>
             </div>
@@ -294,14 +330,14 @@ Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos p
 
         {/* 4. DESCUBRE OTRAS CATEGORÍAS (Bento Grid) */}
         {translatedOtherCategories.length > 0 && (
-          <section className="pt-16 pb-24 md:py-32 bg-[#F5F2EE] min-h-[100dvh] snap-start snap-stop-always md:min-h-0 md:snap-none flex flex-col justify-center">
+          <section className="pt-16 pb-24 md:py-32 bg-[#F5F2EE] dark:bg-stone-900/60 min-h-[100dvh] snap-start snap-stop-always md:min-h-0 md:snap-none flex flex-col justify-center">
             <div className="w-full max-w-7xl mx-auto px-6">
               <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 mb-10">
                 <div>
-                  <h2 className="text-2xl md:text-5xl font-serif font-extrabold text-stone-900">{t('page.other_categories', 'Otras Categorías')}</h2>
-                  <p className="text-stone-500 mt-2 text-sm md:text-lg">{t('page.explore_more', 'Explora más servicios de medicina estética avanzada.')}</p>
+                  <h2 className="text-2xl md:text-5xl font-serif font-extrabold text-stone-900 dark:text-stone-100">{t('page.other_categories', 'Otras Categorías')}</h2>
+                  <p className="text-stone-500 dark:text-stone-400 mt-2 text-sm md:text-lg">{t('page.explore_more', 'Explora más servicios y categorías de nuestro catálogo.')}</p>
                 </div>
-                <Link href="/tratamientos" className="text-[#d4af37] font-bold uppercase tracking-widest text-[10px] md:text-sm hover:text-stone-900 transition-colors">
+                <Link href="/tratamientos" className="text-[#d4af37] font-bold uppercase tracking-widest text-[10px] md:text-sm hover:text-stone-900 dark:hover:text-white transition-colors">
                   {t('page.see_full_catalog', 'Ver todo el catálogo')} →
                 </Link>
               </div>
@@ -330,7 +366,7 @@ Déjate asesorar por nuestro equipo médico-estético y descubre cómo podemos p
                       {/* Imagen de Fondo */}
                       <div className="absolute inset-0 transition-transform duration-1000 group-hover:scale-110">
                         <img
-                          src={other.image_url?.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${other.image_url}` : other.image_url}
+                          src={other.image_url?.startsWith('/') && process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}${other.image_url}` : other.image_url}
                           alt={other.name}
                           className="w-full h-full object-cover"
                         />

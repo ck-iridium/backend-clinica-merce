@@ -93,6 +93,10 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
                     if name == "update_landing_config":
                         args = fn_call.args
                         updated_fields.extend(args.keys())
+                    elif name == "update_tenant_branding":
+                        args = fn_call.args
+                        if args:
+                            updated_fields.extend(args.keys())
                     elif name == "update_service_fields":
                         args = fn_call.args
                         if args:
