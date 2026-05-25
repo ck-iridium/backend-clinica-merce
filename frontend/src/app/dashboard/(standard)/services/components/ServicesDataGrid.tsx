@@ -5,6 +5,7 @@ import { Clock, Pencil, Trash2, Search, CheckCircle, HelpCircle, AlertCircle, Ey
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from 'sonner';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
+import MediaPickerModal from '@/components/MediaPickerModal';
 
 interface ServicesDataGridProps {
   services: any[];
@@ -34,6 +35,9 @@ export default function ServicesDataGrid({
   // Seguimiento de cambios rápidos
   const [updatingPrices, setUpdatingPrices] = useState<Record<string, string>>({});
   const [savingPriceId, setSavingPriceId] = useState<string | null>(null);
+  const [updatingDurations, setUpdatingDurations] = useState<Record<string, string>>({});
+  const [savingDurationId, setSavingDurationId] = useState<string | null>(null);
+  const [activeImagePickerServiceId, setActiveImagePickerServiceId] = useState<string | null>(null);
   const [updatingStatusIds, setUpdatingStatusIds] = useState<Set<string>>(new Set());
   const [bulkActionLoading, setBulkActionLoading] = useState<boolean>(false);
 
@@ -208,6 +212,73 @@ export default function ServicesDataGrid({
         delete next[service.id];
         return next;
       });
+    }
+  };
+
+  // Modificación de duración rápida por fila (Blur / Enter)
+  const handleDurationChange = (id: string, val: string) => {
+    setUpdatingDurations(prev => ({ ...prev, [id]: val }));
+  };
+
+  const handleDurationSave = async (service: any, val: string) => {
+    const originalDuration = parseInt(service.duration_minutes);
+    const newDuration = parseInt(val);
+
+    if (isNaN(newDuration) || newDuration <= 0) {
+      toast.error(language === 'fr' ? 'Veuillez saisir una durée valide.' : language === 'en' ? 'Please enter a valid duration.' : 'Por favor, ingresa una duración válida.');
+      setUpdatingDurations(prev => {
+        const next = { ...prev };
+        delete next[service.id];
+        return next;
+      });
+      return;
+    }
+
+    if (newDuration === originalDuration) return;
+
+    setSavingDurationId(service.id);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/${service.id}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ duration_minutes: newDuration }),
+      });
+      if (res.ok) {
+        toast.success(language === 'fr' ? `Durée de "${service.name}" mise à jour à ${newDuration} min.` : language === 'en' ? `Duration of "${service.name}" updated to ${newDuration} min.` : `Duración de "${service.name}" actualizada a ${newDuration} min.`);
+        if (onRefresh) onRefresh();
+      } else {
+        throw new Error();
+      }
+    } catch (err) {
+      toast.error(language === 'fr' ? 'Erreur lors de la mise à jour de la duración.' : language === 'en' ? 'Error updating duration.' : 'Error al actualizar la duración.');
+    } finally {
+      setSavingDurationId(null);
+      setUpdatingDurations(prev => {
+        const next = { ...prev };
+        delete next[service.id];
+        return next;
+      });
+    }
+  };
+
+  const handleImageSave = async (id: string, url: string) => {
+    const toastId = toast.loading(language === 'fr' ? "Mise à jour de l'image..." : language === 'en' ? "Updating image..." : "Actualizando imagen...");
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/${id}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ image_url: url }),
+      });
+      if (res.ok) {
+        toast.success(language === 'fr' ? "Image mise à jour avec succès." : language === 'en' ? "Image updated successfully." : "Imagen actualizada con éxito.", { id: toastId });
+        if (onRefresh) onRefresh();
+      } else {
+        throw new Error();
+      }
+    } catch (err) {
+      toast.error(language === 'fr' ? "Erreur de mise à jour." : language === 'en' ? "Error updating image." : "Error al actualizar la imagen.", { id: toastId });
+    } finally {
+      setActiveImagePickerServiceId(null);
     }
   };
 
@@ -449,6 +520,9 @@ export default function ServicesDataGrid({
                   </th>
 
                   {/* Cabeceras de Columnas */}
+                  <th className="p-4 text-xs font-black uppercase tracking-wider text-stone-400 w-20 text-center">
+                    {language === 'fr' ? 'Image' : language === 'en' ? 'Image' : 'Imagen'}
+                  </th>
                   <th className="p-4 text-xs font-black uppercase tracking-wider text-stone-400">
                     {language === 'fr' ? 'Service / Traitement' : language === 'en' ? 'Service / Treatment' : 'Servicio / Tratamiento'}
                   </th>
@@ -477,6 +551,10 @@ export default function ServicesDataGrid({
                     ? updatingPrices[svc.id] 
                     : svc.price.toString();
 
+                  const inputDurationVal = updatingDurations[svc.id] !== undefined
+                    ? updatingDurations[svc.id]
+                    : svc.duration_minutes.toString();
+
                   return (
                     <tr 
                       key={svc.id} 
@@ -502,6 +580,37 @@ export default function ServicesDataGrid({
                         </label>
                       </td>
 
+                      {/* Imagen con MediaPicker Directo */}
+                      <td className="p-4 w-20 text-center">
+                        <div className="flex items-center justify-center">
+                          {svc.image_url ? (
+                            <div 
+                              onClick={() => setActiveImagePickerServiceId(svc.id)}
+                              className="relative w-12 h-12 rounded-xl overflow-hidden cursor-pointer group shadow-sm border border-stone-200 hover:border-[#d4af37] hover:scale-105 transition-all"
+                              title={language === 'fr' ? "Changer l'image" : language === 'en' ? "Change image" : "Cambiar imagen"}
+                            >
+                              <img 
+                                src={svc.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${svc.image_url}` : svc.image_url} 
+                                alt={svc.name}
+                                className="w-full h-full object-cover group-hover:opacity-75 transition-all"
+                              />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all text-white text-[9px] font-black uppercase tracking-widest">
+                                {language === 'fr' ? 'Edit' : language === 'en' ? 'Edit' : 'Editar'}
+                              </div>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setActiveImagePickerServiceId(svc.id)}
+                              className="w-12 h-12 rounded-xl border border-dashed border-stone-300 hover:border-[#d4af37] flex items-center justify-center text-stone-400 hover:text-[#d4af37] hover:bg-stone-50 transition-all cursor-pointer group bg-stone-50/50"
+                              title={language === 'fr' ? "Ajouter une image" : language === 'en' ? "Add image" : "Añadir imagen"}
+                            >
+                              <span className="text-lg font-light group-hover:scale-110 transition-all text-stone-400 group-hover:text-[#d4af37]">+</span>
+                            </button>
+                          )}
+                        </div>
+                      </td>
+
                       {/* Nombre y Badge de Categoría */}
                       <td className="p-4">
                         <div className="flex items-center gap-3">
@@ -522,11 +631,26 @@ export default function ServicesDataGrid({
                         )}
                       </td>
 
-                      {/* Duración */}
+                      {/* Duración (Entrada de Duración Directa con Auto-guardado) */}
                       <td className="p-4">
-                        <div className="flex items-center gap-1.5 text-stone-500 text-xs font-semibold">
-                          <Clock size={14} className="text-[#d4af37]" />
-                          {svc.duration_minutes} min
+                        <div className="relative flex items-center max-w-[110px]">
+                          <input
+                            type="text"
+                            value={inputDurationVal}
+                            onChange={e => handleDurationChange(svc.id, e.target.value)}
+                            onBlur={e => handleDurationSave(svc, e.target.value)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') {
+                                handleDurationSave(svc, inputDurationVal);
+                                (e.target as HTMLInputElement).blur();
+                              }
+                            }}
+                            className="w-full pr-10 pl-3 py-1.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 focus:border-[#d4af37] rounded-lg text-xs font-bold text-stone-800 dark:text-stone-800 outline-none text-right transition-all focus:ring-1 focus:ring-[#d4af37]"
+                          />
+                          <span className="absolute right-2.5 text-stone-400 text-[10px] font-bold pointer-events-none">min</span>
+                          {savingDurationId === svc.id && (
+                            <Loader2 size={12} className="absolute left-1 animate-spin text-[#d4af37]" />
+                          )}
                         </div>
                       </td>
 
@@ -618,6 +742,14 @@ export default function ServicesDataGrid({
           </div>
 
         </div>
+      )}
+
+      {activeImagePickerServiceId && (
+        <MediaPickerModal
+          onClose={() => setActiveImagePickerServiceId(null)}
+          mediaType="image"
+          onImageSelected={(url) => handleImageSave(activeImagePickerServiceId, url)}
+        />
       )}
 
     </div>
