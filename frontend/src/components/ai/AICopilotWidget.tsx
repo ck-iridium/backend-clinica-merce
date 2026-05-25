@@ -531,9 +531,9 @@ export default function AICopilotWidget() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               disabled={isLoading}
-              rows={1}
+              rows={3}
               placeholder={language === 'fr' ? 'Écrire ou parler...' : language === 'en' ? 'Type or speak...' : 'Escribe o habla...'}
-              className="flex-1 bg-stone-50 border border-stone-200/80 rounded-2xl px-3.5 py-2.5 text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:border-primary transition-all font-medium resize-none max-h-24 overflow-y-auto"
+              className="flex-1 bg-stone-50 border border-stone-200/80 rounded-xl px-3 py-2 text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:border-primary transition-all font-medium resize-y min-h-[40px] max-h-48 overflow-y-auto"
             />
             
             {/* Botón de Voz Nativo */}
