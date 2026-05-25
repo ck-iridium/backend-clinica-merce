@@ -70,7 +70,7 @@ export default function CreateCategoryInlineModal({ open, onOpenChange, onCreate
               value={name} 
               onChange={(e) => setName(e.target.value)} 
               placeholder={t('dashboard.services.new_category_placeholder')} 
-              className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all font-semibold text-sm" 
+              className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all font-semibold text-sm text-stone-900 dark:text-stone-900" 
             />
           </form>
         </div>

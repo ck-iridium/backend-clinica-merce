@@ -154,18 +154,18 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
         <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.seo_title_label')}</label>
         <input 
           {...register('seo_title')} 
-          className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" 
+          className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" 
           placeholder={(t('dashboard.services.seo_title_placeholder') || 'Ej: {name} | Negocio')
             .replace('{name}', formValues.name || t('dashboard.services.placeholder_title'))} 
         />
       </div>
       <div>
         <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.seo_description_label')}</label>
-        <textarea {...register('seo_description')} rows={3} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:ring-2 focus:ring-[#d4af37] outline-none transition-all text-sm resize-none" placeholder={t('dashboard.services.meta_description_placeholder')} />
+        <textarea {...register('seo_description')} rows={3} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all text-sm resize-none" placeholder={t('dashboard.services.meta_description_placeholder')} />
       </div>
       <div>
         <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.seo_keywords_label')}</label>
-        <input {...register('seo_keywords')} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:ring-2 focus:ring-[#d4af37] outline-none transition-all text-sm" placeholder={t('dashboard.services.meta_keywords_placeholder')} />
+        <input {...register('seo_keywords')} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all text-sm" placeholder={t('dashboard.services.meta_keywords_placeholder')} />
       </div>
     </div>
   );

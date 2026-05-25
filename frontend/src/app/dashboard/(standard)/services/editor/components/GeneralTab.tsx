@@ -42,7 +42,7 @@ export default function GeneralTab({
     <div className="space-y-4">
       <div>
         <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.service_name_label')}</label>
-        <input {...register('name', { required: true })} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" placeholder={t('dashboard.services.service_name_placeholder')} />
+        <input {...register('name', { required: true })} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" placeholder={t('dashboard.services.service_name_placeholder')} />
       </div>
       <div className="relative group">
         <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.slug_label')}</label>
@@ -50,7 +50,7 @@ export default function GeneralTab({
           <input 
             {...register('slug', { required: true })} 
             readOnly={slugLocked}
-            className={`w-full pl-4 pr-12 py-3 rounded-xl border outline-none transition-all text-sm font-mono ${slugLocked ? 'bg-stone-50 border-stone-200 text-stone-500' : 'bg-white border-[#d4af37] text-stone-800'}`} 
+            className={`w-full pl-4 pr-12 py-3 rounded-xl border outline-none transition-all text-sm font-mono ${slugLocked ? 'bg-stone-50 border-stone-200 text-stone-500 dark:text-stone-500' : 'bg-white border-[#d4af37] text-stone-800 dark:text-stone-800'}`} 
           />
           <button 
             type="button"
@@ -75,7 +75,7 @@ export default function GeneralTab({
               rules={{ required: true }}
               render={({ field }) => (
                 <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger className="w-full h-[46px] rounded-xl border-stone-200 bg-white font-semibold shadow-none">
+                  <SelectTrigger className="w-full h-[46px] rounded-xl border-stone-200 bg-white dark:bg-white text-stone-900 dark:text-stone-900 font-semibold shadow-none border dark:border-stone-200">
                     <SelectValue placeholder={t('dashboard.services.select_placeholder')} />
                   </SelectTrigger>
                   <SelectContent>
@@ -100,11 +100,11 @@ export default function GeneralTab({
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.price_label')}</label>
-          <input type="number" step="0.01" {...register('price', { required: true, valueAsNumber: true })} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" />
+          <input type="number" step="0.01" {...register('price', { required: true, valueAsNumber: true })} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" />
         </div>
         <div>
           <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.duration_label')}</label>
-          <input type="number" step="15" {...register('duration_minutes', { required: true, valueAsNumber: true })} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" />
+          <input type="number" step="15" {...register('duration_minutes', { required: true, valueAsNumber: true })} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" />
         </div>
       </div>
 
@@ -124,7 +124,7 @@ export default function GeneralTab({
               type="number" 
               step="0.01" 
               {...register('deposit_amount', { required: formValues.requires_deposit, valueAsNumber: true })} 
-              className="w-full sm:w-1/2 px-4 py-3 rounded-xl border border-stone-200 bg-white focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" 
+              className="w-full sm:w-1/2 px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" 
             />
             <p className="text-[10px] text-stone-400 mt-1">{t('dashboard.services.deposit_amount_helper')}</p>
           </div>
@@ -143,7 +143,7 @@ export default function GeneralTab({
             {t('dashboard.services.generate_ia')}
           </button>
         </div>
-        <textarea {...register('description')} rows={3} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:ring-2 focus:ring-[#d4af37] outline-none transition-all text-sm resize-none" placeholder={t('dashboard.services.short_description_placeholder')} />
+        <textarea {...register('description')} rows={3} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all text-sm resize-none" placeholder={t('dashboard.services.short_description_placeholder')} />
       </div>
       
       <div className="flex items-center gap-3 p-4 bg-white border border-stone-200 rounded-xl">

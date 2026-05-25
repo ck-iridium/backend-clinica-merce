@@ -269,7 +269,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
             control={control}
             render={({ field }) => (
               <Select onValueChange={field.onChange} value={field.value}>
-                <SelectTrigger className="w-full h-[45px] rounded-xl border-stone-200 bg-white text-sm font-semibold shadow-sm focus:ring-stone-200">
+                <SelectTrigger className="w-full h-[45px] rounded-xl border-stone-200 bg-white dark:bg-white text-stone-900 dark:text-stone-900 text-sm font-semibold shadow-sm focus:ring-stone-200 border dark:border-stone-200">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl shadow-xl border-stone-200">

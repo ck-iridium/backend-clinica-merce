@@ -177,7 +177,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-sm max-w-none focus:outline-none min-h-[200px] p-4 bg-white border border-stone-200 rounded-b-xl',
+        class: 'prose prose-sm max-w-none focus:outline-none min-h-[200px] p-4 bg-white dark:bg-white text-stone-900 dark:text-stone-900 border border-stone-200 rounded-b-xl',
       },
     },
   });
