@@ -32,7 +32,7 @@ export default function BillingTab({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-xs font-bold text-stone-500 mb-2">{t('dashboard.settings.billing.prefix')}</label>
-            <input type="text" value={settings.invoice_prefix} onChange={e => setSettings({...settings, invoice_prefix: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono text-sm outline-none" />
+            <input type="text" value={settings.invoice_prefix} onChange={e => setSettings({...settings, invoice_prefix: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono text-sm text-stone-800 dark:text-stone-800 outline-none" />
             <p className="text-[10px] text-stone-400 mt-2">{t('dashboard.settings.billing.prefix_vars')}</p>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -46,7 +46,7 @@ export default function BillingTab({
                   const val = e.target.value;
                   setSettings({...settings, invoice_next_number: val === "" ? "" : parseInt(val) });
                 }} 
-                className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono font-bold outline-none" 
+                className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono font-bold text-stone-800 dark:text-stone-800 outline-none" 
               />
             </div>
             <div>
@@ -60,7 +60,7 @@ export default function BillingTab({
                   const val = e.target.value;
                   setSettings({...settings, default_tax_rate: val === "" ? "" : parseFloat(val) });
                 }} 
-                className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono font-bold outline-none" 
+                className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono font-bold text-stone-800 dark:text-stone-800 outline-none" 
               />
             </div>
           </div>

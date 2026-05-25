@@ -22,31 +22,31 @@ export default function GeneralTab({ settings, setSettings }: GeneralTabProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-xs font-bold text-stone-500 mb-2">{t('dashboard.settings.clinic_name')}</label>
-            <input required type="text" value={settings.clinic_name} onChange={e => setSettings({...settings, clinic_name: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all outline-none" />
+            <input required type="text" value={settings.clinic_name} onChange={e => setSettings({...settings, clinic_name: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all text-stone-800 dark:text-stone-800 outline-none" />
           </div>
           <div>
             <label className="block text-xs font-bold text-stone-500 mb-2">{t('dashboard.settings.legal_name')}</label>
-            <input type="text" value={settings.legal_name || ''} onChange={e => setSettings({...settings, legal_name: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all outline-none" />
+            <input type="text" value={settings.legal_name || ''} onChange={e => setSettings({...settings, legal_name: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all text-stone-800 dark:text-stone-800 outline-none" />
           </div>
           <div>
             <label className="block text-xs font-bold text-stone-500 mb-2">{t('dashboard.settings.clinic_nif')}</label>
-            <input type="text" value={settings.clinic_nif} onChange={e => setSettings({...settings, clinic_nif: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all outline-none" />
+            <input type="text" value={settings.clinic_nif} onChange={e => setSettings({...settings, clinic_nif: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all text-stone-800 dark:text-stone-800 outline-none" />
           </div>
           <div>
             <label className="block text-xs font-bold text-stone-500 mb-2">{t('dashboard.settings.sanitary_register')}</label>
-            <input type="text" value={settings.sanitary_register || ''} onChange={e => setSettings({...settings, sanitary_register: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all outline-none" placeholder={t('dashboard.settings.optional')} />
+            <input type="text" value={settings.sanitary_register || ''} onChange={e => setSettings({...settings, sanitary_register: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all text-stone-800 dark:text-stone-800 outline-none" placeholder={t('dashboard.settings.optional')} />
           </div>
           <div className="md:col-span-2">
             <label className="block text-xs font-bold text-stone-500 mb-2">{t('dashboard.settings.clinic_address')}</label>
-            <input type="text" value={settings.clinic_address} onChange={e => setSettings({...settings, clinic_address: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all outline-none" />
+            <input type="text" value={settings.clinic_address} onChange={e => setSettings({...settings, clinic_address: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all text-stone-800 dark:text-stone-800 outline-none" />
           </div>
           <div>
             <label className="block text-xs font-bold text-stone-500 mb-2">{t('dashboard.settings.clinic_phone')}</label>
-            <input type="text" value={settings.clinic_phone} onChange={e => setSettings({...settings, clinic_phone: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all outline-none" />
+            <input type="text" value={settings.clinic_phone} onChange={e => setSettings({...settings, clinic_phone: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all text-stone-800 dark:text-stone-800 outline-none" />
           </div>
           <div>
             <label className="block text-xs font-bold text-stone-500 mb-2">{t('dashboard.settings.clinic_email')}</label>
-            <input type="email" value={settings.clinic_email} onChange={e => setSettings({...settings, clinic_email: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all outline-none" />
+            <input type="email" value={settings.clinic_email} onChange={e => setSettings({...settings, clinic_email: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all text-stone-800 dark:text-stone-800 outline-none" />
           </div>
         </div>
       </div>
@@ -62,15 +62,15 @@ export default function GeneralTab({ settings, setSettings }: GeneralTabProps) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="block text-xs font-bold text-stone-500 mb-2">{t('dashboard.settings.instagram_url')}</label>
-            <input type="text" value={settings.instagram_url || ''} onChange={e => setSettings({...settings, instagram_url: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] transition-all outline-none" placeholder="https://instagram.com/..." />
+            <input type="text" value={settings.instagram_url || ''} onChange={e => setSettings({...settings, instagram_url: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] transition-all text-stone-800 dark:text-stone-800 outline-none" placeholder="https://instagram.com/..." />
           </div>
           <div>
             <label className="block text-xs font-bold text-stone-500 mb-2">{t('dashboard.settings.whatsapp')}</label>
-            <input type="text" value={settings.whatsapp_number || ''} onChange={e => setSettings({...settings, whatsapp_number: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] transition-all outline-none" placeholder="600000000" />
+            <input type="text" value={settings.whatsapp_number || ''} onChange={e => setSettings({...settings, whatsapp_number: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] transition-all text-stone-800 dark:text-stone-800 outline-none" placeholder="600000000" />
           </div>
           <div>
             <label className="block text-xs font-bold text-stone-500 mb-2">{t('dashboard.settings.maps_url')}</label>
-            <input type="text" value={settings.maps_url || ''} onChange={e => setSettings({...settings, maps_url: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] transition-all outline-none" placeholder="https://goo.gl/maps/..." />
+            <input type="text" value={settings.maps_url || ''} onChange={e => setSettings({...settings, maps_url: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] transition-all text-stone-800 dark:text-stone-800 outline-none" placeholder="https://goo.gl/maps/..." />
           </div>
         </div>
       </div>
