@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Sparkles, Wand2, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 import {
   Select,
   SelectContent,
@@ -17,6 +18,7 @@ interface AIGeneratorModalProps {
 }
 
 export default function AIGeneratorModal({ onClose, onGenerate, targetType, serviceName }: AIGeneratorModalProps) {
+  const { t } = useLanguage();
   const [prompt, setPrompt] = useState('');
   const [tone, setTone] = useState('premium');
   const [isLoading, setIsLoading] = useState(false);
@@ -48,7 +50,7 @@ export default function AIGeneratorModal({ onClose, onGenerate, targetType, serv
 
   const handleGenerate = async () => {
     if (!prompt.trim() && !serviceName.trim()) {
-      toast.error('Por favor, indica al menos el nombre del servicio o algunos detalles.');
+      toast.error(t('dashboard.services.ai_error_prompt'));
       return;
     }
 
@@ -85,12 +87,12 @@ export default function AIGeneratorModal({ onClose, onGenerate, targetType, serv
       }
       
       onGenerate(finalContent);
-      toast.success('¡Contenido generado con éxito!');
+      toast.success(t('dashboard.services.ai_success_toast'));
       onClose();
     } catch (error: any) {
       console.error("AI Error:", error);
       if (error.message === "AI_LIMIT_BYOK_REQUIRED") {
-        toast.error("Requiere clave de API propia o mejorar su suscripción.");
+        toast.error(t('dashboard.services.ai_byok_error'));
       } else {
         toast.error(error.message);
       }
@@ -137,13 +139,11 @@ export default function AIGeneratorModal({ onClose, onGenerate, targetType, serv
             </div>
             
             <h3 className="text-2xl font-serif font-bold text-stone-800 leading-tight mb-2">
-              Asistente de Redacción
+              {t('dashboard.services.ai_writer_title')}
             </h3>
             
-            <p className="text-xs text-stone-500 max-w-sm leading-relaxed mb-8 font-sans">
-              La generación automática de contenido inteligente requiere una suscripción activa al <span className="font-bold text-stone-700">Plan Gold</span>. 
-              <br/><br/>
-              Si se encuentra en planes inferiores (Free, Basic o Pro), puede habilitar esta función configurando su propia <span className="font-bold text-stone-700">Clave de API</span> en los Ajustes de su negocio.
+            <p className="text-xs text-stone-500 max-w-sm leading-relaxed mb-8 font-sans whitespace-pre-line">
+              {t('dashboard.services.ai_writer_locked_desc')}
             </p>
 
             <div className="flex flex-col w-full gap-3 max-w-sm">
@@ -151,13 +151,13 @@ export default function AIGeneratorModal({ onClose, onGenerate, targetType, serv
                 href="/dashboard/settings"
                 className="flex items-center justify-center h-12 rounded-xl bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 font-bold text-xs transition-all shadow-sm active:scale-95"
               >
-                Configurar Clave de API Propia
+                {t('dashboard.services.config_own_key')}
               </a>
               <a 
                 href="/dashboard/settings"
                 className="flex items-center justify-center h-12 rounded-xl bg-[#d4af37] hover:bg-stone-900 text-white font-bold text-xs transition-all shadow-md active:scale-95"
               >
-                Mejorar Plan de Suscripción
+                {t('dashboard.services.upgrade_plan')}
               </a>
             </div>
           </div>
@@ -170,9 +170,11 @@ export default function AIGeneratorModal({ onClose, onGenerate, targetType, serv
                 <Sparkles size={24} strokeWidth={1.5} />
               </div>
               <div>
-                <h3 className="text-2xl font-serif font-bold text-stone-800 leading-tight">Generar con IA</h3>
+                <h3 className="text-2xl font-serif font-bold text-stone-800 leading-tight">
+                  {t('dashboard.services.generate_ia_modal_title')}
+                </h3>
                 <p className="text-sm text-stone-500 font-medium">
-                  {targetType === 'short_description' ? 'Descripción Corta' : 'Contenido Detallado'}
+                  {targetType === 'short_description' ? t('dashboard.services.short_description_label') : t('dashboard.services.rich_content_title')}
                 </p>
               </div>
             </div>
@@ -182,12 +184,12 @@ export default function AIGeneratorModal({ onClose, onGenerate, targetType, serv
               
               <div>
                 <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">
-                  Contexto / Ideas Clave
+                  {t('dashboard.services.context_ideas_label')}
                 </label>
                 <textarea 
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="¿Qué quieres destacar? (ej: resultados inmediatos, hidratación profunda, ideal para eventos...)"
+                  placeholder={t('dashboard.services.context_ideas_placeholder')}
                   className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-stone-50 focus:bg-white focus:border-[#d4af37] focus:ring-4 focus:ring-[#d4af37]/10 outline-none transition-all resize-none min-h-[120px] text-sm"
                   disabled={isLoading}
                 />
@@ -195,17 +197,17 @@ export default function AIGeneratorModal({ onClose, onGenerate, targetType, serv
 
               <div>
                 <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">
-                  Tono de Comunicación
+                  {t('dashboard.services.tone_label')}
                 </label>
                 <Select value={tone} onValueChange={setTone} disabled={isLoading}>
                   <SelectTrigger className="w-full h-[52px] px-5 rounded-2xl border-stone-200 bg-white shadow-none font-medium">
-                    <SelectValue placeholder="Selecciona un tono" />
+                    <SelectValue placeholder={t('dashboard.services.tone_select_placeholder')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="premium">Premium (Sophisticated & Elegant)</SelectItem>
-                    <SelectItem value="cercano">Cercano (Friendly & Warm)</SelectItem>
-                    <SelectItem value="clinico">Clínico (Professional & Precise)</SelectItem>
-                    <SelectItem value="comercial">Comercial (Direct & Persuasive)</SelectItem>
+                    <SelectItem value="premium">{t('dashboard.services.tone_premium')}</SelectItem>
+                    <SelectItem value="cercano">{t('dashboard.services.tone_friendly')}</SelectItem>
+                    <SelectItem value="clinico">{t('dashboard.services.tone_clinical')}</SelectItem>
+                    <SelectItem value="comercial">{t('dashboard.services.tone_persuasive')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -222,12 +224,12 @@ export default function AIGeneratorModal({ onClose, onGenerate, targetType, serv
                 {isLoading ? (
                   <div className="flex items-center gap-3">
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>La IA está redactando...</span>
+                    <span>{t('dashboard.services.generating_magic')}</span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
                     <Wand2 size={18} />
-                    <span>Generar Contenido Mágico</span>
+                    <span>{t('dashboard.services.generate_magic_btn')}</span>
                   </div>
                 )}
                 
