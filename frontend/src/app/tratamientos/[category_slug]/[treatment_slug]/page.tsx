@@ -273,7 +273,7 @@ export default async function TreatmentDynamicPage({ params }: { params: { treat
 
           <div id="treatment-content" className="w-full md:w-[58%] lg:w-[60%] flex flex-col pt-12 md:pt-32 pb-24 px-6 md:pl-8 md:pr-12 lg:pl-16 lg:pr-24 bg-white dark:bg-stone-950 min-h-[65vh] md:min-h-[100vh]">
             <div className="max-w-3xl">
-              <span className="text-xs font-black uppercase tracking-[0.2em] text-[#d4af37] mb-4 block">
+              <span className="text-xs font-black uppercase tracking-[0.2em] text-primary mb-4 block">
                 {categoryName}
               </span>
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-stone-900 dark:text-stone-100 mb-10 leading-[1.1]">
@@ -320,7 +320,7 @@ export default async function TreatmentDynamicPage({ params }: { params: { treat
 
               {translatedContentHtml && (
                 <div
-                  className="prose prose-stone lg:prose-xl dark:prose-invert max-w-none prose-headings:font-serif prose-headings:font-normal prose-p:leading-relaxed prose-a:text-[#d4af37] prose-img:rounded-3xl mb-16 text-stone-700 dark:text-stone-300"
+                  className="prose prose-stone lg:prose-xl dark:prose-invert max-w-none prose-headings:font-serif prose-headings:font-normal prose-p:leading-relaxed prose-a:text-primary prose-img:rounded-3xl mb-16 text-stone-700 dark:text-stone-300"
                   dangerouslySetInnerHTML={{ __html: translatedContentHtml }}
                 />
               )}
@@ -340,7 +340,7 @@ export default async function TreatmentDynamicPage({ params }: { params: { treat
               <h2 className="text-2xl md:text-5xl font-serif text-stone-800 dark:text-stone-100 mb-2">{pageT.complementary}</h2>
               <p className="text-stone-400 dark:text-stone-400 text-xs md:text-base">{pageT.discover}</p>
             </div>
-            <Link href="/tratamientos" className="hidden md:inline-flex text-sm font-bold uppercase tracking-widest text-[#d4af37] border-b-2 border-[#d4af37]/20 pb-1 hover:border-[#d4af37] transition-all">
+            <Link href="/tratamientos" className="hidden md:inline-flex text-sm font-bold uppercase tracking-widest text-primary border-b-2 border-primary/20 pb-1 hover:border-primary transition-all">
               {pageT.see_catalog}
             </Link>
           </div>

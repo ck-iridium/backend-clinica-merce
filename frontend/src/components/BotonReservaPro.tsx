@@ -20,15 +20,16 @@ export default function BotonReservaPro({
   type = "button",
   color = "#d4af37"
 }: BotonReservaProProps) {
-  // Calculamos colores derivados
-  const gradientStyle = {
-    background: `linear-gradient(to bottom, ${color}dd, ${color}, ${color}ee)`
-  };
+  const isDefaultGold = color === "#d4af37";
+  const borderGradientColor = isDefaultGold ? "hsl(var(--primary))" : color;
+  const gradientStyle = isDefaultGold
+    ? { background: `linear-gradient(to bottom, hsl(var(--primary) / 0.85), hsl(var(--primary)), hsl(var(--primary) / 0.95))` }
+    : { background: `linear-gradient(to bottom, ${color}dd, ${color}, ${color}ee)` };
 
   const content = (
     <div
       style={gradientStyle}
-      className="relative px-8 py-3.5 rounded-full flex items-center justify-center
+      className="relative px-8 py-3.5 rounded-[var(--radius-btn)] flex items-center justify-center
                     shadow-[inset_0_4px_8px_rgba(255,255,255,0.7),inset_0_-1px_2px_rgba(0,0,0,0.1)]
                     group-hover:shadow-[inset_0_6px_12px_rgba(255,255,255,0.8),inset_0_-1px_2px_rgba(0,0,0,0.2),0_10px_20px_-5px_rgba(0,0,0,0.1)]
                     transition-all duration-500 overflow-hidden border border-black/5"
@@ -45,11 +46,11 @@ export default function BotonReservaPro({
 
   if (href) {
     return (
-      <Link href={href} className={`block relative p-[2px] overflow-hidden rounded-full group ${className}`}>
+      <Link href={href} className={`block relative p-[2px] overflow-hidden rounded-[var(--radius-btn)] group ${className}`}>
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-          style={{ background: `conic-gradient(from 0deg, transparent 0deg, transparent 150deg, ${color} 180deg, transparent 210deg, transparent 360deg)` }}
+          style={{ background: `conic-gradient(from 0deg, transparent 0deg, transparent 150deg, ${borderGradientColor} 180deg, transparent 210deg, transparent 360deg)` }}
           className="absolute inset-[-150%] opacity-100"
         />
         {content}
@@ -63,12 +64,12 @@ export default function BotonReservaPro({
       onClick={onClick}
       whileHover={{ scale: 1.05, y: -2 }}
       whileTap={{ scale: 0.95 }}
-      className={`relative p-[2px] overflow-hidden rounded-full group ${className}`}
+      className={`relative p-[2px] overflow-hidden rounded-[var(--radius-btn)] group ${className}`}
     >
       <motion.div
         animate={{ rotate: 360 }}
         transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-        style={{ background: `conic-gradient(from 0deg, transparent 0deg, transparent 150deg, ${color} 180deg, transparent 210deg, transparent 360deg)` }}
+        style={{ background: `conic-gradient(from 0deg, transparent 0deg, transparent 150deg, ${borderGradientColor} 180deg, transparent 210deg, transparent 360deg)` }}
         className="absolute inset-[-150%] opacity-100"
       />
       {content}

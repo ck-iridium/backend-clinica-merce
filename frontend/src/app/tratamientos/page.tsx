@@ -150,7 +150,7 @@ export default async function CatalogPage() {
                       />
                     </Link>
                     <div>
-                      <Link href={`/tratamientos/${categoryInfo?.slug || categoryInfo?.id}`} className="hover:text-[#d4af37] transition-colors">
+                      <Link href={`/tratamientos/${categoryInfo?.slug || categoryInfo?.id}`} className="hover:text-primary transition-colors">
                         <h2 className="text-3xl md:text-4xl font-extrabold text-stone-800 dark:text-stone-100 tracking-tight">{catName}</h2>
                       </Link>
                       <p className="text-stone-500 dark:text-stone-400 font-semibold mt-2">{svcs.length} {t.treatments_count}</p>
@@ -167,7 +167,7 @@ export default async function CatalogPage() {
                             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-yellow-50/10 to-transparent rounded-bl-[4rem] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
                             
                             <div className="flex justify-between items-start mb-6 gap-4 relative z-10">
-                              <h3 className="text-xl md:text-2xl font-bold leading-tight group-hover:text-[#d4af37] dark:text-stone-100 transition-colors">{svc.name}</h3>
+                              <h3 className="text-xl md:text-2xl font-bold leading-tight group-hover:text-primary dark:text-stone-100 transition-colors">{svc.name}</h3>
                               <span className="bg-[#fcf8e5] dark:bg-yellow-950/20 text-[#b08e23] dark:text-yellow-450 px-3 py-1.5 rounded-xl font-bold text-sm shrink-0 whitespace-nowrap shadow-sm border border-yellow-100 dark:border-yellow-950/30">
                                 {svc.price} €
                               </span>
@@ -179,9 +179,9 @@ export default async function CatalogPage() {
                             
                             <div className="mt-auto pt-6 border-t border-stone-100 dark:border-stone-800 flex justify-between items-center relative z-10">
                               <span className="text-stone-400 dark:text-stone-500 font-semibold text-sm flex items-center gap-1">
-                                 <span className="text-[#d4af37] text-lg leading-none">⏱</span> {svc.duration_minutes} min
+                                 <span className="text-primary text-lg leading-none">⏱</span> {svc.duration_minutes} min
                               </span>
-                              <span className="text-sm font-bold text-[#d4af37] opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                              <span className="text-sm font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
                                 {t.details} <span className="text-lg leading-none">→</span>
                               </span>
                             </div>

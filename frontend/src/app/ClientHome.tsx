@@ -621,7 +621,7 @@ export default function ClientHome({ content, settings, services, categories }: 
           // ── CTA ───────────────────────────────────────────────────────────
           if (section.type === 'cta') {
             return (
-              <section key="cta" className="flex flex-col justify-center w-full py-24 bg-[#d4af37] text-stone-900 text-center px-6 h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none">
+              <section key="cta" className="flex flex-col justify-center w-full py-24 bg-primary text-primary-foreground text-center px-6 h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none">
                 <div className="max-w-3xl mx-auto space-y-8 animate-in zoom-in-95 duration-700 w-full">
                   <h2 className="text-5xl md:text-6xl font-extrabold tracking-tight">
                     {cleanTitle(translate(content.cta_title, content.translations, 'cta_title'))}
@@ -630,7 +630,7 @@ export default function ClientHome({ content, settings, services, categories }: 
                     {translate(content.cta_subtitle, content.translations, 'cta_subtitle')}
                   </p>
                   <div className="pt-6">
-                    <a href={content.cta_button_link} className="inline-block bg-stone-900 text-white px-12 py-6 rounded-full font-bold text-xl hover:bg-stone-800 transition-all shadow-xl hover:scale-105">
+                    <a href={content.cta_button_link} className="inline-block bg-stone-900 dark:bg-stone-950 text-white dark:text-stone-100 px-12 py-6 rounded-[var(--radius-btn)] font-bold text-xl hover:bg-stone-800 dark:hover:bg-black transition-all shadow-xl hover:scale-105">
                       {translate(content.cta_button_text, content.translations, 'cta_button_text')}
                     </a>
                   </div>

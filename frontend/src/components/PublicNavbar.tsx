@@ -98,7 +98,7 @@ function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen, 
       {/* Floating Duration Badge - Top Right */}
       <div className={`absolute top-4 right-4 z-30 transition-all duration-500 ${isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
         <div className="bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 shadow-xl">
-          <span className="text-[#d4af37] text-[12px] font-black uppercase tracking-[0.1em]">
+          <span className="text-primary text-[12px] font-black uppercase tracking-[0.1em]">
             {svc.duration_minutes} min
           </span>
         </div>
@@ -265,7 +265,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                 <img src={settings.logo_app_b64} alt="Logo" className="h-10" />
               </Link>
             ) : (
-              <Link href="/" onClick={() => setIsOpen(false)} className={`font-extrabold text-2xl tracking-tighter transition-colors ${!useTransparent ? 'text-[#d4af37]' : 'text-white hover:text-[#d4af37]'}`}>
+              <Link href="/" onClick={() => setIsOpen(false)} className={`font-extrabold text-2xl tracking-tighter transition-colors ${!useTransparent ? 'text-primary' : 'text-white hover:text-primary'}`}>
                 {settings?.clinic_name || getFallbackClinicName()}
               </Link>
             )}
@@ -289,10 +289,10 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                       href={item.path}
                       className={`transition-colors flex items-center gap-1 ${
                         isActive
-                          ? 'text-[#d4af37]'
+                          ? 'text-primary'
                           : !useTransparent
-                          ? 'text-stone-800 hover:text-[#d4af37]'
-                          : 'text-white hover:text-[#d4af37]'
+                          ? 'text-stone-800 hover:text-primary'
+                          : 'text-white hover:text-primary'
                       }`}
                     >
                       {label}
@@ -307,10 +307,10 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                   href={item.path}
                   className={`transition-colors ${
                     isActive
-                      ? 'text-[#d4af37]'
+                      ? 'text-primary'
                       : !useTransparent
-                      ? 'text-stone-800 hover:text-[#d4af37]'
-                      : 'text-white hover:text-[#d4af37]'
+                      ? 'text-stone-800 hover:text-primary'
+                      : 'text-white hover:text-primary'
                   }`}
                 >
                   {label}
@@ -346,7 +346,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                           onMouseEnter={() => setActiveCategory(cat.id)}
                           onClick={() => { setShowMegaMenu(false); window.location.href = `/tratamientos/${cat.slug || cat.id}` }}
                           className={`w-full text-left px-6 py-2.5 transition-all font-serif text-lg md:text-xl leading-tight whitespace-normal relative ${activeCategory === cat.id
-                              ? 'bg-white text-[#d4af37] font-semibold rounded-l-2xl -mr-[1px] z-10 shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.02)] after:absolute after:top-0 after:-right-[1px] after:w-[2px] after:h-full after:bg-white after:z-20'
+                              ? 'bg-white text-primary font-semibold rounded-l-2xl -mr-[1px] z-10 shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.02)] after:absolute after:top-0 after:-right-[1px] after:w-[2px] after:h-full after:bg-white after:z-20'
                               : 'text-stone-200 hover:text-white rounded-2xl mr-4 hover:bg-white/5'
                             }`}
                         >
@@ -436,12 +436,12 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
               return (
                 <div key={item.id || item.path} className="w-full flex flex-col items-center">
                   <div className="flex items-center gap-2 cursor-pointer" onClick={() => setMobileAccordionOpen(!mobileAccordionOpen)}>
-                    <span className={`transition-all duration-300 active:scale-95 ${isActive ? 'text-[#d4af37]' : 'hover:text-[#d4af37]'}`}>{label}</span>
-                    <span className={`text-sm text-[#d4af37] transition-transform duration-300 ${mobileAccordionOpen ? 'rotate-180' : ''}`}>▼</span>
+                    <span className={`transition-all duration-300 active:scale-95 ${isActive ? 'text-primary' : 'hover:text-primary'}`}>{label}</span>
+                    <span className={`text-sm text-primary transition-transform duration-300 ${mobileAccordionOpen ? 'rotate-180' : ''}`}>▼</span>
                   </div>
 
                   <div className={`flex flex-col items-center gap-4 overflow-hidden transition-all duration-500 ease-in-out ${mobileAccordionOpen ? 'max-h-[500px] mt-6 opacity-100' : 'max-h-0 opacity-0 mt-0'}`}>
-                    <Link href={item.path} onClick={() => setIsOpen(false)} className="text-xl font-serif text-[#d4af37] italic hover:text-stone-900 transition-colors">
+                    <Link href={item.path} onClick={() => setIsOpen(false)} className="text-xl font-serif text-primary italic hover:text-stone-900 transition-colors">
                       {navT.see_all}
                     </Link>
                     {translatedCategories.map(cat => (
@@ -459,7 +459,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                 key={item.id || item.path}
                 href={item.path}
                 onClick={() => setIsOpen(false)}
-                className={`transition-all duration-300 active:scale-95 ${isActive ? 'text-[#d4af37]' : 'hover:text-[#d4af37]'}`}
+                className={`transition-all duration-300 active:scale-95 ${isActive ? 'text-primary' : 'hover:text-primary'}`}
               >
                 {label}
               </Link>

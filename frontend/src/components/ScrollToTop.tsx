@@ -39,11 +39,11 @@ export default function ScrollToTop() {
   return (
     <button
       onClick={scrollToTop}
-      className="fixed bottom-6 right-6 z-[200] p-4 rounded-full bg-white/80 backdrop-blur-xl border border-stone-200 text-[#d4af37] shadow-2xl transition-all duration-500 hover:scale-110 active:scale-95 animate-in fade-in zoom-in group"
+      className="fixed bottom-6 right-6 z-[200] p-4 rounded-full bg-white/80 backdrop-blur-xl border border-stone-200 text-primary shadow-2xl transition-all duration-500 hover:scale-110 active:scale-95 animate-in fade-in zoom-in group"
       aria-label="Volver arriba"
     >
       <ArrowUp className="w-5 h-5 transition-transform duration-300 group-hover:-translate-y-1" />
-      <div className="absolute inset-0 rounded-full bg-[#d4af37]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-lg"></div>
+      <div className="absolute inset-0 rounded-full bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-lg"></div>
     </button>
   );
 }

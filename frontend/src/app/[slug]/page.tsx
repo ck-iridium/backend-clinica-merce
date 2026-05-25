@@ -223,7 +223,7 @@ export default async function CustomPage({ params }: PageProps) {
                                   {data.title}
                                 </Tag>
                                 {data.show_divider !== false && (
-                                  <div className={`w-12 h-[2px] bg-[#d4af37] mt-4 rounded-full inline-block`} />
+                                  <div className={`w-12 h-[2px] bg-primary mt-4 rounded-full inline-block`} />
                                 )}
                                 {data.subtitle && (
                                   <p className="text-stone-400 text-sm mt-3 font-sans max-w-lg mx-auto">
@@ -371,7 +371,7 @@ export default async function CustomPage({ params }: PageProps) {
                                       <div className={`pt-2 ${align === 'center' ? 'flex justify-center' : ''}`}>
                                         <Link
                                           href={data.cta_url || '#'}
-                                          className="inline-block bg-stone-900 text-white text-[10px] font-black uppercase tracking-widest px-7 py-3.5 rounded-xl shadow-md transition-all duration-300 hover:bg-[#d4af37]"
+                                          className="inline-block bg-stone-900 text-white text-[10px] font-black uppercase tracking-widest px-7 py-3.5 rounded-[var(--radius-btn)] shadow-md transition-all duration-300 hover:bg-primary hover:text-white"
                                         >
                                           {data.cta_text}
                                         </Link>
@@ -393,16 +393,16 @@ export default async function CustomPage({ params }: PageProps) {
 
                             const styleClass = 
                               data.style === 'gold_outline' 
-                                ? 'border border-[#d4af37] text-[#d4af37] bg-transparent hover:bg-[#d4af37] hover:text-white' 
+                                ? 'border border-primary text-primary bg-transparent hover:bg-primary hover:text-white' 
                                 : data.style === 'dark_solid' 
                                 ? 'bg-stone-900 text-white hover:bg-stone-800' 
-                                : 'bg-[#d4af37] text-white hover:bg-[#b08e23]';
+                                : 'bg-primary text-white hover:bg-primary/90';
 
                             return (
                               <div key={block.id} className={`w-full flex ${alignClass} py-3`}>
                                 <Link
                                   href={data.url || '#'}
-                                  className={`px-7 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 shadow-sm active:scale-95 ${styleClass}`}
+                                  className={`px-7 py-3.5 rounded-[var(--radius-btn)] text-xs font-black uppercase tracking-widest transition-all duration-300 shadow-sm active:scale-95 ${styleClass}`}
                                 >
                                   {data.text || 'Acción'}
                                 </Link>
@@ -440,7 +440,7 @@ export default async function CustomPage({ params }: PageProps) {
                                     <div className="pt-4">
                                       <Link
                                         href={data.cta_url || '#'}
-                                        className="inline-block bg-[#d4af37] text-white hover:bg-[#b08e23] px-8 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 shadow-md active:scale-95"
+                                        className="inline-block bg-primary text-white hover:bg-primary/95 px-8 py-4 rounded-[var(--radius-btn)] text-xs font-black uppercase tracking-widest transition-all duration-300 shadow-md active:scale-95"
                                       >
                                         {data.cta_text}
                                       </Link>
@@ -525,11 +525,11 @@ export default async function CustomPage({ params }: PageProps) {
                                       return (
                                         <div key={service.id} className="flex items-center justify-between py-6 group">
                                           <div className="pr-4">
-                                            <span className="text-[#d4af37] text-[10px] font-bold uppercase tracking-wider block mb-1">
+                                            <span className="text-primary text-[10px] font-bold uppercase tracking-wider block mb-1">
                                               0{idx + 1} · {service.duration_minutes} min
                                             </span>
                                             <Link href={hrefPath} className="inline-block">
-                                              <h4 className="text-base font-serif font-bold text-stone-800 hover:text-[#d4af37] transition-colors leading-tight">
+                                              <h4 className="text-base font-serif font-bold text-stone-800 hover:text-primary transition-colors leading-tight">
                                                 {service.name}
                                               </h4>
                                             </Link>
@@ -539,7 +539,7 @@ export default async function CustomPage({ params }: PageProps) {
                                           </div>
                                           <div className="flex items-center gap-6 shrink-0">
                                             <span className="text-stone-700 text-sm font-black">{service.price} €</span>
-                                            <Link href={hrefPath} className="text-[10px] font-black uppercase tracking-widest text-[#d4af37] hover:text-stone-900 border-b border-transparent hover:border-stone-950/40 pb-0.5 transition-all">
+                                            <Link href={hrefPath} className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-stone-900 border-b border-transparent hover:border-stone-950/40 pb-0.5 transition-all">
                                               {data.link_text || 'Ver'} →
                                             </Link>
                                           </div>
@@ -564,9 +564,9 @@ export default async function CustomPage({ params }: PageProps) {
         ) : (
           /* Estado vacío elegante */
           <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center">
-            <div className="w-16 h-[2px] bg-[#d4af37] rounded-full mb-10" />
+            <div className="w-16 h-[2px] bg-primary rounded-full mb-10" />
 
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#d4af37] block mb-4">
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary block mb-4">
               Página en construcción
             </span>
 
@@ -580,7 +580,7 @@ export default async function CustomPage({ params }: PageProps) {
 
             <a
               href="/"
-              className="inline-flex items-center gap-2 text-sm font-bold text-stone-500 hover:text-[#d4af37] transition-colors duration-300 group"
+              className="inline-flex items-center gap-2 text-sm font-bold text-stone-500 hover:text-primary transition-colors duration-300 group"
             >
               <svg
                 className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform duration-300"

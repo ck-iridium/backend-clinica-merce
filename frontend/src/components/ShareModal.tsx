@@ -168,8 +168,8 @@ export default function ShareModal({ isOpen, onClose, serviceName, url }: ShareM
           >
             {copied ? (
               <>
-                <Check size={14} className="text-[#d4af37] animate-bounce" />
-                <span className="text-[#d4af37]">{t('common.copied')}</span>
+                <Check size={14} className="text-primary animate-bounce" />
+                <span className="text-primary">{t('common.copied')}</span>
               </>
             ) : (
               <>

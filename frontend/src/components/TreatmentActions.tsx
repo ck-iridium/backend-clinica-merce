@@ -21,7 +21,7 @@ export default function TreatmentActions({ serviceName }: TreatmentActionsProps)
 
   return (
     <div className="flex flex-col sm:flex-row items-center gap-8 pt-12 border-t border-stone-100">
-      <Link href="/tratamientos" className="flex items-center gap-2 text-stone-400 hover:text-[#d4af37] transition-colors text-xs font-black uppercase tracking-widest group">
+      <Link href="/tratamientos" className="flex items-center gap-2 text-stone-400 hover:text-primary transition-colors text-xs font-black uppercase tracking-widest group">
         <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
         {t('common.back_to_treatments')}
       </Link>

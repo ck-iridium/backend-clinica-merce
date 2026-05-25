@@ -17,7 +17,7 @@ export default function ScrollIndicator() {
     >
       <div className="relative w-[28px] h-[50px] rounded-full border border-white/20 backdrop-blur-md bg-stone-900/40 flex justify-center overflow-hidden shadow-2xl">
         {/* La "Gota de Luz" Dorada */}
-        <div className="w-[4px] h-[8px] bg-[#d4af37] rounded-full mt-2 animate-liquid-drop shadow-[0_0_10px_#d4af37]"></div>
+        <div className="w-[4px] h-[8px] bg-primary rounded-full mt-2 animate-liquid-drop shadow-[0_0_10px_hsl(var(--primary))]"></div>
         
         {/* Sutil resplandor interno */}
         <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none"></div>

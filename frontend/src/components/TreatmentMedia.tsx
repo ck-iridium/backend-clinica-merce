@@ -47,7 +47,7 @@ export default function TreatmentMedia({ imageUrl, videoUrl, headerStyle, clinic
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-stone-50 to-stone-100/50 text-stone-400 border border-stone-200/40 rounded-[2rem] md:rounded-[3rem] p-8 text-center">
             <div className="w-16 h-16 rounded-full bg-stone-100 border border-stone-200/50 flex items-center justify-center mb-4 shadow-sm">
-              <span className="font-serif text-[#d4af37] text-2xl italic">{displayClinicName.charAt(0).toUpperCase()}</span>
+              <span className="font-serif text-primary text-2xl italic">{displayClinicName.charAt(0).toUpperCase()}</span>
             </div>
             <h4 className="font-serif text-3xl italic text-stone-800 mb-1 leading-tight">{displayClinicName}</h4>
             <span className="text-[9px] font-black uppercase tracking-[0.25em] text-stone-400/80">Estética Avanzada</span>
@@ -72,7 +72,7 @@ export default function TreatmentMedia({ imageUrl, videoUrl, headerStyle, clinic
       ) : (
         <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-stone-50 to-stone-100/50 text-stone-400 border border-stone-200/40 rounded-[2rem] md:rounded-[3rem] p-8 text-center">
           <div className="w-16 h-16 rounded-full bg-stone-100 border border-stone-200/50 flex items-center justify-center mb-4 shadow-sm">
-            <span className="font-serif text-[#d4af37] text-2xl italic">{displayClinicName.charAt(0).toUpperCase()}</span>
+            <span className="font-serif text-primary text-2xl italic">{displayClinicName.charAt(0).toUpperCase()}</span>
           </div>
           <h4 className="font-serif text-3xl italic text-stone-800 mb-1 leading-tight">{displayClinicName}</h4>
           <span className="text-[9px] font-black uppercase tracking-[0.25em] text-stone-400/80">Estética Avanzada</span>

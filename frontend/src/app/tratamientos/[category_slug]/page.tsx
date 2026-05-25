@@ -279,7 +279,7 @@ export default async function CategoryDynamicPage({ params }: { params: { catego
                   </h2>
                   <p className="text-stone-400 font-medium text-xs md:text-base">{translatedCategoryServices.length} {t('page.options_available', 'opciones disponibles')}</p>
                 </div>
-                <Link href="/tratamientos" className="self-end md:self-auto inline-flex items-center gap-2 font-bold text-[#d4af37] hover:text-stone-900 dark:hover:text-white transition-colors uppercase tracking-widest text-[10px] md:text-sm">
+                <Link href="/tratamientos" className="self-end md:self-auto inline-flex items-center gap-2 font-bold text-primary hover:text-stone-900 dark:hover:text-white transition-colors uppercase tracking-widest text-[10px] md:text-sm">
                   <span className="hidden md:inline">{t('page.see_all_treatments', 'Ver todos los tratamientos')}</span>
                   <span className="md:hidden">{t('page.see_all', 'Ver todos')}</span>
                   <span className="text-xl">→</span>
@@ -315,9 +315,9 @@ export default async function CategoryDynamicPage({ params }: { params: { catego
         <section className="pt-16 pb-24 md:py-32 bg-white dark:bg-stone-950 min-h-[100dvh] snap-start snap-stop-always md:min-h-0 md:snap-none flex flex-col justify-center">
           <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-24 items-start">
             <div className="md:col-span-4 md:sticky md:top-32">
-              <div className="w-16 h-1 bg-[#d4af37] mb-6 rounded-full"></div>
+              <div className="w-16 h-1 bg-primary mb-6 rounded-full"></div>
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-extrabold text-stone-900 dark:text-stone-100 leading-tight">
-                {t('page.excellence_in', 'Excelencia en')} <br /> <span className="text-[#d4af37]">{translatedCategoryName}</span>
+                {t('page.excellence_in', 'Excelencia en')} <br /> <span className="text-primary">{translatedCategoryName}</span>
               </h2>
             </div>
             <div className="md:col-span-8">
@@ -337,7 +337,7 @@ export default async function CategoryDynamicPage({ params }: { params: { catego
                   <h2 className="text-2xl md:text-5xl font-serif font-extrabold text-stone-900 dark:text-stone-100">{t('page.other_categories', 'Otras Categorías')}</h2>
                   <p className="text-stone-500 dark:text-stone-400 mt-2 text-sm md:text-lg">{t('page.explore_more', 'Explora más servicios y categorías de nuestro catálogo.')}</p>
                 </div>
-                <Link href="/tratamientos" className="text-[#d4af37] font-bold uppercase tracking-widest text-[10px] md:text-sm hover:text-stone-900 dark:hover:text-white transition-colors">
+                <Link href="/tratamientos" className="text-primary font-bold uppercase tracking-widest text-[10px] md:text-sm hover:text-stone-900 dark:hover:text-white transition-colors">
                   {t('page.see_full_catalog', 'Ver todo el catálogo')} →
                 </Link>
               </div>
@@ -382,7 +382,7 @@ export default async function CategoryDynamicPage({ params }: { params: { catego
                             {other.name}
                           </h3>
                           <div className="opacity-0 group-hover:opacity-100 transition-all duration-500 absolute top-full left-0 mt-2">
-                            <span className="text-[#d4af37] font-black uppercase text-[10px] tracking-[0.3em] flex items-center gap-2">
+                            <span className="text-primary font-black uppercase text-[10px] tracking-[0.3em] flex items-center gap-2">
                               {t('page.explore', 'Explorar')} <span className="text-lg transition-transform group-hover:translate-x-1">→</span>
                             </span>
                           </div>
