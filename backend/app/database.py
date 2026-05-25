@@ -16,8 +16,8 @@ connect_args = {"check_same_thread": False} if SQLALCHEMY_DATABASE_URL.startswit
 engine_args = {"connect_args": connect_args}
 if not SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
     engine_args.update({
-        "pool_size": 25,
-        "max_overflow": 35,
+        "pool_size": 5,
+        "max_overflow": 5,
         "pool_recycle": 1800,
         "pool_pre_ping": True
     })

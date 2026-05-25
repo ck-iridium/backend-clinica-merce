@@ -50,11 +50,11 @@ export default function AgendaTab({
             </div>
             <div>
               <label className="block text-xs font-bold text-stone-500 mb-2">{t('dashboard.settings.calendar.break_start')}</label>
-              <input type="time" value={settings.lunch_start || ''} onChange={e => setSettings({...settings, lunch_start: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono font-bold transition-all outline-none" />
+              <input type="time" value={settings.lunch_start || ''} onChange={e => setSettings({...settings, lunch_start: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono font-bold text-stone-800 dark:text-stone-800 transition-all outline-none" />
             </div>
             <div>
               <label className="block text-xs font-bold text-stone-500 mb-2">{t('dashboard.settings.calendar.break_end')}</label>
-              <input type="time" value={settings.lunch_end || ''} onChange={e => setSettings({...settings, lunch_end: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono font-bold transition-all outline-none" />
+              <input type="time" value={settings.lunch_end || ''} onChange={e => setSettings({...settings, lunch_end: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono font-bold text-stone-800 dark:text-stone-800 transition-all outline-none" />
             </div>
           </div>
 
