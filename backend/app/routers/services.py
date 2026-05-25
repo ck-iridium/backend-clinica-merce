@@ -77,3 +77,71 @@ def delete_service(service_id: str, db: Session = Depends(database.get_db)):
     db.delete(service)
     db.commit()
     return {"message": "Servicio eliminado con éxito"}
+
+
+@router.post("/bulk-delete")
+def bulk_delete_services(payload: schemas.BulkActionPayload, db: Session = Depends(database.get_db)):
+    tenant_id = database.current_tenant_var.get()
+    service_ids = payload.ids
+    
+    # 1. Obtener los servicios que pertenecen a este tenant
+    services = db.query(models.Service).filter(
+        models.Service.id.in_(service_ids),
+        models.Service.tenant_id == tenant_id
+    ).all()
+    
+    if not services:
+        return {"message": "No se encontraron servicios para eliminar"}
+        
+    actual_ids = [s.id for s in services]
+    
+    # 2. Comprobar referencias
+    has_appointments = db.query(models.Appointment).filter(models.Appointment.service_id.in_(actual_ids)).first()
+    has_vouchers = db.query(models.Voucher).filter(models.Voucher.service_id.in_(actual_ids)).first()
+    has_templates = db.query(models.VoucherTemplate).filter(models.VoucherTemplate.service_id.in_(actual_ids)).first()
+    
+    if has_appointments or has_vouchers or has_templates:
+        raise HTTPException(
+            status_code=409, 
+            detail="Uno o varios servicios no pueden eliminarse porque tienen citas o bonos asociados. Por favor, desactiva su interruptor 'Activo' en su lugar."
+        )
+        
+    # 3. Eliminar imágenes de Supabase Storage en bulk si aplica
+    supabase_url = os.environ.get("SUPABASE_URL")
+    supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+    if supabase_url and supabase_key:
+        try:
+            supabase: Client = create_client(supabase_url, supabase_key)
+            filenames = []
+            for service in services:
+                if service.image_url:
+                    filename = service.image_url.split('/')[-1]
+                    filenames.append(filename)
+            if filenames:
+                supabase.storage.from_("media").remove(filenames)
+        except Exception:
+            pass
+            
+    # 4. Eliminar los servicios
+    deleted_count = db.query(models.Service).filter(
+        models.Service.id.in_(actual_ids),
+        models.Service.tenant_id == tenant_id
+    ).delete(synchronize_session=False)
+    
+    db.commit()
+    return {"message": f"{deleted_count} servicios eliminados con éxito"}
+
+
+@router.post("/bulk-status")
+def bulk_status_services(payload: schemas.BulkStatusPayload, db: Session = Depends(database.get_db)):
+    tenant_id = database.current_tenant_var.get()
+    service_ids = payload.ids
+    is_active = payload.is_active
+    
+    updated_count = db.query(models.Service).filter(
+        models.Service.id.in_(service_ids),
+        models.Service.tenant_id == tenant_id
+    ).update({models.Service.is_active: is_active}, synchronize_session=False)
+    
+    db.commit()
+    return {"message": f"Estado de {updated_count} servicios actualizado con éxito"}

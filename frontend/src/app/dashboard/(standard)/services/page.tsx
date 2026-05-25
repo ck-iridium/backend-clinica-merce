@@ -173,6 +173,7 @@ export default function ServicesPage() {
         loading={loading}
         showArchived={showArchived}
         onEditClick={handleEditClick}
+        onRefresh={fetchServices}
       />
 
       {/* Modal Gestionar Categorías */}

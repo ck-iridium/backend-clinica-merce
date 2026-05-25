@@ -682,4 +682,13 @@ class AIVoiceResponse(BaseModel):
     updated_fields: Optional[List[str]] = None
 
 
+# --- BULK ACTIONS ---
+class BulkActionPayload(BaseModel):
+    ids: List[str]
+
+class BulkStatusPayload(BaseModel):
+    ids: List[str]
+    is_active: bool
+
+
 
