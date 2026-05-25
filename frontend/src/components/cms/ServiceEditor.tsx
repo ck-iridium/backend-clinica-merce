@@ -83,6 +83,18 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showAIModal, setShowAIModal] = useState<'short_description' | 'rich_content' | null>(null);
+  const [brandAccentColor, setBrandAccentColor] = useState('#d4af37');
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/settings/`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.accent_color) {
+          setBrandAccentColor(data.accent_color);
+        }
+      })
+      .catch(err => console.error("Error loading brand settings in ServiceEditor:", err));
+  }, []);
 
   const { register, handleSubmit, watch, setValue, control, reset, formState: { isDirty, errors } } = useForm<ServiceFormData>({
     defaultValues: initialData ? {
@@ -94,6 +106,17 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
 
   const formValues = watch();
   const serviceName = formValues.name;
+
+  const activeAccentColor = (formValues.layout_preferences?.accentColor && formValues.layout_preferences.accentColor !== '#d4af37') 
+    ? formValues.layout_preferences.accentColor 
+    : brandAccentColor;
+
+  const getDisplayDescription = (desc: string) => {
+    if (!desc || desc === "Tratamiento genérico en clínica. Sin especificaciones adicionales.") {
+      return t('dashboard.services.generic_description') || "Tratamiento genérico en clínica. Sin especificaciones adicionales.";
+    }
+    return desc;
+  };
 
   // Generación automática del slug a partir del nombre
   useEffect(() => {
@@ -350,6 +373,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
                 control={control}
                 setValue={setValue}
                 setMediaPickerSlot={setMediaPickerSlot}
+                brandAccentColor={brandAccentColor}
               />
             </div>
 
@@ -449,7 +473,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
               {/* Columna Derecha: Contenido (Scroll) */}
               <div className="w-full md:w-[55%] lg:w-[57%] flex flex-col pt-12 pb-24 px-6 md:pl-10 md:pr-12 lg:pl-16 lg:pr-24">
                 <div className="max-w-2xl">
-                  <span className="text-xs font-black uppercase tracking-[0.2em] text-[#d4af37] mb-4 block">
+                  <span className="text-xs font-black uppercase tracking-[0.2em] mb-4 block" style={{ color: activeAccentColor }}>
                     {t('dashboard.services.specialized_treatment')}
                   </span>
                   <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-stone-900 mb-8 leading-[1.1]">
@@ -467,7 +491,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
                       <p className="text-lg font-bold text-stone-800">{formValues.price} €</p>
                     </div>
                     <div className="ml-auto">
-                      <button disabled className="px-6 py-3 rounded-2xl font-bold text-white shadow-lg" style={{ backgroundColor: formValues.layout_preferences.accentColor }}>
+                      <button disabled className="px-6 py-3 rounded-2xl font-bold text-white shadow-lg transition-all" style={{ backgroundColor: activeAccentColor }}>
                         {t('dashboard.services.book_now')}
                       </button>
                     </div>
@@ -475,12 +499,13 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
 
                   {/* Short Description */}
                   <p className="text-lg md:text-xl text-stone-500 font-sans leading-relaxed mb-12 italic">
-                    "{formValues.description || t('dashboard.services.short_desc_placeholder')}"
+                    "{getDisplayDescription(formValues.description) || t('dashboard.services.short_desc_placeholder')}"
                   </p>
 
                   {/* Content Rich Text (Sync with Tiptap) */}
                   <div
-                    className="prose prose-stone max-w-none prose-headings:font-serif prose-headings:font-normal prose-p:leading-relaxed prose-a:text-[#d4af37] prose-img:rounded-3xl"
+                    className="prose prose-stone max-w-none prose-headings:font-serif prose-headings:font-normal prose-p:leading-relaxed prose-img:rounded-3xl"
+                    style={{ '--tw-prose-links': activeAccentColor } as React.CSSProperties}
                     dangerouslySetInnerHTML={{ __html: formValues.content_html || `<p class="text-stone-300 italic">${t('dashboard.services.rich_content_placeholder')}</p>` }}
                   />
                 </div>

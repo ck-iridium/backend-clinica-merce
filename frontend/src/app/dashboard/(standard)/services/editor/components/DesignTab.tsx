@@ -22,9 +22,10 @@ interface DesignTabProps {
   control: Control<ServiceFormData>;
   setValue: UseFormSetValue<ServiceFormData>;
   setMediaPickerSlot: (slot: 'image' | 'video' | null) => void;
+  brandAccentColor?: string;
 }
 
-export default function DesignTab({ formValues, register, control, setValue, setMediaPickerSlot }: DesignTabProps) {
+export default function DesignTab({ formValues, register, control, setValue, setMediaPickerSlot, brandAccentColor = '#d4af37' }: DesignTabProps) {
   const { t } = useLanguage();
   const [showAIImageModal, setShowAIImageModal] = useState(false);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
@@ -286,32 +287,32 @@ export default function DesignTab({ formValues, register, control, setValue, set
           <div className="flex flex-wrap gap-3 items-center bg-white p-3 rounded-2xl border border-stone-100 shadow-sm">
             <button
               type="button"
-              onClick={() => setValue('layout_preferences.accentColor', '#d4af37', { shouldDirty: true })}
-              className={`w-9 h-9 rounded-full border-2 transition-all ${formValues.layout_preferences.accentColor === '#d4af37' ? 'border-stone-800 scale-110 shadow-lg' : 'border-transparent hover:scale-105 shadow-sm'}`}
-              style={{ backgroundColor: '#d4af37' }}
-              title={t('dashboard.services.corporate_gold')}
+              onClick={() => setValue('layout_preferences.accentColor', brandAccentColor, { shouldDirty: true })}
+              className={`w-9 h-9 rounded-full border-2 transition-all ${formValues.layout_preferences.accentColor === brandAccentColor ? 'border-stone-800 scale-110 shadow-lg' : 'border-transparent hover:scale-105 shadow-sm'}`}
+              style={{ backgroundColor: brandAccentColor }}
+              title={brandAccentColor === '#d4af37' ? t('dashboard.services.corporate_gold') : t('dashboard.services.corporate_color') || 'Color Corporativo'}
             />
             <div className="w-px h-6 bg-stone-200 mx-1" />
             <div className="relative group" title={t('dashboard.services.custom_color')}>
               <input
                 type="color"
-                value={formValues.layout_preferences.accentColor}
+                value={formValues.layout_preferences.accentColor || brandAccentColor}
                 onChange={(e) => setValue('layout_preferences.accentColor', e.target.value, { shouldDirty: true })}
                 className="w-9 h-9 rounded-full cursor-pointer border-2 border-stone-100 overflow-hidden p-0 bg-transparent opacity-0 absolute inset-0 z-10"
               />
               <div
                 className="w-9 h-9 rounded-full border-2 border-stone-200 flex items-center justify-center bg-white shadow-sm transition-all group-hover:shadow-md"
-                style={{ borderColor: formValues.layout_preferences.accentColor !== '#d4af37' ? formValues.layout_preferences.accentColor : '#e5e7eb' }}
+                style={{ borderColor: formValues.layout_preferences.accentColor && formValues.layout_preferences.accentColor !== brandAccentColor ? formValues.layout_preferences.accentColor : '#e5e7eb' }}
               >
                 <Pipette size={14} className="text-stone-400" />
               </div>
             </div>
-            <span className="text-[11px] font-mono text-stone-500 font-bold uppercase ml-1">{formValues.layout_preferences.accentColor}</span>
+            <span className="text-[11px] font-mono text-stone-500 font-bold uppercase ml-1">{formValues.layout_preferences.accentColor || brandAccentColor}</span>
             
-            {formValues.layout_preferences.accentColor !== '#d4af37' && (
+            {formValues.layout_preferences.accentColor && formValues.layout_preferences.accentColor !== brandAccentColor && (
               <button
                 type="button"
-                onClick={() => setValue('layout_preferences.accentColor', '#d4af37', { shouldDirty: true })}
+                onClick={() => setValue('layout_preferences.accentColor', brandAccentColor, { shouldDirty: true })}
                 className="ml-auto p-2 text-stone-400 hover:text-[#d4af37] hover:bg-stone-50 rounded-xl transition-all"
                 title={t('dashboard.services.reset_default')}
               >
