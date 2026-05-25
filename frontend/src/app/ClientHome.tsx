@@ -429,10 +429,6 @@ export default function ClientHome({ content, settings, services, categories }: 
 
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 font-sans relative">
-      {/* Único Navbar dinámico del CMS en el contenedor superior */}
-      <div className="absolute top-0 left-0 w-full z-[100]">
-        <PublicNavbar />
-      </div>
 
       <style dangerouslySetInnerHTML={{
         __html: `
@@ -441,6 +437,10 @@ export default function ClientHome({ content, settings, services, categories }: 
       `}} />
 
       <main className="w-full h-[100dvh] overflow-y-auto snap-y-mandatory md:h-auto md:overflow-visible md:snap-none scroll-smooth relative">
+        {/* Único Navbar dinámico del CMS en el contenedor superior */}
+        <div className="absolute top-0 left-0 w-full z-[100]">
+          <PublicNavbar />
+        </div>
 
         {finalOrder.map((section, index) => {
 

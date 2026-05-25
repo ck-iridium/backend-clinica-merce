@@ -103,18 +103,19 @@ export default function ContactoPage() {
             <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-16">
               
               {/* Ubicación Dinámica */}
-              <div className="space-y-6 group">
-                <div className="w-12 h-12 rounded-luxury-card bg-white shadow-luxury flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500">
-                  <MapPin size={22} strokeWidth={1.5} />
+              {settings?.clinic_address && (
+                <div className="space-y-6 group">
+                  <div className="w-12 h-12 rounded-luxury-card bg-white shadow-luxury flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500">
+                    <MapPin size={22} strokeWidth={1.5} />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-[10px] font-black uppercase tracking-widest text-stone-400">Encuéntranos</h3>
+                    <p className="text-xl text-stone-900 font-medium leading-tight">
+                      {settings.clinic_address}
+                    </p>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <h3 className="text-[10px] font-black uppercase tracking-widest text-stone-400">Encuéntranos</h3>
-                  <p className="text-xl text-stone-900 font-medium leading-tight">
-                    {settings?.clinic_address || "Calle Favareta, 46, Alzira"}
-                  </p>
-                  <p className="text-sm text-stone-400 font-medium">Valencia, 46600</p>
-                </div>
-              </div>
+              )}
 
               {/* Horarios Dinámicos (Lógica Footer) */}
               <div className="space-y-6 group">
@@ -140,30 +141,36 @@ export default function ContactoPage() {
 
             {/* ACCIONES DE CONTACTO DIRECTO */}
             <motion.div variants={itemVariants} className="flex flex-wrap gap-8">
-              <a 
-                href={`https://wa.me/${settings?.whatsapp_number?.replace('+', '') || '34605407128'}`}
-                className="flex items-center gap-4 text-stone-900 hover:text-primary transition-all group"
-              >
-                <div className="w-14 h-14 rounded-luxury-btn border border-stone-200 flex items-center justify-center group-hover:border-primary group-hover:bg-primary/5 transition-all duration-500">
-                  <Share2 size={24} strokeWidth={1.2} />
-                </div>
-                <div>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-stone-400">Escríbenos</p>
-                  <p className="text-sm font-bold tracking-tight">WhatsApp Business</p>
-                </div>
-              </a>
-              <a 
-                href={`tel:${settings?.clinic_phone || '+34605407128'}`}
-                className="flex items-center gap-4 text-stone-900 hover:text-primary transition-all group"
-              >
-                <div className="w-14 h-14 rounded-luxury-btn border border-stone-200 flex items-center justify-center group-hover:border-primary group-hover:bg-primary/5 transition-all duration-500">
-                  <Phone size={24} strokeWidth={1.2} />
-                </div>
-                <div>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-stone-400">Llámanos</p>
-                  <p className="text-sm font-bold tracking-tight">{settings?.clinic_phone || '+34 605 40 71 28'}</p>
-                </div>
-              </a>
+              {settings?.whatsapp_number && (
+                <a 
+                  href={`https://wa.me/${settings.whatsapp_number.replace('+', '').replace(/\s+/g, '')}`}
+                  className="flex items-center gap-4 text-stone-900 hover:text-primary transition-all group"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <div className="w-14 h-14 rounded-luxury-btn border border-stone-200 flex items-center justify-center group-hover:border-primary group-hover:bg-primary/5 transition-all duration-500">
+                    <Share2 size={24} strokeWidth={1.2} />
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-stone-400">Escríbenos</p>
+                    <p className="text-sm font-bold tracking-tight">WhatsApp Business</p>
+                  </div>
+                </a>
+              )}
+              {settings?.clinic_phone && (
+                <a 
+                  href={`tel:${settings.clinic_phone}`}
+                  className="flex items-center gap-4 text-stone-900 hover:text-primary transition-all group"
+                >
+                  <div className="w-14 h-14 rounded-luxury-btn border border-stone-200 flex items-center justify-center group-hover:border-primary group-hover:bg-primary/5 transition-all duration-500">
+                    <Phone size={24} strokeWidth={1.2} />
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-stone-400">Llámanos</p>
+                    <p className="text-sm font-bold tracking-tight">{settings.clinic_phone}</p>
+                  </div>
+                </a>
+              )}
             </motion.div>
 
             {/* FORMULARIO EDITORIAL REFORZADO */}
@@ -205,7 +212,7 @@ export default function ContactoPage() {
             >
               {/* Mapa con filtro Dark/Muted reforzado */}
               <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m13!1m1!2sCalle+Favareta+46+Alzira!2m2!1d-0.437!2d39.151!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd61ab5d9d9d9d9d%3A0xd61ab5d9d9d9d9d!2sCalle%20Favareta%2C%2046%2C%2046600%20Alzira%2C%20Valencia!5e0!3m2!1ses!2ses!4v1715685000000!5m2!1ses!2ses"
+                src={settings?.maps_url || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m13!1m1!2sCalle+Favareta+46+Alzira!2m2!1d-0.437!2d39.151!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd61ab5d9d9d9d9d%3A0xd61ab5d9d9d9d9d!2sCalle%20Favareta%2C%2046%2C%2046600%20Alzira%2C%20Valencia!5e0!3m2!1ses!2ses!4v1715685000000!5m2!1ses!2ses"}
                 width="100%" 
                 height="100%" 
                 style={{ border: 0 }} 
@@ -220,33 +227,46 @@ export default function ContactoPage() {
                   <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                   <span className="text-[9px] font-black uppercase tracking-[0.3em] text-stone-500">Estamos aquí</span>
                 </div>
-                <h4 className="font-serif font-bold text-stone-900 text-2xl mb-4 italic leading-tight">Alzira</h4>
-                <p className="text-stone-500 text-sm leading-relaxed mb-8 font-medium">Ubicados en la Calle Favareta, un entorno de confianza a la altura de tu belleza.</p>
-                <a 
-                  href="https://www.google.com/maps/dir/?api=1&destination=Calle+Favareta+46+Alzira" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between group/link w-full bg-stone-900 text-white px-6 py-4 rounded-luxury-btn text-[10px] font-bold uppercase tracking-widest hover:bg-primary transition-all"
-                >
-                  Cómo llegar <ChevronRight size={14} className="group-hover/link:translate-x-1 transition-transform" />
-                </a>
+                <h4 className="font-serif font-bold text-stone-900 text-2xl mb-4 italic leading-tight">
+                  {settings?.clinic_name || "Nuestra Clínica"}
+                </h4>
+                <p className="text-stone-500 text-sm leading-relaxed mb-8 font-medium">
+                  {settings?.clinic_address 
+                    ? `Ubicados en ${settings.clinic_address}, un entorno de confianza a la altura de tus necesidades.`
+                    : "Ubicados en nuestro centro exclusivo, un entorno de confianza a la altura de tus necesidades."
+                  }
+                </p>
+                {(settings?.maps_url || settings?.clinic_address) && (
+                  <a 
+                    href={settings?.maps_url || `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(settings?.clinic_address || '')}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between group/link w-full bg-stone-900 text-white px-6 py-4 rounded-luxury-btn text-[10px] font-bold uppercase tracking-widest hover:bg-primary transition-all"
+                  >
+                    Cómo llegar <ChevronRight size={14} className="group-hover/link:translate-x-1 transition-transform" />
+                  </a>
+                )}
               </div>
             </motion.div>
 
             {/* Redes Sociales con impacto */}
             <motion.div variants={itemVariants} className="mt-12 flex justify-center gap-10">
-              <a href="#" className="flex flex-col items-center gap-3 group">
-                <div className="w-14 h-14 rounded-luxury-btn bg-white shadow-sm flex items-center justify-center text-stone-400 group-hover:text-primary group-hover:shadow-md transition-all">
-                  <Camera size={24} strokeWidth={1.5} />
-                </div>
-                <span className="text-[8px] font-black uppercase tracking-widest opacity-40">Instagram</span>
-              </a>
-              <a href="#" className="flex flex-col items-center gap-3 group">
-                <div className="w-14 h-14 rounded-luxury-btn bg-white shadow-sm flex items-center justify-center text-stone-400 group-hover:text-primary group-hover:shadow-md transition-all">
-                  <Mail size={24} strokeWidth={1.5} />
-                </div>
-                <span className="text-[8px] font-black uppercase tracking-widest opacity-40">Email</span>
-              </a>
+              {settings?.instagram_url && (
+                <a href={settings.instagram_url} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-3 group">
+                  <div className="w-14 h-14 rounded-luxury-btn bg-white shadow-sm flex items-center justify-center text-stone-400 group-hover:text-primary group-hover:shadow-md transition-all">
+                    <Camera size={24} strokeWidth={1.5} />
+                  </div>
+                  <span className="text-[8px] font-black uppercase tracking-widest opacity-40">Instagram</span>
+                </a>
+              )}
+              {settings?.clinic_email && (
+                <a href={`mailto:${settings.clinic_email}`} className="flex flex-col items-center gap-3 group">
+                  <div className="w-14 h-14 rounded-luxury-btn bg-white shadow-sm flex items-center justify-center text-stone-400 group-hover:text-primary group-hover:shadow-md transition-all">
+                    <Mail size={24} strokeWidth={1.5} />
+                  </div>
+                  <span className="text-[8px] font-black uppercase tracking-widest opacity-40">Email</span>
+                </a>
+              )}
             </motion.div>
           </div>
 
