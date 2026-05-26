@@ -268,8 +268,12 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
             {!mounted || loadingSettings ? (
               <div className="h-6 w-32 bg-stone-200/40 animate-pulse rounded-md" />
             ) : settings?.logo_app_b64 ? (
-              <Link href="/" onClick={() => setIsOpen(false)}>
-                <img src={settings.logo_app_b64} alt="Logo" className="h-10" />
+              <Link href="/" onClick={() => setIsOpen(false)} className="relative block h-10 w-24 md:w-32">
+                <img 
+                  src={settings.logo_app_b64} 
+                  alt="Logo" 
+                  className="absolute left-0 top-1/2 -translate-y-1/2 h-16 md:h-20 max-w-none object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300" 
+                />
               </Link>
             ) : (
               <Link href="/" onClick={() => setIsOpen(false)} className={`font-extrabold text-2xl tracking-tighter transition-colors ${!useTransparent ? 'text-primary' : 'text-white hover:text-primary'}`}>
