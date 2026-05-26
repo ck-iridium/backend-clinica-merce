@@ -478,13 +478,13 @@ export default function AICopilotWidget() {
   if (loadingRole || !isAuthorized) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-3 font-sans">
+    <div className="fixed bottom-[110px] md:bottom-6 right-0 md:right-6 z-[9999] flex flex-col items-end gap-3 font-sans transition-all duration-300">
       
       {/* ── PANEL DE COPILOTO (CREMA, ANTRACITA Y DORADO) ── */}
       {isOpen && (
         <div 
           style={{ width: `${chatWidth}px`, height: `${chatHeight}px` }}
-          className="bg-white/95 backdrop-blur-md border border-stone-200/80 rounded-luxury-card shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-300 ease-out relative select-none"
+          className="bg-white/95 backdrop-blur-md border border-stone-200/80 rounded-luxury-card shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-300 ease-out relative select-none mr-4 md:mr-0"
         >
           {/* Resize Handles (Premium visual indicators and cursors) */}
           <div
@@ -692,7 +692,9 @@ export default function AICopilotWidget() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`h-14 w-14 rounded-full bg-stone-900 text-white shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center relative border border-primary/40 z-10 group overflow-hidden ${
-          isOpen ? 'bg-primary border-primary text-primary-foreground rotate-90' : 'hover:bg-stone-800'
+          isOpen 
+            ? 'bg-primary border-primary text-primary-foreground rotate-90 mr-4 md:mr-0' 
+            : 'hover:bg-stone-800 max-md:translate-x-[35%] max-md:hover:translate-x-0 max-md:rounded-l-2xl max-md:rounded-r-none'
         }`}
         title="Copiloto de Navegación IA"
       >
@@ -702,7 +704,7 @@ export default function AICopilotWidget() {
         {isOpen ? (
           <X size={22} className="text-white group-hover:text-stone-900 transition-colors" strokeWidth={2.2} />
         ) : (
-          <MessageSquare size={22} className="text-primary" strokeWidth={1.8} />
+          <Sparkles size={22} className="text-primary animate-pulse" strokeWidth={1.8} />
         )}
       </button>
 

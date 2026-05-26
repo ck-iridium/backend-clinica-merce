@@ -404,7 +404,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
 
           {/* Logo Area - Isotype Only */}
           <div className="flex items-center justify-center mb-10 px-4">
-            <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-[#d9777f] to-[#b35e65] flex items-center justify-center text-white font-serif italic text-2xl shadow-lg shadow-black/40 overflow-hidden">
+            <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-[#d4af37] to-[#aa8412] flex items-center justify-center text-white font-serif italic text-2xl shadow-lg shadow-black/40 overflow-hidden">
               {logoUrl ? <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" /> : clinicName.charAt(0)}
             </div>
           </div>

@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAuthRole } from '@/hooks/useAuthRole';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 type MenuLevel = 'main' | 'gestion' | 'configuracion';
 
@@ -41,6 +42,7 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
   const pathname = usePathname();
   const router = useRouter();
   const { role, userName: authUserName, loading } = useAuthRole();
+  const { language, setLanguage } = useLanguage();
   const [userName, setUserName] = useState<string>('');
   const [planType, setPlanType] = useState<string | null>(null);
 
@@ -246,7 +248,7 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
               {item.label}
             </div>
             {active && (
-              <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#d9777f] shadow-[0_0_8px_#d9777f]"></div>
+              <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_var(--primary)]"></div>
             )}
           </Link>
         );
@@ -365,7 +367,7 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center justify-between w-full px-5 py-5 group outline-none hover:bg-stone-900/50 active:bg-stone-900 transition-all duration-200">
                     <div className="flex items-center gap-3 overflow-hidden">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#d9777f] to-[#b35e65] text-white flex items-center justify-center font-bold text-lg shadow-lg shrink-0 overflow-hidden group-active:scale-95 transition-transform">
+                      <div className="w-10 h-10 rounded-full bg-stone-900 border border-[#d4af37]/40 text-[#d4af37] flex items-center justify-center font-bold text-lg shadow-lg shrink-0 overflow-hidden group-active:scale-95 transition-transform">
                         <User size={20} />
                       </div>
                       <div className="flex flex-col text-left overflow-hidden">
@@ -402,6 +404,30 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
                             )}
                           </DropdownMenuLabel>
                           <DropdownMenuSeparator className="bg-stone-800 mx-2" />
+                          
+                          {/* Selector de idioma inline en el menú móvil */}
+                          <div className="px-4 py-2 flex items-center justify-between bg-stone-950/40 rounded-xl border border-stone-800/85 mx-2 my-1.5">
+                            <span className="text-xs font-bold text-stone-400">Idioma</span>
+                            <div className="flex items-center gap-2">
+                              {[
+                                { code: 'es', flag: '🇪🇸' },
+                                { code: 'en', flag: '🇬🇧' },
+                                { code: 'fr', flag: '🇫🇷' }
+                              ].map((l) => (
+                                <button
+                                  key={l.code}
+                                  onClick={() => setLanguage(l.code as any)}
+                                  className={`w-7 h-7 flex items-center justify-center rounded-lg text-sm transition-all ${
+                                    language === l.code
+                                      ? 'bg-stone-800 border border-[#d4af37]/40 scale-110 shadow-sm'
+                                      : 'opacity-40 hover:opacity-100'
+                                  }`}
+                                >
+                                  {l.flag}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
                           <DropdownMenuItem onClick={() => { setIsUserMenuOpen(false); router.push('/dashboard/profile'); }} className="flex items-center gap-3 px-4 py-3.5 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer transition-colors">
                             <User size={18} strokeWidth={1.5} className="text-stone-400" />
                             <span className="font-bold text-sm">Mi Perfil</span>

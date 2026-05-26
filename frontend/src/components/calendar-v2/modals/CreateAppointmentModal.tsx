@@ -182,7 +182,7 @@ export function CreateAppointmentModal({
           <DialogTitle className="text-2xl font-extrabold text-stone-800">
             {modalType === 'appointment' ? (t('dashboard.calendar.modal.assign_appt') || 'Asignar Cita') : (t('dashboard.calendar.modal.block_slot') || 'Bloquear Horario')}
           </DialogTitle>
-          <DialogDescription className="text-[#d9777f] font-bold flex items-center gap-2 mt-1">
+          <DialogDescription className="text-primary font-bold flex items-center gap-2 mt-1">
             <Calendar size={16} strokeWidth={1.5} />
             {selectedSlot && (
               language === 'es' ? `${selectedSlot.date.toLocaleDateString('es-ES')} a las ${selectedSlot.hour.toString().padStart(2, '0')}:${selectedMinutes.toString().padStart(2, '0')} h` :
@@ -253,9 +253,21 @@ export function CreateAppointmentModal({
                       <SelectValue placeholder={t('dashboard.calendar.modal.choose_client') || '-- Elige un cliente --'} />
                     </SelectTrigger>
                     <SelectContent>
-                      {clients
-                        .filter(c => c.email !== 'contado@clinica-mercedes.com')
-                        .map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                      {(() => {
+                        const filteredClients = clients.filter(c => c.email !== 'contado@clinica-mercedes.com');
+                        if (filteredClients.length === 0) {
+                          return (
+                            <SelectItem value="none" disabled className="text-stone-400 font-bold py-3 text-center">
+                              No hay clientes registrados
+                            </SelectItem>
+                          );
+                        }
+                        return filteredClients.map(c => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.name}
+                          </SelectItem>
+                        ));
+                      })()}
                     </SelectContent>
                   </Select>
                 </div>
@@ -295,7 +307,7 @@ export function CreateAppointmentModal({
                     value={appointmentNotes}
                     onChange={e => setAppointmentNotes(e.target.value)}
                     placeholder={t('dashboard.calendar.modal.appt_obs') || 'Observaciones de la cita...'}
-                    className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50 min-h-[100px] resize-none text-sm"
+                    className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-primary outline-none bg-stone-50 min-h-[100px] resize-none text-sm"
                   />
                 </div>
               </div>
