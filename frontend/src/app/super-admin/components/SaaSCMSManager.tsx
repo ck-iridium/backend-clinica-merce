@@ -41,6 +41,7 @@ interface MappedPreviewSector {
   title: string;
   copy: string;
   videoUrl: string;
+  imageUrl?: string;
   placeholderGradient: string;
 }
 
