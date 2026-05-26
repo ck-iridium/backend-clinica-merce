@@ -323,7 +323,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
                 type="submit"
                 disabled={saving || isGeneratingAI || (!isDirty && !isNew)}
                 onClick={() => setExitAfterSave(true)}
-                className="bg-stone-900 hover:bg-[#d4af37] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-30 disabled:grayscale shadow-sm"
+                className="bg-[#d4af37] hover:bg-[#c29e2f] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-30 disabled:grayscale shadow-sm"
                 title={isGeneratingAI ? t('dashboard.services.no_save_ai_generating') : ""}
               >
                 {saving && exitAfterSave ? t('dashboard.services.saving') : t('dashboard.services.save_and_exit')}

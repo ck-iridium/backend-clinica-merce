@@ -24,13 +24,13 @@ export default function CookieBanner() {
       <div className="max-w-4xl mx-auto bg-stone-900 text-white rounded-2xl shadow-2xl p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-6 relative border border-stone-800 backdrop-blur-md bg-stone-900/90">
         <div className="flex-1">
           <p className="text-sm font-medium leading-relaxed">
-            Utilizamos cookies propias y de terceros para mejorar tu experiencia y ofrecerte lo mejor de nuestra clínica. Al navegar, aceptas nuestra <Link href="/cookies" className="underline hover:text-[#d9777f] transition-colors font-bold decoration-stone-600 decoration-2 underline-offset-4">Política de Cookies</Link>.
+            Utilizamos cookies propias y de terceros para mejorar tu experiencia y ofrecerte lo mejor de nuestra clínica. Al navegar, aceptas nuestra <Link href="/cookies" className="underline hover:text-primary transition-colors font-bold decoration-stone-600 decoration-2 underline-offset-4">Política de Cookies</Link>.
           </p>
         </div>
         <div className="flex items-center gap-4 shrink-0 w-full md:w-auto">
           <button 
             onClick={handleAccept}
-            className="w-full md:w-auto bg-[#d9777f] hover:bg-[#c7656e] text-white font-black px-8 py-3 rounded-xl transition-all active:scale-95 shadow-lg shadow-[#d9777f]/20 uppercase tracking-widest text-[10px]"
+            className="w-full md:w-auto bg-primary hover:bg-primary/90 text-white font-black px-8 py-3 rounded-xl transition-all active:scale-95 shadow-lg shadow-primary/20 uppercase tracking-widest text-[10px]"
           >
             Aceptar
           </button>

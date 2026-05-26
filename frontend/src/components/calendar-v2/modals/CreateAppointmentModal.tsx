@@ -258,7 +258,7 @@ export function CreateAppointmentModal({
                         if (filteredClients.length === 0) {
                           return (
                             <SelectItem value="none" disabled className="text-stone-400 font-bold py-3 text-center">
-                              No hay clientes registrados
+                              {t('dashboard.calendar.modal.no_clients') || 'No hay clientes registrados'}
                             </SelectItem>
                           );
                         }

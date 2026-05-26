@@ -129,6 +129,7 @@
       "free_minutes": "minutes libres",
       "client_req": "Client *",
       "choose_client": "-- Choisir un client --",
+      "no_clients": "Aucun client enregistré",
       "treatment_req": "Soin *",
       "select_service": "-- Sélectionner un soin --",
       "exceeded": "DÉPASSÉ",
@@ -443,5 +444,23 @@
     "microphone_transcribed": "Audio transcrit avec succès.",
     "microphone_warning": "Impossible de transcrire une phrase claire.",
     "microphone_error": "Votre navigateur ne prend pas en charge la reconnaissance vocale native."
+  },
+  "search": {
+    "placeholder": "Que cherchez-vous ?",
+    "no_results": "Aucun résultat trouvé.",
+    "shortcuts": "Raccourcis",
+    "go_to_calendar": "Aller à l'Agenda",
+    "go_to_clients": "Aller aux Clients",
+    "go_to_services": "Aller aux Soins",
+    "view_vouchers": "Voir les Bons & Packs",
+    "content_mgmt": "Gestion du Contenu",
+    "media_gallery": "Médiathèque",
+    "web_editor": "Éditeur Web (CMS)",
+    "settings_system": "Paramètres & Système",
+    "manage_team": "Gérer l'Équipe",
+    "general_settings": "Paramètres Généraux",
+    "searching_clients": "Recherche de clients...",
+    "view_remaining": "Voir les {count} restants...",
+    "clients": "Clients"
   }
 }

@@ -15,6 +15,7 @@ import {
 } from "lucide-react"
 
 import { useAuthRole } from "@/hooks/useAuthRole"
+import { useLanguage } from "@/app/contexts/LanguageContext"
 
 import {
   CommandDialog,
@@ -33,6 +34,7 @@ interface Client {
 
 export function GlobalSearch({ open, setOpen }: { open: boolean, setOpen: (open: boolean) => void }) {
   const router = useRouter()
+  const { t } = useLanguage()
   const { role } = useAuthRole()
   const currentRole = role?.toLowerCase()
   const isEspecialista = currentRole === 'especialista'
@@ -75,33 +77,33 @@ export function GlobalSearch({ open, setOpen }: { open: boolean, setOpen: (open:
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
-      <CommandInput placeholder="¿Qué estás buscando?" onValueChange={setSearchQuery} />
+      <CommandInput placeholder={t('search.placeholder') || "¿Qué estás buscando?"} onValueChange={setSearchQuery} />
       <CommandList>
-        <CommandEmpty>No se encontraron resultados.</CommandEmpty>
+        <CommandEmpty>{t('search.no_results') || "No se encontraron resultados."}</CommandEmpty>
 
         {/* Accesos Directos */}
-        <CommandGroup heading="Accesos Directos">
+        <CommandGroup heading={t('search.shortcuts') || "Accesos Directos"}>
           <CommandItem className="cursor-pointer" onSelect={() => runCommand(() => router.push("/dashboard/calendar"))}>
             <Calendar className="mr-2 h-4 w-4" />
-            <span>Ir a Agenda</span>
+            <span>{t('search.go_to_calendar') || "Ir a Agenda"}</span>
           </CommandItem>
           <CommandItem className="cursor-pointer" onSelect={() => runCommand(() => router.push("/dashboard/clients"))}>
             <Users className="mr-2 h-4 w-4" />
-            <span>Ir a Clientes</span>
+            <span>{t('search.go_to_clients') || "Ir a Clientes"}</span>
           </CommandItem>
           
           {/* Servicios y Bonos filtrados */}
           {isAdmin && (
             <CommandItem className="cursor-pointer" onSelect={() => runCommand(() => router.push("/dashboard/services"))}>
               <Zap className="mr-2 h-4 w-4" />
-              <span>Ir a Servicios</span>
+              <span>{t('search.go_to_services') || "Ir a Servicios"}</span>
             </CommandItem>
           )}
           
           {(!isEspecialista) && (
             <CommandItem className="cursor-pointer" onSelect={() => runCommand(() => router.push("/dashboard/vouchers"))}>
               <CreditCard className="mr-2 h-4 w-4" />
-              <span>Ver Bonos y Packs</span>
+              <span>{t('search.view_vouchers') || "Ver Bonos y Packs"}</span>
             </CommandItem>
           )}
         </CommandGroup>
@@ -111,15 +113,15 @@ export function GlobalSearch({ open, setOpen }: { open: boolean, setOpen: (open:
         {/* Gestión de Contenidos: Solo Admin (Ni Especialista ni Recepción) */}
         {isAdmin && (
           <>
-            <CommandGroup heading="Gestión de Contenidos">
+            <CommandGroup heading={t('search.content_mgmt') || "Gestión de Contenidos"}>
               <CommandItem className="cursor-pointer" onSelect={() => runCommand(() => router.push("/dashboard/media"))}>
                 <Search className="mr-2 h-4 w-4" />
-                <span>Galería de Medios</span>
+                <span>{t('search.media_gallery') || "Galería de Medios"}</span>
               </CommandItem>
               
               <CommandItem className="cursor-pointer" onSelect={() => runCommand(() => router.push("/dashboard/cms"))}>
                 <Settings className="mr-2 h-4 w-4" />
-                <span>Editor Web (CMS)</span>
+                <span>{t('search.web_editor') || "Editor Web (CMS)"}</span>
               </CommandItem>
             </CommandGroup>
             <CommandSeparator />
@@ -129,14 +131,14 @@ export function GlobalSearch({ open, setOpen }: { open: boolean, setOpen: (open:
         {/* Ajustes: Solo Admin */}
         {isAdmin && (
           <>
-            <CommandGroup heading="Ajustes y Sistema">
+            <CommandGroup heading={t('search.settings_system') || "Ajustes y Sistema"}>
               <CommandItem className="cursor-pointer" onSelect={() => runCommand(() => router.push("/dashboard/team"))}>
                 <ShieldCheck className="mr-2 h-4 w-4" />
-                <span>Gestionar Equipo</span>
+                <span>{t('search.manage_team') || "Gestionar Equipo"}</span>
               </CommandItem>
               <CommandItem className="cursor-pointer" onSelect={() => runCommand(() => router.push("/dashboard/settings"))}>
                 <Settings className="mr-2 h-4 w-4" />
-                <span>Ajustes Generales</span>
+                <span>{t('search.general_settings') || "Ajustes Generales"}</span>
               </CommandItem>
             </CommandGroup>
             <CommandSeparator />
@@ -146,16 +148,16 @@ export function GlobalSearch({ open, setOpen }: { open: boolean, setOpen: (open:
         {/* Clientes — solo visibles si hay búsqueda activa */}
         {searchQuery.length > 0 && (
           loadingClients ? (
-            <CommandGroup heading="Clientes">
+            <CommandGroup heading={t('search.clients') || "Clientes"}>
               <CommandItem disabled>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                <span className="text-stone-400">Buscando clientes...</span>
+                <span className="text-stone-400">{t('search.searching_clients') || "Buscando clientes..."}</span>
               </CommandItem>
             </CommandGroup>
           ) : clients.length > 0 ? (
             <>
               <CommandSeparator />
-              <CommandGroup heading={`Clientes (${clients.length})`}>
+              <CommandGroup heading={`${t('search.clients') || "Clientes"} (${clients.length})`}>
                 {clients.slice(0, 8).map((client) => {
                   const normalized = client.name
                     .toLowerCase()
@@ -176,7 +178,9 @@ export function GlobalSearch({ open, setOpen }: { open: boolean, setOpen: (open:
                 {clients.length > 8 && (
                   <CommandItem onSelect={() => runCommand(() => router.push("/dashboard/clients"))}>
                     <Users className="mr-2 h-4 w-4 text-stone-400" />
-                    <span className="text-stone-400 text-sm">Ver los {clients.length - 8} restantes...</span>
+                    <span className="text-stone-400 text-sm">
+                      {(t('search.view_remaining') || "Ver los {count} restantes...").replace('{count}', (clients.length - 8).toString())}
+                    </span>
                   </CommandItem>
                 )}
               </CommandGroup>

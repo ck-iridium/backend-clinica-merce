@@ -7,10 +7,10 @@ import { useLanguage } from '@/app/contexts/LanguageContext';
 function LazyPremiumImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
   const [loaded, setLoaded] = React.useState(false);
   return (
-    <div className="absolute inset-0 w-full h-full overflow-hidden bg-stone-100">
+    <div className="absolute inset-0 w-full h-full overflow-hidden bg-stone-100 dark:bg-stone-900">
       {/* Premium Pulse Skeleton Placeholder */}
       {!loaded && (
-        <div className="absolute inset-0 w-full h-full bg-gradient-to-tr from-stone-200/50 via-stone-100 to-stone-200/50 animate-pulse" />
+        <div className="absolute inset-0 w-full h-full bg-gradient-to-tr from-stone-200/50 via-stone-100 to-stone-200/50 dark:from-stone-800/50 dark:via-stone-900 dark:to-stone-800/50 animate-pulse" />
       )}
       <img
         src={src}
@@ -204,7 +204,7 @@ export default function Step1Treatments({
                             className="group-hover:scale-110 transition-all duration-700"
                           />
                         ) : (
-                          <div className="absolute inset-0 bg-stone-100" />
+                          <div className="absolute inset-0 bg-gradient-to-br from-stone-900 to-stone-950 dark:from-stone-950 dark:to-black" />
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
 

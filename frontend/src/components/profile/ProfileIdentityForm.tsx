@@ -17,7 +17,7 @@ export default function ProfileIdentityForm({
   return (
     <section className="bg-white rounded-[3rem] border border-stone-100 shadow-sm p-10 relative">
       <div className="flex items-center gap-5 mb-10">
-        <div className="w-14 h-14 rounded-3xl bg-[#fdf2f3] flex items-center justify-center text-[#d9777f] shadow-sm">
+        <div className="w-14 h-14 rounded-3xl bg-primary/5 flex items-center justify-center text-primary shadow-sm">
           <User size={26} strokeWidth={1.5} />
         </div>
         <div>
@@ -34,7 +34,7 @@ export default function ProfileIdentityForm({
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className="w-full bg-stone-50 border border-stone-200 rounded-[1.2rem] px-5 py-4 text-sm focus:bg-white focus:ring-4 focus:ring-[#fdf2f3] focus:border-[#d9777f] transition-all outline-none font-medium text-stone-800"
+              className="w-full bg-stone-50 border border-stone-200 rounded-[1.2rem] px-5 py-4 text-sm focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-medium text-stone-800"
               placeholder="Escribe tu nombre..."
             />
           </div>

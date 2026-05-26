@@ -129,6 +129,7 @@
       "free_minutes": "free minutes",
       "client_req": "Client *",
       "choose_client": "-- Choose a client --",
+      "no_clients": "No clients registered",
       "treatment_req": "Treatment *",
       "select_service": "-- Select a service --",
       "exceeded": "EXCEEDED",
@@ -443,5 +444,23 @@
     "microphone_transcribed": "Audio transcribed successfully.",
     "microphone_warning": "Could not transcribe a clear phrase.",
     "microphone_error": "Your browser does not support native speech recognition."
+  },
+  "search": {
+    "placeholder": "What are you looking for?",
+    "no_results": "No results found.",
+    "shortcuts": "Shortcuts",
+    "go_to_calendar": "Go to Calendar",
+    "go_to_clients": "Go to Clients",
+    "go_to_services": "Go to Services",
+    "view_vouchers": "View Vouchers & Packs",
+    "content_mgmt": "Content Management",
+    "media_gallery": "Media Gallery",
+    "web_editor": "Web Editor (CMS)",
+    "settings_system": "Settings & System",
+    "manage_team": "Manage Team",
+    "general_settings": "General Settings",
+    "searching_clients": "Searching clients...",
+    "view_remaining": "View the remaining {count}...",
+    "clients": "Clients"
   }
 }

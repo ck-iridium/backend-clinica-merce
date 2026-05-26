@@ -52,7 +52,7 @@ export function CalendarHeader({
         <div className="flex items-center gap-2">
           <div className="relative pointer-events-auto">
             <div className="bg-white/80 backdrop-blur-md border border-stone-200/50 text-stone-800 rounded-xl px-4 py-2.5 font-bold shadow-sm flex items-center justify-between gap-3 min-w-[130px] max-w-[160px]">
-              <Calendar size={18} className="text-[#d9777f] shrink-0" />
+              <Calendar size={18} className="text-primary shrink-0" />
               <span className="capitalize text-sm text-center flex-1 truncate">
                 {mobileSelectedDate.toLocaleDateString(getLocaleString(), { month: 'short', year: 'numeric' }).replace('.', '')}
               </span>

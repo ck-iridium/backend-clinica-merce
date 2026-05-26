@@ -142,7 +142,7 @@ function NotificationList({
         <div className="px-4 py-3.5 border-t border-stone-800 shrink-0">
           <button
             onClick={onMarkAllRead}
-            className="w-full text-[11px] font-black uppercase tracking-widest text-stone-500 hover:text-[#d9777f] transition-colors py-1"
+            className="w-full text-[11px] font-black uppercase tracking-widest text-stone-500 hover:text-primary transition-colors py-1"
           >
             Marcar todas como leídas
           </button>

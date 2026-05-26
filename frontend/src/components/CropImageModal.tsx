@@ -194,7 +194,7 @@ export default function CropImageModal({ imageSrc, onClose, onCropComplete, forc
                 <button
                   onClick={() => processImage(true)}
                   disabled={isProcessing}
-                  className="bg-stone-900 hover:bg-[#d9777f] text-white min-w-[160px] px-8 py-3.5 rounded-2xl font-bold transition-all shadow-xl shadow-stone-200 disabled:opacity-50 flex justify-center items-center gap-2 group order-1 sm:order-3"
+                  className="bg-stone-900 hover:bg-primary text-white min-w-[160px] px-8 py-3.5 rounded-2xl font-bold transition-all shadow-xl shadow-stone-200 disabled:opacity-50 flex justify-center items-center gap-2 group order-1 sm:order-3"
                 >
                   {isProcessing ? <Loader2 className="animate-spin" size={18} /> : <CheckCircle2 size={18} className="group-hover:scale-110 transition-transform" />}
                   {isProcessing ? 'Procesando...' : 'Aplicar Recorte'}

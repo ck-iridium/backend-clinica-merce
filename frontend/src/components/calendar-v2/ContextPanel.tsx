@@ -109,19 +109,19 @@ export function ContextPanel({
                 {/* 2. BÚSQUEDA Y COLAPSAR */}
                 <div className="flex items-center gap-2">
                     <div className="relative flex-1 group">
-                        <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-[#d9777f] transition-colors" />
+                        <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-primary transition-colors" />
                         <input
                             type="text"
                             placeholder={t('dashboard.calendar.search_placeholder')}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-11 pr-4 py-3 bg-stone-50 border border-stone-100 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-[#f3c7cb] focus:bg-white outline-none transition-all shadow-sm"
+                            className="w-full pl-11 pr-4 py-3 bg-stone-50 border border-stone-100 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:bg-white outline-none transition-all shadow-sm"
                         />
                     </div>
                     {onClose && (
                         <button
                             onClick={onClose}
-                            className="p-3 rounded-2xl bg-stone-50 border border-stone-100 text-stone-500 active:scale-95 transition-all hover:bg-rose-50 hover:text-[#d9777f] hover:border-rose-100 shrink-0"
+                            className="p-3 rounded-2xl bg-stone-50 border border-stone-100 text-stone-500 active:scale-95 transition-all hover:bg-primary/5 hover:text-primary hover:border-primary/10 shrink-0"
                             aria-label={t('dashboard.calendar.close_panel')}
                         >
                             <PanelLeftClose size={20} />
@@ -167,7 +167,7 @@ export function ContextPanel({
                                         key={i}
                                         onClick={() => item.currentMonth && onDateChange?.(item.date)}
                                         className={`w-8 h-8 flex items-center justify-center text-xs font-bold rounded-xl transition-all
-                                            ${isSelected ? 'bg-[#d9777f] text-white shadow-lg shadow-rose-200 scale-110' :
+                                            ${isSelected ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-110' :
                                                 item.currentMonth ? 'text-stone-600 hover:bg-stone-50' : 'text-stone-200 pointer-events-none'}
                                         `}
                                     >
@@ -181,20 +181,20 @@ export function ContextPanel({
                         <div className="flex items-center justify-between mt-4 pt-4 border-t border-stone-50">
                             <button 
                                 onClick={onPrev}
-                                className="p-2 rounded-lg hover:bg-stone-50 text-stone-400 hover:text-[#d9777f] transition-all"
+                                className="p-2 rounded-lg hover:bg-stone-50 text-stone-400 hover:text-primary transition-all"
                                 title={t('dashboard.calendar.prev_day')}
                             >
                                 <ChevronLeft size={18} />
                             </button>
                             <button 
                                 onClick={onToday}
-                                className="px-4 py-1.5 rounded-lg bg-stone-50 border border-stone-100 text-stone-600 font-black text-[10px] uppercase tracking-widest hover:bg-[#fdf2f3] hover:text-[#d9777f] hover:border-[#f3c7cb] transition-all"
+                                className="px-4 py-1.5 rounded-lg bg-stone-50 border border-stone-100 text-stone-600 font-black text-[10px] uppercase tracking-widest hover:bg-primary/5 hover:text-primary hover:border-primary/10 transition-all"
                             >
                                 {t('dashboard.calendar.today')}
                             </button>
                             <button 
                                 onClick={onNext}
-                                className="p-2 rounded-lg hover:bg-stone-50 text-stone-400 hover:text-[#d9777f] transition-all"
+                                className="p-2 rounded-lg hover:bg-stone-50 text-stone-400 hover:text-primary transition-all"
                                 title={t('dashboard.calendar.next_day')}
                             >
                                 <ChevronRight size={18} />
@@ -210,7 +210,7 @@ export function ContextPanel({
                         <button
                             onClick={() => setActiveFilter(activeFilter === 'CONFIRMADA' ? 'ALL' : 'CONFIRMADA')}
                             className={`w-full flex items-center justify-between p-3.5 rounded-2xl transition-all border
-                                ${activeFilter === 'CONFIRMADA' ? 'bg-[#fdf2f3] border-[#f3c7cb] text-[#d9777f]' : 'bg-white border-stone-100 text-stone-500 hover:border-stone-200'}
+                                ${activeFilter === 'CONFIRMADA' ? 'bg-primary/5 border-primary/10 text-primary' : 'bg-white border-stone-100 text-stone-500 hover:border-stone-200'}
                             `}
                         >
                             <div className="flex items-center gap-3">

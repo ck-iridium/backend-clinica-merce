@@ -42,7 +42,7 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
   const pathname = usePathname();
   const router = useRouter();
   const { role, userName: authUserName, loading } = useAuthRole();
-  const { language, setLanguage } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   const [userName, setUserName] = useState<string>('');
   const [planType, setPlanType] = useState<string | null>(null);
 
@@ -99,9 +99,9 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
   };
 
   const submenuGestion = [
-    { href: '/dashboard/team', label: 'Equipo', icon: ShieldCheck },
-    { href: '/dashboard/services', label: 'Servicios', icon: Sparkles },
-    { href: '/dashboard/vouchers', label: 'Bonos', icon: Ticket },
+    { href: '/dashboard/team', label: t('dashboard.menu.team') || 'Equipo', icon: ShieldCheck },
+    { href: '/dashboard/services', label: t('dashboard.menu.services') || 'Servicios', icon: Sparkles },
+    { href: '/dashboard/vouchers', label: t('dashboard.menu.vouchers') || 'Bonos', icon: Ticket },
   ].filter(item => {
     const currentRole = role?.toLowerCase();
 
@@ -113,10 +113,10 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
   });
 
   const submenuConfig = [
-    { href: '/dashboard/settings', label: 'Ajustes Generales', icon: Settings },
-    { href: '/dashboard/backups', label: 'Copias de Seguridad', icon: Database },
-    { href: '/dashboard/media', label: 'Galería de Medios', icon: ImageIcon },
-    { href: '/dashboard/cms', label: 'Editor Web (CMS)', icon: Globe },
+    { href: '/dashboard/settings', label: t('dashboard.menu.settings') || 'Ajustes Generales', icon: Settings },
+    { href: '/dashboard/backups', label: t('dashboard.menu.backups') || 'Copias de Seguridad', icon: Database },
+    { href: '/dashboard/media', label: t('dashboard.menu.media') || 'Galería de Medios', icon: ImageIcon },
+    { href: '/dashboard/cms', label: t('dashboard.menu.cms') || 'Editor Web (CMS)', icon: Globe },
   ].filter(item => {
     const currentRole = role?.toLowerCase();
 
@@ -128,16 +128,16 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
   });
 
   const navItemsMain = [
-    { href: '/dashboard/pos', label: 'Venta Rápida', icon: Tag, isSubmenu: false, style: 'accent' },
-    { href: '/dashboard', label: 'Inicio', icon: LayoutDashboard, isSubmenu: false, exact: true },
-    { href: '/dashboard/ai-webmaster', label: 'Asistente Web IA', icon: Bot, isSubmenu: false },
-    { href: '/dashboard/calendar', label: 'Agenda', icon: CalendarDays, isSubmenu: false },
-    { href: '/dashboard/clients', label: 'Clientes', icon: Users, isSubmenu: false },
-    { href: '/dashboard/invoices', label: 'Facturas', icon: Receipt, isSubmenu: false },
-    { href: '/dashboard/vouchers', label: 'Bonos', icon: Ticket, isSubmenu: false },
+    { href: '/dashboard/pos', label: t('dashboard.menu.pos') || 'Venta Rápida', icon: Tag, isSubmenu: false, style: 'accent' },
+    { href: '/dashboard', label: t('dashboard.menu.home') || 'Inicio', icon: LayoutDashboard, isSubmenu: false, exact: true },
+    { href: '/dashboard/ai-webmaster', label: t('dashboard.menu.ai_webmaster') || 'Asistente Web IA', icon: Bot, isSubmenu: false },
+    { href: '/dashboard/calendar', label: t('dashboard.menu.calendar') || 'Agenda', icon: CalendarDays, isSubmenu: false },
+    { href: '/dashboard/clients', label: t('dashboard.menu.clients') || 'Clientes', icon: Users, isSubmenu: false },
+    { href: '/dashboard/invoices', label: t('dashboard.menu.invoices') || 'Facturas', icon: Receipt, isSubmenu: false },
+    { href: '/dashboard/vouchers', label: t('dashboard.menu.vouchers') || 'Bonos', icon: Ticket, isSubmenu: false },
     // Solo mostrar submenús si tienen contenido para el rol actual
-    ...(submenuGestion.length > 0 ? [{ id: 'gestion', label: 'Gestión Avanzada', icon: ShieldCheck, isSubmenu: true }] : []),
-    ...(submenuConfig.length > 0 ? [{ id: 'configuracion', label: 'Configuración', icon: Settings, isSubmenu: true }] : []),
+    ...(submenuGestion.length > 0 ? [{ id: 'gestion', label: t('dashboard.menu.management') || 'Gestión Avanzada', icon: ShieldCheck, isSubmenu: true }] : []),
+    ...(submenuConfig.length > 0 ? [{ id: 'configuracion', label: t('dashboard.menu.configuration') || 'Configuración', icon: Settings, isSubmenu: true }] : []),
   ].filter(item => {
     if (!item.href) return true; // Los submenús no tienen href directo
     const currentRole = role?.toLowerCase();
@@ -334,7 +334,7 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
                     className="absolute inset-0 w-full h-full overflow-y-auto px-4 pt-8 pb-4 custom-scrollbar"
                   >
                     <button onClick={handleBack} className="flex items-center text-stone-400 hover:text-white font-bold text-lg mb-6 w-full -ml-1 transition-colors">
-                      <ChevronLeft size={24} className="mr-1" /> Gestión
+                      <ChevronLeft size={24} className="mr-1" /> {t('dashboard.menu.management') || 'Gestión'}
                     </button>
                     {renderNavListWithSkeleton(submenuGestion)}
                   </motion.div>
@@ -352,7 +352,7 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
                     className="absolute inset-0 w-full h-full overflow-y-auto px-4 pt-8 pb-4 custom-scrollbar"
                   >
                     <button onClick={handleBack} className="flex items-center text-stone-400 hover:text-white font-bold text-lg mb-6 w-full -ml-1 transition-colors">
-                      <ChevronLeft size={24} className="mr-1" /> Configuración
+                      <ChevronLeft size={24} className="mr-1" /> {t('dashboard.menu.configuration') || 'Configuración'}
                     </button>
                     {renderNavListWithSkeleton(submenuConfig)}
                   </motion.div>
@@ -396,7 +396,7 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
                           transition={{ type: "spring", stiffness: 400, damping: 30 }}
                         >
                           <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-stone-500 px-4 py-3 flex items-center justify-between gap-2">
-                            <span>Gestión de Cuenta</span>
+                            <span>{t('dashboard.menu.profile') || 'Gestión de Cuenta'}</span>
                             {planType && (
                               <span className="bg-[#d4af37]/15 text-[#e4c257] text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border border-[#d4af37]/20 flex items-center gap-1 select-none shrink-0">
                                 {planType === 'gold' ? 'Gold' : planType === 'pro' ? 'Pro' : planType === 'basic' ? 'Básico' : 'Demo'}
@@ -407,7 +407,7 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
                           
                           {/* Selector de idioma inline en el menú móvil */}
                           <div className="px-4 py-2 flex items-center justify-between bg-stone-950/40 rounded-xl border border-stone-800/85 mx-2 my-1.5">
-                            <span className="text-xs font-bold text-stone-400">Idioma</span>
+                            <span className="text-xs font-bold text-stone-400">{t('dashboard.menu.language') || 'Idioma'}</span>
                             <div className="flex items-center gap-2">
                               {[
                                 { code: 'es', flag: '🇪🇸' },
@@ -430,17 +430,17 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
                           </div>
                           <DropdownMenuItem onClick={() => { setIsUserMenuOpen(false); router.push('/dashboard/profile'); }} className="flex items-center gap-3 px-4 py-3.5 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer transition-colors">
                             <User size={18} strokeWidth={1.5} className="text-stone-400" />
-                            <span className="font-bold text-sm">Mi Perfil</span>
+                            <span className="font-bold text-sm">{t('dashboard.menu.profile') || 'Mi Perfil'}</span>
                           </DropdownMenuItem>
                           {(role?.toLowerCase() === 'admin' || role?.toLowerCase() === 'administrador') && (
                             <DropdownMenuItem onClick={() => { setIsUserMenuOpen(false); router.push('/dashboard/settings?tab=subscription'); }} className="flex items-center gap-3 px-4 py-3.5 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer text-[#d4af37] focus:text-[#e4c257] focus:bg-stone-800 transition-colors">
-                              <CreditCard size={18} strokeWidth={1.5} />
-                              <span className="font-bold text-sm">Plan & Suscripción</span>
+                               <CreditCard size={18} strokeWidth={1.5} />
+                              <span className="font-bold text-sm">{t('dashboard.settings.tabs.billing') || 'Plan & Suscripción'}</span>
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuItem onClick={() => { setIsUserMenuOpen(false); handleLogout(); }} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-rose-400 focus:bg-rose-950 focus:text-rose-300 cursor-pointer transition-colors">
                             <LogOut size={18} strokeWidth={1.5} />
-                            <span className="font-bold text-sm">Cerrar Sesión</span>
+                            <span className="font-bold text-sm">{t('dashboard.menu.logout') || 'Cerrar Sesión'}</span>
                           </DropdownMenuItem>
                         </motion.div>
                       </DropdownMenuContent>

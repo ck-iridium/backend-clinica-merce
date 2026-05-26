@@ -102,7 +102,7 @@ export function DayColumn({
           className="absolute inset-0 z-[60] bg-stone-100/80 backdrop-blur-[1px] flex flex-col items-center justify-center p-4 text-center cursor-pointer border-[3px] border-stone-300 pointer-events-auto hover:bg-stone-200/80 transition-all group/closed"
         >
           <div className="w-16 h-16 bg-white/50 rounded-full flex items-center justify-center mb-3 shadow-sm group-hover/closed:scale-110 transition-transform">
-            <Lock size={viewType === 'mobile' ? 32 : 24} className="text-[#d9777f]" strokeWidth={2} />
+            <Lock size={viewType === 'mobile' ? 32 : 24} className="text-primary" strokeWidth={2} />
           </div>
           <span className="text-stone-800 font-black uppercase tracking-widest text-xs">
             {closedReason || (t('dashboard.calendar.closed') || 'CERRADO')}

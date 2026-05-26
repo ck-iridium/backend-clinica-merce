@@ -66,7 +66,7 @@ function CalendarContent() {
   if (c.loading) {
     return (
       <div className="flex flex-col items-center justify-center py-32 animate-pulse">
-        <div className="w-12 h-12 border-4 border-[#f3c7cb] border-t-[#d9777f] rounded-full animate-spin mb-6"></div>
+        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-6"></div>
         <p className="text-stone-500 font-serif italic text-lg">{t('dashboard.calendar.loading_agenda')}</p>
       </div>
     );
@@ -151,7 +151,7 @@ function CalendarContent() {
           {isPanelOpen ? (
             <PanelLeftClose size={18} className="group-hover:-translate-x-0.5 transition-transform" />
           ) : (
-            <PanelLeftOpen size={20} className="text-[#d9777f]" />
+            <PanelLeftOpen size={20} className="text-primary" />
           )}
         </button>
 
@@ -174,7 +174,7 @@ function CalendarContent() {
             <div className="border-r border-stone-200" />
             {c.days.map((date, i) => (
               <div key={i} className="py-3 px-4 text-center border-r border-stone-200 last:border-r-0">
-                <p className="text-[10px] font-black text-[#d9777f] uppercase tracking-[0.2em] mb-0.5">
+                <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-0.5">
                   {date.toLocaleDateString(getLocaleString(), { weekday: 'short' })}
                 </p>
                 <p className="text-2xl font-serif italic font-black text-stone-900">
@@ -250,7 +250,7 @@ function CalendarContent() {
               className="flex-shrink-0 px-4 py-3 active:scale-95 transition-all outline-none"
               aria-label="Abrir panel"
             >
-              <PanelLeftOpen className="text-[#d9777f] w-5 h-5" />
+              <PanelLeftOpen className="text-primary w-5 h-5" />
             </button>
 
             {/* Carrusel de días con degradado */}
@@ -271,12 +271,12 @@ function CalendarContent() {
                       onClick={() => c.handleMobileDateSelect(date)}
                       className={`snap-center flex-shrink-0 w-14 rounded-xl flex flex-col items-center justify-center py-2 transition-all border-2
                         ${isSelected
-                          ? 'bg-[#fdf2f3] border-[#d9777f] shadow-md shadow-rose-100 scale-105'
+                          ? 'bg-primary/5 border-primary shadow-md shadow-primary/10 scale-105'
                           : 'bg-white border-stone-100 text-stone-400 hover:border-stone-200'
                         }
                       `}
                     >
-                      <span className={`text-[8px] font-bold uppercase tracking-wider ${isSelected ? 'text-[#d9777f]' : 'text-stone-300'}`}>
+                      <span className={`text-[8px] font-bold uppercase tracking-wider ${isSelected ? 'text-primary' : 'text-stone-300'}`}>
                         {date.toLocaleDateString(getLocaleString(), { weekday: 'short' }).replace('.', '')}
                       </span>
                       <span className={`text-base font-serif italic font-black ${isSelected ? 'text-stone-800' : 'text-stone-400'}`}>
@@ -440,7 +440,7 @@ export default function CalendarPage() {
   return (
     <Suspense fallback={
       <div className="flex flex-col items-center justify-center py-32">
-        <div className="w-8 h-8 border-4 border-[#f3c7cb] border-t-[#d9777f] rounded-full animate-spin mb-4"></div>
+        <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4"></div>
         <p className="text-stone-500 font-medium">{t('dashboard.calendar.loading_orchestrator')}</p>
       </div>
     }>

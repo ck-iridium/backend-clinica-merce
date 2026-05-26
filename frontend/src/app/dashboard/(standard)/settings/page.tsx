@@ -50,6 +50,31 @@ export default function SettingsPage() {
     }
   }, [tabParam]);
 
+  // Sincronización robusta para navegación del lado del cliente (ej. desde el popup de perfil o accesos directos del CMS)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const handleUrlChange = () => {
+        const params = new URLSearchParams(window.location.search);
+        const tParam = params.get('tab');
+        if (tParam) {
+          const validTabs = ['general', 'subscription', 'agenda', 'billing', 'payments', 'branding', 'booking_ui', 'advanced'];
+          if (validTabs.includes(tParam)) {
+            setActiveTab(tParam);
+          }
+        }
+      };
+
+      handleUrlChange();
+      window.addEventListener('popstate', handleUrlChange);
+      const interval = setInterval(handleUrlChange, 250);
+
+      return () => {
+        window.removeEventListener('popstate', handleUrlChange);
+        clearInterval(interval);
+      };
+    }
+  }, []);
+
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
     if (typeof window !== 'undefined') {

@@ -103,7 +103,7 @@ export function EditAppointmentModal({
               {selectedAppt ? clientMap.get(selectedAppt.client_id)?.name : (t('dashboard.calendar.modal.appt_detail') || 'Detalle Cita')}
             </DialogTitle>
             {selectedAppt && (
-              <DialogDescription className="text-[#d9777f] font-bold flex items-center gap-2 text-sm">
+              <DialogDescription className="text-primary font-bold flex items-center gap-2 text-sm">
                 <Calendar size={14} strokeWidth={2.5} />
                 {new Date(selectedAppt.start_time.endsWith('Z') ? selectedAppt.start_time.slice(0, -1) : selectedAppt.start_time).toLocaleDateString(getLocaleString(), {
                   day: 'numeric',
@@ -122,7 +122,7 @@ export function EditAppointmentModal({
               <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{t('dashboard.calendar.service') || 'Tratamiento'}</p>
             </div>
             <div className="flex items-center gap-2 py-1.5 border-b border-stone-100">
-              <Sparkles size={16} strokeWidth={2} className="text-[#d9777f]" />
+              <Sparkles size={16} strokeWidth={2} className="text-primary" />
               <p className="text-base font-bold text-stone-700">
                 {selectedAppt ? serviceMap.get(selectedAppt.service_id)?.name : '...'}
               </p>
@@ -134,7 +134,7 @@ export function EditAppointmentModal({
             <textarea
               value={editNotes}
               onChange={e => setEditNotes(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-stone-100 focus:ring-2 focus:ring-[#d9777f] outline-none bg-stone-50 min-h-[42px] h-auto resize-none text-[13px] placeholder:italic shadow-inner overflow-hidden"
+              className="w-full px-4 py-3 rounded-xl border border-stone-100 focus:ring-2 focus:ring-primary/20 outline-none bg-stone-50 min-h-[42px] h-auto resize-none text-[13px] placeholder:italic shadow-inner overflow-hidden"
               placeholder={t('dashboard.calendar.modal.add_notes') || 'Añadir nota...'}
             />
             {selectedAppt && editNotes !== (selectedAppt.notes || '') && (

@@ -132,7 +132,7 @@ export function SignaturePadModal({ isOpen, onClose, onSave, clientName }: Signa
         <div className="p-8 pb-4">
           {/* Tipo de Documento */}
           <div className="mb-6">
-            <label className="block text-sm font-bold text-[#d9777f] uppercase tracking-widest mb-2">{t('dashboard.clients.select_agreement_label')}</label>
+            <label className="block text-sm font-bold text-primary uppercase tracking-widest mb-2">{t('dashboard.clients.select_agreement_label')}</label>
             <Select value={docType} onValueChange={setDocType}>
               <SelectTrigger className="w-full bg-white border-stone-200">
                 <SelectValue placeholder={t('dashboard.clients.select_agreement_placeholder')} />
@@ -155,7 +155,7 @@ export function SignaturePadModal({ isOpen, onClose, onSave, clientName }: Signa
           {/* Canvas Wrapper */}
           <div>
             <div className="flex justify-between items-end mb-2">
-              <label className="block text-sm font-bold text-[#d9777f] uppercase tracking-widest">{t('dashboard.clients.signature_label')}</label>
+              <label className="block text-sm font-bold text-primary uppercase tracking-widest">{t('dashboard.clients.signature_label')}</label>
               <button 
                 onClick={clearCanvas}
                 className="text-[10px] uppercase font-bold text-stone-400 bg-stone-100 hover:bg-stone-200 hover:text-stone-600 px-3 py-1 rounded-full transition-colors"
@@ -194,7 +194,7 @@ export function SignaturePadModal({ isOpen, onClose, onSave, clientName }: Signa
            <button 
              onClick={handleSave} 
              disabled={!hasSignature}
-             className="px-8 py-3 font-extrabold text-white bg-[#d9777f] hover:bg-[#c6646b] rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-lg disabled:hover:bg-[#d9777f]"
+             className="px-8 py-3 font-extrabold text-white bg-primary hover:bg-primary/90 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               ✓ {t('dashboard.clients.accept_and_sign')}
            </button>

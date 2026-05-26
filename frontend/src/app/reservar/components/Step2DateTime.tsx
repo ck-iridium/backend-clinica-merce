@@ -151,7 +151,7 @@ export default function Step2DateTime({
                           ${isSelected
                             ? 'bg-primary border-primary shadow-lg text-primary-foreground'
                             : !isOpen
-                              ? 'bg-red-500/5 dark:bg-red-950/10 border-red-500/10 dark:border-red-900/20 opacity-70'
+                              ? 'bg-rose-500/5 dark:bg-rose-950/15 border-rose-500/10 dark:border-rose-900/30 opacity-70'
                               : 'bg-card border-border shadow-sm hover:border-primary/30'}`}
                       >
                         <div className="flex items-center gap-4 md:gap-6">
@@ -159,22 +159,22 @@ export default function Step2DateTime({
                             ${isSelected
                               ? 'bg-white/10 border-white/20'
                               : !isOpen
-                                ? 'bg-red-500/10 dark:bg-red-950/20 border-red-500/10 dark:border-red-900/20'
+                                ? 'bg-rose-500/10 dark:bg-rose-950/20 border-rose-500/10 dark:border-rose-900/30'
                                 : 'bg-muted border-border'}`}>
                             <span className={`text-[10px] md:text-[11px] uppercase font-black tracking-wider
-                              ${isSelected ? 'text-white/80' : !isOpen ? 'text-red-400 dark:text-red-300' : 'text-muted-foreground'}`}>
+                              ${isSelected ? 'text-white/80' : !isOpen ? 'text-rose-500 dark:text-rose-300' : 'text-muted-foreground'}`}>
                               {date.toLocaleDateString(localeStr, { month: 'short' }).replace('.', '')}
                             </span>
                             <span className={`text-lg md:text-2xl font-serif font-bold leading-none mt-0.5
-                               ${isSelected ? 'text-white' : !isOpen ? 'text-red-400 dark:text-red-300' : 'text-foreground'}`}>
+                               ${isSelected ? 'text-white' : !isOpen ? 'text-rose-500 dark:text-rose-300' : 'text-foreground'}`}>
                               {date.getDate()}
                             </span>
                           </div>
                           <div className="flex flex-col items-start">
-                            <span className={`text-sm md:text-xl font-bold capitalize ${isSelected ? 'text-white' : !isOpen ? 'text-red-400 dark:text-red-300' : 'text-foreground'}`}>
+                            <span className={`text-sm md:text-xl font-bold capitalize ${isSelected ? 'text-white' : !isOpen ? 'text-rose-500 dark:text-rose-300' : 'text-foreground'}`}>
                               {date.toLocaleDateString(localeStr, { weekday: 'long' })}
                             </span>
-                            <span className={`text-[11px] md:text-sm mt-0.5 ${isSelected ? 'text-white/70' : !isOpen ? 'text-red-400/50 dark:text-red-300/40' : 'text-muted-foreground'}`}>
+                            <span className={`text-[11px] md:text-sm mt-0.5 ${isSelected ? 'text-white/70' : !isOpen ? 'text-rose-500/50 dark:text-rose-300/40' : 'text-muted-foreground'}`}>
                               {date.getFullYear()}
                             </span>
                           </div>
@@ -187,7 +187,7 @@ export default function Step2DateTime({
                             </span>
                           )}
                           {!isOpen ? (
-                            <span className="text-[9px] md:text-xs font-black text-red-400 dark:text-red-300 uppercase tracking-wider">{t('wizard.closed')}</span>
+                            <span className="text-[9px] md:text-xs font-black text-rose-500 dark:text-rose-300 uppercase tracking-wider">{t('wizard.closed')}</span>
                           ) : (
                             <ChevronRight size={16} className={`transition-transform md:scale-125 ${isSelected ? 'text-white' : 'text-muted-foreground/30'}`} />
                           )}
@@ -255,15 +255,15 @@ export default function Step2DateTime({
                           onClick={() => setSelectedTime(slot)}
                           className={`min-h-[56px] md:min-h-[72px] py-4 md:py-6 rounded-luxury-btn text-sm md:text-lg lg:text-xl font-bold transition-all border shadow-sm relative flex items-center justify-center
                             ${!isAvailable
-                              ? 'bg-red-50/10 border-red-100/10 text-red-300 opacity-60 cursor-not-allowed'
+                              ? 'bg-rose-500/5 border-rose-500/10 dark:border-rose-950/20 text-rose-500 dark:text-rose-300 opacity-60 cursor-not-allowed'
                               : isSelected
                                 ? 'bg-primary border-primary text-white shadow-lg ring-2 ring-primary/20 z-10'
                                 : 'bg-card border-border text-foreground hover:border-primary hover:bg-muted'}`}
                         >
-                          <span className={!isAvailable ? 'line-through decoration-red-300/50' : ''}>{slot}</span>
+                          <span className={!isAvailable ? 'line-through decoration-rose-500/50' : ''}>{slot}</span>
                           {!isAvailable && (
                             <div className="absolute top-1 right-2 md:top-2 md:right-3">
-                              <Lock size={8} className="text-red-200 md:scale-125" />
+                              <Lock size={8} className="text-rose-400 dark:text-rose-300 md:scale-125" />
                             </div>
                           )}
                         </motion.button>

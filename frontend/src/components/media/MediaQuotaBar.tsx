@@ -26,7 +26,7 @@ export default function MediaQuotaBar({ quota, usedPercent, isNearLimit }: Media
       </div>
       <div className="w-full bg-stone-100 rounded-full h-3 overflow-hidden">
         <div
-          className={`h-3 rounded-full transition-all duration-700 ${isNearLimit ? 'bg-gradient-to-r from-orange-400 to-red-500' : 'bg-gradient-to-r from-[#d9777f] to-[#d4af37]'}`}
+          className={`h-3 rounded-full transition-all duration-700 ${isNearLimit ? 'bg-gradient-to-r from-orange-400 to-red-500' : 'bg-gradient-to-r from-primary to-[#d4af37]'}`}
           style={{ width: `${usedPercent}%` }}
         />
       </div>

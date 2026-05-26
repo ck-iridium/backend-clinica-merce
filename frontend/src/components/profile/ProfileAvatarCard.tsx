@@ -34,7 +34,7 @@ export default function ProfileAvatarCard({
   return (
     <div className="lg:col-span-4 space-y-8 sticky top-24">
       <div className="bg-white rounded-[3rem] border border-stone-100 shadow-xl shadow-stone-200/40 p-10 text-center relative overflow-hidden group">
-        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#D4AF37] via-[#f3c7cb] to-[#D4AF37] opacity-60"></div>
+        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#D4AF37] via-primary/30 to-[#D4AF37] opacity-60"></div>
 
         {/* Avatar Upload */}
         <div className="relative group mb-6">
@@ -57,7 +57,7 @@ export default function ProfileAvatarCard({
             <button
               onClick={handleAvatarClick}
               disabled={uploadingAvatar}
-              className="w-9 h-9 bg-stone-900 text-white rounded-xl flex items-center justify-center shadow-xl hover:bg-[#d9777f] hover:scale-105 transition-all duration-300 border-2 border-white active:scale-95"
+              className="w-9 h-9 bg-stone-900 text-white rounded-xl flex items-center justify-center shadow-xl hover:bg-primary hover:scale-105 transition-all duration-300 border-2 border-white active:scale-95"
               title="Cambiar foto"
             >
               {uploadingAvatar ? <Loader2 className="animate-spin" size={16} /> : <Camera size={16} />}

@@ -22,7 +22,7 @@ export default function MediaGrid({
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <div className="w-10 h-10 border-4 border-stone-200 border-t-[#d9777f] rounded-full animate-spin" />
+        <div className="w-10 h-10 border-4 border-stone-200 border-t-primary rounded-full animate-spin" />
         <p className="text-stone-400 font-medium text-sm tracking-widest uppercase">Cargando galería...</p>
       </div>
     );
@@ -48,7 +48,7 @@ export default function MediaGrid({
           <div
             key={file.name}
             className={`group relative rounded-2xl overflow-hidden aspect-square border-2 transition-all duration-200 cursor-pointer bg-stone-100
-              ${isChecked ? 'border-red-500 ring-2 ring-red-400/40 scale-[0.97]' : isSelected ? 'border-[#d9777f] ring-2 ring-[#d9777f]/30 scale-[0.98]' : 'border-transparent hover:border-stone-300 hover:shadow-md'}`}
+              ${isChecked ? 'border-red-500 ring-2 ring-red-400/40 scale-[0.97]' : isSelected ? 'border-primary ring-2 ring-primary/30 scale-[0.98]' : 'border-transparent hover:border-stone-300 hover:shadow-md'}`}
             onClick={() => {
               if (selectedNames.size > 0 && canSelect) {
                 onToggleSelect(file.name);

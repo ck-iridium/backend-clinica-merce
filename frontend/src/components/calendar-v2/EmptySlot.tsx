@@ -33,8 +33,8 @@ export function EmptySlot({
       : 'none';
 
   const baseClasses = viewType === 'desktop' 
-    ? `w-full h-1/4 transition-all relative ${borderClass} ${isDisabled ? 'bg-stone-100/30 cursor-not-allowed opacity-50' : 'hover:bg-[#fdf2f3]/50 cursor-pointer'}`
-    : `w-full h-1/4 transition-all relative ${borderClass} ${isDisabled ? 'bg-stone-100/30 cursor-not-allowed opacity-50' : 'active:bg-[#fdf2f3] cursor-pointer'}`;
+    ? `w-full h-1/4 transition-all relative ${borderClass} ${isDisabled ? 'bg-stone-100/30 cursor-not-allowed opacity-50' : 'hover:bg-primary/5 cursor-pointer'}`
+    : `w-full h-1/4 transition-all relative ${borderClass} ${isDisabled ? 'bg-stone-100/30 cursor-not-allowed opacity-50' : 'active:bg-primary/10 cursor-pointer'}`;
 
   return (
     <div
@@ -43,7 +43,7 @@ export function EmptySlot({
       style={{ backgroundImage: bgImage }}
     >
       {!isDisabled && viewType === 'desktop' && (
-        <span className="opacity-0 hover:opacity-100 text-[#d9777f] font-black text-[9px] absolute top-0.5 left-1 transition-opacity">+</span>
+        <span className="opacity-0 hover:opacity-100 text-primary font-black text-[9px] absolute top-0.5 left-1 transition-opacity">+</span>
       )}
       
       {isLunch && ((viewType === 'desktop' && minute === 0) || (viewType === 'mobile' && minute === 15)) && (
