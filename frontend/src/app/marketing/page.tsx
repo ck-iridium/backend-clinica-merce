@@ -1,9 +1,11 @@
 "use client"
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Calendar, Shield, FileText, CreditCard, Sparkles, ChevronRight, Check, X, Loader2, Bot, Volume2, BookOpen, User, Tag } from 'lucide-react';
-import { toast } from 'sonner';
+import { Shield, FileText, Sparkles, ChevronRight, BookOpen } from 'lucide-react';
+import OnboardingModal from './components/OnboardingModal';
+import Showcase3DRing from './components/Showcase3DRing';
+import PricingSection from './components/PricingSection';
 
 interface Sector {
   id: string;
@@ -11,102 +13,15 @@ interface Sector {
   title: string;
   copy: string;
   videoUrl: string;
+  imageUrl?: string;
   placeholderGradient: string;
 }
 
 export default function MarketingPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<'free' | 'basic' | 'pro' | 'gold'>('pro');
   
-  // Hover states for sectors to play/pause videos
-  const [hoveredSector, setHoveredSector] = useState<string | null>(null);
-  
-  // Form state
-  const [formData, setFormData] = useState({
-    tenant_name: '',
-    tenant_slug: '',
-    admin_name: '',
-    admin_email: '',
-    admin_password: '',
-  });
-
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    
-    if (name === 'tenant_slug') {
-      const cleanSlug = value
-        .toLowerCase()
-        .replace(/[^a-z0-9-]/g, '')
-        .replace(/-+/g, '-');
-      setFormData(prev => ({ ...prev, [name]: cleanSlug }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
-  };
-
-  const handleOnboardingSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.tenant_name || !formData.tenant_slug || !formData.admin_name || !formData.admin_email || !formData.admin_password) {
-      toast.error('Por favor, rellena todos los campos obligatorios.');
-      return;
-    }
-
-    if (formData.tenant_slug.length < 2) {
-      toast.error('El subdominio debe tener al menos 2 caracteres.');
-      return;
-    }
-
-    if (formData.admin_password.length < 6) {
-      toast.error('La contraseña del administrador debe tener al menos 6 caracteres.');
-      return;
-    }
-
-    setLoading(true);
-    const isFree = selectedPlan === 'free';
-    const loadingMessage = isFree 
-      ? 'Creando tu base de datos aislada y cuenta gratuita...'
-      : 'Creando base de datos segura y conectando pasarela...';
-    
-    const loadingToast = toast.loading(loadingMessage);
-
-    try {
-      const response = await fetch(`${API_URL}/stripe/create-onboarding-session`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          plan_type: selectedPlan
-        }),
-      });
-
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.detail || 'Error al iniciar la sesión de onboarding.');
-      }
-
-      const data = await response.json();
-      
-      const successMessage = isFree
-        ? '¡Entorno ProBookia inicializado con éxito!'
-        : '¡Aprovisionamiento listo! Redirigiendo a Stripe...';
-        
-      toast.success(successMessage, { id: loadingToast });
-      
-      setTimeout(() => {
-        window.location.href = data.url;
-      }, 1000);
-
-    } catch (err: any) {
-      toast.error(err.message || 'Error al conectar con el servidor. Inténtalo de nuevo.', { id: loadingToast });
-      setLoading(false);
-    }
-  };
 
   const fallbackSectors: Sector[] = [
     {
@@ -156,15 +71,18 @@ export default function MarketingPage() {
     if (animating) return;
     setAnimating(true);
     
-    // 200ms timeout to update activeIndex (giving the previous panel time to slide down completely)
     setTimeout(() => {
       setActiveIndex(newIndex);
     }, 200);
 
-    // 400ms timeout to reveal the new panel cleanly
     setTimeout(() => {
       setAnimating(false);
-    }, 600); // 200ms index update + 400ms delay = 600ms total to settle
+    }, 600);
+  };
+
+  const handleOpenOnboarding = (plan: 'free' | 'basic' | 'pro' | 'gold') => {
+    setSelectedPlan(plan);
+    setIsModalOpen(true);
   };
 
   useEffect(() => {
@@ -198,6 +116,7 @@ export default function MarketingPage() {
               title: s.title,
               copy: copy,
               videoUrl: s.video_url || 'https://assets.mixkit.co/videos/preview/mixkit-hairdresser-cutting-hair-of-a-woman-in-salon-40552-large.mp4',
+              imageUrl: s.image_url || '',
               placeholderGradient: gradient
             };
           });
@@ -240,7 +159,7 @@ export default function MarketingPage() {
               Acceso Profesional
             </Link>
             <button 
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => handleOpenOnboarding('pro')}
               className="bg-stone-950 hover:bg-stone-900 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all duration-300 hover:scale-105 active:scale-95"
             >
               Comenzar Ahora
@@ -267,7 +186,7 @@ export default function MarketingPage() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button 
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => handleOpenOnboarding('pro')}
               className="w-full sm:w-auto bg-stone-950 hover:bg-stone-900 text-white px-8 py-4 rounded-xl text-xs font-bold shadow-md transition-all duration-300 flex items-center justify-center gap-2 group active:scale-95"
             >
               Comenzar Prueba Gratuita <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -283,194 +202,13 @@ export default function MarketingPage() {
       </section>
 
       {/* 3. SECCIÓN DE SECTORES EN ANILLO 3D CILÍNDRICO REAL */}
-      <section id="sectors" className="py-24 bg-stone-50/50 border-y border-stone-100 overflow-hidden relative">
-        <div className="max-w-7xl mx-auto px-6 relative flex flex-col items-center">
-          
-          {/* Cabecera Editorial */}
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="text-blue-600 text-[10px] font-black uppercase tracking-[0.25em] block mb-3">Especialidades</span>
-            <h2 className="text-3xl md:text-5xl font-serif font-semibold tracking-tight text-stone-950">
-              Sectores de Alta Gama
-            </h2>
-            <p className="text-stone-500 text-sm md:text-base mt-3 font-medium">
-              Interactúa con el carrusel en anillo 3D tridimensional de alta precisión.
-            </p>
-          </div>
-
-          {/* El contenedor padre define la profundidad del espacio */}
-          <div className="relative w-full h-[650px] overflow-hidden flex flex-col items-center justify-center [perspective:1200px]">
-            
-            {/* EL ANILLO: Este es el contenedor que gira según el sector activo */}
-            <div 
-              className="relative w-[280px] h-[500px] transition-transform duration-1000 ease-out [transform-style:preserve-3d]"
-              style={{ transform: `rotateY(${activeIndex * -90}deg)` }}
-            >
-              {/* CARD 0: Clínicas (0 grados) */}
-              <div 
-                onClick={() => handleNavigate(0)}
-                className={`absolute inset-0 cursor-pointer transition-all duration-700 ease-out [backface-visibility:hidden] [transform:rotateY(0deg)_translateZ(380px)] ${
-                  activeIndex === 0 ? 'scale-105 opacity-100 drop-shadow-[0_20px_40px_rgba(37,99,235,0.08)] z-20' : 'scale-95 opacity-40 hover:opacity-70 filter brightness-90 z-10'
-                }`}
-              >
-                <div className="w-full h-full bg-white rounded-2xl border border-stone-200/50 p-3 shadow-md relative overflow-hidden">
-                  <div className="w-full h-full rounded-xl overflow-hidden bg-stone-50 relative border border-stone-100">
-                    <video 
-                      src={sectorsToRender[0]?.videoUrl} 
-                      className="w-full h-full object-cover" 
-                      autoPlay={activeIndex === 0} 
-                      loop 
-                      muted 
-                      playsInline 
-                    />
-                    <div className="absolute top-4 left-4 z-10">
-                      <span className={`border px-2.5 py-1 rounded-full text-[9px] font-black tracking-wider shadow-sm uppercase transition-colors duration-500 ${
-                        activeIndex === 0 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white/95 border-stone-200/60 text-stone-500'
-                      }`}>
-                        {sectorsToRender[0]?.badge}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* CARD 1: Barberías (90 grados) */}
-              <div 
-                onClick={() => handleNavigate(1)}
-                className={`absolute inset-0 cursor-pointer transition-all duration-700 ease-out [backface-visibility:hidden] [transform:rotateY(90deg)_translateZ(380px)] ${
-                  activeIndex === 1 ? 'scale-105 opacity-100 drop-shadow-[0_20px_40px_rgba(37,99,235,0.08)] z-20' : 'scale-95 opacity-40 hover:opacity-70 filter brightness-90 z-10'
-                }`}
-              >
-                <div className="w-full h-full bg-white rounded-2xl border border-stone-200/50 p-3 shadow-md relative overflow-hidden">
-                  <div className="w-full h-full rounded-xl overflow-hidden bg-stone-50 relative border border-stone-100">
-                    <video 
-                      src={sectorsToRender[1]?.videoUrl} 
-                      className="w-full h-full object-cover" 
-                      autoPlay={activeIndex === 1} 
-                      loop 
-                      muted 
-                      playsInline 
-                    />
-                    <div className="absolute top-4 left-4 z-10">
-                      <span className={`border px-2.5 py-1 rounded-full text-[9px] font-black tracking-wider shadow-sm uppercase transition-colors duration-500 ${
-                        activeIndex === 1 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white/95 border-stone-200/60 text-stone-500'
-                      }`}>
-                        {sectorsToRender[1]?.badge}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* CARD 2: Dentistas (180 grados) */}
-              <div 
-                onClick={() => handleNavigate(2)}
-                className={`absolute inset-0 cursor-pointer transition-all duration-700 ease-out [backface-visibility:hidden] [transform:rotateY(180deg)_translateZ(380px)] ${
-                  activeIndex === 2 ? 'scale-105 opacity-100 drop-shadow-[0_20px_40px_rgba(37,99,235,0.08)] z-20' : 'scale-95 opacity-40 hover:opacity-70 filter brightness-90 z-10'
-                }`}
-              >
-                <div className="w-full h-full bg-white rounded-2xl border border-stone-200/50 p-3 shadow-md relative overflow-hidden">
-                  <div className="w-full h-full rounded-xl overflow-hidden bg-stone-50 relative border border-stone-100">
-                    <video 
-                      src={sectorsToRender[2]?.videoUrl} 
-                      className="w-full h-full object-cover" 
-                      autoPlay={activeIndex === 2} 
-                      loop 
-                      muted 
-                      playsInline 
-                    />
-                    <div className="absolute top-4 left-4 z-10">
-                      <span className={`border px-2.5 py-1 rounded-full text-[9px] font-black tracking-wider shadow-sm uppercase transition-colors duration-500 ${
-                        activeIndex === 2 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white/95 border-stone-200/60 text-stone-500'
-                      }`}>
-                        {sectorsToRender[2]?.badge}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* CARD 3: Salones (270 grados) */}
-              <div 
-                onClick={() => handleNavigate(3)}
-                className={`absolute inset-0 cursor-pointer transition-all duration-700 ease-out [backface-visibility:hidden] [transform:rotateY(270deg)_translateZ(380px)] ${
-                  activeIndex === 3 ? 'scale-105 opacity-100 drop-shadow-[0_20px_40px_rgba(37,99,235,0.08)] z-20' : 'scale-95 opacity-40 hover:opacity-70 filter brightness-90 z-10'
-                }`}
-              >
-                <div className="w-full h-full bg-white rounded-2xl border border-stone-200/50 p-3 shadow-md relative overflow-hidden">
-                  <div className="w-full h-full rounded-xl overflow-hidden bg-stone-50 relative border border-stone-100">
-                    <video 
-                      src={sectorsToRender[3]?.videoUrl} 
-                      className="w-full h-full object-cover" 
-                      autoPlay={activeIndex === 3} 
-                      loop 
-                      muted 
-                      playsInline 
-                    />
-                    <div className="absolute top-4 left-4 z-10">
-                      <span className={`border px-2.5 py-1 rounded-full text-[9px] font-black tracking-wider shadow-sm uppercase transition-colors duration-500 ${
-                        activeIndex === 3 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white/95 border-stone-200/60 text-stone-500'
-                      }`}>
-                        {sectorsToRender[3]?.badge}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Controles de Navegación Lateral (Flechitas Flotantes Premium) */}
-            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 sm:px-12 pointer-events-none z-20">
-              <button
-                onClick={() => {
-                  const prevIndex = (activeIndex - 1 + 4) % 4;
-                  handleNavigate(prevIndex);
-                }}
-                className="w-12 h-12 rounded-full bg-white/90 backdrop-blur-sm border border-stone-200/80 hover:bg-stone-50 flex items-center justify-center text-stone-700 hover:text-stone-950 transition-all shadow-md active:scale-95 pointer-events-auto"
-                title="Sector Anterior"
-              >
-                <ChevronRight className="w-5 h-5 rotate-180" />
-              </button>
-              <button
-                onClick={() => {
-                  const nextIndex = (activeIndex + 1) % 4;
-                  handleNavigate(nextIndex);
-                }}
-                className="w-12 h-12 rounded-full bg-white/90 backdrop-blur-sm border border-stone-200/80 hover:bg-stone-50 flex items-center justify-center text-stone-700 hover:text-stone-950 transition-all shadow-md active:scale-95 pointer-events-auto"
-                title="Siguiente Sector"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* 2. LA FICHA BLANCA EMERGENTE (Fuera del anillo, abajo en el centro) */}
-            {sectorsToRender[activeIndex] && (
-              <div className={`absolute bottom-6 max-w-md w-full bg-white/90 backdrop-blur-md p-6 rounded-2xl shadow-2xl border border-stone-100 transition-all duration-500 transform z-30 ${
-                animating ? 'translate-y-10 opacity-0' : 'translate-y-0 opacity-100'
-              }`}>
-                <span className="text-[10px] uppercase font-bold tracking-widest text-blue-600">
-                  {sectorsToRender[activeIndex]?.badge}
-                </span>
-                <h3 className="font-serif text-2xl text-stone-900 my-1">
-                  {sectorsToRender[activeIndex]?.title}
-                </h3>
-                <p className="text-stone-600 text-xs leading-relaxed mb-4">
-                  {sectorsToRender[activeIndex]?.copy}
-                </p>
-                <button 
-                  onClick={() => {
-                    setSelectedPlan('pro');
-                    setIsModalOpen(true);
-                  }}
-                  className="w-full bg-stone-950 text-white text-xs py-2.5 rounded-xl font-medium hover:bg-stone-900 transition-colors"
-                >
-                  Configurar Entorno
-                </button>
-              </div>
-            )}
-            
-          </div>
-        </div>
-      </section>
+      <Showcase3DRing
+        sectorsToRender={sectorsToRender}
+        activeIndex={activeIndex}
+        animating={animating}
+        handleNavigate={handleNavigate}
+        onConfigureEntorno={handleOpenOnboarding}
+      />
 
       {/* 4. LOS 3 PUNTOS FUERTES (BENTO REFACTORIZADO A LA ALTA GAMA) */}
       <section className="py-28 bg-white">
@@ -533,7 +271,7 @@ export default function MarketingPage() {
               <div className="text-5xl font-serif font-medium text-stone-200/80 mb-6 group-hover:text-blue-600/10 transition-colors">03</div>
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <Bot className="w-5 h-5 text-blue-600" />
+                  <Sparkles className="w-5 h-5 text-blue-600" />
                   <h3 className="font-serif text-xl font-semibold text-stone-950">
                     Co-Piloto por Voz IA
                   </h3>
@@ -554,245 +292,7 @@ export default function MarketingPage() {
       </section>
 
       {/* 5. SUSCRIPCIÓN & PRECIOS EDITORIALES */}
-      <section id="pricing" className="py-24 bg-stone-50/50 border-t border-stone-100">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <span className="text-blue-600 text-[10px] font-black uppercase tracking-[0.25em] block mb-3">Suscripciones</span>
-            <h2 className="text-3xl md:text-5xl font-serif font-semibold tracking-tight text-stone-950">
-              Planes de Suscripción Flexibles
-            </h2>
-            <p className="text-stone-500 text-sm md:text-base mt-3 font-medium">
-              Elige el nivel perfecto para elevar la gestión y las reservas de tu negocio.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
-            {/* Card 0: Gratuito */}
-            <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-stone-200/50 p-8 relative flex flex-col justify-between hover:shadow-lg transition-all duration-300">
-              <div>
-                <div className="mb-6">
-                  <span className="text-stone-400 font-bold uppercase text-[9px] tracking-widest block mb-1.5">Para Autónomos</span>
-                  <h3 className="text-xl font-serif font-semibold text-stone-900">Plan Inicial</h3>
-                  <div className="flex items-baseline mt-3">
-                    <span className="text-3xl font-serif font-semibold text-stone-950">0€</span>
-                    <span className="text-stone-400 text-xs font-medium ml-1.5">/ siempre (sin tarjeta)</span>
-                  </div>
-                </div>
-
-                <div className="space-y-3.5 mb-8">
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded-full bg-stone-100 flex items-center justify-center text-stone-500">
-                      <Check className="w-2.5 h-2.5" />
-                    </div>
-                    <span className="text-xs font-semibold text-stone-600">1 especialista único</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded-full bg-stone-100 flex items-center justify-center text-stone-500">
-                      <Check className="w-2.5 h-2.5" />
-                    </div>
-                    <span className="text-xs font-semibold text-stone-600">Hasta 3 servicios</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded-full bg-stone-100 flex items-center justify-center text-stone-500">
-                      <Check className="w-2.5 h-2.5" />
-                    </div>
-                    <span className="text-xs font-semibold text-stone-600">Agenda interactiva</span>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={() => {
-                  setSelectedPlan('free');
-                  setIsModalOpen(true);
-                }}
-                className="w-full bg-stone-50 hover:bg-stone-100 text-stone-950 py-3.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center gap-1 active:scale-95 mt-auto border border-stone-200/50"
-              >
-                <span>Comenzar Gratis</span>
-                <ChevronRight size={12} />
-              </button>
-            </div>
-
-            {/* Card 1: Básico */}
-            <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-stone-200/50 p-8 relative flex flex-col justify-between hover:shadow-lg transition-all duration-300">
-              <div>
-                <div className="mb-6">
-                  <span className="text-stone-400 font-bold uppercase text-[9px] tracking-widest block mb-1.5">Centros Emergentes</span>
-                  <h3 className="text-xl font-serif font-semibold text-stone-900">Plan Básico</h3>
-                  <div className="flex items-baseline mt-3">
-                    <span className="text-3xl font-serif font-semibold text-stone-950">29€</span>
-                    <span className="text-stone-400 text-xs font-medium ml-1.5">/ mes (excl. IVA)</span>
-                  </div>
-                </div>
-
-                <div className="space-y-3.5 mb-8">
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded-full bg-stone-100 flex items-center justify-center text-stone-500">
-                      <Check className="w-2.5 h-2.5" />
-                    </div>
-                    <span className="text-xs font-semibold text-stone-600">Hasta 2 especialistas</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded-full bg-stone-100 flex items-center justify-center text-stone-500">
-                      <Check className="w-2.5 h-2.5" />
-                    </div>
-                    <span className="text-xs font-semibold text-stone-600">Hasta 10 servicios</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded-full bg-stone-100 flex items-center justify-center text-stone-500">
-                      <Check className="w-2.5 h-2.5" />
-                    </div>
-                    <span className="text-xs font-semibold text-stone-600">Agenda interactiva</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded-full bg-stone-100 flex items-center justify-center text-stone-500">
-                      <Check className="w-2.5 h-2.5" />
-                    </div>
-                    <span className="text-xs font-semibold text-stone-600">TPV POS & Facturación</span>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={() => {
-                  setSelectedPlan('basic');
-                  setIsModalOpen(true);
-                }}
-                className="w-full bg-stone-50 hover:bg-stone-100 text-stone-950 py-3.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center gap-1 active:scale-95 mt-auto border border-stone-200/50"
-              >
-                <span>Comenzar Ahora</span>
-                <ChevronRight size={12} />
-              </button>
-            </div>
-
-            {/* Card 2: Pro */}
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-blue-600/30 p-8 relative flex flex-col justify-between hover:shadow-xl transition-all duration-300 lg:-translate-y-1">
-              <div className="absolute top-0 right-0 bg-blue-600 text-white px-3 py-1 rounded-bl-xl text-[8px] font-black uppercase tracking-widest">
-                Recomendado
-              </div>
-              <div>
-                <div className="mb-6">
-                  <span className="text-blue-600 font-bold uppercase text-[9px] tracking-widest block mb-1.5">Clínicas en Crecimiento</span>
-                  <h3 className="text-xl font-serif font-semibold text-stone-900">Plan Pro</h3>
-                  <div className="flex items-baseline mt-3">
-                    <span className="text-3xl font-serif font-semibold text-stone-950">59€</span>
-                    <span className="text-stone-400 text-xs font-medium ml-1.5">/ mes (excl. IVA)</span>
-                  </div>
-                </div>
-
-                <div className="space-y-3.5 mb-8">
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-                      <Check className="w-2.5 h-2.5" />
-                    </div>
-                    <span className="text-xs font-semibold text-stone-600">Hasta 5 especialistas</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-                      <Check className="w-2.5 h-2.5" />
-                    </div>
-                    <span className="text-xs font-semibold text-stone-600">Hasta 25 servicios</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-                      <Check className="w-2.5 h-2.5" />
-                    </div>
-                    <span className="text-xs font-semibold text-stone-600">Agenda interactiva</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-                      <Check className="w-2.5 h-2.5" />
-                    </div>
-                    <span className="text-xs font-semibold text-stone-600">Expedientes con firma</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-                      <Check className="w-2.5 h-2.5" />
-                    </div>
-                    <span className="text-xs font-semibold text-stone-600">TPV POS & Facturación</span>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={() => {
-                  setSelectedPlan('pro');
-                  setIsModalOpen(true);
-                }}
-                className="w-full bg-stone-950 hover:bg-stone-900 text-white py-3.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center gap-1 active:scale-95 mt-auto shadow-md"
-              >
-                <span>Comenzar Prueba</span>
-                <ChevronRight size={12} />
-              </button>
-            </div>
-
-            {/* Card 3: Gold */}
-            <div className="bg-stone-950 text-white rounded-2xl shadow-sm overflow-hidden border border-stone-800 p-8 relative flex flex-col justify-between hover:shadow-lg transition-all duration-300">
-              <div>
-                <div className="mb-6">
-                  <span className="text-[#d4af37] font-bold uppercase text-[9px] tracking-widest block mb-1.5">Rendimiento Máximo & IA</span>
-                  <h3 className="text-xl font-serif font-semibold">Plan Gold</h3>
-                  <div className="flex items-baseline mt-3">
-                    <span className="text-3xl font-serif font-semibold">99€</span>
-                    <span className="text-stone-500 text-xs font-medium ml-1.5">/ mes (excl. IVA)</span>
-                  </div>
-                </div>
-
-                <div className="space-y-3.5 mb-8">
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded-full bg-white/5 flex items-center justify-center text-[#d4af37]">
-                      <Check className="w-2.5 h-2.5" />
-                    </div>
-                    <span className="text-xs font-semibold text-stone-200">Especialistas ilimitados</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded-full bg-white/5 flex items-center justify-center text-[#d4af37]">
-                      <Check className="w-2.5 h-2.5" />
-                    </div>
-                    <span className="text-xs font-semibold text-stone-200">Servicios ilimitados</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded-full bg-white/5 flex items-center justify-center text-[#d4af37]">
-                      <Check className="w-2.5 h-2.5" />
-                    </div>
-                    <span className="text-xs font-semibold text-stone-200">Agenda interactiva</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded-full bg-white/5 flex items-center justify-center text-[#d4af37]">
-                      <Check className="w-2.5 h-2.5" />
-                    </div>
-                    <span className="text-xs font-semibold text-stone-200">Expedientes con firma</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded-full bg-white/5 flex items-center justify-center text-[#d4af37]">
-                      <Check className="w-2.5 h-2.5" />
-                    </div>
-                    <span className="text-xs font-semibold text-stone-200">POS & Facturación Deluxe</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 bg-yellow-500/10 rounded-full flex items-center justify-center text-[#d4af37]">
-                      <Sparkles className="w-2.5 h-2.5" />
-                    </div>
-                    <span className="text-xs font-bold text-[#d4af37]">Acceso Co-piloto Voz IA</span>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={() => {
-                  setSelectedPlan('gold');
-                  setIsModalOpen(true);
-                }}
-                className="w-full bg-white hover:bg-stone-100 text-stone-950 py-3.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center gap-1 active:scale-95 mt-auto shadow-md"
-              >
-                <span>Comenzar Ahora</span>
-                <ChevronRight size={12} />
-              </button>
-            </div>
-          </div>
-
-        </div>
-      </section>
+      <PricingSection onSelectPlan={handleOpenOnboarding} />
 
       {/* 5. FOOTER */}
       <footer className="bg-stone-950 text-white py-16">
@@ -815,141 +315,12 @@ export default function MarketingPage() {
       </footer>
 
       {/* 6. ONBOARDING REGISTRATION MODAL (BOUTIQUE BLANCA) */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/40 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-stone-200/50 p-8 md:p-10 relative overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
-            
-            <button 
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-6 right-6 w-8 h-8 rounded-full bg-stone-50 border border-stone-200/50 flex items-center justify-center text-stone-400 hover:text-stone-700 transition-colors shadow-sm active:scale-95"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="mb-8">
-              <span className="text-[9px] font-black uppercase tracking-widest text-blue-600 block mb-2">
-                {selectedPlan === 'free' ? 'Plan Inicial' : 'Registro de Cliente B2B'}
-              </span>
-              <h2 className="text-2.5xl font-serif font-semibold text-stone-900 leading-tight">
-                {selectedPlan === 'free' && 'Configura tu Entorno de Citas'}
-                {selectedPlan === 'basic' && 'Inicializa tu Plan Básico'}
-                {selectedPlan === 'pro' && 'Inicializa tu Plan Pro'}
-                {selectedPlan === 'gold' && 'Inicializa tu Plan Gold'}
-              </h2>
-              <p className="text-stone-500 text-xs md:text-sm mt-2 leading-relaxed font-medium">
-                {selectedPlan === 'free' 
-                  ? 'Aprovisiona tu base de datos dedicada y comienza con el Plan Inicial (1 especialista, 3 servicios) sin compromisos.'
-                  : `Aprovisiona tu entorno de seguridad dedicado. Incluye una prueba gratuita de 14 días en el Plan ${selectedPlan.toUpperCase()}.`
-                }
-              </p>
-            </div>
-
-            <form onSubmit={handleOnboardingSubmit} className="space-y-6">
-              
-              <div className="space-y-4">
-                <h3 className="text-[10px] font-black uppercase tracking-widest text-stone-400 pb-1 border-b border-stone-100">Datos de la Organización</h3>
-                
-                <div>
-                  <label className="block text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-2">Nombre de la Clínica o Centro</label>
-                  <input 
-                    type="text" 
-                    name="tenant_name"
-                    required
-                    placeholder="Ej. Clínica Mercè, Spazio Estético, Barbería Jade"
-                    value={formData.tenant_name}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-white rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all text-xs font-semibold text-stone-700"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-2">Subdominio Dedicado</label>
-                  <div className="relative">
-                    <input 
-                      type="text" 
-                      name="tenant_slug"
-                      required
-                      placeholder="clinica-merce"
-                      value={formData.tenant_slug}
-                      onChange={handleInputChange}
-                      className="w-full pl-4 pr-32 py-3 bg-white rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all text-xs font-mono text-stone-700 font-semibold"
-                    />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-stone-400 font-sans pointer-events-none">
-                      .probookia.com
-                    </span>
-                  </div>
-                  {formData.tenant_slug && (
-                    <span className="block text-[9px] text-blue-600 mt-2 font-black tracking-wide">
-                      Dirección única: <span className="font-mono text-stone-600 font-bold">https://{formData.tenant_slug}.probookia.com</span>
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-4 pt-2">
-                <h3 className="text-[10px] font-black uppercase tracking-widest text-stone-400 pb-1 border-b border-stone-100">Cuenta de Administrador Principal</h3>
-
-                <div>
-                  <label className="block text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-2">Nombre del Director</label>
-                  <input 
-                    type="text" 
-                    name="admin_name"
-                    required
-                    placeholder="Ej. Sofía Valenzuela"
-                    value={formData.admin_name}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-white rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all text-xs font-semibold text-stone-700"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-2">Email Corporativo</label>
-                  <input 
-                    type="email" 
-                    name="admin_email"
-                    required
-                    placeholder="directiva@clinicamerce.com"
-                    value={formData.admin_email}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-white rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all text-xs font-semibold text-stone-700"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-2">Contraseña del Sistema</label>
-                  <input 
-                    type="password" 
-                    name="admin_password"
-                    required
-                    placeholder="Mínimo 6 caracteres"
-                    value={formData.admin_password}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-white rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all text-xs font-semibold text-stone-700"
-                  />
-                </div>
-              </div>
-
-              <button 
-                type="submit"
-                disabled={loading}
-                className="w-full bg-stone-950 hover:bg-stone-900 text-white font-bold py-3.5 rounded-xl shadow-md transition-all duration-300 flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> {selectedPlan === 'free' ? 'Configurando base de datos...' : 'Redirigiendo a pasarela...'}
-                  </>
-                ) : (
-                  <>
-                    <span>{selectedPlan === 'free' ? 'Inicializar Cuenta Gratis' : 'Aprovisionar Entorno y Pagar'}</span> 
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </>
-                )}
-              </button>
-
-            </form>
-          </div>
-        </div>
-      )}
+      <OnboardingModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        selectedPlan={selectedPlan}
+        apiUrl={API_URL}
+      />
 
     </div>
   );
