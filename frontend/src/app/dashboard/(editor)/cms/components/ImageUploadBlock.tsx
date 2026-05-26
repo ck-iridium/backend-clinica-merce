@@ -10,14 +10,18 @@ export default function ImageUploadBlock({
   onSelect, 
   onClear, 
   onUpload, 
-  accepts = 'both' 
+  accepts = 'both',
+  tenantId,
+  token
 }: { 
   label: string, 
   value: string | null, 
   onSelect: () => void, 
   onClear: () => void, 
   onUpload: (url: string) => void,
-  accepts?: 'image' | 'video' | 'both'
+  accepts?: 'image' | 'video' | 'both',
+  tenantId?: string,
+  token?: string
 }) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -96,8 +100,17 @@ export default function ImageUploadBlock({
       const formData = new FormData();
       formData.append('file', fileToUpload, isVideo ? `video_${Date.now()}.mp4` : file.name);
 
+      const headers: Record<string, string> = {};
+      if (tenantId) {
+        headers['X-Tenant-ID'] = tenantId;
+      }
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/`, {
         method: 'POST',
+        headers,
         body: formData
       });
       

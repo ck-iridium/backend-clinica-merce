@@ -78,6 +78,15 @@ def build_used_urls_map(db: Session) -> dict:
         if item[0]:
             add_usage(item[0], "Galería Multimedia")
 
+    # Showcase Sectors (Solo para el tenant del sistema/marketing)
+    if tenant_id == "00000000-0000-0000-0000-000000000000":
+        sectors = db.query(models.LandingShowcaseSector).all()
+        for s in sectors:
+            if s.image_url:
+                add_usage(s.image_url, f"Showcase: {s.title}")
+            if s.video_url:
+                add_usage(s.video_url, f"Showcase (Vídeo): {s.title}")
+
     return usage_map
 
 
@@ -117,6 +126,14 @@ def check_global_file_usage(filename: str, db: Session) -> bool:
         
     if db.query(models.Media).filter(
         models.Media.url.like(search_pattern)
+    ).first():
+        return True
+        
+    if db.query(models.LandingShowcaseSector).filter(
+        or_(
+            models.LandingShowcaseSector.image_url.like(search_pattern),
+            models.LandingShowcaseSector.video_url.like(search_pattern)
+        )
     ).first():
         return True
         

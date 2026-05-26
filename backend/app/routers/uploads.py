@@ -14,7 +14,7 @@ router = APIRouter(
 )
 
 @router.post("/")
-async def upload_image(file: UploadFile = File(...)):
+async def upload_image(file: UploadFile = File(...), db: Session = Depends(get_db)):
     is_image = file.content_type.startswith("image/")
     is_video = file.content_type.startswith("video/")
 
@@ -73,6 +73,23 @@ async def upload_image(file: UploadFile = File(...)):
         
         # Obtener url pública
         public_url = supabase.storage.from_("media").get_public_url(filename)
+
+        # Registrar en la base de datos models.Media si hay un tenant resuelto
+        from app.database import current_tenant_var
+        tenant_id = current_tenant_var.get()
+        if tenant_id:
+            new_media = models.Media(
+                id=str(uuid.uuid4()),
+                tenant_id=tenant_id,
+                filename=filename,
+                url=public_url,
+                file_type="video" if is_video else "image",
+                mime_type=content_type,
+                size=len(final_bytes)
+            )
+            db.add(new_media)
+            db.commit()
+
         return {"url": public_url}
         
     except Exception as e:

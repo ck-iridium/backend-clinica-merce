@@ -20,6 +20,8 @@ interface SaaSCMSSectorFormProps {
   onClearMedia: (field: 'video_url' | 'image_url') => void;
   onUploadMedia: (field: 'video_url' | 'image_url', url: string) => void;
   submitting: boolean;
+  tenantId?: string;
+  token?: string;
 }
 
 export default function SaaSCMSSectorForm({
@@ -31,7 +33,9 @@ export default function SaaSCMSSectorForm({
   onSetPickerTarget,
   onClearMedia,
   onUploadMedia,
-  submitting
+  submitting,
+  tenantId,
+  token
 }: SaaSCMSSectorFormProps) {
   return (
     <form onSubmit={onSubmit} className="p-6 space-y-5">
@@ -60,6 +64,8 @@ export default function SaaSCMSSectorForm({
             onClear={() => onClearMedia('image_url')} 
             onUpload={(url) => onUploadMedia('image_url', url)}
             accepts="image"
+            tenantId={tenantId}
+            token={token}
           />
 
           <ImageUploadBlock 
@@ -69,6 +75,8 @@ export default function SaaSCMSSectorForm({
             onClear={() => onClearMedia('video_url')} 
             onUpload={(url) => onUploadMedia('video_url', url)}
             accepts="video"
+            tenantId={tenantId}
+            token={token}
           />
         </div>
 

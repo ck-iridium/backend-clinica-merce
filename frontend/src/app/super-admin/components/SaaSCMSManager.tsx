@@ -443,6 +443,8 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                   onClearMedia={(field) => setSectorFormData(prev => ({ ...prev, [field]: '' }))}
                   onUploadMedia={(field, url) => setSectorFormData(prev => ({ ...prev, [field]: url }))}
                   submitting={submittingSector}
+                  tenantId="00000000-0000-0000-0000-000000000000"
+                  token={token}
                 />
               ) : (
                 <SaaSCMSSectorList 
