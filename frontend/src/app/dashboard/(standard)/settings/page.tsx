@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthRole } from '@/hooks/useAuthRole';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/app/contexts/LanguageContext';
@@ -29,6 +29,8 @@ export default function SettingsPage() {
   const { t } = useLanguage();
   const { showFeedback } = useFeedback();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
   const { role, loading: loadingRole } = useAuthRole();
   const [settings, setSettings] = useState<any>(null);
   const [originalSettings, setOriginalSettings] = useState<any>(null);
@@ -37,6 +39,25 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('general');
   const [hasChanges, setHasChanges] = useState(false);
+
+  // Sincronizar parámetro URL tab al cambiar de pestaña
+  useEffect(() => {
+    if (tabParam) {
+      const validTabs = ['general', 'subscription', 'agenda', 'billing', 'payments', 'branding', 'booking_ui', 'advanced'];
+      if (validTabs.includes(tabParam)) {
+        setActiveTab(tabParam);
+      }
+    }
+  }, [tabParam]);
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      params.set('tab', tabId);
+      router.replace(`/dashboard/settings?${params.toString()}`);
+    }
+  };
 
   // Modal de Ausencias
   const [showBlockModal, setShowBlockModal] = useState(false);
@@ -247,7 +268,7 @@ export default function SettingsPage() {
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabChange(tab.id)}
                 className={`flex items-center gap-3 px-4 py-2.5 md:py-3.5 rounded-full md:rounded-2xl font-bold text-sm transition-all duration-300 whitespace-nowrap md:w-full md:justify-start
                     ${activeTab === tab.id
                     ? 'bg-stone-900 text-white shadow-md shadow-stone-200/50 font-bold'
@@ -258,7 +279,7 @@ export default function SettingsPage() {
               </button>
             ))}
           </nav>
-
+ 
           {/* BOTÓN GUARDAR (Desktop) */}
           <div className="hidden md:block mt-4 pt-4 border-t border-stone-200/50">
             <button
@@ -266,7 +287,7 @@ export default function SettingsPage() {
               disabled={saving || !hasChanges}
               className={`w-full py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 shadow-sm
                   ${hasChanges
-                  ? 'bg-stone-900 text-white hover:bg-[#d4af37]'
+                  ? 'bg-[#d4af37] text-white hover:bg-[#c29e2f]'
                   : 'bg-stone-100 text-stone-300 cursor-not-allowed'}`}
             >
               <Save size={18} strokeWidth={1.5} />
@@ -275,7 +296,7 @@ export default function SettingsPage() {
             {!hasChanges && <p className="text-[10px] text-stone-300 text-center mt-2 font-medium italic">{t('dashboard.settings.no_changes')}</p>}
           </div>
         </aside>
-
+ 
         {/* PANEL DINÁMICO */}
         <div className="flex-1 w-full mt-0 relative z-10">
           {activeTab === 'general' && <GeneralTab settings={settings} setSettings={setSettings} />}
@@ -311,13 +332,13 @@ export default function SettingsPage() {
           {activeTab === 'advanced' && <AdvancedTab settings={settings} setSettings={setSettings} />}
         </div>
       </div>
-
+ 
       {/* FAB STICKY (Mobile) */}
       <div className={`md:hidden fixed bottom-16 right-6 z-50 transition-all duration-300 ${hasChanges ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
         <button
           onClick={() => handleSave()}
           disabled={saving || !hasChanges}
-          className="px-6 py-4 rounded-full font-bold bg-stone-900 text-white flex items-center justify-center gap-2 shadow-[0_8px_30px_rgb(0,0,0,0.2)] active:scale-95 transition-transform"
+          className="px-6 py-4 rounded-full font-bold bg-[#d4af37] text-white flex items-center justify-center gap-2 shadow-[0_8px_30px_rgba(212,175,55,0.3)] active:scale-95 transition-transform"
         >
           <Save size={18} strokeWidth={1.5} />
           {saving ? t('dashboard.settings.saving') : t('dashboard.general.save')}

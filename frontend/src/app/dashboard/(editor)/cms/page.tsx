@@ -434,25 +434,33 @@ export default function CMSPage() {
           </div>
 
           {/* Card 3: Estilo & Branding */}
-          <div className="bg-[#F2F2EF]/40 rounded-3xl p-8 border border-stone-100 flex flex-col justify-between h-[280px] relative group overflow-hidden">
+          <Link
+            href="/dashboard/settings?tab=branding"
+            className="bg-white rounded-3xl p-8 border border-stone-100 shadow-[0_10px_35px_-10px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-500 flex flex-col justify-between h-[280px] cursor-pointer group relative overflow-hidden"
+          >
             <div>
               <div className="flex items-center justify-between mb-4">
-                <span className="text-[9px] font-black bg-stone-100 text-stone-400 px-3 py-1 rounded-full uppercase tracking-widest">
+                <span className="text-[10px] font-bold text-[#d4af37] bg-amber-50 px-3 py-1 rounded-full uppercase tracking-wider">
                   Estilo & Branding
                 </span>
-                <span className="text-[9px] font-black uppercase tracking-[0.1em] text-[#d4af37]">
-                  PROXIMAMENTE
-                </span>
+                <svg className="w-5 h-5 text-stone-300 group-hover:text-[#d4af37] transition-colors" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-3.078 0L3.72 17.5a1 1 0 001.48 1.135L8 17l2.8 1.635a1 1 0 001.48-1.135l-2.732-1.378z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v13m0-13L8 7m4-4l4 4" />
+                </svg>
               </div>
-              <h3 className="font-serif text-xl font-bold text-stone-500 mb-2">
+              <h3 className="font-serif text-2xl font-bold text-stone-800 mb-3 group-hover:text-[#d4af37] transition-colors">
                 Tipografía & Colores
               </h3>
-              <p className="text-stone-400 font-sans text-xs leading-relaxed max-w-sm">
+              <p className="text-stone-500 font-sans text-xs md:text-sm leading-relaxed max-w-sm">
                 Configura los tokens estéticos globales: selecciona paletas de lujo, colores de acento y tipografías premium como Playfair Display e Inter.
               </p>
             </div>
-            <div className="w-12 h-1 bg-stone-200/50 rounded-full" />
-          </div>
+            
+            <div className="flex items-center gap-2 text-stone-800 font-bold text-xs uppercase tracking-wider">
+              <span>Configurar Estilos</span>
+              <span className="transform group-hover:translate-x-1 transition-transform duration-300">→</span>
+            </div>
+          </Link>
 
           {/* Card 4: Páginas Independientes */}
           <Link
