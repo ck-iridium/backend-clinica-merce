@@ -151,7 +151,7 @@ export default function Step2DateTime({
                           ${isSelected
                             ? 'bg-primary border-primary shadow-lg text-primary-foreground'
                             : !isOpen
-                              ? 'bg-red-50/10 border-red-100/20 opacity-60'
+                              ? 'bg-red-500/5 dark:bg-red-950/10 border-red-500/10 dark:border-red-900/20 opacity-70'
                               : 'bg-card border-border shadow-sm hover:border-primary/30'}`}
                       >
                         <div className="flex items-center gap-4 md:gap-6">
@@ -159,22 +159,22 @@ export default function Step2DateTime({
                             ${isSelected
                               ? 'bg-white/10 border-white/20'
                               : !isOpen
-                                ? 'bg-red-50/10 border-red-100/20'
+                                ? 'bg-red-500/10 dark:bg-red-950/20 border-red-500/10 dark:border-red-900/20'
                                 : 'bg-muted border-border'}`}>
                             <span className={`text-[10px] md:text-[11px] uppercase font-black tracking-wider
-                              ${isSelected ? 'text-white/80' : !isOpen ? 'text-red-300' : 'text-muted-foreground'}`}>
+                              ${isSelected ? 'text-white/80' : !isOpen ? 'text-red-400 dark:text-red-300' : 'text-muted-foreground'}`}>
                               {date.toLocaleDateString(localeStr, { month: 'short' }).replace('.', '')}
                             </span>
                             <span className={`text-lg md:text-2xl font-serif font-bold leading-none mt-0.5
-                               ${isSelected ? 'text-white' : !isOpen ? 'text-red-400' : 'text-foreground'}`}>
+                               ${isSelected ? 'text-white' : !isOpen ? 'text-red-400 dark:text-red-300' : 'text-foreground'}`}>
                               {date.getDate()}
                             </span>
                           </div>
                           <div className="flex flex-col items-start">
-                            <span className={`text-sm md:text-xl font-bold capitalize ${isSelected ? 'text-white' : !isOpen ? 'text-red-800/40' : 'text-foreground'}`}>
+                            <span className={`text-sm md:text-xl font-bold capitalize ${isSelected ? 'text-white' : !isOpen ? 'text-red-400 dark:text-red-300' : 'text-foreground'}`}>
                               {date.toLocaleDateString(localeStr, { weekday: 'long' })}
                             </span>
-                            <span className={`text-[11px] md:text-sm mt-0.5 ${isSelected ? 'text-white/70' : !isOpen ? 'text-red-300' : 'text-muted-foreground'}`}>
+                            <span className={`text-[11px] md:text-sm mt-0.5 ${isSelected ? 'text-white/70' : !isOpen ? 'text-red-400/50 dark:text-red-300/40' : 'text-muted-foreground'}`}>
                               {date.getFullYear()}
                             </span>
                           </div>
@@ -187,9 +187,9 @@ export default function Step2DateTime({
                             </span>
                           )}
                           {!isOpen ? (
-                            <span className="text-[9px] md:text-xs font-black text-red-400 uppercase tracking-wider">{t('wizard.closed')}</span>
+                            <span className="text-[9px] md:text-xs font-black text-red-400 dark:text-red-300 uppercase tracking-wider">{t('wizard.closed')}</span>
                           ) : (
-                            <ChevronRight size={16} className={`transition-transform md:scale-125 ${isSelected ? 'text-white' : 'text-stone-200'}`} />
+                            <ChevronRight size={16} className={`transition-transform md:scale-125 ${isSelected ? 'text-white' : 'text-muted-foreground/30'}`} />
                           )}
                         </div>
                       </motion.button>

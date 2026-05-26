@@ -27,7 +27,7 @@ const getTenantId = () => {
 
 export default function BookingPage() {
   const { showFeedback } = useFeedback();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   
   // Días laborables desde backend/settings (con localStorage y fallback seguro)
   const getWorkingDays = (): number[] => {
@@ -363,7 +363,7 @@ export default function BookingPage() {
             {step === 1 && (activeCategory?.name || selectedService) && (
                <div className="flex-grow flex flex-col justify-center overflow-hidden">
                   <p className="text-[10px] md:text-xs font-bold text-muted-foreground uppercase tracking-wider truncate">
-                    {selectedService ? 'Tratamiento' : 'Zona'}
+                    {selectedService ? t('common.treatment') : t('common.zone')}
                   </p>
                   <p className="text-xs md:text-base font-bold text-foreground truncate mt-0.5">
                     {selectedService ? selectedService.name : activeCategory?.name}
@@ -391,7 +391,7 @@ export default function BookingPage() {
                 </button>
                 
                 <span className="text-sm md:text-lg font-serif font-bold text-foreground tracking-wide capitalize select-none">
-                  {new Date(new Date().getFullYear(), new Date().getMonth() + currentMonthOffset, 1).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
+                  {new Date(new Date().getFullYear(), new Date().getMonth() + currentMonthOffset, 1).toLocaleDateString(language === 'es' ? 'es-ES' : language === 'en' ? 'en-US' : 'fr-FR', { month: 'long', year: 'numeric' })}
                 </span>
                 
                 <button
@@ -426,12 +426,12 @@ export default function BookingPage() {
                   }}
                   className="flex-grow bg-primary text-primary-foreground py-4 md:py-5 rounded-luxury-btn font-bold text-xs md:text-sm uppercase tracking-widest shadow-xl active:scale-95 transition-all disabled:opacity-30 disabled:grayscale"
                 >
-                  {saving ? 'Procesando...' : step === 3 ? (() => {
+                  {saving ? t('common.processing') : step === 3 ? (() => {
                     const dep = getServiceDepositInfo(selectedService);
                     return dep.required 
-                      ? `Proceder al Pago Seguro de ${dep.amount}€` 
-                      : 'Confirmar Reserva';
-                  })() : 'Siguiente'}
+                      ? t('wizard.pay_deposit_amount').replace('{amount}', dep.amount.toString())
+                      : t('wizard.confirm_booking');
+                  })() : t('common.next')}
                 </button>
               )
             )}
