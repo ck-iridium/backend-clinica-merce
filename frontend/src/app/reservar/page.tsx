@@ -241,11 +241,11 @@ export default function BookingPage() {
   };
 
   return (
-    <div className="h-[100dvh] bg-[#F7F7F5] font-sans selection:bg-primary/30 selection:text-stone-900 flex flex-col overflow-hidden">
+    <div className="h-[100dvh] bg-background font-sans selection:bg-primary/30 selection:text-stone-900 flex flex-col overflow-hidden text-foreground">
       
       {/* APP HEADER (FIXED) */}
       {step < 4 && (
-        <header className="shrink-0 bg-white border-b border-stone-200/60 z-50">
+        <header className="shrink-0 bg-card border-b border-border z-50">
           <div className="max-w-2xl mx-auto w-full px-8 py-4 md:py-5 flex items-center justify-between">
             {!(step === 1 && !activeCategory) ? (
               <button 
@@ -254,7 +254,7 @@ export default function BookingPage() {
                   else if (step === 2 && dateTimePhase === 2) setDateTimePhase(1);
                   else if (step > 1) setStep(step - 1);
                 }} 
-                className="text-stone-400 hover:text-stone-800 transition-colors text-xs md:text-sm font-bold uppercase tracking-widest w-20 text-left font-bold"
+                className="text-muted-foreground hover:text-foreground transition-colors text-xs md:text-sm font-bold uppercase tracking-widest w-20 text-left font-bold"
               >
                 {t('common.back')}
               </button>
@@ -263,13 +263,13 @@ export default function BookingPage() {
             )}
             
             <div className="flex-grow max-w-[180px] md:max-w-[200px]">
-               <div className="h-2 bg-stone-100 rounded-luxury-btn overflow-hidden">
+               <div className="h-2 bg-muted rounded-luxury-btn overflow-hidden">
                   <div 
                     className="h-full bg-primary transition-all duration-700 ease-out" 
                     style={{ width: step === 1 ? '25%' : step === 2 ? '50%' : '75%' }} 
                   />
                </div>
-               <p className="text-[10px] md:text-xs uppercase tracking-widest text-stone-400 font-bold mt-1.5 text-center">
+               <p className="text-[10px] md:text-xs uppercase tracking-widest text-muted-foreground font-bold mt-1.5 text-center">
                  {t('wizard.step_indicator').replace('{step}', step.toString())}
                </p>
             </div>
@@ -278,7 +278,7 @@ export default function BookingPage() {
                <LanguageSelector />
                <Link 
                  href="/" 
-                 className="text-stone-400 hover:text-stone-800 transition-colors text-xs md:text-sm font-bold uppercase tracking-widest text-right"
+                 className="text-muted-foreground hover:text-foreground transition-colors text-xs md:text-sm font-bold uppercase tracking-widest text-right"
                >
                  {t('common.exit')}
                </Link>
@@ -358,14 +358,14 @@ export default function BookingPage() {
 
       {/* ACTION FOOTER (FIXED) */}
       {step < 4 && (
-        <footer className="shrink-0 bg-white border-t border-stone-200/60 p-4 md:py-6 md:px-8 z-50">
+        <footer className="shrink-0 bg-card border-t border-border p-4 md:py-6 md:px-8 z-50">
           <div className="max-w-2xl mx-auto flex gap-3">
             {step === 1 && (activeCategory?.name || selectedService) && (
                <div className="flex-grow flex flex-col justify-center overflow-hidden">
-                  <p className="text-[10px] md:text-xs font-bold text-stone-400 uppercase tracking-wider truncate">
+                  <p className="text-[10px] md:text-xs font-bold text-muted-foreground uppercase tracking-wider truncate">
                     {selectedService ? 'Tratamiento' : 'Zona'}
                   </p>
-                  <p className="text-xs md:text-base font-bold text-stone-800 truncate mt-0.5">
+                  <p className="text-xs md:text-base font-bold text-foreground truncate mt-0.5">
                     {selectedService ? selectedService.name : activeCategory?.name}
                   </p>
                </div>
@@ -384,13 +384,13 @@ export default function BookingPage() {
                       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
                   }}
-                  className={`w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full border border-stone-200 bg-white shadow-sm active:scale-90 transition-all
-                    ${currentMonthOffset === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-stone-50'}`}
+                  className={`w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full border border-border bg-card shadow-sm active:scale-90 transition-all
+                    ${currentMonthOffset === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-muted'}`}
                 >
-                  <ChevronLeft size={18} className="text-stone-600 md:scale-125" />
+                  <ChevronLeft size={18} className="text-foreground md:scale-125" />
                 </button>
                 
-                <span className="text-sm md:text-lg font-serif font-bold text-stone-800 tracking-wide capitalize select-none">
+                <span className="text-sm md:text-lg font-serif font-bold text-foreground tracking-wide capitalize select-none">
                   {new Date(new Date().getFullYear(), new Date().getMonth() + currentMonthOffset, 1).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
                 </span>
                 
@@ -406,10 +406,10 @@ export default function BookingPage() {
                       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
                   }}
-                  className={`w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full border border-stone-200 bg-white shadow-sm active:scale-90 transition-all
-                    ${currentMonthOffset === 3 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-stone-50'}`}
+                  className={`w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full border border-border bg-card shadow-sm active:scale-90 transition-all
+                    ${currentMonthOffset === 3 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-muted'}`}
                 >
-                  <ChevronRight size={18} className="text-stone-600 md:scale-125" />
+                  <ChevronRight size={18} className="text-foreground md:scale-125" />
                 </button>
               </div>
             ) : (

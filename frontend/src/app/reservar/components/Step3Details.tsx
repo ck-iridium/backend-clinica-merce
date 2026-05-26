@@ -44,32 +44,32 @@ export default function Step3Details({
     <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
-      className="w-full flex flex-col flex-grow min-h-0 bg-[#F7F7F5]"
+      className="w-full flex flex-col flex-grow min-h-0 bg-background text-foreground"
     >
       {/* Header Equilibrado */}
-      <div className="shrink-0 px-6 pt-4 pb-2 z-30 bg-[#F7F7F5]">
-        <h1 className="text-2xl md:text-3xl lg:text-4xl font-serif text-stone-800 tracking-tight">{t('wizard.fill_details')}</h1>
-        <p className="text-[11px] md:text-xs lg:text-sm text-stone-500 mt-1 uppercase tracking-[0.15em] font-medium truncate">
+      <div className="shrink-0 px-6 pt-4 pb-2 z-30 bg-background">
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-serif text-foreground tracking-tight">{t('wizard.fill_details')}</h1>
+        <p className="text-[11px] md:text-xs lg:text-sm text-muted-foreground mt-1 uppercase tracking-[0.15em] font-medium truncate">
           {t('wizard.finish_booking_for')} <span className="text-primary font-bold">{translate(selectedService?.name, selectedService?.translations, 'name')}</span>
         </p>
       </div>
 
       <div className="flex-grow overflow-y-auto custom-scrollbar px-6 pt-3 pb-6 space-y-5">
         {/* Card de Resumen con fuentes legibles */}
-        <div className="bg-white rounded-luxury-card p-4 md:p-6 md:px-8 border border-stone-100 shadow-sm flex items-center justify-between relative overflow-hidden group">
+        <div className="bg-card rounded-luxury-card p-4 md:p-6 md:px-8 border border-border shadow-sm flex items-center justify-between relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
 
           <div className="relative z-10">
             <p className="text-[10px] md:text-xs font-black uppercase text-primary tracking-[0.2em] mb-0.5">{t('wizard.appointment_for_date')}</p>
-            <p className="text-base md:text-xl font-serif text-stone-800 leading-tight">
+            <p className="text-base md:text-xl font-serif text-foreground leading-tight">
               {selectedDate.toLocaleDateString(language === 'es' ? 'es-ES' : language === 'en' ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'long' })}
             </p>
-            <p className="text-xs md:text-sm font-bold text-stone-400 mt-0.5">{t('wizard.at_time').replace('{time}', selectedTime)}</p>
+            <p className="text-xs md:text-sm font-bold text-muted-foreground mt-0.5">{t('wizard.at_time').replace('{time}', selectedTime)}</p>
           </div>
 
           <div className="text-right relative z-10 flex flex-col items-end">
-            <p className="text-[10px] md:text-xs font-black uppercase text-stone-300 tracking-widest mb-0.5">{t('wizard.total')}</p>
-            <p className="text-2xl md:text-3xl font-serif text-stone-900 font-bold">{selectedService?.price}€</p>
+            <p className="text-[10px] md:text-xs font-black uppercase text-muted-foreground/50 tracking-widest mb-0.5">{t('wizard.total')}</p>
+            <p className="text-2xl md:text-3xl font-serif text-foreground font-bold">{selectedService?.price}€</p>
             {(() => {
               const dep = getServiceDepositInfo(selectedService);
               if (!dep.required) return null;
@@ -92,7 +92,7 @@ export default function Step3Details({
                   >
                     <Info size={13} className="shrink-0" />
                   </motion.button>
-                  <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-stone-400">
+                  <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                     {t('wizard.fianza')}
                   </span>
                   <span className="text-xs md:text-sm font-bold text-primary">
@@ -109,11 +109,11 @@ export default function Step3Details({
         <div className="space-y-4">
           <div className="space-y-3.5 md:space-y-5">
             <div className="group">
-              <label className="block text-[10px] md:text-xs font-black uppercase tracking-[0.12em] text-stone-400 mb-1.5 ml-1 group-focus-within:text-primary transition-colors">
+              <label className="block text-[10px] md:text-xs font-black uppercase tracking-[0.12em] text-muted-foreground mb-1.5 ml-1 group-focus-within:text-primary transition-colors">
                 {t('wizard.full_name')}
               </label>
               <div className="relative">
-                <div className="absolute left-4 md:left-5 top-1/2 -translate-y-1/2 text-stone-300 group-focus-within:text-primary transition-colors">
+                <div className="absolute left-4 md:left-5 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-primary transition-colors">
                   <User size={18} className="md:scale-125" />
                 </div>
                 <input
@@ -121,18 +121,18 @@ export default function Step3Details({
                   type="text"
                   value={formData.name}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full bg-white border border-stone-100 rounded-luxury-btn py-3.5 md:py-4.5 pl-12 md:pl-16 pr-4 text-sm md:text-base font-bold text-stone-800 placeholder:text-stone-200 focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all shadow-sm outline-none"
+                  className="w-full bg-card border border-border rounded-luxury-btn py-3.5 md:py-4.5 pl-12 md:pl-16 pr-4 text-sm md:text-base font-bold text-foreground placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm outline-none"
                   placeholder={t('wizard.full_name_placeholder')}
                 />
               </div>
             </div>
 
             <div className="group">
-              <label className="block text-[10px] md:text-xs font-black uppercase tracking-[0.12em] text-stone-400 mb-1.5 ml-1 group-focus-within:text-primary transition-colors">
+              <label className="block text-[10px] md:text-xs font-black uppercase tracking-[0.12em] text-muted-foreground mb-1.5 ml-1 group-focus-within:text-primary transition-colors">
                 {t('wizard.email')}
               </label>
               <div className="relative">
-                <div className="absolute left-4 md:left-5 top-1/2 -translate-y-1/2 text-stone-300 group-focus-within:text-primary transition-colors">
+                <div className="absolute left-4 md:left-5 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-primary transition-colors">
                   <Mail size={18} className="md:scale-125" />
                 </div>
                 <input
@@ -140,18 +140,18 @@ export default function Step3Details({
                   type="email"
                   value={formData.email}
                   onChange={e => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full bg-white border border-stone-100 rounded-luxury-btn py-3.5 md:py-4.5 pl-12 md:pl-16 pr-4 text-sm md:text-base font-bold text-stone-800 placeholder:text-stone-200 focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all shadow-sm outline-none"
+                  className="w-full bg-card border border-border rounded-luxury-btn py-3.5 md:py-4.5 pl-12 md:pl-16 pr-4 text-sm md:text-base font-bold text-foreground placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm outline-none"
                   placeholder="tu@email.com"
                 />
               </div>
             </div>
 
             <div className="group">
-              <label className="block text-[10px] md:text-xs font-black uppercase tracking-[0.12em] text-stone-400 mb-1.5 ml-1 group-focus-within:text-primary transition-colors">
+              <label className="block text-[10px] md:text-xs font-black uppercase tracking-[0.12em] text-muted-foreground mb-1.5 ml-1 group-focus-within:text-primary transition-colors">
                 {t('wizard.phone')}
               </label>
               <div className="relative">
-                <div className="absolute left-4 md:left-5 top-1/2 -translate-y-1/2 text-stone-300 group-focus-within:text-primary transition-colors">
+                <div className="absolute left-4 md:left-5 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-primary transition-colors">
                   <Phone size={18} className="md:scale-125" />
                 </div>
                 <input
@@ -159,7 +159,7 @@ export default function Step3Details({
                   type="tel"
                   value={formData.phone}
                   onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full bg-white border border-stone-100 rounded-luxury-btn py-3.5 md:py-4.5 pl-12 md:pl-16 pr-4 text-sm md:text-base font-bold text-stone-800 placeholder:text-stone-200 focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all shadow-sm outline-none"
+                  className="w-full bg-card border border-border rounded-luxury-btn py-3.5 md:py-4.5 pl-12 md:pl-16 pr-4 text-sm md:text-base font-bold text-foreground placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm outline-none"
                   placeholder="600 000 000"
                 />
               </div>
@@ -176,7 +176,7 @@ export default function Step3Details({
                   onChange={e => setPrivacyAccepted(e.target.checked)}
                   className="peer sr-only"
                 />
-                <div className="w-6 h-6 md:w-8 md:h-8 border-2 border-stone-200 rounded-luxury-btn bg-white transition-all flex items-center justify-center text-white overflow-hidden relative shadow-sm">
+                <div className="w-6 h-6 md:w-8 md:h-8 border-2 border-border rounded-luxury-btn bg-card transition-all flex items-center justify-center text-white overflow-hidden relative shadow-sm">
                   <AnimatePresence>
                     {privacyAccepted && (
                       <motion.div
@@ -207,7 +207,7 @@ export default function Step3Details({
                 </div>
               </div>
               <div className="flex flex-col">
-                <span className="text-[11px] md:text-sm font-bold text-stone-600 group-hover:text-stone-900 transition-colors">
+                <span className="text-[11px] md:text-sm font-bold text-muted-foreground group-hover:text-foreground transition-colors">
                   {t('wizard.accept_privacy')}{' '}
                   <a
                     href="/privacidad"
@@ -219,7 +219,7 @@ export default function Step3Details({
                     {t('wizard.privacy_policy')}
                   </a>
                 </span>
-                <span className="text-[9px] md:text-xs text-stone-400 uppercase tracking-widest mt-0.5 font-medium">{t('wizard.secure_data')}</span>
+                <span className="text-[9px] md:text-xs text-muted-foreground/70 uppercase tracking-widest mt-0.5 font-medium">{t('wizard.secure_data')}</span>
               </div>
             </label>
           </div>
@@ -245,7 +245,7 @@ export default function Step3Details({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ type: "spring", duration: 0.4 }}
-              className="relative w-full max-w-sm bg-white rounded-luxury-card p-6 md:p-8 border border-stone-100 shadow-xl z-10 flex flex-col gap-5 overflow-hidden"
+              className="relative w-full max-w-sm bg-card rounded-luxury-card p-6 md:p-8 border border-border shadow-xl z-10 flex flex-col gap-5 overflow-hidden"
             >
               {/* Decorative Accent */}
               <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary/80 to-primary" />
@@ -253,17 +253,17 @@ export default function Step3Details({
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="text-primary w-5 h-5 shrink-0" />
-                  <h3 className="text-stone-850 font-serif text-lg font-bold leading-tight">{t('wizard.deposit_policy')}</h3>
+                  <h3 className="text-foreground font-serif text-lg font-bold leading-tight">{t('wizard.deposit_policy')}</h3>
                 </div>
                 <button
                   onClick={() => setShowFianzaInfo(false)}
-                  className="text-stone-400 hover:text-stone-800 transition-colors p-1 rounded-full hover:bg-stone-50"
+                  className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-full hover:bg-muted"
                 >
                   <X size={16} />
                 </button>
               </div>
 
-              <div className="space-y-3.5 text-xs text-stone-600 leading-relaxed">
+              <div className="space-y-3.5 text-xs text-muted-foreground leading-relaxed">
                 <p>
                   {t('wizard.deposit_policy_desc')}
                 </p>
@@ -272,10 +272,10 @@ export default function Step3Details({
                   const dep = getServiceDepositInfo(selectedService);
                   const remaining = Math.max(0, parseFloat(selectedService?.price || 0) - dep.amount);
                   return (
-                    <div className="bg-stone-50 rounded-xl p-3 border border-stone-100 flex flex-col gap-2 font-medium">
+                    <div className="bg-muted rounded-xl p-3 border border-border flex flex-col gap-2 font-medium">
                       <div className="flex justify-between items-center text-[11px]">
                         <span className="text-stone-400">{t('wizard.total_treatment')}</span>
-                        <span className="font-bold text-stone-800">{selectedService?.price}€</span>
+                        <span className="font-bold text-foreground">{selectedService?.price}€</span>
                       </div>
                       <div className="flex justify-between items-center text-[11px] text-primary">
                         <span>{t('wizard.deposit_online_today')}</span>
@@ -283,7 +283,7 @@ export default function Step3Details({
                       </div>
                       <div className="flex justify-between items-center text-[11px]">
                         <span className="text-stone-400">{t('wizard.remaining_at_clinic')}</span>
-                        <span className="font-bold text-stone-800">{remaining}€</span>
+                        <span className="font-bold text-foreground">{remaining}€</span>
                       </div>
                     </div>
                   );
@@ -297,7 +297,7 @@ export default function Step3Details({
 
               <button
                 onClick={() => setShowFianzaInfo(false)}
-                className="w-full bg-stone-900 hover:bg-stone-800 active:scale-98 transition-all text-primary py-3 rounded-luxury-btn font-bold uppercase tracking-wider text-xs"
+                className="w-full bg-primary hover:bg-primary/95 text-primary-foreground active:scale-98 transition-all py-3 rounded-luxury-btn font-bold uppercase tracking-wider text-xs"
               >
                 {t('common.understood')}
               </button>

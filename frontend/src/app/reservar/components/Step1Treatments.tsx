@@ -70,7 +70,7 @@ export default function Step1Treatments({
   };
 
   return (
-    <div className="w-full flex flex-col flex-grow min-h-0 relative bg-[#F7F7F5]">
+    <div className="w-full flex flex-col flex-grow min-h-0 relative bg-background text-foreground">
       <AnimatePresence mode="wait">
         {!activeCategory ? (
           <motion.div
@@ -82,16 +82,16 @@ export default function Step1Treatments({
             className="flex flex-col flex-grow min-h-0"
           >
             {/* Header Compacto */}
-            <div className="shrink-0 px-6 pt-3 pb-2 z-30 bg-[#F7F7F5]">
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-serif text-stone-800 tracking-tight">{t('wizard.select_zone_title')}</h1>
-              <p className="text-[11px] md:text-xs lg:text-sm text-stone-500 mt-1 uppercase tracking-[0.15em] font-medium">
+            <div className="shrink-0 px-6 pt-3 pb-2 z-30 bg-background">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-serif text-foreground tracking-tight">{t('wizard.select_zone_title')}</h1>
+              <p className="text-[11px] md:text-xs lg:text-sm text-muted-foreground mt-1 uppercase tracking-[0.15em] font-medium">
                 {t('wizard.select_zone_subtitle')}
               </p>
             </div>
 
             <div className="flex flex-col flex-grow min-h-0 relative">
               {/* Degradado superior de inmersión */}
-              <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-[#F7F7F5] to-transparent z-20 pointer-events-none" />
+              <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-background to-transparent z-20 pointer-events-none" />
 
               <div className="flex-grow overflow-y-auto custom-scrollbar px-6 pt-6 pb-6 space-y-3">
                 {categories.map(cat => {
@@ -102,7 +102,7 @@ export default function Step1Treatments({
                       variants={itemVariants}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => setActiveCategory(cat)}
-                      className="relative w-full h-28 md:h-36 rounded-luxury-card overflow-hidden group shadow-sm border border-stone-200/50 shrink-0"
+                      className="relative w-full h-28 md:h-36 rounded-luxury-card overflow-hidden group shadow-sm border border-border shrink-0"
                     >
                       {cat.image_url ? (
                         <LazyPremiumImage
@@ -143,7 +143,7 @@ export default function Step1Treatments({
               animate={{ y: 0, opacity: 1 }}
               className="absolute top-0 left-0 right-0 z-40 px-4 pt-3"
             >
-              <div className="bg-white rounded-luxury-card overflow-hidden border border-stone-200/60 shadow-lg relative h-20 md:h-24 flex items-center px-4 md:px-6">
+              <div className="bg-card rounded-luxury-card overflow-hidden border border-border shadow-lg relative h-20 md:h-24 flex items-center px-4 md:px-6">
                 {activeCategory.image_url && (
                   <div
                     className="absolute inset-0 w-full h-full pointer-events-none"
@@ -163,12 +163,12 @@ export default function Step1Treatments({
                 <div className="relative z-10 flex items-center gap-4 w-full">
                   <button
                     onClick={() => setActiveCategory(null)}
-                    className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center hover:bg-stone-100 rounded-full transition-colors"
+                    className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center hover:bg-muted rounded-full transition-colors"
                   >
-                    <ChevronLeft size={20} className="text-stone-600 md:scale-125" />
+                    <ChevronLeft size={20} className="text-foreground md:scale-125" />
                   </button>
                   <div className="flex flex-col">
-                    <h2 className="text-lg md:text-2xl font-serif text-stone-800 leading-tight">{translate(activeCategory.name, activeCategory.translations, 'name')}</h2>
+                    <h2 className="text-lg md:text-2xl font-serif text-foreground leading-tight">{translate(activeCategory.name, activeCategory.translations, 'name')}</h2>
                     <p className="text-[10px] md:text-xs uppercase tracking-widest text-primary font-bold mt-0.5">{t('wizard.select_treatment')}</p>
                   </div>
                 </div>
@@ -184,7 +184,7 @@ export default function Step1Treatments({
                 className="flex-grow overflow-y-auto pt-32 md:pt-36 pb-10 px-4 custom-scrollbar grid grid-cols-2 gap-4 content-start auto-rows-max"
               >
                 {services.filter(s => String(s.category_id) === String(activeCategory.id)).length === 0 ? (
-                  <div className="col-span-2 py-10 text-center text-stone-400 text-sm font-medium">
+                  <div className="col-span-2 py-10 text-center text-muted-foreground text-sm font-medium">
                     {t('wizard.no_services')}
                   </div>
                 ) : (
@@ -195,7 +195,7 @@ export default function Step1Treatments({
                         key={srv.id}
                         variants={itemVariants}
                         onClick={() => onSelectService(srv)}
-                        className="relative aspect-[4/5] w-full rounded-luxury-card overflow-hidden group border border-stone-200/50 shadow-sm active:scale-95 transition-transform bg-white shrink-0"
+                        className="relative aspect-[4/5] w-full rounded-luxury-card overflow-hidden group border border-border shadow-sm active:scale-95 transition-transform bg-card shrink-0"
                       >
                         {srv.image_url ? (
                           <LazyPremiumImage
@@ -248,7 +248,7 @@ export default function Step1Treatments({
                 className="flex-grow overflow-y-auto pt-32 md:pt-36 pb-10 px-4 custom-scrollbar flex flex-col gap-3 content-start"
               >
                 {services.filter(s => !activeCategory || String(s.category_id) === String(activeCategory.id)).length === 0 ? (
-                  <div className="py-10 text-center text-stone-400 text-sm font-medium">
+                  <div className="py-10 text-center text-muted-foreground text-sm font-medium">
                     {t('wizard.no_services')}
                   </div>
                 ) : (
@@ -261,12 +261,12 @@ export default function Step1Treatments({
                           key={srv.id}
                           variants={itemVariants}
                           onClick={() => onSelectService(srv)}
-                          className="w-full bg-white rounded-luxury-card border border-stone-200/50 hover:border-primary/30 hover:bg-stone-50/50 p-3.5 md:p-4.5 flex items-center justify-between shadow-sm active:scale-98 transition-all shrink-0 group text-left gap-4"
+                          className="w-full bg-card rounded-luxury-card border border-border hover:border-primary/30 hover:bg-muted/50 p-3.5 md:p-4.5 flex items-center justify-between shadow-sm active:scale-98 transition-all shrink-0 group text-left gap-4"
                         >
                           {/* Left Side: Image + Full Wrapping Title */}
                           <div className="flex items-center gap-3.5 md:gap-4.5 min-w-0 flex-grow">
                             {srv.image_url ? (
-                              <div className="w-14 h-14 md:w-16 md:h-16 rounded-luxury-btn overflow-hidden shrink-0 border border-stone-100 relative">
+                              <div className="w-14 h-14 md:w-16 md:h-16 rounded-luxury-btn overflow-hidden shrink-0 border border-border relative">
                                 <LazyPremiumImage
                                   src={srv.image_url}
                                   alt={translatedName}
@@ -274,12 +274,12 @@ export default function Step1Treatments({
                                 />
                               </div>
                             ) : (
-                              <div className="w-14 h-14 md:w-16 md:h-16 rounded-luxury-btn bg-gradient-to-tr from-primary/5 to-primary/20 flex items-center justify-center shrink-0 border border-stone-100">
+                              <div className="w-14 h-14 md:w-16 md:h-16 rounded-luxury-btn bg-gradient-to-tr from-primary/5 to-primary/20 flex items-center justify-center shrink-0 border border-border">
                                 <span className="text-xs md:text-sm text-primary font-serif font-bold">M</span>
                               </div>
                             )}
                             <div className="min-w-0">
-                              <h3 className="text-stone-850 font-serif text-sm md:text-lg leading-snug group-hover:text-primary transition-colors break-words">
+                              <h3 className="text-foreground font-serif text-sm md:text-lg leading-snug group-hover:text-primary transition-colors break-words">
                                 {translatedName}
                               </h3>
                             </div>
@@ -298,12 +298,12 @@ export default function Step1Treatments({
                               <span className="text-sm md:text-lg font-bold text-primary leading-none py-0.5">
                                 {srv.price}€
                               </span>
-                              <div className="flex items-center gap-1 text-[10px] md:text-xs text-stone-400 mt-1 leading-none">
-                                <Clock size={11} className="text-stone-300 shrink-0" />
+                              <div className="flex items-center gap-1 text-[10px] md:text-xs text-muted-foreground mt-1 leading-none">
+                                <Clock size={11} className="text-muted-foreground/60 shrink-0" />
                                 <span>{srv.duration_minutes} {t('wizard.min')}</span>
                               </div>
                             </div>
-                            <span className="text-stone-300 group-hover:text-primary transition-colors text-lg md:text-xl font-bold shrink-0">›</span>
+                            <span className="text-muted-foreground/55 group-hover:text-primary transition-colors text-lg md:text-xl font-bold shrink-0">›</span>
                           </div>
                         </motion.button>
                       );
