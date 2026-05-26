@@ -203,8 +203,15 @@ export default async function RootLayout({
 
   if (isMarketing) {
     return (
-      <html lang="es" suppressHydrationWarning className={`${inter.variable}`}>
-        <body className="antialiased bg-[#F7F7F5] text-[#1F2937] flex flex-col min-h-screen">
+      <html lang="es" suppressHydrationWarning className={`${inter.variable} ${cormorantGaramond.variable}`}>
+        <head>
+          <style dangerouslySetInnerHTML={{ __html: `
+            :root {
+              --font-playfair: var(--font-cormorant) !important;
+            }
+          ` }} />
+        </head>
+        <body className="antialiased bg-white text-stone-900 flex flex-col min-h-screen">
           <Providers>
             {children}
           </Providers>
