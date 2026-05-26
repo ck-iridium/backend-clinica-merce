@@ -904,6 +904,8 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
             setPickerTarget(null);
           }}
           mediaType={pickerTarget.field === 'video_url' ? 'video' : 'image'}
+          tenantId="00000000-0000-0000-0000-000000000000"
+          token={token}
         />
       )}
 

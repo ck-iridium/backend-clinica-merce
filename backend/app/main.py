@@ -15,11 +15,42 @@ Base.metadata.create_all(bind=engine)
 
 def seed_admin_user():
     from .database import SessionLocal
-    from .models import User
+    from .models import User, Tenant
     from .routers.users import pwd_context
     
     db = SessionLocal()
     try:
+        # 1. Sembrar Inquilino de Sistema (ProBookia Core)
+        system_tenant_id = "00000000-0000-0000-0000-000000000000"
+        system_tenant = db.query(Tenant).filter(Tenant.id == system_tenant_id).first()
+        if not system_tenant:
+            system_tenant = Tenant(
+                id=system_tenant_id,
+                name="ProBookia Core",
+                slug="probookia",
+                subscription_status="active",
+                plan_type="gold"
+            )
+            db.add(system_tenant)
+            db.commit()
+            print("Tenant del sistema (ProBookia Core) sembrado.")
+
+        # 2. Sembrar Inquilino de Clínica Mercè
+        merce_tenant_id = "00000000-0000-0000-0000-000000000001"
+        merce_tenant = db.query(Tenant).filter(Tenant.id == merce_tenant_id).first()
+        if not merce_tenant:
+            merce_tenant = Tenant(
+                id=merce_tenant_id,
+                name="Clínica Mercè",
+                slug="merce",
+                subscription_status="active",
+                plan_type="gold"
+            )
+            db.add(merce_tenant)
+            db.commit()
+            print("Tenant de Clínica Mercè sembrado.")
+
+        # 3. Sembrar Usuario de Clínica Mercè
         admin_email = "merce@clinicamerce.com"
         user = db.query(User).filter(User.email == admin_email).first()
         if not user:
@@ -29,7 +60,7 @@ def seed_admin_user():
                 email=admin_email,
                 hashed_password=hashed_pw,
                 role="admin",
-                tenant_id="00000000-0000-0000-0000-000000000001"
+                tenant_id=merce_tenant_id
             )
             db.add(new_user)
             db.commit()

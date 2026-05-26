@@ -192,9 +192,9 @@ def get_saas_settings(
     """
     Obtiene los ajustes globales del SaaS (Tenant por defecto).
     """
-    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == "00000000-0000-0000-0000-000000000001").first()
+    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == "00000000-0000-0000-0000-000000000000").first()
     if not settings:
-        settings = models.ClinicSettings(tenant_id="00000000-0000-0000-0000-000000000001")
+        settings = models.ClinicSettings(tenant_id="00000000-0000-0000-0000-000000000000")
         db.add(settings)
         db.commit()
         db.refresh(settings)
@@ -211,9 +211,9 @@ def update_saas_settings(
     """
     Actualiza los ajustes globales del SaaS.
     """
-    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == "00000000-0000-0000-0000-000000000001").first()
+    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == "00000000-0000-0000-0000-000000000000").first()
     if not settings:
-        settings = models.ClinicSettings(tenant_id="00000000-0000-0000-0000-000000000001")
+        settings = models.ClinicSettings(tenant_id="00000000-0000-0000-0000-000000000000")
         db.add(settings)
     settings.allow_search_engine_indexing = payload.allow_search_engine_indexing
     db.commit()

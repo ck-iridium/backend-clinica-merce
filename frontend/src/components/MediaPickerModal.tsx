@@ -23,10 +23,12 @@ interface MediaPickerModalProps {
   forceAspect?: number;
   maxResolution?: number;
   mediaType?: 'image' | 'video' | 'all';
+  tenantId?: string;
+  token?: string;
 }
 
 const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
-  ({ onClose, onImageSelected, forceAspect, maxResolution, mediaType = 'image' }, ref) => {
+  ({ onClose, onImageSelected, forceAspect, maxResolution, mediaType = 'image', tenantId, token }, ref) => {
     const { showFeedback } = useFeedback();
     const { language } = useLanguage();
     const [activeTab, setActiveTab] = useState<'upload' | 'gallery'>('gallery');
@@ -88,7 +90,17 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
     const loadGallery = async () => {
       setGalleryLoading(true);
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/all`);
+        const headers: Record<string, string> = {};
+        if (tenantId) {
+          headers['X-Tenant-ID'] = tenantId;
+        }
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/all`, {
+          headers
+        });
         if (res.ok) {
           const allFiles = await res.json();
           // Filtrar por tipo si se especifica
@@ -148,8 +160,17 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
       const formData = new FormData();
       formData.append('file', fileOrBlob, customName || (fileOrBlob instanceof File ? fileOrBlob.name : 'upload.mp4'));
       try {
+        const headers: Record<string, string> = {};
+        if (tenantId) {
+          headers['X-Tenant-ID'] = tenantId;
+        }
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/`, {
           method: 'POST',
+          headers,
           body: formData,
         });
         if (res.ok) {
@@ -172,8 +193,17 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
       const formData = new FormData();
       formData.append('file', croppedBlob, 'picked_image.webp');
       try {
+        const headers: Record<string, string> = {};
+        if (tenantId) {
+          headers['X-Tenant-ID'] = tenantId;
+        }
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/`, {
           method: 'POST',
+          headers,
           body: formData,
         });
         if (res.ok) {
