@@ -147,6 +147,26 @@ export default function MarketingPage() {
   const [heroTitle, setHeroTitle] = useState('La elegancia de tu negocio traducida en un SaaS de Lujo');
   const [heroSubtitle, setHeroSubtitle] = useState('Diseñado exclusivamente para centros de estética, wellness, spas y salones premium independientes. Agendas fluidas, expedientes médicos asimétricos y reservas de doble opt-in integradas en una experiencia sublime.');
 
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [animating, setAnimating] = useState(false);
+
+  const sectorsToRender = sectors.length >= 4 ? sectors : fallbackSectors;
+
+  const handleNavigate = (newIndex: number) => {
+    if (animating) return;
+    setAnimating(true);
+    
+    // 200ms timeout to update activeIndex (giving the previous panel time to slide down completely)
+    setTimeout(() => {
+      setActiveIndex(newIndex);
+    }, 200);
+
+    // 400ms timeout to reveal the new panel cleanly
+    setTimeout(() => {
+      setAnimating(false);
+    }, 600); // 200ms index update + 400ms delay = 600ms total to settle
+  };
+
   useEffect(() => {
     async function loadMarketingContent() {
       try {
@@ -262,73 +282,192 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* 3. SECCIÓN DE SECTORES DINÁMICA (REJILLA CON VIDEOS EN BUCLE CORTO Y 3D PARALLAX) */}
-      <section id="sectors" className="py-24 bg-stone-50/50 border-y border-stone-100">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center max-w-2xl mx-auto mb-20">
+      {/* 3. SECCIÓN DE SECTORES EN ANILLO 3D CILÍNDRICO REAL */}
+      <section id="sectors" className="py-24 bg-stone-50/50 border-y border-stone-100 overflow-hidden relative">
+        <div className="max-w-7xl mx-auto px-6 relative flex flex-col items-center">
+          
+          {/* Cabecera Editorial */}
+          <div className="text-center max-w-2xl mx-auto mb-16">
             <span className="text-blue-600 text-[10px] font-black uppercase tracking-[0.25em] block mb-3">Especialidades</span>
             <h2 className="text-3xl md:text-5xl font-serif font-semibold tracking-tight text-stone-950">
               Sectores de Alta Gama
             </h2>
             <p className="text-stone-500 text-sm md:text-base mt-3 font-medium">
-              ProBookia se integra con naturalidad en negocios selectos de alta ocupación proporcionando las herramientas técnicas específicas para cada perfil.
+              Interactúa con el carrusel en anillo 3D tridimensional de alta precisión.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 [perspective:1500px] [transform-style:preserve-3d]">
-            {sectors.map(sector => (
+          {/* El contenedor padre define la profundidad del espacio */}
+          <div className="relative w-full h-[650px] overflow-hidden flex flex-col items-center justify-center [perspective:1200px]">
+            
+            {/* EL ANILLO: Este es el contenedor que gira según el sector activo */}
+            <div 
+              className="relative w-[280px] h-[500px] transition-transform duration-1000 ease-out [transform-style:preserve-3d]"
+              style={{ transform: `rotateY(${activeIndex * -90}deg)` }}
+            >
+              {/* CARD 0: Clínicas (0 grados) */}
               <div 
-                key={sector.id}
-                onMouseEnter={() => setHoveredSector(sector.id)}
-                onMouseLeave={() => setHoveredSector(null)}
-                className="group bg-white rounded-[2rem] border border-stone-200/50 p-6 flex flex-col justify-between transition-all duration-700 ease-out h-[530px] relative overflow-hidden [transform-style:preserve-3d] [perspective:1000px] hover:[transform:rotateY(-6deg)_rotateX(4deg)_translateZ(40px)] hover:shadow-2xl hover:border-blue-600/20"
+                onClick={() => handleNavigate(0)}
+                className={`absolute inset-0 cursor-pointer transition-all duration-700 ease-out [backface-visibility:hidden] [transform:rotateY(0deg)_translateZ(380px)] ${
+                  activeIndex === 0 ? 'scale-105 opacity-100 drop-shadow-[0_20px_40px_rgba(37,99,235,0.08)] z-20' : 'scale-95 opacity-40 hover:opacity-70 filter brightness-90 z-10'
+                }`}
               >
-                {/* Contenedor del Vídeo / Visual conceptual en proporción vertical */}
-                <div className="h-[270px] w-full rounded-2xl overflow-hidden relative bg-stone-50 border border-stone-100 shrink-0 shadow-sm transition-transform duration-700 group-hover:[transform:translateZ(20px)] group-hover:shadow-md">
-                  <div className={`absolute inset-0 bg-gradient-to-br ${sector.placeholderGradient} transition-opacity duration-500`}></div>
-                  
-                  {/* Vídeo en bucle vertical */}
-                  <video
-                    src={sector.videoUrl}
-                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${hoveredSector === sector.id ? 'opacity-100 scale-105' : 'opacity-0 scale-100'}`}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                  />
-                  
-                  {/* Badges Flotantes */}
-                  <div className="absolute top-4 left-4 z-10 transition-transform duration-700 group-hover:[transform:translateZ(10px)]">
-                    <span className="border border-stone-200/60 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full text-[9px] font-black text-blue-600 tracking-wider shadow-sm uppercase">
-                      {sector.badge}
-                    </span>
+                <div className="w-full h-full bg-white rounded-2xl border border-stone-200/50 p-3 shadow-md relative overflow-hidden">
+                  <div className="w-full h-full rounded-xl overflow-hidden bg-stone-50 relative border border-stone-100">
+                    <video 
+                      src={sectorsToRender[0]?.videoUrl} 
+                      className="w-full h-full object-cover" 
+                      autoPlay={activeIndex === 0} 
+                      loop 
+                      muted 
+                      playsInline 
+                    />
+                    <div className="absolute top-4 left-4 z-10">
+                      <span className={`border px-2.5 py-1 rounded-full text-[9px] font-black tracking-wider shadow-sm uppercase transition-colors duration-500 ${
+                        activeIndex === 0 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white/95 border-stone-200/60 text-stone-500'
+                      }`}>
+                        {sectorsToRender[0]?.badge}
+                      </span>
+                    </div>
                   </div>
-                </div>
-
-                {/* Copys e Información con paralaje en eje Z */}
-                <div className="mt-6 flex-1 flex flex-col justify-between [transform-style:preserve-3d]">
-                  <div>
-                    <h3 className="font-serif text-lg md:text-xl font-medium text-stone-900 mb-2 transition-transform duration-700 group-hover:[transform:translateZ(15px)]">
-                      {sector.title}
-                    </h3>
-                    <p className="text-stone-500 text-[13px] leading-relaxed font-medium transition-transform duration-700 group-hover:[transform:translateZ(10px)]">
-                      {sector.copy}
-                    </p>
-                  </div>
-                  
-                  <button 
-                    onClick={() => {
-                      setSelectedPlan('pro');
-                      setIsModalOpen(true);
-                    }}
-                    className="w-full py-2.5 mt-4 border border-stone-200 hover:border-stone-900 rounded-xl text-stone-700 hover:text-stone-950 text-xs font-bold transition-all flex items-center justify-center gap-1 active:scale-95 transition-transform duration-700 group-hover:[transform:translateZ(5px)]"
-                  >
-                    <span>Configurar Entorno</span>
-                    <ChevronRight size={12} />
-                  </button>
                 </div>
               </div>
-            ))}
+              
+              {/* CARD 1: Barberías (90 grados) */}
+              <div 
+                onClick={() => handleNavigate(1)}
+                className={`absolute inset-0 cursor-pointer transition-all duration-700 ease-out [backface-visibility:hidden] [transform:rotateY(90deg)_translateZ(380px)] ${
+                  activeIndex === 1 ? 'scale-105 opacity-100 drop-shadow-[0_20px_40px_rgba(37,99,235,0.08)] z-20' : 'scale-95 opacity-40 hover:opacity-70 filter brightness-90 z-10'
+                }`}
+              >
+                <div className="w-full h-full bg-white rounded-2xl border border-stone-200/50 p-3 shadow-md relative overflow-hidden">
+                  <div className="w-full h-full rounded-xl overflow-hidden bg-stone-50 relative border border-stone-100">
+                    <video 
+                      src={sectorsToRender[1]?.videoUrl} 
+                      className="w-full h-full object-cover" 
+                      autoPlay={activeIndex === 1} 
+                      loop 
+                      muted 
+                      playsInline 
+                    />
+                    <div className="absolute top-4 left-4 z-10">
+                      <span className={`border px-2.5 py-1 rounded-full text-[9px] font-black tracking-wider shadow-sm uppercase transition-colors duration-500 ${
+                        activeIndex === 1 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white/95 border-stone-200/60 text-stone-500'
+                      }`}>
+                        {sectorsToRender[1]?.badge}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* CARD 2: Dentistas (180 grados) */}
+              <div 
+                onClick={() => handleNavigate(2)}
+                className={`absolute inset-0 cursor-pointer transition-all duration-700 ease-out [backface-visibility:hidden] [transform:rotateY(180deg)_translateZ(380px)] ${
+                  activeIndex === 2 ? 'scale-105 opacity-100 drop-shadow-[0_20px_40px_rgba(37,99,235,0.08)] z-20' : 'scale-95 opacity-40 hover:opacity-70 filter brightness-90 z-10'
+                }`}
+              >
+                <div className="w-full h-full bg-white rounded-2xl border border-stone-200/50 p-3 shadow-md relative overflow-hidden">
+                  <div className="w-full h-full rounded-xl overflow-hidden bg-stone-50 relative border border-stone-100">
+                    <video 
+                      src={sectorsToRender[2]?.videoUrl} 
+                      className="w-full h-full object-cover" 
+                      autoPlay={activeIndex === 2} 
+                      loop 
+                      muted 
+                      playsInline 
+                    />
+                    <div className="absolute top-4 left-4 z-10">
+                      <span className={`border px-2.5 py-1 rounded-full text-[9px] font-black tracking-wider shadow-sm uppercase transition-colors duration-500 ${
+                        activeIndex === 2 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white/95 border-stone-200/60 text-stone-500'
+                      }`}>
+                        {sectorsToRender[2]?.badge}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* CARD 3: Salones (270 grados) */}
+              <div 
+                onClick={() => handleNavigate(3)}
+                className={`absolute inset-0 cursor-pointer transition-all duration-700 ease-out [backface-visibility:hidden] [transform:rotateY(270deg)_translateZ(380px)] ${
+                  activeIndex === 3 ? 'scale-105 opacity-100 drop-shadow-[0_20px_40px_rgba(37,99,235,0.08)] z-20' : 'scale-95 opacity-40 hover:opacity-70 filter brightness-90 z-10'
+                }`}
+              >
+                <div className="w-full h-full bg-white rounded-2xl border border-stone-200/50 p-3 shadow-md relative overflow-hidden">
+                  <div className="w-full h-full rounded-xl overflow-hidden bg-stone-50 relative border border-stone-100">
+                    <video 
+                      src={sectorsToRender[3]?.videoUrl} 
+                      className="w-full h-full object-cover" 
+                      autoPlay={activeIndex === 3} 
+                      loop 
+                      muted 
+                      playsInline 
+                    />
+                    <div className="absolute top-4 left-4 z-10">
+                      <span className={`border px-2.5 py-1 rounded-full text-[9px] font-black tracking-wider shadow-sm uppercase transition-colors duration-500 ${
+                        activeIndex === 3 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white/95 border-stone-200/60 text-stone-500'
+                      }`}>
+                        {sectorsToRender[3]?.badge}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Controles de Navegación Lateral (Flechitas Flotantes Premium) */}
+            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 sm:px-12 pointer-events-none z-20">
+              <button
+                onClick={() => {
+                  const prevIndex = (activeIndex - 1 + 4) % 4;
+                  handleNavigate(prevIndex);
+                }}
+                className="w-12 h-12 rounded-full bg-white/90 backdrop-blur-sm border border-stone-200/80 hover:bg-stone-50 flex items-center justify-center text-stone-700 hover:text-stone-950 transition-all shadow-md active:scale-95 pointer-events-auto"
+                title="Sector Anterior"
+              >
+                <ChevronRight className="w-5 h-5 rotate-180" />
+              </button>
+              <button
+                onClick={() => {
+                  const nextIndex = (activeIndex + 1) % 4;
+                  handleNavigate(nextIndex);
+                }}
+                className="w-12 h-12 rounded-full bg-white/90 backdrop-blur-sm border border-stone-200/80 hover:bg-stone-50 flex items-center justify-center text-stone-700 hover:text-stone-950 transition-all shadow-md active:scale-95 pointer-events-auto"
+                title="Siguiente Sector"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* 2. LA FICHA BLANCA EMERGENTE (Fuera del anillo, abajo en el centro) */}
+            {sectorsToRender[activeIndex] && (
+              <div className={`absolute bottom-6 max-w-md w-full bg-white/90 backdrop-blur-md p-6 rounded-2xl shadow-2xl border border-stone-100 transition-all duration-500 transform z-30 ${
+                animating ? 'translate-y-10 opacity-0' : 'translate-y-0 opacity-100'
+              }`}>
+                <span className="text-[10px] uppercase font-bold tracking-widest text-blue-600">
+                  {sectorsToRender[activeIndex]?.badge}
+                </span>
+                <h3 className="font-serif text-2xl text-stone-900 my-1">
+                  {sectorsToRender[activeIndex]?.title}
+                </h3>
+                <p className="text-stone-600 text-xs leading-relaxed mb-4">
+                  {sectorsToRender[activeIndex]?.copy}
+                </p>
+                <button 
+                  onClick={() => {
+                    setSelectedPlan('pro');
+                    setIsModalOpen(true);
+                  }}
+                  className="w-full bg-stone-950 text-white text-xs py-2.5 rounded-xl font-medium hover:bg-stone-900 transition-colors"
+                >
+                  Configurar Entorno
+                </button>
+              </div>
+            )}
+            
           </div>
         </div>
       </section>
