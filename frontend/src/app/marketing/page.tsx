@@ -1,14 +1,26 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Calendar, Shield, FileText, CreditCard, Sparkles, ChevronRight, Check, X, Loader2 } from 'lucide-react';
+import { Calendar, Shield, FileText, CreditCard, Sparkles, ChevronRight, Check, X, Loader2, Bot, Volume2, BookOpen, User, Tag } from 'lucide-react';
 import { toast } from 'sonner';
+
+interface Sector {
+  id: string;
+  badge: string;
+  title: string;
+  copy: string;
+  videoUrl: string;
+  placeholderGradient: string;
+}
 
 export default function MarketingPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<'free' | 'basic' | 'pro' | 'gold'>('pro');
+  
+  // Hover states for sectors to play/pause videos
+  const [hoveredSector, setHoveredSector] = useState<string | null>(null);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -25,7 +37,6 @@ export default function MarketingPage() {
     const { name, value } = e.target;
     
     if (name === 'tenant_slug') {
-      // Limpiar el slug para que solo admita minúsculas, números y guiones
       const cleanSlug = value
         .toLowerCase()
         .replace(/[^a-z0-9-]/g, '')
@@ -39,7 +50,6 @@ export default function MarketingPage() {
   const handleOnboardingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validaciones básicas
     if (!formData.tenant_name || !formData.tenant_slug || !formData.admin_name || !formData.admin_email || !formData.admin_password) {
       toast.error('Por favor, rellena todos los campos obligatorios.');
       return;
@@ -58,8 +68,8 @@ export default function MarketingPage() {
     setLoading(true);
     const isFree = selectedPlan === 'free';
     const loadingMessage = isFree 
-      ? 'Verificando disponibilidad y creando tu cuenta gratuita...'
-      : 'Verificando disponibilidad e iniciando pasarela...';
+      ? 'Creando tu base de datos aislada y cuenta gratuita...'
+      : 'Creando base de datos segura y conectando pasarela...';
     
     const loadingToast = toast.loading(loadingMessage);
 
@@ -83,12 +93,11 @@ export default function MarketingPage() {
       const data = await response.json();
       
       const successMessage = isFree
-        ? '¡Cuenta gratuita creada con éxito! Inicializando tu panel...'
-        : '¡Todo listo! Redirigiendo a la pasarela de pago seguro...';
+        ? '¡Entorno ProBookia inicializado con éxito!'
+        : '¡Aprovisionamiento listo! Redirigiendo a Stripe...';
         
       toast.success(successMessage, { id: loadingToast });
       
-      // Redirigir a la pasarela de Stripe Checkout o directamente al Onboarding Success
       setTimeout(() => {
         window.location.href = data.url;
       }, 1000);
@@ -99,28 +108,70 @@ export default function MarketingPage() {
     }
   };
 
+  const sectors: Sector[] = [
+    {
+      id: 'clinicas',
+      badge: 'Clínicas Estéticas',
+      title: 'Clínicas & Wellness',
+      copy: 'Aislamiento total de expedientes clínicos en base de datos, firmas manuscritas Base64 y branding de lujo.',
+      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-dermatologist-examining-a-patients-face-with-magnifier-40545-large.mp4',
+      placeholderGradient: 'from-blue-50 to-blue-100/30'
+    },
+    {
+      id: 'barberias',
+      badge: 'Barberías Selectas',
+      title: 'Barberías Premium',
+      copy: 'Gestión ágil de especialistas en tiempo real, venta de bonos express y protección total contra incomparecencias.',
+      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-barber-shaving-a-man-with-a-razor-41223-large.mp4',
+      placeholderGradient: 'from-amber-50 to-amber-100/30'
+    },
+    {
+      id: 'dentistas',
+      badge: 'Odontología Avanzada',
+      title: 'Consultorios Dentales',
+      copy: 'Calendarios dinámicos asimétricos, cobros rápidos en POS y recordatorios automáticos por SMTP privado.',
+      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-dentist-adjusting-a-surgical-light-in-clinic-40549-large.mp4',
+      placeholderGradient: 'from-emerald-50 to-emerald-100/30'
+    },
+    {
+      id: 'peluquerias',
+      badge: 'Salones de Alta Costura',
+      title: 'Salones de Belleza',
+      copy: 'Portal de reserva en 3 pasos con colores y logotipos propios, adaptable a dominio exclusivo corporativo.',
+      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-hairdresser-cutting-hair-of-a-woman-in-salon-40552-large.mp4',
+      placeholderGradient: 'from-purple-50 to-purple-100/30'
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-[#F7F7F5] text-[#1F2937] font-sans selection:bg-[#d4af37]/30 overflow-x-hidden relative">
+    <div className="min-h-screen bg-white text-stone-900 font-sans selection:bg-[#d4af37]/20 overflow-x-hidden relative transition-colors duration-300">
       
-      {/* 1. STICKY GLASSMORPHISM HEADER (CORPO EXCLUSIVO) */}
-      <header className="sticky top-0 z-40 w-full bg-[#F7F7F5]/80 backdrop-blur-md border-b border-[#1F2937]/5 transition-all duration-300">
+      {/* 1. STICKY HEADER EDITORIAL */}
+      <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-stone-100 py-1 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-xl md:text-2xl font-serif tracking-widest text-[#1F2937] font-bold">
-              PROBOOKIA <span className="text-[#d4af37] font-sans text-xs font-black tracking-widest uppercase ml-1">SaaS</span>
+            <span className="text-xl md:text-2.5xl font-serif tracking-widest text-stone-950 font-semibold select-none">
+              PROBOOKIA <span className="text-blue-600 font-sans text-[10px] font-black tracking-[0.25em] uppercase ml-1">SaaS</span>
             </span>
           </div>
           
           <div className="flex items-center gap-4">
+            <Link
+              href="/docs"
+              className="hidden sm:flex items-center gap-1.5 px-4 py-2 text-stone-500 hover:text-stone-950 text-xs font-bold transition-colors"
+            >
+              <BookOpen size={14} />
+              <span>SaaS Blueprint</span>
+            </Link>
             <Link 
               href="/login" 
-              className="px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold bg-white text-[#1F2937] border border-stone-200 shadow-sm hover:border-[#d4af37] hover:text-[#d4af37] transition-all duration-300 active:scale-95"
+              className="px-5 py-2.5 rounded-xl text-xs font-bold bg-stone-50 text-stone-700 border border-stone-200/60 hover:text-stone-950 hover:bg-stone-100 transition-all duration-300 active:scale-95 shadow-sm"
             >
               Acceso Profesional
             </Link>
             <button 
               onClick={() => setIsModalOpen(true)}
-              className="bg-[#1F2937] hover:bg-[#d4af37] text-white px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold shadow-sm transition-all duration-300 hover:scale-105 active:scale-95"
+              className="bg-stone-950 hover:bg-stone-900 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all duration-300 hover:scale-105 active:scale-95"
             >
               Comenzar Ahora
             </button>
@@ -128,177 +179,234 @@ export default function MarketingPage() {
         </div>
       </header>
 
-      {/* 2. HERO SECTION */}
-      <section className="relative pt-20 pb-16 md:pt-32 md:pb-28 bg-gradient-to-b from-white to-[#F7F7F5]">
+      {/* 2. HERO SECTION - BOUTIQUE BLANCA */}
+      <section className="relative pt-20 pb-20 md:pt-36 md:pb-32 bg-white">
         <div className="max-w-7xl mx-auto px-6 relative z-10 text-center animate-in fade-in slide-in-from-bottom-6 duration-1000">
-          <div className="inline-flex items-center gap-2 bg-[#fcf8e5] text-[#b08e23] px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase mb-8 shadow-sm border border-yellow-100/50 font-sans">
-            <Sparkles className="w-3.5 h-3.5" /> El Nuevo Estándar de Gestión para Centros y Negocios de Lujo
+          <div className="inline-flex items-center gap-2 bg-stone-50 border border-stone-200/60 text-stone-500 px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase mb-8 shadow-sm">
+            <Sparkles className="w-3 h-3 text-blue-600" /> EL NUEVO ESTÁNDAR PARA CENTROS Y SALONES DE LUJO
           </div>
           
-          <h1 className="text-4xl md:text-7xl font-serif font-extrabold text-[#1F2937] tracking-tight leading-[1.1] max-w-5xl mx-auto mb-8">
-            La elegancia de tu negocio <br className="hidden md:block"/> traducida en un <span className="text-[#d4af37]">SaaS de Lujo</span>
+          <h1 className="text-4xl md:text-7xl font-serif font-semibold text-stone-950 tracking-tight leading-[1.1] max-w-5xl mx-auto mb-8">
+            La elegancia de tu negocio <br className="hidden md:block"/> traducida en un <span className="text-blue-600 dark:text-[#d4af37]">SaaS de Lujo</span>
           </h1>
           
-          <p className="text-lg md:text-xl text-stone-500 font-medium max-w-3xl mx-auto mb-12 leading-relaxed font-sans">
-            Diseñado exclusivamente para centros de estética, spas, salones de belleza y barberías premium independientes. Agendas fluidas, fichas de clientes personalizadas y seguras, consentimiento digital inteligente y facturación integrada en una experiencia borderless sublime.
+          <p className="text-base md:text-lg text-stone-500 font-medium max-w-2xl mx-auto mb-12 leading-relaxed">
+            Diseñado exclusivamente para centros de estética, wellness, spas y salones premium independientes. Agendas fluidas, expedientes médicos asimétricos y reservas de doble opt-in integradas en una experiencia sublime.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button 
               onClick={() => setIsModalOpen(true)}
-              className="w-full sm:w-auto bg-[#d4af37] hover:bg-[#1F2937] text-white px-8 py-4 rounded-xl text-base font-bold shadow-luxury transition-all duration-300 flex items-center justify-center gap-2 group active:scale-95"
+              className="w-full sm:w-auto bg-stone-950 hover:bg-stone-900 text-white px-8 py-4 rounded-xl text-xs font-bold shadow-md transition-all duration-300 flex items-center justify-center gap-2 group active:scale-95"
             >
               Comenzar Prueba Gratuita <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
             <a 
-              href="#features" 
-              className="w-full sm:w-auto bg-white border border-[#1F2937]/10 hover:border-[#d4af37] hover:text-[#d4af37] text-[#1F2937] px-8 py-4 rounded-xl text-base font-bold shadow-sm transition-all duration-300 flex items-center justify-center"
+              href="#sectors" 
+              className="w-full sm:w-auto bg-white border border-stone-200/80 hover:bg-stone-50 text-stone-700 px-8 py-4 rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center"
             >
-              Explorar Características
+              Ver Sectores de Especialidad
             </a>
           </div>
         </div>
       </section>
 
-      {/* 3. BENTO GRID - MULTI-TENANT FEATURES */}
-      <section id="features" className="py-24 bg-white">
+      {/* 3. SECCIÓN DE SECTORES DINÁMICA (REJILLA CON VIDEOS EN BUCLE CORTO) */}
+      <section id="sectors" className="py-24 bg-stone-50/50 border-y border-stone-100">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-20">
-            <h2 className="text-3xl md:text-5xl font-serif font-extrabold text-[#1F2937] tracking-tight">
-              Diseño Borderless. Ingeniería Robusta.
+          <div className="text-center max-w-2xl mx-auto mb-20">
+            <span className="text-blue-600 text-[10px] font-black uppercase tracking-[0.25em] block mb-3">Especialidades</span>
+            <h2 className="text-3xl md:text-5xl font-serif font-semibold tracking-tight text-stone-950">
+              Sectores de Alta Gama
             </h2>
-            <p className="text-[#1F2937]/60 text-lg mt-4 max-w-2xl mx-auto font-medium">
-              Estructura asimétrica diseñada para optimizar los procesos críticos de tu negocio con máxima simplicidad visual.
+            <p className="text-stone-500 text-sm md:text-base mt-3 font-medium">
+              ProBookia se integra con naturalidad en negocios selectos de alta ocupación proporcionando las herramientas técnicas específicas para cada perfil.
             </p>
           </div>
 
-          {/* ASYMMETRIC BENTO GRID */}
-          <div id="bento" className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            
-            {/* Bento Card 1: Agenda */}
-            <div className="md:col-span-2 bg-[#F7F7F5] rounded-3xl p-8 md:p-12 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 relative group min-h-[350px] flex flex-col justify-between">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[#d4af37]/10 to-transparent rounded-bl-[16rem] group-hover:scale-110 transition-transform duration-700 pointer-events-none"></div>
-              
-              <div className="w-14 h-14 bg-white rounded-2xl shadow-sm flex items-center justify-center text-[#d4af37] mb-8 relative z-10">
-                <Calendar className="w-6 h-6" />
-              </div>
-              
-              <div className="relative z-10 mt-auto">
-                <h3 className="text-2xl md:text-3xl font-serif font-bold text-[#1F2937] mb-3">
-                  Agenda Inteligente de Alta Ocupación
-                </h3>
-                <p className="text-stone-500 font-medium leading-relaxed max-w-xl">
-                  Optimiza los turnos de especialistas y salas en tiempo real. Visualización en columnas dinámicas con transiciones fluidas y sincronización de citas instantánea para evitar tiempos muertos.
-                </p>
-              </div>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {sectors.map(sector => (
+              <div 
+                key={sector.id}
+                onMouseEnter={() => setHoveredSector(sector.id)}
+                onMouseLeave={() => setHoveredSector(null)}
+                className="group bg-white rounded-2xl border border-stone-200/50 p-5 flex flex-col justify-between hover:shadow-xl transition-all duration-500 h-[450px] relative overflow-hidden"
+              >
+                {/* Contenedor del Vídeo / Visual conceptual */}
+                <div className="h-44 w-full rounded-xl overflow-hidden relative bg-stone-50 border border-stone-100 shrink-0">
+                  <div className={`absolute inset-0 bg-gradient-to-br ${sector.placeholderGradient} transition-opacity duration-500`}></div>
+                  
+                  {/* Vídeo en bucle ultra corto */}
+                  <video
+                    src={sector.videoUrl}
+                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${hoveredSector === sector.id ? 'opacity-100 scale-105' : 'opacity-0 scale-100'}`}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                  />
+                  
+                  {/* Badges Flotantes */}
+                  <div className="absolute top-3 left-3 z-10">
+                    <span className="border border-stone-200/60 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full text-[9px] font-black text-blue-600 tracking-wider shadow-sm uppercase">
+                      {sector.badge}
+                    </span>
+                  </div>
+                </div>
 
-            {/* Bento Card 2: Security (RBAC) */}
-            <div className="bg-[#1F2937] text-white rounded-3xl p-8 md:p-12 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 relative group min-h-[350px] flex flex-col justify-between">
-              <div className="absolute bottom-0 right-0 w-48 h-48 bg-gradient-to-tl from-[#d4af37]/20 to-transparent rounded-tl-[12rem] pointer-events-none"></div>
-              
-              <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-[#d4af37] mb-8 relative z-10">
-                <Shield className="w-6 h-6" />
+                {/* Copys e Información */}
+                <div className="mt-6 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 className="font-serif text-lg md:text-xl font-medium text-stone-900 mb-2.5">
+                      {sector.title}
+                    </h3>
+                    <p className="text-stone-500 text-[13.5px] leading-relaxed font-medium">
+                      {sector.copy}
+                    </p>
+                  </div>
+                  
+                  <button 
+                    onClick={() => {
+                      setSelectedPlan('pro');
+                      setIsModalOpen(true);
+                    }}
+                    className="w-full py-2.5 mt-4 border border-stone-200 hover:border-stone-900 rounded-xl text-stone-700 hover:text-stone-950 text-xs font-bold transition-all flex items-center justify-center gap-1 active:scale-95"
+                  >
+                    <span>Configurar Entorno</span>
+                    <ChevronRight size={12} />
+                  </button>
+                </div>
               </div>
-              
-              <div className="relative z-10 mt-auto">
-                <h3 className="text-2xl font-serif font-bold mb-3">
-                  Seguridad de Datos & RBAC
-                </h3>
-                <p className="text-stone-300 font-medium leading-relaxed">
-                  Control de Acceso basado en Roles (RBAC). Los directores acceden a reportes, recepción vende bonos y especialistas registran observaciones en estricta confidencialidad bajo estándares RGPD.
-                </p>
-              </div>
-            </div>
-
-            {/* Bento Card 3: Invoicing / POS */}
-            <div className="bg-[#1F2937] text-white rounded-3xl p-8 md:p-12 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 relative group min-h-[350px] flex flex-col justify-between">
-              <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-white/5 to-transparent rounded-bl-[12rem] pointer-events-none"></div>
-              
-              <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-[#d4af37] mb-8 relative z-10">
-                <CreditCard className="w-6 h-6" />
-              </div>
-              
-              <div className="relative z-10 mt-auto">
-                <h3 className="text-2xl font-serif font-bold mb-3">
-                  Facturación Express & POS
-                </h3>
-                <p className="text-stone-300 font-medium leading-relaxed">
-                  Pasarela de cobro rápida integrada. Generación de presupuestos deluxe en PDF, conversión instantánea a factura y cobro de bonos/vouchers de manera simplificada en recepción.
-                </p>
-              </div>
-            </div>
-
-            {/* Bento Card 4: Fichas de Clientes */}
-            <div className="md:col-span-2 bg-[#F7F7F5] rounded-3xl p-8 md:p-12 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 relative group min-h-[350px] flex flex-col justify-between">
-              <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-[#d4af37]/5 to-transparent rounded-tr-[16rem] group-hover:scale-110 transition-transform duration-700 pointer-events-none"></div>
-              
-              <div className="w-14 h-14 bg-white rounded-2xl shadow-sm flex items-center justify-center text-[#d4af37] mb-8 relative z-10">
-                <FileText className="w-6 h-6" />
-              </div>
-              
-              <div className="relative z-10 mt-auto">
-                <h3 className="text-2xl md:text-3xl font-serif font-bold text-[#1F2937] mb-3">
-                  Ficha de Clientes & Consentimientos
-                </h3>
-                <p className="text-stone-500 font-medium leading-relaxed max-w-xl">
-                  Firma digital de consentimientos informados integrada en tablet o móvil. Registro cronológico de servicios y tratamientos, galería fotográfica evolutiva (antes/después) y alertas inteligentes personalizadas.
-                </p>
-              </div>
-            </div>
-
+            ))}
           </div>
         </div>
       </section>
 
-      <section id="pricing" className="py-24 bg-[#F7F7F5] border-t border-[#1F2937]/5">
+      {/* 4. LOS 3 PUNTOS FUERTES (BENTO REFACTORIZADO A LA ALTA GAMA) */}
+      <section className="py-28 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          
+          <div className="text-center max-w-2xl mx-auto mb-24">
+            <span className="text-blue-600 text-[10px] font-black uppercase tracking-[0.25em] block mb-3">La Diferencia ProBookia</span>
+            <h2 className="text-3xl md:text-5xl font-serif font-semibold tracking-tight text-stone-950">
+              ¿Por qué ProBookia?
+            </h2>
+            <p className="text-stone-500 text-sm md:text-base mt-3 font-medium">
+              Dejamos obsoletas las agendas analógicas y los listados genéricos. Tres pilares técnicos blindados para proteger y proyectar tu negocio.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            
+            {/* Beneficio 1: Multi-tenant Aislado */}
+            <div className="p-8 rounded-3xl bg-stone-50/50 border border-stone-200/50 flex flex-col justify-between h-[360px] hover:shadow-lg transition-all duration-300 relative overflow-hidden group">
+              <div className="text-5xl font-serif font-medium text-stone-200/80 mb-6 group-hover:text-blue-600/10 transition-colors">01</div>
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Shield className="w-5 h-5 text-blue-600" />
+                  <h3 className="font-serif text-xl font-semibold text-stone-950">
+                    Aislamiento Total RLS
+                  </h3>
+                </div>
+                <p className="text-stone-500 text-[14px] leading-relaxed font-medium">
+                  Seguridad a nivel bancario. Cada centro tiene su base de datos herméticamente aislada con Supabase RLS. Nadie ve los datos de nadie. Cumplimiento absoluto RGPD sin riesgos.
+                </p>
+              </div>
+              <Link href="/docs?tab=aislamiento-multi-tenant" className="text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1 mt-4">
+                <span>Ver plano de arquitectura</span>
+                <ChevronRight size={12} />
+              </Link>
+            </div>
+
+            {/* Beneficio 2: Marca Blanca Lujo */}
+            <div className="p-8 rounded-3xl bg-stone-50/50 border border-stone-200/50 flex flex-col justify-between h-[360px] hover:shadow-lg transition-all duration-300 relative overflow-hidden group">
+              <div className="text-5xl font-serif font-medium text-stone-200/80 mb-6 group-hover:text-blue-600/10 transition-colors">02</div>
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <FileText className="w-5 h-5 text-blue-600" />
+                  <h3 className="font-serif text-xl font-semibold text-stone-950">
+                    Branding Invisible de Lujo
+                  </h3>
+                </div>
+                <p className="text-stone-500 text-[14px] leading-relaxed font-medium">
+                  No vendemos ProBookia a tu paciente. Mostramos tu logotipo digitalizado, tus colores corporativos, tipografías y tu subdominio exclusivo. ProBookia es el motor oculto que te hace lucir gigante.
+                </p>
+              </div>
+              <Link href="/docs?tab=estructura-catalogo" className="text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1 mt-4">
+                <span>Ver control de marca blanca</span>
+                <ChevronRight size={12} />
+              </Link>
+            </div>
+
+            {/* Beneficio 3: Copiloto por Voz */}
+            <div className="p-8 rounded-3xl bg-stone-50/50 border border-stone-200/50 flex flex-col justify-between h-[360px] hover:shadow-lg transition-all duration-300 relative overflow-hidden group">
+              <div className="text-5xl font-serif font-medium text-stone-200/80 mb-6 group-hover:text-blue-600/10 transition-colors">03</div>
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Bot className="w-5 h-5 text-blue-600" />
+                  <h3 className="font-serif text-xl font-semibold text-stone-950">
+                    Co-Piloto por Voz IA
+                  </h3>
+                </div>
+                <p className="text-stone-500 text-[14px] leading-relaxed font-medium">
+                  No pierdas el tiempo haciendo clics. Habla con el sistema como a un colega humano: *"Pon el color de acento primario en dorado"* o *"Genera el copy SEO en tono clínico"*, y la IA procesará la acción al instante.
+                </p>
+              </div>
+              <Link href="/docs?tab=limites-conversacionales" className="text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1 mt-4">
+                <span>Ver límites conversacionales</span>
+                <ChevronRight size={12} />
+              </Link>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* 5. SUSCRIPCIÓN & PRECIOS EDITORIALES */}
+      <section id="pricing" className="py-24 bg-stone-50/50 border-t border-stone-100">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-serif font-extrabold text-[#1F2937] tracking-tight">
+            <span className="text-blue-600 text-[10px] font-black uppercase tracking-[0.25em] block mb-3">Suscripciones</span>
+            <h2 className="text-3xl md:text-5xl font-serif font-semibold tracking-tight text-stone-950">
               Planes de Suscripción Flexibles
             </h2>
-            <p className="text-stone-500 text-lg mt-4 max-w-2xl mx-auto font-medium">
+            <p className="text-stone-500 text-sm md:text-base mt-3 font-medium">
               Elige el nivel perfecto para elevar la gestión y las reservas de tu negocio.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
             {/* Card 0: Gratuito */}
-            <div className="bg-white rounded-3xl shadow-sm overflow-hidden border border-stone-200/60 p-8 md:p-10 relative flex flex-col justify-between hover:shadow-lg transition-all duration-300">
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-stone-200/50 p-8 relative flex flex-col justify-between hover:shadow-lg transition-all duration-300">
               <div>
                 <div className="mb-6">
-                  <span className="text-stone-400 font-bold uppercase text-[10px] tracking-widest block mb-2">Para Autónomos</span>
-                  <h3 className="text-2xl font-serif font-bold text-[#1F2937]">Plan Inicial</h3>
-                  <div className="flex items-baseline mt-4">
-                    <span className="text-4xl font-serif font-extrabold text-[#1F2937]">0€</span>
-                    <span className="text-stone-400 text-sm font-semibold ml-2">/ siempre (sin tarjeta)</span>
+                  <span className="text-stone-400 font-bold uppercase text-[9px] tracking-widest block mb-1.5">Para Autónomos</span>
+                  <h3 className="text-xl font-serif font-semibold text-stone-900">Plan Inicial</h3>
+                  <div className="flex items-baseline mt-3">
+                    <span className="text-3xl font-serif font-semibold text-stone-950">0€</span>
+                    <span className="text-stone-400 text-xs font-medium ml-1.5">/ siempre (sin tarjeta)</span>
                   </div>
                 </div>
 
-                <div className="space-y-4 mb-8">
+                <div className="space-y-3.5 mb-8">
                   <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
-                      <Check className="w-3.5 h-3.5" />
+                    <div className="w-4 h-4 rounded-full bg-stone-100 flex items-center justify-center text-stone-500">
+                      <Check className="w-2.5 h-2.5" />
                     </div>
-                    <span className="text-sm font-semibold text-stone-600">1 especialista único</span>
+                    <span className="text-xs font-semibold text-stone-600">1 especialista único</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
-                      <Check className="w-3.5 h-3.5" />
+                    <div className="w-4 h-4 rounded-full bg-stone-100 flex items-center justify-center text-stone-500">
+                      <Check className="w-2.5 h-2.5" />
                     </div>
-                    <span className="text-sm font-semibold text-stone-600">Hasta 3 servicios</span>
+                    <span className="text-xs font-semibold text-stone-600">Hasta 3 servicios</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
-                      <Check className="w-3.5 h-3.5" />
+                    <div className="w-4 h-4 rounded-full bg-stone-100 flex items-center justify-center text-stone-500">
+                      <Check className="w-2.5 h-2.5" />
                     </div>
-                    <span className="text-sm font-semibold text-stone-600">Agenda inteligente interactiva</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
-                      <Check className="w-3.5 h-3.5" />
-                    </div>
-                    <span className="text-sm font-semibold text-stone-600">Soporte por email</span>
+                    <span className="text-xs font-semibold text-stone-600">Agenda interactiva</span>
                   </div>
                 </div>
               </div>
@@ -308,48 +416,49 @@ export default function MarketingPage() {
                   setSelectedPlan('free');
                   setIsModalOpen(true);
                 }}
-                className="w-full bg-[#1F2937] hover:bg-[#d4af37] text-white py-3.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 group active:scale-95 mt-auto"
+                className="w-full bg-stone-50 hover:bg-stone-100 text-stone-950 py-3.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center gap-1 active:scale-95 mt-auto border border-stone-200/50"
               >
-                Comenzar Gratis <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <span>Comenzar Gratis</span>
+                <ChevronRight size={12} />
               </button>
             </div>
 
             {/* Card 1: Básico */}
-            <div className="bg-white rounded-3xl shadow-sm overflow-hidden border border-stone-200/60 p-8 md:p-10 relative flex flex-col justify-between hover:shadow-lg transition-all duration-300">
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-stone-200/50 p-8 relative flex flex-col justify-between hover:shadow-lg transition-all duration-300">
               <div>
                 <div className="mb-6">
-                  <span className="text-stone-400 font-bold uppercase text-[10px] tracking-widest block mb-2">Para Negocios Emergentes</span>
-                  <h3 className="text-2xl font-serif font-bold text-[#1F2937]">Plan Básico</h3>
-                  <div className="flex items-baseline mt-4">
-                    <span className="text-4xl font-serif font-extrabold text-[#1F2937]">29€</span>
-                    <span className="text-stone-400 text-sm font-semibold ml-2">/ mes (excl. IVA)</span>
+                  <span className="text-stone-400 font-bold uppercase text-[9px] tracking-widest block mb-1.5">Centros Emergentes</span>
+                  <h3 className="text-xl font-serif font-semibold text-stone-900">Plan Básico</h3>
+                  <div className="flex items-baseline mt-3">
+                    <span className="text-3xl font-serif font-semibold text-stone-950">29€</span>
+                    <span className="text-stone-400 text-xs font-medium ml-1.5">/ mes (excl. IVA)</span>
                   </div>
                 </div>
 
-                <div className="space-y-4 mb-8">
+                <div className="space-y-3.5 mb-8">
                   <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
-                      <Check className="w-3.5 h-3.5" />
+                    <div className="w-4 h-4 rounded-full bg-stone-100 flex items-center justify-center text-stone-500">
+                      <Check className="w-2.5 h-2.5" />
                     </div>
-                    <span className="text-sm font-semibold text-stone-600">Hasta 2 especialistas</span>
+                    <span className="text-xs font-semibold text-stone-600">Hasta 2 especialistas</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
-                      <Check className="w-3.5 h-3.5" />
+                    <div className="w-4 h-4 rounded-full bg-stone-100 flex items-center justify-center text-stone-500">
+                      <Check className="w-2.5 h-2.5" />
                     </div>
-                    <span className="text-sm font-semibold text-stone-600">Hasta 10 servicios</span>
+                    <span className="text-xs font-semibold text-stone-600">Hasta 10 servicios</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
-                      <Check className="w-3.5 h-3.5" />
+                    <div className="w-4 h-4 rounded-full bg-stone-100 flex items-center justify-center text-stone-500">
+                      <Check className="w-2.5 h-2.5" />
                     </div>
-                    <span className="text-sm font-semibold text-stone-600">Agenda inteligente interactiva</span>
+                    <span className="text-xs font-semibold text-stone-600">Agenda interactiva</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
-                      <Check className="w-3.5 h-3.5" />
+                    <div className="w-4 h-4 rounded-full bg-stone-100 flex items-center justify-center text-stone-500">
+                      <Check className="w-2.5 h-2.5" />
                     </div>
-                    <span className="text-sm font-semibold text-stone-600">Módulo POS y Facturación</span>
+                    <span className="text-xs font-semibold text-stone-600">TPV POS & Facturación</span>
                   </div>
                 </div>
               </div>
@@ -359,57 +468,58 @@ export default function MarketingPage() {
                   setSelectedPlan('basic');
                   setIsModalOpen(true);
                 }}
-                className="w-full bg-stone-100 hover:bg-[#d4af37] hover:text-white text-stone-800 py-3.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 group active:scale-95 mt-auto"
+                className="w-full bg-stone-50 hover:bg-stone-100 text-stone-950 py-3.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center gap-1 active:scale-95 mt-auto border border-stone-200/50"
               >
-                Comenzar Ahora <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <span>Comenzar Ahora</span>
+                <ChevronRight size={12} />
               </button>
             </div>
 
             {/* Card 2: Pro */}
-            <div className="bg-white rounded-3xl shadow-luxury overflow-hidden border border-[#d4af37]/40 p-8 md:p-10 relative flex flex-col justify-between hover:shadow-xl transition-all duration-300 transform lg:-translate-y-2">
-              <div className="absolute top-0 right-0 bg-[#d4af37] text-white px-4 py-1 rounded-bl-2xl text-[9px] font-black uppercase tracking-widest">
-                Popular
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-blue-600/30 p-8 relative flex flex-col justify-between hover:shadow-xl transition-all duration-300 lg:-translate-y-1">
+              <div className="absolute top-0 right-0 bg-blue-600 text-white px-3 py-1 rounded-bl-xl text-[8px] font-black uppercase tracking-widest">
+                Recomendado
               </div>
               <div>
                 <div className="mb-6">
-                  <span className="text-[#d4af37] font-bold uppercase text-[10px] tracking-widest block mb-2">Crecimiento & Control</span>
-                  <h3 className="text-2xl font-serif font-bold text-[#1F2937]">Plan Pro</h3>
-                  <div className="flex items-baseline mt-4">
-                    <span className="text-4xl font-serif font-extrabold text-[#1F2937]">59€</span>
-                    <span className="text-stone-400 text-sm font-semibold ml-2">/ mes (excl. IVA)</span>
+                  <span className="text-blue-600 font-bold uppercase text-[9px] tracking-widest block mb-1.5">Clínicas en Crecimiento</span>
+                  <h3 className="text-xl font-serif font-semibold text-stone-900">Plan Pro</h3>
+                  <div className="flex items-baseline mt-3">
+                    <span className="text-3xl font-serif font-semibold text-stone-950">59€</span>
+                    <span className="text-stone-400 text-xs font-medium ml-1.5">/ mes (excl. IVA)</span>
                   </div>
                 </div>
 
-                <div className="space-y-4 mb-8">
+                <div className="space-y-3.5 mb-8">
                   <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
-                      <Check className="w-3.5 h-3.5" />
+                    <div className="w-4 h-4 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                      <Check className="w-2.5 h-2.5" />
                     </div>
-                    <span className="text-sm font-semibold text-stone-600">Hasta 5 especialistas</span>
+                    <span className="text-xs font-semibold text-stone-600">Hasta 5 especialistas</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
-                      <Check className="w-3.5 h-3.5" />
+                    <div className="w-4 h-4 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                      <Check className="w-2.5 h-2.5" />
                     </div>
-                    <span className="text-sm font-semibold text-stone-600">Hasta 25 servicios</span>
+                    <span className="text-xs font-semibold text-stone-600">Hasta 25 servicios</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
-                      <Check className="w-3.5 h-3.5" />
+                    <div className="w-4 h-4 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                      <Check className="w-2.5 h-2.5" />
                     </div>
-                    <span className="text-sm font-semibold text-stone-600">Agenda inteligente interactiva</span>
+                    <span className="text-xs font-semibold text-stone-600">Agenda interactiva</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
-                      <Check className="w-3.5 h-3.5" />
+                    <div className="w-4 h-4 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                      <Check className="w-2.5 h-2.5" />
                     </div>
-                    <span className="text-sm font-semibold text-stone-600">Fichas de clientes y fotos</span>
+                    <span className="text-xs font-semibold text-stone-600">Expedientes con firma</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5] flex items-center justify-center text-[#b08e23]">
-                      <Check className="w-3.5 h-3.5" />
+                    <div className="w-4 h-4 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                      <Check className="w-2.5 h-2.5" />
                     </div>
-                    <span className="text-sm font-semibold text-stone-600">Módulo POS y Facturación</span>
+                    <span className="text-xs font-semibold text-stone-600">TPV POS & Facturación</span>
                   </div>
                 </div>
               </div>
@@ -419,60 +529,61 @@ export default function MarketingPage() {
                   setSelectedPlan('pro');
                   setIsModalOpen(true);
                 }}
-                className="w-full bg-[#d4af37] hover:bg-[#1F2937] text-white py-3.5 rounded-xl text-sm font-bold shadow-luxury transition-all duration-300 flex items-center justify-center gap-2 group active:scale-95 mt-auto"
+                className="w-full bg-stone-950 hover:bg-stone-900 text-white py-3.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center gap-1 active:scale-95 mt-auto shadow-md"
               >
-                Comenzar Prueba <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <span>Comenzar Prueba</span>
+                <ChevronRight size={12} />
               </button>
             </div>
 
             {/* Card 3: Gold */}
-            <div className="bg-[#1F2937] text-white rounded-3xl shadow-sm overflow-hidden border border-white/5 p-8 md:p-10 relative flex flex-col justify-between hover:shadow-lg transition-all duration-300">
+            <div className="bg-stone-950 text-white rounded-2xl shadow-sm overflow-hidden border border-stone-800 p-8 relative flex flex-col justify-between hover:shadow-lg transition-all duration-300">
               <div>
                 <div className="mb-6">
-                  <span className="text-[#d4af37] font-bold uppercase text-[10px] tracking-widest block mb-2">Máximo Rendimiento & IA</span>
-                  <h3 className="text-2xl font-serif font-bold">Plan Gold</h3>
-                  <div className="flex items-baseline mt-4">
-                    <span className="text-4xl font-serif font-extrabold">99€</span>
-                    <span className="text-stone-400 text-sm font-semibold ml-2">/ mes (excl. IVA)</span>
+                  <span className="text-[#d4af37] font-bold uppercase text-[9px] tracking-widest block mb-1.5">Rendimiento Máximo & IA</span>
+                  <h3 className="text-xl font-serif font-semibold">Plan Gold</h3>
+                  <div className="flex items-baseline mt-3">
+                    <span className="text-3xl font-serif font-semibold">99€</span>
+                    <span className="text-stone-500 text-xs font-medium ml-1.5">/ mes (excl. IVA)</span>
                   </div>
                 </div>
 
-                <div className="space-y-4 mb-8">
+                <div className="space-y-3.5 mb-8">
                   <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[#d4af37]">
-                      <Check className="w-3.5 h-3.5" />
+                    <div className="w-4 h-4 rounded-full bg-white/5 flex items-center justify-center text-[#d4af37]">
+                      <Check className="w-2.5 h-2.5" />
                     </div>
-                    <span className="text-sm font-semibold text-stone-200">Especialistas ilimitados</span>
+                    <span className="text-xs font-semibold text-stone-200">Especialistas ilimitados</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[#d4af37]">
-                      <Check className="w-3.5 h-3.5" />
+                    <div className="w-4 h-4 rounded-full bg-white/5 flex items-center justify-center text-[#d4af37]">
+                      <Check className="w-2.5 h-2.5" />
                     </div>
-                    <span className="text-sm font-semibold text-stone-200">Servicios ilimitados</span>
+                    <span className="text-xs font-semibold text-stone-200">Servicios ilimitados</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[#d4af37]">
-                      <Check className="w-3.5 h-3.5" />
+                    <div className="w-4 h-4 rounded-full bg-white/5 flex items-center justify-center text-[#d4af37]">
+                      <Check className="w-2.5 h-2.5" />
                     </div>
-                    <span className="text-sm font-semibold text-stone-200">Agenda inteligente interactiva</span>
+                    <span className="text-xs font-semibold text-stone-200">Agenda interactiva</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[#d4af37]">
-                      <Check className="w-3.5 h-3.5" />
+                    <div className="w-4 h-4 rounded-full bg-white/5 flex items-center justify-center text-[#d4af37]">
+                      <Check className="w-2.5 h-2.5" />
                     </div>
-                    <span className="text-sm font-semibold text-stone-200">Fichas de clientes y fotos</span>
+                    <span className="text-xs font-semibold text-stone-200">Expedientes con firma</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[#d4af37]">
-                      <Check className="w-3.5 h-3.5" />
+                    <div className="w-4 h-4 rounded-full bg-white/5 flex items-center justify-center text-[#d4af37]">
+                      <Check className="w-2.5 h-2.5" />
                     </div>
-                    <span className="text-sm font-semibold text-stone-200">Facturación & POS Deluxe</span>
+                    <span className="text-xs font-semibold text-stone-200">POS & Facturación Deluxe</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-[#fcf8e5]/10 flex items-center justify-center text-[#d4af37]">
-                      <Sparkles className="w-3.5 h-3.5" />
+                    <div className="w-4 h-4 bg-yellow-500/10 rounded-full flex items-center justify-center text-[#d4af37]">
+                      <Sparkles className="w-2.5 h-2.5" />
                     </div>
-                    <span className="text-sm font-semibold text-[#d4af37]">Acceso ilimitado a IA integrada</span>
+                    <span className="text-xs font-bold text-[#d4af37]">Acceso Co-piloto Voz IA</span>
                   </div>
                 </div>
               </div>
@@ -482,9 +593,10 @@ export default function MarketingPage() {
                   setSelectedPlan('gold');
                   setIsModalOpen(true);
                 }}
-                className="w-full bg-[#d4af37] hover:bg-white hover:text-stone-900 text-white py-3.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 group active:scale-95 mt-auto"
+                className="w-full bg-white hover:bg-stone-100 text-stone-950 py-3.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center gap-1 active:scale-95 mt-auto shadow-md"
               >
-                Comenzar Ahora <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <span>Comenzar Ahora</span>
+                <ChevronRight size={12} />
               </button>
             </div>
           </div>
@@ -493,131 +605,128 @@ export default function MarketingPage() {
       </section>
 
       {/* 5. FOOTER */}
-      <footer className="bg-[#1F2937] text-white py-16">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8 border-b border-white/5 pb-12 mb-12">
+      <footer className="bg-stone-950 text-white py-16">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8 border-b border-stone-900 pb-12 mb-12">
           <div>
             <span className="text-xl font-serif tracking-widest text-white block mb-2">PROBOOKIA SaaS</span>
-            <p className="text-stone-400 text-sm max-w-sm leading-relaxed">
-              La plataforma definitiva para elevar la gestión de citas, reservas y clientes de los centros y negocios más selectos.
+            <p className="text-stone-400 text-xs md:text-sm max-w-sm leading-relaxed font-medium">
+              La plataforma invisible de alta gama para agendamiento, gestión de citas, facturación y TPV en centros selectos.
             </p>
           </div>
-          <div className="flex gap-8 text-sm font-semibold text-stone-400">
-            <a href="#" className="hover:text-white transition-colors">Privacidad</a>
-            <a href="#" className="hover:text-white transition-colors">Términos y Condiciones</a>
-            <a href="#" className="hover:text-white transition-colors">Soporte VIP</a>
+          <div className="flex gap-8 text-xs font-bold text-stone-400">
+            <Link href="/privacidad" className="hover:text-white transition-colors">Privacidad</Link>
+            <Link href="/aviso-legal" className="hover:text-white transition-colors">Aviso Legal</Link>
+            <Link href="/docs" className="hover:text-white transition-colors">VIP Blueprint Docs</Link>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto px-6 text-center text-xs text-stone-500 font-semibold">
-          &copy; {new Date().getFullYear()} Probookia. Todos los derechos reservados. Estándares SaaS Quiet Luxury 2026.
+        <div className="max-w-7xl mx-auto px-6 text-center text-xs text-stone-600 font-semibold">
+          &copy; {new Date().getFullYear()} ProBookia. Todos los derechos reservados. SaaS Quiet Luxury B2B.
         </div>
       </footer>
 
-      {/* 6. ONBOARDING REGISTRATION MODAL (QUIET LUXURY) */}
+      {/* 6. ONBOARDING REGISTRATION MODAL (BOUTIQUE BLANCA) */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-[#F7F7F5] w-full max-w-lg rounded-[2rem] shadow-luxury border border-stone-200/50 p-8 md:p-10 relative overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-stone-200/50 p-8 md:p-10 relative overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
             
-            {/* Botón de cerrar */}
             <button 
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white border border-stone-200/60 flex items-center justify-center text-stone-500 hover:text-stone-950 transition-colors shadow-sm active:scale-95"
+              className="absolute top-6 right-6 w-8 h-8 rounded-full bg-stone-50 border border-stone-200/50 flex items-center justify-center text-stone-400 hover:text-stone-700 transition-colors shadow-sm active:scale-95"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
 
             <div className="mb-8">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#d4af37] block mb-2">
-                {selectedPlan === 'free' ? 'Plan Inicial' : 'Registro Premium'}
+              <span className="text-[9px] font-black uppercase tracking-widest text-blue-600 block mb-2">
+                {selectedPlan === 'free' ? 'Plan Inicial' : 'Registro de Cliente B2B'}
               </span>
-              <h2 className="text-3xl font-serif font-bold text-stone-900 leading-tight">
-                {selectedPlan === 'free' && 'Configura tu Cuenta Gratuita'}
-                {selectedPlan === 'basic' && 'Configura tu Negocio - Plan Básico'}
-                {selectedPlan === 'pro' && 'Configura tu Negocio - Plan Pro'}
-                {selectedPlan === 'gold' && 'Configura tu Negocio - Plan Gold'}
+              <h2 className="text-2.5xl font-serif font-semibold text-stone-900 leading-tight">
+                {selectedPlan === 'free' && 'Configura tu Entorno de Citas'}
+                {selectedPlan === 'basic' && 'Inicializa tu Plan Básico'}
+                {selectedPlan === 'pro' && 'Inicializa tu Plan Pro'}
+                {selectedPlan === 'gold' && 'Inicializa tu Plan Gold'}
               </h2>
-              <p className="text-stone-500 text-sm mt-2 leading-relaxed">
+              <p className="text-stone-500 text-xs md:text-sm mt-2 leading-relaxed font-medium">
                 {selectedPlan === 'free' 
-                  ? 'Rellena la información inicial para crear tu base de datos y comenzar con el Plan Gratuito para siempre (1 especialista, 3 servicios).'
-                  : `Rellena la información inicial para crear tu base de datos y comenzar tu prueba gratuita de 14 días en el Plan ${selectedPlan.toUpperCase()}.`
+                  ? 'Aprovisiona tu base de datos dedicada y comienza con el Plan Inicial (1 especialista, 3 servicios) sin compromisos.'
+                  : `Aprovisiona tu entorno de seguridad dedicado. Incluye una prueba gratuita de 14 días en el Plan ${selectedPlan.toUpperCase()}.`
                 }
               </p>
             </div>
 
             <form onSubmit={handleOnboardingSubmit} className="space-y-6">
               
-              {/* Sección Negocio */}
               <div className="space-y-4">
-                <h3 className="text-xs font-extrabold uppercase tracking-widest text-stone-400 pb-1 border-b border-stone-200/40">Datos del Centro / Negocio</h3>
+                <h3 className="text-[10px] font-black uppercase tracking-widest text-stone-400 pb-1 border-b border-stone-100">Datos de la Organización</h3>
                 
                 <div>
-                  <label className="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-2">Nombre Comercial</label>
+                  <label className="block text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-2">Nombre de la Clínica o Centro</label>
                   <input 
                     type="text" 
                     name="tenant_name"
                     required
-                    placeholder="Ej. Salón Jade, Barbería Luxury, Spazio Wellness"
+                    placeholder="Ej. Clínica Mercè, Spazio Estético, Barbería Jade"
                     value={formData.tenant_name}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3.5 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-1 focus:ring-[#d4af37] focus:border-transparent transition-all text-sm"
+                    className="w-full px-4 py-3 bg-white rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all text-xs font-semibold text-stone-700"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-2">Subdominio deseado</label>
+                  <label className="block text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-2">Subdominio Dedicado</label>
                   <div className="relative">
                     <input 
                       type="text" 
                       name="tenant_slug"
                       required
-                      placeholder="ej-salon-jade"
+                      placeholder="clinica-merce"
                       value={formData.tenant_slug}
                       onChange={handleInputChange}
-                      className="w-full pl-4 pr-32 py-3.5 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-1 focus:ring-[#d4af37] focus:border-transparent transition-all text-sm font-mono"
+                      className="w-full pl-4 pr-32 py-3 bg-white rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all text-xs font-mono text-stone-700 font-semibold"
                     />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-stone-400 font-sans pointer-events-none">
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-stone-400 font-sans pointer-events-none">
                       .probookia.com
                     </span>
                   </div>
                   {formData.tenant_slug && (
-                    <span className="block text-xxs text-[#d4af37] mt-2 font-semibold tracking-wide">
-                      Dirección de acceso: <span className="font-mono text-stone-600 font-bold">https://{formData.tenant_slug}.probookia.com</span>
+                    <span className="block text-[9px] text-blue-600 mt-2 font-black tracking-wide">
+                      Dirección única: <span className="font-mono text-stone-600 font-bold">https://{formData.tenant_slug}.probookia.com</span>
                     </span>
                   )}
                 </div>
               </div>
 
-              {/* Sección Administrador */}
               <div className="space-y-4 pt-2">
-                <h3 className="text-xs font-extrabold uppercase tracking-widest text-stone-400 pb-1 border-b border-stone-200/40">Cuenta del Administrador</h3>
+                <h3 className="text-[10px] font-black uppercase tracking-widest text-stone-400 pb-1 border-b border-stone-100">Cuenta de Administrador Principal</h3>
 
                 <div>
-                  <label className="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-2">Nombre Completo</label>
+                  <label className="block text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-2">Nombre del Director</label>
                   <input 
                     type="text" 
                     name="admin_name"
                     required
-                    placeholder="Ej. Sofía Valenzuela o Juan Pérez"
+                    placeholder="Ej. Sofía Valenzuela"
                     value={formData.admin_name}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3.5 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-1 focus:ring-[#d4af37] focus:border-transparent transition-all text-sm"
+                    className="w-full px-4 py-3 bg-white rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all text-xs font-semibold text-stone-700"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-2">Correo Electrónico</label>
+                  <label className="block text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-2">Email Corporativo</label>
                   <input 
                     type="email" 
                     name="admin_email"
                     required
-                    placeholder="contacto@salonjade.com"
+                    placeholder="directiva@clinicamerce.com"
                     value={formData.admin_email}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3.5 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-1 focus:ring-[#d4af37] focus:border-transparent transition-all text-sm"
+                    className="w-full px-4 py-3 bg-white rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all text-xs font-semibold text-stone-700"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-2">Contraseña de acceso</label>
+                  <label className="block text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-2">Contraseña del Sistema</label>
                   <input 
                     type="password" 
                     name="admin_password"
@@ -625,23 +734,24 @@ export default function MarketingPage() {
                     placeholder="Mínimo 6 caracteres"
                     value={formData.admin_password}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3.5 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-1 focus:ring-[#d4af37] focus:border-transparent transition-all text-sm"
+                    className="w-full px-4 py-3 bg-white rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all text-xs font-semibold text-stone-700"
                   />
                 </div>
               </div>
 
-              {/* Botón de envío */}
               <button 
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#d4af37] text-white font-bold py-4 rounded-xl shadow-luxury hover:bg-[#1F2937] transition-all duration-300 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-sm">
+                className="w-full bg-stone-950 hover:bg-stone-900 text-white font-bold py-3.5 rounded-xl shadow-md transition-all duration-300 flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+              >
                 {loading ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" /> {selectedPlan === 'free' ? 'Creando tu entorno...' : 'Procesando con Stripe...'}
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> {selectedPlan === 'free' ? 'Configurando base de datos...' : 'Redirigiendo a pasarela...'}
                   </>
                 ) : (
                   <>
-                    {selectedPlan === 'free' ? 'Crear Cuenta Gratuita' : 'Ir al Pago Seguro'} <ChevronRight className="w-4 h-4" />
+                    <span>{selectedPlan === 'free' ? 'Inicializar Cuenta Gratis' : 'Aprovisionar Entorno y Pagar'}</span> 
+                    <ChevronRight className="w-3.5 h-3.5" />
                   </>
                 )}
               </button>
