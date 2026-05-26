@@ -13,6 +13,7 @@ import AdminProfile from './components/AdminProfile';
 import SaaSGlobalSettings from './components/SaaSGlobalSettings';
 import SaaSAnalytics from './components/SaaSAnalytics';
 import SaaSFinance from './components/SaaSFinance';
+import SaaSCMSManager from './components/SaaSCMSManager';
 
 interface Tenant {
   id: string;
@@ -267,6 +268,12 @@ export default function SuperAdminPage() {
                   <ChevronRight className="w-3 h-3 text-stone-300" />
                   <span className="text-[#d4af37] font-bold">Ajustes Globales</span>
                 </>
+              ) : activeTab === 'cms' ? (
+                <>
+                  <span>CMS</span>
+                  <ChevronRight className="w-3 h-3 text-stone-300" />
+                  <span className="text-[#d4af37] font-bold">Gestor de Contenidos</span>
+                </>
               ) : activeTab === 'profile' ? (
                 <>
                   <span>Mi Perfil</span>
@@ -296,6 +303,8 @@ export default function SuperAdminPage() {
             <h1 className="text-2xl font-bold font-serif text-stone-900">
               {activeTab === 'settings' 
                 ? 'Configuración Global del SaaS' 
+                : activeTab === 'cms'
+                ? 'CMS Portada & Sectores'
                 : activeTab === 'profile'
                 ? 'Mi Perfil Administrativo'
                 : activeTab === 'analytics' 
@@ -334,6 +343,8 @@ export default function SuperAdminPage() {
             savingSettings={savingSettings}
             onToggleIndexing={handleToggleSaasIndexing}
           />
+        ) : activeTab === 'cms' ? (
+          <SaaSCMSManager token={user?.access_token} />
         ) : activeTab === 'profile' ? (
           <AdminProfile user={user} setUser={setUser} />
         ) : activeTab === 'analytics' ? (

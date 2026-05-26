@@ -383,3 +383,22 @@ class SiteBlock(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class LandingMarketingSettings(Base):
+    __tablename__ = "landing_marketing_settings"
+    id = Column(String(36), primary_key=True, default="global")
+    hero_title = Column(String, default="La elegancia de tu negocio traducida en un SaaS de Lujo")
+    hero_subtitle = Column(String, default="Diseñado exclusivamente para centros de estética, wellness, spas y salones premium independientes.")
+
+
+class LandingShowcaseSector(Base):
+    __tablename__ = "landing_showcase_sectors"
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    title = Column(String, nullable=False)
+    slug = Column(String, nullable=False, unique=True)
+    badge_text = Column(String, nullable=True)
+    video_url = Column(String, nullable=True)
+    image_url = Column(String, nullable=True)
+    order_index = Column(Integer, default=0)
+
+
+

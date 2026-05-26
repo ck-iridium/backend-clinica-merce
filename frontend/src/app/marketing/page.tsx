@@ -108,7 +108,7 @@ export default function MarketingPage() {
     }
   };
 
-  const sectors: Sector[] = [
+  const fallbackSectors: Sector[] = [
     {
       id: 'clinicas',
       badge: 'Clínicas Estéticas',
@@ -142,6 +142,56 @@ export default function MarketingPage() {
       placeholderGradient: 'from-purple-50 to-purple-100/30'
     }
   ];
+
+  const [sectors, setSectors] = useState<Sector[]>([]);
+  const [heroTitle, setHeroTitle] = useState('La elegancia de tu negocio traducida en un SaaS de Lujo');
+  const [heroSubtitle, setHeroSubtitle] = useState('Diseñado exclusivamente para centros de estética, wellness, spas y salones premium independientes. Agendas fluidas, expedientes médicos asimétricos y reservas de doble opt-in integradas en una experiencia sublime.');
+
+  useEffect(() => {
+    async function loadMarketingContent() {
+      try {
+        const response = await fetch(`${API_URL}/super-admin/marketing/public`);
+        if (!response.ok) throw new Error('Error loading marketing content');
+        const data = await response.json();
+        
+        if (data.settings) {
+          if (data.settings.hero_title) setHeroTitle(data.settings.hero_title);
+          if (data.settings.hero_subtitle) setHeroSubtitle(data.settings.hero_subtitle);
+        }
+        
+        if (data.sectors && data.sectors.length > 0) {
+          const mappedSectors = data.sectors.map((s: any) => {
+            let gradient = 'from-blue-50 to-blue-100/30';
+            if (s.slug === 'barberias' || s.order_index === 1) gradient = 'from-amber-50 to-amber-100/30';
+            else if (s.slug === 'dentistas' || s.order_index === 2) gradient = 'from-emerald-50 to-emerald-100/30';
+            else if (s.slug === 'peluquerias' || s.order_index === 3) gradient = 'from-purple-50 to-purple-100/30';
+            
+            let copy = 'Configura tu plataforma en marca blanca de alta gama con subdominio exclusivo y RLS a nivel de base de datos.';
+            if (s.slug === 'clinicas') copy = 'Aislamiento total de expedientes clínicos en base de datos, firmas manuscritas Base64 y branding de lujo.';
+            else if (s.slug === 'barberias') copy = 'Gestión ágil de especialistas en tiempo real, venta de bonos express y protección total contra incomparecencias.';
+            else if (s.slug === 'dentistas') copy = 'Calendarios dinámicos asimétricos, cobros rápidos en POS y recordatorios automáticos por SMTP privado.';
+            else if (s.slug === 'peluquerias') copy = 'Portal de reserva en 3 pasos con colores y logotipos propios, adaptable a dominio exclusivo corporativo.';
+            
+            return {
+              id: s.id,
+              badge: s.badge_text || 'Especialidad',
+              title: s.title,
+              copy: copy,
+              videoUrl: s.video_url || 'https://assets.mixkit.co/videos/preview/mixkit-hairdresser-cutting-hair-of-a-woman-in-salon-40552-large.mp4',
+              placeholderGradient: gradient
+            };
+          });
+          setSectors(mappedSectors);
+        } else {
+          setSectors(fallbackSectors);
+        }
+      } catch (err) {
+        console.error('Error fetching CMS content, falling back to static lists', err);
+        setSectors(fallbackSectors);
+      }
+    }
+    loadMarketingContent();
+  }, []);
 
   return (
     <div className="min-h-screen bg-white text-stone-900 font-sans selection:bg-[#d4af37]/20 overflow-x-hidden relative transition-colors duration-300">
@@ -186,12 +236,13 @@ export default function MarketingPage() {
             <Sparkles className="w-3 h-3 text-blue-600" /> EL NUEVO ESTÁNDAR PARA CENTROS Y SALONES DE LUJO
           </div>
           
-          <h1 className="text-4xl md:text-7xl font-serif font-semibold text-stone-950 tracking-tight leading-[1.1] max-w-5xl mx-auto mb-8">
-            La elegancia de tu negocio <br className="hidden md:block"/> traducida en un <span className="text-blue-600 dark:text-[#d4af37]">SaaS de Lujo</span>
-          </h1>
+          <h1 
+            className="text-4xl md:text-7xl font-serif font-semibold text-stone-950 tracking-tight leading-[1.1] max-w-5xl mx-auto mb-8"
+            dangerouslySetInnerHTML={{ __html: heroTitle.replace(/\n/g, '<br/>') }}
+          />
           
           <p className="text-base md:text-lg text-stone-500 font-medium max-w-2xl mx-auto mb-12 leading-relaxed">
-            Diseñado exclusivamente para centros de estética, wellness, spas y salones premium independientes. Agendas fluidas, expedientes médicos asimétricos y reservas de doble opt-in integradas en una experiencia sublime.
+            {heroSubtitle}
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -211,7 +262,7 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* 3. SECCIÓN DE SECTORES DINÁMICA (REJILLA CON VIDEOS EN BUCLE CORTO) */}
+      {/* 3. SECCIÓN DE SECTORES DINÁMICA (REJILLA CON VIDEOS EN BUCLE CORTO Y 3D PARALLAX) */}
       <section id="sectors" className="py-24 bg-stone-50/50 border-y border-stone-100">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-20">
@@ -224,19 +275,19 @@ export default function MarketingPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 [perspective:1500px] [transform-style:preserve-3d]">
             {sectors.map(sector => (
               <div 
                 key={sector.id}
                 onMouseEnter={() => setHoveredSector(sector.id)}
                 onMouseLeave={() => setHoveredSector(null)}
-                className="group bg-white rounded-2xl border border-stone-200/50 p-5 flex flex-col justify-between hover:shadow-xl transition-all duration-500 h-[450px] relative overflow-hidden"
+                className="group bg-white rounded-[2rem] border border-stone-200/50 p-6 flex flex-col justify-between transition-all duration-700 ease-out h-[530px] relative overflow-hidden [transform-style:preserve-3d] [perspective:1000px] hover:[transform:rotateY(-6deg)_rotateX(4deg)_translateZ(40px)] hover:shadow-2xl hover:border-blue-600/20"
               >
-                {/* Contenedor del Vídeo / Visual conceptual */}
-                <div className="h-44 w-full rounded-xl overflow-hidden relative bg-stone-50 border border-stone-100 shrink-0">
+                {/* Contenedor del Vídeo / Visual conceptual en proporción vertical */}
+                <div className="h-[270px] w-full rounded-2xl overflow-hidden relative bg-stone-50 border border-stone-100 shrink-0 shadow-sm transition-transform duration-700 group-hover:[transform:translateZ(20px)] group-hover:shadow-md">
                   <div className={`absolute inset-0 bg-gradient-to-br ${sector.placeholderGradient} transition-opacity duration-500`}></div>
                   
-                  {/* Vídeo en bucle ultra corto */}
+                  {/* Vídeo en bucle vertical */}
                   <video
                     src={sector.videoUrl}
                     className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${hoveredSector === sector.id ? 'opacity-100 scale-105' : 'opacity-0 scale-100'}`}
@@ -247,20 +298,20 @@ export default function MarketingPage() {
                   />
                   
                   {/* Badges Flotantes */}
-                  <div className="absolute top-3 left-3 z-10">
+                  <div className="absolute top-4 left-4 z-10 transition-transform duration-700 group-hover:[transform:translateZ(10px)]">
                     <span className="border border-stone-200/60 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full text-[9px] font-black text-blue-600 tracking-wider shadow-sm uppercase">
                       {sector.badge}
                     </span>
                   </div>
                 </div>
 
-                {/* Copys e Información */}
-                <div className="mt-6 flex-1 flex flex-col justify-between">
+                {/* Copys e Información con paralaje en eje Z */}
+                <div className="mt-6 flex-1 flex flex-col justify-between [transform-style:preserve-3d]">
                   <div>
-                    <h3 className="font-serif text-lg md:text-xl font-medium text-stone-900 mb-2.5">
+                    <h3 className="font-serif text-lg md:text-xl font-medium text-stone-900 mb-2 transition-transform duration-700 group-hover:[transform:translateZ(15px)]">
                       {sector.title}
                     </h3>
-                    <p className="text-stone-500 text-[13.5px] leading-relaxed font-medium">
+                    <p className="text-stone-500 text-[13px] leading-relaxed font-medium transition-transform duration-700 group-hover:[transform:translateZ(10px)]">
                       {sector.copy}
                     </p>
                   </div>
@@ -270,7 +321,7 @@ export default function MarketingPage() {
                       setSelectedPlan('pro');
                       setIsModalOpen(true);
                     }}
-                    className="w-full py-2.5 mt-4 border border-stone-200 hover:border-stone-900 rounded-xl text-stone-700 hover:text-stone-950 text-xs font-bold transition-all flex items-center justify-center gap-1 active:scale-95"
+                    className="w-full py-2.5 mt-4 border border-stone-200 hover:border-stone-900 rounded-xl text-stone-700 hover:text-stone-950 text-xs font-bold transition-all flex items-center justify-center gap-1 active:scale-95 transition-transform duration-700 group-hover:[transform:translateZ(5px)]"
                   >
                     <span>Configurar Entorno</span>
                     <ChevronRight size={12} />

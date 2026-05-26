@@ -261,3 +261,188 @@ def update_tenant_domain(
     db.commit()
     db.refresh(tenant)
     return tenant
+
+
+# ---------------------------------------------------------------------
+# CMS MARKETING & SHOWCASE ENDPOINTS
+# ---------------------------------------------------------------------
+class LandingMarketingSettingsOut(BaseModel):
+    id: str
+    hero_title: str
+    hero_subtitle: str
+
+    class Config:
+        from_attributes = True
+
+
+class LandingMarketingSettingsUpdate(BaseModel):
+    hero_title: str
+    hero_subtitle: str
+
+
+class LandingShowcaseSectorOut(BaseModel):
+    id: str
+    title: str
+    slug: str
+    badge_text: Optional[str] = None
+    video_url: Optional[str] = None
+    image_url: Optional[str] = None
+    order_index: int
+
+    class Config:
+        from_attributes = True
+
+
+class LandingShowcaseSectorCreateUpdate(BaseModel):
+    title: str
+    slug: str
+    badge_text: Optional[str] = None
+    video_url: Optional[str] = None
+    image_url: Optional[str] = None
+    order_index: int = 0
+
+
+# 1. PUBLIC ENDPOINT (No authentication required)
+@router.get("/marketing/public")
+def get_public_marketing_content(db: Session = Depends(database.get_db)):
+    """
+    Endpoint público para que la landing consuma textos de portada y sectores ordenados.
+    """
+    settings = db.query(models.LandingMarketingSettings).filter(models.LandingMarketingSettings.id == "global").first()
+    if not settings:
+        settings = models.LandingMarketingSettings(
+            id="global",
+            hero_title="La elegancia de tu negocio traducida en un SaaS de Lujo",
+            hero_subtitle="Diseñado exclusivamente para centros de estética, wellness, spas y salones premium independientes. Agendas fluidas, expedientes médicos asimétricos y reservas de doble opt-in integradas en una experiencia sublime."
+        )
+        db.add(settings)
+        db.commit()
+        db.refresh(settings)
+        
+    sectors = db.query(models.LandingShowcaseSector).order_by(models.LandingShowcaseSector.order_index.asc()).all()
+    return {
+        "settings": {
+            "hero_title": settings.hero_title,
+            "hero_subtitle": settings.hero_subtitle
+        },
+        "sectors": [
+            {
+                "id": s.id,
+                "title": s.title,
+                "slug": s.slug,
+                "badge_text": s.badge_text,
+                "video_url": s.video_url,
+                "image_url": s.image_url,
+                "order_index": s.order_index
+            } for s in sectors
+        ]
+    }
+
+
+# 2. PROTECTED ENDPOINTS (Requiere rol de Super Admin)
+@router.get("/marketing/settings", response_model=LandingMarketingSettingsOut)
+def get_marketing_settings(
+    db: Session = Depends(database.get_db),
+    admin_payload: dict = Depends(verify_super_admin)
+):
+    settings = db.query(models.LandingMarketingSettings).filter(models.LandingMarketingSettings.id == "global").first()
+    if not settings:
+        settings = models.LandingMarketingSettings(id="global")
+        db.add(settings)
+        db.commit()
+        db.refresh(settings)
+    return settings
+
+
+@router.put("/marketing/settings", response_model=LandingMarketingSettingsOut)
+def update_marketing_settings(
+    payload: LandingMarketingSettingsUpdate,
+    db: Session = Depends(database.get_db),
+    admin_payload: dict = Depends(verify_super_admin)
+):
+    settings = db.query(models.LandingMarketingSettings).filter(models.LandingMarketingSettings.id == "global").first()
+    if not settings:
+        settings = models.LandingMarketingSettings(id="global")
+        db.add(settings)
+    settings.hero_title = payload.hero_title
+    settings.hero_subtitle = payload.hero_subtitle
+    db.commit()
+    db.refresh(settings)
+    return settings
+
+
+@router.get("/marketing/sectors", response_model=List[LandingShowcaseSectorOut])
+def get_marketing_sectors(
+    db: Session = Depends(database.get_db),
+    admin_payload: dict = Depends(verify_super_admin)
+):
+    return db.query(models.LandingShowcaseSector).order_by(models.LandingShowcaseSector.order_index.asc()).all()
+
+
+@router.post("/marketing/sectors", response_model=LandingShowcaseSectorOut)
+def create_marketing_sector(
+    payload: LandingShowcaseSectorCreateUpdate,
+    db: Session = Depends(database.get_db),
+    admin_payload: dict = Depends(verify_super_admin)
+):
+    # Validar slug único
+    existing = db.query(models.LandingShowcaseSector).filter(models.LandingShowcaseSector.slug == payload.slug.strip()).first()
+    if existing:
+        raise HTTPException(status_code=400, detail=f"El slug '{payload.slug}' ya está en uso por otro sector.")
+        
+    sector = models.LandingShowcaseSector(
+        title=payload.title.strip(),
+        slug=payload.slug.strip(),
+        badge_text=payload.badge_text.strip() if payload.badge_text else None,
+        video_url=payload.video_url.strip() if payload.video_url else None,
+        image_url=payload.image_url.strip() if payload.image_url else None,
+        order_index=payload.order_index
+    )
+    db.add(sector)
+    db.commit()
+    db.refresh(sector)
+    return sector
+
+
+@router.put("/marketing/sectors/{sector_id}", response_model=LandingShowcaseSectorOut)
+def update_marketing_sector(
+    sector_id: str,
+    payload: LandingShowcaseSectorCreateUpdate,
+    db: Session = Depends(database.get_db),
+    admin_payload: dict = Depends(verify_super_admin)
+):
+    sector = db.query(models.LandingShowcaseSector).filter(models.LandingShowcaseSector.id == sector_id).first()
+    if not sector:
+        raise HTTPException(status_code=404, detail="Sector no encontrado")
+        
+    # Validar slug único si cambia
+    if sector.slug != payload.slug.strip():
+        existing = db.query(models.LandingShowcaseSector).filter(models.LandingShowcaseSector.slug == payload.slug.strip()).first()
+        if existing:
+            raise HTTPException(status_code=400, detail=f"El slug '{payload.slug}' ya está en uso por otro sector.")
+            
+    sector.title = payload.title.strip()
+    sector.slug = payload.slug.strip()
+    sector.badge_text = payload.badge_text.strip() if payload.badge_text else None
+    sector.video_url = payload.video_url.strip() if payload.video_url else None
+    sector.image_url = payload.image_url.strip() if payload.image_url else None
+    sector.order_index = payload.order_index
+    
+    db.commit()
+    db.refresh(sector)
+    return sector
+
+
+@router.delete("/marketing/sectors/{sector_id}")
+def delete_marketing_sector(
+    sector_id: str,
+    db: Session = Depends(database.get_db),
+    admin_payload: dict = Depends(verify_super_admin)
+):
+    sector = db.query(models.LandingShowcaseSector).filter(models.LandingShowcaseSector.id == sector_id).first()
+    if not sector:
+        raise HTTPException(status_code=404, detail="Sector no encontrado")
+    db.delete(sector)
+    db.commit()
+    return {"success": True, "message": f"Sector '{sector.title}' eliminado correctamente."}
+
