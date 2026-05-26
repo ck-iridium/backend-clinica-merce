@@ -1,11 +1,14 @@
 "use client"
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, ChevronRight, BookOpen, Lock, Terminal, Shield, Eye, Settings, FileText, Menu, X, ArrowLeft } from 'lucide-react';
-import PublicNavbar from '@/components/PublicNavbar';
+import { Search, ChevronRight, BookOpen, Menu, X, ArrowLeft, Loader2 } from 'lucide-react';
+import LanguageSelector from '@/components/LanguageSelector';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 import { DOCS_CONTENT, DocSection, DocSubpage } from './content';
 
 export default function DocsPage() {
+  const { language } = useLanguage();
+  
   const [activeSectionId, setActiveSectionId] = useState(DOCS_CONTENT[0].id);
   const [activeSubpageId, setActiveSubpageId] = useState(DOCS_CONTENT[0].subpages[0].id);
   const [searchQuery, setSearchQuery] = useState('');
@@ -20,12 +23,74 @@ export default function DocsPage() {
   const activeSection = DOCS_CONTENT.find(s => s.id === activeSectionId) || DOCS_CONTENT[0];
   const activeSubpage = activeSection.subpages.find(p => p.id === activeSubpageId) || activeSection.subpages[0];
 
-  // Quick search filtration across all pages and sections
+  // Dynamic language key mapping
+  const langKey = (language === 'es' || language === 'en' || language === 'fr') ? language : 'es';
+
+  // 3-Language UI Dictionary
+  const uiT = {
+    es: {
+      badge: 'SaaS Blueprint & API',
+      title: 'Documentación de ProBookia',
+      subtitle: 'Explora la arquitectura técnica de marca blanca, el aislamiento de base de datos multi-tenant, y los límites del motor del co-piloto por voz.',
+      searchPlaceholder: 'Buscar guías o código...',
+      indexTitle: 'Índice del SaaS Blueprint',
+      btnIndex: 'Ver Índice técnico',
+      noResults: 'No hay resultados que coincidan con la búsqueda.',
+      footerText: '© 2026 ProBookia B2B SaaS. Marca blanca registrada de alta gama.',
+      backHome: 'Volver a la Home Comercial',
+      professionalAccess: 'Acceso Profesional',
+      getStarted: 'Comenzar',
+      impersonationNote: 'Nota de Impersonación',
+      architectureNote: 'Nota de Arquitectura',
+      bestPractice: 'Mejor Práctica Comercial',
+      securityRequirement: 'Requisito de Seguridad'
+    },
+    en: {
+      badge: 'SaaS Blueprint & API',
+      title: 'ProBookia Documentation',
+      subtitle: 'Explore the white-label technical architecture, multi-tenant database isolation, and voice co-pilot limits.',
+      searchPlaceholder: 'Search guides or code...',
+      indexTitle: 'SaaS Blueprint Index',
+      btnIndex: 'View technical index',
+      noResults: 'No results match your search query.',
+      footerText: '© 2026 ProBookia B2B SaaS. Premium registered white-label engine.',
+      backHome: 'Back to Corporate Home',
+      professionalAccess: 'Professional Login',
+      getStarted: 'Get Started',
+      impersonationNote: 'Impersonation Note',
+      architectureNote: 'Architecture Note',
+      bestPractice: 'Best Business Practice',
+      securityRequirement: 'Security Requirement'
+    },
+    fr: {
+      badge: 'SaaS Blueprint & API',
+      title: 'Documentation ProBookia',
+      subtitle: 'Explorez l\'architecture technique de marque blanche, l\'isolation de base de données multi-tenant et le co-pilote vocal.',
+      searchPlaceholder: 'Rechercher des guides ou du code...',
+      indexTitle: 'Index du SaaS Blueprint',
+      btnIndex: 'Voir l\'index technique',
+      noResults: 'Aucun résultat ne correspond à votre recherche.',
+      footerText: '© 2026 ProBookia B2B SaaS. Moteur de marque blanche haut de gamme.',
+      backHome: 'Retour à l\'Accueil',
+      professionalAccess: 'Accès Professionnel',
+      getStarted: 'Commencer',
+      impersonationNote: 'Note d\'Impersonation',
+      architectureNote: 'Note d\'Architecture',
+      bestPractice: 'Meilleure Pratique',
+      securityRequirement: 'Exigence de Sécurité'
+    }
+  }[langKey];
+
+  // Quick search filtration across all pages and sections in the active language
   const filteredSections = DOCS_CONTENT.map(section => {
-    const matchingPages = section.subpages.filter(page => 
-      page.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      page.markdown.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const matchingPages = section.subpages.filter(page => {
+      const title = page.title[langKey] || '';
+      const markdown = page.markdown[langKey] || '';
+      return (
+        title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        markdown.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    });
     return {
       ...section,
       subpages: matchingPages
@@ -53,8 +118,8 @@ export default function DocsPage() {
           inCodeBlock = false;
           const codeText = codeBlockLines.join('\n');
           blocks.push(
-            <div key={`code-${i}`} className="my-6 rounded-2xl overflow-hidden border border-stone-800 bg-stone-950 shadow-xl animate-in fade-in duration-300">
-              <div className="flex items-center justify-between px-4 py-3 bg-stone-900 border-b border-stone-800">
+            <div key={`code-${i}`} className="my-6 rounded-2xl overflow-hidden border border-stone-850 bg-stone-950 shadow-xl animate-in fade-in duration-300">
+              <div className="flex items-center justify-between px-4 py-3 bg-stone-900 border-b border-stone-850">
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-red-500/80"></span>
                   <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></span>
@@ -62,7 +127,7 @@ export default function DocsPage() {
                 </div>
                 <span className="text-[10px] font-mono tracking-widest text-stone-500 uppercase">{codeBlockLang || 'CODE'}</span>
               </div>
-              <pre className="p-5 overflow-x-auto font-mono text-xs text-stone-300 leading-relaxed custom-scrollbar">
+              <pre className="p-5 overflow-x-auto font-mono text-xs text-stone-350 leading-relaxed custom-scrollbar">
                 <code>{codeText}</code>
               </pre>
             </div>
@@ -97,10 +162,10 @@ export default function DocsPage() {
               {listItems.map((item, idx) => {
                 const parts = item.split('**');
                 return (
-                  <li key={idx} className="flex items-start gap-3 text-stone-600 dark:text-stone-300 text-[15px] leading-relaxed">
+                  <li key={idx} className="flex items-start gap-3 text-stone-600 dark:text-stone-300 text-[15px] leading-relaxed animate-in fade-in duration-200">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-[#d4af37] shrink-0 mt-2.5"></span>
                     <span>
-                      {parts.map((part, pIdx) => pIdx % 2 === 1 ? <strong key={pIdx} className="font-bold text-stone-900 dark:text-stone-100">{part}</strong> : part)}
+                      {parts.map((part, pIdx) => pIdx % 2 === 1 ? <strong key={pIdx} className="font-bold text-stone-950 dark:text-stone-100">{part}</strong> : part)}
                     </span>
                   </li>
                 );
@@ -114,7 +179,7 @@ export default function DocsPage() {
       // Headers
       if (line.startsWith('# ')) {
         blocks.push(
-          <h1 key={`h1-${i}`} className="font-serif text-3xl md:text-4xl font-semibold tracking-tight text-stone-900 dark:text-white mt-2 mb-6 pb-4 border-b border-stone-100 dark:border-stone-900 leading-tight">
+          <h1 key={`h1-${i}`} className="font-serif text-3xl md:text-4xl font-semibold tracking-tight text-stone-950 dark:text-white mt-2 mb-6 pb-4 border-b border-stone-100 dark:border-stone-900 leading-tight">
             {line.replace('# ', '')}
           </h1>
         );
@@ -123,7 +188,7 @@ export default function DocsPage() {
       
       if (line.startsWith('## ')) {
         blocks.push(
-          <h2 key={`h2-${i}`} className="font-serif text-xl md:text-2xl font-medium tracking-tight text-stone-900 dark:text-white mt-8 mb-4 leading-snug">
+          <h2 key={`h2-${i}`} className="font-serif text-xl md:text-2xl font-medium tracking-tight text-stone-950 dark:text-white mt-8 mb-4 leading-snug">
             {line.replace('## ', '')}
           </h2>
         );
@@ -132,7 +197,7 @@ export default function DocsPage() {
       
       if (line.startsWith('### ')) {
         blocks.push(
-          <h3 key={`h3-${i}`} className="font-sans text-xs font-bold uppercase tracking-widest text-stone-500 dark:text-stone-400 mt-6 mb-3">
+          <h3 key={`h3-${i}`} className="font-sans text-xs font-black uppercase tracking-widest text-stone-400 dark:text-stone-500 mt-6 mb-3">
             {line.replace('### ', '')}
           </h3>
         );
@@ -157,15 +222,15 @@ export default function DocsPage() {
         if (cleanLine.startsWith('[!NOTE]')) {
           type = 'note';
           text = cleanLine.replace('[!NOTE]', '').trim();
-          titleText = 'Nota de Arquitectura';
+          titleText = uiT.architectureNote;
         } else if (cleanLine.startsWith('[!TIP]')) {
           type = 'tip';
           text = cleanLine.replace('[!TIP]', '').trim();
-          titleText = 'Mejor Práctica Comercial';
+          titleText = uiT.bestPractice;
         } else if (cleanLine.startsWith('[!IMPORTANT]')) {
           type = 'important';
           text = cleanLine.replace('[!IMPORTANT]', '').trim();
-          titleText = 'Requisito de Seguridad';
+          titleText = uiT.securityRequirement;
         }
         
         blocks.push(
@@ -196,14 +261,14 @@ export default function DocsPage() {
         const parts = line.split('**');
         const inlineParsed = parts.map((part, pIdx) => {
           if (pIdx % 2 === 1) {
-            return <strong key={pIdx} className="font-bold text-stone-900 dark:text-stone-100">{part}</strong>;
+            return <strong key={pIdx} className="font-bold text-stone-950 dark:text-stone-100">{part}</strong>;
           }
           
           const codeParts = part.split('`');
           return codeParts.map((cPart, cIdx) => {
             if (cIdx % 2 === 1) {
               return (
-                <code key={cIdx} className="px-2 py-0.5 mx-0.5 rounded-lg bg-stone-100 dark:bg-stone-900 border border-stone-200/50 dark:border-stone-850 text-xs font-mono text-stone-800 dark:text-stone-200 font-semibold">
+                <code key={cIdx} className="px-2 py-0.5 mx-0.5 rounded-lg bg-stone-100 dark:bg-stone-900 border border-stone-200/50 dark:border-stone-800 text-xs font-mono text-stone-800 dark:text-stone-250 font-semibold">
                   {cPart}
                 </code>
               );
@@ -226,8 +291,32 @@ export default function DocsPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-stone-950 text-stone-900 dark:text-stone-100 font-sans transition-all duration-300">
       
-      {/* Navbar Global */}
-      <PublicNavbar />
+      {/* HEADER CORPORATIVO B2B SAAS (SIN FUGA DE CLINICA) */}
+      <header className="sticky top-0 z-50 w-full bg-white/95 dark:bg-stone-950/95 backdrop-blur-md border-b border-stone-100 dark:border-stone-900 py-1 transition-all duration-300">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link href="/" className="text-xl md:text-2xl font-serif tracking-widest text-stone-950 dark:text-white font-semibold select-none">
+              PROBOOKIA <span className="text-blue-600 dark:text-[#d4af37] font-sans text-[10px] font-black tracking-[0.25em] uppercase ml-1">SaaS</span>
+            </Link>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <LanguageSelector />
+            <Link 
+              href="/login" 
+              className="px-5 py-2.5 rounded-xl text-xs font-bold bg-stone-50 dark:bg-stone-900 text-stone-700 dark:text-stone-350 border border-stone-200/60 dark:border-stone-850 hover:text-stone-950 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800 transition-all duration-300 active:scale-95 shadow-sm"
+            >
+              {uiT.professionalAccess}
+            </Link>
+            <Link
+              href="/"
+              className="bg-stone-950 hover:bg-stone-900 dark:bg-white dark:hover:bg-stone-50 text-white dark:text-stone-950 px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all duration-300 hover:scale-105 active:scale-95"
+            >
+              {uiT.getStarted}
+            </Link>
+          </div>
+        </div>
+      </header>
 
       {/* Hero Header para la Documentación */}
       <header className="border-b border-stone-100 dark:border-stone-900 bg-stone-50/50 dark:bg-stone-900/10 py-12 md:py-16 px-6">
@@ -235,13 +324,13 @@ export default function DocsPage() {
           <div>
             <div className="flex items-center gap-2 text-blue-600 dark:text-[#d4af37] text-xs font-black uppercase tracking-[0.2em] mb-3">
               <BookOpen size={14} />
-              <span>SaaS Blueprint & API</span>
+              <span>{uiT.badge}</span>
             </div>
-            <h1 className="font-serif text-3xl md:text-5xl font-semibold tracking-tight text-stone-900 dark:text-white">
-              Documentación de ProBookia
+            <h1 className="font-serif text-3xl md:text-5xl font-semibold tracking-tight text-stone-950 dark:text-white">
+              {uiT.title}
             </h1>
             <p className="text-stone-500 dark:text-stone-400 text-sm md:text-base mt-2 max-w-xl font-medium">
-              Explora la arquitectura técnica de marca blanca, el aislamiento de base de datos multi-tenant, y los límites del motor del co-piloto por voz.
+              {uiT.subtitle}
             </p>
           </div>
           
@@ -250,7 +339,7 @@ export default function DocsPage() {
             <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-blue-600 transition-colors" />
             <input
               type="text"
-              placeholder="Buscar guías o código..."
+              placeholder={uiT.searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-11 pr-4 py-3 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-850 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 outline-none transition-all shadow-sm"
@@ -268,7 +357,7 @@ export default function DocsPage() {
             className="lg:hidden flex items-center justify-center gap-2 self-start px-4 py-2.5 bg-stone-50 dark:bg-stone-900 border border-stone-200/60 dark:border-stone-850 rounded-xl text-xs font-bold text-stone-700 dark:text-stone-200 hover:bg-stone-100 transition-all active:scale-95 shadow-sm"
           >
             <Menu size={16} />
-            <span>Ver Índice técnico</span>
+            <span>{uiT.btnIndex}</span>
           </button>
 
           {/* Sidebar Izquierdo: Estilo Editorial */}
@@ -276,7 +365,7 @@ export default function DocsPage() {
             
             {/* Header del Menú Móvil */}
             <div className="flex items-center justify-between lg:hidden pb-6 border-b border-stone-100 dark:border-stone-900 mb-6">
-              <span className="font-serif font-bold text-lg">Índice del SaaS Blueprint</span>
+              <span className="font-serif font-bold text-lg">{uiT.indexTitle}</span>
               <button 
                 onClick={() => setSidebarOpen(false)}
                 className="p-2 text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-900 rounded-lg"
@@ -288,8 +377,8 @@ export default function DocsPage() {
             <div className="space-y-8 pr-2">
               {filteredSections.map(section => (
                 <div key={section.id} className="space-y-3">
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.25em] text-stone-400 dark:text-stone-500">
-                    {section.title}
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.25em] text-stone-400 dark:text-stone-500 select-none">
+                    {section.title[langKey] || section.title.es}
                   </h3>
                   <ul className="space-y-1.5 border-l border-stone-100 dark:border-stone-900 pl-0">
                     {section.subpages.map(page => {
@@ -308,7 +397,7 @@ export default function DocsPage() {
                                 : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-50/50 dark:hover:bg-stone-900/20'
                             }`}
                           >
-                            <span>{page.title}</span>
+                            <span>{page.title[langKey] || page.title.es}</span>
                             <ChevronRight size={12} className={`opacity-0 group-hover:opacity-100 transition-opacity ${isActive ? 'text-blue-600 dark:text-[#d4af37]' : 'text-stone-300'}`} />
                           </button>
                         </li>
@@ -320,7 +409,7 @@ export default function DocsPage() {
 
               {filteredSections.length === 0 && (
                 <div className="text-center py-10">
-                  <p className="text-stone-400 text-xs font-semibold">No hay resultados que coincidan con la búsqueda.</p>
+                  <p className="text-stone-400 text-xs font-semibold">{uiT.noResults}</p>
                 </div>
               )}
             </div>
@@ -332,7 +421,7 @@ export default function DocsPage() {
               
               {/* Contenido Renderizado */}
               <div className="animate-in fade-in duration-500 ease-out">
-                {renderMarkdownToReact(activeSubpage.markdown)}
+                {renderMarkdownToReact(activeSubpage.markdown[langKey] || activeSubpage.markdown.es)}
               </div>
 
               {/* Botón de llamada a la acción inferior */}
@@ -342,14 +431,14 @@ export default function DocsPage() {
                   className="flex items-center gap-2 text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 text-xs font-bold transition-colors"
                 >
                   <ArrowLeft size={14} />
-                  <span>Volver a la Home Comercial</span>
+                  <span>{uiT.backHome}</span>
                 </Link>
 
                 <Link
                   href="/login"
                   className="px-5 py-2.5 bg-stone-950 hover:bg-stone-900 dark:bg-white dark:hover:bg-stone-50 text-white dark:text-stone-950 text-xs font-bold rounded-xl transition-all shadow-md active:scale-95"
                 >
-                  Acceso Profesional
+                  {uiT.professionalAccess}
                 </Link>
               </div>
 
@@ -361,9 +450,9 @@ export default function DocsPage() {
 
       {/* Footer Minimalista */}
       <footer className="border-t border-stone-100 dark:border-stone-900 py-8 px-6 mt-20 bg-stone-50/50 dark:bg-stone-900/10">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-semibold text-stone-400 dark:text-stone-500">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-semibold text-stone-400 dark:text-stone-505">
           <div>
-            <span>© {new Date().getFullYear()} ProBookia B2B SaaS. Marca blanca registrada de alta gama.</span>
+            <span>{uiT.footerText}</span>
           </div>
           <div className="flex items-center gap-6">
             <Link href="/privacidad" className="hover:text-stone-600">Privacidad</Link>

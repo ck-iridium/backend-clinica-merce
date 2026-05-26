@@ -139,6 +139,7 @@ export async function middleware(request: NextRequest) {
     const isGlobalSassPath = 
       url.pathname === "/" ||
       url.pathname === "/marketing" ||
+      url.pathname.startsWith("/docs") ||
       url.pathname.startsWith("/onboarding") ||
       url.pathname === "/login" ||
       url.pathname === "/aviso-legal" ||
