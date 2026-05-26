@@ -360,6 +360,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
       title: s.title,
       copy: copy,
       videoUrl: s.video_url || 'https://assets.mixkit.co/videos/preview/mixkit-hairdresser-cutting-hair-of-a-woman-in-salon-40552-large.mp4',
+      imageUrl: s.image_url || '',
       placeholderGradient: gradient
     };
   });
@@ -511,21 +512,21 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                     {/* Visual Media Pickers */}
                     <div className="space-y-4 p-4 bg-stone-50 rounded-2xl border border-stone-200/65">
                       <ImageUploadBlock 
-                        label="Vídeo del Sector (Loop 9:16)"
-                        value={sectorFormData.video_url} 
-                        onSelect={() => setPickerTarget({ field: 'video_url' })} 
-                        onClear={() => setSectorFormData(prev => ({ ...prev, video_url: '' }))} 
-                        onUpload={(url) => setSectorFormData(prev => ({ ...prev, video_url: url }))}
-                        accepts="video"
-                      />
-
-                      <ImageUploadBlock 
                         label="Imagen Cobertura (Opcional)"
                         value={sectorFormData.image_url} 
                         onSelect={() => setPickerTarget({ field: 'image_url' })} 
                         onClear={() => setSectorFormData(prev => ({ ...prev, image_url: '' }))} 
                         onUpload={(url) => setSectorFormData(prev => ({ ...prev, image_url: url }))}
                         accepts="image"
+                      />
+
+                      <ImageUploadBlock 
+                        label="Vídeo del Sector (Loop 9:16)"
+                        value={sectorFormData.video_url} 
+                        onSelect={() => setPickerTarget({ field: 'video_url' })} 
+                        onClear={() => setSectorFormData(prev => ({ ...prev, video_url: '' }))} 
+                        onUpload={(url) => setSectorFormData(prev => ({ ...prev, video_url: url }))}
+                        accepts="video"
                       />
                     </div>
 
@@ -770,7 +771,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
               >
                 <div className="w-full h-full bg-white rounded-3xl border border-stone-200/50 p-2.5 shadow-md relative overflow-hidden">
                   <div className="w-full h-full rounded-2xl overflow-hidden bg-stone-50 relative border border-stone-100">
-                    <video src={previewSectors[0]?.videoUrl} className="w-full h-full object-cover" autoPlay={previewIndex === 0} loop muted playsInline />
+                    <video src={previewSectors[0]?.videoUrl} poster={previewSectors[0]?.imageUrl} className="w-full h-full object-cover" autoPlay={previewIndex === 0} loop muted playsInline />
                     <div className="absolute top-4 left-4 z-10">
                       <span className={`border px-3 py-1 rounded-full text-[8px] font-black tracking-wider uppercase font-sans ${
                         previewIndex === 0 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white/95 border-stone-200/60 text-stone-500'
@@ -791,7 +792,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
               >
                 <div className="w-full h-full bg-white rounded-3xl border border-stone-200/50 p-2.5 shadow-md relative overflow-hidden">
                   <div className="w-full h-full rounded-2xl overflow-hidden bg-stone-50 relative border border-stone-100">
-                    <video src={previewSectors[1]?.videoUrl} className="w-full h-full object-cover" autoPlay={previewIndex === 1} loop muted playsInline />
+                    <video src={previewSectors[1]?.videoUrl} poster={previewSectors[1]?.imageUrl} className="w-full h-full object-cover" autoPlay={previewIndex === 1} loop muted playsInline />
                     <div className="absolute top-4 left-4 z-10">
                       <span className={`border px-3 py-1 rounded-full text-[8px] font-black tracking-wider uppercase font-sans ${
                         previewIndex === 1 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white/95 border-stone-200/60 text-stone-500'
@@ -812,7 +813,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
               >
                 <div className="w-full h-full bg-white rounded-3xl border border-stone-200/50 p-2.5 shadow-md relative overflow-hidden">
                   <div className="w-full h-full rounded-2xl overflow-hidden bg-stone-50 relative border border-stone-100">
-                    <video src={previewSectors[2]?.videoUrl} className="w-full h-full object-cover" autoPlay={previewIndex === 2} loop muted playsInline />
+                    <video src={previewSectors[2]?.videoUrl} poster={previewSectors[2]?.imageUrl} className="w-full h-full object-cover" autoPlay={previewIndex === 2} loop muted playsInline />
                     <div className="absolute top-4 left-4 z-10">
                       <span className={`border px-3 py-1 rounded-full text-[8px] font-black tracking-wider uppercase font-sans ${
                         previewIndex === 2 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white/95 border-stone-200/60 text-stone-500'
@@ -833,7 +834,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
               >
                 <div className="w-full h-full bg-white rounded-3xl border border-stone-200/50 p-2.5 shadow-md relative overflow-hidden">
                   <div className="w-full h-full rounded-2xl overflow-hidden bg-stone-50 relative border border-stone-100">
-                    <video src={previewSectors[3]?.videoUrl} className="w-full h-full object-cover" autoPlay={previewIndex === 3} loop muted playsInline />
+                    <video src={previewSectors[3]?.videoUrl} poster={previewSectors[3]?.imageUrl} className="w-full h-full object-cover" autoPlay={previewIndex === 3} loop muted playsInline />
                     <div className="absolute top-4 left-4 z-10">
                       <span className={`border px-3 py-1 rounded-full text-[8px] font-black tracking-wider uppercase font-sans ${
                         previewIndex === 3 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white/95 border-stone-200/60 text-stone-500'
