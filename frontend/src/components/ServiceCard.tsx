@@ -47,14 +47,15 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={`
-        group relative rounded-3xl overflow-hidden border border-stone-100 dark:border-stone-850 block bg-stone-50 dark:bg-stone-900 transition-all duration-500 ease-out shadow-sm hover:shadow-xl
+        group relative overflow-hidden border border-stone-100 dark:border-stone-800/40 block bg-stone-50 dark:bg-stone-900 transition-all duration-500 ease-out shadow-sm hover:shadow-xl
         flex-shrink-0 w-[85vw] md:w-[372px] h-full md:h-[662px] snap-center md:snap-align-none
         ${className}
       `}
       style={{
         transform: 'translateZ(0)',
         backfaceVisibility: 'hidden',
-        willChange: 'transform'
+        willChange: 'transform',
+        borderRadius: 'var(--radius-card)'
       }}
     >
       {/* Imagen Estática con Lazy Loading - Siempre visible de fondo para evitar flash */}

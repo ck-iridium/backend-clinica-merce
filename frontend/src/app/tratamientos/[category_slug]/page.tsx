@@ -361,7 +361,8 @@ export default async function CategoryDynamicPage({ params }: { params: { catego
                     <Link
                       key={other.id}
                       href={`/tratamientos/${other.slug || other.id}`}
-                      className={`group relative rounded-[2.5rem] overflow-hidden shadow-luxury hover:shadow-2xl transition-all duration-700 block ${gridClasses}`}
+                      className={`group relative overflow-hidden shadow-luxury hover:shadow-2xl transition-all duration-700 block ${gridClasses}`}
+                      style={{ borderRadius: 'var(--radius-card)' }}
                     >
                       {/* Imagen de Fondo */}
                       <div className="absolute inset-0 transition-transform duration-1000 group-hover:scale-110">

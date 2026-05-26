@@ -64,24 +64,24 @@ export default async function CatalogPage() {
   // Traducción estática
   const contentMap = {
     es: {
-      title: 'Catálogo de Tratamientos',
+      title: 'Catálogo de Servicios',
       subtitle: 'Explora todos nuestros servicios diseñados para realzar tu belleza. Selecciona una categoría para ver los detalles.',
-      no_treatments: 'No hay tratamientos disponibles en este momento.',
-      treatments_count: 'tratamientos disponibles',
+      no_treatments: 'No hay servicios disponibles en este momento.',
+      treatments_count: 'servicios disponibles',
       details: 'Ver detalles'
     },
     en: {
-      title: 'Treatment Catalog',
+      title: 'Service Catalog',
       subtitle: 'Explore all our aesthetic services designed to enhance your natural beauty. Select a category to view details.',
-      no_treatments: 'No treatments available at this moment.',
-      treatments_count: 'treatments available',
+      no_treatments: 'No services available at this moment.',
+      treatments_count: 'services available',
       details: 'View details'
     },
     fr: {
-      title: 'Catalogue de Soins',
-      subtitle: 'Explorez tous nos soins esthétiques conçus pour sublimer votre beauté naturelle. Sélectionnez une catégorie pour voir les détails.',
-      no_treatments: 'Aucun soin disponible pour le moment.',
-      treatments_count: 'soins disponibles',
+      title: 'Catalogue de Services',
+      subtitle: 'Explorez tous nos services esthétiques conçus pour sublimer votre beauté naturelle. Sélectionnez une catégorie pour voir les détails.',
+      no_treatments: 'Aucun service disponible pour le moment.',
+      treatments_count: 'services disponibles',
       details: 'Voir les détails'
     }
   };
@@ -108,7 +108,7 @@ export default async function CatalogPage() {
   const groupedServices = activeServices.reduce((acc: Record<string, any[]>, svc: any) => {
     // Buscar la categoría completa o asignar "General" si no existe
     const category = translatedCategories.find((c: any) => c.id === svc.category_id);
-    const catName = category ? category.name : (lang === 'fr' ? "Soins Généraux" : lang === 'en' ? "General Treatments" : "Tratamientos Generales");
+    const catName = category ? category.name : (lang === 'fr' ? "Services Généraux" : lang === 'en' ? "General Services" : "Servicios Generales");
 
     if (!acc[catName]) acc[catName] = [];
     acc[catName].push({ ...svc, categoryInfo: category });
@@ -141,8 +141,12 @@ export default async function CatalogPage() {
               return (
                 <section key={catName} className="max-w-7xl mx-auto px-6">
                   {/* Category Header */}
-                  <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-10 border-b border-stone-200 dark:border-stone-850 pb-8">
-                    <Link href={`/tratamientos/${categoryInfo?.slug || categoryInfo?.id}`} className="w-24 h-24 sm:w-32 sm:h-32 shrink-0 rounded-[1.5rem] overflow-hidden shadow-lg border border-stone-100 dark:border-stone-800 bg-white dark:bg-stone-900 group relative block">
+                  <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-10 border-b border-stone-200 dark:border-stone-800 pb-8">
+                    <Link 
+                      href={`/tratamientos/${categoryInfo?.slug || categoryInfo?.id}`} 
+                      className="w-24 h-24 sm:w-32 sm:h-32 shrink-0 overflow-hidden shadow-lg border border-stone-100 dark:border-stone-800 bg-white dark:bg-stone-900 group relative block"
+                      style={{ borderRadius: 'var(--radius-card)' }}
+                    >
                       <div className="absolute inset-0 bg-stone-900/10 group-hover:bg-stone-900/0 transition-colors z-10 pointer-events-none"></div>
                       <CategoryImage
                         src={categoryInfo?.image_url?.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${categoryInfo.image_url}` : categoryInfo?.image_url}
@@ -163,12 +167,20 @@ export default async function CatalogPage() {
                       const catSlug = categoryInfo?.slug || categoryInfo?.id || 'general';
                       const serviceLink = `/tratamientos/${catSlug}/${svc.slug || svc.id}`;
                       return (
-                        <Link href={serviceLink} key={svc.id} className="bg-white dark:bg-stone-900 p-8 rounded-[2.5rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-stone-100 dark:border-stone-850/60 flex flex-col relative group overflow-hidden">
+                        <Link 
+                          href={serviceLink} 
+                          key={svc.id} 
+                          className="bg-white dark:bg-stone-900 p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-stone-100 dark:border-stone-800/40 flex flex-col relative group overflow-hidden"
+                          style={{ borderRadius: 'var(--radius-card)' }}
+                        >
                           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-yellow-50/10 to-transparent rounded-bl-[4rem] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
 
                           <div className="flex justify-between items-start mb-6 gap-4 relative z-10">
                             <h3 className="text-xl md:text-2xl font-bold leading-tight group-hover:text-primary dark:text-stone-100 transition-colors">{svc.name}</h3>
-                            <span className="bg-[#fcf8e5] dark:bg-yellow-950/20 text-[#b08e23] dark:text-yellow-450 px-3 py-1.5 rounded-xl font-bold text-sm shrink-0 whitespace-nowrap shadow-sm border border-yellow-100 dark:border-yellow-950/30">
+                            <span 
+                              className="bg-primary/10 text-primary dark:text-primary px-3 py-1.5 font-bold text-sm shrink-0 whitespace-nowrap shadow-sm border border-primary/25"
+                              style={{ borderRadius: 'var(--radius-btn)' }}
+                            >
                               {svc.price} €
                             </span>
                           </div>
