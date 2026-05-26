@@ -84,7 +84,10 @@ def run_auto_migrations():
             "ALTER TABLE clinic_settings ADD COLUMN dark_mode_enabled BOOLEAN DEFAULT FALSE",
             "ALTER TABLE clinic_settings ADD COLUMN border_radius VARCHAR DEFAULT 'suave'",
             "ALTER TABLE clinic_settings ADD COLUMN favicon_b64 TEXT",
-            "ALTER TABLE clinic_settings ADD COLUMN clinic_description VARCHAR DEFAULT 'Tu centro de confianza para servicios personalizados y bienestar de primer nivel.'"
+            "ALTER TABLE clinic_settings ADD COLUMN clinic_description VARCHAR DEFAULT 'Tu centro de confianza para servicios personalizados y bienestar de primer nivel.'",
+            "ALTER TABLE clinic_settings ADD COLUMN branding_palette_id VARCHAR DEFAULT 'dorado-antracita'",
+            "ALTER TABLE clinic_settings ADD COLUMN accent_color_primary VARCHAR DEFAULT '#D4AF37'",
+            "ALTER TABLE clinic_settings ADD COLUMN accent_color_secondary VARCHAR DEFAULT '#1C1917'"
         ]
         
         for m in migrations:

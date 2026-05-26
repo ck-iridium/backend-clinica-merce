@@ -170,7 +170,7 @@ export default async function CatalogPage() {
                         <Link 
                           href={serviceLink} 
                           key={svc.id} 
-                          className="bg-white dark:bg-stone-900 p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-stone-100 dark:border-stone-800/40 flex flex-col relative group overflow-hidden"
+                          className="bg-white dark:bg-stone-900 p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-secondary/10 dark:border-secondary/10 flex flex-col relative group overflow-hidden"
                           style={{ borderRadius: 'var(--radius-card)' }}
                         >
                           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-yellow-50/10 to-transparent rounded-bl-[4rem] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
@@ -189,11 +189,11 @@ export default async function CatalogPage() {
                             {svc.description || 'Servicio personalizado y de alta calidad.'}
                           </p>
 
-                          <div className="mt-auto pt-6 border-t border-stone-100 dark:border-stone-800 flex justify-between items-center relative z-10">
+                          <div className="mt-auto pt-6 border-t border-secondary/10 flex justify-between items-center relative z-10">
                             <span className="text-stone-400 dark:text-stone-500 font-semibold text-sm flex items-center gap-1">
-                              <span className="text-primary text-lg leading-none">⏱</span> {svc.duration_minutes} min
+                              <span className="text-secondary text-lg leading-none">⏱</span> {svc.duration_minutes} min
                             </span>
-                            <span className="text-sm font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                            <span className="text-sm font-bold text-secondary opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 hover:text-primary">
                               {t.details} <span className="text-lg leading-none">→</span>
                             </span>
                           </div>

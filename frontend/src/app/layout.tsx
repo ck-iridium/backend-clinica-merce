@@ -214,8 +214,10 @@ export default async function RootLayout({
   }
 
   // ── CÁLCULO DE VALORES DE MARCA DINÁMICOS ──
-  const accentColor = settings?.accent_color || '#d4af37';
-  const primaryHsl = hexToHsl(accentColor);
+  const primaryColor = settings?.accent_color_primary || settings?.accent_color || '#d4af37';
+  const secondaryColor = settings?.accent_color_secondary || '#1c1917';
+  const primaryHsl = hexToHsl(primaryColor);
+  const secondaryHsl = hexToHsl(secondaryColor);
   const isDark = settings?.dark_mode_enabled || false;
   const borderRadiusStyle = settings?.border_radius || 'suave';
   const headingsFont = settings?.branding_font_headings || 'Playfair Display';
@@ -245,6 +247,7 @@ export default async function RootLayout({
         <style dangerouslySetInnerHTML={{ __html: `
           :root {
             --primary: ${primaryHsl} !important;
+            --secondary: ${secondaryHsl} !important;
             --ring: ${primaryHsl} !important;
             --radius-base: ${radiusBase} !important;
             --radius-card: ${radiusCard} !important;

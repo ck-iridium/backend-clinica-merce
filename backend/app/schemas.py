@@ -184,6 +184,9 @@ class ClinicSettingsBase(BaseModel):
     onboarding_completed: bool = False
     theme_palette: Optional[str] = "charcoal-gold"
     accent_color: Optional[str] = "#D4AF37"
+    branding_palette_id: Optional[str] = "dorado-antracita"
+    accent_color_primary: Optional[str] = "#D4AF37"
+    accent_color_secondary: Optional[str] = "#1C1917"
     dark_mode_enabled: Optional[bool] = False
     border_radius: Optional[str] = "suave"
     favicon_b64: Optional[str] = None
@@ -249,6 +252,9 @@ class ClinicSettingsUpdate(BaseModel):
     onboarding_completed: Optional[bool] = None
     theme_palette: Optional[str] = None
     accent_color: Optional[str] = None
+    branding_palette_id: Optional[str] = None
+    accent_color_primary: Optional[str] = None
+    accent_color_secondary: Optional[str] = None
     dark_mode_enabled: Optional[bool] = None
     border_radius: Optional[str] = None
     favicon_b64: Optional[str] = None

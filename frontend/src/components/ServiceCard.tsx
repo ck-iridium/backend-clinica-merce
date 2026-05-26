@@ -126,10 +126,10 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
           <h3 className="text-2xl font-serif text-white font-bold leading-tight mb-2">
             {service.name}
           </h3>
-          <div className="flex items-center gap-3 text-primary font-semibold text-sm uppercase tracking-wider">
-            <span>{service.duration_minutes} MIN</span>
-            <span>•</span>
-            <span>{service.price} €</span>
+          <div className="flex items-center gap-3 font-semibold text-sm uppercase tracking-wider">
+            <span className="text-secondary">{service.duration_minutes} MIN</span>
+            <span className="text-secondary/60">•</span>
+            <span className="text-primary">{service.price} €</span>
           </div>
         </div>
 

@@ -188,28 +188,142 @@ export default function BrandingTab({
               </div>
             </div>
 
-            {/* 1. Color de Acento Dinámico */}
+            {/* 1. Paletas de Colores Preestablecidas */}
             <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <label className="text-xs font-black uppercase tracking-widest text-stone-500 flex items-center gap-1.5">
-                  Color de Acento Dinámico
-                </label>
-                <span className="text-xs font-mono font-bold text-[#d4af37] bg-amber-50/50 px-2.5 py-1 rounded-lg border border-amber-100/50">
-                  {settings.accent_color || '#D4AF37'}
-                </span>
+              <label className="text-xs font-black uppercase tracking-widest text-stone-500 flex items-center gap-1.5">
+                Paletas Cromáticas Core (Lujo Silencioso)
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {[
+                  { id: 'dorado-antracita', name: 'Dorado / Antracita', primary: '#D4AF37', secondary: '#1C1917', desc: 'Lujo silencioso tradicional' },
+                  { id: 'esmeralda-lino', name: 'Esmeralda / Lino', primary: '#0F5132', secondary: '#F2EFE9', desc: 'Orgánico, spa y botánica' },
+                  { id: 'bronce-crema', name: 'Bronce / Crema', primary: '#A3704C', secondary: '#FAF6F0', desc: 'Calidez, cosmética y calma' },
+                  { id: 'minimalista-industrial', name: 'Minimalista Industrial', primary: '#2B2D42', secondary: '#8D99AE', desc: 'Barbería y medicina' },
+                  { id: 'custom', name: 'Personalizado (Custom)', primary: '#D4AF37', secondary: '#1C1917', desc: 'Elige tus propios colores' }
+                ].map(p => {
+                  const activePaletteId = settings.branding_palette_id || 'dorado-antracita';
+                  const active = activePaletteId === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => {
+                        if (p.id === 'custom') {
+                          setSettings({
+                            ...settings,
+                            branding_palette_id: 'custom'
+                          });
+                        } else {
+                          setSettings({
+                            ...settings,
+                            branding_palette_id: p.id,
+                            accent_color_primary: p.primary,
+                            accent_color_secondary: p.secondary,
+                            accent_color: p.primary // Backward compatibility sync
+                          });
+                        }
+                      }}
+                      className={`p-3.5 border rounded-2xl text-left transition-all relative flex flex-col justify-between min-h-[90px] ${
+                        active 
+                          ? 'border-[#d4af37] bg-amber-50/10 shadow-sm shadow-amber-100/10' 
+                          : 'border-stone-200/80 hover:border-stone-300 bg-white hover:bg-stone-50'
+                      }`}
+                    >
+                      <div className="flex justify-between items-center w-full mb-1">
+                        <span className={`text-xs font-bold leading-none ${active ? 'text-stone-900' : 'text-stone-600'}`}>{p.name}</span>
+                        {active && <Check size={12} className="text-[#d4af37] shrink-0" />}
+                      </div>
+                      
+                      <p className="text-[10px] text-stone-400 font-semibold mb-2 line-clamp-1">{p.desc}</p>
+                      
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center -space-x-1.5">
+                          <div 
+                            className="w-4 h-4 rounded-full border border-white shadow-sm" 
+                            style={{ backgroundColor: p.id === 'custom' ? (settings.accent_color_primary || settings.accent_color || '#D4AF37') : p.primary }}
+                          />
+                          <div 
+                            className="w-4 h-4 rounded-full border border-white shadow-sm" 
+                            style={{ backgroundColor: p.id === 'custom' ? (settings.accent_color_secondary || '#1C1917') : p.secondary }}
+                          />
+                        </div>
+                        <span className="text-[9px] font-mono font-bold text-stone-500 uppercase">
+                          {p.id === 'custom' 
+                            ? `${settings.accent_color_primary || settings.accent_color || '#D4AF37'} / ${settings.accent_color_secondary || '#1C1917'}` 
+                            : `${p.primary} / ${p.secondary}`
+                          }
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
-              <div className="flex items-center gap-4 bg-stone-50 p-4 rounded-2xl border border-stone-200/50">
-                <div className="relative shrink-0 w-12 h-12 rounded-xl overflow-hidden border border-stone-200/60 shadow-inner flex items-center justify-center bg-white">
-                  <input 
-                    type="color" 
-                    value={settings.accent_color || '#D4AF37'} 
-                    onChange={e => updateSetting('accent_color', e.target.value)}
-                    className="absolute inset-0 w-full h-full p-0 border-0 cursor-pointer scale-150"
-                  />
+            </div>
+
+            {/* 2. Doble Selector de Colores Personalizados */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Color Primario */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-black uppercase tracking-widest text-stone-500">
+                    Color Acento Primario
+                  </label>
+                  <span className="text-xs font-mono font-bold text-stone-600 bg-stone-50 px-2 py-0.5 rounded border border-stone-200/60">
+                    {settings.accent_color_primary || settings.accent_color || '#D4AF37'}
+                  </span>
                 </div>
-                <div className="flex-1">
-                  <p className="text-xs font-bold text-stone-850">Paleta Cromática de Marca</p>
-                  <p className="text-[11px] text-stone-400 font-semibold mt-0.5">Haz clic en el selector de la izquierda para escoger el color principal de los botones, enlaces e identidad visual.</p>
+                <div className="flex items-center gap-3 bg-stone-50 p-3 rounded-2xl border border-stone-200/50">
+                  <div className="relative shrink-0 w-10 h-10 rounded-xl overflow-hidden border border-stone-200/60 shadow-inner flex items-center justify-center bg-white">
+                    <input 
+                      type="color" 
+                      value={settings.accent_color_primary || settings.accent_color || '#D4AF37'} 
+                      onChange={e => {
+                        setSettings({
+                          ...settings,
+                          accent_color_primary: e.target.value,
+                          accent_color: e.target.value, // Backward compatibility sync
+                          branding_palette_id: 'custom' // Switch to custom automatically
+                        });
+                      }}
+                      className="absolute inset-0 w-full h-full p-0 border-0 cursor-pointer scale-150"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] font-bold text-stone-850 leading-tight">Acción Principal</p>
+                    <p className="text-[9px] text-stone-400 leading-normal truncate">CTAs, Precios, Estados Activos</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Color Secundario */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-black uppercase tracking-widest text-stone-500">
+                    Color Acento Secundario
+                  </label>
+                  <span className="text-xs font-mono font-bold text-stone-600 bg-stone-50 px-2 py-0.5 rounded border border-stone-200/60">
+                    {settings.accent_color_secondary || '#1C1917'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 bg-stone-50 p-3 rounded-2xl border border-stone-200/50">
+                  <div className="relative shrink-0 w-10 h-10 rounded-xl overflow-hidden border border-stone-200/60 shadow-inner flex items-center justify-center bg-white">
+                    <input 
+                      type="color" 
+                      value={settings.accent_color_secondary || '#1C1917'} 
+                      onChange={e => {
+                        setSettings({
+                          ...settings,
+                          accent_color_secondary: e.target.value,
+                          branding_palette_id: 'custom' // Switch to custom automatically
+                        });
+                      }}
+                      className="absolute inset-0 w-full h-full p-0 border-0 cursor-pointer scale-150"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] font-bold text-stone-850 leading-tight">Acento Secundario</p>
+                    <p className="text-[9px] text-stone-400 leading-normal truncate">⏱ Duración, Detalles, Contornos</p>
+                  </div>
                 </div>
               </div>
             </div>
