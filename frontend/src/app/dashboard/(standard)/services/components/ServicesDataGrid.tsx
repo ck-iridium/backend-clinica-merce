@@ -37,6 +37,7 @@ export default function ServicesDataGrid({
   const [savingPriceId, setSavingPriceId] = useState<string | null>(null);
   const [updatingDurations, setUpdatingDurations] = useState<Record<string, string>>({});
   const [savingDurationId, setSavingDurationId] = useState<string | null>(null);
+  const [savingCategoryId, setSavingCategoryId] = useState<string | null>(null);
   const [activeImagePickerServiceId, setActiveImagePickerServiceId] = useState<string | null>(null);
   const [updatingStatusIds, setUpdatingStatusIds] = useState<Set<string>>(new Set());
   const [bulkActionLoading, setBulkActionLoading] = useState<boolean>(false);
@@ -258,6 +259,47 @@ export default function ServicesDataGrid({
         delete next[service.id];
         return next;
       });
+    }
+  };
+
+  // Modificación de categoría rápida por fila
+  const handleCategorySave = async (service: any, newCategoryId: string) => {
+    const finalValue = newCategoryId === "" ? null : newCategoryId;
+    if (service.category_id === finalValue) return;
+
+    setSavingCategoryId(service.id);
+    const toastId = toast.loading(
+      language === 'fr' ? 'Mise à jour de la catégorie...' : 
+      language === 'en' ? 'Updating category...' : 
+      'Actualizando categoría...'
+    );
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/${service.id}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ category_id: finalValue }),
+      });
+      if (res.ok) {
+        toast.success(
+          language === 'fr' ? 'Catégorie mise à jour.' : 
+          language === 'en' ? 'Category updated.' : 
+          'Categoría actualizada con éxito.', 
+          { id: toastId }
+        );
+        if (onRefresh) onRefresh();
+      } else {
+        throw new Error();
+      }
+    } catch (err) {
+      toast.error(
+        language === 'fr' ? 'Erreur lors de la mise à jour.' : 
+        language === 'en' ? 'Error updating category.' : 
+        'Error al actualizar la categoría.', 
+        { id: toastId }
+      );
+    } finally {
+      setSavingCategoryId(null);
     }
   };
 
@@ -532,6 +574,9 @@ export default function ServicesDataGrid({
                   <th className="p-4 text-xs font-black uppercase tracking-wider text-stone-400">
                     {language === 'fr' ? 'Service / Traitement' : language === 'en' ? 'Service / Treatment' : 'Servicio / Tratamiento'}
                   </th>
+                  <th className="p-4 text-xs font-black uppercase tracking-wider text-stone-400 w-44">
+                    {language === 'fr' ? 'Catégorie' : language === 'en' ? 'Category' : 'Categoría'}
+                  </th>
                   <th className="p-4 text-xs font-black uppercase tracking-wider text-stone-400 w-32">
                     {language === 'fr' ? 'Durée' : language === 'en' ? 'Duration' : 'Duración'}
                   </th>
@@ -627,9 +672,6 @@ export default function ServicesDataGrid({
                       <td className="p-4">
                         <div className="flex items-center gap-3">
                           <div className="font-bold text-stone-800 text-sm">{svc.name}</div>
-                          <span className="px-2 py-0.5 text-[9px] rounded-full font-black uppercase tracking-wider bg-stone-100 text-stone-500 border border-stone-200">
-                            {displayCategory}
-                          </span>
                           {svc.is_featured && (
                             <span className="px-2 py-0.5 text-[9px] rounded-full font-black uppercase tracking-wider bg-yellow-50 text-yellow-700 border border-yellow-200">
                               {language === 'fr' ? 'À la une' : language === 'en' ? 'Featured' : 'Destacado'}
@@ -641,6 +683,34 @@ export default function ServicesDataGrid({
                             {svc.description}
                           </div>
                         )}
+                      </td>
+
+                      {/* Categoría (Select Moderno) */}
+                      <td className="p-4">
+                        <div className="relative flex items-center min-w-[140px] max-w-[180px]">
+                          <select
+                            value={svc.category_id || ''}
+                            disabled={savingCategoryId === svc.id}
+                            onChange={e => handleCategorySave(svc, e.target.value)}
+                            className="w-full pl-3 pr-8 py-1.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 focus:border-[#d4af37] rounded-lg text-xs font-bold text-stone-800 outline-none transition-all cursor-pointer focus:ring-1 focus:ring-[#d4af37] appearance-none"
+                          >
+                            <option value="">{language === 'fr' ? 'Sans catégorie' : language === 'en' ? 'No Category' : 'Sin Categoría'}</option>
+                            {categories.map(cat => (
+                              <option key={cat.id} value={cat.id}>
+                                {cat.name}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="absolute right-2.5 pointer-events-none text-stone-400">
+                            {savingCategoryId === svc.id ? (
+                              <Loader2 size={12} className="animate-spin text-[#d4af37]" />
+                            ) : (
+                              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                              </svg>
+                            )}
+                          </div>
+                        </div>
                       </td>
 
                       {/* Duración (Entrada de Duración Directa con Auto-guardado) */}
