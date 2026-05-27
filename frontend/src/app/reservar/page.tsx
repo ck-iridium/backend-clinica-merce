@@ -133,8 +133,18 @@ export default function BookingPage() {
 
         if (catRes.ok) {
           const cats = await catRes.json();
-          const validCats = cats.filter((c: any) => c.name.toUpperCase() !== 'GENERAL');
+          // Ocultar 'General' solo si existen otras categorías específicas, preservando la estética de Clínica Mercè
+          // pero garantizando que nuevas clínicas registradas vean su categoría por defecto.
+          const hasOtherCategories = cats.some((c: any) => c.name.toUpperCase() !== 'GENERAL');
+          const validCats = hasOtherCategories 
+            ? cats.filter((c: any) => c.name.toUpperCase() !== 'GENERAL')
+            : cats;
           setCategories(validCats);
+
+          // Si solo existe una categoría activa, la auto-seleccionamos para reducir fricción y mejorar la UX
+          if (validCats.length === 1) {
+            setActiveCategory(validCats[0]);
+          }
         }
 
         if (srvRes.ok) {
