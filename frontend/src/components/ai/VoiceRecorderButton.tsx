@@ -8,12 +8,14 @@ interface VoiceRecorderButtonProps {
   onVoiceTranscribed?: (transcribedText: string) => void;
   disabled?: boolean;
   lang?: string;
+  onStartClick?: () => void;
 }
 
 export default function VoiceRecorderButton({
   onVoiceTranscribed,
   disabled = false,
   lang = 'es-ES',
+  onStartClick,
 }: VoiceRecorderButtonProps) {
   const [isRecording, setIsRecording] = useState(false);
   const recognitionRef = useRef<any>(null);
@@ -146,6 +148,7 @@ export default function VoiceRecorderButton({
     if (isRecording) {
       stopListening();
     } else {
+      if (onStartClick) onStartClick();
       startListening();
     }
   };

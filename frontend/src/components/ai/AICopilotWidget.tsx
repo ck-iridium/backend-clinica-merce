@@ -134,7 +134,7 @@ export default function AICopilotWidget() {
           {
             role: 'model',
             content: language === 'fr' 
-              ? 'Bonjour, je suis votre Copilote ProBookia. Dites-moi où vous souhaitez naviguer ou quel tratamiento vous souhaitez créer.'
+              ? 'Bonjour, je suis votre Copilote ProBookia. Dites-moi où vous souhaitez naviguer ou quel traitement vous souhaitez créer.'
               : language === 'en'
                 ? 'Hello, I am your ProBookia Copilot. Tell me where you want to navigate or what service you want to create.'
                 : 'Hola, soy tu Co-Piloto ProBookia. Dime a qué sección del panel deseas ir o qué tratamiento quieres crear hoy.',
@@ -182,7 +182,13 @@ export default function AICopilotWidget() {
               : 'Hola, soy tu Co-Piloto ProBookia. Dime a qué sección del panel deseas ir o qué tratamiento quieres crear hoy.',
         },
       ]);
-      toast.success('Historial de conversación reiniciado.');
+      toast.success(
+        language === 'fr' 
+          ? 'Historique de conversation réinitialisé.' 
+          : language === 'en' 
+            ? 'Conversation history reset.' 
+            : 'Historial de conversación reiniciado.'
+      );
     } catch (e) {
       console.warn("Error al borrar historial:", e);
     }
@@ -194,6 +200,19 @@ export default function AICopilotWidget() {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, isOpen]);
+
+  // Pre-unlock the Audio Context synchronously on user gesture to prevent browser autoplay blocks
+  const unlockAudioContext = () => {
+    if (isMuted || typeof window === 'undefined') return;
+    try {
+      const silentAudio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==");
+      silentAudio.play().catch(() => {
+        // Ignorar rechazo de autoplay, la llamada misma registra la interacción en el navegador
+      });
+    } catch (e) {
+      // Ignorar errores
+    }
+  };
 
   // Speak response out loud if not muted with proper native premium voice
   const speakText = (text: string, audioBase64?: string | null, onEndCallback?: () => void) => {
@@ -355,6 +374,7 @@ export default function AICopilotWidget() {
   };
 
   const handleSend = async (textToSend?: string) => {
+    unlockAudioContext();
     let queryText = textToSend || input.trim();
     if (!queryText && !attachedFile && !textToSend) return;
     if (isLoading || isUploading) return;
@@ -527,7 +547,7 @@ export default function AICopilotWidget() {
               <button
                 onClick={() => setIsOpen(false)}
                 className="p-2.5 rounded-xl text-stone-400 hover:text-white hover:bg-stone-800 transition-all shrink-0 active:scale-95 border border-stone-800"
-                title="Cerrar Asistente"
+                title={language === 'fr' ? "Fermer l'assistant" : language === 'en' ? 'Close Assistant' : 'Cerrar Asistente'}
               >
                 <X size={18} />
               </button>
@@ -552,7 +572,10 @@ export default function AICopilotWidget() {
                 }`}
                 title={language === 'fr' ? 'Changer de voix (Féminin/Masculin)' : language === 'en' ? 'Change voice (Female/Male)' : 'Cambiar voz (Femenina/Masculina)'}
               >
-                {voiceGender === 'female' ? '👩 Voz Femenina' : '👨 Voz Masculina'}
+                {voiceGender === 'female' 
+                  ? (language === 'fr' ? '👩 Voix Féminine' : language === 'en' ? '👩 Female Voice' : '👩 Voz Femenina')
+                  : (language === 'fr' ? '👨 Voix Masculine' : language === 'en' ? '👨 Male Voice' : '👨 Voz Masculina')
+                }
               </button>
 
               <div className="flex items-center gap-2">
@@ -564,7 +587,10 @@ export default function AICopilotWidget() {
                       ? 'border-red-500/40 bg-red-500/10 text-red-400' 
                       : 'border-stone-800 bg-stone-900/50 text-stone-400 hover:text-primary hover:border-stone-700'
                   }`}
-                  title={isMuted ? 'Activar Voz' : 'Silenciar Voz'}
+                  title={isMuted 
+                    ? (language === 'fr' ? 'Activer la voix' : language === 'en' ? 'Unmute Voice' : 'Activar Voz')
+                    : (language === 'fr' ? 'Couper la voix' : language === 'en' ? 'Mute Voice' : 'Silenciar Voz')
+                  }
                 >
                   {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
                 </button>
@@ -573,7 +599,7 @@ export default function AICopilotWidget() {
                 <button
                   onClick={handleClearHistory}
                   className="p-2 rounded-xl border border-stone-800 bg-stone-900/50 text-stone-400 hover:text-red-400 hover:border-stone-700 transition-all shrink-0 active:scale-95"
-                  title="Reiniciar Conversación"
+                  title={language === 'fr' ? 'Réinitialiser la conversation' : language === 'en' ? 'Reset Conversation' : 'Reiniciar Conversación'}
                 >
                   <RotateCcw size={16} />
                 </button>
@@ -638,14 +664,17 @@ export default function AICopilotWidget() {
                     {attachedFile.name}
                   </span>
                   <span className="text-[9px] text-stone-400 font-bold uppercase tracking-wider">
-                    {attachedFile.type === 'image' ? 'Imagen para servicio/categoría' : 'Documento seguro (CSV/TXT/JSON)'}
+                    {attachedFile.type === 'image' 
+                      ? (language === 'fr' ? 'Image pour service/catégorie' : language === 'en' ? 'Image for service/category' : 'Imagen para servicio/categoría')
+                      : (language === 'fr' ? 'Document sécurisé (CSV/TXT/JSON)' : language === 'en' ? 'Secure document (CSV/TXT/JSON)' : 'Documento seguro (CSV/TXT/JSON)')
+                    }
                   </span>
                 </div>
               </div>
               <button
                 onClick={() => setAttachedFile(null)}
                 className="p-1 rounded-full text-stone-400 hover:text-stone-600 hover:bg-stone-200/50 transition-all shrink-0"
-                title="Quitar archivo"
+                title={language === 'fr' ? 'Retirer le fichier' : language === 'en' ? 'Remove file' : 'Quitar archivo'}
               >
                 <X size={14} />
               </button>
@@ -674,19 +703,33 @@ export default function AICopilotWidget() {
                     ? 'animate-pulse border-primary bg-primary/10 text-primary' 
                     : 'border-stone-200/80 bg-white hover:bg-stone-50 text-stone-600 hover:text-stone-800'
                 }`}
-                title="Adjuntar archivo seguro (CSV, TXT, JSON, Imagen)"
+                title={
+                  language === 'fr' 
+                    ? 'Joindre un fichier sécurisé (CSV, TXT, JSON, Image)' 
+                    : language === 'en' 
+                      ? 'Attach secure file (CSV, TXT, JSON, Image)' 
+                      : 'Adjuntar archivo seguro (CSV, TXT, JSON, Imagen)'
+                }
               >
                 <Paperclip size={15} />
-                <span>{isUploading ? 'Subiendo...' : 'Adjuntar Archivo'}</span>
+                <span>
+                  {isUploading 
+                    ? (language === 'fr' ? 'Téléchargement...' : language === 'en' ? 'Uploading...' : 'Subiendo...')
+                    : (language === 'fr' ? 'Joindre un fichier' : language === 'en' ? 'Attach File' : 'Adjuntar Archivo')
+                  }
+                </span>
               </button>
 
               {/* Botón de Voz Nativo */}
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider">¿Prefieres hablar?</span>
+                <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider">
+                  {language === 'fr' ? 'Préférez-vous parler ?' : language === 'en' ? 'Prefer to speak?' : '¿Prefieres hablar?'}
+                </span>
                 <VoiceRecorderButton
                   onVoiceTranscribed={(txt) => handleSend(language === 'fr' ? `🎙️ [Voix]: "${txt}"` : language === 'en' ? `🎙️ [Voice]: "${txt}"` : `🎙️ [Voz]: "${txt}"`)}
                   disabled={isLoading || isUploading}
                   lang={audioLanguage}
+                  onStartClick={unlockAudioContext}
                 />
               </div>
             </div>
@@ -712,7 +755,7 @@ export default function AICopilotWidget() {
                     ? 'opacity-40 cursor-not-allowed' 
                     : 'hover:bg-primary hover:text-stone-900 hover:border-primary'
                 }`}
-                title="Enviar Mensaje"
+                title={language === 'fr' ? 'Envoyer le message' : language === 'en' ? 'Send Message' : 'Enviar Mensaje'}
               >
                 <Send size={18} />
               </button>
@@ -724,7 +767,10 @@ export default function AICopilotWidget() {
       {/* ── BURBUJA FLOTANTE FIJA ── */}
       {!isOpen && (
         <button
-          onClick={() => setIsOpen(true)}
+          onClick={() => {
+            setIsOpen(true);
+            unlockAudioContext();
+          }}
           className="h-14 w-14 rounded-full bg-stone-900 text-white shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center relative border border-primary/40 z-10 group overflow-hidden hover:bg-stone-800 max-md:translate-x-[35%] max-md:hover:translate-x-0 max-md:rounded-l-2xl max-md:rounded-r-none"
           title="Copiloto de Navegación IA"
         >
