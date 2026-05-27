@@ -3,10 +3,10 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Cormorant_Garamond } from 'next/font/google';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-const cormorantGaramond = Cormorant_Garamond({ 
+const cormorantGaramond = Cormorant_Garamond({
   weight: ['400', '500', '600', '700'],
-  subsets: ['latin'], 
-  variable: '--font-cormorant' 
+  subsets: ['latin'],
+  variable: '--font-cormorant'
 });
 
 export const viewport: Viewport = {
@@ -39,7 +39,7 @@ export async function generateMetadata(): Promise<Metadata> {
     const systemTenantId = process.env.NEXT_PUBLIC_SYSTEM_TENANT_ID;
     if (systemTenantId) {
       try {
-        const resSettings = await fetch(`${baseUrl}/settings/`, { 
+        const resSettings = await fetch(`${baseUrl}/settings/`, {
           next: { revalidate: 60 },
           headers: { "X-Tenant-ID": systemTenantId }
         });
@@ -47,7 +47,7 @@ export async function generateMetadata(): Promise<Metadata> {
           const data = await resSettings.json();
           allowSaasIndexing = data.allow_search_engine_indexing;
         }
-      } catch(e) {}
+      } catch (e) { }
     }
 
     return {
@@ -74,12 +74,12 @@ export async function generateMetadata(): Promise<Metadata> {
     keywords: [],
     ogImage: ""
   };
-  
+
   const tenantId = requestHeaders.get("x-tenant-id");
 
   if (tenantId) {
     try {
-      const resSettings = await fetch(`${baseUrl}/settings/`, { 
+      const resSettings = await fetch(`${baseUrl}/settings/`, {
         next: { revalidate: 60 },
         headers: { "X-Tenant-ID": tenantId }
       });
@@ -91,10 +91,10 @@ export async function generateMetadata(): Promise<Metadata> {
           seoData.description = `Tratamientos de estética avanzada y depilación láser en ${data.clinic_name}.`;
         }
       }
-    } catch(e) {}
+    } catch (e) { }
 
     try {
-      const resContent = await fetch(`${baseUrl}/site-content/`, { 
+      const resContent = await fetch(`${baseUrl}/site-content/`, {
         next: { revalidate: 60 },
         headers: { "X-Tenant-ID": tenantId }
       });
@@ -104,10 +104,10 @@ export async function generateMetadata(): Promise<Metadata> {
         if (data.seo_description) seoData.description = data.seo_description;
         if (data.seo_keywords) seoData.keywords = data.seo_keywords.split(',').map((k: string) => k.trim());
         if (data.hero_image_url) {
-           seoData.ogImage = data.hero_image_url.startsWith('/') ? `${baseUrl}${data.hero_image_url}` : data.hero_image_url;
+          seoData.ogImage = data.hero_image_url.startsWith('/') ? `${baseUrl}${data.hero_image_url}` : data.hero_image_url;
         }
       }
-    } catch(e) {}
+    } catch (e) { }
   }
 
   return {
@@ -158,7 +158,22 @@ export default async function RootLayout({
       } else if (resSettings.ok) {
         settings = await resSettings.json();
       }
-    } catch(e) {}
+    } catch (e) { }
+  }
+
+  let marketingFavicon = "/favicon_probookia.ico";
+  if (isMarketing && baseUrl) {
+    try {
+      const resPub = await fetch(`${baseUrl}/marketing/public`, {
+        next: { revalidate: 60 }
+      });
+      if (resPub.ok) {
+        const data = await resPub.json();
+        if (data.settings?.favicon_url) {
+          marketingFavicon = data.settings.favicon_url;
+        }
+      }
+    } catch (e) {}
   }
 
   if (isSuspended) {
@@ -167,7 +182,7 @@ export default async function RootLayout({
         <body className="antialiased bg-[#F7F7F5] text-[#1F2937] flex items-center justify-center min-h-screen p-6 font-sans">
           <div className="max-w-md w-full bg-white rounded-[2.5rem] p-10 md:p-12 shadow-luxury border border-[#d4af37]/20 text-center relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-2 bg-[#d4af37]"></div>
-            
+
             <div className="w-16 h-16 bg-[#fcf8e5] text-[#b08e23] rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-sm">
               <CreditCard className="w-8 h-8" />
             </div>
@@ -182,14 +197,14 @@ export default async function RootLayout({
             </p>
 
             <div className="space-y-4">
-              <a 
-                href="/login" 
+              <a
+                href="/login"
                 className="block w-full bg-[#1F2937] hover:bg-[#d4af37] text-white font-bold py-3.5 rounded-xl text-sm shadow-sm transition-all duration-300 active:scale-95"
               >
                 Acceder al Panel de Control
               </a>
-              <a 
-                href="mailto:soporte@merce-saas.com" 
+              <a
+                href="mailto:soporte@merce-saas.com"
                 className="block w-full bg-white hover:bg-stone-50 text-stone-600 border border-stone-200 font-bold py-3.5 rounded-xl text-sm transition-all duration-300"
               >
                 Contactar con Soporte B2B
@@ -205,7 +220,9 @@ export default async function RootLayout({
     return (
       <html lang="es" suppressHydrationWarning className={`${inter.variable} ${cormorantGaramond.variable}`}>
         <head>
-          <style dangerouslySetInnerHTML={{ __html: `
+          <link rel="icon" href={marketingFavicon} />
+          <style dangerouslySetInnerHTML={{
+            __html: `
             :root {
               --font-playfair: var(--font-cormorant) !important;
             }
@@ -229,7 +246,7 @@ export default async function RootLayout({
   const borderRadiusStyle = settings?.border_radius || 'suave';
   const headingsFont = settings?.branding_font_headings || 'Playfair Display';
   const bodyFont = settings?.branding_font_body || 'Inter';
-  const favicon = settings?.favicon_b64 || '/favicon.ico';
+  const favicon = settings?.favicon_b64 || '/favicon_tenant.ico';
 
   let radiusBase = "1rem";
   let radiusCard = "1.5rem";
@@ -251,7 +268,8 @@ export default async function RootLayout({
     <html lang="es" suppressHydrationWarning className={`${inter.variable} ${cormorantGaramond.variable} ${isDark && !isDashboardRoute ? 'dark' : ''}`}>
       <head>
         <link rel="icon" href={favicon} type="image/x-icon" />
-        <style dangerouslySetInnerHTML={{ __html: `
+        <style dangerouslySetInnerHTML={{
+          __html: `
           :root {
             --primary: ${primaryHsl} !important;
             --secondary: ${secondaryHsl} !important;
