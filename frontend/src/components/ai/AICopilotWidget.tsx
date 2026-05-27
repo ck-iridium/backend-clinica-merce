@@ -508,21 +508,33 @@ export default function AICopilotWidget() {
             className="absolute top-0 left-0 right-0 h-1.5 cursor-ns-resize z-40 hover:bg-primary/20 transition-all duration-300 max-sm:hidden"
           />
 
-          {/* Cabecera Premium (Antracita + Oro) */}
-          <div className="px-5 py-4 bg-stone-900 flex items-center justify-between text-white border-b border-stone-800 shrink-0">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-stone-800 to-stone-950 flex items-center justify-center border border-primary/40 shadow-inner">
-                <Sparkles size={14} className="text-primary animate-pulse" />
+          {/* Cabecera Premium (Antracita + Oro) - 2 FILAS */}
+          <div className="bg-stone-900 text-white border-b border-stone-800 shrink-0 flex flex-col">
+            {/* Fila 1: Título y Cerrar */}
+            <div className="px-5 py-3.5 flex items-center justify-between border-b border-stone-800/40">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-stone-800 to-stone-950 flex items-center justify-center border border-primary/40 shadow-inner">
+                  <Sparkles size={18} className="text-primary animate-pulse" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-base font-bold tracking-wide">Co-Piloto AI</h3>
+                  <span className="text-[10px] text-primary font-black uppercase tracking-widest block leading-none mt-0.5">
+                    {language === 'fr' ? 'Navigation Intelligente' : language === 'en' ? 'Smart Navigation' : 'Navegación Inteligente'}
+                  </span>
+                </div>
               </div>
-              <div>
-                <h3 className="font-serif text-sm font-bold tracking-wide">Co-Piloto AI</h3>
-                <span className="text-[9px] text-primary font-black uppercase tracking-widest">
-                  {language === 'fr' ? 'Navigation Intelligente' : language === 'en' ? 'Smart Navigation' : 'Navegación Inteligente'}
-                </span>
-              </div>
+              
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-2.5 rounded-xl text-stone-400 hover:text-white hover:bg-stone-800 transition-all shrink-0 active:scale-95 border border-stone-800"
+                title="Cerrar Asistente"
+              >
+                <X size={18} />
+              </button>
             </div>
-            
-            <div className="flex items-center gap-1.5">
+
+            {/* Fila 2: Controles Auxiliares más grandes y accesibles */}
+            <div className="px-5 py-2.5 bg-stone-950/40 flex items-center justify-between gap-3 text-xs">
               {/* Selector de Género de Voz Premium */}
               <button
                 onClick={() => {
@@ -533,41 +545,39 @@ export default function AICopilotWidget() {
                     : (language === 'fr' ? 'Voix féminine activée' : language === 'en' ? 'Female voice activated' : 'Voz femenina activada')
                   );
                 }}
-                className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border transition-all duration-300 flex items-center gap-1 shrink-0 ${
+                className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all duration-300 flex items-center justify-center gap-1.5 shrink-0 active:scale-95 ${
                   voiceGender === 'male'
-                    ? 'border-primary/40 bg-primary/10 text-primary font-bold'
-                    : 'border-stone-700 bg-transparent text-stone-400 hover:text-stone-200 hover:border-stone-600'
+                    ? 'border-primary bg-primary/20 text-primary font-bold shadow-lg shadow-primary/10'
+                    : 'border-stone-800 bg-stone-900/50 text-stone-400 hover:text-stone-200 hover:border-stone-700'
                 }`}
                 title={language === 'fr' ? 'Changer de voix (Féminin/Masculin)' : language === 'en' ? 'Change voice (Female/Male)' : 'Cambiar voz (Femenina/Masculina)'}
               >
-                {voiceGender === 'female' ? '👩 Fem' : '👨 Masc'}
+                {voiceGender === 'female' ? '👩 Voz Femenina' : '👨 Voz Masculina'}
               </button>
 
-              {/* Botón de Silencio */}
-              <button
-                onClick={() => setIsMuted(!isMuted)}
-                className="p-1.5 rounded-lg text-stone-400 hover:text-primary hover:bg-stone-800 transition-all shrink-0"
-                title={isMuted ? 'Activar Voz' : 'Silenciar Voz'}
-              >
-                {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
-              </button>
-              
-              {/* Botón Reiniciar Chat */}
-              <button
-                onClick={handleClearHistory}
-                className="p-1.5 rounded-lg text-stone-400 hover:text-red-400 hover:bg-stone-800 transition-all shrink-0"
-                title="Reiniciar Conversación"
-              >
-                <RotateCcw size={15} />
-              </button>
-              
-              {/* Botón Cerrar */}
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-1.5 rounded-lg text-stone-400 hover:text-white hover:bg-stone-800 transition-all shrink-0"
-              >
-                <X size={15} />
-              </button>
+              <div className="flex items-center gap-2">
+                {/* Botón de Silencio */}
+                <button
+                  onClick={() => setIsMuted(!isMuted)}
+                  className={`p-2 rounded-xl border transition-all shrink-0 active:scale-95 ${
+                    isMuted 
+                      ? 'border-red-500/40 bg-red-500/10 text-red-400' 
+                      : 'border-stone-800 bg-stone-900/50 text-stone-400 hover:text-primary hover:border-stone-700'
+                  }`}
+                  title={isMuted ? 'Activar Voz' : 'Silenciar Voz'}
+                >
+                  {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                </button>
+                
+                {/* Botón Reiniciar Chat */}
+                <button
+                  onClick={handleClearHistory}
+                  className="p-2 rounded-xl border border-stone-800 bg-stone-900/50 text-stone-400 hover:text-red-400 hover:border-stone-700 transition-all shrink-0 active:scale-95"
+                  title="Reiniciar Conversación"
+                >
+                  <RotateCcw size={16} />
+                </button>
+              </div>
             </div>
           </div>
 
@@ -576,10 +586,14 @@ export default function AICopilotWidget() {
             {messages.map((msg, index) => {
               const isAI = msg.role === 'model';
               return (
-                <div key={index} className={`flex gap-2.5 max-w-[85%] ${isAI ? 'self-start' : 'self-end ml-auto flex-row-reverse'}`}>
-                  {isAI && (
-                    <div className="w-7 h-7 rounded-full bg-stone-900 border border-primary/30 flex items-center justify-center text-white shrink-0 shadow-sm mt-0.5">
-                      <Bot size={12} className="text-primary" />
+                <div key={index} className={`flex gap-3 max-w-[92%] ${isAI ? 'self-start' : 'self-end ml-auto flex-row-reverse'}`}>
+                  {isAI ? (
+                    <div className="w-10 h-10 rounded-full bg-stone-900 border border-primary/30 flex items-center justify-center text-white shrink-0 shadow-sm mt-0.5">
+                      <Bot size={18} className="text-primary" />
+                    </div>
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-[#d4af37]/20 border border-primary/30 flex items-center justify-center text-stone-900 shrink-0 shadow-sm mt-0.5">
+                      <User size={18} className="text-stone-900" />
                     </div>
                   )}
                   
@@ -595,9 +609,9 @@ export default function AICopilotWidget() {
             })}
             
             {isLoading && (
-              <div className="flex gap-2.5 max-w-[85%] self-start animate-pulse">
-                <div className="w-7 h-7 rounded-full bg-stone-900 border border-primary/30 flex items-center justify-center text-white shrink-0">
-                  <Bot size={12} className="text-primary" />
+              <div className="flex gap-3 max-w-[92%] self-start animate-pulse">
+                <div className="w-10 h-10 rounded-full bg-stone-900 border border-primary/30 flex items-center justify-center text-white shrink-0 shadow-sm mt-0.5">
+                  <Bot size={18} className="text-primary" />
                 </div>
                 <div className="p-3 bg-white border border-stone-200/50 rounded-luxury-card rounded-tl-none text-[10px] text-stone-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" />
@@ -638,56 +652,71 @@ export default function AICopilotWidget() {
             </div>
           )}
 
-          {/* Formulario de Entrada (Reutiliza el Micro e Input como TEXTAREA para Shift+Enter) */}
-          <div className="p-3 bg-white border-t border-stone-200/80 flex items-center gap-2 shrink-0 select-text">
-            {/* Input de archivo oculto */}
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              accept=".txt,.csv,.json,.png,.jpg,.jpeg,.webp"
-              className="hidden"
-            />
-            
-            {/* Botón de Adjuntar */}
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isLoading || isUploading}
-              className={`p-2 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-all shrink-0 relative ${
-                isUploading ? 'animate-pulse text-primary' : ''
-              }`}
-              title="Adjuntar archivo seguro (CSV, TXT, JSON, Imagen)"
-            >
-              <Paperclip size={16} />
-            </button>
+          {/* Formulario de Entrada (Reutiliza el Micro e Input como TEXTAREA para Shift+Enter) - 2 FILAS */}
+          <div className="flex flex-col shrink-0">
+            {/* Fila 1 (Superior): Controles Multimedia y de Entrada Rápida (Micro y Adjuntar) */}
+            <div className="px-4 py-2.5 bg-stone-50 border-t border-stone-100 flex items-center justify-between gap-3 shrink-0">
+              {/* Input de archivo oculto */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept=".txt,.csv,.json,.png,.jpg,.jpeg,.webp"
+                className="hidden"
+              />
 
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              disabled={isLoading || isUploading}
-              rows={3}
-              placeholder={language === 'fr' ? 'Écrire ou parler...' : language === 'en' ? 'Type or speak...' : 'Escribe o habla o adjunta un archivo...'}
-              className="flex-1 bg-stone-50 border border-stone-200/80 rounded-xl px-3 py-2 text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:border-primary transition-all font-medium resize-y min-h-[40px] max-h-48 overflow-y-auto"
-            />
-            
-            {/* Botón de Voz Nativo */}
-            <VoiceRecorderButton
-              onVoiceTranscribed={(txt) => handleSend(language === 'fr' ? `🎙️ [Voix]: "${txt}"` : language === 'en' ? `🎙️ [Voice]: "${txt}"` : `🎙️ [Voz]: "${txt}"`)}
-              disabled={isLoading || isUploading}
-              lang={audioLanguage}
-            />
-            
-            {/* Botón Enviar */}
-            <button
-              onClick={() => handleSend()}
-              disabled={isLoading || isUploading || (!input.trim() && !attachedFile)}
-              className={`flex h-11 w-11 items-center justify-center rounded-luxury-btn bg-stone-900 text-white transition-all duration-300 border border-stone-800 shadow-md shrink-0 ${
-                isLoading || isUploading || (!input.trim() && !attachedFile) ? 'opacity-40 cursor-not-allowed' : 'hover:bg-primary hover:text-stone-900 hover:border-primary active:scale-95'
-              }`}
-            >
-              <Send size={16} />
-            </button>
+              {/* Botón de Adjuntar Archivo Grande y Elegante */}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isLoading || isUploading}
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-all active:scale-95 shrink-0 ${
+                  isUploading 
+                    ? 'animate-pulse border-primary bg-primary/10 text-primary' 
+                    : 'border-stone-200/80 bg-white hover:bg-stone-50 text-stone-600 hover:text-stone-800'
+                }`}
+                title="Adjuntar archivo seguro (CSV, TXT, JSON, Imagen)"
+              >
+                <Paperclip size={15} />
+                <span>{isUploading ? 'Subiendo...' : 'Adjuntar Archivo'}</span>
+              </button>
+
+              {/* Botón de Voz Nativo */}
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider">¿Prefieres hablar?</span>
+                <VoiceRecorderButton
+                  onVoiceTranscribed={(txt) => handleSend(language === 'fr' ? `🎙️ [Voix]: "${txt}"` : language === 'en' ? `🎙️ [Voice]: "${txt}"` : `🎙️ [Voz]: "${txt}"`)}
+                  disabled={isLoading || isUploading}
+                  lang={audioLanguage}
+                />
+              </div>
+            </div>
+
+            {/* Fila 2 (Inferior): Entrada de Texto Principal y Enviar */}
+            <div className="p-3 bg-white border-t border-stone-200/80 flex items-center gap-2.5 shrink-0 select-text">
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                disabled={isLoading || isUploading}
+                rows={2}
+                placeholder={language === 'fr' ? 'Écrire un message...' : language === 'en' ? 'Type a message...' : 'Escribe tu mensaje...'}
+                className="flex-1 bg-stone-50 border border-stone-200/80 rounded-xl px-3 py-2.5 text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:border-primary transition-all font-medium resize-none min-h-[48px] max-h-32 overflow-y-auto leading-relaxed"
+              />
+              
+              {/* Botón Enviar */}
+              <button
+                onClick={() => handleSend()}
+                disabled={isLoading || isUploading || (!input.trim() && !attachedFile)}
+                className={`flex h-12 w-12 items-center justify-center rounded-xl bg-stone-900 text-white transition-all duration-300 border border-stone-800 shadow-md shrink-0 active:scale-95 ${
+                  isLoading || isUploading || (!input.trim() && !attachedFile) 
+                    ? 'opacity-40 cursor-not-allowed' 
+                    : 'hover:bg-primary hover:text-stone-900 hover:border-primary'
+                }`}
+                title="Enviar Mensaje"
+              >
+                <Send size={18} />
+              </button>
+            </div>
           </div>
         </div>
       )}
