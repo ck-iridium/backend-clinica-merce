@@ -108,7 +108,7 @@ export default function MarketingPage() {
           if (data.settings.tertiary_color) setTertiaryColor(data.settings.tertiary_color);
           if (data.settings.font_family) setFontFamily(data.settings.font_family);
           
-          // Inyección dinámica de SEO en el Cliente (Document Headers)
+          // Inyección dinámica de SEO y Favicon en el Cliente (Document Headers)
           if (data.settings.seo_title) {
             document.title = data.settings.seo_title;
           }
@@ -132,6 +132,17 @@ export default function MarketingPage() {
               metaKey.setAttribute('name', 'keywords');
               metaKey.setAttribute('content', data.settings.seo_keywords);
               document.head.appendChild(metaKey);
+            }
+          }
+          if (data.settings.favicon_url) {
+            let favLink = document.querySelector('link[rel="icon"]');
+            if (favLink) {
+              favLink.setAttribute('href', data.settings.favicon_url);
+            } else {
+              favLink = document.createElement('link');
+              favLink.setAttribute('rel', 'icon');
+              favLink.setAttribute('href', data.settings.favicon_url);
+              document.head.appendChild(favLink);
             }
           }
         }

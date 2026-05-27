@@ -275,6 +275,7 @@ class LandingMarketingSettingsOut(BaseModel):
     secondary_color: Optional[str] = None
     tertiary_color: Optional[str] = None
     font_family: Optional[str] = None
+    favicon_url: Optional[str] = None
     seo_title: Optional[str] = None
     seo_description: Optional[str] = None
     seo_keywords: Optional[str] = None
@@ -291,6 +292,7 @@ class LandingMarketingSettingsUpdate(BaseModel):
     secondary_color: Optional[str] = None
     tertiary_color: Optional[str] = None
     font_family: Optional[str] = None
+    favicon_url: Optional[str] = None
     seo_title: Optional[str] = None
     seo_description: Optional[str] = None
     seo_keywords: Optional[str] = None
@@ -345,6 +347,7 @@ def get_public_marketing_content(db: Session = Depends(database.get_db)):
             "secondary_color": settings.secondary_color,
             "tertiary_color": settings.tertiary_color,
             "font_family": settings.font_family,
+            "favicon_url": settings.favicon_url,
             "seo_title": settings.seo_title,
             "seo_description": settings.seo_description,
             "seo_keywords": settings.seo_keywords
@@ -395,6 +398,7 @@ def update_marketing_settings(
     settings.secondary_color = payload.secondary_color
     settings.tertiary_color = payload.tertiary_color
     settings.font_family = payload.font_family
+    settings.favicon_url = payload.favicon_url
     settings.seo_title = payload.seo_title
     settings.seo_description = payload.seo_description
     settings.seo_keywords = payload.seo_keywords

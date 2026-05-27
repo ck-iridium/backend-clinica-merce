@@ -21,6 +21,7 @@ interface MarketingSettings {
   secondary_color?: string | null;
   tertiary_color?: string | null;
   font_family?: string | null;
+  favicon_url?: string | null;
   seo_title?: string | null;
   seo_description?: string | null;
   seo_keywords?: string | null;
@@ -39,6 +40,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
     secondary_color: '#1c1917',
     tertiary_color: '#d4af37',
     font_family: 'playfair_inter',
+    favicon_url: null,
     seo_title: '',
     seo_description: '',
     seo_keywords: ''
@@ -470,32 +472,23 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
 
           {/* C. BRANDING FORM */}
           {subTab === 'branding' && (
-            <div className="p-6 space-y-6">
-              <div className="bg-stone-50 border border-stone-200 p-4 rounded-xl space-y-1">
-                <h4 className="text-xs font-bold text-stone-700 flex items-center gap-1.5">
-                  <Palette className="w-3.5 h-3.5 text-stone-600" /> Branding & Identidad Visual
-                </h4>
-                <p className="text-[10px] text-stone-500 leading-relaxed font-medium">
-                  Configura la paleta de colores de alta gama, tipografía y sube tu logotipo SVG personalizado para el SaaS.
-                </p>
-              </div>
-
+            <div className="p-6 space-y-5">
               {loading ? (
                 <div className="space-y-4 animate-pulse">
                   <div className="h-4 w-32 bg-stone-100 rounded"></div>
                   <div className="h-10 w-full bg-stone-100 rounded-xl"></div>
                 </div>
               ) : (
-                <form onSubmit={handleSaveSettings} className="space-y-6 select-text">
+                <form onSubmit={handleSaveSettings} className="space-y-5 select-text">
                   {/* Curated Typography Dropdown */}
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest block">
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-black text-stone-400 uppercase tracking-widest block">
                       Tipografía Corporativa
                     </label>
                     <select
                       value={settings.font_family || 'playfair_inter'}
                       onChange={(e) => setSettings(prev => ({ ...prev, font_family: e.target.value }))}
-                      className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-900 transition-colors text-xs font-sans appearance-none cursor-pointer"
+                      className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-900 transition-colors text-xs font-sans appearance-none cursor-pointer"
                     >
                       <option value="playfair_inter">Playfair Display & Inter (Serif de Lujo + Sans Limpia)</option>
                       <option value="outfit">Outfit (Geométrica Moderna)</option>
@@ -505,88 +498,89 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                     </select>
                   </div>
 
-                  {/* 3 Colors Selectors */}
-                  <div className="space-y-4">
-                    <h5 className="text-[10px] font-bold text-stone-550 uppercase tracking-widest border-b border-stone-100 pb-1.5">
+                  {/* 3 Colors in 1 Row */}
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-black text-stone-400 uppercase tracking-widest block border-b border-stone-100 pb-1">
                       Paleta de Colores de la Landing
-                    </h5>
+                    </label>
                     
-                    {/* Primary Color */}
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] font-bold text-stone-400 uppercase tracking-wider block">
-                        Color Primario (Botones y Enlaces)
-                      </label>
-                      <div className="flex items-center gap-3">
-                        <input 
-                          type="color" 
-                          value={settings.primary_color || '#3b82f6'} 
-                          onChange={(e) => setSettings(prev => ({ ...prev, primary_color: e.target.value }))}
-                          className="w-8 h-8 border border-stone-200 rounded-lg cursor-pointer bg-transparent outline-none"
-                        />
-                        <input 
-                          type="text" 
-                          value={settings.primary_color || '#3b82f6'} 
-                          onChange={(e) => setSettings(prev => ({ ...prev, primary_color: e.target.value }))}
-                          placeholder="#3b82f6"
-                          className="flex-1 px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-900 transition-colors text-xxs font-mono"
-                        />
+                    <div className="grid grid-cols-3 gap-3">
+                      {/* Primary Color */}
+                      <div className="space-y-1">
+                        <label className="text-[8px] font-black text-stone-450 uppercase tracking-wider block truncate">
+                          Primario
+                        </label>
+                        <div className="flex items-center gap-1 bg-stone-50 border border-stone-200 rounded-xl px-1.5 py-1.5">
+                          <input 
+                            type="color" 
+                            value={settings.primary_color || '#3b82f6'} 
+                            onChange={(e) => setSettings(prev => ({ ...prev, primary_color: e.target.value }))}
+                            className="w-4 h-4 border border-stone-200 rounded cursor-pointer bg-transparent outline-none shrink-0"
+                          />
+                          <input 
+                            type="text" 
+                            value={settings.primary_color || '#3b82f6'} 
+                            onChange={(e) => setSettings(prev => ({ ...prev, primary_color: e.target.value }))}
+                            className="w-full bg-transparent outline-none text-[9px] font-mono select-all text-stone-700 min-w-0"
+                          />
+                        </div>
                       </div>
-                    </div>
-
-                    {/* Secondary Color */}
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] font-bold text-stone-400 uppercase tracking-wider block">
-                        Color Secundario (Textos y Fondos)
-                      </label>
-                      <div className="flex items-center gap-3">
-                        <input 
-                          type="color" 
-                          value={settings.secondary_color || '#1c1917'} 
-                          onChange={(e) => setSettings(prev => ({ ...prev, secondary_color: e.target.value }))}
-                          className="w-8 h-8 border border-stone-200 rounded-lg cursor-pointer bg-transparent outline-none"
-                        />
-                        <input 
-                          type="text" 
-                          value={settings.secondary_color || '#1c1917'} 
-                          onChange={(e) => setSettings(prev => ({ ...prev, secondary_color: e.target.value }))}
-                          placeholder="#1c1917"
-                          className="flex-1 px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-900 transition-colors text-xxs font-mono"
-                        />
+                      
+                      {/* Secondary Color */}
+                      <div className="space-y-1">
+                        <label className="text-[8px] font-black text-stone-455 uppercase tracking-wider block truncate">
+                          Secundario
+                        </label>
+                        <div className="flex items-center gap-1 bg-stone-50 border border-stone-200 rounded-xl px-1.5 py-1.5">
+                          <input 
+                            type="color" 
+                            value={settings.secondary_color || '#1c1917'} 
+                            onChange={(e) => setSettings(prev => ({ ...prev, secondary_color: e.target.value }))}
+                            className="w-4 h-4 border border-stone-200 rounded cursor-pointer bg-transparent outline-none shrink-0"
+                          />
+                          <input 
+                            type="text" 
+                            value={settings.secondary_color || '#1c1917'} 
+                            onChange={(e) => setSettings(prev => ({ ...prev, secondary_color: e.target.value }))}
+                            className="w-full bg-transparent outline-none text-[9px] font-mono select-all text-stone-700 min-w-0"
+                          />
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Tertiary Color */}
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] font-bold text-stone-400 uppercase tracking-wider block">
-                        Color Terciario (Detalles e Indicadores)
-                      </label>
-                      <div className="flex items-center gap-3">
-                        <input 
-                          type="color" 
-                          value={settings.tertiary_color || '#d4af37'} 
-                          onChange={(e) => setSettings(prev => ({ ...prev, tertiary_color: e.target.value }))}
-                          className="w-8 h-8 border border-stone-200 rounded-lg cursor-pointer bg-transparent outline-none"
-                        />
-                        <input 
-                          type="text" 
-                          value={settings.tertiary_color || '#d4af37'} 
-                          onChange={(e) => setSettings(prev => ({ ...prev, tertiary_color: e.target.value }))}
-                          placeholder="#d4af37"
-                          className="flex-1 px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-900 transition-colors text-xxs font-mono"
-                        />
+                      {/* Tertiary Color */}
+                      <div className="space-y-1">
+                        <label className="text-[8px] font-black text-stone-455 uppercase tracking-wider block truncate">
+                          Terciario
+                        </label>
+                        <div className="flex items-center gap-1 bg-stone-50 border border-stone-200 rounded-xl px-1.5 py-1.5">
+                          <input 
+                            type="color" 
+                            value={settings.tertiary_color || '#d4af37'} 
+                            onChange={(e) => setSettings(prev => ({ ...prev, tertiary_color: e.target.value }))}
+                            className="w-4 h-4 border border-stone-200 rounded cursor-pointer bg-transparent outline-none shrink-0"
+                          />
+                          <input 
+                            type="text" 
+                            value={settings.tertiary_color || '#d4af37'} 
+                            onChange={(e) => setSettings(prev => ({ ...prev, tertiary_color: e.target.value }))}
+                            className="w-full bg-transparent outline-none text-[9px] font-mono select-all text-stone-700 min-w-0"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Logo SVG */}
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest block flex justify-between items-center">
-                      <span>Logotipo Corporativo (Código SVG)</span>
-                      <span className="text-[9px] text-stone-450 normal-case">Pega el XML o arrastra un .svg</span>
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-black text-stone-400 uppercase tracking-widest block flex justify-between items-center">
+                      <span>Logotipo (SVG)</span>
+                      {settings.logo_svg && (
+                        <span className="text-[8px] text-[#d4af37] font-bold">Cargado</span>
+                      )}
                     </label>
 
                     {/* SVG Dropzone / File Uploader */}
-                    <div className="border border-dashed border-stone-200 rounded-xl p-4 hover:bg-stone-50/50 transition-colors flex flex-col items-center justify-center gap-2 cursor-pointer relative">
+                    <div className="border border-dashed border-stone-200 rounded-xl p-3 hover:bg-stone-50/50 transition-colors flex flex-col items-center justify-center gap-1.5 cursor-pointer relative">
                       <input 
                         type="file" 
                         accept=".svg"
@@ -608,31 +602,70 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                         }}
                         className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                       />
-                      <div className="w-8 h-8 rounded-lg bg-stone-100 text-stone-600 flex items-center justify-center">
-                        <Palette className="w-4 h-4" />
+                      <div className="w-7 h-7 rounded-lg bg-stone-100 text-stone-600 flex items-center justify-center">
+                        <Palette className="w-3.5 h-3.5" />
                       </div>
-                      <p className="text-[10px] text-stone-500 font-medium">Sube tu archivo .svg aquí</p>
+                      <p className="text-[9px] text-stone-500 font-medium">Arrastra o sube tu archivo .svg aquí</p>
                     </div>
 
-                    <textarea 
-                      rows={5}
-                      value={settings.logo_svg || ''}
-                      onChange={(e) => setSettings(prev => ({ ...prev, logo_svg: e.target.value }))}
-                      placeholder="<svg ...> ... </svg>"
-                      className="w-full p-4 bg-stone-900 border border-stone-850 rounded-xl outline-none focus:border-stone-750 transition-colors text-xs font-mono text-stone-200 placeholder:text-stone-700 leading-relaxed"
-                    />
-
                     {settings.logo_svg && (
-                      <div className="space-y-2 mt-2">
-                        <p className="text-[9px] font-bold text-stone-450 uppercase tracking-widest">Vista previa del logotipo:</p>
-                        <div className="p-4 bg-stone-50 border border-stone-150 rounded-xl flex items-center justify-center max-h-[80px] overflow-hidden">
-                          <div 
-                            className="h-10 w-full flex items-center justify-center [&>svg]:h-full [&>svg]:w-auto [&>svg]:max-w-full"
-                            dangerouslySetInnerHTML={{ __html: settings.logo_svg }}
-                          />
-                        </div>
+                      <div className="p-3 bg-stone-50 border border-stone-150 rounded-xl flex items-center justify-center max-h-[60px] overflow-hidden relative group">
+                        <div 
+                          className="h-8 w-full flex items-center justify-center [&>svg]:h-full [&>svg]:w-auto [&>svg]:max-w-full"
+                          dangerouslySetInnerHTML={{ __html: settings.logo_svg }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setSettings(prev => ({ ...prev, logo_svg: null }))}
+                          className="absolute right-2 top-2 text-[8px] bg-red-50 text-red-600 px-2 py-0.5 rounded-md hover:bg-red-100 transition-colors font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 duration-300"
+                        >
+                          Eliminar
+                        </button>
                       </div>
                     )}
+                  </div>
+
+                  {/* Favicon Uploader */}
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-black text-stone-400 uppercase tracking-widest block flex justify-between items-center">
+                      <span>Favicon (.ico, .png, .svg)</span>
+                      {settings.favicon_url && (
+                        <span className="text-[8px] text-[#d4af37] font-bold">Cargado</span>
+                      )}
+                    </label>
+
+                    <div className="flex items-center gap-3">
+                      {/* Preview */}
+                      <div className="w-10 h-10 rounded-xl border border-stone-200 bg-stone-50 flex items-center justify-center overflow-hidden shrink-0">
+                        {settings.favicon_url ? (
+                          <img src={settings.favicon_url} alt="Favicon" className="w-5 h-5 object-contain" />
+                        ) : (
+                          <Globe className="w-4 h-4 text-stone-400" />
+                        )}
+                      </div>
+
+                      {/* File Input */}
+                      <div className="flex-1 relative border border-dashed border-stone-200 rounded-xl px-4 py-2 hover:bg-stone-50/50 transition-colors flex items-center justify-center gap-2 cursor-pointer h-10">
+                        <input 
+                          type="file" 
+                          accept=".ico,.png,.svg"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onload = (event) => {
+                                const base64 = event.target?.result as string;
+                                setSettings(prev => ({ ...prev, favicon_url: base64 }));
+                                toast.success('¡Favicon cargado con éxito!');
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        />
+                        <span className="text-[9px] text-stone-500 font-bold uppercase tracking-wider">Subir Favicon</span>
+                      </div>
+                    </div>
                   </div>
 
                   <button 
@@ -790,6 +823,11 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
         previewIndex={previewIndex}
         previewAnimating={previewAnimating}
         handlePreviewNavigate={handlePreviewNavigate}
+        primaryColor={settings.primary_color}
+        secondaryColor={settings.secondary_color}
+        tertiaryColor={settings.tertiary_color}
+        fontFamily={settings.font_family}
+        logoSvg={settings.logo_svg}
       />
 
       {/* Media Picker Dialog Modal */}
