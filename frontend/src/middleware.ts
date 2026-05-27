@@ -147,6 +147,11 @@ export async function middleware(request: NextRequest) {
       url.pathname === "/cookies" ||
       url.pathname.startsWith("/super-admin");
 
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-tenant-slug", "");
+    requestHeaders.set("x-tenant-id", "");
+    requestHeaders.set("x-pathname", url.pathname);
+
     if (!isGlobalSassPath) {
       url.pathname = "/";
       return NextResponse.redirect(url);
@@ -154,9 +159,18 @@ export async function middleware(request: NextRequest) {
 
     if (url.pathname === "/") {
       url.pathname = "/marketing";
-      return NextResponse.rewrite(url);
+      return NextResponse.rewrite(url, {
+        request: {
+          headers: requestHeaders,
+        },
+      });
     }
-    return NextResponse.next();
+
+    return NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
   }
 }
 

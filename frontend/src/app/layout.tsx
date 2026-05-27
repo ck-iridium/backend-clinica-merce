@@ -164,7 +164,7 @@ export default async function RootLayout({
   let marketingFavicon = "/favicon_probookia.ico";
   if (isMarketing && baseUrl) {
     try {
-      const resPub = await fetch(`${baseUrl}/marketing/public`, {
+      const resPub = await fetch(`${baseUrl}/super-admin/marketing/public`, {
         next: { revalidate: 60 }
       });
       if (resPub.ok) {
