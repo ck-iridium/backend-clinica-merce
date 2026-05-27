@@ -21,6 +21,7 @@ interface MarketingSettings {
   secondary_color?: string | null;
   tertiary_color?: string | null;
   font_family?: string | null;
+  font_weight_headings?: string | null;
   favicon_url?: string | null;
   seo_title?: string | null;
   seo_description?: string | null;
@@ -40,6 +41,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
     secondary_color: '#1c1917',
     tertiary_color: '#d4af37',
     font_family: 'playfair_inter',
+    font_weight_headings: 'semibold',
     favicon_url: null,
     seo_title: '',
     seo_description: '',
@@ -499,6 +501,24 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                     </select>
                   </div>
 
+                  {/* Title Font Weight Dropdown */}
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-black text-stone-400 uppercase tracking-widest block">
+                      Grosor de Títulos
+                    </label>
+                    <select
+                      value={settings.font_weight_headings || 'semibold'}
+                      onChange={(e) => setSettings(prev => ({ ...prev, font_weight_headings: e.target.value }))}
+                      className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-900 transition-colors text-xs font-sans appearance-none cursor-pointer"
+                    >
+                      <option value="light">Fino (Light - 300)</option>
+                      <option value="normal">Elegante (Normal - 400)</option>
+                      <option value="medium">Suave (Medium - 500)</option>
+                      <option value="semibold">Imprenta (Semibold - 600)</option>
+                      <option value="bold">Sólido (Bold - 700)</option>
+                    </select>
+                  </div>
+
                   {/* 3 Colors in 1 Row */}
                   <div className="space-y-1.5">
                     <label className="text-[9px] font-black text-stone-400 uppercase tracking-widest block border-b border-stone-100 pb-1">
@@ -828,6 +848,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
         secondaryColor={settings.secondary_color}
         tertiaryColor={settings.tertiary_color}
         fontFamily={settings.font_family}
+        fontWeightHeadings={settings.font_weight_headings}
         logoSvg={settings.logo_svg}
       />
 

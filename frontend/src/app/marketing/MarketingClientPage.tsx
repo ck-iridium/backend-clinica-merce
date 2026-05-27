@@ -26,6 +26,7 @@ interface MarketingClientPageProps {
     secondary_color: string;
     tertiary_color: string;
     font_family: string;
+    font_weight_headings: string;
     favicon_url: string | null;
   };
   initialSectors: Sector[];
@@ -67,6 +68,15 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
     setIsModalOpen(true);
   };
 
+  const weightMap: Record<string, string> = {
+    'light': '300',
+    'normal': '400',
+    'medium': '500',
+    'semibold': '600',
+    'bold': '700'
+  };
+  const activeWeight = weightMap[initialSettings.font_weight_headings || 'semibold'] || '600';
+
   return (
     <div 
       style={{ 
@@ -102,6 +112,7 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
         
         .font-serif {
           font-family: var(--font-serif) !important;
+          font-weight: ${activeWeight} !important;
         }
         
         .font-sans, body, html, button, input, select, textarea {

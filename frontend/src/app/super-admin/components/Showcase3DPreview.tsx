@@ -23,6 +23,7 @@ interface Showcase3DPreviewProps {
   secondaryColor?: string | null;
   tertiaryColor?: string | null;
   fontFamily?: string | null;
+  fontWeightHeadings?: string | null;
   logoSvg?: string | null;
 }
 
@@ -37,8 +38,18 @@ export default function Showcase3DPreview({
   secondaryColor,
   tertiaryColor,
   fontFamily,
+  fontWeightHeadings,
   logoSvg
 }: Showcase3DPreviewProps) {
+  const weightMap: Record<string, string> = {
+    'light': '300',
+    'normal': '400',
+    'medium': '500',
+    'semibold': '600',
+    'bold': '700'
+  };
+  const activeWeight = weightMap[fontWeightHeadings || 'semibold'] || '600';
+
   return (
     <div 
       style={{ 
@@ -61,6 +72,7 @@ export default function Showcase3DPreview({
             fontFamily === 'cinzel_roboto' ? "'Cinzel', serif" :
             "'Inter', sans-serif"
           } !important;
+          font-weight: ${activeWeight} !important;
         }
         
         .preview-sans {

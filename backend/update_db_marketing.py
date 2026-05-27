@@ -17,6 +17,7 @@ def run_alter_table():
             conn.execute(text("ALTER TABLE landing_marketing_settings ADD COLUMN IF NOT EXISTS seo_title VARCHAR;"))
             conn.execute(text("ALTER TABLE landing_marketing_settings ADD COLUMN IF NOT EXISTS seo_description VARCHAR;"))
             conn.execute(text("ALTER TABLE landing_marketing_settings ADD COLUMN IF NOT EXISTS seo_keywords VARCHAR;"))
+            conn.execute(text("ALTER TABLE landing_marketing_settings ADD COLUMN IF NOT EXISTS font_weight_headings VARCHAR DEFAULT 'semibold';"))
             # Asegurar commit si es requerido en modo transaccional antiguo
             conn.execute(text("COMMIT;"))
         print("[SUCCESS] Tabla landing_marketing_settings actualizada exitosamente en PostgreSQL!")

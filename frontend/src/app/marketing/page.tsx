@@ -14,6 +14,7 @@ export default async function Page() {
     secondary_color: '#1c1917',
     tertiary_color: '#d4af37',
     font_family: 'playfair_inter',
+    font_weight_headings: 'semibold',
     favicon_url: null as string | null,
   };
 
@@ -71,6 +72,7 @@ export default async function Page() {
           secondary_color: data.settings.secondary_color || defaultSettings.secondary_color,
           tertiary_color: data.settings.tertiary_color || defaultSettings.tertiary_color,
           font_family: data.settings.font_family || defaultSettings.font_family,
+          font_weight_headings: data.settings.font_weight_headings || defaultSettings.font_weight_headings,
           favicon_url: data.settings.favicon_url || null,
         };
       }
