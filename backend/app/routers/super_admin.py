@@ -446,3 +446,84 @@ def delete_marketing_sector(
     db.commit()
     return {"success": True, "message": f"Sector '{sector.title}' eliminado correctamente."}
 
+
+@router.delete("/tenants/{tenant_id}")
+def hard_delete_tenant(
+    tenant_id: str,
+    db: Session = Depends(database.get_db),
+    admin_payload: dict = Depends(verify_super_admin)
+):
+    """
+    Realiza un borrado físico en cascada (Hard Delete) de un inquilino,
+    eliminando todas sus dependencias y borrando sus archivos de Supabase Storage.
+    """
+    import os
+    tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Inquilino no encontrado")
+
+    # 1. Obtener y eliminar físicamente los archivos del inquilino en Supabase Storage
+    supabase_url = os.environ.get("SUPABASE_URL")
+    supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+    deleted_files = []
+
+    if supabase_url and supabase_key:
+        try:
+            from supabase import create_client, Client
+            supabase: Client = create_client(supabase_url, supabase_key)
+            
+            # Obtener nombres de archivos registrados para este tenant
+            tenant_media = db.query(models.Media).filter(models.Media.tenant_id == tenant_id).all()
+            filenames_to_delete = [media.filename for media in tenant_media if media.filename]
+            
+            if filenames_to_delete:
+                supabase.storage.from_("media").remove(filenames_to_delete)
+                deleted_files = filenames_to_delete
+        except Exception as e:
+            # Registramos el error de almacenamiento pero permitimos continuar con la DB para evitar bloqueos
+            print(f"Advertencia: No se pudieron borrar archivos del Storage: {str(e)}")
+
+    # 2. Ejecutar eliminación en cascada quirúrgica y atómica en DB
+    try:
+        # Oleada 1: Hojas con múltiples dependencias cruzadas
+        db.query(models.Appointment).filter(models.Appointment.tenant_id == tenant_id).delete(synchronize_session=False)
+        db.query(models.Consent).filter(models.Consent.tenant_id == tenant_id).delete(synchronize_session=False)
+        db.query(models.Voucher).filter(models.Voucher.tenant_id == tenant_id).delete(synchronize_session=False)
+        db.query(models.Invoice).filter(models.Invoice.tenant_id == tenant_id).delete(synchronize_session=False)
+        db.query(models.Notification).filter(models.Notification.tenant_id == tenant_id).delete(synchronize_session=False)
+        db.query(models.Media).filter(models.Media.tenant_id == tenant_id).delete(synchronize_session=False)
+        db.query(models.VoucherTemplate).filter(models.VoucherTemplate.tenant_id == tenant_id).delete(synchronize_session=False)
+        
+        # Oleada 2: Entidades primarias referenciadas
+        db.query(models.Client).filter(models.Client.tenant_id == tenant_id).delete(synchronize_session=False)
+        db.query(models.Service).filter(models.Service.tenant_id == tenant_id).delete(synchronize_session=False)
+        
+        # Oleada 3: Parametrización e infraestructura del inquilino
+        db.query(models.ServiceCategory).filter(models.ServiceCategory.tenant_id == tenant_id).delete(synchronize_session=False)
+        db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).delete(synchronize_session=False)
+        db.query(models.TimeBlock).filter(models.TimeBlock.tenant_id == tenant_id).delete(synchronize_session=False)
+        db.query(models.SiteContent).filter(models.SiteContent.tenant_id == tenant_id).delete(synchronize_session=False)
+        db.query(models.SiteNavigation).filter(models.SiteNavigation.tenant_id == tenant_id).delete(synchronize_session=False)
+        db.query(models.SiteBlock).filter(models.SiteBlock.tenant_id == tenant_id).delete(synchronize_session=False)
+        db.query(models.Profile).filter(models.Profile.tenant_id == tenant_id).delete(synchronize_session=False)
+        
+        # Oleada 4: Credenciales y cuentas de acceso
+        db.query(models.User).filter(models.User.tenant_id == tenant_id).delete(synchronize_session=False)
+        
+        # Oleada 5: Inquilino Raíz
+        db.query(models.Tenant).filter(models.Tenant.id == tenant_id).delete(synchronize_session=False)
+        
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Fallo en la base de datos al realizar el borrado en cascada: {str(e)}"
+        )
+
+    return {
+        "success": True,
+        "message": f"Inquilino '{tenant.name}' y todas sus dependencias eliminados permanentemente.",
+        "deleted_files_count": len(deleted_files)
+    }
+

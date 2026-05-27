@@ -36,9 +36,10 @@ interface TenantDetailProps {
   tenant: Tenant;
   onUpdateStatus: (tenantId: string, status: 'active' | 'suspended') => Promise<void>;
   onUpdateTenant?: (updatedTenant: Tenant) => void;
+  onDeleteTenant?: (tenantId: string) => void;
 }
 
-export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant }: TenantDetailProps) {
+export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant, onDeleteTenant }: TenantDetailProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'stripe' | 'config'>('overview');
   const [redirectingPlan, setRedirectingPlan] = useState<string | null>(null);
   const [impersonating, setImpersonating] = useState(false);
@@ -47,10 +48,17 @@ export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant }:
   const [inputDomain, setInputDomain] = useState('');
   const [savingDomain, setSavingDomain] = useState(false);
 
+  // Estados para el borrado en cascada seguro
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
+
   // Sincronizar el estado del dominio personalizado y limpiar cruzado entre inquilinos
   useEffect(() => {
     setCustomDomain(tenant.custom_domain || null);
     setInputDomain('');
+    setConfirmText('');
+    setShowDeleteModal(false);
   }, [tenant.id, tenant.custom_domain]);
 
   const getJwtToken = (): string => {
@@ -198,6 +206,48 @@ export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant }:
       toast.error(err.message || 'Error al entrar como soporte.');
     } finally {
       setImpersonating(false);
+    }
+  };
+
+  const handleDeleteTenant = async () => {
+    if (confirmText !== tenant.slug) {
+      toast.error('El subdominio ingresado no coincide.');
+      return;
+    }
+
+    setDeleting(true);
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const jwtToken = getJwtToken();
+    const loadingToast = toast.loading('Eliminando inquilino y dependencias en cascada...');
+
+    try {
+      const res = await fetch(`${API_URL}/super-admin/tenants/${tenant.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${jwtToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!res.ok) {
+        let errMsg = 'Error al eliminar el inquilino';
+        try {
+          const errorData = await res.json();
+          errMsg = errorData.detail || errMsg;
+        } catch {}
+        throw new Error(errMsg);
+      }
+
+      toast.success('Inquilino y todos sus datos eliminados correctamente.', { id: loadingToast });
+      setShowDeleteModal(false);
+      setConfirmText('');
+      if (onDeleteTenant) {
+        onDeleteTenant(tenant.id);
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Error al eliminar el inquilino', { id: loadingToast });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -688,6 +738,31 @@ export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant }:
                       Protegido
                     </span>
                   </div>
+
+                  {/* Zona de Peligro - Hard Delete */}
+                  <div className="bg-red-50/10 p-5 rounded-2xl border border-red-200/40 flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition-all duration-300 mt-6">
+                    <div className="flex items-start gap-4">
+                      <span className="w-12 h-12 rounded-xl bg-white border border-red-100 text-red-500 flex items-center justify-center shrink-0 shadow-sm">
+                        <AlertTriangle className="w-6 h-6" />
+                      </span>
+                      <div className="space-y-1">
+                        <p className="font-bold text-red-900 text-sm">Zona de Peligro: Borrado en Cascada</p>
+                        <p className="text-stone-500 text-xs leading-relaxed max-w-xl">
+                          Esta acción es irreversible. Eliminará de forma definitiva toda la base de datos de la clínica (citas, facturas, clientes, servicios) y todos sus archivos multimedia del storage.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="shrink-0 self-end sm:self-center">
+                      <button 
+                        onClick={() => setShowDeleteModal(true)}
+                        className="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl text-xxs font-black uppercase tracking-wider transition-all duration-300 shadow-sm active:scale-95 border border-red-600 focus:outline-none"
+                      >
+                        Eliminar Clínica
+                      </button>
+                    </div>
+                  </div>
+
                 </div>
               </div>
             )}
@@ -751,6 +826,69 @@ export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant }:
                   className="bg-stone-900 hover:bg-[#d4af37] text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
                 >
                   {savingDomain ? 'Guardando...' : 'Verificar y Conectar'}
+                </button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal de Confirmación de Borrado en Cascada */}
+        <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+          <DialogContent className="bg-white rounded-3xl border border-stone-200/50 p-8 shadow-xl max-w-lg w-full">
+            <DialogHeader className="space-y-3">
+              <DialogTitle className="text-2xl font-serif font-bold text-red-600 flex items-center gap-2.5">
+                <AlertTriangle className="w-6 h-6" /> ¿Eliminar esta clínica permanentemente?
+              </DialogTitle>
+              <DialogDescription className="text-sm text-stone-500 leading-relaxed font-sans">
+                Estás a punto de borrar **físicamente en cascada** la clínica <strong className="text-stone-900 font-bold">{tenant.name}</strong>. Esta acción destruirá de manera irreversible:
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6 pt-4 font-sans">
+              <div className="bg-red-50/20 p-4 rounded-xl border border-red-100 text-xs text-red-700 space-y-2 leading-relaxed">
+                <p className="font-bold flex items-center gap-1.5 text-red-800">
+                  🚨 ¡ADVERTENCIA CRÍTICA!
+                </p>
+                <ul className="list-disc pl-4 space-y-1">
+                  <li>Todos los expedientes médicos e historiales de clientes serán purgados.</li>
+                  <li>Se borrarán citas activas, facturas emitidas y agendas de especialistas.</li>
+                  <li>Todos los archivos multimedia y firmas subidas a Supabase Storage serán destruidos.</li>
+                </ul>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-stone-500 uppercase tracking-widest block">
+                  Escribe el subdominio para confirmar: <strong className="text-stone-900 font-bold font-mono">{tenant.slug}</strong>
+                </label>
+                <input 
+                  type="text" 
+                  value={confirmText}
+                  onChange={(e) => setConfirmText(e.target.value)}
+                  placeholder={`Escribe ${tenant.slug}`}
+                  className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none transition-all text-sm font-sans"
+                />
+              </div>
+
+              <div className="flex gap-3 justify-end pt-4 border-t border-stone-100">
+                <button
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setConfirmText('');
+                  }}
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-stone-500 hover:bg-stone-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleDeleteTenant}
+                  disabled={confirmText !== tenant.slug || deleting}
+                  className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 text-white ${
+                    confirmText !== tenant.slug || deleting
+                      ? 'bg-stone-100 text-stone-400 cursor-not-allowed border border-stone-200'
+                      : 'bg-red-600 hover:bg-red-700 active:scale-95'
+                  }`}
+                >
+                  {deleting ? 'Destruyendo datos...' : 'Confirmar Borrado'}
                 </button>
               </div>
             </div>

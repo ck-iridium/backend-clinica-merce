@@ -202,6 +202,19 @@ export default function SuperAdminPage() {
     }
   }
 
+  // 3.2. Eliminar físicamente un inquilino de la base de datos (y actualizar la UI)
+  const handleTenantDeleted = (tenantId: string) => {
+    setTenants((prev) => {
+      const filtered = prev.filter(t => t.id !== tenantId);
+      if (filtered.length > 0) {
+        setSelectedTenant(filtered[0]);
+      } else {
+        setSelectedTenant(null);
+      }
+      return filtered;
+    });
+  };
+
   // Perfil administrativo ahora se maneja modularmente en el componente <AdminProfile />
 
   // Carga inicial
@@ -374,6 +387,7 @@ export default function SuperAdminPage() {
                   setTenants(prev => prev.map(t => t.id === updated.id ? updated : t));
                   setSelectedTenant(updated);
                 }}
+                onDeleteTenant={handleTenantDeleted}
               />
             ) : (
               <section className="flex-1 bg-[#FAFAFA] flex items-center justify-center text-stone-400 font-serif text-lg">
