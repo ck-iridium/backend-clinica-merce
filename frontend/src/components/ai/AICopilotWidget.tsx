@@ -478,18 +478,22 @@ export default function AICopilotWidget() {
   if (loadingRole || !isAuthorized) return null;
 
   return (
-    <div className="fixed bottom-[110px] md:bottom-6 right-0 md:right-6 z-[9999] flex flex-col items-end gap-3 font-sans transition-all duration-300">
+    <div className={
+      isOpen
+        ? "fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-3 font-sans transition-all duration-300 max-sm:!fixed max-sm:!inset-0 max-sm:!w-full max-sm:!h-full max-sm:!p-0 max-sm:!m-0 max-sm:!z-[9999]"
+        : "fixed bottom-[110px] md:bottom-6 right-0 md:right-6 z-[9999] flex flex-col items-end gap-3 font-sans transition-all duration-300"
+    }>
       
       {/* ── PANEL DE COPILOTO (CREMA, ANTRACITA Y DORADO) ── */}
       {isOpen && (
         <div 
           style={{ width: `${chatWidth}px`, height: `${chatHeight}px` }}
-          className="bg-white/95 backdrop-blur-md border border-stone-200/80 rounded-luxury-card shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-300 ease-out relative select-none mr-4 md:mr-0"
+          className="bg-white/95 backdrop-blur-md border border-stone-200/80 rounded-luxury-card shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-300 ease-out relative select-none mr-4 md:mr-0 max-sm:!w-full max-sm:!h-full max-sm:!max-w-none max-sm:!max-h-none max-sm:!mr-0 max-sm:!rounded-none max-sm:!border-none max-sm:!h-[100dvh]"
         >
           {/* Resize Handles (Premium visual indicators and cursors) */}
           <div
             onMouseDown={startResize}
-            className="absolute top-0 left-0 w-4 h-4 cursor-nwse-resize z-50 group/resize flex items-center justify-center"
+            className="absolute top-0 left-0 w-4 h-4 cursor-nwse-resize z-50 group/resize flex items-center justify-center max-sm:hidden"
             title="Redimensionar chat"
           >
             <div className="w-2.5 h-2.5 border-l-2 border-t-2 border-stone-400/40 group-hover/resize:border-primary transition-colors rounded-tl" />
@@ -497,11 +501,11 @@ export default function AICopilotWidget() {
           
           <div
             onMouseDown={startResize}
-            className="absolute top-0 left-0 bottom-0 w-1.5 cursor-ew-resize z-40 hover:bg-primary/20 transition-all duration-300"
+            className="absolute top-0 left-0 bottom-0 w-1.5 cursor-ew-resize z-40 hover:bg-primary/20 transition-all duration-300 max-sm:hidden"
           />
           <div
             onMouseDown={startResize}
-            className="absolute top-0 left-0 right-0 h-1.5 cursor-ns-resize z-40 hover:bg-primary/20 transition-all duration-300"
+            className="absolute top-0 left-0 right-0 h-1.5 cursor-ns-resize z-40 hover:bg-primary/20 transition-all duration-300 max-sm:hidden"
           />
 
           {/* Cabecera Premium (Antracita + Oro) */}
@@ -689,24 +693,17 @@ export default function AICopilotWidget() {
       )}
 
       {/* ── BURBUJA FLOTANTE FIJA ── */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`h-14 w-14 rounded-full bg-stone-900 text-white shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center relative border border-primary/40 z-10 group overflow-hidden ${
-          isOpen 
-            ? 'bg-primary border-primary text-primary-foreground rotate-90 mr-4 md:mr-0' 
-            : 'hover:bg-stone-800 max-md:translate-x-[35%] max-md:hover:translate-x-0 max-md:rounded-l-2xl max-md:rounded-r-none'
-        }`}
-        title="Copiloto de Navegación IA"
-      >
-        {/* Efecto de Brillo Circular en hover */}
-        <span className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        
-        {isOpen ? (
-          <X size={22} className="text-white group-hover:text-stone-900 transition-colors" strokeWidth={2.2} />
-        ) : (
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="h-14 w-14 rounded-full bg-stone-900 text-white shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center relative border border-primary/40 z-10 group overflow-hidden hover:bg-stone-800 max-md:translate-x-[35%] max-md:hover:translate-x-0 max-md:rounded-l-2xl max-md:rounded-r-none"
+          title="Copiloto de Navegación IA"
+        >
+          {/* Efecto de Brillo Circular en hover */}
+          <span className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           <Sparkles size={22} className="text-primary animate-pulse" strokeWidth={1.8} />
-        )}
-      </button>
+        </button>
+      )}
 
     </div>
   );
