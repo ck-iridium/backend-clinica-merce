@@ -270,6 +270,11 @@ class LandingMarketingSettingsOut(BaseModel):
     id: str
     hero_title: str
     hero_subtitle: str
+    logo_svg: Optional[str] = None
+    primary_color: Optional[str] = None
+    seo_title: Optional[str] = None
+    seo_description: Optional[str] = None
+    seo_keywords: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -278,6 +283,11 @@ class LandingMarketingSettingsOut(BaseModel):
 class LandingMarketingSettingsUpdate(BaseModel):
     hero_title: str
     hero_subtitle: str
+    logo_svg: Optional[str] = None
+    primary_color: Optional[str] = None
+    seo_title: Optional[str] = None
+    seo_description: Optional[str] = None
+    seo_keywords: Optional[str] = None
 
 
 class LandingShowcaseSectorOut(BaseModel):
@@ -323,7 +333,12 @@ def get_public_marketing_content(db: Session = Depends(database.get_db)):
     return {
         "settings": {
             "hero_title": settings.hero_title,
-            "hero_subtitle": settings.hero_subtitle
+            "hero_subtitle": settings.hero_subtitle,
+            "logo_svg": settings.logo_svg,
+            "primary_color": settings.primary_color,
+            "seo_title": settings.seo_title,
+            "seo_description": settings.seo_description,
+            "seo_keywords": settings.seo_keywords
         },
         "sectors": [
             {
@@ -366,6 +381,11 @@ def update_marketing_settings(
         db.add(settings)
     settings.hero_title = payload.hero_title
     settings.hero_subtitle = payload.hero_subtitle
+    settings.logo_svg = payload.logo_svg
+    settings.primary_color = payload.primary_color
+    settings.seo_title = payload.seo_title
+    settings.seo_description = payload.seo_description
+    settings.seo_keywords = payload.seo_keywords
     db.commit()
     db.refresh(settings)
     return settings

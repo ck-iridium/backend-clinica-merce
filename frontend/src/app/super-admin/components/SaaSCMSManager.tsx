@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Sparkles, Settings2 } from 'lucide-react';
+import { Sparkles, Settings2, Palette } from 'lucide-react';
 import MediaPickerModal from '@/components/MediaPickerModal';
 import Showcase3DPreview, { MappedPreviewSector } from './Showcase3DPreview';
 import SaaSCMSHeroForm from './SaaSCMSHeroForm';
@@ -16,16 +16,26 @@ interface SaaSCMSManagerProps {
 interface MarketingSettings {
   hero_title: string;
   hero_subtitle: string;
+  logo_svg?: string | null;
+  primary_color?: string | null;
+  seo_title?: string | null;
+  seo_description?: string | null;
+  seo_keywords?: string | null;
 }
 
 export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
-  const [subTab, setSubTab] = useState<'hero' | 'sectors'>('hero');
+  const [subTab, setSubTab] = useState<'hero' | 'sectors' | 'branding'>('hero');
   const [loading, setLoading] = useState(false);
   
   // Settings state
   const [settings, setSettings] = useState<MarketingSettings>({
     hero_title: 'La elegancia de tu negocio traducida en un SaaS de Lujo',
-    hero_subtitle: 'Diseñado exclusivamente para centros de estética, wellness, spas y salones premium independientes.'
+    hero_subtitle: 'Diseñado exclusivamente para centros de estética, wellness, spas y salones premium independientes.',
+    logo_svg: null,
+    primary_color: '#3b82f6',
+    seo_title: '',
+    seo_description: '',
+    seo_keywords: ''
   });
   const [savingSettings, setSavingSettings] = useState(false);
 
@@ -364,30 +374,43 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
         </div>
 
         {/* Tab Selectors inside Sidebar */}
-        <div className="grid grid-cols-2 border-b border-stone-100 text-center text-xs font-bold text-stone-400 bg-stone-50/50 font-sans shrink-0">
+        <div className="grid grid-cols-3 border-b border-stone-100 text-center text-xs font-bold text-stone-400 bg-stone-50/50 font-sans shrink-0">
           <button 
             onClick={() => {
               setSubTab('hero');
               setEditingSector(null);
               setIsAddingSector(false);
             }}
-            className={`py-3.5 border-r border-stone-100 transition-colors flex items-center justify-center gap-1.5 ${
+            className={`py-3.5 border-r border-stone-100 transition-colors flex items-center justify-center gap-1 ${
               subTab === 'hero' ? 'bg-white text-stone-900 border-b-2 border-[#d4af37]' : 'hover:bg-white/50'
             }`}
           >
             <Settings2 className="w-3.5 h-3.5" />
-            <span>Portada (Hero)</span>
+            <span>Portada</span>
           </button>
           <button 
             onClick={() => {
               setSubTab('sectors');
             }}
-            className={`py-3.5 transition-colors flex items-center justify-center gap-1.5 ${
+            className={`py-3.5 border-r border-stone-100 transition-colors flex items-center justify-center gap-1 ${
               subTab === 'sectors' ? 'bg-white text-stone-900 border-b-2 border-[#d4af37]' : 'hover:bg-white/50'
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Showcase (3D)</span>
+            <span>Sectores</span>
+          </button>
+          <button 
+            onClick={() => {
+              setSubTab('branding');
+              setEditingSector(null);
+              setIsAddingSector(false);
+            }}
+            className={`py-3.5 transition-colors flex items-center justify-center gap-1 ${
+              subTab === 'branding' ? 'bg-white text-stone-900 border-b-2 border-[#d4af37]' : 'hover:bg-white/50'
+            }`}
+          >
+            <Palette className="w-3.5 h-3.5" />
+            <span>Branding</span>
           </button>
         </div>
 
@@ -422,6 +445,158 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                   onSubmit={handleSaveSettings}
                   saving={savingSettings}
                 />
+              )}
+            </div>
+          )}
+
+          {/* C. BRANDING & SEO FORM */}
+          {subTab === 'branding' && (
+            <div className="p-6 space-y-6">
+              <div className="bg-stone-50 border border-stone-200 p-4 rounded-xl space-y-1">
+                <h4 className="text-xs font-bold text-stone-700 flex items-center gap-1.5">
+                  <Palette className="w-3.5 h-3.5 text-stone-600" /> Branding & Identidad Visual
+                </h4>
+                <p className="text-[10px] text-stone-500 leading-relaxed font-medium">
+                  Configura los colores corporativos, sube tu logotipo SVG personalizado y ajusta los parámetros de indexación de Google para la landing corporativa.
+                </p>
+              </div>
+
+              {loading ? (
+                <div className="space-y-4 animate-pulse">
+                  <div className="h-4 w-32 bg-stone-100 rounded"></div>
+                  <div className="h-10 w-full bg-stone-100 rounded-xl"></div>
+                </div>
+              ) : (
+                <form onSubmit={handleSaveSettings} className="space-y-6 select-text">
+                  {/* Color Selector */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest block">
+                      Color de Acento Primario
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <input 
+                        type="color" 
+                        value={settings.primary_color || '#3b82f6'} 
+                        onChange={(e) => setSettings(prev => ({ ...prev, primary_color: e.target.value }))}
+                        className="w-10 h-10 border border-stone-200 rounded-xl cursor-pointer bg-transparent outline-none"
+                      />
+                      <input 
+                        type="text" 
+                        value={settings.primary_color || '#3b82f6'} 
+                        onChange={(e) => setSettings(prev => ({ ...prev, primary_color: e.target.value }))}
+                        placeholder="#3b82f6"
+                        className="flex-1 px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-900 transition-colors text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Logo SVG */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest block flex justify-between items-center">
+                      <span>Logotipo Corporativo (Código SVG)</span>
+                      <span className="text-[9px] text-stone-450 normal-case">Pega el código XML o arrastra un archivo .svg</span>
+                    </label>
+
+                    {/* SVG Dropzone / File Uploader */}
+                    <div className="border border-dashed border-stone-200 rounded-xl p-4 hover:bg-stone-50/50 transition-colors flex flex-col items-center justify-center gap-2 cursor-pointer relative">
+                      <input 
+                        type="file" 
+                        accept=".svg"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                              const text = event.target?.result as string;
+                              if (text.includes('<svg')) {
+                                setSettings(prev => ({ ...prev, logo_svg: text }));
+                                toast.success('¡Logotipo SVG cargado con éxito!');
+                              } else {
+                                toast.error('El archivo no parece ser un SVG válido.');
+                              }
+                            };
+                            reader.readAsText(file);
+                          }
+                        }}
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                      />
+                      <div className="w-8 h-8 rounded-lg bg-stone-100 text-stone-600 flex items-center justify-center">
+                        <Palette className="w-4 h-4" />
+                      </div>
+                      <p className="text-[10px] text-stone-500 font-medium">Sube tu archivo .svg aquí</p>
+                    </div>
+
+                    <textarea 
+                      rows={6}
+                      value={settings.logo_svg || ''}
+                      onChange={(e) => setSettings(prev => ({ ...prev, logo_svg: e.target.value }))}
+                      placeholder="<svg ...> ... </svg>"
+                      className="w-full p-4 bg-stone-900 border border-stone-850 rounded-xl outline-none focus:border-stone-750 transition-colors text-xs font-mono text-stone-200 placeholder:text-stone-700 leading-relaxed"
+                    />
+
+                    {settings.logo_svg && (
+                      <div className="space-y-2 mt-2">
+                        <p className="text-[9px] font-bold text-stone-450 uppercase tracking-widest">Vista previa del logotipo:</p>
+                        <div className="p-4 bg-stone-50 border border-stone-150 rounded-xl flex items-center justify-center max-h-[80px] overflow-hidden">
+                          <div 
+                            className="h-10 w-full flex items-center justify-center [&>svg]:h-full [&>svg]:w-auto [&>svg]:max-w-full"
+                            dangerouslySetInnerHTML={{ __html: settings.logo_svg }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* SEO Title */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest block">
+                      Meta Título (SEO Title)
+                    </label>
+                    <input 
+                      type="text" 
+                      value={settings.seo_title || ''}
+                      onChange={(e) => setSettings(prev => ({ ...prev, seo_title: e.target.value }))}
+                      placeholder="Probookia | El SaaS de Gestión Premium..."
+                      className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-900 transition-colors text-xs font-sans"
+                    />
+                  </div>
+
+                  {/* SEO Description */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest block">
+                      Meta Descripción (SEO Description)
+                    </label>
+                    <textarea 
+                      rows={3}
+                      value={settings.seo_description || ''}
+                      onChange={(e) => setSettings(prev => ({ ...prev, seo_description: e.target.value }))}
+                      placeholder="Describe tu plataforma para los buscadores de Google..."
+                      className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-900 transition-colors text-xs font-sans leading-relaxed"
+                    />
+                  </div>
+
+                  {/* SEO Keywords */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest block">
+                      Palabras Clave (SEO Keywords)
+                    </label>
+                    <input 
+                      type="text" 
+                      value={settings.seo_keywords || ''}
+                      onChange={(e) => setSettings(prev => ({ ...prev, seo_keywords: e.target.value }))}
+                      placeholder="saas, agenda online, estetica"
+                      className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-900 transition-colors text-xs font-sans"
+                    />
+                  </div>
+
+                  <button 
+                    type="submit"
+                    disabled={savingSettings}
+                    className="w-full bg-stone-950 hover:bg-[#d4af37] text-white py-3 rounded-xl text-xxs font-black uppercase tracking-widest transition-all duration-300 shadow-sm active:scale-98"
+                  >
+                    {savingSettings ? 'Guardando Ajustes...' : 'Guardar Branding & SEO'}
+                  </button>
+                </form>
               )}
             </div>
           )}

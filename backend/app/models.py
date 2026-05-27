@@ -388,6 +388,11 @@ class LandingMarketingSettings(Base):
     id = Column(String(36), primary_key=True, default="global")
     hero_title = Column(String, default="La elegancia de tu negocio traducida en un SaaS de Lujo")
     hero_subtitle = Column(String, default="Diseñado exclusivamente para centros de estética, wellness, spas y salones premium independientes.")
+    logo_svg = Column(Text, nullable=True)
+    primary_color = Column(String(7), default="#3b82f6")
+    seo_title = Column(String, default="Probookia | El SaaS de Gestión para Centros de Estética y Salones Premium")
+    seo_description = Column(String, default="La elegancia de tu negocio traducida en un SaaS de lujo. Agendas fluidas, expedientes médicos y cobros en una experiencia sublime.")
+    seo_keywords = Column(String, default="saas, agenda online, centros de estetica, probookia")
 
 
 class LandingShowcaseSector(Base):

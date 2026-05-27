@@ -61,6 +61,10 @@ export default function MarketingPage() {
   const [sectors, setSectors] = useState<Sector[]>([]);
   const [heroTitle, setHeroTitle] = useState('La elegancia de tu negocio traducida en un SaaS de Lujo');
   const [heroSubtitle, setHeroSubtitle] = useState('Diseñado exclusivamente para centros de estética, wellness, spas y salones premium independientes. Agendas fluidas, expedientes médicos asimétricos y reservas de doble opt-in integradas en una experiencia sublime.');
+  
+  // Estados de Branding y SEO dinámicos del SaaS ProBookia
+  const [logoSvg, setLogoSvg] = useState<string | null>(null);
+  const [primaryColor, setPrimaryColor] = useState('#3b82f6');
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [animating, setAnimating] = useState(false);
@@ -95,6 +99,35 @@ export default function MarketingPage() {
         if (data.settings) {
           if (data.settings.hero_title) setHeroTitle(data.settings.hero_title);
           if (data.settings.hero_subtitle) setHeroSubtitle(data.settings.hero_subtitle);
+          if (data.settings.logo_svg) setLogoSvg(data.settings.logo_svg);
+          if (data.settings.primary_color) setPrimaryColor(data.settings.primary_color);
+          
+          // Inyección dinámica de SEO en el Cliente (Document Headers)
+          if (data.settings.seo_title) {
+            document.title = data.settings.seo_title;
+          }
+          if (data.settings.seo_description) {
+            let metaDesc = document.querySelector('meta[name="description"]');
+            if (metaDesc) {
+              metaDesc.setAttribute('content', data.settings.seo_description);
+            } else {
+              metaDesc = document.createElement('meta');
+              metaDesc.setAttribute('name', 'description');
+              metaDesc.setAttribute('content', data.settings.seo_description);
+              document.head.appendChild(metaDesc);
+            }
+          }
+          if (data.settings.seo_keywords) {
+            let metaKey = document.querySelector('meta[name="keywords"]');
+            if (metaKey) {
+              metaKey.setAttribute('content', data.settings.seo_keywords);
+            } else {
+              metaKey = document.createElement('meta');
+              metaKey.setAttribute('name', 'keywords');
+              metaKey.setAttribute('content', data.settings.seo_keywords);
+              document.head.appendChild(metaKey);
+            }
+          }
         }
         
         if (data.sectors && data.sectors.length > 0) {
@@ -133,15 +166,25 @@ export default function MarketingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white text-stone-900 font-sans selection:bg-[#d4af37]/20 overflow-x-hidden relative transition-colors duration-300">
+    <div 
+      style={{ '--primary-accent': primaryColor } as React.CSSProperties}
+      className="min-h-screen bg-white text-stone-900 font-sans selection:bg-[#d4af37]/20 overflow-x-hidden relative transition-colors duration-300"
+    >
       
       {/* 1. STICKY HEADER EDITORIAL */}
       <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-stone-100 py-1 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-xl md:text-2.5xl font-serif tracking-widest text-stone-950 font-semibold select-none">
-              PROBOOKIA <span className="text-blue-600 font-sans text-[10px] font-black tracking-[0.25em] uppercase ml-1">SaaS</span>
-            </span>
+            {logoSvg ? (
+              <div 
+                className="h-10 flex items-center justify-start [&>svg]:h-full [&>svg]:w-auto"
+                dangerouslySetInnerHTML={{ __html: logoSvg }}
+              />
+            ) : (
+              <span className="text-xl md:text-2.5xl font-serif tracking-widest text-stone-950 font-semibold select-none">
+                PROBOOKIA <span style={{ color: primaryColor }} className="font-sans text-[10px] font-black tracking-[0.25em] uppercase ml-1">SaaS</span>
+              </span>
+            )}
           </div>
           
           <div className="flex items-center gap-4">
@@ -160,7 +203,8 @@ export default function MarketingPage() {
             </Link>
             <button 
               onClick={() => handleOpenOnboarding('pro')}
-              className="bg-stone-950 hover:bg-stone-900 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all duration-300 hover:scale-105 active:scale-95"
+              style={{ backgroundColor: primaryColor }}
+              className="hover:opacity-90 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all duration-300 hover:scale-105 active:scale-95"
             >
               Comenzar Ahora
             </button>
@@ -172,7 +216,7 @@ export default function MarketingPage() {
       <section className="relative pt-20 pb-20 md:pt-36 md:pb-32 bg-white">
         <div className="max-w-7xl mx-auto px-6 relative z-10 text-center animate-in fade-in slide-in-from-bottom-6 duration-1000">
           <div className="inline-flex items-center gap-2 bg-stone-50 border border-stone-200/60 text-stone-500 px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase mb-8 shadow-sm">
-            <Sparkles className="w-3 h-3 text-blue-600" /> EL NUEVO ESTÁNDAR PARA CENTROS Y SALONES DE LUJO
+            <Sparkles className="w-3 h-3" style={{ color: primaryColor }} /> EL NUEVO ESTÁNDAR PARA CENTROS Y SALONES DE LUJO
           </div>
           
           <h1 
@@ -215,7 +259,7 @@ export default function MarketingPage() {
         <div className="max-w-7xl mx-auto px-6">
           
           <div className="text-center max-w-2xl mx-auto mb-24">
-            <span className="text-blue-600 text-[10px] font-black uppercase tracking-[0.25em] block mb-3">La Diferencia ProBookia</span>
+            <span style={{ color: primaryColor }} className="text-[10px] font-black uppercase tracking-[0.25em] block mb-3">La Diferencia ProBookia</span>
             <h2 className="text-3xl md:text-5xl font-serif font-semibold tracking-tight text-stone-950">
               ¿Por qué ProBookia?
             </h2>
@@ -228,10 +272,10 @@ export default function MarketingPage() {
             
             {/* Beneficio 1: Multi-tenant Aislado */}
             <div className="p-8 rounded-3xl bg-stone-50/50 border border-stone-200/50 flex flex-col justify-between h-[360px] hover:shadow-lg transition-all duration-300 relative overflow-hidden group">
-              <div className="text-5xl font-serif font-medium text-stone-200/80 mb-6 group-hover:text-blue-600/10 transition-colors">01</div>
+              <div className="text-5xl font-serif font-medium text-stone-200/80 mb-6 transition-colors group-hover:opacity-40">01</div>
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <Shield className="w-5 h-5 text-blue-600" />
+                  <Shield className="w-5 h-5" style={{ color: primaryColor }} />
                   <h3 className="font-serif text-xl font-semibold text-stone-950">
                     Aislamiento Total RLS
                   </h3>
@@ -240,7 +284,7 @@ export default function MarketingPage() {
                   Seguridad a nivel bancario. Cada centro tiene su base de datos herméticamente aislada con Supabase RLS. Nadie ve los datos de nadie. Cumplimiento absoluto RGPD sin riesgos.
                 </p>
               </div>
-              <Link href="/docs?tab=aislamiento-multi-tenant" className="text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1 mt-4">
+              <Link href="/docs?tab=aislamiento-multi-tenant" style={{ color: primaryColor }} className="text-xs font-bold hover:opacity-80 transition-colors flex items-center gap-1 mt-4">
                 <span>Ver plano de arquitectura</span>
                 <ChevronRight size={12} />
               </Link>
@@ -248,10 +292,10 @@ export default function MarketingPage() {
 
             {/* Beneficio 2: Marca Blanca Lujo */}
             <div className="p-8 rounded-3xl bg-stone-50/50 border border-stone-200/50 flex flex-col justify-between h-[360px] hover:shadow-lg transition-all duration-300 relative overflow-hidden group">
-              <div className="text-5xl font-serif font-medium text-stone-200/80 mb-6 group-hover:text-blue-600/10 transition-colors">02</div>
+              <div className="text-5xl font-serif font-medium text-stone-200/80 mb-6 transition-colors group-hover:opacity-40">02</div>
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <FileText className="w-5 h-5 text-blue-600" />
+                  <FileText className="w-5 h-5" style={{ color: primaryColor }} />
                   <h3 className="font-serif text-xl font-semibold text-stone-950">
                     Branding Invisible de Lujo
                   </h3>
@@ -260,7 +304,7 @@ export default function MarketingPage() {
                   No vendemos ProBookia a tu paciente. Mostramos tu logotipo digitalizado, tus colores corporativos, tipografías y tu subdominio exclusivo. ProBookia es el motor oculto que te hace lucir gigante.
                 </p>
               </div>
-              <Link href="/docs?tab=estructura-catalogo" className="text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1 mt-4">
+              <Link href="/docs?tab=estructura-catalogo" style={{ color: primaryColor }} className="text-xs font-bold hover:opacity-80 transition-colors flex items-center gap-1 mt-4">
                 <span>Ver control de marca blanca</span>
                 <ChevronRight size={12} />
               </Link>
@@ -268,10 +312,10 @@ export default function MarketingPage() {
 
             {/* Beneficio 3: Copiloto por Voz */}
             <div className="p-8 rounded-3xl bg-stone-50/50 border border-stone-200/50 flex flex-col justify-between h-[360px] hover:shadow-lg transition-all duration-300 relative overflow-hidden group">
-              <div className="text-5xl font-serif font-medium text-stone-200/80 mb-6 group-hover:text-blue-600/10 transition-colors">03</div>
+              <div className="text-5xl font-serif font-medium text-stone-200/80 mb-6 transition-colors group-hover:opacity-40">03</div>
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <Sparkles className="w-5 h-5 text-blue-600" />
+                  <Sparkles className="w-5 h-5" style={{ color: primaryColor }} />
                   <h3 className="font-serif text-xl font-semibold text-stone-950">
                     Co-Piloto por Voz IA
                   </h3>
@@ -280,7 +324,7 @@ export default function MarketingPage() {
                   No pierdas el tiempo haciendo clics. Habla con el sistema como a un colega humano: *"Pon el color de acento primario en dorado"* o *"Genera el copy SEO en tono clínico"*, y la IA procesará la acción al instante.
                 </p>
               </div>
-              <Link href="/docs?tab=limites-conversacionales" className="text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1 mt-4">
+              <Link href="/docs?tab=limites-conversacionales" style={{ color: primaryColor }} className="text-xs font-bold hover:opacity-80 transition-colors flex items-center gap-1 mt-4">
                 <span>Ver límites conversacionales</span>
                 <ChevronRight size={12} />
               </Link>
