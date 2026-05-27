@@ -462,6 +462,8 @@ def hard_delete_tenant(
     if not tenant:
         raise HTTPException(status_code=404, detail="Inquilino no encontrado")
 
+    tenant_name = tenant.name
+
     # 1. Obtener y eliminar físicamente los archivos del inquilino en Supabase Storage
     supabase_url = os.environ.get("SUPABASE_URL")
     supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
@@ -523,7 +525,7 @@ def hard_delete_tenant(
 
     return {
         "success": True,
-        "message": f"Inquilino '{tenant.name}' y todas sus dependencias eliminados permanentemente.",
+        "message": f"Inquilino '{tenant_name}' y todas sus dependencias eliminados permanentemente.",
         "deleted_files_count": len(deleted_files)
     }
 
