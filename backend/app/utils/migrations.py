@@ -87,7 +87,11 @@ def run_auto_migrations():
             "ALTER TABLE clinic_settings ADD COLUMN clinic_description VARCHAR DEFAULT 'Tu centro de confianza para servicios personalizados y bienestar de primer nivel.'",
             "ALTER TABLE clinic_settings ADD COLUMN branding_palette_id VARCHAR DEFAULT 'dorado-antracita'",
             "ALTER TABLE clinic_settings ADD COLUMN accent_color_primary VARCHAR DEFAULT '#D4AF37'",
-            "ALTER TABLE clinic_settings ADD COLUMN accent_color_secondary VARCHAR DEFAULT '#1C1917'"
+            "ALTER TABLE clinic_settings ADD COLUMN accent_color_secondary VARCHAR DEFAULT '#1C1917'",
+            # ── CMS: Imágenes rotativas de la portada hero ───────────────────────
+            "ALTER TABLE landing_marketing_settings ADD COLUMN hero_image_1 VARCHAR",
+            "ALTER TABLE landing_marketing_settings ADD COLUMN hero_image_2 VARCHAR",
+            "ALTER TABLE landing_marketing_settings ADD COLUMN hero_image_3 VARCHAR"
         ]
         
         for m in migrations:

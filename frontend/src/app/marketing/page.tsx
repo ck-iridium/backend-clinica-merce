@@ -67,6 +67,9 @@ export default async function Page() {
         settings = {
           hero_title: data.settings.hero_title || defaultSettings.hero_title,
           hero_subtitle: data.settings.hero_subtitle || defaultSettings.hero_subtitle,
+          hero_image_1: data.settings.hero_image_1 || null,
+          hero_image_2: data.settings.hero_image_2 || null,
+          hero_image_3: data.settings.hero_image_3 || null,
           logo_svg: data.settings.logo_svg || null,
           primary_color: data.settings.primary_color || defaultSettings.primary_color,
           secondary_color: data.settings.secondary_color || defaultSettings.secondary_color,

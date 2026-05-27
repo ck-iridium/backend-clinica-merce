@@ -270,6 +270,9 @@ class LandingMarketingSettingsOut(BaseModel):
     id: str
     hero_title: str
     hero_subtitle: str
+    hero_image_1: Optional[str] = None
+    hero_image_2: Optional[str] = None
+    hero_image_3: Optional[str] = None
     logo_svg: Optional[str] = None
     primary_color: Optional[str] = None
     secondary_color: Optional[str] = None
@@ -288,6 +291,9 @@ class LandingMarketingSettingsOut(BaseModel):
 class LandingMarketingSettingsUpdate(BaseModel):
     hero_title: str
     hero_subtitle: str
+    hero_image_1: Optional[str] = None
+    hero_image_2: Optional[str] = None
+    hero_image_3: Optional[str] = None
     logo_svg: Optional[str] = None
     primary_color: Optional[str] = None
     secondary_color: Optional[str] = None
@@ -344,6 +350,9 @@ def get_public_marketing_content(db: Session = Depends(database.get_db)):
         "settings": {
             "hero_title": settings.hero_title,
             "hero_subtitle": settings.hero_subtitle,
+            "hero_image_1": settings.hero_image_1,
+            "hero_image_2": settings.hero_image_2,
+            "hero_image_3": settings.hero_image_3,
             "logo_svg": settings.logo_svg,
             "primary_color": settings.primary_color,
             "secondary_color": settings.secondary_color,
@@ -396,6 +405,9 @@ def update_marketing_settings(
         db.add(settings)
     settings.hero_title = payload.hero_title
     settings.hero_subtitle = payload.hero_subtitle
+    settings.hero_image_1 = payload.hero_image_1
+    settings.hero_image_2 = payload.hero_image_2
+    settings.hero_image_3 = payload.hero_image_3
     settings.logo_svg = payload.logo_svg
     settings.primary_color = payload.primary_color
     settings.secondary_color = payload.secondary_color

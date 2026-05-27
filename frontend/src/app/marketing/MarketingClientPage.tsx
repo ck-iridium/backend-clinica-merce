@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Shield, FileText, Sparkles, ChevronRight, BookOpen } from 'lucide-react';
 import OnboardingModal from './components/OnboardingModal';
@@ -21,6 +21,9 @@ interface MarketingClientPageProps {
   initialSettings: {
     hero_title: string;
     hero_subtitle: string;
+    hero_image_1?: string | null;
+    hero_image_2?: string | null;
+    hero_image_3?: string | null;
     logo_svg: string | null;
     primary_color: string;
     secondary_color: string;
@@ -46,6 +49,22 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
   const [secondaryColor, setSecondaryColor] = useState(initialSettings.secondary_color);
   const [tertiaryColor, setTertiaryColor] = useState(initialSettings.tertiary_color);
   const [fontFamily, setFontFamily] = useState(initialSettings.font_family);
+
+  // Manejo de la galería rotativa del hero
+  const heroImages = [
+    initialSettings.hero_image_1,
+    initialSettings.hero_image_2,
+    initialSettings.hero_image_3
+  ].filter(Boolean) as string[];
+  const [currentHeroImageIndex, setCurrentHeroImageIndex] = useState(0);
+
+  useEffect(() => {
+    if (heroImages.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentHeroImageIndex((prev) => (prev + 1) % heroImages.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [heroImages.length]);
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [animating, setAnimating] = useState(false);
@@ -192,6 +211,39 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
               Ver Sectores de Especialidad
             </a>
           </div>
+
+          {/* ROTATING HERO SLIDESHOW - Elegant Widescreen Glass Mockup */}
+          {heroImages.length > 0 && (
+            <div className="w-full max-w-4xl mx-auto mt-16 px-4 select-none animate-in fade-in zoom-in-95 duration-1000">
+              <div className="relative aspect-[21/9] w-full bg-stone-50 rounded-3xl overflow-hidden border border-stone-200/50 shadow-xl">
+                {heroImages.map((imgUrl, idx) => (
+                  <img
+                    key={idx}
+                    src={imgUrl}
+                    alt={`Hero Slideshow ${idx}`}
+                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+                      idx === currentHeroImageIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                    }`}
+                  />
+                ))}
+                
+                {/* Dot Indicators */}
+                {heroImages.length > 1 && (
+                  <div className="absolute bottom-4 inset-x-0 flex justify-center gap-2 z-20">
+                    {heroImages.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentHeroImageIndex(idx)}
+                        className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                          idx === currentHeroImageIndex ? 'bg-white scale-125 shadow-sm' : 'bg-white/40'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

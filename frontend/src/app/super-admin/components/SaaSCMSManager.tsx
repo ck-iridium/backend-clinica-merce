@@ -16,6 +16,9 @@ interface SaaSCMSManagerProps {
 interface MarketingSettings {
   hero_title: string;
   hero_subtitle: string;
+  hero_image_1?: string | null;
+  hero_image_2?: string | null;
+  hero_image_3?: string | null;
   logo_svg?: string | null;
   primary_color?: string | null;
   secondary_color?: string | null;
@@ -36,6 +39,9 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
   const [settings, setSettings] = useState<MarketingSettings>({
     hero_title: 'La elegancia de tu negocio traducida en un SaaS de Lujo',
     hero_subtitle: 'Diseñado exclusivamente para centros de estética, wellness, spas y salones premium independientes.',
+    hero_image_1: null,
+    hero_image_2: null,
+    hero_image_3: null,
     logo_svg: null,
     primary_color: '#3b82f6',
     secondary_color: '#1c1917',
@@ -69,7 +75,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
   const [submittingSector, setSubmittingSector] = useState(false);
 
   // Media Picker Dialog target
-  const [pickerTarget, setPickerTarget] = useState<{ field: 'video_url' | 'image_url' } | null>(null);
+  const [pickerTarget, setPickerTarget] = useState<{ field: 'video_url' | 'image_url' | 'hero_image_1' | 'hero_image_2' | 'hero_image_3' } | null>(null);
 
   // Preview Navigation States
   const [previewIndex, setPreviewIndex] = useState(0);
@@ -463,8 +469,13 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                 <SaaSCMSHeroForm 
                   heroTitle={settings.hero_title}
                   heroSubtitle={settings.hero_subtitle}
+                  heroImage1={settings.hero_image_1 || null}
+                  heroImage2={settings.hero_image_2 || null}
+                  heroImage3={settings.hero_image_3 || null}
                   onChangeTitle={(val) => setSettings(prev => ({ ...prev, hero_title: val }))}
                   onChangeSubtitle={(val) => setSettings(prev => ({ ...prev, hero_subtitle: val }))}
+                  onSelectImage={(index) => setPickerTarget({ field: `hero_image_${index}` as any })}
+                  onClearImage={(index) => setSettings(prev => ({ ...prev, [`hero_image_${index}`]: null }))}
                   onSubmit={handleSaveSettings}
                   saving={savingSettings}
                 />
@@ -840,6 +851,9 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
       <Showcase3DPreview
         heroTitle={settings.hero_title}
         heroSubtitle={settings.hero_subtitle}
+        heroImage1={settings.hero_image_1}
+        heroImage2={settings.hero_image_2}
+        heroImage3={settings.hero_image_3}
         previewSectors={previewSectors}
         previewIndex={previewIndex}
         previewAnimating={previewAnimating}
@@ -857,7 +871,11 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
         <MediaPickerModal
           onClose={() => setPickerTarget(null)}
           onImageSelected={(url) => {
-            setSectorFormData(prev => ({ ...prev, [pickerTarget.field]: url }));
+            if (pickerTarget.field.startsWith('hero_image_')) {
+              setSettings(prev => ({ ...prev, [pickerTarget.field]: url }));
+            } else {
+              setSectorFormData(prev => ({ ...prev, [pickerTarget.field]: url }));
+            }
             setPickerTarget(null);
           }}
           mediaType={pickerTarget.field === 'video_url' ? 'video' : 'image'}

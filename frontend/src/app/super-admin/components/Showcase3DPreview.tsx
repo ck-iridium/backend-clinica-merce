@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { Monitor, ChevronRight } from 'lucide-react';
 
 export interface MappedPreviewSector {
@@ -16,6 +16,9 @@ export interface MappedPreviewSector {
 interface Showcase3DPreviewProps {
   heroTitle: string;
   heroSubtitle: string;
+  heroImage1?: string | null;
+  heroImage2?: string | null;
+  heroImage3?: string | null;
   previewSectors: MappedPreviewSector[];
   previewIndex: number;
   previewAnimating: boolean;
@@ -58,6 +61,9 @@ function ShowcaseVideo({ src, poster, isActive }: { src: string; poster?: string
 export default function Showcase3DPreview({
   heroTitle,
   heroSubtitle,
+  heroImage1,
+  heroImage2,
+  heroImage3,
   previewSectors,
   previewIndex,
   previewAnimating,
@@ -81,6 +87,18 @@ export default function Showcase3DPreview({
   const N_prev = previewSectors.length;
   const realIndexPrev = N_prev > 0 ? ((previewIndex % N_prev) + N_prev) % N_prev : 0;
 
+  // Manejo de la galería rotativa del hero
+  const heroImages = [heroImage1, heroImage2, heroImage3].filter(Boolean) as string[];
+  const [currentHeroImageIndex, setCurrentHeroImageIndex] = useState(0);
+
+  useEffect(() => {
+    if (heroImages.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentHeroImageIndex((prev) => (prev + 1) % heroImages.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [heroImages.length]);
+
   const handlePreviewCardClick = (targetIndex: number) => {
     if (N_prev === 0) return;
     const currentReal = ((previewIndex % N_prev) + N_prev) % N_prev;
@@ -100,7 +118,7 @@ export default function Showcase3DPreview({
         '--secondary-accent': secondaryColor || '#1c1917',
         '--tertiary-accent': tertiaryColor || '#d4af37'
       } as React.CSSProperties}
-      className="flex-1 h-full bg-stone-50 flex flex-col relative overflow-hidden"
+      className="flex-1 h-full bg-stone-50 flex flex-col relative overflow-hidden animate-fade-in"
     >
       <style dangerouslySetInnerHTML={{
         __html: `
@@ -148,14 +166,14 @@ export default function Showcase3DPreview({
         </div>
       </div>
 
-      {/* Live Mock Page Body */}
-      <div className="flex-1 overflow-y-auto bg-white p-10 relative flex flex-col justify-between min-h-0">
+      {/* Live Mock Page Body - Optimización de Distribución Vertical */}
+      <div className="flex-1 overflow-y-auto bg-white p-6 relative flex flex-col justify-start min-h-0">
 
         {/* Mock Landing Header */}
-        <div className="flex justify-between items-center border-b border-stone-100 pb-4 mb-6 select-none shrink-0">
+        <div className="flex justify-between items-center border-b border-stone-100 pb-2 mb-3 select-none shrink-0">
           {logoSvg ? (
             <div
-              className="h-8 flex items-center justify-start [&>svg]:h-full [&>svg]:w-auto"
+              className="h-6 flex items-center justify-start [&>svg]:h-full [&>svg]:w-auto"
               dangerouslySetInnerHTML={{ __html: logoSvg }}
             />
           ) : (
@@ -164,143 +182,177 @@ export default function Showcase3DPreview({
             </span>
           )}
 
-          <div className="flex justify-between items-center gap-6 text-[9px] text-stone-400 font-bold preview-sans">
+          <div className="flex justify-between items-center gap-4 text-[9px] text-stone-400 font-bold preview-sans">
             <span>Producto</span>
             <span>Precios</span>
             <span>Documentación</span>
-            <span className="bg-stone-950 text-white px-3 py-1.2 rounded-lg text-[8px] font-black uppercase tracking-wider">Entorno Seguro</span>
+            <span className="bg-stone-950 text-white px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-wider">Entorno Seguro</span>
           </div>
         </div>
 
-        {/* Live Hero Header */}
-        <div className="text-center max-w-2xl mx-auto select-none mt-2 shrink-0">
-          <span style={{ color: tertiaryColor || '#d4af37' }} className="text-[9px] font-black uppercase tracking-[0.25em] block mb-3 preview-sans">
+        {/* Live Hero Header - Espacio Estable */}
+        <div className="text-center max-w-2xl mx-auto select-none mt-1 shrink-0">
+          <span style={{ color: tertiaryColor || '#d4af37' }} className="text-[9px] font-black uppercase tracking-[0.25em] block mb-0.5 preview-sans">
             Especialidades
           </span>
-          <h2 className="text-2xl md:text-4xl font-serif font-bold tracking-tight text-stone-950 leading-snug mb-4 transition-all duration-300 preview-serif">
+          <h2 className="text-xl md:text-2xl font-serif font-bold tracking-tight text-stone-950 leading-snug mb-1 transition-all duration-300 preview-serif">
             {heroTitle || 'Sectores de Alta Gama'}
           </h2>
-          <p className="text-xs md:text-sm text-stone-500 font-medium leading-relaxed max-w-lg mx-auto transition-all duration-300 preview-sans">
+          <p className="text-[10px] text-stone-500 font-medium leading-relaxed max-w-md mx-auto transition-all duration-300 preview-sans">
             {heroSubtitle || 'Interactúa con el carrusel en anillo 3D tridimensional de alta precisión.'}
           </p>
         </div>
 
-        {/* 3D COVERFLOW INFINITE STAGE */}
-        <div className="relative flex-1 min-h-[460px] w-full flex items-center justify-center [perspective:1000px] [transform-style:preserve-3d] select-none overflow-hidden my-2 shrink-0">
+        {/* ROTATING HERO SLIDESHOW MOCKUP - Elegant Glass Frame */}
+        {heroImages.length > 0 && (
+          <div className="w-full max-w-lg mx-auto my-3 shrink-0 select-none px-4 z-10 animate-fade-in">
+            <div className="relative aspect-[21/9] w-full bg-stone-50 rounded-2xl overflow-hidden border border-stone-200/50 shadow-md">
+              {heroImages.map((imgUrl, idx) => (
+                <img
+                  key={idx}
+                  src={imgUrl}
+                  alt={`Hero Mockup ${idx}`}
+                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+                    idx === currentHeroImageIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                  }`}
+                />
+              ))}
+              
+              {/* Dot Indicators */}
+              {heroImages.length > 1 && (
+                <div className="absolute bottom-2.5 inset-x-0 flex justify-center gap-1.5 z-20">
+                  {heroImages.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentHeroImageIndex(idx)}
+                      className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                        idx === currentHeroImageIndex ? 'bg-white scale-125 shadow-sm' : 'bg-white/40'
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
-          {/* Card Container wrapper - Perfectly centered */}
-          <div className="relative w-[220px] h-[360px] [transform-style:preserve-3d]">
-            {previewSectors.map((sector, index) => {
-              // Circular offset for infinite loop
-              const realActive = ((previewIndex % N_prev) + N_prev) % N_prev;
-              let offset = index - realActive;
-              if (offset > N_prev / 2) {
-                offset -= N_prev;
-              } else if (offset < -N_prev / 2) {
-                offset += N_prev;
-              }
+        {/* CONTENEDOR VERTICAL QUE ALINEA EL CAROUSEL Y LA INFO AL CENTRO (my-auto, justify-center) */}
+        <div className="relative flex-1 flex flex-col items-center justify-center gap-4 max-w-4xl w-full mx-auto my-auto">
 
-              // Transform configurations based on offset (Central card scaled to 1.2)
-              let transformStr = "";
-              let zIndex = 0;
-              let opacity = 1;
-              let pointerEvents: "auto" | "none" = "auto";
+          {/* 3D COVERFLOW INFINITE STAGE - Ajustado para tarjetas 9:16 */}
+          <div className="relative w-full h-[390px] flex items-center justify-center [perspective:1000px] [transform-style:preserve-3d] select-none shrink-0">
 
-              if (offset === 0) {
-                transformStr = "translateX(0) scale(1.2) rotateY(0deg)";
-                zIndex = 30;
-                opacity = 1;
-              } else if (offset === 1) {
-                transformStr = "translateX(60%) scale(0.8) rotateY(-15deg)";
-                zIndex = 20;
-                opacity = 0.8;
-              } else if (offset === -1) {
-                transformStr = "translateX(-60%) scale(0.8) rotateY(15deg)";
-                zIndex = 20;
-                opacity = 0.8;
-              } else if (offset === 2) {
-                transformStr = "translateX(110%) scale(0.65) rotateY(-25deg)";
-                zIndex = 10;
-                opacity = 0.4;
-              } else if (offset === -2) {
-                transformStr = "translateX(-110%) scale(0.65) rotateY(25deg)";
-                zIndex = 10;
-                opacity = 0.4;
-              } else {
-                transformStr = `translateX(${offset * 100}%) scale(0.5) rotateY(0deg)`;
-                zIndex = 0;
-                opacity = 0;
-                pointerEvents = "none";
-              }
+            {/* Card Container wrapper - Formato 9:16 (w-200px, h-355px es 9:16) */}
+            <div className="relative w-[200px] h-[355px] [transform-style:preserve-3d]">
+              {previewSectors.map((sector, index) => {
+                // Circular offset for infinite loop
+                const realActive = ((previewIndex % N_prev) + N_prev) % N_prev;
+                let offset = index - realActive;
+                if (offset > N_prev / 2) {
+                  offset -= N_prev;
+                } else if (offset < -N_prev / 2) {
+                  offset += N_prev;
+                }
 
-              const isActive = offset === 0;
+                // Transform configurations based on offset (Central card scaled to 1.15)
+                let transformStr = "";
+                let zIndex = 0;
+                let opacity = 1;
+                let pointerEvents: "auto" | "none" = "auto";
 
-              return (
-                <div
-                  key={sector.id}
-                  onClick={() => handlePreviewCardClick(index)}
-                  style={{
-                    transform: transformStr,
-                    zIndex: zIndex,
-                    opacity: opacity,
-                    pointerEvents: pointerEvents,
-                    transition: "all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)"
-                  }}
-                  className={`absolute inset-0 cursor-pointer [backface-visibility:hidden] select-none ${isActive
-                      ? 'drop-shadow-[0_25px_50px_rgba(0,0,0,0.15)]'
-                      : 'filter brightness-90 hover:brightness-100 hover:opacity-90'
-                    }`}
-                >
-                  <div className="w-full h-full bg-white rounded-3xl border border-stone-200/50 p-2.5 shadow-md relative overflow-hidden">
-                    <div className="w-full h-full rounded-2xl overflow-hidden bg-stone-50 relative border border-stone-100">
-                      <ShowcaseVideo
-                        src={sector.videoUrl}
-                        poster={sector.imageUrl}
-                        isActive={isActive}
-                      />
-                      <div className="absolute top-4 left-4 z-10">
-                        <span
-                          style={isActive ? { backgroundColor: primaryColor || '#3b82f6', borderColor: primaryColor || '#3b82f6', color: '#ffffff' } : {}}
-                          className={`border px-3 py-1 rounded-full text-[8px] font-black tracking-wider uppercase preview-sans ${isActive ? '' : 'bg-white/95 border-stone-200/60 text-stone-500'
-                            }`}
-                        >
-                          {sector.badge}
-                        </span>
-                      </div>
+                if (offset === 0) {
+                  transformStr = "translateX(0) scale(1.15) rotateY(0deg)";
+                  zIndex = 30;
+                  opacity = 1;
+                } else if (offset === 1) {
+                  transformStr = "translateX(60%) scale(0.85) rotateY(-15deg)";
+                  zIndex = 20;
+                  opacity = 0.8;
+                } else if (offset === -1) {
+                  transformStr = "translateX(-60%) scale(0.85) rotateY(15deg)";
+                  zIndex = 20;
+                  opacity = 0.8;
+                } else if (offset === 2) {
+                  transformStr = "translateX(110%) scale(0.7) rotateY(-25deg)";
+                  zIndex = 10;
+                  opacity = 0.4;
+                } else if (offset === -2) {
+                  transformStr = "translateX(-110%) scale(0.7) rotateY(25deg)";
+                  zIndex = 10;
+                  opacity = 0.4;
+                } else {
+                  transformStr = `translateX(${offset * 100}%) scale(0.5) rotateY(0deg)`;
+                  zIndex = 0;
+                  opacity = 0;
+                  pointerEvents = "none";
+                }
+
+                const isActive = offset === 0;
+
+                return (
+                  <div
+                    key={sector.id}
+                    onClick={() => handlePreviewCardClick(index)}
+                    style={{
+                      transform: transformStr,
+                      zIndex: zIndex,
+                      opacity: opacity,
+                      pointerEvents: pointerEvents,
+                      transition: "all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)"
+                    }}
+                    className={`absolute inset-0 cursor-pointer [backface-visibility:hidden] select-none rounded-3xl border border-stone-200/50 shadow-md overflow-hidden bg-stone-50 ${isActive
+                        ? 'drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] border-stone-300/60'
+                        : 'filter brightness-90 hover:brightness-100 hover:opacity-90'
+                      }`}
+                  >
+                    <ShowcaseVideo
+                      src={sector.videoUrl}
+                      poster={sector.imageUrl}
+                      isActive={isActive}
+                    />
+                    <div className="absolute top-4 left-4 z-10">
+                      <span
+                        style={isActive ? { backgroundColor: primaryColor || '#3b82f6', borderColor: primaryColor || '#3b82f6', color: '#ffffff' } : {}}
+                        className={`border px-3 py-1 rounded-full text-[8px] font-black tracking-wider uppercase preview-sans ${isActive ? '' : 'bg-white/95 border-stone-200/60 text-stone-500'
+                          }`}
+                      >
+                        {sector.badge}
+                      </span>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+
+            {/* Lateral arrows */}
+            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 pointer-events-none z-20">
+              <button
+                onClick={() => handlePreviewNavigate(previewIndex - 1)}
+                className="w-9 h-9 rounded-full bg-white/95 backdrop-blur-sm border border-stone-200/60 hover:bg-stone-50 flex items-center justify-center text-stone-700 shadow-md active:scale-95 pointer-events-auto transition-transform"
+              >
+                <ChevronRight className="w-4 h-4 rotate-180" />
+              </button>
+              <button
+                onClick={() => handlePreviewNavigate(previewIndex + 1)}
+                className="w-9 h-9 rounded-full bg-white/95 backdrop-blur-sm border border-stone-200/60 hover:bg-stone-50 flex items-center justify-center text-stone-700 shadow-md active:scale-95 pointer-events-auto transition-transform"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
           </div>
 
-          {/* Lateral arrows */}
-          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-12 pointer-events-none z-20">
-            <button
-              onClick={() => handlePreviewNavigate(previewIndex - 1)}
-              className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm border border-stone-200/60 hover:bg-stone-50 flex items-center justify-center text-stone-700 shadow-lg active:scale-95 pointer-events-auto transition-transform"
-            >
-              <ChevronRight className="w-5 h-5 rotate-180" />
-            </button>
-            <button
-              onClick={() => handlePreviewNavigate(previewIndex + 1)}
-              className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm border border-stone-200/60 hover:bg-stone-50 flex items-center justify-center text-stone-700 shadow-lg active:scale-95 pointer-events-auto transition-transform"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* LA FICHA BLANCA EMERGENTE - Posicionada en la esquina inferior derecha */}
+          {/* FICHA BLANCA EMERGENTE - Perfectamente centrada abajo con mt-6 */}
           {previewSectors[realIndexPrev] && (
-            <div className={`absolute bottom-4 right-4 max-w-xs w-[280px] bg-white/95 backdrop-blur-md p-5 rounded-2xl shadow-xl border border-stone-100/80 transition-all duration-500 transform z-30 select-none text-left ${previewAnimating ? 'translate-y-4 opacity-0' : 'translate-y-0 opacity-100'
+            <div className={`mt-6 max-w-sm w-full bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-lg border border-stone-100/80 transition-all duration-500 transform z-30 select-none text-center shrink-0 ${previewAnimating ? 'translate-y-4 opacity-0' : 'translate-y-0 opacity-100'
               }`}>
-              <span style={{ color: tertiaryColor || '#d4af37' }} className="text-[8.5px] uppercase font-black tracking-[0.15em] block mb-1 preview-sans">
+              <span style={{ color: tertiaryColor || '#d4af37' }} className="text-[8px] uppercase font-black tracking-[0.15em] block mb-1 preview-sans">
                 {previewSectors[realIndexPrev]?.badge}
               </span>
-              <h4 className="font-serif text-base text-stone-900 font-bold mb-1.5 leading-tight preview-serif">
+              <h4 className="font-serif text-base text-stone-900 font-bold mb-1 leading-tight preview-serif">
                 {previewSectors[realIndexPrev]?.title}
               </h4>
-              <p className="text-stone-500 text-[10px] md:text-xs leading-relaxed mb-4 preview-sans">
+              <p className="text-stone-500 text-[10px] leading-relaxed mb-3 preview-sans">
                 {previewSectors[realIndexPrev]?.copy}
               </p>
               <button
