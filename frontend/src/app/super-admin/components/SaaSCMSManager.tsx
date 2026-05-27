@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Sparkles, Settings2, Palette } from 'lucide-react';
+import { Sparkles, Settings2, Palette, Globe } from 'lucide-react';
 import MediaPickerModal from '@/components/MediaPickerModal';
 import Showcase3DPreview, { MappedPreviewSector } from './Showcase3DPreview';
 import SaaSCMSHeroForm from './SaaSCMSHeroForm';
@@ -18,13 +18,16 @@ interface MarketingSettings {
   hero_subtitle: string;
   logo_svg?: string | null;
   primary_color?: string | null;
+  secondary_color?: string | null;
+  tertiary_color?: string | null;
+  font_family?: string | null;
   seo_title?: string | null;
   seo_description?: string | null;
   seo_keywords?: string | null;
 }
 
 export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
-  const [subTab, setSubTab] = useState<'hero' | 'sectors' | 'branding'>('hero');
+  const [subTab, setSubTab] = useState<'hero' | 'sectors' | 'branding' | 'seo'>('hero');
   const [loading, setLoading] = useState(false);
   
   // Settings state
@@ -33,6 +36,9 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
     hero_subtitle: 'Diseñado exclusivamente para centros de estética, wellness, spas y salones premium independientes.',
     logo_svg: null,
     primary_color: '#3b82f6',
+    secondary_color: '#1c1917',
+    tertiary_color: '#d4af37',
+    font_family: 'playfair_inter',
     seo_title: '',
     seo_description: '',
     seo_keywords: ''
@@ -134,7 +140,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingSettings(true);
-    const toastId = toast.loading('Guardando textos de portada...');
+    const toastId = toast.loading('Guardando configuración...');
     try {
       const response = await fetch(`${API_URL}/super-admin/marketing/settings`, {
         method: 'PUT',
@@ -147,10 +153,10 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
       if (!response.ok) throw new Error('Error al guardar ajustes de marketing');
       const data = await response.json();
       setSettings(data);
-      toast.success('¡Textos de portada actualizados con éxito!', { id: toastId });
+      toast.success('¡Ajustes de la plataforma actualizados con éxito!', { id: toastId });
     } catch (err: any) {
       console.error(err);
-      toast.error('Error al guardar los textos de la landing.', { id: toastId });
+      toast.error('Error al guardar los ajustes de la landing.', { id: toastId });
     } finally {
       setSavingSettings(false);
     }
@@ -374,7 +380,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
         </div>
 
         {/* Tab Selectors inside Sidebar */}
-        <div className="grid grid-cols-3 border-b border-stone-100 text-center text-xs font-bold text-stone-400 bg-stone-50/50 font-sans shrink-0">
+        <div className="grid grid-cols-4 border-b border-stone-100 text-center text-[10px] md:text-xs font-bold text-stone-400 bg-stone-50/50 font-sans shrink-0">
           <button 
             onClick={() => {
               setSubTab('hero');
@@ -405,12 +411,25 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
               setEditingSector(null);
               setIsAddingSector(false);
             }}
-            className={`py-3.5 transition-colors flex items-center justify-center gap-1 ${
+            className={`py-3.5 border-r border-stone-100 transition-colors flex items-center justify-center gap-1 ${
               subTab === 'branding' ? 'bg-white text-stone-900 border-b-2 border-[#d4af37]' : 'hover:bg-white/50'
             }`}
           >
             <Palette className="w-3.5 h-3.5" />
             <span>Branding</span>
+          </button>
+          <button 
+            onClick={() => {
+              setSubTab('seo');
+              setEditingSector(null);
+              setIsAddingSector(false);
+            }}
+            className={`py-3.5 transition-colors flex items-center justify-center gap-1 ${
+              subTab === 'seo' ? 'bg-white text-stone-900 border-b-2 border-[#d4af37]' : 'hover:bg-white/50'
+            }`}
+          >
+            <Globe className="w-3.5 h-3.5" />
+            <span>SEO</span>
           </button>
         </div>
 
@@ -449,7 +468,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
             </div>
           )}
 
-          {/* C. BRANDING & SEO FORM */}
+          {/* C. BRANDING FORM */}
           {subTab === 'branding' && (
             <div className="p-6 space-y-6">
               <div className="bg-stone-50 border border-stone-200 p-4 rounded-xl space-y-1">
@@ -457,7 +476,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                   <Palette className="w-3.5 h-3.5 text-stone-600" /> Branding & Identidad Visual
                 </h4>
                 <p className="text-[10px] text-stone-500 leading-relaxed font-medium">
-                  Configura los colores corporativos, sube tu logotipo SVG personalizado y ajusta los parámetros de indexación de Google para la landing corporativa.
+                  Configura la paleta de colores de alta gama, tipografía y sube tu logotipo SVG personalizado para el SaaS.
                 </p>
               </div>
 
@@ -468,25 +487,94 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                 </div>
               ) : (
                 <form onSubmit={handleSaveSettings} className="space-y-6 select-text">
-                  {/* Color Selector */}
+                  {/* Curated Typography Dropdown */}
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest block">
-                      Color de Acento Primario
+                      Tipografía Corporativa
                     </label>
-                    <div className="flex items-center gap-3">
-                      <input 
-                        type="color" 
-                        value={settings.primary_color || '#3b82f6'} 
-                        onChange={(e) => setSettings(prev => ({ ...prev, primary_color: e.target.value }))}
-                        className="w-10 h-10 border border-stone-200 rounded-xl cursor-pointer bg-transparent outline-none"
-                      />
-                      <input 
-                        type="text" 
-                        value={settings.primary_color || '#3b82f6'} 
-                        onChange={(e) => setSettings(prev => ({ ...prev, primary_color: e.target.value }))}
-                        placeholder="#3b82f6"
-                        className="flex-1 px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-900 transition-colors text-xs font-mono"
-                      />
+                    <select
+                      value={settings.font_family || 'playfair_inter'}
+                      onChange={(e) => setSettings(prev => ({ ...prev, font_family: e.target.value }))}
+                      className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-900 transition-colors text-xs font-sans appearance-none cursor-pointer"
+                    >
+                      <option value="playfair_inter">Playfair Display & Inter (Serif de Lujo + Sans Limpia)</option>
+                      <option value="outfit">Outfit (Geométrica Moderna)</option>
+                      <option value="cormorant_montserrat">Cormorant Garamond & Montserrat (Boutique de Lujo)</option>
+                      <option value="cinzel_roboto">Cinzel & Roboto (Serif Imperial + Tech Sans)</option>
+                      <option value="inter">Inter (Estética Pura SaaS/Minimalista)</option>
+                    </select>
+                  </div>
+
+                  {/* 3 Colors Selectors */}
+                  <div className="space-y-4">
+                    <h5 className="text-[10px] font-bold text-stone-550 uppercase tracking-widest border-b border-stone-100 pb-1.5">
+                      Paleta de Colores de la Landing
+                    </h5>
+                    
+                    {/* Primary Color */}
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-bold text-stone-400 uppercase tracking-wider block">
+                        Color Primario (Botones y Enlaces)
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <input 
+                          type="color" 
+                          value={settings.primary_color || '#3b82f6'} 
+                          onChange={(e) => setSettings(prev => ({ ...prev, primary_color: e.target.value }))}
+                          className="w-8 h-8 border border-stone-200 rounded-lg cursor-pointer bg-transparent outline-none"
+                        />
+                        <input 
+                          type="text" 
+                          value={settings.primary_color || '#3b82f6'} 
+                          onChange={(e) => setSettings(prev => ({ ...prev, primary_color: e.target.value }))}
+                          placeholder="#3b82f6"
+                          className="flex-1 px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-900 transition-colors text-xxs font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Secondary Color */}
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-bold text-stone-400 uppercase tracking-wider block">
+                        Color Secundario (Textos y Fondos)
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <input 
+                          type="color" 
+                          value={settings.secondary_color || '#1c1917'} 
+                          onChange={(e) => setSettings(prev => ({ ...prev, secondary_color: e.target.value }))}
+                          className="w-8 h-8 border border-stone-200 rounded-lg cursor-pointer bg-transparent outline-none"
+                        />
+                        <input 
+                          type="text" 
+                          value={settings.secondary_color || '#1c1917'} 
+                          onChange={(e) => setSettings(prev => ({ ...prev, secondary_color: e.target.value }))}
+                          placeholder="#1c1917"
+                          className="flex-1 px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-900 transition-colors text-xxs font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Tertiary Color */}
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-bold text-stone-400 uppercase tracking-wider block">
+                        Color Terciario (Detalles e Indicadores)
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <input 
+                          type="color" 
+                          value={settings.tertiary_color || '#d4af37'} 
+                          onChange={(e) => setSettings(prev => ({ ...prev, tertiary_color: e.target.value }))}
+                          className="w-8 h-8 border border-stone-200 rounded-lg cursor-pointer bg-transparent outline-none"
+                        />
+                        <input 
+                          type="text" 
+                          value={settings.tertiary_color || '#d4af37'} 
+                          onChange={(e) => setSettings(prev => ({ ...prev, tertiary_color: e.target.value }))}
+                          placeholder="#d4af37"
+                          className="flex-1 px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-900 transition-colors text-xxs font-mono"
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -494,7 +582,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest block flex justify-between items-center">
                       <span>Logotipo Corporativo (Código SVG)</span>
-                      <span className="text-[9px] text-stone-450 normal-case">Pega el código XML o arrastra un archivo .svg</span>
+                      <span className="text-[9px] text-stone-450 normal-case">Pega el XML o arrastra un .svg</span>
                     </label>
 
                     {/* SVG Dropzone / File Uploader */}
@@ -527,7 +615,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                     </div>
 
                     <textarea 
-                      rows={6}
+                      rows={5}
                       value={settings.logo_svg || ''}
                       onChange={(e) => setSettings(prev => ({ ...prev, logo_svg: e.target.value }))}
                       placeholder="<svg ...> ... </svg>"
@@ -547,6 +635,37 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                     )}
                   </div>
 
+                  <button 
+                    type="submit"
+                    disabled={savingSettings}
+                    className="w-full bg-stone-950 hover:bg-[#d4af37] text-white py-3 rounded-xl text-xxs font-black uppercase tracking-widest transition-all duration-300 shadow-sm active:scale-98"
+                  >
+                    {savingSettings ? 'Guardando Ajustes...' : 'Guardar Branding'}
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
+
+          {/* D. SEO METADATA FORM */}
+          {subTab === 'seo' && (
+            <div className="p-6 space-y-6">
+              <div className="bg-stone-50 border border-stone-200 p-4 rounded-xl space-y-1">
+                <h4 className="text-xs font-bold text-stone-700 flex items-center gap-1.5">
+                  <Globe className="w-3.5 h-3.5 text-stone-600" /> Posicionamiento en Buscadores (SEO)
+                </h4>
+                <p className="text-[10px] text-stone-500 leading-relaxed font-medium">
+                  Optimiza la indexación del SaaS corporativo de ProBookia en buscadores de Google, Bing y redes sociales.
+                </p>
+              </div>
+
+              {loading ? (
+                <div className="space-y-4 animate-pulse">
+                  <div className="h-4 w-32 bg-stone-100 rounded"></div>
+                  <div className="h-10 w-full bg-stone-100 rounded-xl"></div>
+                </div>
+              ) : (
+                <form onSubmit={handleSaveSettings} className="space-y-6 select-text">
                   {/* SEO Title */}
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest block">
@@ -567,7 +686,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                       Meta Descripción (SEO Description)
                     </label>
                     <textarea 
-                      rows={3}
+                      rows={4}
                       value={settings.seo_description || ''}
                       onChange={(e) => setSettings(prev => ({ ...prev, seo_description: e.target.value }))}
                       placeholder="Describe tu plataforma para los buscadores de Google..."
@@ -594,7 +713,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                     disabled={savingSettings}
                     className="w-full bg-stone-950 hover:bg-[#d4af37] text-white py-3 rounded-xl text-xxs font-black uppercase tracking-widest transition-all duration-300 shadow-sm active:scale-98"
                   >
-                    {savingSettings ? 'Guardando Ajustes...' : 'Guardar Branding & SEO'}
+                    {savingSettings ? 'Guardando Ajustes...' : 'Guardar SEO'}
                   </button>
                 </form>
               )}

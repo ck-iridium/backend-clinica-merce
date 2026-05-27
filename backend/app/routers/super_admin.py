@@ -272,6 +272,9 @@ class LandingMarketingSettingsOut(BaseModel):
     hero_subtitle: str
     logo_svg: Optional[str] = None
     primary_color: Optional[str] = None
+    secondary_color: Optional[str] = None
+    tertiary_color: Optional[str] = None
+    font_family: Optional[str] = None
     seo_title: Optional[str] = None
     seo_description: Optional[str] = None
     seo_keywords: Optional[str] = None
@@ -285,6 +288,9 @@ class LandingMarketingSettingsUpdate(BaseModel):
     hero_subtitle: str
     logo_svg: Optional[str] = None
     primary_color: Optional[str] = None
+    secondary_color: Optional[str] = None
+    tertiary_color: Optional[str] = None
+    font_family: Optional[str] = None
     seo_title: Optional[str] = None
     seo_description: Optional[str] = None
     seo_keywords: Optional[str] = None
@@ -336,6 +342,9 @@ def get_public_marketing_content(db: Session = Depends(database.get_db)):
             "hero_subtitle": settings.hero_subtitle,
             "logo_svg": settings.logo_svg,
             "primary_color": settings.primary_color,
+            "secondary_color": settings.secondary_color,
+            "tertiary_color": settings.tertiary_color,
+            "font_family": settings.font_family,
             "seo_title": settings.seo_title,
             "seo_description": settings.seo_description,
             "seo_keywords": settings.seo_keywords
@@ -383,6 +392,9 @@ def update_marketing_settings(
     settings.hero_subtitle = payload.hero_subtitle
     settings.logo_svg = payload.logo_svg
     settings.primary_color = payload.primary_color
+    settings.secondary_color = payload.secondary_color
+    settings.tertiary_color = payload.tertiary_color
+    settings.font_family = payload.font_family
     settings.seo_title = payload.seo_title
     settings.seo_description = payload.seo_description
     settings.seo_keywords = payload.seo_keywords

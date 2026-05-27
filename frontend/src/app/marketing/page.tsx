@@ -65,6 +65,9 @@ export default function MarketingPage() {
   // Estados de Branding y SEO dinámicos del SaaS ProBookia
   const [logoSvg, setLogoSvg] = useState<string | null>(null);
   const [primaryColor, setPrimaryColor] = useState('#3b82f6');
+  const [secondaryColor, setSecondaryColor] = useState('#1c1917');
+  const [tertiaryColor, setTertiaryColor] = useState('#d4af37');
+  const [fontFamily, setFontFamily] = useState('playfair_inter');
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [animating, setAnimating] = useState(false);
@@ -101,6 +104,9 @@ export default function MarketingPage() {
           if (data.settings.hero_subtitle) setHeroSubtitle(data.settings.hero_subtitle);
           if (data.settings.logo_svg) setLogoSvg(data.settings.logo_svg);
           if (data.settings.primary_color) setPrimaryColor(data.settings.primary_color);
+          if (data.settings.secondary_color) setSecondaryColor(data.settings.secondary_color);
+          if (data.settings.tertiary_color) setTertiaryColor(data.settings.tertiary_color);
+          if (data.settings.font_family) setFontFamily(data.settings.font_family);
           
           // Inyección dinámica de SEO en el Cliente (Document Headers)
           if (data.settings.seo_title) {
@@ -167,9 +173,43 @@ export default function MarketingPage() {
 
   return (
     <div 
-      style={{ '--primary-accent': primaryColor } as React.CSSProperties}
+      style={{ 
+        '--primary-accent': primaryColor,
+        '--secondary-accent': secondaryColor,
+        '--tertiary-accent': tertiaryColor 
+      } as React.CSSProperties}
       className="min-h-screen bg-white text-stone-900 font-sans selection:bg-[#d4af37]/20 overflow-x-hidden relative transition-colors duration-300"
     >
+      
+      {/* Inyección dinámica de Google Fonts y Clases Tipográficas */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@100..900&family=Outfit:wght@100..900&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Montserrat:wght@100..900&family=Cinzel:wght@400..900&family=Roboto:wght@100..900&display=swap');
+        
+        :root {
+          --font-serif: ${
+            fontFamily === 'playfair_inter' ? "'Playfair Display', serif" :
+            fontFamily === 'outfit' ? "'Outfit', sans-serif" :
+            fontFamily === 'cormorant_montserrat' ? "'Cormorant Garamond', serif" :
+            fontFamily === 'cinzel_roboto' ? "'Cinzel', serif" :
+            "'Inter', sans-serif"
+          };
+          --font-sans: ${
+            fontFamily === 'playfair_inter' ? "'Inter', sans-serif" :
+            fontFamily === 'outfit' ? "'Outfit', sans-serif" :
+            fontFamily === 'cormorant_montserrat' ? "'Montserrat', sans-serif" :
+            fontFamily === 'cinzel_roboto' ? "'Roboto', sans-serif" :
+            "'Inter', sans-serif"
+          };
+        }
+        
+        .font-serif {
+          font-family: var(--font-serif) !important;
+        }
+        
+        .font-sans, body, html, button, input, select, textarea {
+          font-family: var(--font-sans) !important;
+        }
+      ` }} />
       
       {/* 1. STICKY HEADER EDITORIAL */}
       <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-stone-100 py-1 transition-all duration-300">
@@ -182,7 +222,7 @@ export default function MarketingPage() {
               />
             ) : (
               <span className="text-xl md:text-2.5xl font-serif tracking-widest text-stone-950 font-semibold select-none">
-                PROBOOKIA <span style={{ color: primaryColor }} className="font-sans text-[10px] font-black tracking-[0.25em] uppercase ml-1">SaaS</span>
+                PROBOOKIA <span style={{ color: tertiaryColor }} className="font-sans text-[10px] font-black tracking-[0.25em] uppercase ml-1">SaaS</span>
               </span>
             )}
           </div>
@@ -216,7 +256,7 @@ export default function MarketingPage() {
       <section className="relative pt-20 pb-20 md:pt-36 md:pb-32 bg-white">
         <div className="max-w-7xl mx-auto px-6 relative z-10 text-center animate-in fade-in slide-in-from-bottom-6 duration-1000">
           <div className="inline-flex items-center gap-2 bg-stone-50 border border-stone-200/60 text-stone-500 px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase mb-8 shadow-sm">
-            <Sparkles className="w-3 h-3" style={{ color: primaryColor }} /> EL NUEVO ESTÁNDAR PARA CENTROS Y SALONES DE LUJO
+            <Sparkles className="w-3 h-3" style={{ color: tertiaryColor }} /> EL NUEVO ESTÁNDAR PARA CENTROS Y SALONES DE LUJO
           </div>
           
           <h1 
@@ -231,7 +271,8 @@ export default function MarketingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button 
               onClick={() => handleOpenOnboarding('pro')}
-              className="w-full sm:w-auto bg-stone-950 hover:bg-stone-900 text-white px-8 py-4 rounded-xl text-xs font-bold shadow-md transition-all duration-300 flex items-center justify-center gap-2 group active:scale-95"
+              style={{ backgroundColor: primaryColor }}
+              className="w-full sm:w-auto hover:opacity-90 text-white px-8 py-4 rounded-xl text-xs font-bold shadow-md transition-all duration-300 flex items-center justify-center gap-2 group active:scale-95"
             >
               Comenzar Prueba Gratuita <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
@@ -259,7 +300,7 @@ export default function MarketingPage() {
         <div className="max-w-7xl mx-auto px-6">
           
           <div className="text-center max-w-2xl mx-auto mb-24">
-            <span style={{ color: primaryColor }} className="text-[10px] font-black uppercase tracking-[0.25em] block mb-3">La Diferencia ProBookia</span>
+            <span style={{ color: tertiaryColor }} className="text-[10px] font-black uppercase tracking-[0.25em] block mb-3">La Diferencia ProBookia</span>
             <h2 className="text-3xl md:text-5xl font-serif font-semibold tracking-tight text-stone-950">
               ¿Por qué ProBookia?
             </h2>
