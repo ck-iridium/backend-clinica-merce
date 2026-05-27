@@ -190,51 +190,58 @@ export default function Showcase3DPreview({
           </div>
         </div>
 
-        {/* Live Hero Header - Espacio Estable */}
-        <div className="text-center max-w-2xl mx-auto select-none mt-1 shrink-0">
-          <span style={{ color: tertiaryColor || '#d4af37' }} className="text-[9px] font-black uppercase tracking-[0.25em] block mb-0.5 preview-sans">
-            Especialidades
-          </span>
-          <h2 className="text-xl md:text-2xl font-serif font-bold tracking-tight text-stone-950 leading-snug mb-1 transition-all duration-300 preview-serif">
-            {heroTitle || 'Sectores de Alta Gama'}
-          </h2>
-          <p className="text-[10px] text-stone-500 font-medium leading-relaxed max-w-md mx-auto transition-all duration-300 preview-sans">
-            {heroSubtitle || 'Interactúa con el carrusel en anillo 3D tridimensional de alta precisión.'}
-          </p>
-        </div>
-
-        {/* ROTATING HERO SLIDESHOW MOCKUP - Elegant Glass Frame */}
-        {heroImages.length > 0 && (
-          <div className="w-full max-w-lg mx-auto my-3 shrink-0 select-none px-4 z-10 animate-fade-in">
-            <div className="relative aspect-[21/9] w-full bg-stone-50 rounded-2xl overflow-hidden border border-stone-200/50 shadow-md">
+        {/* Mock Landing Hero Wrapper with Background slideshow & Light Overlay */}
+        <div className="relative w-full min-h-[190px] rounded-2xl overflow-hidden border border-stone-200/50 shadow-sm flex flex-col justify-center items-center p-6 text-center select-none shrink-0 mb-4 bg-stone-50">
+          
+          {/* Background Rotating Images inside mock Hero */}
+          {heroImages.length > 0 && (
+            <div className="absolute inset-0 w-full h-full z-0 select-none animate-fade-in">
               {heroImages.map((imgUrl, idx) => (
                 <img
                   key={idx}
                   src={imgUrl}
                   alt={`Hero Mockup ${idx}`}
                   className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-                    idx === currentHeroImageIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                    idx === currentHeroImageIndex ? 'opacity-100' : 'opacity-0'
                   }`}
                 />
               ))}
-              
-              {/* Dot Indicators */}
-              {heroImages.length > 1 && (
-                <div className="absolute bottom-2.5 inset-x-0 flex justify-center gap-1.5 z-20">
-                  {heroImages.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setCurrentHeroImageIndex(idx)}
-                      className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                        idx === currentHeroImageIndex ? 'bg-white scale-125 shadow-sm' : 'bg-white/40'
-                      }`}
-                    />
-                  ))}
-                </div>
-              )}
             </div>
+          )}
+
+          {/* Premium light overlay */}
+          <div className="absolute inset-0 bg-white/80 backdrop-blur-[2px] z-10"></div>
+
+          {/* Content layer */}
+          <div className="relative z-20 max-w-lg mx-auto flex flex-col items-center">
+            <span style={{ color: tertiaryColor || '#d4af37' }} className="text-[8px] font-black uppercase tracking-[0.25em] block mb-1 preview-sans">
+              Especialidades
+            </span>
+            <h2 className="text-base md:text-lg font-serif font-bold tracking-tight text-stone-950 leading-snug mb-1 transition-all duration-300 preview-serif">
+              {heroTitle || 'Sectores de Alta Gama'}
+            </h2>
+            <p className="text-[9px] text-stone-600 font-semibold leading-relaxed max-w-sm mx-auto transition-all duration-300 preview-sans">
+              {heroSubtitle || 'Interactúa con el carrusel en anillo 3D tridimensional de alta precisión.'}
+            </p>
+
+            {/* Bottom dots */}
+            {heroImages.length > 1 && (
+              <div className="flex justify-center gap-1.5 mt-4">
+                {heroImages.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentHeroImageIndex(idx)}
+                    className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                      idx === currentHeroImageIndex 
+                        ? 'bg-stone-950 scale-125' 
+                        : 'bg-stone-950/20 hover:bg-stone-950/40'
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
         {/* CONTENEDOR VERTICAL QUE ALINEA EL CAROUSEL Y LA INFO AL CENTRO (my-auto, justify-center) */}
         <div className="relative flex-1 flex flex-col items-center justify-center gap-4 max-w-4xl w-full mx-auto my-auto">

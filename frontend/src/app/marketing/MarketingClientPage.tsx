@@ -180,68 +180,73 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
         </div>
       </header>
 
-      {/* 2. HERO SECTION - BOUTIQUE BLANCA */}
-      <section className="relative pt-20 pb-20 md:pt-36 md:pb-32 bg-white">
-        <div className="max-w-7xl mx-auto px-6 relative z-10 text-center animate-in fade-in slide-in-from-bottom-6 duration-1000">
-          <div className="inline-flex items-center gap-2 bg-stone-50 border border-stone-200/60 text-stone-500 px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase mb-8 shadow-sm">
+      {/* 2. HERO SECTION - BOUTIQUE BLANCA FULL SCREEN BACKGROUND */}
+      <section className="relative min-h-[calc(100vh-80px)] flex flex-col items-center justify-center overflow-hidden bg-stone-50">
+        
+        {/* Full-screen rotating image background */}
+        {heroImages.length > 0 && (
+          <div className="absolute inset-0 w-full h-full z-0 select-none">
+            {heroImages.map((imgUrl, idx) => (
+              <img
+                key={idx}
+                src={imgUrl}
+                alt={`Hero Slideshow ${idx}`}
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+                  idx === currentHeroImageIndex ? 'opacity-100' : 'opacity-0'
+                }`}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Premium light overlay with very soft blur to guarantee complete text legibility */}
+        <div className="absolute inset-0 bg-white/80 backdrop-blur-[4px] z-10"></div>
+
+        {/* Hero Content Layer */}
+        <div className="max-w-7xl mx-auto px-6 py-20 relative z-20 text-center animate-in fade-in slide-in-from-bottom-6 duration-1000 flex flex-col justify-center items-center">
+          <div className="inline-flex items-center gap-2 bg-white/90 border border-stone-200/60 text-stone-600 px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase mb-8 shadow-sm backdrop-blur-sm">
             <Sparkles className="w-3 h-3" style={{ color: tertiaryColor }} /> EL NUEVO ESTÁNDAR PARA CENTROS Y SALONES DE LUJO
           </div>
           
           <h1 
-            className="text-4xl md:text-7xl font-serif font-semibold text-stone-950 tracking-tight leading-[1.1] max-w-5xl mx-auto mb-8"
+            className="text-4xl md:text-7xl font-serif font-semibold text-stone-950 tracking-tight leading-[1.1] max-w-5xl mx-auto mb-8 filter drop-shadow-sm"
             dangerouslySetInnerHTML={{ __html: heroTitle.replace(/\n/g, '<br/>') }}
           />
           
-          <p className="text-base md:text-lg text-stone-500 font-medium max-w-2xl mx-auto mb-12 leading-relaxed">
+          <p className="text-base md:text-lg text-stone-850 font-medium max-w-2xl mx-auto mb-12 leading-relaxed filter drop-shadow-sm">
             {heroSubtitle}
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
             <button 
               onClick={() => handleOpenOnboarding('pro')}
               style={{ backgroundColor: primaryColor }}
-              className="w-full sm:w-auto hover:opacity-90 text-white px-8 py-4 rounded-xl text-xs font-bold shadow-md transition-all duration-300 flex items-center justify-center gap-2 group active:scale-95"
+              className="w-full sm:w-auto hover:opacity-90 text-white px-8 py-4 rounded-xl text-xs font-bold shadow-md transition-all duration-300 flex items-center justify-center gap-2 group active:scale-95 hover:scale-105"
             >
               Comenzar Prueba Gratuita <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
             <a 
               href="#sectors" 
-              className="w-full sm:w-auto bg-white border border-stone-200/80 hover:bg-stone-50 text-stone-700 px-8 py-4 rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center"
+              className="w-full sm:w-auto bg-white/90 backdrop-blur-sm border border-stone-200/80 hover:bg-stone-50 text-stone-700 px-8 py-4 rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center hover:scale-105 shadow-sm"
             >
               Ver Sectores de Especialidad
             </a>
           </div>
 
-          {/* ROTATING HERO SLIDESHOW - Elegant Widescreen Glass Mockup */}
-          {heroImages.length > 0 && (
-            <div className="w-full max-w-4xl mx-auto mt-16 px-4 select-none animate-in fade-in zoom-in-95 duration-1000">
-              <div className="relative aspect-[21/9] w-full bg-stone-50 rounded-3xl overflow-hidden border border-stone-200/50 shadow-xl">
-                {heroImages.map((imgUrl, idx) => (
-                  <img
-                    key={idx}
-                    src={imgUrl}
-                    alt={`Hero Slideshow ${idx}`}
-                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-                      idx === currentHeroImageIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
-                    }`}
-                  />
-                ))}
-                
-                {/* Dot Indicators */}
-                {heroImages.length > 1 && (
-                  <div className="absolute bottom-4 inset-x-0 flex justify-center gap-2 z-20">
-                    {heroImages.map((_, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setCurrentHeroImageIndex(idx)}
-                        className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                          idx === currentHeroImageIndex ? 'bg-white scale-125 shadow-sm' : 'bg-white/40'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
+          {/* Premium Bottom Carousel Dot indicators inside full-screen Hero */}
+          {heroImages.length > 1 && (
+            <div className="flex justify-center gap-2 mt-16 select-none z-20">
+              {heroImages.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentHeroImageIndex(idx)}
+                  className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                    idx === currentHeroImageIndex 
+                      ? 'bg-stone-950 scale-125 shadow-sm' 
+                      : 'bg-stone-950/20 hover:bg-stone-950/40'
+                  }`}
+                />
+              ))}
             </div>
           )}
         </div>
