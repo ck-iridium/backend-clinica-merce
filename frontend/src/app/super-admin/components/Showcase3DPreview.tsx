@@ -50,6 +50,21 @@ export default function Showcase3DPreview({
   };
   const activeWeight = weightMap[fontWeightHeadings || 'semibold'] || '600';
 
+  const N_prev = previewSectors.length;
+  const realIndexPrev = N_prev > 0 ? ((previewIndex % N_prev) + N_prev) % N_prev : 0;
+
+  const handlePreviewCardClick = (targetIndex: number) => {
+    if (N_prev === 0) return;
+    const currentReal = ((previewIndex % N_prev) + N_prev) % N_prev;
+    let diff = targetIndex - currentReal;
+    if (diff > N_prev / 2) {
+      diff -= N_prev;
+    } else if (diff < -N_prev / 2) {
+      diff += N_prev;
+    }
+    handlePreviewNavigate(previewIndex + diff);
+  };
+
   return (
     <div 
       style={{ 
@@ -145,127 +160,111 @@ export default function Showcase3DPreview({
           </p>
         </div>
 
-        {/* 3D CYLINDRICAL STAGE */}
-        <div className="relative flex-1 min-h-[480px] w-full flex items-center justify-center [perspective:1200px] [perspective-origin:50%_38%] select-none overflow-hidden my-2 shrink-0">
+        {/* 3D COVERFLOW INFINITE STAGE */}
+        <div className="relative flex-1 min-h-[480px] w-full flex items-center justify-center [perspective:1000px] [transform-style:preserve-3d] select-none overflow-hidden my-2 shrink-0">
           
-          {/* Spinning Ring */}
-          <div 
-            className="relative w-[260px] h-[450px] transition-transform duration-1000 ease-out [transform-style:preserve-3d]"
-            style={{ transform: `rotateY(${previewIndex * -90}deg)` }}
-          >
-            {/* Card 0 */}
-            <div 
-              onClick={() => handlePreviewNavigate(0)}
-              className={`absolute inset-0 cursor-pointer transition-all duration-700 ease-out [backface-visibility:hidden] [transform:rotateY(0deg)_translateZ(350px)] ${
-                previewIndex === 0 ? 'scale-105 opacity-100 drop-shadow-[0_20px_40px_rgba(0,0,0,0.08)] z-20' : 'scale-95 opacity-25 hover:opacity-50 filter brightness-90 z-10'
-              }`}
-            >
-              <div className="w-full h-full bg-white rounded-3xl border border-stone-200/50 p-2.5 shadow-md relative overflow-hidden">
-                <div className="w-full h-full rounded-2xl overflow-hidden bg-stone-50 relative border border-stone-100">
-                  <video src={previewSectors[0]?.videoUrl} poster={previewSectors[0]?.imageUrl} className="w-full h-full object-cover" autoPlay={previewIndex === 0} loop muted playsInline />
-                  <div className="absolute top-4 left-4 z-10">
-                    <span 
-                      style={previewIndex === 0 ? { backgroundColor: primaryColor || '#3b82f6', borderColor: primaryColor || '#3b82f6', color: '#ffffff' } : {}}
-                      className={`border px-3 py-1 rounded-full text-[8px] font-black tracking-wider uppercase preview-sans ${
-                        previewIndex === 0 ? '' : 'bg-white/95 border-stone-200/60 text-stone-500'
-                      }`}
-                    >
-                      {previewSectors[0]?.badge}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+          {/* Card Container wrapper */}
+          <div className="relative w-[240px] h-[400px] [transform-style:preserve-3d]">
+            {previewSectors.map((sector, index) => {
+              // Circular offset for infinite loop
+              const realActive = ((previewIndex % N_prev) + N_prev) % N_prev;
+              let offset = index - realActive;
+              if (offset > N_prev / 2) {
+                offset -= N_prev;
+              } else if (offset < -N_prev / 2) {
+                offset += N_prev;
+              }
 
-            {/* Card 1 */}
-            <div 
-              onClick={() => handlePreviewNavigate(1)}
-              className={`absolute inset-0 cursor-pointer transition-all duration-700 ease-out [backface-visibility:hidden] [transform:rotateY(90deg)_translateZ(350px)] ${
-                previewIndex === 1 ? 'scale-105 opacity-100 drop-shadow-[0_20px_40px_rgba(0,0,0,0.08)] z-20' : 'scale-95 opacity-25 hover:opacity-50 filter brightness-90 z-10'
-              }`}
-            >
-              <div className="w-full h-full bg-white rounded-3xl border border-stone-200/50 p-2.5 shadow-md relative overflow-hidden">
-                <div className="w-full h-full rounded-2xl overflow-hidden bg-stone-50 relative border border-stone-100">
-                  <video src={previewSectors[1]?.videoUrl} poster={previewSectors[1]?.imageUrl} className="w-full h-full object-cover" autoPlay={previewIndex === 1} loop muted playsInline />
-                  <div className="absolute top-4 left-4 z-10">
-                    <span 
-                      style={previewIndex === 1 ? { backgroundColor: primaryColor || '#3b82f6', borderColor: primaryColor || '#3b82f6', color: '#ffffff' } : {}}
-                      className={`border px-3 py-1 rounded-full text-[8px] font-black tracking-wider uppercase preview-sans ${
-                        previewIndex === 1 ? '' : 'bg-white/95 border-stone-200/60 text-stone-500'
-                      }`}
-                    >
-                      {previewSectors[1]?.badge}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+              // Transform configurations based on offset
+              let transformStr = "";
+              let zIndex = 0;
+              let opacity = 1;
+              let pointerEvents: "auto" | "none" = "auto";
 
-            {/* Card 2 */}
-            <div 
-              onClick={() => handlePreviewNavigate(2)}
-              className={`absolute inset-0 cursor-pointer transition-all duration-700 ease-out [backface-visibility:hidden] [transform:rotateY(180deg)_translateZ(350px)] ${
-                previewIndex === 2 ? 'scale-105 opacity-100 drop-shadow-[0_20px_40px_rgba(0,0,0,0.08)] z-20' : 'scale-95 opacity-25 hover:opacity-50 filter brightness-90 z-10'
-              }`}
-            >
-              <div className="w-full h-full bg-white rounded-3xl border border-stone-200/50 p-2.5 shadow-md relative overflow-hidden">
-                <div className="w-full h-full rounded-2xl overflow-hidden bg-stone-50 relative border border-stone-100">
-                  <video src={previewSectors[2]?.videoUrl} poster={previewSectors[2]?.imageUrl} className="w-full h-full object-cover" autoPlay={previewIndex === 2} loop muted playsInline />
-                  <div className="absolute top-4 left-4 z-10">
-                    <span 
-                      style={previewIndex === 2 ? { backgroundColor: primaryColor || '#3b82f6', borderColor: primaryColor || '#3b82f6', color: '#ffffff' } : {}}
-                      className={`border px-3 py-1 rounded-full text-[8px] font-black tracking-wider uppercase preview-sans ${
-                        previewIndex === 2 ? '' : 'bg-white/95 border-stone-200/60 text-stone-500'
-                      }`}
-                    >
-                      {previewSectors[2]?.badge}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+              if (offset === 0) {
+                transformStr = "translateX(0) scale(1) rotateY(0deg)";
+                zIndex = 30;
+                opacity = 1;
+              } else if (offset === 1) {
+                transformStr = "translateX(60%) scale(0.85) rotateY(-15deg)";
+                zIndex = 20;
+                opacity = 0.8;
+              } else if (offset === -1) {
+                transformStr = "translateX(-60%) scale(0.85) rotateY(15deg)";
+                zIndex = 20;
+                opacity = 0.8;
+              } else if (offset === 2) {
+                transformStr = "translateX(110%) scale(0.7) rotateY(-25deg)";
+                zIndex = 10;
+                opacity = 0.5;
+              } else if (offset === -2) {
+                transformStr = "translateX(-110%) scale(0.7) rotateY(25deg)";
+                zIndex = 10;
+                opacity = 0.5;
+              } else {
+                transformStr = `translateX(${offset * 100}%) scale(0.5) rotateY(0deg)`;
+                zIndex = 0;
+                opacity = 0;
+                pointerEvents = "none";
+              }
 
-            {/* Card 3 */}
-            <div 
-              onClick={() => handlePreviewNavigate(3)}
-              className={`absolute inset-0 cursor-pointer transition-all duration-700 ease-out [backface-visibility:hidden] [transform:rotateY(270deg)_translateZ(350px)] ${
-                previewIndex === 3 ? 'scale-105 opacity-100 drop-shadow-[0_20px_40px_rgba(0,0,0,0.08)] z-20' : 'scale-95 opacity-25 hover:opacity-50 filter brightness-90 z-10'
-              }`}
-            >
-              <div className="w-full h-full bg-white rounded-3xl border border-stone-200/50 p-2.5 shadow-md relative overflow-hidden">
-                <div className="w-full h-full rounded-2xl overflow-hidden bg-stone-50 relative border border-stone-100">
-                  <video src={previewSectors[3]?.videoUrl} poster={previewSectors[3]?.imageUrl} className="w-full h-full object-cover" autoPlay={previewIndex === 3} loop muted playsInline />
-                  <div className="absolute top-4 left-4 z-10">
-                    <span 
-                      style={previewIndex === 3 ? { backgroundColor: primaryColor || '#3b82f6', borderColor: primaryColor || '#3b82f6', color: '#ffffff' } : {}}
-                      className={`border px-3 py-1 rounded-full text-[8px] font-black tracking-wider uppercase preview-sans ${
-                        previewIndex === 3 ? '' : 'bg-white/95 border-stone-200/60 text-stone-500'
-                      }`}
-                    >
-                      {previewSectors[3]?.badge}
-                    </span>
+              const isActive = offset === 0;
+
+              return (
+                <div
+                  key={sector.id}
+                  onClick={() => handlePreviewCardClick(index)}
+                  style={{
+                    transform: transformStr,
+                    zIndex: zIndex,
+                    opacity: opacity,
+                    pointerEvents: pointerEvents,
+                    transition: "all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)"
+                  }}
+                  className={`absolute inset-0 cursor-pointer [backface-visibility:hidden] select-none ${
+                    isActive 
+                      ? 'drop-shadow-[0_20px_40px_rgba(0,0,0,0.12)] scale-105' 
+                      : 'filter brightness-90 hover:brightness-100 hover:opacity-90'
+                  }`}
+                >
+                  <div className="w-full h-full bg-white rounded-3xl border border-stone-200/50 p-2.5 shadow-md relative overflow-hidden">
+                    <div className="w-full h-full rounded-2xl overflow-hidden bg-stone-50 relative border border-stone-100">
+                      <video 
+                        src={sector.videoUrl} 
+                        poster={sector.imageUrl} 
+                        className="w-full h-full object-cover" 
+                        autoPlay={isActive} 
+                        loop 
+                        muted 
+                        playsInline 
+                      />
+                      <div className="absolute top-4 left-4 z-10">
+                        <span 
+                          style={isActive ? { backgroundColor: primaryColor || '#3b82f6', borderColor: primaryColor || '#3b82f6', color: '#ffffff' } : {}}
+                          className={`border px-3 py-1 rounded-full text-[8px] font-black tracking-wider uppercase preview-sans ${
+                            isActive ? '' : 'bg-white/95 border-stone-200/60 text-stone-500'
+                          }`}
+                        >
+                          {sector.badge}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
 
           {/* Lateral arrows */}
           <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-12 pointer-events-none z-20">
             <button
-              onClick={() => {
-                const prevIndex = (previewIndex - 1 + 4) % 4;
-                handlePreviewNavigate(prevIndex);
-              }}
+              onClick={() => handlePreviewNavigate(previewIndex - 1)}
               className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm border border-stone-200/60 hover:bg-stone-50 flex items-center justify-center text-stone-700 shadow-lg active:scale-95 pointer-events-auto transition-transform"
             >
               <ChevronRight className="w-5 h-5 rotate-180" />
             </button>
             <button
-              onClick={() => {
-                const nextIndex = (previewIndex + 1) % 4;
-                handlePreviewNavigate(nextIndex);
-              }}
+              onClick={() => handlePreviewNavigate(previewIndex + 1)}
               className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm border border-stone-200/60 hover:bg-stone-50 flex items-center justify-center text-stone-700 shadow-lg active:scale-95 pointer-events-auto transition-transform"
             >
               <ChevronRight className="w-5 h-5" />
@@ -273,18 +272,18 @@ export default function Showcase3DPreview({
           </div>
 
           {/* Sliding Sheet Details Panel */}
-          {previewSectors[previewIndex] && (
+          {previewSectors[realIndexPrev] && (
             <div className={`absolute bottom-4 max-w-sm w-full bg-white/90 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-stone-100/80 transition-all duration-500 transform z-30 select-none text-center ${
               previewAnimating ? 'translate-y-6 opacity-0' : 'translate-y-0 opacity-100'
             }`}>
               <span style={{ color: tertiaryColor || '#d4af37' }} className="text-[8.5px] uppercase font-black tracking-[0.15em] block mb-1 preview-sans">
-                {previewSectors[previewIndex]?.badge}
+                {previewSectors[realIndexPrev]?.badge}
               </span>
               <h4 className="font-serif text-base text-stone-900 font-bold mb-1.5 leading-tight preview-serif">
-                {previewSectors[previewIndex]?.title}
+                {previewSectors[realIndexPrev]?.title}
               </h4>
               <p className="text-stone-500 text-[10px] md:text-xs leading-relaxed mb-4 preview-sans">
-                {previewSectors[previewIndex]?.copy}
+                {previewSectors[realIndexPrev]?.copy}
               </p>
               <button 
                 style={{ backgroundColor: primaryColor || '#3b82f6' }}
