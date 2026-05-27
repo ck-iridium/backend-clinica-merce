@@ -492,6 +492,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                     >
                       <option value="playfair_inter">Playfair Display & Inter (Serif de Lujo + Sans Limpia)</option>
                       <option value="outfit">Outfit (Geométrica Moderna)</option>
+                      <option value="fredoka">Fredoka (Amigable & Redondeada)</option>
                       <option value="cormorant_montserrat">Cormorant Garamond & Montserrat (Boutique de Lujo)</option>
                       <option value="cinzel_roboto">Cinzel & Roboto (Serif Imperial + Tech Sans)</option>
                       <option value="inter">Inter (Estética Pura SaaS/Minimalista)</option>

@@ -50,12 +50,13 @@ export default function Showcase3DPreview({
     >
       {/* Inyección dinámica de Google Fonts para la previsualización del cliente */}
       <style dangerouslySetInnerHTML={{ __html: `
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@100..900&family=Outfit:wght@100..900&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Montserrat:wght@100..900&family=Cinzel:wght@400..900&family=Roboto:wght@100..900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@100..900&family=Outfit:wght@100..900&family=Fredoka:wght@300..700&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Montserrat:wght@100..900&family=Cinzel:wght@400..900&family=Roboto:wght@100..900&display=swap');
         
         .preview-serif {
           font-family: ${
             fontFamily === 'playfair_inter' ? "'Playfair Display', serif" :
             fontFamily === 'outfit' ? "'Outfit', sans-serif" :
+            fontFamily === 'fredoka' ? "'Fredoka', sans-serif" :
             fontFamily === 'cormorant_montserrat' ? "'Cormorant Garamond', serif" :
             fontFamily === 'cinzel_roboto' ? "'Cinzel', serif" :
             "'Inter', sans-serif"
@@ -66,6 +67,7 @@ export default function Showcase3DPreview({
           font-family: ${
             fontFamily === 'playfair_inter' ? "'Inter', sans-serif" :
             fontFamily === 'outfit' ? "'Outfit', sans-serif" :
+            fontFamily === 'fredoka' ? "'Fredoka', sans-serif" :
             fontFamily === 'cormorant_montserrat' ? "'Montserrat', sans-serif" :
             fontFamily === 'cinzel_roboto' ? "'Roboto', sans-serif" :
             "'Inter', sans-serif"
