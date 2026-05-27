@@ -9,6 +9,9 @@ export default async function Page() {
   const defaultSettings = {
     hero_title: 'La elegancia de tu negocio traducida en un SaaS de Lujo',
     hero_subtitle: 'Diseñado exclusivamente para centros de estética, wellness, spas y salones premium independientes. Agendas fluidas, expedientes médicos asimétricos y reservas de doble opt-in integradas en una experiencia sublime.',
+    hero_image_1: null as string | null,
+    hero_image_2: null as string | null,
+    hero_image_3: null as string | null,
     logo_svg: null as string | null,
     primary_color: '#3b82f6',
     secondary_color: '#1c1917',
