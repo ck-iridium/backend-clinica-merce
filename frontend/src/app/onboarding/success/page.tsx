@@ -62,6 +62,7 @@ function OnboardingContent() {
         tenant_name: searchParams.get('tenant_name'),
         admin_email: searchParams.get('admin_email'),
         admin_name: searchParams.get('admin_name'),
+        admin_password: searchParams.get('admin_password'),
       };
       setTenantData(data);
       setClinicName(data.tenant_name || '');
@@ -175,46 +176,23 @@ function OnboardingContent() {
 
       const setupResult = await setupResponse.json();
 
-      // 2. Autenticar silenciosamente en Supabase para una UX de fricción cero
-      toast.loading('Iniciando sesión en tu nuevo espacio...', { id: setupToast });
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: tenantData.admin_email,
-        password: tenantData.admin_password
-      });
-
-      if (authError) {
-        console.error('Error in silent auto-login:', authError);
-        toast.success('¡Espacio creado! Por favor inicia sesión con tu correo.', { id: setupToast });
-        router.push('/login');
-        return;
-      }
-
-      // Guardar sesión en localStorage igual que en LoginPage
-      const userPayload = {
-        email: authData.user.email,
-        id: authData.user.id,
-        access_token: authData.session.access_token
-      };
-      localStorage.setItem('user', JSON.stringify(userPayload));
-
       // Determinar dominio de redirección
       const hostname = window.location.hostname;
       const protocol = window.location.protocol;
       
       toast.success('¡Configuración completada con éxito! Bienvenido a ProBookia.', { id: setupToast });
 
-      // Redirigir según subdominio
+      // Redirigir al login de su subdominio dedicado pre-rellenando el correo para una UX sin fricciones
       setTimeout(() => {
+        let redirectUrl = '/login';
         if (hostname === 'localhost' || hostname === '127.0.0.1') {
-          // Desarrollo local
-          window.location.href = `${protocol}//${setupResult.tenant_slug}.localhost:3000/dashboard`;
+          redirectUrl = `${protocol}//${setupResult.tenant_slug}.localhost:3000/login?email=${encodeURIComponent(tenantData.admin_email)}&welcome=true`;
         } else if (hostname.endsWith('.probookia.com')) {
-          // Entorno staging/producción con subdominio activo
-          window.location.href = `${protocol}//${setupResult.tenant_slug}.probookia.com/dashboard`;
+          redirectUrl = `${protocol}//${setupResult.tenant_slug}.probookia.com/login?email=${encodeURIComponent(tenantData.admin_email)}&welcome=true`;
         } else {
-          // Fallback a ruta estándar
-          router.push('/dashboard');
+          redirectUrl = `/login?email=${encodeURIComponent(tenantData.admin_email)}&welcome=true`;
         }
+        window.location.href = redirectUrl;
       }, 1500);
 
     } catch (err: any) {

@@ -16,6 +16,16 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const emailParam = params.get('email');
+      if (emailParam) {
+        setEmail(emailParam);
+      }
+      const welcomeParam = params.get('welcome');
+      if (welcomeParam === 'true') {
+        setSuccess('¡Tu portal de reservas está activo! Por seguridad, introduce tu contraseña para acceder.');
+      }
+
       const hostname = window.location.hostname.toLowerCase();
       if (hostname.includes('.localhost') && hostname !== 'localhost') {
         const sub = hostname.split('.')[0];

@@ -121,7 +121,7 @@ def create_onboarding_session(request: OnboardingSessionRequest, req: Request):
                 stripe_subscription_id=None,
                 plan_type="free"
             )
-            redirect_url = f"{frontend_url}/onboarding/success?free_success=true&tenant_id={tenant.id}&tenant_slug={tenant.slug}&tenant_name={tenant.name}&admin_email={request.admin_email}&admin_name={request.admin_name}"
+            redirect_url = f"{frontend_url}/onboarding/success?free_success=true&tenant_id={tenant.id}&tenant_slug={tenant.slug}&tenant_name={tenant.name}&admin_email={request.admin_email}&admin_name={request.admin_name}&admin_password={request.admin_password}"
             return {"url": redirect_url}
             
     finally:
