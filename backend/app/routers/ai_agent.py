@@ -31,24 +31,38 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
     if not tenant_id:
         raise HTTPException(status_code=400, detail="Falta la cabecera del identificador de inquilino (tenant_id)")
 
-    # Blindaje de Seguridad: Doble Verificación del Plan Gold o BYOK
+    # Recuperar Tenant y ClinicSettings
     tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
     if not tenant:
         raise HTTPException(status_code=404, detail="Inquilino no encontrado")
         
     plan = (tenant.plan_type or "free").lower()
-    if plan != "gold":
-        settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).first()
-        if not settings or not settings.gemini_api_key or not settings.gemini_api_key.strip():
-            # Permitir consultas de Trial si no han excedido las 10
-            queries_used = tenant.ai_trial_queries_used if hasattr(tenant, "ai_trial_queries_used") else 0
-            if queries_used is None:
-                queries_used = 0
-            if queries_used >= 10:
-                raise HTTPException(
-                    status_code=403, 
-                    detail="AI_TRIAL_EXHAUSTED"
-                )
+    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).first()
+    has_byok = settings and settings.gemini_api_key and settings.gemini_api_key.strip()
+
+    # Lazy reset de la cuota diaria de Acciones Inteligentes
+    from datetime import datetime
+    today = datetime.utcnow().date()
+    if tenant.ai_last_action_date != today:
+        tenant.ai_daily_actions_used = 0
+        tenant.ai_last_action_date = today
+        db.commit()
+
+    # Calcular límites de acciones inteligentes
+    from ..limits import PLAN_LIMITS
+    plan_limits = PLAN_LIMITS.get(plan, PLAN_LIMITS["free"])
+    daily_limit = plan_limits["ai_smart_actions_daily"]
+    
+    is_trial_mode = (plan == "free") and not has_byok
+    is_capped_mode = (plan in ["basic", "pro"]) and not has_byok
+    
+    actions_remaining = None
+    if has_byok or plan == "gold":
+        actions_remaining = 999999  # Sin límites
+    elif is_trial_mode:
+        actions_remaining = max(0, 10 - (tenant.ai_trial_queries_used or 0))
+    elif is_capped_mode:
+        actions_remaining = max(0, daily_limit - (tenant.ai_daily_actions_used or 0))
 
     # 1. Recuperar la clave API de Gemini del inquilino de forma segura
     try:
@@ -69,6 +83,28 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
     clinic_name = settings.clinic_name if settings and settings.clinic_name else None
 
     system_instruction = ai_agent_service.build_system_instruction(user_name, lang, clinic_name)
+
+    if actions_remaining is not None and actions_remaining <= 0:
+        limit_warning = ""
+        if is_trial_mode:
+            limit_warning = (
+                "\n\n[DIRECTIVA DE CONTROL CRÍTICA: LÍMITE DE PRUEBA ALCANZADO]\n"
+                "El cliente ha agotado su período de prueba único de 10 Acciones Inteligentes.\n"
+                "Tienes terminantemente prohibido invocar o ejecutar cualquier herramienta o función que modifique la base de datos o navegue (por ejemplo: crear citas, actualizar servicios, editar landing o mover servicios).\n"
+                "Si el usuario te solicita realizar alguna acción de escritura o cambio, debes responderle en un tono sumamente empático, profesional y distinguido (estilo 'Quiet Luxury'). "
+                "Explícale que ha consumido sus 10 acciones de prueba de bienvenida del plan gratuito y que debe actualizar al Plan Profesional o Gold Elite para que sigas automatizando por él de forma instantánea. "
+                "Recuérdale amablemente que el chat de consulta, preguntas y navegación es 100% gratuito e ilimitado, por lo que estarás encantado de seguir respondiendo cualquier duda que tenga sobre su negocio."
+            )
+        elif is_capped_mode:
+            limit_warning = (
+                f"\n\n[DIRECTIVA DE CONTROL CRÍTICA: LÍMITE DIARIO ALCANZADO]\n"
+                f"El cliente ha agotado su límite diario de {daily_limit} Acciones Inteligentes permitido en su plan '{plan.upper()}'.\n"
+                "Tienes terminantemente prohibido invocar o ejecutar cualquier herramienta o función que modifique la base de datos o navegue (por ejemplo: crear citas, actualizar servicios, editar landing o mover servicios).\n"
+                "Si el usuario te solicita realizar alguna acción de escritura o cambio, debes responderle en un tono sumamente empático, profesional y distinguido (estilo 'Quiet Luxury'). "
+                f"Explícale con mucha clase que ha alcanzado el límite diario de {daily_limit} acciones de su plan actual, y que si no quiere preocuparse por límites diarios puede pasarse al Plan Gold Elite (donde es ilimitado), o bien agregar su propia Gemini API Key en Ajustes. "
+                "Recuérdale que el chat de consulta es totalmente ilimitado y gratis, por lo que estarás feliz de seguir respondiendo cualquier duda o consultando su agenda sin coste alguno."
+            )
+        system_instruction += limit_warning
 
     try:
         # 1. EL CEREBRO (Gemini 2.5 Flash): Mantiene la sesión de chat con herramientas y multiturnos
@@ -127,16 +163,21 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
         # Quitar duplicados en campos actualizados si existen
         updated_fields = list(set(updated_fields))
 
-        # 2.5. Si no es Gold y está en el Trial, solo cobramos un intento si de verdad se ejecutó una acción real o navegación
-        is_trial = False
-        if plan != "gold" and (not settings or not settings.gemini_api_key or not settings.gemini_api_key.strip()):
-            is_trial = True
+        # 2.5. Lógica de cobro/incremento de Smart Actions ejecutadas
+        if not has_byok and plan != "gold":
             if updated_fields or redirect_url:
-                queries_used = tenant.ai_trial_queries_used if hasattr(tenant, "ai_trial_queries_used") else 0
-                if queries_used is None:
-                    queries_used = 0
-                tenant.ai_trial_queries_used = queries_used + 1
-                db.commit()
+                if is_trial_mode:
+                    queries_used = tenant.ai_trial_queries_used if hasattr(tenant, "ai_trial_queries_used") else 0
+                    if queries_used is None:
+                        queries_used = 0
+                    tenant.ai_trial_queries_used = queries_used + 1
+                    db.commit()
+                elif is_capped_mode:
+                    actions_used = tenant.ai_daily_actions_used if hasattr(tenant, "ai_daily_actions_used") else 0
+                    if actions_used is None:
+                        actions_used = 0
+                    tenant.ai_daily_actions_used = actions_used + 1
+                    db.commit()
 
         # 3. LA VOZ (Gemini 2.5 Flash TTS): Convierte de forma secuencial el texto en voz hiperrealista
         voice_gender = getattr(request, 'voice_gender', 'female')
@@ -147,10 +188,14 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
         clean_text = re.sub(r'\[.*?\]', '', brain_text).strip()
         clean_text = re.sub(r'\s+', ' ', clean_text)
 
-        # Calcular consultas de trial restantes
+        # Calcular acciones inteligentes restantes
         trial_remaining = None
-        if is_trial:
+        if has_byok or plan == "gold":
+            trial_remaining = 999999  # Sin límite
+        elif is_trial_mode:
             trial_remaining = max(0, 10 - (tenant.ai_trial_queries_used or 0))
+        elif is_capped_mode:
+            trial_remaining = max(0, daily_limit - (tenant.ai_daily_actions_used or 0))
 
         return schemas.AIChatResponse(
             response=clean_text,

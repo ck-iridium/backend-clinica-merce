@@ -37,6 +37,8 @@ export default function AICopilotWidget() {
   const [trialRemaining, setTrialRemaining] = useState<number | null>(null);
   const [hasOwnKey, setHasOwnKey] = useState<boolean>(false);
   const [isTrialExhausted, setIsTrialExhausted] = useState<boolean>(false);
+  const [dailyActionsUsed, setDailyActionsUsed] = useState<number>(0);
+  const [dailyActionsLimit, setDailyActionsLimit] = useState<number>(0);
 
   // Cargar límites y estado del Trial
   useEffect(() => {
@@ -82,7 +84,13 @@ export default function AICopilotWidget() {
           const remaining = Math.max(0, 10 - used);
           setTrialRemaining(remaining);
 
-          if (plan !== 'gold' && !ownKey && remaining <= 0) {
+          // Rellenar nuevos campos de acciones diarias
+          const dailyUsed = limitsData.ai_daily_actions_used ?? 0;
+          const dailyLimit = limitsData.limits?.ai_smart_actions_daily ?? 0;
+          setDailyActionsUsed(dailyUsed);
+          setDailyActionsLimit(dailyLimit);
+
+          if (plan === 'free' && !ownKey && remaining <= 0) {
             setIsTrialExhausted(true);
           }
         }
@@ -526,8 +534,10 @@ export default function AICopilotWidget() {
 
       if (typeof data.trial_remaining === 'number') {
         setTrialRemaining(data.trial_remaining);
-        if (data.trial_remaining <= 0 && planType !== 'gold' && !hasOwnKey) {
+        if (planType === 'free' && data.trial_remaining <= 0 && !hasOwnKey) {
           setIsTrialExhausted(true);
+        } else if ((planType === 'basic' || planType === 'pro') && !hasOwnKey) {
+          setDailyActionsUsed(Math.max(0, dailyActionsLimit - data.trial_remaining));
         }
       }
 
@@ -641,10 +651,34 @@ export default function AICopilotWidget() {
 
             {/* Fila 2: Controles Auxiliares más grandes y accesibles */}
             <div className="px-5 py-2.5 bg-stone-950/40 flex items-center justify-between gap-3 text-xs">
-              {planType && planType !== 'gold' && !hasOwnKey && trialRemaining !== null && (
-                <div className="px-2.5 py-1 rounded-lg border border-primary/20 bg-primary/10 text-primary text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 shrink-0">
-                  <Sparkles size={10} className="animate-pulse" />
-                  <span>{trialRemaining} / 10 trial</span>
+              {planType && !hasOwnKey && (
+                planType === 'free' && trialRemaining !== null ? (
+                  <div className="px-2.5 py-1 rounded-lg border border-primary/20 bg-primary/10 text-primary text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 shrink-0">
+                    <Sparkles size={10} className="animate-pulse" />
+                    <span>{trialRemaining} / 10 prueba</span>
+                  </div>
+                ) : (planType === 'basic' || planType === 'pro') && dailyActionsLimit > 0 ? (
+                  <div 
+                    className={`px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 shrink-0 cursor-pointer hover:scale-105 active:scale-95 transition-all ${
+                      (dailyActionsLimit - dailyActionsUsed) <= 0 
+                        ? 'border-red-500/30 bg-red-500/10 text-red-400' 
+                        : 'border-primary/20 bg-primary/10 text-primary'
+                    }`}
+                    title="Detalles de cuota diaria de Smart Actions"
+                    onClick={() => {
+                      toast.info(`Límite diario: ${dailyActionsLimit - dailyActionsUsed} de ${dailyActionsLimit} acciones inteligentes disponibles hoy.`);
+                    }}
+                  >
+                    <Sparkles size={10} className="animate-pulse" />
+                    <span>Smart: {dailyActionsLimit - dailyActionsUsed} / {dailyActionsLimit} hoy</span>
+                  </div>
+                ) : null
+              )}
+
+              {(planType === 'gold' || hasOwnKey) && (
+                <div className="px-2.5 py-1 rounded-lg border border-yellow-500/20 bg-yellow-500/10 text-yellow-500 text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 shrink-0">
+                  <Sparkles size={10} className="text-yellow-500" />
+                  <span>Ilimitado ✨</span>
                 </div>
               )}
 
@@ -699,28 +733,26 @@ export default function AICopilotWidget() {
           </div>
 
           {isTrialExhausted && (
-            <div className="absolute inset-x-0 bottom-0 top-[110px] z-50 bg-stone-950/60 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center select-text animate-in fade-in duration-300">
-              <div className="bg-white border border-stone-200/80 p-6 rounded-2xl shadow-luxury max-w-[90%] flex flex-col items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center border border-amber-500/30">
-                  <Lock className="text-amber-500" size={24} />
-                </div>
-                <div>
-                  <h4 className="font-serif text-stone-900 font-bold text-base">Trial Agotado</h4>
-                  <p className="text-xs text-stone-500 mt-2 leading-relaxed">
-                    Has completado tus 10 consultas de prueba gratuitas. Actualiza al <strong className="text-stone-900">Plan Gold Elite</strong> para disfrutar de navegación ilimitada por voz y control inteligente en tu clínica.
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    setIsOpen(false);
-                    router.push('/dashboard/settings?tab=billing');
-                  }}
-                  className="w-full py-2.5 rounded-xl bg-stone-900 hover:bg-[#d4af37] text-white hover:text-stone-950 font-bold text-xs uppercase tracking-wider transition-all duration-300 shadow-md active:scale-95 flex items-center justify-center gap-2"
-                >
-                  <Sparkles size={14} />
-                  <span>Mejorar a Plan Gold</span>
-                </button>
+            <div className="bg-amber-50/70 border-b border-amber-200/50 px-4 py-2.5 flex items-center justify-between gap-3 shrink-0 animate-in slide-in-from-top duration-300">
+              <div className="flex items-center gap-2 min-w-0">
+                <Sparkles size={14} className="text-amber-600 shrink-0 animate-pulse" />
+                <p className="text-[10px] text-amber-800 font-medium leading-normal">
+                  {language === 'fr' 
+                    ? "Essai de Smart Actions épuisé. Chat gratuit illimité !" 
+                    : language === 'en' 
+                      ? "Smart Actions trial exhausted. Free queries are unlimited!" 
+                      : "Prueba de Smart Actions agotada. ¡Consultas de voz/chat ilimitadas gratis!"}
+                </p>
               </div>
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  router.push('/dashboard/settings?tab=billing');
+                }}
+                className="px-2.5 py-1 rounded-lg bg-stone-900 text-white hover:bg-[#d4af37] hover:text-stone-950 font-black text-[9px] uppercase tracking-widest transition-all duration-300 shrink-0 active:scale-95 shadow-sm"
+              >
+                {language === 'fr' ? 'Upgrade' : language === 'en' ? 'Upgrade' : 'Upgrade'}
+              </button>
             </div>
           )}
 

@@ -6,19 +6,23 @@ from .database import current_tenant_var
 PLAN_LIMITS = {
     "free": {
         "specialists": 1,
-        "services": 3
+        "services": 3,
+        "ai_smart_actions_daily": 0
     },
     "basic": {
         "specialists": 2,
-        "services": 10
+        "services": 10,
+        "ai_smart_actions_daily": 5
     },
     "pro": {
         "specialists": 5,
-        "services": 25
+        "services": 25,
+        "ai_smart_actions_daily": 15
     },
     "gold": {
         "specialists": 999999,
-        "services": 999999
+        "services": 999999,
+        "ai_smart_actions_daily": 999999
     }
 }
 
@@ -100,25 +104,24 @@ def get_tenant_ai_key(db: Session, provider: str) -> str:
             raise HTTPException(status_code=400, detail="Clave de API no configurada en el sistema para Plan Premium.")
         return key
         
-    # Si no es Gold, debe tener su propia clave de API configurada o estar en el Trial de cortesía (máximo 10 consultas)
+    # Si no es Gold, debe tener su propia clave de API configurada, o estar usando el Copiloto de IA
+    # en plan de pago Básico/Pro (con la clave maestra con límites diarios), o el Trial de cortesía
     tenant_key = settings.gemini_api_key if provider == "gemini" else settings.openai_api_key
     if not tenant_key or not tenant_key.strip():
-        queries_used = tenant.ai_trial_queries_used if hasattr(tenant, "ai_trial_queries_used") else 0
-        if queries_used is None:
-            queries_used = 0
-            
-        if queries_used < 10:
-            # Devolver llave maestra para posibilitar el trial sin incrementar el contador todavía
+        # Para planes de pago basic y pro, facilitamos la llave maestra
+        if plan in ["basic", "pro"]:
             master_key = os.getenv("GEMINI_API_KEY") if provider == "gemini" else os.getenv("OPENAI_API_KEY")
             if master_key and master_key.strip():
                 return master_key
             else:
-                raise HTTPException(status_code=500, detail="Clave maestra de IA no disponible para el trial.")
-        
-        # Si se agotaron las consultas de trial, lanzamos error específico para la UI
-        raise HTTPException(
-            status_code=403, 
-            detail="AI_TRIAL_EXHAUSTED"
-        )
+                raise HTTPException(status_code=500, detail="Clave maestra de IA no disponible.")
+                
+        # Para plan free (Trial de cortesía), permitimos el uso del chat global con clave maestra.
+        # El control de límite se hará en el propio router de chat.
+        master_key = os.getenv("GEMINI_API_KEY") if provider == "gemini" else os.getenv("OPENAI_API_KEY")
+        if master_key and master_key.strip():
+            return master_key
+        else:
+            raise HTTPException(status_code=500, detail="Clave maestra de IA no disponible para el trial.")
         
     return tenant_key

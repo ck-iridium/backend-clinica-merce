@@ -17,6 +17,8 @@ class Tenant(Base):
     subscription_expires_at = Column(DateTime, nullable=True)
     custom_domain = Column(String, nullable=True)
     ai_trial_queries_used = Column(Integer, default=0, nullable=False)
+    ai_daily_actions_used = Column(Integer, default=0, nullable=False)
+    ai_last_action_date = Column(Date, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 class User(Base):

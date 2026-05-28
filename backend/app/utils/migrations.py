@@ -91,7 +91,10 @@ def run_auto_migrations():
             # ── CMS: Imágenes rotativas de la portada hero ───────────────────────
             "ALTER TABLE landing_marketing_settings ADD COLUMN hero_image_1 VARCHAR",
             "ALTER TABLE landing_marketing_settings ADD COLUMN hero_image_2 VARCHAR",
-            "ALTER TABLE landing_marketing_settings ADD COLUMN hero_image_3 VARCHAR"
+            "ALTER TABLE landing_marketing_settings ADD COLUMN hero_image_3 VARCHAR",
+            # ── Control de Cuotas Diarias de Copiloto de IA ─────────────────────────
+            "ALTER TABLE tenants ADD COLUMN ai_daily_actions_used INTEGER DEFAULT 0",
+            "ALTER TABLE tenants ADD COLUMN ai_last_action_date DATE"
         ]
         
         for m in migrations:
