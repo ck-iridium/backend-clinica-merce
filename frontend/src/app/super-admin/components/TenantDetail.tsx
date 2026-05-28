@@ -8,16 +8,15 @@ import {
   AlertTriangle, 
   Layers, 
   DollarSign, 
-  Globe, 
-  Shield 
+  Globe 
 } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+
+// Subcomponentes modulares
+import TenantOverviewTab from './detail/TenantOverviewTab';
+import TenantStripeTab from './detail/TenantStripeTab';
+import TenantConfigTab from './detail/TenantConfigTab';
+import DomainConnectionModal from './detail/DomainConnectionModal';
+import DeleteConfirmModal from './detail/DeleteConfirmModal';
 
 interface Tenant {
   id: string;
@@ -419,492 +418,50 @@ export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant, o
           {/* Contenido de la pestaña activa */}
           <div className="p-8 space-y-6">
             {activeTab === 'overview' && (
-              <div className="space-y-6">
-                <h3 className="text-lg font-bold font-serif text-stone-900 border-b border-stone-100 pb-2">
-                  Información General del Inquilino
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                  <div className="space-y-1">
-                    <span className="text-stone-400 text-xs font-bold uppercase tracking-wider">ID Único</span>
-                    <p className="font-mono text-stone-700 font-semibold">{tenant.id}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-stone-400 text-xs font-bold uppercase tracking-wider">Plan Comercial</span>
-                    <p className="text-stone-900 font-bold text-base flex items-center gap-2">
-                      {tenant.plan_type === 'gold' && '🥇 Elite Gold Plan'}
-                      {tenant.plan_type === 'pro' && '🥈 Pro Premium Plan'}
-                      {tenant.plan_type === 'basic' && '🥉 Basic Plan'}
-                      {(!tenant.plan_type || tenant.plan_type === 'free') && '🌱 Free Trial Plan'}
-                      <span className="bg-[#fcf8e5] text-[#d4af37] px-2 py-0.5 rounded text-[9px] font-black uppercase">
-                        {tenant.plan_type || 'FREE'}
-                      </span>
-                    </p>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-stone-400 text-xs font-bold uppercase tracking-wider">Estado en Middleware</span>
-                    <p className="text-stone-850 font-medium">
-                      {tenant.subscription_status === 'active' 
-                        ? 'Permitido y desbloqueado en capas de API globales' 
-                        : 'Acceso denegado con cabecera de suspensión activa'}
-                    </p>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-stone-400 text-xs font-bold uppercase tracking-wider">Renovación / Expiración</span>
-                    <p className="text-stone-850 font-medium font-mono text-xs">
-                      {tenant.subscription_expires_at 
-                        ? new Date(tenant.subscription_expires_at).toLocaleDateString('es-ES', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })
-                        : 'Sin fecha de expiración activa'}
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <TenantOverviewTab tenant={tenant} />
             )}
 
             {activeTab === 'stripe' && (
-              <div className="space-y-8">
-                <div className="flex justify-between items-center border-b border-stone-100 pb-2">
-                  <h3 className="text-lg font-bold font-serif text-stone-900">
-                    Detalles de Pasarela de Pagos
-                  </h3>
-                  <span className="text-xs bg-[#fcf8e5] text-[#d4af37] px-3 py-1 rounded-full font-bold uppercase">
-                    Stripe Connected
-                  </span>
-                </div>
-                
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center bg-stone-50 p-4 rounded-xl text-sm border border-stone-100">
-                    <div>
-                      <p className="font-bold text-stone-900">Identificador de Cliente</p>
-                      <p className="text-xs text-stone-400 mt-0.5">Enlazado a la cuenta principal del SaaS</p>
-                    </div>
-                    <span className="font-mono bg-white px-3 py-1.5 rounded-lg border border-stone-200/50 text-xs font-bold text-stone-700">
-                      {tenant.stripe_customer_id || 'Sin vincular'}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-center bg-stone-50 p-4 rounded-xl text-sm border border-stone-100">
-                    <div>
-                      <p className="font-bold text-stone-900">ID de Suscripción Stripe</p>
-                      <p className="text-xs text-stone-400 mt-0.5">Identificador de facturación recurrente activa</p>
-                    </div>
-                    <span className="font-mono bg-white px-3 py-1.5 rounded-lg border border-stone-200/50 text-xs font-bold text-stone-700">
-                      {tenant.stripe_subscription_id || 'Sin suscripción activa'}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-center bg-stone-50 p-4 rounded-xl text-sm border border-stone-100">
-                    <div>
-                      <p className="font-bold text-stone-900">Historial de Pagos B2B</p>
-                      <p className="text-xs text-stone-400 mt-0.5">Control directo de cobros por suscripción mensual</p>
-                    </div>
-                    {tenant.stripe_customer_id ? (
-                      <a 
-                        href={`https://dashboard.stripe.com/customers/${tenant.stripe_customer_id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs font-bold text-[#d4af37] hover:underline hover:text-[#b08e23] transition-all"
-                      >
-                        Ver en Stripe Dashboard →
-                      </a>
-                    ) : (
-                      <span className="text-xs text-stone-450 italic font-semibold">
-                        Sin vincular
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Sección de Selección de Planes */}
-                <div className="space-y-6 pt-4">
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-bold font-serif text-stone-900">
-                      Contratar o Cambiar Plan Comercial
-                    </h4>
-                    <p className="text-xs text-stone-400 font-sans">
-                      Selecciona un plan premium para redirigir a la pasarela de pago recurrente y segura de Stripe.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {/* Plan Gratuito */}
-                    <div className={`p-6 rounded-2xl border bg-white flex flex-col justify-between transition-all duration-300 hover:shadow-luxury hover:-translate-y-0.5 ${
-                      tenant.plan_type === 'free' || !tenant.plan_type ? 'border-[#d4af37]' : 'border-stone-200/40'
-                    }`}>
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-[9px] font-black uppercase tracking-wider text-stone-400 font-sans">Gratuito</span>
-                          {(tenant.plan_type === 'free' || !tenant.plan_type) && (
-                            <span className="bg-[#fcf8e5] text-[#d4af37] text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">Activo</span>
-                          )}
-                        </div>
-                        <h5 className="text-sm font-bold font-serif text-stone-950">Plan Gratuito</h5>
-                        <p className="text-[11px] text-stone-400 font-sans leading-relaxed">Agenda inicial para autónomos y pruebas.</p>
-                        <div className="pt-1 flex items-baseline gap-0.5">
-                          <span className="text-xl font-bold text-stone-900 font-serif">0€</span>
-                          <span className="text-[10px] text-stone-400 font-sans">/ siempre</span>
-                        </div>
-                        <ul className="text-[10px] text-stone-500 font-sans space-y-1 pt-2 border-t border-stone-100">
-                          <li>✓ 1 Profesional</li>
-                          <li>✓ Hasta 3 Servicios</li>
-                          <li>✓ Agenda Interactiva</li>
-                        </ul>
-                      </div>
-                      <button
-                        onClick={() => handleSubscribe('free')}
-                        disabled={redirectingPlan !== null || tenant.plan_type === 'free' || !tenant.plan_type}
-                        className={`mt-5 w-full py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-300 focus:outline-none ${
-                          tenant.plan_type === 'free' || !tenant.plan_type
-                            ? 'bg-stone-50 text-stone-400 border border-stone-200/50 cursor-default'
-                            : 'bg-white border border-stone-200 text-stone-950 hover:border-[#d4af37] hover:text-[#d4af37]'
-                        }`}
-                      >
-                        {redirectingPlan === 'free' ? 'Cargando...' : (tenant.plan_type === 'free' || !tenant.plan_type) ? 'Plan Actual' : 'Contratar'}
-                      </button>
-                    </div>
-
-                    {/* Plan Básico */}
-                    <div className={`p-6 rounded-2xl border bg-white flex flex-col justify-between transition-all duration-300 hover:shadow-luxury hover:-translate-y-0.5 ${
-                      tenant.plan_type === 'basic' ? 'border-[#d4af37]' : 'border-stone-200/40'
-                    }`}>
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-[9px] font-black uppercase tracking-wider text-stone-400 font-sans">Básico</span>
-                          {tenant.plan_type === 'basic' && (
-                            <span className="bg-[#fcf8e5] text-[#d4af37] text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">Activo</span>
-                          )}
-                        </div>
-                        <h5 className="text-sm font-bold font-serif text-stone-950">Plan Básico</h5>
-                        <p className="text-[11px] text-stone-400 font-sans leading-relaxed">Agenda estándar para equipos pequeños.</p>
-                        <div className="pt-1 flex items-baseline gap-0.5">
-                          <span className="text-xl font-bold text-stone-900 font-serif">29€</span>
-                          <span className="text-[10px] text-stone-400 font-sans">/ mes</span>
-                        </div>
-                        <ul className="text-[10px] text-stone-500 font-sans space-y-1 pt-2 border-t border-stone-100">
-                          <li>✓ Citas y Clientes Ilimitados</li>
-                          <li>✓ Hasta 2 Profesionales</li>
-                          <li>✓ Agenda Interactiva</li>
-                        </ul>
-                      </div>
-                      <button
-                        onClick={() => handleSubscribe('basic')}
-                        disabled={redirectingPlan !== null || tenant.plan_type === 'basic'}
-                        className={`mt-5 w-full py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-300 focus:outline-none ${
-                          tenant.plan_type === 'basic'
-                            ? 'bg-stone-50 text-stone-400 border border-stone-200/50 cursor-default'
-                            : 'bg-white border border-stone-200 text-stone-950 hover:border-[#d4af37] hover:text-[#d4af37]'
-                        }`}
-                      >
-                        {redirectingPlan === 'basic' ? 'Cargando...' : tenant.plan_type === 'basic' ? 'Plan Actual' : 'Contratar'}
-                      </button>
-                    </div>
-
-                    {/* Plan Pro */}
-                    <div className={`p-6 rounded-2xl border bg-white flex flex-col justify-between transition-all duration-300 hover:shadow-luxury hover:-translate-y-0.5 ${
-                      tenant.plan_type === 'pro' ? 'border-[#d4af37]' : 'border-stone-200/40'
-                    }`}>
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-[9px] font-black uppercase tracking-wider text-stone-400 font-sans">Profesional</span>
-                          {tenant.plan_type === 'pro' && (
-                            <span className="bg-[#fcf8e5] text-[#d4af37] text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">Activo</span>
-                          )}
-                        </div>
-                        <h5 className="text-sm font-bold font-serif text-stone-950">Plan Pro Premium</h5>
-                        <p className="text-[11px] text-stone-400 font-sans leading-relaxed">Para clínicas de estética de alto crecimiento.</p>
-                        <div className="pt-1 flex items-baseline gap-0.5">
-                          <span className="text-xl font-bold text-stone-900 font-serif">59€</span>
-                          <span className="text-[10px] text-stone-400 font-sans">/ mes</span>
-                        </div>
-                        <ul className="text-[10px] text-stone-500 font-sans space-y-1 pt-2 border-t border-stone-100">
-                          <li>✓ Todo lo del Plan Básico</li>
-                          <li>✓ Hasta 10 Profesionales</li>
-                          <li>✓ Venta Rápida y Bonos</li>
-                        </ul>
-                      </div>
-                      <button
-                        onClick={() => handleSubscribe('pro')}
-                        disabled={redirectingPlan !== null || tenant.plan_type === 'pro'}
-                        className={`mt-5 w-full py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-300 focus:outline-none ${
-                          tenant.plan_type === 'pro'
-                            ? 'bg-stone-50 text-stone-400 border border-stone-200/50 cursor-default'
-                            : 'bg-stone-950 text-white hover:bg-stone-850 hover:shadow-md'
-                        }`}
-                      >
-                        {redirectingPlan === 'pro' ? 'Cargando...' : tenant.plan_type === 'pro' ? 'Plan Actual' : 'Contratar'}
-                      </button>
-                    </div>
-
-                    {/* Plan Elite Gold */}
-                    <div className={`p-6 rounded-2xl border bg-white flex flex-col justify-between transition-all duration-300 hover:shadow-luxury hover:-translate-y-0.5 ${
-                      tenant.plan_type === 'gold' ? 'border-[#d4af37]' : 'border-stone-200/40'
-                    }`}>
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-[9px] font-black uppercase tracking-wider text-stone-400 font-sans">Elite</span>
-                          {tenant.plan_type === 'gold' && (
-                            <span className="bg-[#fcf8e5] text-[#d4af37] text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">Activo</span>
-                          )}
-                        </div>
-                        <h5 className="text-sm font-bold font-serif text-stone-950">Plan Elite Gold</h5>
-                        <p className="text-[11px] text-stone-400 font-sans leading-relaxed">Asistentes de IA ilimitados y multi-local.</p>
-                        <div className="pt-1 flex items-baseline gap-0.5">
-                          <span className="text-xl font-bold text-stone-900 font-serif">99€</span>
-                          <span className="text-[10px] text-stone-400 font-sans">/ mes</span>
-                        </div>
-                        <ul className="text-[10px] text-stone-500 font-sans space-y-1 pt-2 border-t border-stone-100">
-                          <li>✓ Profesionales Ilimitados</li>
-                          <li>✓ IA Avanzada Ilimitada</li>
-                          <li>✓ Soporte Personalizado 24/7</li>
-                        </ul>
-                      </div>
-                      <button
-                        onClick={() => handleSubscribe('gold')}
-                        disabled={redirectingPlan !== null || tenant.plan_type === 'gold'}
-                        className={`mt-5 w-full py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-300 focus:outline-none ${
-                          tenant.plan_type === 'gold'
-                            ? 'bg-stone-50 text-stone-400 border border-stone-200/50 cursor-default'
-                            : 'bg-white border border-stone-200 text-stone-950 hover:border-[#d4af37] hover:text-[#d4af37]'
-                        }`}
-                      >
-                        {redirectingPlan === 'gold' ? 'Cargando...' : tenant.plan_type === 'gold' ? 'Plan Actual' : 'Contratar'}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <TenantStripeTab 
+                tenant={tenant}
+                onSubscribe={handleSubscribe}
+                redirectingPlan={redirectingPlan}
+              />
             )}
 
             {activeTab === 'config' && (
-              <div className="space-y-6 animate-in fade-in duration-300">
-                <h3 className="text-lg font-bold font-serif text-stone-900 border-b border-stone-100 pb-2">
-                  Estructura de Ruteo e Infraestructura
-                </h3>
-                <div className="space-y-4">
-                  {/* Tarjeta de Dominios Personalizados Condicional */}
-                  <div className="bg-[#FAFAFA] p-5 rounded-2xl border border-stone-200/30 flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition-all duration-300">
-                    <div className="flex items-start gap-4">
-                      <span className="w-12 h-12 rounded-xl bg-white border border-stone-100 text-stone-400 flex items-center justify-center shrink-0 shadow-sm">
-                        <Globe className="w-6 h-6" />
-                      </span>
-                      <div className="space-y-1">
-                        <p className="font-bold text-stone-900 text-sm">Dominios Personalizados</p>
-                        {customDomain ? (
-                          <div className="space-y-0.5">
-                            <p className="text-stone-400 text-xs">Mapeo DNS activo para el dominio:</p>
-                            <p className="text-base font-serif font-bold text-[#d4af37]">{customDomain}</p>
-                          </div>
-                        ) : (
-                          <div className="space-y-0.5">
-                            <p className="text-stone-400 text-xs">Usando subdominio de la plataforma:</p>
-                            <p className="text-stone-700 font-mono text-xs">{tenant.slug}.probookia.com</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
-                      {customDomain ? (
-                        <>
-                          <span className="bg-emerald-50 text-emerald-600 border border-emerald-100 px-3 py-1 rounded-full text-xxs font-black uppercase tracking-wider">
-                            🟢 Activo
-                          </span>
-                          <button 
-                            onClick={handleDisconnectDomain}
-                            className="text-stone-400 hover:text-red-500 text-[10px] font-bold uppercase tracking-wider transition-colors"
-                          >
-                            Desconectar
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <span className="bg-stone-100 text-stone-500 border border-stone-200 px-3 py-1 rounded-full text-xxs font-bold uppercase tracking-wider">
-                            Sin dominio personalizado
-                          </span>
-                          <button 
-                            onClick={() => setShowDomainModal(true)}
-                            className="bg-stone-900 hover:bg-[#d4af37] text-white px-4 py-2 rounded-xl text-xxs font-black uppercase tracking-wider transition-all duration-300 shadow-sm active:scale-95"
-                          >
-                            Conectar Dominio
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center bg-[#FAFAFA] p-4 rounded-xl text-sm border border-stone-200/30">
-                    <div className="flex items-center gap-3">
-                      <Shield className="w-5 h-5 text-stone-400" />
-                      <div>
-                        <p className="font-bold text-stone-900">Políticas RLS en Base de Datos</p>
-                        <p className="text-xs text-stone-400">Aislamiento por Row Level Security (RLS) habilitado</p>
-                      </div>
-                    </div>
-                    <span className="bg-green-50 text-green-600 border border-green-100 px-3 py-1 rounded-full text-xxs font-black uppercase">
-                      Protegido
-                    </span>
-                  </div>
-
-                  {/* Zona de Peligro - Hard Delete */}
-                  <div className="bg-red-50/10 p-5 rounded-2xl border border-red-200/40 flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition-all duration-300 mt-6">
-                    <div className="flex items-start gap-4">
-                      <span className="w-12 h-12 rounded-xl bg-white border border-red-100 text-red-500 flex items-center justify-center shrink-0 shadow-sm">
-                        <AlertTriangle className="w-6 h-6" />
-                      </span>
-                      <div className="space-y-1">
-                        <p className="font-bold text-red-900 text-sm">Zona de Peligro: Borrado en Cascada</p>
-                        <p className="text-stone-500 text-xs leading-relaxed max-w-xl">
-                          Esta acción es irreversible. Eliminará de forma definitiva toda la base de datos de la clínica (citas, facturas, clientes, servicios) y todos sus archivos multimedia del storage.
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="shrink-0 self-end sm:self-center">
-                      <button 
-                        onClick={() => setShowDeleteModal(true)}
-                        className="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl text-xxs font-black uppercase tracking-wider transition-all duration-300 shadow-sm active:scale-95 border border-red-600 focus:outline-none"
-                      >
-                        Eliminar Clínica
-                      </button>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
+              <TenantConfigTab 
+                tenant={tenant}
+                customDomain={customDomain}
+                onDisconnectDomain={handleDisconnectDomain}
+                onOpenDomainModal={() => setShowDomainModal(true)}
+                onOpenDeleteModal={() => setShowDeleteModal(true)}
+              />
             )}
           </div>
         </div>
 
         {/* Modal de Configuración DNS para Dominio Personalizado */}
-        <Dialog open={showDomainModal} onOpenChange={setShowDomainModal}>
-          <DialogContent className="bg-white rounded-3xl border border-stone-200/50 p-8 shadow-xl max-w-lg w-full">
-            <DialogHeader className="space-y-3">
-              <DialogTitle className="text-2xl font-serif font-bold text-stone-900 flex items-center gap-2.5">
-                <Globe className="w-6 h-6 text-[#d4af37]" /> Conectar Dominio Propio
-              </DialogTitle>
-              <DialogDescription className="text-sm text-stone-500 leading-relaxed font-sans">
-                Asocia tu propio dominio comercial para que tus clientes puedan reservar tratamientos directamente en tu dirección web.
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-6 pt-4">
-              <div>
-                <label className="text-xs font-bold text-stone-400 uppercase tracking-widest block mb-2">Ingresa tu Dominio</label>
-                <input 
-                  type="text" 
-                  value={inputDomain}
-                  onChange={(e) => setInputDomain(e.target.value)}
-                  placeholder="ej: www.miestetica.com"
-                  className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20 outline-none transition-all text-sm font-sans"
-                />
-              </div>
-
-              <div className="bg-stone-50 p-6 rounded-2xl border border-stone-100 space-y-4">
-                <h5 className="text-xs font-bold text-stone-700 uppercase tracking-widest flex items-center gap-1.5">
-                  📋 Registros DNS Requeridos
-                </h5>
-                <p className="text-xs text-stone-600 leading-relaxed font-sans">
-                  Accede a tu proveedor de dominios (GoDaddy, Namecheap, etc.) y añade el siguiente registro CNAME para habilitar el mapeo:
-                </p>
-                
-                <div className="grid grid-cols-3 gap-3 text-xs md:text-sm font-mono border-t border-stone-200/50 pt-4">
-                  <span className="text-stone-400 font-bold">Tipo:</span>
-                  <span className="col-span-2 text-stone-800 font-black">CNAME</span>
-
-                  <span className="text-stone-400 font-bold">Host:</span>
-                  <span className="col-span-2 text-stone-800 font-black">www o @</span>
-
-                  <span className="text-stone-400 font-bold">Valor:</span>
-                  <span className="col-span-2 text-stone-800 font-black text-[#b08e23]">cname.probookia.com</span>
-                </div>
-              </div>
-
-              <div className="flex gap-3 justify-end pt-2 border-t border-stone-100">
-                <button
-                  onClick={() => setShowDomainModal(false)}
-                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-stone-500 hover:bg-stone-50 transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleConnectDomain}
-                  disabled={savingDomain}
-                  className="bg-stone-900 hover:bg-[#d4af37] text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
-                >
-                  {savingDomain ? 'Guardando...' : 'Verificar y Conectar'}
-                </button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <DomainConnectionModal 
+          open={showDomainModal}
+          onOpenChange={setShowDomainModal}
+          inputDomain={inputDomain}
+          onChangeInputDomain={setInputDomain}
+          onConnect={handleConnectDomain}
+          saving={savingDomain}
+        />
 
         {/* Modal de Confirmación de Borrado en Cascada */}
-        <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
-          <DialogContent className="bg-white rounded-3xl border border-stone-200/50 p-8 shadow-xl max-w-lg w-full">
-            <DialogHeader className="space-y-3">
-              <DialogTitle className="text-2xl font-serif font-bold text-red-600 flex items-center gap-2.5">
-                <AlertTriangle className="w-6 h-6" /> ¿Eliminar esta clínica permanentemente?
-              </DialogTitle>
-              <DialogDescription className="text-sm text-stone-500 leading-relaxed font-sans">
-                Estás a punto de borrar **físicamente en cascada** la clínica <strong className="text-stone-900 font-bold">{tenant.name}</strong>. Esta acción destruirá de manera irreversible:
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-6 pt-4 font-sans">
-              <div className="bg-red-50/20 p-4 rounded-xl border border-red-100 text-xs text-red-700 space-y-2 leading-relaxed">
-                <p className="font-bold flex items-center gap-1.5 text-red-800">
-                  🚨 ¡ADVERTENCIA CRÍTICA!
-                </p>
-                <ul className="list-disc pl-4 space-y-1">
-                  <li>Todos los expedientes médicos e historiales de clientes serán purgados.</li>
-                  <li>Se borrarán citas activas, facturas emitidas y agendas de especialistas.</li>
-                  <li>Todos los archivos multimedia y firmas subidas a Supabase Storage serán destruidos.</li>
-                </ul>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-stone-500 uppercase tracking-widest block">
-                  Escribe el subdominio para confirmar: <strong className="text-stone-900 font-bold font-mono">{tenant.slug}</strong>
-                </label>
-                <input 
-                  type="text" 
-                  value={confirmText}
-                  onChange={(e) => setConfirmText(e.target.value)}
-                  placeholder={`Escribe ${tenant.slug}`}
-                  className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none transition-all text-sm font-sans"
-                />
-              </div>
-
-              <div className="flex gap-3 justify-end pt-4 border-t border-stone-100">
-                <button
-                  onClick={() => {
-                    setShowDeleteModal(false);
-                    setConfirmText('');
-                  }}
-                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-stone-500 hover:bg-stone-50 transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleDeleteTenant}
-                  disabled={confirmText !== tenant.slug || deleting}
-                  className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 text-white ${
-                    confirmText !== tenant.slug || deleting
-                      ? 'bg-stone-100 text-stone-400 cursor-not-allowed border border-stone-200'
-                      : 'bg-red-600 hover:bg-red-700 active:scale-95'
-                  }`}
-                >
-                  {deleting ? 'Destruyendo datos...' : 'Confirmar Borrado'}
-                </button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <DeleteConfirmModal 
+          open={showDeleteModal}
+          onOpenChange={setShowDeleteModal}
+          tenantSlug={tenant.slug}
+          tenantName={tenant.name}
+          confirmText={confirmText}
+          onChangeConfirmText={setConfirmText}
+          onDelete={handleDeleteTenant}
+          deleting={deleting}
+        />
 
       </div>
     </section>
