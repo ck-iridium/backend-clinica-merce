@@ -503,9 +503,20 @@ export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant, o
                       <p className="font-bold text-stone-900">Historial de Pagos B2B</p>
                       <p className="text-xs text-stone-400 mt-0.5">Control directo de cobros por suscripción mensual</p>
                     </div>
-                    <button className="text-xs font-bold text-[#d4af37] hover:underline focus:outline-none">
-                      Ver en Stripe Dashboard →
-                    </button>
+                    {tenant.stripe_customer_id ? (
+                      <a 
+                        href={`https://dashboard.stripe.com/customers/${tenant.stripe_customer_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-bold text-[#d4af37] hover:underline hover:text-[#b08e23] transition-all"
+                      >
+                        Ver en Stripe Dashboard →
+                      </a>
+                    ) : (
+                      <span className="text-xs text-stone-450 italic font-semibold">
+                        Sin vincular
+                      </span>
+                    )}
                   </div>
                 </div>
 
