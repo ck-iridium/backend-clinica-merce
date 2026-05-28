@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sparkles, X, Send, Bot, User, Volume2, VolumeX, MessageSquare, RotateCcw, Paperclip, FileText } from 'lucide-react';
+import { Sparkles, X, Send, Bot, User, Volume2, VolumeX, MessageSquare, RotateCcw, Paperclip, FileText, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import VoiceRecorderButton from './VoiceRecorderButton';
 import { useLanguage } from '@/app/contexts/LanguageContext';
@@ -31,6 +31,41 @@ export default function AICopilotWidget() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+
+  // Estados para Límites de Suscripción e IA Trial
+  const [planType, setPlanType] = useState<string | null>(null);
+  const [trialRemaining, setTrialRemaining] = useState<number | null>(null);
+  const [hasOwnKey, setHasOwnKey] = useState<boolean>(false);
+  const [isTrialExhausted, setIsTrialExhausted] = useState<boolean>(false);
+
+  // Cargar límites y estado del Trial
+  useEffect(() => {
+    async function fetchPlanAndTrial() {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const res = await fetch(`${API_URL}/settings/limits`);
+        if (res.ok) {
+          const limitsData = await res.json();
+          const plan = limitsData.plan_type?.toLowerCase() || 'free';
+          setPlanType(plan);
+          
+          const ownKey = limitsData.limits?.ai_allowed && limitsData.limits?.ai_requires_byok;
+          setHasOwnKey(!!ownKey);
+          
+          const used = limitsData.ai_trial_queries_used ?? 0;
+          const remaining = Math.max(0, 10 - used);
+          setTrialRemaining(remaining);
+          
+          if (plan !== 'gold' && !ownKey && remaining <= 0) {
+            setIsTrialExhausted(true);
+          }
+        }
+      } catch (err) {
+        console.error("Error al obtener límites de plan en AI Widget:", err);
+      }
+    }
+    fetchPlanAndTrial();
+  }, []);
 
   // Selector de Voz y Redimensionamiento
   const [voiceGender, setVoiceGender] = useState<'female' | 'male'>('female');
@@ -441,10 +476,34 @@ export default function AICopilotWidget() {
       );
 
       if (!response.ok) {
+        if (response.status === 403) {
+          const errData = await response.json().catch(() => ({}));
+          if (errData.detail === 'AI_TRIAL_EXHAUSTED') {
+            setIsTrialExhausted(true);
+            setTrialRemaining(0);
+            const exhaustMsg = language === 'fr' 
+              ? "Votre essai gratuit a expiré. Veuillez passer au Plan Gold." 
+              : language === 'en' 
+              ? "Your free trial has expired. Please upgrade to Plan Gold." 
+              : "Tu prueba gratuita de Co-Piloto de IA ha expirado. Por favor, actualiza al Plan Gold.";
+            setMessages((prev) => [...prev, { role: 'model', content: exhaustMsg }]);
+            speakText(exhaustMsg);
+            setIsLoading(false);
+            return;
+          }
+        }
         throw new Error('Error al conectar con el servidor.');
       }
 
       const data = await response.json();
+      
+      if (typeof data.trial_remaining === 'number') {
+        setTrialRemaining(data.trial_remaining);
+        if (data.trial_remaining <= 0 && planType !== 'gold' && !hasOwnKey) {
+          setIsTrialExhausted(true);
+        }
+      }
+
       let responseText = data.response;
 
       // 4. Check for structural JSON navigation instruction
@@ -555,6 +614,13 @@ export default function AICopilotWidget() {
 
             {/* Fila 2: Controles Auxiliares más grandes y accesibles */}
             <div className="px-5 py-2.5 bg-stone-950/40 flex items-center justify-between gap-3 text-xs">
+              {planType && planType !== 'gold' && !hasOwnKey && trialRemaining !== null && (
+                <div className="px-2.5 py-1 rounded-lg border border-primary/20 bg-primary/10 text-primary text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 shrink-0">
+                  <Sparkles size={10} className="animate-pulse" />
+                  <span>{trialRemaining} / 10 trial</span>
+                </div>
+              )}
+
               {/* Selector de Género de Voz Premium */}
               <button
                 onClick={() => {
@@ -606,6 +672,32 @@ export default function AICopilotWidget() {
               </div>
             </div>
           </div>
+
+          {isTrialExhausted && (
+            <div className="absolute inset-x-0 bottom-0 top-[110px] z-50 bg-stone-950/60 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center select-text animate-in fade-in duration-300">
+              <div className="bg-white border border-stone-200/80 p-6 rounded-2xl shadow-luxury max-w-[90%] flex flex-col items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center border border-amber-500/30">
+                  <Lock className="text-amber-500" size={24} />
+                </div>
+                <div>
+                  <h4 className="font-serif text-stone-900 font-bold text-base">Trial Agotado</h4>
+                  <p className="text-xs text-stone-500 mt-2 leading-relaxed">
+                    Has completado tus 10 consultas de prueba gratuitas. Actualiza al <strong className="text-stone-900">Plan Gold Elite</strong> para disfrutar de navegación ilimitada por voz y control inteligente en tu clínica.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setIsOpen(false);
+                    router.push('/dashboard/settings?tab=billing');
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-stone-900 hover:bg-[#d4af37] text-white hover:text-stone-950 font-bold text-xs uppercase tracking-wider transition-all duration-300 shadow-md active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <Sparkles size={14} />
+                  <span>Mejorar a Plan Gold</span>
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Historial de Mensajes (Quiet Luxury Crema) */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-[#FAF9F5] hide-scroll select-text">
@@ -696,7 +788,20 @@ export default function AICopilotWidget() {
 
               {/* Botón de Adjuntar Archivo Grande y Elegante */}
               <button
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => {
+                  const isGoldOrPro = planType === 'gold' || planType === 'pro';
+                  if (!isGoldOrPro && !hasOwnKey) {
+                    toast.error(
+                      language === 'fr'
+                        ? 'Le téléchargement de documents nécessite un plan Pro ou Gold.'
+                        : language === 'en'
+                        ? 'Uploading files requires a Pro or Gold plan.'
+                        : 'Subir archivos requiere una suscripción Pro o Gold.'
+                    );
+                    return;
+                  }
+                  fileInputRef.current?.click();
+                }}
                 disabled={isLoading || isUploading}
                 className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-all active:scale-95 shrink-0 ${
                   isUploading 
@@ -704,14 +809,24 @@ export default function AICopilotWidget() {
                     : 'border-stone-200/80 bg-white hover:bg-stone-50 text-stone-600 hover:text-stone-800'
                 }`}
                 title={
-                  language === 'fr' 
-                    ? 'Joindre un fichier sécurisé (CSV, TXT, JSON, Image)' 
-                    : language === 'en' 
-                      ? 'Attach secure file (CSV, TXT, JSON, Image)' 
-                      : 'Adjuntar archivo seguro (CSV, TXT, JSON, Imagen)'
+                  planType !== 'gold' && planType !== 'pro' && !hasOwnKey
+                    ? (language === 'fr' 
+                        ? 'Téléchargement de fichiers (Pro/Gold uniquement)' 
+                        : language === 'en' 
+                          ? 'File upload (Pro/Gold only)' 
+                          : 'Subir archivos (Solo Pro/Gold)')
+                    : (language === 'fr' 
+                        ? 'Joindre un fichier sécurisé (CSV, TXT, JSON, Image)' 
+                        : language === 'en' 
+                          ? 'Attach secure file (CSV, TXT, JSON, Image)' 
+                          : 'Adjuntar archivo seguro (CSV, TXT, JSON, Imagen)')
                 }
               >
-                <Paperclip size={15} />
+                {planType !== 'gold' && planType !== 'pro' && !hasOwnKey ? (
+                  <Lock size={15} className="text-amber-500" />
+                ) : (
+                  <Paperclip size={15} />
+                )}
                 <span>
                   {isUploading 
                     ? (language === 'fr' ? 'Téléchargement...' : language === 'en' ? 'Uploading...' : 'Subiendo...')

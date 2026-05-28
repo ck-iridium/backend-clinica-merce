@@ -100,13 +100,29 @@ def get_tenant_ai_key(db: Session, provider: str) -> str:
             raise HTTPException(status_code=400, detail="Clave de API no configurada en el sistema para Plan Premium.")
         return key
         
-    # Si no es Gold, debe tener su propia clave de API configurada
+    # Si no es Gold, debe tener su propia clave de API configurada o estar en el Trial de cortesía (máximo 10 consultas)
     tenant_key = settings.gemini_api_key if provider == "gemini" else settings.openai_api_key
     if not tenant_key or not tenant_key.strip():
-        # Lanzamos código de error específico para que la UI lo reconozca
+        queries_used = tenant.ai_trial_queries_used if hasattr(tenant, "ai_trial_queries_used") else 0
+        if queries_used is None:
+            queries_used = 0
+            
+        if queries_used < 10:
+            # Incrementar y guardar en base de datos
+            tenant.ai_trial_queries_used = queries_used + 1
+            db.commit()
+            
+            # Devolver llave maestra para posibilitar el trial
+            master_key = os.getenv("GEMINI_API_KEY") if provider == "gemini" else os.getenv("OPENAI_API_KEY")
+            if master_key and master_key.strip():
+                return master_key
+            else:
+                raise HTTPException(status_code=500, detail="Clave maestra de IA no disponible para el trial.")
+        
+        # Si se agotaron las consultas de trial, lanzamos error específico para la UI
         raise HTTPException(
             status_code=403, 
-            detail="AI_LIMIT_BYOK_REQUIRED"
+            detail="AI_TRIAL_EXHAUSTED"
         )
         
     return tenant_key

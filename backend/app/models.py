@@ -16,6 +16,7 @@ class Tenant(Base):
     plan_type = Column(String, default="free", nullable=False)
     subscription_expires_at = Column(DateTime, nullable=True)
     custom_domain = Column(String, nullable=True)
+    ai_trial_queries_used = Column(Integer, default=0, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 class User(Base):

@@ -54,6 +54,7 @@ def read_tenant_limits(db: Session = Depends(database.get_db)):
     return {
         "tenant_id": tenant_id,
         "plan_type": plan,
+        "ai_trial_queries_used": tenant.ai_trial_queries_used if hasattr(tenant, "ai_trial_queries_used") else 0,
         "limits": {
             "specialists": limits["specialists"],
             "services": limits["services"],

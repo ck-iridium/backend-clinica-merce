@@ -40,10 +40,15 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
     if plan != "gold":
         settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).first()
         if not settings or not settings.gemini_api_key or not settings.gemini_api_key.strip():
-            raise HTTPException(
-                status_code=403, 
-                detail="Se requiere Plan Gold o configuración de clave API de Gemini propia para usar el Co-Piloto de IA."
-            )
+            # Permitir consultas de Trial si no han excedido las 10
+            queries_used = tenant.ai_trial_queries_used if hasattr(tenant, "ai_trial_queries_used") else 0
+            if queries_used is None:
+                queries_used = 0
+            if queries_used >= 10:
+                raise HTTPException(
+                    status_code=403, 
+                    detail="AI_TRIAL_EXHAUSTED"
+                )
 
     # 1. Recuperar la clave API de Gemini del inquilino de forma segura
     try:
@@ -131,11 +136,17 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
         clean_text = re.sub(r'\[.*?\]', '', brain_text).strip()
         clean_text = re.sub(r'\s+', ' ', clean_text)
 
+        # Calcular consultas de trial restantes
+        trial_remaining = None
+        if plan != "gold" and (not settings or not settings.gemini_api_key or not settings.gemini_api_key.strip()):
+            trial_remaining = max(0, 10 - (tenant.ai_trial_queries_used or 0))
+
         return schemas.AIChatResponse(
             response=clean_text,
             updated_fields=updated_fields if updated_fields else None,
             redirect_url=redirect_url,
-            audio_response_base64=audio_response_base64
+            audio_response_base64=audio_response_base64,
+            trial_remaining=trial_remaining
         )
 
     except Exception as e:
