@@ -502,13 +502,14 @@ export default function AICopilotWidget() {
       );
 
       if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        console.error("Error del servidor en chat:", errData);
         if (response.status === 403) {
-          const errData = await response.json().catch(() => ({}));
           if (errData.detail === 'AI_TRIAL_EXHAUSTED') {
             setIsTrialExhausted(true);
             setTrialRemaining(0);
             const exhaustMsg = language === 'fr' 
-              ? "Votre essai gratuit a expiré. Veuillez passer au Plan Gold." 
+              ? "Votre essai gratuit a expiré. Veuillez pasar au Plan Gold." 
               : language === 'en' 
               ? "Your free trial has expired. Please upgrade to Plan Gold." 
               : "Tu prueba gratuita de Co-Piloto de IA ha expirado. Por favor, actualiza al Plan Gold.";
@@ -518,7 +519,7 @@ export default function AICopilotWidget() {
             return;
           }
         }
-        throw new Error('Error al conectar con el servidor.');
+        throw new Error(errData.detail || 'Error al conectar con el servidor.');
       }
 
       const data = await response.json();
@@ -565,7 +566,7 @@ export default function AICopilotWidget() {
 
     } catch (err: any) {
       console.error('Error in Copilot chat:', err);
-      const errMsg = 'Error en el asistente. Inténtalo de nuevo.';
+      const errMsg = err.message || 'Error en el asistente. Inténtalo de nuevo.';
       setMessages((prev) => [...prev, { role: 'model', content: errMsg }]);
       speakText(errMsg);
     } finally {
