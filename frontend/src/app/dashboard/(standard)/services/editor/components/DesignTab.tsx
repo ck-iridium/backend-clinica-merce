@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Image as ImageIcon, Pipette, Sparkles, Video, Trash2, Loader2, RotateCcw } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Image as ImageIcon, Pipette, Sparkles, Video, Trash2, Loader2, RotateCcw, Lock } from 'lucide-react';
 import { UseFormRegister, Control, UseFormSetValue } from 'react-hook-form';
 import { processVideo } from '@/lib/videoProcessor';
 import { cn } from '@/lib/utils';
@@ -26,13 +26,69 @@ interface DesignTabProps {
 }
 
 export default function DesignTab({ formValues, register, control, setValue, setMediaPickerSlot, brandAccentColor = '#d4af37' }: DesignTabProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [showAIImageModal, setShowAIImageModal] = useState(false);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [isProcessingVideo, setIsProcessingVideo] = useState(false);
   const [processingProgress, setProcessingProgress] = useState(0);
   const [isDraggingImage, setIsDraggingImage] = useState(false);
   const [isDraggingVideo, setIsDraggingVideo] = useState(false);
+
+  // Validación de Clave de API propia (BYOK) para imágenes
+  const [hasOwnKey, setHasOwnKey] = useState<boolean>(false);
+  const [loadingLimits, setLoadingLimits] = useState(true);
+
+  useEffect(() => {
+    function getCookie(name: string): string | null {
+      if (typeof document === 'undefined') return null;
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+      return null;
+    }
+
+    async function fetchLimits() {
+      try {
+        const userSession = localStorage.getItem('user');
+        let tenantId = getCookie('tenant_id') || '';
+        let authToken = '';
+        
+        if (userSession) {
+          try {
+            const parsed = JSON.parse(userSession);
+            if (!tenantId) {
+              tenantId = parsed.tenant_id || '';
+            }
+            authToken = parsed.access_token || parsed.token || '';
+          } catch (e) {
+            console.error("Error parsing user session in DesignTab:", e);
+          }
+        }
+
+        if (!tenantId) {
+          setLoadingLimits(false);
+          return;
+        }
+
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const res = await fetch(`${API_URL}/settings/limits`, {
+          headers: {
+            'X-Tenant-ID': tenantId,
+            'Authorization': authToken ? `Bearer ${authToken}` : '',
+          }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setHasOwnKey(!!data.has_own_key);
+        }
+      } catch (err) {
+        console.error("Error al obtener límites de plan:", err);
+      } finally {
+        setLoadingLimits(false);
+      }
+    }
+    fetchLimits();
+  }, []);
 
   const getFullUrl = (url: string) => {
     if (!url) return '';
@@ -119,18 +175,56 @@ export default function DesignTab({ formValues, register, control, setValue, set
     if (file) handleMediaUpload(file, type);
   };
 
+  const handleOpenAIImageModal = () => {
+    if (loadingLimits) return;
+    if (!hasOwnKey) {
+      toast.error(
+        language === 'fr' 
+          ? "Génération d'images désactivée. Le plan Gold / Premium requiert votre propre clé API (BYOK) dans Paramètres > Avancé." 
+          : language === 'en' 
+            ? "Image generation disabled. Gold / Premium plan requires your own API Key (BYOK) in Settings > Advanced." 
+            : "Generación de imágenes deshabilitada. El plan Gold / Premium requiere tu propia clave de API (BYOK) en Ajustes > Avanzado.",
+        { 
+          duration: 7000,
+          action: {
+            label: language === 'fr' ? 'Configurer' : language === 'en' ? 'Configure' : 'Configurar',
+            onClick: () => window.location.href = '/dashboard/settings?tab=advanced'
+          }
+        }
+      );
+      return;
+    }
+    setShowAIImageModal(true);
+  };
+
   return (
     <div className="space-y-8">
       {/* SECCIÓN: IMAGEN PRINCIPAL */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <label className="block text-xs font-bold text-stone-500 uppercase tracking-[0.15em]">{t('dashboard.services.main_image_label')}</label>
+          <div className="flex flex-col gap-0.5">
+            <label className="block text-xs font-bold text-stone-500 uppercase tracking-[0.15em]">{t('dashboard.services.main_image_label')}</label>
+            {!hasOwnKey && !loadingLimits && (
+              <span className="text-[9px] text-[#d4af37] font-bold tracking-wide uppercase italic">
+                {language === 'fr' 
+                  ? "✦ Exclusivité BYOK : Clé API requise" 
+                  : language === 'en' 
+                    ? "✦ BYOK Exclusive: API Key required" 
+                    : "✦ Exclusivo BYOK: Clave de API requerida"}
+              </span>
+            )}
+          </div>
           <button
             type="button"
-            onClick={() => setShowAIImageModal(true)}
-            className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[#d4af37] hover:bg-yellow-50/50 px-2.5 py-1.5 rounded-lg border border-yellow-100 transition-all shadow-sm"
+            onClick={handleOpenAIImageModal}
+            className={cn(
+              "flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-lg border transition-all shadow-sm active:scale-95",
+              !hasOwnKey && !loadingLimits
+                ? "bg-stone-50 text-stone-400 border-stone-200 hover:bg-stone-100"
+                : "text-[#d4af37] border-yellow-100 hover:bg-yellow-50/50"
+            )}
           >
-            <Sparkles size={12} strokeWidth={2.5} />
+            {!hasOwnKey && !loadingLimits ? <Lock size={12} className="text-stone-400" /> : <Sparkles size={12} strokeWidth={2.5} />}
             {t('dashboard.services.generate_ia')}
           </button>
         </div>

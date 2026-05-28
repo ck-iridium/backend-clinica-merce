@@ -239,12 +239,12 @@ export default function AIImageGeneratorModal({
                 ? "AI Photo Studio" 
                 : "Estudio Fotográfico IA"}
           </DialogTitle>
-          <DialogDescription className="text-stone-500 mt-2 text-sm max-w-[90%]">
+          <DialogDescription className="text-stone-500 mt-2 text-sm max-w-[90%] font-sans">
             {language === 'fr' 
-              ? "Décrivez ce que vous souhaitez voir. L'IA créera une photo premium dans le style 'Quiet Luxury' de la clinique." 
+              ? "Décrivez ce que vous souhaitez voir. L'IA créera une photo premium dans le style 'Quiet Luxury' de la clinique. (Nécessite votre propre clé API configurée dans Paramètres)." 
               : language === 'en' 
-                ? "Describe what you want to see. The AI will create a premium photo matching the clinic's 'Quiet Luxury' style." 
-                : "Describe lo que quieres ver. La IA creará una foto premium con el estilo 'Quiet Luxury' de la clínica."}
+                ? "Describe what you want to see. The AI will create a premium photo matching the clinic's 'Quiet Luxury' style. (Requires your own configured API Key in Settings)." 
+                : "Describe lo que quieres ver. La IA creará una foto premium con el estilo 'Quiet Luxury' de la clínica. (Requiere tu propia clave de API configurada en Ajustes)."}
           </DialogDescription>
         </DialogHeader>
         <div className="p-6 space-y-5 relative">
