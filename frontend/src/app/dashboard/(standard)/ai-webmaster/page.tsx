@@ -14,6 +14,15 @@ export default function AIWebmasterPage() {
   const [checkingPlan, setCheckingPlan] = useState(true);
 
   useEffect(() => {
+    // Helper simple para leer cookies del lado del cliente
+    function getCookie(name: string): string | null {
+      if (typeof document === 'undefined') return null;
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+      return null;
+    }
+
     // 1. Intentar cargar rápido de localStorage
     try {
       const userStr = localStorage.getItem('user');
@@ -33,8 +42,34 @@ export default function AIWebmasterPage() {
     // 2. Hacer fetch de la API real
     async function fetchPlan() {
       try {
+        const userSession = localStorage.getItem('user');
+        let tenantId = getCookie('tenant_id') || '';
+        let authToken = '';
+        
+        if (userSession) {
+          try {
+            const parsed = JSON.parse(userSession);
+            if (!tenantId) {
+              tenantId = parsed.tenant_id || '';
+            }
+            authToken = parsed.access_token || parsed.token || '';
+          } catch (e) {
+            console.error("Error parsing user session in AI Webmaster Page:", e);
+          }
+        }
+
+        if (!tenantId) {
+          setCheckingPlan(false);
+          return;
+        }
+
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-        const res = await fetch(`${API_URL}/settings/limits`);
+        const res = await fetch(`${API_URL}/settings/limits`, {
+          headers: {
+            'X-Tenant-ID': tenantId,
+            'Authorization': authToken ? `Bearer ${authToken}` : '',
+          }
+        });
         if (res.ok) {
           const limitsData = await res.json();
           const pType = limitsData.plan_type?.toLowerCase() || 'free';

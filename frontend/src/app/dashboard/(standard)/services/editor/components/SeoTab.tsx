@@ -22,10 +22,45 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
   const [loadingLimits, setLoadingLimits] = useState(true);
 
   useEffect(() => {
+    // Helper simple para leer cookies del lado del cliente
+    function getCookie(name: string): string | null {
+      if (typeof document === 'undefined') return null;
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+      return null;
+    }
+
     async function fetchLimits() {
       try {
+        const userSession = localStorage.getItem('user');
+        let tenantId = getCookie('tenant_id') || '';
+        let authToken = '';
+        
+        if (userSession) {
+          try {
+            const parsed = JSON.parse(userSession);
+            if (!tenantId) {
+              tenantId = parsed.tenant_id || '';
+            }
+            authToken = parsed.access_token || parsed.token || '';
+          } catch (e) {
+            console.error("Error parsing user session in SeoTab:", e);
+          }
+        }
+
+        if (!tenantId) {
+          setLoadingLimits(false);
+          return;
+        }
+
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-        const res = await fetch(`${API_URL}/settings/limits`);
+        const res = await fetch(`${API_URL}/settings/limits`, {
+          headers: {
+            'X-Tenant-ID': tenantId,
+            'Authorization': authToken ? `Bearer ${authToken}` : '',
+          }
+        });
         if (res.ok) {
           const limitsData = await res.json();
           setLimits({
@@ -61,11 +96,34 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
 
     setIsGeneratingSEO(true);
     try {
+      const getCookie = (name: string): string | null => {
+        if (typeof document === 'undefined') return null;
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+        return null;
+      };
+
+      const userSession = localStorage.getItem('user');
+      let tenantId = getCookie('tenant_id') || '';
+      let authToken = '';
+      if (userSession) {
+        const parsed = JSON.parse(userSession);
+        if (!tenantId) {
+          tenantId = parsed.tenant_id || '';
+        }
+        authToken = parsed.access_token || parsed.token || '';
+      }
+
       const contextPrompt = `Nombre del servicio: ${name}\nDescripción corta: ${description}\nContenido detallado: ${plainTextContent}`;
       
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/ai/generate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Tenant-ID': tenantId,
+          'Authorization': authToken ? `Bearer ${authToken}` : '',
+        },
         body: JSON.stringify({
           prompt: contextPrompt,
           type: 'seo',

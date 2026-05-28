@@ -42,8 +42,34 @@ export default function AICopilotWidget() {
   useEffect(() => {
     async function fetchPlanAndTrial() {
       try {
+        const userSession = localStorage.getItem('user');
+        let tenantId = getCookie('tenant_id') || '';
+        let authToken = '';
+        
+        if (userSession) {
+          try {
+            const parsed = JSON.parse(userSession);
+            if (!tenantId) {
+              tenantId = parsed.tenant_id || '';
+            }
+            authToken = parsed.access_token || parsed.token || '';
+          } catch (e) {
+            console.error("Error parsing user session in AI Widget:", e);
+          }
+        }
+
+        if (!tenantId) {
+          console.warn("Tenant ID missing in AI Widget initialization");
+          return;
+        }
+
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-        const res = await fetch(`${API_URL}/settings/limits`);
+        const res = await fetch(`${API_URL}/settings/limits`, {
+          headers: {
+            'X-Tenant-ID': tenantId,
+            'Authorization': authToken ? `Bearer ${authToken}` : '',
+          }
+        });
         if (res.ok) {
           const limitsData = await res.json();
           const plan = limitsData.plan_type?.toLowerCase() || 'free';

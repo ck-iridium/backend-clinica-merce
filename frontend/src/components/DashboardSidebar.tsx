@@ -82,6 +82,15 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
   const [planType, setPlanType] = useState<string | null>(null);
 
   useEffect(() => {
+    // Helper simple para leer cookies del lado del cliente
+    function getCookie(name: string): string | null {
+      if (typeof document === 'undefined') return null;
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+      return null;
+    }
+
     // 1. Intentar leer rápido de localStorage
     try {
       const userStr = localStorage.getItem('user');
@@ -98,8 +107,31 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
     // 2. Fetch de la API para asegurar frescura de los datos
     async function fetchPlan() {
       try {
+        const userSession = localStorage.getItem('user');
+        let tenantId = getCookie('tenant_id') || '';
+        let authToken = '';
+        
+        if (userSession) {
+          try {
+            const parsed = JSON.parse(userSession);
+            if (!tenantId) {
+              tenantId = parsed.tenant_id || '';
+            }
+            authToken = parsed.access_token || parsed.token || '';
+          } catch (e) {
+            console.error("Error parsing user session in Sidebar:", e);
+          }
+        }
+
+        if (!tenantId) return;
+
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-        const res = await fetch(`${API_URL}/settings/limits`);
+        const res = await fetch(`${API_URL}/settings/limits`, {
+          headers: {
+            'X-Tenant-ID': tenantId,
+            'Authorization': authToken ? `Bearer ${authToken}` : '',
+          }
+        });
         if (res.ok) {
           const limitsData = await res.json();
           const pType = limitsData.plan_type?.toLowerCase() || 'free';
