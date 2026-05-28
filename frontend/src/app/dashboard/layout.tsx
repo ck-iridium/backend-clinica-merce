@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 
+import { headers } from 'next/headers';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import RouteGuard from '@/components/RouteGuard';
 import OnboardingGuard from '@/components/OnboardingGuard';
@@ -8,12 +9,19 @@ import AIGenerationFloatingCard from '@/components/cms/AIGenerationFloatingCard'
 import AICopilotWidget from '@/components/ai/AICopilotWidget';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  // El middleware inyecta x-tenant-id en cada request para Server Components
+  const headersList = await headers();
+  const tenantId = headersList.get('x-tenant-id') || '';
+
   let settings = null;
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/settings/`, {
       cache: 'no-store',
-      // Añadir un timeout corto para evitar bloqueos si Render está dormido
-      signal: AbortSignal.timeout(5000)
+      signal: AbortSignal.timeout(5000),
+      headers: {
+        // Reenviar el tenant al backend para que devuelva los ajustes correctos
+        ...(tenantId ? { 'X-Tenant-ID': tenantId } : {}),
+      },
     });
     if (res.ok) {
       settings = await res.json();

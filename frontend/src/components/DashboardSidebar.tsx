@@ -436,8 +436,14 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
 
           {/* Logo Area - Isotype Only */}
           <div className="flex items-center justify-center mb-10 px-4">
-            <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-[#d4af37] to-[#aa8412] flex items-center justify-center text-white font-serif italic text-2xl shadow-lg shadow-black/40 overflow-hidden">
-              {logoUrl ? <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" /> : clinicName.charAt(0)}
+            <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-stone-800 to-stone-950 border border-stone-700/60 flex items-center justify-center shadow-lg shadow-black/40 overflow-hidden">
+              {logoUrl ? (
+                <img src={logoUrl} alt={clinicName} className="w-full h-full object-cover" />
+              ) : (
+                <span className="font-serif italic text-2xl font-bold text-[#d4af37] drop-shadow-[0_0_8px_rgba(212,175,55,0.6)] select-none">
+                  {clinicName.charAt(0).toUpperCase()}
+                </span>
+              )}
             </div>
           </div>
 
