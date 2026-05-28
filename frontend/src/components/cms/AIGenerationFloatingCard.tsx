@@ -3,9 +3,11 @@
 import React, { useEffect } from 'react';
 import { useAIImage } from '@/app/contexts/AIImageContext';
 import { Sparkles, Loader2, CheckCircle2, AlertCircle, X } from 'lucide-react';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 export default function AIGenerationFloatingCard() {
   const { isGenerating, generationTime, resultUrl, error, resetGeneration, retry, cancelGeneration } = useAIImage();
+  const { language } = useLanguage();
   const [isClosing, setIsClosing] = React.useState(false);
 
   const handleClose = React.useCallback(() => {
@@ -50,11 +52,15 @@ export default function AIGenerationFloatingCard() {
               <div>
                 <h4 className="font-serif font-bold text-stone-800 leading-tight">
                   {isGenerating 
-                    ? 'Generando Foto IA' 
-                    : '¡Imagen Lista!'}
+                    ? (language === 'fr' ? 'Génération de Photo IA' : language === 'en' ? 'Generating AI Photo' : 'Generando Foto IA') 
+                    : (language === 'fr' ? 'Image Prête !' : language === 'en' ? 'Image Ready!' : '¡Imagen Lista!')}
                 </h4>
                 <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mt-0.5">
-                  {isGenerating ? `Procesando (${generationTime}s)...` : resultUrl ? 'Listo para el catálogo' : 'Algo salió mal'}
+                  {isGenerating 
+                    ? `${language === 'fr' ? 'Traitement' : language === 'en' ? 'Processing' : 'Procesando'} (${generationTime}s)...` 
+                    : resultUrl 
+                      ? (language === 'fr' ? 'Prête pour le catalogue' : language === 'en' ? 'Ready for the catalog' : 'Listo para el catálogo') 
+                      : (language === 'fr' ? "Quelque chose s'est mal passé" : language === 'en' ? 'Something went wrong' : 'Algo salió mal')}
                 </p>
               </div>
             </div>
@@ -69,15 +75,19 @@ export default function AIGenerationFloatingCard() {
             <div className="space-y-4">
               <div className="flex flex-col gap-1.5">
                 <div className="flex justify-between items-center text-[10px] font-bold">
-                  <span className="text-stone-400 uppercase tracking-widest">Estado</span>
+                  <span className="text-stone-400 uppercase tracking-widest">
+                    {language === 'fr' ? 'Statut' : language === 'en' ? 'Status' : 'Estado'}
+                  </span>
                   <span className={`${generationTime > 60 ? 'text-amber-500' : 'text-[#d4af37]'} transition-colors animate-pulse`}>
-                    {generationTime > 60 ? 'Finalizando detalles...' : 'En curso...'}
+                    {generationTime > 60 
+                      ? (language === 'fr' ? 'Finalisation des détails...' : language === 'en' ? 'Finalizing details...' : 'Finalizando detalles...') 
+                      : (language === 'fr' ? 'En cours...' : language === 'en' ? 'In progress...' : 'En curso...')}
                   </span>
                 </div>
                 <div className="text-[11px] text-stone-500 leading-relaxed italic">
                   {generationTime > 60 
-                    ? "Está tardando más de lo habitual. Puedes esperar un poco más o cancelar y reintentar."
-                    : "No cierres esta página mientras trabajamos en tu contenido editorial premium."}
+                    ? (language === 'fr' ? "Cela prend plus de temps que d'habitude. Vous pouvez attendre un peu plus ou annuler et réessayer." : language === 'en' ? "It's taking longer than usual. You can wait a bit more or cancel and retry." : "Está tardando más de lo habitual. Puedes esperar un poco más o cancelar y reintentar.")
+                    : (language === 'fr' ? "Ne fermez pas cette page pendant que nous travaillons sur votre contenu éditorial premium." : language === 'en' ? "Do not close this page while we are working on your premium editorial content." : "No cierres esta página mientras trabajamos en tu contenido editorial premium.")}
                 </div>
               </div>
               <button 
@@ -85,7 +95,7 @@ export default function AIGenerationFloatingCard() {
                 className="w-full py-2 bg-stone-50 hover:bg-stone-100 text-stone-500 rounded-xl text-[9px] font-black uppercase tracking-widest border border-stone-100 transition-all shadow-sm flex items-center justify-center gap-2 group"
               >
                 <X size={12} className="group-hover:text-red-500 transition-colors" />
-                Cancelar generación
+                {language === 'fr' ? 'Annuler la génération' : language === 'en' ? 'Cancel generation' : 'Cancelar generación'}
               </button>
             </div>
           )}
@@ -98,13 +108,15 @@ export default function AIGenerationFloatingCard() {
               <div className="space-y-3">
                 <div className="flex items-center justify-center gap-2 py-2 px-4 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-100 animate-pulse">
                   <CheckCircle2 size={14} />
-                  <span className="text-[11px] font-bold">Multimedia aplicado al tratamiento</span>
+                  <span className="text-[11px] font-bold">
+                    {language === 'fr' ? 'Multimédia appliqué au soin' : language === 'en' ? 'Media applied to service' : 'Multimedia aplicado al tratamiento'}
+                  </span>
                 </div>
                 <button 
                   onClick={handleClose}
                   className="w-full py-2.5 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-md active:scale-95"
                 >
-                  Entendido
+                  {language === 'fr' ? 'Compris' : language === 'en' ? 'Understood' : 'Entendido'}
                 </button>
               </div>
             </div>
@@ -112,13 +124,21 @@ export default function AIGenerationFloatingCard() {
 
           {error && (
             <div className="p-4 bg-red-50 rounded-2xl border border-red-100">
-              <p className="text-[11px] text-red-600 font-bold leading-tight line-clamp-2 mb-3">{error}</p>
+              <p className="text-[11px] text-red-600 font-bold leading-tight line-clamp-2 mb-3">
+                {error.includes("Clave de API no configurada en el sistema para Plan Premium")
+                  ? (language === 'fr' 
+                      ? "Clé API non configurée dans le système pour le Plan Premium." 
+                      : language === 'en' 
+                        ? "API Key not configured in the system for Premium Plan." 
+                        : error)
+                  : error}
+              </p>
               <button 
                 onClick={retry}
                 className="w-full py-2 bg-white text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-red-100 hover:bg-red-600 hover:text-white transition-all shadow-sm flex items-center justify-center gap-2"
               >
                 <Loader2 size={12} className="rotate-90" />
-                Reintentar ahora
+                {language === 'fr' ? 'Réessayer maintenant' : language === 'en' ? 'Retry now' : 'Reintentar ahora'}
               </button>
             </div>
           )}

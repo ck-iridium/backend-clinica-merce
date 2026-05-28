@@ -205,7 +205,10 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
     try:
         gemini_key = get_tenant_ai_key(db, "gemini")
     except HTTPException:
-        raise
+        # Fallback a la clave maestra de Gemini si no se pudo resolver pero tenemos la variable de entorno
+        gemini_key = os.getenv("GEMINI_API_KEY")
+        if not gemini_key or not gemini_key.strip():
+            raise HTTPException(status_code=400, detail="Clave de API de Gemini no configurada en el sistema.")
         
     logger.info(f"START GENERATION: {request.prompt[:50]}...")
     
@@ -213,6 +216,14 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
     refined_prompt = ai_enhance_image_prompt_sync(request.prompt, request.shot_type, request.visual_style, gemini_key, request.reference_image)
     
     file_bytes = None
+
+    # Lógica de fallback transparente si el proveedor es OpenAI pero no hay clave configurada
+    if ai_provider == "openai":
+        try:
+            openai_key = get_tenant_ai_key(db, "openai")
+        except Exception:
+            logger.info("OpenAI API Key no configurada para el inquilino. Realizando fallback automático a Google Imagen 3 de la plataforma.")
+            ai_provider = "gemini"
 
     if ai_provider == "gemini":
         try:

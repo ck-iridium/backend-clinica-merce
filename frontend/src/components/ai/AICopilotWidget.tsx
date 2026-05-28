@@ -596,8 +596,8 @@ export default function AICopilotWidget() {
   return (
     <div className={
       isOpen
-        ? "fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-3 font-sans transition-all duration-300 max-sm:!fixed max-sm:!inset-0 max-sm:!w-full max-sm:!h-full max-sm:!p-0 max-sm:!m-0 max-sm:!z-[9999]"
-        : "fixed bottom-[110px] md:bottom-6 right-0 md:right-6 z-[9999] flex flex-col items-end gap-3 font-sans transition-all duration-300"
+        ? "fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3 font-sans transition-all duration-300 max-sm:!fixed max-sm:!inset-0 max-sm:!w-full max-sm:!h-full max-sm:!p-0 max-sm:!m-0 max-sm:!z-40"
+        : "fixed bottom-[110px] md:bottom-6 right-0 md:right-6 z-40 flex flex-col items-end gap-3 font-sans transition-all duration-300"
     }>
 
       {/* ── PANEL DE COPILOTO (CREMA, ANTRACITA Y DORADO) ── */}
