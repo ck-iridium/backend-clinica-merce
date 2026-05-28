@@ -121,9 +121,9 @@ export default function ManageCategoriesModal({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="p-0 border-none max-w-lg">
-          <DialogHeader className="p-8 border-b border-stone-50 bg-white rounded-t-xl">
-            <div className="flex justify-between items-start">
+        <DialogContent className={`p-0 border-none max-w-lg transition-all duration-300 ${showCategoryModal ? 'blur-[2.5px] opacity-60 scale-[0.98] pointer-events-none' : ''}`}>
+          <DialogHeader className="p-8 pr-20 border-b border-stone-50 bg-white rounded-t-xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <DialogTitle className="text-2xl font-extrabold text-stone-800">{t('dashboard.services.manage_categories')}</DialogTitle>
                 <DialogDescription className="text-stone-400 text-sm mt-1">
@@ -132,7 +132,7 @@ export default function ManageCategoriesModal({
               </div>
               <button 
                 onClick={() => setShowCategoryModal(true)}
-                className="bg-[#d4af37] text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md hover:bg-[#b08e23] transition-all active:scale-95 flex items-center gap-2"
+                className="bg-[#d4af37] text-white px-4 py-2.5 rounded-xl text-sm font-bold shadow-md hover:bg-[#b08e23] transition-all active:scale-95 flex items-center gap-2 self-start sm:self-center shrink-0"
               >
                 <Plus size={16} strokeWidth={2} /> {t('dashboard.services.new')}
               </button>
@@ -234,7 +234,7 @@ export default function ManageCategoriesModal({
 
       {/* Modal Nueva Categoría */}
       <Dialog open={showCategoryModal} onOpenChange={setShowCategoryModal}>
-        <DialogContent className="p-0 border-none max-w-md">
+        <DialogContent className="p-0 border-none max-w-xs">
           <DialogHeader className="p-8 border-b border-stone-50 bg-white rounded-t-xl">
             <DialogTitle className="text-xl font-extrabold text-stone-800">{t('dashboard.services.new_category')}</DialogTitle>
             <DialogDescription className="text-stone-500 text-sm">
