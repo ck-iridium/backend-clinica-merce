@@ -24,7 +24,7 @@ def generate_gemini_tts(text: str, voice_gender: str, api_key: str, lang: str = 
         voice_name = "Algieba" if voice_gender == "male" else "Zephyr"
 
         generation_config = {
-            "response_modalities": ["TEXT", "AUDIO"],
+            "response_modalities": ["AUDIO"],
             "speech_config": {
                 "voice_config": {
                     "prebuilt_voice_config": {
@@ -35,7 +35,7 @@ def generate_gemini_tts(text: str, voice_gender: str, api_key: str, lang: str = 
         }
         
         model_voice = genai.GenerativeModel(
-            model_name="gemini-3.1-flash-tts-preview",
+            model_name="gemini-2.5-flash-preview-tts",
             generation_config=generation_config
         )
 

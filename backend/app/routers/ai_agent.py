@@ -127,7 +127,18 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
         # Quitar duplicados en campos actualizados si existen
         updated_fields = list(set(updated_fields))
 
-        # 3. LA VOZ (Gemini 3.1 Flash TTS): Convierte de forma secuencial el texto en voz hiperrealista
+        # 2.5. Si no es Gold y está en el Trial, solo cobramos un intento si de verdad se ejecutó una acción real o navegación
+        is_trial = False
+        if plan != "gold" and (not settings or not settings.gemini_api_key or not settings.gemini_api_key.strip()):
+            is_trial = True
+            if updated_fields or redirect_url:
+                queries_used = tenant.ai_trial_queries_used if hasattr(tenant, "ai_trial_queries_used") else 0
+                if queries_used is None:
+                    queries_used = 0
+                tenant.ai_trial_queries_used = queries_used + 1
+                db.commit()
+
+        # 3. LA VOZ (Gemini 2.5 Flash TTS): Convierte de forma secuencial el texto en voz hiperrealista
         voice_gender = getattr(request, 'voice_gender', 'female')
         lang = getattr(request, 'language', 'es')
         audio_response_base64 = ai_agent_service.generate_gemini_tts(brain_text, voice_gender, api_key, lang)
@@ -138,7 +149,7 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
 
         # Calcular consultas de trial restantes
         trial_remaining = None
-        if plan != "gold" and (not settings or not settings.gemini_api_key or not settings.gemini_api_key.strip()):
+        if is_trial:
             trial_remaining = max(0, 10 - (tenant.ai_trial_queries_used or 0))
 
         return schemas.AIChatResponse(

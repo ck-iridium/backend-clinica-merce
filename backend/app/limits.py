@@ -108,11 +108,7 @@ def get_tenant_ai_key(db: Session, provider: str) -> str:
             queries_used = 0
             
         if queries_used < 10:
-            # Incrementar y guardar en base de datos
-            tenant.ai_trial_queries_used = queries_used + 1
-            db.commit()
-            
-            # Devolver llave maestra para posibilitar el trial
+            # Devolver llave maestra para posibilitar el trial sin incrementar el contador todavía
             master_key = os.getenv("GEMINI_API_KEY") if provider == "gemini" else os.getenv("OPENAI_API_KEY")
             if master_key and master_key.strip():
                 return master_key
