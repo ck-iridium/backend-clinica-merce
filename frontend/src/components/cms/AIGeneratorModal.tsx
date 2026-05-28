@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { X, Sparkles, Wand2, ShieldAlert } from 'lucide-react';
+import { X, Sparkles, Wand2, ShieldAlert, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import {
   Select,
@@ -19,9 +20,11 @@ interface AIGeneratorModalProps {
 
 export default function AIGeneratorModal({ onClose, onGenerate, targetType, serviceName }: AIGeneratorModalProps) {
   const { t } = useLanguage();
+  const router = useRouter();
   const [prompt, setPrompt] = useState('');
   const [tone, setTone] = useState('premium');
   const [isLoading, setIsLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState<string | null>(null);
   
   // Límites de plan
   const [limits, setLimits] = useState<{ ai_allowed: boolean; ai_requires_byok: boolean } | null>(null);
@@ -147,18 +150,40 @@ export default function AIGeneratorModal({ onClose, onGenerate, targetType, serv
             </p>
 
             <div className="flex flex-col w-full gap-3 max-w-sm">
-              <a 
-                href="/dashboard/settings"
-                className="flex items-center justify-center h-12 rounded-xl bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 font-bold text-xs transition-all shadow-sm active:scale-95"
+              <button 
+                onClick={() => {
+                  setRedirecting('advanced');
+                  router.push('/dashboard/settings?tab=advanced');
+                }}
+                disabled={redirecting !== null}
+                className="flex items-center justify-center h-12 rounded-xl bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 font-bold text-xs transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {t('dashboard.services.config_own_key')}
-              </a>
-              <a 
-                href="/dashboard/settings"
-                className="flex items-center justify-center h-12 rounded-xl bg-[#d4af37] hover:bg-stone-900 text-white font-bold text-xs transition-all shadow-md active:scale-95"
+                {redirecting === 'advanced' ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-stone-600" />
+                    <span>Redirigiendo a Ajustes...</span>
+                  </div>
+                ) : (
+                  t('dashboard.services.config_own_key')
+                )}
+              </button>
+              <button 
+                onClick={() => {
+                  setRedirecting('subscription');
+                  router.push('/dashboard/settings?tab=subscription');
+                }}
+                disabled={redirecting !== null}
+                className="flex items-center justify-center h-12 rounded-xl bg-[#d4af37] hover:bg-stone-900 text-white font-bold text-xs transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {t('dashboard.services.upgrade_plan')}
-              </a>
+                {redirecting === 'subscription' ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-white" />
+                    <span>Redirigiendo a Suscripciones...</span>
+                  </div>
+                ) : (
+                  t('dashboard.services.upgrade_plan')
+                )}
+              </button>
             </div>
           </div>
         ) : (

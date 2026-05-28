@@ -45,7 +45,7 @@ export default function AICopilotWidget() {
         const userSession = localStorage.getItem('user');
         let tenantId = getCookie('tenant_id') || '';
         let authToken = '';
-        
+
         if (userSession) {
           try {
             const parsed = JSON.parse(userSession);
@@ -74,14 +74,14 @@ export default function AICopilotWidget() {
           const limitsData = await res.json();
           const plan = limitsData.plan_type?.toLowerCase() || 'free';
           setPlanType(plan);
-          
+
           const ownKey = limitsData.limits?.ai_allowed && limitsData.limits?.ai_requires_byok;
           setHasOwnKey(!!ownKey);
-          
+
           const used = limitsData.ai_trial_queries_used ?? 0;
           const remaining = Math.max(0, 10 - used);
           setTrialRemaining(remaining);
-          
+
           if (plan !== 'gold' && !ownKey && remaining <= 0) {
             setIsTrialExhausted(true);
           }
@@ -113,7 +113,7 @@ export default function AICopilotWidget() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'model',
-      content: language === 'fr' 
+      content: language === 'fr'
         ? 'Bonjour, je suis votre Copilote ProBookia. Dites-moi où vous souhaitez naviguer ou quel traitement vous souhaitez créer.'
         : language === 'en'
           ? 'Hello, I am your ProBookia Copilot. Tell me where you want to navigate or what service you want to create.'
@@ -138,10 +138,10 @@ export default function AICopilotWidget() {
     const windowHeight = window.innerHeight;
     const paddingRight = 24;
     const paddingBottom = 90;
-    
+
     const newWidth = Math.max(300, Math.min(windowWidth - 32, windowWidth - e.clientX - paddingRight));
     const newHeight = Math.max(300, Math.min(windowHeight - 32, windowHeight - e.clientY - paddingBottom));
-    
+
     setChatWidth(newWidth);
     setChatHeight(newHeight);
     localStorage.setItem('probookia_copilot_width', String(newWidth));
@@ -194,7 +194,7 @@ export default function AICopilotWidget() {
         return [
           {
             role: 'model',
-            content: language === 'fr' 
+            content: language === 'fr'
               ? 'Bonjour, je suis votre Copilote ProBookia. Dites-moi où vous souhaitez naviguer ou quel traitement vous souhaitez créer.'
               : language === 'en'
                 ? 'Hello, I am your ProBookia Copilot. Tell me where you want to navigate or what service you want to create.'
@@ -236,7 +236,7 @@ export default function AICopilotWidget() {
       setMessages([
         {
           role: 'model',
-          content: language === 'fr' 
+          content: language === 'fr'
             ? 'Bonjour, je suis votre Copilote ProBookia. Dites-moi où vous souhaitez naviguer ou quel traitement vous souhaitez créer.'
             : language === 'en'
               ? 'Hello, I am your ProBookia Copilot. Tell me where you want to navigate or what service you want to create.'
@@ -244,10 +244,10 @@ export default function AICopilotWidget() {
         },
       ]);
       toast.success(
-        language === 'fr' 
-          ? 'Historique de conversation réinitialisé.' 
-          : language === 'en' 
-            ? 'Conversation history reset.' 
+        language === 'fr'
+          ? 'Historique de conversation réinitialisé.'
+          : language === 'en'
+            ? 'Conversation history reset.'
             : 'Historial de conversación reiniciado.'
       );
     } catch (e) {
@@ -316,7 +316,7 @@ export default function AICopilotWidget() {
     try {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      
+
       const voices = window.speechSynthesis.getVoices();
       const langPrefix = audioLanguage.split('-')[0].toLowerCase();
       const langVoices = voices.filter((v) => v.lang.toLowerCase().startsWith(langPrefix));
@@ -326,12 +326,12 @@ export default function AICopilotWidget() {
         selectedVoice = langVoices.find((v) => {
           const name = v.name.toLowerCase();
           if (voiceGender === 'male') {
-            return name.includes('male') || name.includes('david') || name.includes('george') || 
-                   name.includes('paul') || name.includes('daniel') || name.includes('microsoft');
+            return name.includes('male') || name.includes('david') || name.includes('george') ||
+              name.includes('paul') || name.includes('daniel') || name.includes('microsoft');
           } else {
-            return name.includes('female') || name.includes('zira') || name.includes('helena') || 
-                   name.includes('hortense') || name.includes('samantha') || name.includes('elene') || 
-                   name.includes('google') || name.includes('hazel') || name.includes('natural');
+            return name.includes('female') || name.includes('zira') || name.includes('helena') ||
+              name.includes('hortense') || name.includes('samantha') || name.includes('elene') ||
+              name.includes('google') || name.includes('hazel') || name.includes('natural');
           }
         });
         if (!selectedVoice) {
@@ -359,7 +359,7 @@ export default function AICopilotWidget() {
         };
         utterance.onend = triggerCallback;
         utterance.onerror = triggerCallback;
-        
+
         // Safety backup timer: ~180ms per word + 1s padding
         const wordCount = text.split(/\s+/).length;
         const backupDelay = Math.max(2000, wordCount * 180 + 1000);
@@ -385,7 +385,7 @@ export default function AICopilotWidget() {
 
     const fileType = file.type;
     const isImage = fileType.startsWith('image/');
-    
+
     if (isImage) {
       setIsUploading(true);
       try {
@@ -458,7 +458,7 @@ export default function AICopilotWidget() {
     const userSession = localStorage.getItem('user');
     let tenantId = getCookie('tenant_id') || '';
     let authToken = '';
-    
+
     if (userSession) {
       const parsed = JSON.parse(userSession);
       if (!tenantId) {
@@ -508,11 +508,11 @@ export default function AICopilotWidget() {
           if (errData.detail === 'AI_TRIAL_EXHAUSTED') {
             setIsTrialExhausted(true);
             setTrialRemaining(0);
-            const exhaustMsg = language === 'fr' 
-              ? "Votre essai gratuit a expiré. Veuillez pasar au Plan Gold." 
-              : language === 'en' 
-              ? "Your free trial has expired. Please upgrade to Plan Gold." 
-              : "Tu prueba gratuita de Co-Piloto de IA ha expirado. Por favor, actualiza al Plan Gold.";
+            const exhaustMsg = language === 'fr'
+              ? "Votre essai gratuit a expiré. Veuillez pasar au Plan Gold."
+              : language === 'en'
+                ? "Your free trial has expired. Please upgrade to Plan Gold."
+                : "Tu prueba gratuita de Co-Piloto de IA ha expirado. Por favor, actualiza al Plan Gold.";
             setMessages((prev) => [...prev, { role: 'model', content: exhaustMsg }]);
             speakText(exhaustMsg);
             setIsLoading(false);
@@ -523,7 +523,7 @@ export default function AICopilotWidget() {
       }
 
       const data = await response.json();
-      
+
       if (typeof data.trial_remaining === 'number') {
         setTrialRemaining(data.trial_remaining);
         if (data.trial_remaining <= 0 && planType !== 'gold' && !hasOwnKey) {
@@ -589,10 +589,10 @@ export default function AICopilotWidget() {
         ? "fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-3 font-sans transition-all duration-300 max-sm:!fixed max-sm:!inset-0 max-sm:!w-full max-sm:!h-full max-sm:!p-0 max-sm:!m-0 max-sm:!z-[9999]"
         : "fixed bottom-[110px] md:bottom-6 right-0 md:right-6 z-[9999] flex flex-col items-end gap-3 font-sans transition-all duration-300"
     }>
-      
+
       {/* ── PANEL DE COPILOTO (CREMA, ANTRACITA Y DORADO) ── */}
       {isOpen && (
-        <div 
+        <div
           style={{ width: `${chatWidth}px`, height: `${chatHeight}px` }}
           className="bg-white/95 backdrop-blur-md border border-stone-200/80 rounded-luxury-card shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-300 ease-out relative select-none mr-4 md:mr-0 max-sm:!w-full max-sm:!h-full max-sm:!max-w-none max-sm:!max-h-none max-sm:!mr-0 max-sm:!rounded-none max-sm:!border-none max-sm:!h-[100dvh]"
         >
@@ -604,7 +604,7 @@ export default function AICopilotWidget() {
           >
             <div className="w-2.5 h-2.5 border-l-2 border-t-2 border-stone-400/40 group-hover/resize:border-primary transition-colors rounded-tl" />
           </div>
-          
+
           <div
             onMouseDown={startResize}
             className="absolute top-0 left-0 bottom-0 w-1.5 cursor-ew-resize z-40 hover:bg-primary/20 transition-all duration-300 max-sm:hidden"
@@ -629,7 +629,7 @@ export default function AICopilotWidget() {
                   </span>
                 </div>
               </div>
-              
+
               <button
                 onClick={() => setIsOpen(false)}
                 className="p-2.5 rounded-xl text-stone-400 hover:text-white hover:bg-stone-800 transition-all shrink-0 active:scale-95 border border-stone-800"
@@ -653,19 +653,18 @@ export default function AICopilotWidget() {
                 onClick={() => {
                   const next = voiceGender === 'female' ? 'male' : 'female';
                   setVoiceGender(next);
-                  toast.success(next === 'male' 
+                  toast.success(next === 'male'
                     ? (language === 'fr' ? 'Voix masculine activée' : language === 'en' ? 'Male voice activated' : 'Voz masculina activada')
                     : (language === 'fr' ? 'Voix féminine activée' : language === 'en' ? 'Female voice activated' : 'Voz femenina activada')
                   );
                 }}
-                className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all duration-300 flex items-center justify-center gap-1.5 shrink-0 active:scale-95 ${
-                  voiceGender === 'male'
+                className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all duration-300 flex items-center justify-center gap-1.5 shrink-0 active:scale-95 ${voiceGender === 'male'
                     ? 'border-primary bg-primary/20 text-primary font-bold shadow-lg shadow-primary/10'
                     : 'border-stone-800 bg-stone-900/50 text-stone-400 hover:text-stone-200 hover:border-stone-700'
-                }`}
+                  }`}
                 title={language === 'fr' ? 'Changer de voix (Féminin/Masculin)' : language === 'en' ? 'Change voice (Female/Male)' : 'Cambiar voz (Femenina/Masculina)'}
               >
-                {voiceGender === 'female' 
+                {voiceGender === 'female'
                   ? (language === 'fr' ? '👩 Voix Féminine' : language === 'en' ? '👩 Female Voice' : '👩 Voz Femenina')
                   : (language === 'fr' ? '👨 Voix Masculine' : language === 'en' ? '👨 Male Voice' : '👨 Voz Masculina')
                 }
@@ -675,19 +674,18 @@ export default function AICopilotWidget() {
                 {/* Botón de Silencio */}
                 <button
                   onClick={() => setIsMuted(!isMuted)}
-                  className={`p-2 rounded-xl border transition-all shrink-0 active:scale-95 ${
-                    isMuted 
-                      ? 'border-red-500/40 bg-red-500/10 text-red-400' 
+                  className={`p-2 rounded-xl border transition-all shrink-0 active:scale-95 ${isMuted
+                      ? 'border-red-500/40 bg-red-500/10 text-red-400'
                       : 'border-stone-800 bg-stone-900/50 text-stone-400 hover:text-primary hover:border-stone-700'
-                  }`}
-                  title={isMuted 
+                    }`}
+                  title={isMuted
                     ? (language === 'fr' ? 'Activer la voix' : language === 'en' ? 'Unmute Voice' : 'Activar Voz')
                     : (language === 'fr' ? 'Couper la voix' : language === 'en' ? 'Mute Voice' : 'Silenciar Voz')
                   }
                 >
                   {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
                 </button>
-                
+
                 {/* Botón Reiniciar Chat */}
                 <button
                   onClick={handleClearHistory}
@@ -741,18 +739,17 @@ export default function AICopilotWidget() {
                       <User size={18} className="text-stone-900" />
                     </div>
                   )}
-                  
-                  <div className={`p-3.5 rounded-luxury-card text-xs leading-relaxed shadow-sm transition-all duration-300 whitespace-pre-wrap ${
-                    isAI
+
+                  <div className={`p-3.5 rounded-luxury-card text-xs leading-relaxed shadow-sm transition-all duration-300 whitespace-pre-wrap ${isAI
                       ? 'bg-white text-stone-800 border border-stone-200/50 rounded-tl-none font-medium'
                       : 'bg-stone-900 text-white rounded-tr-none font-bold'
-                  }`}>
+                    }`}>
                     {msg.content}
                   </div>
                 </div>
               );
             })}
-            
+
             {isLoading && (
               <div className="flex gap-3 max-w-[92%] self-start animate-pulse">
                 <div className="w-10 h-10 rounded-full bg-stone-900 border border-primary/30 flex items-center justify-center text-white shrink-0 shadow-sm mt-0.5">
@@ -765,7 +762,7 @@ export default function AICopilotWidget() {
                 </div>
               </div>
             )}
-            
+
             <div ref={messagesEndRef} />
           </div>
 
@@ -783,7 +780,7 @@ export default function AICopilotWidget() {
                     {attachedFile.name}
                   </span>
                   <span className="text-[9px] text-stone-400 font-bold uppercase tracking-wider">
-                    {attachedFile.type === 'image' 
+                    {attachedFile.type === 'image'
                       ? (language === 'fr' ? 'Image pour service/catégorie' : language === 'en' ? 'Image for service/category' : 'Imagen para servicio/categoría')
                       : (language === 'fr' ? 'Document sécurisé (CSV/TXT/JSON)' : language === 'en' ? 'Secure document (CSV/TXT/JSON)' : 'Documento seguro (CSV/TXT/JSON)')
                     }
@@ -822,31 +819,30 @@ export default function AICopilotWidget() {
                       language === 'fr'
                         ? 'Le téléchargement de documents nécessite un plan Pro ou Gold.'
                         : language === 'en'
-                        ? 'Uploading files requires a Pro or Gold plan.'
-                        : 'Subir archivos requiere una suscripción Pro o Gold.'
+                          ? 'Uploading files requires a Pro or Gold plan.'
+                          : 'Subir archivos requiere una suscripción Pro o Gold.'
                     );
                     return;
                   }
                   fileInputRef.current?.click();
                 }}
                 disabled={isLoading || isUploading}
-                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-all active:scale-95 shrink-0 ${
-                  isUploading 
-                    ? 'animate-pulse border-primary bg-primary/10 text-primary' 
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-all active:scale-95 shrink-0 ${isUploading
+                    ? 'animate-pulse border-primary bg-primary/10 text-primary'
                     : 'border-stone-200/80 bg-white hover:bg-stone-50 text-stone-600 hover:text-stone-800'
-                }`}
+                  }`}
                 title={
                   planType !== 'gold' && planType !== 'pro' && !hasOwnKey
-                    ? (language === 'fr' 
-                        ? 'Téléchargement de fichiers (Pro/Gold uniquement)' 
-                        : language === 'en' 
-                          ? 'File upload (Pro/Gold only)' 
-                          : 'Subir archivos (Solo Pro/Gold)')
-                    : (language === 'fr' 
-                        ? 'Joindre un fichier sécurisé (CSV, TXT, JSON, Image)' 
-                        : language === 'en' 
-                          ? 'Attach secure file (CSV, TXT, JSON, Image)' 
-                          : 'Adjuntar archivo seguro (CSV, TXT, JSON, Imagen)')
+                    ? (language === 'fr'
+                      ? 'Téléchargement de fichiers (Pro/Gold uniquement)'
+                      : language === 'en'
+                        ? 'File upload (Pro/Gold only)'
+                        : 'Subir archivos (Solo Pro/Gold)')
+                    : (language === 'fr'
+                      ? 'Joindre un fichier sécurisé (CSV, TXT, JSON, Image)'
+                      : language === 'en'
+                        ? 'Attach secure file (CSV, TXT, JSON, Image)'
+                        : 'Adjuntar archivo seguro (CSV, TXT, JSON, Imagen)')
                 }
               >
                 {planType !== 'gold' && planType !== 'pro' && !hasOwnKey ? (
@@ -855,7 +851,7 @@ export default function AICopilotWidget() {
                   <Paperclip size={15} />
                 )}
                 <span>
-                  {isUploading 
+                  {isUploading
                     ? (language === 'fr' ? 'Téléchargement...' : language === 'en' ? 'Uploading...' : 'Subiendo...')
                     : (language === 'fr' ? 'Joindre un fichier' : language === 'en' ? 'Attach File' : 'Adjuntar Archivo')
                   }
@@ -887,16 +883,15 @@ export default function AICopilotWidget() {
                 placeholder={language === 'fr' ? 'Écrire un message...' : language === 'en' ? 'Type a message...' : 'Escribe tu mensaje...'}
                 className="flex-1 bg-stone-50 border border-stone-200/80 rounded-xl px-3 py-2.5 text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:border-primary transition-all font-medium resize-none min-h-[48px] max-h-32 overflow-y-auto leading-relaxed"
               />
-              
+
               {/* Botón Enviar */}
               <button
                 onClick={() => handleSend()}
                 disabled={isLoading || isUploading || (!input.trim() && !attachedFile)}
-                className={`flex h-12 w-12 items-center justify-center rounded-xl bg-stone-900 text-white transition-all duration-300 border border-stone-800 shadow-md shrink-0 active:scale-95 ${
-                  isLoading || isUploading || (!input.trim() && !attachedFile) 
-                    ? 'opacity-40 cursor-not-allowed' 
+                className={`flex h-12 w-12 items-center justify-center rounded-xl bg-stone-900 text-white transition-all duration-300 border border-stone-800 shadow-md shrink-0 active:scale-95 ${isLoading || isUploading || (!input.trim() && !attachedFile)
+                    ? 'opacity-40 cursor-not-allowed'
                     : 'hover:bg-primary hover:text-stone-900 hover:border-primary'
-                }`}
+                  }`}
                 title={language === 'fr' ? 'Envoyer le message' : language === 'en' ? 'Send Message' : 'Enviar Mensaje'}
               >
                 <Send size={18} />

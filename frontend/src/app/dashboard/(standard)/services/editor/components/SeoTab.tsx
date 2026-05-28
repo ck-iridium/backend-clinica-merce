@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Sparkles, Lock } from 'lucide-react';
+import { Sparkles, Lock, Loader2 } from 'lucide-react';
 import { UseFormRegister, UseFormSetValue } from 'react-hook-form';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Editor } from '@tiptap/react';
 import type { ServiceFormData } from '@/components/cms/ServiceEditor';
@@ -15,7 +16,9 @@ interface SeoTabProps {
 
 export default function SeoTab({ formValues, register, setValue, editor }: SeoTabProps) {
   const { t } = useLanguage();
+  const router = useRouter();
   const [isGeneratingSEO, setIsGeneratingSEO] = useState(false);
+  const [redirecting, setRedirecting] = useState<string | null>(null);
 
   // Límites de plan
   const [limits, setLimits] = useState<{ ai_allowed: boolean; ai_requires_byok: boolean } | null>(null);
@@ -167,12 +170,40 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
             La automatización de metadatos mediante IA está reservada para el <span className="font-bold text-stone-700">Plan Gold</span> o requiere que configure su propia <span className="font-bold text-stone-700">Clave de API</span> en Ajustes.
           </p>
           <div className="flex gap-2 mt-1">
-            <a href="/dashboard/settings" className="px-3 py-1.5 rounded-lg bg-white border border-stone-200 hover:bg-stone-50 text-stone-700 font-bold transition-all shadow-sm">
-              Configurar Clave
-            </a>
-            <a href="/dashboard/settings" className="px-3 py-1.5 rounded-lg bg-[#d4af37] text-white font-bold transition-all shadow-sm">
-              Mejorar Plan
-            </a>
+            <button 
+              onClick={() => {
+                setRedirecting('advanced');
+                router.push('/dashboard/settings?tab=advanced');
+              }}
+              disabled={redirecting !== null}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-stone-200 hover:bg-stone-50 text-stone-700 font-bold transition-all shadow-sm active:scale-95 disabled:opacity-50"
+            >
+              {redirecting === 'advanced' ? (
+                <>
+                  <Loader2 className="w-3 h-3 animate-spin text-stone-600" />
+                  <span>Redirigiendo...</span>
+                </>
+              ) : (
+                "Configurar Clave"
+              )}
+            </button>
+            <button 
+              onClick={() => {
+                setRedirecting('subscription');
+                router.push('/dashboard/settings?tab=subscription');
+              }}
+              disabled={redirecting !== null}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#d4af37] text-white font-bold transition-all shadow-sm hover:bg-stone-900 active:scale-95 disabled:opacity-50"
+            >
+              {redirecting === 'subscription' ? (
+                <>
+                  <Loader2 className="w-3 h-3 animate-spin text-white" />
+                  <span>Redirigiendo...</span>
+                </>
+              ) : (
+                "Mejorar Plan"
+              )}
+            </button>
           </div>
         </div>
       )}
