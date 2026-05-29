@@ -45,59 +45,7 @@ export default function Step3Details({
   const leafletMapRef = useRef<any | null>(null);
   const markerRef = useRef<any | null>(null);
 
-  // Diccionario local de traducción para la interfaz de reserva a domicilio
-  const dict: Record<string, Record<string, string>> = {
-    es: {
-      service_modality: "Modalidad del Servicio",
-      in_center: "En Centro",
-      at_home: "A Domicilio",
-      your_address: "Tu Dirección de Envío/Domicilio",
-      address_placeholder: "Busca tu calle, número y población",
-      map: "Mapa",
-      save_address_label: "Guardar esta dirección para mis próximas reservas (Checkout Rápido en 1-Click)",
-      detected_address_title: "¿Dirección Habitual Detectada?",
-      detected_address_desc: "Hemos encontrado tu dirección recurrente:",
-      autocomplete: "Auto-completar",
-      fix_map_title: "Fijar Ubicación en el Mapa",
-      fix_map_desc: "Arrastra el marcador dorado sobre tu dirección",
-      cancel: "Cancelar",
-      confirm_location: "Confirmar Ubicación"
-    },
-    en: {
-      service_modality: "Service Modality",
-      in_center: "At Salon",
-      at_home: "At Home",
-      your_address: "Your Delivery/Home Address",
-      address_placeholder: "Search your street, number and town",
-      map: "Map",
-      save_address_label: "Save this address for my next bookings (1-Click Fast Checkout)",
-      detected_address_title: "Habitual Address Detected?",
-      detected_address_desc: "We found your recurrent address:",
-      autocomplete: "Auto-fill",
-      fix_map_title: "Pin Location on Map",
-      fix_map_desc: "Drag the gold marker over your address",
-      cancel: "Cancel",
-      confirm_location: "Confirm Location"
-    },
-    fr: {
-      service_modality: "Modalité du Service",
-      in_center: "En Salon",
-      at_home: "À Domicile",
-      your_address: "Votre Adresse de Livraison/Domicile",
-      address_placeholder: "Recherchez votre rue, numéro et ville",
-      map: "Carte",
-      save_address_label: "Enregistrer cette adresse pour mes prochaines réservations (Checkout Rapide en 1-Clic)",
-      detected_address_title: "Adresse Habituelle Détectée ?",
-      detected_address_desc: "Nous avons trouvé votre adresse récurrente :",
-      autocomplete: "Remplir",
-      fix_map_title: "Épingler l'emplacement sur la carte",
-      fix_map_desc: "Faites glisser le marqueur doré sur votre adresse",
-      cancel: "Annuler",
-      confirm_location: "Confirmer l'emplacement"
-    }
-  };
 
-  const text = (key: string) => dict[language]?.[key] || dict['es']?.[key] || key;
 
   const getServiceDepositInfo = (srv: any) => {
     if (!srv) return { required: false, amount: 0 };
@@ -444,9 +392,9 @@ export default function Step3Details({
                   <CheckCircle size={16} />
                 </span>
                 <div>
-                  <h4 className="text-xs font-bold text-[#b08e23]">{text('detected_address_title')}</h4>
+                  <h4 className="text-xs font-bold text-[#b08e23]">{t('wizard.detected_address_title')}</h4>
                   <p className="text-[11px] text-stone-500 font-medium leading-normal mt-0.5">
-                    {text('detected_address_desc')} <strong>{savedAddressData.client_address}</strong>.
+                    {t('wizard.detected_address_desc')} <strong>{savedAddressData.client_address}</strong>.
                   </p>
                 </div>
               </div>
@@ -455,7 +403,7 @@ export default function Step3Details({
                 onClick={handleApplySavedAddress}
                 className="w-full md:w-auto px-4 py-2 bg-[#d4af37] hover:bg-[#c29e2f] text-white text-xs font-bold rounded-xl transition-all shadow-sm shrink-0 whitespace-nowrap"
               >
-                {text('autocomplete')}
+                {t('wizard.autocomplete')}
               </button>
             </motion.div>
           )}
@@ -468,7 +416,7 @@ export default function Step3Details({
             {showModalitySelector && (
               <div className="group">
                 <label className="block text-[10px] md:text-xs font-black uppercase tracking-[0.12em] text-muted-foreground mb-1.5 ml-1">
-                  {text('service_modality')}
+                  {t('wizard.service_modality')}
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
@@ -482,7 +430,7 @@ export default function Step3Details({
                       }`}
                   >
                     <Building2 size={14} />
-                    {text('in_center')}
+                    {t('wizard.in_center')}
                   </button>
                   <button
                     type="button"
@@ -495,7 +443,7 @@ export default function Step3Details({
                       }`}
                   >
                     <MapPin size={14} />
-                    {text('at_home')}
+                    {t('wizard.at_home')}
                   </button>
                 </div>
               </div>
@@ -505,7 +453,7 @@ export default function Step3Details({
             {formData.service_modality === 'home' && (
               <div className="group animate-in slide-in-from-top-2 duration-300 relative">
                 <label className="block text-[10px] md:text-xs font-black uppercase tracking-[0.12em] text-muted-foreground mb-1.5 ml-1">
-                  {text('your_address')}
+                  {t('wizard.your_address')}
                 </label>
                 <div className="relative">
                   <div className="absolute left-4 md:left-5 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-primary transition-colors">
@@ -517,7 +465,7 @@ export default function Step3Details({
                     value={addressQuery}
                     onChange={handleAddressChange}
                     className="w-full bg-card border border-border rounded-luxury-btn py-3.5 pl-12 pr-28 text-sm font-bold text-foreground placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm outline-none"
-                    placeholder={text('address_placeholder')}
+                    placeholder={t('wizard.address_placeholder')}
                   />
                   {loadingSuggestions && (
                     <div className="absolute right-24 top-1/2 -translate-y-1/2 flex items-center">
@@ -530,7 +478,7 @@ export default function Step3Details({
                     className="absolute right-2.5 top-1/2 -translate-y-1/2 px-2.5 py-1.5 bg-stone-850 hover:bg-stone-800 text-stone-200 text-[10px] font-bold rounded-lg transition-all flex items-center gap-1 hover:text-white border border-stone-750"
                   >
                     <Compass size={11} />
-                    {text('map')}
+                    {t('wizard.map')}
                   </button>
                 </div>
 
@@ -565,7 +513,7 @@ export default function Step3Details({
                       </svg>
                     </div>
                     <span className="text-[10px] md:text-[11px] text-stone-400 font-bold hover:text-stone-300 transition-colors">
-                      {text('save_address_label')}
+                      {t('wizard.save_address_label')}
                     </span>
                   </label>
                 </div>
@@ -781,8 +729,8 @@ export default function Step3Details({
               {/* Header */}
               <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-card shrink-0">
                 <div>
-                  <h3 className="font-serif font-bold text-base text-foreground">{text('fix_map_title')}</h3>
-                  <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest mt-0.5">{text('fix_map_desc')}</p>
+                  <h3 className="font-serif font-bold text-base text-foreground">{t('wizard.fix_map_title')}</h3>
+                  <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest mt-0.5">{t('wizard.fix_map_desc')}</p>
                 </div>
                 <button
                   type="button"
@@ -805,7 +753,7 @@ export default function Step3Details({
                   onClick={() => setShowMapModal(false)}
                   className="flex-1 py-3 bg-stone-800 hover:bg-stone-750 text-stone-200 rounded-xl font-bold text-xs uppercase tracking-wider transition-colors border border-stone-700 hover:text-white"
                 >
-                  {text('cancel')}
+                  {t('wizard.cancel')}
                 </button>
                 <button
                   type="button"
@@ -816,7 +764,7 @@ export default function Step3Details({
                   {loadingReverseGeo ? (
                     <span className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin"></span>
                   ) : (
-                    text('confirm_location')
+                    t('wizard.confirm_location')
                   )}
                 </button>
               </div>
