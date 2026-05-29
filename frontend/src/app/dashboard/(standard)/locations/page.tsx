@@ -11,7 +11,7 @@ import {
   Building, 
   Check, 
   X,
-  Sparkles,
+  Home,
   ChevronRight
 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -26,7 +26,6 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import { useLanguage } from "@/app/contexts/LanguageContext"
 import PlanLimitsCard from "@/components/PlanLimitsCard"
@@ -49,6 +48,7 @@ export default function LocationsPage() {
   
   const [locations, setLocations] = React.useState<Location[]>([])
   const [limitsData, setLimitsData] = React.useState<any>(null)
+  const [serviceModality, setServiceModality] = React.useState<string>('clinic') // 'clinic', 'home', 'both'
   const [loading, setLoading] = React.useState(true)
   const [isCreateOpen, setIsCreateOpen] = React.useState(false)
   const [isEditOpen, setIsEditOpen] = React.useState(false)
@@ -63,7 +63,6 @@ export default function LocationsPage() {
     is_active: true
   })
 
-  // Helper cookie reader
   const getCookie = (name: string): string | null => {
     if (typeof document === 'undefined') return null
     const value = `; ${document.cookie}`
@@ -76,17 +75,12 @@ export default function LocationsPage() {
     const userSession = localStorage.getItem('user')
     let tenantId = getCookie('tenant_id') || ''
     let authToken = ''
-    
     if (userSession) {
       try {
         const parsed = JSON.parse(userSession)
-        if (!tenantId) {
-          tenantId = parsed.tenant_id || ''
-        }
+        if (!tenantId) tenantId = parsed.tenant_id || ''
         authToken = parsed.access_token || parsed.token || ''
-      } catch (e) {
-        console.error("Error parsing user session in locations page:", e)
-      }
+      } catch (e) { /* ignore */ }
     }
     return {
       'X-Tenant-ID': tenantId,
@@ -101,21 +95,20 @@ export default function LocationsPage() {
       const headers = getAuthHeaders()
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       
-      // Fetch locations list
-      const locRes = await fetch(`${API_URL}/locations/`, { headers })
-      if (!locRes.ok) throw new Error("Failed to fetch locations")
-      const locData = await locRes.json()
-      setLocations(locData || [])
+      const [locRes, limitsRes, settingsRes] = await Promise.all([
+        fetch(`${API_URL}/locations/`, { headers }),
+        fetch(`${API_URL}/settings/limits`, { headers }),
+        fetch(`${API_URL}/settings/`, { headers })
+      ])
 
-      // Fetch limits
-      const limitsRes = await fetch(`${API_URL}/settings/limits`, { headers })
-      if (limitsRes.ok) {
-        const data = await limitsRes.json()
-        setLimitsData(data)
+      if (locRes.ok) setLocations(await locRes.json() || [])
+      if (limitsRes.ok) setLimitsData(await limitsRes.json())
+      if (settingsRes.ok) {
+        const settings = await settingsRes.json()
+        setServiceModality(settings.service_modality || 'clinic')
       }
     } catch (err) {
-      console.error("Error al cargar sedes:", err)
-      toast.error("Error al conectar con el servidor de sedes.")
+      toast.error(t('dashboard.locations.toast_error_load'))
     } finally {
       setLoading(false)
     }
@@ -125,7 +118,7 @@ export default function LocationsPage() {
     if (!loadingRole) {
       const currentRole = role?.toLowerCase()
       if (currentRole !== 'administrador' && currentRole !== 'admin') {
-        toast.error("Acceso denegado: Solo el Administrador puede gestionar las sedes de la clínica.")
+        toast.error("Acceso denegado")
         router.replace('/dashboard')
       } else {
         fetchLocationsAndLimits()
@@ -133,36 +126,25 @@ export default function LocationsPage() {
     }
   }, [role, loadingRole, router])
 
+  const isHomeOnly = serviceModality === 'home'
+
   const handleCreateOpen = () => {
-    // Verificar si se ha alcanzado el límite permitido en el plan
     if (limitsData) {
       const maxLocations = limitsData.limits?.locations || 1
       const activeCount = locations.filter(l => l.is_active).length
-      
       if (activeCount >= maxLocations) {
-        // Traspasado el límite: Disparar el paywall premium con FeedbackModal
         showFeedback({
           type: 'confirm',
-          title: "Expande tus Sedes",
-          message: `Has alcanzado el límite de ${maxLocations} sedes físicas incluido en tu plan actual '${limitsData.plan_type.toUpperCase()}'. Para gestionar más sucursales y conectar agendas cruzadas, te invitamos a mejorar tu plan de suscripción.`,
-          confirmText: "Mejorar Plan",
-          cancelText: "Más tarde",
-          onConfirm: () => {
-            router.push('/dashboard/settings?tab=subscription')
-          }
+          title: t('dashboard.locations.paywall_title'),
+          message: `Has alcanzado el límite de ${maxLocations} sedes para tu plan '${limitsData.plan_type?.toUpperCase()}'. Mejora tu plan para añadir más sucursales.`,
+          confirmText: t('dashboard.locations.paywall_upgrade'),
+          cancelText: t('dashboard.locations.paywall_later'),
+          onConfirm: () => router.push('/dashboard/settings?tab=subscription')
         })
         return
       }
     }
-    
-    // Si no está al límite, abrir modal limpio
-    setFormData({
-      name: '',
-      address: '',
-      phone: '',
-      email: '',
-      is_active: true
-    })
+    setFormData({ name: '', address: '', phone: '', email: '', is_active: true })
     setIsCreateOpen(true)
   }
 
@@ -172,28 +154,18 @@ export default function LocationsPage() {
     try {
       const headers = getAuthHeaders()
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-
-      const res = await fetch(`${API_URL}/locations/`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(formData)
-      })
-
+      const res = await fetch(`${API_URL}/locations/`, { method: 'POST', headers, body: JSON.stringify(formData) })
       if (res.status === 403) {
-        const errorData = await res.json()
-        toast.error(errorData.detail || "Límite del plan excedido.")
+        toast.error(t('dashboard.locations.limit_exceeded'))
         setIsCreateOpen(false)
         return
       }
-
-      if (!res.ok) throw new Error("Error creating location")
-      
-      toast.success("Sede física creada correctamente.")
+      if (!res.ok) throw new Error()
+      toast.success(t('dashboard.locations.toast_created'))
       setIsCreateOpen(false)
       fetchLocationsAndLimits()
-    } catch (err) {
-      console.error(err)
-      toast.error("Fallo al guardar la sede.")
+    } catch {
+      toast.error(t('dashboard.locations.toast_error_save'))
     } finally {
       setIsSubmitting(false)
     }
@@ -201,13 +173,7 @@ export default function LocationsPage() {
 
   const handleEditOpen = (location: Location) => {
     setLocationToEdit(location)
-    setFormData({
-      name: location.name,
-      address: location.address,
-      phone: location.phone || '',
-      email: location.email || '',
-      is_active: location.is_active
-    })
+    setFormData({ name: location.name, address: location.address, phone: location.phone || '', email: location.email || '', is_active: location.is_active })
     setIsEditOpen(true)
   }
 
@@ -218,95 +184,63 @@ export default function LocationsPage() {
     try {
       const headers = getAuthHeaders()
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-
-      const res = await fetch(`${API_URL}/locations/${locationToEdit.id}`, {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify(formData)
-      })
-
-      if (!res.ok) throw new Error("Error updating location")
-
-      toast.success("Información de sede actualizada.")
+      const res = await fetch(`${API_URL}/locations/${locationToEdit.id}`, { method: 'PUT', headers, body: JSON.stringify(formData) })
+      if (!res.ok) throw new Error()
+      toast.success(t('dashboard.locations.toast_updated'))
       setIsEditOpen(false)
       fetchLocationsAndLimits()
-    } catch (err) {
-      console.error(err)
-      toast.error("Error al actualizar la sede.")
+    } catch {
+      toast.error(t('dashboard.locations.toast_error_update'))
     } finally {
       setIsSubmitting(false)
     }
   }
 
   const handleToggleStatus = async (location: Location) => {
-    // Si la vamos a activar, verificar límite
     if (!location.is_active && limitsData) {
       const maxLocations = limitsData.limits?.locations || 1
       const activeCount = locations.filter(l => l.is_active).length
-      
       if (activeCount >= maxLocations) {
         showFeedback({
           type: 'confirm',
           title: "Límite Alcanzado",
-          message: `No puedes activar esta sede. Has alcanzado el límite de ${maxLocations} sedes activas contratado en tu plan '${limitsData.plan_type.toUpperCase()}'. Mejora tu suscripción para habilitarla.`,
-          confirmText: "Mejorar Plan",
+          message: `No puedes activar esta sede. Has alcanzado el límite de ${maxLocations} sedes activas en tu plan '${limitsData.plan_type?.toUpperCase()}'.`,
+          confirmText: t('dashboard.locations.paywall_upgrade'),
           cancelText: "Cerrar",
-          onConfirm: () => {
-            router.push('/dashboard/settings?tab=subscription')
-          }
+          onConfirm: () => router.push('/dashboard/settings?tab=subscription')
         })
         return
       }
     }
-
     try {
       const headers = getAuthHeaders()
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-
-      const res = await fetch(`${API_URL}/locations/${location.id}`, {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify({
-          name: location.name,
-          address: location.address,
-          phone: location.phone,
-          email: location.email,
-          is_active: !location.is_active
-        })
-      })
-
+      const res = await fetch(`${API_URL}/locations/${location.id}`, { method: 'PUT', headers, body: JSON.stringify({ ...location, is_active: !location.is_active }) })
       if (!res.ok) throw new Error()
-      
-      toast.success(location.is_active ? "Sede desactivada correctamente." : "Sede activada correctamente.")
+      toast.success(location.is_active ? t('dashboard.locations.toast_deactivated') : t('dashboard.locations.toast_activated'))
       fetchLocationsAndLimits()
-    } catch (err) {
-      toast.error("Error al cambiar el estado de la sede.")
+    } catch {
+      toast.error(t('dashboard.locations.toast_error_status'))
     }
   }
 
   const handleDeleteLocation = (location: Location) => {
     showFeedback({
       type: 'confirm',
-      title: "¿Eliminar Sede?",
-      message: `¿Estás seguro de que quieres eliminar la sede '${location.name}'? Esta acción es definitiva y podría invalidar turnos o citas ya agendadas en esta ubicación.`,
-      confirmText: "Eliminar Definitivamente",
-      cancelText: "Cancelar",
+      title: t('dashboard.locations.delete_confirm_title'),
+      message: `¿Estás seguro de que quieres eliminar la sede '${location.name}'? Esta acción es definitiva y podría invalidar turnos ya agendados en esta ubicación.`,
+      confirmText: t('dashboard.locations.delete_confirm_btn'),
+      cancelText: t('dashboard.locations.cancel'),
       onConfirm: async () => {
         try {
           const headers = getAuthHeaders()
           const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-
-          const res = await fetch(`${API_URL}/locations/${location.id}`, {
-            method: 'DELETE',
-            headers
-          })
-
+          const res = await fetch(`${API_URL}/locations/${location.id}`, { method: 'DELETE', headers })
           if (!res.ok) throw new Error()
-          
-          toast.success("Sede eliminada de forma irreversible.")
+          toast.success(t('dashboard.locations.toast_deleted'))
           fetchLocationsAndLimits()
-        } catch (err) {
-          toast.error("Error al eliminar la sede.")
+        } catch {
+          toast.error(t('dashboard.locations.toast_error_delete'))
         }
       }
     })
@@ -323,29 +257,56 @@ export default function LocationsPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500 pb-16">
-      {/* Header Sección */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-4">
             <h1 className="text-5xl font-serif font-semibold text-stone-800 tracking-tight">
-              Sedes de la Clínica
+              {t('dashboard.locations.title')}
             </h1>
             <PlanLimitsCard type="locations" />
           </div>
           <p className="text-stone-400 font-medium max-w-lg">
-            Administra tus centros médicos, cabinas estéticas y sucursales físicas donde tu equipo presta servicio.
+            {t('dashboard.locations.subtitle')}
           </p>
         </div>
 
-        <button 
-          onClick={handleCreateOpen}
-          className="flex items-center gap-2.5 bg-stone-900 hover:bg-[#d4af37] hover:text-stone-950 text-white px-6 py-3.5 rounded-2xl font-bold text-sm transition-all shadow-lg active:scale-95 duration-300 shrink-0"
-        >
-          <Plus size={18} strokeWidth={2} />
-          Nueva Sede
-        </button>
+        {!isHomeOnly && (
+          <button
+            onClick={handleCreateOpen}
+            className="flex items-center gap-2.5 bg-stone-900 hover:bg-[#d4af37] hover:text-stone-950 text-white px-6 py-3.5 rounded-2xl font-bold text-sm transition-all shadow-lg active:scale-95 duration-300 shrink-0"
+          >
+            <Plus size={18} strokeWidth={2} />
+            {t('dashboard.locations.add_btn')}
+          </button>
+        )}
       </div>
 
+      {/* Banner para profesionales a domicilio */}
+      {isHomeOnly && (
+        <div className="bg-[#d4af37]/5 border border-[#d4af37]/20 rounded-[2rem] p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-[#d4af37]/10 border border-[#d4af37]/20 flex items-center justify-center text-[#bf9b30] shrink-0">
+              <Home size={22} strokeWidth={1.5} />
+            </div>
+            <div className="space-y-1">
+              <h3 className="font-bold text-stone-800 text-lg">{t('dashboard.locations.home_service_notice')}</h3>
+              <p className="text-stone-500 text-sm font-medium max-w-lg leading-relaxed">
+                {t('dashboard.locations.home_service_desc')}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => router.push('/dashboard/settings?tab=domicilio')}
+            className="flex items-center gap-2 text-[#bf9b30] font-bold text-sm border border-[#d4af37]/30 px-4 py-2.5 rounded-xl hover:bg-[#d4af37]/10 transition-all shrink-0"
+          >
+            {t('dashboard.locations.home_service_config')}
+            <ChevronRight size={14} />
+          </button>
+        </div>
+      )}
+
+      {/* Content */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array(3).fill(0).map((_, i) => (
@@ -360,52 +321,44 @@ export default function LocationsPage() {
             </div>
           ))}
         </div>
-      ) : locations.length === 0 ? (
+      ) : locations.length === 0 && !isHomeOnly ? (
         <div className="flex flex-col items-center justify-center text-center p-12 bg-white border border-stone-100 rounded-2xl shadow-sm space-y-6">
           <div className="w-16 h-16 rounded-2xl bg-stone-50 border border-stone-100 flex items-center justify-center text-stone-400">
             <Building size={32} strokeWidth={1.2} />
           </div>
           <div className="space-y-1">
-            <h3 className="text-xl font-serif text-stone-800">No hay sedes registradas</h3>
-            <p className="text-stone-400 text-sm max-w-xs">
-              Comienza registrando tu clínica central para poder planificar los turnos de tu equipo.
-            </p>
+            <h3 className="text-xl font-serif text-stone-800">{t('dashboard.locations.empty_title')}</h3>
+            <p className="text-stone-400 text-sm max-w-xs">{t('dashboard.locations.empty_desc')}</p>
           </div>
-          <button 
+          <button
             onClick={handleCreateOpen}
             className="text-stone-800 font-bold border-b-2 border-stone-900 hover:text-[#d4af37] hover:border-[#d4af37] transition-all py-0.5 text-sm"
           >
-            Dar de alta mi primera sede
+            {t('dashboard.locations.empty_cta')}
           </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {locations.map((loc) => (
-            <div 
-              key={loc.id} 
+            <div
+              key={loc.id}
               className={`bg-white border transition-all duration-300 rounded-2xl p-6 flex flex-col justify-between hover:shadow-lg relative overflow-hidden ${
                 loc.is_active ? 'border-stone-200/60 shadow-sm' : 'border-stone-100 opacity-60'
               }`}
             >
-              {/* Luxury gold accent inside active locations */}
               {loc.is_active && (
                 <div className="absolute top-0 right-0 w-24 h-1 bg-gradient-to-r from-stone-900 via-[#d4af37] to-stone-900" />
               )}
-
               <div className="space-y-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="space-y-1">
-                    <h3 className="font-serif text-2xl font-light text-stone-800 tracking-tight leading-tight">
-                      {loc.name}
-                    </h3>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                      loc.is_active 
-                        ? 'bg-[#d4af37]/10 text-[#bf9b30] border border-[#d4af37]/15' 
-                        : 'bg-stone-100 text-stone-400 border border-stone-200/40'
-                    }`}>
-                      {loc.is_active ? 'Activa' : 'Inactiva'}
-                    </span>
-                  </div>
+                <div className="space-y-1">
+                  <h3 className="font-serif text-2xl font-light text-stone-800 tracking-tight leading-tight">{loc.name}</h3>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                    loc.is_active
+                      ? 'bg-[#d4af37]/10 text-[#bf9b30] border border-[#d4af37]/15'
+                      : 'bg-stone-100 text-stone-400 border border-stone-200/40'
+                  }`}>
+                    {loc.is_active ? t('dashboard.locations.active_badge') : t('dashboard.locations.inactive_badge')}
+                  </span>
                 </div>
 
                 <div className="space-y-2.5 pt-2 text-stone-500 font-medium text-sm">
@@ -413,14 +366,12 @@ export default function LocationsPage() {
                     <MapPin size={16} className="text-[#d4af37] shrink-0 mt-0.5" />
                     <span>{loc.address}</span>
                   </div>
-                  
                   {loc.phone && (
                     <div className="flex items-center gap-2.5">
                       <Phone size={16} className="text-[#d4af37] shrink-0" />
                       <span>{loc.phone}</span>
                     </div>
                   )}
-
                   {loc.email && (
                     <div className="flex items-center gap-2.5">
                       <Mail size={16} className="text-[#d4af37] shrink-0" />
@@ -430,42 +381,22 @@ export default function LocationsPage() {
                 </div>
               </div>
 
-              {/* Botones de acción */}
               <div className="flex items-center justify-between border-t border-stone-100 mt-6 pt-4 gap-2">
                 <button
                   onClick={() => handleToggleStatus(loc)}
                   className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition-all duration-300 flex items-center gap-1.5 ${
                     loc.is_active
                       ? 'border-stone-200 text-stone-500 hover:bg-stone-50'
-                      : 'border-[#d4af37]/30 text-[#bf9b30] hover:bg-[#d4af37]/5 bg-transparent'
+                      : 'border-[#d4af37]/30 text-[#bf9b30] hover:bg-[#d4af37]/5'
                   }`}
                 >
-                  {loc.is_active ? (
-                    <>
-                      <X size={12} />
-                      Desactivar
-                    </>
-                  ) : (
-                    <>
-                      <Check size={12} />
-                      Activar
-                    </>
-                  )}
+                  {loc.is_active ? <><X size={12} />{t('dashboard.locations.deactivate_btn')}</> : <><Check size={12} />{t('dashboard.locations.activate_btn')}</>}
                 </button>
-
                 <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => handleEditOpen(loc)}
-                    className="p-2 text-stone-400 hover:text-stone-800 hover:bg-stone-50 rounded-xl transition-all"
-                    title="Editar Sede"
-                  >
+                  <button onClick={() => handleEditOpen(loc)} className="p-2 text-stone-400 hover:text-stone-800 hover:bg-stone-50 rounded-xl transition-all" title={t('dashboard.locations.edit_btn')}>
                     <Edit2 size={16} />
                   </button>
-                  <button
-                    onClick={() => handleDeleteLocation(loc)}
-                    className="p-2 text-stone-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
-                    title="Eliminar Sede"
-                  >
+                  <button onClick={() => handleDeleteLocation(loc)} className="p-2 text-stone-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all" title={t('dashboard.locations.delete_btn')}>
                     <Trash2 size={16} />
                   </button>
                 </div>
@@ -475,170 +406,87 @@ export default function LocationsPage() {
         </div>
       )}
 
-      {/* DIALOG DE CREACIÓN */}
+      {/* DIALOG CREACIÓN */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="sm:max-w-[450px] rounded-[2rem] p-8 bg-white border-stone-100 shadow-2xl">
           <DialogHeader className="mb-4">
-            <DialogTitle className="font-serif italic text-2xl text-stone-800">Crear Nueva Sede</DialogTitle>
-            <DialogDescription className="text-stone-400 font-medium">
-              Da de alta una nueva clínica o cabina física para expandir la disponibilidad de reservas de tu equipo.
-            </DialogDescription>
+            <DialogTitle className="font-serif italic text-2xl text-stone-800">{t('dashboard.locations.create_title')}</DialogTitle>
+            <DialogDescription className="text-stone-400 font-medium">{t('dashboard.locations.create_desc')}</DialogDescription>
           </DialogHeader>
-
           <form onSubmit={handleCreateLocation} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">
-                Nombre de la Sede
-              </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all font-sans font-medium"
-                placeholder="Ej. Clínica Mercè - Sarrià"
-                required
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">
-                Dirección Física
-              </label>
-              <input
-                type="text"
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all font-sans font-medium"
-                placeholder="Calle Mayor 45, Barcelona"
-                required
-              />
-            </div>
-
+            {[
+              { key: 'name', label: t('dashboard.locations.name_label'), placeholder: t('dashboard.locations.name_placeholder'), type: 'text', required: true },
+              { key: 'address', label: t('dashboard.locations.address_label'), placeholder: t('dashboard.locations.address_placeholder'), type: 'text', required: true },
+            ].map(({ key, label, placeholder, type, required }) => (
+              <div key={key} className="space-y-1.5">
+                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{label}</label>
+                <input type={type} value={(formData as any)[key]} onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all"
+                  placeholder={placeholder} required={required} />
+              </div>
+            ))}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">
-                  Teléfono
-                </label>
-                <input
-                  type="text"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all font-sans font-medium"
-                  placeholder="932 456 789"
-                />
+                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.locations.phone_label')}</label>
+                <input type="text" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all" />
               </div>
-
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">
-                  Email de Contacto
-                </label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all font-sans font-medium"
-                  placeholder="sarria@clinicamerce.com"
-                />
+                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.locations.email_label')}</label>
+                <input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder={t('dashboard.locations.email_placeholder')}
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all" />
               </div>
             </div>
-
             <DialogFooter className="pt-6">
-              <button
-                type="button"
-                onClick={() => setIsCreateOpen(false)}
-                className="text-stone-400 hover:text-stone-700 transition-all font-bold text-xs uppercase tracking-wider px-4 py-2"
-              >
-                Cancelar
+              <button type="button" onClick={() => setIsCreateOpen(false)} className="text-stone-400 hover:text-stone-700 transition-all font-bold text-xs uppercase tracking-wider px-4 py-2">
+                {t('dashboard.locations.cancel')}
               </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="bg-stone-950 hover:bg-[#d4af37] hover:text-stone-950 text-white font-bold text-xs uppercase tracking-widest px-6 py-3.5 rounded-full transition-all duration-300 active:scale-95 disabled:opacity-50"
-              >
-                {isSubmitting ? "Creando..." : "Crear Sede"}
+              <button type="submit" disabled={isSubmitting} className="bg-stone-950 hover:bg-[#d4af37] hover:text-stone-950 text-white font-bold text-xs uppercase tracking-widest px-6 py-3.5 rounded-full transition-all duration-300 active:scale-95 disabled:opacity-50">
+                {isSubmitting ? t('dashboard.locations.creating') : t('dashboard.locations.create_submit')}
               </button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
 
-      {/* DIALOG DE EDICIÓN */}
+      {/* DIALOG EDICIÓN */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="sm:max-w-[450px] rounded-[2rem] p-8 bg-white border-stone-100 shadow-2xl">
           <DialogHeader className="mb-4">
-            <DialogTitle className="font-serif italic text-2xl text-stone-800">Editar Sede</DialogTitle>
-            <DialogDescription className="text-stone-400 font-medium">
-              Modifica la información general de la sede física seleccionada.
-            </DialogDescription>
+            <DialogTitle className="font-serif italic text-2xl text-stone-800">{t('dashboard.locations.edit_title')}</DialogTitle>
+            <DialogDescription className="text-stone-400 font-medium">{t('dashboard.locations.edit_desc')}</DialogDescription>
           </DialogHeader>
-
           <form onSubmit={handleUpdateLocation} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">
-                Nombre de la Sede
-              </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all font-sans font-medium"
-                required
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">
-                Dirección Física
-              </label>
-              <input
-                type="text"
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all font-sans font-medium"
-                required
-              />
-            </div>
-
+            {[
+              { key: 'name', label: t('dashboard.locations.name_label'), type: 'text', required: true },
+              { key: 'address', label: t('dashboard.locations.address_label'), type: 'text', required: true },
+            ].map(({ key, label, type, required }) => (
+              <div key={key} className="space-y-1.5">
+                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{label}</label>
+                <input type={type} value={(formData as any)[key]} onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all"
+                  required={required} />
+              </div>
+            ))}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">
-                  Teléfono
-                </label>
-                <input
-                  type="text"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all font-sans font-medium"
-                />
+                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.locations.phone_label')}</label>
+                <input type="text" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all" />
               </div>
-
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">
-                  Email de Contacto
-                </label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all font-sans font-medium"
-                />
+                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.locations.email_label')}</label>
+                <input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all" />
               </div>
             </div>
-
             <DialogFooter className="pt-6">
-              <button
-                type="button"
-                onClick={() => setIsEditOpen(false)}
-                className="text-stone-400 hover:text-stone-700 transition-all font-bold text-xs uppercase tracking-wider px-4 py-2"
-              >
-                Cancelar
+              <button type="button" onClick={() => setIsEditOpen(false)} className="text-stone-400 hover:text-stone-700 transition-all font-bold text-xs uppercase tracking-wider px-4 py-2">
+                {t('dashboard.locations.cancel')}
               </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="bg-stone-950 hover:bg-[#d4af37] hover:text-stone-950 text-white font-bold text-xs uppercase tracking-widest px-6 py-3.5 rounded-full transition-all duration-300 active:scale-95 disabled:opacity-50"
-              >
-                {isSubmitting ? "Guardando..." : "Guardar Cambios"}
+              <button type="submit" disabled={isSubmitting} className="bg-stone-950 hover:bg-[#d4af37] hover:text-stone-950 text-white font-bold text-xs uppercase tracking-widest px-6 py-3.5 rounded-full transition-all duration-300 active:scale-95 disabled:opacity-50">
+                {isSubmitting ? t('dashboard.locations.saving') : t('dashboard.locations.save_btn')}
               </button>
             </DialogFooter>
           </form>

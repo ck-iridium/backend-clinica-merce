@@ -7,7 +7,7 @@ import {
   Ticket, Receipt, CalendarDays, Settings,
   Database, Image as ImageIcon, Globe, Tag,
   ShieldCheck, User, LogOut, Search, ChevronRight,
-  MoreHorizontal, Briefcase, FileText, Bot, CreditCard, MapPin
+  MoreHorizontal, Briefcase, FileText, Bot, CreditCard, MapPin, Clock
 } from 'lucide-react';
 import { GlobalSearch } from './GlobalSearch';
 import { NotificationCenter } from './NotificationCenter';
@@ -50,7 +50,7 @@ export const navLinks = [
   { href: '/dashboard/vouchers', label: 'Bonos', icon: Ticket, style: 'normal' },
   { href: '/dashboard/invoices', label: 'Facturas', icon: Receipt, style: 'normal' },
   { href: '/dashboard/calendar', label: 'Agenda', icon: CalendarDays, style: 'normal' },
-  { href: '/dashboard/my-schedule', label: 'Mi Horario', icon: CalendarDays, style: 'normal' },
+  { href: '/dashboard/my-schedule', label: 'Mi Horario', icon: Clock, style: 'normal' },
   { href: '/dashboard/settings', label: 'Ajustes Generales', icon: Settings, style: 'normal' },
   { href: '/dashboard/backups', label: 'Copias de Seguridad', icon: Database, style: 'normal' },
   { href: '/dashboard/media', label: 'Galería de Medios', icon: ImageIcon, style: 'highlight' },

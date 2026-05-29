@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation"
 import { useAuthRole } from "@/hooks/useAuthRole"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
+import { useLanguage } from "@/app/contexts/LanguageContext"
 import RosteringManager from "@/components/RosteringManager"
 
 export default function MySchedulePage() {
   const router = useRouter()
+  const { t } = useLanguage()
   const { role, userName, loading: loadingRole } = useAuthRole()
   const [userId, setUserId] = React.useState<string | null>(null)
 
@@ -17,9 +19,7 @@ export default function MySchedulePage() {
     if (userStr) {
       try {
         const user = JSON.parse(userStr)
-        if (user.id) {
-          setUserId(user.id)
-        }
+        if (user.id) setUserId(user.id)
       } catch (e) {
         console.error("Error parsing user in my-schedule page:", e)
       }
@@ -29,13 +29,12 @@ export default function MySchedulePage() {
   React.useEffect(() => {
     if (!loadingRole) {
       const currentRole = role?.toLowerCase()
-      // Permitimos que tanto Administradores como Especialistas administren su horario
       if (currentRole !== 'especialista' && currentRole !== 'administrador' && currentRole !== 'admin') {
-        toast.error("Acceso denegado: Esta sección es exclusiva para especialistas de la clínica.")
+        toast.error(t('dashboard.my_schedule.access_denied'))
         router.replace('/dashboard')
       }
     }
-  }, [role, loadingRole, router])
+  }, [role, loadingRole, router, t])
 
   if (loadingRole || !userId || !userName) {
     return (
@@ -48,20 +47,19 @@ export default function MySchedulePage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500 pb-16">
-      {/* Header Sección */}
       <div className="space-y-2">
         <h1 className="text-5xl font-serif font-semibold text-stone-800 tracking-tight">
-          Mi Horario y Sedes
+          {t('dashboard.my_schedule.title')}
         </h1>
         <p className="text-stone-400 font-medium max-w-lg">
-          Gestiona tus turnos semanales y notifica excepciones o guardias específicas en tus cabinas y sedes asignadas.
+          {t('dashboard.my_schedule.subtitle')}
         </p>
       </div>
 
       <div className="bg-white border border-stone-100 rounded-[2.5rem] p-6 md:p-8 shadow-sm">
-        <RosteringManager 
-          staffId={userId} 
-          staffName={userName} 
+        <RosteringManager
+          staffId={userId}
+          staffName={userName}
         />
       </div>
     </div>
