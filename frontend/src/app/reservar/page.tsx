@@ -363,7 +363,6 @@ export default function BookingPage() {
             </div>
 
             <div className="flex items-center gap-3.5 w-24 justify-end shrink-0">
-               <LanguageSelector />
                <Link 
                  href="/" 
                  className="text-muted-foreground hover:text-foreground transition-colors text-xs md:text-sm font-bold uppercase tracking-widest text-right"
