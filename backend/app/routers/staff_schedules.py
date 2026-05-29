@@ -11,8 +11,8 @@ router = APIRouter(
 )
 
 @router.get("/", response_model=List[schemas.StaffScheduleResponse])
-def read_staff_schedules(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return crud_staff_schedules.get_staff_schedules(db, skip=skip, limit=limit)
+def read_staff_schedules(staff_id: str = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    return crud_staff_schedules.get_staff_schedules(db, staff_id=staff_id, skip=skip, limit=limit)
 
 @router.get("/{schedule_id}", response_model=schemas.StaffScheduleResponse)
 def read_staff_schedule(schedule_id: str, db: Session = Depends(get_db)):

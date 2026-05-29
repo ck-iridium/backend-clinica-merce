@@ -9,15 +9,17 @@ interface LimitsData {
   limits: {
     specialists: number;
     services: number;
+    locations?: number;
   };
   usage: {
     specialists: number;
     services: number;
+    locations?: number;
   };
 }
 
 interface PlanLimitsCardProps {
-  type: 'services' | 'specialists';
+  type: 'services' | 'specialists' | 'locations';
 }
 
 export default function PlanLimitsCard({ type }: PlanLimitsCardProps) {
@@ -87,8 +89,8 @@ export default function PlanLimitsCard({ type }: PlanLimitsCardProps) {
   if (!data) return null;
 
   const planType = data.plan_type.toUpperCase();
-  const usage = type === 'services' ? data.usage.services : data.usage.specialists;
-  const limit = type === 'services' ? data.limits.services : data.limits.specialists;
+  const usage = type === 'services' ? data.usage.services : type === 'specialists' ? data.usage.specialists : (data.usage.locations || 0);
+  const limit = type === 'services' ? data.limits.services : type === 'specialists' ? data.limits.specialists : (data.limits.locations || 1);
   
   const isUnlimited = limit >= 999999;
   const percentage = isUnlimited ? 0 : Math.min(100, (usage / limit) * 100);
@@ -96,8 +98,10 @@ export default function PlanLimitsCard({ type }: PlanLimitsCardProps) {
   const getLabel = () => {
     if (type === 'services') {
       return language === 'fr' ? 'Services' : language === 'en' ? 'Services' : 'Servicios';
-    } else {
+    } else if (type === 'specialists') {
       return language === 'fr' ? 'Spécialistes' : language === 'en' ? 'Specialists' : 'Especialistas';
+    } else {
+      return language === 'fr' ? 'Sedes' : language === 'en' ? 'Locations' : 'Sedes';
     }
   };
 

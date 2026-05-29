@@ -7,7 +7,7 @@ import {
   Ticket, Receipt, CalendarDays, Settings,
   Database, Image as ImageIcon, Globe, Tag,
   ShieldCheck, User, LogOut, Search, ChevronRight,
-  MoreHorizontal, Briefcase, FileText, Bot, CreditCard
+  MoreHorizontal, Briefcase, FileText, Bot, CreditCard, MapPin
 } from 'lucide-react';
 import { GlobalSearch } from './GlobalSearch';
 import { NotificationCenter } from './NotificationCenter';
@@ -45,10 +45,12 @@ export const navLinks = [
   { href: '/dashboard/ai-webmaster', label: 'Asistente Web IA', icon: Bot, style: 'highlight' },
   { href: '/dashboard/clients', label: 'Clientes', icon: Users, style: 'normal' },
   { href: '/dashboard/team', label: 'Equipo', icon: ShieldCheck, style: 'normal' },
+  { href: '/dashboard/locations', label: 'Sedes', icon: MapPin, style: 'normal' },
   { href: '/dashboard/services', label: 'Servicios', icon: Sparkles, style: 'normal' },
   { href: '/dashboard/vouchers', label: 'Bonos', icon: Ticket, style: 'normal' },
   { href: '/dashboard/invoices', label: 'Facturas', icon: Receipt, style: 'normal' },
   { href: '/dashboard/calendar', label: 'Agenda', icon: CalendarDays, style: 'normal' },
+  { href: '/dashboard/my-schedule', label: 'Mi Horario', icon: CalendarDays, style: 'normal' },
   { href: '/dashboard/settings', label: 'Ajustes Generales', icon: Settings, style: 'normal' },
   { href: '/dashboard/backups', label: 'Copias de Seguridad', icon: Database, style: 'normal' },
   { href: '/dashboard/media', label: 'Galería de Medios', icon: ImageIcon, style: 'highlight' },
@@ -65,10 +67,12 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
       case '/dashboard/ai-webmaster': return t('dashboard.menu.ai_webmaster') || 'Asistente Web IA';
       case '/dashboard/clients': return t('dashboard.menu.clients');
       case '/dashboard/team': return t('dashboard.menu.team');
+      case '/dashboard/locations': return t('dashboard.menu.locations') || 'Sedes';
       case '/dashboard/services': return t('dashboard.menu.services');
       case '/dashboard/vouchers': return t('dashboard.menu.vouchers');
       case '/dashboard/invoices': return t('dashboard.menu.invoices');
       case '/dashboard/calendar': return t('dashboard.menu.calendar');
+      case '/dashboard/my-schedule': return t('dashboard.menu.my_schedule') || 'Mi Horario';
       case '/dashboard/settings': return t('dashboard.menu.settings');
       case '/dashboard/backups': return t('dashboard.menu.backups');
       case '/dashboard/media': return t('dashboard.menu.media');
@@ -236,11 +240,13 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
       '/dashboard/calendar', 
       '/dashboard/clients', 
       '/dashboard/invoices',
+      '/dashboard/my-schedule',
       ...(isRecepcion ? ['/dashboard/vouchers'] : []) // Solo Recepción ve Bonos fuera
     ];
 
     const gestionLinksHrefs = [
       '/dashboard/team', 
+      '/dashboard/locations',
       '/dashboard/services', 
       ...(isAdmin ? ['/dashboard/vouchers'] : []) // Admin sigue viendo Bonos en Gestión
     ];
@@ -263,13 +269,17 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
         if (currentRole === 'administrador' || currentRole === 'admin') return true;
 
         if (currentRole === 'recepción' || currentRole === 'recepcion') {
-          // Recepción NO ve: Equipo, Servicios, Ajustes, Media, CMS, Backups
-          const restricted = ['/dashboard/team', '/dashboard/settings', '/dashboard/backups', '/dashboard/cms', '/dashboard/services', '/dashboard/media'];
+          // Recepción NO ve: Equipo, Sedes, Servicios, Ajustes, Media, CMS, Backups, Mi Horario
+          const restricted = [
+            '/dashboard/team', '/dashboard/settings', '/dashboard/backups', 
+            '/dashboard/cms', '/dashboard/services', '/dashboard/media', 
+            '/dashboard/locations', '/dashboard/my-schedule'
+          ];
           return !restricted.includes(link.href);
         }
 
         if (currentRole === 'especialista') {
-          const allowed = ['/dashboard', '/dashboard/calendar', '/dashboard/clients', '/dashboard/ai-webmaster'];
+          const allowed = ['/dashboard', '/dashboard/calendar', '/dashboard/clients', '/dashboard/ai-webmaster', '/dashboard/my-schedule'];
           return allowed.includes(link.href);
         }
         return false;

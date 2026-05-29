@@ -23,6 +23,8 @@ def read_location(location_id: str, db: Session = Depends(get_db)):
 
 @router.post("/", response_model=schemas.LocationResponse)
 def create_location(location: schemas.LocationCreate, db: Session = Depends(get_db)):
+    from ..limits import check_location_limit
+    check_location_limit(db)
     return crud_locations.create_location(db=db, location_in=location)
 
 @router.put("/{location_id}", response_model=schemas.LocationResponse)

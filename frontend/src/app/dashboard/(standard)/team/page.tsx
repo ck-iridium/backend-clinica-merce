@@ -10,7 +10,8 @@ import {
   ShieldCheck,
   Stethoscope,
   UserCircle,
-  Loader2
+  Loader2,
+  CalendarDays
 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useFeedback } from "@/app/contexts/FeedbackContext"
@@ -36,6 +37,7 @@ import {
 } from "@/components/ui/select"
 import { useLanguage } from "@/app/contexts/LanguageContext"
 import PlanLimitsCard from "@/components/PlanLimitsCard"
+import RosteringManager from "@/components/RosteringManager"
 
 export default function TeamPage() {
   const { t } = useLanguage();
@@ -57,6 +59,10 @@ export default function TeamPage() {
   const [memberToEdit, setMemberToEdit] = React.useState<any>(null);
   const [editRole, setEditRole] = React.useState('');
   const [isEditing, setIsEditing] = React.useState(false);
+
+  // Estados para Planificación (Rostering)
+  const [isRosterModalOpen, setIsRosterModalOpen] = React.useState(false);
+  const [rosterMember, setRosterMember] = React.useState<any>(null);
 
   React.useEffect(() => {
     if (!loadingRole) {
@@ -358,17 +364,29 @@ export default function TeamPage() {
                   </td>
                   <td className="py-5 px-4 text-right">
                     <div className="flex items-center justify-end gap-2 transition-opacity">
-                      <button
-                        onClick={() => {
-                          setMemberToEdit(member);
-                          setEditRole(member.role);
-                          setIsEditModalOpen(true);
-                        }}
-                        className="p-2.5 rounded-xl hover:bg-white hover:shadow-md text-stone-400 hover:text-stone-800 transition-all border border-transparent hover:border-stone-100"
-                        title={t('dashboard.team.edit_role_title') || "Editar Rol"}
-                      >
-                        <Edit2 size={16} strokeWidth={1.5} />
-                      </button>
+                        {(member.role === 'Especialista' || member.role === 'specialist') && (
+                          <button
+                            onClick={() => {
+                              setRosterMember(member);
+                              setIsRosterModalOpen(true);
+                            }}
+                            className="p-2.5 rounded-xl hover:bg-white hover:shadow-md text-stone-400 hover:text-[#d4af37] transition-all border border-transparent hover:border-stone-100"
+                            title="Planificar Turnos y Sedes"
+                          >
+                            <CalendarDays size={16} strokeWidth={1.5} />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => {
+                            setMemberToEdit(member);
+                            setEditRole(member.role);
+                            setIsEditModalOpen(true);
+                          }}
+                          className="p-2.5 rounded-xl hover:bg-white hover:shadow-md text-stone-400 hover:text-stone-800 transition-all border border-transparent hover:border-stone-100"
+                          title={t('dashboard.team.edit_role_title') || "Editar Rol"}
+                        >
+                          <Edit2 size={16} strokeWidth={1.5} />
+                        </button>
                       <button
                         onClick={() => handleDelete(member.id, member.full_name)}
                         className="p-2.5 rounded-xl hover:bg-white hover:shadow-md text-stone-400 hover:text-red-500 transition-all border border-transparent hover:border-stone-100"
@@ -468,6 +486,25 @@ export default function TeamPage() {
                 </button>
               </DialogFooter>
             </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Planificación de Turnos (Rostering) */}
+      <Dialog open={isRosterModalOpen} onOpenChange={setIsRosterModalOpen}>
+        <DialogContent className="max-w-6xl w-full rounded-[2.5rem] p-8 bg-white border-stone-100 shadow-2xl overflow-y-auto max-h-[90vh] scrollbar-hide">
+          <DialogHeader className="mb-2">
+            <DialogTitle className="font-serif italic text-2xl text-stone-800">Planificar Horario y Sedes</DialogTitle>
+            <DialogDescription className="text-stone-400 font-medium">
+              Establece los turnos de asistencia habitual y las excepciones de fecha para este profesional.
+            </DialogDescription>
+          </DialogHeader>
+          {rosterMember && (
+            <RosteringManager 
+              staffId={rosterMember.id} 
+              staffName={rosterMember.full_name} 
+              onClose={() => setIsRosterModalOpen(false)}
+            />
           )}
         </DialogContent>
       </Dialog>

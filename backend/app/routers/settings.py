@@ -39,6 +39,10 @@ def read_tenant_limits(db: Session = Depends(database.get_db)):
             "especialista", "recepcionist", "recepción", "recepcion", "administrador"
         ])
     ).count()
+    locations_count = db.query(models.Location).filter(
+        models.Location.tenant_id == tenant_id,
+        models.Location.is_active == True
+    ).count()
     
     clinic_settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).first()
     has_own_key = False
@@ -60,13 +64,15 @@ def read_tenant_limits(db: Session = Depends(database.get_db)):
         "limits": {
             "specialists": limits["specialists"],
             "services": limits["services"],
+            "locations": limits.get("locations", 1),
             "ai_smart_actions_daily": limits.get("ai_smart_actions_daily", 0),
             "ai_allowed": ai_allowed,
             "ai_requires_byok": ai_requires_byok
         },
         "usage": {
             "specialists": specialists_count,
-            "services": services_count
+            "services": services_count,
+            "locations": locations_count
         }
     }
 

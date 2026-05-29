@@ -3,15 +3,12 @@ import uuid
 from .. import models, schemas
 from ..database import current_tenant_var
 
-def get_staff_schedules(db: Session, skip: int = 0, limit: int = 100):
+def get_staff_schedules(db: Session, staff_id: str = None, skip: int = 0, limit: int = 100):
     tenant_id = current_tenant_var.get()
-    return (
-        db.query(models.StaffSchedule)
-        .filter(models.StaffSchedule.tenant_id == tenant_id)
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
+    query = db.query(models.StaffSchedule).filter(models.StaffSchedule.tenant_id == tenant_id)
+    if staff_id:
+        query = query.filter(models.StaffSchedule.staff_id == staff_id)
+    return query.offset(skip).limit(limit).all()
 
 def get_staff_schedule(db: Session, schedule_id: str):
     tenant_id = current_tenant_var.get()

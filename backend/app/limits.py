@@ -7,21 +7,25 @@ PLAN_LIMITS = {
     "free": {
         "specialists": 1,
         "services": 3,
+        "locations": 1,
         "ai_smart_actions_daily": 0
     },
     "basic": {
         "specialists": 2,
         "services": 10,
+        "locations": 1,
         "ai_smart_actions_daily": 5
     },
     "pro": {
         "specialists": 5,
         "services": 25,
+        "locations": 3,
         "ai_smart_actions_daily": 15
     },
     "gold": {
         "specialists": 999999,
         "services": 999999,
+        "locations": 5,
         "ai_smart_actions_daily": 999999
     }
 }
@@ -77,6 +81,30 @@ def check_specialist_limit(db: Session):
         raise HTTPException(
             status_code=403, 
             detail=f"Límite de especialistas/personal alcanzado para su plan '{tenant.plan_type.upper()}'. Máximo permitido: {max_specialists}. Por favor, mejore su plan de facturación."
+        )
+
+def check_location_limit(db: Session):
+    tenant_id = current_tenant_var.get()
+    if not tenant_id:
+        return
+        
+    tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
+    if not tenant:
+        return
+        
+    limits = get_tenant_limits(tenant.plan_type)
+    max_locations = limits.get("locations", 1)
+    
+    # Contar las sedes para este tenant_id
+    current_count = db.query(models.Location).filter(
+        models.Location.tenant_id == tenant_id,
+        models.Location.is_active == True
+    ).count()
+    
+    if current_count >= max_locations:
+        raise HTTPException(
+            status_code=403, 
+            detail=f"Límite de sedes físicas alcanzado para su plan '{tenant.plan_type.upper()}'. Máximo permitido: {max_locations}. Por favor, mejore su plan de facturación para añadir más sucursales."
         )
 
 def get_tenant_ai_key(db: Session, provider: str) -> str:
