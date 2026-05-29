@@ -108,6 +108,30 @@ export default function GeneralTab({
         </div>
       </div>
 
+      <div>
+        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Modalidad Permitida</label>
+        <Controller
+          name="allowed_modality"
+          control={control}
+          rules={{ required: true }}
+          render={({ field }) => (
+            <Select onValueChange={field.onChange} value={field.value || 'clinic'}>
+              <SelectTrigger className="w-full h-[46px] rounded-xl border-stone-200 bg-white dark:bg-white text-stone-900 dark:text-stone-900 font-semibold shadow-none border dark:border-stone-200">
+                <SelectValue placeholder="Selecciona la modalidad" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="clinic">Solo en Clínica</SelectItem>
+                <SelectItem value="home">Solo a Domicilio</SelectItem>
+                <SelectItem value="both">Ambas (Mixto)</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+        />
+        <p className="text-[10px] text-stone-400 mt-1">
+          Configura si este tratamiento puede reservarse solo en clínica, solo a domicilio, o bajo ambas opciones.
+        </p>
+      </div>
+
       {/* STRIPE FIANZA CONFIGURATION */}
       <div className="p-4 bg-stone-50 border border-stone-200 rounded-xl space-y-4">
         <div className="flex items-center gap-3">

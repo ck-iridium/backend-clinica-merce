@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks, Request
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Dict, Any
 from datetime import date as DateType
 from .. import schemas, database, models
 from ..crud import appointments as crud
@@ -43,6 +43,39 @@ def get_availability(
     )
 
 
+@router.get("/client-saved-address", response_model=Dict[str, Any])
+def get_client_saved_address(
+    email: str = Query(..., description="Client email"),
+    phone: str = Query(..., description="Client phone"),
+    db: Session = Depends(database.get_db),
+):
+    """
+    Recupera de forma segura la dirección guardada de un cliente si coinciden
+    el email y el teléfono. Evita fugas de datos (fishing) al requerir ambos campos.
+    """
+    from ..database import current_tenant_var
+    tenant_id = current_tenant_var.get()
+    
+    client = db.query(models.Client).filter(
+        models.Client.tenant_id == tenant_id,
+        models.Client.email == email.strip().lower(),
+        models.Client.phone == phone.strip()
+    ).first()
+    
+    if client and client.address:
+        return {
+            "has_saved_address": True,
+            "client_name": client.name,
+            "client_address": client.address,
+            "client_latitude": client.client_latitude,
+            "client_longitude": client.client_longitude,
+            "client_postal_code": client.client_postal_code,
+            "client_city": client.client_city
+        }
+        
+    return {"has_saved_address": False}
+
+
 @router.post("/public", response_model=schemas.PublicBookingResponse, status_code=201)
 # @limiter.limit("3/hour")
 def public_booking(request: Request, booking: schemas.PublicBookingRequest, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
@@ -56,8 +89,84 @@ def public_booking(request: Request, booking: schemas.PublicBookingRequest, back
             status_code=422,
             detail="Provide at least one of: client_email, client_phone"
         )
+
+    # ── VALIDACIONES DE MODALIDAD Y COBERTURA GEOGRÁFICA ──
     service = db.query(models.Service).filter(models.Service.id == booking.service_id).first()
+    if not service:
+        raise HTTPException(status_code=404, detail="Servicio no encontrado")
+        
     settings = get_clinic_settings(db)
+    
+    # 1. Validar modalidad permitida por servicio
+    allowed = service.allowed_modality or "clinic"
+    requested = booking.service_modality or "clinic"
+    
+    if allowed == "home_only" and requested == "clinic":
+        raise HTTPException(
+            status_code=400,
+            detail="Este servicio es exclusivo a domicilio."
+        )
+    if allowed == "clinic_only" and requested == "home":
+        raise HTTPException(
+            status_code=400,
+            detail="Este servicio es exclusivo en clínica."
+        )
+        
+    # 2. Validar que si es a domicilio, el profesional soporte domicilio
+    if requested == "home":
+        if settings.work_modality == "clinic_only":
+            raise HTTPException(
+                status_code=400,
+                detail="El profesional no ofrece servicios a domicilio actualmente."
+            )
+            
+        # Validar dirección y coordenadas
+        if not booking.client_address or booking.client_latitude is None or booking.client_longitude is None:
+            raise HTTPException(
+                status_code=422,
+                detail="La dirección y coordenadas geográficas son obligatorias para citas a domicilio."
+            )
+            
+        # 3. Comprobar lista blanca de zonas híbrida
+        in_whitelist = False
+        if settings.whitelist_zones:
+            import json
+            try:
+                whitelist = json.loads(settings.whitelist_zones)
+            except Exception:
+                whitelist = []
+            
+            if whitelist:
+                postal_code = (booking.client_postal_code or "").strip().lower()
+                city = (booking.client_city or "").strip().lower()
+                for zone in whitelist:
+                    zone_clean = str(zone).strip().lower()
+                    if (postal_code and zone_clean == postal_code) or (city and zone_clean == city):
+                        in_whitelist = True
+                        break
+                        
+        # 4. Si no está en lista blanca, verificar radio kilométrico con Haversine
+        if not in_whitelist:
+            if settings.operations_center_latitude is None or settings.operations_center_longitude is None:
+                raise HTTPException(
+                    status_code=400,
+                    detail="El profesional no tiene configurado su Centro de Operaciones para calcular la cobertura."
+                )
+                
+            from ..utils.geo import calculate_haversine_distance
+            distance = calculate_haversine_distance(
+                settings.operations_center_latitude,
+                settings.operations_center_longitude,
+                booking.client_latitude,
+                booking.client_longitude
+            )
+            
+            max_radius = settings.max_coverage_radius_km or 10.0
+            if distance > max_radius:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Lo sentimos, tu dirección está fuera de nuestro radio de cobertura. Estás a {distance:.1f} km, el límite es {max_radius:.1f} km."
+                )
     
     # Creamos la cita inicialmente SIN enviar email. 
     # Decidiremos si enviarlo después de intentar generar el pago de Stripe.

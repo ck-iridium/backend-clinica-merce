@@ -45,6 +45,7 @@ export interface ServiceFormData {
   };
   requires_deposit: boolean;
   deposit_amount: number;
+  allowed_modality: 'clinic' | 'home' | 'both';
 }
 
 const DEFAULT_FORM_DATA: ServiceFormData = {
@@ -68,7 +69,8 @@ const DEFAULT_FORM_DATA: ServiceFormData = {
     accentColor: '#d4af37'
   },
   requires_deposit: false,
-  deposit_amount: 0
+  deposit_amount: 0,
+  allowed_modality: 'clinic'
 };
 
 export default function ServiceEditor({ initialData, serviceId }: { initialData?: any, serviceId?: string }) {
@@ -147,6 +149,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
         seo_keywords: initialData.seo_keywords || '',
         requires_deposit: initialData.requires_deposit || false,
         deposit_amount: initialData.deposit_amount || 0,
+        allowed_modality: initialData.allowed_modality || 'clinic',
         layout_preferences: initialData.layout_preferences || DEFAULT_FORM_DATA.layout_preferences
       };
 

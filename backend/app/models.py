@@ -53,6 +53,10 @@ class Client(Base):
     phone = Column(String)
     dni = Column(String, nullable=True)
     address = Column(String, nullable=True)
+    client_latitude = Column(Float, nullable=True)
+    client_longitude = Column(Float, nullable=True)
+    client_postal_code = Column(String, nullable=True)
+    client_city = Column(String, nullable=True)
     medical_history = Column(Text, nullable=True)
     allergies = Column(Text, nullable=True)
     preferred_language = Column(String, default="es")
@@ -122,6 +126,7 @@ class Service(Base):
     requires_deposit = Column(Boolean, default=False)
     deposit_amount = Column(Numeric(10, 2), nullable=True)
     translations = Column(JSONB, default=dict, nullable=True)
+    allowed_modality = Column(String, default="clinic") # "clinic", "home", "both"
     created_at = Column(DateTime, default=datetime.utcnow)
 
     __table_args__ = (
@@ -158,6 +163,12 @@ class Appointment(Base):
     stripe_checkout_session_id = Column(String, nullable=True)
     notes = Column(Text, nullable=True)
     reminder_sent = Column(Boolean, default=False)
+    service_modality = Column(String, default="clinic") # "clinic", "home"
+    client_address = Column(String, nullable=True)
+    client_latitude = Column(Float, nullable=True)
+    client_longitude = Column(Float, nullable=True)
+    client_postal_code = Column(String, nullable=True)
+    client_city = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     
     client = relationship("Client", back_populates="appointments")
@@ -194,6 +205,14 @@ class ClinicSettings(Base):
     legal_name = Column(String, default="")
     clinic_description = Column(String, default="Tu centro de confianza para servicios personalizados y bienestar de primer nivel.")
     sanitary_register = Column(String, nullable=True)
+
+    # Mobile Services & Geographical Coverage
+    work_modality = Column(String, default="clinic_only") # "clinic_only", "home_only", "both"
+    operations_center_address = Column(String, nullable=True)
+    operations_center_latitude = Column(Float, nullable=True)
+    operations_center_longitude = Column(Float, nullable=True)
+    max_coverage_radius_km = Column(Float, default=10.0)
+    whitelist_zones = Column(Text, nullable=True) # JSON list stored as string e.g. '["08001", "08002", "Badalona"]'
 
     # SMTP Configuration
     smtp_host = Column(String, nullable=True)

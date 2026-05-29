@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthRole } from '@/hooks/useAuthRole';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/app/contexts/LanguageContext';
-import { Save, Building2, SearchCode, ImageIcon, Hash, Clock, Calendar, Trash2, CreditCard, LayoutTemplate, Wallet } from 'lucide-react';
+import { Save, Building2, SearchCode, ImageIcon, Hash, Clock, Calendar, Trash2, CreditCard, LayoutTemplate, Wallet, MapPin } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,7 @@ import BrandingTab from './tabs/BrandingTab';
 import AdvancedTab from './tabs/AdvancedTab';
 import PaymentsTab from './tabs/PaymentsTab';
 import BookingLayoutTab from './tabs/BookingLayoutTab';
+import MobileServicesTab from './tabs/MobileServicesTab';
 
 export default function SettingsPage() {
   const { t } = useLanguage();
@@ -43,7 +44,7 @@ export default function SettingsPage() {
   // Sincronizar parámetro URL tab al cambiar de pestaña
   useEffect(() => {
     if (tabParam) {
-      const validTabs = ['general', 'subscription', 'agenda', 'billing', 'payments', 'branding', 'booking_ui', 'advanced'];
+      const validTabs = ['general', 'subscription', 'agenda', 'mobile_services', 'billing', 'payments', 'branding', 'booking_ui', 'advanced'];
       if (validTabs.includes(tabParam)) {
         setActiveTab(tabParam);
       }
@@ -57,7 +58,7 @@ export default function SettingsPage() {
         const params = new URLSearchParams(window.location.search);
         const tParam = params.get('tab');
         if (tParam) {
-          const validTabs = ['general', 'subscription', 'agenda', 'billing', 'payments', 'branding', 'booking_ui', 'advanced'];
+          const validTabs = ['general', 'subscription', 'agenda', 'mobile_services', 'billing', 'payments', 'branding', 'booking_ui', 'advanced'];
           if (validTabs.includes(tParam)) {
             setActiveTab(tParam);
           }
@@ -285,6 +286,7 @@ export default function SettingsPage() {
               { id: 'general', label: t('dashboard.settings.tabs.general'), icon: Building2 },
               { id: 'subscription', label: 'Plan & Suscripción', icon: CreditCard },
               { id: 'agenda', label: t('dashboard.settings.tabs.agenda'), icon: Clock },
+              { id: 'mobile_services', label: 'Servicios Domicilio', icon: MapPin },
               { id: 'billing', label: t('dashboard.settings.tabs.billing'), icon: Hash },
               { id: 'payments', label: t('dashboard.settings.tabs.payments'), icon: Wallet },
               { id: 'branding', label: t('dashboard.settings.tabs.branding'), icon: ImageIcon },
@@ -354,6 +356,7 @@ export default function SettingsPage() {
           )}
           {activeTab === 'payments' && <PaymentsTab settings={settings} setSettings={setSettings} />}
           {activeTab === 'booking_ui' && <BookingLayoutTab settings={settings} setSettings={setSettings} />}
+          {activeTab === 'mobile_services' && <MobileServicesTab settings={settings} setSettings={setSettings} />}
           {activeTab === 'advanced' && <AdvancedTab settings={settings} setSettings={setSettings} />}
         </div>
       </div>

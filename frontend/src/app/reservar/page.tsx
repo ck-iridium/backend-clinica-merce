@@ -85,7 +85,18 @@ export default function BookingPage() {
   const [dateTimePhase, setDateTimePhase] = useState<1 | 2>(1);
   const [currentMonthOffset, setCurrentMonthOffset] = useState(0);
 
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    service_modality: 'clinic', // 'clinic' o 'home'
+    client_address: '',
+    client_latitude: null as number | null,
+    client_longitude: null as number | null,
+    client_postal_code: '',
+    client_city: '',
+    save_address_to_crm: false
+  });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
@@ -101,14 +112,26 @@ export default function BookingPage() {
       const qEmail = query.get('email');
       const qPhone = query.get('phone');
       if (qName || qEmail || qPhone) {
-        setFormData({
+        setFormData(prev => ({
+          ...prev,
           name: qName || '',
           email: qEmail || '',
           phone: qPhone || ''
-        });
+        }));
       }
     }
   }, []);
+
+  // Inicializar modalidad del servicio al seleccionarlo
+  useEffect(() => {
+    if (selectedService) {
+      const allowed = selectedService.allowed_modality || 'clinic';
+      setFormData(prev => ({
+        ...prev,
+        service_modality: allowed === 'home' ? 'home' : 'clinic'
+      }));
+    }
+  }, [selectedService]);
 
   useEffect(() => {
     const fetchBaseData = async () => {
@@ -197,6 +220,7 @@ export default function BookingPage() {
       .catch(() => setAvailableSlots([]))
       .finally(() => setLoadingSlots(false));
   }, [selectedDate, selectedService, settings]);
+
   const handleBooking = async (e?: React.FormEvent) => {
     e?.preventDefault();
     const tenantId = getTenantId();
@@ -223,6 +247,13 @@ export default function BookingPage() {
           client_phone: formData.phone,
           service_id: selectedService.id,
           start_time: formatLocalISO(startD),
+          service_modality: formData.service_modality,
+          client_address: formData.service_modality === 'home' ? formData.client_address : null,
+          client_latitude: formData.service_modality === 'home' ? formData.client_latitude : null,
+          client_longitude: formData.service_modality === 'home' ? formData.client_longitude : null,
+          client_postal_code: formData.service_modality === 'home' ? formData.client_postal_code : null,
+          client_city: formData.service_modality === 'home' ? formData.client_city : null,
+          save_address_to_crm: formData.service_modality === 'home' ? formData.save_address_to_crm : false
         })
       });
 
@@ -231,7 +262,10 @@ export default function BookingPage() {
         return;
       }
 
-      if (!res.ok) throw new Error("Error al confirmar la reserva");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.detail || "Error al confirmar la reserva");
+      }
       
       const data = await res.json();
       
@@ -242,8 +276,12 @@ export default function BookingPage() {
         // Reserva normal sin fianza
         setStep(4);
       }
-    } catch (err) {
-      setBookingError("Oops, ha ocurrido un error. Inténtalo de nuevo o llama a la clínica.");
+    } catch (err: any) {
+      showFeedback({
+        type: 'error',
+        title: 'Reserva no disponible',
+        message: err.message || "Oops, ha ocurrido un error. Inténtalo de nuevo o llama a la clínica."
+      });
       console.error(err);
     } finally {
       setSaving(false);

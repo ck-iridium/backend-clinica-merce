@@ -103,6 +103,7 @@ class ServiceBase(BaseModel):
     layout_preferences: Optional[Dict[str, Any]] = None
     requires_deposit: bool = False
     deposit_amount: Optional[float] = None
+    allowed_modality: Optional[str] = "clinic" # "clinic", "home", "both"
 
 class ServiceCreate(ServiceBase):
     pass
@@ -125,6 +126,7 @@ class ServiceUpdate(BaseModel):
     layout_preferences: Optional[Dict[str, Any]] = None
     requires_deposit: Optional[bool] = None
     deposit_amount: Optional[float] = None
+    allowed_modality: Optional[str] = None
 
 class ServiceResponse(ServiceBase):
     id: str
@@ -177,6 +179,14 @@ class ClinicSettingsBase(BaseModel):
     cancellation_margin_hours: int = 24
     global_deposit_required: Optional[bool] = False
     global_deposit_amount: Optional[float] = None
+
+    # Mobile Services & Coverage
+    work_modality: Optional[str] = "clinic_only" # "clinic_only", "home_only", "both"
+    operations_center_address: Optional[str] = None
+    operations_center_latitude: Optional[float] = None
+    operations_center_longitude: Optional[float] = None
+    max_coverage_radius_km: float = 10.0
+    whitelist_zones: Optional[str] = None
 
     # Design & Onboarding Tokens
     branding_font_headings: Optional[str] = "Playfair Display"
@@ -238,6 +248,12 @@ class ClinicSettingsUpdate(BaseModel):
     cancellation_margin_hours: Optional[int] = None
     global_deposit_required: Optional[bool] = None
     global_deposit_amount: Optional[float] = None
+    work_modality: Optional[str] = None
+    operations_center_address: Optional[str] = None
+    operations_center_latitude: Optional[float] = None
+    operations_center_longitude: Optional[float] = None
+    max_coverage_radius_km: Optional[float] = None
+    whitelist_zones: Optional[str] = None
     ai_provider: Optional[str] = None
     gemini_api_key: Optional[str] = None
     openai_api_key: Optional[str] = None
@@ -440,6 +456,14 @@ class PublicBookingRequest(BaseModel):
     service_id: str
     start_time: datetime
     notes: Optional[str] = None
+    # Mobile Services geocoding payload
+    service_modality: Optional[str] = "clinic" # "clinic" or "home"
+    client_address: Optional[str] = None
+    client_latitude: Optional[float] = None
+    client_longitude: Optional[float] = None
+    client_postal_code: Optional[str] = None
+    client_city: Optional[str] = None
+    save_address_to_crm: Optional[bool] = False
 
 class PublicBookingResponse(BaseModel):
     appointment_id: str

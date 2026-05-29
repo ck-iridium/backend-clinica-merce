@@ -281,6 +281,15 @@ def create_public_appointment(db: Session, booking: schemas.PublicBookingRequest
     if collision_msg:
         raise ValueError(collision_msg)
 
+    # Actualizar la dirección y coordenadas en el perfil del cliente (CRM) si consiente
+    if getattr(booking, "save_address_to_crm", False) and client:
+        client.address = booking.client_address
+        client.client_latitude = booking.client_latitude
+        client.client_longitude = booking.client_longitude
+        client.client_postal_code = booking.client_postal_code
+        client.client_city = booking.client_city
+        db.add(client)
+
     appt = models.Appointment(
         id=str(uuid.uuid4()),
         tenant_id=tenant_id,
@@ -290,6 +299,12 @@ def create_public_appointment(db: Session, booking: schemas.PublicBookingRequest
         end_time=end_time,
         status="pending_verification",
         notes=booking.notes,
+        service_modality=getattr(booking, "service_modality", "clinic"),
+        client_address=getattr(booking, "client_address", None),
+        client_latitude=getattr(booking, "client_latitude", None),
+        client_longitude=getattr(booking, "client_longitude", None),
+        client_postal_code=getattr(booking, "client_postal_code", None),
+        client_city=getattr(booking, "client_city", None),
     )
     db.add(appt)
     db.commit()
