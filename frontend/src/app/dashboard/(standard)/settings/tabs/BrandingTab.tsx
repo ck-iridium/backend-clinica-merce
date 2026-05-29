@@ -39,29 +39,34 @@ export default function BrandingTab({
   return (
     <div className="space-y-6 md:space-y-10 animate-in slide-in-from-bottom-2 duration-300 font-sans">
       
-      {/* ── BANNER EXCLUSIVO DE BRANDING ── */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-stone-900 via-stone-850 to-stone-950 text-white rounded-3xl md:rounded-[2.5rem] p-6 md:p-10 border border-stone-850 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        <div className="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-gradient-to-br from-[#d4af37]/10 to-transparent blur-3xl" />
-        <div className="absolute -left-16 -bottom-16 w-64 h-64 rounded-full bg-gradient-to-tr from-stone-800/25 to-transparent blur-2xl" />
+      {/* ── CABECERA COMPACTA DE BRANDING ── */}
+      <div className="relative overflow-hidden bg-[#1C1917] text-white rounded-2xl py-5 px-6 border border-stone-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="absolute -right-16 -top-16 w-48 h-48 rounded-full bg-gradient-to-br from-[#d4af37]/5 to-transparent blur-2xl pointer-events-none" />
         
-        <div className="space-y-2.5 relative z-10 max-w-xl">
-          <span className="inline-block bg-[#d4af37]/25 text-[#d4af37] text-[10px] font-black uppercase tracking-[0.2em] px-3.5 py-1.5 rounded-full border border-[#d4af37]/35">
-            Branding Deluxe
+        <div className="flex items-center gap-5 relative z-10">
+          <span className="w-11 h-11 rounded-xl bg-[#D4AF37]/10 border border-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] shrink-0">
+            <Palette size={20} strokeWidth={1.5} />
           </span>
-          <h2 className="text-2xl md:text-3.5xl font-serif font-extrabold tracking-tight">
-            Identidad Visual Premium
-          </h2>
-          <p className="text-stone-300 text-sm leading-relaxed font-medium">
-            Define la personalidad estética de tu clínica. El color de acento, las tipografías seleccionadas, la geometría de los bordes y el modo oscuro se inyectan dinámicamente y con total aislamiento en la landing page pública y en tu dashboard.
-          </p>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-serif font-semibold tracking-wide text-white">Identidad Visual & Branding Premium</h3>
+              <span className="bg-[#d4af37]/20 text-[#d4af37] text-[8px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full border border-[#d4af37]/30">
+                Deluxe
+              </span>
+            </div>
+            <p className="text-xs text-stone-300 leading-relaxed max-w-xl font-medium">
+              Personaliza el logotipo, la paleta de color de acento, tipografías premium, geometría de bordes y modo de interfaz inyectados dinámicamente en tu landing pública y dashboard.
+            </p>
+          </div>
         </div>
-        <div className="flex items-center gap-2.5 bg-stone-850/80 border border-stone-800 p-4 rounded-2xl relative z-10 shrink-0 self-stretch md:self-auto justify-center">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-stone-800 to-stone-950 flex items-center justify-center border border-[#d4af37]/30">
-            <Sparkles size={13} className="text-[#d4af37] animate-pulse" />
+
+        <div className="flex items-center gap-3 bg-stone-900/60 border border-stone-800/80 px-4 py-2.5 rounded-xl relative z-10 shrink-0 self-stretch md:self-auto justify-center">
+          <div className="w-6 h-6 rounded-full bg-stone-950 flex items-center justify-center border border-[#d4af37]/20">
+            <Sparkles size={11} className="text-[#d4af37] animate-pulse" />
           </div>
           <div className="text-left">
-            <p className="text-[10px] text-stone-400 font-black uppercase tracking-widest leading-none">Co-Piloto por Voz</p>
-            <p className="text-xs text-[#d4af37] font-extrabold mt-1">Totalmente enlazado</p>
+            <p className="text-[9px] text-stone-400 font-black uppercase tracking-widest leading-none">Co-Piloto por Voz</p>
+            <p className="text-xs text-[#d4af37] font-bold mt-1">Enlazado</p>
           </div>
         </div>
       </div>
