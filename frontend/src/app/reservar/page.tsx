@@ -126,12 +126,13 @@ export default function BookingPage() {
   useEffect(() => {
     if (selectedService) {
       const allowed = selectedService.allowed_modality || 'clinic';
+      const isHomeOnly = settings?.work_modality === 'home_only' || allowed === 'home';
       setFormData(prev => ({
         ...prev,
-        service_modality: allowed === 'home' ? 'home' : 'clinic'
+        service_modality: isHomeOnly ? 'home' : 'clinic'
       }));
     }
-  }, [selectedService]);
+  }, [selectedService, settings]);
 
   useEffect(() => {
     const fetchBaseData = async () => {
