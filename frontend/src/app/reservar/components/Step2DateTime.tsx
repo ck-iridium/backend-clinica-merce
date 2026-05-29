@@ -123,7 +123,7 @@ export default function Step2DateTime({
               </p>
             </div>
 
-            {staffList.length > 0 && (
+            {staffList.length > 1 && (
               <div className="shrink-0 px-6 pb-4 z-30 bg-background select-none">
                 <p className="text-[10px] md:text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
                   ¿Preferencia de especialista?
@@ -287,7 +287,7 @@ export default function Step2DateTime({
               </div>
             </div>
 
-            {staffList.length > 0 && (
+            {staffList.length > 1 && (
               <div className="shrink-0 px-6 pb-4 z-30 bg-background select-none">
                 <p className="text-[10px] md:text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
                   ¿Preferencia de especialista?

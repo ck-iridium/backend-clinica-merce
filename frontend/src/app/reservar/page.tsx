@@ -175,7 +175,11 @@ export default function BookingPage() {
         }
 
         if (staffRes.ok) {
-          setStaff(await staffRes.json());
+          const staffData = await staffRes.json();
+          setStaff(staffData);
+          if (staffData.length === 1) {
+            setSelectedStaff(staffData[0]);
+          }
         }
 
         if (catRes.ok) {
