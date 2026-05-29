@@ -34,4 +34,5 @@ def get_specialists(db: Session = Depends(database.get_db)):
         models.Profile.tenant_id == tenant_id,
         models.Profile.role.in_(["specialist", "especialista", "admin", "administrador", "Administrador", "Especialista"])
     ).all()
-    return [{"id": p.id, "full_name": p.full_name or p.email, "email": p.email, "role": p.role} for p in profiles]
+    return [{"id": p.id, "full_name": p.full_name or p.email, "email": p.email, "role": p.role, "avatar_url": p.avatar_url} for p in profiles]
+

@@ -110,6 +110,8 @@ export default function BookingPage() {
   const [bookingError, setBookingError] = useState('');
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
+  const showHeaderFooter = step < 4 && !(locations.length > 1 && !selectedLocation);
+
   // Parse check for rebooking query params on initial mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -325,7 +327,7 @@ export default function BookingPage() {
     <div className="h-[100dvh] bg-background font-sans selection:bg-primary/30 selection:text-stone-900 flex flex-col overflow-hidden text-foreground">
       
       {/* APP HEADER (FIXED) */}
-      {step < 4 && selectedLocation && (
+      {showHeaderFooter && (
         <header className="shrink-0 bg-card border-b border-border z-50">
           <div className="max-w-2xl mx-auto w-full px-8 py-4 md:py-5 flex items-center justify-between">
             {!(step === 1 && !activeCategory && (locations.length <= 1 || !selectedLocation)) ? (
@@ -404,7 +406,15 @@ export default function BookingPage() {
                   selectedDate={selectedDate}
                   setSelectedDate={setSelectedDate}
                   selectedTime={selectedTime}
-                  setSelectedTime={setSelectedTime}
+                  setSelectedTime={(time) => {
+                    setSelectedTime(time);
+                    if (time) {
+                      setTimeout(() => {
+                        setStep(3);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }, 300);
+                    }
+                  }}
                   availableSlots={availableSlots}
                   loadingSlots={loadingSlots}
                   selectedService={selectedService}
@@ -447,7 +457,7 @@ export default function BookingPage() {
       </main>
 
       {/* ACTION FOOTER (FIXED) */}
-      {step < 4 && selectedLocation && (
+      {showHeaderFooter && (
         <footer className="shrink-0 bg-card border-t border-border p-4 md:py-6 md:px-8 z-50">
           <div className="max-w-2xl mx-auto flex gap-3">
             {step === 1 && (activeCategory?.name || selectedService) && (

@@ -124,17 +124,27 @@ export default function Step2DateTime({
             </div>
 
             {staffList.length > 0 && (
-              <div className="shrink-0 px-6 pb-3 z-30 bg-background select-none">
-                <p className="text-[9px] md:text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">¿Preferencia de especialista?</p>
-                <div className="flex gap-2 overflow-x-auto pb-1.5 custom-scrollbar select-none">
+              <div className="shrink-0 px-6 pb-4 z-30 bg-background select-none">
+                <p className="text-[10px] md:text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
+                  ¿Preferencia de especialista?
+                </p>
+                <div className="flex gap-4 overflow-x-auto pb-2 pt-1 px-1 custom-scrollbar justify-start select-none">
                   <button
                     onClick={() => setSelectedStaff({ id: 'any', full_name: 'Cualquiera (Recomendado)' })}
-                    className={`px-3.5 py-2 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all duration-300 border active:scale-95 flex items-center gap-1.5
+                    className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all duration-300 active:scale-95 min-w-[90px] md:min-w-[110px] group
                       ${selectedStaff?.id === 'any'
-                        ? 'bg-primary border-primary text-white shadow-sm font-black'
-                        : 'bg-card border-border text-foreground hover:border-primary/30'}`}
+                        ? 'bg-[#1c1917] border-[#D4AF37] text-white shadow-md'
+                        : 'bg-card border-border text-foreground hover:border-[#D4AF37]/40'}`}
                   >
-                    ✨ Cualquier Especialista
+                    <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center border-2 transition-all duration-300
+                      ${selectedStaff?.id === 'any' 
+                        ? 'border-[#D4AF37] bg-[#D4AF37]/15 scale-105' 
+                        : 'border-border bg-stone-100 group-hover:border-[#D4AF37]/30'}`}>
+                      <span className="text-xl">✨</span>
+                    </div>
+                    <span className="text-[10px] md:text-xs font-bold tracking-wide text-center truncate max-w-[80px] md:max-w-[100px]">
+                      Cualquiera
+                    </span>
                   </button>
                   {staffList.map((st: any) => {
                     const isSelected = selectedStaff?.id === st.id;
@@ -142,16 +152,26 @@ export default function Step2DateTime({
                       <button
                         key={st.id}
                         onClick={() => setSelectedStaff(st)}
-                        className={`px-3.5 py-2 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all duration-300 border active:scale-95 flex items-center gap-1.5
+                        className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all duration-300 active:scale-95 min-w-[90px] md:min-w-[110px] group
                           ${isSelected
-                            ? 'bg-primary border-primary text-white shadow-sm font-black'
-                            : 'bg-card border-border text-foreground hover:border-primary/30'}`}
+                            ? 'bg-[#1c1917] border-[#D4AF37] text-white shadow-md'
+                            : 'bg-card border-border text-foreground hover:border-[#D4AF37]/40'}`}
                       >
-                        <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-serif border font-bold
-                          ${isSelected ? 'bg-white/20 border-white/30 text-white' : 'bg-primary/5 border-primary/20 text-primary'}`}>
-                          {st.full_name.charAt(0).toUpperCase()}
+                        <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full overflow-hidden flex items-center justify-center border-2 transition-all duration-300
+                          ${isSelected 
+                            ? 'border-[#D4AF37] scale-105 bg-[#1c1917]' 
+                            : 'border-border bg-stone-100 group-hover:border-[#D4AF37]/30'}`}>
+                          {st.avatar_url ? (
+                            <img src={st.avatar_url} alt={st.full_name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className={`text-sm md:text-base font-serif font-bold ${isSelected ? 'text-[#D4AF37]' : 'text-stone-500'}`}>
+                              {st.full_name.charAt(0).toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] md:text-xs font-bold tracking-wide text-center truncate max-w-[80px] md:max-w-[100px]">
+                          {st.full_name}
                         </span>
-                        {st.full_name}
                       </button>
                     );
                   })}
@@ -268,17 +288,27 @@ export default function Step2DateTime({
             </div>
 
             {staffList.length > 0 && (
-              <div className="shrink-0 px-6 pb-3 z-30 bg-background select-none">
-                <p className="text-[9px] md:text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">¿Preferencia de especialista?</p>
-                <div className="flex gap-2 overflow-x-auto pb-1.5 custom-scrollbar select-none">
+              <div className="shrink-0 px-6 pb-4 z-30 bg-background select-none">
+                <p className="text-[10px] md:text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
+                  ¿Preferencia de especialista?
+                </p>
+                <div className="flex gap-4 overflow-x-auto pb-2 pt-1 px-1 custom-scrollbar justify-start select-none">
                   <button
                     onClick={() => setSelectedStaff({ id: 'any', full_name: 'Cualquiera (Recomendado)' })}
-                    className={`px-3.5 py-2 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all duration-300 border active:scale-95 flex items-center gap-1.5
+                    className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all duration-300 active:scale-95 min-w-[90px] md:min-w-[110px] group
                       ${selectedStaff?.id === 'any'
-                        ? 'bg-primary border-primary text-white shadow-sm font-black'
-                        : 'bg-card border-border text-foreground hover:border-primary/30'}`}
+                        ? 'bg-[#1c1917] border-[#D4AF37] text-white shadow-md'
+                        : 'bg-card border-border text-foreground hover:border-[#D4AF37]/40'}`}
                   >
-                    ✨ Cualquier Especialista
+                    <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center border-2 transition-all duration-300
+                      ${selectedStaff?.id === 'any' 
+                        ? 'border-[#D4AF37] bg-[#D4AF37]/15 scale-105' 
+                        : 'border-border bg-stone-100 group-hover:border-[#D4AF37]/30'}`}>
+                      <span className="text-xl">✨</span>
+                    </div>
+                    <span className="text-[10px] md:text-xs font-bold tracking-wide text-center truncate max-w-[80px] md:max-w-[100px]">
+                      Cualquiera
+                    </span>
                   </button>
                   {staffList.map((st: any) => {
                     const isSelected = selectedStaff?.id === st.id;
@@ -286,16 +316,26 @@ export default function Step2DateTime({
                       <button
                         key={st.id}
                         onClick={() => setSelectedStaff(st)}
-                        className={`px-3.5 py-2 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all duration-300 border active:scale-95 flex items-center gap-1.5
+                        className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all duration-300 active:scale-95 min-w-[90px] md:min-w-[110px] group
                           ${isSelected
-                            ? 'bg-primary border-primary text-white shadow-sm font-black'
-                            : 'bg-card border-border text-foreground hover:border-primary/30'}`}
+                            ? 'bg-[#1c1917] border-[#D4AF37] text-white shadow-md'
+                            : 'bg-card border-border text-foreground hover:border-[#D4AF37]/40'}`}
                       >
-                        <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-serif border font-bold
-                          ${isSelected ? 'bg-white/20 border-white/30 text-white' : 'bg-primary/5 border-primary/20 text-primary'}`}>
-                          {st.full_name.charAt(0).toUpperCase()}
+                        <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full overflow-hidden flex items-center justify-center border-2 transition-all duration-300
+                          ${isSelected 
+                            ? 'border-[#D4AF37] scale-105 bg-[#1c1917]' 
+                            : 'border-border bg-stone-100 group-hover:border-[#D4AF37]/30'}`}>
+                          {st.avatar_url ? (
+                            <img src={st.avatar_url} alt={st.full_name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className={`text-sm md:text-base font-serif font-bold ${isSelected ? 'text-[#D4AF37]' : 'text-stone-500'}`}>
+                              {st.full_name.charAt(0).toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] md:text-xs font-bold tracking-wide text-center truncate max-w-[80px] md:max-w-[100px]">
+                          {st.full_name}
                         </span>
-                        {st.full_name}
                       </button>
                     );
                   })}
