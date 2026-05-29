@@ -1,6 +1,6 @@
 "use client"
 import React, { useState, useEffect, useRef } from 'react';
-import { User, Mail, Phone, ShieldCheck, Info, X, MapPin, Building2, Home, Search, Compass, CheckCircle } from 'lucide-react';
+import { User, Mail, Phone, ShieldCheck, Info, X, MapPin, Building2, Globe, Search, Compass, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 
@@ -44,6 +44,60 @@ export default function Step3Details({
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const leafletMapRef = useRef<any | null>(null);
   const markerRef = useRef<any | null>(null);
+
+  // Diccionario local de traducción para la interfaz de reserva a domicilio
+  const dict: Record<string, Record<string, string>> = {
+    es: {
+      service_modality: "Modalidad del Servicio",
+      in_center: "En Centro",
+      at_home: "A Domicilio",
+      your_address: "Tu Dirección de Envío/Domicilio",
+      address_placeholder: "Busca tu calle, número y población",
+      map: "Mapa",
+      save_address_label: "Guardar esta dirección para mis próximas reservas (Checkout Rápido en 1-Click)",
+      detected_address_title: "¿Dirección Habitual Detectada?",
+      detected_address_desc: "Hemos encontrado tu dirección recurrente:",
+      autocomplete: "Auto-completar",
+      fix_map_title: "Fijar Ubicación en el Mapa",
+      fix_map_desc: "Arrastra el marcador dorado sobre tu dirección",
+      cancel: "Cancelar",
+      confirm_location: "Confirmar Ubicación"
+    },
+    en: {
+      service_modality: "Service Modality",
+      in_center: "At Salon",
+      at_home: "At Home",
+      your_address: "Your Delivery/Home Address",
+      address_placeholder: "Search your street, number and town",
+      map: "Map",
+      save_address_label: "Save this address for my next bookings (1-Click Fast Checkout)",
+      detected_address_title: "Habitual Address Detected?",
+      detected_address_desc: "We found your recurrent address:",
+      autocomplete: "Auto-fill",
+      fix_map_title: "Pin Location on Map",
+      fix_map_desc: "Drag the gold marker over your address",
+      cancel: "Cancel",
+      confirm_location: "Confirm Location"
+    },
+    fr: {
+      service_modality: "Modalité du Service",
+      in_center: "En Salon",
+      at_home: "À Domicile",
+      your_address: "Votre Adresse de Livraison/Domicile",
+      address_placeholder: "Recherchez votre rue, numéro et ville",
+      map: "Carte",
+      save_address_label: "Enregistrer cette adresse pour mes prochaines réservations (Checkout Rapide en 1-Clic)",
+      detected_address_title: "Adresse Habituelle Détectée ?",
+      detected_address_desc: "Nous avons trouvé votre adresse récurrente :",
+      autocomplete: "Remplir",
+      fix_map_title: "Épingler l'emplacement sur la carte",
+      fix_map_desc: "Faites glisser le marqueur doré sur votre adresse",
+      cancel: "Annuler",
+      confirm_location: "Confirmer l'emplacement"
+    }
+  };
+
+  const text = (key: string) => dict[language]?.[key] || dict['es']?.[key] || key;
 
   const getServiceDepositInfo = (srv: any) => {
     if (!srv) return { required: false, amount: 0 };
@@ -101,7 +155,7 @@ export default function Step3Details({
     setSavedAddressData(null);
   };
 
-  // Buscar sugerencias de autocompletado
+  // Buscar sugerencias de autocompletado (Soporte España y Francia)
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setAddressQuery(value);
@@ -122,7 +176,7 @@ export default function Step3Details({
           const res = await fetch(
             `https://api.mapbox.com/search/searchbox/v1/suggest?q=${encodeURIComponent(
               value
-            )}&language=es&access_token=${mapboxToken}&session_token=booking-flow-session`
+            )}&language=es&access_token=${mapboxToken}&country=es,fr&session_token=booking-flow-session`
           );
           if (res.ok) {
             const data = await res.json();
@@ -138,7 +192,7 @@ export default function Step3Details({
           const res = await fetch(
             `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
               value
-            )}&limit=5&addressdetails=1&countrycodes=es`
+            )}&limit=5&addressdetails=1&countrycodes=es,fr`
           );
           if (res.ok) {
             const data = await res.json();
@@ -227,13 +281,11 @@ export default function Step3Details({
         };
         document.body.appendChild(script);
       } else {
-        // Retraso de renderizado para permitir que el modal se dibuje en el DOM
         setTimeout(() => {
           initMap();
         }, 300);
       }
     } else {
-      // Cleanup del mapa al cerrar
       if (leafletMapRef.current) {
         leafletMapRef.current.remove();
         leafletMapRef.current = null;
@@ -247,7 +299,6 @@ export default function Step3Details({
     const L = (window as any).L;
     if (!L) return;
 
-    // Coordenadas iniciales: Centro de operaciones o centro de España (Madrid)
     const initialLat = formData.client_latitude || settings?.operations_center_latitude || 40.416775;
     const initialLon = formData.client_longitude || settings?.operations_center_longitude || -3.703790;
 
@@ -258,7 +309,6 @@ export default function Step3Details({
       attribution: '&copy; OpenStreetMap'
     }).addTo(map);
 
-    // Icono personalizado dorado para Clínica Mercè
     const goldIcon = L.icon({
       iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
       shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -274,7 +324,6 @@ export default function Step3Details({
     }).addTo(map);
     markerRef.current = marker;
 
-    // Cuando se mueva el marcador por arrastre del Pin Drop
     marker.on('dragend', () => {
       const pos = marker.getLatLng();
       map.panTo(pos);
@@ -286,7 +335,6 @@ export default function Step3Details({
     const pos = markerRef.current.getLatLng();
     setLoadingReverseGeo(true);
     try {
-      // Reverse Geocoding mediante Nominatim
       const res = await fetch(
         `https://nominatim.openstreetmap.org/reverse?lat=${pos.lat}&lon=${pos.lng}&format=json`
       );
@@ -314,8 +362,6 @@ export default function Step3Details({
     }
   };
 
-  // Determinar si debemos mostrar el selector de modalidad
-  // Se muestra si el servicio permite ambas y el profesional soporta ambas
   const showModalitySelector =
     (selectedService?.allowed_modality === 'both' || !selectedService?.allowed_modality) &&
     (settings?.work_modality === 'both' || settings?.work_modality === 'mix');
@@ -324,7 +370,7 @@ export default function Step3Details({
     <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
-      className="w-full flex flex-col flex-grow min-h-0 bg-background text-foreground"
+      className="w-full flex flex-col flex-grow min-h-0 bg-background text-foreground animate-in duration-300"
     >
       {/* Header Equilibrado */}
       <div className="shrink-0 px-6 pt-4 pb-2 z-30 bg-background">
@@ -398,9 +444,9 @@ export default function Step3Details({
                   <CheckCircle size={16} />
                 </span>
                 <div>
-                  <h4 className="text-xs font-bold text-[#b08e23]">¿Dirección Habitual Detectada?</h4>
+                  <h4 className="text-xs font-bold text-[#b08e23]">{text('detected_address_title')}</h4>
                   <p className="text-[11px] text-stone-500 font-medium leading-normal mt-0.5">
-                    Hemos encontrado tu dirección recurrente: <strong>{savedAddressData.client_address}</strong>.
+                    {text('detected_address_desc')} <strong>{savedAddressData.client_address}</strong>.
                   </p>
                 </div>
               </div>
@@ -409,7 +455,7 @@ export default function Step3Details({
                 onClick={handleApplySavedAddress}
                 className="w-full md:w-auto px-4 py-2 bg-[#d4af37] hover:bg-[#c29e2f] text-white text-xs font-bold rounded-xl transition-all shadow-sm shrink-0 whitespace-nowrap"
               >
-                Auto-completar
+                {text('autocomplete')}
               </button>
             </motion.div>
           )}
@@ -422,7 +468,7 @@ export default function Step3Details({
             {showModalitySelector && (
               <div className="group">
                 <label className="block text-[10px] md:text-xs font-black uppercase tracking-[0.12em] text-muted-foreground mb-1.5 ml-1">
-                  Modalidad del Servicio
+                  {text('service_modality')}
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
@@ -431,12 +477,12 @@ export default function Step3Details({
                     className={`p-3.5 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all outline-none
                       ${
                         formData.service_modality === 'clinic'
-                          ? 'border-[#d4af37] bg-stone-50 text-[#d4af37] shadow-sm'
+                          ? 'border-[#d4af37] bg-[#24211e] text-[#d4af37] shadow-sm'
                           : 'border-border bg-card text-muted-foreground hover:border-stone-300'
                       }`}
                   >
                     <Building2 size={14} />
-                    En Centro
+                    {text('in_center')}
                   </button>
                   <button
                     type="button"
@@ -444,12 +490,12 @@ export default function Step3Details({
                     className={`p-3.5 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all outline-none
                       ${
                         formData.service_modality === 'home'
-                          ? 'border-[#d4af37] bg-stone-50 text-[#d4af37] shadow-sm'
+                          ? 'border-[#d4af37] bg-[#24211e] text-[#d4af37] shadow-sm'
                           : 'border-border bg-card text-muted-foreground hover:border-stone-300'
                       }`}
                   >
                     <MapPin size={14} />
-                    A Domicilio
+                    {text('at_home')}
                   </button>
                 </div>
               </div>
@@ -457,9 +503,9 @@ export default function Step3Details({
 
             {/* Dirección a Domicilio (Si aplica) */}
             {formData.service_modality === 'home' && (
-              <div className="group animate-in slide-in-from-top-2 duration-300">
+              <div className="group animate-in slide-in-from-top-2 duration-300 relative">
                 <label className="block text-[10px] md:text-xs font-black uppercase tracking-[0.12em] text-muted-foreground mb-1.5 ml-1">
-                  Tu Dirección de Envío/Domicilio
+                  {text('your_address')}
                 </label>
                 <div className="relative">
                   <div className="absolute left-4 md:left-5 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-primary transition-colors">
@@ -470,8 +516,8 @@ export default function Step3Details({
                     type="text"
                     value={addressQuery}
                     onChange={handleAddressChange}
-                    className="w-full bg-card border border-border rounded-luxury-btn py-3.5 md:py-4.5 pl-12 md:pl-16 pr-28 text-sm md:text-base font-bold text-foreground placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm outline-none"
-                    placeholder="Busca tu calle, número y población"
+                    className="w-full bg-card border border-border rounded-luxury-btn py-3.5 pl-12 pr-28 text-sm font-bold text-foreground placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm outline-none"
+                    placeholder={text('address_placeholder')}
                   />
                   {loadingSuggestions && (
                     <div className="absolute right-24 top-1/2 -translate-y-1/2 flex items-center">
@@ -481,21 +527,21 @@ export default function Step3Details({
                   <button
                     type="button"
                     onClick={() => setShowMapModal(true)}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-[10px] font-bold rounded-lg transition-all flex items-center gap-1 hover:text-stone-900 border border-stone-200"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 px-2.5 py-1.5 bg-stone-850 hover:bg-stone-800 text-stone-200 text-[10px] font-bold rounded-lg transition-all flex items-center gap-1 hover:text-white border border-stone-750"
                   >
                     <Compass size={11} />
-                    Mapa
+                    {text('map')}
                   </button>
                 </div>
 
                 {suggestions.length > 0 && (
-                  <div className="absolute left-6 right-6 mt-1.5 bg-white border border-stone-200 rounded-xl shadow-xl z-50 overflow-hidden divide-y divide-stone-100 max-h-56 overflow-y-auto">
+                  <div className="absolute left-0 right-0 w-full mt-1.5 bg-[#24211e] border border-stone-800 rounded-xl shadow-2xl z-50 overflow-hidden divide-y divide-stone-800 max-h-48 overflow-y-auto">
                     {suggestions.map((s) => (
                       <button
                         key={s.id}
                         type="button"
                         onClick={() => handleSelectSuggestion(s)}
-                        className="w-full text-left px-4 py-3 hover:bg-stone-50 text-[11px] font-bold text-stone-600 transition-colors flex items-center gap-2.5"
+                        className="w-full text-left px-4 py-2.5 hover:bg-stone-800/60 text-[11px] font-bold text-stone-300 transition-colors flex items-center gap-2"
                       >
                         <MapPin size={12} className="text-[#d4af37] shrink-0" />
                         {s.display_name}
@@ -505,7 +551,7 @@ export default function Step3Details({
                 )}
 
                 {/* Consentimiento para guardar la dirección (Caché de cliente) */}
-                <div className="mt-3.5 ml-1">
+                <div className="mt-3 ml-1">
                   <label className="flex items-center gap-3 cursor-pointer select-none">
                     <input
                       type="checkbox"
@@ -513,13 +559,13 @@ export default function Step3Details({
                       onChange={(e) => setFormData({ ...formData, save_address_to_crm: e.target.checked })}
                       className="peer sr-only"
                     />
-                    <div className="w-4 h-4 rounded border border-stone-300 bg-white peer-checked:bg-[#d4af37] peer-checked:border-[#d4af37] flex items-center justify-center text-white transition-all shadow-sm shrink-0">
+                    <div className="w-4 h-4 rounded border border-stone-700 bg-card peer-checked:bg-[#d4af37] peer-checked:border-[#d4af37] flex items-center justify-center text-white transition-all shadow-sm shrink-0">
                       <svg className="w-3 h-3 text-white fill-none stroke-current" viewBox="0 0 24 24" strokeWidth="4">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
-                    <span className="text-[11px] text-stone-500 font-bold hover:text-stone-700 transition-colors">
-                      Guardar esta dirección para mis próximas reservas (Checkout Rápido en 1-Click)
+                    <span className="text-[10px] md:text-[11px] text-stone-400 font-bold hover:text-stone-300 transition-colors">
+                      {text('save_address_label')}
                     </span>
                   </label>
                 </div>
@@ -539,7 +585,7 @@ export default function Step3Details({
                   type="text"
                   value={formData.name}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full bg-card border border-border rounded-luxury-btn py-3.5 md:py-4.5 pl-12 md:pl-16 pr-4 text-sm md:text-base font-bold text-foreground placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm outline-none"
+                  className="w-full bg-card border border-border rounded-luxury-btn py-3.5 pl-12 pr-4 text-sm font-bold text-foreground placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm outline-none"
                   placeholder={t('wizard.full_name_placeholder')}
                 />
               </div>
@@ -558,7 +604,7 @@ export default function Step3Details({
                   type="email"
                   value={formData.email}
                   onChange={e => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full bg-card border border-border rounded-luxury-btn py-3.5 md:py-4.5 pl-12 md:pl-16 pr-4 text-sm md:text-base font-bold text-foreground placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm outline-none"
+                  className="w-full bg-card border border-border rounded-luxury-btn py-3.5 pl-12 pr-4 text-sm font-bold text-foreground placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm outline-none"
                   placeholder="tu@email.com"
                 />
               </div>
@@ -577,7 +623,7 @@ export default function Step3Details({
                   type="tel"
                   value={formData.phone}
                   onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full bg-card border border-border rounded-luxury-btn py-3.5 md:py-4.5 pl-12 md:pl-16 pr-4 text-sm md:text-base font-bold text-foreground placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm outline-none"
+                  className="w-full bg-card border border-border rounded-luxury-btn py-3.5 pl-12 pr-4 text-sm font-bold text-foreground placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm outline-none"
                   placeholder="600 000 000"
                 />
               </div>
@@ -647,7 +693,7 @@ export default function Step3Details({
       {/* Pop-up Modal Explicativo de Fianza */}
       <AnimatePresence>
         {showFianzaInfo && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in duration-300">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -718,13 +764,13 @@ export default function Step3Details({
       {/* MODAL INTERACTIVO DE PIN DROP PARA GEOLOCALIZACIÓN MANUAL */}
       <AnimatePresence>
         {showMapModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in duration-300">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowMapModal(false)}
-              className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-stone-900/60 backdrop-blur-md"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
@@ -735,20 +781,20 @@ export default function Step3Details({
               {/* Header */}
               <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-card shrink-0">
                 <div>
-                  <h3 className="font-serif font-bold text-base text-foreground">Fijar Ubicación en el Mapa</h3>
-                  <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest mt-0.5">Arrastra el marcador dorado sobre tu dirección</p>
+                  <h3 className="font-serif font-bold text-base text-foreground">{text('fix_map_title')}</h3>
+                  <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest mt-0.5">{text('fix_map_desc')}</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowMapModal(false)}
-                  className="text-stone-400 hover:text-stone-700 transition-colors p-1.5 rounded-full hover:bg-muted"
+                  className="text-stone-400 hover:text-stone-200 transition-colors p-1.5 rounded-full hover:bg-stone-800"
                 >
                   <X size={16} />
                 </button>
               </div>
 
               {/* Map Canvas */}
-              <div className="flex-1 w-full bg-stone-50 relative min-h-0">
+              <div className="flex-1 w-full bg-stone-900 relative min-h-0">
                 <div ref={mapContainerRef} className="w-full h-full z-10" style={{ minHeight: '200px' }} />
               </div>
 
@@ -757,9 +803,9 @@ export default function Step3Details({
                 <button
                   type="button"
                   onClick={() => setShowMapModal(false)}
-                  className="flex-1 py-3 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl font-bold text-xs uppercase tracking-wider transition-colors border border-stone-200"
+                  className="flex-1 py-3 bg-stone-800 hover:bg-stone-750 text-stone-200 rounded-xl font-bold text-xs uppercase tracking-wider transition-colors border border-stone-700 hover:text-white"
                 >
-                  Cancelar
+                  {text('cancel')}
                 </button>
                 <button
                   type="button"
@@ -770,7 +816,7 @@ export default function Step3Details({
                   {loadingReverseGeo ? (
                     <span className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin"></span>
                   ) : (
-                    'Confirmar Ubicación'
+                    text('confirm_location')
                   )}
                 </button>
               </div>
