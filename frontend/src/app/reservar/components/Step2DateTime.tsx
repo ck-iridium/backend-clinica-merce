@@ -17,7 +17,10 @@ export default function Step2DateTime({
   dateTimePhase,
   setDateTimePhase,
   currentMonthOffset,
-  setCurrentMonthOffset
+  setCurrentMonthOffset,
+  staffList = [],
+  selectedStaff,
+  setSelectedStaff
 }: {
   selectedDate: Date;
   setSelectedDate: (d: Date) => void;
@@ -32,6 +35,9 @@ export default function Step2DateTime({
   setDateTimePhase: (p: 1 | 2) => void;
   currentMonthOffset: number;
   setCurrentMonthOffset: (o: number) => void;
+  staffList?: any[];
+  selectedStaff: any;
+  setSelectedStaff: (s: any) => void;
 }) {
   const { language, t, translate } = useLanguage();
 
@@ -116,6 +122,42 @@ export default function Step2DateTime({
                 {t('wizard.appointment_for')} <span className="text-primary font-bold">{translate(selectedService?.name, selectedService?.translations, 'name')}</span>
               </p>
             </div>
+
+            {staffList.length > 0 && (
+              <div className="shrink-0 px-6 pb-3 z-30 bg-background select-none">
+                <p className="text-[9px] md:text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">¿Preferencia de especialista?</p>
+                <div className="flex gap-2 overflow-x-auto pb-1.5 custom-scrollbar select-none">
+                  <button
+                    onClick={() => setSelectedStaff({ id: 'any', full_name: 'Cualquiera (Recomendado)' })}
+                    className={`px-3.5 py-2 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all duration-300 border active:scale-95 flex items-center gap-1.5
+                      ${selectedStaff?.id === 'any'
+                        ? 'bg-primary border-primary text-white shadow-sm font-black'
+                        : 'bg-card border-border text-foreground hover:border-primary/30'}`}
+                  >
+                    ✨ Cualquier Especialista
+                  </button>
+                  {staffList.map((st: any) => {
+                    const isSelected = selectedStaff?.id === st.id;
+                    return (
+                      <button
+                        key={st.id}
+                        onClick={() => setSelectedStaff(st)}
+                        className={`px-3.5 py-2 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all duration-300 border active:scale-95 flex items-center gap-1.5
+                          ${isSelected
+                            ? 'bg-primary border-primary text-white shadow-sm font-black'
+                            : 'bg-card border-border text-foreground hover:border-primary/30'}`}
+                      >
+                        <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-serif border font-bold
+                          ${isSelected ? 'bg-white/20 border-white/30 text-white' : 'bg-primary/5 border-primary/20 text-primary'}`}>
+                          {st.full_name.charAt(0).toUpperCase()}
+                        </span>
+                        {st.full_name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <div className="flex flex-col flex-grow min-h-0 relative">
               <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-background to-transparent z-20 pointer-events-none" />
@@ -224,6 +266,42 @@ export default function Step2DateTime({
                 </button>
               </div>
             </div>
+
+            {staffList.length > 0 && (
+              <div className="shrink-0 px-6 pb-3 z-30 bg-background select-none">
+                <p className="text-[9px] md:text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">¿Preferencia de especialista?</p>
+                <div className="flex gap-2 overflow-x-auto pb-1.5 custom-scrollbar select-none">
+                  <button
+                    onClick={() => setSelectedStaff({ id: 'any', full_name: 'Cualquiera (Recomendado)' })}
+                    className={`px-3.5 py-2 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all duration-300 border active:scale-95 flex items-center gap-1.5
+                      ${selectedStaff?.id === 'any'
+                        ? 'bg-primary border-primary text-white shadow-sm font-black'
+                        : 'bg-card border-border text-foreground hover:border-primary/30'}`}
+                  >
+                    ✨ Cualquier Especialista
+                  </button>
+                  {staffList.map((st: any) => {
+                    const isSelected = selectedStaff?.id === st.id;
+                    return (
+                      <button
+                        key={st.id}
+                        onClick={() => setSelectedStaff(st)}
+                        className={`px-3.5 py-2 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all duration-300 border active:scale-95 flex items-center gap-1.5
+                          ${isSelected
+                            ? 'bg-primary border-primary text-white shadow-sm font-black'
+                            : 'bg-card border-border text-foreground hover:border-primary/30'}`}
+                      >
+                        <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-serif border font-bold
+                          ${isSelected ? 'bg-white/20 border-white/30 text-white' : 'bg-primary/5 border-primary/20 text-primary'}`}>
+                          {st.full_name.charAt(0).toUpperCase()}
+                        </span>
+                        {st.full_name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <div className="flex flex-col flex-grow min-h-0 relative mt-0">
               <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-background to-transparent z-20 pointer-events-none" />

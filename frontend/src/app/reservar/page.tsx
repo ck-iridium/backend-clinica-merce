@@ -9,6 +9,7 @@ import Step1Treatments from './components/Step1Treatments';
 import Step2DateTime from './components/Step2DateTime';
 import Step3Details from './components/Step3Details';
 import Step4Success from './components/Step4Success';
+import Step0Locations from './components/Step0Locations';
 
 // Helper for local ISO to prevent Server/Client boundary timezone rendering errors on Backend
 const formatLocalISO = (date: Date) => {
@@ -76,6 +77,11 @@ export default function BookingPage() {
   const [activeCategory, setActiveCategory] = useState<any>(null);
   const [settings, setSettings] = useState<any>(null);
   const [appointments, setAppointments] = useState<any[]>([]);
+  
+  const [locations, setLocations] = useState<any[]>([]);
+  const [selectedLocation, setSelectedLocation] = useState<any>(null);
+  const [staff, setStaff] = useState<any[]>([]);
+  const [selectedStaff, setSelectedStaff] = useState<any>({ id: 'any', full_name: 'Cualquiera (Recomendado)' });
 
   const [selectedService, setSelectedService] = useState<any>(null);
 
@@ -144,15 +150,30 @@ export default function BookingPage() {
           setLoading(false);
           return;
         }
-        const [catRes, srvRes, apptRes, settingsRes] = await Promise.all([
+        const [catRes, srvRes, apptRes, settingsRes, locRes, staffRes] = await Promise.all([
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/service-categories/`, { headers: { 'X-Tenant-ID': tenantId } }),
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/`, { headers: { 'X-Tenant-ID': tenantId } }),
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/`, { headers: { 'X-Tenant-ID': tenantId } }),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/`, { headers: { 'X-Tenant-ID': tenantId } })
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/`, { headers: { 'X-Tenant-ID': tenantId } }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/locations/`, { headers: { 'X-Tenant-ID': tenantId } }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/specialists`, { headers: { 'X-Tenant-ID': tenantId } })
         ]);
 
         if (settingsRes.ok) {
           setSettings(await settingsRes.json());
+        }
+
+        if (locRes.ok) {
+          const locs = await locRes.json();
+          const activeLocs = locs.filter((l: any) => l.is_active);
+          setLocations(activeLocs);
+          if (activeLocs.length === 1) {
+            setSelectedLocation(activeLocs[0]);
+          }
+        }
+
+        if (staffRes.ok) {
+          setStaff(await staffRes.json());
         }
 
         if (catRes.ok) {
@@ -202,7 +223,7 @@ export default function BookingPage() {
   }, []);
 
 
-  // Fetch availability from backend whenever date or service changes
+  // Fetch availability from backend whenever date, service, location or preferred specialist changes
   useEffect(() => {
     if (!selectedService || !selectedDate) return;
     const tenantId = getTenantId();
@@ -213,14 +234,23 @@ export default function BookingPage() {
     setLoadingSlots(true);
     setSelectedTime('');
     const dateStr = selectedDate.toLocaleDateString('en-CA'); // YYYY-MM-DD in local tz
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/availability?date=${dateStr}&service_id=${selectedService.id}`, {
+    
+    let url = `${process.env.NEXT_PUBLIC_API_URL}/appointments/availability?date=${dateStr}&service_id=${selectedService.id}`;
+    if (selectedLocation) {
+      url += `&location_id=${selectedLocation.id}`;
+    }
+    if (selectedStaff && selectedStaff.id !== 'any') {
+      url += `&staff_id=${selectedStaff.id}`;
+    }
+
+    fetch(url, {
       headers: { 'X-Tenant-ID': tenantId }
     })
       .then(r => r.json())
       .then(data => setAvailableSlots(data.available_slots ?? []))
       .catch(() => setAvailableSlots([]))
       .finally(() => setLoadingSlots(false));
-  }, [selectedDate, selectedService, settings]);
+  }, [selectedDate, selectedService, selectedLocation, selectedStaff, settings]);
 
   const handleBooking = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -247,6 +277,8 @@ export default function BookingPage() {
           client_email: formData.email,
           client_phone: formData.phone,
           service_id: selectedService.id,
+          location_id: selectedLocation ? selectedLocation.id : null,
+          staff_id: selectedStaff && selectedStaff.id !== 'any' ? selectedStaff.id : 'any',
           start_time: formatLocalISO(startD),
           service_modality: formData.service_modality,
           client_address: formData.service_modality === 'home' ? formData.client_address : null,
@@ -293,13 +325,14 @@ export default function BookingPage() {
     <div className="h-[100dvh] bg-background font-sans selection:bg-primary/30 selection:text-stone-900 flex flex-col overflow-hidden text-foreground">
       
       {/* APP HEADER (FIXED) */}
-      {step < 4 && (
+      {step < 4 && selectedLocation && (
         <header className="shrink-0 bg-card border-b border-border z-50">
           <div className="max-w-2xl mx-auto w-full px-8 py-4 md:py-5 flex items-center justify-between">
-            {!(step === 1 && !activeCategory) ? (
+            {!(step === 1 && !activeCategory && (locations.length <= 1 || !selectedLocation)) ? (
               <button 
                 onClick={() => {
                   if (step === 1 && activeCategory) setActiveCategory(null);
+                  else if (step === 1 && locations.length > 1 && selectedLocation) setSelectedLocation(null);
                   else if (step === 2 && dateTimePhase === 2) setDateTimePhase(1);
                   else if (step > 1) setStep(step - 1);
                 }} 
@@ -346,7 +379,12 @@ export default function BookingPage() {
             </div>
           ) : (
             <>
-              {step === 1 && (
+              {locations.length > 1 && !selectedLocation ? (
+                <Step0Locations
+                  locations={locations}
+                  onSelectLocation={(loc) => setSelectedLocation(loc)}
+                />
+              ) : step === 1 ? (
                 <Step1Treatments 
                   categories={categories}
                   services={services}
@@ -359,7 +397,7 @@ export default function BookingPage() {
                     setStep(2); 
                   }}
                 />
-              )}
+              ) : null}
 
               {step === 2 && (
                 <Step2DateTime
@@ -376,6 +414,9 @@ export default function BookingPage() {
                   setDateTimePhase={setDateTimePhase}
                   currentMonthOffset={currentMonthOffset}
                   setCurrentMonthOffset={setCurrentMonthOffset}
+                  staffList={staff}
+                  selectedStaff={selectedStaff}
+                  setSelectedStaff={setSelectedStaff}
                 />
               )}
 
@@ -406,7 +447,7 @@ export default function BookingPage() {
       </main>
 
       {/* ACTION FOOTER (FIXED) */}
-      {step < 4 && (
+      {step < 4 && selectedLocation && (
         <footer className="shrink-0 bg-card border-t border-border p-4 md:py-6 md:px-8 z-50">
           <div className="max-w-2xl mx-auto flex gap-3">
             {step === 1 && (activeCategory?.name || selectedService) && (

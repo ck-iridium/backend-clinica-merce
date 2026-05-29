@@ -322,10 +322,66 @@ class ClinicSettingsResponse(ClinicSettingsBase):
     class Config:
         from_attributes = True
 
+# --- Locations ---
+class LocationBase(BaseModel):
+    name: str
+    address: str
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    is_active: bool = True
+
+class LocationCreate(LocationBase):
+    pass
+
+class LocationUpdate(BaseModel):
+    name: Optional[str] = None
+    address: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    is_active: Optional[bool] = None
+
+class LocationResponse(LocationBase):
+    id: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+# --- Staff Schedules ---
+class StaffScheduleBase(BaseModel):
+    staff_id: str
+    location_id: str
+    day_of_week: Optional[int] = None
+    specific_date: Optional[date] = None
+    start_time: str
+    end_time: str
+    is_active: bool = True
+
+class StaffScheduleCreate(StaffScheduleBase):
+    pass
+
+class StaffScheduleUpdate(BaseModel):
+    staff_id: Optional[str] = None
+    location_id: Optional[str] = None
+    day_of_week: Optional[int] = None
+    specific_date: Optional[date] = None
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
+    is_active: Optional[bool] = None
+
+class StaffScheduleResponse(StaffScheduleBase):
+    id: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
 # --- Appointments ---
 class AppointmentBase(BaseModel):
     client_id: str
     service_id: str
+    staff_id: Optional[str] = None
+    location_id: Optional[str] = None
     start_time: datetime
     end_time: datetime
     status: str = "pending"
@@ -341,6 +397,8 @@ class AppointmentCreate(AppointmentBase):
 class AppointmentUpdate(BaseModel):
     client_id: Optional[str] = None
     service_id: Optional[str] = None
+    staff_id: Optional[str] = None
+    location_id: Optional[str] = None
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
     status: Optional[str] = None
@@ -454,6 +512,8 @@ class PublicBookingRequest(BaseModel):
     client_phone: Optional[str] = None
     # Appointment details
     service_id: str
+    staff_id: Optional[str] = None
+    location_id: Optional[str] = None
     start_time: datetime
     notes: Optional[str] = None
     # Mobile Services geocoding payload
@@ -477,6 +537,7 @@ class PublicBookingResponse(BaseModel):
 class AvailabilityResponse(BaseModel):
     date: str
     service_id: str
+    location_id: Optional[str] = None
     available_slots: List[str]  # e.g. ["09:30", "10:00", "16:30"]
 
 # --- Time Blocks ---
@@ -485,6 +546,7 @@ class TimeBlockBase(BaseModel):
     end_time: datetime
     reason: Optional[str] = None
     is_annual_holiday: bool = False
+    staff_id: Optional[str] = None
 
 class TimeBlockCreate(TimeBlockBase):
     pass
@@ -494,6 +556,7 @@ class TimeBlockUpdate(ModelMetaclass if 'ModelMetaclass' in globals() else BaseM
     end_time: Optional[datetime] = None
     reason: Optional[str] = None
     is_annual_holiday: Optional[bool] = None
+    staff_id: Optional[str] = None
 
 class TimeBlockResponse(TimeBlockBase):
     id: str

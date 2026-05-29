@@ -94,7 +94,11 @@ def run_auto_migrations():
             "ALTER TABLE landing_marketing_settings ADD COLUMN hero_image_3 VARCHAR",
             # ── Control de Cuotas Diarias de Copiloto de IA ─────────────────────────
             "ALTER TABLE tenants ADD COLUMN ai_daily_actions_used INTEGER DEFAULT 0",
-            "ALTER TABLE tenants ADD COLUMN ai_last_action_date DATE"
+            "ALTER TABLE tenants ADD COLUMN ai_last_action_date DATE",
+            # ── Multi-Location & Rostering ──────────────────────────────────────────
+            "ALTER TABLE appointments ADD COLUMN staff_id VARCHAR",
+            "ALTER TABLE appointments ADD COLUMN location_id VARCHAR",
+            "ALTER TABLE time_blocks ADD COLUMN staff_id VARCHAR"
         ]
         
         for m in migrations:

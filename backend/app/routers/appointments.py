@@ -24,6 +24,8 @@ router = APIRouter(
 def get_availability(
     date: str = Query(..., description="Target date in YYYY-MM-DD format"),
     service_id: str = Query(..., description="Service UUID"),
+    location_id: Optional[str] = Query(None, description="Location UUID"),
+    staff_id: Optional[str] = Query(None, description="Preferred Specialist UUID"),
     db: Session = Depends(database.get_db),
 ):
     """
@@ -35,10 +37,17 @@ def get_availability(
     except ValueError:
         raise HTTPException(status_code=422, detail="date must be YYYY-MM-DD")
 
-    slots = crud.get_availability_slots(db, target_date=target, service_id=service_id)
+    slots = crud.get_availability_slots(
+        db, 
+        target_date=target, 
+        service_id=service_id,
+        location_id=location_id,
+        preferred_staff_id=staff_id
+    )
     return schemas.AvailabilityResponse(
         date=date,
         service_id=service_id,
+        location_id=location_id,
         available_slots=slots,
     )
 

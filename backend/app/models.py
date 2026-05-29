@@ -149,12 +149,44 @@ class VoucherTemplate(Base):
 
     service = relationship("Service", back_populates="voucher_templates")
 
+class Location(Base):
+    __tablename__ = "locations"
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
+    name = Column(String, nullable=False)
+    address = Column(Text, nullable=False)
+    phone = Column(String, nullable=True)
+    email = Column(String, nullable=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    tenant = relationship("Tenant")
+
+class StaffSchedule(Base):
+    __tablename__ = "staff_schedules"
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
+    staff_id = Column(String(36), ForeignKey("users.id"), nullable=False, index=True)
+    location_id = Column(String(36), ForeignKey("locations.id"), nullable=False, index=True)
+    day_of_week = Column(Integer, nullable=True) # 1 = Monday ... 7 = Sunday
+    specific_date = Column(Date, nullable=True)
+    start_time = Column(String(5), nullable=False) # e.g. "09:00"
+    end_time = Column(String(5), nullable=False) # e.g. "19:30"
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    tenant = relationship("Tenant")
+    staff = relationship("User", foreign_keys=[staff_id])
+    location = relationship("Location", foreign_keys=[location_id])
+
 class Appointment(Base):
     __tablename__ = "appointments"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
     client_id = Column(String(36), ForeignKey("clients.id"), nullable=False)
     service_id = Column(String(36), ForeignKey("services.id"), nullable=False)
+    staff_id = Column(String(36), ForeignKey("users.id"), nullable=True, index=True)
+    location_id = Column(String(36), ForeignKey("locations.id"), nullable=True, index=True)
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=False)
     status = Column(String, default="pending") # pending, confirmed, completed, cancelled, awaiting_payment
@@ -173,6 +205,8 @@ class Appointment(Base):
     
     client = relationship("Client", back_populates="appointments")
     service = relationship("Service")
+    staff = relationship("User", foreign_keys=[staff_id])
+    location = relationship("Location")
 
 class Voucher(Base):
     __tablename__ = "vouchers"
@@ -305,11 +339,14 @@ class TimeBlock(Base):
     __tablename__ = "time_blocks"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
+    staff_id = Column(String(36), ForeignKey("users.id"), nullable=True, index=True)
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=False)
     reason = Column(String, nullable=True)
     is_annual_holiday = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    staff = relationship("User", foreign_keys=[staff_id])
 
 class SiteContent(Base):
     __tablename__ = "site_content"
