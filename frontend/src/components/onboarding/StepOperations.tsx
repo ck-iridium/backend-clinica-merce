@@ -1,6 +1,6 @@
 "use client"
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Building2 } from 'lucide-react';
 
 interface StepOperationsProps {
@@ -32,6 +32,64 @@ export const StepOperations: React.FC<StepOperationsProps> = ({
   maxCoverageRadiusKm,
   setMaxCoverageRadiusKm
 }) => {
+  // Autocomplete states
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [activeInput, setActiveInput] = useState<'clinic' | 'home' | null>(null);
+  const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const handleAddressChange = (val: string, field: 'clinic' | 'home') => {
+    if (field === 'clinic') {
+      setLocationAddress(val);
+    } else {
+      setOperationsCenterAddress(val);
+    }
+
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+
+    if (val.length < 3) {
+      setSuggestions([]);
+      setActiveInput(null);
+      return;
+    }
+
+    setLoading(true);
+    setActiveInput(field);
+
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+            val
+          )}&limit=5&addressdetails=1&countrycodes=es,fr`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setSuggestions(
+            data.map((item: any) => ({
+              id: item.place_id,
+              display_name: item.display_name,
+            }))
+          );
+        }
+      } catch (err) {
+        console.error('Error fetching suggestions:', err);
+      } finally {
+        setLoading(false);
+      }
+    }, 400);
+  };
+
+  const handleSelectSuggestion = (display_name: string, field: 'clinic' | 'home') => {
+    if (field === 'clinic') {
+      setLocationAddress(display_name);
+    } else {
+      setOperationsCenterAddress(display_name);
+    }
+    setSuggestions([]);
+    setActiveInput(null);
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="space-y-2">
@@ -146,15 +204,37 @@ export const StepOperations: React.FC<StepOperationsProps> = ({
               </div>
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-1 relative">
               <label className="text-[9px] font-bold uppercase tracking-wider text-stone-400">Dirección Física de Sede</label>
-              <input 
-                type="text" 
-                value={locationAddress} 
-                onChange={(e) => setLocationAddress(e.target.value)} 
-                placeholder="Calle, número, piso, código postal y ciudad de tu cabina" 
-                className="w-full bg-[#FAF9F5]/30 border border-stone-200 rounded-xl px-4 py-3 text-xs font-semibold text-stone-800 placeholder-stone-300 focus:outline-none focus:border-[#d4af37] focus:bg-white transition-all shadow-sm"
-              />
+              <div className="relative">
+                <input 
+                  type="text" 
+                  value={locationAddress} 
+                  onChange={(e) => handleAddressChange(e.target.value, 'clinic')} 
+                  onFocus={() => { if (locationAddress.length >= 3) { setActiveInput('clinic'); } }}
+                  onBlur={() => { setTimeout(() => setActiveInput(null), 200); }}
+                  placeholder="Calle, número, piso, código postal y ciudad de tu cabina" 
+                  className="w-full bg-[#FAF9F5]/30 border border-stone-200 rounded-xl px-4 py-3 text-xs font-semibold text-stone-800 placeholder-stone-300 focus:outline-none focus:border-[#d4af37] focus:bg-white transition-all shadow-sm"
+                />
+                {loading && activeInput === 'clinic' && (
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-[#d4af37]/20 border-t-[#d4af37] rounded-full animate-spin"></span>
+                )}
+              </div>
+              {activeInput === 'clinic' && suggestions.length > 0 && (
+                <div className="absolute left-0 right-0 mt-1 bg-white border border-stone-200 rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto divide-y divide-stone-100">
+                  {suggestions.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => handleSelectSuggestion(s.display_name, 'clinic')}
+                      className="w-full text-left px-4 py-3 hover:bg-[#FAF9F5] text-xs font-semibold text-stone-700 transition-colors flex items-center gap-2"
+                    >
+                      <span className="text-[#d4af37]">📍</span>
+                      <span className="truncate">{s.display_name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -163,15 +243,37 @@ export const StepOperations: React.FC<StepOperationsProps> = ({
           <div className="space-y-4 pt-2">
             <h3 className="font-serif italic text-stone-700 text-sm">Configuración de Servicios a Domicilio</h3>
             
-            <div className="space-y-1">
+            <div className="space-y-1 relative">
               <label className="text-[9px] font-bold uppercase tracking-wider text-stone-400">Dirección Base / Centro de Operaciones</label>
-              <input 
-                type="text" 
-                value={operationsCenterAddress} 
-                onChange={(e) => setOperationsCenterAddress(e.target.value)} 
-                placeholder="Dirección desde donde se calculan las rutas a domicilio" 
-                className="w-full bg-[#FAF9F5]/30 border border-stone-200 rounded-xl px-4 py-3 text-xs font-semibold text-stone-800 placeholder-stone-300 focus:outline-none focus:border-[#d4af37] focus:bg-white transition-all shadow-sm"
-              />
+              <div className="relative">
+                <input 
+                  type="text" 
+                  value={operationsCenterAddress} 
+                  onChange={(e) => handleAddressChange(e.target.value, 'home')} 
+                  onFocus={() => { if (operationsCenterAddress.length >= 3) { setActiveInput('home'); } }}
+                  onBlur={() => { setTimeout(() => setActiveInput(null), 200); }}
+                  placeholder="Dirección desde donde se calculan las rutas a domicilio" 
+                  className="w-full bg-[#FAF9F5]/30 border border-stone-200 rounded-xl px-4 py-3 text-xs font-semibold text-stone-800 placeholder-stone-300 focus:outline-none focus:border-[#d4af37] focus:bg-white transition-all shadow-sm"
+                />
+                {loading && activeInput === 'home' && (
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-[#d4af37]/20 border-t-[#d4af37] rounded-full animate-spin"></span>
+                )}
+              </div>
+              {activeInput === 'home' && suggestions.length > 0 && (
+                <div className="absolute left-0 right-0 mt-1 bg-white border border-stone-200 rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto divide-y divide-stone-100">
+                  {suggestions.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => handleSelectSuggestion(s.display_name, 'home')}
+                      className="w-full text-left px-4 py-3 hover:bg-[#FAF9F5] text-xs font-semibold text-stone-700 transition-colors flex items-center gap-2"
+                    >
+                      <span className="text-[#d4af37]">📍</span>
+                      <span className="truncate">{s.display_name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="space-y-2 p-5 rounded-2xl bg-[#FAF9F5]/50 border border-stone-200/50">
