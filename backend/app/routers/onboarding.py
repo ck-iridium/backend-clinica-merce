@@ -144,6 +144,34 @@ def setup_onboarding(payload: schemas.OnboardingSetupRequest, db: Session = Depe
     settings.open_time = payload.open_time
     settings.close_time = payload.close_time
     settings.working_days = json.dumps(payload.working_days)
+    
+    # Configurar modalidad de trabajo y domicilio
+    work_mod = payload.work_modality or "clinic_only"
+    settings.work_modality = work_mod
+    
+    if work_mod in ["home_only", "both"]:
+        settings.operations_center_address = payload.operations_center_address or payload.location_address
+        settings.max_coverage_radius_km = payload.max_coverage_radius_km or 10.0
+        # Coordenadas por defecto (Barcelona Centro) para evitar nulos y habilitar el mapa
+        settings.operations_center_latitude = 41.3850639
+        settings.operations_center_longitude = 2.1734035
+        
+    # Crear sede física por defecto para resolver dependencias duras si aplica
+    if work_mod in ["clinic_only", "both"]:
+        existing_loc = db.query(models.Location).filter(models.Location.tenant_id == tenant_id).first()
+        if not existing_loc:
+            default_location = models.Location(
+                id=str(uuid.uuid4()),
+                tenant_id=tenant_id,
+                name=payload.location_name or "Sede Principal",
+                address=payload.location_address or "Calle de la Clínica 123",
+                phone=payload.location_phone or settings.clinic_phone or "931234567",
+                email=settings.clinic_email or "contacto@probookia.com",
+                is_active=True
+            )
+            db.add(default_location)
+            db.flush()
+            
     settings.onboarding_completed = True
 
     # Asignar paleta tipográfica según el sector para coherencia de marca (Tokens de diseño)

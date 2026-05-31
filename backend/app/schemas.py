@@ -743,6 +743,12 @@ class OnboardingSetupRequest(BaseModel):
     close_time: str = "19:00"
     working_days: List[int] = [1, 2, 3, 4, 5]
     load_demo_data: bool = True
+    work_modality: Optional[str] = "clinic_only"  # "clinic_only", "home_only", "both"
+    location_name: Optional[str] = None
+    location_address: Optional[str] = None
+    location_phone: Optional[str] = None
+    operations_center_address: Optional[str] = None
+    max_coverage_radius_km: Optional[float] = 10.0
 
 
 # --- AI Webmaster Assistant & Voice Agent ---
