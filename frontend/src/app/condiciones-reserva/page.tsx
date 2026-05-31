@@ -22,18 +22,18 @@ export default function CondicionesReservaPage() {
         </Link>
       </nav>
 
-      <h1 className="text-4xl md:text-5xl font-serif font-black text-stone-800 mb-12 tracking-tight">Condiciones de Reserva</h1>
+      <h1 className="text-4xl md:text-5xl font-serif font-black text-stone-800 dark:text-stone-100 mb-12 tracking-tight">Condiciones de Reserva</h1>
 
-      <div className="prose prose-stone max-w-none space-y-8 text-stone-600 leading-relaxed">
+      <div className="prose prose-stone dark:prose-invert max-w-none space-y-8 text-stone-600 dark:text-stone-300 leading-relaxed">
         <section>
-          <h2 className="text-xl font-bold text-stone-800 mb-4 uppercase tracking-wider text-sm border-b border-stone-100 pb-2">1. Política de Fianzas (Stripe)</h2>
+          <h2 className="text-xl font-bold text-stone-800 dark:text-stone-100 mb-4 uppercase tracking-wider text-sm border-b border-stone-100 dark:border-stone-800 pb-2">1. Política de Fianzas (Stripe)</h2>
           <p>
             Para garantizar su cita, {settings.clinic_name} requiere el pago de una fianza mediante la plataforma segura <strong>Stripe</strong>. El importe de la fianza se descontará del precio total del tratamiento el día de su visita.
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-stone-800 mb-4 uppercase tracking-wider text-sm border-b border-stone-100 pb-2">2. Cancelaciones y Cambios</h2>
+          <h2 className="text-xl font-bold text-stone-800 dark:text-stone-100 mb-4 uppercase tracking-wider text-sm border-b border-stone-100 dark:border-stone-800 pb-2">2. Cancelaciones y Cambios</h2>
           <p>
             Entendemos que pueden surgir imprevistos. Sin embargo, para mantener la calidad de nuestro servicio y respetar el tiempo de nuestros profesionales, aplicamos la siguiente política:
           </p>
@@ -44,21 +44,21 @@ export default function CondicionesReservaPage() {
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-stone-800 mb-4 uppercase tracking-wider text-sm border-b border-stone-100 pb-2">3. Puntualidad</h2>
+          <h2 className="text-xl font-bold text-stone-800 dark:text-stone-100 mb-4 uppercase tracking-wider text-sm border-b border-stone-100 dark:border-stone-800 pb-2">3. Puntualidad</h2>
           <p>
             Le rogamos puntualidad para garantizar que pueda disfrutar de la duración completa de su tratamiento. En caso de retraso superior a 15 minutos, la clínica se reserva el derecho de cancelar la cita para no perjudicar al siguiente cliente, considerándose como "No-Presentado".
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-stone-800 mb-4 uppercase tracking-wider text-sm border-b border-stone-100 pb-2">4. Seguridad en los Pagos</h2>
+          <h2 className="text-xl font-bold text-stone-800 dark:text-stone-100 mb-4 uppercase tracking-wider text-sm border-b border-stone-100 dark:border-stone-800 pb-2">4. Seguridad en los Pagos</h2>
           <p>
             {settings.clinic_name} no almacena sus datos bancarios. Todas las transacciones se realizan a través de <strong>Stripe</strong>, cumpliendo con los estándares de seguridad PCI-DSS de nivel 1.
           </p>
         </section>
 
-        <section className="bg-stone-50 p-8 rounded-3xl border border-stone-100">
-          <p className="text-sm italic opacity-80">
+        <section className="bg-stone-50 dark:bg-stone-900/50 p-8 rounded-3xl border border-stone-100 dark:border-stone-800">
+          <p className="text-sm italic opacity-80 text-stone-600 dark:text-stone-400">
             Al realizar una reserva en nuestro sistema, usted acepta expresamente estas condiciones. Si tiene cualquier duda, puede contactarnos en {settings.clinic_email} o al teléfono {settings.clinic_phone}.
           </p>
         </section>

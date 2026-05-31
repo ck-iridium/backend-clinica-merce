@@ -22,11 +22,11 @@ export default function AvisoLegalPage() {
         </Link>
       </nav>
 
-      <h1 className="text-4xl md:text-5xl font-black text-stone-800 mb-12 tracking-tight">Aviso Legal</h1>
+      <h1 className="text-4xl md:text-5xl font-black text-stone-800 dark:text-stone-100 mb-12 tracking-tight">Aviso Legal</h1>
 
-      <div className="prose prose-stone max-w-none space-y-8 text-stone-600 leading-relaxed font-medium">
+      <div className="prose prose-stone dark:prose-invert max-w-none space-y-8 text-stone-600 dark:text-stone-300 leading-relaxed font-medium">
         <section>
-          <h2 className="text-xl font-bold text-stone-800 mb-4 uppercase tracking-wider text-sm">1. Información del Titular</h2>
+          <h2 className="text-xl font-bold text-stone-800 dark:text-stone-100 mb-4 uppercase tracking-wider text-sm border-b border-stone-100 dark:border-stone-800 pb-2">1. Información del Titular</h2>
           <p>
             En cumplimiento del artículo 10 de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y Comercio Electrónico (LSSICE), se exponen los siguientes datos identificativos del titular de este sitio web:
           </p>
@@ -43,21 +43,21 @@ export default function AvisoLegalPage() {
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-stone-800 mb-4 uppercase tracking-wider text-sm">2. Propiedad Intelectual</h2>
+          <h2 className="text-xl font-bold text-stone-800 dark:text-stone-100 mb-4 uppercase tracking-wider text-sm border-b border-stone-100 dark:border-stone-800 pb-2">2. Propiedad Intelectual</h2>
           <p>
             El código fuente, los diseños gráficos, las imágenes, las fotografías, los sonidos, las animaciones, el software, los textos, así como la información y los contenidos que se recogen en el presente sitio web están protegidos por la legislación española sobre los derechos de propiedad intelectual e industrial a favor de <strong>{settings.clinic_name}</strong>. No se permite la reproducción y/o publicación, total o parcial, del sitio web, ni su tratamiento informático, su distribución, su difusión, ni su modificación o transformación, sin el permiso previo y por escrito de su titular.
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-stone-800 mb-4 uppercase tracking-wider text-sm">3. Protección de Datos de Carácter Personal</h2>
+          <h2 className="text-xl font-bold text-stone-800 dark:text-stone-100 mb-4 uppercase tracking-wider text-sm border-b border-stone-100 dark:border-stone-800 pb-2">3. Protección de Datos de Carácter Personal</h2>
           <p>
             Puede consultar toda la información relativa al tratamiento de sus datos personales accediendo a nuestra <Link href="/privacidad" className="text-[#d4af37] font-bold underline">Política de Privacidad</Link>.
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-stone-800 mb-4 uppercase tracking-wider text-sm">4. Legislación Aplicable</h2>
+          <h2 className="text-xl font-bold text-stone-800 dark:text-stone-100 mb-4 uppercase tracking-wider text-sm border-b border-stone-100 dark:border-stone-800 pb-2">4. Legislación Aplicable</h2>
           <p>
             Con carácter general las relaciones entre <strong>{settings.clinic_name}</strong> con los usuarios de sus servicios telemáticos, presentes en esta web, se encuentran sometidas a la legislación y jurisdicción españolas.
           </p>

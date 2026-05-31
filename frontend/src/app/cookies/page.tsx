@@ -22,18 +22,18 @@ export default function CookiesPage() {
         </Link>
       </nav>
 
-      <h1 className="text-4xl md:text-5xl font-black text-stone-800 mb-12 tracking-tight">Política de Cookies</h1>
+      <h1 className="text-4xl md:text-5xl font-black text-stone-800 dark:text-stone-100 mb-12 tracking-tight">Política de Cookies</h1>
 
-      <div className="prose prose-stone max-w-none space-y-8 text-stone-600 leading-relaxed font-medium">
+      <div className="prose prose-stone dark:prose-invert max-w-none space-y-8 text-stone-600 dark:text-stone-300 leading-relaxed font-medium">
         <section>
-          <h2 className="text-xl font-bold text-stone-800 mb-4 uppercase tracking-wider text-sm">1. ¿Qué son las Cookies?</h2>
+          <h2 className="text-xl font-bold text-stone-800 dark:text-stone-100 mb-4 uppercase tracking-wider text-sm border-b border-stone-100 dark:border-stone-800 pb-2">1. ¿Qué son las Cookies?</h2>
           <p>
             Una cookie es un fichero que se descarga en su ordenador al acceder a determinadas páginas web. Las cookies permiten a una página web, entre otras cosas, almacenar y recuperar información sobre los hábitos de navegación de un usuario o de su equipo y, dependiendo de la información que contengan y de la forma en que utilice su equipo, pueden utilizarse para reconocer al usuario.
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-stone-800 mb-4 uppercase tracking-wider text-sm">2. ¿Qué tipos de cookies utiliza esta web?</h2>
+          <h2 className="text-xl font-bold text-stone-800 dark:text-stone-100 mb-4 uppercase tracking-wider text-sm border-b border-stone-100 dark:border-stone-800 pb-2">2. ¿Qué tipos de cookies utiliza esta web?</h2>
           <p>
             Esta página web utiliza los siguientes tipos de cookies:
           </p>
@@ -45,14 +45,14 @@ export default function CookiesPage() {
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-stone-800 mb-4 uppercase tracking-wider text-sm">3. Revocación y Eliminación de Cookies</h2>
+          <h2 className="text-xl font-bold text-stone-800 dark:text-stone-100 mb-4 uppercase tracking-wider text-sm border-b border-stone-100 dark:border-stone-800 pb-2">3. Revocación y Eliminación de Cookies</h2>
           <p>
             Usted puede permitir, bloquear o eliminar las cookies instaladas en su equipo mediante la configuración de las opciones del navegador instalado en su ordenador. También puede limpiar el `localStorage` de su navegador si desea revocar el consentimiento del banner de nuestra web.
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-stone-800 mb-4 uppercase tracking-wider text-sm">4. Titularidad</h2>
+          <h2 className="text-xl font-bold text-stone-800 dark:text-stone-100 mb-4 uppercase tracking-wider text-sm border-b border-stone-100 dark:border-stone-800 pb-2">4. Titularidad</h2>
           <p>
             El responsable del tratamiento de las cookies utilizadas en este sitio web es <strong>{settings.legal_name || settings.clinic_name}</strong> con NIF <strong>{settings.clinic_nif}</strong>.
           </p>
