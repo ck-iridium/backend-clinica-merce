@@ -2,64 +2,17 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { 
-  Check, 
-  Sparkles, 
-  Building2, 
-  Clock, 
-  Scissors, 
-  Smile, 
-  ChevronRight, 
-  ChevronLeft, 
-  Loader2, 
-  Upload, 
-  CheckCircle2, 
-  CalendarRange
-} from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+
+import { OnboardingHeader } from '@/components/onboarding/OnboardingHeader';
+import { StepIdentity } from '@/components/onboarding/StepIdentity';
+import { StepOperations } from '@/components/onboarding/StepOperations';
+import { StepScheduling } from '@/components/onboarding/StepScheduling';
+import { StepProvisioning } from '@/components/onboarding/StepProvisioning';
+import { OnboardingFooter } from '@/components/onboarding/OnboardingFooter';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
-const SECTORS = [
-  { id: 'Medicina Estética', label: 'Medicina Estética', desc: 'Clínicas médicas, botox, rellenos y láser advanced.', icon: '💉' },
-  { id: 'Estética y Bienestar', label: 'Estética y Bienestar', desc: 'Tratamientos faciales, masajes, spa y mimos.', icon: '✨' },
-  { id: 'Clínicas de Salud', label: 'Clínicas de Salud', desc: 'Fisioterapia, nutrición, dermatología y salud integral.', icon: '🏥' },
-  { id: 'Salones y Barberías', label: 'Salones y Barberías', desc: 'Peluquería de lujo, estilismo de barba y color.', icon: '💈' }
-];
-
-const DAYS = [
-  { label: 'Lun', val: 1 },
-  { label: 'Mar', val: 2 },
-  { label: 'Mié', val: 3 },
-  { label: 'Jue', val: 4 },
-  { label: 'Vie', val: 5 },
-  { label: 'Sáb', val: 6 },
-  { label: 'Dom', val: 7 }
-];
-
-const SECTOR_PREVIEWS: Record<string, Array<{ name: string; duration: number; price: number; desc: string }>> = {
-  "Medicina Estética": [
-    { name: "Toxina Botulínica (Bótox)", duration: 30, price: 150.00, desc: "Atenuación elegante de arrugas y líneas de expresión mediante microinyecciones localizadas." },
-    { name: "Relleno con Ácido Hialurónico", duration: 45, price: 290.00, desc: "Relleno e hidratación de labios o pómulos con acabado natural y armónico." },
-    { name: "Peeling Químico de Alta Gama", duration: 40, price: 95.00, desc: "Renovación celular profunda para aportar luminosidad extrema y homogeneizar el tono." }
-  ],
-  "Estética y Bienestar": [
-    { name: "Higiene Facial Ultrasónica", duration: 45, price: 65.00, desc: "Purificación celular profunda con exfoliación y mascarilla calmante." },
-    { name: "Masaje Relajante Sensorial", duration: 50, price: 70.00, desc: "Terapia relajante corporal con aceites esenciales calientes para calma absoluta." },
-    { name: "Tratamiento Reafirmante de Radiofrecuencia", duration: 45, price: 85.00, desc: "Estímulo de colágeno mediante calor intradérmico para atenuar la flacidez." }
-  ],
-  "Clínicas de Salud": [
-    { name: "Consulta Nutricional y Bioimpedancia", duration: 45, price: 60.00, desc: "Estudio corporal completo y plan nutricional personalizado." },
-    { name: "Sesión de Fisioterapia Personalizada", duration: 55, price: 50.00, desc: "Tratamiento manual de dolencias y estiramientos dirigidos." },
-    { name: "Drenaje Linfático Manual", duration: 60, price: 75.00, desc: "Terapia suave orientada a estimular la reducción activa de retención de líquidos." }
-  ],
-  "Salones y Barberías": [
-    { name: "Corte de Cabello Signature & Estilismo", duration: 40, price: 35.00, desc: "Diseño personalizado de corte adaptado a tus rasgos y peinado profesional." },
-    { name: "Ritual de Afeitado a Navaja Tradicional", duration: 30, price: 25.00, desc: "Afeitado clásico con toallas calientes aromáticas y espuma de brocha." },
-    { name: "Tratamiento de Hidratación Capilar Profunda", duration: 45, price: 45.00, desc: "Nutrición capilar intensiva con keratina para devolver el brillo." }
-  ]
-};
 
 function OnboardingContent() {
   const router = useRouter();
@@ -349,39 +302,7 @@ function OnboardingContent() {
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-stone-900 via-[#d4af37] to-stone-900" />
         
         {/* Header - Stepper Progress Indicator */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <div>
-            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#d4af37] block mb-1">
-              Onboarding ProBookia
-            </span>
-            <h1 className="font-serif italic text-2xl text-stone-850 transition-all duration-300">
-              {step === 1 && "Comienza tu viaje premium"}
-              {step === 2 && "Estructura operativa"}
-              {step === 3 && "Horarios & Agenda"}
-              {step === 4 && "Últimos retoques de marca"}
-            </h1>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <span className="text-stone-400 text-xs font-semibold font-sans">
-              Paso {step} de 4
-            </span>
-            <div className="flex items-center gap-1">
-              {[1, 2, 3, 4].map((s) => (
-                <div 
-                  key={s} 
-                  className={`h-1 rounded-full transition-all duration-500 ${
-                    s === step 
-                      ? 'w-6 bg-[#d4af37]' 
-                      : s < step 
-                      ? 'w-2.5 bg-stone-900' 
-                      : 'w-2 bg-stone-100'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
+        <OnboardingHeader step={step} totalSteps={4} />
 
         {/* Dynamic Transition Wrapper */}
         <div className={`flex-1 mb-8 transition-all duration-300 transform ${
@@ -390,433 +311,66 @@ function OnboardingContent() {
           
           {/* STEP 1: Identidad Corporativa */}
           {step === 1 && (
-            <div className="space-y-6 animate-in fade-in duration-500">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 block">
-                  Nombre de tu Negocio
-                </label>
-                <input 
-                  type="text" 
-                  value={clinicName}
-                  onChange={(e) => setClinicName(e.target.value)}
-                  placeholder="Ej. Clínica Mercè"
-                  className="w-full bg-[#FAF9F5]/40 border border-stone-200 rounded-xl px-5 py-4 text-sm font-semibold text-stone-850 placeholder-stone-300 focus:outline-none focus:ring-2 focus:ring-[#d4af37]/10 focus:border-[#d4af37] focus:bg-white transition-all shadow-sm"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 block">
-                  Sector o Especialidad Principal
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {SECTORS.map((sec) => {
-                    const isSelected = selectedSector === sec.id;
-                    return (
-                      <div
-                        key={sec.id}
-                        onClick={() => setSelectedSector(sec.id)}
-                        className={`p-5 rounded-2xl border transition-all duration-300 cursor-pointer flex items-start gap-4 select-none group relative ${
-                          isSelected 
-                            ? 'bg-[#FAF9F5] border-[#d4af37] shadow-sm' 
-                            : 'bg-white border-stone-200/60 hover:bg-stone-50/50 hover:border-stone-300'
-                        }`}
-                      >
-                        <span className="text-2xl shrink-0 transition-transform duration-300 group-hover:scale-110">{sec.icon}</span>
-                        <div>
-                          <h4 className="font-bold text-stone-850 text-xs leading-none mb-1.5 flex items-center gap-1.5">
-                            {sec.label}
-                            {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]" />}
-                          </h4>
-                          <p className="text-[10px] text-stone-400 font-medium leading-relaxed">
-                            {sec.desc}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="space-y-2 pt-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 block">
-                  Logotipo de la Marca (Opcional)
-                </label>
-                <div className="flex items-center gap-6 p-5 border border-dashed border-stone-200 rounded-2xl bg-[#FAF9F5]/30">
-                  {logoBase64 ? (
-                    <div className="relative group shrink-0">
-                      <img src={logoBase64} alt="Preview Logo" className="h-16 w-16 object-contain rounded-xl border border-stone-200 bg-white shadow-sm" />
-                      <button onClick={() => setLogoBase64(null)} className="absolute -top-1.5 -right-1.5 bg-stone-900 text-white w-5 h-5 rounded-full text-[10px] flex items-center justify-center shadow hover:bg-rose-500 transition-colors">
-                        ✕
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="h-16 w-16 bg-stone-50 rounded-xl border border-dashed border-stone-300 flex items-center justify-center text-stone-300 shrink-0">
-                      <Upload className="w-5 h-5 text-stone-400" />
-                    </div>
-                  )}
-                  <div className="flex-1">
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={handleLogoChange}
-                      id="logo-upload"
-                      className="hidden"
-                    />
-                    <label 
-                      htmlFor="logo-upload"
-                      className="inline-block bg-stone-900 hover:bg-[#d4af37] hover:text-stone-950 text-white px-5 py-2.5 rounded-xl text-xs font-bold cursor-pointer transition-all shadow-sm uppercase tracking-wider active:scale-95 duration-300"
-                    >
-                      Elegir Imagen
-                    </label>
-                    <span className="text-[10px] text-stone-400 font-medium block mt-1.5">
-                      Formatos admitidos: PNG, JPEG o SVG. Máx. 2MB.
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <StepIdentity 
+              clinicName={clinicName}
+              setClinicName={setClinicName}
+              selectedSector={selectedSector}
+              setSelectedSector={setSelectedSector}
+              logoBase64={logoBase64}
+              setLogoBase64={setLogoBase64}
+              handleLogoChange={handleLogoChange}
+            />
           )}
 
           {/* STEP 2: Modalidad Operativa y Sedes */}
           {step === 2 && (
-            <div className="space-y-6 animate-in fade-in duration-500">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 block">
-                  Modelo de Negocio / Modalidad de Trabajo
-                </label>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Tarjeta Sede */}
-                  <div 
-                    onClick={() => setWorkModality('clinic_only')}
-                    className={`p-5 rounded-2xl border transition-all duration-300 cursor-pointer flex flex-col items-center text-center gap-3 select-none hover:-translate-y-0.5 ${
-                      workModality === 'clinic_only'
-                        ? 'border-[#d4af37] bg-[#FAF9F5] shadow-sm'
-                        : 'border-stone-200 bg-white hover:border-stone-300 hover:bg-stone-50/30'
-                    }`}
-                  >
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-                      workModality === 'clinic_only' ? 'bg-[#d4af37]/10 text-[#bf9b30]' : 'bg-stone-50 text-stone-400'
-                    }`}>
-                      <Building2 className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-stone-850 text-xs mb-1">Solo en Clínica</h4>
-                      <p className="text-[9px] text-stone-400 leading-relaxed max-w-[155px] mx-auto">
-                        Los clientes agendan y asisten a tu centro físico.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Tarjeta Domicilio */}
-                  <div 
-                    onClick={() => setWorkModality('home_only')}
-                    className={`p-5 rounded-2xl border transition-all duration-300 cursor-pointer flex flex-col items-center text-center gap-3 select-none hover:-translate-y-0.5 ${
-                      workModality === 'home_only'
-                        ? 'border-[#d4af37] bg-[#FAF9F5] shadow-sm'
-                        : 'border-stone-200 bg-white hover:border-stone-300 hover:bg-stone-50/30'
-                    }`}
-                  >
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-                      workModality === 'home_only' ? 'bg-[#d4af37]/10 text-[#bf9b30]' : 'bg-stone-50 text-stone-400'
-                    }`}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1 .4-1 1v7c0 .6.4 1 1 1h2"/>
-                        <circle cx="7" cy="17" r="2"/>
-                        <circle cx="17" cy="17" r="2"/>
-                        <path d="M13 17H9"/>
-                      </svg>
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-stone-850 text-xs mb-1">A Domicilio</h4>
-                      <p className="text-[9px] text-stone-400 leading-relaxed max-w-[155px] mx-auto">
-                        Te desplazas a casa u oficina del cliente.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Tarjeta Híbrida */}
-                  <div 
-                    onClick={() => setWorkModality('both')}
-                    className={`p-5 rounded-2xl border transition-all duration-300 cursor-pointer flex flex-col items-center text-center gap-3 select-none hover:-translate-y-0.5 ${
-                      workModality === 'both'
-                        ? 'border-[#d4af37] bg-[#FAF9F5] shadow-sm'
-                        : 'border-stone-200 bg-white hover:border-stone-300 hover:bg-stone-50/30'
-                    }`}
-                  >
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-                      workModality === 'both' ? 'bg-[#d4af37]/10 text-[#bf9b30]' : 'bg-stone-50 text-stone-400'
-                    }`}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10"/>
-                        <polyline points="12 6 12 12 16 14"/>
-                      </svg>
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-stone-850 text-xs mb-1">Modelo Híbrido</h4>
-                      <p className="text-[9px] text-stone-400 leading-relaxed max-w-[155px] mx-auto">
-                        Ofreces cabina física y atención móvil.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Dynamic Subforms */}
-              <div className="space-y-4 pt-2 border-t border-stone-100 animate-in fade-in duration-500">
-                {(workModality === 'clinic_only' || workModality === 'both') && (
-                  <div className="space-y-4">
-                    <h3 className="font-serif italic text-stone-700 text-sm">Información de Sede Principal</h3>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-[9px] font-bold uppercase tracking-wider text-stone-400">Nombre de la Sede</label>
-                        <input 
-                          type="text" 
-                          value={locationName} 
-                          onChange={(e) => setLocationName(e.target.value)} 
-                          placeholder="Ej. Sede Central Mercè" 
-                          className="w-full bg-[#FAF9F5]/30 border border-stone-200 rounded-xl px-4 py-3 text-xs font-semibold text-stone-800 placeholder-stone-300 focus:outline-none focus:border-[#d4af37] focus:bg-white transition-all shadow-sm"
-                        />
-                      </div>
-                      
-                      <div className="space-y-1">
-                        <label className="text-[9px] font-bold uppercase tracking-wider text-stone-400">Teléfono de Sede</label>
-                        <input 
-                          type="text" 
-                          value={locationPhone} 
-                          onChange={(e) => setLocationPhone(e.target.value)} 
-                          placeholder="Ej. +34 931 234 567" 
-                          className="w-full bg-[#FAF9F5]/30 border border-stone-200 rounded-xl px-4 py-3 text-xs font-semibold text-stone-800 placeholder-stone-300 focus:outline-none focus:border-[#d4af37] focus:bg-white transition-all shadow-sm"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-bold uppercase tracking-wider text-stone-400">Dirección Física de Sede</label>
-                      <input 
-                        type="text" 
-                        value={locationAddress} 
-                        onChange={(e) => setLocationAddress(e.target.value)} 
-                        placeholder="Calle, número, piso, código postal y ciudad de tu cabina" 
-                        className="w-full bg-[#FAF9F5]/30 border border-stone-200 rounded-xl px-4 py-3 text-xs font-semibold text-stone-800 placeholder-stone-300 focus:outline-none focus:border-[#d4af37] focus:bg-white transition-all shadow-sm"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {(workModality === 'home_only' || workModality === 'both') && (
-                  <div className="space-y-4 pt-2">
-                    <h3 className="font-serif italic text-stone-700 text-sm">Configuración de Servicios a Domicilio</h3>
-                    
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-bold uppercase tracking-wider text-stone-400">Dirección Base / Centro de Operaciones</label>
-                      <input 
-                        type="text" 
-                        value={operationsCenterAddress} 
-                        onChange={(e) => setOperationsCenterAddress(e.target.value)} 
-                        placeholder="Dirección desde donde se calculan las rutas a domicilio" 
-                        className="w-full bg-[#FAF9F5]/30 border border-stone-200 rounded-xl px-4 py-3 text-xs font-semibold text-stone-800 placeholder-stone-300 focus:outline-none focus:border-[#d4af37] focus:bg-white transition-all shadow-sm"
-                      />
-                    </div>
-
-                    <div className="space-y-2 p-5 rounded-2xl bg-[#FAF9F5]/50 border border-stone-200/50">
-                      <div className="flex justify-between items-center">
-                        <label className="text-[9px] font-bold uppercase tracking-wider text-stone-400">Radio Máximo de Cobertura</label>
-                        <span className="text-xs font-bold text-[#bf9b30] bg-[#d4af37]/10 px-2.5 py-1 rounded-full">{maxCoverageRadiusKm} km</span>
-                      </div>
-                      
-                      <input 
-                        type="range" 
-                        min="2" 
-                        max="50" 
-                        step="1"
-                        value={maxCoverageRadiusKm} 
-                        onChange={(e) => setMaxCoverageRadiusKm(Number(e.target.value))}
-                        className="w-full h-1.5 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-[#d4af37] focus:outline-none focus:ring-0"
-                      />
-                      
-                      <div className="flex justify-between text-[8px] text-stone-400 font-bold uppercase tracking-wider">
-                        <span>2 km</span>
-                        <span>25 km</span>
-                        <span>50 km</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
+            <StepOperations 
+              workModality={workModality}
+              setWorkModality={setWorkModality}
+              locationName={locationName}
+              setLocationName={setLocationName}
+              locationAddress={locationAddress}
+              setLocationAddress={setLocationAddress}
+              locationPhone={locationPhone}
+              setLocationPhone={setLocationPhone}
+              operationsCenterAddress={operationsCenterAddress}
+              setOperationsCenterAddress={setOperationsCenterAddress}
+              maxCoverageRadiusKm={maxCoverageRadiusKm}
+              setMaxCoverageRadiusKm={setMaxCoverageRadiusKm}
+            />
           )}
 
           {/* STEP 3: Horarios y Calendario */}
           {step === 3 && (
-            <div className="space-y-6 animate-in fade-in duration-500">
-              <div className="space-y-3">
-                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 block">
-                  Días Operativos de Atención
-                </label>
-                <div className="flex flex-wrap items-center gap-2">
-                  {DAYS.map((day) => {
-                    const isSelected = workingDays.includes(day.val);
-                    return (
-                      <button
-                        key={day.val}
-                        type="button"
-                        onClick={() => toggleWorkingDay(day.val)}
-                        className={`h-12 flex-1 min-w-[50px] rounded-xl font-bold text-xs transition-all border flex items-center justify-center select-none active:scale-95 duration-200 ${
-                          isSelected
-                            ? 'bg-stone-900 border-stone-900 text-[#d4af37] shadow-sm'
-                            : 'bg-stone-50 border-stone-200 text-stone-400 hover:bg-stone-100 hover:border-stone-300'
-                        }`}
-                      >
-                        {day.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">
-                    Hora de Apertura
-                  </label>
-                  <input 
-                    type="time" 
-                    value={openTime}
-                    onChange={(e) => setOpenTime(e.target.value)}
-                    className="w-full bg-[#FAF9F5]/40 border border-stone-200 rounded-xl px-5 py-4 text-sm font-semibold text-stone-850 focus:outline-none focus:border-[#d4af37] focus:bg-white transition-all shadow-sm"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">
-                    Hora de Cierre
-                  </label>
-                  <input 
-                    type="time" 
-                    value={closeTime}
-                    onChange={(e) => setCloseTime(e.target.value)}
-                    className="w-full bg-[#FAF9F5]/40 border border-stone-200 rounded-xl px-5 py-4 text-sm font-semibold text-stone-855 focus:outline-none focus:border-[#d4af37] focus:bg-white transition-all shadow-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="p-5 rounded-2xl bg-amber-50/10 border border-[#d4af37]/20 flex gap-3 text-stone-600">
-                <span className="text-lg shrink-0">💡</span>
-                <p className="text-[10px] md:text-xs leading-relaxed font-medium">
-                  <strong>Ajustes de Agenda:</strong> Estos horarios serán la base de tu calendario. Podrás añadir descansos, festivos o turnos para especialistas individualmente en la sección de Ajustes del panel administrativo.
-                </p>
-              </div>
-            </div>
+            <StepScheduling 
+              workingDays={workingDays}
+              toggleWorkingDay={toggleWorkingDay}
+              openTime={openTime}
+              setOpenTime={setOpenTime}
+              closeTime={closeTime}
+              setCloseTime={setCloseTime}
+            />
           )}
 
           {/* STEP 4: Aprovisionamiento con IA */}
           {step === 4 && (
-            <div className="space-y-6 animate-in fade-in duration-500">
-              <div className="space-y-4">
-                <div className={`p-6 rounded-2xl border transition-all duration-300 flex items-start gap-4 ${
-                  loadDemoData 
-                    ? 'bg-[#FAF9F5] border-[#d4af37] shadow-sm' 
-                    : 'bg-stone-50/50 border-stone-200'
-                }`}>
-                  <div className="pt-1 shrink-0">
-                    <input 
-                      type="checkbox" 
-                      id="demo-data"
-                      checked={loadDemoData}
-                      onChange={(e) => setLoadDemoData(e.target.checked)}
-                      className="h-5 w-5 border-stone-300 rounded text-[#d4af37] focus:ring-[#d4af37] cursor-pointer"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="demo-data" className="font-bold text-stone-850 text-sm cursor-pointer block select-none mb-1">
-                      Generar catálogo inicial de {selectedSector}
-                    </label>
-                    <p className="text-xs text-stone-400 font-medium leading-relaxed">
-                      ProBookia configurará automáticamente **3 servicios premium** específicos para el sector de **{selectedSector}**, listos para que tu portal de reservas esté online y funcional desde el primer segundo.
-                    </p>
-                  </div>
-                </div>
-
-                {/* DYNAMIC SERVICE CATALOG PREVIEW (WOW FACTOR) */}
-                {loadDemoData && (
-                  <div className="border border-stone-200/70 rounded-2xl p-5 space-y-3 bg-white shadow-sm transition-all duration-500 animate-in slide-in-from-bottom-2 duration-300">
-                    <div className="flex items-center justify-between border-b border-stone-100 pb-2">
-                      <span className="text-[9px] font-black tracking-widest text-[#d4af37] uppercase">
-                        Catálogo Inicial Previsualizado
-                      </span>
-                      <span className="text-[10px] font-bold text-stone-400 font-serif italic">
-                        Servicios sugeridos
-                      </span>
-                    </div>
-
-                    <div className="space-y-3">
-                      {(SECTOR_PREVIEWS[selectedSector] || SECTOR_PREVIEWS["Estética y Bienestar"]).map((svc, idx) => (
-                        <div key={idx} className="flex justify-between items-start gap-4 p-2.5 rounded-xl hover:bg-stone-50 transition-colors border border-stone-50">
-                          <div className="flex-1">
-                            <h4 className="text-xs font-bold text-stone-800 flex items-center gap-2">
-                              {svc.name}
-                              <span className="text-[8px] bg-stone-100 text-stone-500 px-1.5 py-0.5 rounded font-mono font-medium">{svc.duration} min</span>
-                            </h4>
-                            <p className="text-[9px] text-stone-400 mt-1 leading-relaxed max-w-[400px]">
-                              {svc.desc}
-                            </p>
-                          </div>
-                          <span className="text-xs font-bold text-stone-900 font-mono shrink-0">{svc.price.toFixed(2)}€</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="bg-[#FAF9F5]/40 border border-stone-200/50 rounded-2xl p-5 space-y-2 flex gap-3 text-stone-600">
-                  <span className="text-lg shrink-0">✨</span>
-                  <div>
-                    <h4 className="text-xs font-extrabold uppercase tracking-wide text-stone-700">Diseño "Quiet Luxury" Aplicado</h4>
-                    <p className="text-[10px] leading-relaxed text-stone-400 font-medium">
-                      Hemos inyectado una paleta tipográfica y estilística de lujo que coordina perfectamente con tu sector. Tu web de reservas tendrá fuentes de Serif elegantes y espaciados armoniosos que proyectan la máxima sofisticación frente a tus clientes.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <StepProvisioning 
+              selectedSector={selectedSector}
+              loadDemoData={loadDemoData}
+              setLoadDemoData={setLoadDemoData}
+            />
           )}
 
         </div>
 
         {/* Footer Navigation Buttons */}
-        <div className="border-t border-stone-100 pt-6 flex items-center justify-between shrink-0 mt-auto">
-          <button
-            type="button"
-            onClick={handlePrevStep}
-            disabled={step === 1 || submitting}
-            className={`text-xs font-bold uppercase tracking-widest text-stone-400 hover:text-stone-850 transition-colors select-none active:scale-95 disabled:opacity-30 ${
-              step === 1 ? 'opacity-0 pointer-events-none' : ''
-            }`}
-          >
-            Anterior
-          </button>
-
-          {step < 4 ? (
-            <button
-              type="button"
-              onClick={handleNextStep}
-              className="bg-stone-900 hover:bg-[#d4af37] hover:text-stone-950 text-white px-8 py-4 rounded-xl text-xs font-bold transition-all shadow-md uppercase tracking-widest active:scale-95 duration-300 flex items-center gap-2"
-            >
-              Siguiente <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleCompleteSetup}
-              disabled={submitting}
-              className="bg-stone-900 hover:bg-[#d4af37] hover:text-stone-950 text-white px-8 py-4 rounded-xl text-xs font-bold transition-all shadow-lg uppercase tracking-widest disabled:opacity-50 active:scale-95 duration-300 flex items-center gap-2"
-            >
-              {submitting ? 'Creando Portal...' : 'Finalizar Registro'}
-            </button>
-          )}
-        </div>
+        <OnboardingFooter 
+          step={step}
+          submitting={submitting}
+          handlePrevStep={handlePrevStep}
+          handleNextStep={handleNextStep}
+          handleCompleteSetup={handleCompleteSetup}
+        />
 
       </div>
     </div>
