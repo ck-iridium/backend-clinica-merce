@@ -13,11 +13,44 @@ export default function DocsPage() {
   const [activeSubpageId, setActiveSubpageId] = useState(DOCS_CONTENT[0].subpages[0].id);
   const [searchQuery, setSearchQuery] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [brandingSettings, setBrandingSettings] = useState<any>(null);
 
   // Auto-scroll to top when changing page
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [activeSubpageId]);
+
+  // Fetch dynamic branding from SuperAdmin CMS
+  useEffect(() => {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    fetch(`${API_URL}/super-admin/marketing/public`)
+      .then((res) => {
+        if (res.ok) return res.json();
+        throw new Error();
+      })
+      .then((data) => {
+        if (data && data.settings) {
+          setBrandingSettings(data.settings);
+        }
+      })
+      .catch((err) => console.error('Error fetching branding settings for docs:', err));
+  }, []);
+
+  const primaryColor = brandingSettings?.primary_color || '#3b82f6';
+  const secondaryColor = brandingSettings?.secondary_color || '#1c1917';
+  const tertiaryColor = brandingSettings?.tertiary_color || '#d4af37';
+  const fontFamily = brandingSettings?.font_family || 'playfair_inter';
+  const logoSvg = brandingSettings?.logo_svg || null;
+  const fontWeightHeadings = brandingSettings?.font_weight_headings || 'semibold';
+
+  const weightMap: Record<string, string> = {
+    'light': '300',
+    'normal': '400',
+    'medium': '500',
+    'semibold': '600',
+    'bold': '700'
+  };
+  const activeWeight = weightMap[fontWeightHeadings] || '600';
 
   // Find active subpage object
   const activeSection = DOCS_CONTENT.find(s => s.id === activeSectionId) || DOCS_CONTENT[0];
@@ -163,7 +196,7 @@ export default function DocsPage() {
                 const parts = item.split('**');
                 return (
                   <li key={idx} className="flex items-start gap-3 text-stone-600 dark:text-stone-300 text-[15px] leading-relaxed animate-in fade-in duration-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-[#d4af37] shrink-0 mt-2.5"></span>
+                    <span className="w-1.5 h-1.5 rounded-full theme-bullet shrink-0 mt-2.5"></span>
                     <span>
                       {parts.map((part, pIdx) => pIdx % 2 === 1 ? <strong key={pIdx} className="font-bold text-stone-950 dark:text-stone-100">{part}</strong> : part)}
                     </span>
@@ -234,17 +267,20 @@ export default function DocsPage() {
         }
         
         blocks.push(
-          <div key={`quote-${i}`} className={`my-6 p-5 rounded-2xl border-l-4 shadow-sm backdrop-blur-md ${
-            type === 'important' ? 'border-red-500 bg-red-500/[0.02] text-red-950 dark:text-red-200' :
-            type === 'tip' ? 'border-blue-600 bg-blue-600/[0.02] text-blue-950 dark:text-blue-200' :
-            'border-[#d4af37] bg-[#d4af37]/[0.02] text-stone-850 dark:text-stone-200'
+          <div key={`quote-${i}`} className={`my-6 p-5 rounded-2xl shadow-sm backdrop-blur-md ${
+            type === 'important' ? 'border-l-4 border-red-500 bg-red-500/[0.02] text-red-950 dark:text-red-200' :
+            type === 'tip' ? 'theme-quote-tip text-stone-850 dark:text-stone-200' :
+            'theme-quote-note text-stone-850 dark:text-stone-200'
           }`}>
             {titleText && (
-              <span className={`text-[10px] font-black tracking-widest uppercase block mb-1.5 ${
-                type === 'important' ? 'text-red-600' :
-                type === 'tip' ? 'text-blue-600' :
-                'text-[#d4af37]'
-              }`}>
+              <span 
+                className="text-[10px] font-black tracking-widest uppercase block mb-1.5"
+                style={{ 
+                  color: type === 'important' ? 'rgb(239, 68, 68)' : 
+                         type === 'tip' ? primaryColor : 
+                         tertiaryColor 
+                }}
+              >
                 {titleText}
               </span>
             )}
@@ -291,13 +327,83 @@ export default function DocsPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-stone-950 text-stone-900 dark:text-stone-100 font-sans transition-all duration-300">
       
+      {/* Inyección dinámica de Google Fonts y Clases Tipográficas */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@100..900&family=Outfit:wght@100..900&family=Fredoka:wght@300..700&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Montserrat:wght@100..900&family=Cinzel:wght@400..900&family=Roboto:wght@100..900&display=swap');
+        
+        :root {
+          --primary-accent: ${primaryColor};
+          --secondary-accent: ${secondaryColor};
+          --tertiary-accent: ${tertiaryColor};
+          
+          --font-serif: ${
+            fontFamily === 'playfair_inter' ? "'Playfair Display', serif" :
+            fontFamily === 'outfit' ? "'Outfit', sans-serif" :
+            fontFamily === 'fredoka' ? "'Fredoka', sans-serif" :
+            fontFamily === 'cormorant_montserrat' ? "'Cormorant Garamond', serif" :
+            fontFamily === 'cinzel_roboto' ? "'Cinzel', serif" :
+            "'Inter', sans-serif"
+          };
+          --font-sans: ${
+            fontFamily === 'playfair_inter' ? "'Inter', sans-serif" :
+            fontFamily === 'outfit' ? "'Outfit', sans-serif" :
+            fontFamily === 'fredoka' ? "'Fredoka', sans-serif" :
+            fontFamily === 'cormorant_montserrat' ? "'Montserrat', sans-serif" :
+            fontFamily === 'cinzel_roboto' ? "'Roboto', sans-serif" :
+            "'Inter', sans-serif"
+          };
+        }
+        
+        .font-serif {
+          font-family: var(--font-serif) !important;
+          font-weight: ${activeWeight} !important;
+        }
+        
+        .font-sans, body, html, button, input, select, textarea {
+          font-family: var(--font-sans) !important;
+        }
+
+        .theme-accent-color {
+          color: var(--tertiary-accent) !important;
+        }
+
+        .theme-active-indicator::before {
+          background-color: var(--primary-accent) !important;
+        }
+
+        .theme-bullet {
+          background-color: var(--primary-accent) !important;
+        }
+
+        .theme-quote-tip {
+          border-left-width: 4px !important;
+          border-color: var(--primary-accent) !important;
+          background-color: color-mix(in srgb, var(--primary-accent) 2%, transparent) !important;
+        }
+
+        .theme-quote-note {
+          border-left-width: 4px !important;
+          border-color: var(--tertiary-accent) !important;
+          background-color: color-mix(in srgb, var(--tertiary-accent) 2%, transparent) !important;
+        }
+
+        .theme-focus-focus:focus {
+          border-color: var(--primary-accent) !important;
+          box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-accent) 20%, transparent) !important;
+        }
+      ` }} />
+
       {/* HEADER CORPORATIVO B2B SAAS (SIN FUGA DE CLINICA) */}
       <header className="sticky top-0 z-50 w-full bg-white/95 dark:bg-stone-950/95 backdrop-blur-md border-b border-stone-100 dark:border-stone-900 py-1 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/" className="text-xl md:text-2xl font-serif tracking-widest text-stone-950 dark:text-white font-semibold select-none">
-              PROBOOKIA <span className="text-blue-600 dark:text-[#d4af37] font-sans text-[10px] font-black tracking-[0.25em] uppercase ml-1">SaaS</span>
-            </Link>
+            {logoSvg ? (
+              <Link href="/" className="h-10 flex items-center justify-start [&>svg]:h-full [&>svg]:w-auto [&>svg]:max-w-full" dangerouslySetInnerHTML={{ __html: logoSvg }} />
+            ) : (
+              <Link href="/" className="text-xl md:text-2xl font-serif tracking-widest text-stone-950 dark:text-white font-semibold select-none">
+                PROBOOKIA <span style={{ color: tertiaryColor }} className="font-sans text-[10px] font-black tracking-[0.25em] uppercase ml-1">SaaS</span>
+              </Link>
+            )}
           </div>
           
           <div className="flex items-center gap-4">
@@ -322,7 +428,7 @@ export default function DocsPage() {
       <header className="border-b border-stone-100 dark:border-stone-900 bg-stone-50/50 dark:bg-stone-900/10 py-12 md:py-16 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <div className="flex items-center gap-2 text-blue-600 dark:text-[#d4af37] text-xs font-black uppercase tracking-[0.2em] mb-3">
+            <div className="flex items-center gap-2 theme-accent-color text-xs font-black uppercase tracking-[0.2em] mb-3">
               <BookOpen size={14} />
               <span>{uiT.badge}</span>
             </div>
@@ -336,13 +442,13 @@ export default function DocsPage() {
           
           {/* Campo de Búsqueda de Lujo */}
           <div className="relative w-full md:w-80 group shrink-0">
-            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-blue-600 transition-colors" />
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-[var(--primary-accent)] transition-colors" />
             <input
               type="text"
               placeholder={uiT.searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-850 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 outline-none transition-all shadow-sm"
+              className="w-full pl-11 pr-4 py-3 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-850 rounded-xl text-sm font-medium theme-focus-focus outline-none transition-all shadow-sm"
             />
           </div>
         </div>
@@ -393,12 +499,12 @@ export default function DocsPage() {
                             }}
                             className={`w-full text-left py-1.5 pl-4 pr-3 text-[14px] font-medium transition-all rounded-lg select-none relative flex items-center justify-between group ${
                               isActive
-                                ? 'text-stone-950 dark:text-white font-bold bg-stone-50 dark:bg-stone-900/50 before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[3px] before:bg-blue-600 dark:before:bg-[#d4af37] before:rounded-full'
+                                ? 'text-stone-950 dark:text-white font-bold bg-stone-50 dark:bg-stone-900/50 before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[3px] theme-active-indicator before:rounded-full'
                                 : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-50/50 dark:hover:bg-stone-900/20'
                             }`}
                           >
                             <span>{page.title[langKey] || page.title.es}</span>
-                            <ChevronRight size={12} className={`opacity-0 group-hover:opacity-100 transition-opacity ${isActive ? 'text-blue-600 dark:text-[#d4af37]' : 'text-stone-300'}`} />
+                            <ChevronRight size={12} className={`opacity-0 group-hover:opacity-100 transition-opacity ${isActive ? 'theme-accent-color' : 'text-stone-300'}`} />
                           </button>
                         </li>
                       );
