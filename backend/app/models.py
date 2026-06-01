@@ -473,4 +473,39 @@ class LandingShowcaseSector(Base):
     order_index = Column(Integer, default=0)
 
 
+class DocSection(Base):
+    __tablename__ = "doc_sections"
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    slug = Column(String(255), nullable=False)
+    title = Column(JSONB, default=dict, nullable=False)
+    position = Column(Integer, default=0, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        UniqueConstraint('slug', name='uq_doc_sections_slug'),
+    )
+
+    pages = relationship("DocPage", back_populates="section", cascade="all, delete-orphan", order_by="DocPage.position")
+
+
+class DocPage(Base):
+    __tablename__ = "doc_pages"
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    section_id = Column(String(36), ForeignKey("doc_sections.id", ondelete="CASCADE"), nullable=False)
+    slug = Column(String(255), nullable=False)
+    title = Column(JSONB, default=dict, nullable=False)
+    content = Column(JSONB, default=dict, nullable=False)
+    position = Column(Integer, default=0, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        UniqueConstraint('slug', name='uq_doc_pages_slug'),
+    )
+
+    section = relationship("DocSection", back_populates="pages")
+
+
+
 

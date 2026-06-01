@@ -1,4 +1,6 @@
 import DocsClientPage from './DocsClientPage';
+import { DOCS_NAVIGATION } from './content';
+import { getDocContent } from '@/lib/docs';
 
 export const revalidate = 60; // Revalidate settings cache every 60 seconds
 
@@ -41,6 +43,19 @@ export default async function Page() {
     console.error('Error fetching CMS content in Server Component for /docs:', err);
   }
 
-  // 3. Render client page instantly with server-fetched settings
-  return <DocsClientPage brandingSettings={settings} />;
+  // 3. Load all markdown content on the server side
+  const docsContent: Record<string, { es: string; en: string; fr: string }> = {};
+
+  for (const section of DOCS_NAVIGATION) {
+    for (const subpage of section.subpages) {
+      docsContent[subpage.id] = {
+        es: getDocContent('es', subpage.id).content,
+        en: getDocContent('en', subpage.id).content,
+        fr: getDocContent('fr', subpage.id).content,
+      };
+    }
+  }
+
+  // 4. Render client page instantly with server-fetched settings and markdown content
+  return <DocsClientPage brandingSettings={settings} docsContent={docsContent} />;
 }

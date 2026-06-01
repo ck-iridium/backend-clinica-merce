@@ -792,4 +792,50 @@ class BulkStatusPayload(BaseModel):
     is_active: bool
 
 
+# --- CMS DOCS SYSTEM ---
+class DocPageBase(BaseModel):
+    section_id: str
+    slug: str
+    title: Dict[str, str]
+    content: Dict[str, str]
+    position: int = 0
+
+class DocPageCreate(DocPageBase):
+    pass
+
+class DocPageUpdate(BaseModel):
+    section_id: Optional[str] = None
+    slug: Optional[str] = None
+    title: Optional[Dict[str, str]] = None
+    content: Optional[Dict[str, str]] = None
+    position: Optional[int] = None
+
+class DocPageOut(DocPageBase):
+    id: str
+
+    class Config:
+        from_attributes = True
+
+class DocSectionBase(BaseModel):
+    slug: str
+    title: Dict[str, str]
+    position: int = 0
+
+class DocSectionCreate(DocSectionBase):
+    pass
+
+class DocSectionUpdate(BaseModel):
+    slug: Optional[str] = None
+    title: Optional[Dict[str, str]] = None
+    position: Optional[int] = None
+
+class DocSectionOut(DocSectionBase):
+    id: str
+    pages: List[DocPageOut] = []
+
+    class Config:
+        from_attributes = True
+
+
+
 

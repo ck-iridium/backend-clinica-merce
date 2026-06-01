@@ -4,17 +4,18 @@ import Link from 'next/link';
 import { Search, ChevronRight, BookOpen, Menu, X, ArrowLeft } from 'lucide-react';
 import LanguageSelector from '@/components/LanguageSelector';
 import { useLanguage } from '@/app/contexts/LanguageContext';
-import { DOCS_CONTENT } from './content';
+import { DOCS_NAVIGATION } from './content';
 
 interface DocsClientPageProps {
   brandingSettings: any;
+  docsContent: Record<string, { es: string; en: string; fr: string }>;
 }
 
-export default function DocsClientPage({ brandingSettings }: DocsClientPageProps) {
+export default function DocsClientPage({ brandingSettings, docsContent }: DocsClientPageProps) {
   const { language } = useLanguage();
   
-  const [activeSectionId, setActiveSectionId] = useState(DOCS_CONTENT[0].id);
-  const [activeSubpageId, setActiveSubpageId] = useState(DOCS_CONTENT[0].subpages[0].id);
+  const [activeSectionId, setActiveSectionId] = useState(DOCS_NAVIGATION[0].id);
+  const [activeSubpageId, setActiveSubpageId] = useState(DOCS_NAVIGATION[0].subpages[0].id);
   const [searchQuery, setSearchQuery] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -40,7 +41,7 @@ export default function DocsClientPage({ brandingSettings }: DocsClientPageProps
   const activeWeight = weightMap[fontWeightHeadings] || '600';
 
   // Find active subpage object
-  const activeSection = DOCS_CONTENT.find(s => s.id === activeSectionId) || DOCS_CONTENT[0];
+  const activeSection = DOCS_NAVIGATION.find(s => s.id === activeSectionId) || DOCS_NAVIGATION[0];
   const activeSubpage = activeSection.subpages.find(p => p.id === activeSubpageId) || activeSection.subpages[0];
 
   // Dynamic language key mapping
@@ -102,10 +103,10 @@ export default function DocsClientPage({ brandingSettings }: DocsClientPageProps
   }[langKey];
 
   // Quick search filtration across all pages and sections in the active language
-  const filteredSections = DOCS_CONTENT.map(section => {
+  const filteredSections = DOCS_NAVIGATION.map(section => {
     const matchingPages = section.subpages.filter(page => {
       const title = page.title[langKey] || '';
-      const markdown = page.markdown[langKey] || '';
+      const markdown = docsContent[page.id]?.[langKey] || '';
       return (
         title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         markdown.toLowerCase().includes(searchQuery.toLowerCase())
@@ -518,7 +519,7 @@ export default function DocsClientPage({ brandingSettings }: DocsClientPageProps
               
               {/* Contenido Renderizado */}
               <div className="animate-in fade-in duration-500 ease-out">
-                {renderMarkdownToReact(activeSubpage.markdown[langKey] || activeSubpage.markdown.es)}
+                {renderMarkdownToReact(docsContent[activeSubpageId]?.[langKey] || docsContent[activeSubpageId]?.es || '')}
               </div>
 
               {/* Botón de llamada a la acción inferior */}
