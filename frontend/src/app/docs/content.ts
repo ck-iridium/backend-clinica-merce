@@ -12,11 +12,11 @@ export interface DocSection {
 
 export const DOCS_CONTENT: DocSection[] = [
   {
-    id: 'arquitectura-core',
+    id: 'fundamentos-seguridad',
     title: {
-      es: 'Sección 1: Arquitectura Core & Seguridad',
-      en: 'Section 1: Core Architecture & Security',
-      fr: 'Section 1: Architecture Core & Sécurité'
+      es: 'Sección 1: Primeros Pasos & Privacidad Blindada',
+      en: 'Section 1: Getting Started & Bulletproof Privacy',
+      fr: 'Section 1: Premiers Pas pour Votre Centre'
     },
     subpages: [
       {
@@ -29,868 +29,537 @@ export const DOCS_CONTENT: DocSection[] = [
         markdown: {
           es: `# ¿Qué es ProBookia?
 
-ProBookia es un ecosistema SaaS global de nivel premium diseñado exclusivamente para la automatización, gestión y reserva de citas en centros médicos, clínicas de estética y salones de wellness de alta gama.
+¡Te damos la bienvenida a ProBookia! Somos una plataforma diseñada para clínicas de estética, centros médicos y salones de bienestar de alta gama que buscan ofrecer una experiencia extraordinaria.
 
-A diferencia de las plataformas de agendamiento genéricas del mercado, ProBookia opera como una **marca blanca de lujo invisible** que empodera la identidad visual del negocio ante su paciente final, mientras gestiona internamente la facturación simplificada, el TPV, el control de personal por RBAC y la resiliencia en la nube.
+A diferencia de las agendas convencionales, ProBookia funciona como una **marca blanca de lujo invisible**. Esto significa que tu portal de reservas llevará tu propio logotipo, tus colores corporativos y tu dominio exclusivo. Tus clientes verán únicamente tu identidad visual, mientras tú disfrutas de una potente suite interna de gestión con facturación rápida, control de personal, comisiones y asistentes de Inteligencia Artificial de última generación.
 
 ---
 
-### Módulos Principales del Ecosistema
+### Módulos Principales para Impulsar tu Negocio
 
-1. **ERP Clínico de Alta Ocupación**: Gestión de calendarios interactivos en tiempo real con aislamiento de agendas por especialista y prevención de colisiones.
-2. **TPV & Facturación Express**: Módulo de venta rápida de servicios y bonos, sincronizado con series impositivas personalizadas y emisión de presupuestos.
-3. **Motor de Reservas Web de Marca Blanca**: Portal de reserva interactivo en 3 pasos adaptable a los colores corporativos, logotipo y dominio propio de cada clínica.
-4. **Asistentes de Inteligencia Artificial**: Generador de copy SEO, creador conceptual de imágenes y un co-piloto por voz que interpreta comandos verbales del personal.`,
+* **Agenda y ERP Clínico**: Controla calendarios interactivos en tiempo real, asigna citas a especialistas específicos y evita la superposición de horarios automáticamente.
+* **TPV y Facturación Rápida**: Registra cobros de tratamientos y bonos al instante, emite presupuestos en PDF prémium y gestiona los impuestos de tu zona sin complicaciones.
+* **Portal de Reservas de Marca Blanca**: Un elegante asistente de reservas en 3 pasos que se adapta al diseño corporativo de tu negocio.
+* **Copilotos de Inteligencia Artificial**: Genera descripciones de tratamientos con un solo clic, crea imágenes espectaculares para tus servicios y gestiona tu clínica mediante sencillos comandos de voz.`,
           en: `# What is ProBookia?
 
-ProBookia is a global B2B premium SaaS ecosystem designed exclusively for scheduling, management, and online bookings in medical clinics, aesthetic centers, and high-end wellness salons.
+Welcome to ProBookia! We are an exclusive booking and management ecosystem designed specifically for aesthetic clinics, medical centers, and high-end wellness salons.
 
-Unlike generic scheduling systems on the market, ProBookia operates as an **invisible luxury white-label engine** that empowers the business's visual identity before the final patient, while managing billing, POS, RBAC team permission matrices, and cloud resilience internally.
+Unlike generic scheduling calendars, ProBookia operates as a **premium invisible white-label engine**. This means your client-facing portal will match your unique brand logo, colors, and custom web domain. Your patients only interact with your luxury brand identity, while you enjoy a robust internal clinical platform equipped with rapid invoicing, specialist rosters, and advanced AI-powered assistants.
 
 ---
 
-### Core Ecosystem Modules
+### Key Modules to Power Your Business
 
-1. **High-Occupancy Clinical ERP**: Real-time calendar dashboard with specialist agendas and collision prevention systems.
-2. **TPV & Express Invoicing**: Instant service and voucher POS checkout, synced with custom taxes and deluxe PDF quotes.
-3. **White-Label Booking Wizard**: High-conversion 3-step scheduling wizard adaptable to each clinic's custom branding palette and logo.
-4. **AI Co-Pilot Integrations**: Voice command interpreting copilot, SEO copy creator, and generative visual design tools.`,
+* **Clinical Agenda & ERP**: Oversee real-time interactive schedules, assign slots to specific specialists, and block double-bookings automatically.
+* **POS & Invoicing**: Checkout services and client vouchers instantly, generate elegant PDF quotes, and handle regional taxes.
+* **White-Label Booking Portal**: A high-conversion, beautifully responsive 3-step online booking wizard that reflects your visual DNA.
+* **Generative AI Copilots**: Write marketing descriptions with a single click, generate premium treatment covers, and operate your clinic via simple voice commands.`,
           fr: `# Qu'est-ce que ProBookia?
 
-ProBookia est un écosystème SaaS B2B de luxe conçu pour l'automatisation, la gestion et la réservation en ligne dans les cliniques esthétiques, centres médicaux et salons de bien-être haut de gamme.
+Bienvenue chez ProBookia ! Nous sommes une plateforme de gestion et de réservation conçue spécifiquement pour les cliniques esthétiques, centres médicaux et salons de bien-être haut de gamme.
 
-Contrairement aux plateformes d'agenda génériques du marché, ProBookia fonctionne comme une **marque blanche de luxe invisible** qui renforce l'identité visuelle de l'entreprise auprès de ses patients, tout en gérant la facturation, le TPV, le contrôle RBAC de l'équipe et la résilience cloud.
+Contrairement aux agendas génériques, ProBookia fonctionne comme une **marque blanche de luxe invisible**. Cela signifie que votre portail client affichera vos propres logos, vos couleurs et votre domaine internet. Vos patients ne verront que votre identité visuelle exclusive, tandis que vous profiterez d'un outil de facturation rapide, d'une gestion de commissions d'équipe et d'assistants IA de dernière génération.
 
 ---
 
-### Principaux Modules de l'Écosystème
+### Les Modules Clés de Votre Succès
 
-1. **ERP Clinique à Haute Occupation**: Tableaux de bord d'agenda interactifs avec isolation des rendez-vous par spécialiste.
-2. **Facturation Express & TPV**: Module de paiement instantané pour soins et bons d'achat, synchronisé avec des factures PDF de luxe.
-3. **Moteur de Réservation en Marque Blanche**: Portail de réservation en 3 étapes adaptable aux couleurs et logos exclusifs de chaque centre.
-4. **Assistance IA Intégrée**: Co-pilote par commande vocale, générateur de textes SEO et outils de création d'images.`
+* **Agenda & ERP Clinique**: Gérez les rendez-vous en temps réel, affectez les créneaux à vos spécialistes et évitez automatiquement les chevauchements.
+* **TPV & Facturation Rapide**: Encaissez vos prestations et abonnements, générez des devis en PDF et gérez vos taux de taxe régionaux en toute simplicité.
+* **Portail de Réservation Personnalisé**: Un assistant en ligne fluide en 3 étapes qui s'adapte à l'ADN visuel de votre marque.
+* **Copilotes d'Intelligence Artificielle**: Créez des descriptions de soins, générez des couvertures visuelles pour vos services et pilotez votre centre par simple commande vocale.`
         }
       },
       {
         id: 'aislamiento-multi-tenant',
         title: {
-          es: 'Aislamiento Multi-Tenant & RLS',
-          en: 'Multi-Tenant Isolation & RLS',
-          fr: 'Isolation Multi-Tenant & RLS'
+          es: 'Seguridad y Privacidad de Datos',
+          en: 'Data Security & Isolation',
+          fr: 'Sécurité et Confidentialité'
         },
         markdown: {
-          es: `# Aislamiento Multi-Tenant & RLS
+          es: `# Privacidad y Seguridad de tus Pacientes
 
-La seguridad y privacidad en ProBookia se rigen por estándares de **seguridad de nivel bancario**. La arquitectura multi-tenant garantiza un aislamiento de datos absoluto entre organizaciones, imposibilitando fugas accidentales de información.
-
----
-
-### Row-Level Security (RLS) en PostgreSQL
-El corazón del aislamiento de datos reside directamente en el motor de base de datos relacional de Supabase (PostgreSQL). Ninguna consulta transaccional puede eludir los filtros RLS del sistema.
-
-1. **Habilitación Obligatoria**: Cada tabla del esquema (servicios, citas, clientes, etc.) activa RLS inmediatamente tras su creación:
-\`\`\`sql
-ALTER TABLE appointments ENABLE ROW LEVEL SECURITY;
-\`\`\`
-
-2. **Middleware Transaccional**: El framework FastAPI intercepta cada petición REST entrante, lee el TenantID verificado en el token JWT o cabeceras, y ejecuta en el pool de conexión una variable local temporal:
-\`\`\`sql
-SET LOCAL app.current_tenant_id = :tenant_id;
-\`\`\`
-
-3. **Política de Seguridad Inviolable**: Las consultas son filtradas de forma implícita mediante la siguiente regla:
-\`\`\`sql
-CREATE POLICY tenant_isolation_policy ON appointments
-    AS RESTRICTIVE
-    USING (tenant_id = current_setting('app.current_tenant_id', true));
-\`\`\`
-
-Esto garantiza que el personal de la clínica "A" jamás pueda consultar, insertar, modificar o eliminar registros de la clínica "B", incluso si se produce un error a nivel de código de aplicación.`,
-          en: `# Multi-Tenant Isolation & RLS
-
-Security and privacy in ProBookia are governed by rigorous **banking-level security standards**. The multi-tenant architecture guarantees absolute database isolation between organizations, preventing any cross-tenant data leaks.
+En ProBookia, la privacidad y la confidencialidad de tu negocio y la de tus pacientes son nuestra máxima prioridad. Aplicamos estándares de **seguridad y protección de datos equivalentes a la banca electrónica**.
 
 ---
 
-### PostgreSQL Row-Level Security (RLS)
-Data isolation is enforced directly within the Supabase relational database engine (PostgreSQL). No transactional queries can bypass the RLS database rules.
+### ¿Cómo Protegemos tus Datos?
 
-1. **Mandatory Activation**: Every database table (services, appointments, clients) enables RLS immediately after creation:
-\`\`\`sql
-ALTER TABLE appointments ENABLE ROW LEVEL SECURITY;
-\`\`\`
+Para garantizar que tu información esté blindada y evitar cualquier tipo de filtración accidental:
 
-2. **Transactional Middleware**: The FastAPI backend intercepts incoming REST requests, extracts the verified TenantID from the JWT claims, and initializes a local database session parameter:
-\`\`\`sql
-SET LOCAL app.current_tenant_id = :tenant_id;
-\`\`\`
+1. **Aislamiento Absoluto de Datos**: Cada clínica cuenta con su propio "espacio seguro e independiente" en nuestra base de datos. Ningún usuario o empleado de otra clínica asociada a ProBookia podrá ver, buscar o modificar tus clientes, citas o expedientes clínicos.
+2. **Cumplimiento RGPD / LOPD**: Cumplimos de forma nativa con los estándares internacionales de protección de datos sanitarios. Toda la información delicada sobre historiales médicos de tus pacientes se almacena bajo estrictos controles de acceso restringido.
+3. **Copias de Seguridad Diarias**: Realizamos respaldos automáticos y encriptados de toda tu base de datos cada noche, asegurando que nunca pierdas tu agenda, fichas de clientes o facturas.
 
-3. **Inviolable Database Policy**: All queries are automatically scoped using the restrictive tenant context:
-\`\`\`sql
-CREATE POLICY tenant_isolation_policy ON appointments
-    AS RESTRICTIVE
-    USING (tenant_id = current_setting('app.current_tenant_id', true));
-\`\`\`
+> [!IMPORTANT]
+> Puedes operar con la total tranquilidad de que la información de tus tratamientos, fichas y facturación está cifrada y protegida por un sistema de aislamiento impenetrable a nivel de base de datos.`,
+          en: `# Patient Data Security & Privacy
 
-This guarantees that Clinic "A" operators can never select, insert, update, or delete records belonging to Clinic "B", even in the event of application-level bugs.`,
-          fr: `# Isolation Multi-Tenant & RLS
-
-La confidentialité dans ProBookia est protégée par des normes de **sécurité de niveau bancaire**. L'architecture multi-tenant garantit une isolation de base de données absolue entre centres, évitant toute fuite d'informations.
+At ProBookia, protecting the security and confidentiality of your business and your patients' clinical records is our absolute priority. We operate under **bank-grade data encryption and security standards**.
 
 ---
 
-### Row-Level Security (RLS) avec PostgreSQL
-L'isolation des données est appliquée au cœur du moteur relationnel Supabase (PostgreSQL). Aucune requête transactionnelle ne peut contourner les règles RLS.
+### How We Protect Your Data
 
-1. **Activation Obligatoire**: Chaque table du schéma active la sécurité au niveau de la ligne immédiatement après sa création:
-\`\`\`sql
-ALTER TABLE appointments ENABLE ROW LEVEL SECURITY;
-\`\`\`
+To guarantee your private database is isolated and prevent any accidental cross-access:
 
-2. **Middleware Transactionnel**: Le backend FastAPI intercepte chaque requête, lit l'identifiant TenantID vérifié dans le jeton JWT et exécute un paramètre local temporaire dans la session:
-\`\`\`sql
-SET LOCAL app.current_tenant_id = :tenant_id;
-\`\`\`
+1. **Absolute Data Isolation**: Every clinic runs on its own secure, isolated "vault" inside our database schema. No managers or staff from other centers using ProBookia can ever view, search, or alter your clients, appointments, or medical charts.
+2. **Global Compliance (GDPR & HIPAA)**: We natively fulfill all mandatory clinical data requirements. Sensitive patient histories and aesthetic files are kept under secure cryptographic access policies.
+3. **Automated Daily Backups**: Your files are backed up automatically and encrypted every night, ensuring you never lose active calendars, billing records, or client files.
 
-3. **Règle de Sécurité Restrictive**:
-\`\`\`sql
-CREATE POLICY tenant_isolation_policy ON appointments
-    AS RESTRICTIVE
-    USING (tenant_id = current_setting('app.current_tenant_id', true));
-\`\`\`
+> [!IMPORTANT]
+> You can manage your business with total peace of mind: all schedules, treatment records, and invoice vaults are shielded inside our database infrastructure.`,
+          fr: `# Sécurité des Données & Confidentialité
 
-Cela garantit que l'opérateur du Centre "A" ne pourra jamais lire ou modifier les données appartenant au Centre "B", assurant un blindage total.`
+Chez ProBookia, la confidentialité de votre activité et des dossiers de vos patients est notre priorité absolue. Nous appliquons des standards de **sécurité et de chiffrement équivalents à ceux des banques**.
+
+---
+
+### Comment Nous Protégeons Vos Données
+
+Pour garantir que vos données soient hermétiquement protégées et éviter toute fuite :
+
+1. **Isolation Absolue des Fichiers**: Chaque centre dispose d'un "coffre-fort virtuel" indépendant. Aucun employé d'un autre établissement sur ProBookia ne pourra jamais consulter ou modifier vos fiches clients, vos agendas ou vos dossiers médicaux.
+2. **Conformité RGPD**: Nous respectons scrupuleusement les exigences européennes de protection des données de santé. Les antécédents et photos cliniques de vos clients font l'objet de contrôles d'accès restreints.
+3. **Sauvegardes Quotidiennes Automatiques**: L'ensemble de votre base de données est sauvegardé de manière cryptée chaque nuit pour vous garantir de ne jamais perdre votre planning ou vos dossiers.
+
+> [!IMPORTANT]
+> Travaillez en toute sérénité : toutes vos fiches clients, agendas et documents comptables sont stockés de manière ultra-sécurisée et isolée.`
         }
       },
       {
         id: 'vip-impersonation',
         title: {
-          es: 'VIP Impersonation & Tokens',
-          en: 'VIP Impersonation & Tokens',
-          fr: 'Impersonation VIP & Tokens'
+          es: 'Soporte Técnico Seguro (Modo Asistencia)',
+          en: 'Secure Support (Impersonation Mode)',
+          fr: 'Assistance Technique Sécurisée'
         },
         markdown: {
-          es: `# VIP Impersonation & Tokens de Soporte
+          es: `# Acceso Seguro de Soporte Técnico
 
-El mantenimiento de clínicas de alto nivel requiere una asistencia de soporte ágil pero sumamente controlada. ProBookia soluciona este dilema mediante un **Modo de Impersonación Segura** con sello criptográfico.
-
----
-
-### Mecánica de Acceso Seguro
-
-Cuando un cliente solicita soporte avanzado, el equipo de administración no solicita su contraseña ni accede mediante cuentas genéricas. En su lugar, la consola del **Super Admin** genera una impersonación controlada:
-
-1. **Generación de Token por Firma**: El servidor genera un token JWT firmado digitalmente mediante un secreto maestro con algoritmo **HMAC SHA-256**.
-2. **Expiración Estricta de 2 Horas**: El payload del token contiene la marca de impersonación y una vigencia limitada en el tiempo:
-\`\`\`json
-{
-  "impersonate": "true",
-  "tenant_id": "UUID_DEL_TENANT",
-  "slug": "slug-de-la-clinica",
-  "exp": "TIMESTAMP_FUTURO_2_HORAS"
-}
-\`\`\`
-
-3. **Aislamiento en Peticiones**: El token se inyecta en las cabeceras HTTP de Next.js. El backend interpreta las credenciales temporales y scoped, permitiendo al especialista de soporte resolver dudas viendo la pantalla exactamente igual que el cliente final.
-4. **Pistas de Auditoría Transparente**: Cada acceso bajo el claim \`impersonate: true\` queda registrado en un log inalterable en base de datos, garantizando la total transparencia y protección contra mal uso.`,
-          en: `# VIP Impersonation & Support Tokens
-
-Providing live support for prestigious clients requires an agile yet strictly controlled mechanism. ProBookia resolves this through a cryptographically signed **Secure Impersonation Mode**.
+Dar soporte y ayudarte a configurar tu clínica requiere agilidad, pero también un control absoluto. En ProBookia hemos eliminado la necesidad de que nos compartas tus contraseñas gracias a nuestro **Modo de Asistencia Segura**.
 
 ---
 
-### Secure Impersonation Mechanism
+### ¿Cómo Funciona la Ayuda en Directo?
 
-When a clinic owner requests live technical assistance, support staff do not request passwords. Instead, the **Super Admin Console** generates an ephemeral, restricted session token:
+Cuando solicitas ayuda para resolver una duda sobre un diseño, horario o factura:
 
-1. **HMAC SHA-256 JWT Signature**: The server signs a digital token using a master secret.
-2. **Strict 2-Hour Expiration**: The JWT payload contains the support scope and a limited lease time:
-\`\`\`json
-{
-  "impersonate": "true",
-  "tenant_id": "TENANT_UUID",
-  "slug": "clinic-slug",
-  "exp": "TIMESTAMP_FUTURE_2_HOURS"
-}
-\`\`\`
+1. **Autorización Temporal**: Si nos otorgas permiso, nuestra consola de Super Admin genera un acceso temporal seguro e inalterable.
+2. **Acceso Sin Contraseña**: El especialista de soporte puede ingresar a tu panel de control para ver la pantalla exactamente como tú la ves, ayudándote a corregir la configuración al instante.
+3. **Cierre Automático tras 2 Horas**: Este acceso especial expira de forma automática a las **2 horas**. Transcurrido ese tiempo, el enlace se destruye y el especialista es expulsado del panel.
+4. **Registro de Auditoría**: Cada vez que un agente de soporte accede a tu cuenta, queda anotado en un historial que puedes consultar, garantizando la total transparencia sobre quién y cuándo ha accedido.
 
-3. **Scoped HTTP Injections**: The token is set in the Next.js request headers. The API resolves the claims, letting the support developer diagnose layouts exactly as the tenant owner sees them.
-4. **Transparent Audit Logging**: All support actions executed under the \`impersonate: true\` claim are logged in an immutable database audit trail, protecting data integrity.`,
-          fr: `# Impersonation VIP & Sessions de Support
+> [!TIP]
+> Nunca compartas tu contraseña por chat o email con nadie. El equipo de ProBookia jamás te la solicitará, ya que empleamos este sistema de asistencia temporal y seguro para ayudarte.`,
+          en: `# Secure Support & Impersonation Access
 
-Offrir une assistance en direct aux cliniques prestigieuses requiert un mécanisme agile et contrôlé. ProBookia résout cela avec un **Mode Impersonation Sécurisé** signé par cryptographie.
+Assisting you with layouts, hours, or invoices requires an agile yet strictly controlled support mechanism. At ProBookia, we have completely eliminated the need for you to share your password via our **Secure Impersonation System**.
 
 ---
 
-### Mécanisme d'Impersonation Sécurisé
+### How Live Assistance Operates
 
-Lorsqu'un propriétaire demande du support, les agents n'utilisent pas de mots de passe. La console **Super Admin** génère un jeton temporaire et restreint:
+When you request technical support to configure your clinic settings:
 
-1. **Signature Criptographique HMAC SHA-256**: Le serveur génère un jeton JWT sécurisé.
-2. **Expiration Stricte de 2 Heures**: Le payload contient les détails de la session d'assistance:
-\`\`\`json
-{
-  "impersonate": "true",
-  "tenant_id": "TENANT_UUID",
-  "slug": "slug-clinique",
-  "exp": "TIMESTAMP_FUTUR_2_HEURES"
-}
-\`\`\`
+1. **Temporary Authorization**: With your permission, our Super Admin Console creates a temporary and secure support link.
+2. **Zero-Password Login**: The support specialist logs in to inspect your dashboard, viewing your configuration exactly as you see it on screen.
+3. **Automatic 2-Hour Expiration**: The secure support window expires automatically after **2 hours**. Once the time is up, the link is destroyed, and the agent is signed out.
+4. **Audit Trail Logs**: Every single support login is recorded in an unalterable database log, giving you total transparency on who accessed your clinic and when.
 
-3. **Injection dans les Requêtes**: Le jeton est interprété par Next.js, permettant au développeur de diagnostiquer l'interface avec les mêmes droits que le client.
-4. **Journaux d'Audit Transparent**: Chaque action d'impersonation est enregistrée de manière immuable, garantissant le respect de la confidentialité des données.`
+> [!TIP]
+> Never share your login credentials or password via email or chat. The ProBookia team will never ask for them, as we use this secure temporary session mechanism to help you.`,
+          fr: `# Assistance Technique Sécurisée (Mode Impersonation)
+
+Vous aider à configurer vos plannings ou vos tarifs exige de la réactivité, mais aussi de la sécurité. Chez ProBookia, nous avons banni le partage de mot de passe grâce à notre **Mode d'Assistance Temporaire Sécurisé**.
+
+---
+
+### Comment Fonctionne l'Assistance en Direct ?
+
+Lorsque vous demandez notre aide pour paramétrer un service ou ajuster une page :
+
+1. **Autorisation Temporaire**: Avec votre accord, notre équipe génère un accès temporaire crypté et hautement sécurisé.
+2. **Connexion Sans Partage de Mot de Passe**: Le technicien se connecte à votre tableau de bord et visualise l'interface exactement comme vous, résolvant vos doutes en temps réel.
+3. **Expiration Automatique (2 Heures)**: Le lien de support expire automatiquement au bout de **2 heures**. Le technicien est alors déconnecté et ne peut plus accéder à vos données.
+4. **Historique des Accès**: Chaque accès d'assistance est enregistré dans un journal de sécurité transparent et immuable.
+
+> [!TIP]
+> Ne partagez jamais votre mot de passe par chat ou email. Nos agents n'en ont pas besoin car nous utilisons ce système temporaire sécurisé pour vous aider.`
         }
       }
     ]
   },
   {
-    id: 'catalogo-i18n',
+    id: 'gestion-catalogo',
     title: {
-      es: 'Sección 2: Módulo de Catálogo & i18n',
-      en: 'Section 2: Catalog & i18n Controls',
-      fr: 'Section 2: Catalogue & Outils i18n'
+      es: 'Sección 2: Catálogo de Servicios y Consentimientos',
+      en: 'Section 2: Service Catalog & Legal Consents',
+      fr: 'Section 2: Gestion des Soins & Consentements'
     },
     subpages: [
       {
         id: 'estructura-catalogo',
         title: {
-          es: 'Estructura Jerárquica',
-          en: 'Hierarchical Structure',
-          fr: 'Structure Hiérarchique'
+          es: 'Organizar tus Categorías y Servicios',
+          en: 'Organize Categories & Services',
+          fr: 'Organiser Vos Catégories'
         },
         markdown: {
-          es: `# Estructura Jerárquica del Catálogo
+          es: `# Cómo Organizar tu Menú de Servicios
 
-ProBookia organiza el catálogo de tratamientos de forma modular y asimétrica, facilitando la creación de menús de navegación ágiles e intuitivos para el cliente final.
-
----
-
-### Entidades y Relaciones
-
-* **Categorías Principales**: Agrupadores semánticos (ej: "Estética Facial", "Medicina Corporal") con un índice de ordenación visual (\`order_index\`) que define su disposición en el Mega Menú.
-* **Tratamientos / Servicios**: Fichas individuales de tratamiento que contienen duración en minutos, inversión económica base, fianza requerida y preferencias de layout.
-* **Slugs Técnicos Compuestos**: Las direcciones URL de los tratamientos se generan dinámicamente, bajo una restricción de unicidad compuesta:
-\`\`\`
-UNIQUE (tenant_id, slug)
-\`\`\`
-Esto permite que dos clínicas independientes tengan el servicio \`/tratamientos/facial/limpieza-hidratante\` en sus respectivos subdominios de marca blanca sin provocar colisiones globales en la base de datos.`,
-          en: `# Hierarchical Catalog Structure
-
-ProBookia structures service catalogs in an asymmetric, modular layout, enabling fast and intuitive website menus for patients.
+Un catálogo bien estructurado facilita que tus clientes encuentren y reserven sus tratamientos favoritos rápidamente. ProBookia te permite organizar tus servicios de forma elegante y limpia.
 
 ---
 
-### Database Entities & Rules
+### Estructura de tu Menú
 
-* **Main Categories**: Semantic grouping (e.g. "Facial Aesthetics", "Body Treatments") sorted via a visual \`order_index\` that determines their placement inside the Mega Menu.
-* **Treatments & Services**: Individual listings storing duration, price, required connect deposit, and media preferences.
-* **Composite Technical Slugs**: Treatment URLs are calculated dynamically using a multi-tenant composite constraint:
-\`\`\`
-UNIQUE (tenant_id, slug)
-\`\`\`
-This enables two independent clinics to publish the path \`/treatments/facial/deep-hydration\` on their white-label domains without triggering database index collisions.`,
-          fr: `# Structure Hiérarchique du Catalogue
+* **Categorías de Servicios**: Agrupadores grandes para tus servicios (ej: "Estética Facial", "Medicina Corporal", "Bonos Especiales"). Puedes ordenar las categorías para decidir cuál se muestra primero en el menú web.
+* **Servicios Individuales**: Fichas para cada tratamiento. Cada una contiene el nombre, la duración del servicio en minutos, el precio base, la fianza opcional y las imágenes de portada.
+* **Enlaces Web Limpios (Slugs)**: ProBookia crea automáticamente una dirección de internet bonita y amigable para cada tratamiento (ej: \`/servicios/estetica-facial/hidratacion-profunda\`). El sistema asegura que los enlaces de tu clínica sean completamente independientes de los de otros negocios.`,
+          en: `# How to Organize Categories & Services
 
-ProBookia organise les traitements de manière modulaire, ce qui facilite la création de menus intuitifs pour les patients.
+A well-structured catalog is the easiest way to help clients browse and book their favorite treatments. ProBookia allows you to organize your services in a beautiful, structured layout.
 
 ---
 
-### Entités et Relations
+### Menu Catalog Blueprint
 
-* **Catégories Principales**: Regroupements sémantiques (ex: "Esthétique Faciale") avec un index de tri visuel (\`order_index\`) pour la disposition du Méga Menu.
-* **Soins & Services**: Fiches individuelles contenant la durée, l'investissement de base, le dépôt de garantie requis et les préférences visuelles.
-* **Slugs Techniques Composés**: Les chemins URL sont générés à l'aide d'une restriction d'unicité composée:
-\`\`\`
-UNIQUE (tenant_id, slug)
-\`\`\`
-Cela permet à deux centres d'avoir l'adresse \`/soins/visage/nettoyage\` sans causer de conflits dans la base de données.`
+* **Service Categories**: Main groups for your treatments (e.g. "Facial Aesthetics", "Body Massage", "Exclusive Vouchers"). You can drag and drop categories to decide which one displays first.
+* **Individual Services**: Profile pages for each treatment. Each card stores the name, treatment duration in minutes, standard price, optional deposit, and cover photos.
+* **Clean URLs (Slugs)**: ProBookia automatically calculates a friendly web link for each treatment (e.g. \`/services/facial-aesthetics/deep-hydration\`). The system ensures your links are fully branded under your custom domain.`,
+          fr: `# Comment Organiser vos Catégories et Prestations
+
+Un catalogue clair permet à vos clients de trouver et réserver leurs soins favoris en quelques secondes. ProBookia vous propose un système d'organisation élégant.
+
+---
+
+### Structure de Votre Catalogue
+
+* **Catégories de Prestations**: Grands groupes pour classer vos soins (ex: "Soin du Visage", "Massages", "Abonnements"). Vous pouvez trier l'ordre des catégories pour définir leur priorité d'affichage.
+* **Soins Individuels**: Fiches pour chaque traitement. Chacune comprend le nom, la durée en minutes, le prix, l'acompte demandé et les photos de couverture.
+* **Liens Internet Propres (Slugs)**: ProBookia crée automatiquement une adresse web intuitive pour chaque prestation (ex: \`/soins/visage/hydratation-profonde\`), parfaitement isolée et sécurisée.`
         }
       },
       {
         id: 'gestion-masiva',
         title: {
-          es: 'Gestión Masiva (Data Tables)',
-          en: 'Mass Controls (Data Tables)',
-          fr: 'Gestion Massive (Data Tables)'
+          es: 'Edición Rápida de Servicios (Data Tables)',
+          en: 'Quick Edit Services (Data Tables)',
+          fr: 'Gestion Rapide des Soins'
         },
         markdown: {
-          es: `# Gestión Masiva (Data Tables)
+          es: `# Edición Rápida de Servicios
 
-Para evitar que los administradores de clínicas con grandes volúmenes de tratamientos se saturen con paneles de texto masivos, la plataforma implementa una **Data Table Avanzada**.
-
----
-
-### Capacidades del Panel de Gestión
-
-1. **Filtros e Indexación Rápida**: Buscador difuso (Fuzzy Search) integrado para localizar servicios en menos de 5ms mediante reactividad en cliente.
-2. **Truncamiento Inteligente**: Descripciones y contenidos de texto largos son truncados mediante CSS con micro-detalles en hover, manteniendo la retícula de la tabla impecable.
-3. **Edición en Masa**: Módulo preparado para realizar actualizaciones masivas de precios de inversión base y duraciones medias de tratamientos por categoría, reduciendo a segundos tareas operativas complejas.
-4. **Toggles de Estado**: Activación o desactivación inmediata (\`is_active\`, \`is_featured\`) con respuesta reactiva y confirmaciones suaves sin ventanas emergentes del navegador.`,
-          en: `# Mass Management & Data Tables
-
-To prevent clinical administrators with hundreds of listings from experiencing visual fatigue, the platform deploys an **Advanced Client-Side Data Table**.
+¿Tienes decenas de servicios y necesitas actualizar precios o duraciones con frecuencia? En lugar de abrir cada servicio uno a uno, ProBookia incluye una **Tabla de Edición Rápida** diseñada para ahorrarte tiempo.
 
 ---
 
-### Management Features
+### Herramientas del Panel de Gestión
 
-1. **Fuzzy Search Filtration**: Highly responsive search indices matching treatments in less than 5ms via reactive state.
-2. **Smart CSS Truncation**: Text summaries are kept within boundary lines, using smooth hover states to reveal full copy and maintain visual alignment.
-3. **Bulk Database Mutations**: Prepared framework to apply bulk price changes and duration shifts across service categories instantly.
-4. **Smooth Status Toggles**: Immediate toggle updates (\`is_active\`, \`is_featured\`) using non-blocking visual feedbacks.`,
-          fr: `# Gestion Massive & Data Tables
+1. **Buscador Instantáneo**: Empieza a escribir y localiza cualquier servicio en menos de un segundo por su nombre, categoría o precio.
+2. **Vista Limpia y Ordenada**: Las descripciones largas se acortan de forma inteligente para que la tabla siempre se vea limpia. Si pasas el ratón por encima del texto, verás el contenido completo.
+3. **Activación de Servicios**: Activa o desactiva tratamientos con un solo clic utilizando los interruptores interactivos (\`is_active\`). Esto te permite ocultar temporalmente tratamientos de temporada sin tener que borrarlos de tu base de datos.
+4. **Destacar Servicios**: Activa el interruptor "Destacado" (\`is_featured\`) para que el servicio aparezca en la parte superior y más visible de tu portal público de reservas.`,
+          en: `# Quick Services Management & Tables
 
-Pour éviter la fatigue visuelle des administrateurs gérant des centaines de soins, la plateforme déploie une **Data Table Avancée** dans le panneau d'administration.
+Do you manage multiple treatments and need to adjust prices or durations often? Instead of opening services one by one, ProBookia includes a **Quick Edit Table** built to save you administrative hours.
 
 ---
 
-### Fonctionnalités de Gestion
+### Dynamic Dashboard Utilities
 
-1. **Filtre Fuzzy Search**: Moteur de recherche réactif en moins de 5ms sur le frontend.
-2. **Tronquage Intelligent CSS**: Les textes longs sont masqués de manière fluide et révélés au survol pour maintenir la grille propre.
-3. **Mises à Jour en Lot**: Module préparé pour appliquer des ajustements de tarifs et de durées sur une catégorie complète en quelques secondes.
-4. **Toggles d'État Réactifs**: Activation ou désactivation instantanée (\`is_active\`, \`is_featured\`) avec notifications sonner discrètes.`
+1. **Instant Search Filter**: Type a few letters and find any treatment in less than a second by name, category, or price.
+2. **Clean Text Views**: Long descriptions are neatly shortened to keep your table structured. Simply hover your mouse over the cell to preview the full description instantly.
+3. **Quick Status Toggles**: Activate or deactivate treatments with a single click using the interactive switches (\`is_active\`). This allows you to hide seasonal treatments without deleting them.
+4. **Featured Treatments**: Check the "Featured" toggle (\`is_featured\`) to highlight specific services at the top of your public booking page.`,
+          fr: `# Tableau de Modification Rapide des Soins
+
+Vous gérez de nombreuses prestations et devez mettre à jour les tarifs régulièrement ? ProBookia intègre un **Tableau d'Édition Rapide** conçu pour vous faire gagner du temps.
+
+---
+
+### Fonctionnalités Clés du Tableau
+
+1. **Recherche Instantanée**: Saisissez quelques lettres pour retrouver n'importe quelle prestation par nom, catégorie ou tarif.
+2. **Affichage Ultra-Propre**: Les textes longs sont abrégés pour garder le tableau lisible. Passez le curseur sur le texte pour en lire l'intégralité.
+3. **Activation en Un Clic**: Activez ou désactivez des soins instantanément (\`is_active\`). Utile pour masquer des soins saisonniers sans les supprimer.
+4. **Mettre en Avant**: Cochez l'interrupteur "Vedette" (\`is_featured\`) pour afficher cette prestation en priorité sur votre portail public.`
         }
       },
       {
         id: 'consentimientos-base64',
         title: {
-          es: 'Consentimientos en Base64',
-          en: 'Base64 Signature Capture',
-          fr: 'Signatures Base64'
+          es: 'Consentimientos y Firmas Digitales',
+          en: 'Consent Forms & Digital Signatures',
+          fr: 'Formulaires & Signatures'
         },
         markdown: {
-          es: `# Consentimientos Informados & Firmas en Base64
+          es: `# Consentimientos y Firmas Digitales
 
-La protección y el consentimiento del paciente son fundamentales en tratamientos de medicina estética o wellness avanzado. ProBookia incluye un **Módulo de Consentimientos Informados con Firma Digitalizada**.
-
----
-
-### Captura y Almacenamiento Criptográfico
-
-Para eliminar el papel físico y cumplir rigurosamente con normativas internacionales (LOPD / RGPD):
-
-1. **Generación de Plantillas**: El administrador define plantillas asociadas a tratamientos específicos (ej: consentimiento de Toxina Botulínica).
-2. **Firma Manuscrita Digitalizada**: El paciente lee el consentimiento en una tablet o smartphone en recepción y dibuja su firma directamente sobre la pantalla en un componente interactivo HTML Canvas.
-3. **Conversión y Almacenamiento en Base64**: La firma se convierte instantáneamente en una representación compacta de texto **Base64 (PNG transparente)**:
-\`\`\`
-data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...
-\`\`\`
-4. **Vinculación con Sello de Tiempo**: La cadena Base64 se guarda asociada a la ficha del cliente en una base de datos segura junto con un hash inalterable del texto del consentimiento y un sello de tiempo UTC. Esto garantiza que el consentimiento firmado es jurídicamente vinculante y que la firma no puede asociarse a otro documento de forma fraudulenta.`,
-          en: `# Consent Forms & Base64 Signature Capture
-
-Patient consent is a legal pillar in clinical aesthetics and advanced wellness. ProBookia integrates an automated **Paperless Digital Signature Module**.
+La seguridad del paciente y el respaldo legal de tu clínica son esenciales, especialmente en tratamientos de medicina estética o cabina avanzada. Con ProBookia, puedes digitalizar y firmar consentimientos sin gastar papel.
 
 ---
 
-### Cryptographic Capture & Storage
+### Adiós al Papel: Firmas 100% Digitales
 
-To completely eliminate printed papers while maintaining strict GDPR and HIPAA compliance:
+Nuestro módulo de firmas te permite gestionar la documentación de forma ágil desde cualquier dispositivo:
 
-1. **Consent Templates**: Managers bind legal consent sheets to specific service treatments.
-2. **Canvas Signature Capture**: Patients read terms on a tablet or phone, drawing their handwritten signature directly inside an HTML Canvas block.
-3. **Base64 Image Export**: The signature is instantly converted to a compact, single-line **Base64 PNG string**:
-\`\`\`
-data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...
-\`\`\`
-4. **Immutable Database Ledger**: The Base64 string is stored securely under the patient's record, linked to a cryptographically hashed sum of the consent text and a UTC timestamp. This guarantees the signed document is legally binding and prevents unauthorized reuse.`,
-          fr: `# Formulaires de Consentement & Signatures Base64
+1. **Plantillas del Centro**: Define y asocia textos legales y de consentimientos para tratamientos específicos (ej: consentimiento para Toxina Botulínica, Láser Diodo, etc.).
+2. **Firma en Pantalla**: El paciente puede leer el consentimiento cómodamente en una tablet o teléfono móvil en la recepción de tu clínica, y dibujar su firma directamente con el dedo o un lápiz sobre la pantalla.
+3. **Guardado Seguro e Inalterable**: La firma digitalizada se guarda en la ficha del paciente, asociada a la fecha exacta de su tratamiento. 
+4. **Blindaje de Seguridad**: Una vez firmado el documento, la firma queda vinculada de forma definitiva a ese texto y fecha específicos. Esto garantiza que el consentimiento sea totalmente seguro y cumpla con las normativas legales de privacidad.`,
+          en: `# Digital Signature & Consent Forms
 
-Le consentement légal du patient est obligatoire dans les cliniques esthétiques. ProBookia intègre un **Module de Signature Numérique sans Papier**.
+Patient safety and legal backups are absolute essentials, particularly in advanced aesthetics or therapeutic wellness. With ProBookia, you can easily compile and store legal digital consent forms with zero paper waste.
 
 ---
 
-### Capture et Stockage Criptographique
+### Paperless Digital Signatures
 
-Pour éliminer complètement les dossiers papier et respecter les réglementations RGPD:
+Our digital signature module streamlines client legal documentation from any smartphone, tablet, or screen:
 
-1. **Modèles Juridiques**: L'administrateur associe des formulaires de consentement à des traitements esthétiques spécifiques.
-2. **Signature sur Écran tactile**: Le patient signe avec son doigt ou un stylet directement sur une tablette via un composant HTML Canvas interactif.
-3. **Exportation Base64**: La signature est convertie en une chaîne compacte **Base64 PNG**:
-\`\`\`
-data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...
-\`\`\`
-4. **Sceau Temporel Sécurisé**: La chaîne de texte est stockée avec un hachage immuable du texte signé et un horodatage UTC, prouvant l'intégrité légale du document.`
+1. **Custom Templates**: Store legal consent templates and link them to specific treatments (e.g. Botulinum Toxin Consent, Laser Hair Removal).
+2. **Signature Drawing**: The patient reviews the terms on a tablet or mobile screen at the front desk, drawing their handwritten signature directly onto the screen.
+3. **Secure Vaulting**: The signed document is saved securely inside the client's file, registering a UTC time-stamp.
+4. **Legally Binding Shield**: Once signed, the signature is cryptographically linked to that specific document text, ensuring security and full privacy compliance.`,
+          fr: `# Formulaires de Consentement & Signatures Tactiles
+
+La sécurité et la protection juridique de votre centre sont cruciales, notamment pour les soins esthétiques avancés. ProBookia vous permet de digitaliser et faire signer tous vos formulaires sans utiliser de papier.
+
+---
+
+### Zéro Papier : Signature 100% Numérique
+
+Notre module de signature simplifie la gestion de vos documents depuis n'importe quel écran :
+
+1. **Modèles de Consentement**: Rédigez vos textes juridiques et associez-les à des prestations précises (ex: Consentement pour Toxine Botulique, Épilation Laser).
+2. **Signature Tactile**: Le patient consulte le document sur une tablette ou un smartphone à l'accueil, puis signe avec son doigt ou un stylet sur l'écran.
+3. **Archivage Ultra-Sécurisé**: Le document signé est stocké directement dans le dossier du patient, avec la date et l'heure exactes.
+4. **Sceau de Sécurité Immuable**: La signature est scellée de manière à ce qu'elle ne puisse pas être modifiée, garantissant sa valeur juridique et la conformité RGPD.`
         }
       },
       {
         id: 'i18n-jsonb',
         title: {
-          es: 'Internacionalización Nativa i18n',
-          en: 'Native i18n Translations',
-          fr: 'Traductions Native i18n'
+          es: 'Tu Catálogo en Varios Idiomas',
+          en: 'Multi-Language Service Translation',
+          fr: 'Traductions Multi-Langues'
         },
         markdown: {
-          es: `# Internacionalización Nativa i18n
+          es: `# Tu Catálogo en Varios Idiomas
 
-El software ProBookia está preparado para el mercado global. La plataforma soporta la traducción instantánea de catálogos y comunicaciones en múltiples idiomas (Español, Inglés y Francés).
-
----
-
-### Arquitectura de Traducciones JSONB
-
-Para evitar la redundancia de registros de base de datos o el uso de tablas secundarias lentas:
-
-1. **Esquema de Base de Datos**: El motor relacional de Supabase utiliza columnas de tipo de datos \`JSONB\` para los campos de traducción (\`translations\`):
-\`\`\`sql
-ALTER TABLE services ADD COLUMN translations JSONB DEFAULT '{}'::jsonb;
-\`\`\`
-
-2. **Estructura Interna del Payload**: Las claves se estructuran jerárquicamente por código de idioma e identificador del campo:
-\`\`\`json
-{
-  "en": {
-    "name": "Luxury Deep Hydration",
-    "description": "Premium facial treatment using high-grade dynamic serums."
-  },
-  "fr": {
-    "name": "Hydratation Profonde de Luxe",
-    "description": "Soin du visage haut de gamme utilisant des sérums dynamiques."
-  }
-}
-\`\`\`
-
-3. **Resolución en Cliente**: El hook \`useLanguage()\` en combinación con helpers de traducción evalúa el idioma del navegador o la preferencia del cliente y extrae instantáneamente el nodo correspondiente del JSONB sin provocar latencia extra en la base de datos.`,
-          en: `# Native i18n Translation Architecture
-
-ProBookia is built for international clinics, natively supporting immediate translation shifts across Spanish, English, and French.
+Si tu clínica recibe clientes internacionales o turistas, ofrecer tu catálogo en varios idiomas multiplicará tus reservas. ProBookia incluye soporte nativo y automático para **Español, Inglés y Francés**.
 
 ---
 
-### PostgreSQL JSONB Translation Schema
+### ¿Cómo Funciona la Traducción Automática?
 
-To bypass slow table joins or duplicate service entries:
+* **Campos Multi-idioma**: Al crear o editar un servicio, puedes introducir el nombre y la descripción en los diferentes idiomas de forma opcional.
+* **Detección Inteligente del Cliente**: Cuando un paciente visite tu portal de reservas, el sistema detectará el idioma de su navegador web y le mostrará tu catálogo traducido de forma instantánea.
+* **Sin Retrasos en tu Web**: Todo el contenido traducido se almacena de forma optimizada junto con el servicio, garantizando que tu página web se cargue a máxima velocidad, sin importar el idioma seleccionado.
 
-1. **Database Schema**: The Supabase relational tables use optimized \`JSONB\` fields to host all custom translations (\`translations\`):
-\`\`\`sql
-ALTER TABLE services ADD COLUMN translations JSONB DEFAULT '{}'::jsonb;
-\`\`\`
+> [!TIP]
+> Si no traduces un servicio a un idioma específico, el portal le mostrará tu idioma por defecto en lugar de dejar el campo en blanco, asegurando que tu menú siempre se vea completo y profesional.`,
+          en: `# Multi-Language Service Translation
 
-2. **Internal Payload Node**: Node data is organized by language prefix and fields:
-\`\`\`json
-{
-  "en": {
-    "name": "Luxury Deep Hydration",
-    "description": "Premium facial treatment using high-grade dynamic serums."
-  },
-  "fr": {
-    "name": "Hydratation Profonde de Luxe",
-    "description": "Soin du visage haut de gamme utilisant des sérums dynamiques."
-  }
-}
-\`\`\`
-
-3. **Client-Side Resolution**: The React \`useLanguage()\` hook matches active client preferences, rendering target language nodes instantly with zero query delay.`,
-          fr: `# Architecture de Traduction Native i18n
-
-ProBookia est conçu pour le marché international, supportant le basculement immédiat entre l'Espagnol, l'Anglais et le Français.
+If your clinic hosts international clients, travelers, or expats, publishing your catalog in multiple languages will boost your online bookings. ProBookia natively supports translations for **English, Spanish, and French**.
 
 ---
 
-### Stockage JSONB PostgreSQL Optimisé
+### How Translations Operate
 
-Pour éviter des jointures lentes ou des entrées de catalogue dupliquées:
+* **Multi-Language Fields**: When designing a treatment card, you can easily fill in the name and descriptions for English, Spanish, and French.
+* **Auto Language Detector**: When a visitor enters your booking portal, the engine automatically checks their browser language setting, displaying translations instantly.
+* **High-Speed Loads**: Translated content is stored inside the service card, ensuring your booking wizard loads at maximum speed with zero lag.
 
-1. **Schéma de Table**: Les tables Supabase utilisent des colonnes \`JSONB\` pour héberger les traductions personnalisées (\`translations\`):
-\`\`\`sql
-ALTER TABLE services ADD COLUMN translations JSONB DEFAULT '{}'::jsonb;
-\`\`\`
+> [!TIP]
+> If you leave a translation field empty, the portal displays your default clinic language as a fallback, ensuring your services are always legible and professional.`,
+          fr: `# Traductions Multi-Langues de Vos Soins
 
-2. **Structure de Données**:
-\`\`\`json
-{
-  "en": {
-    "name": "Luxury Deep Hydration",
-    "description": "Premium facial treatment using high-grade dynamic serums."
-  },
-  "fr": {
-    "name": "Hydratation Profonde de Luxe",
-    "description": "Soin du visage haut de gamme utilisant des sérums dynamiques."
-  }
-}
-\`\`\`
+Si votre clientèle est internationale ou touristique, proposer vos soins en plusieurs langues est un atout précieux. ProBookia intègre une gestion complète de l'**Espagnol, de l'Anglais et du Français**.
 
-3. **Résolution Instantanée**: Le hook client \`useLanguage()\` filtre et affiche le bon nœud linguistique en temps réel, garantissant des performances maximales.`
+---
+
+### Comment Fonctionnent les Traductions ?
+
+* **Champs Multilingues**: Lors de la création d'un soin, vous pouvez saisir le nom et la description dans les différentes langues de votre choix.
+* **Détection Automatique**: Le portail détecte la langue du navigateur web du patient et affiche le catalogue correspondant instantanément.
+* **Chargement Ultra-Rapide**: Les traductions sont stockées de manière optimisée, assurant une vitesse d'affichage maximale.
+
+> [!TIP]
+> Si vous ne remplissez pas la traduction pour un soin, le système affichera votre langue par défaut pour éviter un espace vide, garantissant un rendu impeccable.`
         }
       }
     ]
   },
   {
-    id: 'ia-copiloto',
+    id: 'motor-reservas',
     title: {
-      es: 'Sección 3: Motor IA (Co-Piloto por Voz)',
-      en: 'Section 3: AI Voice Co-Pilot',
-      fr: 'Section 3: Co-Pilote Vocal IA'
+      es: 'Sección 3: Integración Web y Gestión de Citas',
+      en: 'Section 3: Web Embedding & Appointment Rules',
+      fr: 'Section 3: Intégration Web & Réservations'
     },
     subpages: [
       {
-        id: 'limites-conversacionales',
+        id: 'iframe-widget',
         title: {
-          es: 'Límites Conversacionales Inteligentes',
-          en: 'Smart Conversational Limits',
-          fr: 'Limites Conversationnelles'
+          es: 'Integrar Reservas en tu Página Web',
+          en: 'Embed Booking Widget on Your Site',
+          fr: 'Intégrer le Module Sur Votre Site'
         },
         markdown: {
-          es: `# Límites Conversacionales Inteligentes
+          es: `# Integrar Reservas en tu Página Web
 
-El Asistente IA de ProBookia (Asistente Global por Voz) está blindado contra la saturación visual e informática tradicional de las interfaces de chat de lenguaje natural.
-
----
-
-### Reglas de Control del Agente
-
-Para garantizar un rendimiento fluido y evitar atascos visuales:
-
-1. **Máximo 3 Ítems por Respuesta**: El prompt maestro de la IA prohíbe de forma inviolable listar más de 3 ítems en formato de texto plano. Si existen más resultados, la IA debe resumir el contexto de forma agregada.
-2. **Redirecciones Visuales Dinámicas**: En lugar de redactar extensas explicaciones de cómo realizar una acción o mostrar grandes listas, la IA utiliza payloads JSON invisibles para guiar al frontend del usuario a realizar redirecciones a la pantalla correspondiente (ej: redirigir a \`/dashboard/settings?tab=branding\`).
-3. **Tono Profesional de Lujo**: El tono de comunicación de la IA está calibrado bajo la filosofía "Boutique", respondiendo de forma clara, ejecutiva y sofisticada sin adornos innecesarios.`,
-          en: `# Smart Conversational Agent Limits
-
-The ProBookia Voice Assistant is secured against visual clutter and standard textual saturation inside modern AI chat widgets.
+Con ProBookia no necesitas cambiar de página web. Puedes insertar tu panel de reservas directamente en tu web actual (WordPress, Squarespace, Wix o código personalizado) mediante un **Widget interactivo**.
 
 ---
 
-### Strict Agent Prompts
+### ¿Cómo Funciona la Integración?
 
-To preserve screen spaces and enforce a quiet, high-end experience:
+* **Acceso Directo**: Los pacientes reservan sus citas dentro de una ventana elegante y segura integrada en tu web, sin tener que abandonarla.
+* **Código de Copiar y Pegar**: Te proporcionamos una línea de código sencilla que puedes pegar en tu editor web favorito:
+\`\`\`html
+<iframe src="https://reservas.probookia.com/tu-clinica" width="100%" height="800px" frameborder="0"></iframe>
+\`\`\`
+* **Adaptable a Móviles (Responsive)**: El widget se rediseña automáticamente para verse espectacular tanto en ordenadores de escritorio como en smartphones de cualquier tamaño.`,
+          en: `# Embed Booking Widget on Your Website
 
-1. **Maximum of 3 List Items**: The AI's master prompt strictly forbids outputting more than 3 flat results. If more services/clients are resolved, the assistant summarizes data in aggregate groups.
-2. **Dynamic UI Redirects**: Instead of displaying long step-by-step texts, the AI includes invisible JSON payloads. The frontend intercepts these and instantly transitions user focus to the correct dashboard (e.g. redirecting to \`/dashboard/settings?tab=branding\`).
-3. **Quiet Luxury Tone**: The AI writes in a sophisticated, brief, clinical executive tone, avoiding chatty default generic styling.`,
-          fr: `# Limites Conversationnelles de l'Assistant
-
-L'Assistant Vocal ProBookia est programmé pour éviter la saturation textuelle et visuelle dans les fenêtres de discussion.
+With ProBookia, you do not need to replace your current corporate website. You can inject your luxury booking assistant directly into your existing pages (WordPress, Wix, Squarespace, or custom code) using a **Web Widget**.
 
 ---
 
-### Consignes de Contrôle de l'Agent
+### Embedding Mechanics
 
-Pour préserver l'espace de l'écran et garantir une expérience utilisateur fluide:
+* **Seamless Booking Journey**: Patients schedule their times inside a beautiful and secure overlay on your site, keeping them on your brand.
+* **Simple Copy-Paste Snippet**: We provide a simple HTML iframe line that you can easily copy and paste into any website builder:
+\`\`\`html
+<iframe src="https://booking.probookia.com/your-clinic" width="100%" height="800px" frameborder="0"></iframe>
+\`\`\`
+* **Fully Mobile Friendly**: The widget automatically adjusts its columns and grids to look stunning on both desktop viewports and Apple/Android smartphones.`,
+          fr: `# Intégrer le Module de Réservation sur Votre Site
 
-1. **Maximum de 3 Éléments par Liste**: Le prompt système interdit d'afficher plus de 3 résultats textuels. L'IA regroupe et résume les données au-delà de cette limite.
-2. **Redirections d'Interface**: Au lieu d'écrire des guides d'utilisation, l'IA envoie des payloads JSON invisibles. L'interface change automatiquement d'écran (ex: redirection vers \`/dashboard/settings?tab=branding\`).
-3. **Ton "Quiet Luxury"**: L'IA s'exprime dans un style professionnel, court et sophistiqué, sans blabla inutile.`
+Avec ProBookia, nul besoin de changer de site web. Vous pouvez insérer votre calendrier de réservation directement sur votre site actuel (WordPress, Wix, Squarespace) à l'aide d'un **Module interactif**.
+
+---
+
+### Comment Fonctionne l'Intégration ?
+
+* **Expérience Client Fluide**: Vos clients choisissent leurs créneaux directement dans une fenêtre intégrée, sans jamais quitter votre site internet.
+* **Code Simple à Coller**: Nous vous fournissons un code simple à insérer sur votre éditeur web :
+\`\`\`html
+<iframe src="https://reservations.probookia.com/votre-centre" width="100%" height="800px" frameborder="0"></iframe>
+\`\`\`
+* **Optimisé pour les Mobiles**: Le module s'adapte automatiquement à toutes les tailles d'écrans pour un affichage parfait sur ordinateurs, tablettes et smartphones.`
         }
       },
       {
-        id: 'procesamiento-voz',
+        id: 'fianzas-stripe',
         title: {
-          es: 'Procesamiento de Voz & Payloads',
-          en: 'Voice Inputs & JSON Payloads',
-          fr: 'Traitement de la Voix & Payloads'
+          es: 'Cobrar Fianzas y Evitar Cancelaciones',
+          en: 'Charge Booking Deposits & Escrow',
+          fr: 'Acomptes de Garantie & Stripe'
         },
         markdown: {
-          es: `# Procesamiento de Voz & Payloads
+          es: `# Cobrar Fianzas y Evitar Cancelaciones
 
-La IA no es una simple capa decorativa; tiene la capacidad de ejecutar lógica de negocio real a través de comandos verbales de forma instantánea.
-
----
-
-### Flujo de Ejecución de Comandos
-
-1. **Captura y Transcripción**: El micrófono del usuario registra el flujo de audio y lo transcribe con alta precisión.
-2. **Análisis de Intención (Intent Parsing)**: El backend alimentado con Google Gemini 2.5 Flash evalúa la semántica de la orden (ej: *"Pon el color de acento primario en dorado y guárdalo"*).
-3. **Generación de Payload Estructurado**: La IA genera una llamada de función JSON parametrizada:
-\`\`\`json
-{
-  "action": "update_branding",
-  "params": {
-    "accent_color_primary": "#D4AF37",
-    "branding_palette_id": "custom"
-  }
-}
-\`\`\`
-4. **Ejecución Atómica**: El middleware procesa la acción ejecutando una mutación en base de datos relacional y actualizando instantáneamente la interfaz del usuario en tiempo real sin necesidad de recargar la página.`,
-          en: `# Voice Input Processing & JSON Payloads
-
-The integrated AI is not decorative; it executes live backend updates directly using voice inputs.
+¿Te preocupa que los clientes no se presenten a sus citas reservadas? En ProBookia puedes vincular tu cuenta de cobros para solicitar un **pago de fianza obligatorio** antes de confirmar el hueco en tu agenda.
 
 ---
 
-### Command Execution Pipeline
+### Métodos de Garantía Disponibles
 
-1. **Audio Recording**: The browser captures voice clips, converting them to high-fidelity strings.
-2. **Intent Parsing**: The Gemini 2.5 backend reads the audio intent (e.g. *"Set the primary branding color to gold and save"*).
-3. **Structured Payload Output**: The AI outputs structured JSON function calls:
-\`\`\`json
-{
-  "action": "update_branding",
-  "params": {
-    "accent_color_primary": "#D4AF37",
-    "branding_palette_id": "custom"
-  }
-}
-\`\`\`
-4. **Atomic Mutations**: The dashboard middleware parses the JSON payload, writing colors instantly to the database and re-rendering styling instantly without page refreshes.`,
-          fr: `# Traitement Vocal & Payloads JSON
+Desde tus ajustes de cobro, puedes elegir la política de pago que mejor se adapte a cada uno de tus tratamientos:
 
-L'IA intégrée n'est pas décorative; elle exécute des modifications de base de données directement à partir de la voix.
+1. **Reserva 100% Online**: El cliente debe abonar la totalidad del tratamiento en la web para poder guardar su cita.
+2. **Depósito / Fianza Parcial**: El cliente abona una pequeña cantidad como garantía (ej: 20€). El resto del importe se abona en la clínica el día del tratamiento.
+3. **Pago en Clínica**: La reserva es gratuita y el pago se realiza íntegramente tras finalizar la sesión.
+
+> [!TIP]
+> Exigir una pequeña fianza (incluso de 10€ o 15€) en tratamientos costosos o de alta ocupación reduce el absentismo (no-shows) a prácticamente cero, protegiendo el tiempo de tu equipo y el rendimiento de tu clínica.`,
+          en: `# Escrow Deposits & No-Show Protection
+
+Tired of empty appointment slots due to last-minute cancellations or client no-shows? ProBookia allows you to link your corporate bank account and require a **mandatory booking deposit** before slots are confirmed.
 
 ---
 
-### Pipeline d'Exécution des Commandes
+### Booking Guarantee Policies
 
-1. **Enregistrement Audio**: Le navigateur capture la voix et la convertit en texte de haute précision.
-2. **Analyse de l'Intention**: Le moteur Gemini 2.5 évalue le sens de la commande (ex: *"Mets la couleur dorée en accent et sauvegarde"*).
-3. **Génération du Payload JSON**: L'IA renvoie des appels système structurés:
-\`\`\`json
-{
-  "action": "update_branding",
-  "params": {
-    "accent_color_primary": "#D4AF37",
-    "branding_palette_id": "custom"
-  }
-}
-\`\`\`
-4. **Mutation Atomique**: L'interface intercepte le message, applique les styles en base de données et met à jour l'affichage en direct sans recharger la page.`
-        }
-      }
-    ]
-  },
-  {
-    id: 'reservas-frontend',
-    title: {
-      es: 'Sección 4: Pasarela & Frontend Cliente',
-      en: 'Section 4: Booking Gateway & Client Visuals',
-      fr: 'Section 4: Tunnel de Réservation'
-    },
-    subpages: [
-      {
-        id: 'iframe-reservas',
-        title: {
-          es: 'Iframe / Widget de Reservas',
-          en: 'Embeddable Booking Widget',
-          fr: 'Widget & Iframe Intégrable'
-        },
-        markdown: {
-          es: `# Iframe / Widget de Reservas Integrable
+Inside your payment preferences tab, you can select the policy that best matches your clinic services:
 
-ProBookia permite que las clínicas conviertan su tráfico web en citas consolidadas mediante la integración de un widget responsivo en cualquier página web.
+1. **100% Online Prepayment**: Clients pay the full amount of the treatment online to secure their date and slot.
+2. **Partial Deposit**: Clients make a safety deposit upfront (e.g. $25). The remaining balance is paid at your center.
+3. **Pay at Clinic**: Reservations are processed for free. The full service amount is collected at your physical venue.
+
+> [!TIP]
+> Setting up a small deposit (even $15 or $20) on high-value or long-duration treatments reduces clinic no-shows to near zero, shielding your team's valuable schedule.`,
+          fr: `# Acomptes de Garantie & Protection Contre l'Absentisme
+
+Vous souhaitez en finir avec les rendez-vous non honorés qui perturbent votre activité ? ProBookia vous permet de demander un **acompte de garantie obligatoire** avant la validation du rendez-vous.
 
 ---
 
-### Mecánica de Integración
+### Options de Paiement Disponibles
 
-* **Código Compacto**: Las clínicas pueden insertar un iframe transparente de carga ultrarrápida:
-\`\`\`html
-<iframe 
-  src="https://merce.probookia.com/reservar?embed=true" 
-  style="width:100%; height:750px; border:none;" 
-  allow="payment">
-</iframe>
-\`\`\`
-* **Adaptación de Estilos Dinámica**: El iframe lee los tokens visuales guardados por la clínica en la tabla \`ClinicSettings\`. Los botones, fuentes tipográficas y colores del wizard se inyectan en tiempo de ejecución, por lo que el cliente final experimenta una transición sin cortes de marca.`,
-          en: `# Embeddable Booking Widget & Iframes
+Dans vos paramètres, définissez la politique de paiement la plus adaptée à vos soins :
 
-ProBookia turns third-party traffic into high-converting clinic bookings through secure, responsive iframe widgets.
+1. **Paiement Intégral en Ligne**: Le client règle 100% du prix du soin lors de la réservation en ligne.
+2. **Acompte Partiel (Garantie)**: Le client paie un montant partiel (ex: 20€) en ligne pour réserver. Le solde restant est réglé sur place le jour du soin.
+3. **Réservation Gratuite**: Le rendez-vous est bloqué sans carte bancaire, le paiement se fait sur place après le soin.
 
----
-
-### Integration Specifications
-
-* **Compact Integration Snippet**: Clinic owners embed a single clean, transparent iframe:
-\`\`\`html
-<iframe 
-  src="https://merce.probookia.com/reservar?embed=true" 
-  style="width:100%; height:750px; border:none;" 
-  allow="payment">
-</iframe>
-\`\`\`
-* **Dynamic Styling Engine**: The iframe dynamically reads brand values from the \`ClinicSettings\` schema. Custom fonts, radii, and brand colors inject instantly on load, maintaining the clinic's luxury identity.`,
-          fr: `# Widget & Iframe de Réservation Intégrable
-
-ProBookia transforme le trafic web en rendez-vous qualifiés grâce à un composant widget/iframe sécurisé et responsive.
-
----
-
-### Caractéristiques d'Intégration
-
-* **Intégration Simplifiée**: Les cliniques insèrent une ligne HTML épurée:
-\`\`\`html
-<iframe 
-  src="https://merce.probookia.com/reservar?embed=true" 
-  style="width:100%; height:750px; border:none;" 
-  allow="payment">
-</iframe>
-\`\`\`
-* **Styles Dynamiques Hérités**: Le widget hérite en direct des variables (\`ClinicSettings\`). Les polices, arrondis et boutons s'injectent au chargement, assurant une parfaite cohérence visuelle.`
-        }
-      },
-      {
-        id: 'fianzas-connect',
-        title: {
-          es: 'Fianzas & Stripe Connect',
-          en: 'Stripe Connect Escrows',
-          fr: 'Garanties Stripe Connect'
-        },
-        markdown: {
-          es: `# Fianzas & Stripe Connect Standard
-
-Las ausencias injustificadas representan una pérdida importante de facturación en centros premium. ProBookia soluciona este problema mediante **Stripe Connect**.
-
----
-
-### Onboarding & Pasarela Segura
-
-1. **Enlace Directo**: A través del panel de ajustes, el propietario de la clínica vincula su cuenta estándar de Stripe en pocos clics.
-2. **Control de Fianzas Dinámico**:
-   * **Depósitos Específicos**: El administrador puede configurar una fianza (ej: 40€) para un servicio quirúrgico o de alto valor en particular.
-   * **Depósito Global Obligatorio**: Obliga a realizar un abono parcial por reserva online de forma general.
-3. **Cobro Directo Seguro**: El dinero del depósito se procesa directamente en la pasarela de la clínica, garantizando que el tiempo del especialista queda protegido financieramente incluso si el paciente no asiste.`,
-          en: `# Connect Escrows & Safe Deposits
-
-No-shows represent a severe loss of income for premium spas. ProBookia shields clinical hours using **Stripe Connect Standard**.
-
----
-
-### Onboarding & Escrow Mechanics
-
-1. **Direct Link**: Owners link their standard Stripe account in two clicks within settings.
-2. **Dynamic Escrow Controls**:
-   * **Service-Specific Deposits**: Managers set distinct deposits (e.g. $50) for high-value surgical appointments.
-   * **Global Required Deposit**: Option to enforce a general advance fee across all web bookings.
-3. **Direct Checkout Flow**: Monies land directly in the clinic's merchant account, securing revenue even if patients miss the appointment.`,
-          fr: `# Dépôts de Garantie Stripe Connect
-
-Les rendez-vous manqués représentent une lourde perte de revenus. ProBookia protège le planning de l'équipe grâce à **Stripe Connect Standard**.
-
----
-
-### Fonctionnement des Acomptes Sécurisés
-
-1. **Liaison Directe**: Les centres connectent leur compte Stripe standard en 2 clics dans les paramètres.
-2. **Garanties Flexibles**:
-   * **Dépôts par Soin**: L'administrateur définit des garanties élevées (ex: 50€) pour les chirurgies ou soins coûteux.
-   * **Acompte Général Obligatoire**: Applique un acompte forfaitaire sur l'ensemble du portail.
-3. **Transfert Instantané**: Les fonds sont crédités directement sur le compte de la clinique, protégeant son chiffre d'affaires en cas d'absence.`
+> [!TIP]
+> Demander un petit acompte de garantie (même 10€ ou 15€) réduit le taux de rendez-vous manqués à près de zéro, protégeant ainsi l'agenda de vos praticiens.`
         }
       },
       {
         id: 'cron-purga',
         title: {
-          es: 'Cron de Purga de Citas',
-          en: 'Orphan Appointments Cron',
-          fr: 'Cron de Nettoyage Citas'
+          es: 'Liberación de Citas No Confirmadas',
+          en: 'Unconfirmed Booking Slot Cleanup',
+          fr: 'Libération des Créneaux Orphelins'
         },
         markdown: {
-          es: `# Cron de Purga de Citas Temporales
+          es: `# Liberación Automática de Citas No Confirmadas
 
-El motor de reservas emplea un sistema de confirmación segura (Doble Opt-in). Esto requiere una administración eficiente de los slots de tiempo del calendario.
-
----
-
-### Mecánica de Liberación de Slots
-
-Para evitar que usuarios malintencionados o abandonos de procesos de reserva bloqueen horas valiosas del calendario:
-
-1. **Estado Temporal**: Al seleccionar hora y rellenar sus datos en el wizard, la cita se registra en estado \`pending_verification\`.
-2. **Ejecución del Cron en Backend**: Un servicio programado (\`cleanup-unverified\`) en el servidor relacional se ejecuta automáticamente cada **30 minutos**.
-3. **Eliminación de Huérfanas**: El cron escanea citas en estado de verificación pendiente que superen el límite de tolerancia establecido.
-4. **Liberación Instantánea**: Las citas que exceden los 30 minutos de antigüedad sin haber sido validadas por el enlace único del correo electrónico son **purgadas y eliminadas atómicamente de la base de datos**, liberando inmediatamente el slot de tiempo en la agenda pública.`,
-          en: `# Orphan Appointments Cleanup Cron
-
-The public booking wizard triggers double opt-in confirmations. To protect calendars from abandoned slots, ProBookia executes a clean scheduler.
+¿Qué pasa si un cliente selecciona una hora en tu portal de reservas pero cierra la pestaña antes de terminar de introducir sus datos o realizar el pago? En ProBookia evitamos que tu agenda se quede bloqueada.
 
 ---
 
-### Time-Slot Release Pipeline
+### Liberación Inteligente de Huecos
 
-To stop malicious locking or incomplete flows from booking premium slots indefinitely:
+Para asegurar que ningún hueco se pierda de forma injustificada, implementamos una regla de limpieza automática:
 
-1. **Pending State**: Upon selecting a slot, appointments write as \`pending_verification\`.
-2. **30-Minute Backend Cron**: A recurrent cron utility (\`cleanup-unverified\`) runs every **30 minutes** on the main engine.
-3. **Verification Scan**: The task scans entries in pending state that exceed the time threshold.
-4. **Atomic Eviction**: If unconfirmed via email within 30 minutes, the appointment is **atomically purged**, instantly releasing the slot for public booking.`,
-          fr: `# Nettoyage de Rendez-vous Orphelins
+1. **Bloqueo Temporal**: En el momento en que un cliente hace clic en una hora disponible, ese hueco queda marcado como "En verificación" en tu agenda.
+2. **Vigencia de 30 Minutos**: El sistema le otorga al cliente **30 minutos** de plazo para que complete su reserva, confirme su correo o realice el pago de la fianza.
+3. **Liberación Automática**: Si transcurren los 30 minutos y la reserva no ha sido completada con éxito, el sistema **libera el hueco al instante**, volviendo a poner la hora a disposición de otros pacientes en tu web.`,
+          en: `# Auto Cleanup of Unfinished Bookings
 
-Le tunnel utilise un système de double opt-in. Pour éviter que des abandons ne bloquent des créneaux, ProBookia exécute un cron automatique.
-
----
-
-### Libération des Créneaux Horaires
-
-Pour empêcher les réservations inachevées de bloquer indéfiniment des plages horaires:
-
-1. **État Temporaire**: Le rendez-vous s'enregistre avec le statut \`pending_verification\`.
-2. **Cron Serveur Automatique**: Une tâche récurrente (\`cleanup-unverified\`) s'exécute toutes les **30 minutes**.
-3. **Scan de Tolérance**: Le script identifie les enregistrements restés non confirmés au-delà du délai limite.
-4. **Suppression Atomique**: Si la validation par email n'est pas reçue sous 30 minutes, le rendez-vous est **supprimé de la base de données**, libérant immédiatement le créneau pour d'autres clients.`
-        }
-      },
-      {
-        id: 'soporte-modo-oscuro',
-        title: {
-          es: 'Soporte Visual & Modo Oscuro',
-          en: 'Dark Mode Safeguards',
-          fr: 'Sécurité Mode Sombre'
-        },
-        markdown: {
-          es: `# Soporte Visual & Blindaje del Modo Oscuro
-
-El diseño visual "Quiet Luxury" de ProBookia requiere un comportamiento impecable de los contrastes, contornos y fondos.
+What happens if a user selects an open slot on your booking website but closes their browser tab before filling in their contact details or processing their card payment? ProBookia blocks that slot from being held indefinitely.
 
 ---
 
-### Blindaje del Canvas en Modo Oscuro
+### Smart Slot Revalidation
 
-Para garantizar una experiencia visual prémium y evitar filtraciones de color o rebordes blancos desagradables:
+To ensure your clinical schedules are never blocked by abandoned page checkouts, our engine runs a dynamic cleanup routine:
 
-* **Inyección de CSS Variables**: Las variables de marca se inyectan en el HTML principal del frontend:
-\`\`\`css
-:root {
-  --primary: #D4AF37;
-  --radius-card: 2rem;
-  --background: #FAFAFA;
-}
-.dark {
-  --background: #0C0A09; /* Antracita profundo */
-}
-\`\`\`
-* **Blindaje de Grillas**: Todos los grids de tarjetas de servicios y calendarios emplean clases dinámicas de Tailwind (\`bg-card\`, \`border-border/40\`, \`text-foreground\`) impidiendo contornos claros y asegurando que las tipografías Serif destaquen de forma impecable en fondos oscuros.`,
-          en: `# Visual Safeguards & Dark Mode Protection
+1. **Temporary Hold**: The moment a user clicks on an open slot, the system marks the slot as "Verification Pending".
+2. **30-Minute Checkout Timer**: The engine gives the user **30 minutes** to complete their booking, verify email instructions, or process their payment.
+3. **Automated Slot Release**: If 30 minutes pass without confirmation, the system **automatically purges** the pending ticket, instantly opening the slot back to the public.`,
+          fr: `# Libération des Créneaux Horaires Inachevés
 
-ProBookia's "Quiet Luxury" styling demands consistent borders, text legibility, and canvas transitions.
+Que se passe-t-il si un client sélectionne une heure disponible sur votre site mais ferme son navigateur avant d'avoir validé ses coordonnées ou payé l'acompte ? ProBookia empêche ce créneau de rester bloqué.
 
 ---
 
-### Dark Mode Canvas Shielding
+### Libération Automatique et Intelligente
 
-To guarantee a clean high-end dark appearance and prevent white flash lines or broken grids:
+Pour éviter que des créneaux de soins ne soient monopolisés par des paniers abandonnés, notre système applique une règle de nettoyage automatique :
 
-* **Tailored Variable Injections**: CSS tokens inject at HTML levels:
-\`\`\`css
-:root {
-  --primary: #D4AF37;
-  --radius-card: 2rem;
-  --background: #FAFAFA;
-}
-.dark {
-  --background: #0C0A09; /* Deep luxury anthracite */
-}
-\`\`\`
-* **Contrast Boundary Shielding**: Treatment cards and schedules utilize responsive Tailwind utilities (\`bg-card\`, \`border-border/40\`, \`text-foreground\`) blocking generic white borders and enforcing pristine text readability.`,
-          fr: `# Sécurité Mode Sombre & Contrastes Visuels
-
-Le design "Quiet Luxury" exige des bordures nettes, des contrastes reposants et un rendu sans défaut.
-
----
-
-### Protection Mode Sombre
-
-Pour éviter les lignes blanches ou contrastes brisés lors du passage au mode sombre:
-
-* **Injection Dynamique de Variables**:
-\`\`\`css
-:root {
-  --primary: #D4AF37;
-  --radius-card: 2rem;
-  --background: #FAFAFA;
-}
-.dark {
-  --background: #0C0A09; /* Anthracite profond */
-}
-\`\`\`
-* **Grilles Blindées**: Les cartes et calendriers utilisent des classes Tailwind fluides (\`bg-card\`, \`border-border/40\`) pour préserver l'harmonie du mode sombre.`
+1. **Blocage Temporaire**: Dès qu'un client choisit un créneau, l'heure est temporairement réservée avec le statut "En cours de vérification".
+2. **Délai de Validation de 30 Minutes**: Le client dispose de **30 minutes** pour terminer son parcours et valider son paiement.
+3. **Remise en Ligne Immédiate**: Si le délai expire sans confirmation, le créneau est **libéré automatiquement** et redevient immédiatement réservable par d'autres clients.`
         }
       }
     ]
@@ -898,367 +567,367 @@ Pour éviter les lignes blanches ou contrastes brisés lors du passage au mode s
   {
     id: 'configuracion-operativa',
     title: {
-      es: 'Sección 5: Configuración Operativa & Perfil de Negocio',
-      en: 'Section 5: Operational Setup & Business Profile',
-      fr: 'Section 5: Configuration Opérationnelle & Profil'
+      es: 'Sección 4: Ajustes del Negocio y Horarios',
+      en: 'Section 4: Operating Hours & Business Setup',
+      fr: 'Section 4: Horaires & Paramètres d\'Établissement'
     },
     subpages: [
       {
         id: 'plan-suscripcion',
         title: {
-          es: 'Plan y Suscripción',
-          en: 'Plan & Subscription',
-          fr: 'Forfait & Abonnement'
+          es: 'Planes de Suscripción',
+          en: 'Subscription Tiers',
+          fr: 'Forfaits & Abonnements'
         },
         markdown: {
-          es: `# Plan y Suscripción del Negocio
-          
-ProBookia ofrece escalabilidad total y transparente en sus niveles de servicio. Los administradores pueden cambiar de plan en cualquier momento desde el panel de control.
+          es: `# Planes de Suscripción
+
+ProBookia crece al mismo ritmo que tu negocio. Ofrecemos diferentes planes de servicio que puedes cambiar en cualquier momento desde tu panel de control, sin permanencias.
 
 ---
 
-### Niveles de Planes Disponibles
+### Planes Disponibles
 
-1. **Free / Autónomos**: Diseñado para profesionales individuales. Permite 1 especialista, 1 sede física y hasta 50 citas mensuales.
-2. **Basic / Clínicas**: Hasta 3 especialistas, 2 sedes físicas, herramientas CRM estándar y facturación simplificada.
-3. **Pro / Centros**: Especialistas y sedes ilimitados, gestión de comisiones de personal, exportación de auditorías e integraciones SMTP.
-4. **Gold Elite**: Acceso prioritario, TPV completo de arqueo de caja, agente IA Webmaster conversacional con renderización interactiva y Co-piloto por voz.
+1. **Free / Autónomos**: Perfecto para profesionales independientes. Incluye 1 especialista activo, 1 sede física y hasta 50 reservas al mes.
+2. **Basic / Clínicas**: Ideal para clínicas pequeñas. Soporta hasta 3 especialistas, 2 sedes físicas, control de facturas rápido y herramientas CRM básicas.
+3. **Pro / Centros**: Para clínicas consolidadas. Especialistas y sedes ilimitadas, cálculo automático de comisiones para tu personal y exportaciones completas.
+4. **Gold Elite**: Acceso prioritario de soporte, asistente autónomo IA Webmaster para diseñar tu web y Co-piloto por comandos de voz en directo.
 
 > [!NOTE]
-> Las actualizaciones de plan calculan un prorrateo automático sobre los días restantes de tu ciclo de facturación mensual mediante Stripe Subscriptions, asegurando cargos exactos y sin sorpresas.`,
-          en: `# Business Plan & Subscription
-          
-ProBookia offers absolute and transparent scalability. Business administrators can transition between plans at any time directly through the client dashboard settings.
+> Cuando cambias de plan (mejoras o bajas), Stripe calcula de forma automática un prorrateo sobre los días restantes de tu mes, de modo que solo pagas por la diferencia real de días utilizados, sin cargos inesperados.`,
+          en: `# Subscription Tiers & Pricing Plans
+
+ProBookia is built to scale alongside your organization's success. We offer flexible service plans that you can transition between at any time right from your settings, with no contracts.
 
 ---
 
-### Available Subscription Tiers
+### Available Plans
 
-1. **Free / Solo**: Designed for individual practitioners. Includes 1 active specialist, 1 physical center location, and up to 50 appointments/month.
-2. **Basic / Clinics**: Supports up to 3 specialists, 2 physical locations, standard CRM tools, and express invoices.
-3. **Pro / Medical Centers**: Unlimited specialists and locations, advanced commission structures, CSV audits, and SMTP private mail relays.
-4. **Gold Elite**: Priority support, full cashier registers (POS), real-time interactive AI Webmaster iframe editors, and Voice Copilots.
+1. **Free / Solo Practitioners**: Perfect for individual professionals. Includes 1 specialist, 1 physical location, and up to 50 bookings per month.
+2. **Basic / Small Clinics**: Designed for growing teams. Supports up to 3 active specialists, 2 centers, express invoicing, and standard CRM sheets.
+3. **Pro / Medical Centers**: For established multi-local clinics. Unlimited specialists and locations, automated staff commission registers, and CSV audit reports.
+4. **Gold Elite**: VIP support routing, interactive AI Webmaster builders, and direct Voice intent pilots.
 
 > [!NOTE]
-> Upgrade and downgrade mutations are handled dynamically via Stripe Subscriptions using prorated adjustments based on the remaining days of your active billing period.`,
-          fr: `# Forfait & Abonnement d'Entreprise
-          
-ProBookia propose une évolutivité totale de ses services. Les administrateurs peuvent changer de forfait à tout moment dans le panneau de contrôle.
+> Plan upgrades and downgrades calculate automatic prorated values via Stripe Subscriptions based on the remaining days of your active billing cycle, ensuring zero surprise fees.`,
+          fr: `# Forfaits & Tarifs d'Abonnement
+
+ProBookia grandit à la même vitesse que votre établissement. Nous proposons différents forfaits d'abonnement sans engagement que vous pouvez ajuster à tout moment.
 
 ---
 
 ### Forfaits Disponibles
 
-1. **Free / Indépendant**: Conçu pour les professionnels solos. 1 spécialiste, 1 centre et 50 rendez-vous/mois.
-2. **Basic / Cliniques**: Jusqu'à 3 spécialistes, 2 centres physiques, CRM standard et facturation simplifiée.
-3. **Pro / Centres Médicaux**: Spécialistes et centres illimités, commissions d'équipe, exports CSV et SMTP privé.
-4. **Gold Elite**: Support prioritaire, TPV de caisse complet, agent IA Webmaster interactif et Co-pilote vocal en direct.
+1. **Free / Indépendant**: Idéal pour les professionnels solos. Comprend 1 praticien actif, 1 adresse physique et 50 réservations par mois.
+2. **Basic / Cliniques**: Pour les petites équipes. Jusqu'à 3 praticiens, 2 centres physiques, suivi simplifié des factures et CRM de base.
+3. **Pro / Centres Médicaux**: Pour les centres d'envergure. Nombre de praticiens et de centres illimité, calcul automatique des commissions de l'équipe et exports complets.
+4. **Gold Elite**: Support technique prioritaire, assistant IA Webmaster autonome et Co-pilote vocal en direct.
 
 > [!NOTE]
-> Les modifications d'abonnement calculent automatiquement un prorata sur la période de facturation en cours grâce à Stripe.`
+> Lors d'un changement de forfait, Stripe calcule automatiquement un prorata au jour près sur votre mois en cours, vous garantissant de ne payer que ce que vous utilisez.`
         }
       },
       {
         id: 'perfil-empresa',
         title: {
           es: 'Perfil de la Empresa',
-          en: 'Company Profile',
-          fr: 'Profil de l\'Entreprise'
+          en: 'Company Profile Setup',
+          fr: 'Profil de l\'Établissement'
         },
         markdown: {
           es: `# Perfil de la Empresa
-          
-La identidad legal, fiscal y de contacto de la clínica se centraliza en la pestaña General del panel de Ajustes. Estos datos alimentan automáticamente tus facturas legales, pie de página y enlaces sociales del portal público de reserva.
+
+Los datos legales, fiscales y de contacto de tu negocio se centralizan en la pestaña **General** dentro de Ajustes. Mantener estos datos al día es importante, ya que se usan para rellenar automáticamente tus facturas legales y notificaciones.
 
 ---
 
-### Atributos Configurables
+### Datos Principales a Configurar
 
-* **Nombre Comercial**: El nombre que verán los clientes en la landing page y notificaciones.
-* **Nombre Legal del Titular (DNI/CIF)**: Razón social del titular mercantil de la clínica.
-* **Número de Registro Sanitario**: Campo opcional para certificar la validez clínica ante los inspectores de salud locales.
-* **Dirección Completa**: Ubicación principal o sede fiscal de la empresa.
-* **Descripción del Negocio (Footer)**: Breve copy que aparecerá en el pie de página de la landing page comercial.
-* **Redes Sociales**: Enlaces verificados para redirigir tráfico a Instagram, WhatsApp o Google Maps de la clínica.`,
+* **Nombre Comercial**: Es el nombre de tu clínica que verán tus clientes en el portal web y en los correos electrónicos.
+* **Datos Fiscales (DNI/CIF/Razón Social)**: Razón social que aparecerá reflejada en los encabezados de tus facturas legales emitidas.
+* **Número de Registro Sanitario**: Campo opcional ideal para centros médicos y de estética que deseen mostrar su número de registro de sanidad en el pie de página de su web.
+* **Dirección Principal**: Calle y número de tu sede principal o domicilio fiscal de la empresa.
+* **Redes Sociales**: Añade los enlaces de tu WhatsApp, Instagram o perfil de Google Maps para que aparezcan como iconos elegantes en tu portal de reservas.`,
           en: `# Company Profile Settings
-          
-The legal, billing, and contact assets of your organization are configured inside the General settings tab. This schema automatically feeds transactional invoices, footer elements, and booking page headers.
+
+Your clinical legal, billing, and contact records are central inside the **General** settings tab. Keeping this profile updated is essential, as this schema automatically populates your legal invoice PDFs and client emails.
 
 ---
 
-### Configurable Attributes
+### Configurable Records
 
-* **Commercial Name**: The business name displayed to clients in booking assistants and notifications.
-* **Legal Owner Name (DNI/CIF)**: The official corporate name of the tax entity.
-* **Health Registry Number**: Optional field to certify clinical compliance before regional health inspectors.
-* **Full Address**: Physical primary headquarters or legal corporate fiscal address.
-* **Business Description (Footer)**: Short custom pitch text rendering inside the public landing page footer.
-* **Social Links**: Verified paths for direct redirection to Instagram, WhatsApp, or Google Maps directions.`,
-          fr: `# Profil de l'Entreprise
-          
-L'identité légale et fiscale du centre est centralisée dans l'onglet Général des paramètres. Ces données remplissent automatiquement vos factures, bas de page et liens sociaux.
+* **Commercial Name**: The clinic brand name displayed to patients in text notifications and landing headers.
+* **Billing Details (Tax ID / CIF)**: The legal fiscal name required to issue official, compliant invoice sheets.
+* **Health Registry Number**: An optional field for medical and aesthetic centers wishing to publish sanitary compliance numbers inside footer sections.
+* **Primary Address**: Street name and physical coordinates of your main office or legal fiscal headquarters.
+* **Social Links**: Insert links for WhatsApp, Instagram, or Google Maps directions to render as sleek social badges in the booking footer.`,
+          fr: `# Profil de l'Établissement
+
+Vos informations juridiques, fiscales et de contact sont centralisées dans l'onglet **Général** des paramètres. Il est essentiel de les maintenir à jour car elles remplissent vos factures et rappels de rendez-vous.
 
 ---
 
-### Attributs Configurables
+### Informations à Renseigner
 
-* **Nom Commercial**: Le nom affiché aux clients sur le portail et les rappels.
-* **Nom Légal du Titulaire (DNI/CIF)**: La raison sociale ou entité fiscale.
-* **Numéro d'Enregistrement Sanitaire**: Optionnel, certifie la conformité clinique du centre.
-* **Adresse Complète**: Siège social principal ou adresse de facturation de l'entreprise.
-* **Description du Bas de Page**: Court paragraphe de présentation visible sur le portail public.
-* **Réseaux Sociaux**: Liens directs vers Instagram, WhatsApp ou Google Maps.`
+* **Nom Commercial**: Le nom de votre centre affiché à vos clients sur le portail web et sur les emails de rappel.
+* **Informations Fiscales (SIRET / Numéro de TVA)**: Raison sociale requise pour l'émission de factures certifiées conformes.
+* **Numéro d'Enregistrement Sanitaire**: Champ optionnel permettant d'afficher vos certifications de santé en bas de page.
+* **Adresse du Siège**: Adresse physique ou fiscale de votre établissement principal.
+* **Réseaux Sociaux**: Renseignez vos comptes WhatsApp, Instagram ou Google Maps pour les afficher sous forme d'icônes élégantes sur votre portail.`
         }
       },
       {
         id: 'agenda-horarios',
         title: {
-          es: 'Agenda, Horarios y Descanso',
-          en: 'Agenda, Hours & Breaks',
-          fr: 'Agenda, Horaires & Pauses'
+          es: 'Configurar Horarios y Descansos',
+          en: 'Configure Hours & Breaks',
+          fr: 'Paramétrer Horaires & Pauses'
         },
         markdown: {
-          es: `# Agenda, Horarios y Descanso
-          
-ProBookia proporciona un motor de agendamiento robusto que respeta estrictamente los tiempos libres y límites operativos de tu personal.
+          es: `# Configurar Horarios y Descansos
+
+ProBookia te da el control total sobre la disponibilidad de tu clínica. El motor de reservas respetará siempre y de forma estricta los días festivos, las horas de apertura y las pausas para comer del personal.
 
 ---
 
-### Ajustes del Horario Hábil
+### Cómo Definir la Jornada Laboral
 
-* **Apertura y Cierre Semanal**: Configura la hora exacta en la que tu clínica inicia y finaliza operaciones (ej: 09:00 - 20:00).
-* **Definición de Descansos (Lunch Breaks)**: Define el inicio y fin del periodo de descanso del equipo (ej: 14:00 - 15:00). Durante este intervalo, la agenda pública bloqueará automáticamente cualquier intento de reserva de citas.
-* **Días Laborables**: Toggles interactivos para activar o desactivar días de la semana completos (ej: de lunes a viernes activos, sábados y domingos inactivos).
-* **Sincronización Multi-Especialista**: Si un especialista tiene asignado un horario individual más restrictivo, el sistema priorizará la disponibilidad individual sobre el horario general de la sede.`,
-          en: `# Calendar, Operating Hours & Breaks
-          
-ProBookia deploys a robust scheduling framework that strictly honors clinic breaks, hours, and staff shifts.
+Desde el menú de Agenda, puedes definir las pautas de disponibilidad horaria generales del centro:
 
----
+* **Hora de Apertura y Cierre**: Define las horas exactas de inicio y fin de jornada (ej: lunes a viernes de 09:00 a 20:00).
+* **Bloqueos por Descanso (Comida)**: Configura las pausas del equipo (ej: descanso para comer de 14:00 a 15:30). El portal web ocultará de inmediato estas horas a tus clientes, haciendo imposible que reserven citas durante la comida.
+* **Días de Apertura**: Utiliza los interruptores de días semanales para marcar si el centro abre o permanece cerrado (ej: fines de semana desactivados).
+* **Horarios del Especialista**: Si un especialista de tu clínica tiene un turno de trabajo individual diferente al del centro, el sistema aplicará automáticamente sus horas personales, evitando citas fuera de su turno.`,
+          en: `# Operating Hours & Calendar Breaks
 
-### Operating Hours Rules
-
-* **Weekly Opening & Closing**: Set the exact hours the physical center starts and stops clinical operations (e.g. 09:00 - 20:00).
-* **Lunch Break Windows**: Configure break start and end targets (e.g. 14:00 - 15:00). During these windows, the booking engine blocks all online reservation attempts.
-* **Working Days**: Active weekly toggles (e.g. Monday-Friday toggled active, Saturday-Sunday toggled inactive).
-* **Multi-Specialist Rostering**: Individual specialist shift overrides are automatically prioritised over general global clinic operating hours.`,
-          fr: `# Agenda, Heures d'Ouverture & Pauses
-          
-ProBookia fournit un moteur de planification qui respecte scrupuleusement les temps de repos et les horaires de votre équipe.
+ProBookia grants you full control over your clinic's calendar schedule. The online booking engine strictly respects custom holidays, daily opening/closing margins, and specialist breaks.
 
 ---
 
-### Paramètres des Horaires de Travail
+### How to Structure Daily Operating Times
 
-* **Ouverture et Fermeture Hebdomadaire**: Configurez l'heure exacte de début et de fin d'activité (ex: 09h00 - 20h00).
-* **Pauses Déjeuner (Lunch Breaks)**: Définissez le début et la fin de l'intervalle de pause collective (ex: 14h00 - 15h00). L'agenda public bloque les réservations sur ce créneau.
-* **Jours Ouvrables**: Boutons interactifs pour activer ou désactiver les jours de la semaine (ex: du lundi au vendredi).
-* **Sincronisation Multi-Spécialiste**: Si un membre a des horaires individuels, le système les applique en priorité sur les horaires du centre.`
+Within the Agenda calendar settings, managers can easily set global availability policies:
+
+* **Daily Opening & Closing**: Set target operational boundaries (e.g. Monday-Friday from 09:00 to 20:00).
+* **Rostered Lunch Breaks**: Configure daily break times (e.g. lunch hour from 14:00 to 15:30). The patient portal instantly hides these blocks, making double-booking over lunch windows impossible.
+* **Weekly Workdays**: Select which days of the week are active or closed (e.g. Saturday-Sunday toggled off).
+* **Specialist Shift Overrides**: If a specific practitioner works an custom shift, ProBookia prioritises their individual times over global clinic opening hours.`,
+          fr: `# Horaires d'Ouverture & Pauses
+
+ProBookia vous permet de garder la maîtrise complète de vos plannings. Notre moteur de réservation en ligne respectera scrupuleusement vos congés, vos horaires d'ouverture et les pauses déjeuner de votre équipe.
+
+---
+
+### Comment Paramétrer Vos Heures de Disponibilité
+
+Depuis l'onglet Agenda, gérez simplement le calendrier de votre établissement :
+
+* **Horaires d'Ouverture et de Fermeture**: Définissez l'amplitude d'accueil générale (ex : du lundi au vendredi de 09h00 à 20h00).
+* **Pauses Déjeuner**: Renseignez les heures de pause de vos équipes (ex : repas de 14h00 à 15h30). Ces créneaux sont instantanément masqués sur le site de réservation.
+* **Jours de Fermeture**: Utilisez les boutons pour activer ou désactiver les jours d'ouverture (ex : week-end désactivé).
+* **Horaires Personnels des Praticiens**: Si un membre a des horaires spécifiques, le planning s'ajustera automatiquement à son agenda individuel.`
         }
       },
       {
         id: 'bloqueos-festivos',
         title: {
-          es: 'Bloqueos, Festivos y Antelación',
-          en: 'Blocks, Holidays & Lead Time',
-          fr: 'Blocages, Congés & Anticipation'
+          es: 'Bloqueo de Citas y Horario de Antelación',
+          en: 'Booking Blockouts & Lead Time',
+          fr: 'Blocages & Délai d\'Anticipation'
         },
         markdown: {
-          es: `# Bloqueos, Festivos y Antelación de Citas
-          
-La prevención de colisiones horarias y la planificación ordenada son claves para mantener un servicio premium y evitar cancelaciones imprevistas.
+          es: `# Bloqueo de Citas y Horario de Antelación
+
+Para ofrecer una atención fluida y de alta calidad, necesitas tiempo para preparar los tratamientos de cabina. ProBookia te ayuda a evitar las reservas sorpresa con muy poco tiempo de antelación.
 
 ---
 
-### Vacaciones y Festivos (Ausencias)
+### Registrar Vacaciones y Días Festivos
 
-Desde el panel de Agenda, los administradores pueden registrar ausencias temporales o periodos de vacaciones de la clínica:
-1. **Motivo de la Ausencia**: Título informativo (ej: "Vacaciones de Verano", "Festivo Local").
-2. **Intervalo Temporal**: Rango exacto con fecha de inicio y fecha de fin.
-3. **Repetición Anual**: Interruptor para automatizar el bloqueo de los mismos días año tras año.
+Puedes bloquear de forma inmediata días específicos de tu agenda en los que tu clínica estará de vacaciones o sea día festivo local:
+1. **Crear Ausencia**: Añade un título descriptivo (ej: "Día de Navidad", "Vacaciones de Pascua").
+2. **Elegir Fechas**: Marca el rango exacto de días en los que el centro permanecerá cerrado. El portal de reservas bloqueará de forma automática esos días en los calendarios públicos de todos tus especialistas.
+3. **Repetición**: Activa el bloqueo automático para que se repita todos los años.
 
-### Tiempo de Antelación Mínimo para Reservas
+### Tiempo de Antelación Mínimo
 
-Para evitar sorpresas con pacientes agendando citas sobre la hora, puedes configurar un límite de antelación mínimo (configurable en horas o minutos):
-* **Ejemplo**: Si configuras **3 horas de antelación**, un paciente que visite tu portal a las 15:00 solo podrá elegir franjas horarias a partir de las 18:00 de ese mismo día. Esto protege los horarios del equipo y permite preparar los gabinetes adecuadamente.`,
-          en: `# Blocks, Holidays & Booking Lead Time
-          
-Collision prevention and organized planning are essential to maintain a premium standard and avoid last-minute customer changes.
+Evita que un cliente reserve una cita para "dentro de 10 minutos" cuando el especialista no está preparado o la cabina no está acondicionada. Puedes definir un tiempo mínimo de antelación para que el portal web muestre horas:
+* **Ejemplo**: Si fijas **3 horas de antelación**, si un cliente entra a reservar en tu web a las 10:00 de la mañana, la primera cita disponible que el sistema le dejará seleccionar será a partir de las 13:00 de la tarde de ese mismo día. Esto le da un valioso margen de preparación a tu equipo.`,
+          en: `# Calendar Blockouts & Lead Time Rules
+
+Delivering luxury, tailored wellness treatments requires buffer time to prepare therapy cabins. ProBookia helps clinic operators block unexpected bookings made too close to current times.
 
 ---
 
-### Holidays & Temporary Absences
+### Setting Holidays & Off Days
 
-Within the Agenda settings tab, managers can register custom center breaks and national holidays:
-1. **Absence Reason**: Text label (e.g. "Summer Holidays", "Local Holiday").
-2. **Date Range**: Precise start date and end date boundaries.
-3. **Annual Recurrence**: Dynamic switch to automate the calendar block year after year.
+Managers can instantly block off days when the center is closed for holidays or local vacations:
+1. **Register Absences**: Enter a clear label (e.g. "Christmas Vacation", "Summer Holiday Block").
+2. **Date Range Selection**: Input the start and end dates. The booking system immediately stops clients from booking slots with any specialist during this period.
+3. **Annual Switch**: Automate recurrent local holidays to repeat calendar blockouts year after year.
 
 ### Minimum Booking Lead Time
 
-To prevent unexpected patients booking appointments too close to their target slot, configure a lead time threshold (in hours/minutes):
-* **Example**: If set to **3 hours**, a patient browsing your online booking portal at 15:00 will only be offered slots starting at 18:00 or later on that day. This grants specialists the buffer time needed to prepare treatment rooms.`,
-          fr: `# Blocages, Congés & Anticipation des Réservations
-          
-La prévention des conflits d'horaires et la planification ordonnée sont essentielles pour maintenir un service haut de gamme et éviter les annulations tardives.
+Prevent a client from booking a slot "10 minutes from now" when your specialist is not prepared or the room has not been sanitized. Configure a minimum lead time threshold:
+* **Example**: If set to **3 hours**, a patient browsing your online booking portal at 10:00 will only be offered slots starting at 13:00 or later on that day. This grants your practitioners the buffer time needed to organize the cabin.`,
+          fr: `# Blocage de Rendez-vous & Anticipation
+
+Pour offrir des prestations de qualité, vous avez besoin de temps pour préparer vos cabines de soins. ProBookia vous aide à éviter les réservations de dernière minute imprévues.
 
 ---
 
-### Congés & Absences Temporaires
+### Enregistrer Vos Vacances et Jours Fériés
 
-Dans les paramètres de l'agenda, les administrateurs peuvent enregistrer les congés du centre:
-1. **Motif de l'Absence**: Titre explicatif (ex: "Congés d'Été").
-2. **Dates de Début et Fin**: Intervalle de blocage dans le calendrier.
-3. **Répétition Annuelle**: Interrupteur pour automatiser le blocage chaque année.
+Bloquez instantanément des journées entières de fermeture pour congés ou jours fériés :
+1. **Créer une Absence**: Indiquez un titre explicatif (ex : "Vacances de Noël", "Jour Férié").
+2. **Sélectionner les Dates**: Définissez le début et la fin de la période. Tous les agendas de vos praticiens seront bloqués.
+3. **Répétition**: Configurez les fermetures récurrentes pour qu'elles se répètent automatiquement chaque année.
 
-### Délai d'Anticipation Minimum
+### Délai d'Anticipation Minimum des Réservations
 
-Pour éviter les surprises avec des rendez-vous pris à la dernière minute, configurez un délai minimum (en heures ou minutes):
-* **Exemple**: Si configuré sur **3 heures**, un patient naviguant sur le site à 15h00 ne pourra choisir qu'un créneau disponible à partir de 18h00.`
+Évitez qu'un client ne prenne rendez-vous pour "dans 15 minutes" alors que votre cabine n'est pas prête. Définissez un délai d'anticipation minimum :
+* **Exemple**: Si configuré sur **3 heures**, un client naviguant sur votre site à 10h00 ne pourra choisir qu'un créneau disponible à partir de 13h00, offrant ainsi un temps de préparation confortable à votre équipe.`
         }
       }
     ]
   },
   {
-    id: 'canales-servicio-pagos',
+    id: 'cobertura-pagos',
     title: {
-      es: 'Sección 6: Canales de Servicio & Pasarela de Pagos',
-      en: 'Section 6: Service Channels & Stripe Gateway',
-      fr: 'Section 6: Canaux de Service & Stripe'
+      es: 'Sección 5: Servicios a Domicilio y Cobros',
+      en: 'Section 5: Home Services & Stripe Connect',
+      fr: 'Section 5: Soins à Domicile & Stripe Connect'
     },
     subpages: [
       {
         id: 'cobertura-domicilio',
         title: {
           es: 'Servicios a Domicilio y Cobertura',
-          en: 'Home Services & Coverage',
-          fr: 'Soins à Domicile & Couverture'
+          en: 'Mobile & Home Visit Services',
+          fr: 'Soins à Domicile & Déplacements'
         },
         markdown: {
           es: `# Servicios a Domicilio y Cobertura
-          
-ProBookia soporta tanto clínicas físicas fijas como profesionales móviles de medicina estética o masajes que asisten directamente a los hogares de sus pacientes.
+
+¿Tu negocio ofrece servicios a domicilio, o tus profesionales viajan directamente a las casas de los pacientes para realizar tratamientos estéticos, masajes o consultas médicas? ProBookia está totalmente adaptado para profesionales móviles.
 
 ---
 
-### Modalidades de Trabajo
+### Modalidades de Trabajo Disponibles
 
-* **Solo en Centro**: Operativa clásica en gabinetes o locales de la clínica.
-* **Solo a Domicilio**: El profesional no cuenta con sede física; se desplaza a los domicilios indicados.
-* **Modalidad Mixta**: El cliente puede elegir si desea reservar el tratamiento de forma presencial en el local o en su domicilio particular.
+Puedes elegir la forma de operar preferida para tu clínica o para especialistas específicos:
 
-### Control Geográfico de Cobertura
+* **En el Centro**: Los servicios se realizan exclusivamente en las salas o cabinas físicas de tu clínica.
+* **A Domicilio**: Tus especialistas se desplazan a la dirección postal que introduzca el cliente en el portal web.
+* **Modalidad Mixta**: El cliente puede elegir si prefiere reservar el tratamiento en tu local físico o recibirlo cómodamente en su propio hogar.
 
-Para evitar reservas en zonas demasiado lejanas, ProBookia integra un potente control geográfico:
-1. **Centro de Operaciones**: Dirección física base desde donde se calcula el desplazamiento.
-2. **Radio Kilométrico Máximo**: Control deslizante que limita la distancia máxima permitida de viaje (ej: hasta 35 km).
-3. **Zonas en Lista Blanca (Whitelisted ZIP Codes)**: Lista de códigos postales validados. Si el paciente introduce un código postal fuera de esta lista, el portal rechazará educadamente la cita antes de formalizar el pago.`,
-          en: `# Home Services & Geographic Coverage
-          
-ProBookia supports fixed clinics as well as mobile practitioners, traveling specialists, or home visit clinics.
+### Control Geográfico y Lista Blanca de Códigos Postales
 
----
+Para proteger a tus profesionales de viajes demasiado largos o costosos, puedes aplicar límites de distancia:
+1. **Dirección Base**: Indica la ubicación física desde donde parte tu equipo.
+2. **Radio de Distancia Máxima**: Configura una distancia máxima permitida de desplazamiento en kilómetros (ej: máximo 25 km a la redonda).
+3. **Códigos Postales Validados**: Introduce la lista de códigos postales donde trabajas. Si el cliente introduce un código postal fuera de tu lista al reservar en la web, el sistema le informará de forma educada que la zona queda fuera de cobertura antes de realizar ningún cargo.`,
+          en: `# Mobile & Home Visit Services
 
-### Workspace Modalities
-
-* **In-Clinic Only**: Traditional brick-and-mortar operation inside treatment rooms.
-* **At-Home Only**: Fully mobile operations where specialists travel to patient addresses.
-* **Mixed Modality**: Patients decide whether to schedule the treatment in-clinic or at their personal home address.
-
-### Geographic Radius & ZIP Whitelist
-
-To shield clinicians from traveling to excessively far-away locations, ProBookia deploys a geographical constraint engine:
-1. **Center of Operations**: Physical base address used as the routing starting point.
-2. **Maximum Traveling Radius**: Interactive slider setting maximum allowed mileage (e.g. up to 35 km).
-3. **Whitelisted ZIP Codes**: Strict whitelist arrays. If a patient inputs a ZIP code missing from the whitelist, the booking gateway prompts a polite refusal message before checkout.`,
-          fr: `# Services à Domicile & Couverture Géographique
-          
-ProBookia prend en charge les centres physiques fixes ainsi que les professionnels mobiles (soins esthétiques, massages, etc.) se déplaçant chez les patients.
+Do you operate a mobile aesthetic practice, travel directly to patient houses for therapy treatments, or offer home visit consultations? ProBookia is fully optimized for mobile specialists.
 
 ---
 
-### Modalités de Travail
+### Available Workspace Modalities
 
-* **En Centre Uniquement**: Fonctionnement traditionnel dans les locaux du centre.
-* **À Domicile Uniquement**: Professionnels mobiles sans local fixe, se déplaçant au domicile du client.
-* **Modalité Mixte**: Le patient choisit s'il souhaite effectuer le soin sur place ou à son domicile.
+You can customize how your clinic operates overall or configure specific specialists individually:
 
-### Contrôle Géographique de la Couverture
+* **In-Clinic Only**: Traditional brick-and-mortar appointments inside your physical rooms.
+* **At-Home Only**: Mobile treatments where specialists travel directly to the client's home address.
+* **Mixed Modality**: Patients choose whether to visit your physical address or schedule the treatment at their home.
 
-Pour éviter les déplacements excessifs, ProBookia intègre un contrôle géographique:
-1. **Centre d'Opérations**: Adresse de départ pour le calcul de l'itinéraire.
-2. **Rayon Kilométrique Maximum**: Curseur définissant la distance de voyage autorisée (ex: 35 km).
-3. **Codes Postaux Autorisés (ZIP Whitelist)**: Si le patient saisit un code postal non répertorié, le portail refuse poliment la réservation.`
+### Geofencing & whitelisted ZIP Codes
+
+To protect mobile practitioners from exhausting, long-distance, or unprofitable travels, configure geographic constraints:
+1. **Base Coordinates**: Specify the physical address where your mobile team starts routing.
+2. **Maximum Traveling Radius**: Set a maximum allowed travel distance in miles or kilometers (e.g. up to 25 km).
+3. **Whitelisted ZIP Codes**: Enter valid ZIP codes. If a patient inputs a ZIP code missing from your active whitelist, the booking wizard will prompt a polite out-of-coverage message before any payment is made.`,
+          fr: `# Soins à Domicile & Zones de Déplacement
+
+Vous proposez des soins esthétiques à domicile ou des consultations où vos praticiens se déplacent chez vos patients ? ProBookia est idéalement conçu pour la gestion des professionnels mobiles.
+
+---
+
+### Modalités de Travail Proposées
+
+Déterminez le fonctionnement général de votre centre ou configurez chaque praticien individuellement :
+
+* **En Centre Uniquement**: Les rendez-vous ont lieu exclusivement dans vos cabines physiques.
+* **À Domicile Uniquement**: Vos spécialistes se déplacent à l'adresse renseignée par le client sur le site.
+* **Modalité Mixta (Mixte)**: Le client choisit entre un rendez-vous dans vos locaux ou un soin à son domicile.
+
+### Gestion Géographique des Déplacements
+
+Pour éviter à votre équipe des trajets trop longs et coûteux, appliquez des restrictions géographiques :
+1. **Adresse de Départ**: Indiquez le point de départ de votre équipe.
+2. **Rayon Kilométrique Maximum**: Définissez une distance de trajet autorisée en kilomètres (ex : 25 km maximum).
+3. **Codes Postaux Autorisés**: Renseignez les codes postaux desservis. Si l'adresse du client n'est pas dans la liste, le portail lui signalera poliment que la zone n'est pas couverte.`
         }
       },
       {
         id: 'pagos-stripe-connect',
         title: {
-          es: 'Pasarela Stripe Connect y Fianzas',
-          en: 'Stripe Connect & Escrows',
-          fr: 'Intégration Stripe & Acomptes'
+          es: 'Configurar Cobros con Stripe Connect',
+          en: 'Link Payments with Stripe Connect',
+          fr: 'Configurer Stripe Connect'
         },
         markdown: {
-          es: `# Pasarela Stripe Connect y Fianzas
-          
-La monetización segura y la protección contra incomparecencias (no-shows) se integran de forma nativa a través de **Stripe Connect Standard**.
+          es: `# Cómo Configurar Cobros con Stripe
+
+Cobrar tus reservas de forma segura y recibir el dinero directamente en tu banco es sumamente sencillo en ProBookia. Empleamos la pasarela oficial y segura **Stripe Connect Standard** para procesar los pagos sin intermediarios.
 
 ---
 
-### Vinculación de Cuentas
+### Enlazar tu Cuenta de Stripe
 
-1. **Acceso**: Dirígete a la pestaña **Pagos** en Ajustes.
-2. **Onboarding Directo**: Haz clic en "Conectar Stripe" para ser redirigido a la pasarela oficial segura de Stripe Connect.
-3. **Registro Express**: Rellena tus datos fiscales y bancarios. Una vez completado, serás devuelto automáticamente a ProBookia con tu cuenta enlazada y lista.
+Configurar la pasarela de cobros te llevará menos de 2 minutos:
 
-### Configuración de Fianzas y Cobros
-
-* **Cobro por Fianza (Garantía)**: Permite exigir un depósito parcial obligado (ej: 25€) en el portal de reserva online para bloquear el slot del calendario.
-* **Cobro del 100% por Adelantado**: El paciente abona la totalidad del tratamiento en la web antes de confirmar la cita.
-* **Pago en el Establecimiento**: Reserva gratuita sin pasarela de pago online.
+1. **Ir a Ajustes**: Dirígete a la pestaña **Pagos** en tu panel de control de ProBookia.
+2. **Onboarding Directo**: Haz clic en el botón "Conectar Stripe" para iniciar el asistente de configuración segura en la web de Stripe.
+3. **Registro Rápido**: Rellena tus datos de autónomo o empresa y tu número de cuenta bancaria. 
+4. **Listo para Cobrar**: Una vez completado el registro, Stripe te redirigirá automáticamente a ProBookia, mostrando tu cuenta enlazada y lista para recibir depósitos.
 
 > [!IMPORTANT]
-> El dinero retenido en concepto de fianza o pago total se transfiere de forma segura y directa a la cuenta Stripe conectada del tenant, reduciendo intermediarios y comisiones innecesarias.`,
-          en: `# Stripe Connect Gateway & Escrow Payments
-          
-Secure monetization and protection against lost appointment slots (no-shows) are natively wired via **Stripe Connect Standard**.
+> ProBookia no retiene tus ingresos en cuentas intermedias ni cobra comisiones de gestión sobre tus cobros. El dinero pagado por tus clientes se deposita directamente en tu propia cuenta bancaria a través de la pasarela de Stripe.`,
+          en: `# How to Link Payments with Stripe
+
+Processing booking deposits online and receiving funds directly in your corporate bank account is straightforward. ProBookia integrates natively with **Stripe Connect Standard** to secure all financial transactions with no intermediates.
 
 ---
 
-### Connect Account Boarding
+### Linking Your Stripe Account
 
-1. **Access**: Navigate to the **Payments** tab inside the dashboard settings.
-2. **Direct Onboarding**: Click "Connect Stripe" to redirect securely to the official Stripe Connect portal.
-3. **Express Registration**: Input corporate details. Upon completion, Stripe returns focus to ProBookia, showing your active linked account status.
+Connecting your payment gateway takes less than 2 minutes:
 
-### Escrow & Booking Charges Settings
-
-* **Connect Escrow Deposits**: Require a mandatory upfront safety fee (e.g. $30) to secure a calendar slot.
-* **Full Online Payment (100%)**: Enforce complete service checkout payment on the booking portal.
-* **Pay at Venue**: Free scheduling without card processing requirements.
+1. **Access Settings**: Navigate to the **Payments** tab inside your ProBookia admin dashboard.
+2. **Secure Onboarding**: Click "Connect Stripe" to redirect to the official, secure Stripe registration pages.
+3. **Quick Setup**: Input corporate records and your active business bank account number.
+4. **Ready for Checkout**: Once validated, Stripe returns focus to ProBookia, showing your active linked account status.
 
 > [!IMPORTANT]
-> Monies charged in deposits are processed directly in the tenant's connected Stripe account, bypassing intermediate escrow layers and minimizing extra fees.`,
-          fr: `# Intégration Stripe Connect & Acomptes
-          
-La monétisation sécurisée et la protection contre les rendez-vous non honorés (no-shows) sont intégrées grâce à **Stripe Connect Standard**.
+> ProBookia never holds your earnings in intermediate accounts or collects transaction management fees. All booking payments made by clients flow directly to your linked business bank account.`,
+          fr: `# Configurer les Paiements En Ligne avec Stripe
+
+Encaisser vos acomptes ou vos prestations en toute sécurité et recevoir les fonds directement sur votre compte bancaire est très simple. ProBookia intègre la passerelle officielle **Stripe Connect Standard** sans intermédiaire.
 
 ---
 
-### Connexion de Compte
+### Associer Votre Compte Stripe
 
-1. **Accès**: Rendez-vous dans l'onglet **Paiements** des paramètres.
-2. **Liaison Directe**: Cliquez sur "Connecter Stripe" pour être redirigé vers Stripe Connect.
-3. **Enregistrement**: Saisissez vos coordonnées bancaires et validez pour activer instantanément les paiements en ligne.
+La configuration de votre terminal de paiement prend moins de 2 minutes :
 
-### Paramètres d'Acompte et Paiement
-
-* **Acompte Obligatoire (Escrow)**: Exige un dépôt de garantie (ex: 25€) sur le portail de réservation pour valider le rendez-vous.
-* **Paiement Intégral en Ligne**: Le patient règle 100% de la prestation lors de la réservation.
-* **Paiement sur Place**: Réservation gratuite sans saisie de carte de crédit.
+1. **Accéder aux Paramètres**: Rendez-vous dans l'onglet **Paiements** de votre tableau de bord.
+2. **Connexion Sécurisée**: Cliquez sur le bouton "Connecter Stripe" pour ouvrir le formulaire sécurisé de Stripe.
+3. **Formulaire Express**: Saisissez vos coordonnées d'entreprise et votre RIB de destination des fonds.
+4. **Activé**: Stripe vous redirige automatiquement vers ProBookia. Votre compte est prêt à recevoir des paiements.
 
 > [!IMPORTANT]
-> Les transactions sont créditées directement sur le compte Stripe du centre, évitant les intermédiaires et réduisant les frais.`
+> ProBookia ne conserve pas vos fonds sur des comptes intermédiaires et ne prend aucune commission de gestion. Les règlements de vos clients sont versés directement sur votre compte bancaire via Stripe.`
         }
       }
     ]
@@ -1266,113 +935,110 @@ La monétisation sécurisée et la protection contre les rendez-vous non honoré
   {
     id: 'branding-experiencia',
     title: {
-      es: 'Sección 7: Branding de Lujo & Experiencia del Paciente',
-      en: 'Section 7: Luxury Branding & Booking UX',
-      fr: 'Section 7: Branding de Luxe & Expérience'
+      es: 'Sección 6: Personalizar tu Portal de Reservas',
+      en: 'Section 6: Design & Branding Settings',
+      fr: 'Section 6: Personnalisation de Votre Image'
     },
     subpages: [
       {
         id: 'branding-favicon',
         title: {
-          es: 'Branding Detallado y Favicon',
-          en: 'Detailed Branding & Favicon',
-          fr: 'Branding Détaillé & Favicon'
+          es: 'Logotipos, Paletas de Colores y Fuentes',
+          en: 'Logos, Colors & Premium Fonts',
+          fr: 'Logos, Couleurs & Polices'
         },
         markdown: {
-          es: `# Branding Detallado & Favicon
-          
-El portal público de tratamientos de ProBookia es una extensión premium de tu marca. El sistema de diseño permite configurar la identidad visual sin esfuerzo.
+          es: `# Personalización de Marca Blanca
+
+Tu portal público de reservas es el escaparate digital de tu negocio. Con el panel de **Personalización de Marca**, puedes adaptarlo al diseño "Quiet Luxury" de tu clínica en segundos.
 
 ---
 
-### Personalización de Marca en la Pestaña Branding
+### Opciones de Diseño en la Pestaña Branding
 
-1. **Logotipo Principal**: Carga de archivos de logotipo optimizados para la barra superior, pie de página y correos transaccionales (transparente en formatos PNG, SVG).
-2. **Icono de la Pestaña (Favicon)**: Carga el icono cuadrado que visualizarán los clientes en la pestaña de sus navegadores web.
-3. **Estilo & Modos Visuales**:
-   * **Paletas Cromáticas Core**: Elige combinaciones de colores refinadas diseñadas para clínicas (Dorado/Antracita, Esmeralda/Lima, Bronce/Crema, Minimalista Industrial) o define tu propio color primario y secundario (Custom).
-   * **Fuente de Encabezados y Cuerpo**: Configura Google Fonts de alta legibilidad (Playfair Display, Outfit, Fredoka, Montserrat, Roboto, Inter).
-   * **Geometría de Bordes**: Controla la estética de botones y contenedores (Recta, Suave/Ejecutiva (12px), Orgánica/Redonda (full)).
-   * **Modo Oscuro Activo**: Interruptor global para activar el modo oscuro por defecto en el portal público de tratamientos.`,
-          en: `# Detailed Branding & Favicons
-          
-The ProBookia client-facing booking wizard functions as a high-end extension of your private brand, preserving a luxurious customer journey.
+* **Cargar tu Logotipo**: Sube el logotipo oficial de tu centro (preferiblemente transparente en formato PNG o SVG). Se adaptará a la barra superior del portal web, al pie de página y a las facturas en PDF.
+* **Favicon de la Pestaña**: Sube tu icono cuadrado corporativo para que los clientes lo visualicen en la pestaña superior de sus navegadores web.
+* **Paletas de Colores**: Elige entre nuestras combinaciones de colores seleccionadas especialmente para clínicas (Dorado/Antracita, Esmeralda/Lima, Bronce/Crema, Minimalista Industrial) o selecciona tu propio color corporativo (Custom).
+* **Tipografías Premium**: Cambia la tipografía de encabezados y del cuerpo de texto para dar un toque editorial y elegante (Playfair Display, Outfit, Fredoka, Montserrat, Inter, Roboto).
+* **Bordes de Botones**: Elige el acabado estético de botones y tarjetas (Recta, Suave/Ejecutiva (12px), Orgánica/Redonda (full)).
+* **Modo Oscuro Predeterminado**: Activa este interruptor si prefieres que tu portal se cargue en un elegante fondo oscuro por defecto.`,
+          en: `# Premium White-Label Customization
 
----
-
-### Visual Customizations
-
-1. **Corporate Brand Logo**: Upload high-resolution transparent logos (PNG, SVG) rendered inside navbars, footers, and invoices.
-2. **Browser Tab Icon (Favicon)**: Upload custom square icons to render in browser address bars.
-3. **Visual Aesthetics & Interface Modes**:
-   * **Core Color Palettes**: Sleek presets tailored for high-end centers (Gold/Anthracite, Emerald/Lime, Bronze/Cream, Minimalist) or set primary/secondary accents manually (Custom).
-   * **Typography Engine**: Select verified Google Fonts (Playfair Display, Outfit, Fredoka, Montserrat, Roboto, Inter).
-   * **Border Radii Geometries**: Set border roundness for UI cards and buttons (Straight (0px), Soft/Executive (12px), Organic (full)).
-   * **Global Dark Mode**: Switch to default dark themes on the public booking page.`,
-          fr: `# Branding Détaillé & Favicon
-          
-Le portail public de réservation ProBookia est une extension haut de gamme de votre marque, conçu pour offrir une expérience esthétique sans compromis.
+Your public booking portal serves as the digital front door of your clinic. Within the **Branding Customization** tab, you can tailor visual tokens to align with your center's quiet luxury feel in seconds.
 
 ---
 
-### Personnalisation de l'Identité Visuelle
+### Design Assets to Customize
 
-1. **Logotype Principal**: Téléversez votre logo transparent (PNG, SVG) affiché sur la barre de navigation et les emails.
-2. **Favicon de l'Onglet**: Téléversez l'icône carrée visible dans la barre d'adresse du navigateur client.
-3. **Styles Visuels & Palettes**:
-   * **Palettes Chromatiques Prédéfinies**: Combinaisons raffinées (Doré/Anthracite, Émeraude/Citron, Bronze/Crème, Minimaliste) ou personnalisez vos couleurs primaires et secondaires (Custom).
-   * **Polices Typographiques**: Choisissez des polices Google Fonts élégantes (Playfair Display, Outfit, Fredoka, Montserrat, Inter).
-   * **Géométrie des Bordures**: Arrondis des boutons et cadres (Droit (0px), Doux/Exécutif (12px), Arrondi (full)).
-   * **Mode Sombre Global**: Interrupteur pour activer par défaut le mode sombre sur l'agenda public.`
+* **Upload Corporate Logo**: Upload your official transparent logo file (PNG, SVG). It renders perfectly inside header navbars, transactional emails, and legal invoices.
+* **Browser Tab Favicon**: Load a custom square monogram or icon to display inside patient browser tabs.
+* **Visual Color Palettes**: Choose from verified premium clinic color presets (Gold/Anthracite, Emerald/Lime, Bronze/Cream, Minimalist) or set primary/secondary accents manually (Custom).
+* **Luxurious Typographies**: Transition your headers and body copy into elegant editorial structures (Playfair Display, Outfit, Fredoka, Montserrat, Inter, Roboto).
+* **Border Radii Geometries**: Set border roundness for client buttons and cards (Straight (0px), Soft/Executive (12px), Rounded (full)).
+* **Default Dark Mode**: Enable this toggle if you prefer your public booking site to display a dark, sleek aesthetic by default.`,
+          fr: `# Personnalisation de Votre Image de Marque
+
+Votre portail public de réservation est la vitrine digitale de votre établissement. Depuis l'onglet **Branding**, adaptez le design à l'esthétique haut de gamme de votre marque en quelques secondes.
+
+---
+
+### Les Éléments de Design à Personnaliser
+
+* **Téléverser Votre Logo**: Ajoutez votre logo transparent (PNG, SVG). Il s'affichera sur votre site, dans les emails de confirmation et sur vos factures.
+* **Favicon de l'Onglet**: Ajoutez l'icône carrée de votre marque pour l'afficher dans les onglets des navigateurs de vos clients.
+* **Palettes de Couleurs**: Choisissez parmi nos harmonies conçues pour l'esthétique (Doré/Anthracite, Émeraude, Bronze/Crème, Minimaliste) ou appliquez vos propres couleurs (Custom).
+* **Polices d'Écriture**: Modifiez les polices pour un style éditorial élégant (Playfair Display, Outfit, Fredoka, Montserrat, Inter, Roboto).
+* **Bordures des Boutons**: Définissez l'arrondi des boutons et cadres (Droit (0px), Doux (12px), Arrondi (full)).
+* **Mode Sombre Actif**: Cochez cette option si vous souhaitez que votre portail s'affiche dans des tons sombres et raffinés par défaut.`
         }
       },
       {
         id: 'layouts-reserva',
         title: {
-          es: 'Diseños de Reserva (Boutique Grid vs Fila)',
+          es: 'Diseños del Catálogo (Grilla vs Lista)',
           en: 'Booking Layouts (Grid vs Row List)',
-          fr: 'Gabarits de Réservation'
+          fr: 'Gabarits de Grille & Liste'
         },
         markdown: {
-          es: `# Diseños de Reserva (Boutique Grid vs Fila)
-          
-La retícula en la que se presentan tus servicios e imágenes de tratamientos define la tasa de conversión inicial del portal de citas.
+          es: `# Diseños de Reservas: Grilla vs Lista
+
+La forma en que presentas tus servicios y tratamientos de estética determina la primera impresión de tus clientes. ProBookia te permite alternar entre dos elegantes diseños visuales para tu portal web.
 
 ---
 
-### Layouts de Reserva Disponibles
+### Diseños Visuales Disponibles
 
-* **Boutique Grid (2 Columnas)**: Presentación sumamente visual que agrupa los tratamientos en bloques de dos columnas con soporte para fotografías destacadas. Excelente para clínicas de estética, cirugías plásticas o tratamientos que se benefician de imágenes descriptivas de alta calidad.
-* **Lista Elegante (Filas)**: Vista clásica, sumamente limpia y ultra-clara. Los tratamientos se disponen uno debajo del otro con copies breves y precios a la derecha. La mejor opción si dispones de un catálogo extenso con muchos tratamientos o si prefieres no utilizar imágenes explicativas.
+* **Boutique Grid (Cuadrículas a 2 Columnas)**: Presentación premium que destaca fotografías de alta resolución en cada tratamiento. Es la opción recomendada para clínicas de medicina estética, cirugías plásticas o spas que se benefician de imágenes descriptivas de antes/después o del gabinete de trabajo.
+* **Lista Elegante (Filas Limpias)**: Un diseño minimalista, sumamente claro y de carga rápida. Los servicios se apilan verticalmente, uno debajo de otro, mostrando el nombre, duración y el precio a la derecha. Ideal si posees un catálogo muy extenso o prefieres una estética sobria sin fotos explicativas.
 
 > [!TIP]
-> Puedes visualizar los cambios de layout instantáneamente en el mockup del iPhone interactivo del panel de Ajustes antes de publicar las modificaciones.`,
-          en: `# Booking Layouts (Grid vs Row List)
-          
-The design layout chosen to display services determines the initial conversion success rate of your patient portal.
+> Puedes ver los cambios de diseño en tiempo real utilizando el simulador de iPhone interactivo del panel de Ajustes antes de guardar los cambios para tus clientes públicos.`,
+          en: `# Catalog Layouts: Grid vs Row List
+
+How you display treatments and wellness therapies shapes your patients' first impression. ProBookia enables you to choose between two sleek layout configurations.
 
 ---
 
 ### Available Visual Layouts
 
-* **Boutique Grid (2 Columns)**: Double-column visual cards displaying description blocks alongside custom cover media. Perfect for aesthetic medicine, dermatology clinics, or cosmetic spays that benefit from high-resolution imagery.
-* **Elegant List (Rows)**: Minimalist, clean, and fast row listings. Services stack vertically with core descriptions and price badges to the right. Recommended for extensive treatment lists or businesses that prefer minimal iconography.
+* **Boutique Grid (2 Columns)**: A premium grid visual displaying high-resolution covers side-by-side. Strongly recommended for aesthetic clinics, cosmetic dermatologists, or luxury spas that benefit from clinical imagery.
+* **Elegant List (Minimalist Rows)**: A clean and fast vertical layout. Services stack vertically, showing names, durations, and price tags to the right. Perfect for extensive treatment menus or centers preferring sobrier aesthetics without covers.
 
 > [!TIP]
 > You can preview layout switches live inside the interactive iPhone mockup in settings before applying changes to the public web.`,
-          fr: `# Gabarits de Réservation (Grille vs Liste)
-          
-La disposition visuelle de vos prestations sur le portail de rendez-vous définit le taux de conversion initial de vos clients.
+          fr: `# Gabarits de Réservation : Grille ou Liste
+
+La manière dont vous présentez vos soins cliniques façonne la première impression de vos clients. ProBookia vous propose d'opter pour l'une de nos deux mises en page exclusives.
 
 ---
 
-### Gabarits Visuels Disponibles
+### Mises en Page Disponibles
 
-* **Boutique Grid (Grille 2 Colonnes)**: Présentation visuelle affichant les prestations sous forme de blocs illustrés sur deux colonnes. Excellent pour les centres d'esthétique ou cliniques de dermatologie utilisant des images descriptives de haute qualité.
-* **Liste Élégante (Lignes)**: Rendu minimaliste et très clair. Les prestations s'alignent verticalement avec une brève description et le tarif à droite. Recommandé pour les centres proposant un grand nombre de soins.
+* **Boutique Grid (Grille 2 Colonnes)**: Une présentation visuelle mettant en valeur des photos haute résolution pour chaque soin. Recommandé pour les cliniques esthétiques ou spas utilisant des images de couverture de haute qualité.
+* **Liste Élégante (Lignes Épurées)**: Rendu minimaliste, clair et rapide. Les soins s'alignent verticalement, affichant le tarif et la durée à droite. Idéal si votre catalogue est très étendu ou si vous préférez un design sobre sans photos.
 
 > [!TIP]
-> Vous pouvez prévisualiser le rendu en temps réel sur la maquette iPhone interactive dans l'onglet de personnalisation.`
+> Visualisez le rendu instantanément sur le simulateur iPhone interactif disponible dans l'onglet de personnalisation avant de valider vos modifications.`
         }
       }
     ]
@@ -1380,244 +1046,244 @@ La disposition visuelle de vos prestations sur le portail de rendez-vous défini
   {
     id: 'seguridad-api-ia',
     title: {
-      es: 'Sección 8: Seguridad, SEO & Agentes de IA VIP',
-      en: 'Section 8: Security, SEO & Gold AI Agents',
-      fr: 'Section 8: Sécurité, SEO & Agents IA Gold'
+      es: 'Sección 7: Inteligencia Artificial y Visibilidad Web',
+      en: 'Section 7: AI Assistants & SEO Settings',
+      fr: 'Section 7: Assistants IA & SEO'
     },
     subpages: [
       {
         id: 'api-keys-ia',
         title: {
-          es: 'Claves API para Inteligencia Artificial',
-          en: 'Client AI API Keys',
-          fr: 'Clés d\'API de l\'IA'
+          es: 'Conectar tu propia Inteligencia Artificial',
+          en: 'Link Your Private AI API Keys',
+          fr: 'Connecter Votre Propre Clé IA'
         },
         markdown: {
-          es: `# Claves API para Inteligencia Artificial
-          
-ProBookia ofrece a los tenants la libertad de utilizar sus propios recursos generativos para impulsar los módulos de asistencia automática, redacción de copias y SEO.
+          es: `# Conecta tu propia Inteligencia Artificial
+
+ProBookia te da total flexibilidad. En el plan Gold Elite, puedes conectar tus propias credenciales de Inteligencia Artificial para potenciar los copilotos de voz, creadores automáticos de SEO e ilustradores de tratamientos.
 
 ---
 
-### Integración de Proveedores Generativos
+### Proveedores de Inteligencia Artificial Soportados
 
-En la pestaña Avanzada, los administradores pueden introducir sus claves de API privadas:
-1. **Google Gemini (Recomendado)**: Consigue tu API Key gratuita en Google AI Studio para activar los modelos rápidos.
-   * **Modelo de Texto**: Gemini 2.5 Flash, Gemini 3 Flash, Gemini 3.1 Pro (alta calidad).
-   * **Modelo de Imagen**: Nano Banana 2 (3.1 Flash Image Preview) o Imagen 4.0 Standard.
-2. **OpenAI ChatGPT (Avanzado)**: Inyecta tu API Key para utilizar la suite de OpenAI.
-   * **Modelo de Texto**: GPT-4o mini (económico y rápido) o GPT-4o (alto rendimiento).
-   * **Modelo de Imagen**: DALL-E 3.
+Desde tu panel de configuración Avanzada, puedes añadir tus claves:
+
+1. **Google Gemini (Recomendado)**: Puedes conseguir tu clave de API gratuita en Google AI Studio para disfrutar de una velocidad increíble.
+   * **Modelos de Texto**: Gemini 2.5 Flash, Gemini 3 Flash, Gemini 3.1 Pro (alta calidad).
+   * **Modelos de Imagen**: Nano Banana 2 (3.1 Flash Image Preview) o Imagen 4.0 Standard.
+2. **OpenAI ChatGPT**: Introduce tu clave de API para activar los modelos de OpenAI.
+   * **Modelos de Texto**: GPT-4o mini (económico y rápido) o GPT-4o (alto rendimiento).
+   * **Modelos de Imagen**: DALL-E 3.
 
 > [!WARNING]
-> Tus claves de API se almacenan cifradas en base de datos. Ningún usuario externo ni paciente final puede leer tus claves, garantizando la seguridad absoluta contra robos de cuota.`,
-          en: `# Private AI API Key Management
-          
-ProBookia grants tenants the freedom to connect their own generative resources to power copy redactors, automated SEO tools, and voice pilots.
+> Tus claves de API personales se almacenan totalmente cifradas en nuestra base de datos. Ningún usuario externo ni paciente final podrá leerlas jamás, protegiéndolas de accesos no autorizados o robos de cuota.`,
+          en: `# Connect Your Own AI API Keys
+
+ProBookia provides total operational flexibility. Within the Gold Elite tier, you can link your private generative AI accounts to power your voice copilots, automatic SEO copywriters, and treatment cover generators.
 
 ---
 
-### Generative Providers Integrations
+### Supported Artificial Intelligence Providers
 
-Within the Advanced settings tab, managers can inject private API credentials:
-1. **Google Gemini (Recommended)**: Secure free API Keys inside Google AI Studio to unlock immediate responses.
-   * **Text Model**: Gemini 2.5 Flash, Gemini 3 Flash, Gemini 3.1 Pro (deluxe text logic).
-   * **Image Model**: Nano Banana 2 (3.1 Flash Image Preview) or Imagen 4.0 Standard.
-2. **OpenAI ChatGPT (Advanced)**: Insert private API Keys to connect the OpenAI generative framework.
-   * **Text Model**: GPT-4o mini (fast and affordable) or GPT-4o (top execution).
-   * **Image Model**: DALL-E 3.
+Inside your Advanced settings tab, you can link:
+
+1. **Google Gemini (Recommended)**: Secure your free API Key inside Google AI Studio for high-speed, instant responses.
+   * **Text Models**: Gemini 2.5 Flash, Gemini 3 Flash, Gemini 3.1 Pro.
+   * **Image Models**: Nano Banana 2 or Imagen 4.0 Standard.
+2. **OpenAI ChatGPT**: Insert your OpenAI API Key to connect their generative framework.
+   * **Text Models**: GPT-4o mini (highly efficient) or GPT-4o (top execution).
+   * **Image Models**: DALL-E 3.
 
 > [!WARNING]
-> Your private API keys are encrypted at rest inside the database schema. No external callers or final patients can inspect keys, avoiding quote thefts.`,
-          fr: `# Gestion des Clés d'API de l'IA
-          
-ProBookia donne aux centres la liberté d'utiliser leurs propres crédits d'IA pour propulser les assistants de rédaction, le SEO et le co-pilote.
+> Your private API keys are encrypted at rest inside our secure database structure. No external callers or patients can inspect keys, protecting you from quota thefts.`,
+          fr: `# Connecter Vos Clés d'API d'Intelligence Artificielle
+
+ProBookia vous offre une flexibilité totale. Avec le forfait Gold Elite, associez vos propres abonnements d'IA pour propulser le co-pilote vocal et le générateur de descriptions SEO de vos soins.
 
 ---
 
-### Intégration des Fournisseurs d'IA
+### Fournisseurs d'IA Compatibles
 
-Dans l'onglet Avancé des paramètres, les administrateurs saisissent leurs identifiants:
-1. **Google Gemini (Recommandé)**: Obtenez votre clé gratuite sur Google AI Studio.
-   * **Modèle de Texte**: Gemini 2.5 Flash, Gemini 3 Flash, Gemini 3.1 Pro.
-   * **Modèle d'Image**: Nano Banana 2 ou Imagen 4.0 Standard.
-2. **OpenAI ChatGPT (Avancé)**: Saisissez votre clé OpenAI.
-   * **Modèle de Texte**: GPT-4o mini ou GPT-4o.
-   * **Modèle d'Image**: DALL-E 3.
+Depuis l'onglet Paramètres Avancés, renseignez vos clés d'API :
+
+1. **Google Gemini (Recommandé)**: Obtenez votre clé gratuite sur Google AI Studio pour des réponses ultra-rapides.
+   * **Modèles de Texte**: Gemini 2.5 Flash, Gemini 3 Flash, Gemini 3.1 Pro.
+   * **Modèles d'Image**: Nano Banana 2 ou Imagen 4.0 Standard.
+2. **OpenAI ChatGPT**: Renseignez votre clé OpenAI pour utiliser leurs modèles.
+   * **Modèles de Texte**: GPT-4o mini ou GPT-4o.
+   * **Modèles d'Image**: DALL-E 3.
 
 > [!WARNING]
-> Vos clés d'API sont cryptées et stockées de manière sécurisée en base de données. Aucun patient final ne peut y accéder.`
+> Vos clés d'API personnelles sont stockées sous forme cryptée en base de données. Aucun client externe ou patient ne peut y accéder, vous garantissant une sécurité totale.`
         }
       },
       {
         id: 'seo-noindex',
         title: {
-          es: 'Visibilidad SEO y NoIndex',
-          en: 'SEO Visibility & NoIndex',
-          fr: 'Visibilité SEO & NoIndex'
+          es: 'Ocultar tu Web de los Buscadores (Privacidad)',
+          en: 'Hide Booking Site from Google (NoIndex)',
+          fr: 'Masquer Votre Site du Référencement'
         },
         markdown: {
-          es: `# Visibilidad SEO y Bloqueo de Indexación
-          
-En clínicas premium o centros que operan de forma privada con una cartera exclusiva de pacientes, puede ser necesario limitar la visibilidad pública en motores de búsqueda como Google o Bing.
+          es: `# Ocultar tu Web de los Buscadores (Privacidad)
+
+Para clínicas muy exclusivas o centros médicos privados que operan únicamente con una lista cerrada de pacientes, puede ser un requisito de privacidad que el portal de reservas no aparezca en Google ni en Bing.
 
 ---
 
-### Indexación en Motores de Búsqueda
+### Cómo Ocultar tu Portal en Google
 
-ProBookia soluciona esto de forma directa desde la pestaña Avanzada:
-* **Indexación Activada (Por defecto)**: Permite que los robots de Google rastreen e indexen tu portal de reserva, capturando metadatos de tratamientos para posicionar orgánicamente.
-* **Indexación Desactivada (NoIndex)**: Al activar este interruptor, el servidor de ProBookia inyecta dinámicamente la cabecera HTTP \`X-Robots-Tag: noindex, nofollow\` y la etiqueta de metadatos HTML correspondiente:
-\`\`\`html
-<meta name="robots" content="noindex, nofollow" />
-\`\`\`
-Esto indica instantáneamente a los motores de búsqueda que no almacenen ni muestren tu web en sus resultados de búsqueda, protegiendo la privacidad operativa.`,
-          en: `# Search Engine Indexing & NoIndex Tags
-          
-For exclusive clinics or private centers operating with a restricted customer list, blocking public indexing on engines like Google or Bing might be a business requirement.
+ProBookia soluciona esto con un solo interruptor en la pestaña de configuración Avanzada:
+
+* **Indexación Activada (Por defecto)**: Permite que Google e Instagram indexen tu catálogo para atraer nuevos clientes locales y potenciar tu visibilidad comercial.
+* **Indexación Desactivada (NoIndex)**: Si activas este interruptor, el servidor de ProBookia inyectará etiquetas de seguridad (\`noindex, nofollow\`) en tu web. Esto indica de inmediato a los robots de Google, Yahoo, Bing o DuckDuckGo que no almacenen ni muestren tu web en sus resultados de búsqueda, protegiendo al 100% tu exclusividad operativa.`,
+          en: `# Hide Booking Site from Google & Search Engines
+
+For prestigious medical centers, private practitioners, or exclusive aesthetic spas operating with a restricted customer list, blocking search engines from indexing the booking web might be a privacy requirement.
 
 ---
 
-### Indexation Toggles
+### How to Block Google Crawlers
 
-ProBookia streamlines crawler blocking within the Advanced settings tab:
-* **Indexing Enabled (Default)**: Grants search bots permissions to index services, categories, and cover details to drive organic local traffic.
-* **Indexing Disabled (NoIndex)**: Turning this toggle on signals ProBookia to inject dynamic HTTP headers \`X-Robots-Tag: noindex, nofollow\` alongside the target HTML meta tags:
-\`\`\`html
-<meta name="robots" content="noindex, nofollow" />
-\`\`\`
-This strictly tells search engine bots to ignore your clinic's booking site and exclude it from public indexes, preserving privacy.`,
-          fr: `# Visibilité SEO & Indexation NoIndex
-          
-Pour les centres privés gérant une clientèle exclusive, bloquer l'indexation publique sur Google ou Bing peut être nécessaire.
+ProBookia handles bot blocking with a single toggle inside the Advanced settings tab:
+
+* **Indexing Enabled (Default)**: Grants Google or Bing permission to crawl services and drive organic local patients to your landing site.
+* **Indexing Disabled (NoIndex)**: Turning this toggle on commands ProBookia to inject restrictive headers (\`noindex, nofollow\`) into your portal code. This tells search engine crawlers to ignore your booking site and exclude it from public searches, preserving privacy.`,
+          fr: `# Masquer Votre Site du Référencement Google (NoIndex)
+
+Pour les centres très prestigieux ou les cabinets privés travaillant uniquement avec un cercle restreint de patients, masquer le site de réservation sur Google ou Bing peut être nécessaire.
 
 ---
 
-### Paramètres d'Indexation
+### Comment Empêcher Google de Référencer Votre Site
 
-ProBookia propose un blocage simple dans l'onglet Avancé:
-* **Indexation Activée (Par défaut)**: Permet aux robots de Google de référencer votre catalogue afin d'attirer des clients par recherche organique.
-* **Indexación Desactivada (NoIndex)**: L'activation de cette option injecte l'en-tête HTTP \`X-Robots-Tag: noindex, nofollow\` et la balise correspondante:
-\`\`\`html
-<meta name="robots" content="noindex, nofollow" />
-\`\`\`
-Cela indique instantanément aux moteurs de recherche de ne pas lister votre site, protégeant l'exclusivité de votre centre.`
+ProBookia gère cela simplement à l'aide d'un bouton dans les Paramètres Avancés :
+
+* **Indexation Activée (Par défaut)**: Permet aux moteurs de recherche de lister vos prestations pour attirer des clients locaux par recherche naturelle.
+* **Indexation Désactivée (NoIndex)**: L'activation de cette option injecte des balises restrictives (\`noindex, nofollow\`) dans votre code. Les robots de Google reçoivent l'ordre de ne pas référencer votre site, protégeant la confidentialité de votre établissement.`
         }
       },
       {
         id: 'galeria-privada-sedes',
         title: {
-          es: 'Galería Privada, Perfiles y Horarios por Sede',
-          en: 'Private Gallery, Profiles & Multi-local',
-          fr: 'Galerie Privée & Multi-local'
+          es: 'Multi-Sede y Archivos Seguros',
+          en: 'Multi-Location Centers & Secure Media',
+          fr: 'Multi-Centres & Stockage Sécurisé'
         },
         markdown: {
-          es: `# Galería Privada, Perfiles y Horarios por Sede
-          
-La arquitectura de ProBookia permite una gestión descentralizada y segura para coordinar el trabajo en múltiples sucursales físicas.
+          es: `# Multi-Sede y Archivos Seguros
+
+La estructura flexible de ProBookia te permite gestionar y coordinar de forma impecable el trabajo diario en múltiples sucursales o centros de trabajo independientes.
 
 ---
 
-### Galería de Medios Privada
-Para evitar el uso de servidores de almacenamiento públicos desprotegidos, ProBookia integra un contenedor seguro de archivos multimedia. Todas las fotografías cargadas de especialistas, tratamientos o logotipos se aíslan por tenant, cifrando sus accesos para garantizar que tu base de datos y archivos son 100% inaccesibles por externos.
+### Gestión Multi-Sede Física
 
-### Horarios Especiales por Sede Física
-Si tu centro opera con múltiples sucursales físicas, no estás obligado a unificar horarios:
-1. **Ficha de Sede**: Configura la dirección, teléfono y correo específico de cada local.
-2. **Calendario Independiente**: Agrega bloqueos, festivos o descansos para la sede A sin alterar la sede B.
-3. **Modalidad del Profesional**: Vincula especialistas exclusivamente a las sedes correspondientes para que sus horas solo se ofrezcan en los locales adecuados.`,
-          en: `# Private Galleries, Staff Profiles & Location Hours
-          
-ProBookia provides secure decentralized capabilities to coordinate multi-center operations.
+Si tu clínica cuenta con diferentes establecimientos, no estás obligado a mezclar su disponibilidad:
+1. **Ficha por Sede**: Configura el nombre, dirección, teléfono y correo específico de cada local físico.
+2. **Calendario Propio**: Define horarios de apertura, descansos y vacaciones específicas para la Sede A sin afectar la disponibilidad de la Sede B.
+3. **Especialistas Vinculados**: Asigna a tu personal de forma exclusiva a las sedes donde trabajan, evitando que un cliente reserve una cita con un especialista en la sucursal incorrecta.
 
----
+### Galería de Medios Privada y Segura
 
-### Secure Private Galleries
-To bypass unprotected public media storage, ProBookia deploys secure isolated buckets. Staff profile images, treatment covers, and logo uploads are structured under tenant constraints, locking external access and guaranteeing 100% asset privacy.
+Todas las imágenes que cargues de tus tratamientos, cabinas o especialistas se guardan en **un contenedor digital cifrado y aislado**. Nadie fuera de tu negocio podrá descargar o acceder a tus archivos multimedia, lo que garantiza una protección total de tu marca y la de tus pacientes.`,
+          en: `# Multi-Location Centers & Private Secure Media
 
-### Scoped Hours per Physical Center Location
-If your business operates multi-local centers, you can bypass unified hour constraints:
-1. **Location Files**: Manage addresses, emails, and phone records for each individual branch.
-2. **Independent Schedules**: Assign custom break times and holidays for Location A without disturbing Location B.
-3. **Specialist Binding**: Link active practitioners to their respective center offices, blocking them from receiving bookings at incorrect branches.`,
-          fr: `# Galerie Privée, Profils & Horaires par Centre
-          
-L'architecture de ProBookia permet une gestion décentralisée pour coordonner le travail sur plusieurs centres physiques.
+ProBookia's scalable architecture provides secure, decentralized capabilities to coordinate daily schedules across multiple physical clinics.
 
 ---
 
-### Galerie de Médias Privée
-Pour éviter l'utilisation de serveurs de stockage non protégés, ProBookia intègre un conteneur sécurisé par centre. Tous les fichiers de spécialistes ou logos sont isolés et protégés.
+### Multi-Center Scheduling Setup
 
-### Horaires Spécifiques par Centre Physique
-Si votre entreprise possède plusieurs agences, vous pouvez configurer des règles distinctes:
-1. **Fiches de Centre**: Saisissez l'adresse, l'email et le téléphone propres à chaque succursale.
-2. **Plannings Indépendants**: Ajoutez des congés ou des plages de fermeture pour le Centre A sans modifier le Centre B.
-3. **Affectation de l'Équipe**: Associez les spécialistes à leurs centres respectifs pour éviter toute erreur de réservation.`
+If your brand operates multiple physical locations, you can bypass unified hour constraints:
+1. **Location Profiles**: Configure unique phone, address, and email records for each separate center branch.
+2. **Independent Calendars**: Set custom holidays and daily operating hours for Location A without disturbing Location B.
+3. **Specialist Binding**: Link active practitioners exclusively to the centers they work at, blocking patients from booking them at incorrect locations.
+
+### Secure Private Media Storage
+
+All image uploads for treatments, clinics, and specialist profiles are saved inside **a securely isolated digital vault**. No external actors can inspect or pull your media, ensuring absolute brand asset privacy.`,
+          fr: `# Gestion Multi-Centres & Stockage Sécurisé de Vos Médias
+
+L'architecture évolutive de ProBookia vous offre des outils décentralisés pour coordonner facilement l'activité de plusieurs succursales ou cabinets.
+
+---
+
+### Configuration Spécifique par Établissement
+
+Si votre marque possède plusieurs succursales physiques, personnalisez chaque fiche :
+1. **Profil de Centre**: Renseignez le numéro de téléphone, l'adresse et l'email propres à chaque établissement.
+2. **Calendriers Autonomes**: Définissez des horaires et congés pour le Centre A sans impacter la disponibilité du Centre B.
+3. **Affectation des Spécialistes**: Associez vos praticiens aux centres où ils exercent pour éviter toute erreur de réservation.
+
+### Galerie de Médias Privée et Chiffrée
+
+Toutes vos photos de soins, de locaux et de profil sont stockées dans **un espace numérique chiffré et hermétique**. Aucun tiers ne peut y accéder, garantissant la protection de vos documents et de votre image.`
         }
       },
       {
         id: 'agentes-ia-webmaster',
         title: {
-          es: 'Agentes Autónomos: IA Webmaster y Global Copilot',
-          en: 'Autonomous Agents: IA Webmaster & Copilot',
-          fr: 'Agents Autonomes: IA Webmaster & Copilot'
+          es: 'Asistentes Inteligentes para Gestionar tu Web',
+          en: 'Autonomous AI Webmaster & Global Copilot',
+          fr: 'Assistants IA Autonomes Webmaster & Copilote'
         },
         markdown: {
-          es: `# Agentes Autónomos: IA Webmaster y Global Copilot
-          
-El Plan Gold Elite incluye el acceso a los motores autónomos de Inteligencia Artificial más avanzados del mercado SaaS, convirtiendo tareas complejas de administración en una simple charla.
+          es: `# Asistentes Inteligentes para Gestionar tu Web
+
+En el Plan **Gold Elite** cuentas con acceso a los asistentes autónomos de Inteligencia Artificial más avanzados. Gracias a ellos, gestionar la configuración de tu negocio se convierte en una simple conversación por chat o comandos de voz.
 
 ---
 
-### Asistente IA Webmaster con Vista Previa (Iframe Editor)
+### Diseñador Web Autónomo con Vista Previa (AI Webmaster)
 
-Ubicado en el menú **AI Webmaster**, este módulo integra:
-* **Panel de Chat Integrado**: Conversa en lenguaje natural con tu IA para cambiar el diseño de la web, modificar paletas tipográficas, añadir o reescribir copys comerciales de tratamientos o cambiar fotos.
-* **Simulador Web (Responsive Preview)**: A la derecha del chat, visualizas un navegador simulado que carga la vista previa real de tu landing page (alternando entre vista de escritorio y vista móvil en iPhone).
-* **Renderización Instantánea**: Cuando la IA edita tu portal de tratamientos, recarga automáticamente el iframe de previsualización para mostrarte el cambio estético de forma inmediata y en tiempo real.
+Olvídate de buscar programadores para actualizar la landing page de tu clínica. Con **AI Webmaster** puedes:
+* **Modificar por Chat**: Escribe comandos sencillos en lenguaje natural (ej: "Cambia el color primario de los botones a dorado", "Reescribe la descripción de Hidratación Facial para hacerla más exclusiva" o "Sube esta nueva foto de portada").
+* **Simulador Web Integrado**: A la derecha de tu panel de chat verás un simulador web interactivo en tiempo real. 
+* **Renderización al Instante**: En el momento en que la IA finaliza un cambio, el simulador se actualiza de inmediato para mostrarte el resultado en pantalla (pudiendo alternar entre vista de escritorio y vista móvil de iPhone).
 
-### Agente IA Copilot Global
+### Copiloto Global por Voz
 
-El co-piloto por voz/audio de ProBookia:
-* **Activación por Voz**: Interpreta tus intenciones a través de audios o comandos verbales.
-* **Mutación de Datos**: Puedes pedirle verbalmente cambiar colores de branding, modificar textos o consultar estados financieros y de citas, actuando directamente sobre las APIs del sistema de forma atómica y segura.`,
-          en: `# Autonomous Agents: IA Webmaster & Global Copilot
-          
-The Gold Elite plan introduces highly sophisticated autonomous AI engines, transforming tedious business administration into natural conversations.
+Gestiona tu agenda y clínica hablando de forma natural:
+* **Audio y Comandos de Voz**: Presiona el botón del micrófono y habla libremente al copiloto de voz.
+* **Consultas Rápidas**: Pregúntale verbalmente: "¿Cuántas citas tenemos agendadas para esta tarde?" o "¿Cuáles han sido los ingresos estimados de esta semana?". El copiloto analizará tu voz y te responderá con total precisión de forma segura.`,
+          en: `# Autonomous AI Webmaster & Voice Copilot
+
+The **Gold Elite** plan introduces highly sophisticated autonomous AI assistants, transforming daily clinical setups into simple chat conversations or voice prompts.
 
 ---
 
-### Interactive AI Webmaster & Live Preview Iframe
+### Live Preview AI Webmaster (Iframe Editor)
 
-Accessible via the **AI Webmaster** dashboard, this module integrates:
-* **Sidebar Chat Assistant**: Chat directly with the AI in natural language to adjust visual palettes, redesign buttons, rewrite commercial treatment descriptions, or modify structures.
-* **Simulated Device Viewport (Responsive Preview)**: A premium simulated browser panel loads your live landing preview, offering one-click switches between desktop and mobile viewport sizes.
-* **Instant Iframe Revalidation**: As soon as the AI applies database edits, the frontend triggers an automatic iframe reload to immediately render design changes in real time.
+Forget about hiring coders to update your clinic website. With **AI Webmaster**, you can:
+* **Edit by Chatting**: Talk to the assistant in natural language (e.g. "Change the main buttons to a gold preset", "Rewrite the Facial treatment copy to sound more luxurious", or "Set this new cover image").
+* **Simulated Device Preview**: A premium responsive simulation viewport sits right next to the chat panel.
+* **Instant Renders**: The moment the AI applies database shifts, the browser iframe automatically reloads to showcase visual updates in real time (supporting simple desktop and mobile iPhone switches).
 
 ### Global Voice AI Copilot
 
-ProBookia's audio intent parser:
-* **Voice Command Interpretation**: Translates verbal voice prompts and recordings into transactional intents.
-* **Atomic Database Actions**: Commands like shifting brand presets, mutating copies, or fetching client charts execute securely and instantly via scoped REST calls.`,
-          fr: `# Agents Autonomes: IA Webmaster & Copilot Global
-          
-Le forfait Gold Elite comprend l'accès aux agents autonomes les plus avancés du marché SaaS, transformant la gestion administrative en une simple discussion.
+Supervise your calendar agenda by talking naturally:
+* **Voice Command Recognition**: Tap the microphone icon and prompt instructions using your voice.
+* **Live Inquiries**: Ask verbally: "How many client sessions do we have scheduled for this afternoon?" or "What are the estimated earnings of this month?". The copilot parses your intent and answers instantly and securely.`,
+          fr: `# Assistants IA Autonomes : Webmaster & Copilote Vocal
+
+Le forfait **Gold Elite** intègre des assistants d'Intelligence Artificielle autonomes de pointe, transformant les tâches administratives complexes en une simple discussion.
 
 ---
 
-### Assistant IA Webmaster avec Prévisualisation en Direct (Iframe)
+### Concepteur Web IA Autonome (AI Webmaster)
 
-Situé dans l'onglet **AI Webmaster**, ce module intègre:
-* **Panneau de Discussion**: Discutez en langage naturel avec l'IA pour modifier le design du site, réécrire les descriptions ou changer les images.
-* **Simulateur d'Écran (Responsive Preview)**: À droite du chat, un navigateur simulé affiche votre site en direct (basculant entre bureau et mobile iPhone).
-* **Mise à Jour Instantanée**: Lorsque l'IA applique une modification en base de données, l'iframe se recharge automatiquement pour afficher le rendu.
+Plus besoin de faire appel à des développeurs pour modifier le site de votre centre. Avec **AI Webmaster** :
+* **Modifiez par Chat**: Donnez des consignes simples en langage naturel (ex : "Modifie la couleur des boutons en bronze", "Réécris la description du Soin Facial en y ajoutant une touche luxueuse").
+* **Simulateur d'Écran Intégré**: Visualisez le rendu sur un écran interactif situé à droite du chat.
+* **Rendu Instantané**: Dès que l'IA applique les changements, l'aperçu se met à jour en temps réel (basculez facilement entre le mode ordinateur et mobile iPhone).
 
-### Assistant IA Copilot Global
+### Assistant Copilote Vocal Global
 
-Le co-pilote vocal ProBookia:
-* **Analyse de Commande Vocale**: Traduit vos messages audio en requêtes transactionnelles.
-* **Actions Automatiques Sécurisées**: Modifiez vos couleurs, vos textes ou consultez vos statistiques financières en parlant simplement à l'assistant.`
+Pilotez votre agenda et votre établissement en parlant simplement :
+* **Reconnaissance Vocale**: Appuyez sur le micro et donnez vos consignes à haute voix.
+* **Questions à l'Oral**: Demandez simplement : "Combien de rendez-vous avons-nous cet après-midi ?" ou "Quel est le chiffre d'affaires estimé de cette semaine ?". Le copilote analyse votre voix et vous répond avec précision.`
         }
       }
     ]

@@ -117,151 +117,87 @@ export default function DocsClientPage({ brandingSettings }: DocsClientPageProps
     };
   }).filter(section => section.subpages.length > 0);
 
-  // Custom visual markdown to react parser
+
   function renderMarkdownToReact(markdown: string) {
     const lines = markdown.split('\n');
     const blocks: React.ReactNode[] = [];
     
-    let inCodeBlock = false;
-    let codeBlockLines: string[] = [];
-    let codeBlockLang = '';
-    
-    let inList = false;
-    let listItems: string[] = [];
-    
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
+    let i = 0;
+    while (i < lines.length) {
+      let line = lines[i];
       
-      // Fenced code blocks
+      // 1. Fenced Code Block
       if (line.trim().startsWith('```')) {
-        if (inCodeBlock) {
-          inCodeBlock = false;
-          const codeText = codeBlockLines.join('\n');
-          blocks.push(
-            <div key={`code-${i}`} className="my-6 rounded-2xl overflow-hidden border border-stone-850 bg-stone-950 shadow-xl animate-in fade-in duration-300">
-              <div className="flex items-center justify-between px-4 py-3 bg-stone-900 border-b border-stone-850">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-red-500/80"></span>
-                  <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></span>
-                  <span className="w-2.5 h-2.5 rounded-full bg-green-500/80"></span>
-                </div>
-                <span className="text-[10px] font-mono tracking-widest text-stone-500 uppercase">{codeBlockLang || 'CODE'}</span>
+        const lang = line.replace('```', '').trim();
+        const codeLines: string[] = [];
+        i++;
+        while (i < lines.length && !lines[i].trim().startsWith('```')) {
+          codeLines.push(lines[i]);
+          i++;
+        }
+        // Skip closing backticks
+        i++;
+        const codeText = codeLines.join('\n');
+        blocks.push(
+          <div key={`code-${i}`} className="my-8 rounded-2xl overflow-hidden border border-stone-200 dark:border-stone-850 bg-stone-950 shadow-xl animate-in fade-in duration-300">
+            <div className="flex items-center justify-between px-4 py-3 bg-stone-900 border-b border-stone-800">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500/80"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-green-500/80"></span>
               </div>
-              <pre className="p-5 overflow-x-auto font-mono text-xs text-stone-350 leading-relaxed custom-scrollbar">
-                <code>{codeText}</code>
-              </pre>
+              <span className="text-[10px] font-mono tracking-widest text-stone-500 uppercase">{lang || 'CODE'}</span>
             </div>
-          );
-          codeBlockLines = [];
-          codeBlockLang = '';
-        } else {
-          inCodeBlock = true;
-          codeBlockLang = line.replace('```', '').trim();
-        }
-        continue;
-      }
-      
-      if (inCodeBlock) {
-        codeBlockLines.push(line);
-        continue;
-      }
-      
-      // Bullet lists
-      if (line.trim().startsWith('* ') || line.trim().startsWith('- ')) {
-        if (!inList) {
-          inList = true;
-          listItems = [];
-        }
-        listItems.push(line.trim().replace(/^[\*\-]\s+/, ''));
-        continue;
-      } else {
-        if (inList) {
-          inList = false;
-          blocks.push(
-            <ul key={`list-${i}`} className="my-5 space-y-3.5 pl-2">
-              {listItems.map((item, idx) => {
-                const parts = item.split('**');
-                return (
-                  <li key={idx} className="flex items-start gap-3 text-stone-600 dark:text-stone-300 text-[15px] leading-relaxed animate-in fade-in duration-200">
-                    <span className="w-1.5 h-1.5 rounded-full theme-bullet shrink-0 mt-2.5"></span>
-                    <span>
-                      {parts.map((part, pIdx) => pIdx % 2 === 1 ? <strong key={pIdx} className="font-bold text-stone-950 dark:text-stone-100">{part}</strong> : part)}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          );
-          listItems = [];
-        }
-      }
-      
-      // Headers
-      if (line.startsWith('# ')) {
-        blocks.push(
-          <h1 key={`h1-${i}`} className="font-serif text-3xl md:text-4xl font-semibold tracking-tight text-stone-950 dark:text-white mt-2 mb-6 pb-4 border-b border-stone-100 dark:border-stone-900 leading-tight">
-            {line.replace('# ', '')}
-          </h1>
+            <pre className="p-5 overflow-x-auto font-mono text-xs text-stone-300 leading-relaxed custom-scrollbar">
+              <code>{codeText}</code>
+            </pre>
+          </div>
         );
         continue;
       }
       
-      if (line.startsWith('## ')) {
-        blocks.push(
-          <h2 key={`h2-${i}`} className="font-serif text-xl md:text-2xl font-medium tracking-tight text-stone-950 dark:text-white mt-8 mb-4 leading-snug">
-            {line.replace('## ', '')}
-          </h2>
-        );
-        continue;
-      }
-      
-      if (line.startsWith('### ')) {
-        blocks.push(
-          <h3 key={`h3-${i}`} className="font-sans text-xs font-black uppercase tracking-widest text-stone-400 dark:text-stone-505 mt-6 mb-3">
-            {line.replace('### ', '')}
-          </h3>
-        );
-        continue;
-      }
-      
-      // Dividers
-      if (line.trim() === '---') {
-        blocks.push(
-          <hr key={`hr-${i}`} className="my-8 border-stone-100 dark:border-stone-900" />
-        );
-        continue;
-      }
-      
-      // Blockquotes / Callouts
+      // 2. Blockquotes / Callouts (grouped multi-line)
       if (line.startsWith('> ')) {
-        const cleanLine = line.replace('> ', '').trim();
+        const quoteLines: string[] = [];
         let type: 'note' | 'tip' | 'important' = 'note';
-        let titleText = '';
-        let text = cleanLine;
         
-        if (cleanLine.startsWith('[!NOTE]')) {
-          type = 'note';
-          text = cleanLine.replace('[!NOTE]', '').trim();
-          titleText = uiT.architectureNote;
-        } else if (cleanLine.startsWith('[!TIP]')) {
-          type = 'tip';
-          text = cleanLine.replace('[!TIP]', '').trim();
-          titleText = uiT.bestPractice;
-        } else if (cleanLine.startsWith('[!IMPORTANT]')) {
-          type = 'important';
-          text = cleanLine.replace('[!IMPORTANT]', '').trim();
-          titleText = uiT.securityRequirement;
+        while (i < lines.length && lines[i].startsWith('> ')) {
+          let cleanLine = lines[i].replace('> ', '').trim();
+          if (cleanLine.startsWith('[!NOTE]')) {
+            type = 'note';
+            cleanLine = cleanLine.replace('[!NOTE]', '').trim();
+          } else if (cleanLine.startsWith('[!TIP]')) {
+            type = 'tip';
+            cleanLine = cleanLine.replace('[!TIP]', '').trim();
+          } else if (cleanLine.startsWith('[!IMPORTANT]')) {
+            type = 'important';
+            cleanLine = cleanLine.replace('[!IMPORTANT]', '').trim();
+          } else if (cleanLine.startsWith('[!WARNING]')) {
+            type = 'important'; // Map warning to red important
+            cleanLine = cleanLine.replace('[!WARNING]', '').trim();
+          }
+          if (cleanLine) {
+            quoteLines.push(cleanLine);
+          }
+          i++;
         }
         
+        let titleText = '';
+        if (type === 'note') titleText = uiT.architectureNote;
+        else if (type === 'tip') titleText = uiT.bestPractice;
+        else if (type === 'important') titleText = uiT.securityRequirement;
+        
+        const quoteText = quoteLines.join(' ');
+        
         blocks.push(
-          <div key={`quote-${i}`} className={`my-6 p-5 rounded-2xl shadow-sm backdrop-blur-md ${
+          <div key={`quote-${i}`} className={`my-8 p-6 rounded-2xl shadow-sm border border-stone-100 dark:border-stone-900 backdrop-blur-md ${
             type === 'important' ? 'border-l-4 border-red-500 bg-red-500/[0.02] text-red-950 dark:text-red-200' :
             type === 'tip' ? 'theme-quote-tip text-stone-850 dark:text-stone-200' :
             'theme-quote-note text-stone-850 dark:text-stone-200'
           }`}>
             {titleText && (
               <span 
-                className="text-[10px] font-black tracking-widest uppercase block mb-1.5"
+                className="text-[10px] font-black tracking-widest uppercase block mb-2"
                 style={{ 
                   color: type === 'important' ? 'rgb(239, 68, 68)' : 
                          type === 'tip' ? primaryColor : 
@@ -271,27 +207,93 @@ export default function DocsClientPage({ brandingSettings }: DocsClientPageProps
                 {titleText}
               </span>
             )}
-            <p className="text-stone-600 dark:text-stone-300 text-sm md:text-[14.5px] leading-relaxed font-medium">
-              {text}
+            <p className="text-stone-600 dark:text-stone-300 text-[15px] leading-relaxed font-medium">
+              {quoteText}
             </p>
           </div>
         );
         continue;
       }
       
-      // Paragraphs
+      // 3. Bullet lists (grouped consecutive items)
+      if (line.trim().startsWith('* ') || line.trim().startsWith('- ')) {
+        const listItems: string[] = [];
+        while (i < lines.length && (lines[i].trim().startsWith('* ') || lines[i].trim().startsWith('- '))) {
+          listItems.push(lines[i].trim().replace(/^[\*\-]\s+/, ''));
+          i++;
+        }
+        
+        blocks.push(
+          <ul key={`list-${i}`} className="my-6 space-y-4 pl-4">
+            {listItems.map((item, idx) => {
+              const parts = item.split('**');
+              return (
+                <li key={idx} className="flex items-start gap-3.5 text-stone-600 dark:text-stone-300 text-[15px] leading-relaxed animate-in fade-in duration-200">
+                  <span className="w-1.5 h-1.5 rounded-full theme-bullet shrink-0 mt-2.5"></span>
+                  <span>
+                    {parts.map((part, pIdx) => pIdx % 2 === 1 ? <strong key={pIdx} className="font-semibold text-stone-900 dark:text-stone-100">{part}</strong> : part)}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        );
+        continue;
+      }
+      
+      // 4. Headers
+      if (line.startsWith('# ')) {
+        blocks.push(
+          <h1 key={`h1-${i}`} className="font-serif text-3xl md:text-4xl font-semibold tracking-tight text-stone-950 dark:text-white mt-10 mb-6 pb-4 border-b border-stone-100 dark:border-stone-900 leading-tight">
+            {line.replace('# ', '')}
+          </h1>
+        );
+        i++;
+        continue;
+      }
+      
+      if (line.startsWith('## ')) {
+        blocks.push(
+          <h2 key={`h2-${i}`} className="font-serif text-2xl font-medium tracking-tight text-stone-950 dark:text-white mt-10 mb-5 leading-snug">
+            {line.replace('## ', '')}
+          </h2>
+        );
+        i++;
+        continue;
+      }
+      
+      if (line.startsWith('### ')) {
+        blocks.push(
+          <h3 key={`h3-${i}`} className="font-sans text-[11px] font-black uppercase tracking-wider text-stone-400 dark:text-stone-500 mt-8 mb-4">
+            {line.replace('### ', '')}
+          </h3>
+        );
+        i++;
+        continue;
+      }
+      
+      // 5. Dividers
+      if (line.trim() === '---') {
+        blocks.push(
+          <hr key={`hr-${i}`} className="my-10 border-stone-100 dark:border-stone-900" />
+        );
+        i++;
+        continue;
+      }
+      
+      // 6. Regular paragraphs
       if (line.trim() !== '') {
         const parts = line.split('**');
         const inlineParsed = parts.map((part, pIdx) => {
           if (pIdx % 2 === 1) {
-            return <strong key={pIdx} className="font-bold text-stone-950 dark:text-stone-100">{part}</strong>;
+            return <strong key={pIdx} className="font-semibold text-stone-900 dark:text-stone-100">{part}</strong>;
           }
           
           const codeParts = part.split('`');
           return codeParts.map((cPart, cIdx) => {
             if (cIdx % 2 === 1) {
               return (
-                <code key={cIdx} className="px-2 py-0.5 mx-0.5 rounded-lg bg-stone-100 dark:bg-stone-900 border border-stone-200/50 dark:border-stone-800 text-xs font-mono text-stone-800 dark:text-stone-250 font-semibold">
+                <code key={cIdx} className="px-2 py-0.5 mx-0.5 rounded-lg bg-stone-100 dark:bg-stone-900 border border-stone-200/50 dark:border-stone-800 text-xs font-mono text-stone-800 dark:text-stone-200 font-semibold">
                   {cPart}
                 </code>
               );
@@ -301,14 +303,16 @@ export default function DocsClientPage({ brandingSettings }: DocsClientPageProps
         });
         
         blocks.push(
-          <p key={`p-${i}`} className="text-stone-600 dark:text-stone-300 text-[15px] md:text-[16px] leading-relaxed my-4.5 font-medium">
+          <p key={`p-${i}`} className="text-stone-600 dark:text-stone-300 text-[16px] leading-relaxed mb-6 font-normal">
             {inlineParsed}
           </p>
         );
       }
+      
+      i++;
     }
     
-    return <div className="space-y-1">{blocks}</div>;
+    return <div className="space-y-2">{blocks}</div>;
   }
 
   return (
@@ -470,7 +474,7 @@ export default function DocsClientPage({ brandingSettings }: DocsClientPageProps
             <div className="space-y-8 pr-2">
               {filteredSections.map(section => (
                 <div key={section.id} className="space-y-3">
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.25em] text-stone-400 dark:text-stone-505 select-none">
+                  <h3 className="text-[11px] font-bold uppercase tracking-[0.15em] text-stone-500 dark:text-stone-400 select-none pb-2 border-b border-stone-100 dark:border-stone-900/60 mb-2">
                     {section.title[langKey] || section.title.es}
                   </h3>
                   <ul className="space-y-1.5 border-l border-stone-100 dark:border-stone-900 pl-0">
@@ -484,7 +488,7 @@ export default function DocsClientPage({ brandingSettings }: DocsClientPageProps
                               setActiveSubpageId(page.id);
                               setSidebarOpen(false);
                             }}
-                            className={`w-full text-left py-1.5 pl-4 pr-3 text-[14px] font-medium transition-all rounded-lg select-none relative flex items-center justify-between group ${
+                            className={`w-full text-left py-2.5 pl-4 pr-3 text-[14px] font-medium transition-all rounded-lg select-none relative flex items-center justify-between group ${
                               isActive
                                 ? 'text-stone-950 dark:text-white font-bold bg-stone-50 dark:bg-stone-900/50 before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[3px] theme-active-indicator before:rounded-full'
                                 : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-50/50 dark:hover:bg-stone-900/20'
