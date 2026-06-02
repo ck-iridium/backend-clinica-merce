@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Calendar } from "lucide-react";
 import { SectorMetadataDisplay } from './SectorMetadataDisplay';
@@ -34,6 +35,12 @@ export function ClientTabsContent({
   sectorMetadata = {}
 }: ClientTabsContentProps) {
   const { t } = useLanguage();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
 
   if (activeTab === 'overview') {
     return (
@@ -60,6 +67,12 @@ export function ClientTabsContent({
   }
 
   if (activeTab === 'appointments') {
+    const totalPages = Math.ceil(appointments.length / itemsPerPage);
+    const paginatedAppointments = appointments.slice(
+      (currentPage - 1) * itemsPerPage,
+      currentPage * itemsPerPage
+    );
+
     return (
       <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-stone-100 space-y-6">
         <h3 className="text-lg font-serif font-light text-stone-800 border-b border-stone-50 pb-4">Historial de Tratamientos</h3>
@@ -67,28 +80,57 @@ export function ClientTabsContent({
         {appointments.length === 0 ? (
           <div className="text-center py-12 text-stone-400 italic text-sm">No hay tratamientos registrados en el historial de este cliente.</div>
         ) : (
-          <div className="space-y-3">
-            {appointments.map(a => {
-              const s = services.find(x => x.id === a.service_id);
-              return (
-                <div key={a.id} className="p-4 rounded-xl border border-stone-100 bg-[#FAFAFA] hover:bg-white flex items-center justify-between transition-all group">
-                  <div className="flex items-center gap-3">
-                    <span className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-650 flex items-center justify-center font-bold text-xs">✓</span>
-                    <div>
-                      <p className="font-bold text-stone-800 text-sm">{s?.name || 'Tratamiento'}</p>
-                      <p className="text-[10px] text-stone-400 font-semibold flex items-center gap-1 mt-0.5">
-                        <Calendar size={10} />
-                        {new Date(a.start_time).toLocaleString(dateLocale, { dateStyle: 'medium', timeStyle: 'short' })}
-                      </p>
+          <>
+            <div className="space-y-3">
+              {paginatedAppointments.map(a => {
+                const s = services.find(x => x.id === a.service_id);
+                return (
+                  <div key={a.id} className="p-4 rounded-xl border border-stone-100 bg-[#FAFAFA] hover:bg-white flex items-center justify-between transition-all group">
+                    <div className="flex items-center gap-3">
+                      <span className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-650 flex items-center justify-center font-bold text-xs">✓</span>
+                      <div>
+                        <p className="font-bold text-stone-800 text-sm">{s?.name || 'Tratamiento'}</p>
+                        <p className="text-[10px] text-stone-400 font-semibold flex items-center gap-1 mt-0.5">
+                          <Calendar size={10} />
+                          {new Date(a.start_time).toLocaleString(dateLocale, { dateStyle: 'medium', timeStyle: 'short' })}
+                        </p>
+                      </div>
                     </div>
+                    <span className="text-[10px] font-bold text-stone-400 bg-white border border-stone-200 px-3 py-1 rounded-full uppercase tracking-wider group-hover:border-stone-300">
+                      {t('dashboard.clients.completed') || 'Completado'}
+                    </span>
                   </div>
-                  <span className="text-[10px] font-bold text-stone-400 bg-white border border-stone-200 px-3 py-1 rounded-full uppercase tracking-wider group-hover:border-stone-300">
-                    {t('dashboard.clients.completed') || 'Completado'}
-                  </span>
+                )
+              })}
+            </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between border-t border-stone-100 pt-6 mt-6">
+                <span className="text-xs text-stone-450 font-semibold uppercase tracking-wider">
+                  Página {currentPage} de {totalPages} ({appointments.length} servicios)
+                </span>
+                <div className="flex gap-2">
+                  <button 
+                    type="button"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    className="px-4 py-2 text-xs font-bold bg-white border border-stone-200 text-stone-600 rounded-xl hover:bg-stone-50 disabled:opacity-40 disabled:hover:bg-white transition-all duration-300"
+                  >
+                    Anterior
+                  </button>
+                  <button 
+                    type="button"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    className="px-4 py-2 text-xs font-bold bg-stone-900 text-white rounded-xl hover:bg-stone-800 disabled:opacity-40 disabled:hover:bg-stone-900 transition-all duration-300"
+                  >
+                    Siguiente
+                  </button>
                 </div>
-              )
-            })}
-          </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     );

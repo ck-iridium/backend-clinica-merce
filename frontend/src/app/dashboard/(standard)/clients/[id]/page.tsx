@@ -297,99 +297,83 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
       </Link>
 
       {/* Main Profile Showcase Card */}
-      <div className="bg-white p-8 md:p-10 rounded-[2rem] shadow-sm border border-stone-100/80 mb-8 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-bl from-stone-50 to-white rounded-full blur-3xl opacity-60 -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+      <div className="bg-white p-5 md:p-6 md:px-8 rounded-2xl shadow-sm border border-stone-100/80 mb-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-60 h-60 bg-gradient-to-bl from-stone-50 to-white rounded-full blur-3xl opacity-60 -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
         
-        <div className="flex flex-col md:flex-row gap-8 items-start relative z-10">
-          <div className="w-24 h-24 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-center text-stone-600 font-serif text-5xl shadow-sm shrink-0 font-bold uppercase">
-            {client.first_name ? client.first_name.charAt(0) : client.name.charAt(0)}
+        <div className="flex flex-col md:flex-row gap-6 items-center justify-between relative z-10">
+          <div className="flex items-center gap-5 w-full md:w-auto">
+            <div className="w-16 h-16 rounded-xl bg-stone-50 border border-stone-200 flex items-center justify-center text-stone-600 font-serif text-3xl shadow-sm shrink-0 font-bold uppercase">
+              {client.first_name ? client.first_name.charAt(0) : client.name.charAt(0)}
+            </div>
+            
+            <div>
+              <h1 className="text-2xl md:text-3xl font-serif font-light text-stone-800 tracking-tight leading-none">
+                {client.first_name} {client.last_name || ''}
+              </h1>
+              <p className="text-stone-400 text-xs font-semibold mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span>{client.email}</span>
+                {client.phone && <span className="text-stone-300">•</span>}
+                {client.phone && <span>{client.phone}</span>}
+                {client.dni && <span className="text-stone-300">•</span>}
+                {client.dni && <span className="font-mono text-stone-550">NIF/DNI: {client.dni}</span>}
+              </p>
+            </div>
           </div>
           
-          <div className="flex-1 w-full">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-              <div>
-                <h1 className="text-4xl font-serif font-light text-stone-800 tracking-tight">
-                  {client.first_name} {client.last_name || ''}
-                </h1>
-                <p className="text-stone-400 text-sm font-medium mt-1">
-                  {client.email} {client.phone && `• ${client.phone}`}
-                </p>
-              </div>
-              
-              <div className="flex flex-wrap gap-2">
-                <a href={`/dashboard/calendar?client_id=${params.id}`} className="bg-stone-900 text-white px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-[#D4AF37] hover:text-stone-950 transition-all active:scale-95 shadow-sm">
-                  {t('dashboard.clients.book_appointment') || 'Reservar Cita'}
-                </a>
-                <button onClick={() => setIsEditing(true)} className="bg-white border border-stone-200 text-stone-600 px-6 py-2.5 rounded-full text-xs font-bold hover:bg-stone-50 transition-all active:scale-95 shadow-sm">
-                  Editar Ficha
-                </button>
-              </div>
-            </div>
-
-            {/* Subinfo Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 text-stone-500 text-xs font-medium border-t border-stone-100 pt-4">
-              {client.dni && (
-                <div className="flex items-center gap-2">
-                  <User size={14} className="text-stone-400" />
-                  <span>NIF/DNI: <strong className="text-stone-700 font-mono">{client.dni}</strong></span>
-                </div>
-              )}
-              {client.service_address && (
-                <div className="flex items-start gap-2">
-                  <MapPin size={14} className="text-stone-400 shrink-0 mt-0.5" />
-                  <div>
-                    <span className="block text-stone-400 uppercase tracking-wider text-[9px] mb-0.5">Domicilio de Servicio</span>
-                    <strong className="text-stone-700">{client.service_address}</strong>
-                    {(client.service_postal_code || client.service_city) && (
-                      <span className="block text-stone-500">
-                        {client.service_postal_code} {client.service_city}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {isBillingDifferent && client.billing_address && (
-                <div className="flex items-start gap-2 border-l border-stone-100 pl-4">
-                  <CreditCard size={14} className="text-stone-400 shrink-0 mt-0.5" />
-                  <div>
-                    <span className="block text-stone-400 uppercase tracking-wider text-[9px] mb-0.5">Dirección de Facturación</span>
-                    <strong className="text-stone-700">{client.billing_name || `${client.first_name} ${client.last_name || ''}`}</strong>
-                    <span className="block text-stone-600 font-mono text-[10px]">NIF: {client.billing_nif}</span>
-                    <span className="block text-stone-500">{client.billing_address}</span>
-                    <span className="block text-stone-500">{client.billing_postal_code} {client.billing_city}</span>
-                  </div>
-                </div>
-              )}
-            </div>
+          <div className="flex gap-2 w-full md:w-auto justify-end border-t md:border-t-0 pt-4 md:pt-0 border-stone-50">
+            <a href={`/dashboard/calendar?client_id=${params.id}`} className="bg-stone-900 text-white px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-[#D4AF37] hover:text-stone-950 transition-all active:scale-95 shadow-sm">
+              {t('dashboard.clients.book_appointment') || 'Reservar Cita'}
+            </a>
+            <button onClick={() => setIsEditing(true)} className="bg-white border border-stone-200 text-stone-600 px-5 py-2.5 rounded-full text-xs font-bold hover:bg-stone-50 transition-all active:scale-95 shadow-sm">
+              Editar Ficha
+            </button>
           </div>
         </div>
+
+        {/* Subinfo Grid */}
+        {(client.service_address || (isBillingDifferent && client.billing_address)) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-stone-50 text-stone-500 text-xs font-medium">
+            {client.service_address && (
+              <div className="flex items-center gap-2">
+                <MapPin size={12} className="text-stone-400 shrink-0" />
+                <span className="truncate">Domicilio: <strong className="text-stone-700">{client.service_address}</strong> {(client.service_postal_code || client.service_city) && `(${client.service_postal_code} ${client.service_city})`}</span>
+              </div>
+            )}
+
+            {isBillingDifferent && client.billing_address && (
+              <div className="flex items-center gap-2">
+                <CreditCard size={12} className="text-stone-400 shrink-0" />
+                <span className="truncate">Facturación: <strong className="text-stone-750 font-mono text-[10px]">NIF {client.billing_nif}</strong> - <strong className="text-stone-700">{client.billing_address}</strong></span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Tabs Menu */}
-      <div className="flex border-b border-stone-200 mb-8 overflow-x-auto gap-8">
+      {/* Tabs Menu (Segmented Controls Styling) */}
+      <div className="bg-stone-100/70 p-1.5 rounded-2xl flex border border-stone-200/50 mb-6 max-w-max overflow-x-auto gap-1.5">
         <button 
           onClick={() => setActiveTab('overview')} 
-          className={`pb-4 px-1 text-xs font-black uppercase tracking-[0.15em] border-b-2 transition-all ${activeTab === 'overview' ? 'border-[#D4AF37] text-stone-850' : 'border-transparent text-stone-400 hover:text-stone-600'}`}
+          className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.12em] transition-all duration-300 ${activeTab === 'overview' ? 'bg-white text-stone-900 shadow-sm border border-stone-200/20' : 'text-stone-500 hover:text-stone-850'}`}
         >
-          Resumen & Ficha Sectorial
+          Resumen & Ficha
         </button>
         <button 
           onClick={() => setActiveTab('appointments')} 
-          className={`pb-4 px-1 text-xs font-black uppercase tracking-[0.15em] border-b-2 transition-all ${activeTab === 'appointments' ? 'border-[#D4AF37] text-stone-850' : 'border-transparent text-stone-400 hover:text-stone-600'}`}
+          className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.12em] transition-all duration-300 ${activeTab === 'appointments' ? 'bg-white text-stone-900 shadow-sm border border-stone-200/20' : 'text-stone-500 hover:text-stone-850'}`}
         >
-          Historial de Servicios ({appointments.length})
+          Servicios ({appointments.length})
         </button>
         <button 
           onClick={() => setActiveTab('vouchers')} 
-          className={`pb-4 px-1 text-xs font-black uppercase tracking-[0.15em] border-b-2 transition-all ${activeTab === 'vouchers' ? 'border-[#D4AF37] text-stone-850' : 'border-transparent text-stone-400 hover:text-stone-600'}`}
+          className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.12em] transition-all duration-300 ${activeTab === 'vouchers' ? 'bg-white text-stone-900 shadow-sm border border-stone-200/20' : 'text-stone-500 hover:text-stone-850'}`}
         >
           Bonos ({vouchers.length})
         </button>
         {(businessSector === 'clinical' || businessSector === 'beauty') && (
           <button 
             onClick={() => setActiveTab('consents')} 
-            className={`pb-4 px-1 text-xs font-black uppercase tracking-[0.15em] border-b-2 transition-all ${activeTab === 'consents' ? 'border-[#D4AF37] text-stone-850' : 'border-transparent text-stone-400 hover:text-stone-600'}`}
+            className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.12em] transition-all duration-300 ${activeTab === 'consents' ? 'bg-white text-stone-900 shadow-sm border border-stone-200/20' : 'text-stone-500 hover:text-stone-850'}`}
           >
             Consentimientos ({consents.length})
           </button>
