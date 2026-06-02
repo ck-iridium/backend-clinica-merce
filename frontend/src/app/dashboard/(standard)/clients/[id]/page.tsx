@@ -306,98 +306,62 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
           </div>
           
           <div className="flex-1 w-full">
-            {isEditing ? (
-              <form onSubmit={handleUpdate} className="space-y-6">
-                {/* Form fields with specialist permission disable check */}
-                <ClientFormFields
-                  formData={formData}
-                  onChange={handleFormFieldChange}
-                  isBillingDifferent={isBillingDifferent}
-                  onBillingDifferentChange={setIsBillingDifferent}
-                  disabled={isEspecialista}
-                />
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+              <div>
+                <h1 className="text-4xl font-serif font-light text-stone-800 tracking-tight">
+                  {client.first_name} {client.last_name || ''}
+                </h1>
+                <p className="text-stone-400 text-sm font-medium mt-1">
+                  {client.email} {client.phone && `• ${client.phone}`}
+                </p>
+              </div>
+              
+              <div className="flex flex-wrap gap-2">
+                <a href={`/dashboard/calendar?client_id=${params.id}`} className="bg-stone-900 text-white px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-[#D4AF37] hover:text-stone-950 transition-all active:scale-95 shadow-sm">
+                  {t('dashboard.clients.book_appointment') || 'Reservar Cita'}
+                </a>
+                <button onClick={() => setIsEditing(true)} className="bg-white border border-stone-200 text-stone-600 px-6 py-2.5 rounded-full text-xs font-bold hover:bg-stone-50 transition-all active:scale-95 shadow-sm">
+                  Editar Ficha
+                </button>
+              </div>
+            </div>
 
-                {/* Dynamic sector metadata inputs */}
-                <div className="border-t border-stone-100 pt-6 mt-6">
-                  <h4 className="text-xs font-black uppercase tracking-[0.2em] text-stone-500 mb-4">
-                    Campos Específicos del Sector
-                  </h4>
-                  <SectorMetadataInputs
-                    sector={businessSector}
-                    value={sectorMetadata}
-                    onChange={setSectorMetadata}
-                  />
+            {/* Subinfo Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 text-stone-500 text-xs font-medium border-t border-stone-100 pt-4">
+              {client.dni && (
+                <div className="flex items-center gap-2">
+                  <User size={14} className="text-stone-400" />
+                  <span>NIF/DNI: <strong className="text-stone-700 font-mono">{client.dni}</strong></span>
                 </div>
-
-                <div className="flex gap-3 pt-6 border-t border-stone-100 mt-4">
-                  <button type="submit" disabled={saving} className="bg-stone-900 hover:bg-stone-800 disabled:opacity-50 text-white px-8 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all">
-                    {saving ? 'Guardando...' : 'Guardar Cambios'}
-                  </button>
-                  <button type="button" onClick={() => {setIsEditing(false); fetchClient();}} className="bg-stone-100 text-stone-600 px-8 py-2.5 rounded-full text-xs font-bold hover:bg-stone-200 transition-all">
-                    Cancelar
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+              )}
+              {client.service_address && (
+                <div className="flex items-start gap-2">
+                  <MapPin size={14} className="text-stone-400 shrink-0 mt-0.5" />
                   <div>
-                    <h1 className="text-4xl font-serif font-light text-stone-800 tracking-tight">
-                      {client.first_name} {client.last_name || ''}
-                    </h1>
-                    <p className="text-stone-400 text-sm font-medium mt-1">
-                      {client.email} {client.phone && `• ${client.phone}`}
-                    </p>
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2">
-                    <a href={`/dashboard/calendar?client_id=${params.id}`} className="bg-stone-900 text-white px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-[#D4AF37] hover:text-stone-950 transition-all active:scale-95 shadow-sm">
-                      {t('dashboard.clients.book_appointment') || 'Reservar Cita'}
-                    </a>
-                    <button onClick={() => setIsEditing(true)} className="bg-white border border-stone-200 text-stone-600 px-6 py-2.5 rounded-full text-xs font-bold hover:bg-stone-50 transition-all active:scale-95 shadow-sm">
-                      Editar Ficha
-                    </button>
+                    <span className="block text-stone-400 uppercase tracking-wider text-[9px] mb-0.5">Domicilio de Servicio</span>
+                    <strong className="text-stone-700">{client.service_address}</strong>
+                    {(client.service_postal_code || client.service_city) && (
+                      <span className="block text-stone-500">
+                        {client.service_postal_code} {client.service_city}
+                      </span>
+                    )}
                   </div>
                 </div>
+              )}
 
-                {/* Subinfo Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 text-stone-500 text-xs font-medium border-t border-stone-100 pt-4">
-                  {client.dni && (
-                    <div className="flex items-center gap-2">
-                      <User size={14} className="text-stone-400" />
-                      <span>NIF/DNI: <strong className="text-stone-700 font-mono">{client.dni}</strong></span>
-                    </div>
-                  )}
-                  {client.service_address && (
-                    <div className="flex items-start gap-2">
-                      <MapPin size={14} className="text-stone-400 shrink-0 mt-0.5" />
-                      <div>
-                        <span className="block text-stone-400 uppercase tracking-wider text-[9px] mb-0.5">Domicilio de Servicio</span>
-                        <strong className="text-stone-700">{client.service_address}</strong>
-                        {(client.service_postal_code || client.service_city) && (
-                          <span className="block text-stone-500">
-                            {client.service_postal_code} {client.service_city}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {isBillingDifferent && client.billing_address && (
-                    <div className="flex items-start gap-2 border-l border-stone-100 pl-4">
-                      <CreditCard size={14} className="text-stone-400 shrink-0 mt-0.5" />
-                      <div>
-                        <span className="block text-stone-400 uppercase tracking-wider text-[9px] mb-0.5">Dirección de Facturación</span>
-                        <strong className="text-stone-700">{client.billing_name || `${client.first_name} ${client.last_name || ''}`}</strong>
-                        <span className="block text-stone-600 font-mono text-[10px]">NIF: {client.billing_nif}</span>
-                        <span className="block text-stone-500">{client.billing_address}</span>
-                        <span className="block text-stone-500">{client.billing_postal_code} {client.billing_city}</span>
-                      </div>
-                    </div>
-                  )}
+              {isBillingDifferent && client.billing_address && (
+                <div className="flex items-start gap-2 border-l border-stone-100 pl-4">
+                  <CreditCard size={14} className="text-stone-400 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="block text-stone-400 uppercase tracking-wider text-[9px] mb-0.5">Dirección de Facturación</span>
+                    <strong className="text-stone-700">{client.billing_name || `${client.first_name} ${client.last_name || ''}`}</strong>
+                    <span className="block text-stone-600 font-mono text-[10px]">NIF: {client.billing_nif}</span>
+                    <span className="block text-stone-500">{client.billing_address}</span>
+                    <span className="block text-stone-500">{client.billing_postal_code} {client.billing_city}</span>
+                  </div>
                 </div>
-              </>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -488,6 +452,62 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
         onSave={handleSaveSignature}
         clientName={client.first_name + ' ' + (client.last_name || '')}
       />
+
+      {/* Dialogo de Edición de Ficha de Cliente */}
+      <Dialog open={isEditing} onOpenChange={setIsEditing}>
+        <DialogContent className="max-w-2xl bg-white rounded-2xl overflow-hidden shadow-2xl p-0 border-none">
+          <DialogHeader className="p-6 border-b border-stone-100 bg-white">
+            <DialogTitle className="text-xl font-serif font-semibold text-stone-800">
+              Editar Ficha de Cliente
+            </DialogTitle>
+            <DialogDescription className="text-stone-400 text-xs mt-0.5">
+              Modifica los datos personales y campos específicos del sector del cliente.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleUpdate} className="flex flex-col">
+            <div className="p-6 max-h-[60vh] overflow-y-auto space-y-6">
+              {/* Form fields with specialist permission disable check */}
+              <ClientFormFields
+                formData={formData}
+                onChange={handleFormFieldChange}
+                isBillingDifferent={isBillingDifferent}
+                onBillingDifferentChange={setIsBillingDifferent}
+                disabled={isEspecialista}
+              />
+
+              {/* Dynamic sector metadata inputs */}
+              <div className="border-t border-stone-100 pt-6">
+                <h4 className="text-xs font-black uppercase tracking-[0.2em] text-stone-500 mb-4">
+                  Campos Específicos del Sector
+                </h4>
+                <SectorMetadataInputs
+                  sector={businessSector}
+                  value={sectorMetadata}
+                  onChange={setSectorMetadata}
+                />
+              </div>
+            </div>
+
+            <DialogFooter className="p-6 border-t border-stone-100 bg-white flex gap-3">
+              <button 
+                type="button" 
+                onClick={() => { setIsEditing(false); fetchClient(); }} 
+                className="flex-1 py-3 bg-stone-100 text-stone-600 font-bold rounded-xl hover:bg-stone-200 text-xs"
+              >
+                Cancelar
+              </button>
+              <button 
+                type="submit" 
+                disabled={saving} 
+                className="flex-1 py-3 text-white bg-stone-900 hover:bg-stone-800 disabled:opacity-50 font-bold rounded-xl shadow-md flex justify-center items-center text-xs uppercase tracking-wider"
+              >
+                {saving ? 'Guardando...' : 'Guardar Cambios'}
+              </button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* Collect Debt Dialog */}
       <Dialog open={showPayModal} onOpenChange={setShowPayModal}>
