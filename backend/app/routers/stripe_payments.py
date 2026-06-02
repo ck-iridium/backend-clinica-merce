@@ -544,6 +544,7 @@ def onboarding_complete_setup(request: OnboardingCompleteSetupRequest, db: Sessi
         raise HTTPException(status_code=404, detail="Configuración del negocio no encontrada")
     
     settings.clinic_name = request.clinic_name
+    settings.business_sector = request.sector
     settings.open_time = request.open_time
     settings.close_time = request.close_time
     settings.working_days = request.working_days

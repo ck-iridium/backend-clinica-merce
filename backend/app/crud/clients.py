@@ -19,15 +19,38 @@ def create_client(db: Session, client: schemas.ClientCreate):
             models.Client.tenant_id == tenant_id
         ).first()
         if existing:
-            existing.name = client.name
+            existing.first_name = client.first_name
+            existing.last_name = client.last_name
+            existing.name = f"{client.first_name} {client.last_name or ''}".strip()
             if client.phone:
                 existing.phone = client.phone
+            
+            # Map addresses and metadata if passed
+            if client.service_address:
+                existing.service_address = client.service_address
+                existing.service_postal_code = client.service_postal_code
+                existing.service_city = client.service_city
+                existing.service_latitude = client.service_latitude
+                existing.service_longitude = client.service_longitude
+            
+            if client.billing_address:
+                existing.billing_name = client.billing_name
+                existing.billing_nif = client.billing_nif
+                existing.billing_address = client.billing_address
+                existing.billing_postal_code = client.billing_postal_code
+                existing.billing_city = client.billing_city
+                
+            if client.sector_metadata is not None:
+                existing.sector_metadata = client.sector_metadata
+                
             db.commit()
             db.refresh(existing)
             return existing
 
     client_dict = client.model_dump()
     client_dict["tenant_id"] = tenant_id
+    client_dict["name"] = f"{client.first_name} {client.last_name or ''}".strip()
+    
     db_client = models.Client(**client_dict)
     db.add(db_client)
     db.commit()
@@ -41,6 +64,13 @@ def update_client(db: Session, client_id: str, client: schemas.ClientUpdate):
     ).first()
     if db_client:
         update_data = client.model_dump(exclude_unset=True)
+        
+        # If first_name or last_name is updated, update name as well
+        first_name = update_data.get("first_name", db_client.first_name)
+        last_name = update_data.get("last_name", db_client.last_name)
+        if "first_name" in update_data or "last_name" in update_data:
+            update_data["name"] = f"{first_name or ''} {last_name or ''}".strip()
+            
         for key, value in update_data.items():
             setattr(db_client, key, value)
         db.commit()
@@ -73,9 +103,15 @@ def find_or_create_client(db: Session, name: str, email: str | None, phone: str 
 
     if not client:
         is_new = True
+        parts = name.strip().split(" ", 1)
+        first_name = parts[0]
+        last_name = parts[1] if len(parts) > 1 else None
+        
         client = models.Client(
             id=str(uuid.uuid4()),
             name=name,
+            first_name=first_name,
+            last_name=last_name,
             email=email.strip().lower() if email else f"web_{str(uuid.uuid4())[:8]}@web.local",
             phone=phone.strip() if phone else None,
             tenant_id=tenant_id

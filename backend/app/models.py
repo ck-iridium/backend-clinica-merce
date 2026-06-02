@@ -49,6 +49,8 @@ class Client(Base):
     tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
     user_id = Column(String(36), ForeignKey("users.id"), nullable=True)
     name = Column(String, index=True)
+    first_name = Column(String, nullable=True, index=True)
+    last_name = Column(String, nullable=True, index=True)
     email = Column(String, unique=True, index=True)
     phone = Column(String)
     dni = Column(String, nullable=True)
@@ -57,6 +59,24 @@ class Client(Base):
     client_longitude = Column(Float, nullable=True)
     client_postal_code = Column(String, nullable=True)
     client_city = Column(String, nullable=True)
+    
+    # Service Address (Principal)
+    service_address = Column(String, nullable=True)
+    service_postal_code = Column(String, nullable=True)
+    service_city = Column(String, nullable=True)
+    service_latitude = Column(Float, nullable=True)
+    service_longitude = Column(Float, nullable=True)
+    
+    # Billing Address (Optional)
+    billing_name = Column(String, nullable=True)
+    billing_nif = Column(String, nullable=True)
+    billing_address = Column(String, nullable=True)
+    billing_postal_code = Column(String, nullable=True)
+    billing_city = Column(String, nullable=True)
+    
+    # Dynamic Sector-specific data
+    sector_metadata = Column(JSONB, default=dict, nullable=True)
+    
     medical_history = Column(Text, nullable=True)
     allergies = Column(Text, nullable=True)
     preferred_language = Column(String, default="es")
@@ -229,6 +249,7 @@ class ClinicSettings(Base):
     __tablename__ = "clinic_settings"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, unique=True, index=True)
+    business_sector = Column(String, default="general", nullable=False)
 
     # Company Details
     clinic_name = Column(String, default="Estética Mercè")
