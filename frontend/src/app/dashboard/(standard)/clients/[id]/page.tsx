@@ -386,7 +386,7 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
         >
           Bonos ({vouchers.length})
         </button>
-        {businessSector === 'clinical' && (
+        {(businessSector === 'clinical' || businessSector === 'beauty') && (
           <button 
             onClick={() => setActiveTab('consents')} 
             className={`pb-4 px-1 text-xs font-black uppercase tracking-[0.15em] border-b-2 transition-all ${activeTab === 'consents' ? 'border-[#D4AF37] text-stone-850' : 'border-transparent text-stone-400 hover:text-stone-600'}`}
@@ -406,26 +406,6 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
             dateLocale={dateLocale}
             totalDebt={totalDebt}
           />
-
-          {/* Sector Profile Panel */}
-          <div className="bg-white p-6 rounded-2xl border border-stone-100 shadow-sm">
-            <h3 className="text-sm font-bold text-stone-800 mb-4 flex items-center gap-2">
-              <span className="w-7 h-7 rounded-full bg-stone-50 border border-stone-150 flex items-center justify-center text-xs">📋</span>
-              {businessSector === 'clinical' && 'Ficha Médica'}
-              {businessSector === 'beauty' && 'Ficha de Estilo'}
-              {businessSector === 'veterinary' && 'Perfil de Mascota'}
-              {businessSector === 'automotive' && 'Detalles de Vehículo'}
-              {businessSector === 'home_services' && 'Ficha de Servicio'}
-              {businessSector === 'professional' && 'Ficha Profesional'}
-              {businessSector === 'general' && 'Notas Internas'}
-            </h3>
-
-            {/* Read Only Sector Fields rendering */}
-            <SectorMetadataDisplay
-              sector={businessSector}
-              value={sectorMetadata}
-            />
-          </div>
         </div>
 
         {/* Right Column: Dynamic Tabs Content */}
@@ -441,6 +421,8 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
             dateLocale={dateLocale}
             onNewConsentClick={() => setIsSignatureModalOpen(true)}
             clientId={params.id}
+            businessSector={businessSector}
+            sectorMetadata={sectorMetadata}
           />
         </div>
       </div>

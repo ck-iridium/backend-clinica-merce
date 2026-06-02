@@ -2,6 +2,7 @@
 
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Calendar } from "lucide-react";
+import { SectorMetadataDisplay } from './SectorMetadataDisplay';
 
 interface ClientTabsContentProps {
   activeTab: 'overview' | 'appointments' | 'vouchers' | 'consents';
@@ -14,6 +15,8 @@ interface ClientTabsContentProps {
   dateLocale: string;
   onNewConsentClick: () => void;
   clientId: string;
+  businessSector?: string;
+  sectorMetadata?: any;
 }
 
 export function ClientTabsContent({
@@ -26,12 +29,34 @@ export function ClientTabsContent({
   onOpenPayModal,
   dateLocale,
   onNewConsentClick,
-  clientId
+  clientId,
+  businessSector = 'general',
+  sectorMetadata = {}
 }: ClientTabsContentProps) {
   const { t } = useLanguage();
 
   if (activeTab === 'overview') {
-    return null; // Managed by ClientActivityCards in the main layout
+    return (
+      <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-stone-100 space-y-6">
+        <h3 className="text-lg font-serif font-light text-stone-800 border-b border-stone-55 pb-4 flex items-center gap-2">
+          <span className="w-8 h-8 rounded-full bg-stone-50 border border-stone-150 flex items-center justify-center text-xs">📋</span>
+          {businessSector === 'clinical' && 'Ficha Médica'}
+          {businessSector === 'beauty' && 'Ficha de Estilo'}
+          {businessSector === 'veterinary' && 'Perfil de Mascota'}
+          {businessSector === 'automotive' && 'Detalles de Vehículo'}
+          {businessSector === 'home_services' && 'Ficha de Servicio'}
+          {businessSector === 'professional' && 'Ficha Profesional'}
+          {businessSector === 'general' && 'Notas Internas'}
+        </h3>
+        
+        <div className="px-1">
+          <SectorMetadataDisplay
+            sector={businessSector}
+            value={sectorMetadata}
+          />
+        </div>
+      </div>
+    );
   }
 
   if (activeTab === 'appointments') {
