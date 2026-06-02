@@ -236,6 +236,7 @@ class ClinicSettingsBase(BaseModel):
     dark_mode_enabled: Optional[bool] = False
     border_radius: Optional[str] = "suave"
     favicon_b64: Optional[str] = None
+    enable_consents: Optional[bool] = True
 
     ai_provider: Optional[str] = "gemini"
 
@@ -311,6 +312,7 @@ class ClinicSettingsUpdate(BaseModel):
     dark_mode_enabled: Optional[bool] = None
     border_radius: Optional[str] = None
     favicon_b64: Optional[str] = None
+    enable_consents: Optional[bool] = None
 
 
 # --- Consents ---
@@ -327,6 +329,26 @@ class ConsentCreate(ConsentBase):
 class ConsentResponse(ConsentBase):
     id: str
     signed_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+# --- Consent Templates ---
+class ConsentTemplateBase(BaseModel):
+    title: str
+    body_text: str
+
+class ConsentTemplateCreate(ConsentTemplateBase):
+    pass
+
+class ConsentTemplateUpdate(BaseModel):
+    title: Optional[str] = None
+    body_text: Optional[str] = None
+
+class ConsentTemplateResponse(ConsentTemplateBase):
+    id: str
+    created_at: datetime
+    updated_at: datetime
     
     class Config:
         from_attributes = True

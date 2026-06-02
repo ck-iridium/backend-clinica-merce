@@ -7,7 +7,7 @@ from slowapi.errors import RateLimitExceeded
 from fastapi.staticfiles import StaticFiles
 import os
 from .database import engine, Base
-from .routers import clients, services, appointments, vouchers, invoices, settings, users, voucher_templates, time_blocks, automation, service_categories, site_content, uploads, backups, media, ai, stripe_payments, super_admin, cms, onboarding, ai_agent, locations, staff_schedules, docs_cms
+from .routers import clients, services, appointments, vouchers, invoices, settings, users, voucher_templates, time_blocks, automation, service_categories, site_content, uploads, backups, media, ai, stripe_payments, super_admin, cms, onboarding, ai_agent, locations, staff_schedules, docs_cms, consent_templates
 from .scheduler import scheduler
 
 # Crear las tablas en la base de datos (Nota: en producción mejor usar Alembic)
@@ -261,6 +261,7 @@ app.include_router(onboarding.router)
 app.include_router(locations.router)
 app.include_router(staff_schedules.router)
 app.include_router(docs_cms.router)
+app.include_router(consent_templates.router)
 
 
 @app.on_event("startup")

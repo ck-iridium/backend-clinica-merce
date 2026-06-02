@@ -66,6 +66,7 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
   const [isBillingDifferent, setIsBillingDifferent] = useState(false);
   const [sectorMetadata, setSectorMetadata] = useState<any>({});
   const [businessSector, setBusinessSector] = useState<string>('general');
+  const [enableConsents, setEnableConsents] = useState<boolean>(true);
   const [saving, setSaving] = useState(false);
   const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
 
@@ -99,6 +100,7 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
         const settingsData = await settingsRes.json();
         clientSector = settingsData.business_sector || 'general';
         setBusinessSector(clientSector);
+        setEnableConsents(settingsData.enable_consents ?? true);
       }
       
       if (cRes.ok) {
@@ -370,7 +372,7 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
         >
           Bonos ({vouchers.length})
         </button>
-        {(businessSector === 'clinical' || businessSector === 'beauty') && (
+        {(businessSector === 'clinical' || businessSector === 'beauty') && enableConsents && (
           <button 
             onClick={() => setActiveTab('consents')} 
             className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.12em] transition-all duration-300 ${activeTab === 'consents' ? 'bg-white text-stone-900 shadow-sm border border-stone-200/20' : 'text-stone-500 hover:text-stone-850'}`}

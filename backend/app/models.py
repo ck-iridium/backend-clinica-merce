@@ -102,6 +102,15 @@ class Consent(Base):
     
     client = relationship("Client", back_populates="consents")
 
+class ConsentTemplate(Base):
+    __tablename__ = "consent_templates"
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
+    title = Column(String(255), nullable=False)
+    body_text = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
 class ServiceCategory(Base):
     __tablename__ = "service_categories"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -250,6 +259,7 @@ class ClinicSettings(Base):
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, unique=True, index=True)
     business_sector = Column(String, default="general", nullable=False)
+    enable_consents = Column(Boolean, default=True, nullable=False)
 
     # Company Details
     clinic_name = Column(String, default="Estética Mercè")

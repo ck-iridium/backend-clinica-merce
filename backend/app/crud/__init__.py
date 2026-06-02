@@ -7,6 +7,7 @@ from .services import get_service, get_services, create_service, update_service
 from .appointments import check_appointment_collision, get_appointments, create_appointment, update_appointment, delete_appointment, get_availability_slots, create_public_appointment
 from .vouchers import get_vouchers, create_voucher, update_voucher, delete_voucher
 from .consents import get_consents_by_client, get_consent, create_consent
+from .consent_templates import get_consent_templates, get_consent_template, create_consent_template, update_consent_template, delete_consent_template
 from .voucher_templates import get_voucher_templates, get_voucher_template, create_voucher_template, delete_voucher_template
 from .time_blocks import get_time_blocks, create_time_block, delete_time_block
 from .utils import get_spain_now
