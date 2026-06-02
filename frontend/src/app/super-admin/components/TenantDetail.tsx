@@ -29,6 +29,7 @@ interface Tenant {
   subscription_expires_at?: string | null;
   created_at: string | null;
   custom_domain?: string | null;
+  business_sector?: string | null;
 }
 
 interface TenantDetailProps {
@@ -250,6 +251,40 @@ export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant, o
     }
   };
 
+  const handleUpdateSector = async (sector: string) => {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const jwtToken = getJwtToken();
+    const loadingToast = toast.loading('Actualizando sector del negocio...');
+
+    try {
+      const res = await fetch(`${API_URL}/super-admin/tenants/${tenant.id}/sector`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${jwtToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ business_sector: sector })
+      });
+
+      if (!res.ok) {
+        let errMsg = 'Error al actualizar el sector';
+        try {
+          const errorData = await res.json();
+          errMsg = errorData.detail || errMsg;
+        } catch {}
+        throw new Error(errMsg);
+      }
+
+      const updatedTenant = await res.json();
+      if (onUpdateTenant) {
+        onUpdateTenant(updatedTenant);
+      }
+      toast.success('¡Sector del negocio actualizado con éxito!', { id: loadingToast });
+    } catch (err: any) {
+      toast.error(err.message || 'Error al actualizar el sector', { id: loadingToast });
+    }
+  };
+
   const handleSubscribe = async (plan: string) => {
     setRedirectingPlan(plan);
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -436,6 +471,7 @@ export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant, o
                 onDisconnectDomain={handleDisconnectDomain}
                 onOpenDomainModal={() => setShowDomainModal(true)}
                 onOpenDeleteModal={() => setShowDeleteModal(true)}
+                onUpdateSector={handleUpdateSector}
               />
             )}
           </div>

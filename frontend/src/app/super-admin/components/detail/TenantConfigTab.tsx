@@ -1,7 +1,7 @@
 "use client"
 
 import React from 'react';
-import { Globe, Shield, AlertTriangle } from 'lucide-react';
+import { Globe, Shield, AlertTriangle, Building } from 'lucide-react';
 
 interface Tenant {
   id: string;
@@ -14,6 +14,7 @@ interface Tenant {
   subscription_expires_at?: string | null;
   created_at: string | null;
   custom_domain?: string | null;
+  business_sector?: string | null;
 }
 
 interface TenantConfigTabProps {
@@ -22,6 +23,7 @@ interface TenantConfigTabProps {
   onDisconnectDomain: () => Promise<void>;
   onOpenDomainModal: () => void;
   onOpenDeleteModal: () => void;
+  onUpdateSector: (sector: string) => Promise<void>;
 }
 
 export default function TenantConfigTab({
@@ -29,7 +31,8 @@ export default function TenantConfigTab({
   customDomain,
   onDisconnectDomain,
   onOpenDomainModal,
-  onOpenDeleteModal
+  onOpenDeleteModal,
+  onUpdateSector
 }: TenantConfigTabProps) {
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -85,6 +88,35 @@ export default function TenantConfigTab({
                 </button>
               </>
             )}
+          </div>
+        </div>
+
+        {/* Selector de Sector del Negocio */}
+        <div className="bg-[#FAFAFA] p-5 rounded-2xl border border-stone-200/30 flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition-all duration-300">
+          <div className="flex items-start gap-4">
+            <span className="w-12 h-12 rounded-xl bg-white border border-stone-100 text-stone-400 flex items-center justify-center shrink-0 shadow-sm">
+              <Building className="w-6 h-6 text-[#d4af37]" />
+            </span>
+            <div className="space-y-1">
+              <p className="font-bold text-stone-900 text-sm">Sector del Negocio (Inquilino)</p>
+              <p className="text-stone-400 text-xs font-medium">Define la interfaz y los campos dinámicos visibles en la ficha de clientes.</p>
+            </div>
+          </div>
+          
+          <div className="w-full sm:w-64 shrink-0">
+            <select
+              value={tenant.business_sector || 'general'}
+              onChange={(e) => onUpdateSector(e.target.value)}
+              className="w-full bg-white border border-stone-200 rounded-xl px-4 py-2.5 text-xs font-bold text-stone-850 focus:outline-none focus:ring-2 focus:ring-[#d4af37]/10 focus:border-[#d4af37] transition-all shadow-sm cursor-pointer"
+            >
+              <option value="clinical">🏥 Medicina / Clínica de Salud</option>
+              <option value="beauty">✨ Estética y Bienestar</option>
+              <option value="veterinary">🐾 Veterinaria</option>
+              <option value="automotive">🚗 Automoción y Mecánica</option>
+              <option value="home_services">🧹 Servicios a Domicilio</option>
+              <option value="professional">💼 Profesional / Asesoría</option>
+              <option value="general">📦 General / Otros</option>
+            </select>
           </div>
         </div>
 

@@ -1,4 +1,4 @@
-import { SearchCode, Sparkles, Key, ChevronDown } from 'lucide-react';
+import { SearchCode, Sparkles, Key, ChevronDown, AlertTriangle, Building } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -257,6 +257,57 @@ export default function AdvancedTab({ settings, setSettings }: AdvancedTabProps)
               <span className="text-[10px] text-stone-400 font-medium uppercase tracking-wider mt-0.5">Estado actual del rastreo</span>
             </div>
           </label>
+        </div>
+      </div>
+
+      {/* Danger Zone: Sector del Negocio */}
+      <div className="bg-[#FFF5F5]/30 rounded-3xl md:rounded-[2.5rem] border border-red-200/40 p-5 md:p-8 shadow-sm">
+        <div className="flex items-center gap-3 mb-4 md:mb-6 pb-3 md:pb-4 border-b border-red-100/50">
+          <span className="w-9 h-9 rounded-2xl bg-red-50 flex items-center justify-center text-red-500">
+            <AlertTriangle size={18} strokeWidth={1.5} />
+          </span>
+          <h3 className="text-2xl font-serif font-semibold text-red-800">Zona de Peligro (Configuración Crítica)</h3>
+        </div>
+
+        <div className="space-y-6">
+          <div className="p-6 bg-white rounded-[2rem] border border-red-100/50 flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-red-400 shrink-0 shadow-sm">
+              <Building size={20} strokeWidth={1.5} />
+            </div>
+            <div>
+              <h4 className="font-serif font-bold text-red-800">Sector o Vertical del Negocio</h4>
+              <p className="text-sm text-stone-500 mt-1 leading-relaxed">
+                Cambiar el sector modificará de forma radical la estructura del CRM, los campos de las fichas de tus clientes y las vistas del dashboard. Los datos anteriores se guardan pero no serán visibles a menos que regreses al sector correspondiente.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+            <div>
+              <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1 mb-2 block">Sector Actual</label>
+              <Select 
+                value={settings.business_sector || 'general'} 
+                onValueChange={(val) => setSettings({ ...settings, business_sector: val })}
+              >
+                <SelectTrigger className="w-full h-12 bg-white border-red-100/50 rounded-xl focus:ring-red-100/20 font-semibold text-stone-850">
+                  <SelectValue placeholder="Seleccionar sector" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border-stone-100 shadow-xl">
+                  <SelectItem value="clinical" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">🏥 Medicina / Clínica de Salud</SelectItem>
+                  <SelectItem value="beauty" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">✨ Estética y Bienestar</SelectItem>
+                  <SelectItem value="veterinary" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">🐾 Veterinaria</SelectItem>
+                  <SelectItem value="automotive" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">🚗 Automoción y Mecánica</SelectItem>
+                  <SelectItem value="home_services" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">🧹 Servicios a Domicilio</SelectItem>
+                  <SelectItem value="professional" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">💼 Profesional / Asesoría</SelectItem>
+                  <SelectItem value="general" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">📦 General / Otros</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="text-xs text-red-500 font-medium bg-white/50 border border-red-150 p-4 rounded-2xl">
+              ⚠️ Nota: La confirmación del cambio se te solicitará al pulsar en el botón global <strong>&quot;Guardar Cambios&quot;</strong>.
+            </div>
+          </div>
         </div>
       </div>
     </div>

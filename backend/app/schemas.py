@@ -176,6 +176,7 @@ class ServiceResponse(ServiceBase):
 # --- SETTINGS ---
 class ClinicSettingsBase(BaseModel):
     clinic_name: Optional[str] = "Clínica Merce"
+    business_sector: Optional[str] = "general"
     clinic_nif: Optional[str] = ""
     clinic_address: Optional[str] = ""
     clinic_phone: Optional[str] = ""
@@ -249,6 +250,7 @@ class ClinicSettingsBase(BaseModel):
 
 class ClinicSettingsUpdate(BaseModel):
     clinic_name: Optional[str] = None
+    business_sector: Optional[str] = None
     clinic_nif: Optional[str] = None
     clinic_address: Optional[str] = None
     clinic_phone: Optional[str] = None

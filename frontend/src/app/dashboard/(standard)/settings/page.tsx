@@ -144,6 +144,25 @@ export default function SettingsPage() {
 
   const handleSave = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+
+    // Si ha cambiado el sector del negocio, pedir confirmación obligatoria con fricción UX
+    if (settings && originalSettings && settings.business_sector !== originalSettings.business_sector) {
+      showFeedback({
+        type: 'confirm',
+        title: '¿Cambiar modelo de negocio?',
+        message: 'Cambiar el sector del negocio modificará radicalmente la interfaz y los campos visibles en la ficha de tus clientes. Los datos anteriores no se borrarán, pero dejarán de ser visibles. ¿Estás absolutamente seguro de que deseas cambiar el modelo de tu negocio?',
+        confirmText: 'Sí, Cambiar',
+        cancelText: 'Cancelar',
+        onConfirm: () => {
+          executeSave();
+        }
+      });
+    } else {
+      executeSave();
+    }
+  };
+
+  const executeSave = async () => {
     setSaving(true);
     try {
       const { id, ...payload } = settings;

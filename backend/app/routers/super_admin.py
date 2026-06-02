@@ -27,6 +27,7 @@ class TenantOut(BaseModel):
     subscription_expires_at: Optional[datetime] = None
     custom_domain: Optional[str] = None
     created_at: Optional[datetime] = None
+    business_sector: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -70,6 +71,12 @@ def verify_super_admin(authorization: str = Header(None)) -> dict:
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Token inválido: {str(e)}")
 
+def get_tenant_out(tenant, db: Session) -> TenantOut:
+    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant.id).first()
+    t_out = TenantOut.model_validate(tenant) if hasattr(TenantOut, "model_validate") else TenantOut.from_orm(tenant)
+    t_out.business_sector = settings.business_sector if settings else "general"
+    return t_out
+
 # ---------------------------------------------------------------------
 # ENDPOINTS DEL BACKOFFICE
 # ---------------------------------------------------------------------
@@ -82,7 +89,7 @@ def get_tenants(
     Obtiene la lista de todos los inquilinos (Tenants) en el SaaS.
     """
     tenants = db.query(models.Tenant).order_by(models.Tenant.created_at.desc()).all()
-    return tenants
+    return [get_tenant_out(t, db) for t in tenants]
 
 @router.post("/tenants/{tenant_id}/status", response_model=TenantOut)
 def update_tenant_status(
@@ -104,7 +111,7 @@ def update_tenant_status(
     tenant.subscription_status = payload.status
     db.commit()
     db.refresh(tenant)
-    return tenant
+    return get_tenant_out(tenant, db)
 
 @router.put("/tenants/{tenant_id}/plan", response_model=TenantOut)
 def update_tenant_plan(
@@ -127,7 +134,43 @@ def update_tenant_plan(
     tenant.plan_type = plan
     db.commit()
     db.refresh(tenant)
-    return tenant
+    return get_tenant_out(tenant, db)
+
+class SectorUpdate(BaseModel):
+    business_sector: str
+
+@router.put("/tenants/{tenant_id}/sector", response_model=TenantOut)
+def update_tenant_sector(
+    tenant_id: str,
+    payload: SectorUpdate,
+    db: Session = Depends(database.get_db),
+    admin_payload: dict = Depends(verify_super_admin)
+):
+    """
+    Actualiza manualmente el sector del negocio de un inquilino.
+    """
+    sector = payload.business_sector.lower()
+    allowed_sectors = ["clinical", "beauty", "veterinary", "automotive", "home_services", "professional", "general"]
+    if sector not in allowed_sectors:
+        raise HTTPException(status_code=400, detail=f"Sector no permitido. Debe ser uno de: {', '.join(allowed_sectors)}")
+    
+    tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Inquilino no encontrado")
+
+    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).first()
+    if not settings:
+        settings = models.ClinicSettings(
+            tenant_id=tenant_id,
+            clinic_name="Negocio",
+            business_sector=sector
+        )
+        db.add(settings)
+    else:
+        settings.business_sector = sector
+    
+    db.commit()
+    return get_tenant_out(tenant, db)
 
 # ---------------------------------------------------------------------
 # IMPERSONACIÓN (MODO SOPORTE)
@@ -260,7 +303,7 @@ def update_tenant_domain(
     tenant.custom_domain = domain_value
     db.commit()
     db.refresh(tenant)
-    return tenant
+    return get_tenant_out(tenant, db)
 
 
 # ---------------------------------------------------------------------
