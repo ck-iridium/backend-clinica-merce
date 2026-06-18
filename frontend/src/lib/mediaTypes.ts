@@ -26,3 +26,19 @@ export function formatBytes(bytes: number): string {
 export function isVideoFile(file: MediaFile): boolean {
   return file.name.toLowerCase().endsWith('.mp4') || file.content_type?.includes('video');
 }
+
+export function isDocumentFile(file: MediaFile): boolean {
+  const name = file.name.toLowerCase();
+  return (
+    name.endsWith('.csv') ||
+    name.endsWith('.pdf') ||
+    name.endsWith('.xlsx') ||
+    name.endsWith('.xls') ||
+    name.endsWith('.txt') ||
+    name.endsWith('.doc') ||
+    name.endsWith('.docx') ||
+    file.content_type?.includes('text/') ||
+    file.content_type?.includes('application/pdf') ||
+    file.content_type?.includes('application/vnd')
+  );
+}

@@ -5,8 +5,8 @@ import CropImageModal from '@/components/CropImageModal';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { processVideo } from '@/lib/videoProcessor';
-import { type MediaFile, formatBytes } from '@/lib/mediaTypes';
-import { Loader2, Sparkles } from 'lucide-react';
+import { type MediaFile, formatBytes, isDocumentFile } from '@/lib/mediaTypes';
+import { Loader2, Sparkles, FileText, FileSpreadsheet } from 'lucide-react';
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { 
   Dialog, 
@@ -128,6 +128,14 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
       
       const name = file.name.toLowerCase();
       const isVideo = file.type.startsWith('video/') || /\.(mp4|webm|mov|avi|mkv|3gp|quicktime)$/i.test(name);
+      const isDoc = isDocumentFile({
+        name: file.name,
+        url: '',
+        size: file.size,
+        content_type: file.type,
+        status: 'orphan',
+        usages: []
+      });
       
       // Si es video, optimizar antes de subir
       if (isVideo) {
@@ -143,6 +151,9 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
           setIsProcessing(false);
           setProcessingProgress(0);
         }
+      } else if (isDoc) {
+        // Si es documento, subir directo sin crop ni optimización de vídeo
+        await uploadDirectly(file, file.name);
       } else {
         // Si es imagen, pasar por crop
         const reader = new FileReader();
@@ -392,6 +403,19 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                                                               </div>
                                                             </div>
                                                           </div>
+                                                        ) : isDocumentFile(file) ? (
+                                                          <div className="w-full h-full relative bg-stone-50 flex flex-col items-center justify-center p-4 border border-stone-200">
+                                                            <div className="text-stone-400 group-hover:text-[#d4af37] transition-colors mb-2">
+                                                              {file.name.toLowerCase().endsWith('.csv') ? (
+                                                                <FileSpreadsheet size={36} strokeWidth={1.5} className="text-[#d4af37]" />
+                                                              ) : (
+                                                                <FileText size={36} strokeWidth={1.5} />
+                                                              )}
+                                                            </div>
+                                                            <p className="text-[9px] font-black tracking-widest text-stone-500 uppercase bg-stone-100 px-2 py-0.5 rounded border border-stone-200">
+                                                              {file.name.split('.').pop()?.toUpperCase() || 'DOC'}
+                                                            </p>
+                                                          </div>
                                                         ) : (
                                                           <img
                                                               src={file.url}
@@ -474,7 +498,13 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                                         >
                                             <input 
                                               type="file" 
-                                              accept={mediaType === 'video' ? "video/*" : "image/*"} 
+                                              accept={
+                                                mediaType === 'video' 
+                                                  ? "video/*" 
+                                                  : mediaType === 'all' 
+                                                  ? "image/*,video/*,text/csv,text/plain,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword" 
+                                                  : "image/*"
+                                              } 
                                               className="sr-only" 
                                               onChange={handleFileInput} 
                                             />
@@ -483,12 +513,21 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                                               isDragging ? "border-primary bg-primary/[0.03]" : "border-stone-300 group-hover:border-primary group-hover:bg-primary/[0.03]"
                                             )}>
                                                 <div className="text-6xl mb-6 transform group-hover:scale-110 transition-transform duration-300">
-                                                  {mediaType === 'video' ? '📹' : '🖼️'}
+                                                  {mediaType === 'video' ? '📹' : mediaType === 'all' ? '📁' : '🖼️'}
                                                 </div>
-                                                <p className="font-extrabold text-stone-800 text-xl mb-2">{language === 'fr' ? 'Télécharger' : language === 'en' ? 'Upload' : 'Subir'}{' '}{mediaType === 'video' ? (language === 'fr' ? 'Vidéo' : language === 'en' ? 'Video' : 'Vídeo') : (language === 'fr' ? 'une Photo' : language === 'en' ? 'a Photo' : 'Foto')}</p>
+                                                <p className="font-extrabold text-stone-800 text-xl mb-2">
+                                                  {language === 'fr' ? 'Télécharger' : language === 'en' ? 'Upload' : 'Subir'}{' '}
+                                                  {mediaType === 'video' 
+                                                    ? (language === 'fr' ? 'Vidéo' : language === 'en' ? 'Video' : 'Vídeo') 
+                                                    : mediaType === 'all' 
+                                                    ? (language === 'fr' ? 'Contenu' : language === 'en' ? 'Content' : 'Contenido/Archivo') 
+                                                    : (language === 'fr' ? 'une Photo' : language === 'en' ? 'a Photo' : 'Foto')}
+                                                </p>
                                                 <p className="text-sm text-stone-500 italic">
                                                   {mediaType === 'video' 
                                                     ? (language === 'fr' ? 'Formats suggérés: .mp4, .webm' : language === 'en' ? 'Suggested formats: .mp4, .webm' : 'Formatos sugeridos: .mp4, .webm') 
+                                                    : mediaType === 'all'
+                                                    ? (language === 'fr' ? 'Fichiers, images ou vidéos' : language === 'en' ? 'Files, images or videos' : 'Archivos, imágenes o vídeos (PDF, CSV, Excel, TXT, Word)')
                                                     : (language === 'fr' ? 'Formats suggérés: .webp, .jpg' : language === 'en' ? 'Suggested formats: .webp, .jpg' : 'Formatos sugeridos: .webp, .jpg')}
                                                 </p>
                                             </div>

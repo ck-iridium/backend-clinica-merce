@@ -5,6 +5,8 @@ export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const hostname = request.headers.get("host") || "";
 
+  console.log(`[MIDDLEWARE] Path: ${url.pathname} | Host: ${hostname}`);
+
   // 1. Excluir recursos estáticos, api routes, _next y archivos de sistema
   if (
     url.pathname.startsWith('/_next') ||
@@ -51,6 +53,8 @@ export async function middleware(request: NextRequest) {
   if ((cleanHost === "probookia.com" || cleanHost === "www.probookia.com" || cleanHost === "localhost") && !url.searchParams.has("tenant") && url.pathname === "/") {
     subdomain = "";
   }
+
+  console.log(`[MIDDLEWARE] subdomain resolved to: "${subdomain}" (cleanHost: "${cleanHost}")`);
 
   // 4. Resolver tenant_id para el subdominio
   let tenantId = "";
@@ -147,17 +151,21 @@ export async function middleware(request: NextRequest) {
       url.pathname === "/cookies" ||
       url.pathname.startsWith("/super-admin");
 
+    console.log(`[MIDDLEWARE-GLOBAL] Path: "${url.pathname}" | isGlobalSassPath: ${isGlobalSassPath}`);
+
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-tenant-slug", "");
     requestHeaders.set("x-tenant-id", "");
     requestHeaders.set("x-pathname", url.pathname);
 
     if (!isGlobalSassPath) {
+      console.log(`[MIDDLEWARE-GLOBAL] Redirecting to / because path is not global SaaS`);
       url.pathname = "/";
       return NextResponse.redirect(url);
     }
 
     if (url.pathname === "/") {
+      console.log(`[MIDDLEWARE-GLOBAL] Rewriting / to /marketing`);
       url.pathname = "/marketing";
       return NextResponse.rewrite(url, {
         request: {

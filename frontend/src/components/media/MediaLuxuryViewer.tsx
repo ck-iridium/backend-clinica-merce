@@ -1,8 +1,16 @@
 'use client';
 
-import { type MediaFile, formatBytes, isVideoFile } from '@/lib/mediaTypes';
+import { type MediaFile, formatBytes, isVideoFile, isDocumentFile } from '@/lib/mediaTypes';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
-import { Download, Link2, Trash2, X, CheckCircle2 } from 'lucide-react';
+import { Download, Link2, Trash2, X, CheckCircle2, FileText, FileSpreadsheet } from 'lucide-react';
+
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+}
 
 interface MediaLuxuryViewerProps {
   file: MediaFile;
@@ -16,7 +24,32 @@ export default function MediaLuxuryViewer({ file, onClose, onDelete, deleting }:
 
   const handleDownload = async () => {
     try {
-      const response = await fetch(file.url);
+      const isDoc = isDocumentFile(file);
+      let downloadUrl = file.url;
+      const headers: Record<string, string> = {};
+
+      if (isDoc) {
+        const userSession = localStorage.getItem('user');
+        let tenantId = getCookie('tenant_id') || '';
+        let token = '';
+        if (userSession) {
+          try {
+            const parsed = JSON.parse(userSession);
+            if (!tenantId) tenantId = parsed.tenant_id || '';
+            token = parsed.access_token || parsed.token || '';
+          } catch (e) {
+            console.error('Error parsing user session for download:', e);
+          }
+        }
+        
+        if (tenantId) headers['X-Tenant-ID'] = tenantId;
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        
+        downloadUrl = `${process.env.NEXT_PUBLIC_API_URL}/media/download/${encodeURIComponent(file.name)}`;
+      }
+
+      const response = await fetch(downloadUrl, { headers });
+      if (!response.ok) throw new Error('Download failed');
       const blob = await response.blob();
       const blobUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -26,8 +59,9 @@ export default function MediaLuxuryViewer({ file, onClose, onDelete, deleting }:
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(blobUrl);
-    } catch {
-      showFeedback({ type: 'error', title: 'Error', message: 'No se pudo descargar el archivo.' });
+    } catch (err) {
+      console.error(err);
+      showFeedback({ type: 'error', title: 'Error', message: 'No se pudo descargar el archivo de forma segura.' });
     }
   };
 
@@ -69,6 +103,27 @@ export default function MediaLuxuryViewer({ file, onClose, onDelete, deleting }:
                 loop
                 crossOrigin="anonymous"
               />
+            ) : isDocumentFile(file) ? (
+              <div className="flex flex-col items-center justify-center p-8 text-center max-h-[70vh]">
+                <div className="w-20 h-20 rounded-3xl bg-stone-100 flex items-center justify-center text-stone-400 mb-4 border border-stone-200 shadow-sm">
+                  {file.name.toLowerCase().endsWith('.csv') ? (
+                    <FileSpreadsheet size={40} className="text-[#d4af37]" />
+                  ) : (
+                    <FileText size={40} />
+                  )}
+                </div>
+                <h4 className="text-lg font-extrabold text-stone-800 tracking-tight mb-2 truncate max-w-md">{file.name}</h4>
+                <p className="text-xs text-stone-500 max-w-sm mb-6">
+                  Este es un documento almacenado de forma segura en la nube. La previsualización directa no está disponible, pero puedes descargarlo para editarlo.
+                </p>
+                <button
+                  onClick={handleDownload}
+                  className="px-6 py-3 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold transition-all shadow-md active:scale-95 flex items-center gap-2"
+                >
+                  <Download size={14} />
+                  Descargar Documento
+                </button>
+              </div>
             ) : (
               <img
                 src={file.url}

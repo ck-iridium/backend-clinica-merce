@@ -1,10 +1,12 @@
 from fastapi import APIRouter, HTTPException, Depends
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from app.database import get_db, current_tenant_var
 from app import models
 from pydantic import BaseModel
 import os
+import io
 from supabase import create_client, Client as SupabaseClient
 from typing import List
 
@@ -166,14 +168,16 @@ async def list_all_media(db: Session = Depends(get_db)):
         metadata = f.get("metadata") or {}
         public_url = supabase.storage.from_("media").get_public_url(name)
 
+        is_orphan = len(usages) == 1 and usages[0] == "Galería Multimedia"
+
         result.append({
             "name": name,
             "url": public_url,
             "size": metadata.get("size", 0),
             "content_type": metadata.get("mimetype", "image/webp"),
             "created_at": f.get("created_at"),
-            "status": "in_use",
-            "usages": usages,
+            "status": "orphan" if is_orphan else "in_use",
+            "usages": [u for u in usages if u != "Galería Multimedia"],
         })
 
     result.sort(key=lambda x: x["name"])
@@ -279,4 +283,46 @@ async def bulk_delete_media_files(payload: BulkDeleteRequest, db: Session = Depe
         "message": f"{len(payload.filenames)} archivo(s) eliminados correctamente.",
         "deleted": payload.filenames,
     }
+
+
+@router.get("/download/{filename}")
+async def download_media_file(filename: str, db: Session = Depends(get_db)):
+    """Downloads a media file, verifying that the current tenant owns it."""
+    tenant_id = current_tenant_var.get()
+    if not tenant_id:
+        raise HTTPException(status_code=400, detail="Tenant context required")
+
+    # Verify ownership in database (Media table)
+    media_record = db.query(models.Media).filter(
+        models.Media.filename == filename,
+        models.Media.tenant_id == tenant_id
+    ).first()
+
+    if not media_record:
+        # Fallback check: is it used by current tenant in services/categories/etc.
+        usage_map = build_used_urls_map(db)
+        if filename not in usage_map:
+            raise HTTPException(status_code=403, detail="Acceso denegado o archivo no encontrado")
+        
+        mime_type = "application/octet-stream"
+        if filename.endswith(".csv"):
+            mime_type = "text/csv"
+        elif filename.endswith(".pdf"):
+            mime_type = "application/pdf"
+    else:
+        mime_type = media_record.mime_type or "application/octet-stream"
+
+    supabase = get_supabase()
+    try:
+        file_bytes = supabase.storage.from_("media").download(filename)
+        return StreamingResponse(
+            io.BytesIO(file_bytes),
+            media_type=mime_type,
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+                "Cache-Control": "no-cache"
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al descargar el archivo de Supabase: {str(e)}")
 

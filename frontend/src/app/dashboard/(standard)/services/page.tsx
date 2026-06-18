@@ -4,12 +4,20 @@ import { useLanguage } from '@/app/contexts/LanguageContext';
 import { useAuthRole } from '@/hooks/useAuthRole';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Settings2, Plus } from 'lucide-react';
+import { Settings2, Plus, Download, Loader2 } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from 'sonner';
 import PlanLimitsCard from '@/components/PlanLimitsCard';
 import ServicesDataGrid from './components/ServicesDataGrid';
 import ManageCategoriesModal from './components/ManageCategoriesModal';
+
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+}
 
 export default function ServicesPage() {
   const { t } = useLanguage();
@@ -22,6 +30,84 @@ export default function ServicesPage() {
   const [loading, setLoading] = useState(true);
   const [showArchived, setShowArchived] = useState(false);
   const [showManageCategoriesModal, setShowManageCategoriesModal] = useState(false);
+  const [planType, setPlanType] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
+
+  useEffect(() => {
+    async function fetchPlan() {
+      try {
+        const userSession = localStorage.getItem('user');
+        let tId = getCookie('tenant_id') || '';
+        let authToken = '';
+        if (userSession) {
+          try {
+            const parsed = JSON.parse(userSession);
+            if (!tId) tId = parsed.tenant_id || '';
+            authToken = parsed.access_token || parsed.token || '';
+          } catch (e) {
+            console.error('Error parsing user session:', e);
+          }
+        }
+        if (!tId) return;
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/limits`, {
+          headers: { 'X-Tenant-ID': tId, 'Authorization': authToken ? `Bearer ${authToken}` : '' }
+        });
+        if (res.ok) {
+          const d = await res.json();
+          setPlanType(d.plan_type?.toLowerCase() || 'free');
+        }
+      } catch (err) {
+        console.error('Error fetching plan type in services page:', err);
+      }
+    }
+    fetchPlan();
+  }, []);
+
+  const handleExport = async () => {
+    if (planType && planType !== 'pro' && planType !== 'gold') {
+      toast.error('La exportación de servicios está reservada para los planes Pro y Gold. Por favor, actualice su suscripción.');
+      return;
+    }
+    
+    setExporting(true);
+    try {
+      const userSession = localStorage.getItem('user');
+      let tId = getCookie('tenant_id') || '';
+      let authToken = '';
+      if (userSession) {
+        try {
+          const parsed = JSON.parse(userSession);
+          if (!tId) tId = parsed.tenant_id || '';
+          authToken = parsed.access_token || parsed.token || '';
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      
+      const headers: Record<string, string> = {};
+      if (tId) headers['X-Tenant-ID'] = tId;
+      if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/export-to-media`, {
+        method: 'POST',
+        headers
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        toast.success(data.message || 'Servicios exportados y guardados en la Galería.');
+      } else {
+        const err = await res.json().catch(() => ({ detail: 'Error al exportar' }));
+        toast.error(err.detail || 'No se pudo exportar los servicios.');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Error de red al intentar exportar los servicios.');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   useEffect(() => {
     if (!loadingRole) {
@@ -150,6 +236,18 @@ export default function ServicesPage() {
             onClick={() => setShowArchived(!showArchived)}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${showArchived ? 'bg-stone-800 text-white border-stone-800' : 'bg-white text-stone-500 border-stone-200 hover:border-stone-400'}`}>
             {showArchived ? t('dashboard.services.hide_archived') : t('dashboard.services.show_archived')}
+          </button>
+          <button 
+            type="button"
+            disabled={exporting}
+            onClick={handleExport}
+            className="px-4 py-3 rounded-xl bg-white text-stone-600 border border-stone-200 font-bold transition-all hover:bg-stone-50 active:scale-95 shadow-sm flex items-center gap-2 disabled:opacity-50">
+            {exporting ? (
+              <Loader2 size={18} className="animate-spin text-stone-400" />
+            ) : (
+              <Download size={18} strokeWidth={1.5} className="text-stone-400" />
+            )}
+            <span className="hidden sm:inline">Exportar a Galería</span>
           </button>
           <button 
             type="button"

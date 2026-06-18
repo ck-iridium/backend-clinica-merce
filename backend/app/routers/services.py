@@ -145,3 +145,114 @@ def bulk_status_services(payload: schemas.BulkStatusPayload, db: Session = Depen
     
     db.commit()
     return {"message": f"Estado de {updated_count} servicios actualizado con éxito"}
+
+
+@router.post("/export-to-media")
+def export_services_to_media(db: Session = Depends(database.get_db)):
+    """Exports the current tenant's services to a CSV file and saves it in their Media Gallery."""
+    import csv
+    import io
+    import uuid
+    import datetime
+    
+    tenant_id = database.current_tenant_var.get()
+    if not tenant_id:
+        raise HTTPException(status_code=400, detail="Tenant context required")
+        
+    # Check plan limit for exporting/generating documents
+    tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
+    plan = (tenant.plan_type or "free").lower() if tenant else "free"
+    
+    # Check BYOK (own API keys) in settings
+    has_own_key = False
+    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).first()
+    if settings and (settings.gemini_api_key or settings.openai_api_key):
+        has_own_key = True
+        
+    if not (plan in ["pro", "gold"] or has_own_key):
+        raise HTTPException(
+            status_code=403, 
+            detail="La exportación de servicios a la galería está reservada para los planes Pro y Gold. Por favor, actualice su plan."
+        )
+
+    # Get all services for current tenant
+    services = db.query(models.Service).filter(models.Service.tenant_id == tenant_id).all()
+    
+    # Generate CSV in memory
+    output = io.StringIO()
+    # Add BOM for Excel compatibility in Spanish/European locales
+    output.write('\ufeff')
+    writer = csv.writer(output, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    
+    # Header
+    writer.writerow([
+        "ID", "Nombre", "Categoría", "Descripción", "Duración (min)", 
+        "Precio (€)", "Activo", "Destacado", "URL Imagen", "URL Vídeo",
+        "Modo de Atención", "Requiere Depósito", "Monto Depósito"
+    ])
+    
+    for s in services:
+        category_name = s.category.name if s.category else ""
+        writer.writerow([
+            s.id,
+            s.name,
+            category_name,
+            s.description or "",
+            s.duration_minutes,
+            s.price,
+            "Sí" if s.is_active else "No",
+            "Sí" if s.is_featured else "No",
+            s.image_url or "",
+            s.video_url or "",
+            s.allowed_modality,
+            "Sí" if s.requires_deposit else "No",
+            s.deposit_amount or 0.00
+        ])
+        
+    csv_content = output.getvalue()
+    csv_bytes = csv_content.encode('utf-8-sig')
+    
+    # Upload to Supabase Storage in bucket 'media'
+    supabase_url = os.environ.get("SUPABASE_URL")
+    supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+    if not supabase_url or not supabase_key:
+        raise HTTPException(status_code=500, detail="Configuración de Supabase no encontrada")
+        
+    try:
+        supabase: Client = create_client(supabase_url, supabase_key)
+        # Create a safe, unique filename
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"servicios_{timestamp}_{uuid.uuid4().hex[:6]}.csv"
+        
+        # Upload
+        supabase.storage.from_("media").upload(
+            file=csv_bytes,
+            path=filename,
+            file_options={"content-type": "text/csv", "upsert": "true"}
+        )
+        
+        # Get public url
+        public_url = supabase.storage.from_("media").get_public_url(filename)
+        
+        # Register in models.Media
+        new_media = models.Media(
+            id=str(uuid.uuid4()),
+            tenant_id=tenant_id,
+            filename=filename,
+            url=public_url,
+            file_type="document",
+            mime_type="text/csv",
+            size=len(csv_bytes)
+        )
+        db.add(new_media)
+        db.commit()
+        
+        return {
+            "success": True,
+            "filename": filename,
+            "url": public_url,
+            "message": "Los servicios han sido exportados correctamente y guardados en la Galería de Medios."
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error al exportar servicios: {str(e)}")

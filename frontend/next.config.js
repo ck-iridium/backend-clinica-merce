@@ -27,6 +27,15 @@ const nextConfig = {
     ],
     unoptimized: true, // Útil para desarrollo y despliegues rápidos
   },
+  webpack: (config, { isServer }) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      canvg: false,
+      html2canvas: false,
+      dompurify: false,
+    };
+    return config;
+  },
 };
 
 module.exports = nextConfig;

@@ -13,6 +13,7 @@ import CopilotMessages from './CopilotMessages';
 import CopilotInputBar from './CopilotInputBar';
 import { useCopilotSpeech } from './useCopilotSpeech';
 import { useCopilotFiles } from './useCopilotFiles';
+import MediaPickerModal from '@/components/MediaPickerModal';
 
 // Helper para leer cookies del lado del cliente
 function getCookie(name: string): string | null {
@@ -42,6 +43,7 @@ export default function AICopilotWidget() {
   const [voiceGender, setVoiceGender] = useState<'female' | 'male'>('female');
   const [chatWidth, setChatWidth] = useState(384);
   const [chatHeight, setChatHeight] = useState(460);
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
   const isResizing = useRef(false);
 
   // ── Estado de Límites y Plan ──────────────────────────────────────────────
@@ -71,6 +73,96 @@ export default function AICopilotWidget() {
     isUploading, fileInputRef,
     handleFileChange, canAttachFiles,
   } = useCopilotFiles({ language, planType, hasOwnKey });
+
+  const handleMediaSelected = async (url: string) => {
+    setShowMediaPicker(false);
+    const filename = decodeURIComponent(url.split('/').pop() || 'archivo');
+    const isImage = /\.(png|jpe?g|gif|svg|webp)$/i.test(filename);
+    const isCsvOrText = /\.(csv|txt|json)$/i.test(filename);
+    
+    if (isImage) {
+      setAttachedFile({
+        name: filename,
+        content: url,
+        type: 'image',
+        url: url
+      });
+      toast.success(
+        language === 'fr'
+          ? 'Image jointe depuis la galerie.'
+          : language === 'en'
+            ? 'Image attached from gallery.'
+            : `Imagen "${filename}" adjuntada desde la galería.`
+      );
+    } else {
+      try {
+        const userSession = localStorage.getItem('user');
+        let tId = getCookie('tenant_id') || '';
+        let authToken = '';
+        if (userSession) {
+          try {
+            const parsed = JSON.parse(userSession);
+            if (!tId) tId = parsed.tenant_id || '';
+            authToken = parsed.access_token || parsed.token || '';
+          } catch (e) {
+            console.error(e);
+          }
+        }
+        
+        const headers: Record<string, string> = {};
+        if (tId) headers['X-Tenant-ID'] = tId;
+        if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+        
+        const downloadUrl = `${process.env.NEXT_PUBLIC_API_URL}/media/download/${encodeURIComponent(filename)}`;
+        const res = await fetch(downloadUrl, { headers });
+        if (!res.ok) throw new Error('Error al descargar el archivo.');
+        
+        const blob = await res.blob();
+        if (blob.size > 150 * 1024) {
+          toast.error(
+            language === 'fr'
+              ? 'Le fichier est trop volumineux pour l\'assistant (max 150 Ko).'
+              : language === 'en'
+                ? 'File is too large for the assistant to process (max 150 KB).'
+                : `El archivo "${filename}" es demasiado grande para procesar (máximo 150 KB).`
+          );
+          return;
+        }
+        
+        if (isCsvOrText) {
+          const text = await blob.text();
+          setAttachedFile({
+            name: filename,
+            content: text,
+            type: 'text'
+          });
+          toast.success(
+            language === 'fr'
+              ? 'Document joint avec succès.'
+              : language === 'en'
+                ? 'Document attached successfully.'
+                : `Documento "${filename}" adjuntado y cargado en el chat.`
+          );
+        } else {
+          setAttachedFile({
+            name: filename,
+            content: `[Enlace seguro al documento: ${downloadUrl}]`,
+            type: 'text'
+          });
+          toast.success(
+            language === 'fr'
+              ? 'Lien du document joint.'
+              : language === 'en'
+                ? 'Document link attached.'
+                : `Enlace de "${filename}" adjuntado para el asistente.`
+          );
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error('No se pudo adjuntar el documento debido a un error de lectura.');
+      }
+    }
+  };
 
   // ── Fetch Límites de Plan ─────────────────────────────────────────────────
   useEffect(() => {
@@ -423,7 +515,19 @@ export default function AICopilotWidget() {
             isUploading={isUploading}
             attachedFile={attachedFile}
             onRemoveFile={() => setAttachedFile(null)}
-            onAttachClick={() => fileInputRef.current?.click()}
+            onAttachClick={() => {
+              if (canAttachFiles) {
+                setShowMediaPicker(true);
+              } else {
+                toast.error(
+                  language === 'fr'
+                    ? 'La pièce jointe est réservée aux plans Pro/Gold.'
+                    : language === 'en'
+                      ? 'Attaching files is restricted to Pro/Gold plans.'
+                      : 'La función de adjuntar archivos está restringida a los planes Pro y Gold.'
+                );
+              }
+            }}
             fileInputRef={fileInputRef}
             onFileChange={handleFileChange}
             canAttachFiles={canAttachFiles}
@@ -449,6 +553,25 @@ export default function AICopilotWidget() {
           <span className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           <Sparkles size={22} className="text-primary animate-pulse" strokeWidth={1.8} />
         </button>
+      )}
+
+      {showMediaPicker && (
+        <MediaPickerModal
+          onClose={() => setShowMediaPicker(false)}
+          onImageSelected={handleMediaSelected}
+          mediaType="all"
+          tenantId={getCookie('tenant_id') || undefined}
+          token={(() => {
+            const userSession = localStorage.getItem('user');
+            if (userSession) {
+              try {
+                const parsed = JSON.parse(userSession);
+                return parsed.access_token || parsed.token || undefined;
+              } catch (_) {}
+            }
+            return undefined;
+          })()}
+        />
       )}
 
     </div>

@@ -1,6 +1,7 @@
 'use client';
 
-import { type MediaFile, isVideoFile } from '@/lib/mediaTypes';
+import { type MediaFile, isVideoFile, isDocumentFile } from '@/lib/mediaTypes';
+import { FileText, FileSpreadsheet } from 'lucide-react';
 
 interface MediaGridProps {
   files: MediaFile[];
@@ -72,6 +73,19 @@ export default function MediaGrid({
                     <span className="text-white text-xs ml-0.5">▶</span>
                   </div>
                 </div>
+              </div>
+            ) : isDocumentFile(file) ? (
+              <div className="w-full h-full relative bg-stone-50 flex flex-col items-center justify-center p-4 border border-stone-100 rounded-2xl">
+                <div className="text-stone-400 group-hover:text-[#d4af37] transition-colors mb-2">
+                  {file.name.toLowerCase().endsWith('.csv') ? (
+                    <FileSpreadsheet size={36} strokeWidth={1.5} className="text-[#d4af37]" />
+                  ) : (
+                    <FileText size={36} strokeWidth={1.5} />
+                  )}
+                </div>
+                <p className="text-[9px] font-black tracking-widest text-stone-500 uppercase bg-stone-100 px-2 py-0.5 rounded border border-stone-200">
+                  {file.name.split('.').pop()?.toUpperCase() || 'DOC'}
+                </p>
               </div>
             ) : (
               <img
