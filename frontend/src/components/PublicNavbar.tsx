@@ -424,7 +424,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                     return (
                       <div className="w-[280px] shrink-0 bg-stone-900 py-6 pl-8 pr-0 border-r border-stone-800 relative flex flex-col">
                         <h4 className="text-[14px] font-black uppercase tracking-[0.3em] text-stone-300 mb-6 shrink-0">{navT.categories}</h4>
-                        <div className="flex-1 overflow-y-auto snap-y snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pr-4">
+                        <div className="flex-1 flex flex-col overflow-y-auto snap-y snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pr-4">
                           {categoryPages.map((page, pageIdx) => (
                             <div key={pageIdx} className="snap-start h-full shrink-0 flex flex-col justify-start gap-1 pb-4">
                               {page.map(cat => {
@@ -512,8 +512,8 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                                     {cat.name}
                                   </span>
                                   
-                                  {catServices.length <= 5 ? (
-                                    /* No scrolling or snap chunks needed if 5 or fewer items */
+                                  {catServices.length <= 4 ? (
+                                    /* No scrolling or snap chunks needed if 4 or fewer items */
                                     <div className="flex-1 min-h-0 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                                       <div className="flex flex-col gap-3.5 pb-4">
                                         {catServices.length === 0 ? (
@@ -544,12 +544,12 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                                       </div>
                                     </div>
                                   ) : (
-                                    /* Snap paging for categories with more than 5 items */
-                                    <div className="flex-1 min-h-0 overflow-y-auto snap-y snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                                    /* Snap paging for categories with more than 4 items */
+                                    <div className="flex-1 min-h-0 flex flex-col overflow-y-auto snap-y snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                                       {(() => {
                                         const serviceChunks: any[][] = [];
-                                        for (let i = 0; i < catServices.length; i += 5) {
-                                          serviceChunks.push(catServices.slice(i, i + 5));
+                                        for (let i = 0; i < catServices.length; i += 4) {
+                                          serviceChunks.push(catServices.slice(i, i + 4));
                                         }
                                         return serviceChunks.map((chunk, chunkIdx) => (
                                           <div key={chunkIdx} className="snap-start h-full shrink-0 flex flex-col justify-start gap-3.5 pb-4">

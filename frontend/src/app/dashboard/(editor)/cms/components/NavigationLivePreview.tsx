@@ -113,7 +113,7 @@ export default function NavigationLivePreview({
                       <div className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-3 shrink-0">
                         Tratamientos
                       </div>
-                      <div className="flex-1 overflow-y-auto snap-y snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pr-2">
+                      <div className="flex-1 flex flex-col overflow-y-auto snap-y snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pr-2">
                         {previewCategoryPages.map((page, pageIdx) => (
                           <div key={pageIdx} className="snap-start h-full shrink-0 flex flex-col justify-start gap-1 pb-4">
                             {page.map(cat => (
@@ -210,7 +210,7 @@ export default function NavigationLivePreview({
                           {cat.name}
                         </span>
                         
-                        {catServices.length <= 5 ? (
+                        {catServices.length <= 4 ? (
                           <div className="flex-1 min-h-0 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                             <div className="flex flex-col gap-2.5 pb-2">
                               {catServices.length === 0 ? (
@@ -231,11 +231,11 @@ export default function NavigationLivePreview({
                             </div>
                           </div>
                         ) : (
-                          <div className="flex-1 min-h-0 overflow-y-auto snap-y snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                          <div className="flex-1 min-h-0 flex flex-col overflow-y-auto snap-y snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                             {(() => {
                               const serviceChunks: any[][] = [];
-                              for (let i = 0; i < catServices.length; i += 5) {
-                                serviceChunks.push(catServices.slice(i, i + 5));
+                              for (let i = 0; i < catServices.length; i += 4) {
+                                serviceChunks.push(catServices.slice(i, i + 4));
                               }
                               return serviceChunks.map((chunk, chunkIdx) => (
                                 <div key={chunkIdx} className="snap-start h-full shrink-0 flex flex-col justify-start gap-2.5 pb-2">
