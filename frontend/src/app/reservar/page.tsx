@@ -389,70 +389,74 @@ export default function BookingPage() {
                   locations={locations}
                   onSelectLocation={(loc) => setSelectedLocation(loc)}
                 />
-              ) : step === 1 ? (
-                <Step1Treatments 
-                  categories={categories}
-                  services={services}
-                  activeCategory={activeCategory}
-                  setActiveCategory={setActiveCategory}
-                  bookingLayout={settings?.booking_layout || 'grid'}
-                  settings={settings}
-                  onSelectService={(srv) => { 
-                    setSelectedService(srv); 
-                    setStep(2); 
-                  }}
-                />
-              ) : null}
+              ) : (
+                <>
+                  {step === 1 && (
+                    <Step1Treatments 
+                      categories={categories}
+                      services={services}
+                      activeCategory={activeCategory}
+                      setActiveCategory={setActiveCategory}
+                      bookingLayout={settings?.booking_layout || 'grid'}
+                      settings={settings}
+                      onSelectService={(srv) => { 
+                        setSelectedService(srv); 
+                        setStep(2); 
+                      }}
+                    />
+                  )}
 
-              {step === 2 && (
-                <Step2DateTime
-                  selectedDate={selectedDate}
-                  setSelectedDate={setSelectedDate}
-                  selectedTime={selectedTime}
-                  setSelectedTime={(time) => {
-                    setSelectedTime(time);
-                    if (time) {
-                      setTimeout(() => {
-                        setStep(3);
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                      }, 300);
-                    }
-                  }}
-                  availableSlots={availableSlots}
-                  loadingSlots={loadingSlots}
-                  selectedService={selectedService}
-                  settings={settings}
-                  onShowFeedback={showFeedback}
-                  dateTimePhase={dateTimePhase}
-                  setDateTimePhase={setDateTimePhase}
-                  currentMonthOffset={currentMonthOffset}
-                  setCurrentMonthOffset={setCurrentMonthOffset}
-                  staffList={staff}
-                  selectedStaff={selectedStaff}
-                  setSelectedStaff={setSelectedStaff}
-                />
-              )}
+                  {step === 2 && (
+                    <Step2DateTime
+                      selectedDate={selectedDate}
+                      setSelectedDate={setSelectedDate}
+                      selectedTime={selectedTime}
+                      setSelectedTime={(time) => {
+                        setSelectedTime(time);
+                        if (time) {
+                          setTimeout(() => {
+                            setStep(3);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }, 300);
+                        }
+                      }}
+                      availableSlots={availableSlots}
+                      loadingSlots={loadingSlots}
+                      selectedService={selectedService}
+                      settings={settings}
+                      onShowFeedback={showFeedback}
+                      dateTimePhase={dateTimePhase}
+                      setDateTimePhase={setDateTimePhase}
+                      currentMonthOffset={currentMonthOffset}
+                      setCurrentMonthOffset={setCurrentMonthOffset}
+                      staffList={staff}
+                      selectedStaff={selectedStaff}
+                      setSelectedStaff={setSelectedStaff}
+                    />
+                  )}
 
-              {step === 3 && (
-                <Step3Details 
-                  formData={formData}
-                  setFormData={setFormData}
-                  selectedDate={selectedDate}
-                  selectedTime={selectedTime}
-                  selectedService={selectedService}
-                  privacyAccepted={privacyAccepted}
-                  setPrivacyAccepted={setPrivacyAccepted}
-                  settings={settings}
-                />
-              )}
+                  {step === 3 && (
+                    <Step3Details 
+                      formData={formData}
+                      setFormData={setFormData}
+                      selectedDate={selectedDate}
+                      selectedTime={selectedTime}
+                      selectedService={selectedService}
+                      privacyAccepted={privacyAccepted}
+                      setPrivacyAccepted={setPrivacyAccepted}
+                      settings={settings}
+                    />
+                  )}
 
-              {step === 4 && (
-                <Step4Success 
-                  selectedDate={selectedDate}
-                  selectedTime={selectedTime}
-                  selectedService={selectedService}
-                  formData={formData}
-                />
+                  {step === 4 && (
+                    <Step4Success 
+                      selectedDate={selectedDate}
+                      selectedTime={selectedTime}
+                      selectedService={selectedService}
+                      formData={formData}
+                    />
+                  )}
+                </>
               )}
             </>
           )}
