@@ -21,3 +21,5 @@ git commit -m "[mensaje]"
 
 Bash
 git push
+
+Debes hacer el commit y el push si se te ordena explícitamente

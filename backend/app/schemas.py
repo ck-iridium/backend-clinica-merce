@@ -661,6 +661,8 @@ class SiteContentBase(BaseModel):
 
     home_sections_order: Optional[str] = None
     layout_style: Optional[str] = "cards_slider"  # 'cards_slider' | 'bento_grid'
+    megamenu_layout: Optional[str] = "bento"
+    megamenu_categories_json: Optional[List[str]] = None
     translations: Optional[Dict[str, Any]] = None
 
 class SiteContentUpdate(BaseModel):
@@ -693,6 +695,8 @@ class SiteContentUpdate(BaseModel):
     
     home_sections_order: Optional[str] = None
     layout_style: Optional[str] = None  # 'cards_slider' | 'bento_grid'
+    megamenu_layout: Optional[str] = None
+    megamenu_categories_json: Optional[List[str]] = None
     translations: Optional[Dict[str, Any]] = None
 
 class SiteContentResponse(SiteContentBase):

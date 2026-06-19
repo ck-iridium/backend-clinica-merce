@@ -82,7 +82,7 @@ function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen, 
       {/* Spinner minimalista para el menú - Esquina inferior derecha y Blanco */}
       {svc.video_url && shouldLoadVideo && !videoLoaded && (
         <div className="absolute bottom-4 right-4 z-30">
-           <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+          <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
         </div>
       )}
 
@@ -143,8 +143,24 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
   const [services, setServices] = useState<any[]>([]);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [showMegaMenu, setShowMegaMenu] = useState(false);
-  const [mobileAccordionOpen, setMobileAccordionOpen] = useState(false);
   const [navigationItems, setNavigationItems] = useState<any[]>([]);
+  const [mobileAccordionOpen, setMobileAccordionOpen] = useState(false);
+
+  const directoryScrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollDirectoryLeft = () => {
+    if (directoryScrollRef.current) {
+      const container = directoryScrollRef.current;
+      container.scrollBy({ left: -container.clientWidth, behavior: 'smooth' });
+    }
+  };
+
+  const scrollDirectoryRight = () => {
+    if (directoryScrollRef.current) {
+      const container = directoryScrollRef.current;
+      container.scrollBy({ left: container.clientWidth, behavior: 'smooth' });
+    }
+  };
 
   const getFullUrl = (url: string) => {
     if (!url) return '';
@@ -168,7 +184,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
   const navT = navTranslations[language] || navTranslations.es;
 
   const fallbackBtnText = t('common.book_appointment');
-  const btnText = siteContent 
+  const btnText = siteContent
     ? translateClient(siteContent.hero_button_text || fallbackBtnText, siteContent.translations, 'hero_button_text')
     : fallbackBtnText;
 
@@ -247,6 +263,27 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
     return () => { document.body.style.overflow = 'unset'; };
   }, [isOpen]);
 
+  useEffect(() => {
+    if (categories.length > 0) {
+      const activeCats = categories.filter((c: any) => c.is_active);
+      const selectedCatIds = siteContent?.megamenu_categories_json;
+      
+      const filtered = activeCats.filter((cat: any) => {
+        if (cat.name?.trim().toUpperCase() === 'GENERAL') return false;
+        if (selectedCatIds === null || selectedCatIds === undefined) return true;
+        if (Array.isArray(selectedCatIds) && selectedCatIds.length === 0) return false;
+        return selectedCatIds.includes(cat.id);
+      });
+
+      if (filtered.length > 0) {
+        if (!filtered.some((c: any) => c.id === activeCategory)) {
+          const firstNonGeneral = filtered.find((c: any) => c.name && c.name.trim().toUpperCase() !== 'GENERAL');
+          setActiveCategory(firstNonGeneral ? firstNonGeneral.id : filtered[0].id);
+        }
+      }
+    }
+  }, [categories, siteContent, activeCategory]);
+
   if (isDashboard) return null;
 
   const isHome = pathname === '/';
@@ -257,6 +294,38 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
     ...c,
     name: translateClient(c.name, c.translations, 'name')
   }));
+
+  // Lógica de filtrado de tres estados para Megamenú
+  const activeLayout = siteContent?.megamenu_layout || 'bento';
+  const selectedCatIds = siteContent?.megamenu_categories_json; // null/undefined, [] o string[]
+
+  const filteredCategories = translatedCategories.filter(cat => {
+    // Excluir categoría GENERAL
+    if (cat.name?.trim().toUpperCase() === 'GENERAL') return false;
+
+    // Tres estados:
+    // 1. null / undefined -> Mostrar todas las activas
+    if (selectedCatIds === null || selectedCatIds === undefined) {
+      return cat.is_active;
+    }
+    // 2. [] -> Ocultar todas
+    if (Array.isArray(selectedCatIds) && selectedCatIds.length === 0) {
+      return false;
+    }
+    // 3. Array con ids -> Mostrar solo las especificadas y activas
+    return cat.is_active && selectedCatIds.includes(cat.id);
+  });
+
+  // Si selectedCatIds es un array con elementos, ordenar las categorías en el orden guardado
+  if (Array.isArray(selectedCatIds) && selectedCatIds.length > 0) {
+    filteredCategories.sort((a, b) => {
+      const idxA = selectedCatIds.indexOf(a.id);
+      const idxB = selectedCatIds.indexOf(b.id);
+      return idxA - idxB;
+    });
+  }
+
+  const hasCategories = filteredCategories.length > 0;
 
   return (
     <>
@@ -269,10 +338,10 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
               <div className="h-6 w-32 bg-stone-200/40 animate-pulse rounded-md" />
             ) : settings?.logo_app_b64 ? (
               <Link href="/" onClick={() => setIsOpen(false)} className="relative block h-10 w-24 md:w-32">
-                <img 
-                  src={settings.logo_app_b64} 
-                  alt="Logo" 
-                  className="absolute left-0 top-1/2 -translate-y-1/2 h-16 md:h-20 max-w-none object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300" 
+                <img
+                  src={settings.logo_app_b64}
+                  alt="Logo"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 h-16 md:h-20 max-w-none object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300"
                 />
               </Link>
             ) : (
@@ -287,7 +356,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
               const isServices = item.path === '/services' || item.path === '/tratamientos';
               const isActive = pathname === item.path;
               const label = item.label;
-              
+
               if (isServices) {
                 return (
                   <div
@@ -298,13 +367,12 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                   >
                     <Link
                       href={item.path}
-                      className={`transition-colors flex items-center gap-1 ${
-                        isActive
+                      className={`transition-colors flex items-center gap-1 ${isActive
                           ? 'text-primary'
                           : !useTransparent
-                          ? 'text-stone-800 dark:text-stone-200 hover:text-primary dark:hover:text-primary'
-                          : 'text-white hover:text-primary'
-                      }`}
+                            ? 'text-stone-800 dark:text-stone-200 hover:text-primary dark:hover:text-primary'
+                            : 'text-white hover:text-primary'
+                        }`}
                     >
                       {label}
                     </Link>
@@ -316,13 +384,12 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                 <Link
                   key={item.id || item.path}
                   href={item.path}
-                  className={`transition-colors ${
-                    isActive
+                  className={`transition-colors ${isActive
                       ? 'text-primary'
                       : !useTransparent
-                      ? 'text-stone-800 dark:text-stone-200 hover:text-primary dark:hover:text-primary'
-                      : 'text-white hover:text-primary'
-                  }`}
+                        ? 'text-stone-800 dark:text-stone-200 hover:text-primary dark:hover:text-primary'
+                        : 'text-white hover:text-primary'
+                    }`}
                 >
                   {label}
                 </Link>
@@ -330,8 +397,8 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
             })}
             <div className="flex items-center gap-4">
               <LanguageSelector />
-              <BotonReservaPro 
-                texto={btnText} 
+              <BotonReservaPro
+                texto={btnText}
                 href={btnLink}
                 className="scale-90 origin-right"
               />
@@ -339,69 +406,172 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
           </div>
 
           {/* MEGA MENU (Full width relative to container) */}
-          <div
-            onMouseEnter={() => setShowMegaMenu(true)}
-            onMouseLeave={() => setShowMegaMenu(false)}
-            className={`absolute top-[calc(100%-8px)] left-6 right-6 bg-white dark:bg-stone-950 rounded-luxury-card border border-stone-100 dark:border-stone-900 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] overflow-hidden transition-all duration-300 origin-top ${showMegaMenu ? 'opacity-100 scale-y-100 translate-y-0' : 'opacity-0 scale-y-95 -translate-y-2 pointer-events-none'}`}
-          >
-            <div className="flex h-[380px]">
-              {/* Left Panel: Categories */}
-              <div className="w-[280px] shrink-0 bg-stone-900 py-6 pl-8 pr-0 border-r border-stone-800 relative">
-                <h4 className="text-[14px] font-black uppercase tracking-[0.3em] text-stone-300 mb-8">{navT.categories}</h4>
-                <ul className="space-y-1">
-                  {translatedCategories.filter(c => c.name.toUpperCase() !== 'GENERAL').map(cat => {
-                    const translatedCatName = cat.name;
+          {showMegaMenu && hasCategories && (
+            <div
+              onMouseEnter={() => setShowMegaMenu(true)}
+              onMouseLeave={() => setShowMegaMenu(false)}
+              className={`absolute top-[calc(100%-8px)] left-6 right-6 bg-white dark:bg-stone-950 rounded-luxury-card border border-stone-100 dark:border-stone-900 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] overflow-hidden transition-all duration-300 origin-top ${showMegaMenu ? 'opacity-100 scale-y-100 translate-y-0' : 'opacity-0 scale-y-95 -translate-y-2 pointer-events-none'}`}
+            >
+              {activeLayout === 'bento' ? (
+                /* --- Bento Grid Layout with Vertical Snap Scroll --- */
+                <div className="flex h-[380px]">
+                  {/* Left Panel: Categories with vertical snap scroll */}
+                  {(() => {
+                    const categoryPages: any[][] = [];
+                    for (let i = 0; i < filteredCategories.length; i += 5) {
+                      categoryPages.push(filteredCategories.slice(i, i + 5));
+                    }
                     return (
-                      <li key={cat.id}>
-                        <button
-                          onMouseEnter={() => setActiveCategory(cat.id)}
-                          onClick={() => { setShowMegaMenu(false); window.location.href = `/tratamientos/${cat.slug || cat.id}` }}
-                          className={`w-full text-left px-6 py-2.5 transition-all font-serif text-lg md:text-xl leading-tight whitespace-normal relative ${activeCategory === cat.id
-                              ? 'bg-white dark:bg-stone-900 text-primary font-semibold rounded-l-luxury-card -mr-[1px] z-10 shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.02)] after:absolute after:top-0 after:-right-[1px] after:w-[2px] after:h-full after:bg-white dark:after:bg-stone-900 after:z-20'
-                              : 'text-stone-200 hover:text-white rounded-luxury-btn mr-4 hover:bg-white/5'
-                            }`}
-                        >
-                          {translatedCatName}
-                        </button>
-                      </li>
+                      <div className="w-[280px] shrink-0 bg-stone-900 py-6 pl-8 pr-0 border-r border-stone-800 relative flex flex-col">
+                        <h4 className="text-[14px] font-black uppercase tracking-[0.3em] text-stone-300 mb-6 shrink-0">{navT.categories}</h4>
+                        <div className="flex-1 overflow-y-auto snap-y snap-mandatory scrollbar-none pr-4">
+                          {categoryPages.map((page, pageIdx) => (
+                            <div key={pageIdx} className="snap-start h-full shrink-0 flex flex-col justify-start gap-1 pb-4">
+                              {page.map(cat => {
+                                const translatedCatName = cat.name;
+                                return (
+                                  <button
+                                    key={cat.id}
+                                    onMouseEnter={() => setActiveCategory(cat.id)}
+                                    onClick={() => { setShowMegaMenu(false); window.location.href = `/tratamientos/${cat.slug || cat.id}` }}
+                                    className={`w-full text-left px-6 py-2.5 transition-all font-serif text-lg md:text-xl leading-tight whitespace-normal relative ${activeCategory === cat.id
+                                      ? 'bg-white dark:bg-stone-900 text-primary font-semibold rounded-l-luxury-card -mr-[1px] z-10 shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.02)] after:absolute after:top-0 after:-right-[1px] after:w-[2px] after:h-full after:bg-white dark:after:bg-stone-900 after:z-20'
+                                      : 'text-stone-200 hover:text-white rounded-luxury-btn mr-4 hover:bg-white/5'
+                                      }`}
+                                  >
+                                    {translatedCatName}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     );
-                  })}
-                </ul>
-              </div>
+                  })()}
 
-              {/* Right Panel: Bento Grid Highlights */}
-              <div className="flex-1 py-6 px-8 bg-white dark:bg-stone-900 overflow-hidden">
-                {(() => {
-                  const servicesList = Array.isArray(services) ? services : [];
-                  const activeServices = servicesList.filter(s => s.category_id === activeCategory).slice(0, 6);
-                  const isFew = activeServices.length <= 3;
+                  {/* Right Panel: Bento Grid Highlights */}
+                  <div className="flex-1 py-6 px-8 bg-white dark:bg-stone-900 overflow-hidden">
+                    {(() => {
+                      const servicesList = Array.isArray(services) ? services : [];
+                      const activeServices = servicesList.filter(s => s.category_id === activeCategory).slice(0, 6);
+                      const isFew = activeServices.length <= 3;
 
+                      return (
+                        <div
+                          key={activeCategory} // Clave para forzar re-render y disparar animación
+                          className={`grid grid-cols-3 gap-6 h-full animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out`}
+                        >
+                          {activeServices.map(svc => (
+                            <MegaMenuServiceCard
+                              key={svc.id}
+                              svc={svc}
+                              isLarge={isFew}
+                              getFullUrl={getFullUrl}
+                              onClick={() => setShowMegaMenu(false)}
+                              isParentOpen={showMegaMenu}
+                              categories={categories}
+                              clinicName={settings?.clinic_name || getFallbackClinicName()}
+                            />
+                          ))}
+                          {activeServices.length === 0 && (
+                            <p className="text-stone-400 font-medium text-sm col-span-3 text-center py-20 animate-in fade-in duration-1000">{navT.no_featured}</p>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+              ) : (
+                /* --- Directory Columns Layout with Horizontal Snap Scroll --- */
+                (() => {
+                  const directoryPages: any[][] = [];
+                  for (let i = 0; i < filteredCategories.length; i += 3) {
+                    directoryPages.push(filteredCategories.slice(i, i + 3));
+                  }
                   return (
-                    <div
-                      key={activeCategory} // Clave para forzar re-render y disparar animación
-                      className={`grid grid-cols-3 gap-6 h-full animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out`}
-                    >
-                      {activeServices.map(svc => (
-                        <MegaMenuServiceCard
-                          key={svc.id}
-                          svc={svc}
-                          isLarge={isFew}
-                          getFullUrl={getFullUrl}
-                          onClick={() => setShowMegaMenu(false)}
-                          isParentOpen={showMegaMenu}
-                          categories={categories}
-                          clinicName={settings?.clinic_name || getFallbackClinicName()}
-                        />
-                      ))}
-                      {activeServices.length === 0 && (
-                        <p className="text-stone-400 font-medium text-sm col-span-3 text-center py-20 animate-in fade-in duration-1000">{navT.no_featured}</p>
+                    <div className="relative w-full h-[380px] bg-white dark:bg-stone-950 flex items-center p-8 overflow-hidden group/dir">
+                      {/* Contenedor horizontal con snap-x scroll */}
+                      <div
+                        ref={directoryScrollRef}
+                        className="w-full h-full flex overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-none gap-8"
+                      >
+                        {directoryPages.map((page, pageIdx) => (
+                          <div
+                            key={pageIdx}
+                            className="w-full shrink-0 snap-start grid grid-cols-3 gap-8 h-full"
+                          >
+                            {page.map(cat => {
+                              const catServices = services.filter(s => s.is_active && s.category_id === cat.id);
+                              return (
+                                <div key={cat.id} className="flex flex-col h-full bg-stone-50/50 dark:bg-stone-900/30 p-6 rounded-3xl border border-stone-100/50 dark:border-stone-900/50">
+                                  <span
+                                    onClick={() => { setShowMegaMenu(false); window.location.href = `/tratamientos/${cat.slug || cat.id}` }}
+                                    className="text-[12px] font-black uppercase tracking-[0.2em] text-[#d4af37] border-b border-stone-200/50 dark:border-stone-800 pb-3 mb-4 cursor-pointer hover:text-stone-800 transition-colors"
+                                  >
+                                    {cat.name}
+                                  </span>
+                                  <div className="flex-1 overflow-y-auto space-y-3.5 pr-2 scrollbar-thin">
+                                    {catServices.length === 0 ? (
+                                      <p className="text-xs text-stone-400 italic">No hay tratamientos en esta categoría.</p>
+                                    ) : (
+                                      catServices.map(svc => {
+                                        const category = categories.find(c => c.id === svc.category_id);
+                                        const categorySlug = category?.slug || category?.id || 'general';
+                                        const serviceLink = `/tratamientos/${categorySlug}/${svc.slug || svc.id}`;
+                                        return (
+                                          <Link
+                                            key={svc.id}
+                                            href={serviceLink}
+                                            onClick={() => setShowMegaMenu(false)}
+                                            className="block group/item"
+                                          >
+                                            <div className="text-sm font-bold text-stone-800 dark:text-stone-200 group-hover/item:text-primary transition-colors truncate">
+                                              {translateClient(svc.name, svc.translations, 'name')}
+                                            </div>
+                                            <div className="flex justify-between items-center text-[10px] text-stone-400 dark:text-stone-500 mt-1">
+                                              <span>{svc.duration_minutes} min</span>
+                                              <span className="font-semibold text-stone-600 dark:text-stone-400">{svc.price}€</span>
+                                            </div>
+                                          </Link>
+                                        );
+                                      })
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Botones de navegación horizontal */}
+                      {directoryPages.length > 1 && (
+                        <>
+                          {/* Left Arrow */}
+                          <button
+                            onClick={scrollDirectoryLeft}
+                            className="absolute left-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white/80 dark:bg-stone-900/80 backdrop-blur-md border border-stone-200/50 dark:border-stone-800 flex items-center justify-center text-lg text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-white transition-all shadow-sm opacity-0 group-hover/dir:opacity-100"
+                            aria-label="Anterior"
+                          >
+                            ‹
+                          </button>
+                          {/* Right Arrow */}
+                          <button
+                            onClick={scrollDirectoryRight}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white/80 dark:bg-stone-900/80 backdrop-blur-md border border-stone-200/50 dark:border-stone-800 flex items-center justify-center text-lg text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-white transition-all shadow-sm opacity-0 group-hover/dir:opacity-100"
+                            aria-label="Siguiente"
+                          >
+                            ›
+                          </button>
+                        </>
                       )}
                     </div>
-                  );
-                })()}
-              </div>
+                  )
+                })()
+              )}
             </div>
-          </div>
+          )}
 
           {/* MOBILE MENU BUTTON - z-index máximo para control total */}
           <button
@@ -482,8 +652,8 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
 
           <div className="flex flex-col items-center gap-4 w-full">
             <LanguageSelector />
-            <BotonReservaPro 
-              texto={btnText} 
+            <BotonReservaPro
+              texto={btnText}
               href={btnLink}
               onClick={() => setIsOpen(false)}
               className="w-full max-w-xs mx-auto"

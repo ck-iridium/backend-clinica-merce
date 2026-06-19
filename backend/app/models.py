@@ -415,6 +415,10 @@ class SiteContent(Base):
     # Diseño global de las secciones de categorías: 'cards_slider' | 'bento_grid'
     layout_style = Column(String(20), default="cards_slider", nullable=True)
 
+    # Megamenú Configurable
+    megamenu_layout = Column(String(20), default="bento", nullable=True)
+    megamenu_categories_json = Column(JSONB, default=None, nullable=True)
+
     # SEO Dinámico
     seo_title = Column(String, nullable=True)
     seo_description = Column(Text, nullable=True)
