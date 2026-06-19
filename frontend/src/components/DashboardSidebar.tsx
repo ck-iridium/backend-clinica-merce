@@ -291,7 +291,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
     const filteredConfig = filterByRole(configLinks);
 
     return (
-      <div className="flex flex-col gap-2 w-full relative z-10 px-3">
+      <div className="flex flex-col gap-2 w-full relative z-10 px-3 dashboard-sidebar-nav">
         {/* 1. GlobalSearch (Lupa) */}
         <button
           onClick={() => {
@@ -301,7 +301,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
             }
             setSearchOpen(true);
           }}
-          className={`w-full group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 text-stone-500 hover:bg-stone-900 hover:text-white border border-transparent hover:border-stone-800 mb-2 ${isGenerating ? 'opacity-30 grayscale cursor-not-allowed' : ''}`}
+          className={`w-full group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 text-stone-500 hover:bg-stone-900 hover:text-white border border-transparent hover:border-stone-800 mb-2 dashboard-sidebar-nav-item ${isGenerating ? 'opacity-30 grayscale cursor-not-allowed' : ''}`}
         >
           <Search size={22} strokeWidth={1.5} />
           <span className="absolute left-full top-1/2 -translate-y-1/2 ml-5 px-4 py-2 bg-stone-800 text-white text-[12px] font-black uppercase tracking-[0.15em] rounded-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-300 whitespace-nowrap z-[110] shadow-2xl border border-stone-700 translate-x-[-15px] group-hover/item:translate-x-0 pointer-events-none">
@@ -339,7 +339,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
                   toast.warning("Espera a que la IA termine antes de salir.");
                 }
               }}
-              className={`group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 ${containerClasses} ${isGenerating ? 'opacity-30 grayscale cursor-not-allowed' : ''}`}
+              className={`group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 ${containerClasses} dashboard-sidebar-nav-item ${isGenerating ? 'opacity-30 grayscale cursor-not-allowed' : ''}`}
             >
               <div className="flex-shrink-0 flex items-center justify-center">
                 <Icon size={22} className={iconClasses} strokeWidth={active ? 2.5 : 1.5} />
@@ -358,7 +358,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
         {filteredGestion.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button disabled={isGenerating} className={`group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 ${filteredGestion.some(l => isActive(l.href)) ? 'bg-stone-800 text-white shadow-lg' : 'text-stone-500 hover:bg-stone-900 hover:text-white'} ${isGenerating ? 'opacity-30 grayscale cursor-not-allowed' : ''}`}>
+              <button disabled={isGenerating} className={`group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 ${filteredGestion.some(l => isActive(l.href)) ? 'bg-stone-800 text-white shadow-lg' : 'text-stone-500 hover:bg-stone-900 hover:text-white'} dashboard-sidebar-nav-item ${isGenerating ? 'opacity-30 grayscale cursor-not-allowed' : ''}`}>
                 <div className="flex-shrink-0 flex items-center justify-center">
                   <Briefcase size={22} strokeWidth={1.5} />
                 </div>
@@ -397,7 +397,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
         {filteredConfig.length > 0 && (role?.toLowerCase() === 'admin' || role?.toLowerCase() === 'administrador') && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className={`group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 ${filteredConfig.some(l => isActive(l.href)) ? 'bg-stone-800 text-white shadow-lg' : 'text-stone-500 hover:bg-stone-900 hover:text-white'}`}>
+              <button className={`group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 ${filteredConfig.some(l => isActive(l.href)) ? 'bg-stone-800 text-white shadow-lg' : 'text-stone-500 hover:bg-stone-900 hover:text-white'} dashboard-sidebar-nav-item`}>
                 <div className="flex-shrink-0 flex items-center justify-center">
                   <Settings size={22} strokeWidth={1.5} />
                 </div>
@@ -442,10 +442,10 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
       {/* ─── Desktop Sidebar (SaaS Deep Dark Style) ─── */}
       <aside className="hidden md:block sticky top-0 h-screen z-[100] print:hidden shrink-0">
         {/* Actual fixed sidebar */}
-        <div className="w-20 h-full bg-stone-950 border-r border-stone-800 flex flex-col py-8 shadow-2xl overflow-visible">
+        <div className="w-20 h-full bg-stone-950 border-r border-stone-800 flex flex-col py-8 shadow-2xl overflow-visible dashboard-sidebar-container">
 
           {/* Logo Area - Isotype Only */}
-          <div className="flex items-center justify-center mb-10 px-4">
+          <div className="flex items-center justify-center mb-10 px-4 dashboard-sidebar-logo">
             <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-stone-800 to-stone-950 border border-stone-700/60 flex items-center justify-center shadow-lg shadow-black/40 overflow-hidden">
               {logoUrl ? (
                 <img src={logoUrl} alt={clinicName} className="w-full h-full object-cover" />
@@ -462,7 +462,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
           </div>
 
           {/* Utilities & User Section Bottom */}
-          <div className="px-3 mt-auto pt-4 border-t border-stone-900/50 space-y-2">
+          <div className="px-3 mt-auto pt-4 border-t border-stone-900/50 space-y-2 dashboard-sidebar-bottom">
             {/* Notifications Slot */}
             <div className="flex justify-center">
               <NotificationCenter isMobile={false} />
@@ -470,7 +470,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="w-full flex items-center justify-center p-3 rounded-2xl text-stone-500 hover:bg-stone-900 hover:text-white transition-all outline-none">
+                <button className="w-full flex items-center justify-center p-3 rounded-2xl text-stone-500 hover:bg-stone-900 hover:text-white transition-all outline-none dashboard-sidebar-bottom-item">
                   <User size={22} strokeWidth={1.5} />
                 </button>
               </DropdownMenuTrigger>
