@@ -209,18 +209,14 @@ export default function NavigationLivePreview({
                         <span className="text-[10px] font-bold text-[#d4af37] uppercase tracking-wider block mb-3 border-b border-stone-50 pb-1.5 truncate shrink-0">
                           {cat.name}
                         </span>
-                        <div className="flex-1 overflow-y-auto snap-y snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                          {(() => {
-                            const serviceChunks: any[][] = [];
-                            for (let i = 0; i < catServices.length; i += 5) {
-                              serviceChunks.push(catServices.slice(i, i + 5));
-                            }
-                            if (serviceChunks.length === 0) {
-                              return <p className="text-[10px] text-stone-400 italic">Sin servicios</p>;
-                            }
-                            return serviceChunks.map((chunk, chunkIdx) => (
-                              <div key={chunkIdx} className="snap-start h-full shrink-0 flex flex-col justify-start gap-2.5 pb-2">
-                                {chunk.map(svc => (
+                        
+                        {catServices.length <= 5 ? (
+                          <div className="flex-1 min-h-0 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                            <div className="flex flex-col gap-2.5 pb-2">
+                              {catServices.length === 0 ? (
+                                <p className="text-[10px] text-stone-400 italic">Sin servicios</p>
+                              ) : (
+                                catServices.map(svc => (
                                   <div key={svc.id} className="group cursor-default shrink-0">
                                     <div className="text-xs font-bold text-stone-800 truncate group-hover:text-[#d4af37] transition-colors">
                                       {svc.name}
@@ -230,11 +226,35 @@ export default function NavigationLivePreview({
                                       <span className="font-medium text-stone-600">{svc.price}€</span>
                                     </div>
                                   </div>
-                                ))}
-                              </div>
-                            ));
-                          })()}
-                        </div>
+                                ))
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex-1 min-h-0 overflow-y-auto snap-y snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                            {(() => {
+                              const serviceChunks: any[][] = [];
+                              for (let i = 0; i < catServices.length; i += 5) {
+                                serviceChunks.push(catServices.slice(i, i + 5));
+                              }
+                              return serviceChunks.map((chunk, chunkIdx) => (
+                                <div key={chunkIdx} className="snap-start h-full shrink-0 flex flex-col justify-start gap-2.5 pb-2">
+                                  {chunk.map(svc => (
+                                    <div key={svc.id} className="group cursor-default shrink-0">
+                                      <div className="text-xs font-bold text-stone-800 truncate group-hover:text-[#d4af37] transition-colors">
+                                        {svc.name}
+                                      </div>
+                                      <div className="flex justify-between items-center text-[9px] text-stone-400 mt-0.5">
+                                        <span>{svc.duration_minutes} min</span>
+                                        <span className="font-medium text-stone-600">{svc.price}€</span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ));
+                            })()}
+                          </div>
+                        )}
                       </div>
                     );
                   })}

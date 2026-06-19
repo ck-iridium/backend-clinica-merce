@@ -494,7 +494,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                       {/* Contenedor horizontal con snap-x scroll */}
                       <div
                         ref={directoryScrollRef}
-                        className="w-full h-full flex overflow-x-auto snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden gap-8"
+                        className="w-full h-full flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden gap-8"
                       >
                         {directoryPages.map((page, pageIdx) => (
                           <div
@@ -504,25 +504,22 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                             {page.map(cat => {
                               const catServices = services.filter(s => s.is_active && s.category_id === cat.id);
                               return (
-                                <div key={cat.id} className="flex flex-col h-full bg-stone-50/50 dark:bg-stone-900/30 p-6 rounded-3xl border border-stone-100/50 dark:border-stone-900/50">
+                                <div key={cat.id} className="flex flex-col h-full overflow-hidden bg-stone-50/50 dark:bg-stone-900/30 p-6 rounded-3xl border border-stone-100/50 dark:border-stone-900/50">
                                   <span
                                     onClick={() => { setShowMegaMenu(false); window.location.href = `/tratamientos/${cat.slug || cat.id}` }}
                                     className="text-[12px] font-black uppercase tracking-[0.2em] text-[#d4af37] border-b border-stone-200/50 dark:border-stone-800 pb-3 mb-4 cursor-pointer hover:text-stone-800 transition-colors shrink-0"
                                   >
                                     {cat.name}
                                   </span>
-                                  <div className="flex-1 overflow-y-auto snap-y snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                                    {(() => {
-                                      const serviceChunks: any[][] = [];
-                                      for (let i = 0; i < catServices.length; i += 5) {
-                                        serviceChunks.push(catServices.slice(i, i + 5));
-                                      }
-                                      if (serviceChunks.length === 0) {
-                                        return <p className="text-xs text-stone-400 italic">No hay tratamientos en esta categoría.</p>;
-                                      }
-                                      return serviceChunks.map((chunk, chunkIdx) => (
-                                        <div key={chunkIdx} className="snap-start h-full shrink-0 flex flex-col justify-start gap-3.5 pb-4">
-                                          {chunk.map(svc => {
+                                  
+                                  {catServices.length <= 5 ? (
+                                    /* No scrolling or snap chunks needed if 5 or fewer items */
+                                    <div className="flex-1 min-h-0 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                                      <div className="flex flex-col gap-3.5 pb-4">
+                                        {catServices.length === 0 ? (
+                                          <p className="text-xs text-stone-400 italic">No hay tratamientos en esta categoría.</p>
+                                        ) : (
+                                          catServices.map(svc => {
                                             const category = categories.find(c => c.id === svc.category_id);
                                             const categorySlug = category?.slug || category?.id || 'general';
                                             const serviceLink = `/tratamientos/${categorySlug}/${svc.slug || svc.id}`;
@@ -542,11 +539,46 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                                                 </div>
                                               </Link>
                                             );
-                                          })}
-                                        </div>
-                                      ));
-                                    })()}
-                                  </div>
+                                          })
+                                        )}
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    /* Snap paging for categories with more than 5 items */
+                                    <div className="flex-1 min-h-0 overflow-y-auto snap-y snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                                      {(() => {
+                                        const serviceChunks: any[][] = [];
+                                        for (let i = 0; i < catServices.length; i += 5) {
+                                          serviceChunks.push(catServices.slice(i, i + 5));
+                                        }
+                                        return serviceChunks.map((chunk, chunkIdx) => (
+                                          <div key={chunkIdx} className="snap-start h-full shrink-0 flex flex-col justify-start gap-3.5 pb-4">
+                                            {chunk.map(svc => {
+                                              const category = categories.find(c => c.id === svc.category_id);
+                                              const categorySlug = category?.slug || category?.id || 'general';
+                                              const serviceLink = `/tratamientos/${categorySlug}/${svc.slug || svc.id}`;
+                                              return (
+                                                <Link
+                                                  key={svc.id}
+                                                  href={serviceLink}
+                                                  onClick={() => setShowMegaMenu(false)}
+                                                  className="block group/item shrink-0"
+                                                >
+                                                  <div className="text-sm font-bold text-stone-800 dark:text-stone-200 group-hover/item:text-primary transition-colors truncate">
+                                                    {translateClient(svc.name, svc.translations, 'name')}
+                                                  </div>
+                                                  <div className="flex justify-between items-center text-[10px] text-stone-400 dark:text-stone-500 mt-1">
+                                                    <span>{svc.duration_minutes} min</span>
+                                                    <span className="font-semibold text-stone-600 dark:text-stone-400">{svc.price}€</span>
+                                                  </div>
+                                                </Link>
+                                              );
+                                            })}
+                                          </div>
+                                        ));
+                                      })()}
+                                    </div>
+                                  )}
                                 </div>
                               );
                             })}
