@@ -102,25 +102,39 @@ export default function NavigationLivePreview({
             ) : megamenuLayout === 'bento' ? (
               /* --- Bento Layout Preview --- */
               <div className="grid grid-cols-3 gap-6 h-[280px]">
-                {/* Left category list with simulated scroll snap */}
-                <div className="col-span-1 border-r border-stone-200/60 pr-4 overflow-y-auto space-y-1 scrollbar-thin">
-                  <div className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-3">
-                    Tratamientos
-                  </div>
-                  {previewFilteredCats.map(cat => (
-                    <div
-                      key={cat.id}
-                      onClick={() => setPreviewActiveCategory(cat.id)}
-                      className={`p-2.5 rounded-xl text-left cursor-pointer transition-all ${
-                        activePreviewCatId === cat.id
-                          ? 'bg-white text-[#d4af37] font-bold shadow-sm'
-                          : 'text-stone-500 hover:text-stone-800'
-                      }`}
-                    >
-                      <div className="text-xs truncate">{cat.name}</div>
+                {/* Left category list with vertical snap scroll in blocks of 5 */}
+                {(() => {
+                  const previewCategoryPages: any[][] = [];
+                  for (let i = 0; i < previewFilteredCats.length; i += 5) {
+                    previewCategoryPages.push(previewFilteredCats.slice(i, i + 5));
+                  }
+                  return (
+                    <div className="col-span-1 border-r border-stone-200/60 pr-2 flex flex-col h-full overflow-hidden">
+                      <div className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-3 shrink-0">
+                        Tratamientos
+                      </div>
+                      <div className="flex-1 overflow-y-auto snap-y snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pr-2">
+                        {previewCategoryPages.map((page, pageIdx) => (
+                          <div key={pageIdx} className="snap-start h-full shrink-0 flex flex-col justify-start gap-1 pb-4">
+                            {page.map(cat => (
+                              <div
+                                key={cat.id}
+                                onClick={() => setPreviewActiveCategory(cat.id)}
+                                className={`p-2 rounded-xl text-left cursor-pointer transition-all shrink-0 ${
+                                  activePreviewCatId === cat.id
+                                    ? 'bg-white text-[#d4af37] font-bold shadow-sm'
+                                    : 'text-stone-500 hover:text-stone-800'
+                                }`}
+                              >
+                                <div className="text-xs truncate">{cat.name}</div>
+                              </div>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  ))}
-                </div>
+                  );
+                })()}
 
                 {/* Right Bento Grid mockup */}
                 <div className="col-span-2 flex flex-col justify-between">
@@ -191,26 +205,35 @@ export default function NavigationLivePreview({
                   {previewFilteredCats.slice(0, 3).map(cat => {
                     const catServices = services.filter(s => s.is_active && s.category_id === cat.id);
                     return (
-                      <div key={cat.id} className="flex flex-col bg-white p-4 rounded-2xl border border-stone-100 shadow-sm overflow-hidden">
-                        <span className="text-[10px] font-bold text-[#d4af37] uppercase tracking-wider block mb-3 border-b border-stone-50 pb-1.5 truncate">
+                      <div key={cat.id} className="flex flex-col bg-white p-4 rounded-2xl border border-stone-100 shadow-sm overflow-hidden h-full">
+                        <span className="text-[10px] font-bold text-[#d4af37] uppercase tracking-wider block mb-3 border-b border-stone-50 pb-1.5 truncate shrink-0">
                           {cat.name}
                         </span>
-                        <div className="flex-1 overflow-y-auto space-y-2.5 scrollbar-none">
-                          {catServices.length === 0 ? (
-                            <p className="text-[10px] text-stone-400 italic">Sin servicios</p>
-                          ) : (
-                            catServices.slice(0, 4).map(svc => (
-                              <div key={svc.id} className="group cursor-default">
-                                <div className="text-xs font-bold text-stone-800 truncate group-hover:text-[#d4af37] transition-colors">
-                                  {svc.name}
-                                </div>
-                                <div className="flex justify-between items-center text-[9px] text-stone-400 mt-0.5">
-                                  <span>{svc.duration_minutes} min</span>
-                                  <span className="font-medium text-stone-600">{svc.price}€</span>
-                                </div>
+                        <div className="flex-1 overflow-y-auto snap-y snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                          {(() => {
+                            const serviceChunks: any[][] = [];
+                            for (let i = 0; i < catServices.length; i += 5) {
+                              serviceChunks.push(catServices.slice(i, i + 5));
+                            }
+                            if (serviceChunks.length === 0) {
+                              return <p className="text-[10px] text-stone-400 italic">Sin servicios</p>;
+                            }
+                            return serviceChunks.map((chunk, chunkIdx) => (
+                              <div key={chunkIdx} className="snap-start h-full shrink-0 flex flex-col justify-start gap-2.5 pb-2">
+                                {chunk.map(svc => (
+                                  <div key={svc.id} className="group cursor-default shrink-0">
+                                    <div className="text-xs font-bold text-stone-800 truncate group-hover:text-[#d4af37] transition-colors">
+                                      {svc.name}
+                                    </div>
+                                    <div className="flex justify-between items-center text-[9px] text-stone-400 mt-0.5">
+                                      <span>{svc.duration_minutes} min</span>
+                                      <span className="font-medium text-stone-600">{svc.price}€</span>
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
-                            ))
-                          )}
+                            ));
+                          })()}
                         </div>
                       </div>
                     );
