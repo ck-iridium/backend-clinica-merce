@@ -123,61 +123,7 @@ export default function Step2DateTime({
               </p>
             </div>
 
-            {staffList.length > 1 && (
-              <div className="shrink-0 px-6 pb-4 z-30 bg-background select-none">
-                <p className="text-[10px] md:text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
-                  ¿Preferencia de especialista?
-                </p>
-                <div className="flex gap-4 overflow-x-auto pb-2 pt-1 px-1 custom-scrollbar justify-start select-none">
-                  <button
-                    onClick={() => setSelectedStaff({ id: 'any', full_name: 'Cualquiera (Recomendado)' })}
-                    className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all duration-300 active:scale-95 min-w-[90px] md:min-w-[110px] group
-                      ${selectedStaff?.id === 'any'
-                        ? 'bg-[#1c1917] border-[#D4AF37] text-white shadow-md'
-                        : 'bg-card border-border text-foreground hover:border-[#D4AF37]/40'}`}
-                  >
-                    <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center border-2 transition-all duration-300
-                      ${selectedStaff?.id === 'any' 
-                        ? 'border-[#D4AF37] bg-[#D4AF37]/15 scale-105' 
-                        : 'border-border bg-stone-100 group-hover:border-[#D4AF37]/30'}`}>
-                      <span className="text-xl">✨</span>
-                    </div>
-                    <span className="text-[10px] md:text-xs font-bold tracking-wide text-center truncate max-w-[80px] md:max-w-[100px]">
-                      Cualquiera
-                    </span>
-                  </button>
-                  {staffList.map((st: any) => {
-                    const isSelected = selectedStaff?.id === st.id;
-                    return (
-                      <button
-                        key={st.id}
-                        onClick={() => setSelectedStaff(st)}
-                        className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all duration-300 active:scale-95 min-w-[90px] md:min-w-[110px] group
-                          ${isSelected
-                            ? 'bg-[#1c1917] border-[#D4AF37] text-white shadow-md'
-                            : 'bg-card border-border text-foreground hover:border-[#D4AF37]/40'}`}
-                      >
-                        <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full overflow-hidden flex items-center justify-center border-2 transition-all duration-300
-                          ${isSelected 
-                            ? 'border-[#D4AF37] scale-105 bg-[#1c1917]' 
-                            : 'border-border bg-stone-100 group-hover:border-[#D4AF37]/30'}`}>
-                          {st.avatar_url ? (
-                            <img src={st.avatar_url} alt={st.full_name} className="w-full h-full object-cover" />
-                          ) : (
-                            <span className={`text-sm md:text-base font-serif font-bold ${isSelected ? 'text-[#D4AF37]' : 'text-stone-500'}`}>
-                              {st.full_name.charAt(0).toUpperCase()}
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-[10px] md:text-xs font-bold tracking-wide text-center truncate max-w-[80px] md:max-w-[100px]">
-                          {st.full_name}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+
 
             <div className="flex flex-col flex-grow min-h-0 relative">
               <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-background to-transparent z-20 pointer-events-none" />
@@ -287,61 +233,7 @@ export default function Step2DateTime({
               </div>
             </div>
 
-            {staffList.length > 1 && (
-              <div className="shrink-0 px-6 pb-4 z-30 bg-background select-none">
-                <p className="text-[10px] md:text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
-                  ¿Preferencia de especialista?
-                </p>
-                <div className="flex gap-4 overflow-x-auto pb-2 pt-1 px-1 custom-scrollbar justify-start select-none">
-                  <button
-                    onClick={() => setSelectedStaff({ id: 'any', full_name: 'Cualquiera (Recomendado)' })}
-                    className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all duration-300 active:scale-95 min-w-[90px] md:min-w-[110px] group
-                      ${selectedStaff?.id === 'any'
-                        ? 'bg-[#1c1917] border-[#D4AF37] text-white shadow-md'
-                        : 'bg-card border-border text-foreground hover:border-[#D4AF37]/40'}`}
-                  >
-                    <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center border-2 transition-all duration-300
-                      ${selectedStaff?.id === 'any' 
-                        ? 'border-[#D4AF37] bg-[#D4AF37]/15 scale-105' 
-                        : 'border-border bg-stone-100 group-hover:border-[#D4AF37]/30'}`}>
-                      <span className="text-xl">✨</span>
-                    </div>
-                    <span className="text-[10px] md:text-xs font-bold tracking-wide text-center truncate max-w-[80px] md:max-w-[100px]">
-                      Cualquiera
-                    </span>
-                  </button>
-                  {staffList.map((st: any) => {
-                    const isSelected = selectedStaff?.id === st.id;
-                    return (
-                      <button
-                        key={st.id}
-                        onClick={() => setSelectedStaff(st)}
-                        className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all duration-300 active:scale-95 min-w-[90px] md:min-w-[110px] group
-                          ${isSelected
-                            ? 'bg-[#1c1917] border-[#D4AF37] text-white shadow-md'
-                            : 'bg-card border-border text-foreground hover:border-[#D4AF37]/40'}`}
-                      >
-                        <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full overflow-hidden flex items-center justify-center border-2 transition-all duration-300
-                          ${isSelected 
-                            ? 'border-[#D4AF37] scale-105 bg-[#1c1917]' 
-                            : 'border-border bg-stone-100 group-hover:border-[#D4AF37]/30'}`}>
-                          {st.avatar_url ? (
-                            <img src={st.avatar_url} alt={st.full_name} className="w-full h-full object-cover" />
-                          ) : (
-                            <span className={`text-sm md:text-base font-serif font-bold ${isSelected ? 'text-[#D4AF37]' : 'text-stone-500'}`}>
-                              {st.full_name.charAt(0).toUpperCase()}
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-[10px] md:text-xs font-bold tracking-wide text-center truncate max-w-[80px] md:max-w-[100px]">
-                          {st.full_name}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+
 
             <div className="flex flex-col flex-grow min-h-0 relative mt-0">
               <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-background to-transparent z-20 pointer-events-none" />

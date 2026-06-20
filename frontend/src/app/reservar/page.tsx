@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { useLanguage } from '@/app/contexts/LanguageContext';
-import LanguageSelector from '@/components/LanguageSelector';
 import Step1Treatments from './components/Step1Treatments';
+import Step1Specialists from './components/Step1Specialists';
 import Step2DateTime from './components/Step2DateTime';
 import Step3Details from './components/Step3Details';
 import Step4Success from './components/Step4Success';
@@ -57,7 +57,6 @@ export default function BookingPage() {
   };
 
   const getServiceDepositInfo = (srv: any) => {
-
     if (!srv) return { required: false, amount: 0 };
     if (srv.requires_deposit && srv.deposit_amount && srv.deposit_amount > 0) {
       return { required: true, amount: srv.deposit_amount };
@@ -110,7 +109,25 @@ export default function BookingPage() {
   const [bookingError, setBookingError] = useState('');
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
-  const showHeaderFooter = step < 4 && !(locations.length > 1 && !selectedLocation);
+  // Dynamic step indicators
+  const hasLocs = locations.length > 1;
+  const hasStaff = staff.length > 1;
+  const totalSteps = 3 + (hasLocs ? 1 : 0) + (hasStaff ? 1 : 0);
+
+  const currentStepIndex = hasLocs && !selectedLocation
+    ? 1
+    : step === 1
+      ? (hasLocs ? 2 : 1)
+      : step === 2
+        ? (hasLocs ? 2 : 1) + 1
+        : step === 3
+          ? (hasLocs ? 2 : 1) + (hasStaff ? 1 : 0) + 1
+          : step === 4
+            ? (hasLocs ? 2 : 1) + (hasStaff ? 1 : 0) + 2
+            : totalSteps + 1;
+
+  const showHeader = currentStepIndex <= totalSteps;
+  const showFooter = currentStepIndex <= totalSteps && selectedLocation !== null;
 
   // Parse check for rebooking query params on initial mount
   useEffect(() => {
@@ -165,17 +182,20 @@ export default function BookingPage() {
           setSettings(await settingsRes.json());
         }
 
+        let hasLocsLocal = false;
         if (locRes.ok) {
           const locs = await locRes.json();
           const activeLocs = locs.filter((l: any) => l.is_active);
           setLocations(activeLocs);
+          hasLocsLocal = activeLocs.length > 1;
           if (activeLocs.length === 1) {
             setSelectedLocation(activeLocs[0]);
           }
         }
 
+        let staffData: any[] = [];
         if (staffRes.ok) {
-          const staffData = await staffRes.json();
+          staffData = await staffRes.json();
           setStaff(staffData);
           if (staffData.length === 1) {
             setSelectedStaff(staffData[0]);
@@ -184,15 +204,12 @@ export default function BookingPage() {
 
         if (catRes.ok) {
           const cats = await catRes.json();
-          // Ocultar 'General' solo si existen otras categorías específicas, preservando la estética de Clínica Mercè
-          // pero garantizando que nuevas clínicas registradas vean su categoría por defecto.
           const hasOtherCategories = cats.some((c: any) => c.name.toUpperCase() !== 'GENERAL');
           const validCats = hasOtherCategories 
             ? cats.filter((c: any) => c.name.toUpperCase() !== 'GENERAL')
             : cats;
           setCategories(validCats);
 
-          // Si solo existe una categoría activa, la auto-seleccionamos para reducir fricción y mejorar la UX
           if (validCats.length === 1) {
             setActiveCategory(validCats[0]);
           }
@@ -212,7 +229,11 @@ export default function BookingPage() {
               const targetSrv = activeSrvs.find((s: any) => String(s.id) === String(srvId));
               if (targetSrv) {
                 setSelectedService(targetSrv);
-                setStep(2);
+                if (staffData.length > 1) {
+                  setStep(2);
+                } else {
+                  setStep(3);
+                }
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }
             }
@@ -227,7 +248,6 @@ export default function BookingPage() {
     };
     fetchBaseData();
   }, []);
-
 
   // Fetch availability from backend whenever date, service, location or preferred specialist changes
   useEffect(() => {
@@ -307,13 +327,10 @@ export default function BookingPage() {
       }
       
       const data = await res.json();
-      
-      // Si el backend devuelve una URL de checkout (fianza requerida), redirigir
       if (data.checkout_url) {
         window.location.href = data.checkout_url;
       } else {
-        // Reserva normal sin fianza
-        setStep(4);
+        setStep(5); // Step 5 is Success screen
       }
     } catch (err: any) {
       showFeedback({
@@ -327,20 +344,44 @@ export default function BookingPage() {
     }
   };
 
+  // Helper to dynamically calculate step indicator label
+  const getStepIndicatorText = () => {
+    let base = t('common.step_indicator') || t('wizard.step_indicator') || 'Paso {step} de 3';
+    base = base.replace('3', totalSteps.toString());
+    return base.replace('{step}', currentStepIndex.toString());
+  };
+
   return (
     <div className="h-[100dvh] bg-background font-sans selection:bg-primary/30 selection:text-stone-900 flex flex-col overflow-hidden text-foreground">
       
       {/* APP HEADER (FIXED) */}
-      {showHeaderFooter && (
+      {showHeader && (
         <header className="shrink-0 bg-card border-b border-border z-50">
           <div className="max-w-2xl mx-auto w-full px-8 py-4 md:py-5 flex items-center justify-between">
             {!(step === 1 && !activeCategory && (locations.length <= 1 || !selectedLocation)) ? (
               <button 
                 onClick={() => {
-                  if (step === 1 && activeCategory) setActiveCategory(null);
-                  else if (step === 1 && locations.length > 1 && selectedLocation) setSelectedLocation(null);
-                  else if (step === 2 && dateTimePhase === 2) setDateTimePhase(1);
-                  else if (step > 1) setStep(step - 1);
+                  if (step === 1) {
+                    if (activeCategory) {
+                      setActiveCategory(null);
+                    } else if (locations.length > 1 && selectedLocation) {
+                      setSelectedLocation(null);
+                    }
+                  } else if (step === 2) {
+                    setStep(1);
+                  } else if (step === 3) {
+                    if (dateTimePhase === 2) {
+                      setDateTimePhase(1);
+                    } else {
+                      if (staff.length > 1) {
+                        setStep(2);
+                      } else {
+                        setStep(1);
+                      }
+                    }
+                  } else if (step === 4) {
+                    setStep(3);
+                  }
                 }} 
                 className="text-muted-foreground hover:text-foreground transition-colors text-xs md:text-sm font-bold uppercase tracking-widest w-20 text-left font-bold"
               >
@@ -354,11 +395,11 @@ export default function BookingPage() {
                <div className="h-2 bg-muted rounded-luxury-btn overflow-hidden">
                   <div 
                     className="h-full bg-primary transition-all duration-700 ease-out" 
-                    style={{ width: step === 1 ? '25%' : step === 2 ? '50%' : '75%' }} 
+                    style={{ width: `${(currentStepIndex / totalSteps) * 100}%` }} 
                   />
                </div>
                <p className="text-[10px] md:text-xs uppercase tracking-widest text-muted-foreground font-bold mt-1.5 text-center">
-                 {t('wizard.step_indicator').replace('{step}', step.toString())}
+                 {getStepIndicatorText()}
                </p>
             </div>
 
@@ -401,12 +442,28 @@ export default function BookingPage() {
                       settings={settings}
                       onSelectService={(srv) => { 
                         setSelectedService(srv); 
-                        setStep(2); 
+                        if (staff.length > 1) {
+                          setStep(2);
+                        } else {
+                          setStep(3);
+                        }
                       }}
                     />
                   )}
 
                   {step === 2 && (
+                    <Step1Specialists
+                      staffList={staff}
+                      selectedStaff={selectedStaff}
+                      onSelectStaff={(st) => {
+                        setSelectedStaff(st);
+                        setStep(3);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                    />
+                  )}
+
+                  {step === 3 && (
                     <Step2DateTime
                       selectedDate={selectedDate}
                       setSelectedDate={setSelectedDate}
@@ -415,7 +472,7 @@ export default function BookingPage() {
                         setSelectedTime(time);
                         if (time) {
                           setTimeout(() => {
-                            setStep(3);
+                            setStep(4);
                             window.scrollTo({ top: 0, behavior: 'smooth' });
                           }, 300);
                         }
@@ -435,7 +492,7 @@ export default function BookingPage() {
                     />
                   )}
 
-                  {step === 3 && (
+                  {step === 4 && (
                     <Step3Details 
                       formData={formData}
                       setFormData={setFormData}
@@ -448,7 +505,7 @@ export default function BookingPage() {
                     />
                   )}
 
-                  {step === 4 && (
+                  {step === 5 && (
                     <Step4Success 
                       selectedDate={selectedDate}
                       selectedTime={selectedTime}
@@ -464,20 +521,30 @@ export default function BookingPage() {
       </main>
 
       {/* ACTION FOOTER (FIXED) */}
-      {showHeaderFooter && (
+      {showFooter && (
         <footer className="shrink-0 bg-card border-t border-border p-4 md:py-6 md:px-8 z-50">
           <div className="max-w-2xl mx-auto flex gap-3">
-            {step === 1 && (activeCategory?.name || selectedService) && (
+            {selectedService && (
                <div className="flex-grow flex flex-col justify-center overflow-hidden">
                   <p className="text-[10px] md:text-xs font-bold text-muted-foreground uppercase tracking-wider truncate">
-                    {selectedService ? t('common.treatment') : t('common.zone')}
+                    {t('common.treatment') || 'Tratamiento'}
                   </p>
                   <p className="text-xs md:text-base font-bold text-foreground truncate mt-0.5">
-                    {selectedService ? selectedService.name : activeCategory?.name}
+                    {selectedService.name}
                   </p>
                </div>
             )}
-            {step === 2 && dateTimePhase === 1 ? (
+            {!selectedService && activeCategory && (
+               <div className="flex-grow flex flex-col justify-center overflow-hidden">
+                  <p className="text-[10px] md:text-xs font-bold text-muted-foreground uppercase tracking-wider truncate">
+                    {t('common.zone') || 'Zona'}
+                  </p>
+                  <p className="text-xs md:text-base font-bold text-foreground truncate mt-0.5">
+                    {activeCategory.name}
+                  </p>
+               </div>
+            )}
+            {step === 3 && dateTimePhase === 1 ? (
               <div className="flex-grow flex items-center justify-between py-1 px-2 select-none">
                 <button
                   disabled={currentMonthOffset === 0}
@@ -520,20 +587,20 @@ export default function BookingPage() {
                 </button>
               </div>
             ) : (
-              step !== 1 && (
+              (step === 3 || step === 4) && (
                 <button
                   disabled={
-                    step === 2 ? !selectedTime :
-                    step === 3 ? (!privacyAccepted || !formData.name || !formData.email || !formData.phone || saving) :
+                    step === 3 ? !selectedTime :
+                    step === 4 ? (!privacyAccepted || !formData.name || !formData.email || !formData.phone || saving) :
                     false
                   }
                   onClick={() => {
-                    if (step === 3) handleBooking();
-                    else { setStep(step + 1); window.scrollTo({ top: 0 }); }
+                    if (step === 4) handleBooking();
+                    else { setStep(4); window.scrollTo({ top: 0 }); }
                   }}
                   className="flex-grow bg-primary text-primary-foreground py-4 md:py-5 rounded-luxury-btn font-bold text-xs md:text-sm uppercase tracking-widest shadow-xl active:scale-95 transition-all disabled:opacity-30 disabled:grayscale"
                 >
-                  {saving ? t('common.processing') : step === 3 ? (() => {
+                  {saving ? t('common.processing') : step === 4 ? (() => {
                     const dep = getServiceDepositInfo(selectedService);
                     return dep.required 
                       ? t('wizard.pay_deposit_amount').replace('{amount}', dep.amount.toString())
