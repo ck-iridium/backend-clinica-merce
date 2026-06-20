@@ -24,10 +24,18 @@
     "share_whatsapp": "WhatsApp",
     "share_facebook": "Facebook",
     "share_twitter": "Twitter (X)",
-    "share_email": "Correo Electrónico"
+    "share_email": "Correo Electrónico",
+    "select": "Seleccionar",
+    "step_indicator": "Paso {step} de 3"
   },
   "wizard": {
     "step_indicator": "Paso {step} de 3",
+    "select_location_title": "Selecciona tu Sede",
+    "select_location_subtitle": "Elige la ubicación donde deseas realizar tu tratamiento",
+    "select_specialist": "Selecciona Especialista",
+    "select_specialist_subtitle": "Escoge con quién prefieres realizar tu sesión",
+    "any_specialist": "Cualquiera (Recomendado)",
+    "any_specialist_desc": "Elige esta opción para obtener la máxima disponibilidad de horarios",
     "select_zone_title": "¿Qué zona deseas tratar?",
     "select_zone_subtitle": "Selecciona una categoría para ver tratamientos",
     "select_treatment": "Selecciona tratamiento",

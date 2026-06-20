@@ -22,10 +22,18 @@
     "share_whatsapp": "WhatsApp",
     "share_facebook": "Facebook",
     "share_twitter": "Twitter (X)",
-    "share_email": "Email"
+    "share_email": "Email",
+    "select": "Select",
+    "step_indicator": "Step {step} of 3"
   },
   "wizard": {
     "step_indicator": "Step {step} of 3",
+    "select_location_title": "Select Location",
+    "select_location_subtitle": "Choose the location where you want to perform your treatment",
+    "select_specialist": "Select Specialist",
+    "select_specialist_subtitle": "Choose who you prefer to perform your session",
+    "any_specialist": "Anyone (Recommended)",
+    "any_specialist_desc": "Choose this option to obtain maximum slot availability",
     "select_zone_title": "Which area do you want to treat?",
     "select_zone_subtitle": "Select a category to view treatments",
     "select_treatment": "Select treatment",

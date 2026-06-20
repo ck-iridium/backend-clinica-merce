@@ -22,10 +22,18 @@
     "share_whatsapp": "WhatsApp",
     "share_facebook": "Facebook",
     "share_twitter": "Twitter (X)",
-    "share_email": "E-mail"
+    "share_email": "E-mail",
+    "select": "Sélectionner",
+    "step_indicator": "Étape {step} sur 3"
   },
   "wizard": {
     "step_indicator": "Étape {step} sur 3",
+    "select_location_title": "Sélectionnez votre centre",
+    "select_location_subtitle": "Choisissez le centre où vous souhaitez effectuer votre traitement",
+    "select_specialist": "Sélectionnez un spécialiste",
+    "select_specialist_subtitle": "Choisissez avec qui vous préférez effectuer votre séance",
+    "any_specialist": "Indifférent (Recommandé)",
+    "any_specialist_desc": "Choisissez cette option pour obtenir la disponibilité maximale de créneaux",
     "select_zone_title": "Quelle zone souhaitez-vous traiter ?",
     "select_zone_subtitle": "Sélectionnez une catégorie pour voir les soins",
     "select_treatment": "Sélectionnez un soin",
