@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
 export async function inviteTeamMember(data: { email: string, full_name: string, role: string }) {
@@ -67,8 +67,14 @@ export async function inviteTeamMember(data: { email: string, full_name: string,
      }
  
      // 5. Proceder con la invitación si está dentro del límite
+     const headersList = headers();
+     const host = headersList.get('host') || 'localhost:3000';
+     const protocol = host.includes('localhost') ? 'http' : 'https';
+     const redirectTo = `${protocol}://${host}/`;
+
      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, {
-       data: { full_name: data.full_name, role: data.role }
+       data: { full_name: data.full_name, role: data.role },
+       redirectTo: redirectTo
      });
  
      if (authError) {
