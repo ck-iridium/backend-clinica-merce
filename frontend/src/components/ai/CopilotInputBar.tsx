@@ -159,7 +159,7 @@ export default function CopilotInputBar({
       </div>
 
       {/* Fila 2: Textarea + Enviar */}
-      <div className="p-3 bg-white border-t border-stone-200/80 flex items-center gap-2.5 shrink-0 select-text">
+      <div className="p-3 bg-white border-t border-stone-200/80 flex items-center gap-2.5 shrink-0 select-text pb-safe">
         <textarea
           value={input}
           onChange={(e) => onInputChange(e.target.value)}
