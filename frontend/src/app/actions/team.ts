@@ -121,11 +121,7 @@ export async function inviteTeamMember(data: { email: string, full_name: string,
         tenantId = impersonateTenantId;
       }
 
-      let logMsg = `[getTeamMembers] tenantId: "${tenantId}" | isImpersonating: ${isImpersonating} | impersonateTenantId: "${impersonateTenantId}"\n`;
-
       if (!tenantId || tenantId === 'undefined') {
-        logMsg += "Seguridad: Intento de obtener miembros de equipo sin tenant_id en cookies\n";
-        require('fs').appendFileSync('c:/Users/Juan/.gemini/antigravity-ide/scratch/backend-clinica-merce/tmp_team_debug.log', logMsg);
         console.error("Seguridad: Intento de obtener miembros de equipo sin tenant_id en cookies");
         return [];
       }
@@ -136,12 +132,6 @@ export async function inviteTeamMember(data: { email: string, full_name: string,
         .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false });
   
-      logMsg += `[getTeamMembers] Profiles count: ${data ? data.length : 0} | Error: ${error ? JSON.stringify(error) : 'null'}\n`;
-      if (data) {
-        logMsg += `Profiles: ${JSON.stringify(data)}\n`;
-      }
-      require('fs').appendFileSync('c:/Users/Juan/.gemini/antigravity-ide/scratch/backend-clinica-merce/tmp_team_debug.log', logMsg);
-
       if (error) {
         console.error("Error obteniendo equipo desde Supabase:", error);
         return [];
@@ -149,8 +139,6 @@ export async function inviteTeamMember(data: { email: string, full_name: string,
   
       return data || [];
     } catch (error: any) {
-      const errMsg = `Excepción crítica obteniendo equipo: ${error.message || error}\n`;
-      require('fs').appendFileSync('c:/Users/Juan/.gemini/antigravity-ide/scratch/backend-clinica-merce/tmp_team_debug.log', errMsg);
       console.error("Excepción crítica obteniendo equipo:", error);
       return [];
     }
