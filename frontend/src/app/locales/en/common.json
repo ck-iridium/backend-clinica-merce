@@ -37,6 +37,7 @@
     "select_zone_title": "Which area do you want to treat?",
     "select_zone_subtitle": "Select a category to view treatments",
     "select_treatment": "Select treatment",
+    "search_treatment_placeholder": "Search treatment...",
     "no_services": "No services available.",
     "finish_booking_for": "Complete your reservation for",
     "appointment_for_date": "Appointment for",

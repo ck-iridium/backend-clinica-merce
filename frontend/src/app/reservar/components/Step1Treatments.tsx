@@ -1,6 +1,6 @@
 "use client"
 import React from 'react';
-import { ChevronLeft, Clock, ChevronRight } from 'lucide-react';
+import { ChevronLeft, Clock, ChevronRight, Search, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 
@@ -41,6 +41,27 @@ export default function Step1Treatments({
   onSelectService: (srv: any) => void;
 }) {
   const { t, translate } = useLanguage();
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [isSearching, setIsSearching] = React.useState(false);
+
+  const activeCategoryServices = React.useMemo(() => {
+    if (!activeCategory) return [];
+    return services.filter(s => String(s.category_id) === String(activeCategory.id));
+  }, [services, activeCategory]);
+
+  const filteredServices = React.useMemo(() => {
+    if (!searchQuery.trim()) return activeCategoryServices;
+    const query = searchQuery.toLowerCase().trim();
+    return activeCategoryServices.filter(srv => {
+      const translatedName = translate(srv.name, srv.translations, 'name') || '';
+      return translatedName.toLowerCase().includes(query);
+    });
+  }, [activeCategoryServices, searchQuery, translate]);
+
+  React.useEffect(() => {
+    setIsSearching(false);
+    setSearchQuery('');
+  }, [activeCategory]);
 
   const getServiceDepositInfo = (srv: any) => {
     if (srv.requires_deposit && srv.deposit_amount && srv.deposit_amount > 0) {
@@ -160,17 +181,67 @@ export default function Step1Treatments({
                   </div>
                 )}
 
-                <div className="relative z-10 flex items-center gap-4 w-full">
-                  <button
-                    onClick={() => setActiveCategory(null)}
-                    className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center hover:bg-muted rounded-full transition-colors"
-                  >
-                    <ChevronLeft size={20} className="text-foreground md:scale-125" />
-                  </button>
-                  <div className="flex flex-col">
-                    <h2 className="text-lg md:text-2xl font-serif text-foreground leading-tight">{translate(activeCategory.name, activeCategory.translations, 'name')}</h2>
-                    <p className="text-[10px] md:text-xs uppercase tracking-widest text-primary font-bold mt-0.5">{t('wizard.select_treatment')}</p>
-                  </div>
+                <div className="relative z-10 flex items-center justify-between gap-4 w-full">
+                  {isSearching ? (
+                    <div className="flex items-center w-full gap-3">
+                      <div className="relative flex-grow">
+                        <input
+                          type="text"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder={t('wizard.search_treatment_placeholder') || 'Buscar tratamiento...'}
+                          className="w-full h-10 md:h-12 pl-4 pr-10 rounded-xl bg-background border border-border/80 focus:border-primary/50 text-sm md:text-base text-foreground focus:outline-none transition-all placeholder:text-muted-foreground/60 font-sans"
+                          autoFocus
+                        />
+                        {searchQuery && (
+                          <button
+                            onClick={() => setSearchQuery('')}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+                          >
+                            <X size={16} />
+                          </button>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => {
+                          setIsSearching(false);
+                          setSearchQuery('');
+                        }}
+                        className="px-4 py-2 text-xs md:text-sm font-sans font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-all whitespace-nowrap"
+                      >
+                        {t('common.cancel') || 'Cancelar'}
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-4 min-w-0">
+                        <button
+                          onClick={() => setActiveCategory(null)}
+                          className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center hover:bg-muted rounded-full transition-colors shrink-0"
+                        >
+                          <ChevronLeft size={20} className="text-foreground md:scale-125" />
+                        </button>
+                        <div className="flex flex-col min-w-0">
+                          <h2 className="text-lg md:text-2xl font-serif text-foreground leading-tight truncate">
+                            {translate(activeCategory.name, activeCategory.translations, 'name')}
+                          </h2>
+                          <p className="text-[10px] md:text-xs uppercase tracking-widest text-primary font-bold mt-0.5 whitespace-nowrap">
+                            {t('wizard.select_treatment')}
+                          </p>
+                        </div>
+                      </div>
+
+                      {activeCategoryServices.length > 5 && (
+                        <button
+                          onClick={() => setIsSearching(true)}
+                          className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center hover:bg-muted rounded-full transition-colors text-foreground hover:text-primary shrink-0"
+                          title="Buscar"
+                        >
+                          <Search size={20} className="md:scale-110" />
+                        </button>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -183,12 +254,12 @@ export default function Step1Treatments({
                 animate="visible"
                 className="flex-grow overflow-y-auto pt-32 md:pt-36 pb-10 px-4 custom-scrollbar grid grid-cols-2 gap-4 content-start auto-rows-max"
               >
-                {services.filter(s => String(s.category_id) === String(activeCategory.id)).length === 0 ? (
+                {filteredServices.length === 0 ? (
                   <div className="col-span-2 py-10 text-center text-muted-foreground text-sm font-medium">
                     {t('wizard.no_services')}
                   </div>
                 ) : (
-                  services.filter(s => String(s.category_id) === String(activeCategory.id)).map(srv => {
+                  filteredServices.map(srv => {
                     const translatedName = translate(srv.name, srv.translations, 'name');
                     return (
                       <motion.button
@@ -247,14 +318,12 @@ export default function Step1Treatments({
                 animate="visible"
                 className="flex-grow overflow-y-auto pt-32 md:pt-36 pb-10 px-4 custom-scrollbar flex flex-col gap-3 content-start"
               >
-                {services.filter(s => !activeCategory || String(s.category_id) === String(activeCategory.id)).length === 0 ? (
+                {filteredServices.length === 0 ? (
                   <div className="py-10 text-center text-muted-foreground text-sm font-medium">
                     {t('wizard.no_services')}
                   </div>
                 ) : (
-                  services
-                    .filter(srv => !activeCategory || String(srv.category_id) === String(activeCategory.id))
-                    .map(srv => {
+                  filteredServices.map(srv => {
                       const translatedName = translate(srv.name, srv.translations, 'name');
                       return (
                         <motion.button

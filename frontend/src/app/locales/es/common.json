@@ -39,6 +39,7 @@
     "select_zone_title": "¿Qué zona deseas tratar?",
     "select_zone_subtitle": "Selecciona una categoría para ver tratamientos",
     "select_treatment": "Selecciona tratamiento",
+    "search_treatment_placeholder": "Buscar tratamiento...",
     "no_services": "No hay servicios disponibles.",
     "finish_booking_for": "Finaliza tu reserva para",
     "appointment_for_date": "Cita para el",
