@@ -141,13 +141,13 @@ export function SectorMetadataDisplay({
             </div>
             
             {value.website_url && (
-              <a href={value.website_url} target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 bg-white border border-stone-200 hover:border-stone-400 rounded-lg transition-colors group">
+              <a id="prof-website-link" href={value.website_url} target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 bg-white border border-stone-200 hover:border-stone-400 rounded-lg transition-colors group">
                 <span className="text-[10px] font-bold text-stone-500">Página Web</span>
                 <ChevronRight size={14} className="text-stone-400 group-hover:translate-x-0.5 transition-transform" />
               </a>
             )}
             {value.cloud_folder_url && (
-              <a href={value.cloud_folder_url} target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 bg-white border border-stone-200 hover:border-stone-400 rounded-lg transition-colors group">
+              <a id="prof-cloud-folder-link" href={value.cloud_folder_url} target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 bg-white border border-stone-200 hover:border-stone-400 rounded-lg transition-colors group">
                 <span className="text-[10px] font-bold text-[#D4AF37]">Carpeta Drive/Dropbox</span>
                 <ChevronRight size={14} className="text-stone-400 group-hover:translate-x-0.5 transition-transform" />
               </a>

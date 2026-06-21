@@ -72,7 +72,7 @@ export default function ConsentPreviewPage() {
       {/* HEADER DE NAVEGACION (No se imprime) */}
       <div className="flex justify-between items-center mb-10 print:hidden relative z-10">
         <div className="flex items-center gap-4">
-           <button onClick={() => router.back()} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-stone-200 text-stone-400 hover:text-stone-700 hover:border-stone-400 transition-all font-bold">
+           <button id="back-to-consents-btn" onClick={() => router.back()} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-stone-200 text-stone-400 hover:text-stone-700 hover:border-stone-400 transition-all font-bold">
              ←
            </button>
            <div>
@@ -83,10 +83,11 @@ export default function ConsentPreviewPage() {
               <p className="text-stone-500 font-medium">{consent.document_title}</p>
            </div>
         </div>
-
+ 
         <div className="flex gap-4">
            {/* Botón Flotante de Imprimir */}
            <button 
+             id="print-consent-btn"
              onClick={handlePrint}
              className="px-6 py-3 font-extrabold text-white bg-[#d9777f] hover:bg-[#c6646b] rounded-xl shadow-lg hover:shadow-xl transition-all border border-[#c6646b] flex items-center gap-2"
            >

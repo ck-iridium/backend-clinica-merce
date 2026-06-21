@@ -47,6 +47,7 @@ export function ClientFormFields({
           Nombre *
         </label>
         <input 
+          id="client-first-name-input"
           type="text" 
           value={formData.first_name} 
           onChange={e => onChange('first_name', e.target.value)} 
@@ -63,6 +64,7 @@ export function ClientFormFields({
           Apellidos
         </label>
         <input 
+          id="client-last-name-input"
           type="text" 
           value={formData.last_name} 
           onChange={e => onChange('last_name', e.target.value)} 
@@ -78,6 +80,7 @@ export function ClientFormFields({
           {t('dashboard.clients.email_label') || 'Correo electrónico *'}
         </label>
         <input 
+          id="client-email-input"
           type="email" 
           value={formData.email} 
           onChange={e => onChange('email', e.target.value)} 
@@ -94,6 +97,7 @@ export function ClientFormFields({
           {t('dashboard.clients.phone_label') || 'Teléfono móvil'}
         </label>
         <input 
+          id="client-phone-input"
           type="tel" 
           value={formData.phone} 
           onChange={e => onChange('phone', e.target.value)} 
@@ -109,6 +113,7 @@ export function ClientFormFields({
           DNI / NIF / NIE
         </label>
         <input 
+          id="client-dni-input"
           type="text" 
           value={formData.dni} 
           onChange={e => onChange('dni', e.target.value)} 
@@ -127,6 +132,7 @@ export function ClientFormFields({
           <div className="md:col-span-2 space-y-1">
             <label className="text-[10px] font-bold text-stone-400">Calle y Número</label>
             <input 
+              id="client-service-address-input"
               type="text" 
               value={formData.service_address} 
               onChange={e => onChange('service_address', e.target.value)} 
@@ -138,6 +144,7 @@ export function ClientFormFields({
           <div className="space-y-1">
             <label className="text-[10px] font-bold text-stone-400">Código Postal</label>
             <input 
+              id="client-service-postal-code-input"
               type="text" 
               value={formData.service_postal_code} 
               onChange={e => onChange('service_postal_code', e.target.value)} 
@@ -149,6 +156,7 @@ export function ClientFormFields({
           <div className="md:col-span-3 space-y-1">
             <label className="text-[10px] font-bold text-stone-400">Ciudad</label>
             <input 
+              id="client-service-city-input"
               type="text" 
               value={formData.service_city} 
               onChange={e => onChange('service_city', e.target.value)} 
@@ -189,6 +197,7 @@ export function ClientFormFields({
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-stone-500">Razón Social / Nombre Fiscal</label>
                   <input 
+                    id="client-billing-name-input"
                     type="text" 
                     value={formData.billing_name} 
                     onChange={e => onChange('billing_name', e.target.value)} 
@@ -200,6 +209,7 @@ export function ClientFormFields({
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-stone-500">NIF / CIF / DNI Fiscal</label>
                   <input 
+                    id="client-billing-nif-input"
                     type="text" 
                     value={formData.billing_nif} 
                     onChange={e => onChange('billing_nif', e.target.value)} 
@@ -211,6 +221,7 @@ export function ClientFormFields({
                 <div className="md:col-span-2 space-y-1">
                   <label className="text-[10px] font-bold text-stone-500">Dirección Fiscal</label>
                   <input 
+                    id="client-billing-address-input"
                     type="text" 
                     value={formData.billing_address} 
                     onChange={e => onChange('billing_address', e.target.value)} 
@@ -222,6 +233,7 @@ export function ClientFormFields({
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-stone-500">Código Postal Fiscal</label>
                   <input 
+                    id="client-billing-postal-code-input"
                     type="text" 
                     value={formData.billing_postal_code} 
                     onChange={e => onChange('billing_postal_code', e.target.value)} 
@@ -233,6 +245,7 @@ export function ClientFormFields({
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-stone-500">Ciudad Fiscal</label>
                   <input 
+                    id="client-billing-city-input"
                     type="text" 
                     value={formData.billing_city} 
                     onChange={e => onChange('billing_city', e.target.value)} 

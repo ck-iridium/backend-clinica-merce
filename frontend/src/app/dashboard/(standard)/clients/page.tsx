@@ -330,6 +330,7 @@ export default function ClientsPage() {
 
               <div className="sticky bottom-0 left-0 w-full flex justify-end gap-3 p-8 md:p-10 py-6 border-t border-stone-100 bg-white rounded-b-2xl z-20">
                 <button 
+                  id="cancel-add-client-btn"
                   type="button" 
                   onClick={() => setIsModalOpen(false)}
                   className="px-8 py-4 rounded-full text-xs font-bold text-stone-400 hover:text-stone-600 transition-all"
@@ -337,6 +338,7 @@ export default function ClientsPage() {
                   {t('dashboard.clients.cancel') || 'Cancelar'}
                 </button>
                 <button 
+                  id="submit-client-form-btn"
                   disabled={saving} 
                   type="submit" 
                   className="bg-[#D4AF37] text-stone-950 hover:bg-[#c49f27] disabled:opacity-50 px-10 py-4 rounded-full text-xs font-bold uppercase tracking-widest transition-all shadow-lg active:scale-95 animate-in fade-in"

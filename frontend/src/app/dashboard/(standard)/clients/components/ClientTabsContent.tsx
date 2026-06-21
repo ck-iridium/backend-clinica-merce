@@ -112,6 +112,7 @@ export function ClientTabsContent({
                 </span>
                 <div className="flex gap-2">
                   <button 
+                    id="prev-appointments-btn"
                     type="button"
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
@@ -120,6 +121,7 @@ export function ClientTabsContent({
                     Anterior
                   </button>
                   <button 
+                    id="next-appointments-btn"
                     type="button"
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
@@ -142,7 +144,7 @@ export function ClientTabsContent({
         <div className="flex justify-between items-center border-b border-stone-50 pb-4">
           <h3 className="text-lg font-serif font-light text-stone-800">Bonos Adquiridos</h3>
           {!isEspecialista && (
-            <a href="/dashboard/vouchers" className="text-xs font-black uppercase tracking-widest text-[#D4AF37] bg-[#D4AF37]/5 border border-[#D4AF37]/20 px-4 py-2 rounded-full hover:bg-[#D4AF37]/10 transition-colors">
+            <a id="sell-voucher-link" href="/dashboard/vouchers" className="text-xs font-black uppercase tracking-widest text-[#D4AF37] bg-[#D4AF37]/5 border border-[#D4AF37]/20 px-4 py-2 rounded-full hover:bg-[#D4AF37]/10 transition-colors">
               {t('dashboard.clients.sell_voucher') || 'Vender Bono'}
             </a>
           )}
@@ -177,7 +179,7 @@ export function ClientTabsContent({
                           <span className="text-[9px] uppercase text-stone-400 block">Deuda</span>
                           <strong className="text-red-650 text-sm">{v.total_price - v.amount_paid}€</strong>
                         </div>
-                        <button onClick={() => onOpenPayModal(v)} className="bg-red-50 hover:bg-red-100 text-red-700 font-bold px-3 py-1.5 rounded-md text-xs transition-colors">
+                        <button id={`pay-voucher-btn-${v.id}`} onClick={() => onOpenPayModal(v)} className="bg-red-50 hover:bg-red-100 text-red-700 font-bold px-3 py-1.5 rounded-md text-xs transition-colors">
                           Cobrar
                         </button>
                       </div>
@@ -209,6 +211,7 @@ export function ClientTabsContent({
         <div className="flex justify-between items-center border-b border-stone-50 pb-4">
           <h3 className="text-lg font-serif font-light text-stone-800">Consentimientos y Firmas</h3>
           <button 
+            id="sign-consent-btn"
             onClick={onNewConsentClick}
             className="text-xs font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 hover:bg-emerald-100 transition-colors shadow-sm"
           >
@@ -233,7 +236,7 @@ export function ClientTabsContent({
                     Firmado: {new Date(c.signed_at).toLocaleString(dateLocale, { dateStyle: 'medium', timeStyle: 'short' })}
                   </p>
                 </div>
-                <a href={`/dashboard/clients/${clientId}/consents/${c.id}`} className="w-full sm:w-auto text-center px-4 py-2 bg-white border border-stone-200 text-stone-600 font-bold text-xs rounded-lg shadow-sm hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors">
+                <a id={`view-consent-link-${c.id}`} href={`/dashboard/clients/${clientId}/consents/${c.id}`} className="w-full sm:w-auto text-center px-4 py-2 bg-white border border-stone-200 text-stone-600 font-bold text-xs rounded-lg shadow-sm hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors">
                   Ver / Imprimir
                 </a>
               </div>

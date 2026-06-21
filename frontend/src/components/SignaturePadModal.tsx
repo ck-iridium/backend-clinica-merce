@@ -134,7 +134,7 @@ export function SignaturePadModal({ isOpen, onClose, onSave, clientName }: Signa
           <div className="mb-6">
             <label className="block text-sm font-bold text-primary uppercase tracking-widest mb-2">{t('dashboard.clients.select_agreement_label')}</label>
             <Select value={docType} onValueChange={setDocType}>
-              <SelectTrigger className="w-full bg-white border-stone-200">
+              <SelectTrigger id="consent-type-select-trigger" className="w-full bg-white border-stone-200">
                 <SelectValue placeholder={t('dashboard.clients.select_agreement_placeholder')} />
               </SelectTrigger>
               <SelectContent>
@@ -157,6 +157,7 @@ export function SignaturePadModal({ isOpen, onClose, onSave, clientName }: Signa
             <div className="flex justify-between items-end mb-2">
               <label className="block text-sm font-bold text-primary uppercase tracking-widest">{t('dashboard.clients.signature_label')}</label>
               <button 
+                id="clear-signature-canvas-btn"
                 onClick={clearCanvas}
                 className="text-[10px] uppercase font-bold text-stone-400 bg-stone-100 hover:bg-stone-200 hover:text-stone-600 px-3 py-1 rounded-full transition-colors"
                 type="button"
@@ -171,6 +172,7 @@ export function SignaturePadModal({ isOpen, onClose, onSave, clientName }: Signa
                  </div>
                )}
                <canvas
+                 id="signature-canvas"
                  ref={canvasRef}
                  width={800}
                  height={250}
@@ -188,10 +190,11 @@ export function SignaturePadModal({ isOpen, onClose, onSave, clientName }: Signa
         </div>
 
         <DialogFooter className="sticky bottom-0 left-0 w-full px-8 py-6 border-t border-stone-100 bg-gradient-to-t from-white via-white to-white/0 rounded-b-2xl z-20 flex justify-end gap-4">
-           <button onClick={onClose} className="px-6 py-3 font-bold text-stone-500 bg-white hover:bg-stone-100 border border-stone-200 rounded-xl transition-colors">
+           <button id="cancel-signature-btn" onClick={onClose} className="px-6 py-3 font-bold text-stone-500 bg-white hover:bg-stone-100 border border-stone-200 rounded-xl transition-colors">
               {t('common.cancel') || t('dashboard.services.cancel')}
            </button>
            <button 
+             id="submit-signature-btn"
              onClick={handleSave} 
              disabled={!hasSignature}
              className="px-8 py-3 font-extrabold text-white bg-primary hover:bg-primary/90 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"

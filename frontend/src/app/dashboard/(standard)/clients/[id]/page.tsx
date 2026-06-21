@@ -293,7 +293,7 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
   return (
     <div className="animate-in fade-in duration-500 bg-[#FAFAFA] min-h-screen pb-12">
       {/* Back Button */}
-      <Link href="/dashboard/clients" className="text-xs font-black uppercase tracking-[0.2em] text-stone-400 hover:text-stone-800 mb-8 inline-flex items-center gap-2 transition-colors">
+      <Link id="back-to-directory-link" href="/dashboard/clients" className="text-xs font-black uppercase tracking-[0.2em] text-stone-400 hover:text-stone-800 mb-8 inline-flex items-center gap-2 transition-colors">
         <ArrowLeft size={14} />
         {t('dashboard.clients.back_to_directory') || 'Volver al directorio'}
       </Link>
@@ -323,10 +323,10 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
           </div>
           
           <div className="flex gap-2 w-full md:w-auto justify-end border-t md:border-t-0 pt-4 md:pt-0 border-stone-50">
-            <a href={`/dashboard/calendar?client_id=${params.id}`} className="bg-stone-900 text-white px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-[#D4AF37] hover:text-stone-950 transition-all active:scale-95 shadow-sm">
+            <a id="book-appointment-link" href={`/dashboard/calendar?client_id=${params.id}`} className="bg-stone-900 text-white px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-[#D4AF37] hover:text-stone-950 transition-all active:scale-95 shadow-sm">
               {t('dashboard.clients.book_appointment') || 'Reservar Cita'}
             </a>
-            <button onClick={() => setIsEditing(true)} className="bg-white border border-stone-200 text-stone-600 px-5 py-2.5 rounded-full text-xs font-bold hover:bg-stone-50 transition-all active:scale-95 shadow-sm">
+            <button id="edit-client-profile-btn" onClick={() => setIsEditing(true)} className="bg-white border border-stone-200 text-stone-600 px-5 py-2.5 rounded-full text-xs font-bold hover:bg-stone-50 transition-all active:scale-95 shadow-sm">
               Editar Ficha
             </button>
           </div>
@@ -355,18 +355,21 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
       {/* Tabs Menu (Segmented Controls Styling) */}
       <div className="bg-stone-100/70 p-1.5 rounded-2xl flex border border-stone-200/50 mb-6 max-w-max overflow-x-auto gap-1.5">
         <button 
+          id="tab-overview-btn"
           onClick={() => setActiveTab('overview')} 
           className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.12em] transition-all duration-300 ${activeTab === 'overview' ? 'bg-white text-stone-900 shadow-sm border border-stone-200/20' : 'text-stone-500 hover:text-stone-850'}`}
         >
           Resumen & Ficha
         </button>
         <button 
+          id="tab-appointments-btn"
           onClick={() => setActiveTab('appointments')} 
           className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.12em] transition-all duration-300 ${activeTab === 'appointments' ? 'bg-white text-stone-900 shadow-sm border border-stone-200/20' : 'text-stone-500 hover:text-stone-850'}`}
         >
           Servicios ({appointments.length})
         </button>
         <button 
+          id="tab-vouchers-btn"
           onClick={() => setActiveTab('vouchers')} 
           className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.12em] transition-all duration-300 ${activeTab === 'vouchers' ? 'bg-white text-stone-900 shadow-sm border border-stone-200/20' : 'text-stone-500 hover:text-stone-850'}`}
         >
@@ -374,6 +377,7 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
         </button>
         {(businessSector === 'clinical' || businessSector === 'beauty') && enableConsents && (
           <button 
+            id="tab-consents-btn"
             onClick={() => setActiveTab('consents')} 
             className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.12em] transition-all duration-300 ${activeTab === 'consents' ? 'bg-white text-stone-900 shadow-sm border border-stone-200/20' : 'text-stone-500 hover:text-stone-850'}`}
           >
@@ -459,6 +463,7 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
 
             <DialogFooter className="p-6 border-t border-stone-100 bg-white flex gap-3">
               <button 
+                id="cancel-edit-client-btn"
                 type="button" 
                 onClick={() => { setIsEditing(false); fetchClient(); }} 
                 className="flex-1 py-3 bg-stone-100 text-stone-600 font-bold rounded-xl hover:bg-stone-200 text-xs"
@@ -466,6 +471,7 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
                 Cancelar
               </button>
               <button 
+                id="submit-edit-client-btn"
                 type="submit" 
                 disabled={saving} 
                 className="flex-1 py-3 text-white bg-stone-900 hover:bg-stone-800 disabled:opacity-50 font-bold rounded-xl shadow-md flex justify-center items-center text-xs uppercase tracking-wider"
@@ -498,6 +504,7 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
               <div className="space-y-1">
                 <label className="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1">Monto Abonado (€)</label>
                 <input 
+                  id="pay-debt-amount-input"
                   required 
                   type="number" 
                   step="0.01" 
@@ -509,12 +516,12 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
               </div>
             </form>
           </div>
-
+ 
           <DialogFooter className="p-6 border-t border-stone-100 bg-white flex gap-3 rounded-b-2xl">
-             <button type="button" onClick={() => setShowPayModal(false)} className="flex-1 py-3 text-stone-600 font-bold border border-stone-200 rounded-xl hover:bg-stone-50 text-xs">
+             <button id="cancel-pay-debt-btn" type="button" onClick={() => setShowPayModal(false)} className="flex-1 py-3 text-stone-600 font-bold border border-stone-200 rounded-xl hover:bg-stone-50 text-xs">
                 Cancelar
              </button>
-             <button form="pay-debt-form-profile" type="submit" disabled={paying} className="flex-1 py-3 text-white bg-stone-900 hover:bg-stone-800 font-bold rounded-xl shadow-md flex justify-center items-center text-xs uppercase tracking-wider">
+             <button id="submit-pay-debt-btn" form="pay-debt-form-profile" type="submit" disabled={paying} className="flex-1 py-3 text-white bg-stone-900 hover:bg-stone-800 font-bold rounded-xl shadow-md flex justify-center items-center text-xs uppercase tracking-wider">
                {paying ? 'Procesando...' : 'Confirmar'}
              </button>
           </DialogFooter>

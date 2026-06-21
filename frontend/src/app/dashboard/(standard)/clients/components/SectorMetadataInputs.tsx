@@ -27,6 +27,7 @@ export function SectorMetadataInputs({
           <div className="space-y-1">
             <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Alergias</label>
             <input 
+              id="clinical-allergies-input"
               type="text" 
               value={value.allergies || ''} 
               onChange={e => updateMeta('allergies', e.target.value)} 
@@ -38,6 +39,7 @@ export function SectorMetadataInputs({
           <div className="space-y-1">
             <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Medicación Actual</label>
             <input 
+              id="clinical-medications-input"
               type="text" 
               value={value.medications || ''} 
               onChange={e => updateMeta('medications', e.target.value)} 
@@ -49,6 +51,7 @@ export function SectorMetadataInputs({
           <div className="space-y-1 md:col-span-2">
             <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Historial de Lesiones</label>
             <input 
+              id="clinical-injury-history-input"
               type="text" 
               value={value.injury_history || ''} 
               onChange={e => updateMeta('injury_history', e.target.value)} 
@@ -60,6 +63,7 @@ export function SectorMetadataInputs({
           <div className="space-y-1 md:col-span-2">
             <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Notas Clínicas</label>
             <textarea 
+              id="clinical-notes-textarea"
               value={value.clinical_notes || ''} 
               onChange={e => updateMeta('clinical_notes', e.target.value)} 
               rows={3} 
@@ -76,6 +80,7 @@ export function SectorMetadataInputs({
           <div className="space-y-1">
             <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Tipo de Cabello/Piel</label>
             <input 
+              id="beauty-skin-hair-type-input"
               type="text" 
               value={value.skin_hair_type || ''} 
               onChange={e => updateMeta('skin_hair_type', e.target.value)} 
@@ -87,6 +92,7 @@ export function SectorMetadataInputs({
           <div className="space-y-1">
             <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Sensibilidad a Productos</label>
             <input 
+              id="beauty-product-sensitivities-input"
               type="text" 
               value={value.product_sensitivities || ''} 
               onChange={e => updateMeta('product_sensitivities', e.target.value)} 
@@ -98,6 +104,7 @@ export function SectorMetadataInputs({
           <div className="space-y-1 md:col-span-2">
             <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Fórmulas de Color / Tinte</label>
             <textarea 
+              id="beauty-color-formulas-textarea"
               value={value.color_formulas || ''} 
               onChange={e => updateMeta('color_formulas', e.target.value)} 
               rows={3} 
@@ -114,6 +121,7 @@ export function SectorMetadataInputs({
           <div className="space-y-1">
             <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Nombre de la Mascota</label>
             <input 
+              id="vet-pet-name-input"
               type="text" 
               value={value.pet_name || ''} 
               onChange={e => updateMeta('pet_name', e.target.value)} 
@@ -125,6 +133,7 @@ export function SectorMetadataInputs({
           <div className="space-y-1">
             <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Especie y Raza</label>
             <input 
+              id="vet-pet-species-input"
               type="text" 
               value={value.pet_species || ''} 
               onChange={e => updateMeta('pet_species', e.target.value)} 
@@ -136,6 +145,7 @@ export function SectorMetadataInputs({
           <div className="space-y-1">
             <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Edad de la Mascota</label>
             <input 
+              id="vet-pet-age-input"
               type="text" 
               value={value.pet_age || ''} 
               onChange={e => updateMeta('pet_age', e.target.value)} 
@@ -147,6 +157,7 @@ export function SectorMetadataInputs({
           <div className="space-y-1">
             <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Carácter / Comportamiento</label>
             <input 
+              id="vet-pet-temperament-input"
               type="text" 
               value={value.temperament || ''} 
               onChange={e => updateMeta('temperament', e.target.value)} 
@@ -158,6 +169,7 @@ export function SectorMetadataInputs({
           <div className="space-y-1 md:col-span-2">
             <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Historial de Vacunación</label>
             <input 
+              id="vet-vaccination-record-input"
               type="text" 
               value={value.vaccination_record || ''} 
               onChange={e => updateMeta('vaccination_record', e.target.value)} 
@@ -174,6 +186,7 @@ export function SectorMetadataInputs({
           <div className="space-y-1">
             <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Matrícula</label>
             <input 
+              id="auto-license-plate-input"
               type="text" 
               value={value.license_plate || ''} 
               onChange={e => updateMeta('license_plate', e.target.value)} 
@@ -185,6 +198,7 @@ export function SectorMetadataInputs({
           <div className="space-y-1">
             <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Marca</label>
             <input 
+              id="auto-brand-input"
               type="text" 
               value={value.brand || ''} 
               onChange={e => updateMeta('brand', e.target.value)} 
@@ -196,6 +210,7 @@ export function SectorMetadataInputs({
           <div className="space-y-1">
             <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Modelo</label>
             <input 
+              id="auto-model-input"
               type="text" 
               value={value.model || ''} 
               onChange={e => updateMeta('model', e.target.value)} 
@@ -207,6 +222,7 @@ export function SectorMetadataInputs({
           <div className="space-y-1">
             <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Año del Vehículo</label>
             <input 
+              id="auto-year-input"
               type="number" 
               value={value.year || ''} 
               onChange={e => updateMeta('year', e.target.value)} 
@@ -218,6 +234,7 @@ export function SectorMetadataInputs({
           <div className="space-y-1">
             <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Kilometraje Actual</label>
             <input 
+              id="auto-mileage-input"
               type="number" 
               value={value.mileage || ''} 
               onChange={e => updateMeta('mileage', e.target.value)} 
@@ -229,6 +246,7 @@ export function SectorMetadataInputs({
           <div className="space-y-1">
             <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Número de Bastidor (VIN)</label>
             <input 
+              id="auto-vin-input"
               type="text" 
               value={value.vin || ''} 
               onChange={e => updateMeta('vin', e.target.value)} 
@@ -245,6 +263,7 @@ export function SectorMetadataInputs({
           <div className="space-y-1">
             <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Metros Cuadrados Vivienda</label>
             <input 
+              id="home-sq-meters-input"
               type="number" 
               value={value.sq_meters || ''} 
               onChange={e => updateMeta('sq_meters', e.target.value)} 
@@ -256,6 +275,7 @@ export function SectorMetadataInputs({
           <div className="space-y-1">
             <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Tipo de Propiedad</label>
             <input 
+              id="home-property-type-input"
               type="text" 
               value={value.property_type || ''} 
               onChange={e => updateMeta('property_type', e.target.value)} 
@@ -267,6 +287,7 @@ export function SectorMetadataInputs({
           <div className="space-y-1 md:col-span-2">
             <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Códigos de Acceso (Urbanización / Portal)</label>
             <input 
+              id="home-access-codes-input"
               type="text" 
               value={value.access_codes || ''} 
               onChange={e => updateMeta('access_codes', e.target.value)} 
@@ -294,6 +315,7 @@ export function SectorMetadataInputs({
           <div className="space-y-1">
             <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Sector de la Empresa</label>
             <input 
+              id="prof-company-sector-input"
               type="text" 
               value={value.company_sector || ''} 
               onChange={e => updateMeta('company_sector', e.target.value)} 
@@ -305,6 +327,7 @@ export function SectorMetadataInputs({
           <div className="space-y-1">
             <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Sitio Web</label>
             <input 
+              id="prof-website-url-input"
               type="url" 
               value={value.website_url || ''} 
               onChange={e => updateMeta('website_url', e.target.value)} 
@@ -316,6 +339,7 @@ export function SectorMetadataInputs({
           <div className="space-y-1 md:col-span-2">
             <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Enlace a Carpeta Cloud (Drive / Dropbox)</label>
             <input 
+              id="prof-cloud-folder-url-input"
               type="url" 
               value={value.cloud_folder_url || ''} 
               onChange={e => updateMeta('cloud_folder_url', e.target.value)} 
@@ -331,6 +355,7 @@ export function SectorMetadataInputs({
         <div className="space-y-1 md:col-span-2">
           <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Notas Internas / Observaciones</label>
           <textarea 
+            id="general-internal-notes-textarea"
             value={value.internal_notes || ''} 
             onChange={e => updateMeta('internal_notes', e.target.value)} 
             rows={4} 
