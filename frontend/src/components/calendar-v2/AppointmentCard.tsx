@@ -72,6 +72,7 @@ export function AppointmentCard({
   if (isMobile) {
     return (
       <div 
+        id={`calendar-appt-card-mobile-${appointment.id}`}
         onClick={(e) => onClick(e, appointment)}
         className={`absolute w-[95%] left-[2.5%] ml-auto mr-auto border-[1.5px] rounded-none shadow-sm px-3 py-2 z-20 overflow-hidden active:scale-[0.98] transition-all flex flex-col justify-start ${colors} ${!isHighlighted ? 'opacity-20 grayscale pointer-events-none' : ''}`}
         style={style}
@@ -92,6 +93,7 @@ export function AppointmentCard({
   // RENDER DESKTOP
   return (
     <div 
+      id={`calendar-appt-card-desktop-${appointment.id}`}
       onClick={(e) => onClick(e, appointment)}
       onMouseEnter={(e) => onMouseEnter?.(e, appointment)}
       onMouseMove={(e) => onMouseMove?.(e, appointment)}

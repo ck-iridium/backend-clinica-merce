@@ -38,6 +38,7 @@ export function EmptySlot({
 
   return (
     <div
+      id={`calendar-empty-slot-${hour}-${minute}`}
       onClick={() => !isDisabled && onClick(hour, minute)}
       className={baseClasses}
       style={{ backgroundImage: bgImage }}

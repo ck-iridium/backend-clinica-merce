@@ -167,12 +167,14 @@ export function CreateAppointmentModal({
         <DialogHeader className="sticky top-0 z-30 shrink-0 p-8 border-b border-stone-100 bg-white/95 backdrop-blur-md">
           <div className="flex gap-4 mb-4 p-1 bg-stone-100 rounded-2xl w-fit">
             <button
+              id="create-appt-appointment-tab"
               onClick={() => setModalType('appointment')}
               className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${modalType === 'appointment' ? 'bg-white text-stone-800 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
             >
               {t('dashboard.calendar.new_appointment') || 'Nueva Cita'}
             </button>
             <button
+              id="create-appt-block-tab"
               onClick={() => setModalType('block')}
               className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${modalType === 'block' ? 'bg-stone-800 text-white shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
             >
@@ -199,6 +201,7 @@ export function CreateAppointmentModal({
                 {(selectedSlot?.hour === startHour ? [30, 45] : [0, 15, 30, 45]).map(m => (
                   <button
                     key={m}
+                    id={`create-appt-minute-btn-${m}`}
                     type="button"
                     onClick={() => setSelectedMinutes(m)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${selectedMinutes === m ? 'bg-stone-800 text-white shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}
@@ -249,7 +252,7 @@ export function CreateAppointmentModal({
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">{t('dashboard.calendar.modal.client_req') || 'Cliente *'}</label>
                   <Select required value={selectedClientId} onValueChange={setSelectedClientId}>
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger id="create-appt-client-select-trigger" className="w-full">
                       <SelectValue placeholder={t('dashboard.calendar.modal.choose_client') || '-- Elige un cliente --'} />
                     </SelectTrigger>
                     <SelectContent>
@@ -275,7 +278,7 @@ export function CreateAppointmentModal({
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">{t('dashboard.calendar.modal.treatment_req') || 'Tratamiento *'}</label>
                   <Select value={selectedServiceId} onValueChange={setSelectedServiceId}>
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger id="create-appt-service-select-trigger" className="w-full">
                       <SelectValue placeholder={t('dashboard.calendar.modal.select_service') || '-- Selecciona el servicio --'} />
                     </SelectTrigger>
                     <SelectContent>
@@ -304,6 +307,7 @@ export function CreateAppointmentModal({
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">{t('dashboard.calendar.notes') || 'Notas'}</label>
                   <textarea
+                    id="create-appt-notes-textarea"
                     value={appointmentNotes}
                     onChange={e => setAppointmentNotes(e.target.value)}
                     placeholder={t('dashboard.calendar.modal.appt_obs') || 'Observaciones de la cita...'}
@@ -317,6 +321,7 @@ export function CreateAppointmentModal({
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-2">{t('dashboard.calendar.modal.reason') || 'Motivo'}</label>
                 <input
+                  id="create-appt-block-reason-input"
                   type="text"
                   value={blockReason}
                   onChange={e => setBlockReason(e.target.value)}
@@ -331,6 +336,7 @@ export function CreateAppointmentModal({
                   {[30, 60, 120, 240, -1].map(mins => (
                     <button
                       key={mins}
+                      id={`create-appt-block-duration-btn-${mins}`}
                       type="button"
                       onClick={() => setBlockDuration(mins)}
                       className={`py-3 rounded-xl font-bold text-[10px] transition-all border-2 ${blockDuration === mins ? 'bg-stone-800 border-stone-800 text-white' : 'bg-white border-stone-100 text-stone-500 hover:border-stone-300'}`}
@@ -345,10 +351,11 @@ export function CreateAppointmentModal({
         </div>
 
         <DialogFooter className="sticky bottom-0 left-0 w-full p-6 pt-12 bg-gradient-to-t from-white via-white/95 to-transparent flex flex-row gap-3 rounded-b-xl z-20 pointer-events-none">
-          <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-4 rounded-xl font-bold text-stone-600 bg-white border border-stone-100 hover:bg-stone-50 shadow-sm transition-all pointer-events-auto">
+          <button id="create-appt-cancel-btn" type="button" onClick={() => setShowModal(false)} className="flex-1 py-4 rounded-xl font-bold text-stone-600 bg-white border border-stone-100 hover:bg-stone-50 shadow-sm transition-all pointer-events-auto">
             {t('dashboard.calendar.modal.cancel') || 'Cancelar'}
           </button>
           <button
+            id="create-appt-submit-btn"
             form={modalType === 'appointment' ? 'appointment-form' : 'block-form'}
             disabled={saving}
             type="submit"

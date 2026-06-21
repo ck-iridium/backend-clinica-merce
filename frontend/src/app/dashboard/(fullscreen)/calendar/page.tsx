@@ -247,6 +247,7 @@ function CalendarContent() {
 
             {/* Botón abrir panel */}
             <button
+              id="calendar-mobile-open-panel-btn"
               onClick={() => setIsMobilePanelOpen(true)}
               className="flex-shrink-0 px-4 py-3 active:scale-95 transition-all outline-none"
               aria-label="Abrir panel"
@@ -268,6 +269,7 @@ function CalendarContent() {
                   return (
                     <button
                       key={i}
+                      id={`calendar-mobile-day-btn-${date.getDate()}`}
                       ref={isSelected ? c.activeDayRef : null}
                       onClick={() => c.handleMobileDateSelect(date)}
                       className={`snap-center flex-shrink-0 w-14 rounded-xl flex flex-col items-center justify-center py-2 transition-all border-2

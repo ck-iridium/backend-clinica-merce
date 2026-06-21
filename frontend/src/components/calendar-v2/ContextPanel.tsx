@@ -111,6 +111,7 @@ export function ContextPanel({
                     <div className="relative flex-1 group">
                         <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-primary transition-colors" />
                         <input
+                            id="calendar-search-input"
                             type="text"
                             placeholder={t('dashboard.calendar.search_placeholder')}
                             value={searchTerm}
@@ -120,6 +121,7 @@ export function ContextPanel({
                     </div>
                     {onClose && (
                         <button
+                            id="calendar-close-panel-btn"
                             onClick={onClose}
                             className="p-3 rounded-2xl bg-stone-50 border border-stone-100 text-stone-500 active:scale-95 transition-all hover:bg-primary/5 hover:text-primary hover:border-primary/10 shrink-0"
                             aria-label={t('dashboard.calendar.close_panel')}
@@ -134,6 +136,7 @@ export function ContextPanel({
                     <div className="bg-white border border-stone-100 rounded-[2rem] p-4 shadow-sm">
                         <div className="flex items-center justify-between mb-4 px-1">
                             <button
+                                id="calendar-prev-month-btn"
                                 onClick={handlePrevMonth}
                                 className="p-1.5 rounded-lg hover:bg-stone-50 text-stone-400 transition-colors"
                             >
@@ -143,6 +146,7 @@ export function ContextPanel({
                                 {viewDate.toLocaleDateString(getLocaleString(), { month: 'long', year: 'numeric' })}
                             </p>
                             <button
+                                id="calendar-next-month-btn"
                                 onClick={handleNextMonth}
                                 className="p-1.5 rounded-lg hover:bg-stone-50 text-stone-400 transition-colors"
                             >
@@ -165,6 +169,7 @@ export function ContextPanel({
                                 return (
                                     <button
                                         key={i}
+                                        id={item.currentMonth ? `calendar-mini-day-btn-${item.day}` : undefined}
                                         onClick={() => item.currentMonth && onDateChange?.(item.date)}
                                         className={`w-8 h-8 flex items-center justify-center text-xs font-bold rounded-xl transition-all
                                             ${isSelected ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-110' :
@@ -180,6 +185,7 @@ export function ContextPanel({
                         {/* Navegación Diaria Compacta */}
                         <div className="flex items-center justify-between mt-4 pt-4 border-t border-stone-50">
                             <button 
+                                id="calendar-daily-prev-btn"
                                 onClick={onPrev}
                                 className="p-2 rounded-lg hover:bg-stone-50 text-stone-400 hover:text-primary transition-all"
                                 title={t('dashboard.calendar.prev_day')}
@@ -187,12 +193,14 @@ export function ContextPanel({
                                 <ChevronLeft size={18} />
                             </button>
                             <button 
+                                id="calendar-daily-today-btn"
                                 onClick={onToday}
                                 className="px-4 py-1.5 rounded-lg bg-stone-50 border border-stone-100 text-stone-600 font-black text-[10px] uppercase tracking-widest hover:bg-primary/5 hover:text-primary hover:border-primary/10 transition-all"
                             >
                                 {t('dashboard.calendar.today')}
                             </button>
                             <button 
+                                id="calendar-daily-next-btn"
                                 onClick={onNext}
                                 className="p-2 rounded-lg hover:bg-stone-50 text-stone-400 hover:text-primary transition-all"
                                 title={t('dashboard.calendar.next_day')}
@@ -208,6 +216,7 @@ export function ContextPanel({
                     <p className="text-[10px] font-black text-stone-300 uppercase tracking-[0.2em] ml-1">{t('dashboard.calendar.filters')}</p>
                     <div className="space-y-2">
                         <button
+                            id="calendar-filter-confirmed-btn"
                             onClick={() => setActiveFilter(activeFilter === 'CONFIRMADA' ? 'ALL' : 'CONFIRMADA')}
                             className={`w-full flex items-center justify-between p-3.5 rounded-2xl transition-all border
                                 ${activeFilter === 'CONFIRMADA' ? 'bg-primary/5 border-primary/10 text-primary' : 'bg-white border-stone-100 text-stone-500 hover:border-stone-200'}
@@ -221,6 +230,7 @@ export function ContextPanel({
                         </button>
 
                         <button
+                            id="calendar-filter-pending-btn"
                             onClick={() => setActiveFilter(activeFilter === 'PENDIENTE' ? 'ALL' : 'PENDIENTE')}
                             className={`w-full flex items-center justify-between p-3.5 rounded-2xl transition-all border
                                 ${activeFilter === 'PENDIENTE' ? 'bg-orange-50 border-orange-100 text-orange-600' : 'bg-white border-stone-100 text-stone-500 hover:border-stone-200'}
@@ -234,6 +244,7 @@ export function ContextPanel({
                         </button>
 
                         <button
+                            id="calendar-filter-paid-btn"
                             onClick={() => setActiveFilter(activeFilter === 'PAGADA' ? 'ALL' : 'PAGADA')}
                             className={`w-full flex items-center justify-between p-3.5 rounded-2xl transition-all border
                                 ${activeFilter === 'PAGADA' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-white border-stone-100 text-stone-500 hover:border-stone-200'}

@@ -95,6 +95,7 @@ export function DayColumn({
       {/* Estado Cerrado (Overlay) */}
       {isClosed && (
         <div 
+          id={`calendar-day-column-closed-overlay-${date.getDate()}`}
           onClick={(e) => {
             e.stopPropagation();
             if (closedBlock) onBlockClick(closedBlock);
@@ -157,6 +158,7 @@ export function DayColumn({
         return (
           <div 
             key={block.id}
+            id={`calendar-time-block-${block.id}`}
             onClick={() => onBlockClick(block)}
             className={`absolute w-full left-0 z-10 cursor-pointer hover:border-stone-400 transition-all flex items-center justify-center overflow-hidden border-y-2 last:border-b-0 ${isFullDay ? 'border-stone-800 border-x-[3px]' : 'border-stone-200 border-x-0'}`}
             style={{ 

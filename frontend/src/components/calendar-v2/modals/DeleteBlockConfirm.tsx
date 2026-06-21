@@ -68,6 +68,7 @@ export function DeleteBlockConfirm({
         </div>
         <DialogFooter className="shrink-0 p-6 pt-2 flex flex-col gap-2 sm:flex-col border-t-0">
           <button
+            id="delete-block-confirm-btn"
             onClick={handleDeleteBlock}
             disabled={updatingStatus}
             className="w-full bg-stone-900 text-white py-4 rounded-xl font-bold hover:bg-black transition-all active:scale-95"
@@ -75,6 +76,7 @@ export function DeleteBlockConfirm({
             {updatingStatus ? (t('dashboard.calendar.modal.releasing') || 'Liberando...') : (t('dashboard.calendar.modal.confirm_release') || 'Sí, Eliminar Bloqueo')}
           </button>
           <button
+            id="delete-block-cancel-btn"
             onClick={() => setShowBlockDeleteModal(false)}
             className="w-full bg-stone-50 text-stone-500 py-3 rounded-xl font-bold hover:bg-stone-100 transition-all"
           >

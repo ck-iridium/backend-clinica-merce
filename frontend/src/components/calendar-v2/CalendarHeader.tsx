@@ -59,6 +59,7 @@ export function CalendarHeader({
               <ChevronDown size={18} className="text-stone-400 shrink-0" />
             </div>
             <input 
+              id="calendar-header-datepicker"
               type="date"
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer pointer-events-auto z-10"
               style={{ display: 'block' }}
@@ -73,6 +74,7 @@ export function CalendarHeader({
             />
           </div>
           <button 
+            id="calendar-header-today-btn"
             onClick={onToday}
             className="pointer-events-auto bg-white/80 backdrop-blur-md border border-stone-200/50 text-stone-600 rounded-xl px-4 py-2.5 font-bold shadow-sm active:scale-95 transition-transform text-sm"
           >

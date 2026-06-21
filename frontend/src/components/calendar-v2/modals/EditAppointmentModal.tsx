@@ -132,6 +132,7 @@ export function EditAppointmentModal({
           <div>
             <label className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">{t('dashboard.calendar.modal.treatment_notes') || 'Notas del Tratamiento'}</label>
             <textarea
+              id="edit-appt-notes-textarea"
               value={editNotes}
               onChange={e => setEditNotes(e.target.value)}
               className="w-full px-4 py-3 rounded-xl border border-stone-100 focus:ring-2 focus:ring-primary/20 outline-none bg-stone-50 min-h-[42px] h-auto resize-none text-[13px] placeholder:italic shadow-inner overflow-hidden"
@@ -139,6 +140,7 @@ export function EditAppointmentModal({
             />
             {selectedAppt && editNotes !== (selectedAppt.notes || '') && (
               <button
+                id="edit-appt-save-notes-btn"
                 onClick={() => handleUpdateNotes()}
                 disabled={updatingStatus}
                 className="mt-2 w-full bg-stone-800 text-white text-[10px] font-bold uppercase py-2.5 rounded-lg hover:bg-stone-900 transition-all flex items-center justify-center gap-2"
@@ -154,6 +156,7 @@ export function EditAppointmentModal({
                 <AlertTriangle size={12} /> {t('dashboard.calendar.modal.web_pending_res') || 'Reserva pendiente'}
               </p>
               <button
+                id="edit-appt-confirm-web-booking-btn"
                 onClick={() => handleStatusChange('confirmed')}
                 disabled={updatingStatus}
                 className="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold py-3 rounded-xl transition-all active:scale-95"
@@ -168,6 +171,7 @@ export function EditAppointmentModal({
 
             <div className="flex items-center gap-3">
               <button
+                id="edit-appt-whatsapp-btn"
                 onClick={() => {
                   if (selectedAppt) {
                     const client = clientMap.get(selectedAppt.client_id);
@@ -199,7 +203,7 @@ export function EditAppointmentModal({
                     else if (status === 'no_show') colorClasses = 'bg-stone-50 text-stone-600 border-stone-200';
 
                     return (
-                      <SelectTrigger className={`w-full h-12 rounded-xl font-bold border transition-all text-[11px] ${colorClasses}`}>
+                      <SelectTrigger id="edit-appt-status-select-trigger" className={`w-full h-12 rounded-xl font-bold border transition-all text-[11px] ${colorClasses}`}>
                         <SelectValue placeholder={t('dashboard.calendar.modal.select_status') || 'Seleccionar estado...'} />
                       </SelectTrigger>
                     );
@@ -218,6 +222,7 @@ export function EditAppointmentModal({
               </div>
 
               <button
+                id="edit-appt-delete-btn"
                 onClick={handleDeleteAppointment}
                 disabled={updatingStatus}
                 className="w-12 h-12 shrink-0 bg-stone-50 hover:bg-rose-50 text-stone-400 hover:text-rose-500 rounded-xl transition-all active:scale-95 flex items-center justify-center outline-none"
