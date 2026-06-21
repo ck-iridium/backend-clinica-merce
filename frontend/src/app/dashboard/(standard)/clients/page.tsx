@@ -283,7 +283,7 @@ export default function ClientsPage() {
         
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogTrigger asChild>
-            <button className="bg-stone-900 text-white px-8 py-3 rounded-full text-sm font-bold hover:bg-[#D4AF37] hover:text-stone-950 transition-all active:scale-95 shadow-lg shadow-stone-200 flex items-center gap-2 group">
+            <button id="add-client-btn" className="bg-stone-900 text-white px-8 py-3 rounded-full text-sm font-bold hover:bg-[#D4AF37] hover:text-stone-950 transition-all active:scale-95 shadow-lg shadow-stone-200 flex items-center gap-2 group">
               <UserPlus size={18} className="group-hover:rotate-12 transition-transform" />
               {t('dashboard.clients.add_client') || 'Añadir Cliente'}
             </button>
@@ -422,6 +422,7 @@ export default function ClientsPage() {
                     </td>
                     <td className="px-8 py-5 text-right">
                       <Link 
+                        id={`view-client-details-btn-${index}`}
                         href={`/dashboard/clients/${client.id}`}
                         className="p-2.5 rounded-xl hover:bg-stone-100 text-stone-400 hover:text-[#D4AF37] transition-all border border-transparent hover:border-stone-100 inline-flex items-center justify-center group/eye"
                         title={t('dashboard.clients.view_full_record') || "Ver ficha completa"}

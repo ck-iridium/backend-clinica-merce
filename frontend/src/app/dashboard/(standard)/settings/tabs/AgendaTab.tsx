@@ -42,19 +42,19 @@ export default function AgendaTab({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
               <label className="block text-xs font-bold text-emerald-700 mb-2">{t('dashboard.settings.calendar.opening')}</label>
-              <input type="time" value={settings.open_time || ''} onChange={e => setSettings({...settings, open_time: e.target.value})} className="w-full p-4 bg-emerald-50/50 border border-emerald-100 rounded-xl focus:border-emerald-400 font-mono font-bold text-emerald-800 transition-all outline-none" required />
+              <input id="agenda-open-time" type="time" value={settings.open_time || ''} onChange={e => setSettings({...settings, open_time: e.target.value})} className="w-full p-4 bg-emerald-50/50 border border-emerald-100 rounded-xl focus:border-emerald-400 font-mono font-bold text-emerald-800 transition-all outline-none" required />
             </div>
             <div>
               <label className="block text-xs font-bold text-orange-700 mb-2">{t('dashboard.settings.calendar.closing')}</label>
-              <input type="time" value={settings.close_time || ''} onChange={e => setSettings({...settings, close_time: e.target.value})} className="w-full p-4 bg-orange-50/50 border border-orange-100 rounded-xl focus:border-orange-400 font-mono font-bold text-orange-800 transition-all outline-none" required />
+              <input id="agenda-close-time" type="time" value={settings.close_time || ''} onChange={e => setSettings({...settings, close_time: e.target.value})} className="w-full p-4 bg-orange-50/50 border border-orange-100 rounded-xl focus:border-orange-400 font-mono font-bold text-orange-800 transition-all outline-none" required />
             </div>
             <div>
               <label className="block text-xs font-bold text-stone-500 mb-2">{t('dashboard.settings.calendar.break_start')}</label>
-              <input type="time" value={settings.lunch_start || ''} onChange={e => setSettings({...settings, lunch_start: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono font-bold text-stone-800 dark:text-stone-800 transition-all outline-none" />
+              <input id="agenda-lunch-start" type="time" value={settings.lunch_start || ''} onChange={e => setSettings({...settings, lunch_start: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono font-bold text-stone-800 dark:text-stone-800 transition-all outline-none" />
             </div>
             <div>
               <label className="block text-xs font-bold text-stone-500 mb-2">{t('dashboard.settings.calendar.break_end')}</label>
-              <input type="time" value={settings.lunch_end || ''} onChange={e => setSettings({...settings, lunch_end: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono font-bold text-stone-800 dark:text-stone-800 transition-all outline-none" />
+              <input id="agenda-lunch-end" type="time" value={settings.lunch_end || ''} onChange={e => setSettings({...settings, lunch_end: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono font-bold text-stone-800 dark:text-stone-800 transition-all outline-none" />
             </div>
           </div>
 
@@ -66,6 +66,7 @@ export default function AgendaTab({
                 return (
                   <button
                     key={day.id}
+                    id={`agenda-working-day-btn-${day.id}`}
                     type="button"
                     onClick={() => {
                       const current = settings.working_days || [1,2,3,4,5];
@@ -101,7 +102,7 @@ export default function AgendaTab({
             </span>
             <h3 className="text-2xl font-serif font-semibold text-stone-800">{t('dashboard.settings.calendar.holidays')}</h3>
           </div>
-          <button type="button" onClick={() => setShowBlockModal(true)} className="bg-stone-50 text-stone-900 px-4 py-2 rounded-xl font-bold hover:bg-stone-100 transition-colors text-sm border border-stone-200">
+          <button id="agenda-add-absence-btn" type="button" onClick={() => setShowBlockModal(true)} className="bg-stone-50 text-stone-900 px-4 py-2 rounded-xl font-bold hover:bg-stone-100 transition-colors text-sm border border-stone-200">
             {t('dashboard.settings.calendar.add_absence')}
           </button>
         </div>
@@ -118,7 +119,7 @@ export default function AgendaTab({
                       {tb.is_annual_holiday && <span className="text-[10px] font-bold text-[#d4af37] uppercase tracking-wider bg-[#fcf8e5] px-2 py-1 rounded-full border border-[#f5efd5]">{t('dashboard.settings.calendar.annual')}</span>}
                     </div>
                   </div>
-                  <button type="button" onClick={() => handleDeleteBlock(tb.id)} className="text-stone-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-xl transition-colors">
+                  <button id={`agenda-delete-absence-btn-${tb.id}`} type="button" onClick={() => handleDeleteBlock(tb.id)} className="text-stone-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-xl transition-colors">
                     <Trash2 size={16} strokeWidth={1.5} />
                   </button>
                 </li>
@@ -143,6 +144,7 @@ export default function AgendaTab({
         <div className="p-4 bg-orange-50/50 border border-orange-100 rounded-2xl">
           <label className="block text-xs font-bold text-orange-700 mb-2">{t('dashboard.settings.calendar.margin_hours')}</label>
           <input 
+            id="agenda-booking-margin-hours"
             type="number" 
             min="0" 
             step="0.5" 

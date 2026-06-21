@@ -93,6 +93,7 @@ export default function BrandingTab({
                 <>
                   <img src={settings.logo_app_b64} alt="App Logo" className="max-h-full max-w-full object-contain filter drop-shadow-sm" />
                   <button
+                    id="branding-logo-delete-btn"
                     type="button"
                     onClick={() => updateSetting('logo_app_b64', null)}
                     className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-md shadow-md border border-stone-200/80 flex items-center justify-center text-stone-500 hover:text-red-650 hover:bg-red-50 hover:border-red-200 transition-all duration-300 active:scale-90"
@@ -112,8 +113,9 @@ export default function BrandingTab({
               </p>
             </div>
             
-            <input type="file" accept="image/*" ref={logoAppRef} className="hidden" onChange={e => handleImageUpload('logo_app_b64', e)} />
+            <input id="branding-logo-file-input" type="file" accept="image/*" ref={logoAppRef} className="hidden" onChange={e => handleImageUpload('logo_app_b64', e)} />
             <button
+              id="branding-logo-change-btn"
               type="button"
               onClick={() => logoAppRef.current?.click()}
               className="text-xs font-black uppercase tracking-wider text-white bg-stone-900 px-8 py-3.5 rounded-xl hover:bg-[#d4af37] hover:text-stone-950 transition-all w-full shadow-lg hover:shadow-xl active:scale-95 duration-300"
@@ -144,6 +146,7 @@ export default function BrandingTab({
                     <span className="text-[9px] font-bold text-stone-400">Icono Actual</span>
                   </div>
                   <button
+                    id="branding-favicon-delete-btn"
                     type="button"
                     onClick={() => updateSetting('favicon_b64', null)}
                     className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-md shadow-md border border-stone-200/80 flex items-center justify-center text-stone-500 hover:text-red-650 hover:bg-red-50 hover:border-red-200 transition-all duration-300 active:scale-90"
@@ -166,8 +169,9 @@ export default function BrandingTab({
               </p>
             </div>
             
-            <input type="file" accept="image/*,.ico" ref={faviconInputRef} className="hidden" onChange={e => handleImageUpload('favicon_b64', e)} />
+            <input id="branding-favicon-file-input" type="file" accept="image/*,.ico" ref={faviconInputRef} className="hidden" onChange={e => handleImageUpload('favicon_b64', e)} />
             <button
+              id="branding-favicon-load-btn"
               type="button"
               onClick={() => faviconInputRef.current?.click()}
               className="text-xs font-black uppercase tracking-wider text-stone-800 bg-stone-50 border border-stone-200 px-8 py-3.5 rounded-xl hover:bg-stone-100 transition-all w-full active:scale-95 duration-300"
@@ -211,6 +215,7 @@ export default function BrandingTab({
                   return (
                     <button
                       key={p.id}
+                      id={`branding-palette-btn-${p.id}`}
                       type="button"
                       onClick={() => {
                         if (p.id === 'custom') {
@@ -280,6 +285,7 @@ export default function BrandingTab({
                 <div className="flex items-center gap-3 bg-stone-50 p-3 rounded-2xl border border-stone-200/50">
                   <div className="relative shrink-0 w-10 h-10 rounded-xl overflow-hidden border border-stone-200/60 shadow-inner flex items-center justify-center bg-white">
                     <input 
+                      id="branding-color-primary-input"
                       type="color" 
                       value={settings.accent_color_primary || settings.accent_color || '#D4AF37'} 
                       onChange={e => {
@@ -313,6 +319,7 @@ export default function BrandingTab({
                 <div className="flex items-center gap-3 bg-stone-50 p-3 rounded-2xl border border-stone-200/50">
                   <div className="relative shrink-0 w-10 h-10 rounded-xl overflow-hidden border border-stone-200/60 shadow-inner flex items-center justify-center bg-white">
                     <input 
+                      id="branding-color-secondary-input"
                       type="color" 
                       value={settings.accent_color_secondary || '#1C1917'} 
                       onChange={e => {
@@ -342,6 +349,7 @@ export default function BrandingTab({
                     Fuente de Encabezados
                   </label>
                   <select
+                    id="branding-font-headings-select"
                     value={settings.branding_font_headings || 'Playfair Display'}
                     onChange={e => updateSetting('branding_font_headings', e.target.value)}
                     className="w-full text-xs font-bold bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#d4af37]/50 focus:border-[#d4af37] transition-all cursor-pointer font-sans"
@@ -358,6 +366,7 @@ export default function BrandingTab({
                     Fuente del Cuerpo (UI)
                   </label>
                   <select
+                    id="branding-font-body-select"
                     value={settings.branding_font_body || 'Inter'}
                     onChange={e => updateSetting('branding_font_body', e.target.value)}
                     className="w-full text-xs font-bold bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#d4af37]/50 focus:border-[#d4af37] transition-all cursor-pointer font-sans"
@@ -388,6 +397,7 @@ export default function BrandingTab({
                   return (
                     <button
                       key={item.value}
+                      id={`branding-border-radius-btn-${item.value}`}
                       type="button"
                       onClick={() => updateSetting('border_radius', item.value)}
                       className={`p-3.5 border rounded-2xl text-left transition-all relative flex flex-col justify-between h-20 ${
@@ -431,6 +441,7 @@ export default function BrandingTab({
                 
                 {/* Switch Toggle */}
                 <button
+                  id="branding-dark-mode-toggle"
                   type="button"
                   onClick={() => updateSetting('dark_mode_enabled', !settings.dark_mode_enabled)}
                   className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${

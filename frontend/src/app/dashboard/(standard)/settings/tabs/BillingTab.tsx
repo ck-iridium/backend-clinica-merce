@@ -32,13 +32,14 @@ export default function BillingTab({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-xs font-bold text-stone-500 mb-2">{t('dashboard.settings.billing.prefix')}</label>
-            <input type="text" value={settings.invoice_prefix} onChange={e => setSettings({...settings, invoice_prefix: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono text-sm text-stone-800 dark:text-stone-800 outline-none" />
+            <input id="billing-invoice-prefix" type="text" value={settings.invoice_prefix} onChange={e => setSettings({...settings, invoice_prefix: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono text-sm text-stone-800 dark:text-stone-800 outline-none" />
             <p className="text-[10px] text-stone-400 mt-2">{t('dashboard.settings.billing.prefix_vars')}</p>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-stone-500 mb-2">{t('dashboard.settings.billing.next_number')}</label>
               <input 
+                id="billing-invoice-next-number"
                 type="number" 
                 min="1" 
                 value={settings.invoice_next_number === undefined || settings.invoice_next_number === null ? "" : settings.invoice_next_number} 
@@ -52,6 +53,7 @@ export default function BillingTab({
             <div>
               <label className="block text-xs font-bold text-stone-500 mb-2">{t('dashboard.settings.billing.tax_rate')}</label>
               <input 
+                id="billing-default-tax-rate"
                 type="number" 
                 min="0" 
                 step="0.5" 
@@ -84,16 +86,16 @@ export default function BillingTab({
             <div className="w-full h-32 bg-white border border-stone-200 border-dashed rounded-lg flex items-center justify-center p-2">
                 {settings.logo_pdf_b64 ? <img src={settings.logo_pdf_b64} alt="PDF Logo" className="max-h-full object-contain" /> : <span className="text-stone-300 text-[10px] uppercase tracking-widest font-bold">{t('dashboard.settings.billing.invoice_logo')}</span>}
             </div>
-            <input type="file" accept="image/*" ref={logoPdfRef} className="hidden" onChange={e => handleImageUpload('logo_pdf_b64', e)} />
-            <button type="button" onClick={() => logoPdfRef.current?.click()} className="text-xs font-bold text-stone-900 bg-white border border-stone-200 px-4 py-2 rounded-lg hover:border-stone-900 w-full transition-all">{t('dashboard.settings.billing.change_logo')}</button>
+            <input id="billing-logo-pdf-input" type="file" accept="image/*" ref={logoPdfRef} className="hidden" onChange={e => handleImageUpload('logo_pdf_b64', e)} />
+            <button id="billing-logo-pdf-btn" type="button" onClick={() => logoPdfRef.current?.click()} className="text-xs font-bold text-stone-900 bg-white border border-stone-200 px-4 py-2 rounded-lg hover:border-stone-900 w-full transition-all">{t('dashboard.settings.billing.change_logo')}</button>
           </div>
           {/* Firma */}
           <div className="border border-stone-200 rounded-xl p-4 bg-stone-50/50 flex flex-col items-start gap-4 transition-all hover:bg-stone-50">
             <div className="w-full h-32 bg-white border border-stone-200 border-dashed rounded-lg flex items-center justify-center p-2">
                 {settings.signature_b64 ? <img src={settings.signature_b64} alt="Signature" className="max-h-full object-contain mix-blend-multiply" /> : <span className="text-stone-300 text-[10px] uppercase tracking-widest font-bold">{t('dashboard.settings.billing.signature')}</span>}
             </div>
-            <input type="file" accept="image/*" ref={sigRef} className="hidden" onChange={e => handleImageUpload('signature_b64', e)} />
-            <button type="button" onClick={() => sigRef.current?.click()} className="text-xs font-bold text-stone-900 bg-white border border-stone-200 px-4 py-2 rounded-lg hover:border-stone-900 w-full transition-all">{t('dashboard.settings.billing.change_signature')}</button>
+            <input id="billing-signature-input" type="file" accept="image/*" ref={sigRef} className="hidden" onChange={e => handleImageUpload('signature_b64', e)} />
+            <button id="billing-signature-btn" type="button" onClick={() => sigRef.current?.click()} className="text-xs font-bold text-stone-900 bg-white border border-stone-200 px-4 py-2 rounded-lg hover:border-stone-900 w-full transition-all">{t('dashboard.settings.billing.change_signature')}</button>
           </div>
         </div>
       </div>

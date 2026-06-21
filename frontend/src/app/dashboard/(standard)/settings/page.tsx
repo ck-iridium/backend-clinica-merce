@@ -316,6 +316,7 @@ export default function SettingsPage() {
             ].map((tab) => (
               <button
                 key={tab.id}
+                id={`settings-tab-btn-${tab.id}`}
                 onClick={() => handleTabChange(tab.id)}
                 className={`flex items-center gap-3 px-4 py-2.5 md:py-3.5 rounded-full md:rounded-2xl font-bold text-sm transition-all duration-300 whitespace-nowrap md:w-full md:justify-start
                     ${activeTab === tab.id
@@ -331,6 +332,7 @@ export default function SettingsPage() {
           {/* BOTÓN GUARDAR (Desktop) */}
           <div className="hidden md:block mt-4 pt-4 border-t border-stone-200/50">
             <button
+              id="settings-save-desktop-btn"
               onClick={() => handleSave()}
               disabled={saving || !hasChanges}
               className={`w-full py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 shadow-sm
@@ -386,6 +388,7 @@ export default function SettingsPage() {
       {/* FAB STICKY (Mobile) */}
       <div className={`md:hidden fixed bottom-16 right-6 z-50 transition-all duration-300 ${hasChanges ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
         <button
+          id="settings-save-mobile-btn"
           onClick={() => handleSave()}
           disabled={saving || !hasChanges}
           className="px-6 py-4 rounded-full font-bold bg-[#d4af37] text-white flex items-center justify-center gap-2 shadow-[0_8px_30px_rgba(212,175,55,0.3)] active:scale-95 transition-transform"
@@ -411,29 +414,29 @@ export default function SettingsPage() {
           <form onSubmit={handleAddBlock} className="p-6 pt-4 bg-white grid gap-5">
             <div className="grid gap-2">
               <label className="text-xs font-bold text-stone-500">{t('dashboard.settings.absences.reason')}</label>
-              <input required type="text" value={newBlock.reason} onChange={e => setNewBlock({ ...newBlock, reason: e.target.value })} className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] transition-all outline-none" />
+              <input id="absence-reason-input" required type="text" value={newBlock.reason} onChange={e => setNewBlock({ ...newBlock, reason: e.target.value })} className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] transition-all outline-none" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <label className="text-xs font-bold text-stone-500">{t('dashboard.settings.absences.start')}</label>
-                <input required type="date" value={newBlock.start_time} onChange={e => setNewBlock({ ...newBlock, start_time: e.target.value })} className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono text-sm outline-none" />
+                <input id="absence-start-input" required type="date" value={newBlock.start_time} onChange={e => setNewBlock({ ...newBlock, start_time: e.target.value })} className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono text-sm outline-none" />
               </div>
               <div className="grid gap-2">
                 <label className="text-xs font-bold text-stone-500">{t('dashboard.settings.absences.end')}</label>
-                <input required type="date" value={newBlock.end_time} onChange={e => setNewBlock({ ...newBlock, end_time: e.target.value })} className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono text-sm outline-none" />
+                <input id="absence-end-input" required type="date" value={newBlock.end_time} onChange={e => setNewBlock({ ...newBlock, end_time: e.target.value })} className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] font-mono text-sm outline-none" />
               </div>
             </div>
             <label className="flex items-center gap-3 cursor-pointer p-3 bg-stone-50 rounded-xl border border-stone-100">
               <div className="relative">
-                <input type="checkbox" checked={newBlock.is_annual_holiday} onChange={e => setNewBlock({ ...newBlock, is_annual_holiday: e.target.checked })} className="sr-only" />
+                <input id="absence-repeat-annual-checkbox" type="checkbox" checked={newBlock.is_annual_holiday} onChange={e => setNewBlock({ ...newBlock, is_annual_holiday: e.target.checked })} className="sr-only" />
                 <div className={`block w-10 h-6 rounded-full transition-colors ${newBlock.is_annual_holiday ? 'bg-[#d4af37]' : 'bg-stone-300'}`}></div>
                 <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${newBlock.is_annual_holiday ? 'translate-x-4' : ''}`}></div>
               </div>
               <span className="text-xs font-bold text-stone-700">{t('dashboard.settings.absences.repeat_annually')}</span>
             </label>
             <div className="flex justify-end gap-3 mt-4">
-              <button type="button" onClick={() => setShowBlockModal(false)} className="px-4 py-2 text-stone-500 font-bold hover:bg-stone-100 rounded-xl transition-colors">{t('dashboard.general.cancel')}</button>
-              <button type="submit" disabled={addingBlock} className="px-6 py-2 bg-stone-900 text-white font-bold rounded-xl shadow-sm hover:bg-stone-800 transition-colors disabled:opacity-50">
+              <button id="absence-cancel-btn" type="button" onClick={() => setShowBlockModal(false)} className="px-4 py-2 text-stone-500 font-bold hover:bg-stone-100 rounded-xl transition-colors">{t('dashboard.general.cancel')}</button>
+              <button id="absence-submit-btn" type="submit" disabled={addingBlock} className="px-6 py-2 bg-stone-900 text-white font-bold rounded-xl shadow-sm hover:bg-stone-800 transition-colors disabled:opacity-50">
                 {addingBlock ? t('dashboard.settings.saving') : t('dashboard.settings.absences.add_btn')}
               </button>
             </div>

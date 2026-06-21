@@ -34,6 +34,7 @@ export default function AdvancedTab({ settings, setSettings }: AdvancedTabProps)
           <div className="flex flex-col md:flex-row gap-4">
             <label className={`flex-1 flex items-center gap-3 p-4 rounded-2xl border-2 transition-all cursor-pointer ${settings.ai_provider === 'gemini' ? 'border-[#d4af37] bg-yellow-50/30' : 'border-stone-100 bg-stone-50 hover:bg-stone-100'}`}>
               <input 
+                id="advanced-provider-gemini-radio"
                 type="radio" 
                 name="ai_provider" 
                 value="gemini" 
@@ -52,6 +53,7 @@ export default function AdvancedTab({ settings, setSettings }: AdvancedTabProps)
 
             <label className={`flex-1 flex items-center gap-3 p-4 rounded-2xl border-2 transition-all cursor-pointer ${settings.ai_provider === 'openai' ? 'border-[#d4af37] bg-yellow-50/30' : 'border-stone-100 bg-stone-50 hover:bg-stone-100'}`}>
               <input 
+                id="advanced-provider-openai-radio"
                 type="radio" 
                 name="ai_provider" 
                 value="openai" 
@@ -81,6 +83,7 @@ export default function AdvancedTab({ settings, setSettings }: AdvancedTabProps)
                 <div>
                   <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1 mb-1.5 block">API Key de Gemini</label>
                   <input 
+                    id="advanced-gemini-api-key"
                     type="password" 
                     value={settings.gemini_api_key || ''} 
                     onChange={e => setSettings({...settings, gemini_api_key: e.target.value})} 
@@ -97,7 +100,7 @@ export default function AdvancedTab({ settings, setSettings }: AdvancedTabProps)
                       value={settings.gemini_model_text || 'gemini-2.5-flash'} 
                       onValueChange={val => setSettings({...settings, gemini_model_text: val})}
                     >
-                      <SelectTrigger className="w-full h-12 bg-white border-stone-200 rounded-xl focus:ring-[#d4af37]/20 font-semibold text-stone-800">
+                      <SelectTrigger id="advanced-gemini-model-text-trigger" className="w-full h-12 bg-white border-stone-200 rounded-xl focus:ring-[#d4af37]/20 font-semibold text-stone-800">
                         <SelectValue placeholder="Seleccionar modelo" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-stone-100 shadow-xl">
@@ -128,7 +131,7 @@ export default function AdvancedTab({ settings, setSettings }: AdvancedTabProps)
                       value={settings.gemini_model_image || 'gemini-3.1-flash-image-preview'} 
                       onValueChange={val => setSettings({...settings, gemini_model_image: val})}
                     >
-                      <SelectTrigger className="w-full h-12 bg-white border-stone-200 rounded-xl focus:ring-[#d4af37]/20 font-semibold text-stone-800">
+                      <SelectTrigger id="advanced-gemini-model-image-trigger" className="w-full h-12 bg-white border-stone-200 rounded-xl focus:ring-[#d4af37]/20 font-semibold text-stone-800">
                         <SelectValue placeholder="Seleccionar modelo" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-stone-100 shadow-xl">
@@ -156,6 +159,7 @@ export default function AdvancedTab({ settings, setSettings }: AdvancedTabProps)
                 <div>
                   <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1 mb-2 block">API Key de OpenAI</label>
                   <input 
+                    id="advanced-openai-api-key"
                     type="password" 
                     value={settings.openai_api_key || ''} 
                     onChange={e => setSettings({...settings, openai_api_key: e.target.value})} 
@@ -172,7 +176,7 @@ export default function AdvancedTab({ settings, setSettings }: AdvancedTabProps)
                       value={settings.openai_model_text || 'gpt-4o-mini'} 
                       onValueChange={val => setSettings({...settings, openai_model_text: val})}
                     >
-                      <SelectTrigger className="w-full h-12 bg-white border-stone-200 rounded-xl focus:ring-[#d4af37]/20 font-semibold text-stone-800">
+                      <SelectTrigger id="advanced-openai-model-text-trigger" className="w-full h-12 bg-white border-stone-200 rounded-xl focus:ring-[#d4af37]/20 font-semibold text-stone-800">
                         <SelectValue placeholder="Seleccionar modelo" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-stone-100 shadow-xl">
@@ -197,7 +201,7 @@ export default function AdvancedTab({ settings, setSettings }: AdvancedTabProps)
                       value={settings.openai_model_image || 'dall-e-3'} 
                       onValueChange={val => setSettings({...settings, openai_model_image: val})}
                     >
-                      <SelectTrigger className="w-full h-12 bg-white border-stone-200 rounded-xl focus:ring-[#d4af37]/20 font-semibold text-stone-800">
+                      <SelectTrigger id="advanced-openai-model-image-trigger" className="w-full h-12 bg-white border-stone-200 rounded-xl focus:ring-[#d4af37]/20 font-semibold text-stone-800">
                         <SelectValue placeholder="Seleccionar modelo" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-stone-100 shadow-xl">
@@ -243,6 +247,7 @@ export default function AdvancedTab({ settings, setSettings }: AdvancedTabProps)
           <label className="flex items-center gap-4 cursor-pointer group p-6 bg-white rounded-[2rem] border border-stone-100 transition-all hover:bg-stone-50 shadow-sm">
             <div className="relative">
               <input 
+                id="advanced-allow-indexing-checkbox"
                 type="checkbox" 
                 checked={settings.allow_search_engine_indexing} 
                 onChange={e => setSettings({...settings, allow_search_engine_indexing: e.target.checked})} 
@@ -275,6 +280,7 @@ export default function AdvancedTab({ settings, setSettings }: AdvancedTabProps)
           <label className="flex items-center gap-4 cursor-pointer group p-6 bg-white rounded-[2rem] border border-stone-100 transition-all hover:bg-stone-50 shadow-sm">
             <div className="relative">
               <input 
+                id="advanced-enable-consents-checkbox"
                 type="checkbox" 
                 checked={settings.enable_consents ?? true} 
                 onChange={e => setSettings({...settings, enable_consents: e.target.checked})} 
@@ -322,7 +328,7 @@ export default function AdvancedTab({ settings, setSettings }: AdvancedTabProps)
                 value={settings.business_sector || 'general'} 
                 onValueChange={(val) => setSettings({ ...settings, business_sector: val })}
               >
-                <SelectTrigger className="w-full h-12 bg-white border-red-100/50 rounded-xl focus:ring-red-100/20 font-semibold text-stone-850">
+                <SelectTrigger id="advanced-business-sector-trigger" className="w-full h-12 bg-white border-red-100/50 rounded-xl focus:ring-red-100/20 font-semibold text-stone-850">
                   <SelectValue placeholder="Seleccionar sector" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl border-stone-100 shadow-xl">

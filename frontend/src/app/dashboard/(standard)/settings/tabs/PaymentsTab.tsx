@@ -108,6 +108,7 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
               {t('dashboard.settings.payments.onboarding_desc')}
             </p>
             <button
+              id="payments-connect-stripe-btn"
               onClick={handleConnectStripe}
               disabled={connecting}
               className="px-6 py-3 bg-[#635BFF] hover:bg-[#4B45C6] text-white rounded-xl font-bold shadow-sm transition-colors flex items-center justify-center gap-2 mx-auto disabled:opacity-50"
@@ -142,6 +143,7 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
 
                 <div className="flex flex-wrap items-center gap-3">
                   <a 
+                    id="payments-manage-stripe-link"
                     href="https://dashboard.stripe.com/" 
                     target="_blank" 
                     rel="noopener noreferrer"
@@ -152,6 +154,7 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
                   </a>
                   
                   <button 
+                    id="payments-refresh-status-btn"
                     onClick={handleRefreshStatus}
                     disabled={refreshing}
                     className="p-3 bg-stone-50 hover:bg-stone-100 text-stone-500 rounded-xl border border-stone-100 transition-all"
@@ -175,6 +178,7 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
             
             <div className="flex justify-end px-2">
               <button 
+                id="payments-disconnect-btn"
                 onClick={handleDisconnect}
                 className="text-[10px] font-bold text-red-500 hover:text-red-700 uppercase tracking-widest transition-all flex items-center gap-2 group"
               >
@@ -196,6 +200,7 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
                     <label className="block text-xs font-bold text-stone-700 mb-2 uppercase tracking-wider">{t('dashboard.settings.payments.cancellation_margin')}</label>
                     <div className="flex items-center gap-3">
                       <input 
+                        id="payments-cancellation-margin-input"
                         type="number" 
                         value={settings?.cancellation_margin_hours === undefined || settings?.cancellation_margin_hours === null ? "" : settings.cancellation_margin_hours} 
                         onChange={(e) => {
@@ -229,6 +234,7 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
                       </div>
                       <div className="relative shrink-0">
                         <input 
+                          id="payments-global-deposit-checkbox"
                           type="checkbox" 
                           checked={settings?.global_deposit_required || false} 
                           onChange={(e) => setSettings({ ...settings, global_deposit_required: e.target.checked })} 
@@ -246,6 +252,7 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
                           <div className="relative flex items-center">
                             <span className="absolute left-3 text-xs font-bold text-stone-400">€</span>
                             <input 
+                              id="payments-global-deposit-amount-input"
                               type="number" 
                               value={settings?.global_deposit_amount === undefined || settings?.global_deposit_amount === null ? "" : settings.global_deposit_amount} 
                               onChange={(e) => {

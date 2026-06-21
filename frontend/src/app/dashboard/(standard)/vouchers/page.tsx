@@ -356,12 +356,14 @@ export default function VouchersPage() {
         <div className="flex items-center gap-3">
           <div className="flex bg-white border border-stone-200 p-1 rounded-xl shadow-sm">
             <button 
+              id="vouchers-tab-issued"
               onClick={() => setActiveTab('vendidos')}
               className={`px-4 py-2 rounded-lg font-bold text-xs transition-all ${activeTab === 'vendidos' ? 'bg-stone-900 text-white shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
             >
                {t('dashboard.vouchers.tab_issued') || 'Emitidos'}
             </button>
             <button 
+              id="vouchers-tab-catalog"
               onClick={() => setActiveTab('catalogo')}
               className={`px-4 py-2 rounded-lg font-bold text-xs transition-all ${activeTab === 'catalogo' ? 'bg-stone-900 text-white shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
             >
@@ -369,6 +371,7 @@ export default function VouchersPage() {
             </button>
           </div>
           <button 
+            id="vouchers-action-btn"
             onClick={() => activeTab === 'vendidos' ? setShowAssignModal(true) : setShowTemplateModal(true)}
             className="px-6 py-3 rounded-xl bg-[#d4af37] hover:bg-[#b08e23] border border-transparent text-white font-bold transition-all shadow-md active:scale-95 flex items-center gap-2"
           >

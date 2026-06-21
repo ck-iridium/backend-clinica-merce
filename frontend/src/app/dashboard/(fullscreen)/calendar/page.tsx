@@ -141,6 +141,7 @@ function CalendarContent() {
 
         {/* Toggle Panel — solo Desktop */}
         <button
+          id="calendar-toggle-panel"
           onClick={() => setIsPanelOpen(!isPanelOpen)}
           className={`
             hidden md:flex absolute top-5 left-[50px] -translate-x-1/2 z-50 p-2.5 rounded-full border border-stone-200 shadow-xl transition-all duration-300 group items-center justify-center

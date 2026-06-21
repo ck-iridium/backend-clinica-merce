@@ -172,6 +172,7 @@ export default function POSPage() {
             <div className="flex justify-between items-center mb-2">
               <h3 className="text-xs font-black text-[#d9777f] uppercase tracking-[0.2em]">{t('dashboard.pos.step_identification') || '1. Identificación'}</h3>
               <button 
+                id="pos-ticket-toggle"
                 onClick={() => { setIsSimplified(!isSimplified); if (!isSimplified) { setSelectedClientId(''); setSearchTerm(''); } }}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all border-2 ${isSimplified ? 'bg-stone-800 border-stone-800 text-white' : 'bg-white border-stone-100 text-stone-400 hover:border-stone-200'}`}
               >
@@ -188,6 +189,7 @@ export default function POSPage() {
                 {isSimplified ? (t('dashboard.pos.carrier_sale') || 'Venta al Portador') : (t('dashboard.pos.search_client') || 'Buscar Cliente')}
               </label>
               <input 
+                id="pos-client-search"
                 type="text"
                 placeholder={isSimplified ? (t('dashboard.pos.id_not_required') || "Identificación no necesaria") : (t('dashboard.pos.client_search_placeholder') || "Nombre, email o teléfono...")}
                 disabled={isSimplified}
@@ -215,6 +217,7 @@ export default function POSPage() {
             <div>
               <label className="block text-sm font-bold text-stone-700 mb-2">{t('dashboard.pos.service_rendered') || 'Servicio Prestado'}</label>
               <select 
+                id="pos-service-select"
                 value={selectedServiceId} 
                 onChange={e => handleServiceChange(e.target.value)}
                 className="w-full px-5 py-4 rounded-2xl border border-stone-100 bg-stone-50 focus:ring-2 focus:ring-[#d9777f] outline-none font-bold text-stone-800"
@@ -234,6 +237,7 @@ export default function POSPage() {
               <div>
                 <label className="block text-sm font-bold text-white/70 mb-2">{t('dashboard.pos.amount_to_charge') || 'Importe a Cobrar (€)'}</label>
                 <input 
+                  id="pos-amount-input"
                   type="number"
                   step="0.01"
                   value={finalPrice}
@@ -248,6 +252,7 @@ export default function POSPage() {
                   {['Tarjeta', 'Efectivo'].map(method => (
                     <button 
                       key={method}
+                      id={method === 'Tarjeta' ? 'pos-pay-card' : 'pos-pay-cash'}
                       onClick={() => setPaymentMethod(method)}
                       className={`py-4 rounded-2xl font-black text-sm transition-all border-2 ${paymentMethod === method ? 'bg-white text-stone-900 border-white shadow-lg' : 'bg-transparent border-white/20 text-white/60 hover:border-white/40'}`}
                     >
@@ -260,6 +265,7 @@ export default function POSPage() {
 
             <div className="pt-6">
               <button 
+                id="pos-submit-btn"
                 onClick={handleProcessSale}
                 disabled={(!isSimplified && !selectedClientId) || !selectedServiceId || isProcessing}
                 className="w-full bg-white text-stone-900 px-8 py-6 rounded-2xl font-black text-xl hover:bg-stone-100 transition-all disabled:opacity-30 active:scale-95 shadow-xl md:py-5"

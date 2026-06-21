@@ -312,6 +312,7 @@ export default function MobileServicesTab({ settings, setSettings }: MobileServi
             return (
               <button
                 key={mode.id}
+                id={`mobile-work-modality-btn-${mode.id}`}
                 type="button"
                 onClick={() => setSettings({ ...settings, work_modality: mode.id })}
                 className={`p-4 rounded-xl border text-left transition-all duration-300 flex flex-col gap-2 group outline-none
@@ -368,6 +369,7 @@ export default function MobileServicesTab({ settings, setSettings }: MobileServi
                 </p>
                 <div className="relative">
                   <input
+                    id="mobile-ops-center-address-input"
                     type="text"
                     value={addressQuery}
                     onChange={handleAddressChange}
@@ -413,6 +415,7 @@ export default function MobileServicesTab({ settings, setSettings }: MobileServi
                   </div>
                 </div>
                 <input
+                  id="mobile-coverage-radius-slider"
                   type="range"
                   min="1"
                   max="150"
@@ -436,6 +439,7 @@ export default function MobileServicesTab({ settings, setSettings }: MobileServi
 
                 <form onSubmit={handleAddZone} className="flex gap-2 mb-2">
                   <input
+                    id="mobile-whitelist-zone-input"
                     type="text"
                     value={whitelistInput}
                     onChange={(e) => setWhitelistInput(e.target.value)}
@@ -443,8 +447,9 @@ export default function MobileServicesTab({ settings, setSettings }: MobileServi
                     className="flex-1 p-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] outline-none text-xs font-semibold text-stone-700"
                   />
                   <button
+                    id="mobile-add-zone-btn"
                     type="submit"
-                    className="px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl font-bold text-xs transition-colors flex items-center gap-1.5 shadow-sm"
+                    className="px-4 py-2 bg-stone-950 hover:bg-stone-800 text-white rounded-xl font-bold text-xs transition-colors flex items-center gap-1.5 shadow-sm"
                   >
                     <Plus size={12} />
                     {t('settings.mobile_services.add')}
@@ -460,6 +465,7 @@ export default function MobileServicesTab({ settings, setSettings }: MobileServi
                       >
                         {zone}
                         <button
+                          id={`mobile-remove-zone-btn-${index}`}
                           type="button"
                           onClick={() => handleRemoveZone(index)}
                           className="hover:bg-stone-100 rounded-full p-0.5 transition-colors text-stone-400 hover:text-stone-700"

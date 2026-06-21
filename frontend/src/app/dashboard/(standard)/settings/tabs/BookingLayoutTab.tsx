@@ -43,6 +43,7 @@ export default function BookingLayoutTab({ settings, setSettings }: BookingLayou
             <div className="flex flex-col gap-4">
               {/* Opción Grid */}
               <button
+                id="booking-layout-grid-btn"
                 onClick={() => handleLayoutChange('grid')}
                 className={`text-left w-full relative overflow-hidden transition-all duration-300 p-5 rounded-[2rem] border-2 group
                   ${currentLayout === 'grid' 
@@ -62,6 +63,7 @@ export default function BookingLayoutTab({ settings, setSettings }: BookingLayou
 
               {/* Opción List */}
               <button
+                id="booking-layout-list-btn"
                 onClick={() => handleLayoutChange('list')}
                 className={`text-left w-full relative overflow-hidden transition-all duration-300 p-5 rounded-[2rem] border-2 group
                   ${currentLayout === 'list' 

@@ -118,6 +118,7 @@ export default function ConsentsTab() {
       <div className="bg-white rounded-3xl md:rounded-[2.5rem] border border-stone-100 p-5 md:p-8 shadow-sm animate-in slide-in-from-bottom-2 duration-300">
         <div className="flex items-center gap-3 mb-6 pb-4 border-b border-stone-100">
           <button 
+            id="consents-back-btn"
             type="button" 
             onClick={() => setEditingTemplate(null)}
             className="w-8 h-8 rounded-full bg-stone-50 hover:bg-stone-100 flex items-center justify-center text-stone-500 transition-colors"
@@ -132,12 +133,13 @@ export default function ConsentsTab() {
           </div>
         </div>
 
-        <form onSubmit={handleSave} className="space-y-6">
+        <form id="consents-template-form" onSubmit={handleSave} className="space-y-6">
           <div>
             <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1 mb-2 block">
               Título del Documento
             </label>
             <input 
+              id="consents-title-input"
               required
               type="text" 
               placeholder="Ej. Consentimiento Informado para Botox"
@@ -152,6 +154,7 @@ export default function ConsentsTab() {
               Cuerpo del Consentimiento (Términos y Condiciones)
             </label>
             <textarea 
+              id="consents-body-textarea"
               required
               rows={12}
               placeholder="Escribe el texto legal aquí. Puedes usar corchetes como [Nombre del Cliente] para que el especialista los rellene al firmar."
@@ -163,6 +166,7 @@ export default function ConsentsTab() {
 
           <div className="flex justify-end gap-3 pt-4 border-t border-stone-100">
             <button 
+              id="consents-cancel-edit-btn"
               type="button" 
               onClick={() => setEditingTemplate(null)}
               className="px-5 py-2.5 text-stone-500 font-bold hover:bg-stone-100 rounded-xl transition-colors text-sm"
@@ -170,6 +174,7 @@ export default function ConsentsTab() {
               Cancelar
             </button>
             <button 
+              id="consents-submit-btn"
               type="submit" 
               disabled={isSaving}
               className="px-6 py-2.5 bg-stone-900 text-white font-bold rounded-xl shadow-sm hover:bg-stone-800 transition-colors disabled:opacity-50 text-sm flex items-center gap-2"
@@ -196,6 +201,7 @@ export default function ConsentsTab() {
           </div>
         </div>
         <button
+          id="consents-new-template-btn"
           type="button"
           onClick={() => setEditingTemplate({ title: '', body_text: '' })}
           className="px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 self-start sm:self-auto"
@@ -233,6 +239,7 @@ export default function ConsentsTab() {
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 <button
+                  id={`consents-edit-btn-${template.id}`}
                   type="button"
                   onClick={() => setEditingTemplate(template)}
                   className="w-8 h-8 rounded-lg border border-stone-250 hover:border-stone-900 hover:bg-stone-50 flex items-center justify-center text-stone-600 transition-colors"
@@ -241,6 +248,7 @@ export default function ConsentsTab() {
                   <Edit2 size={14} />
                 </button>
                 <button
+                  id={`consents-delete-btn-${template.id}`}
                   type="button"
                   onClick={() => handleDelete(template.id)}
                   className="w-8 h-8 rounded-lg border border-red-200/50 hover:bg-red-50 flex items-center justify-center text-red-500 transition-colors"

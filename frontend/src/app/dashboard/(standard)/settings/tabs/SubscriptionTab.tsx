@@ -319,6 +319,7 @@ export default function SubscriptionTab() {
                 </div>
 
                 <button
+                  id={`subscription-upgrade-btn-${plan.id}`}
                   onClick={() => handleUpgrade(plan.id)}
                   disabled={isCurrent || redirectingPlan !== null}
                   className={`w-full py-3 rounded-xl text-xs font-bold transition-all duration-300 active:scale-95 flex items-center justify-center gap-1.5
