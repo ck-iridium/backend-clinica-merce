@@ -263,13 +263,13 @@ export default function RosteringManager({ staffId, staffName }: RosteringManage
           </div>
 
           {locations.length > 0 && (
-            <form onSubmit={handleAddWeekly} className="grid grid-cols-2 gap-4 bg-stone-50/50 border border-stone-100/50 p-5 rounded-2xl">
+            <form id="roster-weekly-form" onSubmit={handleAddWeekly} className="grid grid-cols-2 gap-4 bg-stone-50/50 border border-stone-100/50 p-5 rounded-2xl">
 
               {/* Día de la semana */}
               <div className="space-y-1.5 col-span-2">
                 <label className="text-[9px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.my_schedule.day_label')}</label>
                 <Select value={weeklyDay} onValueChange={setWeeklyDay}>
-                  <SelectTrigger className={selectTriggerCls}>
+                  <SelectTrigger id="roster-weekly-day-trigger" className={selectTriggerCls}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className={selectContentCls}>
@@ -286,7 +286,7 @@ export default function RosteringManager({ staffId, staffName }: RosteringManage
               <div className="space-y-1.5 col-span-2">
                 <label className="text-[9px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.my_schedule.location_label')}</label>
                 <Select value={weeklyLocation} onValueChange={setWeeklyLocation}>
-                  <SelectTrigger className={selectTriggerCls}>
+                  <SelectTrigger id="roster-weekly-location-trigger" className={selectTriggerCls}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className={selectContentCls}>
@@ -302,18 +302,18 @@ export default function RosteringManager({ staffId, staffName }: RosteringManage
               {/* Horas */}
               <div className="space-y-1.5">
                 <label className="text-[9px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.my_schedule.start_label')}</label>
-                <input type="time" value={weeklyStart} onChange={e => setWeeklyStart(e.target.value)}
+                <input id="roster-weekly-start-input" type="time" value={weeklyStart} onChange={e => setWeeklyStart(e.target.value)}
                   className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] font-medium text-stone-700 transition-all"
                   required />
               </div>
               <div className="space-y-1.5">
                 <label className="text-[9px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.my_schedule.end_label')}</label>
-                <input type="time" value={weeklyEnd} onChange={e => setWeeklyEnd(e.target.value)}
+                <input id="roster-weekly-end-input" type="time" value={weeklyEnd} onChange={e => setWeeklyEnd(e.target.value)}
                   className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] font-medium text-stone-700 transition-all"
                   required />
               </div>
 
-              <button type="submit" disabled={saving}
+              <button id="roster-weekly-submit-btn" type="submit" disabled={saving}
                 className="col-span-2 mt-2 bg-stone-950 hover:bg-[#d4af37] hover:text-stone-950 text-white font-bold text-[10px] uppercase tracking-widest py-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50">
                 {saving ? <Loader2 size={12} className="animate-spin" /> : <Plus size={14} />}
                 {t('dashboard.my_schedule.add_weekly_btn')}
@@ -350,11 +350,11 @@ export default function RosteringManager({ staffId, staffName }: RosteringManage
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <button onClick={() => handleToggleActive(sched)}
+                        <button id={`roster-weekly-toggle-btn-${sched.id}`} onClick={() => handleToggleActive(sched)}
                           className={`w-7 h-7 rounded-lg border flex items-center justify-center transition-all ${sched.is_active ? 'border-green-200 text-green-600 bg-green-50 hover:bg-green-100/60' : 'border-stone-200 text-stone-400 bg-stone-100 hover:bg-stone-200/40'}`}>
                           <Check size={14} strokeWidth={2.5} />
                         </button>
-                        <button onClick={() => handleDeleteSchedule(sched.id, `${dayName} (${locName})`)}
+                        <button id={`roster-weekly-delete-btn-${sched.id}`} onClick={() => handleDeleteSchedule(sched.id, `${dayName} (${locName})`)}
                           className="w-7 h-7 rounded-lg border border-transparent text-stone-400 hover:text-rose-500 hover:bg-rose-50 flex items-center justify-center transition-all">
                           <Trash2 size={14} />
                         </button>
@@ -378,12 +378,12 @@ export default function RosteringManager({ staffId, staffName }: RosteringManage
           </div>
 
           {locations.length > 0 && (
-            <form onSubmit={handleAddException} className="grid grid-cols-2 gap-4 bg-stone-50/50 border border-stone-100/50 p-5 rounded-2xl">
+            <form id="roster-exception-form" onSubmit={handleAddException} className="grid grid-cols-2 gap-4 bg-stone-50/50 border border-stone-100/50 p-5 rounded-2xl">
 
               {/* Fecha */}
               <div className="space-y-1.5 col-span-2">
                 <label className="text-[9px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.my_schedule.date_label')}</label>
-                <input type="date" value={excDate} onChange={e => setExcDate(e.target.value)}
+                <input id="roster-exception-date-input" type="date" value={excDate} onChange={e => setExcDate(e.target.value)}
                   className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] font-medium text-stone-700 transition-all"
                   required />
               </div>
@@ -392,7 +392,7 @@ export default function RosteringManager({ staffId, staffName }: RosteringManage
               <div className="space-y-1.5 col-span-2">
                 <label className="text-[9px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.my_schedule.location_label')}</label>
                 <Select value={excLocation} onValueChange={setExcLocation}>
-                  <SelectTrigger className={selectTriggerCls}>
+                  <SelectTrigger id="roster-exception-location-trigger" className={selectTriggerCls}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className={selectContentCls}>
@@ -408,18 +408,18 @@ export default function RosteringManager({ staffId, staffName }: RosteringManage
               {/* Horas */}
               <div className="space-y-1.5">
                 <label className="text-[9px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.my_schedule.start_label')}</label>
-                <input type="time" value={excStart} onChange={e => setExcStart(e.target.value)}
+                <input id="roster-exception-start-input" type="time" value={excStart} onChange={e => setExcStart(e.target.value)}
                   className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] font-medium text-stone-700 transition-all"
                   required />
               </div>
               <div className="space-y-1.5">
                 <label className="text-[9px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.my_schedule.end_label')}</label>
-                <input type="time" value={excEnd} onChange={e => setExcEnd(e.target.value)}
+                <input id="roster-exception-end-input" type="time" value={excEnd} onChange={e => setExcEnd(e.target.value)}
                   className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] font-medium text-stone-700 transition-all"
                   required />
               </div>
 
-              <button type="submit" disabled={saving}
+              <button id="roster-exception-submit-btn" type="submit" disabled={saving}
                 className="col-span-2 mt-2 bg-stone-950 hover:bg-[#d4af37] hover:text-stone-950 text-white font-bold text-[10px] uppercase tracking-widest py-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50">
                 {saving ? <Loader2 size={12} className="animate-spin" /> : <Plus size={14} />}
                 {t('dashboard.my_schedule.add_exception_btn')}
@@ -458,11 +458,11 @@ export default function RosteringManager({ staffId, staffName }: RosteringManage
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <button onClick={() => handleToggleActive(sched)}
+                        <button id={`roster-exception-toggle-btn-${sched.id}`} onClick={() => handleToggleActive(sched)}
                           className={`w-7 h-7 rounded-lg border flex items-center justify-center transition-all ${sched.is_active ? 'border-green-200 text-green-600 bg-green-50 hover:bg-green-100/60' : 'border-stone-200 text-stone-400 bg-stone-100 hover:bg-stone-200/40'}`}>
                           <Check size={14} strokeWidth={2.5} />
                         </button>
-                        <button onClick={() => handleDeleteSchedule(sched.id, `${dateFormatted} (${locName})`)}
+                        <button id={`roster-exception-delete-btn-${sched.id}`} onClick={() => handleDeleteSchedule(sched.id, `${dateFormatted} (${locName})`)}
                           className="w-7 h-7 rounded-lg border border-transparent text-stone-400 hover:text-rose-500 hover:bg-rose-50 flex items-center justify-center transition-all">
                           <Trash2 size={14} />
                         </button>

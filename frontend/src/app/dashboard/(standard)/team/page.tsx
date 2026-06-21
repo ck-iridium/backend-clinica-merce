@@ -200,7 +200,7 @@ export default function TeamPage() {
         {(role?.toLowerCase() === 'administrador' || role?.toLowerCase() === 'admin') ? (
           <Dialog open={isInviteModalOpen} onOpenChange={setIsInviteModalOpen}>
             <DialogTrigger asChild>
-              <button className="flex items-center gap-2.5 bg-stone-900 hover:bg-[#d9777f] text-white px-6 py-3.5 rounded-2xl font-bold text-sm transition-all shadow-lg shadow-stone-200 active:scale-95">
+              <button id="team-add-member-btn" className="flex items-center gap-2.5 bg-stone-900 hover:bg-[#d9777f] text-white px-6 py-3.5 rounded-2xl font-bold text-sm transition-all shadow-lg shadow-stone-200 active:scale-95">
                 <UserPlus size={18} strokeWidth={1.5} />
                 {t('dashboard.team.add_member_btn') || "Añadir Miembro"}
               </button>
@@ -218,6 +218,7 @@ export default function TeamPage() {
                     {t('dashboard.team.full_name_label') || "Nombre Completo"}
                   </label>
                   <input
+                    id="team-invite-name-input"
                     type="text"
                     value={formData.full_name}
                     onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
@@ -231,6 +232,7 @@ export default function TeamPage() {
                     {t('dashboard.team.email_label') || "Correo Electrónico"}
                   </label>
                   <input
+                    id="team-invite-email-input"
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -247,7 +249,7 @@ export default function TeamPage() {
                     value={formData.role}
                     onValueChange={(val) => setFormData({ ...formData, role: val })}
                   >
-                    <SelectTrigger className="w-full bg-stone-50 border-stone-200 rounded-xl px-4 py-3 h-auto text-sm focus:ring-[#d9777f]/20 focus:border-[#d9777f]">
+                    <SelectTrigger id="team-invite-role-trigger" className="w-full bg-stone-50 border-stone-200 rounded-xl px-4 py-3 h-auto text-sm focus:ring-[#d9777f]/20 focus:border-[#d9777f]">
                       <SelectValue placeholder={t('dashboard.team.select_role_placeholder') || "Selecciona un rol"} />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl border-stone-100 shadow-xl">
@@ -259,6 +261,7 @@ export default function TeamPage() {
                 </div>
                 <DialogFooter className="pt-4">
                   <button
+                    id="team-invite-cancel-btn"
                     type="button"
                     onClick={() => setIsInviteModalOpen(false)}
                     className="px-5 py-2.5 rounded-xl font-bold text-stone-500 hover:bg-stone-100 transition-colors text-sm"
@@ -267,6 +270,7 @@ export default function TeamPage() {
                     {t('dashboard.team.cancel_btn') || "Cancelar"}
                   </button>
                   <button
+                    id="team-invite-submit-btn"
                     type="submit"
                     disabled={isSubmitting}
                     className="flex items-center gap-2 bg-stone-900 hover:bg-[#d9777f] text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
@@ -292,7 +296,7 @@ export default function TeamPage() {
         <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white to-transparent z-10 opacity-0 group-hover/table:opacity-100 transition-opacity md:hidden pointer-events-none"></div>
 
         <div className="overflow-x-auto scrollbar-hide">
-          <table className="w-full text-left border-collapse min-w-[600px]">
+          <table id="team-members-table" className="w-full text-left border-collapse min-w-[600px]">
             <thead>
               <tr className="border-b border-stone-50">
                 <th className="pb-5 px-4 text-[11px] font-black uppercase tracking-widest text-stone-300">{t('dashboard.team.table_header_member') || "Miembro"}</th>
@@ -366,6 +370,7 @@ export default function TeamPage() {
                     <div className="flex items-center justify-end gap-2 transition-opacity">
                         {(member.role === 'Especialista' || member.role === 'specialist') && (
                           <button
+                            id={`team-roster-btn-${member.id}`}
                             onClick={() => {
                               setRosterMember(member);
                               setIsRosterModalOpen(true);
@@ -377,6 +382,7 @@ export default function TeamPage() {
                           </button>
                         )}
                         <button
+                          id={`team-edit-role-btn-${member.id}`}
                           onClick={() => {
                             setMemberToEdit(member);
                             setEditRole(member.role);
@@ -388,6 +394,7 @@ export default function TeamPage() {
                           <Edit2 size={16} strokeWidth={1.5} />
                         </button>
                       <button
+                        id={`team-delete-member-btn-${member.id}`}
                         onClick={() => handleDelete(member.id, member.full_name)}
                         className="p-2.5 rounded-xl hover:bg-white hover:shadow-md text-stone-400 hover:text-red-500 transition-all border border-transparent hover:border-stone-100"
                         title={t('dashboard.team.delete_member_btn') || "Eliminar Miembro"}
@@ -443,6 +450,7 @@ export default function TeamPage() {
                   {t('dashboard.team.email_label') || "Correo Electrónico"}
                 </label>
                 <input
+                  id="team-edit-email-input"
                   type="email"
                   value={memberToEdit.email}
                   disabled
@@ -457,7 +465,7 @@ export default function TeamPage() {
                   value={editRole}
                   onValueChange={setEditRole}
                 >
-                  <SelectTrigger className="w-full bg-stone-50 border-stone-200 rounded-xl px-4 py-3 h-auto text-sm focus:ring-[#d9777f]/20 focus:border-[#d9777f]">
+                  <SelectTrigger id="team-edit-role-trigger" className="w-full bg-stone-50 border-stone-200 rounded-xl px-4 py-3 h-auto text-sm focus:ring-[#d9777f]/20 focus:border-[#d9777f]">
                     <SelectValue placeholder={t('dashboard.team.select_role_placeholder') || "Selecciona un rol"} />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-stone-100 shadow-xl">
@@ -469,6 +477,7 @@ export default function TeamPage() {
               </div>
               <DialogFooter className="pt-4">
                 <button
+                  id="team-edit-cancel-btn"
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
                   className="px-5 py-2.5 rounded-xl font-bold text-stone-500 hover:bg-stone-100 transition-colors text-sm"
@@ -477,6 +486,7 @@ export default function TeamPage() {
                   {t('dashboard.team.cancel_btn') || "Cancelar"}
                 </button>
                 <button
+                  id="team-edit-submit-btn"
                   type="submit"
                   disabled={isEditing}
                   className="flex items-center gap-2 bg-stone-900 hover:bg-[#d9777f] text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"

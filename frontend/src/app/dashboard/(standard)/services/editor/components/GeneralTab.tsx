@@ -42,17 +42,19 @@ export default function GeneralTab({
     <div className="space-y-4">
       <div>
         <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.service_name_label')}</label>
-        <input {...register('name', { required: true })} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" placeholder={t('dashboard.services.service_name_placeholder')} />
+        <input id="service-editor-general-name-input" {...register('name', { required: true })} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" placeholder={t('dashboard.services.service_name_placeholder')} />
       </div>
       <div className="relative group">
         <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.slug_label')}</label>
         <div className="relative">
           <input 
+            id="service-editor-general-slug-input"
             {...register('slug', { required: true })} 
             readOnly={slugLocked}
             className={`w-full pl-4 pr-12 py-3 rounded-xl border outline-none transition-all text-sm font-mono ${slugLocked ? 'bg-stone-50 border-stone-200 text-stone-500 dark:text-stone-500' : 'bg-white border-[#d4af37] text-stone-800 dark:text-stone-800'}`} 
           />
           <button 
+            id="service-editor-general-slug-toggle-btn"
             type="button"
             onClick={() => setSlugLocked(!slugLocked)}
             className={`absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${slugLocked ? 'text-stone-400 hover:text-stone-600' : 'bg-[#d4af37]/10 text-[#d4af37] hover:bg-[#d4af37]/20'}`}
@@ -75,7 +77,7 @@ export default function GeneralTab({
               rules={{ required: true }}
               render={({ field }) => (
                 <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger className="w-full h-[46px] rounded-xl border-stone-200 bg-white dark:bg-white text-stone-900 dark:text-stone-900 font-semibold shadow-none border dark:border-stone-200">
+                  <SelectTrigger id="service-editor-general-category-trigger" className="w-full h-[46px] rounded-xl border-stone-200 bg-white dark:bg-white text-stone-900 dark:text-stone-900 font-semibold shadow-none border dark:border-stone-200">
                     <SelectValue placeholder={t('dashboard.services.select_placeholder')} />
                   </SelectTrigger>
                   <SelectContent>
@@ -88,6 +90,7 @@ export default function GeneralTab({
             />
           </div>
           <button 
+            id="service-editor-general-add-category-btn"
             type="button" 
             onClick={() => setShowCreateCat(true)}
             className="w-[46px] h-[46px] flex items-center justify-center shrink-0 rounded-xl border border-stone-200 bg-stone-50 hover:bg-white hover:border-stone-300 transition-colors text-stone-500"
@@ -100,11 +103,11 @@ export default function GeneralTab({
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.price_label')}</label>
-          <input type="number" step="0.01" {...register('price', { required: true, valueAsNumber: true })} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" />
+          <input id="service-editor-general-price-input" type="number" step="0.01" {...register('price', { required: true, valueAsNumber: true })} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" />
         </div>
         <div>
           <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.duration_label')}</label>
-          <input type="number" step="15" {...register('duration_minutes', { required: true, valueAsNumber: true })} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" />
+          <input id="service-editor-general-duration-input" type="number" step="15" {...register('duration_minutes', { required: true, valueAsNumber: true })} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" />
         </div>
       </div>
 
@@ -116,7 +119,7 @@ export default function GeneralTab({
           rules={{ required: true }}
           render={({ field }) => (
             <Select onValueChange={field.onChange} value={field.value || 'clinic'}>
-              <SelectTrigger className="w-full h-[46px] rounded-xl border-stone-200 bg-white dark:bg-white text-stone-900 dark:text-stone-900 font-semibold shadow-none border dark:border-stone-200">
+              <SelectTrigger id="service-editor-general-modality-trigger" className="w-full h-[46px] rounded-xl border-stone-200 bg-white dark:bg-white text-stone-900 dark:text-stone-900 font-semibold shadow-none border dark:border-stone-200">
                 <SelectValue placeholder="Selecciona la modalidad" />
               </SelectTrigger>
               <SelectContent>
@@ -137,6 +140,7 @@ export default function GeneralTab({
         <div className="flex items-center gap-3">
           <label className="relative flex items-center justify-center cursor-pointer select-none">
             <input 
+              id="service-editor-general-deposit-checkbox"
               type="checkbox" 
               {...register('requires_deposit')} 
               className="sr-only" 
@@ -162,6 +166,7 @@ export default function GeneralTab({
           <div className="pt-3 border-t border-stone-200 mt-2">
             <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.deposit_amount_label')}</label>
             <input 
+              id="service-editor-general-deposit-amount-input"
               type="number" 
               step="0.01" 
               {...register('deposit_amount', { required: formValues.requires_deposit, valueAsNumber: true })} 
@@ -176,6 +181,7 @@ export default function GeneralTab({
         <div className="flex items-center justify-between mb-1.5">
           <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest">{t('dashboard.services.short_description_label')}</label>
           <button 
+            id="service-editor-general-ai-desc-btn"
             type="button" 
             onClick={() => setShowAIModal('short_description')}
             className="flex items-center gap-1.5 text-xs font-bold text-[#d4af37] hover:bg-yellow-50/50 px-2.5 py-1 rounded-lg border border-yellow-100 transition-colors shadow-sm"
@@ -184,12 +190,13 @@ export default function GeneralTab({
             {t('dashboard.services.generate_ia')}
           </button>
         </div>
-        <textarea {...register('description')} rows={3} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all text-sm resize-none" placeholder={t('dashboard.services.short_description_placeholder')} />
+        <textarea id="service-editor-general-desc-textarea" {...register('description')} rows={3} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all text-sm resize-none" placeholder={t('dashboard.services.short_description_placeholder')} />
       </div>
       
       <div className="flex items-center gap-3 p-4 bg-white border border-stone-200 rounded-xl">
         <label className="relative flex items-center justify-center cursor-pointer select-none">
           <input 
+            id="service-editor-general-active-checkbox"
             type="checkbox" 
             {...register('is_active')} 
             className="sr-only" 

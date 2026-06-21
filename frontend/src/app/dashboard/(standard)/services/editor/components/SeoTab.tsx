@@ -171,6 +171,7 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
           </p>
           <div className="flex gap-2 mt-1">
             <button 
+              id="service-editor-seo-config-key-btn"
               onClick={() => {
                 setRedirecting('advanced');
                 router.push('/dashboard/settings?tab=advanced');
@@ -188,6 +189,7 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
               )}
             </button>
             <button 
+              id="service-editor-seo-upgrade-plan-btn"
               onClick={() => {
                 setRedirecting('subscription');
                 router.push('/dashboard/settings?tab=subscription');
@@ -210,6 +212,7 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
 
       <div className="mb-6">
         <button 
+          id="service-editor-seo-generate-btn"
           type="button" 
           onClick={handleGenerateSEO}
           disabled={loadingLimits || isGeneratingSEO || (!isBlocked && !formValues.name && !formValues.description && !editor?.getText())}
@@ -242,6 +245,7 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
       <div>
         <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.seo_title_label')}</label>
         <input 
+          id="service-editor-seo-title-input"
           {...register('seo_title')} 
           className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" 
           placeholder={(t('dashboard.services.seo_title_placeholder') || 'Ej: {name} | Negocio')
@@ -250,11 +254,11 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
       </div>
       <div>
         <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.seo_description_label')}</label>
-        <textarea {...register('seo_description')} rows={3} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all text-sm resize-none" placeholder={t('dashboard.services.meta_description_placeholder')} />
+        <textarea id="service-editor-seo-desc-textarea" {...register('seo_description')} rows={3} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all text-sm resize-none" placeholder={t('dashboard.services.meta_description_placeholder')} />
       </div>
       <div>
         <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.seo_keywords_label')}</label>
-        <input {...register('seo_keywords')} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all text-sm" placeholder={t('dashboard.services.meta_keywords_placeholder')} />
+        <input id="service-editor-seo-keywords-input" {...register('seo_keywords')} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all text-sm" placeholder={t('dashboard.services.meta_keywords_placeholder')} />
       </div>
     </div>
   );

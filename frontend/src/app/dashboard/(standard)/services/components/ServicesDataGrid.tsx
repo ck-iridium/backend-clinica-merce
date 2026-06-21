@@ -452,6 +452,7 @@ export default function ServicesDataGrid({
         {/* Filtros de Categorías */}
         <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
           <button
+            id="services-category-filter-all-btn"
             type="button"
             onClick={() => setSelectedCategory('all')}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
@@ -464,6 +465,7 @@ export default function ServicesDataGrid({
           </button>
           {categories.map(cat => (
             <button
+              id={`services-category-filter-btn-${cat.id}`}
               key={cat.id}
               type="button"
               onClick={() => setSelectedCategory(cat.id)}
@@ -482,6 +484,7 @@ export default function ServicesDataGrid({
         <div className="relative min-w-[260px]">
           <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" />
           <input
+            id="services-search-input"
             type="text"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
@@ -505,6 +508,7 @@ export default function ServicesDataGrid({
 
           <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
             <button
+              id="services-bulk-activate-btn"
               type="button"
               disabled={bulkActionLoading}
               onClick={() => handleBulkStatusChange(true)}
@@ -513,6 +517,7 @@ export default function ServicesDataGrid({
               <Eye size={14} /> {language === 'fr' ? 'Tout activer' : language === 'en' ? 'Activate All' : 'Activar Todos'}
             </button>
             <button
+              id="services-bulk-deactivate-btn"
               type="button"
               disabled={bulkActionLoading}
               onClick={() => handleBulkStatusChange(false)}
@@ -521,6 +526,7 @@ export default function ServicesDataGrid({
               <EyeOff size={14} /> {language === 'fr' ? 'Tout désactiver' : language === 'en' ? 'Deactivate All' : 'Desactivar Todos'}
             </button>
             <button
+              id="services-bulk-delete-btn"
               type="button"
               disabled={bulkActionLoading}
               onClick={handleBulkDelete}
@@ -548,6 +554,7 @@ export default function ServicesDataGrid({
                   <th className="p-4 w-12 text-center">
                     <label className="relative flex items-center justify-center cursor-pointer select-none">
                       <input
+                        id="services-select-all-checkbox"
                         type="checkbox"
                         checked={isAllSelected}
                         onChange={handleSelectAllToggle}
@@ -618,6 +625,7 @@ export default function ServicesDataGrid({
                       <td className="p-4 text-center">
                         <label className="relative flex items-center justify-center cursor-pointer select-none">
                           <input
+                            id={`services-select-checkbox-${svc.id}`}
                             type="checkbox"
                             checked={isChecked}
                             onChange={() => handleSelectRowToggle(svc.id)}
@@ -642,6 +650,7 @@ export default function ServicesDataGrid({
                         <div className="flex items-center justify-center">
                           {svc.image_url ? (
                             <div 
+                              id={`services-image-cover-div-${svc.id}`}
                               onClick={() => setActiveImagePickerServiceId(svc.id)}
                               className="relative w-12 h-12 rounded-xl overflow-hidden cursor-pointer group shadow-sm border border-stone-200 hover:border-[#d4af37] hover:scale-105 transition-all"
                               title={language === 'fr' ? "Changer l'image" : language === 'en' ? "Change image" : "Cambiar imagen"}
@@ -657,6 +666,7 @@ export default function ServicesDataGrid({
                             </div>
                           ) : (
                             <button
+                              id={`services-image-placeholder-btn-${svc.id}`}
                               type="button"
                               onClick={() => setActiveImagePickerServiceId(svc.id)}
                               className="w-12 h-12 rounded-xl border border-dashed border-stone-300 hover:border-[#d4af37] flex items-center justify-center text-stone-400 hover:text-[#d4af37] hover:bg-stone-50 transition-all cursor-pointer group bg-stone-50/50"
@@ -689,6 +699,7 @@ export default function ServicesDataGrid({
                       <td className="p-4">
                         <div className="relative flex items-center min-w-[140px] max-w-[180px]">
                           <select
+                            id={`services-category-select-${svc.id}`}
                             value={svc.category_id || ''}
                             disabled={savingCategoryId === svc.id}
                             onChange={e => handleCategorySave(svc, e.target.value)}
@@ -717,6 +728,7 @@ export default function ServicesDataGrid({
                       <td className="p-4">
                         <div className="relative flex items-center max-w-[110px]">
                           <input
+                            id={`services-duration-input-${svc.id}`}
                             type="text"
                             value={inputDurationVal}
                             onChange={e => handleDurationChange(svc.id, e.target.value)}
@@ -740,6 +752,7 @@ export default function ServicesDataGrid({
                       <td className="p-4">
                         <div className="relative flex items-center max-w-[100px]">
                           <input
+                            id={`services-price-input-${svc.id}`}
                             type="text"
                             value={inputPriceVal}
                             onChange={e => handlePriceChange(svc.id, e.target.value)}
@@ -767,6 +780,7 @@ export default function ServicesDataGrid({
                           ) : (
                             <label className="relative inline-flex items-center cursor-pointer">
                               <input
+                                id={`services-status-toggle-${svc.id}`}
                                 type="checkbox"
                                 checked={svc.is_active}
                                 onChange={() => handleToggleStatus(svc)}
@@ -782,6 +796,7 @@ export default function ServicesDataGrid({
                       <td className="p-4 text-center">
                         <div className="flex justify-center items-center gap-2">
                           <button
+                            id={`services-edit-details-btn-${svc.id}`}
                             type="button"
                             onClick={() => onEditClick(svc)}
                             className="p-1.5 text-stone-400 hover:text-stone-700 bg-white border border-stone-200 hover:border-stone-400 rounded-lg shadow-sm active:scale-95 transition-all"
@@ -790,6 +805,7 @@ export default function ServicesDataGrid({
                             <Pencil size={13} strokeWidth={1.5} />
                           </button>
                           <button
+                            id={`services-delete-btn-${svc.id}`}
                             type="button"
                             onClick={() => handleDeleteIndividual(svc.id, svc.name)}
                             className="p-1.5 text-rose-400 hover:text-rose-600 bg-white border border-stone-200 hover:border-rose-300 rounded-lg shadow-sm active:scale-95 transition-all"

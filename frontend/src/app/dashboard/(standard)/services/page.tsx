@@ -232,12 +232,14 @@ export default function ServicesPage() {
         </div>
         <div className="flex items-center gap-3">
           <button 
+            id="services-archived-toggle-btn"
             type="button"
             onClick={() => setShowArchived(!showArchived)}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${showArchived ? 'bg-stone-800 text-white border-stone-800' : 'bg-white text-stone-500 border-stone-200 hover:border-stone-400'}`}>
             {showArchived ? t('dashboard.services.hide_archived') : t('dashboard.services.show_archived')}
           </button>
           <button 
+            id="services-export-btn"
             type="button"
             disabled={exporting}
             onClick={handleExport}
@@ -250,12 +252,14 @@ export default function ServicesPage() {
             <span className="hidden sm:inline">Exportar a Galería</span>
           </button>
           <button 
+            id="services-categories-btn"
             type="button"
             onClick={() => setShowManageCategoriesModal(true)}
             className="px-4 py-3 rounded-xl bg-white text-stone-600 border border-stone-200 font-bold transition-all hover:bg-stone-50 active:scale-95 shadow-sm flex items-center gap-2">
             <Settings2 size={18} strokeWidth={1.5} className="text-stone-400" /> <span className="hidden sm:inline">{t('dashboard.services.categories')}</span>
           </button>
           <Link 
+            id="services-new-btn"
             href="/dashboard/services/new"
             className="px-6 py-3 rounded-xl font-bold transition-all shadow-md active:scale-95 flex items-center gap-2 bg-[#d4af37] hover:bg-[#b08e23] border border-transparent text-white">
             <Plus size={18} strokeWidth={1.5} />

@@ -273,6 +273,7 @@ export default function LocationsPage() {
 
         {!isHomeOnly && (
           <button
+            id="locations-add-btn"
             onClick={handleCreateOpen}
             className="flex items-center gap-2.5 bg-stone-900 hover:bg-[#d4af37] hover:text-stone-950 text-white px-6 py-3.5 rounded-2xl font-bold text-sm transition-all shadow-lg active:scale-95 duration-300 shrink-0"
           >
@@ -383,6 +384,7 @@ export default function LocationsPage() {
 
               <div className="flex items-center justify-between border-t border-stone-100 mt-6 pt-4 gap-2">
                 <button
+                  id={`locations-toggle-status-btn-${loc.id}`}
                   onClick={() => handleToggleStatus(loc)}
                   className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition-all duration-300 flex items-center gap-1.5 ${
                     loc.is_active
@@ -393,10 +395,10 @@ export default function LocationsPage() {
                   {loc.is_active ? <><X size={12} />{t('dashboard.locations.deactivate_btn')}</> : <><Check size={12} />{t('dashboard.locations.activate_btn')}</>}
                 </button>
                 <div className="flex items-center gap-1.5">
-                  <button onClick={() => handleEditOpen(loc)} className="p-2 text-stone-400 hover:text-stone-800 hover:bg-stone-50 rounded-xl transition-all" title={t('dashboard.locations.edit_btn')}>
+                  <button id={`locations-edit-btn-${loc.id}`} onClick={() => handleEditOpen(loc)} className="p-2 text-stone-400 hover:text-stone-800 hover:bg-stone-50 rounded-xl transition-all" title={t('dashboard.locations.edit_btn')}>
                     <Edit2 size={16} />
                   </button>
-                  <button onClick={() => handleDeleteLocation(loc)} className="p-2 text-stone-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all" title={t('dashboard.locations.delete_btn')}>
+                  <button id={`locations-delete-btn-${loc.id}`} onClick={() => handleDeleteLocation(loc)} className="p-2 text-stone-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all" title={t('dashboard.locations.delete_btn')}>
                     <Trash2 size={16} />
                   </button>
                 </div>
@@ -413,14 +415,14 @@ export default function LocationsPage() {
             <DialogTitle className="font-serif italic text-2xl text-stone-800">{t('dashboard.locations.create_title')}</DialogTitle>
             <DialogDescription className="text-stone-400 font-medium">{t('dashboard.locations.create_desc')}</DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleCreateLocation} className="space-y-4">
+          <form id="locations-create-form" onSubmit={handleCreateLocation} className="space-y-4">
             {[
               { key: 'name', label: t('dashboard.locations.name_label'), placeholder: t('dashboard.locations.name_placeholder'), type: 'text', required: true },
               { key: 'address', label: t('dashboard.locations.address_label'), placeholder: t('dashboard.locations.address_placeholder'), type: 'text', required: true },
             ].map(({ key, label, placeholder, type, required }) => (
               <div key={key} className="space-y-1.5">
                 <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{label}</label>
-                <input type={type} value={(formData as any)[key]} onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+                <input id={`locations-create-${key}-input`} type={type} value={(formData as any)[key]} onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
                   className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all"
                   placeholder={placeholder} required={required} />
               </div>
@@ -428,21 +430,21 @@ export default function LocationsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.locations.phone_label')}</label>
-                <input type="text" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                <input id="locations-create-phone-input" type="text" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all" />
               </div>
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.locations.email_label')}</label>
-                <input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                <input id="locations-create-email-input" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder={t('dashboard.locations.email_placeholder')}
                   className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all" />
               </div>
             </div>
             <DialogFooter className="pt-6">
-              <button type="button" onClick={() => setIsCreateOpen(false)} className="text-stone-400 hover:text-stone-700 transition-all font-bold text-xs uppercase tracking-wider px-4 py-2">
+              <button id="locations-create-cancel-btn" type="button" onClick={() => setIsCreateOpen(false)} className="text-stone-400 hover:text-stone-700 transition-all font-bold text-xs uppercase tracking-wider px-4 py-2">
                 {t('dashboard.locations.cancel')}
               </button>
-              <button type="submit" disabled={isSubmitting} className="bg-stone-950 hover:bg-[#d4af37] hover:text-stone-950 text-white font-bold text-xs uppercase tracking-widest px-6 py-3.5 rounded-full transition-all duration-300 active:scale-95 disabled:opacity-50">
+              <button id="locations-create-submit-btn" type="submit" disabled={isSubmitting} className="bg-stone-950 hover:bg-[#d4af37] hover:text-stone-950 text-white font-bold text-xs uppercase tracking-widest px-6 py-3.5 rounded-full transition-all duration-300 active:scale-95 disabled:opacity-50">
                 {isSubmitting ? t('dashboard.locations.creating') : t('dashboard.locations.create_submit')}
               </button>
             </DialogFooter>
@@ -457,14 +459,14 @@ export default function LocationsPage() {
             <DialogTitle className="font-serif italic text-2xl text-stone-800">{t('dashboard.locations.edit_title')}</DialogTitle>
             <DialogDescription className="text-stone-400 font-medium">{t('dashboard.locations.edit_desc')}</DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleUpdateLocation} className="space-y-4">
+          <form id="locations-edit-form" onSubmit={handleUpdateLocation} className="space-y-4">
             {[
               { key: 'name', label: t('dashboard.locations.name_label'), type: 'text', required: true },
               { key: 'address', label: t('dashboard.locations.address_label'), type: 'text', required: true },
             ].map(({ key, label, type, required }) => (
               <div key={key} className="space-y-1.5">
                 <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{label}</label>
-                <input type={type} value={(formData as any)[key]} onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+                <input id={`locations-edit-${key}-input`} type={type} value={(formData as any)[key]} onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
                   className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all"
                   required={required} />
               </div>
@@ -472,20 +474,20 @@ export default function LocationsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.locations.phone_label')}</label>
-                <input type="text" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                <input id="locations-edit-phone-input" type="text" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all" />
               </div>
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.locations.email_label')}</label>
-                <input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                <input id="locations-edit-email-input" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all" />
               </div>
             </div>
             <DialogFooter className="pt-6">
-              <button type="button" onClick={() => setIsEditOpen(false)} className="text-stone-400 hover:text-stone-700 transition-all font-bold text-xs uppercase tracking-wider px-4 py-2">
+              <button id="locations-edit-cancel-btn" type="button" onClick={() => setIsEditOpen(false)} className="text-stone-400 hover:text-stone-700 transition-all font-bold text-xs uppercase tracking-wider px-4 py-2">
                 {t('dashboard.locations.cancel')}
               </button>
-              <button type="submit" disabled={isSubmitting} className="bg-stone-950 hover:bg-[#d4af37] hover:text-stone-950 text-white font-bold text-xs uppercase tracking-widest px-6 py-3.5 rounded-full transition-all duration-300 active:scale-95 disabled:opacity-50">
+              <button id="locations-edit-save-btn" type="submit" disabled={isSubmitting} className="bg-stone-950 hover:bg-[#d4af37] hover:text-stone-950 text-white font-bold text-xs uppercase tracking-widest px-6 py-3.5 rounded-full transition-all duration-300 active:scale-95 disabled:opacity-50">
                 {isSubmitting ? t('dashboard.locations.saving') : t('dashboard.locations.save_btn')}
               </button>
             </DialogFooter>

@@ -131,6 +131,7 @@ export default function ManageCategoriesModal({
                 </DialogDescription>
               </div>
               <button 
+                id="services-manage-categories-add-btn"
                 onClick={() => setShowCategoryModal(true)}
                 className="bg-[#d4af37] text-white px-4 py-2.5 rounded-xl text-sm font-bold shadow-md hover:bg-[#b08e23] transition-all active:scale-95 flex items-center gap-2 self-start sm:self-center shrink-0"
               >
@@ -150,6 +151,7 @@ export default function ManageCategoriesModal({
                           <div>
                             <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1.5 block">{t('dashboard.services.category_name_label')}</label>
                             <input 
+                              id="services-category-edit-name-input"
                               autoFocus
                               type="text" 
                               value={editingCategoryName} 
@@ -166,6 +168,7 @@ export default function ManageCategoriesModal({
                               <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1.5 block">{t('dashboard.services.category_cover_label')}</label>
                               <div className="flex gap-2">
                                 <button
+                                  id="services-category-edit-cover-btn"
                                   type="button"
                                   onClick={() => setShowCatMediaPicker(true)}
                                   className="flex items-center gap-2 px-3 py-2 rounded-lg bg-stone-50 hover:bg-stone-100 text-stone-600 text-xs font-bold transition-all border border-stone-200"
@@ -174,7 +177,7 @@ export default function ManageCategoriesModal({
                                   {editingCategoryImage ? t('dashboard.services.modify') : t('dashboard.services.gallery')}
                                 </button>
                                 {editingCategoryImage && (
-                                  <button type="button" onClick={() => setEditingCategoryImage('')} className="text-[10px] text-red-500 font-bold px-3 py-2 rounded-lg bg-red-50 hover:bg-red-100 transition-all uppercase tracking-widest">
+                                  <button id="services-category-edit-remove-cover-btn" type="button" onClick={() => setEditingCategoryImage('')} className="text-[10px] text-red-500 font-bold px-3 py-2 rounded-lg bg-red-50 hover:bg-red-100 transition-all uppercase tracking-widest">
                                     {t('dashboard.services.remove')}
                                   </button>
                                 )}
@@ -183,8 +186,8 @@ export default function ManageCategoriesModal({
                           </div>
 
                           <div className="grid grid-cols-2 gap-2 mt-2">
-                            <button type="button" onClick={() => {setEditingCategoryId(null); setEditingCategoryImage(null);}} className="bg-stone-200 text-stone-600 px-4 py-3 rounded-xl font-bold text-xs uppercase hover:bg-stone-300 transition-all">{t('dashboard.services.cancel')}</button>
-                            <button type="submit" className="bg-[#d4af37] border border-[#b08e23] text-white px-4 py-3 rounded-xl font-bold text-xs uppercase shadow-md hover:bg-[#b08e23] transition-all">{t('dashboard.services.save')}</button>
+                            <button id="services-category-edit-cancel-btn" type="button" onClick={() => {setEditingCategoryId(null); setEditingCategoryImage(null);}} className="bg-stone-200 text-stone-600 px-4 py-3 rounded-xl font-bold text-xs uppercase hover:bg-stone-300 transition-all">{t('dashboard.services.cancel')}</button>
+                            <button id="services-category-edit-submit-btn" type="submit" className="bg-[#d4af37] border border-[#b08e23] text-white px-4 py-3 rounded-xl font-bold text-xs uppercase shadow-md hover:bg-[#b08e23] transition-all">{t('dashboard.services.save')}</button>
                           </div>
                         </div>
                       </form>
@@ -202,6 +205,7 @@ export default function ManageCategoriesModal({
                         </div>
                         <div className="flex gap-2 shrink-0">
                           <button 
+                            id={`services-category-edit-btn-${cat.id}`}
                             type="button"
                             onClick={() => { setEditingCategoryId(cat.id); setEditingCategoryName(cat.name); setEditingCategoryImage(cat.image_url || null); }}
                             className="p-2 text-stone-400 hover:text-stone-800 hover:bg-white rounded-lg transition-all"
@@ -210,6 +214,7 @@ export default function ManageCategoriesModal({
                             <Pencil size={16} strokeWidth={1.5} />
                           </button>
                           <button 
+                            id={`services-category-delete-btn-${cat.id}`}
                             type="button"
                             onClick={() => handleDeleteCategory(cat.id)}
                             className="p-2 text-stone-300 hover:text-red-500 hover:bg-white rounded-lg transition-all"
@@ -243,8 +248,9 @@ export default function ManageCategoriesModal({
           </DialogHeader>
 
           <div className="p-8">
-            <form id="new-category-form" onSubmit={handleCreateCategory}>
+            <form id="services-new-category-form" onSubmit={handleCreateCategory}>
               <input 
+                id="services-new-category-name-input"
                 required 
                 type="text" 
                 value={newCategoryName} 
@@ -256,10 +262,10 @@ export default function ManageCategoriesModal({
           </div>
 
           <DialogFooter className="sticky bottom-0 left-0 w-full p-6 pt-12 bg-gradient-to-t from-white via-white/95 to-transparent flex gap-3 rounded-b-xl z-20">
-            <button type="button" onClick={() => setShowCategoryModal(false)} className="flex-1 px-6 py-4 rounded-xl font-bold text-stone-600 bg-white border border-stone-100 hover:bg-stone-50 transition-all">
+            <button id="services-new-category-cancel-btn" type="button" onClick={() => setShowCategoryModal(false)} className="flex-1 px-6 py-4 rounded-xl font-bold text-stone-600 bg-white border border-stone-100 hover:bg-stone-50 transition-all">
               {t('dashboard.services.cancel')}
             </button>
-            <button form="new-category-form" type="submit" className="flex-1 bg-stone-900 hover:bg-[#d4af37] text-white px-6 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95 border border-stone-800">
+            <button id="services-new-category-submit-btn" form="services-new-category-form" type="submit" className="flex-1 bg-stone-900 hover:bg-[#d4af37] text-white px-6 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95 border border-stone-800">
               {t('dashboard.services.create')}
             </button>
           </DialogFooter>

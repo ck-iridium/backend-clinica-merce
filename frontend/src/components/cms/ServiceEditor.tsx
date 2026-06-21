@@ -314,6 +314,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
             </div>
             <div className="flex gap-2">
               <button
+                id="service-editor-save-btn"
                 type="submit"
                 disabled={saving || isGeneratingAI || (!isDirty && !isNew)}
                 onClick={() => setExitAfterSave(false)}
@@ -323,6 +324,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
                 {saving && !exitAfterSave ? '...' : t('dashboard.services.save_changes')}
               </button>
               <button
+                id="service-editor-save-exit-btn"
                 type="submit"
                 disabled={saving || isGeneratingAI || (!isDirty && !isNew)}
                 onClick={() => setExitAfterSave(true)}
@@ -336,10 +338,10 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
 
           {/* Pestañas de Navegación */}
           <div className="flex px-6 pt-4 gap-4 border-b border-stone-100 shrink-0">
-            <button type="button" onClick={() => setActiveTab('general')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'general' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tabs.general')}</button>
-            <button type="button" onClick={() => setActiveTab('content')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'content' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tabs.content')}</button>
-            <button type="button" onClick={() => setActiveTab('design')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'design' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tabs.design')}</button>
-            <button type="button" onClick={() => setActiveTab('seo')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'seo' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tabs.seo')}</button>
+            <button id="service-editor-tab-general" type="button" onClick={() => setActiveTab('general')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'general' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tabs.general')}</button>
+            <button id="service-editor-tab-content" type="button" onClick={() => setActiveTab('content')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'content' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tabs.content')}</button>
+            <button id="service-editor-tab-design" type="button" onClick={() => setActiveTab('design')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'design' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tabs.design')}</button>
+            <button id="service-editor-tab-seo" type="button" onClick={() => setActiveTab('seo')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'seo' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tabs.seo')}</button>
           </div>
 
           {/* Cuerpo del Formulario */}
@@ -397,6 +399,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
             <div className="flex gap-3">
               {!isNew && (
                 <button
+                  id="service-editor-delete-btn"
                   type="button"
                   disabled={isGeneratingAI}
                   onClick={() => setShowDeleteModal(true)}
@@ -407,6 +410,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
                 </button>
               )}
               <Link
+                id="service-editor-cancel-btn"
                 href="/dashboard/services"
                 onClick={(e) => {
                   if (isGeneratingAI) {

@@ -215,6 +215,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
             )}
           </div>
           <button
+            id="service-editor-design-ai-image-btn"
             type="button"
             onClick={handleOpenAIImageModal}
             className={cn(
@@ -251,6 +252,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
               <img src={getFullUrl(formValues.image_url)} alt="Cover" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
               <div className="absolute inset-0 bg-stone-900/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-3 backdrop-blur-[2px]">
                 <button
+                  id="service-editor-design-change-image-btn"
                   type="button"
                   onClick={() => setMediaPickerSlot('image')}
                   className="px-4 py-2 bg-white text-stone-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#d4af37] hover:text-white transition-all shadow-xl active:scale-95"
@@ -258,6 +260,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
                   {t('dashboard.services.change')}
                 </button>
                 <button
+                  id="service-editor-design-remove-image-btn"
                   type="button"
                   onClick={() => setValue('image_url', '', { shouldDirty: true })}
                   className="p-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all shadow-xl active:scale-95"
@@ -269,6 +272,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
             </div>
           ) : (
             <button
+              id="service-editor-design-upload-image-placeholder-btn"
               type="button"
               onClick={() => setMediaPickerSlot('image')}
               className={cn(
@@ -322,6 +326,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
               />
               <div className="absolute inset-0 bg-stone-900/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-3 backdrop-blur-[2px]">
                 <button
+                  id="service-editor-design-change-video-btn"
                   type="button"
                   onClick={() => setMediaPickerSlot('video')}
                   className="px-4 py-2 bg-white text-stone-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#d4af37] hover:text-white transition-all shadow-xl active:scale-95"
@@ -329,6 +334,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
                   {t('dashboard.services.change_video')}
                 </button>
                 <button
+                  id="service-editor-design-remove-video-btn"
                   type="button"
                   onClick={() => setValue('video_url', '', { shouldDirty: true })}
                   className="p-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all shadow-xl active:scale-95"
@@ -340,6 +346,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
             </div>
           ) : (
             <button
+              id="service-editor-design-upload-video-placeholder-btn"
               type="button"
               onClick={() => setMediaPickerSlot('video')}
               className="w-full py-12 flex flex-col items-center justify-center text-stone-400 group"
@@ -364,7 +371,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
             control={control}
             render={({ field }) => (
               <Select onValueChange={field.onChange} value={field.value}>
-                <SelectTrigger className="w-full h-[45px] rounded-xl border-stone-200 bg-white dark:bg-white text-stone-900 dark:text-stone-900 text-sm font-semibold shadow-sm focus:ring-stone-200 border dark:border-stone-200">
+                <SelectTrigger id="service-editor-design-header-style-trigger" className="w-full h-[45px] rounded-xl border-stone-200 bg-white dark:bg-white text-stone-900 dark:text-stone-900 text-sm font-semibold shadow-sm focus:ring-stone-200 border dark:border-stone-200">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl shadow-xl border-stone-200">
@@ -380,6 +387,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
           <label className="block text-xs font-bold text-stone-500 uppercase tracking-[0.15em] mb-4">{t('dashboard.services.accent_color_label')}</label>
           <div className="flex flex-wrap gap-3 items-center bg-white p-3 rounded-2xl border border-stone-100 shadow-sm">
             <button
+              id="service-editor-design-corporate-color-btn"
               type="button"
               onClick={() => setValue('layout_preferences.accentColor', brandAccentColor, { shouldDirty: true })}
               className={`w-9 h-9 rounded-full border-2 transition-all ${formValues.layout_preferences.accentColor === brandAccentColor ? 'border-stone-800 scale-110 shadow-lg' : 'border-transparent hover:scale-105 shadow-sm'}`}
@@ -389,6 +397,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
             <div className="w-px h-6 bg-stone-200 mx-1" />
             <div className="relative group" title={t('dashboard.services.custom_color')}>
               <input
+                id="service-editor-design-color-picker-input"
                 type="color"
                 value={formValues.layout_preferences.accentColor || brandAccentColor}
                 onChange={(e) => setValue('layout_preferences.accentColor', e.target.value, { shouldDirty: true })}
@@ -405,6 +414,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
             
             {formValues.layout_preferences.accentColor && formValues.layout_preferences.accentColor !== brandAccentColor && (
               <button
+                id="service-editor-design-reset-color-btn"
                 type="button"
                 onClick={() => setValue('layout_preferences.accentColor', brandAccentColor, { shouldDirty: true })}
                 className="ml-auto p-2 text-stone-400 hover:text-[#d4af37] hover:bg-stone-50 rounded-xl transition-all"
