@@ -151,12 +151,14 @@ export default function POSPage() {
           
           <div className="flex flex-col md:flex-row gap-4 justify-center">
             <Link 
+              id="pos-view-invoices-link"
               href={`/dashboard/invoices`} 
               className="bg-stone-900 text-white px-10 py-5 rounded-2xl font-bold hover:bg-black transition-all shadow-xl shadow-stone-900/20 active:scale-95"
             >
               {t('dashboard.pos.view_all_invoices') || 'Ver Todas las Facturas'}
             </Link>
             <button 
+              id="pos-new-sale-btn"
               onClick={resetForm}
               className="bg-stone-100 text-stone-600 px-10 py-5 rounded-2xl font-bold hover:bg-stone-200 transition-all active:scale-95 border border-stone-200"
             >
@@ -202,6 +204,7 @@ export default function POSPage() {
                   {filteredClients.map(c => (
                     <button 
                       key={c.id}
+                      id={`pos-client-result-${c.id}`}
                       onClick={() => { setSelectedClientId(c.id); setSearchTerm(c.name); }}
                       className="w-full text-left px-5 py-3 hover:bg-[#fdf2f3] border-b border-stone-50 last:border-0 flex flex-col"
                     >
