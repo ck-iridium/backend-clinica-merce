@@ -143,7 +143,7 @@ export default function InvoicePreviewPage() {
       
       {/* HEADER DE NAVEGACION (No se imprime) */}
       <div className="mb-8 print:hidden flex items-center gap-4">
-        <button onClick={() => router.back()} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-stone-100 text-stone-500 hover:text-[#d9777f] hover:border-[#d9777f] transition-all">
+        <button id="invoice-back-btn" onClick={() => router.back()} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-stone-100 text-stone-500 hover:text-[#d9777f] hover:border-[#d9777f] transition-all">
           ←
         </button>
         <div>
@@ -170,7 +170,7 @@ export default function InvoicePreviewPage() {
               <span className="text-sm font-medium text-stone-500">{client?.phone || (t('dashboard.invoices.no_phone') || 'Sin teléfono')}</span>
             </div>
             {client?.id && (
-               <Link href={`/dashboard/clients/${client.id}`} className="text-xs font-bold text-[#d9777f] hover:underline flex items-center gap-1">
+               <Link id="invoice-client-record-link" href={`/dashboard/clients/${client.id}`} className="text-xs font-bold text-[#d9777f] hover:underline flex items-center gap-1">
                  {t('dashboard.invoices.view_full_record') || 'Ver Ficha Completa →'}
                </Link>
             )}
@@ -186,6 +186,7 @@ export default function InvoicePreviewPage() {
             <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
               <DialogTrigger asChild>
                 <button 
+                  id="invoice-status-change-trigger"
                   className={`w-full p-4 rounded-xl flex items-center justify-between text-left transition-all font-bold text-sm mb-6 ${
                     invoice.status === 'paid' 
                     ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm'
@@ -218,12 +219,14 @@ export default function InvoicePreviewPage() {
 
                 <DialogFooter className="p-8 pt-4 bg-stone-50/50 border-t border-stone-100 flex gap-3">
                   <button 
+                    id="invoice-cancel-change-btn"
                     onClick={() => setShowConfirmModal(false)}
                     className="flex-1 px-6 py-4 rounded-2xl font-bold bg-white border border-stone-200 text-stone-500 hover:bg-stone-50 transition-all font-sans text-sm"
                   >
                     {t('dashboard.invoices.cancel') || 'Cancelar'}
                   </button>
                   <button 
+                    id="invoice-confirm-change-btn"
                     onClick={() => handleToggleStatus(invoice.status)}
                     className="flex-1 px-6 py-4 rounded-2xl font-bold bg-stone-900 text-white hover:bg-[#d9777f] transition-all shadow-lg shadow-stone-200 font-sans text-sm active:scale-95"
                   >
@@ -234,6 +237,7 @@ export default function InvoicePreviewPage() {
             </Dialog>
 
             <button 
+              id="invoice-print-btn"
               onClick={handlePrint}
               className="w-full bg-stone-900 hover:bg-[#d4af37] text-white p-4 rounded-xl font-extrabold active:scale-95 transition-all shadow-lg flex items-center justify-center gap-2"
             >
@@ -386,9 +390,9 @@ export default function InvoicePreviewPage() {
                              className="absolute -top-12 left-1/2 -translate-x-1/2 bg-stone-900 border border-stone-700 text-white rounded-xl p-1.5 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity print:hidden shadow-xl"
                              onMouseDown={(e) => e.stopPropagation()} // Prevenir arrastre al hacer clic en los botones
                            >
-                              <button title="Rotar Izquierda" onClick={() => { const r = sigRot - 5; setSigRot(r); saveSello(selloPos, r); }} onMouseDown={e => e.stopPropagation()} className="w-8 h-8 rounded-lg hover:bg-stone-700 flex items-center justify-center font-bold text-stone-300 hover:text-white transition-colors">↺</button>
+                              <button id="invoice-rotate-left-btn" title="Rotar Izquierda" onClick={() => { const r = sigRot - 5; setSigRot(r); saveSello(selloPos, r); }} onMouseDown={e => e.stopPropagation()} className="w-8 h-8 rounded-lg hover:bg-stone-700 flex items-center justify-center font-bold text-stone-300 hover:text-white transition-colors">↺</button>
                               <span className="text-[10px] font-mono font-bold w-10 text-center">{sigRot}º</span>
-                              <button title="Rotar Derecha" onClick={() => { const r = sigRot + 5; setSigRot(r); saveSello(selloPos, r); }} onMouseDown={e => e.stopPropagation()} className="w-8 h-8 rounded-lg hover:bg-stone-700 flex items-center justify-center font-bold text-stone-300 hover:text-white transition-colors">↻</button>
+                              <button id="invoice-rotate-right-btn" title="Rotar Derecha" onClick={() => { const r = sigRot + 5; setSigRot(r); saveSello(selloPos, r); }} onMouseDown={e => e.stopPropagation()} className="w-8 h-8 rounded-lg hover:bg-stone-700 flex items-center justify-center font-bold text-stone-300 hover:text-white transition-colors">↻</button>
                            </div>
                         </div>
                      ) : (

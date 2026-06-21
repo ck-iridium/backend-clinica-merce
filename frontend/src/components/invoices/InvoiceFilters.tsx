@@ -70,6 +70,7 @@ export default function InvoiceFilters({ filters, onFilterChange, onSearch }: Pr
         ].map((tab) => (
           <button
             key={tab.id}
+            id={`invoice-status-tab-${tab.id}`}
             onClick={() => onFilterChange('status', tab.id)}
             className={cn(
               "flex-1 md:flex-none px-6 py-2.5 rounded-xl text-sm font-bold transition-all",
@@ -87,7 +88,7 @@ export default function InvoiceFilters({ filters, onFilterChange, onSearch }: Pr
         {/* Selector de Fechas (Presets rápidos) */}
         <div className="relative min-w-[160px]">
           <Select onValueChange={handleDatePresetChange} defaultValue="all">
-            <SelectTrigger className="h-11 rounded-xl bg-stone-50 border-stone-200 focus:ring-[#d4af37]">
+            <SelectTrigger id="invoice-date-preset-trigger" className="h-11 rounded-xl bg-stone-50 border-stone-200 focus:ring-[#d4af37]">
               <div className="flex items-center gap-2 font-bold text-stone-600">
                 <CalendarIcon size={16} />
                 <SelectValue placeholder={t('dashboard.invoices.dates_filter') || "Fechas"} />
@@ -108,6 +109,7 @@ export default function InvoiceFilters({ filters, onFilterChange, onSearch }: Pr
             <Search size={18} className="text-stone-400" />
           </div>
           <input
+            id="invoice-search-input"
             type="text"
             placeholder={t('dashboard.invoices.search_placeholder') || "Buscar concepto o cliente..."}
             value={localSearch}

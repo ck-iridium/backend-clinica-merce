@@ -265,6 +265,7 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
       {/* Header Tools */}
       <div className="p-4 border-b border-border/40 flex justify-end gap-3 bg-stone-50/50">
         <button 
+          id="invoice-export-pdf-btn"
           onClick={exportToPDF}
           disabled={invoices.length === 0}
           className="flex items-center gap-2 px-4 py-2 bg-white border border-stone-200 rounded-xl text-sm font-bold text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-all shadow-sm disabled:opacity-50"
@@ -273,6 +274,7 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
           {t('dashboard.invoices.download_pdf') || 'Descargar PDF'}
         </button>
         <button 
+          id="invoice-export-csv-btn"
           onClick={exportToCSV}
           disabled={invoices.length === 0}
           className="flex items-center gap-2 px-4 py-2 bg-white border border-stone-200 rounded-xl text-sm font-bold text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-all shadow-sm disabled:opacity-50"
@@ -339,22 +341,23 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
                   </td>
                   <td className="px-6 py-4 text-right">
                     <DropdownMenu>
-                      <DropdownMenuTrigger className="p-2 rounded-xl hover:bg-stone-200 text-stone-400 hover:text-stone-700 transition-colors focus:outline-none ml-auto border border-transparent hover:border-stone-200">
+                      <DropdownMenuTrigger id={`invoice-actions-trigger-${index}`} className="p-2 rounded-xl hover:bg-stone-200 text-stone-400 hover:text-stone-700 transition-colors focus:outline-none ml-auto border border-transparent hover:border-stone-200">
                         <MoreHorizontal size={18} />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48 rounded-2xl p-2 border-stone-200 shadow-xl">
                         <DropdownMenuItem asChild className="rounded-xl cursor-pointer font-medium p-3">
-                          <Link href={`/dashboard/invoices/${inv.id}`} className="flex items-center gap-3">
+                          <Link id={`invoice-view-detail-btn-${index}`} href={`/dashboard/invoices/${inv.id}`} className="flex items-center gap-3">
                             <Eye size={16} className="text-stone-400" />
                             {t('dashboard.invoices.view_detail') || 'Ver Detalle'}
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={exportToPDF} className="rounded-xl cursor-pointer font-medium p-3 flex items-center gap-3">
+                        <DropdownMenuItem id={`invoice-download-pdf-btn-${index}`} onClick={exportToPDF} className="rounded-xl cursor-pointer font-medium p-3 flex items-center gap-3">
                           <Download size={16} className="text-stone-400" />
                           {t('dashboard.invoices.download_pdf') || 'Descargar PDF'}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator className="bg-stone-100 my-1" />
                         <DropdownMenuItem 
+                          id={`invoice-delete-btn-${index}`}
                           onClick={() => handleDelete(inv.id)}
                           className="rounded-xl cursor-pointer font-bold p-3 flex items-center gap-3 text-red-600 focus:text-red-700 focus:bg-red-50"
                         >
@@ -383,6 +386,7 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
         </span>
         <div className="flex gap-2">
           <button 
+            id="invoice-page-prev-btn"
             onClick={() => onPageChange(pagination.page - 1)}
             disabled={pagination.page <= 1}
             className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-stone-200 text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition-all disabled:opacity-40 shadow-sm"
@@ -390,6 +394,7 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
             <ChevronLeft size={18} />
           </button>
           <button 
+            id="invoice-page-next-btn"
             onClick={() => onPageChange(pagination.page + 1)}
             disabled={pagination.page >= pagination.pages}
             className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-stone-200 text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition-all disabled:opacity-40 shadow-sm"

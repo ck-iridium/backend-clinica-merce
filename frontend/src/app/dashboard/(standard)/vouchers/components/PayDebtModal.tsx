@@ -40,6 +40,7 @@ export default function PayDebtModal({
             <div>
               <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.vouchers.amount_paid_today') || 'Monto abonado HOY (€)'}</label>
               <input 
+                id="pay-debt-amount-input"
                 required 
                 type="number" 
                 step="0.01" 
@@ -54,8 +55,8 @@ export default function PayDebtModal({
         </div>
 
         <DialogFooter className="sticky bottom-0 left-0 w-full p-6 border-t border-stone-100 bg-gradient-to-t from-white via-white to-white/0 flex gap-3 rounded-b-2xl z-20">
-          <button type="button" onClick={() => setShowPayModal(false)} className="flex-1 py-3 text-stone-600 font-bold border border-stone-200 rounded-xl hover:bg-stone-50 bg-white">{t('dashboard.vouchers.cancel') || 'Cancelar'}</button>
-          <button form="pay-debt-form" type="submit" disabled={paying} className="flex-1 py-3 text-white bg-[#d9777f] font-bold rounded-xl hover:bg-[#c6646b] shadow-md flex justify-center items-center">
+          <button id="pay-debt-cancel-btn" type="button" onClick={() => setShowPayModal(false)} className="flex-1 py-3 text-stone-600 font-bold border border-stone-200 rounded-xl hover:bg-stone-50 bg-white">{t('dashboard.vouchers.cancel') || 'Cancelar'}</button>
+          <button id="pay-debt-submit-btn" form="pay-debt-form" type="submit" disabled={paying} className="flex-1 py-3 text-white bg-[#d9777f] font-bold rounded-xl hover:bg-[#c6646b] shadow-md flex justify-center items-center">
             {paying ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : (t('dashboard.vouchers.confirm') || 'Confirmar')}
           </button>
         </DialogFooter>

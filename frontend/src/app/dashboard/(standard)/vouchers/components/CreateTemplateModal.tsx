@@ -49,7 +49,7 @@ export default function CreateTemplateModal({
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.vouchers.template_name_label') || 'Nombre (Ej: Bono 5 Ses. Axilas)'}</label>
-                <input required type="text" value={templateName} onChange={e => setTemplateName(e.target.value)} className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-semibold" />
+                <input id="template-name-input" required type="text" value={templateName} onChange={e => setTemplateName(e.target.value)} className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-semibold" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.vouchers.base_service_label') || 'Servicio / Tratamiento base'}</label>
@@ -57,7 +57,7 @@ export default function CreateTemplateModal({
                   setTemplateServiceId(val);
                   calculateTemplateDefaultPrice(val, templateSessions);
                 }}>
-                  <SelectTrigger className="w-full bg-stone-50 border-stone-200 font-bold">
+                  <SelectTrigger id="template-service-trigger" className="w-full bg-stone-50 border-stone-200 font-bold">
                     <SelectValue placeholder={t('dashboard.vouchers.choose_technique') || "-- Elige técnica --"} />
                   </SelectTrigger>
                   <SelectContent>
@@ -68,6 +68,7 @@ export default function CreateTemplateModal({
               <div>
                 <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.vouchers.sessions_count_label') || 'Nº de Sesiones / Usos'}</label>
                 <input 
+                  id="template-sessions-input"
                   required type="number" min="1"
                   value={templateSessions} 
                   onChange={e => {
@@ -80,14 +81,14 @@ export default function CreateTemplateModal({
               </div>
               <div>
                 <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.vouchers.suggested_price_label') || 'Precio de Venta Sugerido (€)'}</label>
-                <input required type="number" step="0.01" value={templatePrice} onChange={e => setTemplatePrice(Number(e.target.value))} className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-bold text-[#b08e23]" />
+                <input id="template-price-input" required type="number" step="0.01" value={templatePrice} onChange={e => setTemplatePrice(Number(e.target.value))} className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-bold text-[#b08e23]" />
               </div>
             </div>
           </form>
         </div>
 
         <DialogFooter className="sticky bottom-0 left-0 w-full p-6 border-t border-stone-50 bg-gradient-to-t from-white via-white to-white/0 rounded-b-2xl z-20">
-          <button form="template-form" type="submit" disabled={saving} className="w-full py-4 bg-[#bf7d6b] text-white font-extrabold rounded-xl hover:bg-[#a66a5a] transition-all flex justify-center items-center shadow-lg shadow-[#bf7d6b]/20 active:scale-95">
+          <button id="template-submit-btn" form="template-form" type="submit" disabled={saving} className="w-full py-4 bg-[#bf7d6b] text-white font-extrabold rounded-xl hover:bg-[#a66a5a] transition-all flex justify-center items-center shadow-lg shadow-[#bf7d6b]/20 active:scale-95">
             {saving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : (t('dashboard.vouchers.save_template') || "Guardar Plantilla")}
           </button>
         </DialogFooter>

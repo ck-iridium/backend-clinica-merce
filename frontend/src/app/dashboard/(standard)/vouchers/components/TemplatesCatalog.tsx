@@ -44,6 +44,7 @@ export default function TemplatesCatalog({
                      <td className="px-8 py-6 font-black text-stone-900">{tpl.price} €</td>
                      <td className="px-8 py-6 text-right">
                         <button 
+                          id={`voucher-template-delete-btn-${tpl.id}`}
                           onClick={() => handleDeleteTemplate(tpl.id)}
                           className="w-10 h-10 rounded-xl bg-white border border-stone-100 flex items-center justify-center text-stone-400 hover:border-rose-200 hover:text-rose-600 hover:bg-rose-50 transition-all ml-auto opacity-0 group-hover:opacity-100 active:scale-95 shadow-sm"
                           title={t('dashboard.vouchers.delete_template_title') || "Eliminar plantilla"}

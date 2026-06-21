@@ -83,7 +83,7 @@ export default function ActiveVouchersList({
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="w-8 h-8 rounded-full border border-stone-100 flex items-center justify-center text-stone-400 hover:text-stone-900 hover:bg-stone-50 transition-all focus:outline-none">
+                      <button id={`voucher-item-actions-trigger-${v.id}`} className="w-8 h-8 rounded-full border border-stone-100 flex items-center justify-center text-stone-400 hover:text-stone-900 hover:bg-stone-50 transition-all focus:outline-none">
                         <span className="text-lg leading-none mb-1">...</span>
                       </button>
                     </DropdownMenuTrigger>
@@ -91,17 +91,17 @@ export default function ActiveVouchersList({
                       <DropdownMenuLabel>{t('dashboard.vouchers.actions_title') || 'Acciones del Bono'}</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
-                        <Link href={`/dashboard/clients/${v.client_id}`} className="cursor-pointer">
+                        <Link id={`voucher-view-client-btn-${v.id}`} href={`/dashboard/clients/${v.client_id}`} className="cursor-pointer">
                           {t('dashboard.vouchers.view_client_file') || 'Ver Ficha Cliente'}
                         </Link>
                       </DropdownMenuItem>
                       {v.payment_status !== 'paid' && (
-                        <DropdownMenuItem onClick={() => handleOpenPayModal(v)} className="text-amber-600 font-bold">
+                        <DropdownMenuItem id={`voucher-collect-pending-btn-${v.id}`} onClick={() => handleOpenPayModal(v)} className="text-amber-600 font-bold">
                           {t('dashboard.vouchers.collect_pending') || 'Cobrar Pendiente'}
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => handleDeleteVoucher(v.id)} className="text-rose-600">
+                      <DropdownMenuItem id={`voucher-annul-btn-${v.id}`} onClick={() => handleDeleteVoucher(v.id)} className="text-rose-600">
                         {t('dashboard.vouchers.annul_voucher') || 'Anular Bono'}
                       </DropdownMenuItem>
                     </DropdownMenuContent>

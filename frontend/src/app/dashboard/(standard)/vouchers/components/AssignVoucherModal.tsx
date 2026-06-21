@@ -56,7 +56,7 @@ export default function AssignVoucherModal({
             <div className="mb-5">
               <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">{t('dashboard.vouchers.client_receptor') || 'Cliente Receptor'}</label>
               <Select required value={selectedClientId} onValueChange={setSelectedClientId}>
-                <SelectTrigger className="w-full bg-stone-50 border-stone-200 uppercase tracking-tighter shadow-sm font-bold">
+                <SelectTrigger id="assign-voucher-client-trigger" className="w-full bg-stone-50 border-stone-200 uppercase tracking-tighter shadow-sm font-bold">
                   <SelectValue placeholder={t('dashboard.vouchers.select_client_placeholder') || "Selecciona cliente..."} />
                 </SelectTrigger>
                 <SelectContent>
@@ -73,6 +73,7 @@ export default function AssignVoucherModal({
               {!selectedTemplateId ? (
                  <>
                     <input 
+                      id="assign-voucher-template-search"
                       type="text" 
                       placeholder={t('dashboard.vouchers.search_template_placeholder') || "Buscar plantilla..."} 
                       value={searchTerm}
@@ -83,6 +84,7 @@ export default function AssignVoucherModal({
                        {filteredTemplates.length === 0 && <p className="text-xs text-stone-400">{t('dashboard.vouchers.no_templates_found') || 'No se encontraron plantillas.'}</p>}
                        {filteredTemplates.map((tmpl: any) => (
                           <div 
+                            id={`assign-voucher-template-result-${tmpl.id}`}
                             key={tmpl.id} 
                             onClick={() => handleSelectTemplateForAssignment(tmpl.id)}
                             className="p-3 bg-white border border-stone-100 rounded-xl hover:border-[#d9777f] hover:shadow-sm cursor-pointer transition-all flex justify-between items-center"
@@ -105,6 +107,7 @@ export default function AssignVoucherModal({
                        </p>
                     </div>
                     <button 
+                      id="assign-voucher-change-template-btn"
                       type="button" 
                       onClick={() => setSelectedTemplateId('')}
                       className="text-xs font-bold text-stone-400 underline hover:text-stone-600"
@@ -118,6 +121,7 @@ export default function AssignVoucherModal({
               <div>
                 <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5 ml-1">{t('dashboard.vouchers.final_price') || 'Precio Final Pactado (€)'}</label>
                 <input 
+                  id="assign-voucher-price-input"
                   type="number" step="0.01" required 
                   value={assignPrice} onChange={e => setAssignPrice(Number(e.target.value))}
                   className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-extrabold text-[#b08e23] outline-none"
@@ -127,6 +131,7 @@ export default function AssignVoucherModal({
               <div>
                 <label className="block text-xs font-bold text-emerald-600 tracking-wide mb-1">{t('dashboard.vouchers.initial_payment') || 'Pago Inicial Hoy (€)'}</label>
                 <input 
+                  id="assign-voucher-initial-pay-input"
                   type="number" step="0.01" required min="0" max={Number(assignPrice)}
                   value={assignAmountPaid} onChange={e => setAssignAmountPaid(Number(e.target.value))}
                   className="w-full p-3 bg-white border border-stone-200 border-l-4 border-l-emerald-400 rounded-xl font-extrabold text-stone-800 outline-none focus:border-l-emerald-600 focus:bg-emerald-50/30"
@@ -136,7 +141,7 @@ export default function AssignVoucherModal({
               <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">{t('dashboard.vouchers.voucher_expiration') || 'Caducidad del Bono'}</label>
                   <Select value={expirationMonths.toString()} onValueChange={(val) => setExpirationMonths(Number(val))}>
-                    <SelectTrigger className="w-full bg-white border border-stone-200 rounded-xl font-semibold text-stone-700">
+                    <SelectTrigger id="assign-voucher-expiration-trigger" className="w-full bg-white border border-stone-200 rounded-xl font-semibold text-stone-700">
                       <SelectValue placeholder={t('dashboard.vouchers.select_expiration') || "Selecciona caducidad..."} />
                     </SelectTrigger>
                     <SelectContent>
@@ -153,6 +158,7 @@ export default function AssignVoucherModal({
 
         <DialogFooter className="sticky bottom-0 left-0 w-full p-8 border-t border-stone-100 bg-gradient-to-t from-white via-white to-white/0 rounded-b-2xl z-20">
           <button 
+            id="assign-voucher-submit-btn"
             form="assign-voucher-form"
             type="submit" 
             disabled={saving || !selectedTemplateId} 
