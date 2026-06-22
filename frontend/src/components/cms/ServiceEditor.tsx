@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -86,6 +86,23 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
   const [isDeleting, setIsDeleting] = useState(false);
   const [showAIModal, setShowAIModal] = useState<'short_description' | 'rich_content' | null>(null);
   const [brandAccentColor, setBrandAccentColor] = useState('#d4af37');
+
+  // Cambio automático de pestaña basado en el hint recibido en la URL
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const hint = searchParams?.get('hint');
+    if (hint) {
+      if (hint.startsWith('service-editor-general')) {
+        setActiveTab('general');
+      } else if (hint.startsWith('service-editor-content')) {
+        setActiveTab('content');
+      } else if (hint.startsWith('service-editor-design')) {
+        setActiveTab('design');
+      } else if (hint.startsWith('service-editor-seo')) {
+        setActiveTab('seo');
+      }
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/settings/`)

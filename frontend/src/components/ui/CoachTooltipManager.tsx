@@ -208,6 +208,12 @@ function getTooltipTextForId(id: string): string {
     'booking-layout-grid-btn': 'Elige el formato de cuadrícula (Grid) para mostrar tus servicios en el portal público de forma visual.',
     'booking-layout-list-btn': 'Elige el formato de lista compacta si prefieres una distribución tradicional de tratamientos.',
 
+    // Editor de Servicios / Tratamientos (Individuales)
+    'service-editor-general-deposit-checkbox': 'Habilita o deshabilita la fianza obligatoria de Stripe para este tratamiento específico.',
+    'service-editor-general-deposit-amount-input': 'Define el importe exacto de fianza en euros que debe prepagar el cliente para este servicio en particular.',
+    'service-editor-design-color-picker-input': 'Selecciona un color de acento único para destacar el botón de reserva y cabeceras de este servicio en el portal público.',
+    'service-editor-design-corporate-color-btn': 'Restablece el color de acento del servicio al color corporativo general de la clínica.',
+
     // Ajustes Agenda Tab (horarios y ausencias)
     'agenda-open-time': 'Define la hora de apertura diaria de tu centro.',
     'agenda-close-time': 'Define la hora de cierre diaria de tu centro.',
