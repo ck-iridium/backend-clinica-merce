@@ -91,10 +91,10 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== 'undefined') {
       document.cookie = `preferred_language=${lang}; path=/; max-age=31536000; SameSite=Lax`;
       
-      // Evitamos reiniciar en el flujo de reserva (para no perder el paso actual) ni en el panel de control.
-      // Para páginas públicas (Home, Categorías, Contacto), recargamos para que Next.js Server Components
+      // Evitamos reiniciar únicamente en el flujo de reserva (para no perder el paso actual y la selección).
+      // Para el dashboard y las páginas públicas, recargamos para que Next.js Server Components
       // reconstruyan todo el contenido traducido desde la base de datos de manera impecable.
-      if (!window.location.pathname.startsWith('/reservar') && !window.location.pathname.startsWith('/dashboard')) {
+      if (!window.location.pathname.startsWith('/reservar')) {
         window.location.reload();
       }
     }
