@@ -7,6 +7,7 @@ import OnboardingGuard from '@/components/OnboardingGuard';
 import { AIImageProvider } from '@/app/contexts/AIImageContext';
 import AIGenerationFloatingCard from '@/components/cms/AIGenerationFloatingCard';
 import AICopilotWidget from '@/components/ai/AICopilotWidget';
+import CoachTooltipManager from '@/components/ui/CoachTooltipManager';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   // El middleware inyecta x-tenant-id en cada request para Server Components
@@ -49,6 +50,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </div>
       <AIGenerationFloatingCard />
       <AICopilotWidget />
+      <CoachTooltipManager />
     </AIImageProvider>
   );
 }

@@ -376,6 +376,7 @@ export default function AICopilotWidget() {
             message: queryText,
             history: updatedMessages.slice(1).map((msg) => ({ role: msg.role, content: msg.content })),
             user_name: firstName,
+            user_role: role,
             language,
             voice_gender: voiceGender,
           }),
@@ -411,7 +412,7 @@ export default function AICopilotWidget() {
         }
       }
 
-      let responseText = data.response;
+       let responseText = data.response;
       let targetRoute: string | null = null;
       try {
         const parsed = JSON.parse(data.response);
@@ -419,7 +420,15 @@ export default function AICopilotWidget() {
           responseText = parsed.message || `Con gusto. Dirigiéndonos a ${parsed.route}...`;
           targetRoute = parsed.route;
         }
-      } catch (_) { /* Not a navigation instruction */ }
+      } catch (_) { /* Not a navigation JSON instruction */ }
+
+      // También chequear si viene en formato [NAVIGATE: route?hint=selector] en el texto plano
+      const navigateRegex = /\[NAVIGATE:\s*([^\]]+)\]/gi;
+      const matches = [...responseText.matchAll(navigateRegex)];
+      if (matches.length > 0) {
+        targetRoute = matches[0][1].trim();
+        responseText = responseText.replace(navigateRegex, '').trim();
+      }
 
       setMessages((prev) => [...prev, { role: 'model', content: responseText }]);
 

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Send, Sparkles, User, Bot, RefreshCw, Volume2, VolumeX } from 'lucide-react';
 import VoiceRecorderButton from './VoiceRecorderButton';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 import FeedbackModal from '../FeedbackModal';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { useAuthRole } from '@/hooks/useAuthRole';
@@ -27,6 +28,7 @@ interface AIChatContainerProps {
 }
 
 export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProps) {
+  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'model',
@@ -41,7 +43,7 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
   const { language, t } = useLanguage();
   const chatLanguage = language === 'fr' ? 'fr-FR' : language === 'en' ? 'en-US' : 'es-ES';
   const [voiceGender, setVoiceGender] = useState<'female' | 'male'>('female');
-  const { userName: authUserName } = useAuthRole();
+  const { role, userName: authUserName } = useAuthRole();
   const firstName = authUserName ? authUserName.trim().split(' ')[0] : '';
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [confirmModal, setConfirmModal] = useState<{
@@ -229,6 +231,7 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
             })),
             voice_gender: voiceGender,
             user_name: firstName,
+            user_role: role,
             language: language,
           }),
         }
@@ -266,11 +269,21 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
         // No es un JSON, usar de forma normal
       }
 
+      // 3.5. Detectar comandos [NAVIGATE: route?hint=selector]
+      const navigateRegex = /\[NAVIGATE:\s*([^\]]+)\]/gi;
+      let cleanedResponseText = finalResponseText;
+      const matches = [...finalResponseText.matchAll(navigateRegex)];
+      if (matches.length > 0) {
+        const targetRoute = matches[0][1].trim();
+        router.push(targetRoute);
+        cleanedResponseText = finalResponseText.replace(navigateRegex, '').trim();
+      }
+
       // 4. Añadir respuesta de la IA a la UI
-      setMessages((prev) => [...prev, { role: 'model', content: finalResponseText }]);
+      setMessages((prev) => [...prev, { role: 'model', content: cleanedResponseText }]);
 
       // 5. Leer respuesta en voz alta
-      speakText(finalResponseText, data.audio_response_base64);
+      speakText(cleanedResponseText, data.audio_response_base64);
 
       // 6. Notificar actualización de campos para recargar vista previa
       if (data.updated_fields && data.updated_fields.length > 0) {
