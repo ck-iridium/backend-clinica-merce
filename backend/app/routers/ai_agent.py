@@ -76,13 +76,14 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
     genai.configure(api_key=api_key)
 
     user_name = getattr(request, 'user_name', None)
+    user_role = getattr(request, 'user_role', None)
     lang = getattr(request, 'language', 'es')
 
     # Obtener el nombre comercial del negocio configurado en los ajustes del inquilino
     settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).first()
     clinic_name = settings.clinic_name if settings and settings.clinic_name else None
 
-    system_instruction = ai_agent_service.build_system_instruction(user_name, lang, clinic_name)
+    system_instruction = ai_agent_service.build_system_instruction(user_name, lang, clinic_name, user_role)
 
     if actions_remaining is not None and actions_remaining <= 0:
         limit_warning = ""

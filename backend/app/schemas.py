@@ -824,6 +824,7 @@ class AIChatRequest(BaseModel):
     history: List[ChatMessage] = []
     voice_gender: Optional[str] = "female"
     user_name: Optional[str] = None
+    user_role: Optional[str] = None
     language: Optional[str] = "es"
 
 class AIChatResponse(BaseModel):
