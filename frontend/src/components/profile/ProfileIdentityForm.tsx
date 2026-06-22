@@ -31,6 +31,7 @@ export default function ProfileIdentityForm({
           <div className="space-y-3">
             <label className="text-[11px] font-black uppercase tracking-widest text-stone-400 px-1">Nombre Completo</label>
             <input
+              id="profile-fullname-input"
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}

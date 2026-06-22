@@ -38,6 +38,7 @@ export default function ProfileSecurityForm({
             <label className="text-[11px] font-black uppercase tracking-widest text-stone-400 px-1">Cambiar Contraseña</label>
             <div className="flex gap-4">
               <input
+                id="profile-new-password-input"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -45,6 +46,7 @@ export default function ProfileSecurityForm({
                 className="flex-1 bg-stone-50 border border-stone-200 rounded-[1.2rem] px-5 py-4 text-sm focus:bg-white focus:ring-4 focus:ring-stone-100 focus:border-stone-400 transition-all outline-none font-medium"
               />
               <button
+                id="profile-update-password-btn"
                 type="submit"
                 disabled={savingPassword || !password}
                 className="bg-stone-100 hover:bg-stone-200 text-stone-800 px-8 py-4 rounded-2xl font-bold text-sm transition-all active:scale-95 disabled:opacity-50"
@@ -74,6 +76,7 @@ export default function ProfileSecurityForm({
               </div>
             </div>
             <button
+              id="profile-logout-btn"
               onClick={handleLogout}
               className="flex items-center gap-2 text-rose-500 hover:text-white hover:bg-rose-500 px-6 py-3 rounded-2xl text-xs font-bold transition-all border border-rose-100 group-hover/session:shadow-lg group-hover/session:shadow-rose-100"
             >

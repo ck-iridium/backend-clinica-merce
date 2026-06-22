@@ -46,6 +46,7 @@ export default function ProfilePreferencesForm({
           </div>
           <label className="relative inline-flex items-center cursor-pointer" onClick={e => e.stopPropagation()}>
             <input
+              id="profile-email-appointments-check"
               type="checkbox"
               className="sr-only peer"
               checked={receiveEmailAppointments}
@@ -70,6 +71,7 @@ export default function ProfilePreferencesForm({
           </div>
           <label className="relative inline-flex items-center cursor-pointer" onClick={e => e.stopPropagation()}>
             <input
+              id="profile-agenda-reminders-check"
               type="checkbox"
               className="sr-only peer"
               checked={receiveAgendaReminders}

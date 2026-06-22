@@ -76,6 +76,16 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL `/dashboa
 - Habilitar Fianzas Globales: Checkbox `id="payments-global-deposit-checkbox"`
 - Importe Fianza por Defecto: `id="payments-global-deposit-amount-input"`
 
+### Pestaña: Agenda (Horario Hábil y Ausencias)
+- Hora Apertura: `id="agenda-open-time"`
+- Hora Cierre: `id="agenda-close-time"`
+- Inicio Descanso: `id="agenda-lunch-start"`
+- Fin Descanso: `id="agenda-lunch-end"`
+- Días Laborables: `id="agenda-working-day-btn-[id]"` (donde `[id]` es el número del día, 1=Lunes, 7=Domingo)
+- Añadir Ausencia (Vacaciones y Festivos): `id="agenda-add-absence-btn"`
+- Eliminar Ausencia: `id="agenda-delete-absence-btn-[id]"` (donde `[id]` es el id del bloqueo)
+- Margen de Reserva Online (en horas): `id="agenda-booking-margin-hours"`
+
 ### Pestaña: Suscripción y Plan
 - Actualizar/Mejorar Plan: `id="subscription-upgrade-btn-[id]"` (donde `[id]` es la clave del plan, ej: `subscription-upgrade-btn-premium`)
 
@@ -87,3 +97,14 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL `/dashboa
   - Input texto zona: `id="mobile-whitelist-zone-input"`
   - Añadir zona: `id="mobile-add-zone-btn"`
   - Quitar zona: `id="mobile-remove-zone-btn-[index]"`
+
+## 4. Mi Perfil Digital
+La sección de Perfil Personal (`/dashboard/profile`) permite al usuario cambiar su información de cuenta, preferencias de notificaciones y contraseñas:
+- Nombre Completo: `id="profile-fullname-input"`
+- Cargar/Cambiar Avatar: `id="profile-avatar-upload-btn"`
+- Guardar Cambios (Nombre y Preferencias): `id="profile-save-all-btn"`
+- Input Nueva Contraseña: `id="profile-new-password-input"`
+- Botón Actualizar Contraseña: `id="profile-update-password-btn"`
+- Notificación Email Citas: Checkbox `id="profile-email-appointments-check"`
+- Recordatorio Agenda Diario: Checkbox `id="profile-agenda-reminders-check"`
+- Botón Cerrar Sesión: `id="profile-logout-btn"`

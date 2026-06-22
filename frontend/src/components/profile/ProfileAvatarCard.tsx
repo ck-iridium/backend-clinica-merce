@@ -55,6 +55,7 @@ export default function ProfileAvatarCard({
           {/* Botones de Acción (Flotantes y Discretos) */}
           <div className="absolute bottom-2 right-1/2 translate-x-[65px] flex flex-col gap-2">
             <button
+              id="profile-avatar-upload-btn"
               onClick={handleAvatarClick}
               disabled={uploadingAvatar}
               className="w-9 h-9 bg-stone-900 text-white rounded-xl flex items-center justify-center shadow-xl hover:bg-primary hover:scale-105 transition-all duration-300 border-2 border-white active:scale-95"
@@ -121,6 +122,7 @@ export default function ProfileAvatarCard({
 
       {/* Botón Maestro: Guardar Cambios (Notificaciones + Nombre) */}
       <button
+        id="profile-save-all-btn"
         onClick={handleSaveAll}
         disabled={savingPrefs || !isDirty}
         className="w-full bg-emerald-600 text-white hover:bg-emerald-700 px-8 py-5 rounded-[2.5rem] font-bold text-sm shadow-xl shadow-emerald-100 transition-all active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed flex items-center justify-center gap-3 group"

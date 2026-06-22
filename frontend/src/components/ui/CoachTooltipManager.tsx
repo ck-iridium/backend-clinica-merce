@@ -204,6 +204,24 @@ function getTooltipTextForId(id: string): string {
     'billing-signature-btn': 'Sube tu cuño y firma digital para facturas.',
     'payments-connect-stripe-btn': 'Vincula tu cuenta para cobrar fianzas online.',
     
+    // Ajustes Agenda Tab (horarios y ausencias)
+    'agenda-open-time': 'Define la hora de apertura diaria de tu centro.',
+    'agenda-close-time': 'Define la hora de cierre diaria de tu centro.',
+    'agenda-lunch-start': 'Define el inicio del descanso de mediodía de la agenda.',
+    'agenda-lunch-end': 'Define el fin del descanso de mediodía.',
+    'agenda-add-absence-btn': 'Registra un período vacacional o días festivos en bloque.',
+    'agenda-booking-margin-hours': 'Horas de antelación mínimas requeridas para que un cliente reserve online.',
+
+    // Mi Perfil Digital
+    'profile-fullname-input': 'Actualiza tu nombre completo para firmas y comunicaciones.',
+    'profile-avatar-upload-btn': 'Sube o cambia tu fotografía de perfil profesional.',
+    'profile-save-all-btn': 'Guardar todos los cambios en tu perfil y notificaciones.',
+    'profile-new-password-input': 'Escribe una nueva contraseña segura para tu acceso.',
+    'profile-update-password-btn': 'Aplica el cambio de tu contraseña.',
+    'profile-logout-btn': 'Cierra tu sesión actual de forma segura.',
+    'profile-email-appointments-check': 'Activa o desactiva los avisos de reservas/cancelaciones por email.',
+    'profile-agenda-reminders-check': 'Activa o desactiva el resumen matutino diario de tu agenda.',
+    
     // Gestión
     'team-add-member-btn': 'Envía una invitación a un nuevo miembro del equipo.',
     'locations-add-btn': 'Agrega una nueva sucursal física de tu negocio.',
