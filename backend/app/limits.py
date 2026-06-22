@@ -109,6 +109,8 @@ def check_location_limit(db: Session):
 
 def get_tenant_ai_key(db: Session, provider: str) -> str:
     import os
+    from dotenv import load_dotenv
+    load_dotenv(override=True)
     tenant_id = current_tenant_var.get()
     if not tenant_id:
         raise HTTPException(status_code=400, detail="Inquilino no identificado.")

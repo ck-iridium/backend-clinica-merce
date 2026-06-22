@@ -22,11 +22,8 @@ router = APIRouter(
 
 @router.post("/chat", response_model=schemas.AIChatResponse)
 def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_db)):
-    """
-    Endpoint del Asistente Web IA (Webmaster). Recibe el mensaje actual y el historial,
-    utiliza el SDK de Gemini 2.5 Flash configurado con herramientas y ejecuta las llamadas a funciones
-    de forma segura antes de devolver la respuesta final en lenguaje natural.
-    """
+    print(f"[DEBUG CHAT] message={request.message} user_role={request.user_role} language={request.language}")
+    print(f"[DEBUG CHAT] history={[{'role': m.role, 'content': m.content} for m in request.history]}")
     tenant_id = current_tenant_var.get()
     if not tenant_id:
         raise HTTPException(status_code=400, detail="Falta la cabecera del identificador de inquilino (tenant_id)")
@@ -130,6 +127,24 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
         response_brain = chat.send_message(request.message)
         brain_text = response_brain.text.strip()
 
+        # Escribir log local de auditoria de chat
+        try:
+            with open("chat_history.log", "a", encoding="utf-8") as hf:
+                hf.write(f"\n--- CHAT TURN ---\n")
+                hf.write(f"PROMPT: {request.message}\n")
+                hf.write(f"ROLE: {request.user_role}\n")
+                hf.write(f"RAW RESPONSE: {brain_text}\n")
+                # Ver si se invocaron herramientas
+                called_fns = []
+                for message in chat.history:
+                    for part in message.parts:
+                        fn = getattr(part, 'function_call', None)
+                        if fn:
+                            called_fns.append(f"{fn.name}({fn.args})")
+                hf.write(f"CALLED TOOLS: {', '.join(called_fns) if called_fns else 'None'}\n")
+        except Exception as log_ex:
+            logger.error(f"Error escribiendo a chat_history.log: {log_ex}")
+
         # 2. Identificar qué campos/parámetros fueron modificados examinando los eventos de llamada a funciones
         updated_fields = []
         redirect_url = None
@@ -180,14 +195,27 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
                     tenant.ai_daily_actions_used = actions_used + 1
                     db.commit()
 
+        # Extraer dirección de navegación [NAVIGATE: ...] si existe
+        navigate_match = re.search(r'\[NAVIGATE:\s*([^\]]+)\]', brain_text, re.IGNORECASE)
+        if navigate_match:
+            redirect_url = navigate_match.group(1).strip()
+            # Remover el tag de navegación de la voz y guardarla en brain_text_for_voice
+            brain_text_for_voice = re.sub(r'\[NAVIGATE:\s*([^\]]+)\]', '', brain_text, flags=re.IGNORECASE)
+        else:
+            brain_text_for_voice = brain_text
+
         # 3. LA VOZ (Gemini 2.5 Flash TTS): Convierte de forma secuencial el texto en voz hiperrealista
         voice_gender = getattr(request, 'voice_gender', 'female')
         lang = getattr(request, 'language', 'es')
-        audio_response_base64 = ai_agent_service.generate_gemini_tts(brain_text, voice_gender, api_key, lang)
+        audio_response_base64 = ai_agent_service.generate_gemini_tts(brain_text_for_voice, voice_gender, api_key, lang)
 
         # Limpiar las etiquetas de dirección de voz (como [warmly], [deliberate pause]) para el chat de texto de la UI
-        clean_text = re.sub(r'\[.*?\]', '', brain_text).strip()
+        clean_text = re.sub(r'\[.*?\]', '', brain_text_for_voice).strip()
         clean_text = re.sub(r'\s+', ' ', clean_text)
+
+        # Volver a añadir el tag [NAVIGATE: ...] al clean_text para asegurar compatibilidad con regex del frontend
+        if redirect_url:
+            clean_text = f"{clean_text} [NAVIGATE: {redirect_url}]"
 
         # Calcular acciones inteligentes restantes
         trial_remaining = None
@@ -207,6 +235,21 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
         )
 
     except Exception as e:
+        import traceback
+        # Escribir el error y el historial detallado a un archivo log local
+        try:
+            with open("chat_debug.log", "w", encoding="utf-8") as lf:
+                lf.write(f"ERROR: {str(e)}\n\n")
+                lf.write("TRACEBACK:\n")
+                traceback.print_exc(file=lf)
+                lf.write(f"\n\nREQUEST MESSAGE: {request.message}\n")
+                lf.write(f"REQUEST ROLE: {request.user_role}\n")
+                lf.write(f"REQUEST HISTORY:\n")
+                for m in request.history:
+                    lf.write(f"- {m.role}: {m.content}\n")
+        except Exception as log_ex:
+            logger.error(f"Error escribiendo a chat_debug.log: {log_ex}")
+
         logger.error(f"Error crítico en ai_webmaster_chat para tenant {tenant_id}: {e}")
         raise HTTPException(
             status_code=500,

@@ -412,8 +412,8 @@ export default function AICopilotWidget() {
         }
       }
 
-       let responseText = data.response;
-      let targetRoute: string | null = null;
+      let responseText = data.response;
+      let targetRoute: string | null = data.redirect_url || null;
       try {
         const parsed = JSON.parse(data.response);
         if (parsed?.action === 'navigate' && parsed.route) {
@@ -433,16 +433,32 @@ export default function AICopilotWidget() {
       setMessages((prev) => [...prev, { role: 'model', content: responseText }]);
 
       const shouldRefresh = data.updated_fields?.length > 0;
-      speakText(responseText, data.audio_response_base64, () => {
-        if (targetRoute) {
-          router.push(targetRoute);
-          setIsOpen(false);
-          toast.success(language === 'fr' ? 'Navigation réussie' : language === 'en' ? 'Navigation successful' : 'Navegación completada con éxito.');
-        } else if (shouldRefresh) {
-          router.refresh();
-          if (typeof window !== 'undefined') window.location.reload();
+
+      // Hablar de forma asíncrona sin bloquear la interfaz
+      speakText(responseText, data.audio_response_base64);
+
+      if (targetRoute) {
+        // Si la ruta contiene un hint, removemos el estado de "desestimado" para que el tooltip vuelva a mostrarse
+        try {
+          const hintMatch = targetRoute.match(/[?&]hint=([^&]+)/);
+          if (hintMatch && hintMatch[1]) {
+            localStorage.removeItem(`coach_dismissed_${hintMatch[1]}`);
+          }
+        } catch (e) {
+          console.warn('Error clearing coach tooltip dismissal:', e);
         }
-      });
+
+        router.push(targetRoute);
+        setIsOpen(false);
+        toast.success(
+          language === 'fr' ? 'Navigation réussie' : 
+          language === 'en' ? 'Navigation successful' : 
+          'Navegación completada con éxito.'
+        );
+      } else if (shouldRefresh) {
+        router.refresh();
+        if (typeof window !== 'undefined') window.location.reload();
+      }
 
     } catch (err: any) {
       console.error('Error in Copilot chat:', err);
