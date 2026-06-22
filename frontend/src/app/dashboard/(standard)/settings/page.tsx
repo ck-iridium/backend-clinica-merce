@@ -42,6 +42,51 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('general');
   const [hasChanges, setHasChanges] = useState(false);
 
+  // Mapeo para auto-detectar pestañas a partir del ID de ayuda (hint)
+  const getTabFromHint = (hint: string | null): string | null => {
+    if (!hint) return null;
+    const hintToTab: Record<string, string> = {
+      'general-clinic-name': 'general',
+      'general-legal-name': 'general',
+      'general-clinic-nif': 'general',
+      'general-sanitary-register': 'general',
+      'general-clinic-address': 'general',
+      'general-clinic-description': 'general',
+      'general-clinic-phone': 'general',
+      'general-clinic-email': 'general',
+      'general-instagram-url': 'general',
+      'general-whatsapp-number': 'general',
+      'general-maps-url': 'general',
+      'branding-logo-change-btn': 'branding',
+      'branding-logo-delete-btn': 'branding',
+      'branding-favicon-load-btn': 'branding',
+      'branding-favicon-delete-btn': 'branding',
+      'branding-color-primary-input': 'branding',
+      'branding-color-secondary-input': 'branding',
+      'branding-font-headings-select': 'branding',
+      'branding-font-body-select': 'branding',
+      'branding-dark-mode-toggle': 'branding',
+      'consents-new-template-btn': 'consents',
+      'billing-invoice-prefix': 'billing',
+      'billing-invoice-next-number': 'billing',
+      'billing-default-tax-rate': 'billing',
+      'billing-logo-pdf-btn': 'billing',
+      'billing-signature-btn': 'billing',
+      'payments-connect-stripe-btn': 'payments',
+      'payments-manage-stripe-link': 'payments',
+      'payments-refresh-status-btn': 'payments',
+      'payments-disconnect-btn': 'payments',
+      'payments-cancellation-margin-input': 'payments',
+      'payments-global-deposit-checkbox': 'payments',
+      'payments-global-deposit-amount-input': 'payments',
+      'mobile-ops-center-address-input': 'mobile_services',
+      'mobile-coverage-radius-slider': 'mobile_services',
+      'mobile-whitelist-zone-input': 'mobile_services',
+      'mobile-add-zone-btn': 'mobile_services',
+    };
+    return hintToTab[hint] || null;
+  };
+
   // Sincronizar parámetro URL tab al cambiar de pestaña
   useEffect(() => {
     if (tabParam) {
@@ -49,8 +94,14 @@ export default function SettingsPage() {
       if (validTabs.includes(tabParam)) {
         setActiveTab(tabParam);
       }
+    } else {
+      const hint = searchParams.get('hint');
+      const resolvedTab = getTabFromHint(hint);
+      if (resolvedTab) {
+        setActiveTab(resolvedTab);
+      }
     }
-  }, [tabParam]);
+  }, [tabParam, searchParams]);
 
   // Sincronización robusta para navegación del lado del cliente (ej. desde el popup de perfil o accesos directos del CMS)
   useEffect(() => {
@@ -62,6 +113,12 @@ export default function SettingsPage() {
           const validTabs = ['general', 'subscription', 'agenda', 'mobile_services', 'billing', 'payments', 'branding', 'booking_ui', 'consents', 'advanced'];
           if (validTabs.includes(tParam)) {
             setActiveTab(tParam);
+          }
+        } else {
+          const hint = params.get('hint');
+          const resolvedTab = getTabFromHint(hint);
+          if (resolvedTab) {
+            setActiveTab(resolvedTab);
           }
         }
       };

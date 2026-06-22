@@ -12,6 +12,7 @@ interface UseCopilotSpeechOptions {
 let persistentAudio: HTMLAudioElement | null = null;
 let persistentAudioContext: AudioContext | null = null;
 let activeSource: AudioBufferSourceNode | null = null;
+let activeUtterance: SpeechSynthesisUtterance | null = null;
 
 const getPersistentAudio = () => {
   if (typeof window === 'undefined') return null;
@@ -85,6 +86,7 @@ export function useCopilotSpeech({ isMuted, voiceGender, audioLanguage }: UseCop
     try {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
+      activeUtterance = utterance; // Keep active utterance reference to prevent GC cutoffs!
 
       const voices = window.speechSynthesis.getVoices();
       const langPrefix = audioLanguage.split('-')[0].toLowerCase();
@@ -118,21 +120,24 @@ export function useCopilotSpeech({ isMuted, voiceGender, audioLanguage }: UseCop
       utterance.rate = 0.98;
       utterance.pitch = voiceGender === 'male' ? 0.90 : 1.12;
 
-      if (onEndCallback) {
-        let called = false;
-        const triggerCallback = () => {
-          if (!called) {
-            called = true;
-            onEndCallback();
+      let called = false;
+      const triggerCallback = () => {
+        if (!called) {
+          called = true;
+          if (activeUtterance === utterance) {
+            activeUtterance = null;
           }
-        };
-        utterance.onend = triggerCallback;
-        utterance.onerror = triggerCallback;
+          if (onEndCallback) onEndCallback();
+        }
+      };
 
-        const wordCount = text.split(/\s+/).length;
-        const backupDelay = Math.max(2000, wordCount * 180 + 1000);
-        setTimeout(triggerCallback, backupDelay);
-      }
+      utterance.onend = triggerCallback;
+      utterance.onerror = triggerCallback;
+
+      // Safety fallback in case onend doesn't fire
+      const wordCount = text.split(/\s+/).length;
+      const backupDelay = Math.max(2000, wordCount * 180 + 1000);
+      setTimeout(triggerCallback, backupDelay);
 
       window.speechSynthesis.speak(utterance);
     } catch (e) {
