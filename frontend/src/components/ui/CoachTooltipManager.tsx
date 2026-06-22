@@ -204,6 +204,10 @@ function getTooltipTextForId(id: string): string {
     'billing-signature-btn': 'Sube tu cuño y firma digital para facturas.',
     'payments-connect-stripe-btn': 'Vincula tu cuenta para cobrar fianzas online.',
     
+    // Ajustes - Diseño de Reservas (Booking UI)
+    'booking-layout-grid-btn': 'Elige el formato de cuadrícula (Grid) para mostrar tus servicios en el portal público de forma visual.',
+    'booking-layout-list-btn': 'Elige el formato de lista compacta si prefieres una distribución tradicional de tratamientos.',
+
     // Ajustes Agenda Tab (horarios y ausencias)
     'agenda-open-time': 'Define la hora de apertura diaria de tu centro.',
     'agenda-close-time': 'Define la hora de cierre diaria de tu centro.',
@@ -211,6 +215,13 @@ function getTooltipTextForId(id: string): string {
     'agenda-lunch-end': 'Define el fin del descanso de mediodía.',
     'agenda-add-absence-btn': 'Registra un período vacacional o días festivos en bloque.',
     'agenda-booking-margin-hours': 'Horas de antelación mínimas requeridas para que un cliente reserve online.',
+
+    // CMS / Editor Web
+    'cms-bento-home-builder': 'Abre el constructor visual para editar el Hero, Sobre Mí, tratamientos y SEO de la página principal.',
+    'cms-bento-nav-editor': 'Accede al gestor de enlaces del menú superior y distribución del megamenú público.',
+    'cms-bento-branding': 'Redirecciona a la pestaña de ajustes para cambiar la paleta de colores y fuentes de la clínica.',
+    'cms-bento-pages': 'Navega al gestor para crear y publicar páginas independientes de políticas o promociones.',
+    'cms-new-page-btn': 'Haz clic para crear una nueva página personalizada e introducir su URL/título.',
 
     // Mi Perfil Digital
     'profile-fullname-input': 'Actualiza tu nombre completo para firmas y comunicaciones.',
