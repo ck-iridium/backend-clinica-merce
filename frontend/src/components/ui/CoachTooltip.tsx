@@ -56,6 +56,9 @@ export default function CoachTooltip({ targetId, content, onClose }: CoachToolti
 
   // 2. Efecto para posicionar el tooltip
   useEffect(() => {
+    let attempts = 0;
+    const maxAttempts = 20; // 20 * 200ms = 4 segundos
+
     const updatePosition = () => {
       const element = document.getElementById(targetId);
       if (element) {
@@ -66,16 +69,30 @@ export default function CoachTooltip({ targetId, content, onClose }: CoachToolti
             top: rect.bottom + window.scrollY + 16,
             left: rect.left + window.scrollX + rect.width / 2,
           });
+          return true;
         }
       }
+      return false;
     };
 
-    const timer = setTimeout(updatePosition, 300); // Margen para dar tiempo a renderizar la pestaña
+    // Intentar de inmediato
+    const success = updatePosition();
 
     window.addEventListener('resize', updatePosition);
     window.addEventListener('scroll', updatePosition);
+
+    let intervalId: any = null;
+    if (!success) {
+      intervalId = setInterval(() => {
+        attempts++;
+        if (updatePosition() || attempts >= maxAttempts) {
+          clearInterval(intervalId);
+        }
+      }, 200);
+    }
+
     return () => {
-      clearTimeout(timer);
+      if (intervalId) clearInterval(intervalId);
       window.removeEventListener('resize', updatePosition);
       window.removeEventListener('scroll', updatePosition);
     };
@@ -109,7 +126,7 @@ export default function CoachTooltip({ targetId, content, onClose }: CoachToolti
           opacity: { duration: 0.3 },
           scale: { duration: 0.3 }
         }}
-        className="bg-white/95 backdrop-blur-md border border-[#d4af37]/45 rounded-2xl p-4 shadow-[0_15px_45px_-8px_rgba(212,175,55,0.25)] max-w-xs relative flex items-start gap-3 border-l-4 border-l-[#d4af37]"
+        className="bg-white/95 backdrop-blur-md border border-[#d4af37]/45 rounded-2xl p-4 shadow-[0_15px_45px_-8px_rgba(212,175,55,0.25)] w-80 sm:w-96 max-w-[calc(100vw-32px)] relative flex items-start gap-3 border-l-4 border-l-[#d4af37]"
       >
         <div className="mt-0.5 text-[#d4af37] shrink-0">
           <Sparkles size={16} className="animate-pulse" />

@@ -70,6 +70,26 @@ def consultar_manual_ayuda(tema: str) -> str:
         "horarios": "gestion",
         "mi-horario": "gestion",
         "mi_horario": "gestion",
+        # Perfil y Notificaciones Personales (Sinónimos Compuestos Específicos)
+        "foto-perfil": "ajustes",
+        "foto_perfil": "ajustes",
+        "foto-de-perfil": "ajustes",
+        "foto-de-mi-perfil": "ajustes",
+        "avatar-personal": "ajustes",
+        "notificaciones-personales": "ajustes",
+        "notificaciones_personales": "ajustes",
+        "mi-cuenta": "ajustes",
+        "mi_cuenta": "ajustes",
+        "mi-perfil": "ajustes",
+        "mi_perfil": "ajustes",
+        "perfil-digital": "ajustes",
+        "perfil_digital": "ajustes",
+        "email-personal": "ajustes",
+        "email_personal": "ajustes",
+        "correo-personal": "ajustes",
+        "correo_personal": "ajustes",
+        "cambiar-usuario": "ajustes",
+        "cambiar_usuario": "ajustes",
     }
     
     if tema_clean in sinonimos:

@@ -24,29 +24,36 @@ function CoachTooltipContent() {
       return;
     }
 
-    // Buscar el elemento en el DOM
-    const targetElement = document.getElementById(hint);
-    if (targetElement) {
-      // Hacer scroll hasta el elemento
-      targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      
-      // Obtener el texto del tooltip
-      const text = getTooltipTextForId(hint);
-      setTooltipText(text);
-      setActiveHint(hint);
-    } else {
-      // Si el elemento aún no se ha renderizado (carga diferida/SPA), re-intentamos en unos ms
-      const retryTimer = setTimeout(() => {
-        const retriedElement = document.getElementById(hint);
-        if (retriedElement) {
-          retriedElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          const text = getTooltipTextForId(hint);
-          setTooltipText(text);
-          setActiveHint(hint);
-        }
-      }, 500);
-      return () => clearTimeout(retryTimer);
-    }
+    let attempts = 0;
+    const maxAttempts = 30; // 30 * 150ms = 4.5 segundos
+
+    const findAndActivate = () => {
+      const targetElement = document.getElementById(hint);
+      if (targetElement) {
+        // Encontrado! Hacemos scroll
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Obtener el texto del tooltip
+        const text = getTooltipTextForId(hint);
+        setTooltipText(text);
+        setActiveHint(hint);
+        return true;
+      }
+      return false;
+    };
+
+    // Intentar de inmediato
+    if (findAndActivate()) return;
+
+    // Si no está listo aún en el DOM, hacemos sondeo periódico (polling)
+    const intervalId = setInterval(() => {
+      attempts++;
+      if (findAndActivate() || attempts >= maxAttempts) {
+        clearInterval(intervalId);
+      }
+    }, 150);
+
+    return () => clearInterval(intervalId);
   }, [searchParams, pathname]);
 
   const handleClose = () => {

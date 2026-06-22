@@ -528,6 +528,7 @@ export default function AICopilotWidget() {
             messages={messages}
             isLoading={isLoading}
             messagesEndRef={messagesEndRef}
+            onSendMessage={handleSend}
           />
 
           {/* Barra de Entrada */}
