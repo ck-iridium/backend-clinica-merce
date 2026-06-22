@@ -16,7 +16,8 @@ def consultar_manual_ayuda(tema: str) -> str:
       'clientes' (fichas clínicas, consentimiento informado, firma digital, bonos de cliente),
       'facturas' (visor de folio A4, exportaciones PDF/CSV, control de estado, sello digital),
       'bonos' (dirección de bonos, catálogo, deudas de bonos),
-      'ajustes' (branding, Stripe, configuración general, plantilla de consentimiento),
+      'ajustes' (branding, Stripe, configuración general, plantilla de consentimiento, diseño de reservas),
+      'cms' (editor web, páginas personalizadas, portada de inicio, menú de navegación),
       'gestion' (equipo, horarios, sedes, servicios y mi horario).
     """
     # Limpiamos el nombre del tema
@@ -40,6 +41,22 @@ def consultar_manual_ayuda(tema: str) -> str:
         "settings": "ajustes",
         "configuracion": "ajustes",
         "configuración": "ajustes",
+        "vacaciones": "ajustes",
+        "festivos": "ajustes",
+        "ausencias": "ajustes",
+        "booking_ui": "ajustes",
+        "diseno_reservas": "ajustes",
+        "diseno-reservas": "ajustes",
+        "diseño-reservas": "ajustes",
+        "cms": "cms",
+        "paginas": "cms",
+        "páginas": "cms",
+        "pagina": "cms",
+        "página": "cms",
+        "editor": "cms",
+        "inicio": "cms",
+        "portada": "cms",
+        "web": "cms",
         "equipo": "gestion",
         "sedes": "gestion",
         "servicios": "gestion",
@@ -50,8 +67,8 @@ def consultar_manual_ayuda(tema: str) -> str:
     
     if tema_clean in sinonimos:
         tema_clean = sinonimos[tema_clean]
-
-    temas_validos = ["agenda", "pos", "clientes", "facturas", "bonos", "ajustes", "gestion"]
+ 
+    temas_validos = ["agenda", "pos", "clientes", "facturas", "bonos", "ajustes", "cms", "gestion"]
     if tema_clean not in temas_validos:
         return (
             f"El tema '{tema}' no es válido. Los temas disponibles en los manuales de ayuda son: "

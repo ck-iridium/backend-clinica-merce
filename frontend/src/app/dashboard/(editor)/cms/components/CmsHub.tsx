@@ -28,6 +28,7 @@ export default function CmsHub({ onSelectMode }: CmsHubProps) {
         
         {/* Card 1: Portada Principal */}
         <div 
+          id="cms-bento-home-builder"
           onClick={() => onSelectMode('HOME_EDITOR')}
           className="bg-white rounded-3xl p-8 border border-stone-100 shadow-[0_10px_35px_-10px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-500 flex flex-col justify-between h-[340px] cursor-pointer group relative overflow-hidden"
         >
@@ -56,6 +57,7 @@ export default function CmsHub({ onSelectMode }: CmsHubProps) {
 
         {/* Card 2: Menú de Navegación */}
         <div 
+          id="cms-bento-nav-editor"
           onClick={() => onSelectMode('NAVIGATION_EDITOR')}
           className="bg-white rounded-3xl p-8 border border-stone-100 shadow-[0_10px_35px_-10px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-500 flex flex-col justify-between h-[340px] cursor-pointer group relative overflow-hidden"
         >
@@ -84,6 +86,7 @@ export default function CmsHub({ onSelectMode }: CmsHubProps) {
 
         {/* Card 3: Estilo & Branding */}
         <Link
+          id="cms-bento-branding"
           href="/dashboard/settings?tab=branding"
           className="bg-white rounded-3xl p-8 border border-stone-100 shadow-[0_10px_35px_-10px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-500 flex flex-col justify-between h-[280px] cursor-pointer group relative overflow-hidden"
         >
@@ -105,7 +108,7 @@ export default function CmsHub({ onSelectMode }: CmsHubProps) {
             </p>
           </div>
           
-          <div className="flex items-center gap-2 text-stone-800 font-bold text-xs uppercase tracking-wider">
+          <div className="flex items-center gap-2 text-stone-850 font-bold text-xs uppercase tracking-wider">
             <span>Configurar Estilos</span>
             <span className="transform group-hover:translate-x-1 transition-transform duration-300">→</span>
           </div>
@@ -113,6 +116,7 @@ export default function CmsHub({ onSelectMode }: CmsHubProps) {
 
         {/* Card 4: Páginas Independientes */}
         <Link
+          id="cms-bento-pages"
           href="/dashboard/pages"
           className="bg-white rounded-3xl p-8 border border-stone-100 shadow-[0_10px_35px_-10px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-500 flex flex-col justify-between h-[280px] cursor-pointer group relative overflow-hidden"
         >

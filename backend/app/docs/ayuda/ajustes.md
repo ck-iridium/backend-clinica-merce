@@ -76,15 +76,21 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL `/dashboa
 - Habilitar Fianzas Globales: Checkbox `id="payments-global-deposit-checkbox"`
 - Importe Fianza por Defecto: `id="payments-global-deposit-amount-input"`
 
-### Pestaña: Agenda (Horario Hábil y Ausencias)
+### Pestaña: Agenda (Horario Hábil y Ausencias de la Empresa)
+*Esta pestaña sirve para configurar el horario hábil semanal, los días laborables de la clínica y las ausencias anuales prolongadas (vacaciones de verano, Navidad, festivos oficiales de la empresa).*
 - Hora Apertura: `id="agenda-open-time"`
 - Hora Cierre: `id="agenda-close-time"`
 - Inicio Descanso: `id="agenda-lunch-start"`
 - Fin Descanso: `id="agenda-lunch-end"`
 - Días Laborables: `id="agenda-working-day-btn-[id]"` (donde `[id]` es el número del día, 1=Lunes, 7=Domingo)
-- Añadir Ausencia (Vacaciones y Festivos): `id="agenda-add-absence-btn"`
+- **Añadir Ausencia (Vacaciones y Festivos de Larga Duración):** `id="agenda-add-absence-btn"` (Abre el modal para bloquear días completos por vacaciones, Navidad, verano, etc.)
 - Eliminar Ausencia: `id="agenda-delete-absence-btn-[id]"` (donde `[id]` es el id del bloqueo)
 - Margen de Reserva Online (en horas): `id="agenda-booking-margin-hours"`
+
+### Pestaña: Diseño de Reservas (Booking UI / Layout)
+*Esta pestaña (`tab=booking_ui`) permite configurar de manera visual cómo se listarán los tratamientos en el flujo público de reserva de citas para los clientes (Grid o Lista).*
+- Formato de Cuadrícula (Grid): `id="booking-layout-grid-btn"`
+- Formato de Lista (List): `id="booking-layout-list-btn"`
 
 ### Pestaña: Suscripción y Plan
 - Actualizar/Mejorar Plan: `id="subscription-upgrade-btn-[id]"` (donde `[id]` es la clave del plan, ej: `subscription-upgrade-btn-premium`)
@@ -97,6 +103,20 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL `/dashboa
   - Input texto zona: `id="mobile-whitelist-zone-input"`
   - Añadir zona: `id="mobile-add-zone-btn"`
   - Quitar zona: `id="mobile-remove-zone-btn-[index]"`
+
+### Pestaña: Avanzado (Modelos e Integración IA)
+*Esta pestaña (`tab=advanced`) contiene la configuración del proveedor de Inteligencia Artificial de la clínica y llaves API propias.*
+- Selector Proveedor Gemini: `id="advanced-provider-gemini-radio"`
+- Selector Proveedor OpenAI: `id="advanced-provider-openai-radio"`
+- API Key Gemini Personal: `id="advanced-gemini-api-key"`
+- Selector de Modelo Gemini (Texto): `id="advanced-gemini-model-text-trigger"`
+- Selector de Modelo Gemini (Imagen): `id="advanced-gemini-model-image-trigger"`
+- API Key OpenAI Personal: `id="advanced-openai-api-key"`
+- Selector de Modelo OpenAI (Texto): `id="advanced-openai-model-text-trigger"`
+- Selector de Modelo OpenAI (Imagen): `id="advanced-openai-model-image-trigger"`
+- Permitir Indexación en Motores de Búsqueda (SEO): `id="advanced-allow-indexing-checkbox"`
+- Habilitar Gestión de Consentimiento Obligatoria: `id="advanced-enable-consents-checkbox"`
+- Sector Comercial de la Clínica: `id="advanced-business-sector-trigger"`
 
 ## 4. Mi Perfil Digital
 La sección de Perfil Personal (`/dashboard/profile`) permite al usuario cambiar su información de cuenta, preferencias de notificaciones y contraseñas:
