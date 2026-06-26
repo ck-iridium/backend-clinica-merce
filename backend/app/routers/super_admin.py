@@ -583,6 +583,7 @@ def hard_delete_tenant(
     # 2. Ejecutar eliminación en cascada quirúrgica y atómica en DB
     try:
         # Oleada 1: Hojas con múltiples dependencias cruzadas
+        db.query(models.SubscriptionRequest).filter(models.SubscriptionRequest.tenant_id == tenant_id).delete(synchronize_session=False)
         db.query(models.Appointment).filter(models.Appointment.tenant_id == tenant_id).delete(synchronize_session=False)
         db.query(models.Consent).filter(models.Consent.tenant_id == tenant_id).delete(synchronize_session=False)
         db.query(models.Voucher).filter(models.Voucher.tenant_id == tenant_id).delete(synchronize_session=False)

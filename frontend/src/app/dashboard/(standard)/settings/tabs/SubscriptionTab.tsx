@@ -495,7 +495,7 @@ export default function SubscriptionTab() {
                     <div className="bg-stone-50 dark:bg-stone-900/40 border border-stone-150 dark:border-stone-850 rounded-2xl p-4 text-center">
                       <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest block">Teléfono Bizum</span>
                       <span className="text-sm font-mono font-bold text-stone-900 dark:text-white mt-1.5 block">
-                        +34 600 000 000
+                        {process.env.NEXT_PUBLIC_BIZUM_PHONE || "+34 600 000 000"}
                       </span>
                     </div>
                   </div>

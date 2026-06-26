@@ -27,7 +27,7 @@ export const StepBizumPayment: React.FC<StepBizumPaymentProps> = ({
   const [copiedPhone, setCopiedPhone] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
 
-  const BIZUM_PHONE = "600 000 000";
+  const BIZUM_PHONE = process.env.NEXT_PUBLIC_BIZUM_PHONE || "600 000 000";
   const displayAmount = tenantData.amount ? parseFloat(tenantData.amount).toFixed(2) : "59.00";
   const displayCode = tenantData.reference_code || "PB-XXXXX";
 
