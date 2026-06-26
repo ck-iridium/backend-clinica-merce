@@ -191,14 +191,14 @@ export default function DocsClientPage({ brandingSettings, docsContent }: DocsCl
         const quoteText = quoteLines.join(' ');
         
         blocks.push(
-          <div key={`quote-${i}`} className={`my-8 p-6 rounded-2xl shadow-sm border border-stone-100 dark:border-stone-900 backdrop-blur-md ${
+          <div key={`quote-${i}`} className={`my-10 p-8 rounded-3xl shadow-sm border border-stone-100 dark:border-stone-900 backdrop-blur-md ${
             type === 'important' ? 'border-l-4 border-red-500 bg-red-500/[0.02] text-red-950 dark:text-red-200' :
             type === 'tip' ? 'theme-quote-tip text-stone-850 dark:text-stone-200' :
             'theme-quote-note text-stone-850 dark:text-stone-200'
           }`}>
             {titleText && (
               <span 
-                className="text-[10px] font-black tracking-widest uppercase block mb-2"
+                className="text-[10px] font-black tracking-widest uppercase block mb-3"
                 style={{ 
                   color: type === 'important' ? 'rgb(239, 68, 68)' : 
                          type === 'tip' ? primaryColor : 
@@ -245,7 +245,7 @@ export default function DocsClientPage({ brandingSettings, docsContent }: DocsCl
       // 4. Headers
       if (line.startsWith('# ')) {
         blocks.push(
-          <h1 key={`h1-${i}`} className="font-serif text-3xl md:text-4xl font-semibold tracking-tight text-stone-950 dark:text-white mt-10 mb-6 pb-4 border-b border-stone-100 dark:border-stone-900 leading-tight">
+          <h1 key={`h1-${i}`} className="font-serif text-3xl md:text-4xl font-semibold tracking-tight text-stone-950 dark:text-white mt-12 mb-6 pb-4 border-b border-stone-100 dark:border-stone-900 leading-tight">
             {line.replace('# ', '')}
           </h1>
         );
@@ -255,7 +255,7 @@ export default function DocsClientPage({ brandingSettings, docsContent }: DocsCl
       
       if (line.startsWith('## ')) {
         blocks.push(
-          <h2 key={`h2-${i}`} className="font-serif text-2xl font-medium tracking-tight text-stone-950 dark:text-white mt-10 mb-5 leading-snug">
+          <h2 key={`h2-${i}`} className="font-serif text-2xl font-medium tracking-tight text-stone-950 dark:text-white mt-12 mb-5 leading-snug">
             {line.replace('## ', '')}
           </h2>
         );
@@ -265,7 +265,7 @@ export default function DocsClientPage({ brandingSettings, docsContent }: DocsCl
       
       if (line.startsWith('### ')) {
         blocks.push(
-          <h3 key={`h3-${i}`} className="font-sans text-[11px] font-black uppercase tracking-wider text-stone-400 dark:text-stone-500 mt-8 mb-4">
+          <h3 key={`h3-${i}`} className="font-sans text-[11px] font-black uppercase tracking-wider text-stone-400 dark:text-stone-505 mt-10 mb-4">
             {line.replace('### ', '')}
           </h3>
         );
@@ -276,7 +276,7 @@ export default function DocsClientPage({ brandingSettings, docsContent }: DocsCl
       // 5. Dividers
       if (line.trim() === '---') {
         blocks.push(
-          <hr key={`hr-${i}`} className="my-10 border-stone-100 dark:border-stone-900" />
+          <hr key={`hr-${i}`} className="my-12 border-stone-100 dark:border-stone-900" />
         );
         i++;
         continue;
@@ -294,7 +294,7 @@ export default function DocsClientPage({ brandingSettings, docsContent }: DocsCl
           return codeParts.map((cPart, cIdx) => {
             if (cIdx % 2 === 1) {
               return (
-                <code key={cIdx} className="px-2 py-0.5 mx-0.5 rounded-lg bg-stone-100 dark:bg-stone-900 border border-stone-200/50 dark:border-stone-800 text-xs font-mono text-stone-800 dark:text-stone-200 font-semibold">
+                <code key={cIdx} className="px-2 py-0.5 mx-0.5 rounded-lg bg-stone-100 dark:bg-stone-900 border border-stone-200/50 dark:border-stone-850 text-xs font-mono text-stone-800 dark:text-stone-200 font-semibold">
                   {cPart}
                 </code>
               );
@@ -313,7 +313,7 @@ export default function DocsClientPage({ brandingSettings, docsContent }: DocsCl
       i++;
     }
     
-    return <div className="space-y-2">{blocks}</div>;
+    return <div className="space-y-6">{blocks}</div>;
   }
 
   return (

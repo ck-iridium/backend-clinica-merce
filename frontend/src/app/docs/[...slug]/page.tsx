@@ -294,7 +294,7 @@ export default function DynamicDocsPage({ params }: { params: { slug: string[] }
 
               {/* Dynamic Styled HTML Rich Text Canvas */}
               <div 
-                className="prose prose-stone max-w-none text-stone-700 font-sans prose-headings:font-serif prose-headings:font-bold prose-a:text-[#d4af37] prose-a:underline hover:prose-a:text-amber-600 transition-colors prose-img:rounded-3xl prose-img:shadow-md border-t border-stone-100 pt-6 prose-strong:font-bold"
+                className="prose prose-stone max-w-none text-stone-700 font-sans prose-headings:font-serif prose-headings:font-bold prose-headings:mt-12 prose-headings:mb-6 prose-p:my-6 prose-p:leading-relaxed prose-blockquote:my-10 prose-blockquote:p-8 prose-blockquote:rounded-3xl prose-blockquote:border-l-4 prose-blockquote:border-l-[#d4af37] prose-blockquote:bg-stone-50/50 prose-ul:my-6 prose-ul:space-y-4 prose-ol:my-6 prose-ol:space-y-4 prose-a:text-[#d4af37] prose-a:underline hover:prose-a:text-amber-600 transition-colors prose-img:rounded-3xl prose-img:shadow-md border-t border-stone-100 pt-6 prose-strong:font-bold"
                 dangerouslySetInnerHTML={{ __html: getSanitizedContent(activePage.content[lang] || activePage.content.es) }}
               />
 
