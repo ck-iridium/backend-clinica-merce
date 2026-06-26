@@ -101,6 +101,12 @@ export default function PricingSection({ onSelectPlan }: PricingSectionProps) {
                   </div>
                   <span className="text-xs font-semibold text-stone-600">TPV POS & Facturación</span>
                 </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-4 rounded-full bg-yellow-500/10 flex items-center justify-center text-[#d4af37]">
+                    <Sparkles className="w-2.5 h-2.5" />
+                  </div>
+                  <span className="text-xs font-semibold text-stone-600">Copiloto IA (5 acciones/día)</span>
+                </div>
               </div>
             </div>
 
@@ -159,6 +165,12 @@ export default function PricingSection({ onSelectPlan }: PricingSectionProps) {
                   </div>
                   <span className="text-xs font-semibold text-stone-600">TPV POS & Facturación</span>
                 </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-4 rounded-full bg-yellow-500/10 flex items-center justify-center text-[#d4af37]">
+                    <Sparkles className="w-2.5 h-2.5" />
+                  </div>
+                  <span className="text-xs font-semibold text-stone-600">Copiloto IA (15 acciones/día)</span>
+                </div>
               </div>
             </div>
 
@@ -213,6 +225,12 @@ export default function PricingSection({ onSelectPlan }: PricingSectionProps) {
                     <Check className="w-2.5 h-2.5" />
                   </div>
                   <span className="text-xs font-semibold text-stone-200">POS & Facturación Deluxe</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-4 bg-yellow-500/10 rounded-full flex items-center justify-center text-[#d4af37]">
+                    <Sparkles className="w-2.5 h-2.5" />
+                  </div>
+                  <span className="text-xs font-semibold text-stone-200">Copiloto IA (Ilimitado)</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-4 h-4 bg-yellow-500/10 rounded-full flex items-center justify-center text-[#d4af37]">

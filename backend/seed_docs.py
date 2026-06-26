@@ -260,6 +260,80 @@ DOCS_NAVIGATION = [
         }
       }
     ]
+  },
+  {
+    "id": "manual-clinica",
+    "title": {
+      "es": "Sección 8: Manual Operativo de la Clínica",
+      "en": "Section 8: Clinic Operations Manual",
+      "fr": "Section 8: Manuel Opérationnel de la Clinique"
+    },
+    "subpages": [
+      {
+        "id": "ayuda-agenda",
+        "title": {
+          "es": "Gestión de Agenda y Calendario",
+          "en": "Calendar & Appointment Management",
+          "fr": "Gestion de l'Agenda"
+        }
+      },
+      {
+        "id": "ayuda-pos",
+        "title": {
+          "es": "Venta Rápida y TPV (POS)",
+          "en": "Quick Sales & POS",
+          "fr": "Vente Rapide & POS"
+        }
+      },
+      {
+        "id": "ayuda-clientes",
+        "title": {
+          "es": "Fichas de Clientes y Consentimientos",
+          "en": "Client Files & Consent Forms",
+          "fr": "Fiches Clients & Consentements"
+        }
+      },
+      {
+        "id": "ayuda-facturas",
+        "title": {
+          "es": "Gestión de Facturación",
+          "en": "Invoice Management",
+          "fr": "Gestion des Factures"
+        }
+      },
+      {
+        "id": "ayuda-bonos",
+        "title": {
+          "es": "Catálogo de Bonos y Vouchers",
+          "en": "Voucher & Gift Card Catalog",
+          "fr": "Catalogue de Bons"
+        }
+      },
+      {
+        "id": "ayuda-ajustes",
+        "title": {
+          "es": "Ajustes del Sistema",
+          "en": "System Settings",
+          "fr": "Paramètres du Système"
+        }
+      },
+      {
+        "id": "ayuda-cms",
+        "title": {
+          "es": "Editor Web y CMS Modular",
+          "en": "Web Editor & Modular CMS",
+          "fr": "Éditeur Web & CMS Modulaire"
+        }
+      },
+      {
+        "id": "ayuda-gestion",
+        "title": {
+          "es": "Gestión de Personal y Servicios",
+          "en": "Staff & Service Management",
+          "fr": "Gestion du Personnel & Prestations"
+        }
+      }
+    ]
   }
 ]
 
