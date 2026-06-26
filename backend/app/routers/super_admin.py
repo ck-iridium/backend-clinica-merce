@@ -584,6 +584,7 @@ def hard_delete_tenant(
     try:
         # Oleada 1: Hojas con múltiples dependencias cruzadas
         db.query(models.SubscriptionRequest).filter(models.SubscriptionRequest.tenant_id == tenant_id).delete(synchronize_session=False)
+        db.query(models.StaffSchedule).filter(models.StaffSchedule.tenant_id == tenant_id).delete(synchronize_session=False)
         db.query(models.Appointment).filter(models.Appointment.tenant_id == tenant_id).delete(synchronize_session=False)
         db.query(models.Consent).filter(models.Consent.tenant_id == tenant_id).delete(synchronize_session=False)
         db.query(models.Voucher).filter(models.Voucher.tenant_id == tenant_id).delete(synchronize_session=False)
@@ -591,10 +592,12 @@ def hard_delete_tenant(
         db.query(models.Notification).filter(models.Notification.tenant_id == tenant_id).delete(synchronize_session=False)
         db.query(models.Media).filter(models.Media.tenant_id == tenant_id).delete(synchronize_session=False)
         db.query(models.VoucherTemplate).filter(models.VoucherTemplate.tenant_id == tenant_id).delete(synchronize_session=False)
+        db.query(models.ConsentTemplate).filter(models.ConsentTemplate.tenant_id == tenant_id).delete(synchronize_session=False)
         
         # Oleada 2: Entidades primarias referenciadas
         db.query(models.Client).filter(models.Client.tenant_id == tenant_id).delete(synchronize_session=False)
         db.query(models.Service).filter(models.Service.tenant_id == tenant_id).delete(synchronize_session=False)
+        db.query(models.Location).filter(models.Location.tenant_id == tenant_id).delete(synchronize_session=False)
         
         # Oleada 3: Parametrización e infraestructura del inquilino
         db.query(models.ServiceCategory).filter(models.ServiceCategory.tenant_id == tenant_id).delete(synchronize_session=False)
