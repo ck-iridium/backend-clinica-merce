@@ -423,7 +423,10 @@ export default function SubscriptionTab() {
                         <span className="text-xs font-medium text-stone-600 leading-tight">{feature}</span>
                       </div>
                     ))}
-                 <button
+                  </div>
+                </div>
+
+                <button
                   id={`subscription-upgrade-btn-${plan.id}`}
                   onClick={() => handleSelectPlanBizum(plan)}
                   disabled={isCurrent || creatingBizumRequest}
