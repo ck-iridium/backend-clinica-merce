@@ -901,5 +901,38 @@ class DocSectionOut(DocSectionBase):
         from_attributes = True
 
 
+# --- BIZUM SUBSCRIPTION SCHEMAS ---
+class SubscriptionRequestBase(BaseModel):
+    plan_type: str
+    billing_period: str
+
+class SubscriptionRequestCreate(SubscriptionRequestBase):
+    pass
+
+class SubscriptionRequestOut(BaseModel):
+    id: str
+    tenant_id: str
+    user_id: str
+    plan_type: str
+    billing_period: str
+    amount: float
+    reference_code: str
+    status: str
+    notes: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class SuperAdminSubscriptionRequestOut(SubscriptionRequestOut):
+    tenant_name: Optional[str] = None
+    user_email: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+
 
 

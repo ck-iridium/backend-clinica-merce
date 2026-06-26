@@ -58,6 +58,8 @@ def read_tenant_limits(db: Session = Depends(database.get_db)):
     return {
         "tenant_id": tenant_id,
         "plan_type": plan,
+        "subscription_status": tenant.subscription_status,
+        "subscription_expires_at": tenant.subscription_expires_at.isoformat() if tenant.subscription_expires_at else None,
         "has_own_key": has_own_key,
         "ai_trial_queries_used": tenant.ai_trial_queries_used if hasattr(tenant, "ai_trial_queries_used") else 0,
         "ai_daily_actions_used": tenant.ai_daily_actions_used if hasattr(tenant, "ai_daily_actions_used") else 0,

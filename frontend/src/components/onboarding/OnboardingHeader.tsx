@@ -19,6 +19,7 @@ export const OnboardingHeader: React.FC<OnboardingHeaderProps> = ({ step, totalS
           {step === 2 && "Estructura operativa"}
           {step === 3 && "Horarios & Agenda"}
           {step === 4 && "Últimos retoques de marca"}
+          {step === 5 && "Activación y Pago Bizum"}
         </h1>
       </div>
       

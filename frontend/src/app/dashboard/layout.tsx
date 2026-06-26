@@ -8,6 +8,7 @@ import { AIImageProvider } from '@/app/contexts/AIImageContext';
 import AIGenerationFloatingCard from '@/components/cms/AIGenerationFloatingCard';
 import AICopilotWidget from '@/components/ai/AICopilotWidget';
 import CoachTooltipManager from '@/components/ui/CoachTooltipManager';
+import GracePeriodBanner from '@/components/dashboard/GracePeriodBanner';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   // El middleware inyecta x-tenant-id en cada request para Server Components
@@ -45,6 +46,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
         {/* Área de Contenido Principal: El comportamiento (header, padding, scroll) se define en los layouts de grupo */}
         <main className="flex-1 flex flex-col relative text-foreground w-full h-full overflow-hidden">
+          <GracePeriodBanner />
           {children}
         </main>
       </div>

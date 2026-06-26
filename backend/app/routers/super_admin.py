@@ -1,12 +1,12 @@
 import base64
 import json
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Header
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from .. import database, models
+from .. import database, models, schemas
 
 router = APIRouter(
     prefix="/super-admin",
@@ -623,4 +623,96 @@ def hard_delete_tenant(
         "message": f"Inquilino '{tenant_name}' y todas sus dependencias eliminados permanentemente.",
         "deleted_files_count": len(deleted_files)
     }
+
+
+# ---------------------------------------------------------------------
+# ENDPOINTS PARA GESTIÓN DE SUSCRIPCIONES BIZUM (SUPER ADMIN)
+# ---------------------------------------------------------------------
+@router.get("/subscription-requests", response_model=List[schemas.SuperAdminSubscriptionRequestOut])
+def get_all_subscription_requests(
+    db: Session = Depends(database.get_db),
+    admin_payload: dict = Depends(verify_super_admin)
+):
+    """
+    Obtiene el listado de todas las solicitudes de suscripción Bizum.
+    """
+    requests = db.query(models.SubscriptionRequest).order_by(models.SubscriptionRequest.created_at.desc()).all()
+    results = []
+    for req in requests:
+        tenant = db.query(models.Tenant).filter(models.Tenant.id == req.tenant_id).first()
+        user = db.query(models.User).filter(models.User.id == req.user_id).first()
+        
+        # Mapeamos a SuperAdminSubscriptionRequestOut
+        out_data = schemas.SuperAdminSubscriptionRequestOut.model_validate(req) if hasattr(schemas.SuperAdminSubscriptionRequestOut, "model_validate") else schemas.SuperAdminSubscriptionRequestOut.from_orm(req)
+        out_data.tenant_name = tenant.name if tenant else "Desconocido"
+        out_data.user_email = user.email if user else "Desconocido"
+        results.append(out_data)
+        
+    return results
+
+class SubscriptionRejectPayload(BaseModel):
+    notes: Optional[str] = None
+
+@router.post("/subscription-requests/{request_id}/approve", response_model=schemas.SubscriptionRequestOut)
+def approve_subscription_request(
+    request_id: str,
+    db: Session = Depends(database.get_db),
+    admin_payload: dict = Depends(verify_super_admin)
+):
+    """
+    Aprueba una solicitud de Bizum, extendiendo la suscripción del tenant al ciclo completo.
+    """
+    req = db.query(models.SubscriptionRequest).filter(models.SubscriptionRequest.id == request_id).first()
+    if not req:
+        raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+        
+    if req.status != "submitted" and req.status != "pending":
+         raise HTTPException(status_code=400, detail="La solicitud no está en estado pendiente de verificación")
+         
+    # Actualizar estado de la solicitud
+    req.status = "approved"
+    req.updated_at = datetime.utcnow()
+    
+    # Actualizar tenant
+    tenant = db.query(models.Tenant).filter(models.Tenant.id == req.tenant_id).first()
+    if tenant:
+        tenant.plan_type = req.plan_type
+        tenant.subscription_status = "active"
+        
+        # Calcular nueva fecha de expiración
+        days = 365 if req.billing_period == "yearly" else 30
+        tenant.subscription_expires_at = datetime.utcnow() + timedelta(days=days)
+        
+    db.commit()
+    db.refresh(req)
+    return req
+
+@router.post("/subscription-requests/{request_id}/reject", response_model=schemas.SubscriptionRequestOut)
+def reject_subscription_request(
+    request_id: str,
+    payload: SubscriptionRejectPayload,
+    db: Session = Depends(database.get_db),
+    admin_payload: dict = Depends(verify_super_admin)
+):
+    """
+    Rechaza una solicitud de Bizum y suspende de inmediato la cuenta del tenant.
+    """
+    req = db.query(models.SubscriptionRequest).filter(models.SubscriptionRequest.id == request_id).first()
+    if not req:
+        raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+        
+    # Actualizar estado de la solicitud
+    req.status = "rejected"
+    req.notes = payload.notes
+    req.updated_at = datetime.utcnow()
+    
+    # Suspender tenant
+    tenant = db.query(models.Tenant).filter(models.Tenant.id == req.tenant_id).first()
+    if tenant:
+        tenant.subscription_status = "suspended"
+        
+    db.commit()
+    db.refresh(req)
+    return req
+
 

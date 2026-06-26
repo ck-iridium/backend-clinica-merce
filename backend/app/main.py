@@ -7,11 +7,27 @@ from slowapi.errors import RateLimitExceeded
 from fastapi.staticfiles import StaticFiles
 import os
 from .database import engine, Base
-from .routers import clients, services, appointments, vouchers, invoices, settings, users, voucher_templates, time_blocks, automation, service_categories, site_content, uploads, backups, media, ai, stripe_payments, super_admin, cms, onboarding, ai_agent, locations, staff_schedules, docs_cms, consent_templates
+from .routers import clients, services, appointments, vouchers, invoices, settings, users, voucher_templates, time_blocks, automation, service_categories, site_content, uploads, backups, media, ai, stripe_payments, super_admin, cms, onboarding, ai_agent, locations, staff_schedules, docs_cms, consent_templates, subscriptions_bizum
 from .scheduler import scheduler
 
 # Crear las tablas en la base de datos (Nota: en producción mejor usar Alembic)
 Base.metadata.create_all(bind=engine)
+
+# Aplicar migración de Bizum RLS de forma automática en Postgres
+try:
+    from sqlalchemy import text
+    is_postgres = not engine.url.drivername.startswith("sqlite")
+    if is_postgres:
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE subscription_requests ENABLE ROW LEVEL SECURITY;"))
+            connection.execute(text("DROP POLICY IF EXISTS tenant_isolation_subscription_requests ON subscription_requests;"))
+            connection.execute(text("""
+                CREATE POLICY tenant_isolation_subscription_requests ON subscription_requests
+                FOR ALL USING (tenant_id = current_setting('app.current_tenant_id', true));
+            """))
+            print("[AUTO-MIGRATION] RLS y políticas aplicadas para subscription_requests.")
+except Exception as e:
+    print(f"[AUTO-MIGRATION] Error al aplicar políticas RLS (puede ignorarse en local): {e}")
 
 def seed_admin_user():
     from .database import SessionLocal
@@ -257,6 +273,7 @@ app.include_router(ai_agent.router)
 app.include_router(stripe_payments.router)
 app.include_router(super_admin.router)
 app.include_router(cms.router)
+app.include_router(subscriptions_bizum.router)
 app.include_router(onboarding.router)
 app.include_router(locations.router)
 app.include_router(staff_schedules.router)

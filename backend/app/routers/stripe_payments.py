@@ -2,6 +2,7 @@ import os
 import logging
 import uuid
 import traceback
+from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
@@ -9,6 +10,7 @@ from .. import models, database
 from ..crud.settings import get_clinic_settings
 from ..services.tenant_provisioner import provision_tenant
 from ..services.stripe_service import StripeService
+from .subscriptions_bizum import generate_reference_code
 
 router = APIRouter(
     prefix="/stripe",
@@ -122,6 +124,55 @@ def create_onboarding_session(request: OnboardingSessionRequest, req: Request):
                 plan_type="free"
             )
             redirect_url = f"{frontend_url}/onboarding/success?free_success=true&tenant_id={tenant.id}&tenant_slug={tenant.slug}&tenant_name={tenant.name}&admin_email={request.admin_email}&admin_name={request.admin_name}&admin_password={request.admin_password}"
+            return {"url": redirect_url}
+            
+        # 2.B Si el plan es de pago y USE_BIZUM_ONBOARDING es True, aprovisionamos optimistamente con Bizum
+        use_bizum = os.getenv("USE_BIZUM_ONBOARDING", "true").lower() == "true"
+        if selected_plan != "free" and use_bizum:
+            print(f"[BIZUM ONBOARDING] Aprovisionando cuenta con Bizum al instante para {request.tenant_slug}")
+            tenant = provision_tenant(
+                db=db,
+                tenant_name=request.tenant_name,
+                tenant_slug=request.tenant_slug,
+                admin_email=request.admin_email,
+                admin_name=request.admin_name,
+                admin_password=request.admin_password,
+                stripe_customer_id=None,
+                stripe_subscription_id=None,
+                plan_type=selected_plan
+            )
+            
+            # Poner en estado grace por 24h
+            tenant.subscription_status = "grace"
+            tenant.subscription_expires_at = datetime.utcnow() + timedelta(hours=24)
+            db.commit()
+            
+            # Obtener user id
+            user = db.query(models.User).filter(models.User.tenant_id == tenant.id).first()
+            user_id = user.id if user else "system"
+            
+            PLAN_PRICES = {
+                "basic": {"monthly": 29.00, "yearly": 290.00},
+                "pro": {"monthly": 59.00, "yearly": 590.00},
+                "gold": {"monthly": 99.00, "yearly": 990.00}
+            }
+            amount = PLAN_PRICES.get(selected_plan, {"monthly": 59.00})["monthly"]
+            ref_code = generate_reference_code(db)
+            
+            new_request = models.SubscriptionRequest(
+                id=str(uuid.uuid4()),
+                tenant_id=tenant.id,
+                user_id=user_id,
+                plan_type=selected_plan,
+                billing_period="monthly",
+                amount=amount,
+                reference_code=ref_code,
+                status="pending"
+            )
+            db.add(new_request)
+            db.commit()
+            
+            redirect_url = f"{frontend_url}/onboarding/success?bizum_success=true&tenant_id={tenant.id}&tenant_slug={tenant.slug}&tenant_name={tenant.name}&admin_email={request.admin_email}&admin_name={request.admin_name}&admin_password={request.admin_password}&reference_code={ref_code}&amount={amount}"
             return {"url": redirect_url}
             
     finally:

@@ -10,6 +10,7 @@ import { StepIdentity } from '@/components/onboarding/StepIdentity';
 import { StepOperations } from '@/components/onboarding/StepOperations';
 import { StepScheduling } from '@/components/onboarding/StepScheduling';
 import { StepProvisioning } from '@/components/onboarding/StepProvisioning';
+import { StepBizumPayment } from '@/components/onboarding/StepBizumPayment';
 import { OnboardingFooter } from '@/components/onboarding/OnboardingFooter';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -52,6 +53,7 @@ function OnboardingContent() {
   // 1. Verify Stripe Checkout Session and Sync Tenant
   useEffect(() => {
     const freeSuccess = searchParams.get('free_success');
+    const bizumSuccess = searchParams.get('bizum_success');
     
     if (freeSuccess === 'true') {
       const data = {
@@ -65,6 +67,27 @@ function OnboardingContent() {
       setTenantData(data);
       setClinicName(data.tenant_name || '');
       setValidatingText('Inicializando tu base de datos gratuita...');
+      setTimeout(() => {
+        setLoading(false);
+      }, 1000);
+      return;
+    }
+
+    if (bizumSuccess === 'true') {
+      const data = {
+        tenant_id: searchParams.get('tenant_id'),
+        tenant_slug: searchParams.get('tenant_slug'),
+        tenant_name: searchParams.get('tenant_name'),
+        admin_email: searchParams.get('admin_email'),
+        admin_name: searchParams.get('admin_name'),
+        admin_password: searchParams.get('admin_password'),
+        reference_code: searchParams.get('reference_code'),
+        amount: searchParams.get('amount'),
+        bizum_success: true,
+      };
+      setTenantData(data);
+      setClinicName(data.tenant_name || '');
+      setValidatingText('Inicializando tu entorno ProBookia...');
       setTimeout(() => {
         setLoading(false);
       }, 1000);
@@ -165,6 +188,21 @@ function OnboardingContent() {
     }, 250);
   };
 
+  const handleGoToDashboard = () => {
+    if (!tenantData) return;
+    const hostname = window.location.hostname;
+    const protocol = window.location.protocol;
+    let redirectUrl = '/login';
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      redirectUrl = `${protocol}//${tenantData.tenant_slug}.localhost:3000/login?email=${encodeURIComponent(tenantData.admin_email)}&welcome=true`;
+    } else if (hostname.endsWith('.probookia.com')) {
+      redirectUrl = `${protocol}//${tenantData.tenant_slug}.probookia.com/login?email=${encodeURIComponent(tenantData.admin_email)}&welcome=true`;
+    } else {
+      redirectUrl = `/login?email=${encodeURIComponent(tenantData.admin_email)}&welcome=true`;
+    }
+    window.location.href = redirectUrl;
+  };
+
   // Final Setup Submission
   const handleCompleteSetup = async () => {
     if (!clinicName.trim()) {
@@ -219,6 +257,12 @@ function OnboardingContent() {
       }
 
       toast.success('¡Configuración completada con éxito! Bienvenido a ProBookia.', { id: setupToast });
+
+      if (tenantData?.bizum_success) {
+        setSubmitting(false);
+        setStep(5);
+        return;
+      }
 
       const hostname = window.location.hostname;
       const protocol = window.location.protocol;
@@ -302,7 +346,7 @@ function OnboardingContent() {
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-stone-900 via-[#d4af37] to-stone-900" />
         
         {/* Header - Stepper Progress Indicator */}
-        <OnboardingHeader step={step} totalSteps={4} />
+        <OnboardingHeader step={step} totalSteps={tenantData?.bizum_success ? 5 : 4} />
 
         {/* Dynamic Transition Wrapper */}
         <div className={`flex-1 mb-8 transition-all duration-300 transform ${
@@ -361,16 +405,26 @@ function OnboardingContent() {
             />
           )}
 
+          {/* STEP 5: Activación y Pago Bizum */}
+          {step === 5 && tenantData && (
+            <StepBizumPayment 
+              tenantData={tenantData}
+              onAccessDashboard={handleGoToDashboard}
+            />
+          )}
+
         </div>
 
         {/* Footer Navigation Buttons */}
-        <OnboardingFooter 
-          step={step}
-          submitting={submitting}
-          handlePrevStep={handlePrevStep}
-          handleNextStep={handleNextStep}
-          handleCompleteSetup={handleCompleteSetup}
-        />
+        {step < 5 && (
+          <OnboardingFooter 
+            step={step}
+            submitting={submitting}
+            handlePrevStep={handlePrevStep}
+            handleNextStep={handleNextStep}
+            handleCompleteSetup={handleCompleteSetup}
+          />
+        )}
 
       </div>
     </div>

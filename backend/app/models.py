@@ -542,5 +542,21 @@ class DocPage(Base):
     section = relationship("DocSection", back_populates="pages")
 
 
+class SubscriptionRequest(Base):
+    __tablename__ = "subscription_requests"
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
+    plan_type = Column(String(20), nullable=False)
+    billing_period = Column(String(20), nullable=False)
+    amount = Column(Numeric(10, 2), nullable=False)
+    reference_code = Column(String(10), nullable=False, unique=True, index=True)
+    status = Column(String(20), nullable=False, default="pending")
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+
 
 

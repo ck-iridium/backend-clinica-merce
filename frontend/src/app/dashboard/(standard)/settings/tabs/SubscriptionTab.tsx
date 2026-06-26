@@ -8,6 +8,11 @@ export default function SubscriptionTab() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
   const [redirectingPlan, setRedirectingPlan] = useState<string | null>(null);
+  const [showBizumModal, setShowBizumModal] = useState(false);
+  const [selectedPlanForBizum, setSelectedPlanForBizum] = useState<any>(null);
+  const [bizumRequestData, setBizumRequestData] = useState<any>(null);
+  const [creatingBizumRequest, setCreatingBizumRequest] = useState(false);
+  const [confirmingBizumSent, setConfirmingBizumSent] = useState(false);
 
   const fetchLimits = async () => {
     try {
@@ -146,6 +151,109 @@ export default function SubscriptionTab() {
       toast.error('Error de red al conectar con Stripe.');
     } finally {
       setRedirectingPlan(null);
+    }
+  };
+
+  const handleSelectPlanBizum = async (plan: any) => {
+    if (!data?.tenant_id) return;
+    setSelectedPlanForBizum(plan);
+    setShowBizumModal(true);
+    setCreatingBizumRequest(true);
+    setBizumRequestData(null);
+    try {
+      const getCookie = (name: string): string | null => {
+        if (typeof document === 'undefined') return null;
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+        return null;
+      };
+
+      const userSession = localStorage.getItem('user');
+      let tenantId = getCookie('tenant_id') || '';
+      let authToken = '';
+      
+      if (userSession) {
+        try {
+          const parsed = JSON.parse(userSession);
+          if (!tenantId) tenantId = parsed.tenant_id || '';
+          authToken = parsed.access_token || parsed.token || '';
+        } catch (e) {}
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subscription/request-bizum`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Tenant-ID': tenantId,
+          'Authorization': authToken ? `Bearer ${authToken}` : ''
+        },
+        body: JSON.stringify({
+          plan_type: plan.id,
+          billing_period: 'monthly'
+        })
+      });
+      const result = await res.json();
+      if (res.ok) {
+        setBizumRequestData(result);
+      } else {
+        toast.error(result.detail || 'Error al iniciar la solicitud de Bizum.');
+        setShowBizumModal(false);
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error('Error de red al procesar la solicitud de Bizum.');
+      setShowBizumModal(false);
+    } finally {
+      setCreatingBizumRequest(false);
+    }
+  };
+
+  const handleConfirmBizumSent = async () => {
+    if (!bizumRequestData?.id) return;
+    setConfirmingBizumSent(true);
+    try {
+      const getCookie = (name: string): string | null => {
+        if (typeof document === 'undefined') return null;
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+        return null;
+      };
+
+      const userSession = localStorage.getItem('user');
+      let tenantId = getCookie('tenant_id') || '';
+      let authToken = '';
+      
+      if (userSession) {
+        try {
+          const parsed = JSON.parse(userSession);
+          if (!tenantId) tenantId = parsed.tenant_id || '';
+          authToken = parsed.access_token || parsed.token || '';
+        } catch (e) {}
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subscription/confirm-sent/${bizumRequestData.id}`, {
+        method: 'POST',
+        headers: {
+          'X-Tenant-ID': tenantId,
+          'Authorization': authToken ? `Bearer ${authToken}` : ''
+        }
+      });
+      const result = await res.json();
+      if (res.ok) {
+        toast.success('¡Activación en curso! Tu cuenta ha sido desbloqueada por 24h de forma optimista mientras verificamos tu pago.');
+        setShowBizumModal(false);
+        window.dispatchEvent(new Event('refresh-limits'));
+        fetchLimits();
+      } else {
+        toast.error(result.detail || 'Error al confirmar el envío del Bizum.');
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error('Error de red al confirmar el pago.');
+    } finally {
+      setConfirmingBizumSent(false);
     }
   };
 
@@ -315,22 +423,19 @@ export default function SubscriptionTab() {
                         <span className="text-xs font-medium text-stone-600 leading-tight">{feature}</span>
                       </div>
                     ))}
-                  </div>
-                </div>
-
-                <button
+                 <button
                   id={`subscription-upgrade-btn-${plan.id}`}
-                  onClick={() => handleUpgrade(plan.id)}
-                  disabled={isCurrent || redirectingPlan !== null}
+                  onClick={() => handleSelectPlanBizum(plan)}
+                  disabled={isCurrent || creatingBizumRequest}
                   className={`w-full py-3 rounded-xl text-xs font-bold transition-all duration-300 active:scale-95 flex items-center justify-center gap-1.5
                     ${isCurrent 
                       ? 'bg-stone-50 text-stone-400 cursor-not-allowed border border-stone-200/50' 
                       : 'bg-stone-900 hover:bg-[#d4af37] text-white shadow-sm'}`}
                 >
-                  {redirectingPlan === plan.id ? (
+                  {creatingBizumRequest && selectedPlanForBizum?.id === plan.id ? (
                     <>
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      Redirigiendo...
+                      Iniciando...
                     </>
                   ) : isCurrent ? (
                     'Plan Actual'
@@ -343,6 +448,107 @@ export default function SubscriptionTab() {
           })}
         </div>
       </div>
+
+      {/* ── MODAL DE PAGO BIZUM (QUIET LUXURY) ────────────────────────── */}
+      {showBizumModal && selectedPlanForBizum && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/40 backdrop-blur-md p-4 animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-stone-900 rounded-[2.25rem] border border-stone-200/60 dark:border-stone-850 p-6 md:p-8 max-w-md w-full shadow-2xl relative animate-in zoom-in-95 duration-300">
+            {/* Botón Cerrar */}
+            <button 
+              onClick={() => setShowBizumModal(false)}
+              className="absolute top-5 right-5 text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {creatingBizumRequest ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-[#d4af37] mb-2" />
+                <span className="text-xs font-semibold text-stone-400">Generando código de referencia único...</span>
+              </div>
+            ) : bizumRequestData ? (
+              <div className="space-y-6">
+                <div>
+                  <span className="text-[9px] font-black uppercase tracking-[0.25em] text-[#d4af37] block mb-1">Soft-Launch ProBookia</span>
+                  <h3 className="text-2xl font-serif font-extrabold tracking-tight text-stone-900 dark:text-white">
+                    Pago Manual vía Bizum
+                  </h3>
+                  <p className="text-stone-500 dark:text-stone-400 text-xs mt-2 leading-relaxed">
+                    Hemos habilitado una forma de pago directa por Bizum para agilizar tu acceso. Por favor, realiza el envío y copia el concepto de manera exacta.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  {/* Datos del pago */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-stone-50 dark:bg-stone-900/40 border border-stone-150 dark:border-stone-850 rounded-2xl p-4 text-center">
+                      <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest block">Monto a Enviar</span>
+                      <span className="text-xl font-mono font-black text-stone-900 dark:text-white mt-1 block">
+                        {bizumRequestData.amount}€
+                      </span>
+                    </div>
+                    <div className="bg-stone-50 dark:bg-stone-900/40 border border-stone-150 dark:border-stone-850 rounded-2xl p-4 text-center">
+                      <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest block">Teléfono Bizum</span>
+                      <span className="text-sm font-mono font-bold text-stone-900 dark:text-white mt-1.5 block">
+                        +34 600 000 000
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Concepto Obligatorio */}
+                  <div className="bg-[#fcf8e5] dark:bg-yellow-500/5 border border-[#f5ebc5] dark:border-yellow-500/10 rounded-2xl p-5 text-center space-y-3">
+                    <span className="text-[9px] font-black text-[#d4af37] uppercase tracking-[0.2em] block">
+                      CONCEPTO OBLIGATORIO EN BIZUM
+                    </span>
+                    
+                    <div className="flex items-center justify-center gap-3">
+                      <span className="text-2xl font-mono font-black text-stone-900 dark:text-white tracking-widest">
+                        {bizumRequestData.reference_code}
+                      </span>
+                      
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(bizumRequestData.reference_code);
+                          toast.success('¡Código copiado al portapapeles!');
+                        }}
+                        className="p-2 rounded-xl bg-white dark:bg-stone-900 hover:bg-stone-50 dark:hover:bg-stone-850 border border-stone-200/50 dark:border-stone-800 text-[#d4af37] transition-all hover:scale-105 active:scale-95 shadow-sm"
+                        title="Copiar código"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                        </svg>
+                      </button>
+                    </div>
+                    
+                    <p className="text-[10px] text-amber-700/80 font-bold leading-relaxed">
+                      ⚠️ Es fundamental incluir este código exacto para que podamos validar tu transferencia.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    onClick={handleConfirmBizumSent}
+                    disabled={confirmingBizumSent}
+                    className="w-full bg-stone-900 hover:bg-[#d4af37] text-white py-3.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center gap-1.5 shadow-md active:scale-95 disabled:bg-stone-300 disabled:cursor-not-allowed"
+                  >
+                    {confirmingBizumSent ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        Confirmando envío...
+                      </>
+                    ) : (
+                      'Ya he enviado el Bizum'
+                    )}
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
