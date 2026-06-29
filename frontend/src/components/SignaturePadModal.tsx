@@ -22,9 +22,10 @@ interface SignaturePadModalProps {
   onClose: () => void;
   onSave: (signatureB64: string, docType: string) => void;
   clientName: string;
+  clinicName?: string;
 }
 
-export function SignaturePadModal({ isOpen, onClose, onSave, clientName }: SignaturePadModalProps) {
+export function SignaturePadModal({ isOpen, onClose, onSave, clientName, clinicName }: SignaturePadModalProps) {
   const { t } = useLanguage();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [docType, setDocType] = useState('rgpd_general');
@@ -149,7 +150,7 @@ export function SignaturePadModal({ isOpen, onClose, onSave, clientName }: Signa
           {/* Texto Legal */}
           <div className="bg-stone-50 border border-stone-200 rounded-2xl p-6 h-48 overflow-y-auto mb-6 text-xs text-stone-500 text-justify leading-relaxed whitespace-pre-line">
             <p className="font-bold text-stone-700 mb-2">{t('dashboard.clients.patient_declaration_title')}</p>
-            {t('dashboard.clients.consent_declaration_body', { name: clientName })}
+            {t('dashboard.clients.consent_declaration_body', { name: clientName, clinic: clinicName || t('common.the_clinic') || 'la clínica' })}
           </div>
 
           {/* Canvas Wrapper */}

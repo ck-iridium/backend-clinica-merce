@@ -108,7 +108,7 @@
   "clear_canvas": "Clear Canvas",
   "sign_here": "Sign here...",
   "patient_declaration_title": "PATIENT DECLARATION:",
-  "consent_declaration_body": "I, Mr./Ms. {name}, hereby state that I have been duly informed and have understood the nature and purpose of the selected treatment, as well as the possible complications, general and rare risks associated with it.\n\nAdditionally, I give my EXPRESS consent, in accordance with Organic Law 3/2018 on Personal Data Protection and guarantee of digital rights (LOPDGDD) and Regulation (EU) 2016/679 (GDPR), for the use, treatment, and filing of my personal data, medical history, and photographs for diagnosis and medical evolution purposes, in favor of Clínica Mercè.\n\nBy signing this document, I assume that I have had the opportunity to clarify doubts and accept the proposed treatment freely and voluntarily.",
+  "consent_declaration_body": "I, Mr./Ms. {name}, hereby state that I have been duly informed and have understood the nature and purpose of the selected treatment, as well as the possible complications, general and rare risks associated with it.\n\nAdditionally, I give my EXPRESS consent, in accordance with Organic Law 3/2018 on Personal Data Protection and guarantee of digital rights (LOPDGDD) and Regulation (EU) 2016/679 (GDPR), for the use, treatment, and filing of my personal data, medical history, and photographs for diagnosis and medical evolution purposes, in favor of {clinic}.\n\nBy signing this document, I assume that I have had the opportunity to clarify doubts and accept the proposed treatment freely and voluntarily.",
   "accept_and_sign": "Accept and Sign Document",
   "signature_label": "Client Signature:",
   "consent_agreements": {

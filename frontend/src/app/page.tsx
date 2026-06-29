@@ -1,11 +1,5 @@
-import { Metadata } from 'next';
 import { headers } from 'next/headers';
 import ClientHome from './ClientHome';
-
-export const metadata: Metadata = {
-  title: 'Clínica de Estética Avanzada - Clínica Mercè',
-  description: 'Tratamientos estéticos avanzados y personalizados para resaltar tu belleza natural.',
-};
 
 async function getData(tenantId: string) {
   const fetchSafe = async (url: string, defaultValue: any) => {

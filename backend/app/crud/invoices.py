@@ -137,14 +137,14 @@ def create_direct_sale(db: Session, sale: schemas.DirectSaleRequest):
     if sale.is_simplified:
         # Search or create "Cliente de Contado"
         anon_client = db.query(models.Client).filter(
-            models.Client.email == "contado@clinica-mercedes.com",
+            models.Client.email == "contado@generico.local",
             models.Client.tenant_id == tenant_id
         ).first()
         if not anon_client:
             anon_client = models.Client(
                 id=str(uuid.uuid4()),
                 name="Cliente de Contado",
-                email="contado@clinica-mercedes.com",
+                email="contado@generico.local",
                 phone="000000000",
                 tenant_id=tenant_id
             )

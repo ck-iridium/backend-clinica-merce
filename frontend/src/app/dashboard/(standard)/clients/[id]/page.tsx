@@ -69,6 +69,7 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
   const [enableConsents, setEnableConsents] = useState<boolean>(true);
   const [saving, setSaving] = useState(false);
   const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
+  const [clinicName, setClinicName] = useState<string>('');
 
   // Pay Debt Modal State
   const [showPayModal, setShowPayModal] = useState(false);
@@ -101,6 +102,7 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
         clientSector = settingsData.business_sector || 'general';
         setBusinessSector(clientSector);
         setEnableConsents(settingsData.enable_consents ?? true);
+        setClinicName(settingsData.clinic_name || '');
       }
       
       if (cRes.ok) {
@@ -423,6 +425,7 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
         onClose={() => setIsSignatureModalOpen(false)}
         onSave={handleSaveSignature}
         clientName={client.first_name + ' ' + (client.last_name || '')}
+        clinicName={clinicName}
       />
 
       {/* Dialogo de Edición de Ficha de Cliente */}

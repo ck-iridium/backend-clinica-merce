@@ -15,9 +15,11 @@ def get_clinic_settings(db: Session):
         settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).first()
 
     if not settings:
+        tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
+        default_name = tenant.name if tenant else "Mi Clínica"
         # Create default singleton settings if not exists
         settings = models.ClinicSettings(
-            clinic_name="Clínica Merce",
+            clinic_name=default_name,
             invoice_prefix="FA-{YY}-",
             invoice_next_number=1,
             default_tax_rate=21.0,

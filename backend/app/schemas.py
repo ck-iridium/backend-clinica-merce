@@ -175,7 +175,7 @@ class ServiceResponse(ServiceBase):
 
 # --- SETTINGS ---
 class ClinicSettingsBase(BaseModel):
-    clinic_name: Optional[str] = "Clínica Merce"
+    clinic_name: Optional[str] = "Clínica"
     business_sector: Optional[str] = "general"
     clinic_nif: Optional[str] = ""
     clinic_address: Optional[str] = ""

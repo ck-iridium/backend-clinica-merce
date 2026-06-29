@@ -396,7 +396,7 @@ class SiteContent(Base):
     hero_horizontal_alignment = Column(String, default="center") # left, center, right
     
     # About Section
-    about_title = Column(String, default="Sobre Estética Merce")
+    about_title = Column(String, default="Sobre Nosotros")
     about_text = Column(Text, default="Nuestra pasión es cuidar de ti y de tu piel con los tratamientos más innovadores.")
     about_image_url = Column(String, nullable=True)
     about_layout = Column(String, default="right") # left, right (imagen a la izq o der)

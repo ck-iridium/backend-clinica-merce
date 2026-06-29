@@ -69,7 +69,7 @@ export default function POSPage() {
   };
 
   const filteredClients = clients.filter(c => 
-    c.email !== 'contado@clinica-mercedes.com' && (
+    c.email !== 'contado@generico.local' && (
       c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
       c.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.phone?.includes(searchTerm)

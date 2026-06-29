@@ -17,10 +17,23 @@ export default function ShareModal({ isOpen, onClose, serviceName, url }: ShareM
   const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [clinicName, setClinicName] = useState('la clínica');
 
   // Garantizar montaje en cliente para SSR seguro con Portals
   useEffect(() => {
     setMounted(true);
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname.toLowerCase();
+      if (hostname.includes('.localhost') && hostname !== 'localhost') {
+        const sub = hostname.split('.')[0];
+        setClinicName(sub === 'merce' ? 'Clínica Mercè' : sub.charAt(0).toUpperCase() + sub.slice(1));
+      } else if (hostname.endsWith('.probookia.com')) {
+        const sub = hostname.replace('.probookia.com', '');
+        setClinicName(sub === 'merce' ? 'Clínica Mercè' : sub.charAt(0).toUpperCase() + sub.slice(1));
+      } else if (hostname.includes('esteticamerce.com')) {
+        setClinicName('Clínica Mercè');
+      }
+    }
     return () => setMounted(false);
   }, []);
 
@@ -56,7 +69,7 @@ export default function ShareModal({ isOpen, onClose, serviceName, url }: ShareM
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(url)}`;
   const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
   const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(serviceName)}`;
-  const emailUrl = `mailto:?subject=${encodeURIComponent(serviceName)}&body=${encodeURIComponent(`Hola, te comparto este tratamiento exclusivo de Clínica Mercè: ${serviceName}\n\nEnlace: ${url}`)}`;
+  const emailUrl = `mailto:?subject=${encodeURIComponent(serviceName)}&body=${encodeURIComponent(`Hola, te comparto este tratamiento exclusivo de ${clinicName}: ${serviceName}\n\nEnlace: ${url}`)}`;
 
   return createPortal(
     <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">

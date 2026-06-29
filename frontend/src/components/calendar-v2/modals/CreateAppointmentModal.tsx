@@ -257,7 +257,7 @@ export function CreateAppointmentModal({
                     </SelectTrigger>
                     <SelectContent>
                       {(() => {
-                        const filteredClients = clients.filter(c => c.email !== 'contado@clinica-mercedes.com');
+                        const filteredClients = clients.filter(c => c.email !== 'contado@generico.local');
                         if (filteredClients.length === 0) {
                           return (
                             <SelectItem value="none" disabled className="text-stone-400 font-bold py-3 text-center">

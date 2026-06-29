@@ -394,7 +394,7 @@ export default function ClientsPage() {
                 </tr>
               ) : (
                 clients
-                  .filter(c => c.email !== 'contado@clinica-mercedes.com')
+                  .filter(c => c.email !== 'contado@generico.local')
                   .map((client, index) => (
                   <tr 
                     key={client.id} 

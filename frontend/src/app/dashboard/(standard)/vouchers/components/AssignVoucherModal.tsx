@@ -61,7 +61,7 @@ export default function AssignVoucherModal({
                 </SelectTrigger>
                 <SelectContent>
                   {clients
-                    .filter((c: any) => c.email !== 'contado@clinica-mercedes.com')
+                    .filter((c: any) => c.email !== 'contado@generico.local')
                     .map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                 </SelectContent>
               </Select>

@@ -113,7 +113,7 @@ export default function BookingLayoutTab({ settings, setSettings }: BookingLayou
                 {/* Mini Title */}
                 <div className="mb-3">
                   <h5 className="text-[11px] font-serif font-bold text-stone-800 tracking-wide">{t('dashboard.settings.booking_ui.treatments')}</h5>
-                  <p className="text-[7px] text-[#d4af37] font-bold uppercase tracking-widest mt-0.5">Clínica Mercè</p>
+                  <p className="text-[7px] text-[#d4af37] font-bold uppercase tracking-widest mt-0.5">{settings?.clinic_name || 'Mi Clínica'}</p>
                 </div>
 
                 {currentLayout === 'grid' ? (

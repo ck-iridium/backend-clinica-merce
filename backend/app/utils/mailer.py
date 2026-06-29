@@ -17,6 +17,7 @@ def send_email(to_email: str, subject: str, body_html: str, settings=None):
     """
     # 1. Prioridad: Resend API si existe la KEY
     api_key = os.environ.get("RESEND_API_KEY", "").strip()
+    sender_name = settings.clinic_name if settings and settings.clinic_name else "Clínica"
     
     if api_key:
         try:
@@ -28,7 +29,7 @@ def send_email(to_email: str, subject: str, body_html: str, settings=None):
             }
             
             data = {
-                "from": "Estética Merce <info@esteticamerce.com>",
+                "from": f"{sender_name} <info@esteticamerce.com>",
                 "to": [to_email],
                 "subject": subject,
                 "html": body_html
@@ -72,7 +73,7 @@ def send_email(to_email: str, subject: str, body_html: str, settings=None):
 
         msg = MIMEMultipart("alternative")
         msg['Subject'] = subject
-        msg['From'] = f"Estética Merce <{smtp_from}>"
+        msg['From'] = f"{sender_name} <{smtp_from}>"
         msg['To'] = to_email
         msg.attach(MIMEText(body_html, 'html'))
 
@@ -166,7 +167,7 @@ def send_appointment_notification(appointment_id: str, type: str):
             if admin_email:
                 subject = f"🔔 Nueva Solicitud: {client.name}"
                 content = f"""
-                <h3 style="color: #444; margin-bottom: 20px;">Merce, ¡tienes una nueva solicitud web!</h3>
+                <h3 style="color: #444; margin-bottom: 20px;">¡Tienes una nueva solicitud web!</h3>
                 <div style="background-color: #fdf2f3; border-radius: 16px; padding: 25px; border: 1px solid #f9e1e3;">
                     <p style="margin: 0 0 10px 0; color: #d9777f; font-weight: bold; font-size: 13px;">DETALLES DE LA CLIENTA</p>
                     <p style="margin: 0; font-size: 18px; color: #5c4d4f; font-weight: 700;">{client.name}</p>
@@ -269,7 +270,7 @@ def send_appointment_notification(appointment_id: str, type: str):
                 whatsapp_url = f"https://wa.me/{client.phone.replace(' ', '').replace('+', '')}?text=Hola%20{client.name.split(' ')[0]},%20he%20visto%20que%20has%20cancelado%20tu%20cita%20para%20{service.name}%20del%20día%20{date_str}.%20¿Te%20puedo%20ayudar%20a%20buscar%20otro%20hueco?"
                 
                 content = f"""
-                <h3 style="color: #444; margin-bottom: 20px;">Merce, una clienta ha cancelado su cita.</h3>
+                <h3 style="color: #444; margin-bottom: 20px;">Una clienta ha cancelado su cita.</h3>
                 <div style="background-color: #fff9fa; border-radius: 16px; padding: 25px; border: 1px solid #fde7e9;">
                     <p style="margin: 0 0 10px 0; color: #dc2626; font-weight: bold; font-size: 13px;">CITA CANCELADA AUTOMÁTICAMENTE</p>
                     <p style="margin: 0; font-size: 18px; color: #5c4d4f; font-weight: 700;">{client.name}</p>

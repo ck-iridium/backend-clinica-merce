@@ -141,7 +141,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-white/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d9777f] focus:border-transparent transition-all shadow-sm" 
-                placeholder="merce@clinicamerce.com" 
+                placeholder="admin@tudominio.com" 
               />
             </div>
             <div>
@@ -186,7 +186,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-5 py-4 rounded-xl border border-stone-200 bg-white/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d9777f] focus:border-transparent transition-all shadow-sm" 
-                placeholder="merce@clinicamerce.com" 
+                placeholder="correo@ejemplo.com" 
               />
             </div>
             

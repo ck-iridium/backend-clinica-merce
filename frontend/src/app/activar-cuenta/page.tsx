@@ -16,9 +16,23 @@ export default function ActivarCuentaPage() {
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [errorUrl, setErrorUrl] = useState(false);
+  const [tenantName, setTenantName] = useState('PROBOOKIA');
 
   useEffect(() => {
     setMounted(true);
+
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname.toLowerCase();
+      if (hostname.includes('.localhost') && hostname !== 'localhost') {
+        const sub = hostname.split('.')[0];
+        setTenantName(sub === 'merce' ? 'CLÍNICA MERCÈ' : sub.split('-').join(' ').toUpperCase());
+      } else if (hostname.endsWith('.probookia.com')) {
+        const sub = hostname.replace('.probookia.com', '');
+        setTenantName(sub === 'merce' ? 'CLÍNICA MERCÈ' : sub.split('-').join(' ').toUpperCase());
+      } else if (hostname.includes('esteticamerce.com')) {
+        setTenantName('CLÍNICA MERCÈ');
+      }
+    }
 
     const checkToken = async () => {
       if (typeof window === 'undefined') return;
@@ -206,7 +220,7 @@ export default function ActivarCuentaPage() {
       
       {/* Decorative Brand footer */}
       <div className="absolute bottom-8 left-0 right-0 text-center">
-        <p className="text-xs font-black uppercase tracking-[0.2em] text-stone-300">CLÍNICA MERCÈ</p>
+        <p className="text-xs font-black uppercase tracking-[0.2em] text-stone-300">{tenantName}</p>
       </div>
     </div>
   );

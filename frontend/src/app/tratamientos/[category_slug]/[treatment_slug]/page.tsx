@@ -71,6 +71,9 @@ export async function generateMetadata({ params }: { params: { category_slug: st
   const service = await getServiceData(params.treatment_slug, tenantId);
   if (!service) return { title: 'Tratamiento no encontrado' };
 
+  const settings = await getSettings(tenantId);
+  const clinicName = settings?.clinic_name || 'Clínica';
+
   const cookieStore = cookies();
   const lang = (cookieStore.get('preferred_language')?.value || 'es') as 'es' | 'en' | 'fr';
 
@@ -87,9 +90,9 @@ export async function generateMetadata({ params }: { params: { category_slug: st
   const description = translateServer(service.description, service.translations, 'description');
 
   const seoTranslations: Record<string, Record<string, string>> = {
-    es: { suffix: '| Clínica de Estética', defaultDesc: `Descubre más sobre nuestro tratamiento ${name}.`, keywords: 'tratamiento, estética, clínica' },
-    en: { suffix: '| Aesthetic Clinic', defaultDesc: `Discover more about our ${name} treatment.`, keywords: 'treatment, aesthetics, clinic' },
-    fr: { suffix: '| Clinique d\'Esthétique', defaultDesc: `Découvrez-en plus sur nuestro soin ${name}.`, keywords: 'soin, esthétique, clinique' }
+    es: { suffix: `| ${clinicName}`, defaultDesc: `Descubre más sobre nuestro tratamiento ${name}.`, keywords: 'tratamiento, estética, clínica' },
+    en: { suffix: `| ${clinicName}`, defaultDesc: `Discover more about our ${name} treatment.`, keywords: 'treatment, aesthetics, clinic' },
+    fr: { suffix: `| ${clinicName}`, defaultDesc: `Découvrez-en plus sur notre soin ${name}.`, keywords: 'soin, esthétique, clinique' }
   };
   const seoT = seoTranslations[lang] || seoTranslations.es;
 
@@ -113,7 +116,7 @@ export async function generateMetadata({ params }: { params: { category_slug: st
       title: finalTitle,
       description: finalDesc,
       url: shareUrl,
-      siteName: 'Clínica Mercè',
+      siteName: clinicName,
       images: [
         {
           url: imageUrl,
