@@ -375,10 +375,18 @@ export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant, o
             <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Suscripción B2B</p>
             <div className="flex items-center gap-2">
               <div className={`w-3 h-3 rounded-full ${
-                tenant.subscription_status === 'active' ? 'bg-[#d4af37] animate-pulse' : 'bg-red-500'
+                tenant.subscription_status === 'active' 
+                  ? 'bg-[#d4af37] animate-pulse' 
+                  : tenant.subscription_status === 'grace'
+                  ? 'bg-blue-500 animate-pulse'
+                  : 'bg-red-500'
               }`}></div>
-              <span className="text-xl font-bold font-serif text-stone-900 capitalize">
-                {tenant.subscription_status === 'active' ? 'Activo' : 'Suspendido'}
+              <span className="text-xl font-bold font-serif text-stone-900 capitalize leading-none">
+                {tenant.subscription_status === 'active' 
+                  ? 'Activo' 
+                  : tenant.subscription_status === 'grace'
+                  ? 'Periodo de Gracia'
+                  : 'Suspendido'}
               </span>
             </div>
             <span className="text-xxs text-stone-400 font-medium">Control de acceso activo en middleware</span>
@@ -408,13 +416,26 @@ export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant, o
         </div>
 
         {/* 3. ALERTA O PRECAUCIÓN DE SUSPENSIÓN SI CORRESPONDE */}
-        {tenant.subscription_status !== 'active' && (
+        {tenant.subscription_status !== 'active' && tenant.subscription_status !== 'grace' && (
           <div className="bg-red-50 border border-red-100 rounded-2xl p-5 flex items-start gap-4">
             <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
             <div>
               <h4 className="text-sm font-bold text-red-800">Clínica Suspendida</h4>
               <p className="text-xs text-red-600 mt-1 leading-relaxed">
                 El acceso público a esta clínica y a su panel de gestión está actualmente restringido. Los usuarios recibirán una pantalla de "Servicio Suspendido (Código 402)" al intentar acceder.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* 3.B ALERTA INFORMATIVA DE PERIODO DE GRACIA SI CORRESPONDE */}
+        {tenant.subscription_status === 'grace' && (
+          <div className="bg-blue-50/50 border border-blue-100/75 rounded-2xl p-5 flex items-start gap-4 animate-in fade-in duration-300">
+            <CheckCircle2 className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div>
+              <h4 className="text-sm font-bold text-blue-800">Periodo de Gracia Activo</h4>
+              <p className="text-xs text-blue-650 mt-1 leading-relaxed">
+                Esta clínica cuenta con un acceso de gracia activo de 24 horas. Los administradores y usuarios pueden explorar y configurar el entorno de trabajo con total normalidad hasta la fecha de vencimiento.
               </p>
             </div>
           </div>

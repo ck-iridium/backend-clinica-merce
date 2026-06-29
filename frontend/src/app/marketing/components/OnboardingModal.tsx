@@ -26,9 +26,21 @@ export default function OnboardingModal({
     admin_password: '',
   });
 
+  const [errors, setErrors] = useState({
+    tenant_name: '',
+    tenant_slug: '',
+    admin_name: '',
+    admin_email: '',
+    admin_password: '',
+    general: ''
+  });
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     
+    // Limpiar errores reactivamente al empezar a escribir
+    setErrors(prev => ({ ...prev, [name]: '', general: '' }));
+
     if (name === 'tenant_slug') {
       const cleanSlug = value
         .toLowerCase()
@@ -43,18 +55,55 @@ export default function OnboardingModal({
   const handleOnboardingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.tenant_name || !formData.tenant_slug || !formData.admin_name || !formData.admin_email || !formData.admin_password) {
-      toast.error('Por favor, rellena todos los campos obligatorios.');
-      return;
+    // Limpiar errores previos
+    setErrors({
+      tenant_name: '',
+      tenant_slug: '',
+      admin_name: '',
+      admin_email: '',
+      admin_password: '',
+      general: ''
+    });
+
+    let hasLocalErrors = false;
+    const newErrors = {
+      tenant_name: '',
+      tenant_slug: '',
+      admin_name: '',
+      admin_email: '',
+      admin_password: '',
+      general: ''
+    };
+
+    if (!formData.tenant_name) {
+      newErrors.tenant_name = 'El nombre de la organización es obligatorio.';
+      hasLocalErrors = true;
+    }
+    if (!formData.tenant_slug) {
+      newErrors.tenant_slug = 'El subdominio es obligatorio.';
+      hasLocalErrors = true;
+    } else if (formData.tenant_slug.length < 2) {
+      newErrors.tenant_slug = 'El subdominio debe tener al menos 2 caracteres.';
+      hasLocalErrors = true;
+    }
+    if (!formData.admin_name) {
+      newErrors.admin_name = 'El nombre del director es obligatorio.';
+      hasLocalErrors = true;
+    }
+    if (!formData.admin_email) {
+      newErrors.admin_email = 'El email corporativo es obligatorio.';
+      hasLocalErrors = true;
+    }
+    if (!formData.admin_password) {
+      newErrors.admin_password = 'La contraseña es obligatoria.';
+      hasLocalErrors = true;
+    } else if (formData.admin_password.length < 6) {
+      newErrors.admin_password = 'La contraseña debe tener al menos 6 caracteres.';
+      hasLocalErrors = true;
     }
 
-    if (formData.tenant_slug.length < 2) {
-      toast.error('El subdominio debe tener al menos 2 caracteres.');
-      return;
-    }
-
-    if (formData.admin_password.length < 6) {
-      toast.error('La contraseña del administrador debe tener al menos 6 caracteres.');
+    if (hasLocalErrors) {
+      setErrors(newErrors);
       return;
     }
 
@@ -80,7 +129,19 @@ export default function OnboardingModal({
 
       if (!response.ok) {
         const errData = await response.json();
-        throw new Error(errData.detail || 'Error al iniciar la sesión de onboarding.');
+        const errorDetail = errData.detail || 'Error al iniciar la sesión de onboarding.';
+        const errLower = errorDetail.toLowerCase();
+
+        // Asignar el error al input correspondiente
+        if (errLower.includes('subdominio') || errLower.includes('subdomain') || errLower.includes('slug')) {
+          setErrors(prev => ({ ...prev, tenant_slug: errorDetail }));
+        } else if (errLower.includes('correo') || errLower.includes('email') || errLower.includes('usuario') || errLower.includes('user')) {
+          setErrors(prev => ({ ...prev, admin_email: errorDetail }));
+        } else {
+          setErrors(prev => ({ ...prev, general: errorDetail }));
+        }
+
+        throw new Error(errorDetail);
       }
 
       const data = await response.json();
@@ -96,7 +157,7 @@ export default function OnboardingModal({
       }, 1000);
 
     } catch (err: any) {
-      toast.error(err.message || 'Error al conectar con el servidor. Inténtalo de nuevo.', { id: loadingToast });
+      toast.dismiss(loadingToast);
       setLoading(false);
     }
   };
@@ -146,8 +207,17 @@ export default function OnboardingModal({
                 placeholder="Ej. Clínica Mercè, Spazio Estético, Barbería Jade"
                 value={formData.tenant_name}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-white rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all text-xs font-semibold text-stone-700"
+                className={`w-full px-4 py-3 bg-white rounded-xl border focus:outline-none focus:ring-2 transition-all text-xs font-semibold text-stone-700 ${
+                  errors.tenant_name
+                    ? 'border-red-300 focus:ring-red-600/10 focus:border-red-600'
+                    : 'border-stone-200 focus:ring-blue-600/20 focus:border-blue-600'
+                }`}
               />
+              {errors.tenant_name && (
+                <span className="block text-[10px] text-red-600 mt-2 font-bold tracking-wide animate-in fade-in slide-in-from-top-1 duration-200">
+                  ⚠️ {errors.tenant_name}
+                </span>
+              )}
             </div>
 
             <div>
@@ -160,16 +230,26 @@ export default function OnboardingModal({
                   placeholder="clinica-merce"
                   value={formData.tenant_slug}
                   onChange={handleInputChange}
-                  className="w-full pl-4 pr-32 py-3 bg-white rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all text-xs font-mono text-stone-700 font-semibold"
+                  className={`w-full pl-4 pr-32 py-3 bg-white rounded-xl border focus:outline-none focus:ring-2 transition-all text-xs font-mono text-stone-700 font-semibold ${
+                    errors.tenant_slug
+                      ? 'border-red-300 focus:ring-red-600/10 focus:border-red-600'
+                      : 'border-stone-200 focus:ring-blue-600/20 focus:border-blue-600'
+                  }`}
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-stone-400 font-sans pointer-events-none">
                   .probookia.com
                 </span>
               </div>
-              {formData.tenant_slug && (
-                <span className="block text-[9px] text-blue-600 mt-2 font-black tracking-wide">
-                  Dirección única: <span className="font-mono text-stone-600 font-bold">https://{formData.tenant_slug}.probookia.com</span>
+              {errors.tenant_slug ? (
+                <span className="block text-[10px] text-red-600 mt-2 font-bold tracking-wide animate-in fade-in slide-in-from-top-1 duration-200">
+                  ⚠️ {errors.tenant_slug}
                 </span>
+              ) : (
+                formData.tenant_slug && (
+                  <span className="block text-[9px] text-blue-600 mt-2 font-black tracking-wide">
+                    Dirección única: <span className="font-mono text-stone-600 font-bold">https://{formData.tenant_slug}.probookia.com</span>
+                  </span>
+                )
               )}
             </div>
           </div>
@@ -186,8 +266,17 @@ export default function OnboardingModal({
                 placeholder="Ej. Sofía Valenzuela"
                 value={formData.admin_name}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-white rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all text-xs font-semibold text-stone-700"
+                className={`w-full px-4 py-3 bg-white rounded-xl border focus:outline-none focus:ring-2 transition-all text-xs font-semibold text-stone-700 ${
+                  errors.admin_name
+                    ? 'border-red-300 focus:ring-red-600/10 focus:border-red-600'
+                    : 'border-stone-200 focus:ring-blue-600/20 focus:border-blue-600'
+                }`}
               />
+              {errors.admin_name && (
+                <span className="block text-[10px] text-red-600 mt-2 font-bold tracking-wide animate-in fade-in slide-in-from-top-1 duration-200">
+                  ⚠️ {errors.admin_name}
+                </span>
+              )}
             </div>
 
             <div>
@@ -199,8 +288,17 @@ export default function OnboardingModal({
                 placeholder="directiva@clinicamerce.com"
                 value={formData.admin_email}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-white rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all text-xs font-semibold text-stone-700"
+                className={`w-full px-4 py-3 bg-white rounded-xl border focus:outline-none focus:ring-2 transition-all text-xs font-semibold text-stone-700 ${
+                  errors.admin_email
+                    ? 'border-red-300 focus:ring-red-600/10 focus:border-red-600'
+                    : 'border-stone-200 focus:ring-blue-600/20 focus:border-blue-600'
+                }`}
               />
+              {errors.admin_email && (
+                <span className="block text-[10px] text-red-600 mt-2 font-bold tracking-wide animate-in fade-in slide-in-from-top-1 duration-200">
+                  ⚠️ {errors.admin_email}
+                </span>
+              )}
             </div>
 
             <div>
@@ -212,10 +310,26 @@ export default function OnboardingModal({
                 placeholder="Mínimo 6 caracteres"
                 value={formData.admin_password}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-white rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all text-xs font-semibold text-stone-700"
+                className={`w-full px-4 py-3 bg-white rounded-xl border focus:outline-none focus:ring-2 transition-all text-xs font-semibold text-stone-700 ${
+                  errors.admin_password
+                    ? 'border-red-300 focus:ring-red-600/10 focus:border-red-600'
+                    : 'border-stone-200 focus:ring-blue-600/20 focus:border-blue-600'
+                }`}
               />
+              {errors.admin_password && (
+                <span className="block text-[10px] text-red-600 mt-2 font-bold tracking-wide animate-in fade-in slide-in-from-top-1 duration-200">
+                  ⚠️ {errors.admin_password}
+                </span>
+              )}
             </div>
           </div>
+
+          {errors.general && (
+            <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-xxs font-bold text-red-600 tracking-wide flex items-start gap-2.5 animate-in fade-in slide-in-from-top-1 duration-200 leading-normal">
+              <span className="mt-0.5">⚠️</span>
+              <span>{errors.general}</span>
+            </div>
+          )}
 
           <button 
             type="submit"

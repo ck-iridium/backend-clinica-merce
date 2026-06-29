@@ -177,7 +177,7 @@ def setup_onboarding(payload: schemas.OnboardingSetupRequest, db: Session = Depe
         "Medicina Estética": "clinical",
         "Estética y Bienestar": "beauty",
         "Clínicas de Salud": "clinical",
-        "Salones y Barberías": "beauty"
+        "Salones y Barberías": "barber"
     }
     settings.business_sector = sector_mapping.get(payload.industry, "general")
     settings.onboarding_completed = True

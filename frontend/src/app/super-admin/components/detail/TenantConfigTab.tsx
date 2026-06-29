@@ -110,7 +110,8 @@ export default function TenantConfigTab({
               className="w-full bg-white border border-stone-200 rounded-xl px-4 py-2.5 text-xs font-bold text-stone-850 focus:outline-none focus:ring-2 focus:ring-[#d4af37]/10 focus:border-[#d4af37] transition-all shadow-sm cursor-pointer"
             >
               <option value="clinical">🏥 Medicina / Clínica de Salud</option>
-              <option value="beauty">✨ Estética y Bienestar</option>
+               <option value="beauty">✨ Estética y Bienestar</option>
+              <option value="barber">💈 Salones y Barberías</option>
               <option value="veterinary">🐾 Veterinaria</option>
               <option value="automotive">🚗 Automoción y Mecánica</option>
               <option value="home_services">🧹 Servicios a Domicilio</option>

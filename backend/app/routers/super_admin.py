@@ -150,7 +150,7 @@ def update_tenant_sector(
     Actualiza manualmente el sector del negocio de un inquilino.
     """
     sector = payload.business_sector.lower()
-    allowed_sectors = ["clinical", "beauty", "veterinary", "automotive", "home_services", "professional", "general"]
+    allowed_sectors = ["clinical", "beauty", "veterinary", "automotive", "home_services", "professional", "general", "barber"]
     if sector not in allowed_sectors:
         raise HTTPException(status_code=400, detail=f"Sector no permitido. Debe ser uno de: {', '.join(allowed_sectors)}")
     

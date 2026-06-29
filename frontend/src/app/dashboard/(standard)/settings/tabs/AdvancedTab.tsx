@@ -334,6 +334,7 @@ export default function AdvancedTab({ settings, setSettings }: AdvancedTabProps)
                 <SelectContent className="rounded-xl border-stone-100 shadow-xl">
                   <SelectItem value="clinical" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">🏥 Medicina / Clínica de Salud</SelectItem>
                   <SelectItem value="beauty" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">✨ Estética y Bienestar</SelectItem>
+                  <SelectItem value="barber" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">💈 Salones y Barberías</SelectItem>
                   <SelectItem value="veterinary" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">🐾 Veterinaria</SelectItem>
                   <SelectItem value="automotive" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">🚗 Automoción y Mecánica</SelectItem>
                   <SelectItem value="home_services" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">🧹 Servicios a Domicilio</SelectItem>

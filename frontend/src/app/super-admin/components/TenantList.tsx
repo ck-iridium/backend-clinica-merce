@@ -128,9 +128,15 @@ export default function TenantList({
                     <span className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full ${
                       tenant.subscription_status === 'active'
                         ? 'bg-amber-50 text-[#d4af37]'
+                        : tenant.subscription_status === 'grace'
+                        ? 'bg-blue-50 text-blue-600'
                         : 'bg-stone-100 text-stone-500'
                     }`}>
-                      {tenant.subscription_status === 'active' ? 'Activo' : 'Suspendido'}
+                      {tenant.subscription_status === 'active' 
+                        ? 'Activo' 
+                        : tenant.subscription_status === 'grace'
+                        ? 'Periodo de Gracia'
+                        : 'Suspendido'}
                     </span>
                   </div>
                   <h3 className="text-sm font-bold font-serif text-stone-900 group-hover:text-[#d4af37] transition-colors leading-tight">
@@ -150,7 +156,13 @@ export default function TenantList({
                         d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                       />
                       <path
-                        className={tenant.subscription_status === 'active' ? "text-[#d4af37]" : "text-stone-400"}
+                        className={
+                          tenant.subscription_status === 'active' 
+                            ? "text-[#d4af37]" 
+                            : tenant.subscription_status === 'grace'
+                            ? "text-blue-500"
+                            : "text-stone-400"
+                        }
                         strokeWidth="2.5"
                         strokeDasharray={`${health}, 100`}
                         strokeLinecap="round"
