@@ -139,13 +139,10 @@ def create_onboarding_session(request: OnboardingSessionRequest, req: Request):
                 admin_password=request.admin_password,
                 stripe_customer_id=None,
                 stripe_subscription_id=None,
-                plan_type=selected_plan
+                plan_type=selected_plan,
+                subscription_status="grace",
+                subscription_expires_at=datetime.utcnow() + timedelta(hours=24)
             )
-            
-            # Poner en estado grace por 24h
-            tenant.subscription_status = "grace"
-            tenant.subscription_expires_at = datetime.utcnow() + timedelta(hours=24)
-            db.commit()
             
             # Obtener user id
             user = db.query(models.User).filter(models.User.tenant_id == tenant.id).first()

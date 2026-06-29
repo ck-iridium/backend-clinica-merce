@@ -1,6 +1,7 @@
 import os
 import uuid
 import logging
+from datetime import datetime
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from fastapi import HTTPException
@@ -19,7 +20,9 @@ def provision_tenant(
     admin_password: str,
     stripe_customer_id: str | None = None,
     stripe_subscription_id: str | None = None,
-    plan_type: str = "pro"
+    plan_type: str = "pro",
+    subscription_status: str = "active",
+    subscription_expires_at: datetime | None = None
 ) -> models.Tenant:
     """
     Aprovisiona de forma atómica y aislada un nuevo inquilino (Tenant) en la base de datos,
@@ -59,7 +62,8 @@ def provision_tenant(
             stripe_customer_id=stripe_customer_id,
             stripe_subscription_id=stripe_subscription_id,
             plan_type=plan_type,
-            subscription_status="active"
+            subscription_status=subscription_status,
+            subscription_expires_at=subscription_expires_at
         )
         db.add(new_tenant)
         db.flush()  # Hace persistente el tenant_id para las relaciones/claves foráneas
@@ -119,6 +123,12 @@ def provision_tenant(
 
                 logger.info(f"[PROVISIONER] Usuario creado en Supabase Auth. ID: {supabase_user_id}")
             except Exception as sb_err:
+                err_msg = str(sb_err).lower()
+                if "already exists" in err_msg or "already registered" in err_msg or "email_exists" in err_msg or "email already" in err_msg:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Este correo electrónico ya está en uso. Por favor, utiliza uno diferente."
+                    )
                 logger.warning(f"[PROVISIONER] [WARNING] Error al crear usuario en Supabase Auth: {sb_err}")
 
         # Fallback de ID local si Supabase falla o no está configurado

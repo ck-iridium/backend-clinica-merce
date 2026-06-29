@@ -172,6 +172,14 @@ def setup_onboarding(payload: schemas.OnboardingSetupRequest, db: Session = Depe
             db.add(default_location)
             db.flush()
             
+    # Mapear el sector del payload al sector permitido en ClinicSettings
+    sector_mapping = {
+        "Medicina Estética": "clinical",
+        "Estética y Bienestar": "beauty",
+        "Clínicas de Salud": "clinical",
+        "Salones y Barberías": "beauty"
+    }
+    settings.business_sector = sector_mapping.get(payload.industry, "general")
     settings.onboarding_completed = True
 
     # Asignar paleta tipográfica según el sector para coherencia de marca (Tokens de diseño)
