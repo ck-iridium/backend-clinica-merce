@@ -159,6 +159,7 @@ async def resolve_tenant_middleware(request, call_next):
     path = request.url.path
     is_global_path = any(path.startswith(prefix) for prefix in [
         "/stripe",
+        "/subscription",
         "/super-admin",
         "/docs",
         "/openapi.json",
@@ -174,7 +175,8 @@ async def resolve_tenant_middleware(request, call_next):
             )
             
         from .database import SessionLocal
-        from .models import Tenant
+        from .models import Tenant, User
+        from datetime import datetime, timedelta
         
         now = time.time()
         cached = TENANT_STATUS_CACHE.get(tenant_id)
@@ -182,26 +184,60 @@ async def resolve_tenant_middleware(request, call_next):
         if cached and (now - cached["timestamp"] < 60):
             status = cached["status"]
             name = cached["name"]
+            email_verified = cached.get("email_verified", True)
+            created_at = cached.get("created_at", datetime.utcnow())
         else:
             db = SessionLocal()
             try:
                 tenant = db.query(Tenant).filter(Tenant.id == tenant_id).first()
                 if tenant:
+                    # 1. Comprobar expiración del trial
+                    if tenant.subscription_status == "trial" and tenant.subscription_expires_at:
+                        if tenant.subscription_expires_at < datetime.utcnow():
+                            tenant.subscription_status = "suspended"
+                            db.commit()
+                            db.refresh(tenant)
+                            print(f"[MIDDLEWARE] Tenant {tenant.id} trial expirado. Estado cambiado a suspended.")
+                            
                     status = tenant.subscription_status
                     name = tenant.name
+                    created_at = tenant.created_at
+                    
+                    # 2. Comprobar verificación de email del admin
+                    admin_user = db.query(User).filter(User.tenant_id == tenant_id, User.role == "admin").first()
+                    email_verified = admin_user.email_verified if admin_user else True
+                    
                     TENANT_STATUS_CACHE[tenant_id] = {
                         "status": status,
                         "name": name,
+                        "email_verified": email_verified,
+                        "created_at": created_at,
                         "timestamp": now
                     }
                 else:
                     status = "active"
                     name = "Clínica"
-            except Exception:
+                    email_verified = True
+                    created_at = datetime.utcnow()
+            except Exception as e:
+                print(f"[MIDDLEWARE ERROR] Error en verificación: {e}")
                 status = "active"
                 name = "Clínica"
+                email_verified = True
+                created_at = datetime.utcnow()
             finally:
                 db.close()
+                
+        # Validar confirmación de email (límite suave de 48h para trial/active/grace)
+        if not email_verified and status in ("trial", "active", "grace"):
+            # Si pasaron más de 48h desde la creación del tenant, bloqueamos con 403
+            if datetime.utcnow() - created_at > timedelta(hours=48):
+                return JSONResponse(
+                    status_code=403,
+                    content={
+                        "detail": "Acceso Restringido: Por favor, confirma tu correo electrónico para seguir usando el sistema."
+                    }
+                )
         
         if status in ("suspended", "inactive"):
             return JSONResponse(

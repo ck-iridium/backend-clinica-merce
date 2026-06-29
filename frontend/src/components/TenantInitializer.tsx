@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 // Utilidad simple para leer cookies en el cliente
 function getCookie(name: string): string | null {
@@ -60,7 +61,29 @@ export default function TenantInitializer() {
           init.headers = headers;
         }
         
-        return originalFetch(input, init);
+        const response = await originalFetch(input, init);
+        
+        if (typeof window !== 'undefined') {
+          const currentPath = window.location.pathname;
+          
+          // Evitar bucle infinito si ya estamos en /suspended
+          if (response.status === 402 && currentPath !== '/suspended') {
+            const tenantId = getCookie('tenant_id') || '';
+            console.log('[Multi-Tenancy] 402 Payment Required detected. Redirecting to paywall.');
+            window.location.href = `/suspended?tenant_id=${tenantId}`;
+          }
+          
+          if (response.status === 403 && currentPath !== '/suspended') {
+            const lastToastTime = (window as any).__last_403_toast_time || 0;
+            const now = Date.now();
+            if (now - lastToastTime > 5000) {
+              (window as any).__last_403_toast_time = now;
+              toast.error('Acceso Restringido: Por favor, confirma tu correo electrónico para seguir usando el sistema.');
+            }
+          }
+        }
+        
+        return response;
       };
       
       console.log('[Multi-Tenancy] Global client-side fetch successfully patched.');

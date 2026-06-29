@@ -125,67 +125,26 @@ def create_onboarding_session(request: OnboardingSessionRequest, req: Request):
             )
             redirect_url = f"{frontend_url}/onboarding/success?free_success=true&tenant_id={tenant.id}&tenant_slug={tenant.slug}&tenant_name={tenant.name}&admin_email={request.admin_email}&admin_name={request.admin_name}&admin_password={request.admin_password}"
             return {"url": redirect_url}
-            
-        # 2.B Si el plan es de pago y USE_BIZUM_ONBOARDING es True, aprovisionamos optimistamente con Bizum
-        use_bizum = os.getenv("USE_BIZUM_ONBOARDING", "true").lower() == "true"
-        if selected_plan != "free" and use_bizum:
-            print(f"[BIZUM ONBOARDING] Aprovisionando cuenta con Bizum al instante para {request.tenant_slug}")
-            tenant = provision_tenant(
-                db=db,
-                tenant_name=request.tenant_name,
-                tenant_slug=request.tenant_slug,
-                admin_email=request.admin_email,
-                admin_name=request.admin_name,
-                admin_password=request.admin_password,
-                stripe_customer_id=None,
-                stripe_subscription_id=None,
-                plan_type=selected_plan,
-                subscription_status="grace",
-                subscription_expires_at=datetime.utcnow() + timedelta(hours=24)
-            )
-            
-            # Obtener user id
-            user = db.query(models.User).filter(models.User.tenant_id == tenant.id).first()
-            user_id = user.id if user else "system"
-            
-            PLAN_PRICES = {
-                "basic": {"monthly": 29.00, "yearly": 290.00},
-                "pro": {"monthly": 59.00, "yearly": 590.00},
-                "gold": {"monthly": 99.00, "yearly": 990.00}
-            }
-            amount = PLAN_PRICES.get(selected_plan, {"monthly": 59.00})["monthly"]
-            ref_code = generate_reference_code(db)
-            
-            new_request = models.SubscriptionRequest(
-                id=str(uuid.uuid4()),
-                tenant_id=tenant.id,
-                user_id=user_id,
-                plan_type=selected_plan,
-                billing_period="monthly",
-                amount=amount,
-                reference_code=ref_code,
-                status="pending"
-            )
-            db.add(new_request)
-            db.commit()
-            
-            redirect_url = f"{frontend_url}/onboarding/success?bizum_success=true&tenant_id={tenant.id}&tenant_slug={tenant.slug}&tenant_name={tenant.name}&admin_email={request.admin_email}&admin_name={request.admin_name}&admin_password={request.admin_password}&reference_code={ref_code}&amount={amount}"
-            return {"url": redirect_url}
+             # 2.B Si el plan es de pago (premium), aprovisionamos directamente con un Periodo de Prueba (Trial) de 14 días
+        print(f"[TRIAL ONBOARDING] Aprovisionando cuenta con Trial de 14 días para {request.tenant_slug}")
+        tenant = provision_tenant(
+            db=db,
+            tenant_name=request.tenant_name,
+            tenant_slug=request.tenant_slug,
+            admin_email=request.admin_email,
+            admin_name=request.admin_name,
+            admin_password=request.admin_password,
+            stripe_customer_id=None,
+            stripe_subscription_id=None,
+            plan_type=selected_plan,
+            subscription_status="trial",
+            subscription_expires_at=datetime.utcnow() + timedelta(days=14)
+        )
+        redirect_url = f"{frontend_url}/onboarding/success?free_success=true&tenant_id={tenant.id}&tenant_slug={tenant.slug}&tenant_name={tenant.name}&admin_email={request.admin_email}&admin_name={request.admin_name}&admin_password={request.admin_password}"
+        return {"url": redirect_url}
             
     finally:
         db.close()
-
-    # 3. Si es plan de pago, iniciamos Checkout Session en Stripe
-    url = StripeService.create_onboarding_session(
-        tenant_name=request.tenant_name,
-        tenant_slug=request.tenant_slug,
-        admin_email=request.admin_email,
-        admin_name=request.admin_name,
-        admin_password=request.admin_password,
-        frontend_url=frontend_url,
-        plan_type=request.plan_type
-    )
-    return {"url": url}
 
 class CreateSubscriptionSessionRequest(BaseModel):
     tenant_id: str

@@ -55,11 +55,16 @@ def read_tenant_limits(db: Session = Depends(database.get_db)):
     ai_allowed = is_gold or has_own_key
     ai_requires_byok = not is_gold
 
+    admin_user = db.query(models.User).filter(models.User.tenant_id == tenant_id, models.User.role == "admin").first()
+    email_verified = admin_user.email_verified if admin_user else True
+
     return {
         "tenant_id": tenant_id,
         "plan_type": plan,
         "subscription_status": tenant.subscription_status,
         "subscription_expires_at": tenant.subscription_expires_at.isoformat() if tenant.subscription_expires_at else None,
+        "created_at": tenant.created_at.isoformat() if tenant.created_at else None,
+        "email_verified": email_verified,
         "has_own_key": has_own_key,
         "ai_trial_queries_used": tenant.ai_trial_queries_used if hasattr(tenant, "ai_trial_queries_used") else 0,
         "ai_daily_actions_used": tenant.ai_daily_actions_used if hasattr(tenant, "ai_daily_actions_used") else 0,

@@ -10,7 +10,6 @@ import { StepIdentity } from '@/components/onboarding/StepIdentity';
 import { StepOperations } from '@/components/onboarding/StepOperations';
 import { StepScheduling } from '@/components/onboarding/StepScheduling';
 import { StepProvisioning } from '@/components/onboarding/StepProvisioning';
-import { StepBizumPayment } from '@/components/onboarding/StepBizumPayment';
 import { OnboardingFooter } from '@/components/onboarding/OnboardingFooter';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -258,12 +257,6 @@ function OnboardingContent() {
 
       toast.success('¡Configuración completada con éxito! Bienvenido a ProBookia.', { id: setupToast });
 
-      if (tenantData?.bizum_success) {
-        setSubmitting(false);
-        setStep(5);
-        return;
-      }
-
       const hostname = window.location.hostname;
       const protocol = window.location.protocol;
 
@@ -346,7 +339,7 @@ function OnboardingContent() {
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-stone-900 via-[#d4af37] to-stone-900" />
         
         {/* Header - Stepper Progress Indicator */}
-        <OnboardingHeader step={step} totalSteps={tenantData?.bizum_success ? 5 : 4} />
+        <OnboardingHeader step={step} totalSteps={4} />
 
         {/* Dynamic Transition Wrapper */}
         <div className={`flex-1 mb-8 transition-all duration-300 transform ${
@@ -405,26 +398,16 @@ function OnboardingContent() {
             />
           )}
 
-          {/* STEP 5: Activación y Pago Bizum */}
-          {step === 5 && tenantData && (
-            <StepBizumPayment 
-              tenantData={tenantData}
-              onAccessDashboard={handleGoToDashboard}
-            />
-          )}
-
         </div>
 
         {/* Footer Navigation Buttons */}
-        {step < 5 && (
-          <OnboardingFooter 
-            step={step}
-            submitting={submitting}
-            handlePrevStep={handlePrevStep}
-            handleNextStep={handleNextStep}
-            handleCompleteSetup={handleCompleteSetup}
-          />
-        )}
+        <OnboardingFooter 
+          step={step}
+          submitting={submitting}
+          handlePrevStep={handlePrevStep}
+          handleNextStep={handleNextStep}
+          handleCompleteSetup={handleCompleteSetup}
+        />
 
       </div>
     </div>

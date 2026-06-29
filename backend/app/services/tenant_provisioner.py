@@ -143,7 +143,8 @@ def provision_tenant(
             email=admin_email,
             hashed_password=hashed_pw,
             role="admin",
-            tenant_id=tenant_id
+            tenant_id=tenant_id,
+            email_verified=False
         )
         db.add(new_user)
         db.flush()
