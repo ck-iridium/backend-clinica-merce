@@ -142,6 +142,10 @@ TENANT_STATUS_CACHE = {} # {tenant_id: {"status": str, "name": str, "timestamp":
 
 @app.middleware("http")
 async def resolve_tenant_middleware(request, call_next):
+    # Ignorar peticiones de preflight de CORS
+    if request.method == "OPTIONS":
+        return await call_next(request)
+
     # 1. Intentar cabecera personalizada X-Tenant-ID
     tenant_id = request.headers.get("X-Tenant-ID")
     

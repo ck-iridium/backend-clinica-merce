@@ -50,15 +50,23 @@ export default function TenantInitializer() {
         if (url.startsWith(apiUrl)) {
           const tenantId = getCookie('tenant_id');
           
-          init = init || {};
-          
-          // Crear un objeto Headers para manejar de forma robusta mayúsculas/minúsculas
-          const headers = new Headers(init.headers || {});
-          if (tenantId && !headers.has('X-Tenant-ID')) {
-            headers.set('X-Tenant-ID', tenantId);
+          if (tenantId) {
+            init = init || {};
+            
+            // Obtener cabeceras del request o del init para no perder cabeceras previas (ej. Authorization)
+            let baseHeaders: HeadersInit = {};
+            if (init.headers) {
+              baseHeaders = init.headers;
+            } else if (input instanceof Request) {
+              baseHeaders = input.headers;
+            }
+            
+            const headers = new Headers(baseHeaders);
+            if (!headers.has('X-Tenant-ID')) {
+              headers.set('X-Tenant-ID', tenantId);
+            }
+            init.headers = headers;
           }
-          
-          init.headers = headers;
         }
         
         const response = await originalFetch(input, init);
