@@ -13,6 +13,9 @@ def run_auto_migrations():
     from ..database import SessionLocal
     db = SessionLocal()
     try:
+        is_sqlite = db.bind.dialect.name == "sqlite"
+        json_type = "JSON" if is_sqlite else "JSONB"
+        
         # Lista de migraciones: ALTER TABLE es soportado por SQLite y PostgreSQL
         migrations = [
             "ALTER TABLE clinic_settings ADD COLUMN smtp_host VARCHAR",
@@ -101,7 +104,44 @@ def run_auto_migrations():
             "ALTER TABLE time_blocks ADD COLUMN staff_id VARCHAR",
             # ── Control de Sesiones Concurrentes (SaaS) ─────────────────────────────
             "ALTER TABLE users ADD COLUMN last_session_id VARCHAR",
-            "ALTER TABLE users ADD COLUMN last_session_iat INTEGER"
+            "ALTER TABLE users ADD COLUMN last_session_iat INTEGER",
+            # ── Mobile Services & Hybrid Configuration (Geografía) ──────────────────
+            "ALTER TABLE clinic_settings ADD COLUMN work_modality VARCHAR(50) DEFAULT 'clinic_only'",
+            "ALTER TABLE clinic_settings ADD COLUMN operations_center_address VARCHAR(500) NULL",
+            "ALTER TABLE clinic_settings ADD COLUMN operations_center_latitude DOUBLE PRECISION NULL",
+            "ALTER TABLE clinic_settings ADD COLUMN operations_center_longitude DOUBLE PRECISION NULL",
+            "ALTER TABLE clinic_settings ADD COLUMN max_coverage_radius_km DOUBLE PRECISION DEFAULT 10.0",
+            "ALTER TABLE clinic_settings ADD COLUMN whitelist_zones TEXT NULL",
+            "ALTER TABLE services ADD COLUMN allowed_modality VARCHAR(50) DEFAULT 'clinic'",
+            "ALTER TABLE clients ADD COLUMN client_latitude DOUBLE PRECISION NULL",
+            "ALTER TABLE clients ADD COLUMN client_longitude DOUBLE PRECISION NULL",
+            "ALTER TABLE clients ADD COLUMN client_postal_code VARCHAR(20) NULL",
+            "ALTER TABLE clients ADD COLUMN client_city VARCHAR(100) NULL",
+            "ALTER TABLE appointments ADD COLUMN service_modality VARCHAR(50) DEFAULT 'clinic'",
+            "ALTER TABLE appointments ADD COLUMN client_address VARCHAR(500) NULL",
+            "ALTER TABLE appointments ADD COLUMN client_latitude DOUBLE PRECISION NULL",
+            "ALTER TABLE appointments ADD COLUMN client_longitude DOUBLE PRECISION NULL",
+            "ALTER TABLE appointments ADD COLUMN client_postal_code VARCHAR(20) NULL",
+            "ALTER TABLE appointments ADD COLUMN client_city VARCHAR(100) NULL",
+            # ── CRM Columns ─────────────────────────────────────────────────────────
+            "ALTER TABLE clinic_settings ADD COLUMN business_sector VARCHAR DEFAULT 'general' NOT NULL",
+            "ALTER TABLE clients ADD COLUMN first_name VARCHAR",
+            "ALTER TABLE clients ADD COLUMN last_name VARCHAR",
+            "ALTER TABLE clients ADD COLUMN service_address VARCHAR",
+            "ALTER TABLE clients ADD COLUMN service_postal_code VARCHAR",
+            "ALTER TABLE clients ADD COLUMN service_city VARCHAR",
+            "ALTER TABLE clients ADD COLUMN service_latitude FLOAT",
+            "ALTER TABLE clients ADD COLUMN service_longitude FLOAT",
+            "ALTER TABLE clients ADD COLUMN billing_name VARCHAR",
+            "ALTER TABLE clients ADD COLUMN billing_nif VARCHAR",
+            "ALTER TABLE clients ADD COLUMN billing_address VARCHAR",
+            "ALTER TABLE clients ADD COLUMN billing_postal_code VARCHAR",
+            "ALTER TABLE clients ADD COLUMN billing_city VARCHAR",
+            f"ALTER TABLE clients ADD COLUMN sector_metadata {json_type}",
+            # ── Stripe Connected Account Payment columns ────────────────────────────
+            "ALTER TABLE appointments ADD COLUMN stripe_payment_intent_id VARCHAR NULL",
+            "ALTER TABLE appointments ADD COLUMN stripe_checkout_session_id VARCHAR NULL",
+            "ALTER TABLE appointments ADD COLUMN payment_status VARCHAR DEFAULT 'pending'"
         ]
         
         for m in migrations:
