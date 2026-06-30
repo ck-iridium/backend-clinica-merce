@@ -118,5 +118,31 @@
     "treatment": "Soin",
     "client_email_desc": "Nous avons envoyé la confirmation et le reçu à"
   },
-  "success": {}
+  "success": {},
+  "contact": {
+    "title": "Nous sommes",
+    "title_italic": "avec vous.",
+    "subtitle": "Votre voyage vers la beauté naturelle commence par un message. Nous sommes à votre écoute.",
+    "find_us": "Nous trouver",
+    "our_locations": "Nos Centres",
+    "mobile_service": "Service Mobile",
+    "home_care": "Soins à Domicile",
+    "home_care_desc": "Nous nous déplaçons à votre domicile dans un rayon de {radius} km.",
+    "preferred_zones": "Zones Préférées",
+    "availability": "Disponibilité",
+    "write_us": "Écrivez-nous",
+    "call_us": "Appelez-nous",
+    "request_info": "Demander des informations personnalisées",
+    "your_name": "Votre Nom",
+    "your_email": "Votre E-mail",
+    "help_placeholder": "Comment pouvons-nous vous aider ?",
+    "send_inquiry": "Envoyer la Demande",
+    "sending": "Envoi en cours...",
+    "message_received": "Message Reçu",
+    "home_area": "Zone à Domicile",
+    "we_are_here": "Nous sommes ici",
+    "get_directions": "Obtenir l'itinéraire",
+    "coverage_area": "Zone de Couverture",
+    "coverage_area_desc": "Nous proposons des soins à domicile dans un rayon de {radius} km depuis notre centre opérationnel."
+  }
 }

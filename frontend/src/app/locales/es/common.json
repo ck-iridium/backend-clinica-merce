@@ -128,5 +128,31 @@
     "emailNoteTime": "30 minutos",
     "emailNote2": "para asegurar tu hueco.",
     "backHome": "Volver al Inicio"
+  },
+  "contact": {
+    "title": "Estamos",
+    "title_italic": "contigo.",
+    "subtitle": "Tu viaje hacia la belleza natural comienza con un mensaje. Estamos aquí para escucharte.",
+    "find_us": "Encuéntranos",
+    "our_locations": "Nuestras Sedes",
+    "mobile_service": "Servicio Móvil",
+    "home_care": "Atención a Domicilio",
+    "home_care_desc": "Nos desplazamos hasta tu domicilio en un radio de {radius} km.",
+    "preferred_zones": "Zonas Preferidas",
+    "availability": "Disponibilidad",
+    "write_us": "Escríbenos",
+    "call_us": "Llámanos",
+    "request_info": "Solicita información personalizada",
+    "your_name": "Tu Nombre",
+    "your_email": "Tu Email",
+    "help_placeholder": "¿En qué podemos ayudarte?",
+    "send_inquiry": "Enviar Consulta",
+    "sending": "Enviando...",
+    "message_received": "Mensaje Recibido",
+    "home_area": "Área a Domicilio",
+    "we_are_here": "Estamos aquí",
+    "get_directions": "Cómo llegar",
+    "coverage_area": "Zona de Cobertura",
+    "coverage_area_desc": "Ofrecemos servicios a domicilio en un radio de {radius} km desde nuestro centro operativo."
   }
 }

@@ -69,8 +69,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
   let allowIndexing = false;
   let seoData: any = {
-    title: `${resolvedTenantName} | Estética y Láser`,
-    description: `Tratamientos de estética avanzada y depilación láser en ${resolvedTenantName}.`,
+    title: resolvedTenantName,
+    description: `Servicios personalizados y bienestar de primer nivel en ${resolvedTenantName}.`,
     keywords: [],
     ogImage: ""
   };
@@ -87,8 +87,8 @@ export async function generateMetadata(): Promise<Metadata> {
         const data = await resSettings.json();
         allowIndexing = data.allow_search_engine_indexing;
         if (data.clinic_name) {
-          seoData.title = `${data.clinic_name} | Estética y Láser`;
-          seoData.description = `Tratamientos de estética avanzada y depilación láser en ${data.clinic_name}.`;
+          seoData.title = data.clinic_name;
+          seoData.description = data.clinic_description || `Servicios personalizados y bienestar de primer nivel en ${data.clinic_name}.`;
         }
       }
     } catch (e) { }

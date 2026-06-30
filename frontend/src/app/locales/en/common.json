@@ -121,5 +121,31 @@
     "treatment": "Treatment",
     "client_email_desc": "We have sent the confirmation and receipt to"
   },
-  "success": {}
+  "success": {},
+  "contact": {
+    "title": "We are",
+    "title_italic": "with you.",
+    "subtitle": "Your journey to natural beauty begins with a message. We are here to listen.",
+    "find_us": "Find Us",
+    "our_locations": "Our Locations",
+    "mobile_service": "Mobile Service",
+    "home_care": "Home Service",
+    "home_care_desc": "We travel to your home within a radius of {radius} km.",
+    "preferred_zones": "Preferred Zones",
+    "availability": "Availability",
+    "write_us": "Write to us",
+    "call_us": "Call us",
+    "request_info": "Request personalized information",
+    "your_name": "Your Name",
+    "your_email": "Your Email",
+    "help_placeholder": "How can we help you?",
+    "send_inquiry": "Send Inquiry",
+    "sending": "Sending...",
+    "message_received": "Message Received",
+    "home_area": "Home Service Area",
+    "we_are_here": "We are here",
+    "get_directions": "Get Directions",
+    "coverage_area": "Coverage Area",
+    "coverage_area_desc": "We offer home services within a radius of {radius} km from our operations center."
+  }
 }
