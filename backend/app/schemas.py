@@ -23,7 +23,7 @@ class ClientBase(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     phone: Optional[str] = None
-    email: Optional[EmailStr] = None
+    email: Optional[str] = None
     medical_history: Optional[str] = None
     allergies: Optional[str] = None
     dni: Optional[str] = None
