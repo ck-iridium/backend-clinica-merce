@@ -459,7 +459,8 @@ def create_public_appointment(db: Session, booking: schemas.PublicBookingRequest
         shift_end = booking.start_time.replace(hour=eh, minute=em, second=0, microsecond=0)
 
         if booking.start_time >= shift_start and end_time <= shift_end:
-            lunch_start_str = (settings := get_clinic_settings(db)).lunch_start if settings and settings.lunch_start else None
+            settings = get_clinic_settings(db)
+            lunch_start_str = settings.lunch_start if settings and settings.lunch_start else None
             lunch_end_str = settings.lunch_end if settings and settings.lunch_end else None
             lunch_overlaps = False
             if lunch_start_str and lunch_end_str:
