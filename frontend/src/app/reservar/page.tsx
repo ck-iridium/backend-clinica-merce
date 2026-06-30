@@ -106,8 +106,6 @@ export default function BookingPage() {
   const [saving, setSaving] = useState(false);
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
-  const [bulkAvailability, setBulkAvailability] = useState<Record<string, boolean>>({});
-  const [loadingBulk, setLoadingBulk] = useState(false);
   const [bookingError, setBookingError] = useState('');
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
@@ -279,37 +277,6 @@ export default function BookingPage() {
       .catch(() => setAvailableSlots([]))
       .finally(() => setLoadingSlots(false));
   }, [selectedDate, selectedService, selectedLocation, selectedStaff, settings]);
-
-  // Fetch bulk availability (90 days) when service, location or preferred specialist changes
-  useEffect(() => {
-    if (!selectedService) return;
-    const tenantId = getTenantId();
-    if (!tenantId) return;
-
-    setLoadingBulk(true);
-    const startDate = new Date();
-    const endDate = new Date();
-    endDate.setDate(startDate.getDate() + 90);
-
-    const startStr = startDate.toLocaleDateString('en-CA');
-    const endStr = endDate.toLocaleDateString('en-CA');
-
-    let url = `${process.env.NEXT_PUBLIC_API_URL}/appointments/availability/bulk?start_date=${startStr}&end_date=${endStr}&service_id=${selectedService.id}`;
-    if (selectedLocation) {
-      url += `&location_id=${selectedLocation.id}`;
-    }
-    if (selectedStaff && selectedStaff.id !== 'any') {
-      url += `&staff_id=${selectedStaff.id}`;
-    }
-
-    fetch(url, {
-      headers: { 'X-Tenant-ID': tenantId }
-    })
-      .then(r => r.json())
-      .then(data => setBulkAvailability(data || {}))
-      .catch(() => setBulkAvailability({}))
-      .finally(() => setLoadingBulk(false));
-  }, [selectedService, selectedLocation, selectedStaff, settings]);
 
   const handleBooking = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -512,8 +479,6 @@ export default function BookingPage() {
                       }}
                       availableSlots={availableSlots}
                       loadingSlots={loadingSlots}
-                      bulkAvailability={bulkAvailability}
-                      loadingBulk={loadingBulk}
                       selectedService={selectedService}
                       settings={settings}
                       onShowFeedback={showFeedback}

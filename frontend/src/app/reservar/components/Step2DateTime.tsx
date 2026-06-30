@@ -11,8 +11,6 @@ export default function Step2DateTime({
   setSelectedTime,
   availableSlots,
   loadingSlots,
-  bulkAvailability = {},
-  loadingBulk = false,
   selectedService,
   settings,
   onShowFeedback,
@@ -30,8 +28,6 @@ export default function Step2DateTime({
   setSelectedTime: (t: string) => void;
   availableSlots: string[];
   loadingSlots: boolean;
-  bulkAvailability?: Record<string, boolean>;
-  loadingBulk?: boolean;
   selectedService: any;
   settings: any;
   onShowFeedback: (f: any) => void;
@@ -141,8 +137,27 @@ export default function Step2DateTime({
                   const day = String(date.getDate()).padStart(2, '0');
                   const dateStr = `${year}-${month}-${day}`;
                   
-                  const hasSlots = bulkAvailability[dateStr] ?? true;
-                  const isOpen = getWorkingDays().includes(dayIndex) && hasSlots;
+                  const cache = settings?.blocked_days_cache;
+                  let isBlocked = false;
+                  if (cache) {
+                    if (cache.global?.includes(dateStr)) {
+                      isBlocked = true;
+                    } else if (selectedStaff && selectedStaff.id !== 'any') {
+                      if (cache.staff?.[selectedStaff.id]?.includes(dateStr)) {
+                        isBlocked = true;
+                      }
+                    } else {
+                      const activeStaffIds = staffList.filter((s: any) => s.id !== 'any').map((s: any) => s.id);
+                      const allBlocked = activeStaffIds.length > 0 && activeStaffIds.every((id: string) => 
+                        cache.staff?.[id]?.includes(dateStr) || cache.global?.includes(dateStr)
+                      );
+                      if (allBlocked) {
+                        isBlocked = true;
+                      }
+                    }
+                  }
+                  
+                  const isOpen = getWorkingDays().includes(dayIndex) && !isBlocked;
                   const isSelected = date.toDateString() === selectedDate.toDateString();
                   const isToday = date.toDateString() === new Date().toDateString();
 

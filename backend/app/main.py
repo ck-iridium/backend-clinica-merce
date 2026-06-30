@@ -384,6 +384,22 @@ async def startup_event():
     seed_admin_user()
     run_auto_migrations_wrapper()
     
+    # Precomputar el caché de bloqueos de tiempo para todos los tenants activos
+    try:
+        from .database import SessionLocal
+        from .models import Tenant
+        from .crud.appointments import rebuild_blocked_days_cache
+        db = SessionLocal()
+        try:
+            tenants = db.query(Tenant).all()
+            for tenant in tenants:
+                rebuild_blocked_days_cache(db, tenant.id)
+                print(f"Cache de bloqueos inicializado para el tenant: {tenant.name} ({tenant.id})")
+        finally:
+            db.close()
+    except Exception as e:
+        print(f"Error inicializando caché de bloqueos al inicio: {e}")
+        
     from .tasks import cleanup_expired_appointments
     # Añadimos la tarea de limpieza cada 5 minutos
     scheduler.add_job(cleanup_expired_appointments, 'interval', minutes=5, id='cleanup_expired_appts')

@@ -348,6 +348,7 @@ class ClinicSettings(Base):
     theme_palette = Column(String, default="charcoal-gold")
     accent_color = Column(String, default="#D4AF37")
     branding_palette_id = Column(String, default="dorado-antracita")
+    blocked_days_cache = Column(JSONB, default=dict, nullable=True)
     accent_color_primary = Column(String, default="#D4AF37")
     accent_color_secondary = Column(String, default="#1C1917")
     dark_mode_enabled = Column(Boolean, default=False)

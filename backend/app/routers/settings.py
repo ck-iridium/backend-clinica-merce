@@ -85,7 +85,11 @@ def read_tenant_limits(db: Session = Depends(database.get_db)):
 
 @router.patch("/", response_model=schemas.ClinicSettingsResponse)
 def update_settings(settings_update: schemas.ClinicSettingsUpdate, db: Session = Depends(database.get_db)):
-    return crud.update_clinic_settings(db, update_data=settings_update)
+    updated = crud.update_clinic_settings(db, update_data=settings_update)
+    from ..database import current_tenant_var
+    from ..crud.appointments import rebuild_blocked_days_cache
+    rebuild_blocked_days_cache(db, current_tenant_var.get())
+    return updated
 
 @router.get("/backup/export")
 def export_database(db: Session = Depends(database.get_db)):

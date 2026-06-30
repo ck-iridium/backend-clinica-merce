@@ -248,6 +248,7 @@ class ClinicSettingsBase(BaseModel):
     openai_model_image: Optional[str] = None
     default_image_shot: Optional[str] = "conceptual"
     default_image_style: Optional[str] = "luxury"
+    blocked_days_cache: Optional[Dict[str, Any]] = None
 
 class ClinicSettingsUpdate(BaseModel):
     clinic_name: Optional[str] = None

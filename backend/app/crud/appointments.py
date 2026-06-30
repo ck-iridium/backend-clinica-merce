@@ -534,18 +534,123 @@ def create_public_appointment(db: Session, booking: schemas.PublicBookingRequest
 
     return appt, client, is_new
 
-def get_bulk_availability(db: Session, start_date: DateType, end_date: DateType, service_id: str, location_id: str = None, preferred_staff_id: str = None) -> Dict[str, bool]:
-    """Returns a dictionary mapping date strings (YYYY-MM-DD) to availability booleans."""
-    result = {}
-    current = start_date
-    while current <= end_date:
-        slots = get_availability_slots(
-            db,
-            target_date=current,
-            service_id=service_id,
-            location_id=location_id,
-            preferred_staff_id=preferred_staff_id
-        )
-        result[current.isoformat()] = len(slots) > 0
-        current += timedelta(days=1)
-    return result
+def rebuild_blocked_days_cache(db: Session, tenant_id: str):
+    """
+    Precomputes the blocked days cache for a given tenant.
+    Saves it in clinic_settings.blocked_days_cache.
+    Format:
+    {
+      "global": ["2026-07-02", ...],
+      "staff": {
+        "staff_uuid": ["2026-07-02", ...]
+      }
+    }
+    """
+    from datetime import date, datetime, timedelta
+    from sqlalchemy import or_
+    from ..models import ClinicSettings, User, TimeBlock, StaffSchedule
+    
+    settings = db.query(ClinicSettings).filter(ClinicSettings.tenant_id == tenant_id).first()
+    if not settings:
+        return
+        
+    # Get all active specialists/staff (all users of this tenant who are not clients)
+    staff_members = db.query(User).filter(
+        User.tenant_id == tenant_id,
+        User.role != "client"
+    ).all()
+    staff_ids = [s.id for s in staff_members]
+    
+    # Range of 90 days starting today
+    today = date.today()
+    days_range = [today + timedelta(days=i) for i in range(90)]
+    
+    # Fetch all time blocks for the next 90 days
+    start_dt = datetime(today.year, today.month, today.day, 0, 0, 0)
+    end_dt = datetime(days_range[-1].year, days_range[-1].month, days_range[-1].day, 23, 59, 59)
+    
+    blocks = db.query(TimeBlock).filter(
+        TimeBlock.tenant_id == tenant_id,
+        TimeBlock.start_time <= end_dt,
+        TimeBlock.end_time >= start_dt,
+    ).all()
+    
+    # Fetch all schedules (specific and recurring)
+    schedules = db.query(StaffSchedule).filter(
+        StaffSchedule.tenant_id == tenant_id,
+        StaffSchedule.is_active == True
+    ).all()
+    
+    global_blocked = []
+    staff_blocked = {sid: [] for sid in staff_ids}
+    
+    # Business hours helper
+    open_time_str = settings.open_time or "09:00"
+    close_time_str = settings.close_time or "19:30"
+    
+    for d in days_range:
+        d_str = d.isoformat()
+        day_index = d.isoweekday() # 1=Mon ... 7=Sun
+        
+        # 1. Check Global Block
+        open_h, open_m = map(int, open_time_str.split(':'))
+        close_h, close_m = map(int, close_time_str.split(':'))
+        biz_start = datetime(d.year, d.month, d.day, open_h, open_m)
+        biz_end = datetime(d.year, d.month, d.day, close_h, close_m)
+        
+        is_global_vacation = False
+        for b in blocks:
+            if b.staff_id is None: # Global block
+                b_start = b.start_time.replace(tzinfo=None) if b.start_time.tzinfo else b.start_time
+                b_end = b.end_time.replace(tzinfo=None) if b.end_time.tzinfo else b.end_time
+                # If the global block covers the business hours
+                if b_start <= biz_start and b_end >= biz_end:
+                    is_global_vacation = True
+                    break
+                    
+        if is_global_vacation:
+            global_blocked.append(d_str)
+            for sid in staff_ids:
+                staff_blocked[sid].append(d_str)
+            continue
+            
+        # 2. Check Staff Block
+        for sid in staff_ids:
+            # Find the schedule of this staff for this day
+            specific = [s for s in schedules if s.staff_id == sid and s.specific_date == d]
+            if specific:
+                staff_scheds = specific
+            else:
+                staff_scheds = [s for s in schedules if s.staff_id == sid and s.day_of_week == day_index and s.specific_date is None]
+                
+            if not staff_scheds:
+                staff_blocked[sid].append(d_str)
+                continue
+                
+            is_staff_blocked = True
+            for sched in staff_scheds:
+                sch_h, sch_m = map(int, sched.start_time.split(':'))
+                ech_h, ech_m = map(int, sched.end_time.split(':'))
+                sched_start = datetime(d.year, d.month, d.day, sch_h, sch_m)
+                sched_end = datetime(d.year, d.month, d.day, ech_h, ech_m)
+                
+                is_block_covered = False
+                for b in blocks:
+                    if b.staff_id is None or b.staff_id == sid:
+                        b_start = b.start_time.replace(tzinfo=None) if b.start_time.tzinfo else b.start_time
+                        b_end = b.end_time.replace(tzinfo=None) if b.end_time.tzinfo else b.end_time
+                        if b_start <= sched_start and b_end >= sched_end:
+                            is_block_covered = True
+                            break
+                if not is_block_covered:
+                    is_staff_blocked = False
+                    break
+                    
+            if is_staff_blocked:
+                staff_blocked[sid].append(d_str)
+                
+    settings.blocked_days_cache = {
+        "global": global_blocked,
+        "staff": staff_blocked
+    }
+    db.commit()

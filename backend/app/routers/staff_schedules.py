@@ -23,13 +23,20 @@ def read_staff_schedule(schedule_id: str, db: Session = Depends(get_db)):
 
 @router.post("/", response_model=schemas.StaffScheduleResponse)
 def create_staff_schedule(schedule: schemas.StaffScheduleCreate, db: Session = Depends(get_db)):
-    return crud_staff_schedules.create_staff_schedule(db=db, schedule_in=schedule)
+    db_sched = crud_staff_schedules.create_staff_schedule(db=db, schedule_in=schedule)
+    from ..database import current_tenant_var
+    from ..crud.appointments import rebuild_blocked_days_cache
+    rebuild_blocked_days_cache(db, current_tenant_var.get())
+    return db_sched
 
 @router.put("/{schedule_id}", response_model=schemas.StaffScheduleResponse)
 def update_staff_schedule(schedule_id: str, schedule: schemas.StaffScheduleUpdate, db: Session = Depends(get_db)):
     db_sched = crud_staff_schedules.update_staff_schedule(db=db, schedule_id=schedule_id, schedule_in=schedule)
     if not db_sched:
         raise HTTPException(status_code=404, detail="Staff schedule not found")
+    from ..database import current_tenant_var
+    from ..crud.appointments import rebuild_blocked_days_cache
+    rebuild_blocked_days_cache(db, current_tenant_var.get())
     return db_sched
 
 @router.delete("/{schedule_id}")
@@ -37,4 +44,7 @@ def delete_staff_schedule(schedule_id: str, db: Session = Depends(get_db)):
     db_sched = crud_staff_schedules.delete_staff_schedule(db=db, schedule_id=schedule_id)
     if not db_sched:
         raise HTTPException(status_code=404, detail="Staff schedule not found")
+    from ..database import current_tenant_var
+    from ..crud.appointments import rebuild_blocked_days_cache
+    rebuild_blocked_days_cache(db, current_tenant_var.get())
     return {"status": "success"}

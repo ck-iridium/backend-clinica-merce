@@ -200,10 +200,10 @@ $function$;
             "ALTER TABLE clients ADD COLUMN billing_postal_code VARCHAR",
             "ALTER TABLE clients ADD COLUMN billing_city VARCHAR",
             f"ALTER TABLE clients ADD COLUMN sector_metadata {json_type}",
-            # ── Stripe Connected Account Payment columns ────────────────────────────
             "ALTER TABLE appointments ADD COLUMN stripe_payment_intent_id VARCHAR NULL",
             "ALTER TABLE appointments ADD COLUMN stripe_checkout_session_id VARCHAR NULL",
-            "ALTER TABLE appointments ADD COLUMN payment_status VARCHAR DEFAULT 'pending'"
+            "ALTER TABLE appointments ADD COLUMN payment_status VARCHAR DEFAULT 'pending'",
+            f"ALTER TABLE clinic_settings ADD COLUMN blocked_days_cache {json_type} DEFAULT '{{}}'::jsonb"
         ]
         
         for m in migrations:
