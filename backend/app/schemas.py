@@ -389,6 +389,8 @@ class LocationBase(BaseModel):
     phone: Optional[str] = None
     email: Optional[str] = None
     is_active: bool = True
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
 class LocationCreate(LocationBase):
     pass
@@ -399,6 +401,8 @@ class LocationUpdate(BaseModel):
     phone: Optional[str] = None
     email: Optional[str] = None
     is_active: Optional[bool] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
 class LocationResponse(LocationBase):
     id: str

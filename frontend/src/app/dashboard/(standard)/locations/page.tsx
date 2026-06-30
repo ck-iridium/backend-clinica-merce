@@ -60,8 +60,18 @@ export default function LocationsPage() {
     address: '',
     phone: '',
     email: '',
-    is_active: true
+    is_active: true,
+    latitude: null as number | null,
+    longitude: null as number | null
   })
+
+  const [suggestions, setSuggestions] = React.useState<any[]>([])
+  const [loadingSuggestions, setLoadingSuggestions] = React.useState(false)
+  const searchTimeoutRef = React.useRef<any>(null)
+
+  const mapContainerRef = React.useRef<HTMLDivElement | null>(null)
+  const mapRef = React.useRef<any | null>(null)
+  const markerRef = React.useRef<any | null>(null)
 
   const getCookie = (name: string): string | null => {
     if (typeof document === 'undefined') return null
@@ -144,9 +154,186 @@ export default function LocationsPage() {
         return
       }
     }
-    setFormData({ name: '', address: '', phone: '', email: '', is_active: true })
+    setFormData({ name: '', address: '', phone: '', email: '', is_active: true, latitude: 39.151, longitude: -0.437 })
     setIsCreateOpen(true)
   }
+
+  // Load Leaflet resources and initialize/destroy map inside Dialogs
+  React.useEffect(() => {
+    if (isCreateOpen || isEditOpen) {
+      const linkId = 'leaflet-css-cdn';
+      if (!document.getElementById(linkId)) {
+        const link = document.createElement('link');
+        link.id = linkId;
+        link.rel = 'stylesheet';
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        document.head.appendChild(link);
+      }
+
+      if (!(window as any).L) {
+        const scriptId = 'leaflet-js-cdn';
+        if (!document.getElementById(scriptId)) {
+          const script = document.createElement('script');
+          script.id = scriptId;
+          script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+          script.onload = () => {
+            initDialogMap();
+          };
+          document.body.appendChild(script);
+        }
+      } else {
+        setTimeout(() => {
+          initDialogMap();
+        }, 150);
+      }
+    } else {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+        markerRef.current = null;
+      }
+    }
+  }, [isCreateOpen, isEditOpen]);
+
+  // Synchronize Leaflet marker position when coordinates change manually
+  React.useEffect(() => {
+    if ((isCreateOpen || isEditOpen) && mapRef.current && formData.latitude && formData.longitude) {
+      const L = (window as any).L;
+      if (!L) return;
+      
+      const newPos = [formData.latitude, formData.longitude] as [number, number];
+      mapRef.current.setView(newPos, 15);
+      
+      if (markerRef.current) {
+        markerRef.current.setLatLng(newPos);
+      } else {
+        const goldIcon = L.icon({
+          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
+        });
+        const marker = L.marker(newPos, { icon: goldIcon, draggable: true }).addTo(mapRef.current);
+        markerRef.current = marker;
+        
+        marker.on('dragend', () => {
+          const latLng = marker.getLatLng();
+          setFormData(prev => ({
+            ...prev,
+            latitude: latLng.lat,
+            longitude: latLng.lng
+          }));
+          reverseGeocode(latLng.lat, latLng.lng);
+        });
+      }
+    }
+  }, [formData.latitude, formData.longitude]);
+
+  const initDialogMap = () => {
+    if (!mapContainerRef.current) return;
+    const L = (window as any).L;
+    if (!L) return;
+
+    if (mapRef.current) {
+      mapRef.current.remove();
+    }
+
+    const lat = formData.latitude || 39.151;
+    const lon = formData.longitude || -0.437;
+
+    const map = L.map(mapContainerRef.current).setView([lat, lon], 15);
+    mapRef.current = map;
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    const goldIcon = L.icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+
+    const marker = L.marker([lat, lon], { icon: goldIcon, draggable: true }).addTo(map);
+    markerRef.current = marker;
+
+    marker.on('dragend', () => {
+      const latLng = marker.getLatLng();
+      setFormData(prev => ({
+        ...prev,
+        latitude: latLng.lat,
+        longitude: latLng.lng
+      }));
+      reverseGeocode(latLng.lat, latLng.lng);
+    });
+  };
+
+  const reverseGeocode = async (lat: number, lon: number) => {
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.display_name) {
+          setFormData(prev => ({ ...prev, address: data.display_name }));
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFormData(prev => ({ ...prev, address: value }));
+
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+
+    if (value.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+
+    setLoadingSuggestions(true);
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+            value
+          )}&limit=5&addressdetails=1&countrycodes=es,fr`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setSuggestions(
+            data.map((item: any) => ({
+              id: item.place_id,
+              display_name: item.display_name,
+              lat: parseFloat(item.lat),
+              lon: parseFloat(item.lon)
+            }))
+          );
+        }
+      } catch (err) {
+        console.error('Error al obtener sugerencias de dirección:', err);
+      } finally {
+        setLoadingSuggestions(false);
+      }
+    }, 450);
+  };
+
+  const handleSelectSuggestion = (suggestion: any) => {
+    setSuggestions([]);
+    setFormData(prev => ({
+      ...prev,
+      address: suggestion.display_name,
+      latitude: suggestion.lat,
+      longitude: suggestion.lon
+    }));
+  };
 
   const handleCreateLocation = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -173,7 +360,15 @@ export default function LocationsPage() {
 
   const handleEditOpen = (location: Location) => {
     setLocationToEdit(location)
-    setFormData({ name: location.name, address: location.address, phone: location.phone || '', email: location.email || '', is_active: location.is_active })
+    setFormData({ 
+      name: location.name, 
+      address: location.address, 
+      phone: location.phone || '', 
+      email: location.email || '', 
+      is_active: location.is_active,
+      latitude: location.latitude || 39.151,
+      longitude: location.longitude || -0.437
+    })
     setIsEditOpen(true)
   }
 
@@ -416,17 +611,49 @@ export default function LocationsPage() {
             <DialogDescription className="text-stone-400 font-medium">{t('dashboard.locations.create_desc')}</DialogDescription>
           </DialogHeader>
           <form id="locations-create-form" onSubmit={handleCreateLocation} className="space-y-4">
-            {[
-              { key: 'name', label: t('dashboard.locations.name_label'), placeholder: t('dashboard.locations.name_placeholder'), type: 'text', required: true },
-              { key: 'address', label: t('dashboard.locations.address_label'), placeholder: t('dashboard.locations.address_placeholder'), type: 'text', required: true },
-            ].map(({ key, label, placeholder, type, required }) => (
-              <div key={key} className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{label}</label>
-                <input id={`locations-create-${key}-input`} type={type} value={(formData as any)[key]} onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.locations.name_label')}</label>
+              <input id="locations-create-name-input" type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all"
+                placeholder={t('dashboard.locations.name_placeholder')} required />
+            </div>
+
+            <div className="space-y-1.5 relative">
+              <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.locations.address_label')}</label>
+              <div className="relative">
+                <input id="locations-create-address-input" type="text" value={formData.address} onChange={handleAddressChange}
                   className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all"
-                  placeholder={placeholder} required={required} />
+                  placeholder={t('dashboard.locations.address_placeholder')} required />
+                {loadingSuggestions && (
+                  <div className="absolute right-3 top-3.5 w-4 h-4 rounded-full border-2 border-stone-300 border-t-stone-900 animate-spin" />
+                )}
               </div>
-            ))}
+              
+              {suggestions.length > 0 && (
+                <div className="absolute z-[100] left-0 right-0 top-full mt-1 bg-white border border-stone-200 rounded-xl shadow-xl max-h-48 overflow-y-auto divide-y divide-stone-100">
+                  {suggestions.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => handleSelectSuggestion(s)}
+                      className="w-full text-left px-4 py-3 text-xs text-stone-700 hover:bg-stone-50 hover:text-stone-950 font-sans transition-colors"
+                    >
+                      {s.display_name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">Verificar ubicación en mapa (Arrastra el pin para precisión)</label>
+              <div 
+                ref={mapContainerRef} 
+                className="w-full h-40 rounded-xl border border-stone-200 overflow-hidden relative z-10"
+                style={{ minHeight: '160px' }}
+              />
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.locations.phone_label')}</label>
@@ -460,17 +687,49 @@ export default function LocationsPage() {
             <DialogDescription className="text-stone-400 font-medium">{t('dashboard.locations.edit_desc')}</DialogDescription>
           </DialogHeader>
           <form id="locations-edit-form" onSubmit={handleUpdateLocation} className="space-y-4">
-            {[
-              { key: 'name', label: t('dashboard.locations.name_label'), type: 'text', required: true },
-              { key: 'address', label: t('dashboard.locations.address_label'), type: 'text', required: true },
-            ].map(({ key, label, type, required }) => (
-              <div key={key} className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{label}</label>
-                <input id={`locations-edit-${key}-input`} type={type} value={(formData as any)[key]} onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.locations.name_label')}</label>
+              <input id="locations-edit-name-input" type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all"
+                required />
+            </div>
+
+            <div className="space-y-1.5 relative">
+              <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.locations.address_label')}</label>
+              <div className="relative">
+                <input id="locations-edit-address-input" type="text" value={formData.address} onChange={handleAddressChange}
                   className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all"
-                  required={required} />
+                  required />
+                {loadingSuggestions && (
+                  <div className="absolute right-3 top-3.5 w-4 h-4 rounded-full border-2 border-stone-300 border-t-stone-900 animate-spin" />
+                )}
               </div>
-            ))}
+              
+              {suggestions.length > 0 && (
+                <div className="absolute z-[100] left-0 right-0 top-full mt-1 bg-white border border-stone-200 rounded-xl shadow-xl max-h-48 overflow-y-auto divide-y divide-stone-100">
+                  {suggestions.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => handleSelectSuggestion(s)}
+                      className="w-full text-left px-4 py-3 text-xs text-stone-700 hover:bg-stone-50 hover:text-stone-950 font-sans transition-colors"
+                    >
+                      {s.display_name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">Verificar ubicación en mapa (Arrastra el pin para precisión)</label>
+              <div 
+                ref={mapContainerRef} 
+                className="w-full h-40 rounded-xl border border-stone-200 overflow-hidden relative z-10"
+                style={{ minHeight: '160px' }}
+              />
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.locations.phone_label')}</label>

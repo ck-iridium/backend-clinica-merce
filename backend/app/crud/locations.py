@@ -29,7 +29,9 @@ def create_location(db: Session, location_in: schemas.LocationCreate):
         address=location_in.address,
         phone=location_in.phone,
         email=location_in.email,
-        is_active=location_in.is_active
+        is_active=location_in.is_active,
+        latitude=location_in.latitude,
+        longitude=location_in.longitude
     )
     db.add(db_loc)
     db.commit()

@@ -190,6 +190,8 @@ class Location(Base):
     phone = Column(String, nullable=True)
     email = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     tenant = relationship("Tenant")
