@@ -186,6 +186,7 @@ $function$;
             "ALTER TABLE appointments ADD COLUMN client_city VARCHAR(100) NULL",
             # ── CRM Columns ─────────────────────────────────────────────────────────
             "ALTER TABLE clinic_settings ADD COLUMN business_sector VARCHAR DEFAULT 'general' NOT NULL",
+            "ALTER TABLE clients ADD COLUMN name VARCHAR",
             "ALTER TABLE clients ADD COLUMN first_name VARCHAR",
             "ALTER TABLE clients ADD COLUMN last_name VARCHAR",
             "ALTER TABLE clients ADD COLUMN service_address VARCHAR",
