@@ -16,14 +16,66 @@ def run_auto_migrations():
         is_sqlite = db.bind.dialect.name == "sqlite"
         json_type = "JSON" if is_sqlite else "JSONB"
         
-        # LOG DE FUNCIÓN TRIGGER
-        try:
-            if not is_sqlite:
-                res = db.execute(text("SELECT pg_get_functiondef(p.oid) FROM pg_proc p WHERE p.proname = 'notify_appointment_changes';")).first()
-                if res:
-                    print(f"FUNCTION_DEF_TRIGGER_START\n{res[0]}\nFUNCTION_DEF_TRIGGER_END", flush=True)
-        except Exception as e:
-            print(f"Error fetching trigger function def: {e}", flush=True)
+        # Recrear la función trigger notify_appointment_changes en PostgreSQL para inyectar tenant_id
+        if not is_sqlite:
+            trigger_sql = """
+CREATE OR REPLACE FUNCTION public.notify_appointment_changes()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE
+  client_name TEXT;
+  service_name TEXT;
+  notif_title TEXT;
+  notif_desc TEXT;
+  notif_type TEXT;
+  appointment_date TEXT;
+BEGIN
+  -- 1. Buscamos datos para el mensaje humano
+  SELECT name INTO client_name FROM public.clients WHERE id = NEW.client_id;
+  SELECT name INTO service_name FROM public.services WHERE id = NEW.service_id;
+  appointment_date := to_char(NEW.start_time, 'DD/MM/YYYY a las HH24:MI');
+  -- CASO A: Cita NUEVA
+  IF TG_OP = 'INSERT' THEN
+    notif_title := 'Nueva Reserva: ' || COALESCE(client_name, 'Cliente');
+    notif_desc := client_name || ' ha reservado ' || service_name || ' para el ' || appointment_date;
+    notif_type := 'success';
+  -- CASO B: ACTUALIZACIÓN (Cambiamos 'Cancelada' por 'cancelled' y 'Confirmada' por 'confirmed')
+  ELSIF TG_OP = 'UPDATE' AND OLD.status IS DISTINCT FROM NEW.status THEN
+    IF NEW.status = 'cancelled' THEN
+      notif_title := 'Cita Cancelada ❌';
+      notif_desc := client_name || ' ha CANCELADO su cita de ' || service_name || ' del ' || appointment_date;
+      notif_type := 'error'; -- Esto activará el sonido alert.wav
+    ELSIF NEW.status = 'confirmed' THEN
+      notif_title := 'Cita Confirmada ✅';
+      notif_desc := 'La cita de ' || service_name || ' para ' || client_name || ' ha sido confirmada.';
+      notif_type := 'success'; -- Esto activará el sonido positive.wav
+    ELSE
+      notif_title := 'Estado actualizado: ' || NEW.status;
+      notif_desc := 'La cita de ' || client_name || ' ha pasado a: ' || NEW.status;
+      notif_type := 'info'; -- Sonido neutral.wav
+    END IF;
+  ELSE
+    RETURN NEW;
+  END IF;
+  -- 2. Insertamos la notificación
+  INSERT INTO public.notifications (user_id, title, description, type, metadata, tenant_id)
+  SELECT id, notif_title, notif_desc, notif_type,
+    jsonb_build_object('appointment_id', NEW.id, 'date', NEW.start_time, 'type', 'appointment'),
+    NEW.tenant_id
+  FROM public.profiles WHERE role IN ('Administrador', 'Recepción');
+  RETURN NEW;
+END;
+$function$;
+            """
+            try:
+                db.execute(text(trigger_sql))
+                db.commit()
+                logger.info("✅ Función de trigger notify_appointment_changes actualizada en PostgreSQL.")
+            except Exception as e:
+                db.rollback()
+                logger.error(f"❌ Error actualizando la función trigger: {e}")
             
         # Lista de migraciones: ALTER TABLE es soportado por SQLite y PostgreSQL
         migrations = [
