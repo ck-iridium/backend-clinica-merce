@@ -16,6 +16,15 @@ def run_auto_migrations():
         is_sqlite = db.bind.dialect.name == "sqlite"
         json_type = "JSON" if is_sqlite else "JSONB"
         
+        # LOG DE FUNCIÓN TRIGGER
+        try:
+            if not is_sqlite:
+                res = db.execute(text("SELECT pg_get_functiondef(p.oid) FROM pg_proc p WHERE p.proname = 'notify_appointment_changes';")).first()
+                if res:
+                    print(f"FUNCTION_DEF_TRIGGER_START\n{res[0]}\nFUNCTION_DEF_TRIGGER_END", flush=True)
+        except Exception as e:
+            print(f"Error fetching trigger function def: {e}", flush=True)
+            
         # Lista de migraciones: ALTER TABLE es soportado por SQLite y PostgreSQL
         migrations = [
             "ALTER TABLE clinic_settings ADD COLUMN smtp_host VARCHAR",
