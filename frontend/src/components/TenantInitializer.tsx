@@ -49,7 +49,17 @@ export default function TenantInitializer() {
         // Si el destino es la API de nuestro backend, inyectamos la cabecera X-Tenant-ID
         if (url.startsWith(apiUrl)) {
           const isImpersonating = getCookie('is_impersonating') === 'true';
-          const tenantId = isImpersonating ? (getCookie('impersonate_tenant_id') || getCookie('tenant_id')) : getCookie('tenant_id');
+          const impersonateId = getCookie('impersonate_tenant_id');
+          const normalTenantId = getCookie('tenant_id');
+          const tenantId = isImpersonating ? (impersonateId || normalTenantId) : normalTenantId;
+          
+          console.log('[TenantInitializer Patch] Intercepting:', url, {
+            isImpersonating,
+            impersonateId,
+            normalTenantId,
+            selectedTenantId: tenantId,
+            cookies: typeof document !== 'undefined' ? document.cookie : ''
+          });
           
           if (tenantId) {
             init = init || {};
