@@ -33,6 +33,12 @@ export default function ContactoPage() {
   const markerRef = useRef<any | null>(null);
   const circleRef = useRef<any | null>(null);
 
+  const clinicMapContainerRef = useRef<HTMLDivElement | null>(null);
+  const clinicMapRef = useRef<any | null>(null);
+  const clinicMarkerRef = useRef<any | null>(null);
+  const [locationCoords, setLocationCoords] = useState<{lat: number, lon: number} | null>(null);
+  const [geocoding, setGeocoding] = useState(false);
+
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/settings/`)
       .then(res => res.json())
@@ -54,8 +60,47 @@ export default function ContactoPage() {
       .catch(() => { });
   }, []);
 
+  // Geocode address when active location changes
   useEffect(() => {
-    if (activeTab === 'home' && settings?.operations_center_latitude) {
+    const activeLocation = locations[selectedLocationIndex];
+    const addressToGeocode = activeLocation?.address || settings?.clinic_address;
+    if (addressToGeocode && activeTab === 'clinics') {
+      setGeocoding(true);
+      const query = encodeURIComponent(addressToGeocode);
+      fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.length > 0) {
+            setLocationCoords({
+              lat: parseFloat(data[0].lat),
+              lon: parseFloat(data[0].lon)
+            });
+          } else {
+            // Fallback to operation center coords or default Alzira
+            setLocationCoords({
+              lat: settings?.operations_center_latitude || 39.151,
+              lon: settings?.operations_center_longitude || -0.437
+            });
+          }
+        })
+        .catch(() => {
+          setLocationCoords({
+            lat: settings?.operations_center_latitude || 39.151,
+            lon: settings?.operations_center_longitude || -0.437
+          });
+        })
+        .finally(() => {
+          setGeocoding(false);
+        });
+    }
+  }, [selectedLocationIndex, locations, activeTab, settings]);
+
+  // Load Leaflet resources globally when needed by either map tab
+  useEffect(() => {
+    const needsLeaflet = (activeTab === 'home' && settings?.operations_center_latitude) ||
+                          (activeTab === 'clinics' && locationCoords && !geocoding);
+                          
+    if (needsLeaflet) {
       const linkId = 'leaflet-css-cdn-public';
       if (!document.getElementById(linkId)) {
         const link = document.createElement('link');
@@ -66,20 +111,25 @@ export default function ContactoPage() {
       }
 
       if (!(window as any).L) {
-        const script = document.createElement('script');
-        script.id = 'leaflet-js-cdn-public';
-        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-        script.onload = () => {
-          initLeafletMap();
-        };
-        document.body.appendChild(script);
+        const scriptId = 'leaflet-js-cdn-public';
+        if (!document.getElementById(scriptId)) {
+          const script = document.createElement('script');
+          script.id = scriptId;
+          script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+          script.onload = () => {
+            if (activeTab === 'home') initLeafletMap();
+            else initClinicLeafletMap();
+          };
+          document.body.appendChild(script);
+        }
       } else {
         setTimeout(() => {
-          initLeafletMap();
+          if (activeTab === 'home') initLeafletMap();
+          else initClinicLeafletMap();
         }, 100);
       }
     }
-  }, [activeTab, settings]);
+  }, [activeTab, settings, locationCoords, geocoding]);
 
   const initLeafletMap = () => {
     if (!mapContainerRef.current) return;
@@ -124,6 +174,44 @@ export default function ContactoPage() {
 
     const bounds = circle.getBounds();
     map.fitBounds(bounds, { padding: [15, 15] });
+  };
+
+  const initClinicLeafletMap = () => {
+    if (!clinicMapContainerRef.current || !locationCoords) return;
+    const L = (window as any).L;
+    if (!L) return;
+
+    if (clinicMapRef.current) {
+      clinicMapRef.current.remove();
+    }
+
+    const lat = locationCoords.lat;
+    const lon = locationCoords.lon;
+
+    const map = L.map(clinicMapContainerRef.current).setView([lat, lon], 15);
+    clinicMapRef.current = map;
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    const goldIcon = L.icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+
+    const marker = L.marker([lat, lon], { icon: goldIcon }).addTo(map);
+    clinicMarkerRef.current = marker;
+
+    const activeLocation = locations[selectedLocationIndex];
+    const name = activeLocation?.name || settings?.clinic_name || t('contact.our_locations');
+    const address = activeLocation?.address || settings?.clinic_address || '';
+    
+    marker.bindPopup(`<b>${name}</b><br/>${address}`).openPopup();
   };
 
   const getWhitelistZones = () => {
@@ -446,7 +534,7 @@ export default function ContactoPage() {
                 )}
 
                 {activeTab === 'clinics' ? (
-                  /* VISTA DE SEDES: Google Maps */
+                  /* VISTA DE SEDES: Leaflet Map */
                   <div className="space-y-4">
                     {/* Selector rápido de Sedes si hay varias */}
                     {locations.length > 1 && (
@@ -471,19 +559,15 @@ export default function ContactoPage() {
                       variants={itemVariants}
                       className="relative aspect-[4/5] rounded-luxury-card overflow-hidden shadow-luxury border border-white group"
                     >
-                      <iframe 
-                        src={
-                          locations[selectedLocationIndex] 
-                            ? `https://maps.google.com/maps?q=${encodeURIComponent(locations[selectedLocationIndex].address)}&output=embed`
-                            : (settings?.maps_url || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m13!1m1!2sCalle+Favareta+46+Alzira!2m2!1d-0.437!2d39.151!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd61ab5d9d9d9d9d%3A0xd61ab5d9d9d9d9d!2sCalle%20Favareta%2C%2046%2C%2046600%20Alzira%2C%20Valencia!5e0!3m2!1ses!2ses!4v1715685000000!5m2!1ses!2ses")
-                        }
-                        width="100%" 
-                        height="100%" 
-                        style={{ border: 0 }} 
-                        allowFullScreen 
-                        loading="lazy" 
-                        className="grayscale contrast-[1.1] brightness-[0.85] hover:grayscale-0 hover:brightness-100 transition-all duration-1000 ease-in-out"
-                      />
+                      {geocoding || !locationCoords ? (
+                        <Skeleton className="w-full h-full absolute inset-0 bg-stone-100/50 z-10" />
+                      ) : (
+                        <div 
+                          ref={clinicMapContainerRef}
+                          style={{ height: '100%', width: '100%', minHeight: '350px' }}
+                          className="z-10"
+                        />
+                      )}
                       
                       {/* Float Glass Card */}
                       <div className="absolute inset-x-6 bottom-6 p-8 bg-white/70 backdrop-blur-2xl rounded-luxury-card border border-white/50 shadow-2xl translate-y-4 group-hover:translate-y-0 transition-all duration-700 z-20">
