@@ -48,7 +48,8 @@ export default function TenantInitializer() {
         
         // Si el destino es la API de nuestro backend, inyectamos la cabecera X-Tenant-ID
         if (url.startsWith(apiUrl)) {
-          const tenantId = getCookie('tenant_id');
+          const isImpersonating = getCookie('is_impersonating') === 'true';
+          const tenantId = isImpersonating ? (getCookie('impersonate_tenant_id') || getCookie('tenant_id')) : getCookie('tenant_id');
           
           if (tenantId) {
             init = init || {};
@@ -62,7 +63,8 @@ export default function TenantInitializer() {
             }
             
             const headers = new Headers(baseHeaders);
-            if (!headers.has('X-Tenant-ID')) {
+            const currentTenantHeader = headers.get('X-Tenant-ID');
+            if (!currentTenantHeader || currentTenantHeader === 'null' || currentTenantHeader === 'undefined') {
               headers.set('X-Tenant-ID', tenantId);
             }
             init.headers = headers;
