@@ -167,8 +167,7 @@ async def resolve_tenant_middleware(request, call_next):
         "/super-admin",
         "/docs",
         "/openapi.json",
-        "/redoc",
-        "/diagnostic"
+        "/redoc"
     ])
     
     if not is_global_path:
@@ -380,55 +379,3 @@ def force_seed():
     finally:
         db.close()
 
-@app.get("/diagnostic")
-def run_diagnostic():
-    import traceback
-    from app.database import SessionLocal
-    from app import models
-    from sqlalchemy import text
-    
-    results = {}
-    
-    # 1. Test database connection
-    try:
-        db = SessionLocal()
-        results["db_connection"] = "ok"
-    except Exception as e:
-        results["db_connection"] = f"failed: {e}"
-        results["traceback"] = traceback.format_exc()
-        return results
-        
-    # 2. Check tenants table columns and data
-    try:
-        tenants = db.execute(text("SELECT id, name, created_at, subscription_status FROM tenants")).fetchall()
-        results["tenants"] = [
-            {"id": t[0], "name": t[1], "created_at": str(t[2]), "status": t[3]}
-            for t in tenants
-        ]
-    except Exception as e:
-        results["tenants_error"] = f"failed: {e}"
-        
-    # 3. Check users table columns
-    try:
-        users_cols = db.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='users'")).fetchall()
-        results["users_columns"] = [c[0] for c in users_cols]
-        if not results["users_columns"]:
-            # SQLite fallback
-            users_cols = db.execute(text("PRAGMA table_info(users)")).fetchall()
-            results["users_columns"] = [c[1] for c in users_cols]
-    except Exception as e:
-        results["users_error"] = f"failed: {e}"
-            
-    # 4. Check clinic_settings table columns
-    try:
-        settings_cols = db.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='clinic_settings'")).fetchall()
-        results["clinic_settings_columns"] = [c[0] for c in settings_cols]
-        if not results["clinic_settings_columns"]:
-            # SQLite fallback
-            settings_cols = db.execute(text("PRAGMA table_info(clinic_settings)")).fetchall()
-            results["clinic_settings_columns"] = [c[1] for c in settings_cols]
-    except Exception as e:
-        results["clinic_settings_error"] = f"failed: {e}"
-            
-    db.close()
-    return results
