@@ -195,6 +195,8 @@ export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant, o
         document.cookie = `impersonate_tenant_id=${data.tenant_id}; path=/; max-age=7200; sameSite=lax`;
         document.cookie = `impersonate_tenant_slug=${data.slug}; path=/; max-age=7200; sameSite=lax`;
         document.cookie = `impersonate_tenant_name=${encodeURIComponent(data.name)}; path=/; max-age=7200; sameSite=lax`;
+        document.cookie = `tenant_id=${data.tenant_id}; path=/; max-age=7200; sameSite=lax`;
+        document.cookie = `tenant_slug=${data.slug}; path=/; max-age=7200; sameSite=lax`;
 
         toast.success(`Iniciando Modo Soporte: ${data.name}...`);
         

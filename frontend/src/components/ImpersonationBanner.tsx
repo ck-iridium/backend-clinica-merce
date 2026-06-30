@@ -30,6 +30,8 @@ export default function ImpersonationBanner() {
     document.cookie = "impersonate_tenant_id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     document.cookie = "impersonate_tenant_slug=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     document.cookie = "impersonate_tenant_name=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie = "tenant_id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie = "tenant_slug=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     
     // Redirect to super admin panel
     window.location.href = '/super-admin';
