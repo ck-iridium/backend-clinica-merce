@@ -98,7 +98,10 @@ def run_auto_migrations():
             # ── Multi-Location & Rostering ──────────────────────────────────────────
             "ALTER TABLE appointments ADD COLUMN staff_id VARCHAR",
             "ALTER TABLE appointments ADD COLUMN location_id VARCHAR",
-            "ALTER TABLE time_blocks ADD COLUMN staff_id VARCHAR"
+            "ALTER TABLE time_blocks ADD COLUMN staff_id VARCHAR",
+            # ── Control de Sesiones Concurrentes (SaaS) ─────────────────────────────
+            "ALTER TABLE users ADD COLUMN last_session_id VARCHAR",
+            "ALTER TABLE users ADD COLUMN last_session_iat INTEGER"
         ]
         
         for m in migrations:

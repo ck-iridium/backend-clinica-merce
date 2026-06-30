@@ -25,6 +25,10 @@ export default function LoginPage() {
       if (welcomeParam === 'true') {
         setSuccess('¡Tu portal de reservas está activo! Por seguridad, introduce tu contraseña para acceder.');
       }
+      const reasonParam = params.get('reason');
+      if (reasonParam === 'superseded') {
+        setError('Tu sesión ha sido cerrada automáticamente porque se inició sesión en otro dispositivo.');
+      }
 
       const hostname = window.location.hostname.toLowerCase();
       if (hostname.includes('.localhost') && hostname !== 'localhost') {

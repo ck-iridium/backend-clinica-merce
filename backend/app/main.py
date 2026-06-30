@@ -136,6 +136,45 @@ def get_tenant_id_from_token(auth_header: str) -> str:
     except Exception:
         return None
 
+def check_concurrent_session(auth_header: str, db) -> bool:
+    """
+    Verifica si la sesión del usuario ha sido superada por un inicio de sesión más reciente.
+    """
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return True
+    token = auth_header.split(" ")[1]
+    try:
+        parts = token.split(".")
+        if len(parts) != 3:
+            return True
+        payload_b64 = parts[1]
+        payload_b64 += "=" * ((4 - len(payload_b64) % 4) % 4)
+        payload_json = base64.b64decode(payload_b64).decode("utf-8")
+        payload = json.loads(payload_json)
+        
+        user_id = payload.get("sub")
+        session_id = payload.get("session_id")
+        iat = payload.get("iat")
+        
+        if not user_id or not session_id or not iat:
+            return True
+            
+        from .models import User
+        user = db.query(User).filter(User.id == user_id).first()
+        if user:
+            # Si no hay sesión registrada, o si la nueva sesión tiene un IAT mayor
+            if not user.last_session_id or iat > (user.last_session_iat or 0):
+                user.last_session_id = session_id
+                user.last_session_iat = iat
+                db.commit()
+            # Si la sesión es distinta y el token es más viejo que la última sesión guardada, se rechaza
+            elif user.last_session_id != session_id and iat < user.last_session_iat:
+                return False
+    except Exception as e:
+        print(f"[CONCURRENT_SESSION_CHECK_ERROR] {e}")
+        
+    return True
+
 # Caché en memoria para evitar consultas reiteradas a la base de datos en peticiones concurrentes
 import time
 TENANT_STATUS_CACHE = {} # {tenant_id: {"status": str, "name": str, "timestamp": float}}
@@ -182,6 +221,21 @@ async def resolve_tenant_middleware(request, call_next):
         from .models import Tenant, User
         from datetime import datetime, timedelta
         
+        # 1. Control de sesión única concurrentes (SaaS)
+        db = None
+        auth_header = request.headers.get("Authorization")
+        if auth_header:
+            db = SessionLocal()
+            try:
+                if not check_concurrent_session(auth_header, db):
+                    db.close()
+                    return JSONResponse(
+                        status_code=401,
+                        content={"detail": "session_superseded"}
+                    )
+            except Exception as e:
+                print(f"[MIDDLEWARE SESSION CHECK ERROR] {e}")
+
         now = time.time()
         cached = TENANT_STATUS_CACHE.get(tenant_id)
         
@@ -189,9 +243,12 @@ async def resolve_tenant_middleware(request, call_next):
             status = cached["status"]
             name = cached["name"]
             email_verified = cached.get("email_verified", True)
-            created_at = cached.get("created_at", datetime.utcnow())
+            created_at = cached.get("created_at")
+            if db:
+                db.close()
         else:
-            db = SessionLocal()
+            if not db:
+                db = SessionLocal()
             try:
                 tenant = db.query(Tenant).filter(Tenant.id == tenant_id).first()
                 if tenant:

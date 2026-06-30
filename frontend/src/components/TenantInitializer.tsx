@@ -89,6 +89,22 @@ export default function TenantInitializer() {
               toast.error('Acceso Restringido: Por favor, confirma tu correo electrónico para seguir usando el sistema.');
             }
           }
+
+          if (response.status === 401) {
+            try {
+              const data = await response.clone().json();
+              if (data?.detail === 'session_superseded') {
+                console.warn('[Session] Session superseded by a newer login. Logging out...');
+                toast.error('Tu sesión ha sido iniciada en otro dispositivo. Por favor, inicia sesión de nuevo.', {
+                  duration: 8000
+                });
+                await supabase.auth.signOut();
+                window.location.href = '/login?reason=superseded';
+              }
+            } catch (err) {
+              // Ignorar errores si no es JSON
+            }
+          }
         }
         
         return response;

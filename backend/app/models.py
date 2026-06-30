@@ -29,6 +29,8 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     role = Column(String, default="client")
     email_verified = Column(Boolean, default=False, nullable=False)
+    last_session_id = Column(String, nullable=True)
+    last_session_iat = Column(Integer, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 class Profile(Base):
