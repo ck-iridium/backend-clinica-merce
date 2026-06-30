@@ -142,6 +142,14 @@ export default async function RootLayout({
   const isMarketing = !tenantSlug || tenantSlug === "www";
   const isBypassRoute = pathname.startsWith("/super-admin") || pathname.startsWith("/login");
 
+  console.log('[RootLayout SSR Debug]', {
+    tenantSlug,
+    pathname,
+    isMarketing,
+    isBypassRoute,
+    tenantId: requestHeaders.get("x-tenant-id")
+  });
+
   let settings: any = null;
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
   const tenantId = requestHeaders.get("x-tenant-id");
