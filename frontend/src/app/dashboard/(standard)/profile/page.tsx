@@ -33,7 +33,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-1000 max-w-6xl mx-auto pb-20 px-4 lg:px-0">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-1000 max-w-6xl mx-auto pb-36 lg:pb-20 px-4 lg:px-0">
       
       {/* ── Header Elegante ── */}
       <div className="mb-12 relative pt-8 lg:pt-0">

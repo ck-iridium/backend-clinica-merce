@@ -121,19 +121,21 @@ export default function ProfileAvatarCard({
       </div>
 
       {/* Botón Maestro: Guardar Cambios (Notificaciones + Nombre) */}
-      <button
-        id="profile-save-all-btn"
-        onClick={handleSaveAll}
-        disabled={savingPrefs || !isDirty}
-        className="w-full bg-emerald-600 text-white hover:bg-emerald-700 px-6 sm:px-8 py-4 sm:py-5 rounded-2xl sm:rounded-[2.5rem] font-bold text-sm shadow-xl shadow-emerald-100 transition-all active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed flex items-center justify-center gap-3 group"
-      >
-        {savingPrefs ? (
-          <Loader2 className="animate-spin" size={18} />
-        ) : (
-          <CheckCircle2 size={18} className="text-emerald-100 group-hover:scale-110 transition-transform" />
-        )}
-        {isDirty ? 'Guardar Cambios' : 'Sin cambios pendientes'}
-      </button>
+      <div className="fixed bottom-20 left-4 right-4 z-40 bg-white/95 backdrop-blur-md p-3 rounded-3xl border border-stone-200/80 shadow-2xl lg:static lg:bg-transparent lg:backdrop-blur-none lg:p-0 lg:border-none lg:shadow-none lg:rounded-none transition-all duration-300">
+        <button
+          id="profile-save-all-btn"
+          onClick={handleSaveAll}
+          disabled={savingPrefs || !isDirty}
+          className="w-full bg-emerald-600 text-white hover:bg-emerald-700 px-6 sm:px-8 py-4 rounded-2xl sm:rounded-[2.5rem] font-bold text-sm shadow-lg hover:shadow-emerald-200/50 transition-all active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed flex items-center justify-center gap-3 group py-4 sm:py-5"
+        >
+          {savingPrefs ? (
+            <Loader2 className="animate-spin" size={18} />
+          ) : (
+            <CheckCircle2 size={18} className="text-emerald-100 group-hover:scale-110 transition-transform" />
+          )}
+          {isDirty ? 'Guardar Cambios' : 'Sin cambios pendientes'}
+        </button>
+      </div>
     </div>
   );
 }
