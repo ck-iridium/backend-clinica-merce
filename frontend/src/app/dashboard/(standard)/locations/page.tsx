@@ -37,6 +37,8 @@ interface Location {
   phone?: string
   email?: string
   is_active: boolean
+  latitude?: number
+  longitude?: number
   created_at: string
 }
 
