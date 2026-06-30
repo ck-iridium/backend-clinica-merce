@@ -85,8 +85,35 @@ def get_client_saved_address(
     return {"has_saved_address": False}
 
 
+import functools
+
+def log_exceptions(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            import traceback
+            tb = traceback.format_exc()
+            print(f"[PUBLIC_BOOKING_ERROR] {e}\n{tb}")
+            try:
+                with open("public_booking_error.txt", "w", encoding="utf-8") as f:
+                    f.write(str(e) + "\n" + tb)
+            except Exception:
+                pass
+            from fastapi.responses import JSONResponse
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "detail": str(e),
+                    "traceback": tb
+                }
+            )
+    return wrapper
+
 @router.post("/public", response_model=schemas.PublicBookingResponse, status_code=201)
 # @limiter.limit("3/hour")
+@log_exceptions
 def public_booking(request: Request, booking: schemas.PublicBookingRequest, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
     """
     Landing page booking endpoint.
