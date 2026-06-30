@@ -17,34 +17,34 @@ export default function ProfilePreferencesForm({
   setReceiveAgendaReminders
 }: ProfilePreferencesFormProps) {
   return (
-    <section className="bg-white rounded-[3rem] border border-stone-100 shadow-sm p-10 overflow-hidden relative">
+    <section className="bg-white rounded-3xl sm:rounded-[3rem] border border-stone-100 shadow-sm p-6 sm:p-10 overflow-hidden relative">
       <div className="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-full blur-3xl opacity-40 translate-x-10 -translate-y-10"></div>
 
-      <div className="flex items-center gap-5 mb-12">
-        <div className="w-14 h-14 rounded-3xl bg-amber-50 text-amber-500 flex items-center justify-center shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 mb-8 sm:mb-12">
+        <div className="w-14 h-14 rounded-3xl bg-amber-50 text-amber-500 flex items-center justify-center shadow-sm shrink-0">
           <Bell size={26} strokeWidth={1.5} />
         </div>
         <div>
-          <h3 className="text-2xl font-serif font-semibold text-stone-800">Preferencias</h3>
+          <h3 className="text-xl sm:text-2xl font-serif font-semibold text-stone-800">Preferencias</h3>
           <p className="text-stone-400 text-sm">Controla cómo y cuándo quieres recibir actualizaciones.</p>
         </div>
       </div>
 
       <div className="space-y-4">
         <div 
-          className="group flex items-center justify-between p-6 rounded-3xl border border-stone-50 hover:bg-stone-50/50 hover:border-stone-100 transition-all cursor-pointer" 
+          className="group flex items-center justify-between p-4 sm:p-6 rounded-3xl border border-stone-50 hover:bg-stone-50/50 hover:border-stone-100 transition-all cursor-pointer gap-4" 
           onClick={() => setReceiveEmailAppointments(!receiveEmailAppointments)}
         >
-          <div className="flex items-center gap-5">
-            <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-stone-400 group-hover:text-[#D4AF37] shadow-sm transition-all">
+          <div className="flex items-center gap-4 sm:gap-5">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white flex items-center justify-center text-stone-400 group-hover:text-[#D4AF37] shadow-sm transition-all shrink-0">
               <Mail size={20} />
             </div>
             <div>
-              <h4 className="text-base font-bold text-stone-800">Citas por Email</h4>
-              <p className="text-xs text-stone-400 mt-0.5">Recibir avisos de reservas y cancelaciones en tiempo real.</p>
+              <h4 className="text-sm sm:text-base font-bold text-stone-800">Citas por Email</h4>
+              <p className="text-[10px] sm:text-xs text-stone-400 mt-0.5 leading-tight">Recibir avisos de reservas y cancelaciones en tiempo real.</p>
             </div>
           </div>
-          <label className="relative inline-flex items-center cursor-pointer" onClick={e => e.stopPropagation()}>
+          <label className="relative inline-flex items-center cursor-pointer shrink-0" onClick={e => e.stopPropagation()}>
             <input
               id="profile-email-appointments-check"
               type="checkbox"
@@ -57,19 +57,19 @@ export default function ProfilePreferencesForm({
         </div>
 
         <div 
-          className="group flex items-center justify-between p-6 rounded-3xl border border-stone-50 hover:bg-stone-50/50 hover:border-stone-100 transition-all cursor-pointer" 
+          className="group flex items-center justify-between p-4 sm:p-6 rounded-3xl border border-stone-50 hover:bg-stone-50/50 hover:border-stone-100 transition-all cursor-pointer gap-4" 
           onClick={() => setReceiveAgendaReminders(!receiveAgendaReminders)}
         >
-          <div className="flex items-center gap-5">
-            <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-stone-400 group-hover:text-[#D4AF37] shadow-sm transition-all">
+          <div className="flex items-center gap-4 sm:gap-5">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white flex items-center justify-center text-stone-400 group-hover:text-[#D4AF37] shadow-sm transition-all shrink-0">
               <MonitorSmartphone size={20} />
             </div>
             <div>
-              <h4 className="text-base font-bold text-stone-800">Recordatorios Diarios</h4>
-              <p className="text-xs text-stone-400 mt-0.5">Resumen matutino con la agenda completa del día.</p>
+              <h4 className="text-sm sm:text-base font-bold text-stone-800">Recordatorios Diarios</h4>
+              <p className="text-[10px] sm:text-xs text-stone-400 mt-0.5 leading-tight">Resumen matutino con la agenda completa del día.</p>
             </div>
           </div>
-          <label className="relative inline-flex items-center cursor-pointer" onClick={e => e.stopPropagation()}>
+          <label className="relative inline-flex items-center cursor-pointer shrink-0" onClick={e => e.stopPropagation()}>
             <input
               id="profile-agenda-reminders-check"
               type="checkbox"

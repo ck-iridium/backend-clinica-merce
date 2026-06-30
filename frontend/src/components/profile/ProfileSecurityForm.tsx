@@ -21,13 +21,13 @@ export default function ProfileSecurityForm({
   handleLogout
 }: ProfileSecurityFormProps) {
   return (
-    <section className="bg-white rounded-[3rem] border border-stone-100 shadow-sm p-10">
-      <div className="flex items-center gap-5 mb-10">
-        <div className="w-14 h-14 rounded-3xl bg-stone-900 flex items-center justify-center text-white shadow-lg">
+    <section className="bg-white rounded-3xl sm:rounded-[3rem] border border-stone-100 shadow-sm p-6 sm:p-10">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 mb-8 sm:mb-10">
+        <div className="w-14 h-14 rounded-3xl bg-stone-900 flex items-center justify-center text-white shadow-lg shrink-0">
           <Key size={26} strokeWidth={1.5} />
         </div>
         <div>
-          <h3 className="text-2xl font-serif font-semibold text-stone-800">Seguridad</h3>
+          <h3 className="text-xl sm:text-2xl font-serif font-semibold text-stone-800">Seguridad</h3>
           <p className="text-stone-400 text-sm">Protege tu acceso y gestiona tus conexiones.</p>
         </div>
       </div>
@@ -36,7 +36,7 @@ export default function ProfileSecurityForm({
         <form onSubmit={handleUpdatePassword} className="space-y-6">
           <div className="space-y-3">
             <label className="text-[11px] font-black uppercase tracking-widest text-stone-400 px-1">Cambiar Contraseña</label>
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               <input
                 id="profile-new-password-input"
                 type="password"
@@ -49,7 +49,7 @@ export default function ProfileSecurityForm({
                 id="profile-update-password-btn"
                 type="submit"
                 disabled={savingPassword || !password}
-                className="bg-stone-100 hover:bg-stone-200 text-stone-800 px-8 py-4 rounded-2xl font-bold text-sm transition-all active:scale-95 disabled:opacity-50"
+                className="bg-stone-100 hover:bg-stone-200 text-stone-800 px-8 py-4 rounded-2xl font-bold text-sm transition-all active:scale-95 disabled:opacity-50 whitespace-nowrap"
               >
                 {savingPassword ? <Loader2 className="animate-spin" size={18} /> : "Actualizar"}
               </button>
@@ -65,20 +65,20 @@ export default function ProfileSecurityForm({
             <span className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[10px] font-bold uppercase tracking-wider animate-pulse">En Línea</span>
           </div>
 
-          <div className="flex items-center justify-between p-6 bg-stone-50 border border-stone-100 rounded-3xl group/session hover:bg-white hover:border-[#D4AF37]/30 transition-all duration-300">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between p-6 bg-stone-50 border border-stone-100 rounded-3xl group/session hover:bg-white hover:border-[#D4AF37]/30 transition-all duration-300 gap-4">
             <div className="flex items-center gap-5">
-              <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center text-stone-400 shadow-sm border border-stone-100 group-hover/session:text-[#D4AF37] transition-colors">
+              <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center text-stone-400 shadow-sm border border-stone-100 group-hover/session:text-[#D4AF37] transition-colors shrink-0">
                 <MonitorSmartphone size={24} />
               </div>
               <div>
-                <p className="font-bold text-stone-800">{browserInfo}</p>
+                <p className="font-bold text-stone-800 text-sm sm:text-base">{browserInfo}</p>
                 <p className="text-xs text-stone-400">Dirección IP protegida • Conectado ahora</p>
               </div>
             </div>
             <button
               id="profile-logout-btn"
               onClick={handleLogout}
-              className="flex items-center gap-2 text-rose-500 hover:text-white hover:bg-rose-500 px-6 py-3 rounded-2xl text-xs font-bold transition-all border border-rose-100 group-hover/session:shadow-lg group-hover/session:shadow-rose-100"
+              className="flex items-center justify-center gap-2 text-rose-500 hover:text-white hover:bg-rose-500 px-6 py-3 rounded-2xl text-xs font-bold transition-all border border-rose-100 group-hover/session:shadow-lg group-hover/session:shadow-rose-100 w-full sm:w-auto"
             >
               <LogOut size={16} />
               Finalizar

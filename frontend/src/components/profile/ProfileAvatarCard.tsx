@@ -32,8 +32,8 @@ export default function ProfileAvatarCard({
   isDirty
 }: ProfileAvatarCardProps) {
   return (
-    <div className="lg:col-span-4 space-y-8 sticky top-24">
-      <div className="bg-white rounded-[3rem] border border-stone-100 shadow-xl shadow-stone-200/40 p-10 text-center relative overflow-hidden group">
+    <div className="lg:col-span-4 space-y-8 lg:sticky lg:top-24">
+      <div className="bg-white rounded-3xl sm:rounded-[3rem] border border-stone-100 shadow-xl shadow-stone-200/40 p-6 sm:p-10 text-center relative overflow-hidden group">
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#D4AF37] via-primary/30 to-[#D4AF37] opacity-60"></div>
 
         {/* Avatar Upload */}
@@ -104,7 +104,7 @@ export default function ProfileAvatarCard({
       </div>
 
       {/* Quick Stats / Info */}
-      <div className="bg-stone-900 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden">
+      <div className="bg-stone-900 rounded-3xl p-6 sm:p-8 text-white shadow-2xl relative overflow-hidden">
         <Sparkles className="absolute top-4 right-4 text-white/10 w-20 h-20" />
         <h4 className="text-stone-400 text-[10px] font-black uppercase tracking-widest mb-4">Estado de Cuenta</h4>
         <div className="flex items-center gap-4">
@@ -125,7 +125,7 @@ export default function ProfileAvatarCard({
         id="profile-save-all-btn"
         onClick={handleSaveAll}
         disabled={savingPrefs || !isDirty}
-        className="w-full bg-emerald-600 text-white hover:bg-emerald-700 px-8 py-5 rounded-[2.5rem] font-bold text-sm shadow-xl shadow-emerald-100 transition-all active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed flex items-center justify-center gap-3 group"
+        className="w-full bg-emerald-600 text-white hover:bg-emerald-700 px-6 sm:px-8 py-4 sm:py-5 rounded-2xl sm:rounded-[2.5rem] font-bold text-sm shadow-xl shadow-emerald-100 transition-all active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed flex items-center justify-center gap-3 group"
       >
         {savingPrefs ? (
           <Loader2 className="animate-spin" size={18} />

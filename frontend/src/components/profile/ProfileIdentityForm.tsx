@@ -15,19 +15,19 @@ export default function ProfileIdentityForm({
   email
 }: ProfileIdentityFormProps) {
   return (
-    <section className="bg-white rounded-[3rem] border border-stone-100 shadow-sm p-10 relative">
-      <div className="flex items-center gap-5 mb-10">
-        <div className="w-14 h-14 rounded-3xl bg-primary/5 flex items-center justify-center text-primary shadow-sm">
+    <section className="bg-white rounded-3xl sm:rounded-[3rem] border border-stone-100 shadow-sm p-6 sm:p-10 relative">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 mb-8 sm:mb-10">
+        <div className="w-14 h-14 rounded-3xl bg-primary/5 flex items-center justify-center text-primary shadow-sm shrink-0">
           <User size={26} strokeWidth={1.5} />
         </div>
         <div>
-          <h3 className="text-2xl font-serif font-semibold text-stone-800">Información General</h3>
+          <h3 className="text-xl sm:text-2xl font-serif font-semibold text-stone-800">Información General</h3>
           <p className="text-stone-400 text-sm">Gestiona cómo te ven los demás miembros del equipo.</p>
         </div>
       </div>
 
       <form className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
           <div className="space-y-3">
             <label className="text-[11px] font-black uppercase tracking-widest text-stone-400 px-1">Nombre Completo</label>
             <input
