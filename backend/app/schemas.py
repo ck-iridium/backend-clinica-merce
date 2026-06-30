@@ -20,10 +20,10 @@ class UserResponse(UserBase):
 # --- Clients ---
 class ClientBase(BaseModel):
     name: Optional[str] = None
-    first_name: str
+    first_name: Optional[str] = None
     last_name: Optional[str] = None
     phone: Optional[str] = None
-    email: EmailStr
+    email: Optional[EmailStr] = None
     medical_history: Optional[str] = None
     allergies: Optional[str] = None
     dni: Optional[str] = None

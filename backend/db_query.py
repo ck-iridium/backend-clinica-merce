@@ -1,23 +1,28 @@
 import psycopg2
-import time
 
 db_url = "postgresql://postgres.ypimdbkiuguiszaddzaj:Az0203836541@aws-1-eu-north-1.pooler.supabase.com:5432/postgres?sslmode=require"
 
-for attempt in range(10):
-    try:
-        conn = psycopg2.connect(db_url)
-        cur = conn.cursor()
-        
-        # Obtener todos los servicios activos
-        cur.execute("SELECT id, name, slug, tenant_id, price FROM services ORDER BY created_at DESC;")
-        services = cur.fetchall()
-        print("=== DATABASE SERVICES ===")
-        for s in services:
-            print(f"ID: {s[0]} | Name: {s[1]} | Slug: {s[2]} | Tenant: {s[3]} | Price: {s[4]}")
+try:
+    conn = psycopg2.connect(db_url)
+    cur = conn.cursor()
+    
+    # Obtener las columnas de la tabla 'clients'
+    cur.execute("""
+        SELECT column_name, data_type 
+        FROM information_schema.columns 
+        WHERE table_name = 'clients';
+    """)
+    columns = cur.fetchall()
+    print("=== CLIENTS TABLE COLUMNS ===")
+    has_name = False
+    for col in columns:
+        print(f"Column: {col[0]} | Type: {col[1]}")
+        if col[0] == 'name':
+            has_name = True
             
-        cur.close()
-        conn.close()
-        break
-    except Exception as e:
-        print(f"Attempt {attempt+1} failed: {e}")
-        time.sleep(2)
+    print(f"\nDoes 'name' column exist? {has_name}")
+    
+    cur.close()
+    conn.close()
+except Exception as e:
+    print(f"Error querying database: {e}")
