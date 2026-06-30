@@ -6,22 +6,16 @@ try:
     conn = psycopg2.connect(db_url)
     cur = conn.cursor()
     
-    # Obtener las columnas de la tabla 'clients'
+    # Obtener los bloqueos de tiempo
     cur.execute("""
-        SELECT column_name, data_type 
-        FROM information_schema.columns 
-        WHERE table_name = 'clients';
+        SELECT id, tenant_id, staff_id, start_time, end_time, reason, is_annual_holiday 
+        FROM time_blocks;
     """)
-    columns = cur.fetchall()
-    print("=== CLIENTS TABLE COLUMNS ===")
-    has_name = False
-    for col in columns:
-        print(f"Column: {col[0]} | Type: {col[1]}")
-        if col[0] == 'name':
-            has_name = True
-            
-    print(f"\nDoes 'name' column exist? {has_name}")
-    
+    blocks = cur.fetchall()
+    print("=== TIME BLOCKS ===")
+    for b in blocks:
+        print(f"ID: {b[0]} | Tenant: {b[1]} | Staff: {b[2]} | Start: {b[3]} | End: {b[4]} | Reason: {b[5]} | Holiday: {b[6]}")
+        
     cur.close()
     conn.close()
 except Exception as e:

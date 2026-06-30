@@ -52,6 +52,41 @@ def get_availability(
     )
 
 
+@router.get("/availability/bulk", response_model=Dict[str, bool])
+def get_availability_bulk(
+    start_date: str = Query(..., description="Start date in YYYY-MM-DD format"),
+    end_date: str = Query(..., description="End date in YYYY-MM-DD format"),
+    service_id: str = Query(..., description="Service UUID"),
+    location_id: Optional[str] = Query(None, description="Location UUID"),
+    staff_id: Optional[str] = Query(None, description="Preferred Specialist UUID"),
+    db: Session = Depends(database.get_db),
+):
+    """
+    Returns a dictionary of dates and their availability status (true/false) for a date range.
+    Used by the public landing booking calendar.
+    """
+    try:
+        start = DateType.fromisoformat(start_date)
+        end = DateType.fromisoformat(end_date)
+    except ValueError:
+        raise HTTPException(status_code=422, detail="dates must be in YYYY-MM-DD format")
+
+    if end < start:
+        raise HTTPException(status_code=400, detail="end_date must be after start_date")
+
+    if (end - start).days > 100:
+        raise HTTPException(status_code=400, detail="date range cannot exceed 100 days")
+
+    return crud.get_bulk_availability(
+        db,
+        start_date=start,
+        end_date=end,
+        service_id=service_id,
+        location_id=location_id,
+        preferred_staff_id=staff_id
+    )
+
+
 @router.get("/client-saved-address", response_model=Dict[str, Any])
 def get_client_saved_address(
     email: str = Query(..., description="Client email"),
@@ -79,11 +114,7 @@ def get_client_saved_address(
             "client_latitude": client.client_latitude,
             "client_longitude": client.client_longitude,
             "client_postal_code": client.client_postal_code,
-            "client_city": client.client_city
-        }
-        
     return {"has_saved_address": False}
-
 
 import functools
 

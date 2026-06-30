@@ -11,6 +11,8 @@ export default function Step2DateTime({
   setSelectedTime,
   availableSlots,
   loadingSlots,
+  bulkAvailability = {},
+  loadingBulk = false,
   selectedService,
   settings,
   onShowFeedback,
@@ -28,6 +30,8 @@ export default function Step2DateTime({
   setSelectedTime: (t: string) => void;
   availableSlots: string[];
   loadingSlots: boolean;
+  bulkAvailability?: Record<string, boolean>;
+  loadingBulk?: boolean;
   selectedService: any;
   settings: any;
   onShowFeedback: (f: any) => void;
@@ -131,7 +135,14 @@ export default function Step2DateTime({
               <div className="flex-grow overflow-y-auto custom-scrollbar px-6 pt-6 pb-32 space-y-3">
                 {nextDays.map((date, i) => {
                   const dayIndex = toWeekDayIndex(date.getDay());
-                  const isOpen = getWorkingDays().includes(dayIndex);
+                  
+                  const year = date.getFullYear();
+                  const month = String(date.getMonth() + 1).padStart(2, '0');
+                  const day = String(date.getDate()).padStart(2, '0');
+                  const dateStr = `${year}-${month}-${day}`;
+                  
+                  const hasSlots = bulkAvailability[dateStr] ?? true;
+                  const isOpen = getWorkingDays().includes(dayIndex) && hasSlots;
                   const isSelected = date.toDateString() === selectedDate.toDateString();
                   const isToday = date.toDateString() === new Date().toDateString();
 

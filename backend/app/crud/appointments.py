@@ -238,8 +238,8 @@ def get_availability_slots(db: Session, target_date: date, service_id: str, loca
         ).all()
         existing_blocks = db.query(models.TimeBlock).filter(
             models.TimeBlock.tenant_id == tenant_id,
-            models.TimeBlock.start_time >= day_start,
             models.TimeBlock.start_time <= day_end,
+            models.TimeBlock.end_time >= day_start,
         ).all()
         
         available = []
@@ -316,8 +316,8 @@ def get_availability_slots(db: Session, target_date: date, service_id: str, loca
     
     existing_blocks = db.query(models.TimeBlock).filter(
         models.TimeBlock.tenant_id == tenant_id,
-        models.TimeBlock.start_time >= day_start,
         models.TimeBlock.start_time <= day_end,
+        models.TimeBlock.end_time >= day_start,
         or_(models.TimeBlock.staff_id == None, models.TimeBlock.staff_id.in_(staff_ids))
     ).all()
 
@@ -533,3 +533,19 @@ def create_public_appointment(db: Session, booking: schemas.PublicBookingRequest
             mailer.send_appointment_notification(appt.id, 'verification_email')
 
     return appt, client, is_new
+
+def get_bulk_availability(db: Session, start_date: DateType, end_date: DateType, service_id: str, location_id: str = None, preferred_staff_id: str = None) -> Dict[str, bool]:
+    """Returns a dictionary mapping date strings (YYYY-MM-DD) to availability booleans."""
+    result = {}
+    current = start_date
+    while current <= end_date:
+        slots = get_availability_slots(
+            db,
+            target_date=current,
+            service_id=service_id,
+            location_id=location_id,
+            preferred_staff_id=preferred_staff_id
+        )
+        result[current.isoformat()] = len(slots) > 0
+        current += timedelta(days=1)
+    return result
