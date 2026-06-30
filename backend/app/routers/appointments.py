@@ -114,6 +114,9 @@ def get_client_saved_address(
             "client_latitude": client.client_latitude,
             "client_longitude": client.client_longitude,
             "client_postal_code": client.client_postal_code,
+            "client_city": client.client_city
+        }
+        
     return {"has_saved_address": False}
 
 import functools
