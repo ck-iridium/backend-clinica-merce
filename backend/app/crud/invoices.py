@@ -153,27 +153,52 @@ def create_direct_sale(db: Session, sale: schemas.DirectSaleRequest):
             db.refresh(anon_client)
         effective_client_id = anon_client.id
 
-    # 2. Fetch service to get original name/concept
-    service = db.query(models.Service).filter(
-        models.Service.id == sale.service_id,
-        models.Service.tenant_id == tenant_id
-    ).first()
-    if not service:
-        raise ValueError("Servicio no encontrado")
+    # 2. Fetch services to get names / build concept
+    concept_names = []
+    if sale.services:
+        for item in sale.services:
+            service = db.query(models.Service).filter(
+                models.Service.id == item.get("service_id"),
+                models.Service.tenant_id == tenant_id
+            ).first()
+            if service:
+                concept_names.append(service.name)
+            else:
+                concept_names.append("Servicio Especial")
+    else:
+        service = db.query(models.Service).filter(
+            models.Service.id == sale.service_id,
+            models.Service.tenant_id == tenant_id
+        ).first()
+        if not service:
+            raise ValueError("Servicio no encontrado")
+        concept_names.append(service.name)
+        
+    concept_str = ", ".join(concept_names)
     
     # 3. Get global settings for tax rate
     settings = get_clinic_settings(db)
     
-    # 4. Create invoice with status 'paid'
-    today = date.today()
-    invoice_id = generate_invoice_id(db, today)
+    # 4. Resolve Date (use custom date if provided, fallback to today)
+    sale_date = date.today()
+    if sale.date:
+        try:
+            if "T" in sale.date:
+                sale_date = datetime.fromisoformat(sale.date.replace("Z", "")).date()
+            else:
+                sale_date = datetime.strptime(sale.date, "%Y-%m-%d").date()
+        except Exception as e:
+            print(f"Error parsing sale date: {e}")
+            sale_date = date.today()
+
+    invoice_id = generate_invoice_id(db, sale_date)
     
     db_invoice = models.Invoice(
         id=invoice_id,
         client_id=effective_client_id,
         amount=sale.final_price,
-        concept=f"Venta Directa: {service.name} ({sale.payment_method})",
-        date=today,
+        concept=f"Venta Directa: {concept_str} ({sale.payment_method})",
+        date=sale_date,
         status="paid",
         tax_rate=settings.default_tax_rate,
         is_simplified=sale.is_simplified,

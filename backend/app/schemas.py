@@ -630,10 +630,12 @@ class TimeBlockResponse(TimeBlockBase):
 # --- Direct Sale (POS) ---
 class DirectSaleRequest(BaseModel):
     client_id: str
-    service_id: str
+    service_id: Optional[str] = None
+    services: Optional[List[Dict[str, Any]]] = None
     final_price: float
     payment_method: str  # e.g. "Efectivo", "Tarjeta"
     is_simplified: bool = False
+    date: Optional[str] = None
 
 # --- Site Content (CMS) ---
 class SiteContentBase(BaseModel):
