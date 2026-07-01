@@ -17,7 +17,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   let settings = null;
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/settings/`, {
+    const baseApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const sanitizedApiUrl = baseApiUrl.replace('localhost', '127.0.0.1');
+    const res = await fetch(`${sanitizedApiUrl}/settings/`, {
       cache: 'no-store',
       signal: AbortSignal.timeout(5000),
       headers: {

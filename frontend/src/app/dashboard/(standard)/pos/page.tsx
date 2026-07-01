@@ -254,7 +254,8 @@ export default function POSPage() {
     try {
       const parts = dateStr.split('-');
       const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-      return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+      const locale = language === 'fr' ? 'fr-FR' : language === 'en' ? 'en-US' : 'es-ES';
+      return d.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
     } catch (e) {
       return dateStr;
     }
