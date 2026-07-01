@@ -8,6 +8,7 @@ import { useAuthRole } from '@/hooks/useAuthRole';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { createPortal } from 'react-dom';
 import { 
   Search, 
   Plus, 
@@ -21,7 +22,8 @@ import {
   Tag, 
   ShoppingCart, 
   Sparkles,
-  ChevronDown
+  ChevronDown,
+  ArrowUp
 } from 'lucide-react';
 
 interface Service {
@@ -56,6 +58,7 @@ export default function POSPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   // UX State
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -63,6 +66,8 @@ export default function POSPage() {
   const [clientSearch, setClientSearch] = useState('');
   const [showClientDropdown, setShowClientDropdown] = useState(false);
   const [showServiceDropdown, setShowServiceDropdown] = useState(false);
+  const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false); // Mobile Drawer state
+  const [bounceCart, setBounceCart] = useState(false); // Visual feedback animation
 
   // Cart / Sale State
   const [cart, setCart] = useState<Service[]>([]);
@@ -81,6 +86,10 @@ export default function POSPage() {
   // Refs for dropdowns
   const clientDropdownRef = useRef<HTMLDivElement>(null);
   const serviceDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!loadingRole) {
@@ -141,6 +150,11 @@ export default function POSPage() {
   // Add item to cart
   const addToCart = (service: Service) => {
     setCart((prev) => [...prev, service]);
+    
+    // Trigger bounce animation for mobile bottom bar
+    setBounceCart(true);
+    setTimeout(() => setBounceCart(false), 500);
+
     toast.success(`${service.name} añadido al ticket`);
     setServiceSearch('');
     setShowServiceDropdown(false);
@@ -149,6 +163,9 @@ export default function POSPage() {
   // Remove item from cart
   const removeFromCart = (index: number) => {
     setCart((prev) => prev.filter((_, i) => i !== index));
+    if (cart.length <= 1) {
+      setIsCartDrawerOpen(false);
+    }
   };
 
   // Calculate totals
@@ -186,6 +203,7 @@ export default function POSPage() {
       if (res.ok) {
         const invoice = await res.json();
         setLastInvoice(invoice);
+        setIsCartDrawerOpen(false);
         toast.success("Venta realizada con éxito");
       } else {
         const err = await res.json();
@@ -252,8 +270,259 @@ export default function POSPage() {
     </div>
   );
 
+  // Renders the cart ticket details to share between desktop column and mobile slide-up drawer
+  const renderTicketContent = (isInsideDrawer = false) => {
+    return (
+      <div className="space-y-6">
+        {/* Drawer Header if inside mobile overlay drawer */}
+        {isInsideDrawer && (
+          <div className="flex justify-between items-center border-b border-white/10 pb-4">
+            <div className="flex items-center gap-2">
+              <ShoppingCart size={18} className="text-[#d4af37]" />
+              <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-white/50">
+                Resumen del Ticket
+              </h3>
+            </div>
+            <button 
+              onClick={() => setIsCartDrawerOpen(false)}
+              className="p-1.5 text-white/40 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        )}
+
+        {/* Cart items list */}
+        <div className="space-y-3 max-h-56 overflow-y-auto pr-1">
+          {cart.length > 0 ? (
+            cart.map((item, idx) => (
+              <div 
+                key={`${item.id}-${idx}`}
+                className="flex justify-between items-center p-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl transition-all group animate-in slide-in-from-right-3 duration-200"
+              >
+                <div className="flex flex-col min-w-0 pr-2">
+                  <span className="font-semibold text-xs text-white/90 truncate">{item.name}</span>
+                  <span className="text-[9px] text-[#d4af37] font-bold font-mono mt-0.5">{Number(item.price).toFixed(2)}€</span>
+                </div>
+                <button
+                  onClick={() => removeFromCart(idx)}
+                  className="p-1.5 text-white/40 hover:text-red-400 hover:bg-white/5 rounded-lg transition-colors group-hover:opacity-100 focus:opacity-100 lg:opacity-100 opacity-100"
+                  title="Quitar tratamiento"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))
+          ) : (
+            <div className="py-12 border-2 border-dashed border-white/10 rounded-2xl text-center space-y-2">
+              <p className="text-xs text-white/40 font-medium">El ticket está vacío</p>
+              <p className="text-[10px] text-white/30">Selecciona servicios en la columna izquierda</p>
+            </div>
+          )}
+        </div>
+
+        {/* Toggle Ticket/Factura Toggle */}
+        <div className="space-y-3 pt-4 border-t border-white/10">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+            <label className="text-xs font-bold uppercase tracking-wider text-white/60">
+              Tipo de Factura
+            </label>
+            
+            {/* Sliding luxury toggle button */}
+            <div className="bg-white/5 p-1 rounded-full border border-white/10 flex items-center w-full sm:w-60">
+              <button
+                type="button"
+                onClick={() => { setIsSimplified(true); setSelectedClientId(''); setSelectedClientName(''); setClientSearch(''); }}
+                className={`flex-1 text-center py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider transition-all duration-300 ${
+                  isSimplified 
+                    ? 'bg-white text-stone-950 font-extrabold shadow-md' 
+                    : 'text-white/60 hover:text-white'
+                }`}
+              >
+                Ticket Simplif.
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsSimplified(false)}
+                className={`flex-1 text-center py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider transition-all duration-300 ${
+                  !isSimplified 
+                    ? 'bg-white text-stone-950 font-extrabold shadow-md' 
+                    : 'text-white/60 hover:text-white'
+                }`}
+              >
+                Nominal
+              </button>
+            </div>
+          </div>
+
+          {/* Nominated Client Selection */}
+          {!isSimplified && (
+            <div className="relative animate-in slide-in-from-top-3 duration-300 pt-2" ref={clientDropdownRef}>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-white/50 mb-2">
+                Buscar Cliente Asociado *
+              </label>
+              {selectedClientId ? (
+                <div className="flex items-center justify-between p-3.5 bg-white/10 border border-[#d4af37]/30 rounded-2xl animate-in zoom-in-95">
+                  <div className="flex items-center gap-3">
+                    <User size={16} className="text-[#d4af37]" />
+                    <span className="font-semibold text-xs text-white">{selectedClientName}</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setSelectedClientId('');
+                      setSelectedClientName('');
+                      setClientSearch('');
+                    }}
+                    className="p-1 text-white/40 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ) : (
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={16} />
+                  <input
+                    id="pos-client-search"
+                    type="text"
+                    placeholder="Nombre, email o teléfono del cliente..."
+                    value={clientSearch}
+                    onChange={(e) => {
+                      setClientSearch(e.target.value);
+                      setShowClientDropdown(true);
+                    }}
+                    onFocus={() => setShowClientDropdown(true)}
+                    className="w-full pl-11 pr-5 py-3.5 rounded-2xl border border-white/10 focus:border-white/30 bg-white/5 text-xs text-white placeholder-white/30 outline-none transition-all"
+                  />
+                  
+                  {/* Clients Results Dropdown */}
+                  {showClientDropdown && clientSearch && (
+                    <div className="absolute z-30 w-full mt-2 bg-stone-900 border border-white/10 rounded-2xl shadow-2xl max-h-48 overflow-y-auto overflow-x-hidden animate-in fade-in slide-in-from-top-1 duration-150">
+                      {filteredClients.length > 0 ? (
+                        <div className="p-1 space-y-0.5">
+                          {filteredClients.map(c => (
+                            <button
+                              key={c.id}
+                              id={`pos-client-result-${c.id}`}
+                              onClick={() => {
+                                setSelectedClientId(c.id);
+                                setSelectedClientName(c.name);
+                                setShowClientDropdown(false);
+                              }}
+                              className="w-full text-left px-4 py-2.5 hover:bg-white/5 rounded-xl transition-colors flex flex-col"
+                            >
+                              <span className="font-semibold text-white text-xs">{c.name}</span>
+                              <span className="text-[9px] text-white/40 mt-0.5">{c.email || c.phone}</span>
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="p-4 text-center text-white/40 text-xs">
+                          No se encontraron clientes
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Datepicker & Payment Method */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+          {/* Manual Custom Date */}
+          <div className="space-y-2">
+            <label className="block text-xs font-bold uppercase tracking-wider text-white/60">
+              Fecha del Registro
+            </label>
+            <div className="relative pointer-events-auto">
+              {/* Visual Button displaying Spanish Selected Date */}
+              <div className="bg-white/5 border border-white/10 text-white rounded-2xl px-4 py-3.5 text-xs font-semibold flex items-center justify-between gap-3 cursor-pointer hover:bg-white/10 hover:border-white/20 transition-all">
+                <Calendar size={16} className="text-[#d4af37] shrink-0" />
+                <span className="truncate flex-1 text-center font-medium">
+                  {getFriendlyDateStr(selectedDate)}
+                </span>
+                <ChevronDown size={14} className="text-white/40 shrink-0" />
+              </div>
+              {/* Hidden Native Date Input overlay */}
+              <input 
+                id="pos-datepicker"
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer pointer-events-auto z-10"
+              />
+            </div>
+          </div>
+
+          {/* Payment Method */}
+          <div className="space-y-2">
+            <label className="block text-xs font-bold uppercase tracking-wider text-white/60">
+              Método de Pago
+            </label>
+            <div className="bg-white/5 p-1 rounded-full border border-white/10 flex items-center w-full">
+              {['Tarjeta', 'Efectivo'].map(method => (
+                <button 
+                  key={method}
+                  type="button"
+                  id={method === 'Tarjeta' ? 'pos-pay-card' : 'pos-pay-cash'}
+                  onClick={() => setPaymentMethod(method as 'Tarjeta' | 'Efectivo')}
+                  className={`flex-1 text-center py-2.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all duration-300 ${
+                    paymentMethod === method 
+                      ? 'bg-white text-stone-950 font-bold shadow-md' 
+                      : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  {method === 'Tarjeta' ? '💳 Tarj.' : '💵 Efect.'}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Totals Section */}
+        <div className="pt-6 border-t border-white/10 space-y-3 font-serif">
+          <div className="flex justify-between text-xs text-white/60 font-sans">
+            <span>Subtotal</span>
+            <span className="font-mono">{subtotal.toFixed(2)}€</span>
+          </div>
+          <div className="flex justify-between text-xs text-white/40 font-sans">
+            <span>IVA Incluido (21%)</span>
+            <span className="font-mono">{taxAmount.toFixed(2)}€</span>
+          </div>
+          <div className="flex justify-between items-baseline pt-2">
+            <span className="text-base text-white/95 font-medium">Total a Cobrar</span>
+            <span className="text-4xl font-semibold text-[#d4af37] font-mono leading-none tracking-tight">
+              {totalAmount.toFixed(2)}€
+            </span>
+          </div>
+        </div>
+
+        {/* Action Button */}
+        <div className="pt-2">
+          <button 
+            id="pos-submit-btn"
+            onClick={handleProcessSale}
+            disabled={cart.length === 0 || (!isSimplified && !selectedClientId) || isProcessing}
+            className="w-full bg-white text-stone-950 hover:bg-stone-50 px-8 py-5 rounded-2xl font-bold text-sm transition-all disabled:opacity-20 active:scale-[0.98] shadow-lg hover:shadow-white/5 tracking-wider uppercase"
+          >
+            {isProcessing 
+              ? (t('dashboard.pos.processing') || 'Procesando...') 
+              : (t('dashboard.pos.confirm_and_charge') || 'Confirmar y Cobrar')}
+          </button>
+          
+          {!isSimplified && !selectedClientId && clientSearch && (
+            <p className="text-[10px] text-red-400 mt-3 text-center animate-pulse">
+              {t('dashboard.pos.must_select_client') || 'Selecciona un cliente de la lista para continuar'}
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-[#FAFAFA] py-12 px-4 md:px-8 font-sans text-stone-800 animate-in fade-in duration-700">
+    <div className="min-h-screen bg-[#FAFAFA] py-12 px-4 md:px-8 font-sans text-stone-800 animate-in fade-in duration-700 pb-32 lg:pb-12">
       <div className="max-w-7xl mx-auto space-y-10">
         
         {/* Header */}
@@ -272,7 +541,6 @@ export default function POSPage() {
             </p>
           </div>
           
-          {/* Quick Stats or breadcrumbs inside quiet luxury space */}
           <div className="mt-4 md:mt-0 flex items-center gap-3">
             <span className="px-4 py-2 bg-[#F7F7F5] rounded-full text-xs font-semibold text-stone-600 border border-stone-200/40">
               Terminal POS activo
@@ -334,7 +602,7 @@ export default function POSPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
             {/* LEFT COLUMN: SELECTION */}
-            <div className="lg:col-span-7 bg-white rounded-3xl p-8 border border-stone-200/40 shadow-sm space-y-8 min-h-[550px] transition-all">
+            <div className="lg:col-span-7 bg-white rounded-3xl p-8 border border-stone-200/40 shadow-sm space-y-8 min-h-[550px] transition-all animate-in fade-in duration-300">
               <div className="space-y-2">
                 <h3 className="text-xs font-bold text-[#d4af37] uppercase tracking-[0.2em]">{t('dashboard.pos.step_identification') || '1. Selección de Servicios'}</h3>
                 <p className="text-stone-400 text-xs">Busca y añade los tratamientos que deseas facturar al ticket.</p>
@@ -450,7 +718,7 @@ export default function POSPage() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-72 overflow-y-auto pr-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-1">
                   {filteredServices.map(s => (
                     <div
                       key={s.id}
@@ -478,8 +746,8 @@ export default function POSPage() {
 
             </div>
 
-            {/* RIGHT COLUMN: THE TICKET */}
-            <div className="lg:col-span-5 bg-stone-950 text-white rounded-3xl p-8 border border-stone-900 shadow-luxury space-y-8 relative overflow-hidden">
+            {/* RIGHT COLUMN: DESKTOP TICKET */}
+            <div className="hidden lg:block lg:col-span-5 bg-stone-950 text-white rounded-3xl p-8 border border-stone-900 shadow-luxury space-y-8 relative overflow-hidden">
               <div className="absolute top-[-50px] right-[-50px] w-64 h-64 bg-white/5 rounded-full blur-3xl pointer-events-none"></div>
               
               <div className="flex justify-between items-center border-b border-white/10 pb-4">
@@ -494,231 +762,7 @@ export default function POSPage() {
                 </span>
               </div>
 
-              {/* Cart List */}
-              <div className="space-y-3 max-h-56 overflow-y-auto pr-1">
-                {cart.length > 0 ? (
-                  cart.map((item, idx) => (
-                    <div 
-                      key={`${item.id}-${idx}`}
-                      className="flex justify-between items-center p-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl transition-all group animate-in slide-in-from-right-3 duration-200"
-                    >
-                      <div className="flex flex-col min-w-0 pr-2">
-                        <span className="font-semibold text-xs text-white/90 truncate">{item.name}</span>
-                        <span className="text-[9px] text-[#d4af37] font-bold font-mono mt-0.5">{Number(item.price).toFixed(2)}€</span>
-                      </div>
-                      <button
-                        onClick={() => removeFromCart(idx)}
-                        className="p-1.5 text-white/40 hover:text-red-400 hover:bg-white/5 rounded-lg transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-                        title="Quitar tratamiento"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  ))
-                ) : (
-                  <div className="py-12 border-2 border-dashed border-white/10 rounded-2xl text-center space-y-2">
-                    <p className="text-xs text-white/40 font-medium">El ticket está vacío</p>
-                    <p className="text-[10px] text-white/30">Selecciona servicios en la columna izquierda</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Ticket/Factura Toggle */}
-              <div className="space-y-3 pt-4 border-t border-white/10">
-                <div className="flex justify-between items-center">
-                  <label className="text-xs font-bold uppercase tracking-wider text-white/60">
-                    Tipo de Factura
-                  </label>
-                  
-                  {/* Sliding luxury toggle button */}
-                  <div className="bg-white/5 p-1 rounded-full border border-white/10 flex items-center w-60">
-                    <button
-                      type="button"
-                      onClick={() => { setIsSimplified(true); setSelectedClientId(''); setSelectedClientName(''); setClientSearch(''); }}
-                      className={`flex-1 text-center py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider transition-all duration-300 ${
-                        isSimplified 
-                          ? 'bg-white text-stone-950 font-extrabold shadow-md' 
-                          : 'text-white/60 hover:text-white'
-                      }`}
-                    >
-                      Ticket Simplif.
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsSimplified(false)}
-                      className={`flex-1 text-center py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider transition-all duration-300 ${
-                        !isSimplified 
-                          ? 'bg-white text-stone-950 font-extrabold shadow-md' 
-                          : 'text-white/60 hover:text-white'
-                      }`}
-                    >
-                      Nominal
-                    </button>
-                  </div>
-                </div>
-
-                {/* Nominated Client Selection */}
-                {!isSimplified && (
-                  <div className="relative animate-in slide-in-from-top-3 duration-300 pt-2" ref={clientDropdownRef}>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-white/50 mb-2">
-                      Buscar Cliente Asociado *
-                    </label>
-                    {selectedClientId ? (
-                      <div className="flex items-center justify-between p-3.5 bg-white/10 border border-[#d4af37]/30 rounded-2xl animate-in zoom-in-95">
-                        <div className="flex items-center gap-3">
-                          <User size={16} className="text-[#d4af37]" />
-                          <span className="font-semibold text-xs text-white">{selectedClientName}</span>
-                        </div>
-                        <button
-                          onClick={() => {
-                            setSelectedClientId('');
-                            setSelectedClientName('');
-                            setClientSearch('');
-                          }}
-                          className="p-1 text-white/40 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors"
-                        >
-                          <X size={12} />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={16} />
-                        <input
-                          id="pos-client-search"
-                          type="text"
-                          placeholder="Nombre, email o teléfono del cliente..."
-                          value={clientSearch}
-                          onChange={(e) => {
-                            setClientSearch(e.target.value);
-                            setShowClientDropdown(true);
-                          }}
-                          onFocus={() => setShowClientDropdown(true)}
-                          className="w-full pl-11 pr-5 py-3.5 rounded-2xl border border-white/10 focus:border-white/30 bg-white/5 text-xs text-white placeholder-white/30 outline-none transition-all"
-                        />
-                        
-                        {/* Clients Results Dropdown */}
-                        {showClientDropdown && clientSearch && (
-                          <div className="absolute z-30 w-full mt-2 bg-stone-900 border border-white/10 rounded-2xl shadow-2xl max-h-48 overflow-y-auto overflow-x-hidden animate-in fade-in slide-in-from-top-1 duration-150">
-                            {filteredClients.length > 0 ? (
-                              <div className="p-1 space-y-0.5">
-                                {filteredClients.map(c => (
-                                  <button
-                                    key={c.id}
-                                    id={`pos-client-result-${c.id}`}
-                                    onClick={() => {
-                                      setSelectedClientId(c.id);
-                                      setSelectedClientName(c.name);
-                                      setShowClientDropdown(false);
-                                    }}
-                                    className="w-full text-left px-4 py-2.5 hover:bg-white/5 rounded-xl transition-colors flex flex-col"
-                                  >
-                                    <span className="font-semibold text-white text-xs">{c.name}</span>
-                                    <span className="text-[9px] text-white/40 mt-0.5">{c.email || c.phone}</span>
-                                  </button>
-                                ))}
-                              </div>
-                            ) : (
-                              <div className="p-4 text-center text-white/40 text-xs">
-                                No se encontraron clientes
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Datepicker & Payment Method */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                {/* Manual Custom Date */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-white/60">
-                    Fecha del Registro
-                  </label>
-                  <div className="relative pointer-events-auto">
-                    {/* Visual Button displaying Spanish Selected Date */}
-                    <div className="bg-white/5 border border-white/10 text-white rounded-2xl px-4 py-3.5 text-xs font-semibold flex items-center justify-between gap-3 cursor-pointer hover:bg-white/10 hover:border-white/20 transition-all">
-                      <Calendar size={16} className="text-[#d4af37] shrink-0" />
-                      <span className="truncate flex-1 text-center font-medium">
-                        {getFriendlyDateStr(selectedDate)}
-                      </span>
-                      <ChevronDown size={14} className="text-white/40 shrink-0" />
-                    </div>
-                    {/* Hidden Native Date Input overlay */}
-                    <input 
-                      id="pos-datepicker"
-                      type="date"
-                      value={selectedDate}
-                      onChange={(e) => setSelectedDate(e.target.value)}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer pointer-events-auto z-10"
-                    />
-                  </div>
-                </div>
-
-                {/* Payment Method */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-white/60">
-                    Método de Pago
-                  </label>
-                  <div className="bg-white/5 p-1 rounded-full border border-white/10 flex items-center w-full">
-                    {['Tarjeta', 'Efectivo'].map(method => (
-                      <button 
-                        key={method}
-                        type="button"
-                        id={method === 'Tarjeta' ? 'pos-pay-card' : 'pos-pay-cash'}
-                        onClick={() => setPaymentMethod(method as 'Tarjeta' | 'Efectivo')}
-                        className={`flex-1 text-center py-2.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all duration-300 ${
-                          paymentMethod === method 
-                            ? 'bg-white text-stone-950 font-bold shadow-md' 
-                            : 'text-white/60 hover:text-white'
-                        }`}
-                      >
-                        {method === 'Tarjeta' ? '💳 Tarj.' : '💵 Efect.'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Totals Section */}
-              <div className="pt-6 border-t border-white/10 space-y-3 font-serif">
-                <div className="flex justify-between text-xs text-white/60 font-sans">
-                  <span>Subtotal</span>
-                  <span className="font-mono">{subtotal.toFixed(2)}€</span>
-                </div>
-                <div className="flex justify-between text-xs text-white/40 font-sans">
-                  <span>IVA Incluido (21%)</span>
-                  <span className="font-mono">{taxAmount.toFixed(2)}€</span>
-                </div>
-                <div className="flex justify-between items-baseline pt-2">
-                  <span className="text-base text-white/95 font-medium">Total a Cobrar</span>
-                  <span className="text-4xl font-semibold text-[#d4af37] font-mono leading-none tracking-tight">
-                    {totalAmount.toFixed(2)}€
-                  </span>
-                </div>
-              </div>
-
-              {/* Action Button */}
-              <div className="pt-2">
-                <button 
-                  id="pos-submit-btn"
-                  onClick={handleProcessSale}
-                  disabled={cart.length === 0 || (!isSimplified && !selectedClientId) || isProcessing}
-                  className="w-full bg-white text-stone-950 hover:bg-stone-50 px-8 py-5 rounded-2xl font-bold text-sm transition-all disabled:opacity-20 active:scale-[0.98] shadow-lg hover:shadow-white/5 tracking-wider uppercase"
-                >
-                  {isProcessing 
-                    ? (t('dashboard.pos.processing') || 'Procesando...') 
-                    : (t('dashboard.pos.confirm_and_charge') || 'Confirmar y Cobrar')}
-                </button>
-                
-                {!isSimplified && !selectedClientId && clientSearch && (
-                  <p className="text-[10px] text-red-400 mt-3 text-center animate-pulse">
-                    {t('dashboard.pos.must_select_client') || 'Selecciona un cliente de la lista para continuar'}
-                  </p>
-                )}
-              </div>
+              {renderTicketContent(false)}
             </div>
 
           </div>
@@ -736,6 +780,45 @@ export default function POSPage() {
         </footer>
 
       </div>
+
+      {/* MOBILE STICKY FLOATING CART BAR */}
+      {cart.length > 0 && !lastInvoice && (
+        <div className={`fixed bottom-20 left-4 right-4 md:left-8 md:right-8 lg:hidden bg-stone-950 border border-white/10 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between z-40 transition-all duration-300 ${
+          bounceCart ? 'scale-105 border-[#d4af37]/50' : 'scale-100'
+        }`}>
+          <div className="flex items-center gap-3">
+            <div className="relative p-2.5 bg-white/10 rounded-xl">
+              <ShoppingCart size={16} className="text-[#d4af37]" />
+              <span className="absolute -top-1 -right-1 bg-[#d4af37] text-stone-950 text-[9px] font-extrabold w-4.5 h-4.5 rounded-full flex items-center justify-center leading-none font-mono">
+                {cart.length}
+              </span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] text-white/50 uppercase tracking-wider font-semibold">Total a cobrar</span>
+              <span className="text-lg font-bold font-mono text-[#d4af37]">{totalAmount.toFixed(2)}€</span>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setIsCartDrawerOpen(true)}
+            className="bg-white hover:bg-stone-100 text-stone-950 px-4 py-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors uppercase tracking-wider"
+          >
+            <span>Ver Ticket</span>
+            <ArrowUp size={14} className="animate-bounce" />
+          </button>
+        </div>
+      )}
+
+      {/* MOBILE FULL-SCREEN CART OVERLAY (PORTAL TO document.body FOR MAXIMUM STACKING CONTEXT DOMINANCE) */}
+      {isCartDrawerOpen && mounted && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[99999] bg-stone-950 text-white lg:hidden overflow-y-auto p-6 space-y-6 animate-in slide-in-from-bottom duration-300">
+          <div className="max-w-md mx-auto">
+            {renderTicketContent(true)}
+          </div>
+        </div>,
+        document.body
+      )}
+
     </div>
   );
 }
