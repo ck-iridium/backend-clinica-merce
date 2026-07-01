@@ -153,13 +153,13 @@
     "checkout": "Cobrar",
     "access_denied": "Acceso denegado: No tienes permisos para realizar ventas.",
     "sale_error": "Error al procesar la venta",
-    "direct_billing_desc": "Módulo de cobro directo sin cita previa.",
+    "direct_billing_desc": "Terminal de cobro directo y facturación instantánea bajo demanda.",
     "sale_completed": "¡Cobro Realizado!",
-    "invoice_generated": "La factura ",
-    "generated_as_paid": " se ha generado como PAGADA.",
-    "view_all_invoices": "Ver Todas las Facturas",
+    "invoice_generated": "El registro fiscal ",
+    "generated_as_paid": " se ha procesado correctamente como PAGADO.",
+    "view_all_invoices": "Ver Historial de Facturas",
     "new_sale": "Nueva Venta 🏷️",
-    "step_identification": "1. Identificación",
+    "step_identification": "1. Selección de Servicios",
     "ticket_mode": "Modo Ticket ✅",
     "nominal_invoice": "Facture Nominal",
     "carrier_sale": "Venta al Portador",
@@ -176,7 +176,7 @@
     "processing": "Procesando...",
     "confirm_and_charge": "Confirmar y Cobrar",
     "must_select_client": "Debes seleccionar un cliente de la lista",
-    "disclaimer": "Este módulo genera automáticamente una factura firmada y marcada como sujeta a IVA (21%). La venta quedará vinculada al historial del cliente pero no genera reserva en el calendario."
+    "disclaimer": "Este módulo genera y registra de manera automática facturas de venta directa marcadas como cobradas y sujetas al tipo impositivo de IVA general. El documento resultante se almacena en el módulo fiscal y queda registrado para fines contables."
   },
   "settings": {
     "title": "Ajustes",

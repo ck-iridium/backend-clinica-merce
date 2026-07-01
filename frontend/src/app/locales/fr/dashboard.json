@@ -153,13 +153,13 @@
     "checkout": "Encaisser",
     "access_denied": "Accès refusé: Vous n'avez pas l'autorisation d'effectuer des ventes.",
     "sale_error": "Erreur lors du traitement de la vente",
-    "direct_billing_desc": "Module de facturation directe sans rendez-vous.",
+    "direct_billing_desc": "Terminal de facturation directe et facturation instantanée à la demande.",
     "sale_completed": "Paiement Effectué !",
-    "invoice_generated": "La facture ",
-    "generated_as_paid": " a été générée comme PAYÉE.",
-    "view_all_invoices": "Voir toutes las factures",
+    "invoice_generated": "Le registre fiscal ",
+    "generated_as_paid": " a été traité avec succès comme PAYÉ.",
+    "view_all_invoices": "Voir l'historique des factures",
     "new_sale": "Nouvelle Vente 🏷️",
-    "step_identification": "1. Identification",
+    "step_identification": "1. Sélection des Soins",
     "ticket_mode": "Mode Ticket ✅",
     "nominal_invoice": "Facture Nominale",
     "carrier_sale": "Vente au Porteur",
@@ -176,7 +176,7 @@
     "processing": "Traitement...",
     "confirm_and_charge": "Confirmer et Encaisser",
     "must_select_client": "Vous devez sélectionner un client dans la liste",
-    "disclaimer": "Ce module génère automatiquement une facture signée et marquée comme assujettie à la TVA (21%). La vente sera liée à l'historique du client mais ne génère pas de rendez-vous dans l'agenda."
+    "disclaimer": "Ce module génère et enregistre automatiquement les factures de vente directe marquées comme payées et soumises au taux standard de TVA. Le document résultant est stocké dans le module fiscal et enregistré à des fins comptables."
   },
   "settings": {
     "title": "Paramètres",

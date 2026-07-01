@@ -153,13 +153,13 @@
     "checkout": "Checkout",
     "access_denied": "Access denied: You do not have permission to make sales.",
     "sale_error": "Error processing sale",
-    "direct_billing_desc": "Direct billing module without appointment.",
+    "direct_billing_desc": "Direct billing terminal and instant invoicing on demand.",
     "sale_completed": "Payment Received!",
-    "invoice_generated": "Invoice ",
-    "generated_as_paid": " has been generated as PAID.",
-    "view_all_invoices": "View All Invoices",
+    "invoice_generated": "The fiscal record ",
+    "generated_as_paid": " has been successfully processed as PAID.",
+    "view_all_invoices": "View Invoice History",
     "new_sale": "New Sale 🏷️",
-    "step_identification": "1. Identification",
+    "step_identification": "1. Select Services",
     "ticket_mode": "Ticket Mode ✅",
     "nominal_invoice": "Nominal Invoice",
     "carrier_sale": "Carrier Sale",
@@ -176,7 +176,7 @@
     "processing": "Processing...",
     "confirm_and_charge": "Confirm and Charge",
     "must_select_client": "You must select a client from the list",
-    "disclaimer": "This module automatically generates a signed invoice marked as subject to VAT (21%). The sale will be linked to the client's history but does not create an appointment in the calendar."
+    "disclaimer": "This module automatically generates and registers direct sale invoices marked as paid and subject to standard VAT. The resulting document is stored in the fiscal module and registered for accounting purposes."
   },
   "settings": {
     "title": "Settings",
