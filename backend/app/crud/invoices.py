@@ -135,16 +135,23 @@ def create_direct_sale(db: Session, sale: schemas.DirectSaleRequest):
     # 1. Handle Simplified Mode (Ticket)
     effective_client_id = sale.client_id
     if sale.is_simplified:
-        # Search or create "Cliente de Contado"
+        # Search or create "Cliente de Contado" per-tenant to respect unique email constraint
+        anon_email = f"contado_{tenant_id}@generico.local"
         anon_client = db.query(models.Client).filter(
-            models.Client.email == "contado@generico.local",
+            models.Client.email == anon_email,
             models.Client.tenant_id == tenant_id
         ).first()
+        if not anon_client:
+            # Fallback check for old contado@generico.local for this tenant
+            anon_client = db.query(models.Client).filter(
+                models.Client.email == "contado@generico.local",
+                models.Client.tenant_id == tenant_id
+            ).first()
         if not anon_client:
             anon_client = models.Client(
                 id=str(uuid.uuid4()),
                 name="Cliente de Contado",
-                email="contado@generico.local",
+                email=anon_email,
                 phone="000000000",
                 tenant_id=tenant_id
             )
@@ -157,8 +164,9 @@ def create_direct_sale(db: Session, sale: schemas.DirectSaleRequest):
     concept_names = []
     if sale.services:
         for item in sale.services:
+            srv_id = item.get("service_id") if isinstance(item, dict) else getattr(item, "service_id", None)
             service = db.query(models.Service).filter(
-                models.Service.id == item.get("service_id"),
+                models.Service.id == srv_id,
                 models.Service.tenant_id == tenant_id
             ).first()
             if service:

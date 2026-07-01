@@ -236,7 +236,7 @@ export default function POSPage() {
 
   // Filters
   const filteredClients = clients.filter(c => 
-    c.email !== 'contado@generico.local' && (
+    c.email !== 'contado@generico.local' && !c.email?.endsWith('@generico.local') && (
       c.name.toLowerCase().includes(clientSearch.toLowerCase()) || 
       c.email?.toLowerCase().includes(clientSearch.toLowerCase()) ||
       c.phone?.includes(clientSearch)
@@ -783,7 +783,7 @@ export default function POSPage() {
 
       {/* MOBILE STICKY FLOATING CART BAR */}
       {cart.length > 0 && !lastInvoice && (
-        <div className={`fixed bottom-20 left-4 right-4 md:left-8 md:right-8 lg:hidden bg-stone-950 border border-white/10 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between z-40 transition-all duration-300 ${
+        <div className={`fixed bottom-20 left-4 right-4 md:left-[96px] md:right-8 lg:hidden bg-stone-950 border border-white/10 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between z-40 transition-all duration-300 ${
           bounceCart ? 'scale-105 border-[#d4af37]/50' : 'scale-100'
         }`}>
           <div className="flex items-center gap-3">

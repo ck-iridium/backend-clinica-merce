@@ -62,3 +62,11 @@ def create_direct_sale(sale: schemas.DirectSaleRequest, db: Session = Depends(da
         return crud.create_direct_sale(db=db, sale=sale)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        import traceback
+        tb_str = traceback.format_exc()
+        print(f"CRITICAL ERROR IN POST /direct-sale:\n{tb_str}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal Error: {str(e)}\nTraceback:\n{tb_str}"
+        )
