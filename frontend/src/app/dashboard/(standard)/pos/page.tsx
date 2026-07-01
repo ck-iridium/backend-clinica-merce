@@ -48,7 +48,7 @@ interface Category {
 }
 
 export default function POSPage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { showFeedback } = useFeedback();
   const router = useRouter();
   const { role, loading: loadingRole } = useAuthRole();
