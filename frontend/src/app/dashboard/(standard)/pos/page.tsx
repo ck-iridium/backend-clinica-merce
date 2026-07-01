@@ -435,9 +435,21 @@ export default function POSPage() {
             <label className="block text-xs font-bold uppercase tracking-wider text-white/60">
               Fecha del Registro
             </label>
-            <div className="relative pointer-events-auto">
+            <div 
+              onClick={(e) => {
+                const input = e.currentTarget.querySelector('input[type="date"]') as HTMLInputElement;
+                if (input && typeof input.showPicker === 'function') {
+                  try {
+                    input.showPicker();
+                  } catch (err) {
+                    console.error("Failed to open native date picker", err);
+                  }
+                }
+              }}
+              className="relative pointer-events-auto cursor-pointer"
+            >
               {/* Visual Button displaying Spanish Selected Date */}
-              <div className="bg-white/5 border border-white/10 text-white rounded-2xl px-4 py-3.5 text-xs font-semibold flex items-center justify-between gap-3 cursor-pointer hover:bg-white/10 hover:border-white/20 transition-all">
+              <div className="bg-white/5 border border-white/10 text-white rounded-2xl px-4 py-3.5 text-xs font-semibold flex items-center justify-between gap-3 hover:bg-white/10 hover:border-white/20 transition-all">
                 <Calendar size={16} className="text-[#d4af37] shrink-0" />
                 <span className="truncate flex-1 text-center font-medium">
                   {getFriendlyDateStr(selectedDate)}
@@ -450,7 +462,7 @@ export default function POSPage() {
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer pointer-events-auto z-10"
+                className="absolute inset-0 w-full h-full opacity-0 pointer-events-none z-10"
               />
             </div>
           </div>
