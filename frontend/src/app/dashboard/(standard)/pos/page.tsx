@@ -280,7 +280,7 @@ export default function POSPage() {
             <div className="flex items-center gap-2">
               <ShoppingCart size={18} className="text-[#d4af37]" />
               <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-white/50">
-                Resumen del Ticket
+                {t('dashboard.pos.ticket_summary') || 'Resumen del Ticket'}
               </h3>
             </div>
             <button 
@@ -307,7 +307,7 @@ export default function POSPage() {
                 <button
                   onClick={() => removeFromCart(idx)}
                   className="p-1.5 text-white/40 hover:text-red-400 hover:bg-white/5 rounded-lg transition-colors group-hover:opacity-100 focus:opacity-100 lg:opacity-100 opacity-100"
-                  title="Quitar tratamiento"
+                  title={t('dashboard.pos.remove_service') || 'Quitar tratamiento'}
                 >
                   <Trash2 size={14} />
                 </button>
@@ -315,8 +315,8 @@ export default function POSPage() {
             ))
           ) : (
             <div className="py-12 border-2 border-dashed border-white/10 rounded-2xl text-center space-y-2">
-              <p className="text-xs text-white/40 font-medium">El ticket está vacío</p>
-              <p className="text-[10px] text-white/30">Selecciona servicios en la columna izquierda</p>
+              <p className="text-xs text-white/40 font-medium">{t('dashboard.pos.empty_ticket') || 'El ticket está vacío'}</p>
+              <p className="text-[10px] text-white/30">{t('dashboard.pos.empty_ticket_desc') || 'Selecciona servicios en la columna izquierda'}</p>
             </div>
           )}
         </div>
@@ -325,7 +325,7 @@ export default function POSPage() {
         <div className="space-y-3 pt-4 border-t border-white/10">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
             <label className="text-xs font-bold uppercase tracking-wider text-white/60">
-              Tipo de Factura
+              {t('dashboard.pos.invoice_type') || 'Tipo de Factura'}
             </label>
             
             {/* Sliding luxury toggle button */}
@@ -339,7 +339,7 @@ export default function POSPage() {
                     : 'text-white/60 hover:text-white'
                 }`}
               >
-                Ticket Simplif.
+                {t('dashboard.pos.ticket_simplif') || 'Ticket Simplif.'}
               </button>
               <button
                 type="button"
@@ -350,7 +350,7 @@ export default function POSPage() {
                     : 'text-white/60 hover:text-white'
                 }`}
               >
-                Nominal
+                {t('dashboard.pos.nominal') || 'Nominal'}
               </button>
             </div>
           </div>
@@ -359,7 +359,7 @@ export default function POSPage() {
           {!isSimplified && (
             <div className="relative animate-in slide-in-from-top-3 duration-300 pt-2" ref={clientDropdownRef}>
               <label className="block text-[10px] font-bold uppercase tracking-wider text-white/50 mb-2">
-                Buscar Cliente Asociado *
+                {t('dashboard.pos.search_client') || 'Buscar Cliente'} *
               </label>
               {selectedClientId ? (
                 <div className="flex items-center justify-between p-3.5 bg-white/10 border border-[#d4af37]/30 rounded-2xl animate-in zoom-in-95">
@@ -384,7 +384,7 @@ export default function POSPage() {
                   <input
                     id="pos-client-search"
                     type="text"
-                    placeholder="Nombre, email o teléfono del cliente..."
+                    placeholder={t('dashboard.pos.client_search_placeholder') || 'Nombre, email o teléfono del cliente...'}
                     value={clientSearch}
                     onChange={(e) => {
                       setClientSearch(e.target.value);
@@ -401,14 +401,14 @@ export default function POSPage() {
                         <div className="p-1 space-y-0.5">
                           {filteredClients.map(c => (
                             <button
-                              key={c.id}
-                              id={`pos-client-result-${c.id}`}
-                              onClick={() => {
-                                setSelectedClientId(c.id);
-                                setSelectedClientName(c.name);
-                                setShowClientDropdown(false);
-                              }}
-                              className="w-full text-left px-4 py-2.5 hover:bg-white/5 rounded-xl transition-colors flex flex-col"
+                               key={c.id}
+                               id={`pos-client-result-${c.id}`}
+                               onClick={() => {
+                                 setSelectedClientId(c.id);
+                                 setSelectedClientName(c.name);
+                                 setShowClientDropdown(false);
+                               }}
+                               className="w-full text-left px-4 py-2.5 hover:bg-white/5 rounded-xl transition-colors flex flex-col"
                             >
                               <span className="font-semibold text-white text-xs">{c.name}</span>
                               <span className="text-[9px] text-white/40 mt-0.5">{c.email || c.phone}</span>
@@ -417,7 +417,7 @@ export default function POSPage() {
                         </div>
                       ) : (
                         <div className="p-4 text-center text-white/40 text-xs">
-                          No se encontraron clientes
+                          {t('dashboard.pos.no_clients_found') || 'No se encontraron clientes'}
                         </div>
                       )}
                     </div>
@@ -431,9 +431,10 @@ export default function POSPage() {
         {/* Datepicker & Payment Method */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
           {/* Manual Custom Date */}
+          {/* Manual Custom Date */}
           <div className="space-y-2">
             <label className="block text-xs font-bold uppercase tracking-wider text-white/60">
-              Fecha del Registro
+              {t('dashboard.pos.registration_date') || 'Fecha del Registro'}
             </label>
             <div 
               onClick={(e) => {
@@ -470,7 +471,7 @@ export default function POSPage() {
           {/* Payment Method */}
           <div className="space-y-2">
             <label className="block text-xs font-bold uppercase tracking-wider text-white/60">
-              Método de Pago
+              {t('dashboard.pos.payment_method') || 'Método de Pago'}
             </label>
             <div className="bg-white/5 p-1 rounded-full border border-white/10 flex items-center w-full">
               {['Tarjeta', 'Efectivo'].map(method => (
@@ -485,7 +486,7 @@ export default function POSPage() {
                       : 'text-white/60 hover:text-white'
                   }`}
                 >
-                  {method === 'Tarjeta' ? '💳 Tarj.' : '💵 Efect.'}
+                  {method === 'Tarjeta' ? t('dashboard.pos.pay_card') || '💳 Tarj.' : t('dashboard.pos.pay_cash') || '💵 Efect.'}
                 </button>
               ))}
             </div>
@@ -495,15 +496,15 @@ export default function POSPage() {
         {/* Totals Section */}
         <div className="pt-6 border-t border-white/10 space-y-3 font-serif">
           <div className="flex justify-between text-xs text-white/60 font-sans">
-            <span>Subtotal</span>
+            <span>{t('dashboard.pos.subtotal') || 'Subtotal'}</span>
             <span className="font-mono">{subtotal.toFixed(2)}€</span>
           </div>
           <div className="flex justify-between text-xs text-white/40 font-sans">
-            <span>IVA Incluido (21%)</span>
+            <span>{t('dashboard.pos.tax_included') || 'IVA Incluido (21%)'}</span>
             <span className="font-mono">{taxAmount.toFixed(2)}€</span>
           </div>
           <div className="flex justify-between items-baseline pt-2">
-            <span className="text-base text-white/95 font-medium">Total a Cobrar</span>
+            <span className="text-base text-white/95 font-medium">{t('dashboard.pos.total_to_charge') || 'Total a Cobrar'}</span>
             <span className="text-4xl font-semibold text-[#d4af37] font-mono leading-none tracking-tight">
               {totalAmount.toFixed(2)}€
             </span>
@@ -617,20 +618,20 @@ export default function POSPage() {
             <div className="lg:col-span-7 bg-white rounded-3xl p-8 border border-stone-200/40 shadow-sm space-y-8 min-h-[550px] transition-all animate-in fade-in duration-300">
               <div className="space-y-2">
                 <h3 className="text-xs font-bold text-[#d4af37] uppercase tracking-[0.2em]">{t('dashboard.pos.step_identification') || '1. Selección de Servicios'}</h3>
-                <p className="text-stone-400 text-xs">Busca y añade los tratamientos que deseas facturar al ticket.</p>
+                <p className="text-stone-400 text-xs">{t('dashboard.pos.search_treatment_desc') || 'Busca y añade los tratamientos que deseas facturar al ticket.'}</p>
               </div>
 
               {/* Service Combobox / Autocomplete Search */}
               <div className="relative" ref={serviceDropdownRef}>
                 <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">
-                  Buscar Tratamiento
+                  {t('dashboard.pos.search_treatment') || 'Buscar Tratamiento'}
                 </label>
                 <div className="relative">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={18} />
                   <input
                     id="pos-service-search"
                     type="text"
-                    placeholder="Escribe el nombre del servicio..."
+                    placeholder={t('dashboard.pos.search_treatment_placeholder') || 'Escribe el nombre del servicio...'}
                     value={serviceSearch}
                     onChange={(e) => {
                       setServiceSearch(e.target.value);
@@ -680,7 +681,7 @@ export default function POSPage() {
                       </div>
                     ) : (
                       <div className="p-8 text-center text-stone-400 text-sm">
-                        No se encontraron servicios
+                        {t('dashboard.pos.no_services_found') || 'No se encontraron servicios'}
                       </div>
                     )}
                   </div>
@@ -690,7 +691,7 @@ export default function POSPage() {
               {/* Category Quick Filters */}
               <div className="space-y-3">
                 <label className="block text-xs font-bold uppercase tracking-wider text-stone-500">
-                  Filtros por Categoría
+                  {t('dashboard.pos.category_filters') || 'Filtros por Categoría'}
                 </label>
                 <div className="flex flex-wrap gap-2">
                   <button
@@ -701,7 +702,7 @@ export default function POSPage() {
                         : 'bg-stone-100 text-stone-600 hover:bg-stone-200/70'
                     }`}
                   >
-                    Todos
+                    {t('dashboard.pos.all_categories') || 'Todos'}
                   </button>
                   {categories.map(cat => (
                     <button
@@ -723,10 +724,10 @@ export default function POSPage() {
               <div className="space-y-4 pt-4 border-t border-stone-100">
                 <div className="flex justify-between items-center">
                   <span className="text-xs font-bold uppercase tracking-wider text-stone-500">
-                    Catálogo Rápido
+                    {t('dashboard.pos.fast_catalog') || 'Catálogo Rápido'}
                   </span>
                   <span className="text-xs text-stone-400 font-medium">
-                    {filteredServices.length} servicios disponibles
+                    {t('dashboard.pos.services_available')?.replace('{count}', String(filteredServices.length)) || `${filteredServices.length} servicios disponibles`}
                   </span>
                 </div>
 
@@ -750,7 +751,7 @@ export default function POSPage() {
                   ))}
                   {filteredServices.length === 0 && (
                     <div className="col-span-2 py-10 text-center text-stone-400 text-xs">
-                      Ningún servicio coincide con la categoría o búsqueda seleccionada.
+                      {t('dashboard.pos.no_services_found') || 'Ningún servicio coincide con la categoría o búsqueda seleccionada.'}
                     </div>
                   )}
                 </div>
@@ -766,11 +767,13 @@ export default function POSPage() {
                 <div className="flex items-center gap-2">
                   <ShoppingCart size={18} className="text-[#d4af37]" />
                   <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-white/50">
-                    2. Resumen & Ticket
+                    {t('dashboard.pos.ticket_summary') || '2. Resumen & Ticket'}
                   </h3>
                 </div>
                 <span className="text-[10px] font-bold px-2.5 py-1 bg-white/10 text-white/80 rounded-full font-mono uppercase tracking-wider">
-                  {cart.length} {cart.length === 1 ? 'ítem' : 'ítems'}
+                  {cart.length === 1 
+                    ? t('dashboard.pos.items_count_one')?.replace('{count}', String(cart.length)) || '1 ítem' 
+                    : t('dashboard.pos.items_count')?.replace('{count}', String(cart.length)) || `${cart.length} ítems`}
                 </span>
               </div>
 
@@ -784,7 +787,9 @@ export default function POSPage() {
         <footer className="p-6 bg-stone-50 border border-stone-200/50 rounded-3xl flex items-start gap-4 text-stone-500 max-w-4xl mx-auto shadow-sm">
           <span className="text-xl p-1 bg-stone-100 rounded-lg text-stone-600 shrink-0">ℹ️</span>
           <div className="space-y-1">
-            <h4 className="text-xs font-bold text-stone-700 uppercase tracking-wider">Aviso Legal y Fiscalidad</h4>
+            <h4 className="text-xs font-bold text-stone-700 uppercase tracking-wider">
+              {t('dashboard.pos.legal_disclaimer') || 'Aviso Legal y Fiscalidad'}
+            </h4>
             <p className="text-[11px] leading-relaxed font-normal">
               {t('dashboard.pos.disclaimer') || 'Este módulo genera y registra de manera automática facturas de venta directa marcadas como cobradas y sujetas al tipo impositivo de IVA general. El documento resultante se almacena en el módulo fiscal y queda registrado para fines contables.'}
             </p>
@@ -806,7 +811,9 @@ export default function POSPage() {
               </span>
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] text-white/50 uppercase tracking-wider font-semibold">Total a cobrar</span>
+              <span className="text-[10px] text-white/50 uppercase tracking-wider font-semibold">
+                {t('dashboard.pos.total_to_charge') || 'Total a cobrar'}
+              </span>
               <span className="text-lg font-bold font-mono text-[#d4af37]">{totalAmount.toFixed(2)}€</span>
             </div>
           </div>
@@ -815,7 +822,7 @@ export default function POSPage() {
             onClick={() => setIsCartDrawerOpen(true)}
             className="bg-white hover:bg-stone-100 text-stone-950 px-4 py-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors uppercase tracking-wider"
           >
-            <span>Ver Ticket</span>
+            <span>{t('dashboard.pos.view_ticket') || 'Ver Ticket'}</span>
             <ArrowUp size={14} className="animate-bounce" />
           </button>
         </div>
