@@ -100,7 +100,11 @@ export default function ClientsPage() {
         const data = await res.json();
         // Ocultar clientes genéricos de contado del listado
         const filtered = Array.isArray(data) 
-          ? data.filter((c: Client) => !c.email?.endsWith('@generico.local')) 
+          ? data.filter((c: Client) => {
+              if (!c.email) return true;
+              const lower = c.email.toLowerCase();
+              return !(lower.endsWith('@generico.local') || lower.startsWith('contado@') || lower.startsWith('contado_'));
+            }) 
           : [];
         setClients(filtered);
       }
@@ -406,7 +410,11 @@ export default function ClientsPage() {
                 </tr>
               ) : (
                 clients
-                  .filter(c => c.email !== 'contado@generico.local')
+                  .filter(c => {
+                    if (!c.email) return true;
+                    const lower = c.email.toLowerCase();
+                    return !(lower.endsWith('@generico.local') || lower.startsWith('contado@') || lower.startsWith('contado_'));
+                  })
                   .map((client, index) => (
                   <tr 
                     key={client.id} 

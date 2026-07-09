@@ -111,7 +111,12 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
         const data = await cRes.json();
         
         // Redirigir si es el cliente genérico de contado
-        if (data.email?.endsWith('@generico.local')) {
+        const isSystem = (email?: string | null) => {
+          if (!email) return false;
+          const lower = email.toLowerCase();
+          return lower.endsWith('@generico.local') || lower.startsWith('contado@') || lower.startsWith('contado_');
+        };
+        if (isSystem(data.email)) {
           router.push('/dashboard/clients');
           toast.error(t('dashboard.clients.protected_client_error') || 'Acceso denegado: Cliente del sistema protegido');
           return;

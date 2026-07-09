@@ -129,7 +129,17 @@ export default function POSPage() {
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/service-categories/`)
       ]);
       
-      if (cRes.ok) setClients(await cRes.json());
+      if (cRes.ok) {
+        const clientsData = await cRes.json();
+        const filteredClients = Array.isArray(clientsData)
+          ? clientsData.filter((c: any) => {
+              if (!c.email) return true;
+              const lower = c.email.toLowerCase();
+              return !(lower.endsWith('@generico.local') || lower.startsWith('contado@') || lower.startsWith('contado_'));
+            })
+          : [];
+        setClients(filteredClients);
+      }
       
       if (sRes.ok) {
         const servs = await sRes.json();
