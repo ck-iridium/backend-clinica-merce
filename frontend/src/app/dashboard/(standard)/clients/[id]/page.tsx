@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { SignaturePadModal } from '@/components/SignaturePadModal';
 import { useAuthRole } from '@/hooks/useAuthRole';
@@ -50,6 +51,7 @@ interface Client {
 
 export default function ClientProfilePage({ params }: { params: { id: string } }) {
   const { t, language } = useLanguage();
+  const router = useRouter();
   const { role } = useAuthRole();
   const isEspecialista = role?.toLowerCase() === 'especialista';
   
@@ -107,6 +109,14 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
       
       if (cRes.ok) {
         const data = await cRes.json();
+        
+        // Redirigir si es el cliente genérico de contado
+        if (data.email?.endsWith('@generico.local')) {
+          router.push('/dashboard/clients');
+          toast.error(t('dashboard.clients.protected_client_error') || 'Acceso denegado: Cliente del sistema protegido');
+          return;
+        }
+
         setClient(data);
         setFormData({
           first_name: data.first_name || data.name.split(' ')[0],

@@ -96,7 +96,14 @@ export default function ClientsPage() {
   const fetchClients = async () => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/`);
-      if (res.ok) setClients(await res.json());
+      if (res.ok) {
+        const data = await res.json();
+        // Ocultar clientes genéricos de contado del listado
+        const filtered = Array.isArray(data) 
+          ? data.filter((c: Client) => !c.email?.endsWith('@generico.local')) 
+          : [];
+        setClients(filtered);
+      }
     } catch (err) {
       console.error(err);
     } finally {

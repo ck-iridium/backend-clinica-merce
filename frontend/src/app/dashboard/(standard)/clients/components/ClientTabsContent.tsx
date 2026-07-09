@@ -47,14 +47,7 @@ export function ClientTabsContent({
       <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-stone-100 space-y-6">
         <h3 className="text-lg font-serif font-light text-stone-800 border-b border-stone-55 pb-4 flex items-center gap-2">
           <span className="w-8 h-8 rounded-full bg-stone-50 border border-stone-150 flex items-center justify-center text-xs">📋</span>
-          {businessSector === 'clinical' && 'Ficha Médica'}
-          {businessSector === 'beauty' && 'Ficha de Estética & Bienestar'}
-          {businessSector === 'barber' && 'Ficha de Estilo & Belleza'}
-          {businessSector === 'veterinary' && 'Perfil de Mascota'}
-          {businessSector === 'automotive' && 'Detalles de Vehículo'}
-          {businessSector === 'home_services' && 'Ficha de Servicio'}
-          {businessSector === 'professional' && 'Ficha Profesional'}
-          {businessSector === 'general' && 'Notas Internas'}
+          {t(`dashboard.clients.sectors.${businessSector}`) || 'Notas Internas'}
         </h3>
         
         <div className="px-1">
@@ -76,10 +69,14 @@ export function ClientTabsContent({
 
     return (
       <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-stone-100 space-y-6">
-        <h3 className="text-lg font-serif font-light text-stone-800 border-b border-stone-50 pb-4">Historial de Tratamientos</h3>
+        <h3 className="text-lg font-serif font-light text-stone-800 border-b border-stone-50 pb-4">
+          {t('dashboard.clients.completed_treatments_history') || 'Historial de Tratamientos'}
+        </h3>
         
         {appointments.length === 0 ? (
-          <div className="text-center py-12 text-stone-400 italic text-sm">No hay tratamientos registrados en el historial de este cliente.</div>
+          <div className="text-center py-12 text-stone-400 italic text-sm">
+            {t('dashboard.clients.zero_completed_treatments') || 'No hay tratamientos registrados en el historial de este cliente.'}
+          </div>
         ) : (
           <>
             <div className="space-y-3">
@@ -90,7 +87,7 @@ export function ClientTabsContent({
                     <div className="flex items-center gap-3">
                       <span className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-650 flex items-center justify-center font-bold text-xs">✓</span>
                       <div>
-                        <p className="font-bold text-stone-800 text-sm">{s?.name || 'Tratamiento'}</p>
+                        <p className="font-bold text-stone-800 text-sm">{s?.name || t('dashboard.clients.treatment_placeholder') || 'Tratamiento'}</p>
                         <p className="text-[10px] text-stone-400 font-semibold flex items-center gap-1 mt-0.5">
                           <Calendar size={10} />
                           {new Date(a.start_time).toLocaleString(dateLocale, { dateStyle: 'medium', timeStyle: 'short' })}
@@ -98,7 +95,7 @@ export function ClientTabsContent({
                       </div>
                     </div>
                     <span className="text-[10px] font-bold text-stone-400 bg-white border border-stone-200 px-3 py-1 rounded-full uppercase tracking-wider group-hover:border-stone-300">
-                      {t('dashboard.clients.completed') || 'Completado'}
+                      {t('dashboard.clients.completed') || 'Finalizado'}
                     </span>
                   </div>
                 )
@@ -109,7 +106,11 @@ export function ClientTabsContent({
             {totalPages > 1 && (
               <div className="flex items-center justify-between border-t border-stone-100 pt-6 mt-6">
                 <span className="text-xs text-stone-450 font-semibold uppercase tracking-wider">
-                  Página {currentPage} de {totalPages} ({appointments.length} servicios)
+                  {t('dashboard.clients.page_pagination')
+                    ?.replace('{current}', String(currentPage))
+                    ?.replace('{total}', String(totalPages))
+                    ?.replace('{count}', String(appointments.length)) 
+                    || `Página ${currentPage} de ${totalPages} (${appointments.length} servicios)`}
                 </span>
                 <div className="flex gap-2">
                   <button 
@@ -119,7 +120,7 @@ export function ClientTabsContent({
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                     className="px-4 py-2 text-xs font-bold bg-white border border-stone-200 text-stone-600 rounded-xl hover:bg-stone-50 disabled:opacity-40 disabled:hover:bg-white transition-all duration-300"
                   >
-                    Anterior
+                    {t('dashboard.clients.previous') || 'Anterior'}
                   </button>
                   <button 
                     id="next-appointments-btn"
@@ -128,7 +129,7 @@ export function ClientTabsContent({
                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                     className="px-4 py-2 text-xs font-bold bg-stone-900 text-white rounded-xl hover:bg-stone-800 disabled:opacity-40 disabled:hover:bg-stone-900 transition-all duration-300"
                   >
-                    Siguiente
+                    {t('dashboard.clients.next') || 'Siguiente'}
                   </button>
                 </div>
               </div>
@@ -143,7 +144,9 @@ export function ClientTabsContent({
     return (
       <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-stone-100 space-y-6">
         <div className="flex justify-between items-center border-b border-stone-50 pb-4">
-          <h3 className="text-lg font-serif font-light text-stone-800">Bonos Adquiridos</h3>
+          <h3 className="text-lg font-serif font-light text-stone-800">
+            {t('dashboard.clients.acquired_vouchers_title') || 'Bonos Adquiridos'}
+          </h3>
           {!isEspecialista && (
             <a id="sell-voucher-link" href="/dashboard/vouchers" className="text-xs font-black uppercase tracking-widest text-[#D4AF37] bg-[#D4AF37]/5 border border-[#D4AF37]/20 px-4 py-2 rounded-full hover:bg-[#D4AF37]/10 transition-colors">
               {t('dashboard.clients.sell_voucher') || 'Vender Bono'}
@@ -152,7 +155,9 @@ export function ClientTabsContent({
         </div>
 
         {vouchers.length === 0 ? (
-          <p className="text-stone-400 text-sm italic py-4">Este cliente no posee bonos en su cuenta.</p>
+          <p className="text-stone-400 text-sm italic py-4">
+            {t('dashboard.clients.no_vouchers_in_account') || 'Este cliente no posee bonos en su cuenta.'}
+          </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {vouchers.map(v => {
@@ -165,28 +170,36 @@ export function ClientTabsContent({
                 <div key={v.id} className={`p-4 rounded-xl border flex flex-col justify-between ${isActive ? 'bg-[#D4AF37]/5 border-[#D4AF37]/20' : 'bg-stone-50 border-stone-100 opacity-60'}`}>
                   <div>
                     <div className="flex justify-between items-start mb-2">
-                      <p className="font-bold text-stone-800 text-sm leading-tight">{s?.name || 'Servicio'}</p>
+                      <p className="font-bold text-stone-800 text-sm leading-tight">
+                        {s?.name || t('dashboard.clients.service_placeholder') || 'Servicio'}
+                      </p>
                       <span className={`text-[9px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full ${isActive ? 'bg-[#D4AF37]/10 text-stone-900' : 'bg-stone-200 text-stone-500'}`}>
-                        {isActive ? 'Activo' : 'Cerrado'}
+                        {isActive ? (t('dashboard.clients.active') || 'Activo') : (t('dashboard.clients.closed') || 'Cerrado')}
                       </span>
                     </div>
-                    <p className="text-[10px] font-semibold text-stone-400">Vence: {new Date(v.expiration_date).toLocaleDateString(dateLocale)}</p>
+                    <p className="text-[10px] font-semibold text-stone-400">
+                      {t('dashboard.clients.expires') || 'Vence: '}{new Date(v.expiration_date).toLocaleDateString(dateLocale)}
+                    </p>
                   </div>
 
                   <div className="mt-4">
                     {v.payment_status !== 'paid' ? (
                       <div className="mb-3 bg-white border border-red-100 p-2.5 rounded-lg flex items-center justify-between">
                         <div>
-                          <span className="text-[9px] uppercase text-stone-400 block">Deuda</span>
+                          <span className="text-[9px] uppercase text-stone-400 block">
+                            {t('dashboard.clients.debt_label') || 'Deuda'}
+                          </span>
                           <strong className="text-red-650 text-sm">{v.total_price - v.amount_paid}€</strong>
                         </div>
                         <button id={`pay-voucher-btn-${v.id}`} onClick={() => onOpenPayModal(v)} className="bg-red-50 hover:bg-red-100 text-red-700 font-bold px-3 py-1.5 rounded-md text-xs transition-colors">
-                          Cobrar
+                          {t('dashboard.clients.collect_btn') || 'Cobrar'}
                         </button>
                       </div>
                     ) : (
                       <div className="mb-3 bg-emerald-50/50 p-2 rounded-lg border border-emerald-100 text-center">
-                        <span className="text-[10px] font-bold text-emerald-650">✓ Pagado Completamente</span>
+                        <span className="text-[10px] font-bold text-emerald-650">
+                          {t('dashboard.clients.fully_paid') || '✓ Pagado Completamente'}
+                        </span>
                       </div>
                     )}
 
@@ -210,7 +223,9 @@ export function ClientTabsContent({
     return (
       <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-stone-100 space-y-6">
         <div className="flex justify-between items-center border-b border-stone-50 pb-4">
-          <h3 className="text-lg font-serif font-light text-stone-800">Consentimientos y Firmas</h3>
+          <h3 className="text-lg font-serif font-light text-stone-800">
+            {t('dashboard.clients.consents_signatures_title') || 'Consentimientos y Firmas'}
+          </h3>
           <button 
             id="sign-consent-btn"
             onClick={onNewConsentClick}
@@ -223,8 +238,12 @@ export function ClientTabsContent({
         {consents.length === 0 ? (
           <div className="text-center py-10">
             <span className="text-stone-300 text-3xl mb-2 block">⚖️</span>
-            <p className="text-stone-500 font-medium text-sm">No hay documentos firmados.</p>
-            <p className="text-stone-400 text-xs mt-1">El paciente aún no ha firmado ningún consentimiento informado.</p>
+            <p className="text-stone-500 font-medium text-sm">
+              {t('dashboard.clients.no_signed_docs_body') || 'No hay documentos firmados.'}
+            </p>
+            <p className="text-stone-400 text-xs mt-1">
+              {t('dashboard.clients.no_signed_docs_desc_custom') || 'El paciente aún no ha firmado ningún consentimiento informado.'}
+            </p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -234,11 +253,11 @@ export function ClientTabsContent({
                 <div className="flex-1">
                   <p className="font-bold text-stone-850 text-sm">{c.document_title}</p>
                   <p className="text-[10px] text-stone-400 font-semibold mt-0.5">
-                    Firmado: {new Date(c.signed_at).toLocaleString(dateLocale, { dateStyle: 'medium', timeStyle: 'short' })}
+                    {t('dashboard.clients.signed_on') || 'Firmado:'} {new Date(c.signed_at).toLocaleString(dateLocale, { dateStyle: 'medium', timeStyle: 'short' })}
                   </p>
                 </div>
                 <a id={`view-consent-link-${c.id}`} href={`/dashboard/clients/${clientId}/consents/${c.id}`} className="w-full sm:w-auto text-center px-4 py-2 bg-white border border-stone-200 text-stone-600 font-bold text-xs rounded-lg shadow-sm hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors">
-                  Ver / Imprimir
+                  {t('dashboard.clients.view_print') || 'Ver / Imprimir'}
                 </a>
               </div>
             ))}

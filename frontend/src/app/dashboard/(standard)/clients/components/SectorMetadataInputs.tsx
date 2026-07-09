@@ -1,5 +1,7 @@
 "use client";
 
+import { useLanguage } from "@/app/contexts/LanguageContext";
+
 interface SectorMetadataInputsProps {
   sector: string;
   value: any;
@@ -13,6 +15,8 @@ export function SectorMetadataInputs({
   onChange,
   disabled = false
 }: SectorMetadataInputsProps) {
+  const { t } = useLanguage();
+
   const updateMeta = (field: string, val: any) => {
     onChange({
       ...value,
@@ -25,50 +29,50 @@ export function SectorMetadataInputs({
       {sector === 'clinical' && (
         <>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Alergias</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.clinical.allergies') || 'Alergias'}</label>
             <input 
               id="clinical-allergies-input"
               type="text" 
               value={value.allergies || ''} 
               onChange={e => updateMeta('allergies', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="Látex, penicilina..." 
+              placeholder={t('dashboard.clients.clinical.allergies_placeholder') || "Látex, penicilina..."} 
               disabled={disabled}
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Medicación Actual</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.clinical.medications_label') || 'Medicación Actual'}</label>
             <input 
               id="clinical-medications-input"
               type="text" 
               value={value.medications || ''} 
               onChange={e => updateMeta('medications', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="Medicamentos diarios..." 
+              placeholder={t('dashboard.clients.clinical.medications_placeholder') || "Medicamentos diarios..."} 
               disabled={disabled}
             />
           </div>
           <div className="space-y-1 md:col-span-2">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Historial de Lesiones</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.clinical.injury_history_label') || 'Historial de Lesiones'}</label>
             <input 
               id="clinical-injury-history-input"
               type="text" 
               value={value.injury_history || ''} 
               onChange={e => updateMeta('injury_history', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="Lesiones previas, operaciones..." 
+              placeholder={t('dashboard.clients.clinical.injury_history_placeholder') || "Lesiones previas, operaciones..."} 
               disabled={disabled}
             />
           </div>
           <div className="space-y-1 md:col-span-2">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Notas Clínicas</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.clinical.notes_label') || 'Notas Clínicas'}</label>
             <textarea 
               id="clinical-notes-textarea"
               value={value.clinical_notes || ''} 
               onChange={e => updateMeta('clinical_notes', e.target.value)} 
               rows={3} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="Detalles de salud del paciente..." 
+              placeholder={t('dashboard.clients.clinical.notes_placeholder') || "Detalles de salud del paciente..."} 
               disabled={disabled}
             />
           </div>
@@ -78,38 +82,38 @@ export function SectorMetadataInputs({
       {sector === 'beauty' && (
         <>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Tipo de Piel</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.beauty.skin_type_label') || 'Tipo de Piel'}</label>
             <input 
               id="beauty-skin-type-input"
               type="text" 
               value={value.skin_type || ''} 
               onChange={e => updateMeta('skin_type', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="Piel seca, grasa, mixta, sensible..." 
+              placeholder={t('dashboard.clients.beauty.skin_type_placeholder') || "Piel seca, grasa, mixta, sensible..."} 
               disabled={disabled}
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Sensibilidad a Cosméticos</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.beauty.sensitivities_label') || 'Sensibilidad a Cosméticos'}</label>
             <input 
               id="beauty-cosmetic-sensitivities-input"
               type="text" 
               value={value.cosmetic_sensitivities || ''} 
               onChange={e => updateMeta('cosmetic_sensitivities', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="Alergia a conservantes, perfumes..." 
+              placeholder={t('dashboard.clients.beauty.sensitivities_placeholder') || "Alergia a conservantes, perfumes..."} 
               disabled={disabled}
             />
           </div>
           <div className="space-y-1 md:col-span-2">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Observaciones Estéticas / Tratamientos de Interés</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.beauty.aesthetic_notes_label') || 'Observaciones Estéticas / Tratamientos de Interés'}</label>
             <textarea 
               id="beauty-aesthetic-notes-textarea"
               value={value.aesthetic_notes || ''} 
               onChange={e => updateMeta('aesthetic_notes', e.target.value)} 
               rows={3} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="Tratamientos corporales/faciales recomendados, objetivos..." 
+              placeholder={t('dashboard.clients.beauty.aesthetic_notes_placeholder') || "Tratamientos corporales/faciales recomendados, objetivos..."} 
               disabled={disabled}
             />
           </div>
@@ -119,38 +123,38 @@ export function SectorMetadataInputs({
       {sector === 'barber' && (
         <>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Tipo de Cabello / Cuero Cabelludo</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.barber.hair_type_label') || 'Tipo de Cabello / Cuero Cabelludo'}</label>
             <input 
               id="barber-hair-type-input"
               type="text" 
               value={value.hair_type || ''} 
               onChange={e => updateMeta('hair_type', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="Cabello fino, seco, graso, caspa..." 
+              placeholder={t('dashboard.clients.barber.hair_type_placeholder') || "Cabello fino, seco, graso, caspa..."} 
               disabled={disabled}
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Sensibilidad a Tintes / Químicos</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.barber.chemical_sensitivities_label') || 'Sensibilidad a Tintes / Químicos'}</label>
             <input 
               id="barber-chemical-sensitivities-input"
               type="text" 
               value={value.chemical_sensitivities || ''} 
               onChange={e => updateMeta('chemical_sensitivities', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="Sensible al amoníaco, tinturas..." 
+              placeholder={t('dashboard.clients.barber.chemical_sensitivities_placeholder') || "Sensible al amoníaco, tinturas..."} 
               disabled={disabled}
             />
           </div>
           <div className="space-y-1 md:col-span-2">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Fórmulas de Color / Tinte</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.barber.color_formulas_label') || 'Fórmulas de Color / Tinte'}</label>
             <textarea 
               id="barber-color-formulas-textarea"
               value={value.color_formulas || ''} 
               onChange={e => updateMeta('color_formulas', e.target.value)} 
               rows={3} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="Fórmulas de tinte, mezclas y decoloración..." 
+              placeholder={t('dashboard.clients.barber.color_formulas_placeholder') || "Fórmulas de tinte, mezclas y decoloración..."} 
               disabled={disabled}
             />
           </div>
@@ -160,62 +164,62 @@ export function SectorMetadataInputs({
       {sector === 'veterinary' && (
         <>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Nombre de la Mascota</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.vet.pet_name_label') || 'Nombre de la Mascota'}</label>
             <input 
               id="vet-pet-name-input"
               type="text" 
               value={value.pet_name || ''} 
               onChange={e => updateMeta('pet_name', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="Toby, Luna..." 
+              placeholder={t('dashboard.clients.vet.pet_name_placeholder') || "Toby, Luna..."} 
               disabled={disabled}
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Especie y Raza</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.vet.species_breed_label') || 'Especie y Raza'}</label>
             <input 
               id="vet-pet-species-input"
               type="text" 
               value={value.pet_species || ''} 
               onChange={e => updateMeta('pet_species', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="Perro (Golden Retriever)..." 
+              placeholder={t('dashboard.clients.vet.species_breed_placeholder') || "Perro (Golden Retriever)..."} 
               disabled={disabled}
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Edad de la Mascota</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.vet.age_label') || 'Edad de la Mascota'}</label>
             <input 
               id="vet-pet-age-input"
               type="text" 
               value={value.pet_age || ''} 
               onChange={e => updateMeta('pet_age', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="3 años..." 
+              placeholder={t('dashboard.clients.vet.age_placeholder') || "3 años..."} 
               disabled={disabled}
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Carácter / Comportamiento</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.vet.temperament_label') || 'Carácter / Comportamiento'}</label>
             <input 
               id="vet-pet-temperament-input"
               type="text" 
               value={value.temperament || ''} 
               onChange={e => updateMeta('temperament', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="Cariñoso, asustadizo..." 
+              placeholder={t('dashboard.clients.vet.temperament_placeholder') || "Cariñoso, asustadizo..."} 
               disabled={disabled}
             />
           </div>
           <div className="space-y-1 md:col-span-2">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Historial de Vacunación</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.vet.vaccinations_label') || 'Historial de Vacunación'}</label>
             <input 
               id="vet-vaccination-record-input"
               type="text" 
               value={value.vaccination_record || ''} 
               onChange={e => updateMeta('vaccination_record', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="Rabia al día, desparasitado..." 
+              placeholder={t('dashboard.clients.vet.vaccinations_placeholder') || "Rabia al día, desparasitado..."} 
               disabled={disabled}
             />
           </div>
@@ -225,74 +229,74 @@ export function SectorMetadataInputs({
       {sector === 'automotive' && (
         <>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Matrícula</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.auto.license_plate_label') || 'Matrícula'}</label>
             <input 
               id="auto-license-plate-input"
               type="text" 
               value={value.license_plate || ''} 
               onChange={e => updateMeta('license_plate', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="1234XYZ..." 
+              placeholder={t('dashboard.clients.auto.license_plate_placeholder') || "1234XYZ..."} 
               disabled={disabled}
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Marca</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.auto.brand_label') || 'Marca'}</label>
             <input 
               id="auto-brand-input"
               type="text" 
               value={value.brand || ''} 
               onChange={e => updateMeta('brand', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="Toyota, Seat..." 
+              placeholder={t('dashboard.clients.auto.brand_placeholder') || "Toyota, Seat..."} 
               disabled={disabled}
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Modelo</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.auto.model_label') || 'Modelo'}</label>
             <input 
               id="auto-model-input"
               type="text" 
               value={value.model || ''} 
               onChange={e => updateMeta('model', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="Auris, Leon..." 
+              placeholder={t('dashboard.clients.auto.model_placeholder') || "Auris, Leon..."} 
               disabled={disabled}
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Año del Vehículo</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.auto.year_label') || 'Año del Vehículo'}</label>
             <input 
               id="auto-year-input"
               type="number" 
               value={value.year || ''} 
               onChange={e => updateMeta('year', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="2018..." 
+              placeholder={t('dashboard.clients.auto.year_placeholder') || "2018..."} 
               disabled={disabled}
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Kilometraje Actual</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.auto.mileage_label') || 'Kilometraje Actual'}</label>
             <input 
               id="auto-mileage-input"
               type="number" 
               value={value.mileage || ''} 
               onChange={e => updateMeta('mileage', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="85000..." 
+              placeholder={t('dashboard.clients.auto.mileage_placeholder') || "85000..."} 
               disabled={disabled}
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Número de Bastidor (VIN)</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.auto.vin_label') || 'Número de Bastidor (VIN)'}</label>
             <input 
               id="auto-vin-input"
               type="text" 
               value={value.vin || ''} 
               onChange={e => updateMeta('vin', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="VIN de 17 caracteres..." 
+              placeholder={t('dashboard.clients.auto.vin_placeholder') || "VIN de 17 caracteres..."} 
               disabled={disabled}
             />
           </div>
@@ -302,38 +306,38 @@ export function SectorMetadataInputs({
       {sector === 'home_services' && (
         <>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Metros Cuadrados Vivienda</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.home.sq_meters_label') || 'Metros Cuadrados Vivienda'}</label>
             <input 
               id="home-sq-meters-input"
               type="number" 
               value={value.sq_meters || ''} 
               onChange={e => updateMeta('sq_meters', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="90..." 
+              placeholder={t('dashboard.clients.home.sq_meters_placeholder') || "90..."} 
               disabled={disabled}
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Tipo de Propiedad</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.home.property_type_label') || 'Tipo de Propiedad'}</label>
             <input 
               id="home-property-type-input"
               type="text" 
               value={value.property_type || ''} 
               onChange={e => updateMeta('property_type', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="Piso, Ático, Chalet..." 
+              placeholder={t('dashboard.clients.home.property_type_placeholder') || "Piso, Ático, Chalet..."} 
               disabled={disabled}
             />
           </div>
           <div className="space-y-1 md:col-span-2">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Códigos de Acceso (Urbanización / Portal)</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.home.access_codes_label') || 'Códigos de Acceso (Urbanización / Portal)'}</label>
             <input 
               id="home-access-codes-input"
               type="text" 
               value={value.access_codes || ''} 
               onChange={e => updateMeta('access_codes', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="Portal #1234, piso 2B..." 
+              placeholder={t('dashboard.clients.home.access_codes_placeholder') || "Portal #1234, piso 2B..."} 
               disabled={disabled}
             />
           </div>
@@ -346,7 +350,7 @@ export function SectorMetadataInputs({
               className="rounded text-stone-900 focus:ring-stone-900 h-4 w-4 border-stone-300 cursor-pointer disabled:opacity-50" 
               disabled={disabled}
             />
-            <label htmlFor="dangerous_pets" className="text-xs font-bold text-stone-600 cursor-pointer">Presencia de mascotas / Perros sueltos</label>
+            <label htmlFor="dangerous_pets" className="text-xs font-bold text-stone-600 cursor-pointer">{t('dashboard.clients.home.dangerous_pets_label') || 'Presencia de mascotas / Perros sueltos'}</label>
           </div>
         </>
       )}
@@ -354,38 +358,38 @@ export function SectorMetadataInputs({
       {sector === 'professional' && (
         <>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Sector de la Empresa</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.prof.company_sector_label') || 'Sector de la Empresa'}</label>
             <input 
               id="prof-company-sector-input"
               type="text" 
               value={value.company_sector || ''} 
               onChange={e => updateMeta('company_sector', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="Finanzas, Legal, Tecnología..." 
+              placeholder={t('dashboard.clients.prof.company_sector_placeholder') || "Finanzas, Legal, Tecnología..."} 
               disabled={disabled}
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Sitio Web</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.prof.website_label') || 'Sitio Web'}</label>
             <input 
               id="prof-website-url-input"
               type="url" 
               value={value.website_url || ''} 
               onChange={e => updateMeta('website_url', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="https://..." 
+              placeholder={t('dashboard.clients.prof.website_placeholder') || "https://..."} 
               disabled={disabled}
             />
           </div>
           <div className="space-y-1 md:col-span-2">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Enlace a Carpeta Cloud (Drive / Dropbox)</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.prof.cloud_folder_label') || 'Enlace a Carpeta Cloud (Drive / Dropbox)'}</label>
             <input 
               id="prof-cloud-folder-url-input"
               type="url" 
               value={value.cloud_folder_url || ''} 
               onChange={e => updateMeta('cloud_folder_url', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="https://drive.google.com/..." 
+              placeholder={t('dashboard.clients.prof.cloud_folder_placeholder') || "https://drive.google.com/..."} 
               disabled={disabled}
             />
           </div>
@@ -394,14 +398,14 @@ export function SectorMetadataInputs({
       
       {sector === 'general' && (
         <div className="space-y-1 md:col-span-2">
-          <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Notas Internas / Observaciones</label>
+          <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.general.notes_label') || 'Notas Internas / Observaciones'}</label>
           <textarea 
             id="general-internal-notes-textarea"
             value={value.internal_notes || ''} 
             onChange={e => updateMeta('internal_notes', e.target.value)} 
             rows={4} 
             className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-            placeholder="Notas libres sobre el cliente..." 
+            placeholder={t('dashboard.clients.general.notes_placeholder') || "Notas libres sobre el cliente..."} 
             disabled={disabled}
           />
         </div>
