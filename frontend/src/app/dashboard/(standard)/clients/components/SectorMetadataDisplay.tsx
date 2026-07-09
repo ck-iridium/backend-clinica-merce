@@ -39,12 +39,29 @@ export function SectorMetadataDisplay({
       {sector === 'beauty' && (
         <>
           <div className="space-y-1">
-            <span className="block text-[9px] uppercase tracking-wider text-stone-400">Tipo de Cabello/Piel</span>
-            <p className="p-2.5 bg-stone-50 border border-stone-100 rounded-lg text-stone-700 font-semibold">{value.skin_hair_type || 'No especificado'}</p>
+            <span className="block text-[9px] uppercase tracking-wider text-stone-400">Tipo de Piel</span>
+            <p className="p-2.5 bg-stone-50 border border-stone-100 rounded-lg text-stone-700 font-semibold">{value.skin_type || 'No especificado'}</p>
           </div>
           <div className="space-y-1">
-            <span className="block text-[9px] uppercase tracking-wider text-stone-400">Sensibilidades</span>
-            <p className="p-2 bg-stone-50 border border-stone-100 rounded-lg text-stone-700">{value.product_sensitivities || 'Sin sensibilidades registradas'}</p>
+            <span className="block text-[9px] uppercase tracking-wider text-stone-400">Sensibilidad a Cosméticos</span>
+            <p className="p-2 bg-stone-50 border border-stone-100 rounded-lg text-stone-700">{value.cosmetic_sensitivities || 'Sin sensibilidades registradas'}</p>
+          </div>
+          <div className="space-y-1">
+            <span className="block text-[9px] uppercase tracking-wider text-stone-400">Observaciones Estéticas / Tratamientos de Interés</span>
+            <p className="p-3 bg-stone-50 border border-stone-100 rounded-lg text-stone-700 leading-relaxed whitespace-pre-wrap">{value.aesthetic_notes || 'Sin observaciones registradas'}</p>
+          </div>
+        </>
+      )}
+
+      {sector === 'barber' && (
+        <>
+          <div className="space-y-1">
+            <span className="block text-[9px] uppercase tracking-wider text-stone-400">Tipo de Cabello / Cuero Cabelludo</span>
+            <p className="p-2.5 bg-stone-50 border border-stone-100 rounded-lg text-stone-700 font-semibold">{value.hair_type || 'No especificado'}</p>
+          </div>
+          <div className="space-y-1">
+            <span className="block text-[9px] uppercase tracking-wider text-stone-400">Sensibilidad a Tintes / Químicos</span>
+            <p className="p-2 bg-stone-50 border border-stone-100 rounded-lg text-stone-700">{value.chemical_sensitivities || 'Sin sensibilidades registradas'}</p>
           </div>
           <div className="space-y-1">
             <span className="block text-[9px] uppercase tracking-wider text-stone-400">Fórmulas de Tinte / Mezclas</span>

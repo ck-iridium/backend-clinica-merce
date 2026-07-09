@@ -48,7 +48,8 @@ export function ClientTabsContent({
         <h3 className="text-lg font-serif font-light text-stone-800 border-b border-stone-55 pb-4 flex items-center gap-2">
           <span className="w-8 h-8 rounded-full bg-stone-50 border border-stone-150 flex items-center justify-center text-xs">📋</span>
           {businessSector === 'clinical' && 'Ficha Médica'}
-          {businessSector === 'beauty' && 'Ficha de Estilo'}
+          {businessSector === 'beauty' && 'Ficha de Estética & Bienestar'}
+          {businessSector === 'barber' && 'Ficha de Estilo & Belleza'}
           {businessSector === 'veterinary' && 'Perfil de Mascota'}
           {businessSector === 'automotive' && 'Detalles de Vehículo'}
           {businessSector === 'home_services' && 'Ficha de Servicio'}

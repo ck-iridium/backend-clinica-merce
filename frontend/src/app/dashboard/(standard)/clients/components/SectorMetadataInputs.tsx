@@ -78,38 +78,79 @@ export function SectorMetadataInputs({
       {sector === 'beauty' && (
         <>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Tipo de Cabello/Piel</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Tipo de Piel</label>
             <input 
-              id="beauty-skin-hair-type-input"
+              id="beauty-skin-type-input"
               type="text" 
-              value={value.skin_hair_type || ''} 
-              onChange={e => updateMeta('skin_hair_type', e.target.value)} 
+              value={value.skin_type || ''} 
+              onChange={e => updateMeta('skin_type', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="Cabello seco, piel grasa..." 
+              placeholder="Piel seca, grasa, mixta, sensible..." 
               disabled={disabled}
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Sensibilidad a Productos</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Sensibilidad a Cosméticos</label>
             <input 
-              id="beauty-product-sensitivities-input"
+              id="beauty-cosmetic-sensitivities-input"
               type="text" 
-              value={value.product_sensitivities || ''} 
-              onChange={e => updateMeta('product_sensitivities', e.target.value)} 
+              value={value.cosmetic_sensitivities || ''} 
+              onChange={e => updateMeta('cosmetic_sensitivities', e.target.value)} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="Sensible al amoníaco..." 
+              placeholder="Alergia a conservantes, perfumes..." 
+              disabled={disabled}
+            />
+          </div>
+          <div className="space-y-1 md:col-span-2">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Observaciones Estéticas / Tratamientos de Interés</label>
+            <textarea 
+              id="beauty-aesthetic-notes-textarea"
+              value={value.aesthetic_notes || ''} 
+              onChange={e => updateMeta('aesthetic_notes', e.target.value)} 
+              rows={3} 
+              className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
+              placeholder="Tratamientos corporales/faciales recomendados, objetivos..." 
+              disabled={disabled}
+            />
+          </div>
+        </>
+      )}
+      
+      {sector === 'barber' && (
+        <>
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Tipo de Cabello / Cuero Cabelludo</label>
+            <input 
+              id="barber-hair-type-input"
+              type="text" 
+              value={value.hair_type || ''} 
+              onChange={e => updateMeta('hair_type', e.target.value)} 
+              className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
+              placeholder="Cabello fino, seco, graso, caspa..." 
+              disabled={disabled}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Sensibilidad a Tintes / Químicos</label>
+            <input 
+              id="barber-chemical-sensitivities-input"
+              type="text" 
+              value={value.chemical_sensitivities || ''} 
+              onChange={e => updateMeta('chemical_sensitivities', e.target.value)} 
+              className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
+              placeholder="Sensible al amoníaco, tinturas..." 
               disabled={disabled}
             />
           </div>
           <div className="space-y-1 md:col-span-2">
             <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Fórmulas de Color / Tinte</label>
             <textarea 
-              id="beauty-color-formulas-textarea"
+              id="barber-color-formulas-textarea"
               value={value.color_formulas || ''} 
               onChange={e => updateMeta('color_formulas', e.target.value)} 
               rows={3} 
               className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder="Fórmulas de tintura utilizadas..." 
+              placeholder="Fórmulas de tinte, mezclas y decoloración..." 
               disabled={disabled}
             />
           </div>

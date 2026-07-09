@@ -212,7 +212,8 @@ export default function ClientsPage() {
   const getDynamicColumnHeader = () => {
     switch (businessSector) {
       case 'clinical': return 'Alertas Clínicas';
-      case 'beauty': return 'Tipo de Cabello/Piel';
+      case 'beauty': return 'Tipo de Piel';
+      case 'barber': return 'Tipo de Cabello';
       case 'veterinary': return 'Mascota';
       case 'automotive': return 'Vehículo';
       case 'home_services': return 'Propiedad';
@@ -236,7 +237,9 @@ export default function ClientsPage() {
           </span>
         );
       case 'beauty':
-        return <span className="text-stone-700 font-medium text-xs">{meta.skin_hair_type || 'No registrado'}</span>;
+        return <span className="text-stone-700 font-medium text-xs">{meta.skin_type || 'No registrado'}</span>;
+      case 'barber':
+        return <span className="text-stone-700 font-medium text-xs">{meta.hair_type || 'No registrado'}</span>;
       case 'veterinary':
         return meta.pet_name ? (
           <span className="text-stone-700 font-medium text-xs font-mono">{meta.pet_name} {meta.pet_species ? `(${meta.pet_species})` : ''}</span>
@@ -272,7 +275,8 @@ export default function ClientsPage() {
           </h1>
           <p className="text-stone-400 mt-1.5 text-sm font-medium">
             {businessSector === 'clinical' && 'Gestión de fichas médicas e historiales clínicos'}
-            {businessSector === 'beauty' && 'Fichas de cuidado personal, estilo y color'}
+            {businessSector === 'beauty' && 'Fichas de cuidado facial, corporal y bienestar'}
+            {businessSector === 'barber' && 'Fichas de cuidado personal, estilo y color'}
             {businessSector === 'veterinary' && 'Directorio de propietarios y mascotas'}
             {businessSector === 'automotive' && 'Control de vehículos e historiales de taller'}
             {businessSector === 'home_services' && 'Gestión de clientes y servicios a domicilio'}
@@ -313,7 +317,8 @@ export default function ClientsPage() {
                 <div className="border-t border-stone-100 pt-6 mt-6">
                   <h4 className="text-xs font-black uppercase tracking-[0.2em] text-stone-500 mb-4">
                     {businessSector === 'clinical' && 'Información Clínica / Médica'}
-                    {businessSector === 'beauty' && 'Ficha de Estilo & Belleza'}
+                    {businessSector === 'beauty' && 'Ficha de Estética & Bienestar'}
+                    {businessSector === 'barber' && 'Ficha de Estilo & Belleza'}
                     {businessSector === 'veterinary' && 'Datos de la Mascota'}
                     {businessSector === 'automotive' && 'Ficha del Vehículo'}
                     {businessSector === 'home_services' && 'Detalles del Servicio a Domicilio'}
