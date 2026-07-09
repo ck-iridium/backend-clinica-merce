@@ -20,7 +20,8 @@ import {
   ArrowLeft,
   User,
   MapPin,
-  CreditCard
+  CreditCard,
+  AlertTriangle
 } from "lucide-react";
 
 // Import modular components
@@ -367,6 +368,46 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
             )}
           </div>
         )}
+
+        {/* Banner de Alerta de Alergias */}
+        {(() => {
+          const clientAllergies = 
+            businessSector === 'clinical' ? sectorMetadata.allergies :
+            businessSector === 'beauty' ? sectorMetadata.cosmetic_sensitivities :
+            businessSector === 'barber' ? sectorMetadata.chemical_sensitivities : null;
+
+          if (!clientAllergies) return null;
+
+          const allergyList = clientAllergies
+            .split(',')
+            .map((t: string) => t.trim())
+            .filter((t: string) => t.length > 0);
+
+          if (allergyList.length === 0) return null;
+
+          return (
+            <div className="mt-4 p-4 bg-rose-50/50 border border-rose-100 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs text-rose-800 animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="flex items-center gap-2.5">
+                <AlertTriangle className="text-rose-650 shrink-0 animate-pulse" size={16} />
+                <div>
+                  <strong className="block text-rose-900 font-bold uppercase tracking-wide text-[10px]">
+                    {t('dashboard.clients.allergy_alert_title') || 'ALERTA DE ALERGIAS / INCOMPATIBILIDADES:'}
+                  </strong>
+                  <span className="font-semibold text-rose-700">
+                    {t('dashboard.clients.allergy_alert_desc') || 'Este paciente presenta sensibilidades o riesgos registrados.'}
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1.5 md:justify-end">
+                {allergyList.map((tag: string, idx: number) => (
+                  <span key={idx} className="px-2.5 py-1 bg-rose-100 text-rose-800 border border-rose-200/50 rounded-full font-bold uppercase tracking-wider text-[9px]">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Tabs Menu (Segmented Controls Styling) */}

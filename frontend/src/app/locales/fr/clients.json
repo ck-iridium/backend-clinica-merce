@@ -257,5 +257,27 @@
     "no_notes": "Aucune observation rédigée.",
     "notes_label": "Notes Internes / Observations",
     "notes_placeholder": "Notes libres sur le client..."
-  }
+  },
+  "allergies": {
+    "no_allergies_listed": "Aucune allergie ou contre-indication enregistrée.",
+    "remove_tag": "Supprimer le tag",
+    "input_placeholder": "Écrivez une allergie et appuyez sur Entrée ou virgule...",
+    "quick_suggestions": "Suggestions rapides :",
+    "sug": {
+      "latex": "Latex",
+      "penicillin": "Pénicilline",
+      "ibuprofen": "Ibuprofène",
+      "aspirin": "Aspirine",
+      "anesthetics": "Anesthésiques",
+      "nickel": "Nickel / Métaux",
+      "parabens": "Parabènes",
+      "ammonia": "Ammoniac",
+      "fragrances": "Parfums",
+      "salicylic_acid": "Acide Salicylique",
+      "essential_oils": "Huiles Essentielles",
+      "ppd": "Teintures (PPD)"
+    }
+  },
+  "allergy_alert_title": "ALERTE ALLERGIES / CONTRE-INDICATIONS :",
+  "allergy_alert_desc": "Ce patient présente des sensibilités ou risques physiques enregistrés."
 }

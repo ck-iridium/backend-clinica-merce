@@ -1,6 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/app/contexts/LanguageContext";
+import { AllergiesManager } from "./AllergiesManager";
 
 interface SectorMetadataInputsProps {
   sector: string;
@@ -29,19 +30,27 @@ export function SectorMetadataInputs({
       {sector === 'clinical' && (
         <>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.clinical.allergies') || 'Alergias'}</label>
-            <input 
-              id="clinical-allergies-input"
-              type="text" 
-              value={value.allergies || ''} 
-              onChange={e => updateMeta('allergies', e.target.value)} 
-              className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder={t('dashboard.clients.clinical.allergies_placeholder') || "Látex, penicilina..."} 
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.clinical.allergies') || 'Alergias'}
+            </label>
+            <AllergiesManager
+              value={value.allergies || ''}
+              onChange={val => updateMeta('allergies', val)}
+              suggestions={[
+                'dashboard.clients.allergies.sug.latex',
+                'dashboard.clients.allergies.sug.penicillin',
+                'dashboard.clients.allergies.sug.ibuprofen',
+                'dashboard.clients.allergies.sug.aspirin',
+                'dashboard.clients.allergies.sug.anesthetics',
+                'dashboard.clients.allergies.sug.nickel'
+              ]}
               disabled={disabled}
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.clinical.medications_label') || 'Medicación Actual'}</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.clinical.medications_label') || 'Medicación Actual'}
+            </label>
             <input 
               id="clinical-medications-input"
               type="text" 
@@ -53,7 +62,9 @@ export function SectorMetadataInputs({
             />
           </div>
           <div className="space-y-1 md:col-span-2">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.clinical.injury_history_label') || 'Historial de Lesiones'}</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.clinical.injury_history_label') || 'Historial de Lesiones'}
+            </label>
             <input 
               id="clinical-injury-history-input"
               type="text" 
@@ -65,7 +76,9 @@ export function SectorMetadataInputs({
             />
           </div>
           <div className="space-y-1 md:col-span-2">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.clinical.notes_label') || 'Notas Clínicas'}</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.clinical.notes_label') || 'Notas Clínicas'}
+            </label>
             <textarea 
               id="clinical-notes-textarea"
               value={value.clinical_notes || ''} 
@@ -82,7 +95,9 @@ export function SectorMetadataInputs({
       {sector === 'beauty' && (
         <>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.beauty.skin_type_label') || 'Tipo de Piel'}</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.beauty.skin_type_label') || 'Tipo de Piel'}
+            </label>
             <input 
               id="beauty-skin-type-input"
               type="text" 
@@ -94,19 +109,28 @@ export function SectorMetadataInputs({
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.beauty.sensitivities_label') || 'Sensibilidad a Cosméticos'}</label>
-            <input 
-              id="beauty-cosmetic-sensitivities-input"
-              type="text" 
-              value={value.cosmetic_sensitivities || ''} 
-              onChange={e => updateMeta('cosmetic_sensitivities', e.target.value)} 
-              className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder={t('dashboard.clients.beauty.sensitivities_placeholder') || "Alergia a conservantes, perfumes..."} 
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.beauty.sensitivities_label') || 'Sensibilidad a Cosméticos'}
+            </label>
+            <AllergiesManager
+              value={value.cosmetic_sensitivities || ''}
+              onChange={val => updateMeta('cosmetic_sensitivities', val)}
+              suggestions={[
+                'dashboard.clients.allergies.sug.latex',
+                'dashboard.clients.allergies.sug.nickel',
+                'dashboard.clients.allergies.sug.parabens',
+                'dashboard.clients.allergies.sug.ammonia',
+                'dashboard.clients.allergies.sug.fragrances',
+                'dashboard.clients.allergies.sug.salicylic_acid',
+                'dashboard.clients.allergies.sug.essential_oils'
+              ]}
               disabled={disabled}
             />
           </div>
           <div className="space-y-1 md:col-span-2">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.beauty.aesthetic_notes_label') || 'Observaciones Estéticas / Tratamientos de Interés'}</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.beauty.aesthetic_notes_label') || 'Observaciones Estéticas / Tratamientos de Interés'}
+            </label>
             <textarea 
               id="beauty-aesthetic-notes-textarea"
               value={value.aesthetic_notes || ''} 
@@ -123,7 +147,9 @@ export function SectorMetadataInputs({
       {sector === 'barber' && (
         <>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.barber.hair_type_label') || 'Tipo de Cabello / Cuero Cabelludo'}</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.barber.hair_type_label') || 'Tipo de Cabello / Cuero Cabelludo'}
+            </label>
             <input 
               id="barber-hair-type-input"
               type="text" 
@@ -135,19 +161,27 @@ export function SectorMetadataInputs({
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.barber.chemical_sensitivities_label') || 'Sensibilidad a Tintes / Químicos'}</label>
-            <input 
-              id="barber-chemical-sensitivities-input"
-              type="text" 
-              value={value.chemical_sensitivities || ''} 
-              onChange={e => updateMeta('chemical_sensitivities', e.target.value)} 
-              className="w-full px-4 py-2 text-sm rounded-xl border border-stone-100 bg-stone-50 focus:bg-white focus:outline-none disabled:opacity-70" 
-              placeholder={t('dashboard.clients.barber.chemical_sensitivities_placeholder') || "Sensible al amoníaco, tinturas..."} 
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.barber.chemical_sensitivities_label') || 'Sensibilidad a Tintes / Químicos'}
+            </label>
+            <AllergiesManager
+              value={value.chemical_sensitivities || ''}
+              onChange={val => updateMeta('chemical_sensitivities', val)}
+              suggestions={[
+                'dashboard.clients.allergies.sug.ammonia',
+                'dashboard.clients.allergies.sug.ppd',
+                'dashboard.clients.allergies.sug.nickel',
+                'dashboard.clients.allergies.sug.latex',
+                'dashboard.clients.allergies.sug.fragrances',
+                'dashboard.clients.allergies.sug.parabens'
+              ]}
               disabled={disabled}
             />
           </div>
           <div className="space-y-1 md:col-span-2">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.barber.color_formulas_label') || 'Fórmulas de Color / Tinte'}</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.barber.color_formulas_label') || 'Fórmulas de Color / Tinte'}
+            </label>
             <textarea 
               id="barber-color-formulas-textarea"
               value={value.color_formulas || ''} 
@@ -164,7 +198,9 @@ export function SectorMetadataInputs({
       {sector === 'veterinary' && (
         <>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.vet.pet_name_label') || 'Nombre de la Mascota'}</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.vet.pet_name_label') || 'Nombre de la Mascota'}
+            </label>
             <input 
               id="vet-pet-name-input"
               type="text" 
@@ -176,7 +212,9 @@ export function SectorMetadataInputs({
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.vet.species_breed_label') || 'Especie y Raza'}</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.vet.species_breed_label') || 'Especie y Raza'}
+            </label>
             <input 
               id="vet-pet-species-input"
               type="text" 
@@ -188,7 +226,9 @@ export function SectorMetadataInputs({
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.vet.age_label') || 'Edad de la Mascota'}</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.vet.age_label') || 'Edad de la Mascota'}
+            </label>
             <input 
               id="vet-pet-age-input"
               type="text" 
@@ -200,7 +240,9 @@ export function SectorMetadataInputs({
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.vet.temperament_label') || 'Carácter / Comportamiento'}</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.vet.temperament_label') || 'Carácter / Comportamiento'}
+            </label>
             <input 
               id="vet-pet-temperament-input"
               type="text" 
@@ -212,7 +254,9 @@ export function SectorMetadataInputs({
             />
           </div>
           <div className="space-y-1 md:col-span-2">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.vet.vaccinations_label') || 'Historial de Vacunación'}</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.vet.vaccinations_label') || 'Historial de Vacunación'}
+            </label>
             <input 
               id="vet-vaccination-record-input"
               type="text" 
@@ -229,7 +273,9 @@ export function SectorMetadataInputs({
       {sector === 'automotive' && (
         <>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.auto.license_plate_label') || 'Matrícula'}</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.auto.license_plate_label') || 'Matrícula'}
+            </label>
             <input 
               id="auto-license-plate-input"
               type="text" 
@@ -241,7 +287,9 @@ export function SectorMetadataInputs({
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.auto.brand_label') || 'Marca'}</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.auto.brand_label') || 'Marca'}
+            </label>
             <input 
               id="auto-brand-input"
               type="text" 
@@ -253,7 +301,9 @@ export function SectorMetadataInputs({
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.auto.model_label') || 'Modelo'}</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.auto.model_label') || 'Modelo'}
+            </label>
             <input 
               id="auto-model-input"
               type="text" 
@@ -265,7 +315,9 @@ export function SectorMetadataInputs({
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.auto.year_label') || 'Año del Vehículo'}</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.auto.year_label') || 'Año del Vehículo'}
+            </label>
             <input 
               id="auto-year-input"
               type="number" 
@@ -277,7 +329,9 @@ export function SectorMetadataInputs({
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.auto.mileage_label') || 'Kilometraje Actual'}</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.auto.mileage_label') || 'Kilometraje Actual'}
+            </label>
             <input 
               id="auto-mileage-input"
               type="number" 
@@ -289,7 +343,9 @@ export function SectorMetadataInputs({
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.auto.vin_label') || 'Número de Bastidor (VIN)'}</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.auto.vin_label') || 'Número de Bastidor (VIN)'}
+            </label>
             <input 
               id="auto-vin-input"
               type="text" 
@@ -306,7 +362,9 @@ export function SectorMetadataInputs({
       {sector === 'home_services' && (
         <>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.home.sq_meters_label') || 'Metros Cuadrados Vivienda'}</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.home.sq_meters_label') || 'Metros Cuadrados Vivienda'}
+            </label>
             <input 
               id="home-sq-meters-input"
               type="number" 
@@ -318,7 +376,9 @@ export function SectorMetadataInputs({
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.home.property_type_label') || 'Tipo de Propiedad'}</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.home.property_type_label') || 'Tipo de Propiedad'}
+            </label>
             <input 
               id="home-property-type-input"
               type="text" 
@@ -330,7 +390,9 @@ export function SectorMetadataInputs({
             />
           </div>
           <div className="space-y-1 md:col-span-2">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.home.access_codes_label') || 'Códigos de Acceso (Urbanización / Portal)'}</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.home.access_codes_label') || 'Códigos de Acceso (Urbanización / Portal)'}
+            </label>
             <input 
               id="home-access-codes-input"
               type="text" 
@@ -350,7 +412,9 @@ export function SectorMetadataInputs({
               className="rounded text-stone-900 focus:ring-stone-900 h-4 w-4 border-stone-300 cursor-pointer disabled:opacity-50" 
               disabled={disabled}
             />
-            <label htmlFor="dangerous_pets" className="text-xs font-bold text-stone-600 cursor-pointer">{t('dashboard.clients.home.dangerous_pets_label') || 'Presencia de mascotas / Perros sueltos'}</label>
+            <label htmlFor="dangerous_pets" className="text-xs font-bold text-stone-600 cursor-pointer">
+              {t('dashboard.clients.home.dangerous_pets_label') || 'Presencia de mascotas / Perros sueltos'}
+            </label>
           </div>
         </>
       )}
@@ -358,7 +422,9 @@ export function SectorMetadataInputs({
       {sector === 'professional' && (
         <>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.prof.company_sector_label') || 'Sector de la Empresa'}</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.prof.company_sector_label') || 'Sector de la Empresa'}
+            </label>
             <input 
               id="prof-company-sector-input"
               type="text" 
@@ -370,7 +436,9 @@ export function SectorMetadataInputs({
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.prof.website_label') || 'Sitio Web'}</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.prof.website_label') || 'Sitio Web'}
+            </label>
             <input 
               id="prof-website-url-input"
               type="url" 
@@ -382,7 +450,9 @@ export function SectorMetadataInputs({
             />
           </div>
           <div className="space-y-1 md:col-span-2">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.prof.cloud_folder_label') || 'Enlace a Carpeta Cloud (Drive / Dropbox)'}</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              {t('dashboard.clients.prof.cloud_folder_label') || 'Enlace a Carpeta Cloud (Drive / Dropbox)'}
+            </label>
             <input 
               id="prof-cloud-folder-url-input"
               type="url" 
@@ -398,7 +468,9 @@ export function SectorMetadataInputs({
       
       {sector === 'general' && (
         <div className="space-y-1 md:col-span-2">
-          <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.clients.general.notes_label') || 'Notas Internas / Observaciones'}</label>
+          <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+            {t('dashboard.clients.general.notes_label') || 'Notas Internas / Observaciones'}
+          </label>
           <textarea 
             id="general-internal-notes-textarea"
             value={value.internal_notes || ''} 

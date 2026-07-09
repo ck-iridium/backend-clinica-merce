@@ -14,6 +14,34 @@ export function SectorMetadataDisplay({
 }: SectorMetadataDisplayProps) {
   const { t } = useLanguage();
 
+  const renderAllergyPills = (allergiesStr: string, emptyFallback: string) => {
+    const list = allergiesStr
+      ? allergiesStr.split(',').map(t => t.trim()).filter(t => t.length > 0)
+      : [];
+
+    if (list.length === 0) {
+      return (
+        <p className="p-2.5 bg-green-50/20 border border-green-100 rounded-xl text-green-700 font-semibold flex items-center gap-1.5 animate-in fade-in">
+          <span className="text-xs">✓</span> {emptyFallback}
+        </p>
+      );
+    }
+
+    return (
+      <div className="flex flex-wrap gap-2 animate-in fade-in py-1">
+        {list.map((item, idx) => (
+          <span
+            key={idx}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-800 border border-amber-250/70 rounded-full text-xs font-semibold shadow-sm"
+          >
+            <span className="text-xs">⚠️</span>
+            <span>{item}</span>
+          </span>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-4 text-xs font-medium text-stone-600">
       {sector === 'clinical' && (
@@ -22,9 +50,7 @@ export function SectorMetadataDisplay({
             <span className="block text-[9px] uppercase tracking-wider text-stone-400">
               {t('dashboard.clients.clinical.allergies') || 'Alergias'}
             </span>
-            <p className={`p-2.5 rounded-lg border font-semibold ${value.allergies ? 'bg-red-50/50 border-red-100 text-red-700' : 'bg-green-50/30 border-green-100 text-green-700'}`}>
-              {value.allergies || t('dashboard.clients.clinical.no_allergies') || 'Sin alergias conocidas'}
-            </p>
+            {renderAllergyPills(value.allergies || '', t('dashboard.clients.clinical.no_allergies') || 'Sin allergies conocidas')}
           </div>
           <div className="space-y-1">
             <span className="block text-[9px] uppercase tracking-wider text-stone-400">
@@ -67,9 +93,7 @@ export function SectorMetadataDisplay({
             <span className="block text-[9px] uppercase tracking-wider text-stone-400">
               {t('dashboard.clients.beauty.sensitivities') || 'Sensibilidad a Cosméticos'}
             </span>
-            <p className="p-2 bg-stone-50 border border-stone-100 rounded-lg text-stone-700">
-              {value.cosmetic_sensitivities || t('dashboard.clients.beauty.no_sensitivities') || 'Sin sensibilidades registradas'}
-            </p>
+            {renderAllergyPills(value.cosmetic_sensitivities || '', t('dashboard.clients.beauty.no_sensitivities') || 'Sin sensibilidades registradas')}
           </div>
           <div className="space-y-1">
             <span className="block text-[9px] uppercase tracking-wider text-stone-400">
@@ -96,9 +120,7 @@ export function SectorMetadataDisplay({
             <span className="block text-[9px] uppercase tracking-wider text-stone-400">
               {t('dashboard.clients.barber.chemical_sensitivities') || 'Sensibilidad a Tintes / Químicos'}
             </span>
-            <p className="p-2 bg-stone-50 border border-stone-100 rounded-lg text-stone-700">
-              {value.chemical_sensitivities || t('dashboard.clients.barber.no_sensitivities') || 'Sin sensibilidades registradas'}
-            </p>
+            {renderAllergyPills(value.chemical_sensitivities || '', t('dashboard.clients.barber.no_sensitivities') || 'Sin sensibilidades registradas')}
           </div>
           <div className="space-y-1">
             <span className="block text-[9px] uppercase tracking-wider text-stone-400">

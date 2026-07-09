@@ -257,5 +257,27 @@
     "no_notes": "No notes written.",
     "notes_label": "Internal Notes / Remarks",
     "notes_placeholder": "Free notes about the client..."
-  }
+  },
+  "allergies": {
+    "no_allergies_listed": "No allergies or warnings registered.",
+    "remove_tag": "Remove tag",
+    "input_placeholder": "Type an allergy and press Enter or comma...",
+    "quick_suggestions": "Quick suggestions:",
+    "sug": {
+      "latex": "Latex",
+      "penicillin": "Penicillin",
+      "ibuprofen": "Ibuprofen",
+      "aspirin": "Aspirin",
+      "anesthetics": "Anesthetics",
+      "nickel": "Nickel / Metals",
+      "parabens": "Parabens",
+      "ammonia": "Ammonia",
+      "fragrances": "Fragrances",
+      "salicylic_acid": "Salicylic Acid",
+      "essential_oils": "Essential Oils",
+      "ppd": "Dyes (PPD)"
+    }
+  },
+  "allergy_alert_title": "ALLERGIES / INCOMPATIBILITIES WARNING:",
+  "allergy_alert_desc": "This patient has active sensitivities or physical risk tags registered."
 }
