@@ -263,6 +263,8 @@ def get_availability_slots(db: Session, target_date: date, service_id: str, loca
                     for block in existing_blocks:
                         b_start = block.start_time.replace(tzinfo=None) if block.start_time.tzinfo else block.start_time
                         b_end   = block.end_time.replace(tzinfo=None) if block.end_time.tzinfo else block.end_time
+                        if b_end.hour == 0 and b_end.minute == 0 and b_end.second == 0 and b_end >= b_start:
+                            b_end = b_end.replace(hour=23, minute=59, second=59)
                         if max(slot, b_start) < min(slot_end, b_end):
                             overlaps = True
                             break
@@ -382,6 +384,8 @@ def get_availability_slots(db: Session, target_date: date, service_id: str, loca
                     for block in staff_blocks:
                         b_start = block.start_time.replace(tzinfo=None) if block.start_time.tzinfo else block.start_time
                         b_end   = block.end_time.replace(tzinfo=None) if block.end_time.tzinfo else block.end_time
+                        if b_end.hour == 0 and b_end.minute == 0 and b_end.second == 0 and b_end >= b_start:
+                            b_end = b_end.replace(hour=23, minute=59, second=59)
                         if max(slot, b_start) < min(slot_end, b_end):
                             overlaps = True
                             break
@@ -603,6 +607,8 @@ def rebuild_blocked_days_cache(db: Session, tenant_id: str):
             if b.staff_id is None: # Global block
                 b_start = b.start_time.replace(tzinfo=None) if b.start_time.tzinfo else b.start_time
                 b_end = b.end_time.replace(tzinfo=None) if b.end_time.tzinfo else b.end_time
+                if b_end.hour == 0 and b_end.minute == 0 and b_end.second == 0 and b_end >= b_start:
+                    b_end = b_end.replace(hour=23, minute=59, second=59)
                 # If the global block covers the business hours
                 if b_start <= biz_start and b_end >= biz_end:
                     is_global_vacation = True
@@ -639,6 +645,8 @@ def rebuild_blocked_days_cache(db: Session, tenant_id: str):
                     if b.staff_id is None or b.staff_id == sid:
                         b_start = b.start_time.replace(tzinfo=None) if b.start_time.tzinfo else b.start_time
                         b_end = b.end_time.replace(tzinfo=None) if b.end_time.tzinfo else b.end_time
+                        if b_end.hour == 0 and b_end.minute == 0 and b_end.second == 0 and b_end >= b_start:
+                            b_end = b_end.replace(hour=23, minute=59, second=59)
                         if b_start <= sched_start and b_end >= sched_end:
                             is_block_covered = True
                             break

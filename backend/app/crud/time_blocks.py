@@ -17,11 +17,14 @@ def get_time_blocks(db: Session, skip: int = 0, limit: int = 100):
 
 def create_time_block(db: Session, block_in: schemas.TimeBlockCreate):
     tenant_id = current_tenant_var.get()
+    end_time = block_in.end_time
+    if end_time.hour == 0 and end_time.minute == 0 and end_time.second == 0 and end_time >= block_in.start_time:
+        end_time = end_time.replace(hour=23, minute=59, second=59)
     db_block = models.TimeBlock(
         id=str(uuid.uuid4()),
         tenant_id=tenant_id,
         start_time=block_in.start_time,
-        end_time=block_in.end_time,
+        end_time=end_time,
         reason=block_in.reason
     )
     db.add(db_block)

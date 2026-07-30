@@ -265,8 +265,8 @@ export default function SettingsPage() {
     try {
       const payload = {
         ...newBlock,
-        start_time: new Date(newBlock.start_time).toISOString(),
-        end_time: new Date(newBlock.end_time).toISOString()
+        start_time: newBlock.start_time.includes('T') ? newBlock.start_time : `${newBlock.start_time}T00:00:00`,
+        end_time: newBlock.end_time.includes('T') ? newBlock.end_time : `${newBlock.end_time}T23:59:59`
       };
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/time-blocks/`, {

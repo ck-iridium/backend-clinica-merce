@@ -127,14 +127,16 @@ export function CreateAppointmentModal({
 
     setSaving(true);
     const start_time = new Date(selectedSlot.date);
+    let end_time: Date;
+
     if (blockDuration === -1) {
-      start_time.setHours(9, 0, 0, 0);
+      start_time.setHours(0, 0, 0, 0);
+      end_time = new Date(start_time);
+      end_time.setHours(23, 59, 59, 999);
     } else {
       start_time.setHours(selectedSlot.hour, selectedMinutes, 0, 0);
+      end_time = new Date(start_time.getTime() + blockDuration * 60000);
     }
-
-    const durationMins = blockDuration === -1 ? 600 : blockDuration;
-    const end_time = new Date(start_time.getTime() + durationMins * 60000);
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/time-blocks/`, {
