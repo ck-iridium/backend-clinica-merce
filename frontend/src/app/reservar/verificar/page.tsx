@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { CheckCircle2, CalendarPlus, Loader2, AlertCircle } from 'lucide-react';
+import { CheckCircle2, CalendarPlus, Loader2, AlertCircle, MapPin } from 'lucide-react';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 
 export default function VerificarPage() {
@@ -106,12 +106,28 @@ export default function VerificarPage() {
                                     <h1 className="text-2xl font-extrabold text-stone-800 mb-4 tracking-tight">Confirmar Cita</h1>
                                     <p className="text-stone-500 mb-6">Solo te falta un paso para bloquear tu hueco en la agenda.</p>
                                     
-                                    <div className="bg-stone-50 border border-stone-100 rounded-2xl p-5 mb-8 text-left">
-                                        <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Tratamiento</p>
-                                        <p className="font-extrabold text-stone-800 text-lg mb-4">{appt.service_name}</p>
+                                    <div className="bg-stone-50 border border-stone-100 rounded-2xl p-5 mb-8 text-left space-y-3">
+                                        <div>
+                                            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Tratamiento</p>
+                                            <p className="font-extrabold text-stone-800 text-lg">{appt.service_name}</p>
+                                        </div>
                                         
-                                        <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Fecha de la reserva</p>
-                                        <p className="font-extrabold text-[#d9777f]">{appt.date} a las {appt.time}h</p>
+                                        <div>
+                                            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Fecha de la reserva</p>
+                                            <p className="font-extrabold text-[#d9777f]">{appt.date} a las {appt.time}h</p>
+                                        </div>
+
+                                        {appt.location_name && (
+                                            <div className="pt-2 border-t border-stone-200/60">
+                                                <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1 flex items-center gap-1">
+                                                    <MapPin size={12} className="text-[#d9777f]" /> Ubicación / Sede
+                                                </p>
+                                                <p className="font-extrabold text-stone-800 text-sm">{appt.location_name}</p>
+                                                {appt.location_address && (
+                                                    <p className="text-xs text-stone-500 font-medium mt-0.5">{appt.location_address}</p>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                     
                                     <button 

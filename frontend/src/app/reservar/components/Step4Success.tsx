@@ -1,6 +1,6 @@
 "use client"
 import React from 'react';
-import { Check, Calendar, Clock, Sparkles, Mail, ArrowRight } from 'lucide-react';
+import { Check, Calendar, Clock, Sparkles, Mail, ArrowRight, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useLanguage } from '@/app/contexts/LanguageContext';
@@ -9,17 +9,24 @@ export default function Step4Success({
   selectedDate,
   selectedTime,
   selectedService,
-  formData
+  formData,
+  selectedLocation,
+  settings
 }: {
   selectedDate: Date;
   selectedTime: string;
   selectedService: any;
   formData: { name: string; email: string };
+  selectedLocation?: any;
+  settings?: any;
 }) {
   const { t, language } = useLanguage();
 
   // Ajustamos el idioma de la fecha dinámicamente
   const dateLocale = language === 'en' ? 'en-US' : language === 'fr' ? 'fr-FR' : 'es-ES';
+  
+  const locName = selectedLocation?.name || settings?.clinic_name || 'Estética Mercè';
+  const locAddress = selectedLocation?.address || settings?.clinic_address || '';
 
   return (
     <div className="w-full flex flex-col flex-grow bg-background text-foreground items-center justify-center px-6 overflow-y-auto py-12 md:py-24">
@@ -88,6 +95,21 @@ export default function Step4Success({
                 <p className="text-sm md:text-lg font-bold text-foreground">{selectedTime}h</p>
               </div>
             </div>
+
+            {locName && (
+              <div className="flex items-start gap-4 md:gap-6 pt-3 border-t border-border/40">
+                <div className="w-10 h-10 md:w-14 md:h-14 bg-muted rounded-luxury-btn flex items-center justify-center text-muted-foreground shrink-0 mt-0.5">
+                  <MapPin size={18} className="md:scale-125" />
+                </div>
+                <div>
+                  <p className="text-[10px] md:text-xs uppercase font-bold text-muted-foreground">UBICACIÓN / SEDE</p>
+                  <p className="text-sm md:text-base font-bold text-foreground">{locName}</p>
+                  {locAddress && (
+                    <p className="text-xs md:text-sm text-muted-foreground mt-0.5">{locAddress}</p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

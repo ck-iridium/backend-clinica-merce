@@ -161,6 +161,22 @@ def send_appointment_notification(appointment_id: str, type: str):
         date_str = appointment.start_time.strftime("%d/%m/%Y")
         time_str = appointment.start_time.strftime("%H:%M")
         
+        # Resolver Ubicación / Sede
+        location = appointment.location
+        if not location and appointment.location_id:
+            location = db.query(models.Location).filter(models.Location.id == appointment.location_id).first()
+            
+        loc_name = location.name if location else (settings.clinic_name if settings else "Centro")
+        loc_address = location.address if location else (settings.clinic_address if settings else "")
+        
+        location_card_html = f"""
+        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #f9e1e3; text-align: center;">
+            <p style="margin: 0; color: #d9777f; font-weight: bold; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">UBICACIÓN / SEDE</p>
+            <p style="margin: 6px 0 2px 0; font-size: 15px; color: #5c4d4f; font-weight: 700;">📍 {loc_name}</p>
+            {f'<p style="margin: 2px 0 0 0; color: #887a7c; font-size: 13px;">{loc_address}</p>' if loc_address else ''}
+        </div>
+        """
+        
         if type == 'new_web_booking':
             # Flujo A: Aviso al Administrador (Estilo Profesional)
             admin_email = settings.clinic_email
@@ -176,6 +192,7 @@ def send_appointment_notification(appointment_id: str, type: str):
                     <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #f3c7cb;">
                         <p style="margin: 0; color: #5c4d4f; font-size: 15px;"><b>Tratamiento:</b> {service.name}</p>
                         <p style="margin: 5px 0 0 0; color: #5c4d4f; font-size: 15px;"><b>Horario:</b> {date_str} a las {time_str}</p>
+                        <p style="margin: 5px 0 0 0; color: #5c4d4f; font-size: 15px;"><b>Sede:</b> {loc_name}{f" ({loc_address})" if loc_address else ""}</p>
                     </div>
                 </div>
                 <p style="margin-top: 30px; font-size: 14px; color: #887a7c; text-align: center;">Entra en la agenda para gestionar esta cita.</p>
@@ -198,6 +215,7 @@ def send_appointment_notification(appointment_id: str, type: str):
                     <div style="display: inline-block; background-color: #fdf2f3; color: #d9777f; padding: 8px 16px; border-radius: 10px; margin-top: 20px; font-weight: bold; font-size: 14px;">
                         {service.name}
                     </div>
+                    {location_card_html}
                 </div>
                 
                 <div style="margin-top: 35px; text-align: center;">
@@ -229,6 +247,7 @@ def send_appointment_notification(appointment_id: str, type: str):
                     <div style="display: inline-block; background-color: #fdf2f3; color: #d9777f; padding: 8px 16px; border-radius: 10px; margin-top: 20px; font-weight: bold; font-size: 14px;">
                         {service.name}
                     </div>
+                    {location_card_html}
                 </div>
                 
                 <div style="margin-top: 35px; text-align: center; border-top: 1px solid #f3e8e9; padding-top: 25px;">
@@ -253,6 +272,7 @@ def send_appointment_notification(appointment_id: str, type: str):
                     <div style="display: inline-block; background-color: #fdf2f3; color: #d9777f; padding: 8px 16px; border-radius: 10px; margin-top: 20px; font-weight: bold; font-size: 14px;">
                         {service.name}
                     </div>
+                    {location_card_html}
                 </div>
                 
                 <div style="margin-top: 35px; text-align: center; border-top: 1px solid #f3e8e9; padding-top: 25px;">

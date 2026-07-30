@@ -20,7 +20,8 @@ export default function Step3Details({
   selectedService,
   privacyAccepted,
   setPrivacyAccepted,
-  settings
+  settings,
+  selectedLocation
 }: {
   formData: any;
   setFormData: (d: any) => void;
@@ -30,6 +31,7 @@ export default function Step3Details({
   privacyAccepted: boolean;
   setPrivacyAccepted: (v: boolean) => void;
   settings?: any;
+  selectedLocation?: any;
 }) {
   const { language, t, translate } = useLanguage();
   const [showFianzaInfo, setShowFianzaInfo] = useState(false);
@@ -339,6 +341,17 @@ export default function Step3Details({
               {selectedDate.toLocaleDateString(language === 'es' ? 'es-ES' : language === 'en' ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'long' })}
             </p>
             <p className="text-xs md:text-sm font-bold text-muted-foreground mt-0.5">{t('wizard.at_time').replace('{time}', selectedTime)}</p>
+            {(() => {
+              const locName = selectedLocation?.name || settings?.clinic_name;
+              const locAddr = selectedLocation?.address || settings?.clinic_address;
+              if (!locName) return null;
+              return (
+                <div className="mt-2 text-[11px] md:text-xs text-muted-foreground flex items-center gap-1 font-medium">
+                  <MapPin size={12} className="text-primary shrink-0" />
+                  <span className="truncate max-w-[200px] md:max-w-[300px]">{locName}{locAddr ? ` (${locAddr})` : ''}</span>
+                </div>
+              );
+            })()}
           </div>
 
           <div className="text-right relative z-10 flex flex-col items-end">

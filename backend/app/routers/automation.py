@@ -170,6 +170,14 @@ def get_appointment_for_verification(
     date_str = appt.start_time.strftime("%d/%m/%Y")
     time_str = appt.start_time.strftime("%H:%M")
 
+    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == appt.tenant_id).first()
+    location = appt.location
+    if not location and appt.location_id:
+        location = db.query(models.Location).filter(models.Location.id == appt.location_id).first()
+
+    loc_name = location.name if location else (settings.clinic_name if settings else "Centro")
+    loc_address = location.address if location else (settings.clinic_address if settings else "")
+
     return {
         "id": appt.id,
         "service_name": appt.service.name,
@@ -177,7 +185,9 @@ def get_appointment_for_verification(
         "time": time_str,
         "status": appt.status,
         "start_iso": appt.start_time.isoformat(),
-        "end_iso": appt.end_time.isoformat()
+        "end_iso": appt.end_time.isoformat(),
+        "location_name": loc_name,
+        "location_address": loc_address
     }
 
 @router.post("/verify/{appointment_id}")

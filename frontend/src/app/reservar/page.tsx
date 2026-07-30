@@ -502,6 +502,7 @@ export default function BookingPage() {
                       privacyAccepted={privacyAccepted}
                       setPrivacyAccepted={setPrivacyAccepted}
                       settings={settings}
+                      selectedLocation={selectedLocation || (locations.length > 0 ? locations[0] : null)}
                     />
                   )}
 
@@ -511,6 +512,8 @@ export default function BookingPage() {
                       selectedTime={selectedTime}
                       selectedService={selectedService}
                       formData={formData}
+                      selectedLocation={selectedLocation || (locations.length > 0 ? locations[0] : null)}
+                      settings={settings}
                     />
                   )}
                 </>
