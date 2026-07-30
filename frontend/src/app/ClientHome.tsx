@@ -497,24 +497,38 @@ export default function ClientHome({ content, settings, services, categories }: 
           // ── ABOUT ─────────────────────────────────────────────────────────
           if (section.type === 'about') {
             return (
-              <section key="about" className="bg-[#F5F2EE] dark:bg-stone-950 relative flex items-start h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none pt-20 md:pt-24 overflow-hidden">
-                <div className="max-w-7xl mx-auto px-6 flex flex-col md:grid md:grid-cols-2 gap-10 md:gap-16 items-center w-full h-full pb-16">
-                  <div className="space-y-4 md:space-y-8 flex flex-col items-center text-center md:items-start md:text-left flex-shrink-0">
+              <section key="about" className="bg-[#F5F2EE] dark:bg-stone-950 relative flex items-center min-h-[100dvh] h-auto md:h-auto snap-start md:snap-none py-16 md:py-24">
+                <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center w-full">
+                  {/* Columna Izquierda (Texto e Imagen en móvil) */}
+                  <div className="space-y-6 md:space-y-8 flex flex-col items-center text-center md:items-start md:text-left">
                     <h2 className="text-3xl md:text-5xl font-serif font-extrabold text-stone-900 dark:text-stone-100 leading-tight">
                       {cleanTitle(translate(content.about_title, content.translations, 'about_title'))}
                     </h2>
+
+                    {/* Imagen visible solo en móviles */}
+                    <div className="block md:hidden rounded-[2.5rem] overflow-hidden shadow-2xl relative group w-full max-w-[320px] aspect-[4/5] mx-auto my-2 shrink-0">
+                      {content.about_image_url ? (
+                        <img src={content.about_image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${content.about_image_url}` : content.about_image_url} alt="Sobre Mí" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                      ) : (
+                        <div className="w-full h-full bg-stone-100 flex items-center justify-center text-stone-400">📷</div>
+                      )}
+                    </div>
+
                     <div className="text-base md:text-xl text-stone-600 dark:text-stone-300 leading-relaxed whitespace-pre-wrap font-medium max-w-md">
                       {translate(content.about_text, content.translations, 'about_text')}
                     </div>
+
                     {content.about_show_button && (
-                      <div className="pt-4">
+                      <div className="pt-2 md:pt-4">
                         <Link href={content.about_button_link || '#'} className="inline-block border-2 border-stone-200 dark:border-stone-850 text-stone-800 dark:text-stone-200 px-8 py-3.5 md:px-12 md:py-5 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-stone-900 dark:hover:bg-white dark:hover:text-stone-900 hover:text-white hover:border-stone-900 transition-all duration-500">
                           {translate(content.about_button_text, content.translations, 'about_button_text')}
                         </Link>
                       </div>
                     )}
                   </div>
-                  <div className="rounded-[2.5rem] md:rounded-[3rem] overflow-hidden shadow-2xl relative group w-full flex-1 min-h-0 md:h-[600px] max-w-[340px] md:max-w-none">
+
+                  {/* Columna Derecha (Imagen en Desktop) */}
+                  <div className="hidden md:block rounded-[3rem] overflow-hidden shadow-2xl relative group w-full md:h-[600px]">
                     {content.about_image_url ? (
                       <img src={content.about_image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${content.about_image_url}` : content.about_image_url} alt="Sobre Mí" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                     ) : (
