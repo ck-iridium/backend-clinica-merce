@@ -96,7 +96,9 @@ export async function generateMetadata({ params }: { params: { category_slug: st
   };
   const seoT = seoTranslations[lang] || seoTranslations.es;
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://clinicamerce.com';
+  const host = requestHeaders.get('host') || '';
+  const proto = requestHeaders.get('x-forwarded-proto') || 'https';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (host ? `${proto}://${host}` : 'https://probookia.com');
   const rawImageUrl = service.image_url || '';
   const imageUrl = rawImageUrl.startsWith('http') 
     ? rawImageUrl 

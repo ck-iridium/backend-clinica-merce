@@ -72,7 +72,8 @@ export async function generateMetadata(): Promise<Metadata> {
     title: resolvedTenantName,
     description: `Servicios personalizados y bienestar de primer nivel en ${resolvedTenantName}.`,
     keywords: [],
-    ogImage: ""
+    ogImage: "",
+    favicon: ""
   };
 
   const tenantId = requestHeaders.get("x-tenant-id");
@@ -90,6 +91,8 @@ export async function generateMetadata(): Promise<Metadata> {
           seoData.title = data.clinic_name;
           seoData.description = data.clinic_description || `Servicios personalizados y bienestar de primer nivel en ${data.clinic_name}.`;
         }
+        // Jerarquía de favicon del tenant: favicon_b64 -> logo_app_b64 -> logo_pdf_b64
+        seoData.favicon = data.favicon_b64 || data.logo_app_b64 || data.logo_pdf_b64 || "";
       }
     } catch (e) { }
 
@@ -110,15 +113,29 @@ export async function generateMetadata(): Promise<Metadata> {
     } catch (e) { }
   }
 
+  const finalFavicon = seoData.favicon || "/favicon_probookia.ico";
+  const finalOgImage = seoData.ogImage || seoData.favicon || "/favicon_probookia.ico";
+
   return {
     title: seoData.title,
     description: seoData.description,
     keywords: seoData.keywords,
     robots: allowIndexing ? "index, follow" : "noindex, nofollow",
+    icons: {
+      icon: finalFavicon,
+      shortcut: finalFavicon,
+      apple: finalFavicon,
+    },
     openGraph: {
       title: seoData.title,
       description: seoData.description,
-      images: seoData.ogImage ? [{ url: seoData.ogImage }] : [],
+      images: finalOgImage ? [{ url: finalOgImage }] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: seoData.title,
+      description: seoData.description,
+      images: finalOgImage ? [finalOgImage] : [],
     }
   };
 }
@@ -254,7 +271,7 @@ export default async function RootLayout({
   const borderRadiusStyle = settings?.border_radius || 'suave';
   const headingsFont = settings?.branding_font_headings || 'Playfair Display';
   const bodyFont = settings?.branding_font_body || 'Inter';
-  const favicon = settings?.favicon_b64 || '/favicon_tenant.ico';
+  const favicon = settings?.favicon_b64 || settings?.logo_app_b64 || settings?.logo_pdf_b64 || '/favicon_probookia.ico';
 
   let radiusBase = "1rem";
   let radiusCard = "1.5rem";
@@ -275,7 +292,7 @@ export default async function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning className={`${inter.variable} ${cormorantGaramond.variable} ${isDark && !isDashboardRoute ? 'dark' : ''}`}>
       <head>
-        <link rel="icon" href={favicon} type="image/x-icon" />
+        <link rel="icon" href={favicon} />
         <style dangerouslySetInnerHTML={{
           __html: `
           :root {
