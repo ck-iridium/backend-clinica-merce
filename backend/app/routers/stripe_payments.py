@@ -321,7 +321,8 @@ async def stripe_webhook(request: Request, db: Session = Depends(database.get_db
                                     title="Pago Recibido",
                                     description=f"Cita confirmada: {appointment.client.name}",
                                     type="success",
-                                    metadata={"appointment_id": appointment.id}
+                                    metadata={"appointment_id": appointment.id},
+                                    tenant_id=appointment.tenant_id
                                 )
                             except: pass
 

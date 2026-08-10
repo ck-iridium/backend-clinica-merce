@@ -59,12 +59,14 @@ BEGIN
   ELSE
     RETURN NEW;
   END IF;
-  -- 2. Insertamos la notificación
+  -- 2. Insertamos la notificación únicamente para los usuarios/perfiles pertenecientes AL MISMO TENANT
   INSERT INTO public.notifications (user_id, title, description, type, metadata, tenant_id)
   SELECT id, notif_title, notif_desc, notif_type,
     jsonb_build_object('appointment_id', NEW.id, 'date', NEW.start_time, 'type', 'appointment'),
     NEW.tenant_id
-  FROM public.profiles WHERE role IN ('Administrador', 'Recepción');
+  FROM public.profiles 
+  WHERE tenant_id = NEW.tenant_id 
+    AND (role IN ('Administrador', 'Recepción', 'admin', 'recepcion') OR role IS NULL);
   RETURN NEW;
 END;
 $function$;
@@ -72,10 +74,28 @@ $function$;
             try:
                 db.execute(text(trigger_sql))
                 db.commit()
-                logger.info("✅ Función de trigger notify_appointment_changes actualizada en PostgreSQL.")
+                logger.info("✅ Función de trigger notify_appointment_changes actualizada en PostgreSQL con aislamiento por tenant_id.")
             except Exception as e:
                 db.rollback()
                 logger.error(f"❌ Error actualizando la función trigger: {e}")
+
+            # Limpieza de notificaciones cruzadas preexistentes (donde tenant_id de notificación != tenant_id del usuario)
+            cleanup_sql = """
+            DELETE FROM public.notifications
+            WHERE id IN (
+                SELECT n.id
+                FROM public.notifications n
+                JOIN public.users u ON n.user_id = u.id
+                WHERE n.tenant_id IS NOT NULL AND u.tenant_id IS NOT NULL AND n.tenant_id != u.tenant_id
+            );
+            """
+            try:
+                db.execute(text(cleanup_sql))
+                db.commit()
+                logger.info("✅ Limpieza de notificaciones cruzadas entre tenants completada.")
+            except Exception as e:
+                db.rollback()
+                logger.error(f"⚠️ Error limpiando notificaciones cruzadas (omitido): {e}")
             
         # Lista de migraciones: ALTER TABLE es soportado por SQLite y PostgreSQL
         migrations = [

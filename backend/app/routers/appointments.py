@@ -270,7 +270,8 @@ def public_booking(request: Request, booking: schemas.PublicBookingRequest, back
                             title="⏰ Reserva Expirada",
                             description=f"Cita de {appointment.client.name} cancelada por falta de pago.",
                             type="warning",
-                            metadata={"appointment_id": appt_id}
+                            metadata={"appointment_id": appt_id},
+                            tenant_id=appointment.tenant_id
                         )
                         
                         print(f"Slot liberado: Cita {appt_id} cancelada tras 10 min sin pago.")
@@ -287,7 +288,8 @@ def public_booking(request: Request, booking: schemas.PublicBookingRequest, back
                 title="✨ Nueva Reserva Web", 
                 description=f"Cita de {client.name} para {appt.start_time.strftime('%H:%M')}",
                 type="info",
-                metadata={"appointment_id": appt.id}
+                metadata={"appointment_id": appt.id},
+                tenant_id=appt.tenant_id
             )
 
         except Exception as e:

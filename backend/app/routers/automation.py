@@ -217,7 +217,8 @@ def verify_appointment(
         title="🔔 Cita Web Verificada",
         description=f"La cita de {appt.client.name} ha sido verificada y confirmada.",
         type="success",
-        metadata={"appointment_id": appt.id}
+        metadata={"appointment_id": appt.id},
+        tenant_id=appt.tenant_id
     )
     
     # Notify Admin that it is a verified web booking
