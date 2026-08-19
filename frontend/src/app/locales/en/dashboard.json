@@ -201,7 +201,14 @@
     "tax_included": "VAT Included (21%)",
     "total_to_charge": "Total to Charge",
     "view_ticket": "View Ticket",
-    "legal_disclaimer": "Legal Disclaimer"
+    "legal_disclaimer": "Legal Disclaimer",
+    "edit_price": "Edit price",
+    "custom_price": "Custom price",
+    "edit_total": "Edit Total",
+    "reset_catalog": "Reset catalog",
+    "custom_total_active": "Custom Total",
+    "invalid_price": "Invalid price",
+    "prices_reset": "Prices reset to catalog"
   },
   "settings": {
     "title": "Settings",

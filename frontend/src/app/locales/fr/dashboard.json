@@ -201,7 +201,14 @@
     "tax_included": "TVA Incluse (21%)",
     "total_to_charge": "Total à Encaisser",
     "view_ticket": "Voir le Ticket",
-    "legal_disclaimer": "Mentions Légales et Fiscalité"
+    "legal_disclaimer": "Mentions Légales et Fiscalité",
+    "edit_price": "Modifier le prix",
+    "custom_price": "Prix personnalisé",
+    "edit_total": "Modifier le Total",
+    "reset_catalog": "Réinitialiser le catalogue",
+    "custom_total_active": "Total Personnalisé",
+    "invalid_price": "Prix non valide",
+    "prices_reset": "Prix réinitialisés au catalogue"
   },
   "settings": {
     "title": "Paramètres",

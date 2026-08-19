@@ -23,7 +23,9 @@ import {
   ShoppingCart, 
   Sparkles,
   ChevronDown,
-  ArrowUp
+  ArrowUp,
+  Edit2,
+  RotateCcw
 } from 'lucide-react';
 
 interface Service {
@@ -32,6 +34,10 @@ interface Service {
   price: number;
   category_id?: string;
   is_active: boolean;
+}
+
+interface CartItem extends Service {
+  original_price: number;
 }
 
 interface Client {
@@ -69,8 +75,15 @@ export default function POSPage() {
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false); // Mobile Drawer state
   const [bounceCart, setBounceCart] = useState(false); // Visual feedback animation
 
-  // Cart / Sale State
-  const [cart, setCart] = useState<Service[]>([]);
+  // Cart / Sale / Custom Pricing State
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [tempItemPrice, setTempItemPrice] = useState<string>('');
+
+  const [customTotal, setCustomTotal] = useState<number | null>(null);
+  const [isEditingTotal, setIsEditingTotal] = useState<boolean>(false);
+  const [customTotalInput, setCustomTotalInput] = useState<string>('');
+
   const [selectedClientId, setSelectedClientId] = useState<string>('');
   const [selectedClientName, setSelectedClientName] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<'Tarjeta' | 'Efectivo'>('Tarjeta');
@@ -159,7 +172,12 @@ export default function POSPage() {
 
   // Add item to cart
   const addToCart = (service: Service) => {
-    setCart((prev) => [...prev, service]);
+    const newItem: CartItem = {
+      ...service,
+      price: Number(service.price),
+      original_price: Number(service.price),
+    };
+    setCart((prev) => [...prev, newItem]);
     
     // Trigger bounce animation for mobile bottom bar
     setBounceCart(true);
@@ -172,17 +190,62 @@ export default function POSPage() {
 
   // Remove item from cart
   const removeFromCart = (index: number) => {
-    setCart((prev) => prev.filter((_, i) => i !== index));
-    if (cart.length <= 1) {
+    const nextCart = cart.filter((_, i) => i !== index);
+    setCart(nextCart);
+    if (nextCart.length <= 1) {
       setIsCartDrawerOpen(false);
+    }
+    if (nextCart.length === 0) {
+      setCustomTotal(null);
+      setCustomTotalInput('');
+      setIsEditingTotal(false);
     }
   };
 
+  // Update item price
+  const updateItemPrice = (index: number, newPriceStr: string) => {
+    const parsed = parseFloat(newPriceStr);
+    if (isNaN(parsed) || parsed < 0) {
+      toast.error(t('dashboard.pos.invalid_price') || "Precio no válido");
+      return;
+    }
+    setCart(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], price: Number(parsed.toFixed(2)) };
+      return updated;
+    });
+    setEditingIndex(null);
+    setCustomTotal(null); // Reset global custom total override when individual price is modified
+  };
+
+  // Apply custom total price directly
+  const handleApplyCustomTotal = () => {
+    const parsed = parseFloat(customTotalInput);
+    if (isNaN(parsed) || parsed < 0) {
+      toast.error(t('dashboard.pos.invalid_price') || "Precio total no válido");
+      return;
+    }
+    setCustomTotal(Number(parsed.toFixed(2)));
+    setIsEditingTotal(false);
+  };
+
+  // Reset all prices to standard catalog values
+  const handleResetPrices = () => {
+    setCart(prev => prev.map(item => ({ ...item, price: item.original_price })));
+    setCustomTotal(null);
+    setCustomTotalInput('');
+    setIsEditingTotal(false);
+    setEditingIndex(null);
+    toast.info(t('dashboard.pos.prices_reset') || "Precios restablecidos al catálogo");
+  };
+
   // Calculate totals
-  const subtotal = cart.reduce((sum, item) => sum + Number(item.price), 0);
+  const catalogSubtotal = cart.reduce((sum, item) => sum + Number(item.price), 0);
+  const totalAmount = customTotal !== null ? customTotal : catalogSubtotal;
+  const subtotal = totalAmount;
   const taxRate = 21; // 21% default IVA
   const taxAmount = (subtotal * taxRate) / 121;
-  const totalAmount = subtotal;
+  const isPriceModified = customTotal !== null || cart.some(item => Number(item.price) !== Number(item.original_price));
 
   const handleProcessSale = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -234,6 +297,10 @@ export default function POSPage() {
   const resetForm = () => {
     setLastInvoice(null);
     setCart([]);
+    setCustomTotal(null);
+    setCustomTotalInput('');
+    setIsEditingTotal(false);
+    setEditingIndex(null);
     setSelectedClientId('');
     setSelectedClientName('');
     setClientSearch('');
@@ -306,24 +373,83 @@ export default function POSPage() {
         {/* Cart items list */}
         <div className="space-y-3 max-h-56 overflow-y-auto pr-1">
           {cart.length > 0 ? (
-            cart.map((item, idx) => (
-              <div 
-                key={`${item.id}-${idx}`}
-                className="flex justify-between items-center p-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl transition-all group animate-in slide-in-from-right-3 duration-200"
-              >
-                <div className="flex flex-col min-w-0 pr-2">
-                  <span className="font-semibold text-xs text-white/90 truncate">{item.name}</span>
-                  <span className="text-[9px] text-[#d4af37] font-bold font-mono mt-0.5">{Number(item.price).toFixed(2)}€</span>
-                </div>
-                <button
-                  onClick={() => removeFromCart(idx)}
-                  className="p-1.5 text-white/40 hover:text-red-400 hover:bg-white/5 rounded-lg transition-colors group-hover:opacity-100 focus:opacity-100 lg:opacity-100 opacity-100"
-                  title={t('dashboard.pos.remove_service') || 'Quitar tratamiento'}
+            cart.map((item, idx) => {
+              const isModified = Number(item.price) !== Number(item.original_price);
+              return (
+                <div 
+                  key={`${item.id}-${idx}`}
+                  className="flex justify-between items-center p-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl transition-all group animate-in slide-in-from-right-3 duration-200 gap-2"
                 >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            ))
+                  <div className="flex flex-col min-w-0 flex-1 pr-1">
+                    <span className="font-semibold text-xs text-white/90 truncate">{item.name}</span>
+                    
+                    {editingIndex === idx ? (
+                      <div className="flex items-center gap-1.5 mt-1.5">
+                        <input 
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={tempItemPrice}
+                          onChange={(e) => setTempItemPrice(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') updateItemPrice(idx, tempItemPrice);
+                            if (e.key === 'Escape') setEditingIndex(null);
+                          }}
+                          autoFocus
+                          className="w-20 bg-stone-900 border border-[#d4af37]/60 rounded-lg px-2 py-1 text-xs text-[#d4af37] font-mono outline-none font-bold"
+                        />
+                        <button 
+                          type="button"
+                          onClick={() => updateItemPrice(idx, tempItemPrice)}
+                          className="p-1 bg-[#d4af37] text-stone-950 rounded-lg hover:bg-amber-400 transition-colors"
+                          title="Guardar precio"
+                        >
+                          <Check size={12} />
+                        </button>
+                        <button 
+                          type="button"
+                          onClick={() => setEditingIndex(null)}
+                          className="p-1 bg-white/10 text-white/60 hover:text-white rounded-lg transition-colors"
+                          title="Cancelar"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] text-[#d4af37] font-bold font-mono">
+                          {Number(item.price).toFixed(2)}€
+                        </span>
+                        {isModified && (
+                          <span className="text-[9px] text-white/40 font-mono line-through">
+                            {Number(item.original_price).toFixed(2)}€
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingIndex(idx);
+                            setTempItemPrice(String(item.price));
+                          }}
+                          className="p-1 text-white/40 hover:text-[#d4af37] hover:bg-white/10 rounded-md transition-colors"
+                          title={t('dashboard.pos.edit_price') || 'Editar precio'}
+                        >
+                          <Edit2 size={12} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => removeFromCart(idx)}
+                    className="p-1.5 text-white/40 hover:text-red-400 hover:bg-white/5 rounded-lg transition-colors shrink-0"
+                    title={t('dashboard.pos.remove_service') || 'Quitar tratamiento'}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              );
+            })
           ) : (
             <div className="py-12 border-2 border-dashed border-white/10 rounded-2xl text-center space-y-2">
               <p className="text-xs text-white/40 font-medium">{t('dashboard.pos.empty_ticket') || 'El ticket está vacío'}</p>
@@ -504,8 +630,22 @@ export default function POSPage() {
           </div>
         </div>
 
+        {/* Reset prices button if customized */}
+        {isPriceModified && (
+          <div className="flex justify-end pt-1">
+            <button
+              type="button"
+              onClick={handleResetPrices}
+              className="flex items-center gap-1.5 px-3 py-1 bg-white/10 hover:bg-white/15 border border-white/10 text-[#d4af37] text-[10px] font-bold rounded-full transition-all"
+            >
+              <RotateCcw size={11} />
+              <span>{t('dashboard.pos.reset_catalog') || 'Restablecer catálogo'}</span>
+            </button>
+          </div>
+        )}
+
         {/* Totals Section */}
-        <div className="pt-6 border-t border-white/10 space-y-3 font-serif">
+        <div className="pt-4 border-t border-white/10 space-y-3 font-serif">
           <div className="flex justify-between text-xs text-white/60 font-sans">
             <span>{t('dashboard.pos.subtotal') || 'Subtotal'}</span>
             <span className="font-mono">{subtotal.toFixed(2)}€</span>
@@ -514,11 +654,79 @@ export default function POSPage() {
             <span>{t('dashboard.pos.tax_included') || 'IVA Incluido (21%)'}</span>
             <span className="font-mono">{taxAmount.toFixed(2)}€</span>
           </div>
-          <div className="flex justify-between items-baseline pt-2">
-            <span className="text-base text-white/95 font-medium">{t('dashboard.pos.total_to_charge') || 'Total a Cobrar'}</span>
-            <span className="text-4xl font-semibold text-[#d4af37] font-mono leading-none tracking-tight">
-              {totalAmount.toFixed(2)}€
-            </span>
+          
+          <div className="pt-2 font-sans">
+            <div className="flex justify-between items-center mb-1">
+              <div className="flex items-center gap-2">
+                <span className="text-base text-white/95 font-medium font-serif">{t('dashboard.pos.total_to_charge') || 'Total a Cobrar'}</span>
+                {customTotal !== null && (
+                  <span className="px-2 py-0.5 bg-[#d4af37]/20 border border-[#d4af37]/40 text-[#d4af37] text-[9px] font-bold rounded-full uppercase tracking-wider">
+                    {t('dashboard.pos.custom_total_active') || 'Personalizado'}
+                  </span>
+                )}
+              </div>
+
+              {!isEditingTotal && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditingTotal(true);
+                    setCustomTotalInput(totalAmount.toFixed(2));
+                  }}
+                  className="flex items-center gap-1 text border border-white/10 bg-white/5 hover:bg-white/10 text-[#d4af37] text-xs font-semibold px-2.5 py-1 rounded-xl transition-all"
+                  title={t('dashboard.pos.edit_total') || 'Editar Total'}
+                >
+                  <Edit2 size={12} />
+                  <span>{t('dashboard.pos.edit_total') || 'Editar Total'}</span>
+                </button>
+              )}
+            </div>
+
+            {isEditingTotal ? (
+              <div className="flex items-center gap-2 mt-2 bg-stone-900 border border-[#d4af37] p-2 rounded-2xl animate-in fade-in duration-200">
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={customTotalInput}
+                  onChange={(e) => setCustomTotalInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleApplyCustomTotal();
+                    if (e.key === 'Escape') setIsEditingTotal(false);
+                  }}
+                  autoFocus
+                  placeholder="0.00"
+                  className="w-full bg-transparent text-2xl font-bold font-mono text-[#d4af37] outline-none px-2"
+                />
+                <button
+                  type="button"
+                  onClick={handleApplyCustomTotal}
+                  className="px-3.5 py-2 bg-[#d4af37] text-stone-950 font-bold text-xs rounded-xl hover:bg-amber-400 transition-colors uppercase tracking-wider shrink-0"
+                >
+                  <Check size={14} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsEditingTotal(false)}
+                  className="p-2 bg-white/10 text-white/60 hover:text-white rounded-xl transition-colors shrink-0"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <div className="flex justify-end items-baseline pt-1">
+                <span 
+                  onClick={() => {
+                    setIsEditingTotal(true);
+                    setCustomTotalInput(totalAmount.toFixed(2));
+                  }}
+                  className="text-4xl font-semibold text-[#d4af37] font-mono leading-none tracking-tight cursor-pointer hover:opacity-80 transition-opacity"
+                  title="Haz clic para editar el total"
+                >
+                  {totalAmount.toFixed(2)}€
+                </span>
+              </div>
+            )}
           </div>
         </div>
 

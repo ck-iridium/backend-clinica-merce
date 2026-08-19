@@ -165,12 +165,16 @@ def create_direct_sale(db: Session, sale: schemas.DirectSaleRequest):
     if sale.services:
         for item in sale.services:
             srv_id = item.get("service_id") if isinstance(item, dict) else getattr(item, "service_id", None)
+            price_val = item.get("price") if isinstance(item, dict) else getattr(item, "price", None)
             service = db.query(models.Service).filter(
                 models.Service.id == srv_id,
                 models.Service.tenant_id == tenant_id
             ).first()
             if service:
-                concept_names.append(service.name)
+                if price_val is not None and float(price_val) != float(service.price):
+                    concept_names.append(f"{service.name} ({float(price_val):.2f}€)")
+                else:
+                    concept_names.append(service.name)
             else:
                 concept_names.append("Servicio Especial")
     else:

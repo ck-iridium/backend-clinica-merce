@@ -201,7 +201,14 @@
     "tax_included": "IVA Incluido (21%)",
     "total_to_charge": "Total a Cobrar",
     "view_ticket": "Ver Ticket",
-    "legal_disclaimer": "Aviso Legal y Fiscalidad"
+    "legal_disclaimer": "Aviso Legal y Fiscalidad",
+    "edit_price": "Editar precio",
+    "custom_price": "Precio personalizado",
+    "edit_total": "Editar Total",
+    "reset_catalog": "Restablecer catálogo",
+    "custom_total_active": "Total Personalizado",
+    "invalid_price": "Precio no válido",
+    "prices_reset": "Precios restablecidos al catálogo"
   },
   "settings": {
     "title": "Ajustes",
