@@ -581,13 +581,22 @@ export default function POSPage() {
                 </span>
                 <ChevronDown size={14} className="text-white/40 shrink-0" />
               </div>
-              {/* Hidden Native Date Input overlay (pointer-events-auto for iPad/iOS WebKit touch support) */}
+              {/* Hidden Native Date Input overlay (Stretched picker indicator for 100% button surface clickability across PC/iPad/Tablets) */}
               <input 
                 id="pos-datepicker"
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer pointer-events-auto z-10"
+                onClick={(e) => {
+                  try {
+                    if (typeof e.currentTarget.showPicker === 'function') {
+                      e.currentTarget.showPicker();
+                    }
+                  } catch (err) {
+                    // Fallback silenciando posibles excepciones en navegadores antiguos
+                  }
+                }}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer pointer-events-auto z-10 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
               />
             </div>
           </div>

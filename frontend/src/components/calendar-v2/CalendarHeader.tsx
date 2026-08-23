@@ -61,9 +61,16 @@ export function CalendarHeader({
             <input 
               id="calendar-header-datepicker"
               type="date"
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer pointer-events-auto z-10"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer pointer-events-auto z-10 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
               style={{ display: 'block' }}
               value={`${mobileSelectedDate.getFullYear()}-${(mobileSelectedDate.getMonth()+1).toString().padStart(2, '0')}-${mobileSelectedDate.getDate().toString().padStart(2, '0')}`}
+              onClick={(e) => {
+                try {
+                  if (typeof e.currentTarget.showPicker === 'function') {
+                    e.currentTarget.showPicker();
+                  }
+                } catch (err) {}
+              }}
               onChange={(e) => {
                 if (e.target.value) {
                   const [y, m, d] = e.target.value.split('-');
