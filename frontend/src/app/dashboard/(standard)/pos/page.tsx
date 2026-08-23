@@ -568,24 +568,11 @@ export default function POSPage() {
         {/* Datepicker & Payment Method */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
           {/* Manual Custom Date */}
-          {/* Manual Custom Date */}
           <div className="space-y-2">
             <label className="block text-xs font-bold uppercase tracking-wider text-white/60">
               {t('dashboard.pos.registration_date') || 'Fecha del Registro'}
             </label>
-            <div 
-              onClick={(e) => {
-                const input = e.currentTarget.querySelector('input[type="date"]') as HTMLInputElement;
-                if (input && typeof input.showPicker === 'function') {
-                  try {
-                    input.showPicker();
-                  } catch (err) {
-                    console.error("Failed to open native date picker", err);
-                  }
-                }
-              }}
-              className="relative pointer-events-auto cursor-pointer"
-            >
+            <div className="relative pointer-events-auto cursor-pointer">
               {/* Visual Button displaying Spanish Selected Date */}
               <div className="bg-white/5 border border-white/10 text-white rounded-2xl px-4 py-3.5 text-xs font-semibold flex items-center justify-between gap-3 hover:bg-white/10 hover:border-white/20 transition-all">
                 <Calendar size={16} className="text-[#d4af37] shrink-0" />
@@ -594,13 +581,13 @@ export default function POSPage() {
                 </span>
                 <ChevronDown size={14} className="text-white/40 shrink-0" />
               </div>
-              {/* Hidden Native Date Input overlay */}
+              {/* Hidden Native Date Input overlay (pointer-events-auto for iPad/iOS WebKit touch support) */}
               <input 
                 id="pos-datepicker"
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="absolute inset-0 w-full h-full opacity-0 pointer-events-none z-10"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer pointer-events-auto z-10"
               />
             </div>
           </div>
