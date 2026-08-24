@@ -21,13 +21,18 @@ def generate_invoice_id(db: Session, target_date=None) -> str:
     settings = get_clinic_settings(db)
     prefix = settings.invoice_prefix.replace("{YYYY}", str(target_date.year)).replace("{YY}", str(target_date.year)[-2:]).replace("{MM}", f"{target_date.month:02d}")
     
-    # Extract padding length (e.g. if we want to support generic 4 zeros)
-    next_numStr = f"{settings.invoice_next_number:04d}"
+    current_num = settings.invoice_next_number
+    if not current_num or current_num < 1:
+        current_num = 1
+
+    new_id = f"{prefix}{current_num:04d}"
     
-    # Fallback si el usuario no pone ceros en NextNumber es un bug, asumimos siempre 4 digitos
-    new_id = f"{prefix}{next_numStr}"
-    
-    settings.invoice_next_number += 1
+    # Bucle de prevención de colisiones para evitar UniqueViolation si la ID ya existe en la base de datos
+    while db.query(models.Invoice).filter(models.Invoice.id == new_id).first() is not None:
+        current_num += 1
+        new_id = f"{prefix}{current_num:04d}"
+        
+    settings.invoice_next_number = current_num + 1
     db.add(settings)
     # no db.commit() yet, commit happens inside the outer function to ensure atomicity
     return new_id
