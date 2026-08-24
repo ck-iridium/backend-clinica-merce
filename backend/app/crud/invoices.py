@@ -133,6 +133,15 @@ def delete_invoice(db: Session, invoice_id: str):
     if db_invoice:
         db.delete(db_invoice)
         db.commit()
+
+        # Auto-reseteo del contador en Ajustes a 1 si la clínica elimina todas sus facturas
+        remaining_count = db.query(models.Invoice).filter(models.Invoice.tenant_id == tenant_id).count()
+        if remaining_count == 0:
+            settings = get_clinic_settings(db)
+            settings.invoice_next_number = 1
+            db.add(settings)
+            db.commit()
+
     return db_invoice
 
 def create_direct_sale(db: Session, sale: schemas.DirectSaleRequest):

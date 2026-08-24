@@ -50,6 +50,7 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
     
     // Translated headers for CSV
     const headers = [
+      t('dashboard.invoices.invoice_number') || 'Nº Factura',
       t('dashboard.invoices.date') || 'Fecha',
       t('dashboard.invoices.client') || 'Cliente',
       t('dashboard.invoices.concept') || 'Concepto',
@@ -78,6 +79,7 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
         const simplified = inv.is_simplified ? 'Si' : 'No';
         
         return [
+          `"${inv.id}"`,
           date, 
           client, 
           concept, 
@@ -176,6 +178,7 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
       
       return [
         shortDate,
+        inv.id,
         getClientName(inv.client_id),
         inv.concept,
         `${base.toFixed(2)} €`,
@@ -188,6 +191,7 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
       startY: 80,
       head: [[
         t('dashboard.invoices.date') || 'Fecha',
+        t('dashboard.invoices.invoice_number') || 'Nº Factura',
         t('dashboard.invoices.client') || 'Cliente',
         t('dashboard.invoices.concept') || 'Concepto',
         t('dashboard.invoices.taxable_base') || 'Base',
@@ -209,10 +213,11 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
         cellPadding: 3
       },
       columnStyles: {
-        0: { cellWidth: 18 }, // short date
-        3: { halign: 'right', cellWidth: 22 }, // Base
-        4: { halign: 'right', cellWidth: 18 }, // IVA
-        5: { halign: 'right', cellWidth: 22 }  // Total
+        0: { cellWidth: 16 }, // short date
+        1: { cellWidth: 26 }, // invoice ID
+        4: { halign: 'right', cellWidth: 20 }, // Base
+        5: { halign: 'right', cellWidth: 16 }, // IVA
+        6: { halign: 'right', cellWidth: 20 }  // Total
       },
       margin: { left: 20, right: 20 },
       styles: {
@@ -300,6 +305,7 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
             <thead>
               <tr className="bg-white border-b border-border/50 text-[10px] uppercase tracking-widest text-stone-400">
                 <th className="px-6 py-5 font-bold">{t('dashboard.invoices.date') || 'Fecha'}</th>
+                <th className="px-6 py-5 font-bold">{t('dashboard.invoices.invoice_number') || 'Nº Factura'}</th>
                 <th className="px-6 py-5 font-bold">{t('dashboard.invoices.client') || 'Cliente'}</th>
                 <th className="px-6 py-5 font-bold">{t('dashboard.invoices.concept') || 'Concepto'}</th>
                 <th className="px-6 py-5 font-bold text-center">{t('dashboard.invoices.state') || 'Estado'}</th>
@@ -318,6 +324,11 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
                  >
                   <td className="px-6 py-4 font-bold text-stone-500 whitespace-nowrap">
                     {new Date(inv.date).toLocaleDateString(dateLocale)}
+                  </td>
+                  <td className="px-6 py-4 font-mono font-bold whitespace-nowrap">
+                    <span className="bg-stone-100 text-stone-900 border border-stone-200/60 px-2.5 py-1 rounded-xl text-xs shadow-sm">
+                      #{inv.id}
+                    </span>
                   </td>
                   <td className="px-6 py-4 font-bold text-stone-800">
                     {getClientName(inv.client_id)}
