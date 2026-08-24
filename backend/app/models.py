@@ -54,7 +54,7 @@ class Client(Base):
     name = Column(String, index=True)
     first_name = Column(String, nullable=True, index=True)
     last_name = Column(String, nullable=True, index=True)
-    email = Column(String, unique=True, index=True)
+    email = Column(String, index=True, nullable=True)
     phone = Column(String)
     dni = Column(String, nullable=True)
     address = Column(String, nullable=True)
@@ -85,6 +85,10 @@ class Client(Base):
     preferred_language = Column(String, default="es")
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        UniqueConstraint('tenant_id', 'email', name='uq_clients_tenant_email'),
+    )
     
     # Relationships
     user = relationship("User", foreign_keys=[user_id])

@@ -227,7 +227,10 @@ $function$;
             "ALTER TABLE locations ADD COLUMN latitude DOUBLE PRECISION NULL",
             "ALTER TABLE locations ADD COLUMN longitude DOUBLE PRECISION NULL",
             "ALTER TABLE invoices ADD COLUMN number VARCHAR",
-            "UPDATE invoices SET number = id WHERE number IS NULL"
+            "UPDATE invoices SET number = id WHERE number IS NULL",
+            "ALTER TABLE clients DROP CONSTRAINT IF EXISTS clients_email_key",
+            "ALTER TABLE clients DROP CONSTRAINT IF EXISTS uq_clients_email",
+            "ALTER TABLE clients ADD CONSTRAINT uq_clients_tenant_email UNIQUE (tenant_id, email)"
         ]
         
         for m in migrations:

@@ -1,3 +1,4 @@
+import uuid
 from sqlalchemy.orm import Session
 from .. import models, schemas
 from .settings import get_clinic_settings
@@ -39,9 +40,11 @@ def create_voucher(db: Session, voucher: schemas.VoucherCreate):
     concept_str = f"Bono {voucher.total_sessions}x {service.name}" if service else "Bono Tratamiento Especial"
 
     settings = get_clinic_settings(db)
+    fiscal_number = generate_invoice_id(db, voucher.purchase_date)
 
     db_invoice = models.Invoice(
-        id=generate_invoice_id(db, voucher.purchase_date),
+        id=str(uuid.uuid4()),
+        number=fiscal_number,
         tenant_id=tenant_id,
         client_id=voucher.client_id,
         amount=voucher.total_price,
