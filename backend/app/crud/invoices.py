@@ -18,6 +18,7 @@ def generate_invoice_id(db: Session, target_date=None) -> str:
         except ValueError:
             target_date = datetime.now()
             
+    tenant_id = current_tenant_var.get()
     settings = get_clinic_settings(db)
     prefix = settings.invoice_prefix.replace("{YYYY}", str(target_date.year)).replace("{YY}", str(target_date.year)[-2:]).replace("{MM}", f"{target_date.month:02d}")
     
@@ -25,22 +26,26 @@ def generate_invoice_id(db: Session, target_date=None) -> str:
     if not current_num or current_num < 1:
         current_num = 1
 
-    new_id = f"{prefix}{current_num:04d}"
+    new_num = f"{prefix}{current_num:04d}"
     
-    # Bucle de prevención de colisiones para evitar UniqueViolation si la ID ya existe en la base de datos
-    while db.query(models.Invoice).filter(models.Invoice.id == new_id).first() is not None:
+    # Comprobar unicidad del folio ESTRICTAMENTE dentro del tenant actual
+    while db.query(models.Invoice).filter(
+        models.Invoice.tenant_id == tenant_id,
+        or_(models.Invoice.number == new_num, models.Invoice.id == new_num)
+    ).first() is not None:
         current_num += 1
-        new_id = f"{prefix}{current_num:04d}"
+        new_num = f"{prefix}{current_num:04d}"
         
     settings.invoice_next_number = current_num + 1
     db.add(settings)
     # no db.commit() yet, commit happens inside the outer function to ensure atomicity
-    return new_id
+    return new_num
 
 def get_invoice(db: Session, invoice_id: str):
+    tenant_id = current_tenant_var.get()
     return db.query(models.Invoice).filter(
-        models.Invoice.id == invoice_id,
-        models.Invoice.tenant_id == current_tenant_var.get()
+        or_(models.Invoice.id == invoice_id, models.Invoice.number == invoice_id),
+        models.Invoice.tenant_id == tenant_id
     ).first()
 
 def get_invoices(db: Session, page: int = 1, limit: int = 10, status: str = "all", start_date: str = None, end_date: str = None, search: str = None):
@@ -66,6 +71,8 @@ def get_invoices(db: Session, page: int = 1, limit: int = 10, status: str = "all
         query = query.filter(
             or_(
                 models.Invoice.concept.ilike(search_term),
+                models.Invoice.number.ilike(search_term),
+                models.Invoice.id.ilike(search_term),
                 models.Client.name.ilike(search_term)
             )
         )
@@ -97,7 +104,9 @@ def get_invoices(db: Session, page: int = 1, limit: int = 10, status: str = "all
 def create_invoice(db: Session, invoice: schemas.InvoiceCreate):
     tenant_id = current_tenant_var.get()
     invoice_dict = invoice.model_dump()
-    invoice_dict["id"] = generate_invoice_id(db, invoice.date)
+    fiscal_number = generate_invoice_id(db, invoice.date)
+    invoice_dict["id"] = str(uuid.uuid4())
+    invoice_dict["number"] = fiscal_number
     invoice_dict["tenant_id"] = tenant_id
     
     if "tax_rate" not in invoice_dict or invoice_dict["tax_rate"] is None or invoice_dict["tax_rate"] == 21.0:
@@ -113,7 +122,7 @@ def create_invoice(db: Session, invoice: schemas.InvoiceCreate):
 def update_invoice(db: Session, invoice_id: str, invoice: schemas.InvoiceUpdate):
     tenant_id = current_tenant_var.get()
     db_invoice = db.query(models.Invoice).filter(
-        models.Invoice.id == invoice_id,
+        or_(models.Invoice.id == invoice_id, models.Invoice.number == invoice_id),
         models.Invoice.tenant_id == tenant_id
     ).first()
     if db_invoice:
@@ -127,7 +136,7 @@ def update_invoice(db: Session, invoice_id: str, invoice: schemas.InvoiceUpdate)
 def delete_invoice(db: Session, invoice_id: str):
     tenant_id = current_tenant_var.get()
     db_invoice = db.query(models.Invoice).filter(
-        models.Invoice.id == invoice_id,
+        or_(models.Invoice.id == invoice_id, models.Invoice.number == invoice_id),
         models.Invoice.tenant_id == tenant_id
     ).first()
     if db_invoice:
@@ -217,10 +226,11 @@ def create_direct_sale(db: Session, sale: schemas.DirectSaleRequest):
             print(f"Error parsing sale date: {e}")
             sale_date = date.today()
 
-    invoice_id = generate_invoice_id(db, sale_date)
+    fiscal_number = generate_invoice_id(db, sale_date)
     
     db_invoice = models.Invoice(
-        id=invoice_id,
+        id=str(uuid.uuid4()),
+        number=fiscal_number,
         client_id=effective_client_id,
         amount=sale.final_price,
         concept=f"Venta Directa: {concept_str} ({sale.payment_method})",

@@ -60,6 +60,7 @@
   "no_results": "Aucun Résultat",
   "no_results_desc": "Aucune facture trouvée avec les filtres actuels.",
   "date": "Date",
+  "invoice_number": "N° Facture",
   "client": "Client",
   "concept": "Concept",
   "amount": "Montant",

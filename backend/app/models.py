@@ -361,6 +361,7 @@ class ClinicSettings(Base):
 class Invoice(Base):
     __tablename__ = "invoices"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    number = Column(String, nullable=True, index=True) # Fiscal/Folio number (e.g. FA-26-0001) scoped per tenant
     tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
     client_id = Column(String(36), ForeignKey("clients.id"), nullable=False)
     amount = Column(Numeric(10, 2), nullable=False)

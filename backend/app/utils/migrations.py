@@ -225,7 +225,9 @@ $function$;
             "ALTER TABLE appointments ADD COLUMN payment_status VARCHAR DEFAULT 'pending'",
             f"ALTER TABLE clinic_settings ADD COLUMN blocked_days_cache {json_type} DEFAULT '{{}}'::jsonb",
             "ALTER TABLE locations ADD COLUMN latitude DOUBLE PRECISION NULL",
-            "ALTER TABLE locations ADD COLUMN longitude DOUBLE PRECISION NULL"
+            "ALTER TABLE locations ADD COLUMN longitude DOUBLE PRECISION NULL",
+            "ALTER TABLE invoices ADD COLUMN number VARCHAR",
+            "UPDATE invoices SET number = id WHERE number IS NULL"
         ]
         
         for m in migrations:

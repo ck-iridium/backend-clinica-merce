@@ -6,6 +6,7 @@ export interface InvoiceKPIs {
 
 export interface Invoice {
   id: string;
+  number?: string;
   client_id: string;
   amount: number;
   concept: string;

@@ -150,7 +150,7 @@ export default function InvoicePreviewPage() {
            <h1 className="text-2xl font-extrabold text-stone-800">
              {t('dashboard.invoices.sheet_viewer') || 'Visor de Folio'}
            </h1>
-           <p className="text-stone-500 text-sm font-medium">#{invoice.id} {invoice.is_simplified && (t('dashboard.invoices.simplified_ticket_tag') || '(Ticket Simplificado)')}</p>
+           <p className="text-stone-500 text-sm font-medium">#{invoice.number || invoice.id} {invoice.is_simplified && (t('dashboard.invoices.simplified_ticket_tag') || '(Ticket Simplificado)')}</p>
         </div>
       </div>
 
@@ -284,7 +284,7 @@ export default function InvoicePreviewPage() {
                       {invoice.is_simplified ? (t('dashboard.invoices.simplified_invoice') || 'FACTURA SIMPLIFICADA') : (t('dashboard.invoices.invoice') || 'FACTURA')}
                     </h1>
                     <div className="text-xs text-stone-500 font-medium grid grid-cols-2 gap-x-4 gap-y-1 text-right w-full max-w-[200px]">
-                      <span className="text-stone-400">{t('dashboard.invoices.doc_number') || 'Nº Documento:'}</span> <span className="text-stone-800 font-bold uppercase">{invoice.id}</span>
+                      <span className="text-stone-400">{t('dashboard.invoices.doc_number') || 'Nº Documento:'}</span> <span className="text-stone-800 font-bold uppercase">{invoice.number || invoice.id}</span>
                       <span className="text-stone-400">{t('dashboard.invoices.issue_date') || 'Fecha Emisión:'}</span> <span className="text-stone-800 font-bold">{new Date(invoice.date).toLocaleDateString(dateLocale)}</span>
                       <span className="text-stone-400">{t('dashboard.invoices.state') || 'Estado:'}</span> 
                       <span className={`font-bold ${invoice.status === 'paid' ? 'text-emerald-500' : 'text-orange-500'}`}>

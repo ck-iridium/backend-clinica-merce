@@ -785,7 +785,7 @@ export default function POSPage() {
             <h2 className="text-3xl font-serif text-stone-900 mb-3">{t('dashboard.pos.sale_completed') || '¡Cobro Realizado!'}</h2>
             <p className="text-stone-500 mb-8 font-medium">
               {t('dashboard.pos.invoice_generated') || 'El registro fiscal '}
-              <span className="text-stone-900 font-bold font-mono bg-stone-100 px-2 py-1 rounded">#{lastInvoice.id}</span>
+              <span className="text-stone-900 font-bold font-mono bg-stone-100 px-2 py-1 rounded">#{lastInvoice.number || lastInvoice.id}</span>
               {t('dashboard.pos.generated_as_paid') || ' se ha procesado correctamente como PAGADO.'}
             </p>
             

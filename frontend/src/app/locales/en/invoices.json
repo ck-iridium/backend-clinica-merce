@@ -60,6 +60,7 @@
   "no_results": "No Results",
   "no_results_desc": "No invoices were found matching the selected filters.",
   "date": "Date",
+  "invoice_number": "Invoice No.",
   "client": "Client",
   "concept": "Concept",
   "amount": "Amount",

@@ -79,7 +79,7 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
         const simplified = inv.is_simplified ? 'Si' : 'No';
         
         return [
-          `"${inv.id}"`,
+          `"${inv.number || inv.id}"`,
           date, 
           client, 
           concept, 
@@ -178,7 +178,7 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
       
       return [
         shortDate,
-        inv.id,
+        inv.number || inv.id,
         getClientName(inv.client_id),
         inv.concept,
         `${base.toFixed(2)} €`,
@@ -327,7 +327,7 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
                   </td>
                   <td className="px-6 py-4 font-mono font-bold whitespace-nowrap">
                     <span className="bg-stone-100 text-stone-900 border border-stone-200/60 px-2.5 py-1 rounded-xl text-xs shadow-sm">
-                      #{inv.id}
+                      #{inv.number || inv.id}
                     </span>
                   </td>
                   <td className="px-6 py-4 font-bold text-stone-800">

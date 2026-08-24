@@ -537,6 +537,7 @@ class InvoiceBase(BaseModel):
     status: str = "pending"
     tax_rate: float = 21.0
     is_simplified: bool = False
+    number: Optional[str] = None
 
 class InvoiceCreate(InvoiceBase):
     pass
@@ -547,9 +548,11 @@ class InvoiceUpdate(BaseModel):
     concept: Optional[str] = None
     date: Optional[date] = None
     status: Optional[str] = None
+    number: Optional[str] = None
 
 class InvoiceResponse(InvoiceBase):
     id: str
+    number: Optional[str] = None
     
     class Config:
         from_attributes = True
