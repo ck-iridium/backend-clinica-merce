@@ -57,8 +57,12 @@ export default function SaaSCMSSectorForm({
         
         {/* Visual Media Pickers */}
         <div className="space-y-4 p-4 bg-stone-50 rounded-2xl border border-stone-200/65">
+          <div className="text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-1 flex items-center justify-between">
+            <span>Contenido Multimedia (Efecto Panorámico)</span>
+            <span className="text-[9px] text-[#d4af37] font-semibold">Hover Interactivo</span>
+          </div>
           <ImageUploadBlock 
-            label="Imagen Cobertura (Opcional)"
+            label="Foto de Portada Fija (Se muestra en reposo)"
             value={sectorFormData.image_url} 
             onSelect={() => onSetPickerTarget({ field: 'image_url' })} 
             onClear={() => onClearMedia('image_url')} 
@@ -69,7 +73,7 @@ export default function SaaSCMSSectorForm({
           />
 
           <ImageUploadBlock 
-            label="Vídeo del Sector (Loop 9:16)"
+            label="Vídeo Demostrativo en Loop (Se activa al hacer hover)"
             value={sectorFormData.video_url} 
             onSelect={() => onSetPickerTarget({ field: 'video_url' })} 
             onClear={() => onClearMedia('video_url')} 

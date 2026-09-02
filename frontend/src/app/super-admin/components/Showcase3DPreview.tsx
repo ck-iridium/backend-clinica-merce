@@ -85,7 +85,95 @@ export default function Showcase3DPreview({
   const activeWeight = weightMap[fontWeightHeadings || 'semibold'] || '600';
 
   const N_prev = previewSectors.length;
-  const realIndexPrev = N_prev > 0 ? ((previewIndex % N_prev) + N_prev) % N_prev : 0;
+  const rawItems = previewSectors.length > 0 ? previewSectors : [];
+  const displayItems: MappedPreviewSector[] = [];
+  if (rawItems.length > 0) {
+    while (displayItems.length < 15) {
+      displayItems.push(...rawItems);
+    }
+  }
+  const totalCards = displayItems.length;
+
+  const CARD_W = 125;
+  const CARD_GAP = 14;
+  const SLOT_W = CARD_W + CARD_GAP;
+  const TOTAL_TRACK = totalCards * SLOT_W;
+
+  const [previewScrollX, setPreviewScrollX] = useState(0);
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartX = useRef(0);
+  const dragStartScroll = useRef(0);
+  const hasDragged = useRef(false);
+  const autoResumeTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const clearTimers = () => {
+    if (autoResumeTimerRef.current) {
+      clearTimeout(autoResumeTimerRef.current);
+      autoResumeTimerRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    return () => clearTimers();
+  }, []);
+
+  // Auto-avance continuo en la preview (solo avanza si no está arrastrando ni pausado por selección)
+  useEffect(() => {
+    let lastTime = performance.now();
+    let animId: number;
+
+    const loop = (time: number) => {
+      const delta = time - lastTime;
+      lastTime = time;
+
+      if (selectedIdx === null && !isDragging) {
+        setPreviewScrollX(prev => {
+          const next = prev - (0.045 * delta);
+          if (next <= -TOTAL_TRACK) return next + TOTAL_TRACK;
+          return next;
+        });
+      }
+      animId = requestAnimationFrame(loop);
+    };
+
+    animId = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(animId);
+  }, [selectedIdx, isDragging, TOTAL_TRACK]);
+
+  const centerPreviewCard = (index: number) => {
+    clearTimers();
+    setSelectedIdx(index);
+    setPreviewScrollX(-index * SLOT_W);
+
+    autoResumeTimerRef.current = setTimeout(() => {
+      setSelectedIdx(null);
+    }, 7000);
+  };
+
+  const onMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    hasDragged.current = false;
+    dragStartX.current = e.clientX;
+    dragStartScroll.current = previewScrollX;
+  };
+
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    const deltaX = e.clientX - dragStartX.current;
+    if (Math.abs(deltaX) > 5) {
+      hasDragged.current = true;
+      if (selectedIdx !== null) {
+        clearTimers();
+        setSelectedIdx(null);
+      }
+    }
+    setPreviewScrollX(dragStartScroll.current + deltaX);
+  };
+
+  const onMouseUp = () => {
+    setIsDragging(false);
+  };
 
   // Manejo de la galería rotativa del hero
   const heroImages = [heroImage1, heroImage2, heroImage3].filter(Boolean) as string[];
@@ -94,22 +182,10 @@ export default function Showcase3DPreview({
   useEffect(() => {
     if (heroImages.length <= 1) return;
     const interval = setInterval(() => {
-      setCurrentHeroImageIndex((prev) => (prev + 1) % heroImages.length);
+      setCurrentHeroImageIndex(prev => (prev + 1) % heroImages.length);
     }, 4000);
     return () => clearInterval(interval);
   }, [heroImages.length]);
-
-  const handlePreviewCardClick = (targetIndex: number) => {
-    if (N_prev === 0) return;
-    const currentReal = ((previewIndex % N_prev) + N_prev) % N_prev;
-    let diff = targetIndex - currentReal;
-    if (diff > N_prev / 2) {
-      diff -= N_prev;
-    } else if (diff < -N_prev / 2) {
-      diff += N_prev;
-    }
-    handlePreviewNavigate(previewIndex + diff);
-  };
 
   return (
     <div
@@ -243,88 +319,125 @@ export default function Showcase3DPreview({
           </div>
         </div>
 
-        {/* CONTENEDOR VERTICAL QUE ALINEA EL CAROUSEL Y LA INFO AL CENTRO (my-auto, justify-center) */}
-        <div className="relative flex-1 flex flex-col items-center justify-center gap-4 max-w-4xl w-full mx-auto my-auto">
+        {/* CONTENEDOR DE CINTA PANORÁMICA CÓNCAVA (Estilo Bambu Lab 3D Track) */}
+        <div className="relative flex-1 flex flex-col items-center justify-center gap-2 max-w-4xl w-full mx-auto my-auto">
+          
+          {/* Píldoras de selector rápido en la preview */}
+          <div className="flex flex-wrap items-center justify-center gap-1.5 mb-2 select-none">
+            {rawItems.map((sec, idx) => {
+              return (
+                <button
+                  key={`pill-${sec.id}-${idx}`}
+                  onClick={() => centerPreviewCard(idx)}
+                  className="px-2.5 py-1 rounded-full text-[9px] font-bold transition-all duration-300 border preview-sans bg-white/90 hover:bg-white text-stone-600 border-stone-200/70"
+                >
+                  {sec.badge || sec.title}
+                </button>
+              );
+            })}
+          </div>
 
-          {/* 3D COVERFLOW INFINITE STAGE - Ajustado para tarjetas 9:16 */}
-          <div className="relative w-full h-[390px] flex items-center justify-center [perspective:1000px] [transform-style:preserve-3d] select-none shrink-0">
+          {/* ESCENARIO CÓNCAVO PANORÁMICO (3D Ribbon Preview) */}
+          <div 
+            className="relative w-full h-[250px] flex items-center justify-center select-none shrink-0 overflow-hidden cursor-grab active:cursor-grabbing"
+            style={{ perspective: '1200px' }}
+            onMouseDown={onMouseDown}
+            onMouseMove={onMouseMove}
+            onMouseUp={onMouseUp}
+            onMouseLeave={onMouseUp}
+          >
+            {/* Sombras difuminadas laterales en el mockup */}
+            <div className="absolute left-0 inset-y-0 w-12 bg-gradient-to-r from-white via-white/80 to-transparent z-30 pointer-events-none" />
+            <div className="absolute right-0 inset-y-0 w-12 bg-gradient-to-l from-white via-white/80 to-transparent z-30 pointer-events-none" />
 
-            {/* Card Container wrapper - Formato 9:16 (w-200px, h-355px es 9:16) */}
-            <div className="relative w-[200px] h-[355px] [transform-style:preserve-3d]">
-              {previewSectors.map((sector, index) => {
-                // Circular offset for infinite loop
-                const realActive = ((previewIndex % N_prev) + N_prev) % N_prev;
-                let offset = index - realActive;
-                if (offset > N_prev / 2) {
-                  offset -= N_prev;
-                } else if (offset < -N_prev / 2) {
-                  offset += N_prev;
-                }
+            {/* Contenedor central 3D */}
+            <div className="relative w-0 h-[220px] flex items-center justify-center [transform-style:preserve-3d]">
+              {displayItems.map((sector, index) => {
+                const basePos = (index * SLOT_W) + previewScrollX;
+                const halfTrack = TOTAL_TRACK / 2;
+                let relativeX = ((basePos + halfTrack) % TOTAL_TRACK);
+                if (relativeX < 0) relativeX += TOTAL_TRACK;
+                relativeX -= halfTrack;
 
-                // Transform configurations based on offset (Central card scaled to 1.15)
-                let transformStr = "";
-                let zIndex = 0;
-                let opacity = 1;
-                let pointerEvents: "auto" | "none" = "auto";
+                if (Math.abs(relativeX) > 420) return null;
 
-                if (offset === 0) {
-                  transformStr = "translateX(0) scale(1.15) rotateY(0deg)";
-                  zIndex = 30;
-                  opacity = 1;
-                } else if (offset === 1) {
-                  transformStr = "translateX(60%) scale(0.85) rotateY(-15deg)";
-                  zIndex = 20;
-                  opacity = 0.8;
-                } else if (offset === -1) {
-                  transformStr = "translateX(-60%) scale(0.85) rotateY(15deg)";
-                  zIndex = 20;
-                  opacity = 0.8;
-                } else if (offset === 2) {
-                  transformStr = "translateX(110%) scale(0.7) rotateY(-25deg)";
-                  zIndex = 10;
-                  opacity = 0.4;
-                } else if (offset === -2) {
-                  transformStr = "translateX(-110%) scale(0.7) rotateY(25deg)";
-                  zIndex = 10;
-                  opacity = 0.4;
-                } else {
-                  transformStr = `translateX(${offset * 100}%) scale(0.5) rotateY(0deg)`;
-                  zIndex = 0;
-                  opacity = 0;
-                  pointerEvents = "none";
-                }
-
-                const isActive = offset === 0;
+                const normalizedDist = relativeX / 300;
+                const rotateY = -Math.max(-28, Math.min(28, normalizedDist * 25));
+                const translateZ = -Math.pow(Math.min(Math.abs(normalizedDist), 1.5), 1.3) * 70;
+                
+                const isSelected = selectedIdx === index;
+                const baseScale = Math.max(0.85, 1.02 - Math.abs(normalizedDist) * 0.1);
+                const scale = isSelected ? 1.18 : (selectedIdx !== null ? baseScale * 0.94 : baseScale);
+                const extraZ = isSelected ? 40 : 0;
 
                 return (
                   <div
-                    key={sector.id}
-                    onClick={() => handlePreviewCardClick(index)}
-                    style={{
-                      transform: transformStr,
-                      zIndex: zIndex,
-                      opacity: opacity,
-                      pointerEvents: pointerEvents,
-                      transition: "all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)"
+                    key={`preview-card-${sector.id}-${index}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!hasDragged.current) {
+                        centerPreviewCard(index);
+                      }
                     }}
-                    className={`absolute inset-0 cursor-pointer [backface-visibility:hidden] select-none rounded-3xl border border-stone-200/50 shadow-md overflow-hidden bg-stone-50 ${isActive
-                        ? 'drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] border-stone-300/60'
-                        : 'filter brightness-90 hover:brightness-100 hover:opacity-90'
-                      }`}
+                    style={{
+                      position: 'absolute',
+                      width: `${CARD_W}px`,
+                      height: '210px',
+                      left: 0,
+                      top: 0,
+                      transform: `translateX(${relativeX - CARD_W / 2}px) translateZ(${translateZ + extraZ}px) rotateY(${rotateY}deg) scale(${scale})`,
+                      transformStyle: 'preserve-3d',
+                      zIndex: isSelected ? 60 : Math.round(50 - Math.abs(normalizedDist) * 20),
+                      transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease'
+                    }}
+                    className={`rounded-xl border overflow-hidden bg-stone-900 group shadow-md cursor-pointer ${
+                      isSelected
+                        ? 'border-[#d4af37] ring-2 ring-[#d4af37]/40 shadow-xl brightness-105'
+                        : (selectedIdx !== null
+                            ? 'border-white/10 filter brightness-75 opacity-75'
+                            : 'border-white/20 hover:border-white/60 filter brightness-95 hover:brightness-100')
+                    }`}
                   >
-                    <ShowcaseVideo
-                      src={sector.videoUrl}
-                      poster={sector.imageUrl}
-                      isActive={isActive}
-                    />
-                    <div className="absolute top-4 left-4 z-10">
+                    {/* Imagen Estática de Portada */}
+                    {sector.imageUrl ? (
+                      <img
+                        src={sector.imageUrl}
+                        alt={sector.title}
+                        className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className={`absolute inset-0 w-full h-full bg-gradient-to-br ${sector.placeholderGradient}`} />
+                    )}
+
+                    {/* Vídeo en Loop si está activo */}
+                    {sector.videoUrl && (
+                      <ShowcaseVideo
+                        src={sector.videoUrl}
+                        poster={sector.imageUrl}
+                        isActive={isSelected}
+                      />
+                    )}
+
+                    {/* Velo degradado */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-black/20 to-transparent pointer-events-none" />
+
+                    {/* Badge Superior */}
+                    <div className="absolute top-2 left-2 right-2 z-20 flex items-center justify-between pointer-events-none">
                       <span
-                        style={isActive ? { backgroundColor: primaryColor || '#3b82f6', borderColor: primaryColor || '#3b82f6', color: '#ffffff' } : {}}
-                        className={`border px-3 py-1 rounded-full text-[8px] font-black tracking-wider uppercase preview-sans ${isActive ? '' : 'bg-white/95 border-stone-200/60 text-stone-500'
-                          }`}
+                        className={`px-2 py-0.5 rounded-full text-[7px] font-black uppercase tracking-wider backdrop-blur-md preview-sans ${
+                          isSelected ? 'bg-[#d4af37] text-stone-950 font-bold' : 'bg-black/50 text-white/90 border border-white/20'
+                        }`}
                       >
-                        {sector.badge}
+                        {sector.badge || 'Sector'}
                       </span>
+                    </div>
+
+                    {/* Panel inferior integrado */}
+                    <div className="absolute bottom-0 inset-x-0 p-2.5 z-20 text-white">
+                      <h4 className="font-serif text-[11px] font-bold leading-tight drop-shadow-md text-white preview-serif truncate">
+                        {sector.title}
+                      </h4>
                     </div>
                   </div>
                 );
@@ -332,44 +445,45 @@ export default function Showcase3DPreview({
             </div>
 
             {/* Lateral arrows */}
-            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 pointer-events-none z-20">
+            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-2 pointer-events-none z-30">
               <button
-                onClick={() => handlePreviewNavigate(previewIndex - 1)}
-                className="w-9 h-9 rounded-full bg-white/95 backdrop-blur-sm border border-stone-200/60 hover:bg-stone-50 flex items-center justify-center text-stone-700 shadow-md active:scale-95 pointer-events-auto transition-transform"
+                onClick={() => {
+                  if (selectedIdx !== null) {
+                    clearTimers();
+                    setSelectedIdx(null);
+                  }
+                  setPreviewScrollX(prev => prev + SLOT_W * 2);
+                }}
+                className="w-7 h-7 rounded-full bg-white/95 backdrop-blur-sm border border-stone-200/60 hover:bg-stone-50 flex items-center justify-center text-stone-700 shadow-sm active:scale-95 pointer-events-auto transition-transform"
+                title="Girar Izquierda"
               >
-                <ChevronRight className="w-4 h-4 rotate-180" />
+                <ChevronRight className="w-3 h-3 rotate-180" />
               </button>
               <button
-                onClick={() => handlePreviewNavigate(previewIndex + 1)}
-                className="w-9 h-9 rounded-full bg-white/95 backdrop-blur-sm border border-stone-200/60 hover:bg-stone-50 flex items-center justify-center text-stone-700 shadow-md active:scale-95 pointer-events-auto transition-transform"
+                onClick={() => {
+                  if (selectedIdx !== null) {
+                    clearTimers();
+                    setSelectedIdx(null);
+                  }
+                  setPreviewScrollX(prev => prev - SLOT_W * 2);
+                }}
+                className="w-7 h-7 rounded-full bg-white/95 backdrop-blur-sm border border-stone-200/60 hover:bg-stone-50 flex items-center justify-center text-stone-700 shadow-sm active:scale-95 pointer-events-auto transition-transform"
+                title="Girar Derecha"
               >
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-3 h-3" />
               </button>
             </div>
 
           </div>
 
-          {/* FICHA BLANCA EMERGENTE - Perfectamente centrada abajo con mt-6 */}
-          {previewSectors[realIndexPrev] && (
-            <div className={`mt-6 max-w-sm w-full bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-lg border border-stone-100/80 transition-all duration-500 transform z-30 select-none text-center shrink-0 ${previewAnimating ? 'translate-y-4 opacity-0' : 'translate-y-0 opacity-100'
-              }`}>
-              <span style={{ color: tertiaryColor || '#d4af37' }} className="text-[8px] uppercase font-black tracking-[0.15em] block mb-1 preview-sans">
-                {previewSectors[realIndexPrev]?.badge}
-              </span>
-              <h4 className="font-serif text-base text-stone-900 font-bold mb-1 leading-tight preview-serif">
-                {previewSectors[realIndexPrev]?.title}
-              </h4>
-              <p className="text-stone-500 text-[10px] leading-relaxed mb-3 preview-sans">
-                {previewSectors[realIndexPrev]?.copy}
-              </p>
-              <button
-                style={{ backgroundColor: primaryColor || '#3b82f6' }}
-                className="w-full text-white text-[9px] py-2 px-4 rounded-xl font-bold hover:opacity-90 transition-opacity preview-sans uppercase tracking-wider shadow-sm"
-              >
-                Configurar Entorno
-              </button>
-            </div>
-          )}
+          <div className="text-center">
+            <span className="text-[8.5px] font-semibold text-stone-500 bg-stone-100/80 px-2.5 py-1 rounded-full border border-stone-200/60 preview-sans">
+              {selectedIdx === null 
+                ? "🔄 Giro continuo automático • Arrastra para mover o pulsa una tarjeta"
+                : "⏸️ Ficha seleccionada • Reanudando giro en breve"
+              }
+            </span>
+          </div>
 
         </div>
 

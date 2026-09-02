@@ -28,6 +28,7 @@ export default async function Page() {
       title: 'Clínicas & Wellness',
       copy: 'Aislamiento total de expedientes clínicos en base de datos, firmas manuscritas Base64 y branding de lujo.',
       videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-dermatologist-examining-a-patients-face-with-magnifier-40545-large.mp4',
+      imageUrl: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80',
       placeholderGradient: 'from-blue-50 to-blue-100/30'
     },
     {
@@ -36,6 +37,7 @@ export default async function Page() {
       title: 'Barberías Premium',
       copy: 'Gestión ágil de especialistas en tiempo real, venta de bonos express y protección total contra incomparecencias.',
       videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-barber-shaving-a-man-with-a-razor-41223-large.mp4',
+      imageUrl: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80',
       placeholderGradient: 'from-amber-50 to-amber-100/30'
     },
     {
@@ -44,6 +46,7 @@ export default async function Page() {
       title: 'Consultorios Dentales',
       copy: 'Calendarios dinámicos asimétricos, cobros rápidos en POS y recordatorios automáticos por SMTP privado.',
       videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-dentist-adjusting-a-surgical-light-in-clinic-40549-large.mp4',
+      imageUrl: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80',
       placeholderGradient: 'from-emerald-50 to-emerald-100/30'
     },
     {
@@ -52,7 +55,17 @@ export default async function Page() {
       title: 'Salones de Belleza',
       copy: 'Portal de reserva en 3 pasos con colores y logotipos propios, adaptable a dominio exclusivo corporativo.',
       videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-hairdresser-cutting-hair-of-a-woman-in-salon-40552-large.mp4',
+      imageUrl: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80',
       placeholderGradient: 'from-purple-50 to-purple-100/30'
+    },
+    {
+      id: 'tattoos',
+      badge: 'Tattoo & Piercing',
+      title: 'Tattoo Studios',
+      copy: 'Gestión de citas por artista, anticipos online y fichas de consentimiento informado sin papel.',
+      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-tattoo-artist-working-on-a-design-41224-large.mp4',
+      imageUrl: 'https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&w=800&q=80',
+      placeholderGradient: 'from-stone-700 to-stone-900/40'
     }
   ];
 
@@ -86,15 +99,27 @@ export default async function Page() {
       if (data.sectors && data.sectors.length > 0) {
         sectors = data.sectors.map((s: any) => {
           let gradient = 'from-blue-50 to-blue-100/30';
-          if (s.slug === 'barberias' || s.order_index === 1) gradient = 'from-amber-50 to-amber-100/30';
-          else if (s.slug === 'dentistas' || s.order_index === 2) gradient = 'from-emerald-50 to-emerald-100/30';
-          else if (s.slug === 'peluquerias' || s.order_index === 3) gradient = 'from-purple-50 to-purple-100/30';
+          let defaultImg = 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80';
+          if (s.slug === 'barberias' || s.order_index === 1) {
+            gradient = 'from-amber-50 to-amber-100/30';
+            defaultImg = 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80';
+          } else if (s.slug === 'dentistas' || s.order_index === 2) {
+            gradient = 'from-emerald-50 to-emerald-100/30';
+            defaultImg = 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80';
+          } else if (s.slug === 'peluquerias' || s.order_index === 3) {
+            gradient = 'from-purple-50 to-purple-100/30';
+            defaultImg = 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80';
+          } else if (s.slug?.includes('tattoo') || s.order_index === 4) {
+            gradient = 'from-stone-700 to-stone-900/40';
+            defaultImg = 'https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&w=800&q=80';
+          }
           
           let copy = 'Configura tu plataforma en marca blanca de alta gama con subdominio exclusivo y RLS a nivel de base de datos.';
           if (s.slug === 'clinicas') copy = 'Aislamiento total de expedientes clínicos en base de datos, firmas manuscritas Base64 y branding de lujo.';
           else if (s.slug === 'barberias') copy = 'Gestión ágil de especialistas en tiempo real, venta de bonos express y protección total contra incomparecencias.';
           else if (s.slug === 'dentistas') copy = 'Calendarios dinámicos asimétricos, cobros rápidos en POS y recordatorios automáticos por SMTP privado.';
           else if (s.slug === 'peluquerias') copy = 'Portal de reserva en 3 pasos con colores y logotipos propios, adaptable a dominio exclusivo corporativo.';
+          else if (s.slug?.includes('tattoo')) copy = 'Gestión de citas por artista, anticipos online y fichas de consentimiento informado sin papel.';
           
           return {
             id: s.id,
@@ -102,7 +127,7 @@ export default async function Page() {
             title: s.title,
             copy: copy,
             videoUrl: s.video_url || 'https://assets.mixkit.co/videos/preview/mixkit-hairdresser-cutting-hair-of-a-woman-in-salon-40552-large.mp4',
-            imageUrl: s.image_url || '',
+            imageUrl: s.image_url || defaultImg,
             placeholderGradient: gradient
           };
         });
