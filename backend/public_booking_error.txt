@@ -1,9 +1,17 @@
-422: Por favor introduce una dirección de correo electrónico válida.
+404: El horario ya está ocupado por otra cita.
+Traceback (most recent call last):
+  File "C:\Users\Juan\MERCE\CLINICA MERCE\backend\app\routers\appointments.py", line 267, in public_booking
+    appt, client, is_new = crud.create_public_appointment(db, booking, background_tasks=background_tasks, send_email=False)
+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Juan\MERCE\CLINICA MERCE\backend\app\crud\appointments.py", line 501, in create_public_appointment
+    raise ValueError(collision_msg)
+ValueError: El horario ya está ocupado por otra cita.
+
+During handling of the above exception, another exception occurred:
+
 Traceback (most recent call last):
   File "C:\Users\Juan\MERCE\CLINICA MERCE\backend\app\routers\appointments.py", line 93, in wrapper
     return func(*args, **kwargs)
-  File "C:\Users\Juan\MERCE\CLINICA MERCE\backend\app\routers\appointments.py", line 181, in public_booking
-    raise HTTPException(
-    ...<2 lines>...
-    )
-fastapi.exceptions.HTTPException: 422: Por favor introduce una dirección de correo electrónico válida.
+  File "C:\Users\Juan\MERCE\CLINICA MERCE\backend\app\routers\appointments.py", line 269, in public_booking
+    raise HTTPException(status_code=404, detail=str(e))
+fastapi.exceptions.HTTPException: 404: El horario ya está ocupado por otra cita.

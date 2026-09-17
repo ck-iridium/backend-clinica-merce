@@ -37,22 +37,32 @@ def run_otp_tests():
             print("[FAIL] No hay servicios disponibles en la base de datos.")
             return
 
+        service_id = service.id
         tenant_id = service.tenant_id
         headers = {"X-Tenant-ID": tenant_id}
 
         test_email = f"nuevo.cliente.{int(time.time())}@gmail.com"
         test_phone = "699112233"
 
-        # Buscar próximo día hábil (Lunes a Viernes)
-        d1 = datetime.now() + timedelta(days=1)
+        # Buscar próximo día hábil futuro (Lunes a Viernes a 14+ días para evitar colisiones con citas reales)
+        d1 = datetime.now() + timedelta(days=14)
         while d1.isoweekday() not in [1, 2, 3, 4, 5]:
             d1 += timedelta(days=1)
-        start_time_1 = d1.replace(hour=10, minute=0, second=0, microsecond=0)
+        start_time_1 = d1.replace(hour=16, minute=0, second=0, microsecond=0)
 
-        d2 = datetime.now() + timedelta(days=2)
+        d2 = datetime.now() + timedelta(days=15)
         while d2.isoweekday() not in [1, 2, 3, 4, 5]:
             d2 += timedelta(days=1)
-        start_time_2 = d2.replace(hour=11, minute=0, second=0, microsecond=0)
+        start_time_2 = d2.replace(hour=17, minute=0, second=0, microsecond=0)
+
+        # Limpiar citas previas de prueba que hayan quedado de ejecuciones anteriores
+        old_clients = db.query(models.Client).filter(models.Client.email.like("%nuevo.cliente%")).all()
+        for oc in old_clients:
+            db.query(models.VerificationCode).filter(models.VerificationCode.client_id == oc.id).delete(synchronize_session=False)
+            db.query(models.Appointment).filter(models.Appointment.client_id == oc.id).delete(synchronize_session=False)
+            db.delete(oc)
+        db.commit()
+        db.close()
 
         print("="*65)
         print("SUITE DE PRUEBAS: VERIFICACIÓN OTP EN 1 SOLA OCASIÓN (NUEVOS VS RECURRENTES)")
@@ -68,7 +78,7 @@ def run_otp_tests():
             "client_name": "Nuevo Usuario Test",
             "client_email": test_email,
             "client_phone": test_phone,
-            "service_id": service.id,
+            "service_id": service_id,
             "start_time": start_time_1.strftime("%Y-%m-%dT%H:%M:00"),
             "website_hp": "",
             "form_load_time": (time.time() * 1000) - 8000
@@ -85,6 +95,7 @@ def run_otp_tests():
         print("[OK] El cliente nuevo recibió 'verification_required' y se generó el flujo de OTP.")
 
         # Verificar en base de datos el código y estado de la cita
+        db = SessionLocal()
         vc = db.query(models.VerificationCode).filter(
             models.VerificationCode.appointment_id == first_appt_id,
             models.VerificationCode.tenant_id == tenant_id
@@ -93,6 +104,10 @@ def run_otp_tests():
         real_otp = vc.code
         print(f"Código OTP generado en base de datos: {real_otp} (longitud: {len(real_otp)})")
         assert len(real_otp) == 6, f"El código debe ser de 6 dígitos, obtenido: {real_otp}"
+
+        # Verificar que el email de verificación OTP FUE ENVIADO en el primer intento
+        assert real_otp in captured_otps, f"¡ERROR CRÍTICO! El código OTP {real_otp} NO fue enviado en el primer intento. captured_otps={captured_otps}"
+        print(f"[OK] Email con código OTP enviado exitosamente en el primer intento: {real_otp}")
 
         # Comprobar que el cliente aún NO está verificado
         db_client = db.query(models.Client).filter(models.Client.id == test_client_id).first()
@@ -139,7 +154,7 @@ def run_otp_tests():
             "client_name": "Nuevo Usuario Test",
             "client_email": test_email, # Mismo email verificado
             "client_phone": test_phone,
-            "service_id": service.id,
+            "service_id": service_id,
             "start_time": start_time_2.strftime("%Y-%m-%dT%H:%M:00"),
             "website_hp": "",
             "form_load_time": (time.time() * 1000) - 9000
@@ -159,16 +174,16 @@ def run_otp_tests():
 
     finally:
         # Limpiar citas y cliente de prueba
-        if first_appt_id:
-            db.query(models.VerificationCode).filter(models.VerificationCode.appointment_id == first_appt_id).delete()
-            db.query(models.Appointment).filter(models.Appointment.id == first_appt_id).delete()
-        if second_appt_id:
-            db.query(models.Appointment).filter(models.Appointment.id == second_appt_id).delete()
-        if test_client_id:
-            db.query(models.Client).filter(models.Client.id == test_client_id).delete()
-        db.commit()
-        db.close()
-        print("[CLEANUP] Datos de prueba eliminados correctamente.")
+        clean_db = SessionLocal()
+        try:
+            if test_client_id:
+                clean_db.query(models.VerificationCode).filter(models.VerificationCode.client_id == test_client_id).delete(synchronize_session=False)
+                clean_db.query(models.Appointment).filter(models.Appointment.client_id == test_client_id).delete(synchronize_session=False)
+                clean_db.query(models.Client).filter(models.Client.id == test_client_id).delete(synchronize_session=False)
+                clean_db.commit()
+            print("[CLEANUP] Datos de prueba eliminados correctamente.")
+        finally:
+            clean_db.close()
 
 if __name__ == "__main__":
     run_otp_tests()

@@ -364,6 +364,18 @@ def public_booking(request: Request, booking: schemas.PublicBookingRequest, back
 
     # Si la cita requiere verificación OTP (cliente nuevo/no verificado):
     if appt.status == "pending_verification":
+        # Despachar de inmediato el código OTP al email del cliente
+        vc = db.query(models.VerificationCode).filter(
+            models.VerificationCode.appointment_id == appt.id,
+            models.VerificationCode.tenant_id == appt.tenant_id
+        ).order_by(models.VerificationCode.created_at.desc()).first()
+
+        if vc:
+            if background_tasks:
+                background_tasks.add_task(mailer.send_appointment_notification, appt.id, 'otp_verification', otp_code=vc.code)
+            else:
+                mailer.send_appointment_notification(appt.id, 'otp_verification', otp_code=vc.code)
+
         raw_email = client.email or booking.client_email or ""
         masked_email = ""
         if "@" in raw_email:
