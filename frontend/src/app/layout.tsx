@@ -19,13 +19,11 @@ export const viewport: Viewport = {
 
 
 import { headers } from "next/headers";
+import { resolveTenantContext } from "@/lib/tenant-resolver";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const requestHeaders = headers();
-  const host = requestHeaders.get("host") || "";
-  const tenantSlug = requestHeaders.get("x-tenant-slug") || "";
-  const isMarketing = !tenantSlug || tenantSlug === "www";
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  const { host, cleanHost, tenantSlug, isMarketing, baseUrl: tenantBaseUrl, apiUrl, tenantId } = await resolveTenantContext();
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || apiUrl;
 
   if (!baseUrl) {
     console.warn("[layout.tsx] process.env.NEXT_PUBLIC_API_URL is not defined.");
@@ -82,8 +80,6 @@ export async function generateMetadata(): Promise<Metadata> {
     ogImage: "",
     favicon: ""
   };
-
-  const tenantId = requestHeaders.get("x-tenant-id");
 
   if (tenantId) {
     try {

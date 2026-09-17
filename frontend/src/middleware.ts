@@ -184,7 +184,6 @@ export async function middleware(request: NextRequest) {
   }
 }
 
-// Configurar en qué rutas se debe ejecutar el middleware
 export const config = {
   matcher: [
     /*
@@ -192,7 +191,10 @@ export const config = {
      * 1. /api routes
      * 2. /_next (Next.js internals)
      * 3. Static files (e.g. /_next/static, public/images)
+     * Incluye explícitamente /sitemap.xml y /robots.txt para contexto multi-tenant
      */
     '/((?!api|_next|static|[\\w-]+\\.\\w+).*)',
+    '/sitemap.xml',
+    '/robots.txt',
   ],
 };

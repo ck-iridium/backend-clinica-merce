@@ -1,18 +1,8 @@
 import { MetadataRoute } from 'next';
-import { headers } from 'next/headers';
+import { resolveTenantContext } from '@/lib/tenant-resolver';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const requestHeaders = headers();
-  const host = requestHeaders.get('host') || '';
-  const tenantSlug = requestHeaders.get('x-tenant-slug') || '';
-  const tenantId = requestHeaders.get('x-tenant-id') || '';
-  
-  const cleanHost = host.split(':')[0].toLowerCase();
-  const isMarketing = !tenantSlug || tenantSlug === 'www' || cleanHost === 'probookia.com' || cleanHost === 'www.probookia.com';
-
-  const protocol = host.includes('localhost') ? 'http' : 'https';
-  const baseUrl = `${protocol}://${host}`;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const { tenantId, isMarketing, baseUrl, apiUrl } = await resolveTenantContext();
   const now = new Date();
 
   // 1. Si es la Web Matriz de ProBookia (SaaS B2B)
@@ -71,6 +61,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly',
       priority: 0.8,
     },
+    {
+      url: `${baseUrl}/aviso-legal`,
+      lastModified: now,
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/privacidad`,
+      lastModified: now,
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/cookies`,
+      lastModified: now,
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    },
   ];
 
   // Si tenemos tenantId, consultar servicios activos para indexar páginas de reserva específicas
@@ -95,7 +103,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           });
         }
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error('[SITEMAP SERVICES FETCH ERROR]', e);
+    }
   }
 
   return tenantRoutes;

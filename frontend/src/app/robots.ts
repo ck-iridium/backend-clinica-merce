@@ -1,18 +1,8 @@
 import { MetadataRoute } from 'next';
-import { headers } from 'next/headers';
+import { resolveTenantContext } from '@/lib/tenant-resolver';
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
-  const requestHeaders = headers();
-  const host = requestHeaders.get('host') || '';
-  const tenantSlug = requestHeaders.get('x-tenant-slug') || '';
-  const tenantId = requestHeaders.get('x-tenant-id') || '';
-  
-  const cleanHost = host.split(':')[0].toLowerCase();
-  const isMarketing = !tenantSlug || tenantSlug === 'www' || cleanHost === 'probookia.com' || cleanHost === 'www.probookia.com';
-
-  const protocol = host.includes('localhost') ? 'http' : 'https';
-  const baseUrl = `${protocol}://${host}`;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const { tenantId, isMarketing, baseUrl, apiUrl } = await resolveTenantContext();
 
   if (isMarketing) {
     let allowSaasIndexing = true;
