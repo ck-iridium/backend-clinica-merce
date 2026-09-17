@@ -22,6 +22,7 @@ import { headers } from "next/headers";
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = headers();
+  const host = requestHeaders.get("host") || "";
   const tenantSlug = requestHeaders.get("x-tenant-slug") || "";
   const isMarketing = !tenantSlug || tenantSlug === "www";
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -50,14 +51,19 @@ export async function generateMetadata(): Promise<Metadata> {
       } catch (e) { }
     }
 
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const saasCanonical = `${protocol}://${host || 'probookia.com'}`;
+
     return {
       title: "Probookia | Software de Gestión Premium para Negocios y Centros de Estética, Wellness y Belleza",
       description: "Eleva la experiencia de tu negocio premium. Gestión inteligente de citas, expedientes, consentimientos digitales y facturación integrada con diseño Quiet Luxury.",
       robots: allowSaasIndexing ? "index, follow" : "noindex, nofollow",
+      alternates: {
+        canonical: saasCanonical,
+      },
     };
   }
 
-  const host = requestHeaders.get("host") || "";
   const hostParts = host.split('.');
   let resolvedTenantName = "Centro";
   if (hostParts.length > 1 && hostParts[0] !== 'www') {
@@ -67,7 +73,8 @@ export async function generateMetadata(): Promise<Metadata> {
       .join(' ');
   }
 
-  let allowIndexing = false;
+  let allowIndexing = true;
+  let googleVerification: string | undefined = undefined;
   let seoData: any = {
     title: resolvedTenantName,
     description: `Servicios personalizados y bienestar de primer nivel en ${resolvedTenantName}.`,
@@ -86,7 +93,19 @@ export async function generateMetadata(): Promise<Metadata> {
       });
       if (resSettings.ok) {
         const data = await resSettings.json();
-        allowIndexing = data.allow_search_engine_indexing;
+        if (data.allow_search_engine_indexing !== undefined) {
+          allowIndexing = data.allow_search_engine_indexing;
+        }
+        if (data.google_site_verification) {
+          let cleanCode = data.google_site_verification.trim();
+          const match = cleanCode.match(/content=["']([^"']+)["']/i);
+          if (match) {
+            cleanCode = match[1];
+          } else if (cleanCode.includes('=')) {
+            cleanCode = cleanCode.split('=').pop()?.replace(/["']/g, '').trim() || cleanCode;
+          }
+          googleVerification = cleanCode;
+        }
         if (data.clinic_name) {
           seoData.title = data.clinic_name;
           seoData.description = data.clinic_description || `Servicios personalizados y bienestar de primer nivel en ${data.clinic_name}.`;
@@ -115,12 +134,20 @@ export async function generateMetadata(): Promise<Metadata> {
 
   const finalFavicon = seoData.favicon || "/favicon_probookia.ico";
   const finalOgImage = seoData.ogImage || seoData.favicon || "/favicon_probookia.ico";
+  const protocol = host.includes('localhost') ? 'http' : 'https';
+  const tenantCanonical = `${protocol}://${host}`;
 
   return {
     title: seoData.title,
     description: seoData.description,
     keywords: seoData.keywords,
     robots: allowIndexing ? "index, follow" : "noindex, nofollow",
+    alternates: {
+      canonical: tenantCanonical,
+    },
+    verification: googleVerification ? {
+      google: googleVerification,
+    } : undefined,
     icons: {
       icon: finalFavicon,
       shortcut: finalFavicon,

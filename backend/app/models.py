@@ -320,7 +320,8 @@ class ClinicSettings(Base):
     # Enlaces y Redes Sociales
     instagram_url = Column(String, nullable=True)
     # SEO e integraciones
-    allow_search_engine_indexing = Column(Boolean, default=False)
+    allow_search_engine_indexing = Column(Boolean, default=True)
+    google_site_verification = Column(String(255), nullable=True)
     whatsapp_number = Column(String, nullable=True)
     maps_url = Column(String, nullable=True)
 

@@ -264,6 +264,28 @@ export default function AdvancedTab({ settings, setSettings }: AdvancedTabProps)
             </div>
           </label>
 
+          {/* Campo Google Search Console */}
+          <div className="p-6 bg-white rounded-[2rem] border border-stone-100 shadow-sm space-y-3">
+            <div>
+              <label htmlFor="advanced-google-verification" className="block text-sm font-bold text-stone-800">
+                Verificación de Google Search Console
+              </label>
+              <p className="text-xs text-stone-500 mt-1 leading-relaxed">
+                Pega aquí tu código de verificación (o la etiqueta HTML completa proporcionada por Google). ProBookia inyectará automáticamente la metaetiqueta en la cabecera <code>&lt;head&gt;</code> para verificar tu propiedad en 1 clic.
+              </p>
+            </div>
+            <div className="relative">
+              <input
+                id="advanced-google-verification"
+                type="text"
+                value={settings.google_site_verification || ''}
+                onChange={e => setSettings({ ...settings, google_site_verification: e.target.value })}
+                placeholder="ej. dX8bQ7y1Z_AbCdEfGhIjKlMnOpQrStUvWxYz o google-site-verification=..."
+                className="w-full px-4 py-3 rounded-xl bg-stone-50 border border-stone-200 text-stone-900 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#d4af37]/50 focus:border-[#d4af37] transition-all"
+              />
+            </div>
+          </div>
+
           {/* Fila Consentimientos */}
           <div className="p-6 bg-stone-50 rounded-[2rem] border border-stone-100 flex items-start gap-4">
             <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-stone-400 shrink-0 shadow-sm">

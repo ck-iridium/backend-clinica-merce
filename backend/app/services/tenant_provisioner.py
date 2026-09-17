@@ -78,7 +78,7 @@ def provision_tenant(
             clinic_address="",
             maps_url="",
             instagram_url="",
-            allow_search_engine_indexing=False,
+            allow_search_engine_indexing=True,
             onboarding_completed=False
         )
         db.add(default_settings)

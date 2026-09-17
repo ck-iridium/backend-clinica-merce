@@ -12,7 +12,7 @@ export async function middleware(request: NextRequest) {
     url.pathname.startsWith('/_next') ||
     url.pathname.startsWith('/api') ||
     url.pathname.startsWith('/static') ||
-    url.pathname.includes('.') ||
+    (url.pathname.includes('.') && url.pathname !== '/robots.txt' && url.pathname !== '/sitemap.xml') ||
     url.pathname.startsWith('/favicon.ico')
   ) {
     return NextResponse.next();
@@ -149,6 +149,8 @@ export async function middleware(request: NextRequest) {
       url.pathname === "/aviso-legal" ||
       url.pathname === "/privacidad" ||
       url.pathname === "/cookies" ||
+      url.pathname === "/robots.txt" ||
+      url.pathname === "/sitemap.xml" ||
       url.pathname.startsWith("/super-admin");
 
     console.log(`[MIDDLEWARE-GLOBAL] Path: "${url.pathname}" | isGlobalSassPath: ${isGlobalSassPath}`);

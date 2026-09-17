@@ -231,7 +231,8 @@ $function$;
             "UPDATE invoices SET number = id WHERE number IS NULL",
             "ALTER TABLE clients DROP CONSTRAINT IF EXISTS clients_email_key",
             "ALTER TABLE clients DROP CONSTRAINT IF EXISTS uq_clients_email",
-            "ALTER TABLE clients ADD CONSTRAINT uq_clients_tenant_email UNIQUE (tenant_id, email)"
+            "ALTER TABLE clients ADD CONSTRAINT uq_clients_tenant_email UNIQUE (tenant_id, email)",
+            "ALTER TABLE clinic_settings ADD COLUMN google_site_verification VARCHAR(255) NULL"
         ]
         
         for m in migrations:
