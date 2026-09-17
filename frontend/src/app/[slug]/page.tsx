@@ -421,7 +421,7 @@ export default async function CustomPage({ params }: PageProps) {
                                   isVideo ? (
                                     <video src={data.image_url} autoPlay loop muted playsInline preload="none" className="absolute inset-0 w-full h-full object-cover" />
                                   ) : (
-                                    <img src={data.image_url} alt={data.heading} className="absolute inset-0 w-full h-full object-cover" />
+                                    <img src={data.image_url} alt={data.heading} fetchPriority="high" loading="eager" decoding="async" className="absolute inset-0 w-full h-full object-cover" />
                                   )
                                 ) : (
                                   <div className="absolute inset-0 bg-stone-900" />

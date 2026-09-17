@@ -26,14 +26,28 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
       {/* Background Media */}
       {bgVideo ? (
         <div className="absolute inset-0 z-0 bg-stone-900">
-          <video autoPlay loop muted playsInline className="w-full h-full object-cover">
+          <video 
+            autoPlay 
+            loop 
+            muted 
+            playsInline 
+            poster={bgImage ? getFullUrl(bgImage) : undefined}
+            className="w-full h-full object-cover"
+          >
             <source src={getFullUrl(bgVideo)} type="video/mp4" />
           </video>
           <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-stone-900/20 to-stone-900/60 mix-blend-multiply"></div>
         </div>
       ) : bgImage ? (
         <div className="absolute inset-0 z-0 bg-stone-900">
-          <img src={getFullUrl(bgImage)} alt="Hero Background" className="w-full h-full object-cover" />
+          <img 
+            src={getFullUrl(bgImage)} 
+            alt="Hero Background" 
+            fetchPriority="high"
+            loading="eager"
+            decoding="async"
+            className="w-full h-full object-cover" 
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-stone-900/20 to-stone-900/60 mix-blend-multiply"></div>
         </div>
       ) : (

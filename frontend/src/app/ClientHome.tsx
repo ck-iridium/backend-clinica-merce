@@ -478,14 +478,29 @@ export default function ClientHome({ content, settings, services, categories }: 
 
                 {content.hero_video_url ? (
                   <div className="absolute inset-0 z-0 bg-stone-900">
-                    <video autoPlay loop muted playsInline preload="metadata" className="w-full h-full object-cover">
+                    <video 
+                      autoPlay 
+                      loop 
+                      muted 
+                      playsInline 
+                      preload="metadata" 
+                      poster={content.hero_image_url ? (content.hero_image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${content.hero_image_url}` : content.hero_image_url) : undefined}
+                      className="w-full h-full object-cover"
+                    >
                       <source src={content.hero_video_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${content.hero_video_url}` : content.hero_video_url} type="video/mp4" />
                     </video>
                     <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-stone-900/20 to-stone-900/60 mix-blend-multiply" />
                   </div>
                 ) : content.hero_image_url ? (
                   <div className="absolute inset-0 z-0 bg-stone-900">
-                    <img src={content.hero_image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${content.hero_image_url}` : content.hero_image_url} alt="Hero" className="w-full h-full object-cover" />
+                    <img 
+                      src={content.hero_image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${content.hero_image_url}` : content.hero_image_url} 
+                      alt={cleanTitle(translate(content.hero_title, content.translations, 'hero_title')) || "Hero"} 
+                      fetchPriority="high"
+                      loading="eager"
+                      decoding="async"
+                      className="w-full h-full object-cover" 
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-stone-900/20 to-stone-900/60 mix-blend-multiply" />
                   </div>
                 ) : (

@@ -1,13 +1,59 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
-import { Inter, Cormorant_Garamond } from 'next/font/google';
+import { Inter, Cormorant_Garamond, Playfair_Display, Montserrat, Outfit } from 'next/font/google';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const inter = Inter({ 
+  subsets: ['latin'], 
+  variable: '--font-inter',
+  display: 'swap',
+});
+
 const cormorantGaramond = Cormorant_Garamond({
   weight: ['400', '500', '600', '700'],
   subsets: ['latin'],
-  variable: '--font-cormorant'
+  variable: '--font-cormorant',
+  display: 'swap',
 });
+
+const playfairDisplay = Playfair_Display({
+  weight: ['400', '500', '600', '700', '800', '900'],
+  subsets: ['latin'],
+  variable: '--font-playfair-base',
+  display: 'swap',
+});
+
+const montserrat = Montserrat({
+  weight: ['300', '400', '500', '600', '700'],
+  subsets: ['latin'],
+  variable: '--font-montserrat',
+  display: 'swap',
+});
+
+const outfit = Outfit({
+  weight: ['300', '400', '500', '600', '700'],
+  subsets: ['latin'],
+  variable: '--font-outfit',
+  display: 'swap',
+});
+
+const fontClasses = `${inter.variable} ${cormorantGaramond.variable} ${playfairDisplay.variable} ${montserrat.variable} ${outfit.variable}`;
+
+function getFontVar(fontName: string, fallback: string): string {
+  switch (fontName) {
+    case 'Cormorant Garamond':
+      return 'var(--font-cormorant), serif';
+    case 'Playfair Display':
+      return 'var(--font-playfair-base), serif';
+    case 'Montserrat':
+      return 'var(--font-montserrat), sans-serif';
+    case 'Outfit':
+      return 'var(--font-outfit), sans-serif';
+    case 'Inter':
+      return 'var(--font-inter), sans-serif';
+    default:
+      return fallback;
+  }
+}
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -226,7 +272,7 @@ export default async function RootLayout({
 
   if (isSuspended) {
     return (
-      <html lang="es" suppressHydrationWarning className={`${inter.variable}`}>
+      <html lang="es" suppressHydrationWarning className={fontClasses}>
         <body className="antialiased bg-[#F7F7F5] text-[#1F2937] flex items-center justify-center min-h-screen p-6 font-sans">
           <div className="max-w-md w-full bg-white rounded-[2.5rem] p-10 md:p-12 shadow-luxury border border-[#d4af37]/20 text-center relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-2 bg-[#d4af37]"></div>
@@ -266,9 +312,11 @@ export default async function RootLayout({
 
   if (isMarketing) {
     return (
-      <html lang="es" suppressHydrationWarning className={`${inter.variable} ${cormorantGaramond.variable}`}>
+      <html lang="es" suppressHydrationWarning className={fontClasses}>
         <head>
           <link rel="icon" href={marketingFavicon} />
+          <link rel="preconnect" href="https://ypimdbkiuguiszaddzaj.supabase.co" crossOrigin="anonymous" />
+          <link rel="dns-prefetch" href="https://ypimdbkiuguiszaddzaj.supabase.co" />
           <style dangerouslySetInnerHTML={{
             __html: `
             :root {
@@ -313,9 +361,11 @@ export default async function RootLayout({
   const isDashboardRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/super-admin') || pathname.startsWith('/login');
 
   return (
-    <html lang="es" suppressHydrationWarning className={`${inter.variable} ${cormorantGaramond.variable} ${isDark && !isDashboardRoute ? 'dark' : ''}`}>
+    <html lang="es" suppressHydrationWarning className={`${fontClasses} ${isDark && !isDashboardRoute ? 'dark' : ''}`}>
       <head>
         <link rel="icon" href={favicon} />
+        <link rel="preconnect" href="https://ypimdbkiuguiszaddzaj.supabase.co" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://ypimdbkiuguiszaddzaj.supabase.co" />
         <style dangerouslySetInnerHTML={{
           __html: `
           :root {
@@ -325,9 +375,9 @@ export default async function RootLayout({
             --radius-base: ${radiusBase} !important;
             --radius-card: ${radiusCard} !important;
             --radius-btn: ${radiusBtn} !important;
-            --font-cormorant: '${headingsFont}', serif !important;
-            --font-playfair: '${headingsFont}', serif !important;
-            --font-inter: '${bodyFont}', sans-serif !important;
+            --font-cormorant: ${getFontVar(headingsFont, 'var(--font-cormorant), serif')} !important;
+            --font-playfair: ${getFontVar(headingsFont, 'var(--font-playfair-base), serif')} !important;
+            --font-inter: ${getFontVar(bodyFont, 'var(--font-inter), sans-serif')} !important;
           }
         ` }} />
       </head>
