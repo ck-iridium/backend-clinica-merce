@@ -1,0 +1,9 @@
+422: Por favor introduce una dirección de correo electrónico válida.
+Traceback (most recent call last):
+  File "C:\Users\Juan\MERCE\CLINICA MERCE\backend\app\routers\appointments.py", line 93, in wrapper
+    return func(*args, **kwargs)
+  File "C:\Users\Juan\MERCE\CLINICA MERCE\backend\app\routers\appointments.py", line 181, in public_booking
+    raise HTTPException(
+    ...<2 lines>...
+    )
+fastapi.exceptions.HTTPException: 422: Por favor introduce una dirección de correo electrónico válida.

@@ -121,12 +121,14 @@
     "client_email_desc": "Hemos enviado la confirmación y el justificante a"
   },
   "success": {
-    "title": "¡Petición enviada!",
-    "subtitle": "Tu momento está cerca",
+    "title": "¡Cita Confirmada!",
+    "subtitle": "Tu espacio está reservado",
     "summary": "Resumen de tu cita",
-    "emailNote1": "Te hemos enviado un enlace de confirmación. Por favor, confírmalo en los próximos",
-    "emailNoteTime": "30 minutos",
-    "emailNote2": "para asegurar tu hueco.",
+    "emailNote1": "Hemos registrado tu cita directamente en nuestra agenda. Te hemos enviado un",
+    "emailNoteTime": "justificante detallado",
+    "emailNote2": "a tu correo con todos los datos.",
+    "addToCalendar": "Añadir a Google Calendar",
+    "contactWhatsApp": "Contactar por WhatsApp",
     "backHome": "Volver al Inicio"
   },
   "contact": {

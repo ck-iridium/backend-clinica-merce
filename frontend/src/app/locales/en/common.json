@@ -121,7 +121,17 @@
     "treatment": "Treatment",
     "client_email_desc": "We have sent the confirmation and receipt to"
   },
-  "success": {},
+  "success": {
+    "title": "Appointment Confirmed!",
+    "subtitle": "Your slot is reserved",
+    "summary": "Appointment Summary",
+    "emailNote1": "We have registered your appointment directly in our schedule. We sent a",
+    "emailNoteTime": "detailed receipt",
+    "emailNote2": "to your inbox with all details.",
+    "addToCalendar": "Add to Google Calendar",
+    "contactWhatsApp": "Contact via WhatsApp",
+    "backHome": "Back to Home"
+  },
   "contact": {
     "title": "We are",
     "title_italic": "with you.",

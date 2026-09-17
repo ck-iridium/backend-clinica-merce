@@ -132,27 +132,15 @@ def cleanup_unverified(
 ):
     """
     Endpoint protected by X-Cron-Key.
-    Cleans up pending_verification appointments older than 30 minutes.
+    With direct zero-friction booking, appointments enter confirmed immediately.
+    Kept for backward compatibility with external scheduled jobs.
     """
     secret_key = os.environ.get("CRON_SECRET_KEY", "dev_secret")
     if x_cron_key != secret_key:
         raise HTTPException(status_code=403, detail="Invalid cron key")
 
-    threshold = datetime.utcnow() - timedelta(minutes=30)
-    
-    expired = db.query(models.Appointment).filter(
-        models.Appointment.status == "pending_verification",
-        models.Appointment.created_at < threshold
-    ).all()
-
-    count = 0
-    for appt in expired:
-        db.delete(appt)
-        count += 1
-            
-    db.commit()
-    logger.info(f"Cleaned up {count} unverified appointments.")
-    return {"status": "success", "deleted": count}
+    logger.info("Cleanup unverified invoked: Zero-friction direct booking active.")
+    return {"status": "success", "message": "Zero-friction active. No unverified cleanup needed.", "deleted": 0}
 
 @router.get("/verify/{appointment_id}")
 def get_appointment_for_verification(

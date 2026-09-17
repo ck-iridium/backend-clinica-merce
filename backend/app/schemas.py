@@ -591,6 +591,9 @@ class PublicBookingRequest(BaseModel):
     client_postal_code: Optional[str] = None
     client_city: Optional[str] = None
     save_address_to_crm: Optional[bool] = False
+    # Invisible Bot & Spam Shield
+    website_hp: Optional[str] = None # Honeypot trap: must remain empty
+    form_load_time: Optional[float] = None # Time-trap: client timestamp in ms
 
 class PublicBookingResponse(BaseModel):
     appointment_id: str

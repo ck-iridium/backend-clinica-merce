@@ -589,6 +589,20 @@ export default function Step3Details({
                 />
               </div>
             </div>
+
+            {/* Honeypot field invisible para humanos pero atractivo para bots */}
+            <div style={{ display: 'none', opacity: 0, position: 'absolute', left: '-9999px', height: 0, width: 0, zIndex: -1 }} aria-hidden="true">
+              <label htmlFor="website_hp">Website URL</label>
+              <input
+                id="website_hp"
+                type="text"
+                name="website_hp"
+                tabIndex={-1}
+                autoComplete="off"
+                value={formData.website_hp || ''}
+                onChange={e => setFormData({ ...formData, website_hp: e.target.value })}
+              />
+            </div>
           </div>
 
           {/* Privacy & Trust */}

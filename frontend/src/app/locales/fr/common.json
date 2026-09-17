@@ -118,7 +118,17 @@
     "treatment": "Soin",
     "client_email_desc": "Nous avons envoyé la confirmation et le reçu à"
   },
-  "success": {},
+  "success": {
+    "title": "Rendez-vous Confirmé !",
+    "subtitle": "Votre créneau est réservé",
+    "summary": "Résumé de votre rendez-vous",
+    "emailNote1": "Nous avons enregistré votre rendez-vous directement dans notre planning. Nous avons envoyé un",
+    "emailNoteTime": "reçu détaillé",
+    "emailNote2": "à votre adresse e-mail.",
+    "addToCalendar": "Ajouter à Google Calendar",
+    "contactWhatsApp": "Contacter par WhatsApp",
+    "backHome": "Retour à l'accueil"
+  },
   "contact": {
     "title": "Nous sommes",
     "title_italic": "avec vous.",

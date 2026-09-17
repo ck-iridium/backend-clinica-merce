@@ -104,19 +104,84 @@ def log_exceptions(func):
     return wrapper
 
 @router.post("/public", response_model=schemas.PublicBookingResponse, status_code=201)
-# @limiter.limit("3/hour")
+@limiter.limit("5/minute")
 @log_exceptions
 def public_booking(request: Request, booking: schemas.PublicBookingRequest, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
     """
-    Landing page booking endpoint.
-    - Finds or creates the client (deduplication by email / phone).
-    - Creates the appointment with status='web_pending'.
+    Landing page booking endpoint with Zero-Friction and Multi-layer Bot Protection.
+    - Honeypot check (website_hp).
+    - Time-trap check (form_load_time).
+    - Phone & Email hygiene / anti-spam validation.
+    - Finds or creates client with direct 'confirmed' appointment.
     """
+    import re
+    import time
+    from ..database import current_tenant_var
+
+    # 1. ESCUDO 1: HONEYPOT TRAP (Bots rellenan campos trampa ocultos)
+    if booking.website_hp and booking.website_hp.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Petición bloqueada por seguridad. Se ha detectado comportamiento automatizado."
+        )
+
+    # 2. ESCUDO 2: TIME-TRAP (Los humanos tardan > 2.5s en rellenar y enviar el formulario)
+    if booking.form_load_time:
+        now_ms = time.time() * 1000.0
+        elapsed_ms = now_ms - booking.form_load_time
+        if 0 < elapsed_ms < 2500:
+            raise HTTPException(
+                status_code=400,
+                detail="Envío demasiado rápido. Por favor, completa el proceso de reserva con calma."
+            )
+
+    # 3. ESCUDO 3: VALIDACIÓN Y SANEAMIENTO DE CONTACTO
     if not booking.client_email and not booking.client_phone:
         raise HTTPException(
             status_code=422,
-            detail="Provide at least one of: client_email, client_phone"
+            detail="Por favor proporciona un número de teléfono o correo electrónico."
         )
+
+    if booking.client_phone:
+        clean_phone = re.sub(r"[\s\-\(\)\.]", "", booking.client_phone)
+        fake_patterns = [
+            r"^0+$", r"^1+$", r"^666666666$", r"^123456789$", r"^987654321$",
+            r"^(\d)\1{7,}$"
+        ]
+        if any(re.match(pat, clean_phone) for pat in fake_patterns) or len(clean_phone) < 8:
+            raise HTTPException(
+                status_code=422,
+                detail="El número de teléfono no parece ser válido. Por favor compruébalo."
+            )
+        
+        # Anti-acaparamiento: máximo 2 reservas activas futuras por teléfono en 24h
+        now_utc = datetime.utcnow()
+        tenant_id = current_tenant_var.get()
+        future_phone_appts = db.query(models.Appointment).join(models.Client).filter(
+            models.Appointment.tenant_id == tenant_id,
+            models.Client.phone == booking.client_phone,
+            models.Appointment.start_time >= now_utc,
+            models.Appointment.start_time <= now_utc + timedelta(days=1),
+            models.Appointment.status.in_(["confirmed", "pending", "awaiting_payment"])
+        ).count()
+        if future_phone_appts >= 2:
+            raise HTTPException(
+                status_code=429,
+                detail="Ya tienes citas programadas para hoy con este teléfono. Si necesitas cambios, contáctanos."
+            )
+
+    if booking.client_email:
+        email_clean = booking.client_email.strip().lower()
+        disposable_domains = {
+            "yopmail.com", "tempmail.com", "guerrillamail.com", "mailinator.com",
+            "10minutemail.com", "trashmail.com", "sharklasers.com", "dispostable.com"
+        }
+        domain = email_clean.split("@")[-1] if "@" in email_clean else ""
+        if domain in disposable_domains or not re.match(r"^[^@]+@[^@]+\.[^@]+$", email_clean):
+            raise HTTPException(
+                status_code=422,
+                detail="Por favor introduce una dirección de correo electrónico válida."
+            )
 
     # ── VALIDACIONES DE MODALIDAD Y COBERTURA GEOGRÁFICA ──
     service = db.query(models.Service).filter(models.Service.id == booking.service_id).first()
@@ -297,10 +362,20 @@ def public_booking(request: Request, booking: schemas.PublicBookingRequest, back
             # Si falla Stripe, permitimos la reserva normal web_pending
             pass
 
-    # Si al final no hay checkout_url (porque no se requiere fianza o falló Stripe),
-    # enviamos el correo de verificación inicial ahora.
+    # Si no hay checkout_url (no requiere fianza o falló Stripe),
+    # la cita ya queda directamente 'confirmed'. Notificamos al admin y al cliente al instante.
     if not checkout_url:
-        background_tasks.add_task(mailer.send_appointment_notification, appt.id, 'verification_email')
+        from ..utils.notifications import create_admin_notification
+        create_admin_notification(
+            db, 
+            title="✨ Nueva Cita Confirmada", 
+            description=f"Reserva online de {client.name} para {appt.start_time.strftime('%d/%m a las %H:%M')}",
+            type="success",
+            metadata={"appointment_id": appt.id},
+            tenant_id=appt.tenant_id
+        )
+        background_tasks.add_task(mailer.send_appointment_notification, appt.id, 'confirmation')
+        background_tasks.add_task(mailer.send_appointment_notification, appt.id, 'new_web_booking')
 
     return schemas.PublicBookingResponse(
         appointment_id=appt.id,

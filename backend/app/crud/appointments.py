@@ -517,7 +517,7 @@ def create_public_appointment(db: Session, booking: schemas.PublicBookingRequest
         location_id=location_id,
         start_time=booking.start_time,
         end_time=end_time,
-        status="pending_verification",
+        status="confirmed",
         notes=booking.notes,
         service_modality=getattr(booking, "service_modality", "clinic"),
         client_address=getattr(booking, "client_address", None),
@@ -532,9 +532,9 @@ def create_public_appointment(db: Session, booking: schemas.PublicBookingRequest
 
     if send_email:
         if background_tasks:
-            background_tasks.add_task(mailer.send_appointment_notification, appt.id, 'verification_email')
+            background_tasks.add_task(mailer.send_appointment_notification, appt.id, 'confirmation')
         else:
-            mailer.send_appointment_notification(appt.id, 'verification_email')
+            mailer.send_appointment_notification(appt.id, 'confirmation')
 
     return appt, client, is_new
 

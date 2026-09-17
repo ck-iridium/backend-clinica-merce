@@ -90,10 +90,12 @@ export default function BookingPage() {
   const [dateTimePhase, setDateTimePhase] = useState<1 | 2>(1);
   const [currentMonthOffset, setCurrentMonthOffset] = useState(0);
 
+  const [formLoadTime] = useState<number>(() => Date.now());
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
+    website_hp: '', // Honeypot field invisible para bots
     service_modality: 'clinic', // 'clinic' o 'home'
     client_address: '',
     client_latitude: null as number | null,
@@ -285,6 +287,15 @@ export default function BookingPage() {
       setBookingError("No se pudo resolver el identificador de la clínica.");
       return;
     }
+
+    if (formData.phone) {
+      const cleanPhone = formData.phone.replace(/[\s\-\(\)\.]/g, '');
+      if (cleanPhone.length < 8) {
+        setBookingError("Por favor, introduce un número de teléfono válido.");
+        return;
+      }
+    }
+
     setSaving(true);
     setBookingError('');
     try {
@@ -302,6 +313,8 @@ export default function BookingPage() {
           client_name: formData.name,
           client_email: formData.email,
           client_phone: formData.phone,
+          website_hp: formData.website_hp || null,
+          form_load_time: formLoadTime,
           service_id: selectedService.id,
           location_id: selectedLocation ? selectedLocation.id : null,
           staff_id: selectedStaff && selectedStaff.id !== 'any' ? selectedStaff.id : 'any',
