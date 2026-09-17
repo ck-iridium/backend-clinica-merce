@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
+import { useLazyMedia } from '@/hooks/useLazyMedia';
 
 interface TreatmentMediaProps {
   imageUrl: string;
@@ -14,6 +15,7 @@ export default function TreatmentMedia({ imageUrl, videoUrl, headerStyle, clinic
   const [hasError, setHasError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
+  const { elementRef: containerRef, isInView } = useLazyMedia<HTMLDivElement>({ threshold: 0.1, rootMargin: '200px' });
 
   // Verificación proactiva para imágenes/vídeos ya cargados (Caché / F5)
   useEffect(() => {
@@ -25,17 +27,32 @@ export default function TreatmentMedia({ imageUrl, videoUrl, headerStyle, clinic
     }
   }, []);
 
+  // Control de reproducción en base a visibilidad en pantalla
+  useEffect(() => {
+    if (videoRef.current) {
+      if (isInView) {
+        videoRef.current.play().catch(() => {});
+      } else {
+        videoRef.current.pause();
+      }
+    }
+  }, [isInView]);
+
   const displayClinicName = clinicName || 'ProBookia';
 
-  // Si es estilo video y tenemos URL, usamos el reproductor con poster
+  // Si es estilo video y tenemos URL, usamos el reproductor con poster y lazy load
   if (headerStyle === 'split_video' && videoUrl) {
     return (
-      <div className="relative h-full aspect-[9/16] max-w-full rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)] bg-stone-100">
+      <div 
+        ref={containerRef}
+        className="relative h-full aspect-[9/16] max-w-full rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)] bg-stone-100"
+      >
         {!hasError ? (
           <video
             ref={videoRef}
-            src={videoUrl}
+            src={isInView ? videoUrl : undefined}
             poster={imageUrl}
+            preload="none"
             className={`w-full h-full object-cover transition-opacity duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
             autoPlay
             loop

@@ -8,6 +8,7 @@ function BentoServiceCard({ svc, idx, gridClass, total }: { svc: any, idx: numbe
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isInView, setIsInView] = useState(false);
+  const [hasEnteredViewport, setHasEnteredViewport] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
 
@@ -17,8 +18,11 @@ function BentoServiceCard({ svc, idx, gridClass, total }: { svc: any, idx: numbe
     const observer = new IntersectionObserver(
       ([entry]) => {
         setIsInView(entry.isIntersecting);
+        if (entry.isIntersecting) {
+          setHasEnteredViewport(true);
+        }
       },
-      { threshold: 0.4 } // Se activa al visualizar el 40% de la tarjeta
+      { threshold: 0.1, rootMargin: '150px' }
     );
 
     observer.observe(containerRef.current);
@@ -27,16 +31,17 @@ function BentoServiceCard({ svc, idx, gridClass, total }: { svc: any, idx: numbe
 
   const isTouchDevice = typeof window !== 'undefined' ? window.matchMedia('(pointer: coarse)').matches : false;
   const shouldShowVideo = isTouchDevice ? isInView : isHovered;
+  const shouldMountVideo = hasEnteredViewport || isHovered;
 
   useEffect(() => {
-    if (videoRef.current) {
+    if (videoRef.current && shouldMountVideo) {
       if (shouldShowVideo) {
         videoRef.current.play().catch(() => {});
       } else {
         videoRef.current.pause();
       }
     }
-  }, [shouldShowVideo]);
+  }, [shouldShowVideo, shouldMountVideo]);
 
   const getFullUrl = (url: string) => {
     if (!url) return '';
@@ -81,21 +86,22 @@ function BentoServiceCard({ svc, idx, gridClass, total }: { svc: any, idx: numbe
         )}
       </div>
 
-      {/* Video Hover de Precarga con Control de Opacidad */}
+      {/* Video Hover de Precarga con Control de Opacidad - Lazy Loaded */}
       <div className={`absolute inset-0 z-10 transition-opacity duration-700 ${shouldShowVideo ? 'opacity-100' : 'opacity-0'} overflow-hidden`}>
-        {videoUrl ? (
+        {videoUrl && shouldMountVideo ? (
           <video 
             ref={videoRef}
             loop 
             muted 
             playsInline 
+            preload="none"
             className={`w-full h-full object-cover absolute inset-0 transition-all duration-700 ease-out ${videoLoaded ? 'opacity-100' : 'opacity-0'} group-hover:scale-105`}
             style={{
               transform: 'translateZ(0)',
               willChange: 'transform'
             }}
             onCanPlay={() => setVideoLoaded(true)}
-            src={videoUrl}
+            src={shouldMountVideo ? videoUrl : undefined}
           />
         ) : svc.image_url ? (
            <img 

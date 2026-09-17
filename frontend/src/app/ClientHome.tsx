@@ -22,6 +22,7 @@ function BentoCategoryCard({ svc, idx, gridClass, total }: { svc: any, idx: numb
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLAnchorElement>(null);
   const [isInView, setIsInView] = useState(false);
+  const [hasEnteredViewport, setHasEnteredViewport] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
 
@@ -31,8 +32,11 @@ function BentoCategoryCard({ svc, idx, gridClass, total }: { svc: any, idx: numb
     const observer = new IntersectionObserver(
       ([entry]) => {
         setIsInView(entry.isIntersecting);
+        if (entry.isIntersecting) {
+          setHasEnteredViewport(true);
+        }
       },
-      { threshold: 0.4 }
+      { threshold: 0.1, rootMargin: '150px' }
     );
 
     observer.observe(containerRef.current);
@@ -41,16 +45,17 @@ function BentoCategoryCard({ svc, idx, gridClass, total }: { svc: any, idx: numb
 
   const isTouchDevice = typeof window !== 'undefined' ? window.matchMedia('(pointer: coarse)').matches : false;
   const shouldShowVideo = isTouchDevice ? isInView : isHovered;
+  const shouldMountVideo = hasEnteredViewport || isHovered;
 
   useEffect(() => {
-    if (videoRef.current) {
+    if (videoRef.current && shouldMountVideo) {
       if (shouldShowVideo) {
         videoRef.current.play().catch(() => { });
       } else {
         videoRef.current.pause();
       }
     }
-  }, [shouldShowVideo]);
+  }, [shouldShowVideo, shouldMountVideo]);
 
   const getFullUrl = (url: string) => {
     if (!url) return '';
@@ -92,21 +97,22 @@ function BentoCategoryCard({ svc, idx, gridClass, total }: { svc: any, idx: numb
         )}
       </div>
 
-      {/* Video Hover de Precarga con Control de Opacidad */}
+      {/* Video Hover de Precarga con Control de Opacidad - Lazy Loaded */}
       <div className={`absolute inset-0 z-10 transition-opacity duration-700 ${shouldShowVideo ? 'opacity-100' : 'opacity-0'} overflow-hidden`}>
-        {videoUrl ? (
+        {videoUrl && shouldMountVideo ? (
           <video
             ref={videoRef}
             loop
             muted
             playsInline
+            preload="none"
             className={`w-full h-full object-cover absolute inset-0 transition-all duration-700 ease-out ${videoLoaded ? 'opacity-100' : 'opacity-0'} group-hover:scale-105`}
             style={{
               transform: 'translateZ(0)',
               willChange: 'transform'
             }}
             onCanPlay={() => setVideoLoaded(true)}
-            src={videoUrl}
+            src={shouldMountVideo ? videoUrl : undefined}
           />
         ) : svc.image_url ? (
           <img
@@ -223,8 +229,21 @@ function TraditionalCategoryGrid({ services }: { services: any[] }) {
 function MinimalistListCard({ svc, idx }: { svc: any, idx: number }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLAnchorElement>(null);
+  const [isInView, setIsInView] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInView(entry.isIntersecting);
+      },
+      { threshold: 0.1, rootMargin: '100px' }
+    );
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   const getFullUrl = (url: string) => {
     if (!url) return '';
@@ -232,16 +251,17 @@ function MinimalistListCard({ svc, idx }: { svc: any, idx: number }) {
   };
 
   const videoUrl = svc.video_url ? getFullUrl(svc.video_url) : null;
+  const shouldMountVideo = isInView && isHovered;
 
   useEffect(() => {
-    if (videoRef.current) {
+    if (videoRef.current && shouldMountVideo) {
       if (isHovered) {
         videoRef.current.play().catch(() => { });
       } else {
         videoRef.current.pause();
       }
     }
-  }, [isHovered]);
+  }, [isHovered, shouldMountVideo]);
 
   return (
     <Link
@@ -284,17 +304,18 @@ function MinimalistListCard({ svc, idx }: { svc: any, idx: number }) {
           )}
         </div>
 
-        {/* Video Hover */}
+        {/* Video Hover - Lazy Loaded */}
         <div className={`absolute inset-0 z-10 transition-opacity duration-700 ${isHovered ? 'opacity-100' : 'opacity-0'} overflow-hidden`}>
-          {videoUrl ? (
+          {videoUrl && shouldMountVideo ? (
             <video
               ref={videoRef}
               loop
               muted
               playsInline
+              preload="none"
               className={`w-full h-full object-cover absolute inset-0 transition-all duration-700 ease-out ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
               onCanPlay={() => setVideoLoaded(true)}
-              src={videoUrl}
+              src={shouldMountVideo ? videoUrl : undefined}
             />
           ) : svc.image_url ? (
             <img
@@ -457,7 +478,7 @@ export default function ClientHome({ content, settings, services, categories }: 
 
                 {content.hero_video_url ? (
                   <div className="absolute inset-0 z-0 bg-stone-900">
-                    <video autoPlay loop muted playsInline className="w-full h-full object-cover">
+                    <video autoPlay loop muted playsInline preload="metadata" className="w-full h-full object-cover">
                       <source src={content.hero_video_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${content.hero_video_url}` : content.hero_video_url} type="video/mp4" />
                     </video>
                     <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-stone-900/20 to-stone-900/60 mix-blend-multiply" />

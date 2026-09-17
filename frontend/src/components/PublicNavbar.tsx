@@ -75,6 +75,7 @@ function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen, 
           muted
           loop
           playsInline
+          preload="none"
           onCanPlay={() => setVideoLoaded(true)}
         />
       )}

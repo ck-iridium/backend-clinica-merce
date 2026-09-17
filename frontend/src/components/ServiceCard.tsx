@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 export default function ServiceCard({ service, isLarge = false, className = '' }: { service: any, isLarge?: boolean, className?: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isInView, setIsInView] = useState(false);
+  const [hasEnteredViewport, setHasEnteredViewport] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const containerRef = useRef<HTMLAnchorElement>(null);
@@ -15,9 +16,13 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
     const observer = new IntersectionObserver(
       ([entry]) => {
         setIsInView(entry.isIntersecting);
+        if (entry.isIntersecting) {
+          setHasEnteredViewport(true);
+        }
       },
       {
-        threshold: 0.6, // Se activa cuando el 60% de la tarjeta es visible
+        threshold: 0.1, // Detección temprana en cuanto asoma la tarjeta
+        rootMargin: '150px' // Margen de anticipación para precarga fluida
       }
     );
 
@@ -27,16 +32,18 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
 
   const isTouchDevice = typeof window !== 'undefined' ? window.matchMedia('(pointer: coarse)').matches : false;
   const shouldShowVideo = isTouchDevice ? isInView : isHovered;
+  // Solo montamos el vídeo si la tarjeta ha entrado en viewport o si hay hover activo
+  const shouldMountVideo = hasEnteredViewport || isHovered;
 
   useEffect(() => {
-    if (videoRef.current) {
+    if (videoRef.current && shouldMountVideo) {
       if (shouldShowVideo) {
         videoRef.current.play().catch(() => { });
       } else {
         videoRef.current.pause();
       }
     }
-  }, [shouldShowVideo]);
+  }, [shouldShowVideo, shouldMountVideo]);
 
   const videoUrl = service.video_url?.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${service.video_url}` : service.video_url;
 
@@ -78,21 +85,22 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
         )}
       </div>
 
-      {/* Vídeo / Imagen Secundaria Hover - CON PRE-CARGA Y CONTROL DE OPACIDAD SIN RE-MONTAR */}
+      {/* Vídeo / Imagen Secundaria Hover - CON LAZY LOAD REAL Y preload="none" */}
       <div className={`absolute inset-0 z-10 transition-opacity duration-700 ${shouldShowVideo ? 'opacity-100' : 'opacity-0'} overflow-hidden`}>
-        {videoUrl ? (
+        {videoUrl && shouldMountVideo ? (
           <video
             ref={videoRef}
             loop
             muted
             playsInline
+            preload="none"
             className={`w-full h-full object-cover absolute inset-0 transition-all duration-700 ease-out ${videoLoaded ? 'opacity-100' : 'opacity-0'} group-hover:scale-105`}
             style={{
               transform: 'translateZ(0)',
               willChange: 'transform'
             }}
             onCanPlay={() => setVideoLoaded(true)}
-            src={videoUrl}
+            src={shouldMountVideo ? videoUrl : undefined}
           />
         ) : service.image_url ? (
           <img

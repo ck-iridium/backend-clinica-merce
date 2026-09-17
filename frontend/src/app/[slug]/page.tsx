@@ -277,6 +277,7 @@ export default async function CustomPage({ params }: PageProps) {
                                         loop
                                         muted
                                         playsInline
+                                        preload="none"
                                         className="w-full"
                                         style={{ 
                                           objectFit: fitMode as any,
@@ -332,6 +333,7 @@ export default async function CustomPage({ params }: PageProps) {
                                             loop
                                             muted
                                             playsInline
+                                            preload="none"
                                             className="w-full"
                                             style={{ objectFit: fitMode as any, height: heightStyle }}
                                           />
@@ -417,7 +419,7 @@ export default async function CustomPage({ params }: PageProps) {
                               <div key={block.id} className="relative w-full min-h-[500px] md:min-h-[620px] flex items-center justify-center overflow-hidden w-full rounded-none shadow-luxury">
                                 {data.image_url ? (
                                   isVideo ? (
-                                    <video src={data.image_url} autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover" />
+                                    <video src={data.image_url} autoPlay loop muted playsInline preload="none" className="absolute inset-0 w-full h-full object-cover" />
                                   ) : (
                                     <img src={data.image_url} alt={data.heading} className="absolute inset-0 w-full h-full object-cover" />
                                   )
