@@ -1,3 +1,5 @@
+export const revalidate = 3600;
+
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -22,7 +24,7 @@ async function getServiceData(slug: string, tenantId: string) {
     const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 segundos
 
     const res = await fetch(`${baseUrl}/services/slug/${slug}`, {
-      cache: 'no-store',
+      next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-${tenantId}-service-${slug}`] },
       signal: controller.signal,
       headers: { "X-Tenant-ID": tenantId }
     });
@@ -48,7 +50,7 @@ async function getRelatedServices(currentServiceId: number, tenantId: string) {
     const timeoutId = setTimeout(() => controller.abort(), 8000);
 
     const res = await fetch(`${baseUrl}/services/`, {
-      cache: 'no-store',
+      next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-${tenantId}-services`] },
       signal: controller.signal,
       headers: { "X-Tenant-ID": tenantId }
     });
@@ -144,7 +146,7 @@ async function getSettings(tenantId: string) {
   if (!baseUrl) return null;
   try {
     const res = await fetch(`${baseUrl}/settings/`, {
-      cache: 'no-store',
+      next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-${tenantId}-settings`] },
       headers: { "X-Tenant-ID": tenantId }
     });
     if (res.ok) return await res.json();

@@ -1,3 +1,5 @@
+export const revalidate = 3600;
+
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -58,7 +60,7 @@ async function getCategoryData(slug: string, tenantId: string) {
     const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 segundos
 
     const res = await fetch(`${baseUrl}/service-categories/slug/${slug}`, {
-      next: { revalidate: 60 },
+      next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-${tenantId}-category-${slug}`] },
       signal: controller.signal,
       headers: { "X-Tenant-ID": tenantId }
     });
@@ -81,7 +83,7 @@ async function getSettings(tenantId: string) {
   if (!baseUrl) return null;
   try {
     const res = await fetch(`${baseUrl}/settings/`, {
-      next: { revalidate: 60 },
+      next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-${tenantId}-settings`] },
       headers: { "X-Tenant-ID": tenantId }
     });
     if (res.ok) return await res.json();
@@ -99,7 +101,7 @@ async function getAllCategories(tenantId: string) {
     const timeoutId = setTimeout(() => controller.abort(), 8000);
 
     const res = await fetch(`${baseUrl}/service-categories/`, {
-      next: { revalidate: 60 },
+      next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-${tenantId}-categories`] },
       signal: controller.signal,
       headers: { "X-Tenant-ID": tenantId }
     });

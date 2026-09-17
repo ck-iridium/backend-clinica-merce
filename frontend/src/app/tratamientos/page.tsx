@@ -1,6 +1,9 @@
+export const revalidate = 3600;
+
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { cookies, headers } from 'next/headers';
+import { cache } from 'react';
 import CategoryImage from '@/components/CategoryImage';
 
 export const metadata: Metadata = {
@@ -8,7 +11,7 @@ export const metadata: Metadata = {
   description: 'Explora nuestro catálogo completo de servicios y tratamientos personalizados.',
 };
 
-async function getData(tenantId: string) {
+const getData = cache(async (tenantId: string) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   if (!apiUrl) {
     console.error("[tratamientos/page.tsx] process.env.NEXT_PUBLIC_API_URL is not defined.");
@@ -17,15 +20,15 @@ async function getData(tenantId: string) {
 
   const [categoriesRes, servicesRes, settingsRes] = await Promise.all([
     fetch(`${apiUrl}/service-categories/`, {
-      cache: 'no-store',
+      next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-${tenantId}-categories`] },
       headers: { "X-Tenant-ID": tenantId }
     }),
     fetch(`${apiUrl}/services/`, {
-      cache: 'no-store',
+      next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-${tenantId}-services`] },
       headers: { "X-Tenant-ID": tenantId }
     }),
     fetch(`${apiUrl}/settings/`, {
-      cache: 'no-store',
+      next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-${tenantId}-settings`] },
       headers: { "X-Tenant-ID": tenantId }
     })
   ]);
@@ -35,7 +38,7 @@ async function getData(tenantId: string) {
   const settings = settingsRes.ok ? await settingsRes.json() : null;
 
   return { categories, services, settings };
-}
+});
 
 export default async function CatalogPage() {
   const requestHeaders = headers();

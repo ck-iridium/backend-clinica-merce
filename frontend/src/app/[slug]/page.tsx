@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: PageProps) {
 
   try {
     const res = await fetch(`${baseUrl}/cms/navigation`, {
-      next: { revalidate: 60 },
+      next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-${tenantId}-nav`] },
       headers: { 'X-Tenant-ID': tenantId },
     });
     if (res.ok) {
@@ -86,7 +86,7 @@ export default async function CustomPage({ params }: PageProps) {
   let pageTitle = slug;
   try {
     const resNav = await fetch(`${baseUrl}/cms/navigation`, {
-      next: { revalidate: 30 },
+      next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-${tenantId}-nav`] },
       headers: { 'X-Tenant-ID': tenantId },
     });
     if (resNav.ok) {
@@ -107,7 +107,7 @@ export default async function CustomPage({ params }: PageProps) {
   let rawBlocks: any[] = [];
   try {
     const resBlocks = await fetch(`${baseUrl}/cms/blocks/${slug}`, {
-      next: { revalidate: 30 },
+      next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-${tenantId}-blocks-${slug}`] },
       headers: { 'X-Tenant-ID': tenantId },
     });
     if (resBlocks.ok) {
@@ -157,8 +157,14 @@ export default async function CustomPage({ params }: PageProps) {
   let dbServices: any[] = [];
   try {
     const [resCat, resSvc] = await Promise.all([
-      fetch(`${baseUrl}/service-categories/`, { headers: { 'X-Tenant-ID': tenantId } }),
-      fetch(`${baseUrl}/services/`, { headers: { 'X-Tenant-ID': tenantId } })
+      fetch(`${baseUrl}/service-categories/`, { 
+        next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-${tenantId}-categories`] },
+        headers: { 'X-Tenant-ID': tenantId } 
+      }),
+      fetch(`${baseUrl}/services/`, { 
+        next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-${tenantId}-services`] },
+        headers: { 'X-Tenant-ID': tenantId } 
+      })
     ]);
     if (resCat.ok) dbCategories = await resCat.json();
     if (resSvc.ok) dbServices = await resSvc.json();

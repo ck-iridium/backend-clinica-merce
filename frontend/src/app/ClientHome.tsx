@@ -507,7 +507,7 @@ export default function ClientHome({ content, settings, services, categories }: 
                   <div className="absolute inset-0 z-0 bg-stone-900" />
                 )}
 
-                <div className={`relative z-10 max-w-7xl w-full animate-in slide-in-from-bottom-8 fade-in duration-1000 ${content.hero_horizontal_alignment === 'left' ? 'text-left px-6 md:px-12 lg:px-24 ml-0 mr-auto' :
+                <div className={`relative z-10 max-w-7xl w-full ${content.hero_horizontal_alignment === 'left' ? 'text-left px-6 md:px-12 lg:px-24 ml-0 mr-auto' :
                     content.hero_horizontal_alignment === 'right' ? 'text-right px-6 md:px-12 lg:px-24 mr-0 ml-auto' :
                       'text-center px-6 mx-auto'
                   }`}>

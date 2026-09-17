@@ -1,14 +1,20 @@
+export const revalidate = 3600;
+
 import { headers } from 'next/headers';
+import { cache } from 'react';
 import ClientHome from './ClientHome';
 
-async function getData(tenantId: string) {
-  const fetchSafe = async (url: string, defaultValue: any) => {
+const getData = cache(async (tenantId: string) => {
+  const fetchSafe = async (url: string, defaultValue: any, subtag: string) => {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
 
       const res = await fetch(url, { 
-        cache: 'no-store',
+        next: { 
+          revalidate: 3600, 
+          tags: [`tenant-${tenantId}`, `tenant-${tenantId}-${subtag}`] 
+        },
         signal: controller.signal,
         headers: { "X-Tenant-ID": tenantId }
       });
@@ -30,14 +36,14 @@ async function getData(tenantId: string) {
   }
 
   const [content, settings, services, categories] = await Promise.all([
-    fetchSafe(`${apiUrl}/site-content/`, null),
-    fetchSafe(`${apiUrl}/settings/`, null),
-    fetchSafe(`${apiUrl}/services/`, []),
-    fetchSafe(`${apiUrl}/service-categories/`, []),
+    fetchSafe(`${apiUrl}/site-content/`, null, 'content'),
+    fetchSafe(`${apiUrl}/settings/`, null, 'settings'),
+    fetchSafe(`${apiUrl}/services/`, [], 'services'),
+    fetchSafe(`${apiUrl}/service-categories/`, [], 'categories'),
   ]);
 
   return { content, settings, services, categories };
-}
+});
 
 export default async function Home() {
   const requestHeaders = headers();

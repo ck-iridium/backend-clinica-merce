@@ -130,7 +130,7 @@ export async function generateMetadata(): Promise<Metadata> {
   if (tenantId) {
     try {
       const resSettings = await fetch(`${baseUrl}/settings/`, {
-        next: { revalidate: 60 },
+        next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-settings-${tenantId}`] },
         headers: { "X-Tenant-ID": tenantId }
       });
       if (resSettings.ok) {
@@ -159,7 +159,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
     try {
       const resContent = await fetch(`${baseUrl}/site-content/`, {
-        next: { revalidate: 60 },
+        next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-content-${tenantId}`] },
         headers: { "X-Tenant-ID": tenantId }
       });
       if (resContent.ok) {
@@ -244,7 +244,7 @@ export default async function RootLayout({
   if (baseUrl && tenantId && !isMarketing && !isBypassRoute) {
     try {
       const resSettings = await fetch(`${baseUrl}/settings/`, {
-        cache: 'no-store', // Obtener ajustes en vivo para inyectar marca dinámicamente
+        next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-settings-${tenantId}`] },
         headers: { "X-Tenant-ID": tenantId }
       });
       if (resSettings.status === 402) {
@@ -259,7 +259,7 @@ export default async function RootLayout({
   if (isMarketing && baseUrl) {
     try {
       const resPub = await fetch(`${baseUrl}/super-admin/marketing/public`, {
-        next: { revalidate: 60 }
+        next: { revalidate: 3600, tags: ['marketing-public'] }
       });
       if (resPub.ok) {
         const data = await resPub.json();

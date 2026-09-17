@@ -43,7 +43,7 @@ export async function resolveTenantContext(): Promise<ResolvedTenantContext> {
   if (!isMarketing && tenantSlug && !tenantId) {
     try {
       const res = await fetch(`${apiUrl}/stripe/resolve-tenant/${tenantSlug}`, {
-        next: { revalidate: 3600 }
+        next: { revalidate: 3600, tags: [`tenant-${tenantSlug}`, 'tenant-resolver'] }
       });
       if (res.ok) {
         const data = await res.json();
