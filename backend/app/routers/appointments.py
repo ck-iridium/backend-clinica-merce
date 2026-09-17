@@ -105,7 +105,6 @@ def log_exceptions(func):
 
 @router.post("/public", response_model=schemas.PublicBookingResponse, status_code=201)
 @limiter.limit("5/minute")
-@log_exceptions
 def public_booking(request: Request, booking: schemas.PublicBookingRequest, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
     """
     Landing page booking endpoint with Zero-Friction and Multi-layer Bot Protection.
@@ -364,17 +363,18 @@ def public_booking(request: Request, booking: schemas.PublicBookingRequest, back
 
     # Si la cita requiere verificación OTP (cliente nuevo/no verificado):
     if appt.status == "pending_verification":
-        # Despachar de inmediato el código OTP al email del cliente
-        vc = db.query(models.VerificationCode).filter(
-            models.VerificationCode.appointment_id == appt.id,
-            models.VerificationCode.tenant_id == appt.tenant_id
-        ).order_by(models.VerificationCode.created_at.desc()).first()
-
-        if vc:
-            if background_tasks:
+        # El código ya fue programado en background_tasks por crud.create_public_appointment.
+        # En caso de que no estuviera presente, usamos fallback de búsqueda en BD.
+        otp_code_val = getattr(appt, "otp_code", None)
+        if not otp_code_val:
+            vc = db.query(models.VerificationCode).filter(
+                models.VerificationCode.appointment_id == appt.id
+            ).order_by(models.VerificationCode.created_at.desc()).first()
+            if vc:
+                otp_code_val = vc.code
                 background_tasks.add_task(mailer.send_appointment_notification, appt.id, 'otp_verification', otp_code=vc.code)
-            else:
-                mailer.send_appointment_notification(appt.id, 'otp_verification', otp_code=vc.code)
+        
+        print(f"[OTP_DISPATCH] Código OTP {otp_code_val} programado para cliente de cita {appt.id}", flush=True)
 
         raw_email = client.email or booking.client_email or ""
         masked_email = ""

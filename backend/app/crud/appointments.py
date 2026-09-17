@@ -556,11 +556,15 @@ def create_public_appointment(db: Session, booking: schemas.PublicBookingRequest
         db.add(vc)
         db.commit()
 
-        if send_email:
-            if background_tasks:
-                background_tasks.add_task(mailer.send_appointment_notification, appt.id, 'otp_verification', otp_code=otp_code)
-            else:
-                mailer.send_appointment_notification(appt.id, 'otp_verification', otp_code=otp_code)
+        # Guardar otp_code en la instancia appt para acceso inmediato
+        appt.otp_code = otp_code
+
+        # El código de verificación OTP DEBE enviarse SIEMPRE, incondicionalmente
+        # (send_email solo rige la confirmación posterior de la cita con Stripe).
+        if background_tasks:
+            background_tasks.add_task(mailer.send_appointment_notification, appt.id, 'otp_verification', otp_code=otp_code)
+        else:
+            mailer.send_appointment_notification(appt.id, 'otp_verification', otp_code=otp_code)
     else:
         # Cliente recurrente ya verificado en este tenant: confirmar directamente
         if send_email:

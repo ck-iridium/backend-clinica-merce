@@ -231,7 +231,9 @@ def send_appointment_notification(appointment_id: str, type: str, otp_code: str 
                 print(f"🔗 URL: {verify_url}")
                 print("="*60 + "\n")
         elif type == 'otp_verification':
-            if client.email and otp_code:
+            target_to = (client.email if client else None)
+            print(f"[MAILER_OTP] Despachando notificación OTP '{otp_code}' a cliente: {target_to} (Cita: {appointment_id})", flush=True)
+            if target_to and otp_code:
                 subject = f"{otp_code} es tu código de confirmación en {clinic_name}"
                 content = f"""
                 <h2 style="color: #5c4d4f; margin-bottom: 5px;">¡Hola, {client.name}!</h2>
@@ -246,7 +248,10 @@ def send_appointment_notification(appointment_id: str, type: str, otp_code: str 
                 
                 <p style="margin: 0; color: #a49697; font-size: 12px; text-align: center;">El código caduca en 10 minutos. No lo compartas con nadie.</p>
                 """
-                send_email(client.email, subject, get_html_template(content, clinic_name, settings.clinic_phone), settings=settings)
+                sent_ok = send_email(target_to, subject, get_html_template(content, clinic_name, settings.clinic_phone), settings=settings)
+                print(f"[MAILER_OTP] Resultado de envío a {target_to}: {sent_ok}", flush=True)
+            else:
+                print(f"[MAILER_OTP_ERROR] No se pudo enviar OTP: target_to={target_to}, otp_code={otp_code}", flush=True)
 
         elif type == 'confirmation':
             # Flujo B: Confirmación al Cliente (Estilo Premium) con enlace de cancelación
