@@ -83,6 +83,7 @@ class Client(Base):
     medical_history = Column(Text, nullable=True)
     allergies = Column(Text, nullable=True)
     preferred_language = Column(String, default="es")
+    is_verified = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -95,6 +96,21 @@ class Client(Base):
     appointments = relationship("Appointment", back_populates="client")
     vouchers = relationship("Voucher", back_populates="client")
     consents = relationship("Consent", back_populates="client")
+
+class VerificationCode(Base):
+    __tablename__ = "verification_codes"
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
+    client_id = Column(String(36), ForeignKey("clients.id"), nullable=False, index=True)
+    appointment_id = Column(String(36), ForeignKey("appointments.id"), nullable=True, index=True)
+    code = Column(String(6), nullable=False)
+    target_email = Column(String, nullable=False)
+    attempts = Column(Integer, default=0)
+    expires_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    client = relationship("Client")
+    appointment = relationship("Appointment")
 
 class Consent(Base):
     __tablename__ = "consents"

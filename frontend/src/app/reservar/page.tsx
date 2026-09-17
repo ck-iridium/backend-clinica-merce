@@ -10,6 +10,7 @@ import Step2DateTime from './components/Step2DateTime';
 import Step3Details from './components/Step3Details';
 import Step4Success from './components/Step4Success';
 import Step0Locations from './components/Step0Locations';
+import OtpVerificationModal from './components/OtpVerificationModal';
 
 // Helper for local ISO to prevent Server/Client boundary timezone rendering errors on Backend
 const formatLocalISO = (date: Date) => {
@@ -110,6 +111,9 @@ export default function BookingPage() {
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [bookingError, setBookingError] = useState('');
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [pendingAppointmentId, setPendingAppointmentId] = useState('');
+  const [pendingMaskedEmail, setPendingMaskedEmail] = useState('');
 
   // Dynamic step indicators
   const hasLocs = locations.length > 1;
@@ -342,6 +346,10 @@ export default function BookingPage() {
       const data = await res.json();
       if (data.checkout_url) {
         window.location.href = data.checkout_url;
+      } else if (data.requires_verification || data.status === 'verification_required') {
+        setPendingAppointmentId(data.appointment_id);
+        setPendingMaskedEmail(data.verification_email_masked || formData.email);
+        setShowOtpModal(true);
       } else {
         setStep(5); // Step 5 is Success screen
       }
@@ -628,6 +636,19 @@ export default function BookingPage() {
           </div>
         </footer>
       )}
+
+      {/* Modal de Verificación OTP en 1 sola ocasión */}
+      <OtpVerificationModal
+        isOpen={showOtpModal}
+        appointmentId={pendingAppointmentId}
+        maskedEmail={pendingMaskedEmail}
+        tenantId={getTenantId()}
+        onSuccess={() => {
+          setShowOtpModal(false);
+          setStep(5);
+        }}
+        onClose={() => setShowOtpModal(false)}
+      />
 
       <style dangerouslySetInnerHTML={{ __html: `
         .custom-scrollbar::-webkit-scrollbar { width: 3px; }

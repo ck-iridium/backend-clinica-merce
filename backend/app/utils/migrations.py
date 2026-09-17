@@ -99,6 +99,7 @@ $function$;
             
         # Lista de migraciones: ALTER TABLE es soportado por SQLite y PostgreSQL
         migrations = [
+            "ALTER TABLE clients ADD COLUMN is_verified BOOLEAN DEFAULT FALSE",
             "ALTER TABLE clinic_settings ADD COLUMN smtp_host VARCHAR",
             "ALTER TABLE clinic_settings ADD COLUMN smtp_port INTEGER",
             "ALTER TABLE clinic_settings ADD COLUMN smtp_user VARCHAR",

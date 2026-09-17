@@ -129,6 +129,17 @@
     "contactWhatsApp": "Contacter par WhatsApp",
     "backHome": "Retour à l'accueil"
   },
+  "otp": {
+    "modal_title": "Vérifiez votre Réservation",
+    "modal_desc": "Uniquement pour votre première visite, nous avons envoyé un code à 6 chiffres à",
+    "incomplete": "Entrez les 6 chiffres du code.",
+    "invalid_code": "Code de vérification incorrect.",
+    "resend_success": "Nouveau code envoyé à votre adresse e-mail !",
+    "verify_btn": "Confirmer le rendez-vous",
+    "didnt_receive": "Vous n'avez pas reçu le code ?",
+    "resend_in": "Vous pourrez en demander un autre dans",
+    "resend_action": "Renvoyer le code maintenant"
+  },
   "contact": {
     "title": "Nous sommes",
     "title_italic": "avec vous.",

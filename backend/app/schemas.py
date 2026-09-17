@@ -603,6 +603,15 @@ class PublicBookingResponse(BaseModel):
     end_time: datetime
     status: str
     checkout_url: Optional[str] = None
+    requires_verification: Optional[bool] = False
+    verification_email_masked: Optional[str] = None
+
+class VerifyOtpRequest(BaseModel):
+    appointment_id: str
+    code: str
+
+class ResendOtpRequest(BaseModel):
+    appointment_id: str
 
 class AvailabilityResponse(BaseModel):
     date: str

@@ -131,7 +131,7 @@ def get_html_template(content_html, clinic_name, clinic_phone):
     </html>
     """
 
-def send_appointment_notification(appointment_id: str, type: str):
+def send_appointment_notification(appointment_id: str, type: str, otp_code: str = None):
     """
     Gestiona las notificaciones de citas (Cliente + Clínica).
     Ejecutar siempre en segundo plano (BackgroundTasks).
@@ -230,6 +230,22 @@ def send_appointment_notification(appointment_id: str, type: str):
                 print(f"🆔 CONFIRMACIÓN DE CITA PARA: {client.name}")
                 print(f"🔗 URL: {verify_url}")
                 print("="*60 + "\n")
+        elif type == 'otp_verification':
+            if client.email and otp_code:
+                subject = f"{otp_code} es tu código de confirmación en {clinic_name}"
+                content = f"""
+                <h2 style="color: #5c4d4f; margin-bottom: 5px;">¡Hola, {client.name}!</h2>
+                <p style="color: #887a7c; font-size: 15px; line-height: 1.5; margin-bottom: 25px;">
+                    Introduce el siguiente código numérico en la pantalla para confirmar tu cita. Este paso solo te lo pediremos en tu primera reserva:
+                </p>
+                
+                <div style="background-color: #ffffff; border: 2px solid #fdf2f3; border-radius: 20px; padding: 25px 20px; text-align: center; margin-bottom: 25px;">
+                    <p style="margin: 0; color: #a49697; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;">CÓDIGO DE VERIFICACIÓN</p>
+                    <p style="margin: 10px 0 0 0; font-size: 38px; color: #1c1917; font-weight: 800; letter-spacing: 8px; font-family: monospace;">{otp_code}</p>
+                </div>
+                
+                <p style="margin: 0; color: #a49697; font-size: 12px; text-align: center;">El código caduca en 10 minutos. No lo compartas con nadie.</p>
+                """
                 send_email(client.email, subject, get_html_template(content, clinic_name, settings.clinic_phone), settings=settings)
 
         elif type == 'confirmation':

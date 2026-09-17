@@ -362,8 +362,29 @@ def public_booking(request: Request, booking: schemas.PublicBookingRequest, back
             # Si falla Stripe, permitimos la reserva normal web_pending
             pass
 
+    # Si la cita requiere verificación OTP (cliente nuevo/no verificado):
+    if appt.status == "pending_verification":
+        raw_email = client.email or booking.client_email or ""
+        masked_email = ""
+        if "@" in raw_email:
+            u_p, d_p = raw_email.split("@", 1)
+            masked_user = (u_p[:2] + "***") if len(u_p) > 2 else (u_p[:1] + "***")
+            masked_email = f"{masked_user}@{d_p}"
+
+        return schemas.PublicBookingResponse(
+            appointment_id=appt.id,
+            client_id=client.id,
+            is_new_client=is_new,
+            start_time=appt.start_time,
+            end_time=appt.end_time,
+            status="verification_required",
+            checkout_url=checkout_url,
+            requires_verification=True,
+            verification_email_masked=masked_email
+        )
+
     # Si no hay checkout_url (no requiere fianza o falló Stripe),
-    # la cita ya queda directamente 'confirmed'. Notificamos al admin y al cliente al instante.
+    # y el cliente ya está verificado, la cita queda directamente 'confirmed'.
     if not checkout_url:
         from ..utils.notifications import create_admin_notification
         create_admin_notification(
@@ -384,8 +405,168 @@ def public_booking(request: Request, booking: schemas.PublicBookingRequest, back
         start_time=appt.start_time,
         end_time=appt.end_time,
         status=appt.status,
-        checkout_url=checkout_url
+        checkout_url=checkout_url,
+        requires_verification=False
     )
+
+
+@router.post("/verify-otp", response_model=schemas.PublicBookingResponse)
+@limiter.limit("10/minute")
+def verify_otp(
+    request: Request,
+    payload: schemas.VerifyOtpRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(database.get_db)
+):
+    """
+    Verifies the 6-digit OTP code for a new client appointment.
+    On success:
+    - Marks Client.is_verified = True (persisted permanently for this tenant).
+    - Updates Appointment.status = 'confirmed'.
+    - Sends official confirmation emails and notifies clinic staff.
+    """
+    from ..database import current_tenant_var
+    tenant_id = current_tenant_var.get()
+
+    appt = db.query(models.Appointment).filter(
+        models.Appointment.id == payload.appointment_id,
+        models.Appointment.tenant_id == tenant_id
+    ).first()
+
+    if not appt:
+        raise HTTPException(status_code=404, detail="Cita no encontrada.")
+
+    client = appt.client
+
+    # Si ya estaba confirmada previamente
+    if appt.status == "confirmed":
+        return schemas.PublicBookingResponse(
+            appointment_id=appt.id,
+            client_id=client.id if client else "",
+            is_new_client=False,
+            start_time=appt.start_time,
+            end_time=appt.end_time,
+            status="confirmed",
+            requires_verification=False
+        )
+
+    # Buscar el código OTP activo más reciente
+    vc = db.query(models.VerificationCode).filter(
+        models.VerificationCode.appointment_id == appt.id,
+        models.VerificationCode.tenant_id == tenant_id
+    ).order_by(models.VerificationCode.created_at.desc()).first()
+
+    if not vc:
+        raise HTTPException(status_code=400, detail="No se encontró ningún código de verificación activo. Solicita un reenvío.")
+
+    # Comprobar expiración (10 minutos)
+    if datetime.utcnow() > vc.expires_at:
+        raise HTTPException(status_code=400, detail="El código de verificación ha caducado. Por favor solicita uno nuevo.")
+
+    # Control anti-fuerza bruta (máximo 5 intentos)
+    if vc.attempts >= 5:
+        raise HTTPException(status_code=429, detail="Has superado el límite de intentos. Por favor solicita un nuevo código.")
+
+    if vc.code != payload.code.strip():
+        vc.attempts += 1
+        db.commit()
+        remaining = max(0, 5 - vc.attempts)
+        raise HTTPException(
+            status_code=400,
+            detail=f"Código incorrecto. Te quedan {remaining} intentos."
+        )
+
+    # ── VERIFICACIÓN EXITOSA ──
+    # 1. Marcar cliente como verificado para siempre en este tenant
+    if client:
+        client.is_verified = True
+        db.add(client)
+
+    # 2. Confirmar cita
+    appt.status = "confirmed"
+    db.add(appt)
+
+    # 3. Eliminar código usado
+    db.delete(vc)
+    db.commit()
+
+    # 4. Disparar notificaciones
+    from ..utils.notifications import create_admin_notification
+    create_admin_notification(
+        db,
+        title="✨ Cita Verificada (Nuevo Cliente)",
+        description=f"Reserva online de {client.name} verificada para {appt.start_time.strftime('%d/%m a las %H:%M')}",
+        type="success",
+        metadata={"appointment_id": appt.id},
+        tenant_id=appt.tenant_id
+    )
+    background_tasks.add_task(mailer.send_appointment_notification, appt.id, 'confirmation')
+    background_tasks.add_task(mailer.send_appointment_notification, appt.id, 'new_web_booking')
+
+    return schemas.PublicBookingResponse(
+        appointment_id=appt.id,
+        client_id=client.id if client else "",
+        is_new_client=True,
+        start_time=appt.start_time,
+        end_time=appt.end_time,
+        status="confirmed",
+        requires_verification=False
+    )
+
+
+@router.post("/resend-otp")
+@limiter.limit("3/minute")
+def resend_otp(
+    request: Request,
+    payload: schemas.ResendOtpRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(database.get_db)
+):
+    """
+    Generates and emails a new 6-digit OTP code for an unverified appointment.
+    """
+    from ..database import current_tenant_var
+    import random
+    tenant_id = current_tenant_var.get()
+
+    appt = db.query(models.Appointment).filter(
+        models.Appointment.id == payload.appointment_id,
+        models.Appointment.tenant_id == tenant_id
+    ).first()
+
+    if not appt:
+        raise HTTPException(status_code=404, detail="Cita no encontrada.")
+
+    if appt.status == "confirmed":
+        return {"status": "already_confirmed", "message": "Esta cita ya está confirmada."}
+
+    client = appt.client
+    target_email = client.email if client else None
+    if not target_email:
+        raise HTTPException(status_code=400, detail="No hay una dirección de correo asociada a esta reserva.")
+
+    # Generar nuevo código
+    new_code = f"{random.randint(100000, 999999)}"
+
+    # Limpiar códigos anteriores de la cita
+    db.query(models.VerificationCode).filter(
+        models.VerificationCode.appointment_id == appt.id,
+        models.VerificationCode.tenant_id == tenant_id
+    ).delete()
+
+    vc = models.VerificationCode(
+        tenant_id=tenant_id,
+        client_id=client.id,
+        appointment_id=appt.id,
+        code=new_code,
+        target_email=target_email,
+        expires_at=datetime.utcnow() + timedelta(minutes=10)
+    )
+    db.add(vc)
+    db.commit()
+
+    background_tasks.add_task(mailer.send_appointment_notification, appt.id, 'otp_verification', otp_code=new_code)
+    return {"status": "success", "message": "Nuevo código enviado correctamente."}
 
 
 # ─── Internal CRUD endpoints ────────────────────────────────────────────────

@@ -508,6 +508,11 @@ def create_public_appointment(db: Session, booking: schemas.PublicBookingRequest
         client.client_city = booking.client_city
         db.add(client)
 
+    import random
+
+    is_verified_client = bool(getattr(client, "is_verified", False))
+    initial_status = "confirmed" if is_verified_client else "pending_verification"
+
     appt = models.Appointment(
         id=str(uuid.uuid4()),
         tenant_id=tenant_id,
@@ -517,7 +522,7 @@ def create_public_appointment(db: Session, booking: schemas.PublicBookingRequest
         location_id=location_id,
         start_time=booking.start_time,
         end_time=end_time,
-        status="confirmed",
+        status=initial_status,
         notes=booking.notes,
         service_modality=getattr(booking, "service_modality", "clinic"),
         client_address=getattr(booking, "client_address", None),
@@ -530,11 +535,39 @@ def create_public_appointment(db: Session, booking: schemas.PublicBookingRequest
     db.commit()
     db.refresh(appt)
 
-    if send_email:
-        if background_tasks:
-            background_tasks.add_task(mailer.send_appointment_notification, appt.id, 'confirmation')
-        else:
-            mailer.send_appointment_notification(appt.id, 'confirmation')
+    if not is_verified_client:
+        # Generar código OTP de 6 dígitos numéricos
+        otp_code = f"{random.randint(100000, 999999)}"
+        
+        # Invalidar cualquier código anterior de este cliente o cita
+        db.query(models.VerificationCode).filter(
+            models.VerificationCode.tenant_id == tenant_id,
+            models.VerificationCode.client_id == client.id
+        ).delete()
+
+        vc = models.VerificationCode(
+            tenant_id=tenant_id,
+            client_id=client.id,
+            appointment_id=appt.id,
+            code=otp_code,
+            target_email=client.email or booking.client_email,
+            expires_at=datetime.utcnow() + timedelta(minutes=10)
+        )
+        db.add(vc)
+        db.commit()
+
+        if send_email:
+            if background_tasks:
+                background_tasks.add_task(mailer.send_appointment_notification, appt.id, 'otp_verification', otp_code=otp_code)
+            else:
+                mailer.send_appointment_notification(appt.id, 'otp_verification', otp_code=otp_code)
+    else:
+        # Cliente recurrente ya verificado en este tenant: confirmar directamente
+        if send_email:
+            if background_tasks:
+                background_tasks.add_task(mailer.send_appointment_notification, appt.id, 'confirmation')
+            else:
+                mailer.send_appointment_notification(appt.id, 'confirmation')
 
     return appt, client, is_new
 

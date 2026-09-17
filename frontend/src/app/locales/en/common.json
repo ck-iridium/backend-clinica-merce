@@ -132,6 +132,17 @@
     "contactWhatsApp": "Contact via WhatsApp",
     "backHome": "Back to Home"
   },
+  "otp": {
+    "modal_title": "Verify your Appointment",
+    "modal_desc": "Only because it's your first visit, we sent a 6-digit code to",
+    "incomplete": "Enter the 6-digit code.",
+    "invalid_code": "Incorrect verification code.",
+    "resend_success": "New code sent to your inbox!",
+    "verify_btn": "Confirm Appointment",
+    "didnt_receive": "Didn't receive the code?",
+    "resend_in": "You can request another in",
+    "resend_action": "Resend code now"
+  },
   "contact": {
     "title": "We are",
     "title_italic": "with you.",
