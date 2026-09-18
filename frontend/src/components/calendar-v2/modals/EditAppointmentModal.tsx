@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Calendar, Sparkles, Trash2, AlertTriangle, Save, MessageCircle, Clock } from 'lucide-react';
+import { toast } from 'sonner';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import {
   Dialog,
@@ -23,6 +24,10 @@ interface EditAppointmentModalProps {
   setSelectedAppt: (appt: any) => void;
   clientMap: Map<string, any>;
   serviceMap: Map<string, any>;
+  settings?: any;
+  endHour?: number;
+  getAppointmentsForDay?: (d: Date) => any[];
+  getBlocksForDay?: (d: Date) => any[];
   editNotes: string;
   setEditNotes: (v: string) => void;
   updatingStatus: boolean;
@@ -44,6 +49,10 @@ export function EditAppointmentModal({
   setSelectedAppt,
   clientMap,
   serviceMap,
+  settings,
+  endHour = 20,
+  getAppointmentsForDay,
+  getBlocksForDay,
   editNotes,
   setEditNotes,
   updatingStatus,
@@ -68,6 +77,44 @@ export function EditAppointmentModal({
   useEffect(() => {
     setDuration(currentApptDuration);
   }, [currentApptDuration]);
+
+  // Cálculo del hueco libre máximo disponible desde el inicio de la cita sin invadir descansos, cierres u otras citas
+  const availableGapMinutes = useMemo(() => {
+    if (!selectedAppt?.start_time) return 480;
+    const tS = selectedAppt.start_time.endsWith('Z') ? selectedAppt.start_time.slice(0, -1) : selectedAppt.start_time;
+    const s_time = new Date(tS);
+    const apptDate = new Date(s_time.getFullYear(), s_time.getMonth(), s_time.getDate());
+
+    const closingH = endHour || 20;
+    const closingM = settings?.close_time ? parseInt(settings.close_time.split(':')[1]) : 0;
+    const closingTime = new Date(apptDate);
+    closingTime.setHours(closingH, closingM, 0, 0);
+
+    let lunchStart = closingTime;
+    if (settings?.lunch_start) {
+      lunchStart = new Date(apptDate);
+      const [lH, lM] = settings.lunch_start.split(':').map(Number);
+      lunchStart.setHours(lH, lM, 0, 0);
+    }
+
+    const dayAppts = (getAppointmentsForDay ? getAppointmentsForDay(apptDate) : []) || [];
+    const dayBlocks = (getBlocksForDay ? getBlocksForDay(apptDate) : []) || [];
+
+    const futureEvents = [...dayAppts, ...dayBlocks]
+      .filter(e => e.id !== selectedAppt.id && e.status !== 'cancelled')
+      .map(e => ({ ...e, start: new Date(e.start_time.endsWith('Z') ? e.start_time.slice(0, -1) : e.start_time) }))
+      .filter(e => e.start > s_time)
+      .sort((a, b) => a.start.getTime() - b.start.getTime());
+
+    let nextLimit = futureEvents.length > 0 ? futureEvents[0].start : closingTime;
+    if (s_time < lunchStart && nextLimit > lunchStart) {
+      nextLimit = lunchStart;
+    }
+
+    const effectiveLimit = nextLimit < closingTime ? nextLimit : closingTime;
+    const diffMins = Math.floor((effectiveLimit.getTime() - s_time.getTime()) / 60000);
+    return Math.max(0, diffMins);
+  }, [selectedAppt, endHour, settings, getAppointmentsForDay, getBlocksForDay]);
 
   const getLocaleString = () => {
     return language === 'es' ? 'es-ES' : language === 'en' ? 'en-US' : 'fr-FR';
@@ -162,25 +209,32 @@ export function EditAppointmentModal({
 
             <div className="flex flex-wrap items-center gap-2">
               <div className="flex flex-wrap gap-1.5 flex-1">
-                {[15, 30, 45, 60, 90, 120].map(mins => (
-                  <button
-                    key={mins}
-                    type="button"
-                    id={`edit-appt-duration-${mins}-btn`}
-                    onClick={() => setDuration(mins)}
-                    disabled={updatingStatus}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${duration === mins ? 'bg-stone-800 text-white border-stone-800 shadow-sm' : 'bg-white text-stone-600 border-stone-200 hover:border-stone-300'}`}
-                  >
-                    {mins}m
-                  </button>
-                ))}
+                {[15, 30, 45, 60, 90, 120].map(mins => {
+                  const isExceeded = availableGapMinutes > 0 && mins > availableGapMinutes;
+                  return (
+                    <button
+                      key={mins}
+                      type="button"
+                      id={`edit-appt-duration-${mins}-btn`}
+                      onClick={() => setDuration(mins)}
+                      disabled={isExceeded || updatingStatus}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                        isExceeded ? 'opacity-30 cursor-not-allowed bg-stone-100 text-stone-400 border-stone-100' :
+                        duration === mins ? 'bg-stone-800 text-white border-stone-800 shadow-sm' :
+                        'bg-white text-stone-600 border-stone-200 hover:border-stone-300'
+                      }`}
+                    >
+                      {mins}m
+                    </button>
+                  );
+                })}
               </div>
 
               <div className="flex items-center gap-1 w-28 shrink-0 bg-white border border-stone-200 rounded-xl px-2.5 py-1.5 shadow-xs">
                 <input
                   type="number"
                   min="5"
-                  max="480"
+                  max={availableGapMinutes > 0 ? availableGapMinutes : 480}
                   step="5"
                   id="edit-appt-custom-duration-input"
                   value={duration || ''}
@@ -195,7 +249,13 @@ export function EditAppointmentModal({
             {duration !== currentApptDuration && (
               <button
                 id="edit-appt-save-duration-btn"
-                onClick={() => handleUpdateDuration(duration)}
+                onClick={() => {
+                  if (availableGapMinutes > 0 && duration > availableGapMinutes) {
+                    toast.error(`La duración no puede superar los ${availableGapMinutes} min disponibles (evita invadir descansos o citas).`);
+                    return;
+                  }
+                  handleUpdateDuration(duration);
+                }}
                 disabled={updatingStatus}
                 className="w-full bg-stone-800 hover:bg-stone-900 text-white text-[10px] font-bold uppercase py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 active:scale-95 shadow-xs"
               >

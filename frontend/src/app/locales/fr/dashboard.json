@@ -100,7 +100,8 @@
       "release_error": "Erreur lors de la libération",
       "appt_scheduled": "Rendez-vous planifié avec succès",
       "block_error": "Erreur lors du blocage du créneau",
-      "slot_blocked": "Créneau horaire bloqué"
+      "slot_blocked": "Créneau horaire bloqué",
+      "duration_updated": "Durée du rendez-vous mise à jour"
     },
     "modal": {
       "delete_title": "Supprimer le Rendez-vous",

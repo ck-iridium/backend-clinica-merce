@@ -136,7 +136,8 @@ export function CalendarModals({
         const updated = await res.json();
         await fetchData();
         setSelectedAppt(updated);
-        toast.success(t('dashboard.calendar.toast.duration_updated') || 'Duración de la cita actualizada');
+        const msg = t('dashboard.calendar.toast.duration_updated');
+        toast.success(msg && !msg.includes('.') ? msg : 'Duración de la cita actualizada');
       } else {
         const err = await res.json();
         toast.error(`Error: ${err.detail || t('dashboard.calendar.toast.update_error') || 'Error al actualizar duración'}`);
@@ -212,6 +213,10 @@ export function CalendarModals({
         setSelectedAppt={setSelectedAppt}
         clientMap={clientMap}
         serviceMap={serviceMap}
+        settings={settings}
+        endHour={endHour}
+        getAppointmentsForDay={getAppointmentsForDay}
+        getBlocksForDay={getBlocksForDay}
         editNotes={editNotes}
         setEditNotes={setEditNotes}
         updatingStatus={updatingStatus}

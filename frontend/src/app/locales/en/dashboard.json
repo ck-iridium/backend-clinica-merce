@@ -100,7 +100,8 @@
       "release_error": "Error releasing slot",
       "appt_scheduled": "Appointment scheduled successfully",
       "block_error": "Error blocking time slot",
-      "slot_blocked": "Time slot blocked"
+      "slot_blocked": "Time slot blocked",
+      "duration_updated": "Appointment duration updated"
     },
     "modal": {
       "delete_title": "Delete Appointment",

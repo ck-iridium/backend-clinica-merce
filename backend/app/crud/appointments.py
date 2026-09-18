@@ -90,6 +90,17 @@ def check_appointment_collision(db: Session, start_time: datetime, end_time: dat
     if start_time < get_spain_now():
         return "No puedes reservar una cita en el pasado."
 
+    # 1d. Lunch Break Check (Dynamic from ClinicSettings)
+    lunch_start_str = settings.lunch_start if settings and settings.lunch_start else None
+    lunch_end_str = settings.lunch_end if settings and settings.lunch_end else None
+    if lunch_start_str and lunch_end_str:
+        l_sh, l_sm = map(int, lunch_start_str.split(':'))
+        l_eh, l_em = map(int, lunch_end_str.split(':'))
+        lunch_start = start_time.replace(hour=l_sh, minute=l_sm, second=0, microsecond=0)
+        lunch_end = start_time.replace(hour=l_eh, minute=l_em, second=0, microsecond=0)
+        if max(start_time, lunch_start) < min(end_time, lunch_end):
+            return f"La cita invade el horario de descanso/almuerzo de la clínica ({lunch_start_str} - {lunch_end_str})."
+
     # 2. Collision with other Appointments (scoped to tenant and specialist)
     query = db.query(models.Appointment).filter(
         models.Appointment.tenant_id == tenant_id,

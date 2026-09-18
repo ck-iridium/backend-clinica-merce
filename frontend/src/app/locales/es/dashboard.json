@@ -100,7 +100,8 @@
       "release_error": "Error al liberar",
       "appt_scheduled": "Cita agendada correctamente",
       "block_error": "Error al bloquear horario",
-      "slot_blocked": "Horario bloqueado"
+      "slot_blocked": "Horario bloqueado",
+      "duration_updated": "Duración de la cita actualizada"
     },
     "modal": {
       "delete_title": "Eliminar Cita",
