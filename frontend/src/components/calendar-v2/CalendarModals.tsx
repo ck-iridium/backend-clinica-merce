@@ -123,6 +123,31 @@ export function CalendarModals({
     }
   };
 
+  const handleUpdateDuration = async (newDuration: number) => {
+    if (!selectedAppt) return;
+    setUpdatingStatus(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/${selectedAppt.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ duration_minutes: newDuration })
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        await fetchData();
+        setSelectedAppt(updated);
+        toast.success(t('dashboard.calendar.toast.duration_updated') || 'Duración de la cita actualizada');
+      } else {
+        const err = await res.json();
+        toast.error(`Error: ${err.detail || t('dashboard.calendar.toast.update_error') || 'Error al actualizar duración'}`);
+      }
+    } catch (e) {
+      toast.error(t('dashboard.calendar.toast.connection_error') || 'Error de conexión');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
   const handleDeleteAppointment = async () => {
     if (!selectedAppt) return;
     showFeedback({
@@ -192,6 +217,7 @@ export function CalendarModals({
         updatingStatus={updatingStatus}
         handleStatusChange={handleStatusChange}
         handleUpdateNotes={handleUpdateNotes}
+        handleUpdateDuration={handleUpdateDuration}
         handleDeleteAppointment={handleDeleteAppointment}
         openWhatsApp={openWhatsApp}
       />

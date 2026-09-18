@@ -456,9 +456,11 @@ class AppointmentBase(BaseModel):
     stripe_checkout_session_id: Optional[str] = None
     notes: Optional[str] = None
     reminder_sent: bool = False
+    duration_minutes: Optional[int] = None
+    custom_duration: Optional[int] = None
 
 class AppointmentCreate(AppointmentBase):
-    pass
+    end_time: Optional[datetime] = None
 
 class AppointmentUpdate(BaseModel):
     client_id: Optional[str] = None
@@ -467,6 +469,8 @@ class AppointmentUpdate(BaseModel):
     location_id: Optional[str] = None
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
+    duration_minutes: Optional[int] = None
+    custom_duration: Optional[int] = None
     status: Optional[str] = None
     payment_status: Optional[str] = None
     stripe_payment_intent_id: Optional[str] = None

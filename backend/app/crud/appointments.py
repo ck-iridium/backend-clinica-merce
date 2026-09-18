@@ -131,11 +131,19 @@ def get_appointments(db: Session, skip: int = 0, limit: int = 100):
 
 def create_appointment(db: Session, appointment: schemas.AppointmentCreate):
     tenant_id = current_tenant_var.get()
-    # Calculate end_time if not provided
-    if not appointment.end_time:
+    
+    appt_data = appointment.model_dump()
+    duration_mins = appt_data.pop("duration_minutes", None) or appt_data.pop("custom_duration", None)
+
+    # Calcular end_time con duración personalizada si se proporciona, o recurrir a la del servicio
+    if duration_mins and int(duration_mins) > 0:
+        appointment.end_time = appointment.start_time + timedelta(minutes=int(duration_mins))
+        appt_data["end_time"] = appointment.end_time
+    elif not appointment.end_time:
         service = get_service(db, appointment.service_id)
         if service:
             appointment.end_time = appointment.start_time + timedelta(minutes=service.duration_minutes)
+            appt_data["end_time"] = appointment.end_time
 
     collision_msg = check_appointment_collision(
         db, 
@@ -147,7 +155,6 @@ def create_appointment(db: Session, appointment: schemas.AppointmentCreate):
     if collision_msg:
         raise ValueError(collision_msg)
 
-    appt_data = appointment.model_dump()
     appt_data["tenant_id"] = tenant_id
     db_appointment = models.Appointment(**appt_data)
     db.add(db_appointment)
@@ -164,19 +171,27 @@ def update_appointment(db: Session, appointment_id: str, appointment: schemas.Ap
     if db_appointment:
         old_status = db_appointment.status
         update_data = appointment.model_dump(exclude_unset=True)
+        duration_mins = update_data.pop("duration_minutes", None) or update_data.pop("custom_duration", None)
 
-        # Check for collision if time is changing
+        # Check for collision if time, duration, staff or location is changing
         new_start = update_data.get("start_time", db_appointment.start_time)
-        new_end = update_data.get("end_time", db_appointment.end_time)
         new_staff = update_data.get("staff_id", db_appointment.staff_id)
         new_location = update_data.get("location_id", db_appointment.location_id)
 
-        if "start_time" in update_data and "end_time" not in update_data:
-             service = get_service(db, db_appointment.service_id)
-             if service:
-                  new_end = new_start + timedelta(minutes=service.duration_minutes)
+        if duration_mins and int(duration_mins) > 0:
+            new_end = new_start + timedelta(minutes=int(duration_mins))
+            update_data["end_time"] = new_end
+        else:
+            new_end = update_data.get("end_time", db_appointment.end_time)
+            if "start_time" in update_data and "end_time" not in update_data:
+                prev_duration = int((db_appointment.end_time - db_appointment.start_time).total_seconds() / 60) if (db_appointment.end_time and db_appointment.start_time) else None
+                if not prev_duration or prev_duration <= 0:
+                    service = get_service(db, db_appointment.service_id)
+                    prev_duration = service.duration_minutes if service else 30
+                new_end = new_start + timedelta(minutes=prev_duration)
+                update_data["end_time"] = new_end
 
-        if "start_time" in update_data or "end_time" in update_data or "staff_id" in update_data or "location_id" in update_data:
+        if "start_time" in update_data or "end_time" in update_data or "staff_id" in update_data or "location_id" in update_data or duration_mins:
             collision_msg = check_appointment_collision(
                 db, 
                 new_start, 

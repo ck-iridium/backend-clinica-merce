@@ -262,6 +262,12 @@ class Appointment(Base):
     staff = relationship("User", foreign_keys=[staff_id])
     location = relationship("Location")
 
+    @property
+    def duration_minutes(self) -> Optional[int]:
+        if self.end_time and self.start_time:
+            return int((self.end_time - self.start_time).total_seconds() / 60)
+        return None
+
 class Voucher(Base):
     __tablename__ = "vouchers"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))

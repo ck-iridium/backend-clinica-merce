@@ -59,6 +59,7 @@ export function CreateAppointmentModal({
   const [modalType, setModalType] = useState<'appointment' | 'block'>('appointment');
   const [selectedClientId, setSelectedClientId] = useState('');
   const [selectedServiceId, setSelectedServiceId] = useState('');
+  const [customDuration, setCustomDuration] = useState<number>(30);
   const [appointmentNotes, setAppointmentNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [blockReason, setBlockReason] = useState('');
@@ -83,11 +84,12 @@ export function CreateAppointmentModal({
 
     setSaving(true);
     const service = services.find(s => s.id === selectedServiceId);
+    const duration = customDuration && customDuration > 0 ? customDuration : (service?.duration_minutes || 30);
 
     const start_time = new Date(selectedSlot.date);
     start_time.setHours(selectedSlot.hour, selectedMinutes, 0, 0);
 
-    const end_time = new Date(start_time.getTime() + service.duration_minutes * 60000);
+    const end_time = new Date(start_time.getTime() + duration * 60000);
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/`, {
@@ -98,6 +100,7 @@ export function CreateAppointmentModal({
           service_id: selectedServiceId,
           start_time: formatLocalISO(start_time),
           end_time: formatLocalISO(end_time),
+          duration_minutes: duration,
           status: 'confirmed',
           notes: appointmentNotes
         })
@@ -108,6 +111,7 @@ export function CreateAppointmentModal({
         setShowModal(false);
         setSelectedClientId('');
         setSelectedServiceId('');
+        setCustomDuration(30);
         setAppointmentNotes('');
         toast.success(t('dashboard.calendar.toast.appt_scheduled') || 'Cita agendada correctamente');
       } else {
@@ -279,7 +283,16 @@ export function CreateAppointmentModal({
 
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">{t('dashboard.calendar.modal.treatment_req') || 'Tratamiento *'}</label>
-                  <Select value={selectedServiceId} onValueChange={setSelectedServiceId}>
+                  <Select
+                    value={selectedServiceId}
+                    onValueChange={(val) => {
+                      setSelectedServiceId(val);
+                      const s = services.find(x => x.id === val);
+                      if (s && s.duration_minutes) {
+                        setCustomDuration(s.duration_minutes);
+                      }
+                    }}
+                  >
                     <SelectTrigger id="create-appt-service-select-trigger" className="w-full">
                       <SelectValue placeholder={t('dashboard.calendar.modal.select_service') || '-- Selecciona el servicio --'} />
                     </SelectTrigger>
@@ -305,6 +318,58 @@ export function CreateAppointmentModal({
                     </SelectContent>
                   </Select>
                 </div>
+
+                {selectedServiceId && (
+                  <div className="space-y-3 p-4 bg-stone-50/80 border border-stone-200/70 rounded-2xl">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-stone-700 flex items-center gap-1.5">
+                        <Clock size={14} className="text-stone-500" />
+                        {t('dashboard.calendar.modal.duration') || 'Duración de la Cita'}
+                      </label>
+                      {(() => {
+                        const service = services.find(s => s.id === selectedServiceId);
+                        const isStandard = service && service.duration_minutes === customDuration;
+                        return (
+                          <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${isStandard ? 'bg-stone-200/60 text-stone-600' : 'bg-primary/10 text-primary font-black'}`}>
+                            {isStandard ? (t('dashboard.calendar.modal.standard_duration') || 'Estándar') : (t('dashboard.calendar.modal.custom_duration') || 'Personalizada')}
+                          </span>
+                        );
+                      })()}
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      {/* Píldoras rápidas de selección */}
+                      <div className="flex flex-wrap gap-1.5 flex-1">
+                        {[15, 30, 45, 60, 90, 120].map(mins => (
+                          <button
+                            key={mins}
+                            type="button"
+                            id={`create-appt-duration-${mins}-btn`}
+                            onClick={() => setCustomDuration(mins)}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${customDuration === mins ? 'bg-stone-800 text-white border-stone-800 shadow-sm' : 'bg-white text-stone-600 border-stone-200 hover:border-stone-300'}`}
+                          >
+                            {mins}m
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Input numérico directo */}
+                      <div className="flex items-center gap-1 w-28 shrink-0 bg-white border border-stone-200 rounded-xl px-2.5 py-1.5 shadow-xs">
+                        <input
+                          type="number"
+                          min="5"
+                          max="480"
+                          step="5"
+                          id="create-appt-custom-duration-input"
+                          value={customDuration || ''}
+                          onChange={e => setCustomDuration(Math.max(5, parseInt(e.target.value) || 0))}
+                          className="w-full text-xs font-bold text-stone-800 outline-none text-right"
+                        />
+                        <span className="text-[11px] font-bold text-stone-400">min</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">{t('dashboard.calendar.notes') || 'Notas'}</label>
