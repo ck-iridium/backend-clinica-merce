@@ -150,7 +150,10 @@ export function EditAppointmentModal({
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold text-stone-700 flex items-center gap-1.5">
                 <Clock size={14} className="text-stone-500" />
-                {t('dashboard.calendar.modal.duration') || 'Duración de la Cita'}
+                {(() => {
+                  const d = t('dashboard.calendar.modal.duration');
+                  return d && !d.includes('.') ? d : 'Duración de la Cita';
+                })()}
               </label>
               <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${duration === currentApptDuration ? 'bg-stone-200/60 text-stone-600' : 'bg-amber-100 text-amber-800 font-black'}`}>
                 {duration === currentApptDuration ? `${currentApptDuration} min` : `${duration} min (Modificado)`}
@@ -196,7 +199,10 @@ export function EditAppointmentModal({
                 disabled={updatingStatus}
                 className="w-full bg-stone-800 hover:bg-stone-900 text-white text-[10px] font-bold uppercase py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 active:scale-95 shadow-xs"
               >
-                <Save size={12} /> {t('dashboard.calendar.modal.save_duration') || 'Guardar Duración'} ({duration} min)
+                <Save size={12} /> {(() => {
+                  const s = t('dashboard.calendar.modal.save_duration');
+                  return s && !s.includes('.') ? s : 'Guardar Duración';
+                })()} ({duration} min)
               </button>
             )}
           </div>

@@ -594,6 +594,10 @@ def create_appointment(appointment: schemas.AppointmentCreate, db: Session = Dep
         return crud.create_appointment(db=db, appointment=appointment)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error interno al crear cita: {str(e)}")
 
 @router.get("/", response_model=List[schemas.AppointmentResponse])
 def read_appointments(skip: int = 0, limit: int = 100, db: Session = Depends(database.get_db)):
@@ -608,6 +612,10 @@ def update_appointment(appointment_id: str, appointment_update: schemas.Appointm
         return db_appointment
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error interno al actualizar cita: {str(e)}")
 
 @router.delete("/{appointment_id}")
 def delete_appointment(appointment_id: str, db: Session = Depends(database.get_db)):

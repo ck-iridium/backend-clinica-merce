@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Calendar, Clock, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '@/app/contexts/LanguageContext';
@@ -65,6 +65,42 @@ export function CreateAppointmentModal({
   const [blockReason, setBlockReason] = useState('');
   const [blockDuration, setBlockDuration] = useState(60);
 
+  // Cálculo exacto del hueco disponible teniendo en cuenta cierres, pausa de mediodía y eventos futuros
+  const availableGapMinutes = useMemo(() => {
+    if (!selectedSlot) return 0;
+    const s_time = new Date(selectedSlot.date);
+    s_time.setHours(selectedSlot.hour, selectedMinutes, 0, 0);
+
+    const closingTime = new Date(selectedSlot.date);
+    const closeM = settings?.close_time ? parseInt(settings.close_time.split(':')[1]) : 0;
+    closingTime.setHours(endHour, closeM, 0, 0);
+
+    let lunchStart = closingTime;
+    if (settings?.lunch_start) {
+      lunchStart = new Date(selectedSlot.date);
+      const [lH, lM] = settings.lunch_start.split(':').map(Number);
+      lunchStart.setHours(lH, lM, 0, 0);
+    }
+
+    const dayAppts = getAppointmentsForDay(selectedSlot.date) || [];
+    const dayBlocks = getBlocksForDay(selectedSlot.date) || [];
+
+    const futureEvents = [...dayAppts, ...dayBlocks]
+      .filter(e => e.status !== 'cancelled')
+      .map(e => ({ ...e, start: new Date(e.start_time.endsWith('Z') ? e.start_time.slice(0, -1) : e.start_time) }))
+      .filter(e => e.start > s_time)
+      .sort((a, b) => a.start.getTime() - b.start.getTime());
+
+    let nextLimit = futureEvents.length > 0 ? futureEvents[0].start : closingTime;
+    if (s_time < lunchStart && nextLimit > lunchStart) {
+      nextLimit = lunchStart;
+    }
+
+    const effectiveLimit = nextLimit < closingTime ? nextLimit : closingTime;
+    const diffMins = Math.floor((effectiveLimit.getTime() - s_time.getTime()) / 60000);
+    return Math.max(0, diffMins);
+  }, [selectedSlot, selectedMinutes, endHour, settings, getAppointmentsForDay, getBlocksForDay]);
+
   // Formateador local para API (ISO naive)
   const formatLocalISO = (date: Date) => {
     const pad = (n: number) => n.toString().padStart(2, '0');
@@ -85,6 +121,12 @@ export function CreateAppointmentModal({
     setSaving(true);
     const service = services.find(s => s.id === selectedServiceId);
     const duration = customDuration && customDuration > 0 ? customDuration : (service?.duration_minutes || 30);
+
+    if (availableGapMinutes > 0 && duration > availableGapMinutes) {
+      toast.error(`La duración seleccionada (${duration} min) supera los ${availableGapMinutes} minutos libres en este horario.`);
+      setSaving(false);
+      return;
+    }
 
     const start_time = new Date(selectedSlot.date);
     start_time.setHours(selectedSlot.hour, selectedMinutes, 0, 0);
@@ -217,42 +259,12 @@ export function CreateAppointmentModal({
                 ))}
               </div>
 
-              {(() => {
-                if (!selectedSlot) return null;
-                const s_time = new Date(selectedSlot.date);
-                s_time.setHours(selectedSlot.hour, selectedMinutes, 0, 0);
-                const closingTime = new Date(selectedSlot.date);
-                closingTime.setHours(endHour, settings?.close_time ? parseInt(settings.close_time.split(':')[1]) : 30, 0, 0);
-
-                let lunchStart = closingTime;
-                if (settings?.lunch_start) {
-                  lunchStart = new Date(selectedSlot.date);
-                  lunchStart.setHours(parseInt(settings.lunch_start.split(':')[0]), parseInt(settings.lunch_start.split(':')[1]), 0, 0);
-                }
-
-                const dayAppts = getAppointmentsForDay(selectedSlot.date);
-                const dayBlocks = getBlocksForDay(selectedSlot.date);
-
-                const futureEvents = [...dayAppts, ...dayBlocks]
-                  .map(e => ({ ...e, start: new Date(e.start_time.endsWith('Z') ? e.start_time.slice(0, -1) : e.start_time) }))
-                  .filter(e => e.start > s_time)
-                  .sort((a, b) => a.start.getTime() - b.start.getTime());
-
-                let nextEventStart = futureEvents.length > 0 ? futureEvents[0].start : closingTime;
-                if (s_time < lunchStart && nextEventStart > lunchStart) nextEventStart = lunchStart;
-
-                const limitDate = nextEventStart < closingTime ? nextEventStart : closingTime;
-                const gapMinutes = Math.floor((limitDate.getTime() - s_time.getTime()) / 60000);
-
-                return (
-                  <div className="mb-4">
-                    <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">{t('dashboard.calendar.modal.available_slot') || 'Hueco Disponible'}</p>
-                    <p className="text-xs font-bold text-stone-600 flex items-center gap-1">
-                      <Clock size={14} strokeWidth={1.5} /> {gapMinutes} {t('dashboard.calendar.modal.free_minutes') || 'minutos libres'}
-                    </p>
-                  </div>
-                );
-              })()}
+              <div className="mb-4">
+                <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">{t('dashboard.calendar.modal.available_slot') || 'Hueco Disponible'}</p>
+                <p className="text-xs font-bold text-stone-600 flex items-center gap-1">
+                  <Clock size={14} strokeWidth={1.5} /> {availableGapMinutes} {t('dashboard.calendar.modal.free_minutes') || 'minutos libres'}
+                </p>
+              </div>
 
               <div className="space-y-5">
                 <div>
@@ -297,24 +309,14 @@ export function CreateAppointmentModal({
                       <SelectValue placeholder={t('dashboard.calendar.modal.select_service') || '-- Selecciona el servicio --'} />
                     </SelectTrigger>
                     <SelectContent>
-                      {(() => {
-                        if (!selectedSlot) return null;
-                        const s_time = new Date(selectedSlot.date);
-                        s_time.setHours(selectedSlot.hour, selectedMinutes, 0, 0);
-                        const clTime = new Date(selectedSlot.date);
-                        clTime.setHours(endHour, 0, 0, 0);
-                        const nextEvent = [...getAppointmentsForDay(selectedSlot.date), ...getBlocksForDay(selectedSlot.date)]
-                          .map(e => ({ ...e, start: new Date(e.start_time.endsWith('Z') ? e.start_time.slice(0, -1) : e.start_time) }))
-                          .filter(e => e.start > s_time)
-                          .sort((a, b) => a.start.getTime() - b.start.getTime())[0];
-                        const limitDate = nextEvent ? (nextEvent.start < clTime ? nextEvent.start : clTime) : clTime;
-                        const gapMinutes = Math.floor((limitDate.getTime() - s_time.getTime()) / 60000);
-                        return services.map(s => (
-                          <SelectItem key={s.id} value={s.id} disabled={s.duration_minutes > gapMinutes}>
-                            {s.name} ({s.duration_minutes} min) {s.duration_minutes > gapMinutes ? `⚠️ ${t('dashboard.calendar.modal.exceeded') || 'EXCEDIDO'}` : ''}
+                      {services.map(s => {
+                        const isExceeded = availableGapMinutes > 0 && s.duration_minutes > availableGapMinutes;
+                        return (
+                          <SelectItem key={s.id} value={s.id} disabled={isExceeded}>
+                            {s.name} ({s.duration_minutes} min) {isExceeded ? `⚠️ ${t('dashboard.calendar.modal.exceeded') || 'EXCEDIDO'}` : ''}
                           </SelectItem>
-                        ));
-                      })()}
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </div>
@@ -329,9 +331,13 @@ export function CreateAppointmentModal({
                       {(() => {
                         const service = services.find(s => s.id === selectedServiceId);
                         const isStandard = service && service.duration_minutes === customDuration;
+                        const stdT = t('dashboard.calendar.modal.standard_duration');
+                        const cstT = t('dashboard.calendar.modal.custom_duration');
+                        const stdLabel = stdT && !stdT.includes('.') ? stdT : 'Estándar';
+                        const cstLabel = cstT && !cstT.includes('.') ? cstT : 'Personalizada';
                         return (
                           <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${isStandard ? 'bg-stone-200/60 text-stone-600' : 'bg-primary/10 text-primary font-black'}`}>
-                            {isStandard ? (t('dashboard.calendar.modal.standard_duration') || 'Estándar') : (t('dashboard.calendar.modal.custom_duration') || 'Personalizada')}
+                            {isStandard ? stdLabel : cstLabel}
                           </span>
                         );
                       })()}
@@ -340,17 +346,25 @@ export function CreateAppointmentModal({
                     <div className="flex flex-wrap items-center gap-2">
                       {/* Píldoras rápidas de selección */}
                       <div className="flex flex-wrap gap-1.5 flex-1">
-                        {[15, 30, 45, 60, 90, 120].map(mins => (
-                          <button
-                            key={mins}
-                            type="button"
-                            id={`create-appt-duration-${mins}-btn`}
-                            onClick={() => setCustomDuration(mins)}
-                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${customDuration === mins ? 'bg-stone-800 text-white border-stone-800 shadow-sm' : 'bg-white text-stone-600 border-stone-200 hover:border-stone-300'}`}
-                          >
-                            {mins}m
-                          </button>
-                        ))}
+                        {[15, 30, 45, 60, 90, 120].map(mins => {
+                          const isExceeded = availableGapMinutes > 0 && mins > availableGapMinutes;
+                          return (
+                            <button
+                              key={mins}
+                              type="button"
+                              id={`create-appt-duration-${mins}-btn`}
+                              disabled={isExceeded}
+                              onClick={() => setCustomDuration(mins)}
+                              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                                isExceeded ? 'opacity-30 cursor-not-allowed bg-stone-100 text-stone-400 border-stone-100' :
+                                customDuration === mins ? 'bg-stone-800 text-white border-stone-800 shadow-sm' :
+                                'bg-white text-stone-600 border-stone-200 hover:border-stone-300'
+                              }`}
+                            >
+                              {mins}m
+                            </button>
+                          );
+                        })}
                       </div>
 
                       {/* Input numérico directo */}
@@ -358,7 +372,7 @@ export function CreateAppointmentModal({
                         <input
                           type="number"
                           min="5"
-                          max="480"
+                          max={availableGapMinutes > 0 ? availableGapMinutes : 480}
                           step="5"
                           id="create-appt-custom-duration-input"
                           value={customDuration || ''}

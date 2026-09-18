@@ -133,7 +133,9 @@ def create_appointment(db: Session, appointment: schemas.AppointmentCreate):
     tenant_id = current_tenant_var.get()
     
     appt_data = appointment.model_dump()
-    duration_mins = appt_data.pop("duration_minutes", None) or appt_data.pop("custom_duration", None)
+    dur_a = appt_data.pop("duration_minutes", None)
+    dur_b = appt_data.pop("custom_duration", None)
+    duration_mins = dur_a if (dur_a is not None and dur_a > 0) else dur_b
 
     # Calcular end_time con duración personalizada si se proporciona, o recurrir a la del servicio
     if duration_mins and int(duration_mins) > 0:
@@ -155,8 +157,12 @@ def create_appointment(db: Session, appointment: schemas.AppointmentCreate):
     if collision_msg:
         raise ValueError(collision_msg)
 
-    appt_data["tenant_id"] = tenant_id
-    db_appointment = models.Appointment(**appt_data)
+    # Filtrar solo columnas válidas de la tabla appointments para evitar TypeErrors
+    valid_cols = {c.name for c in models.Appointment.__table__.columns}
+    filtered_data = {k: v for k, v in appt_data.items() if k in valid_cols}
+    filtered_data["tenant_id"] = tenant_id
+
+    db_appointment = models.Appointment(**filtered_data)
     db.add(db_appointment)
     db.commit()
     db.refresh(db_appointment)
@@ -171,7 +177,9 @@ def update_appointment(db: Session, appointment_id: str, appointment: schemas.Ap
     if db_appointment:
         old_status = db_appointment.status
         update_data = appointment.model_dump(exclude_unset=True)
-        duration_mins = update_data.pop("duration_minutes", None) or update_data.pop("custom_duration", None)
+        dur_a = update_data.pop("duration_minutes", None)
+        dur_b = update_data.pop("custom_duration", None)
+        duration_mins = dur_a if (dur_a is not None and dur_a > 0) else dur_b
 
         # Check for collision if time, duration, staff or location is changing
         new_start = update_data.get("start_time", db_appointment.start_time)
@@ -203,8 +211,10 @@ def update_appointment(db: Session, appointment_id: str, appointment: schemas.Ap
             if collision_msg:
                 raise ValueError(collision_msg)
 
+        valid_cols = {c.name for c in models.Appointment.__table__.columns}
         for key, value in update_data.items():
-            setattr(db_appointment, key, value)
+            if key in valid_cols:
+                setattr(db_appointment, key, value)
 
         # Magic Logic: If marked as completed, decrement 1 from active voucher if exists
         if old_status != "completed" and db_appointment.status == "completed":
