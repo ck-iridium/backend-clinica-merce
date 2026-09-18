@@ -267,6 +267,14 @@ $function$;
                 s.category_id = general_cat.id
             db.commit()
             logger.info(f"✅ Se han vinculado {len(orphaned_services)} servicios a la categoría 'General'.")
+
+        # 3. Limpieza de citas pendientes obsoletas (> 10 min) para liberar huecos bloqueados
+        try:
+            from ..tasks import cleanup_expired_appointments
+            purged = cleanup_expired_appointments()
+            logger.info(f"✅ Limpieza inicial de citas pendientes ejecutada: {purged} citas liberadas.")
+        except Exception as e:
+            logger.warning(f"⚠️ Nota al ejecutar cleanup_expired_appointments en migración: {e}")
                 
     except Exception as e:
         logger.error(f"❌ Error crítico en auto-migración: {e}")

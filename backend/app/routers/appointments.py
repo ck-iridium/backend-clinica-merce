@@ -37,6 +37,9 @@ def get_availability(
     except ValueError:
         raise HTTPException(status_code=422, detail="date must be YYYY-MM-DD")
 
+    # Liberación lazy en tiempo real antes de calcular la disponibilidad pública
+    crud.auto_cancel_expired_pending_appointments(db)
+
     slots = crud.get_availability_slots(
         db, 
         target_date=target, 
@@ -156,6 +159,8 @@ def public_booking(request: Request, booking: schemas.PublicBookingRequest, back
         # Anti-acaparamiento: máximo 2 reservas activas futuras por teléfono en 24h
         now_utc = datetime.utcnow()
         tenant_id = current_tenant_var.get()
+        # Liberación lazy de reservas pendientes caducadas antes de verificar límites
+        crud.auto_cancel_expired_pending_appointments(db, tenant_id)
         future_phone_appts = db.query(models.Appointment).join(models.Client).filter(
             models.Appointment.tenant_id == tenant_id,
             models.Client.phone == booking.client_phone,

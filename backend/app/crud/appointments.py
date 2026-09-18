@@ -13,6 +13,51 @@ from ..database import current_tenant_var
 
 _SLOT_STEP_MINUTES = 15
 
+def auto_cancel_expired_pending_appointments(db: Session, tenant_id: str = None) -> int:
+    """
+    Liberación en tiempo real: Cancela cualquier cita en 'pending_verification',
+    'awaiting_payment' o 'web_pending' creada hace más de 10 minutos para liberar
+    inmediatamente el hueco antes de calcular disponibilidad o validar colisiones.
+    """
+    if not tenant_id:
+        tenant_id = current_tenant_var.get()
+
+    limit_time = datetime.utcnow() - timedelta(minutes=10)
+    query = db.query(models.Appointment).filter(
+        models.Appointment.status.in_(["pending_verification", "awaiting_payment", "web_pending"]),
+        models.Appointment.created_at < limit_time
+    )
+    if tenant_id:
+        query = query.filter(models.Appointment.tenant_id == tenant_id)
+
+    expired_appts = query.all()
+    if not expired_appts:
+        return 0
+
+    for appt in expired_appts:
+        old_status = appt.status
+        appt.status = "cancelled"
+        if old_status == "pending_verification":
+            reason = "código OTP no introducido en el tiempo límite (10 min)"
+        elif old_status == "awaiting_payment":
+            reason = "tiempo de fianza expirado sin pago (10 min)"
+        else:
+            reason = "reserva pendiente expirada tras 10 min"
+
+        appt.notes = (appt.notes or "") + f"\n[Sistema] Cita cancelada automáticamente: {reason}."
+        
+        # Eliminar códigos de verificación asociados
+        db.query(models.VerificationCode).filter(
+            models.VerificationCode.appointment_id == appt.id
+        ).delete()
+
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+
+    return len(expired_appts)
+
 # Appointments
 def check_appointment_collision(db: Session, start_time: datetime, end_time: datetime, staff_id: str = None, location_id: str = None, ignore_id: str = None):
     """
@@ -20,6 +65,7 @@ def check_appointment_collision(db: Session, start_time: datetime, end_time: dat
     or if the appointment exceeds the clinic's configured closing time.
     """
     tenant_id = current_tenant_var.get()
+    auto_cancel_expired_pending_appointments(db, tenant_id)
     settings = get_clinic_settings(db)
 
     # 1. Closing Time Check (Dynamic from ClinicSettings)
@@ -74,6 +120,7 @@ def check_appointment_collision(db: Session, start_time: datetime, end_time: dat
 
 def get_appointments(db: Session, skip: int = 0, limit: int = 100):
     tenant_id = current_tenant_var.get()
+    auto_cancel_expired_pending_appointments(db, tenant_id)
     return (
         db.query(models.Appointment)
         .filter(models.Appointment.tenant_id == tenant_id)
@@ -183,6 +230,7 @@ def delete_appointment(db: Session, appointment_id: str):
 def get_availability_slots(db: Session, target_date: date, service_id: str, location_id: str = None, preferred_staff_id: str = None) -> List[str]:
     """Return available time slots (HH:MM strings) for a given date and service at a specific location."""
     tenant_id = current_tenant_var.get()
+    auto_cancel_expired_pending_appointments(db, tenant_id)
     settings = get_clinic_settings(db)
     margin_hours = float(settings.booking_margin_hours) if settings.booking_margin_hours else 0.0
 
@@ -404,6 +452,8 @@ def get_availability_slots(db: Session, target_date: date, service_id: str, loca
 def create_public_appointment(db: Session, booking: schemas.PublicBookingRequest, background_tasks: any = None, send_email: bool = True):
     """Idempotent public booking: find-or-create client, auto-assign specialist, then create appointment."""
     tenant_id = current_tenant_var.get()
+    # Liberación lazy: limpiar cualquier cita pendiente expirada antes de asignar o validar
+    auto_cancel_expired_pending_appointments(db, tenant_id)
 
     client, is_new = find_or_create_client(
         db,

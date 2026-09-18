@@ -131,16 +131,21 @@ def cleanup_unverified(
     db: Session = Depends(get_db)
 ):
     """
-    Endpoint protected by X-Cron-Key.
-    With direct zero-friction booking, appointments enter confirmed immediately.
-    Kept for backward compatibility with external scheduled jobs.
+    Endpoint protegido por X-Cron-Key.
+    Ejecuta la purga de citas en 'pending_verification' o 'awaiting_payment' que superaron los 10 minutos.
     """
     secret_key = os.environ.get("CRON_SECRET_KEY", "dev_secret")
     if x_cron_key != secret_key:
         raise HTTPException(status_code=403, detail="Invalid cron key")
 
-    logger.info("Cleanup unverified invoked: Zero-friction direct booking active.")
-    return {"status": "success", "message": "Zero-friction active. No unverified cleanup needed.", "deleted": 0}
+    from ..tasks import cleanup_expired_appointments
+    cancelled_count = cleanup_expired_appointments()
+    logger.info(f"Cleanup unverified ejecutado: {cancelled_count} citas canceladas.")
+    return {
+        "status": "success", 
+        "message": f"Barrendero ejecutado con éxito. Se cancelaron {cancelled_count} citas expiradas tras 10 min.", 
+        "cancelled": cancelled_count
+    }
 
 @router.get("/verify/{appointment_id}")
 def get_appointment_for_verification(

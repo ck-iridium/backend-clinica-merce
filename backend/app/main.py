@@ -405,10 +405,16 @@ async def startup_event():
         print(f"Error inicializando caché de bloqueos al inicio: {e}")
         
     from .tasks import cleanup_expired_appointments
+    try:
+        initial_purged = cleanup_expired_appointments()
+        print(f"Limpieza inicial completada al arrancar: {initial_purged} citas caducadas liberadas.")
+    except Exception as e:
+        print(f"Error en limpieza inicial de citas: {e}")
+
     # Añadimos la tarea de limpieza cada 5 minutos
     scheduler.add_job(cleanup_expired_appointments, 'interval', minutes=5, id='cleanup_expired_appts')
     scheduler.start()
-    print("APScheduler iniciado con tarea de limpieza (cada 5 min).")
+    print("APScheduler iniciado con tarea de limpieza periódica (cada 5 min).")
 
 @app.on_event("shutdown")
 async def shutdown_event():
