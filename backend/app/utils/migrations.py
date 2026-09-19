@@ -275,6 +275,35 @@ $function$;
             logger.info(f"✅ Limpieza inicial de citas pendientes ejecutada: {purged} citas liberadas.")
         except Exception as e:
             logger.warning(f"⚠️ Nota al ejecutar cleanup_expired_appointments en migración: {e}")
+
+        # 4. Auto-asignación de staff_id y location_id para citas huérfanas
+        try:
+            from ..models import Appointment, Profile, Location, Tenant
+            from sqlalchemy import func
+            tenants = db.query(Tenant).all()
+            total_fixed = 0
+            for t in tenants:
+                specs = db.query(Profile).filter(
+                    Profile.tenant_id == t.id,
+                    func.lower(Profile.role).in_(["specialist", "especialista", "admin", "administrador"])
+                ).all()
+                loc = db.query(Location).filter(Location.tenant_id == t.id, Location.is_active == True).first()
+                if specs:
+                    default_staff_id = specs[0].id
+                    orphan_appts = db.query(Appointment).filter(
+                        Appointment.tenant_id == t.id,
+                        Appointment.staff_id == None
+                    ).all()
+                    for o in orphan_appts:
+                        o.staff_id = default_staff_id
+                        if not o.location_id and loc:
+                            o.location_id = loc.id
+                        total_fixed += 1
+            if total_fixed > 0:
+                db.commit()
+                logger.info(f"✅ Auto-reparación: Se han asignado especialista y sede a {total_fixed} citas sin staff_id.")
+        except Exception as e:
+            logger.warning(f"⚠️ Nota al auto-asignar staff_id a citas huérfanas: {e}")
                 
     except Exception as e:
         logger.error(f"❌ Error crítico en auto-migración: {e}")

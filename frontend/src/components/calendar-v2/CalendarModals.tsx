@@ -34,6 +34,8 @@ interface CalendarModalsProps {
   getBlocksForDay: (d: Date) => any[];
   clientMap: Map<string, any>;
   serviceMap: Map<string, any>;
+  staffList?: any[];
+  locations?: any[];
   fetchData: () => Promise<void>;
   openWhatsApp: (name: string, phone: string, service: string, start: string) => void;
 }
@@ -57,6 +59,8 @@ export function CalendarModals({
   startHour, endHour,
   getAppointmentsForDay, getBlocksForDay,
   clientMap, serviceMap,
+  staffList = [],
+  locations = [],
   fetchData,
   openWhatsApp
 }: CalendarModalsProps) {
@@ -194,6 +198,8 @@ export function CalendarModals({
         endHour={endHour}
         getAppointmentsForDay={getAppointmentsForDay}
         getBlocksForDay={getBlocksForDay}
+        staffList={staffList}
+        locations={locations}
         fetchData={fetchData}
       />
 

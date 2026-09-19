@@ -31,6 +31,8 @@ interface CreateAppointmentModalProps {
   endHour: number;
   getAppointmentsForDay: (d: Date) => any[];
   getBlocksForDay: (d: Date) => any[];
+  staffList?: any[];
+  locations?: any[];
   fetchData: () => Promise<void>;
 }
 
@@ -51,6 +53,8 @@ export function CreateAppointmentModal({
   endHour,
   getAppointmentsForDay,
   getBlocksForDay,
+  staffList = [],
+  locations = [],
   fetchData
 }: CreateAppointmentModalProps) {
   const { t, language } = useLanguage();
@@ -59,11 +63,19 @@ export function CreateAppointmentModal({
   const [modalType, setModalType] = useState<'appointment' | 'block'>('appointment');
   const [selectedClientId, setSelectedClientId] = useState('');
   const [selectedServiceId, setSelectedServiceId] = useState('');
+  const [selectedStaffId, setSelectedStaffId] = useState('');
   const [customDuration, setCustomDuration] = useState<number>(30);
   const [appointmentNotes, setAppointmentNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [blockReason, setBlockReason] = useState('');
   const [blockDuration, setBlockDuration] = useState(60);
+
+  // Inicializar especialista predeterminado si hay disponibles
+  React.useEffect(() => {
+    if (!selectedStaffId && staffList && staffList.length > 0) {
+      setSelectedStaffId(staffList[0].id);
+    }
+  }, [staffList, selectedStaffId]);
 
   // Cálculo exacto del hueco disponible teniendo en cuenta cierres, pausa de mediodía y eventos futuros
   const availableGapMinutes = useMemo(() => {
@@ -140,6 +152,8 @@ export function CreateAppointmentModal({
         body: JSON.stringify({
           client_id: selectedClientId,
           service_id: selectedServiceId,
+          staff_id: selectedStaffId || (staffList.length > 0 ? staffList[0].id : null),
+          location_id: (locations.length > 0 ? locations[0].id : null),
           start_time: formatLocalISO(start_time),
           end_time: formatLocalISO(end_time),
           duration_minutes: duration,
@@ -320,6 +334,26 @@ export function CreateAppointmentModal({
                     </SelectContent>
                   </Select>
                 </div>
+
+                {staffList.length > 1 && (
+                  <div>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">
+                      {t('dashboard.calendar.modal.specialist') || 'Especialista *'}
+                    </label>
+                    <Select value={selectedStaffId} onValueChange={setSelectedStaffId}>
+                      <SelectTrigger id="create-appt-staff-select-trigger" className="w-full">
+                        <SelectValue placeholder="-- Selecciona especialista --" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {staffList.map((s: any) => (
+                          <SelectItem key={s.id} value={s.id}>
+                            {s.full_name || s.name || s.email}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 {selectedServiceId && (
                   <div className="space-y-3 p-4 bg-stone-50/80 border border-stone-200/70 rounded-2xl">

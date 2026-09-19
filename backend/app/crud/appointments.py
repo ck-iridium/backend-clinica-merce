@@ -109,7 +109,12 @@ def check_appointment_collision(db: Session, start_time: datetime, end_time: dat
         models.Appointment.end_time > start_time
     )
     if staff_id:
-        query = query.filter(models.Appointment.staff_id == staff_id)
+        query = query.filter(
+            or_(
+                models.Appointment.staff_id == staff_id,
+                models.Appointment.staff_id == None
+            )
+        )
         
     if ignore_id:
         query = query.filter(models.Appointment.id != ignore_id)
@@ -172,6 +177,35 @@ def create_appointment(db: Session, appointment: schemas.AppointmentCreate):
     valid_cols = {c.name for c in models.Appointment.__table__.columns}
     filtered_data = {k: v for k, v in appt_data.items() if k in valid_cols}
     filtered_data["tenant_id"] = tenant_id
+
+    # Auto-asignación de staff_id y location_id si no vienen especificados
+    if not filtered_data.get("staff_id"):
+        from sqlalchemy import func
+        specialists = db.query(models.Profile).filter(
+            models.Profile.tenant_id == tenant_id,
+            func.lower(models.Profile.role).in_(["specialist", "especialista", "admin", "administrador"])
+        ).all()
+        if len(specialists) == 1:
+            filtered_data["staff_id"] = specialists[0].id
+        elif len(specialists) > 1:
+            day_idx = appointment.start_time.isoweekday()
+            active_schedule = db.query(models.StaffSchedule).filter(
+                models.StaffSchedule.tenant_id == tenant_id,
+                models.StaffSchedule.day_of_week == day_idx,
+                models.StaffSchedule.is_active == True
+            ).first()
+            if active_schedule:
+                filtered_data["staff_id"] = active_schedule.staff_id
+            else:
+                filtered_data["staff_id"] = specialists[0].id
+
+    if not filtered_data.get("location_id"):
+        loc = db.query(models.Location).filter(
+            models.Location.tenant_id == tenant_id,
+            models.Location.is_active == True
+        ).first()
+        if loc:
+            filtered_data["location_id"] = loc.id
 
     db_appointment = models.Appointment(**filtered_data)
     db.add(db_appointment)
@@ -394,7 +428,10 @@ def get_availability_slots(db: Session, target_date: date, service_id: str, loca
     staff_ids = {s.staff_id for s in all_schedules}
     existing_appts = db.query(models.Appointment).filter(
         models.Appointment.tenant_id == tenant_id,
-        models.Appointment.staff_id.in_(staff_ids),
+        or_(
+            models.Appointment.staff_id.in_(staff_ids),
+            models.Appointment.staff_id == None
+        ),
         models.Appointment.start_time >= day_start,
         models.Appointment.start_time <= day_end,
         models.Appointment.status != "cancelled",
@@ -408,9 +445,12 @@ def get_availability_slots(db: Session, target_date: date, service_id: str, loca
     ).all()
 
     appts_by_staff = {sid: [] for sid in staff_ids}
+    unassigned_appts = []
     for appt in existing_appts:
         if appt.staff_id in appts_by_staff:
             appts_by_staff[appt.staff_id].append(appt)
+        elif appt.staff_id is None:
+            unassigned_appts.append(appt)
             
     blocks_by_staff = {sid: [] for sid in staff_ids}
     global_blocks = []
@@ -446,7 +486,10 @@ def get_availability_slots(db: Session, target_date: date, service_id: str, loca
         else:
             schedule_blocks = [(sh, sm, eh, em)]
             
-        staff_appts = appts_by_staff.get(sid, [])
+        staff_appts = list(appts_by_staff.get(sid, []))
+        if len(staff_ids) == 1 or preferred_staff_id:
+            staff_appts.extend(unassigned_appts)
+
         staff_blocks = blocks_by_staff.get(sid, []) + global_blocks
         
         for (st_h, st_m, en_h, en_m) in schedule_blocks:
@@ -473,6 +516,34 @@ def get_availability_slots(db: Session, target_date: date, service_id: str, loca
                         if max(slot, b_start) < min(slot_end, b_end):
                             overlaps = True
                             break
+
+                # Control multi-especialista si hay citas sin asignar en la clínica
+                if not overlaps and unassigned_appts and len(staff_ids) > 1 and not preferred_staff_id:
+                    overlapping_unassigned = sum(
+                        1 for ua in unassigned_appts
+                        if max(slot, (ua.start_time.replace(tzinfo=None) if ua.start_time.tzinfo else ua.start_time)) < 
+                           min(slot_end, (ua.end_time.replace(tzinfo=None) if ua.end_time.tzinfo else ua.end_time))
+                    )
+                    if overlapping_unassigned > 0:
+                        free_staff_count = 0
+                        for other_sched in all_schedules:
+                            other_sid = other_sched.staff_id
+                            osh, osm = map(int, other_sched.start_time.split(':'))
+                            oeh, oem = map(int, other_sched.end_time.split(':'))
+                            other_st = datetime(target_date.year, target_date.month, target_date.day, osh, osm)
+                            other_en = datetime(target_date.year, target_date.month, target_date.day, oeh, oem)
+                            if slot >= other_st and slot_end <= other_en:
+                                other_busy = False
+                                for oa in appts_by_staff.get(other_sid, []):
+                                    oa_start = oa.start_time.replace(tzinfo=None) if oa.start_time.tzinfo else oa.start_time
+                                    oa_end   = oa.end_time.replace(tzinfo=None) if oa.end_time.tzinfo else oa.end_time
+                                    if max(slot, oa_start) < min(slot_end, oa_end):
+                                        other_busy = True
+                                        break
+                                if not other_busy:
+                                    free_staff_count += 1
+                        if free_staff_count <= overlapping_unassigned:
+                            overlaps = True
                             
                 if not overlaps and slot.date() == now_spain.date():
                     if slot < now_spain + timedelta(hours=margin_hours):

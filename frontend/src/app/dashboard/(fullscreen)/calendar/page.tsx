@@ -365,6 +365,8 @@ function CalendarContent() {
           getBlocksForDay={c.getBlocksForDay}
           clientMap={c.clientMap}
           serviceMap={c.serviceMap}
+          staffList={c.staffList}
+          locations={c.locations}
           fetchData={c.fetchData}
           openWhatsApp={c.openWhatsApp}
         />

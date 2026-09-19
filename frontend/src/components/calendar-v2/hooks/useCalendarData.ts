@@ -38,6 +38,8 @@ export function useCalendarData() {
   const [timeBlocks, setTimeBlocks] = useState<any[]>([]);
   const [clients, setClients] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
+  const [staffList, setStaffList] = useState<any[]>([]);
+  const [locations, setLocations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // --- NUEVO: Estados de UI y Modales ---
@@ -76,12 +78,14 @@ export function useCalendarData() {
 
   const fetchData = async () => {
     try {
-      const [apptRes, clientRes, srvRes, blockRes, settingsRes] = await Promise.all([
+      const [apptRes, clientRes, srvRes, blockRes, settingsRes, staffRes, locRes] = await Promise.all([
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/`),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/`),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/`),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/time-blocks/`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/`)
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/specialists`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/locations/`)
       ]);
       
       if (apptRes.ok) setAppointments(await apptRes.json());
@@ -92,6 +96,8 @@ export function useCalendarData() {
       }
       if (blockRes.ok) setTimeBlocks(await blockRes.json());
       if (settingsRes.ok) setSettings(await settingsRes.json());
+      if (staffRes.ok) setStaffList(await staffRes.json());
+      if (locRes.ok) setLocations(await locRes.json());
     } catch (e) {
       console.error(e);
       toast.error('Error al cargar datos del calendario');
@@ -342,6 +348,8 @@ export function useCalendarData() {
     timeBlocks,
     clients,
     services,
+    staffList,
+    locations,
 
     // Refs
     mobileDaysContainerRef,
