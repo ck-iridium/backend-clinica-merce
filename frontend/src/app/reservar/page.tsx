@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { useLanguage } from '@/app/contexts/LanguageContext';
@@ -8,7 +9,6 @@ import Step1Treatments from './components/Step1Treatments';
 import Step1Specialists from './components/Step1Specialists';
 import Step2DateTime from './components/Step2DateTime';
 import Step3Details from './components/Step3Details';
-import Step4Success from './components/Step4Success';
 import Step0Locations from './components/Step0Locations';
 import OtpVerificationModal from './components/OtpVerificationModal';
 
@@ -28,6 +28,7 @@ const getTenantId = () => {
 };
 
 export default function BookingPage() {
+  const router = useRouter();
   const { showFeedback } = useFeedback();
   const { t, language } = useLanguage();
   
@@ -284,6 +285,39 @@ export default function BookingPage() {
       .finally(() => setLoadingSlots(false));
   }, [selectedDate, selectedService, selectedLocation, selectedStaff, settings]);
 
+  const redirectToConfirmation = (appointmentId?: string) => {
+    const params = new URLSearchParams();
+    if (appointmentId) params.set('booking_id', appointmentId);
+    if (selectedDate) {
+      const pad = (n: number) => n.toString().padStart(2, '0');
+      const dateStr = `${selectedDate.getFullYear()}-${pad(selectedDate.getMonth() + 1)}-${pad(selectedDate.getDate())}`;
+      params.set('date', dateStr);
+    }
+    if (selectedTime) params.set('time', selectedTime);
+    if (selectedService?.name) params.set('service', selectedService.name);
+    if (selectedService?.price !== undefined && selectedService?.price !== null) {
+      params.set('price', selectedService.price.toString());
+    }
+    if (selectedService?.duration_minutes) {
+      params.set('duration', selectedService.duration_minutes.toString());
+    }
+    if (formData.name) params.set('name', formData.name);
+    if (formData.email) params.set('email', formData.email);
+
+    const loc = selectedLocation || (locations.length > 0 ? locations[0] : null);
+    if (loc?.name) params.set('location_name', loc.name);
+    if (loc?.address) params.set('location_address', loc.address);
+
+    // Preservar tenant de la URL si existe (útil en dev o multi-tenant explícito)
+    if (typeof window !== 'undefined') {
+      const currentParams = new URLSearchParams(window.location.search);
+      const currentTenant = currentParams.get('tenant');
+      if (currentTenant) params.set('tenant', currentTenant);
+    }
+
+    router.push(`/reservar/confirmada?${params.toString()}`);
+  };
+
   const handleBooking = async (e?: React.FormEvent) => {
     e?.preventDefault();
     const tenantId = getTenantId();
@@ -351,7 +385,7 @@ export default function BookingPage() {
         setPendingMaskedEmail(data.verification_email_masked || formData.email);
         setShowOtpModal(true);
       } else {
-        setStep(5); // Step 5 is Success screen
+        redirectToConfirmation(data.appointment_id);
       }
     } catch (err: any) {
       showFeedback({
@@ -526,17 +560,6 @@ export default function BookingPage() {
                       selectedLocation={selectedLocation || (locations.length > 0 ? locations[0] : null)}
                     />
                   )}
-
-                  {step === 5 && (
-                    <Step4Success 
-                      selectedDate={selectedDate}
-                      selectedTime={selectedTime}
-                      selectedService={selectedService}
-                      formData={formData}
-                      selectedLocation={selectedLocation || (locations.length > 0 ? locations[0] : null)}
-                      settings={settings}
-                    />
-                  )}
                 </>
               )}
             </>
@@ -645,7 +668,7 @@ export default function BookingPage() {
         tenantId={getTenantId()}
         onSuccess={() => {
           setShowOtpModal(false);
-          setStep(5);
+          redirectToConfirmation(pendingAppointmentId);
         }}
         onClose={() => setShowOtpModal(false)}
       />
