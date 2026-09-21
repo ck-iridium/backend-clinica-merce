@@ -29,7 +29,12 @@ function BentoServiceCard({ svc, idx, gridClass, total }: { svc: any, idx: numbe
     return () => observer.disconnect();
   }, []);
 
-  const isTouchDevice = typeof window !== 'undefined' ? window.matchMedia('(pointer: coarse)').matches : false;
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsTouchDevice(window.matchMedia('(pointer: coarse)').matches);
+    }
+  }, []);
   const shouldShowVideo = isTouchDevice ? isInView : isHovered;
   const shouldMountVideo = hasEnteredViewport || isHovered;
 

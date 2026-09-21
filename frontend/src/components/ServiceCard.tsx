@@ -30,7 +30,12 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
     return () => observer.disconnect();
   }, []);
 
-  const isTouchDevice = typeof window !== 'undefined' ? window.matchMedia('(pointer: coarse)').matches : false;
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsTouchDevice(window.matchMedia('(pointer: coarse)').matches);
+    }
+  }, []);
   const shouldShowVideo = isTouchDevice ? isInView : isHovered;
   // Solo montamos el vídeo si la tarjeta ha entrado en viewport o si hay hover activo
   const shouldMountVideo = hasEnteredViewport || isHovered;
