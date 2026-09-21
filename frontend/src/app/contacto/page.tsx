@@ -10,6 +10,7 @@ import {
   Share2
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import BotonReservaPro from '@/components/BotonReservaPro';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -343,6 +344,16 @@ export default function ContactoPage() {
                                 <p className="font-bold text-stone-900 text-sm font-sans">{loc.name}</p>
                                 <p className="text-xs text-stone-500 mt-1 font-sans">{loc.address}</p>
                                 {loc.phone && <p className="text-[10px] text-stone-400 mt-1.5 font-bold font-sans">Tel: {loc.phone}</p>}
+                                <div className="mt-3 pt-3 border-t border-stone-100 flex items-center justify-between">
+                                  <Link
+                                    href={`/sedes/${loc.slug || loc.id}`}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="text-xs font-semibold text-[#b08e23] hover:text-stone-900 inline-flex items-center gap-1 transition-colors"
+                                  >
+                                    <span>Ver sede y tratamientos</span>
+                                    <ChevronRight size={13} />
+                                  </Link>
+                                </div>
                               </div>
                             ))}
                           </div>

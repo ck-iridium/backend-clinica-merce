@@ -17,8 +17,6 @@ import {
 } from 'lucide-react';
 import { resolveTenantContext } from '@/lib/tenant-resolver';
 import { formatMapsUrl } from '@/lib/utils';
-import PublicNavbar from '@/components/PublicNavbar';
-import Footer from '@/components/Footer';
 import JsonLd from '@/components/seo/JsonLd';
 
 export const revalidate = 3600;
@@ -209,7 +207,6 @@ export default async function LocationDetailPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-[#FAFAFA] text-stone-900 flex flex-col font-sans selection:bg-[#d4af37]/20">
       <JsonLd id={`location-schema-${location.id}`} data={locationSchema} />
-      <PublicNavbar />
 
       <main className="flex-1">
         {/* HERO SECTION - QUIET LUXURY */}
@@ -592,8 +589,6 @@ export default async function LocationDetailPage({ params }: PageProps) {
           </section>
         )}
       </main>
-
-      <Footer />
     </div>
   );
 }

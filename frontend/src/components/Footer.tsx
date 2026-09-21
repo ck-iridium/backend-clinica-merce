@@ -24,6 +24,7 @@ const footerTranslations: Record<string, Record<string, string>> = {
     'footer.nav_home': 'Inicio',
     'footer.nav_treatments': 'Servicios',
     'footer.nav_contact': 'Contacto',
+    'footer.nav_locations': 'Sedes',
     'footer.nav_portal': 'Acceso Personal',
     'footer.rights_reserved': 'Todos los derechos reservados.',
     'footer.privacy': 'Privacidad',
@@ -51,6 +52,7 @@ const footerTranslations: Record<string, Record<string, string>> = {
     'footer.nav_home': 'Home',
     'footer.nav_treatments': 'Services',
     'footer.nav_contact': 'Contact',
+    'footer.nav_locations': 'Locations',
     'footer.nav_portal': 'Staff Portal',
     'footer.rights_reserved': 'All rights reserved.',
     'footer.privacy': 'Privacy Policy',
@@ -78,6 +80,7 @@ const footerTranslations: Record<string, Record<string, string>> = {
     'footer.nav_home': 'Accueil',
     'footer.nav_treatments': 'Services',
     'footer.nav_contact': 'Contact',
+    'footer.nav_locations': 'Centres',
     'footer.nav_portal': 'Portail Personnel',
     'footer.rights_reserved': 'Tous droits réservés.',
     'footer.privacy': 'Confidentialité',
@@ -297,6 +300,12 @@ export default function Footer() {
                 <Link href="/contacto" className="group flex items-center gap-2 text-sm font-medium hover:text-white transition-colors">
                   <ChevronRight size={14} className="text-primary opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all" />
                   {translateStatic('footer.nav_contact', "Contacto")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/sedes" className="group flex items-center gap-2 text-sm font-medium hover:text-white transition-colors">
+                  <ChevronRight size={14} className="text-primary opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all" />
+                  {translateStatic('footer.nav_locations', "Sedes")}
                 </Link>
               </li>
               <li>

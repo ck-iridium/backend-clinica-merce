@@ -12,7 +12,9 @@ import {
   Check, 
   X,
   Home,
-  ChevronRight
+  ChevronRight,
+  Globe,
+  ExternalLink
 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useFeedback } from "@/app/contexts/FeedbackContext"
@@ -33,6 +35,7 @@ import PlanLimitsCard from "@/components/PlanLimitsCard"
 interface Location {
   id: string
   name: string
+  slug?: string
   address: string
   phone?: string
   email?: string
@@ -576,6 +579,22 @@ export default function LocationsPage() {
                       <span className="truncate max-w-[200px]">{loc.email}</span>
                     </div>
                   )}
+
+                  {loc.slug && (
+                    <div className="pt-1">
+                      <a
+                        href={`/sedes/${loc.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs text-[#b08e23] hover:text-stone-900 font-semibold bg-[#d4af37]/10 hover:bg-[#d4af37]/20 px-3 py-1.5 rounded-lg transition-colors"
+                        title="Ver ficha web pública optimizada para Google"
+                      >
+                        <Globe size={13} />
+                        <span>Ver página SEO pública</span>
+                        <ExternalLink size={12} className="opacity-70" />
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -592,6 +611,15 @@ export default function LocationsPage() {
                   {loc.is_active ? <><X size={12} />{t('dashboard.locations.deactivate_btn')}</> : <><Check size={12} />{t('dashboard.locations.activate_btn')}</>}
                 </button>
                 <div className="flex items-center gap-1.5">
+                  <a
+                    href={`/sedes/${loc.slug || loc.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 text-stone-400 hover:text-[#d4af37] hover:bg-stone-50 rounded-xl transition-all"
+                    title="Abrir página pública"
+                  >
+                    <ExternalLink size={16} />
+                  </a>
                   <button id={`locations-edit-btn-${loc.id}`} onClick={() => handleEditOpen(loc)} className="p-2 text-stone-400 hover:text-stone-800 hover:bg-stone-50 rounded-xl transition-all" title={t('dashboard.locations.edit_btn')}>
                     <Edit2 size={16} />
                   </button>
