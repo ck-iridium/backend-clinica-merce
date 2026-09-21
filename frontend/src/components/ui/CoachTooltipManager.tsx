@@ -18,7 +18,11 @@ function CoachTooltipContent() {
     }
 
     // Verificar si el tooltip para este ID ya fue cerrado por el usuario
-    const isDismissed = localStorage.getItem(`coach_dismissed_${hint}`) === 'true';
+    let isDismissed = false;
+    try {
+      isDismissed = localStorage.getItem(`coach_dismissed_${hint}`) === 'true';
+    } catch (_) {}
+
     if (isDismissed) {
       setActiveHint(null);
       return;
@@ -58,7 +62,9 @@ function CoachTooltipContent() {
 
   const handleClose = () => {
     if (activeHint) {
-      localStorage.setItem(`coach_dismissed_${activeHint}`, 'true');
+      try {
+        localStorage.setItem(`coach_dismissed_${activeHint}`, 'true');
+      } catch (_) {}
       setActiveHint(null);
     }
   };

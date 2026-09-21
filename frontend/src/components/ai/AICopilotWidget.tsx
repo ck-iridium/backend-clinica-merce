@@ -219,23 +219,33 @@ export default function AICopilotWidget() {
   // ── Persistencia de preferencias ──────────────────────────────────────────
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedGender = localStorage.getItem('probookia_copilot_voice_gender') as 'female' | 'male';
-      if (savedGender) setVoiceGender(savedGender);
-      const savedWidth = localStorage.getItem('probookia_copilot_width');
-      const savedHeight = localStorage.getItem('probookia_copilot_height');
-      if (savedWidth) setChatWidth(Number(savedWidth));
-      if (savedHeight) setChatHeight(Number(savedHeight));
+      try {
+        const savedGender = localStorage.getItem('probookia_copilot_voice_gender') as 'female' | 'male';
+        if (savedGender) setVoiceGender(savedGender);
+        const savedWidth = localStorage.getItem('probookia_copilot_width');
+        const savedHeight = localStorage.getItem('probookia_copilot_height');
+        if (savedWidth) setChatWidth(Number(savedWidth));
+        if (savedHeight) setChatHeight(Number(savedHeight));
+      } catch (e) {
+        console.warn('No se pudo acceder a localStorage para preferencias:', e);
+      }
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('probookia_copilot_voice_gender', voiceGender);
+    try {
+      localStorage.setItem('probookia_copilot_voice_gender', voiceGender);
+    } catch (e) {}
   }, [voiceGender]);
 
   // ── Precalentar voces del navegador ───────────────────────────────────────
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.speechSynthesis) {
-      window.speechSynthesis.getVoices();
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window && window.speechSynthesis) {
+      try {
+        window.speechSynthesis.getVoices();
+      } catch (e) {
+        console.warn('Precalentamiento de voces no disponible:', e);
+      }
     }
   }, []);
 
@@ -278,8 +288,10 @@ export default function AICopilotWidget() {
     const newHeight = Math.max(300, Math.min(window.innerHeight - 32, window.innerHeight - e.clientY - paddingBottom));
     setChatWidth(newWidth);
     setChatHeight(newHeight);
-    localStorage.setItem('probookia_copilot_width', String(newWidth));
-    localStorage.setItem('probookia_copilot_height', String(newHeight));
+    try {
+      localStorage.setItem('probookia_copilot_width', String(newWidth));
+      localStorage.setItem('probookia_copilot_height', String(newHeight));
+    } catch (_) {}
   };
 
   const stopResize = () => {
@@ -344,13 +356,17 @@ export default function AICopilotWidget() {
 
     if (!textToSend) setInput('');
 
-    const userSession = localStorage.getItem('user');
     let tenantId = getCookie('tenant_id') || '';
     let authToken = '';
-    if (userSession) {
-      const parsed = JSON.parse(userSession);
-      if (!tenantId) tenantId = parsed.tenant_id || '';
-      authToken = parsed.access_token || parsed.token || '';
+    try {
+      const userSession = localStorage.getItem('user');
+      if (userSession) {
+        const parsed = JSON.parse(userSession);
+        if (!tenantId) tenantId = parsed.tenant_id || '';
+        authToken = parsed.access_token || parsed.token || '';
+      }
+    } catch (e) {
+      console.warn('Error accediendo a sesión de usuario en Copilot:', e);
     }
 
     if (!tenantId) {
@@ -412,7 +428,7 @@ export default function AICopilotWidget() {
         }
       }
 
-      let responseText = data.response;
+      let responseText = data.response || '';
       let targetRoute: string | null = data.redirect_url || null;
       try {
         const parsed = JSON.parse(data.response);
@@ -423,11 +439,11 @@ export default function AICopilotWidget() {
       } catch (_) { /* Not a navigation JSON instruction */ }
 
       // También chequear si viene en formato [NAVIGATE: route?hint=selector] en el texto plano
-      const navigateRegex = /\[NAVIGATE:\s*([^\]]+)\]/gi;
-      const matches = [...responseText.matchAll(navigateRegex)];
-      if (matches.length > 0) {
-        targetRoute = matches[0][1].trim();
-        responseText = responseText.replace(navigateRegex, '').trim();
+      const navigateRegex = /\[NAVIGATE:\s*([^\]]+)\]/i;
+      const navMatch = typeof responseText === 'string' ? responseText.match(navigateRegex) : null;
+      if (navMatch && navMatch[1]) {
+        targetRoute = navMatch[1].trim();
+        responseText = responseText.replace(/\[NAVIGATE:\s*[^\]]+\]/gi, '').trim();
       }
 
       setMessages((prev) => [...prev, { role: 'model', content: responseText }]);

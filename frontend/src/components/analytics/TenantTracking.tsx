@@ -20,8 +20,12 @@ export default function TenantTracking({ settings }: TenantTrackingProps) {
   useEffect(() => {
     // 1. Comprobar si las cookies ya fueron aceptadas
     const checkConsent = () => {
-      const accepted = localStorage.getItem('cookies_accepted') === 'true';
-      setHasConsent(accepted);
+      try {
+        const accepted = localStorage.getItem('cookies_accepted') === 'true';
+        setHasConsent(accepted);
+      } catch (_) {
+        setHasConsent(false);
+      }
     };
 
     checkConsent();

@@ -17,9 +17,14 @@ let activeUtterance: SpeechSynthesisUtterance | null = null;
 const getPersistentAudio = () => {
   if (typeof window === 'undefined') return null;
   if (!persistentAudio) {
-    persistentAudio = new Audio();
-    // Preload a tiny silent base64 to unlock it initially
-    persistentAudio.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
+    try {
+      persistentAudio = new Audio();
+      // Preload a tiny silent base64 to unlock it initially
+      persistentAudio.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
+    } catch (e) {
+      console.warn("No se pudo instanciar HTMLAudioElement en este entorno:", e);
+      persistentAudio = null;
+    }
   }
   return persistentAudio;
 };
@@ -27,9 +32,14 @@ const getPersistentAudio = () => {
 const getPersistentAudioContext = () => {
   if (typeof window === 'undefined') return null;
   if (!persistentAudioContext) {
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-    if (AudioContextClass) {
-      persistentAudioContext = new AudioContextClass();
+    try {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioContextClass) {
+        persistentAudioContext = new AudioContextClass();
+      }
+    } catch (e) {
+      console.warn("No se pudo instanciar AudioContext en este entorno:", e);
+      persistentAudioContext = null;
     }
   }
   return persistentAudioContext;

@@ -6,16 +6,25 @@ export default function CookieBanner() {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    const accepted = localStorage.getItem('cookies_accepted');
-    if (!accepted) {
-      setShow(true);
+    try {
+      const accepted = localStorage.getItem('cookies_accepted');
+      if (!accepted) {
+        setShow(true);
+      }
+    } catch (_) {
+      // Si el almacenamiento está restringido en Safari, no bloquear la UI
+      setShow(false);
     }
   }, []);
 
   const handleAccept = () => {
-    localStorage.setItem('cookies_accepted', 'true');
+    try {
+      localStorage.setItem('cookies_accepted', 'true');
+    } catch (_) {}
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('cookie_consent_updated', { detail: { accepted: true } }));
+      try {
+        window.dispatchEvent(new CustomEvent('cookie_consent_updated', { detail: { accepted: true } }));
+      } catch (_) {}
     }
     setShow(false);
   };

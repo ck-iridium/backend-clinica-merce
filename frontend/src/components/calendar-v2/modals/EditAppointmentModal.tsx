@@ -64,10 +64,16 @@ export function EditAppointmentModal({
 }: EditAppointmentModalProps) {
   const { t, language } = useLanguage();
 
+  const parseIsoDate = (str?: string) => {
+    if (!str) return new Date();
+    const clean = str.endsWith('Z') ? str.slice(0, -1) : str;
+    return new Date(clean.replace(' ', 'T'));
+  };
+
   const currentApptDuration = useMemo(() => {
     if (!selectedAppt?.start_time || !selectedAppt?.end_time) return 30;
-    const s = new Date(selectedAppt.start_time.endsWith('Z') ? selectedAppt.start_time.slice(0, -1) : selectedAppt.start_time).getTime();
-    const e = new Date(selectedAppt.end_time.endsWith('Z') ? selectedAppt.end_time.slice(0, -1) : selectedAppt.end_time).getTime();
+    const s = parseIsoDate(selectedAppt.start_time).getTime();
+    const e = parseIsoDate(selectedAppt.end_time).getTime();
     const diff = Math.round((e - s) / 60000);
     return diff > 0 ? diff : 30;
   }, [selectedAppt]);
@@ -81,8 +87,7 @@ export function EditAppointmentModal({
   // Cálculo del hueco libre máximo disponible desde el inicio de la cita sin invadir descansos, cierres u otras citas
   const availableGapMinutes = useMemo(() => {
     if (!selectedAppt?.start_time) return 480;
-    const tS = selectedAppt.start_time.endsWith('Z') ? selectedAppt.start_time.slice(0, -1) : selectedAppt.start_time;
-    const s_time = new Date(tS);
+    const s_time = parseIsoDate(selectedAppt.start_time);
     const apptDate = new Date(s_time.getFullYear(), s_time.getMonth(), s_time.getDate());
 
     const closingH = endHour || 20;
@@ -102,7 +107,7 @@ export function EditAppointmentModal({
 
     const futureEvents = [...dayAppts, ...dayBlocks]
       .filter(e => e.id !== selectedAppt.id && e.status !== 'cancelled')
-      .map(e => ({ ...e, start: new Date(e.start_time.endsWith('Z') ? e.start_time.slice(0, -1) : e.start_time) }))
+      .map(e => ({ ...e, start: parseIsoDate(e.start_time) }))
       .filter(e => e.start > s_time)
       .sort((a, b) => a.start.getTime() - b.start.getTime());
 
@@ -168,7 +173,7 @@ export function EditAppointmentModal({
             {selectedAppt && (
               <DialogDescription className="text-primary font-bold flex items-center gap-2 text-sm">
                 <Calendar size={14} strokeWidth={2.5} />
-                {new Date(selectedAppt.start_time.endsWith('Z') ? selectedAppt.start_time.slice(0, -1) : selectedAppt.start_time).toLocaleDateString(getLocaleString(), {
+                {parseIsoDate(selectedAppt.start_time).toLocaleDateString(getLocaleString(), {
                   day: 'numeric',
                   month: 'long',
                   hour: '2-digit',

@@ -102,8 +102,12 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
 
   // Precalentar voces del navegador
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.speechSynthesis) {
-      window.speechSynthesis.getVoices();
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window && window.speechSynthesis) {
+      try {
+        window.speechSynthesis.getVoices();
+      } catch (e) {
+        console.warn('Precalentamiento de voces no disponible:', e);
+      }
     }
   }, []);
 
@@ -270,13 +274,13 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
       }
 
       // 3.5. Detectar comandos [NAVIGATE: route?hint=selector]
-      const navigateRegex = /\[NAVIGATE:\s*([^\]]+)\]/gi;
-      let cleanedResponseText = finalResponseText;
-      const matches = [...finalResponseText.matchAll(navigateRegex)];
-      if (matches.length > 0) {
-        const targetRoute = matches[0][1].trim();
+      const navigateRegex = /\[NAVIGATE:\s*([^\]]+)\]/i;
+      let cleanedResponseText = finalResponseText || '';
+      const navMatch = typeof finalResponseText === 'string' ? finalResponseText.match(navigateRegex) : null;
+      if (navMatch && navMatch[1]) {
+        const targetRoute = navMatch[1].trim();
         router.push(targetRoute);
-        cleanedResponseText = finalResponseText.replace(navigateRegex, '').trim();
+        cleanedResponseText = finalResponseText.replace(/\[NAVIGATE:\s*[^\]]+\]/gi, '').trim();
       }
 
       // 4. Añadir respuesta de la IA a la UI

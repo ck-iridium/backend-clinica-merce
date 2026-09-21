@@ -53,7 +53,7 @@ function ConfirmacionContent() {
       const [year, month, day] = dateParam.split('-').map(Number);
       return new Date(year, month - 1, day);
     }
-    const d = new Date(dateParam);
+    const d = new Date(dateParam.replace(' ', 'T'));
     return isNaN(d.getTime()) ? new Date() : d;
   }, [dateParam]);
 

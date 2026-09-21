@@ -76,20 +76,36 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   // Detectar idioma inicial al montar el componente y sincronizar cookies
   useEffect(() => {
-    let savedLang = localStorage.getItem('preferred_language') as Language;
-    if (!savedLang) {
-      const browserLang = navigator.language.split('-')[0] as Language;
-      savedLang = ['es', 'en', 'fr'].includes(browserLang) ? browserLang : 'es';
+    try {
+      let savedLang: Language | null = null;
+      try {
+        savedLang = localStorage.getItem('preferred_language') as Language;
+      } catch (_) {}
+
+      if (!savedLang) {
+        const browserLang = typeof navigator !== 'undefined' && navigator.language 
+          ? (navigator.language.split('-')[0] as Language) 
+          : 'es';
+        savedLang = ['es', 'en', 'fr'].includes(browserLang) ? browserLang : 'es';
+      }
+      setLanguageState(savedLang);
+      if (typeof document !== 'undefined') {
+        document.cookie = `preferred_language=${savedLang}; path=/; max-age=31536000; SameSite=Lax`;
+      }
+    } catch (e) {
+      console.warn("Error inicializando LanguageContext:", e);
     }
-    setLanguageState(savedLang);
-    document.cookie = `preferred_language=${savedLang}; path=/; max-age=31536000; SameSite=Lax`;
   }, []);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem('preferred_language', lang);
+    try {
+      localStorage.setItem('preferred_language', lang);
+    } catch (_) {}
     if (typeof window !== 'undefined') {
-      document.cookie = `preferred_language=${lang}; path=/; max-age=31536000; SameSite=Lax`;
+      try {
+        document.cookie = `preferred_language=${lang}; path=/; max-age=31536000; SameSite=Lax`;
+      } catch (_) {}
       
       // Evitamos reiniciar únicamente en el flujo de reserva (para no perder el paso actual y la selección).
       // Para el dashboard y las páginas públicas, recargamos para que Next.js Server Components

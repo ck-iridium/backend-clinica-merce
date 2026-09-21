@@ -18,7 +18,7 @@ function getCookie(name: string): string | null {
 if (typeof window !== 'undefined' && !(window as any).__tenant_fetch_patched) {
   (window as any).__tenant_fetch_patched = true;
   
-  const originalFetch = window.fetch;
+  const originalFetch = window.fetch.bind(window);
   
   window.fetch = async function (input: RequestInfo | URL, init?: RequestInit) {
     let url = '';
@@ -38,14 +38,6 @@ if (typeof window !== 'undefined' && !(window as any).__tenant_fetch_patched) {
       const impersonateId = getCookie('impersonate_tenant_id');
       const normalTenantId = getCookie('tenant_id');
       const tenantId = isImpersonating ? (impersonateId || normalTenantId) : normalTenantId;
-      
-      console.log('[TenantInitializer Patch] Intercepting:', url, {
-        isImpersonating,
-        impersonateId,
-        normalTenantId,
-        selectedTenantId: tenantId,
-        cookies: typeof document !== 'undefined' ? document.cookie : ''
-      });
       
       if (tenantId) {
         init = init || {};
@@ -67,7 +59,7 @@ if (typeof window !== 'undefined' && !(window as any).__tenant_fetch_patched) {
       }
     }
     
-    const response = await originalFetch(input, init);
+    const response = await originalFetch.call(window, input, init);
     
     if (typeof window !== 'undefined') {
       const currentPath = window.location.pathname;
