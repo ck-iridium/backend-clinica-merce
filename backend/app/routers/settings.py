@@ -60,6 +60,8 @@ def read_tenant_limits(db: Session = Depends(database.get_db)):
 
     return {
         "tenant_id": tenant_id,
+        "tenant_slug": tenant.slug,
+        "custom_domain": tenant.custom_domain,
         "plan_type": plan,
         "subscription_status": tenant.subscription_status,
         "subscription_expires_at": tenant.subscription_expires_at.isoformat() if tenant.subscription_expires_at else None,

@@ -53,6 +53,8 @@ export default function LocationsPage() {
   
   const [locations, setLocations] = React.useState<Location[]>([])
   const [limitsData, setLimitsData] = React.useState<any>(null)
+  const [tenantSlug, setTenantSlug] = React.useState<string>('')
+  const [customDomain, setCustomDomain] = React.useState<string | null>(null)
   const [serviceModality, setServiceModality] = React.useState<string>('clinic') // 'clinic', 'home', 'both'
   const [loading, setLoading] = React.useState(true)
   const [isCreateOpen, setIsCreateOpen] = React.useState(false)
@@ -117,7 +119,12 @@ export default function LocationsPage() {
       ])
 
       if (locRes.ok) setLocations(await locRes.json() || [])
-      if (limitsRes.ok) setLimitsData(await limitsRes.json())
+      if (limitsRes.ok) {
+        const limits = await limitsRes.json()
+        setLimitsData(limits)
+        if (limits.custom_domain) setCustomDomain(limits.custom_domain)
+        if (limits.tenant_slug) setTenantSlug(limits.tenant_slug)
+      }
       if (settingsRes.ok) {
         const settings = await settingsRes.json()
         setServiceModality(settings.service_modality || 'clinic')
@@ -128,6 +135,39 @@ export default function LocationsPage() {
       setLoading(false)
     }
   }
+
+  const getPublicLocationUrl = (loc: Location) => {
+    const slug = loc.slug || loc.id;
+    
+    // 1. Dominio personalizado configurado en base de datos
+    if (customDomain) {
+      const clean = customDomain.trim().replace(/\/+$/, '');
+      return `${clean.startsWith('http') ? clean : `https://${clean}`}/sedes/${slug}`;
+    }
+    
+    // 2. Mapeo específico para tenant merce
+    const currentSlug = tenantSlug || getCookie('impersonate_tenant_slug') || getCookie('tenant_slug');
+    if (currentSlug === 'merce') {
+      return `https://www.esteticamerce.com/sedes/${slug}`;
+    }
+    
+    // 3. Modo Soporte en probookia.com
+    if (typeof window !== 'undefined' && (window.location.hostname === 'probookia.com' || window.location.hostname === 'www.probookia.com')) {
+      if (currentSlug) {
+        return `https://${currentSlug}.probookia.com/sedes/${slug}`;
+      }
+    }
+
+    // 4. Entorno de desarrollo localhost
+    if (typeof window !== 'undefined' && window.location.hostname.includes('localhost')) {
+      if (currentSlug) {
+        return `http://${currentSlug}.localhost:${window.location.port || 3000}/sedes/${slug}`;
+      }
+    }
+    
+    // 5. En el dominio propio de la clínica
+    return `/sedes/${slug}`;
+  };
 
   React.useEffect(() => {
     if (!loadingRole) {
@@ -583,7 +623,7 @@ export default function LocationsPage() {
                   {loc.slug && (
                     <div className="pt-1">
                       <a
-                        href={`/sedes/${loc.slug}`}
+                        href={getPublicLocationUrl(loc)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 text-xs text-[#b08e23] hover:text-stone-900 font-semibold bg-[#d4af37]/10 hover:bg-[#d4af37]/20 px-3 py-1.5 rounded-lg transition-colors"
@@ -612,7 +652,7 @@ export default function LocationsPage() {
                 </button>
                 <div className="flex items-center gap-1.5">
                   <a
-                    href={`/sedes/${loc.slug || loc.id}`}
+                    href={getPublicLocationUrl(loc)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-2 text-stone-400 hover:text-[#d4af37] hover:bg-stone-50 rounded-xl transition-all"
