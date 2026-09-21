@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Optional, List, Dict, Any
 from datetime import datetime, date
 
@@ -203,6 +203,10 @@ class ClinicSettingsBase(BaseModel):
     maps_url: Optional[str] = None
     allow_search_engine_indexing: bool = True
     google_site_verification: Optional[str] = None
+    gtm_container_id: Optional[str] = None
+    google_ads_id: Optional[str] = None
+    google_ads_conversion_label: Optional[str] = None
+    integrations_config: Optional[Dict[str, Any]] = None
     stripe_account_id: Optional[str] = None
     stripe_charges_enabled: bool = False
     whatsapp_number: Optional[str] = None
@@ -316,6 +320,45 @@ class ClinicSettingsUpdate(BaseModel):
     border_radius: Optional[str] = None
     favicon_b64: Optional[str] = None
     enable_consents: Optional[bool] = None
+    gtm_container_id: Optional[str] = None
+    google_ads_id: Optional[str] = None
+    google_ads_conversion_label: Optional[str] = None
+    integrations_config: Optional[Dict[str, Any]] = None
+
+    @field_validator('gtm_container_id')
+    @classmethod
+    def validate_gtm(cls, v: Optional[str]) -> Optional[str]:
+        if not v or not v.strip():
+            return None
+        v = v.strip().upper()
+        import re
+        if not re.match(r'^GTM-[A-Z0-9]+$', v):
+            raise ValueError("Formato de Google Tag Manager inválido. Debe ser de la forma GTM-XXXXXXX")
+        return v
+
+    @field_validator('google_ads_id')
+    @classmethod
+    def validate_google_ads_id(cls, v: Optional[str]) -> Optional[str]:
+        if not v or not v.strip():
+            return None
+        v = v.strip().upper()
+        if not v.startswith('AW-'):
+            v = f"AW-{v}"
+        import re
+        if not re.match(r'^AW-[0-9]+$', v):
+            raise ValueError("Formato de ID de Google Ads inválido. Debe ser de la forma AW-123456789")
+        return v
+
+    @field_validator('google_ads_conversion_label')
+    @classmethod
+    def validate_conversion_label(cls, v: Optional[str]) -> Optional[str]:
+        if not v or not v.strip():
+            return None
+        v = v.strip()
+        import re
+        if not re.match(r'^[a-zA-Z0-9_-]+$', v):
+            raise ValueError("Etiqueta de conversión inválida. Solo caracteres alfanuméricos, guiones o barras bajas")
+        return v
 
 
 # --- Consents ---

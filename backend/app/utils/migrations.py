@@ -232,7 +232,11 @@ $function$;
             "ALTER TABLE clients DROP CONSTRAINT IF EXISTS clients_email_key",
             "ALTER TABLE clients DROP CONSTRAINT IF EXISTS uq_clients_email",
             "ALTER TABLE clients ADD CONSTRAINT uq_clients_tenant_email UNIQUE (tenant_id, email)",
-            "ALTER TABLE clinic_settings ADD COLUMN google_site_verification VARCHAR(255) NULL"
+            "ALTER TABLE clinic_settings ADD COLUMN google_site_verification VARCHAR(255) NULL",
+            "ALTER TABLE clinic_settings ADD COLUMN gtm_container_id VARCHAR(50) NULL",
+            "ALTER TABLE clinic_settings ADD COLUMN google_ads_id VARCHAR(50) NULL",
+            "ALTER TABLE clinic_settings ADD COLUMN google_ads_conversion_label VARCHAR(100) NULL",
+            f"ALTER TABLE clinic_settings ADD COLUMN integrations_config {json_type} DEFAULT '{{}}'"
         ]
         
         for m in migrations:

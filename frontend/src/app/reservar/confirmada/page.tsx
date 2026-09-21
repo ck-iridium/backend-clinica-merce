@@ -17,6 +17,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { trackBookingConversion } from '@/lib/tracking';
 
 const getTenantId = () => {
   if (typeof document === 'undefined') return '';
@@ -77,19 +78,18 @@ function ConfirmacionContent() {
 
   // Evento DataLayer para Google Tag Manager / Google Ads Enhanced Conversions
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const gtmWindow = window as any;
-      gtmWindow.dataLayer = gtmWindow.dataLayer || [];
-      gtmWindow.dataLayer.push({
-        event: 'booking_confirmed',
-        booking_id: bookingId,
-        service_name: serviceName,
-        value: servicePrice ? parseFloat(servicePrice) : 0,
-        currency: 'EUR',
-        customer_email: clientEmail
-      });
-    }
-  }, [bookingId, serviceName, servicePrice, clientEmail]);
+    if (!bookingId) return;
+
+    trackBookingConversion({
+      bookingId,
+      serviceName,
+      value: servicePrice ? parseFloat(servicePrice) : 0,
+      currency: 'EUR',
+      clientEmail,
+      googleAdsId: settings?.google_ads_id,
+      googleAdsConversionLabel: settings?.google_ads_conversion_label
+    });
+  }, [bookingId, serviceName, servicePrice, clientEmail, settings]);
 
   // Formateo de fecha según idioma
   const dateLocale = language === 'en' ? 'en-US' : language === 'fr' ? 'fr-FR' : 'es-ES';

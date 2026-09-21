@@ -330,6 +330,10 @@ class ClinicSettings(Base):
     google_site_verification = Column(String(255), nullable=True)
     whatsapp_number = Column(String, nullable=True)
     maps_url = Column(String, nullable=True)
+    gtm_container_id = Column(String(50), nullable=True)
+    google_ads_id = Column(String(50), nullable=True)
+    google_ads_conversion_label = Column(String(100), nullable=True)
+    integrations_config = Column(JSONB, default=dict, nullable=True)
 
     # Horario Base (Agenda)
     open_time = Column(String, default="09:00")

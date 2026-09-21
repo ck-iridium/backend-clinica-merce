@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthRole } from '@/hooks/useAuthRole';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/app/contexts/LanguageContext';
-import { Save, Building2, SearchCode, ImageIcon, Hash, Clock, Calendar, Trash2, CreditCard, LayoutTemplate, Wallet, MapPin, FileText } from 'lucide-react';
+import { Save, Building2, SearchCode, ImageIcon, Hash, Clock, Calendar, Trash2, CreditCard, LayoutTemplate, Wallet, MapPin, FileText, TrendingUp } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -26,6 +26,7 @@ import PaymentsTab from './tabs/PaymentsTab';
 import BookingLayoutTab from './tabs/BookingLayoutTab';
 import MobileServicesTab from './tabs/MobileServicesTab';
 import ConsentsTab from './tabs/ConsentsTab';
+import IntegrationsTab from './tabs/IntegrationsTab';
 
 export default function SettingsPage() {
   const { t } = useLanguage();
@@ -90,7 +91,7 @@ export default function SettingsPage() {
   // Sincronizar parámetro URL tab al cambiar de pestaña
   useEffect(() => {
     if (tabParam) {
-      const validTabs = ['general', 'subscription', 'agenda', 'mobile_services', 'billing', 'payments', 'branding', 'booking_ui', 'consents', 'advanced'];
+      const validTabs = ['general', 'subscription', 'agenda', 'mobile_services', 'billing', 'payments', 'branding', 'booking_ui', 'consents', 'integrations', 'advanced'];
       if (validTabs.includes(tabParam)) {
         setActiveTab(tabParam);
       }
@@ -110,7 +111,7 @@ export default function SettingsPage() {
         const params = new URLSearchParams(window.location.search);
         const tParam = params.get('tab');
         if (tParam) {
-          const validTabs = ['general', 'subscription', 'agenda', 'mobile_services', 'billing', 'payments', 'branding', 'booking_ui', 'consents', 'advanced'];
+          const validTabs = ['general', 'subscription', 'agenda', 'mobile_services', 'billing', 'payments', 'branding', 'booking_ui', 'consents', 'integrations', 'advanced'];
           if (validTabs.includes(tParam)) {
             setActiveTab(tParam);
           }
@@ -242,6 +243,16 @@ export default function SettingsPage() {
         payload.booking_margin_hours = 2.0;
       }
 
+      if (typeof payload.gtm_container_id === 'string') {
+        payload.gtm_container_id = payload.gtm_container_id.trim() || null;
+      }
+      if (typeof payload.google_ads_id === 'string') {
+        payload.google_ads_id = payload.google_ads_id.trim() || null;
+      }
+      if (typeof payload.google_ads_conversion_label === 'string') {
+        payload.google_ads_conversion_label = payload.google_ads_conversion_label.trim() || null;
+      }
+
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -369,6 +380,7 @@ export default function SettingsPage() {
               { id: 'branding', label: t('dashboard.settings.tabs.branding'), icon: ImageIcon },
               { id: 'booking_ui', label: t('dashboard.settings.tabs.booking_ui'), icon: LayoutTemplate },
               ...(settings.enable_consents ?? true ? [{ id: 'consents', label: 'Consentimientos', icon: FileText }] : []),
+              { id: 'integrations', label: 'Integraciones', icon: TrendingUp },
               { id: 'advanced', label: t('dashboard.settings.tabs.advanced'), icon: SearchCode },
             ].map((tab) => (
               <button
@@ -438,6 +450,7 @@ export default function SettingsPage() {
           {activeTab === 'booking_ui' && <BookingLayoutTab settings={settings} setSettings={setSettings} />}
           {activeTab === 'mobile_services' && <MobileServicesTab settings={settings} setSettings={setSettings} />}
           {activeTab === 'consents' && (settings.enable_consents ?? true) && <ConsentsTab />}
+          {activeTab === 'integrations' && <IntegrationsTab settings={settings} setSettings={setSettings} />}
           {activeTab === 'advanced' && <AdvancedTab settings={settings} setSettings={setSettings} />}
         </div>
       </div>

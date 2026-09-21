@@ -213,6 +213,7 @@ import LayoutWrapper from "@/components/LayoutWrapper";
 import { Providers } from "@/components/Providers";
 import InviteHandler from "@/components/InviteHandler";
 import TenantInitializer from "@/components/TenantInitializer";
+import TenantTracking from "@/components/analytics/TenantTracking";
 
 
 import { CreditCard } from "lucide-react";
@@ -385,6 +386,7 @@ export default async function RootLayout({
         <Providers>
           <TenantInitializer />
           <InviteHandler />
+          <TenantTracking settings={settings} />
           <LayoutWrapper>
             {children}
           </LayoutWrapper>
