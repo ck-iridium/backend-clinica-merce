@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
 import { supabase, getSupabaseAdmin } from '@/lib/supabase';
 
 /**
@@ -49,15 +50,28 @@ export async function updatePasswordAndActivate(newPassword: string, accessToken
   }
 }
 
-export async function getUserRoleByEmail(email: string) {
+export async function getUserRoleByEmail(email: string, targetTenantId?: string) {
   try {
     const adminSupabase = getSupabaseAdmin();
+    const cookieStore = cookies();
+    let tenantId = targetTenantId || cookieStore.get('tenant_id')?.value;
+    const isImpersonating = cookieStore.get('is_impersonating')?.value === 'true';
+    const impersonateTenantId = cookieStore.get('impersonate_tenant_id')?.value;
 
-    const { data, error } = await adminSupabase
+    if (isImpersonating && impersonateTenantId) {
+      tenantId = impersonateTenantId;
+    }
+
+    let query = adminSupabase
       .from('profiles')
       .select('role')
-      .eq('email', email)
-      .single();
+      .eq('email', email.trim().toLowerCase());
+
+    if (tenantId && tenantId !== 'undefined') {
+      query = query.eq('tenant_id', tenantId);
+    }
+
+    const { data, error } = await query.maybeSingle();
 
     if (error || !data) {
       return { success: false, role: null };
@@ -69,18 +83,44 @@ export async function getUserRoleByEmail(email: string) {
   }
 }
 
-export async function getUserProfile(userId: string) {
+export async function getUserProfile(userId: string, targetTenantId?: string) {
   try {
     const adminSupabase = getSupabaseAdmin();
-    const { data, error } = await adminSupabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
+    const cookieStore = cookies();
+    let tenantId = targetTenantId || cookieStore.get('tenant_id')?.value;
+    const isImpersonating = cookieStore.get('is_impersonating')?.value === 'true';
+    const impersonateTenantId = cookieStore.get('impersonate_tenant_id')?.value;
+
+    if (isImpersonating && impersonateTenantId) {
+      tenantId = impersonateTenantId;
+    }
+
+    let query = adminSupabase.from('profiles').select('*').eq('id', userId);
+
+    if (tenantId && tenantId !== 'undefined') {
+      query = query.eq('tenant_id', tenantId);
+    }
+
+    const { data, error } = await query.maybeSingle();
 
     if (error) {
       console.error("Error obteniendo perfil:", error);
       return { success: false, error: error.message };
+    }
+
+    // Si no se encuentra perfil para ese tenant_id específico, buscar el primer perfil existente como fallback
+    if (!data) {
+      const { data: fallbackData } = await adminSupabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .limit(1)
+        .maybeSingle();
+
+      if (fallbackData) {
+        return { success: true, profile: fallbackData };
+      }
+      return { success: false, error: "Perfil no encontrado" };
     }
 
     return { success: true, profile: data };
@@ -89,13 +129,28 @@ export async function getUserProfile(userId: string) {
   }
 }
 
-export async function updateUserProfile(userId: string, updates: any) {
+export async function updateUserProfile(userId: string, updates: any, targetTenantId?: string) {
   try {
     const adminSupabase = getSupabaseAdmin();
-    const { error } = await adminSupabase
+    const cookieStore = cookies();
+    let tenantId = targetTenantId || cookieStore.get('tenant_id')?.value;
+    const isImpersonating = cookieStore.get('is_impersonating')?.value === 'true';
+    const impersonateTenantId = cookieStore.get('impersonate_tenant_id')?.value;
+
+    if (isImpersonating && impersonateTenantId) {
+      tenantId = impersonateTenantId;
+    }
+
+    let query = adminSupabase
       .from('profiles')
       .update(updates)
       .eq('id', userId);
+
+    if (tenantId && tenantId !== 'undefined') {
+      query = query.eq('tenant_id', tenantId);
+    }
+
+    const { error } = await query;
 
     if (error) {
       console.error("Error actualizando perfil:", error);

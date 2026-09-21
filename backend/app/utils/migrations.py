@@ -328,9 +328,31 @@ $function$;
                     locs_updated += 1
             if locs_updated > 0:
                 db.commit()
-                logger.info(f"✅ Auto-migración: Se asignaron slugs SEO a {locs_updated} sedes.")
-        except Exception as e:
-            logger.warning(f"⚠️ Nota al auto-asignar slug a sedes: {e}")
+        # 6. Migración Multi-Tenant: Clave Primaria Compuesta en profiles (id, tenant_id)
+        if not is_sqlite:
+            try:
+                pk_check = db.execute(text("""
+                    SELECT kcu.column_name
+                    FROM information_schema.table_constraints tc
+                    JOIN information_schema.key_column_usage kcu 
+                      ON tc.constraint_name = kcu.constraint_name 
+                      AND tc.table_schema = kcu.table_schema
+                    WHERE tc.table_name = 'profiles' 
+                      AND tc.constraint_type = 'PRIMARY KEY';
+                """)).fetchall()
+                pk_columns = [row[0] for row in pk_check]
+
+                if "tenant_id" not in pk_columns:
+                    logger.info("Iniciando migración de clave primaria compuesta en public.profiles...")
+                    db.execute(text("UPDATE public.profiles SET tenant_id = '00000000-0000-0000-0000-000000000001' WHERE tenant_id IS NULL;"))
+                    db.execute(text("ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_pkey;"))
+                    db.execute(text("ALTER TABLE public.profiles ADD CONSTRAINT profiles_pkey PRIMARY KEY (id, tenant_id);"))
+                    db.execute(text("CREATE INDEX IF NOT EXISTS idx_profiles_email_tenant ON public.profiles(email, tenant_id);"))
+                    db.commit()
+                    logger.info("✅ Migración Multi-Tenant: profiles_pkey actualizada a (id, tenant_id) con éxito.")
+            except Exception as e:
+                db.rollback()
+                logger.warning(f"⚠️ Nota al actualizar clave primaria compuesta en profiles: {e}")
                 
     except Exception as e:
         logger.error(f"❌ Error crítico en auto-migración: {e}")

@@ -36,7 +36,7 @@ class User(Base):
 class Profile(Base):
     __tablename__ = "profiles"
     id = Column(String(36), primary_key=True)
-    tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
+    tenant_id = Column(String(36), ForeignKey("tenants.id"), primary_key=True, nullable=False, index=True)
     full_name = Column(String, nullable=True)
     avatar_url = Column(String, nullable=True)
     role = Column(String, nullable=True)

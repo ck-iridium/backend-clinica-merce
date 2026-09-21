@@ -36,8 +36,9 @@ export function useAuthRole() {
              setUserName(user.full_name || user.name);
           }
 
-          // 2. Obtener perfil completo de la DB para asegurar datos frescos (rol y nombre)
-          const profileRes = await getUserProfile(user.id);
+          // 2. Obtener perfil completo de la DB para asegurar datos frescos (rol y nombre) según el tenant activo
+          const activeTenantId = getCookie('tenant_id') || undefined;
+          const profileRes = await getUserProfile(user.id, activeTenantId);
           
           if (profileRes.success && profileRes.profile) {
             const p = profileRes.profile;
