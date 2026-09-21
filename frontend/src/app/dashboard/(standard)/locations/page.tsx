@@ -265,16 +265,100 @@ export default function LocationsPage() {
         
         marker.on('dragend', () => {
           const latLng = marker.getLatLng();
-          setFormData(prev => ({
-            ...prev,
-            latitude: latLng.lat,
-            longitude: latLng.lng
-          }));
-          reverseGeocode(latLng.lat, latLng.lng);
+          setFormData(prev => {
+            if (!prev.address || !prev.address.trim()) {
+              reverseGeocode(latLng.lat, latLng.lng);
+            }
+            return {
+              ...prev,
+              latitude: latLng.lat,
+              longitude: latLng.lng
+            };
+          });
         });
       }
     }
   }, [formData.latitude, formData.longitude]);
+
+  const extractHouseNumber = (query: string, rawPostcode?: string): string | null => {
+    if (!query) return null;
+    let text = query;
+    if (rawPostcode) {
+      text = text.replace(new RegExp(`\\b${rawPostcode}\\b`, 'g'), '');
+    }
+    // Eliminar códigos postales estándar españoles de 5 dígitos (01000 - 52999) para no confundirlos con números
+    text = text.replace(/\b[0-5][0-9]{4}\b/g, '');
+
+    // Buscar número de calle: 57, nº 57, n. 57, num 57, 57A, 57-B, 57 bis
+    const match = text.match(/(?:(?:n[º°.]?|n[uú]m(?:ero)?\.?|#)\s*)?(\b\d{1,4}(?:\s*[-/]\s*\d{1,4})?(?:\s*(?:bis|[a-zA-Z]))?\b)/i);
+    return match ? match[1].trim() : null;
+  };
+
+  const formatCleanAddress = (item: any, userQuery: string = ''): string => {
+    if (!item) return '';
+    const addr = item.address || {};
+
+    const road =
+      addr.road ||
+      addr.pedestrian ||
+      addr.street ||
+      addr.footway ||
+      addr.path ||
+      addr.cycleway ||
+      addr.square ||
+      addr.avenue ||
+      addr.place ||
+      '';
+
+    const postcode = addr.postcode || '';
+    const userNum = extractHouseNumber(userQuery, postcode);
+    const houseNumber = addr.house_number || userNum || '';
+
+    const city =
+      addr.city ||
+      addr.town ||
+      addr.village ||
+      addr.municipality ||
+      addr.hamlet ||
+      '';
+
+    const province =
+      addr.province ||
+      addr.state_district ||
+      (addr.state && addr.state !== city && addr.state !== 'Comunidad Valenciana' ? addr.state : '') ||
+      '';
+
+    if (!road) {
+      return [city, postcode, province].filter(Boolean).join(', ') || item.display_name || '';
+    }
+
+    const parts: string[] = [];
+
+    // 1. Calle y número exacto
+    if (houseNumber) {
+      parts.push(`${road}, ${houseNumber}`);
+    } else {
+      parts.push(road);
+    }
+
+    // 2. Código postal y localidad
+    if (city) {
+      if (postcode) {
+        parts.push(`${postcode} ${city}`);
+      } else {
+        parts.push(city);
+      }
+    } else if (postcode) {
+      parts.push(postcode);
+    }
+
+    // 3. Provincia (solo si difiere del municipio)
+    if (province && province.toLowerCase() !== city.toLowerCase()) {
+      parts.push(province);
+    }
+
+    return parts.join(', ');
+  };
 
   const initDialogMap = () => {
     if (!mapContainerRef.current) return;
@@ -309,22 +393,33 @@ export default function LocationsPage() {
 
     marker.on('dragend', () => {
       const latLng = marker.getLatLng();
-      setFormData(prev => ({
-        ...prev,
-        latitude: latLng.lat,
-        longitude: latLng.lng
-      }));
-      reverseGeocode(latLng.lat, latLng.lng);
+      setFormData(prev => {
+        // Solo autocompletar si no hay una dirección escrita para no borrar el número manual
+        if (!prev.address || !prev.address.trim()) {
+          reverseGeocode(latLng.lat, latLng.lng);
+        }
+        return {
+          ...prev,
+          latitude: latLng.lat,
+          longitude: latLng.lng
+        };
+      });
     });
   };
 
   const reverseGeocode = async (lat: number, lon: number) => {
     try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`);
       if (res.ok) {
         const data = await res.json();
-        if (data && data.display_name) {
-          setFormData(prev => ({ ...prev, address: data.display_name }));
+        if (data) {
+          const clean = formatCleanAddress(data, '');
+          if (clean) {
+            setFormData(prev => {
+              if (prev.address && prev.address.trim().length > 0) return prev;
+              return { ...prev, address: clean };
+            });
+          }
         }
       }
     } catch (e) {
@@ -354,12 +449,22 @@ export default function LocationsPage() {
         if (res.ok) {
           const data = await res.json();
           setSuggestions(
-            data.map((item: any) => ({
-              id: item.place_id,
-              display_name: item.display_name,
-              lat: parseFloat(item.lat),
-              lon: parseFloat(item.lon)
-            }))
+            data.map((item: any) => {
+              const cleanAddress = formatCleanAddress(item, value);
+              const secondary = [
+                item.address?.town || item.address?.city || item.address?.village,
+                item.address?.province || item.address?.state
+              ].filter(Boolean).join(', ');
+
+              return {
+                id: item.place_id,
+                clean_address: cleanAddress,
+                secondary_text: secondary,
+                display_name: item.display_name,
+                lat: parseFloat(item.lat),
+                lon: parseFloat(item.lon)
+              };
+            })
           );
         }
       } catch (err) {
@@ -374,7 +479,7 @@ export default function LocationsPage() {
     setSuggestions([]);
     setFormData(prev => ({
       ...prev,
-      address: suggestion.display_name,
+      address: suggestion.clean_address || suggestion.display_name,
       latitude: suggestion.lat,
       longitude: suggestion.lon
     }));
@@ -700,15 +805,18 @@ export default function LocationsPage() {
               </div>
               
               {suggestions.length > 0 && (
-                <div className="absolute z-[100] left-0 right-0 top-full mt-1 bg-white border border-stone-200 rounded-xl shadow-xl max-h-48 overflow-y-auto divide-y divide-stone-100">
+                <div className="absolute z-[100] left-0 right-0 top-full mt-1 bg-white border border-stone-200 rounded-2xl shadow-xl max-h-52 overflow-y-auto divide-y divide-stone-100">
                   {suggestions.map((s) => (
                     <button
                       key={s.id}
                       type="button"
                       onClick={() => handleSelectSuggestion(s)}
-                      className="w-full text-left px-4 py-3 text-xs text-stone-700 hover:bg-stone-50 hover:text-stone-950 font-sans transition-colors"
+                      className="w-full text-left px-4 py-3 hover:bg-stone-50 transition-colors flex flex-col gap-0.5 text-stone-700 hover:text-stone-950 font-sans"
                     >
-                      {s.display_name}
+                      <span className="text-xs font-semibold text-stone-800">{s.clean_address}</span>
+                      {s.secondary_text && (
+                        <span className="text-[11px] text-stone-400 truncate">{s.secondary_text}</span>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -776,15 +884,18 @@ export default function LocationsPage() {
               </div>
               
               {suggestions.length > 0 && (
-                <div className="absolute z-[100] left-0 right-0 top-full mt-1 bg-white border border-stone-200 rounded-xl shadow-xl max-h-48 overflow-y-auto divide-y divide-stone-100">
+                <div className="absolute z-[100] left-0 right-0 top-full mt-1 bg-white border border-stone-200 rounded-2xl shadow-xl max-h-52 overflow-y-auto divide-y divide-stone-100">
                   {suggestions.map((s) => (
                     <button
                       key={s.id}
                       type="button"
                       onClick={() => handleSelectSuggestion(s)}
-                      className="w-full text-left px-4 py-3 text-xs text-stone-700 hover:bg-stone-50 hover:text-stone-950 font-sans transition-colors"
+                      className="w-full text-left px-4 py-3 hover:bg-stone-50 transition-colors flex flex-col gap-0.5 text-stone-700 hover:text-stone-950 font-sans"
                     >
-                      {s.display_name}
+                      <span className="text-xs font-semibold text-stone-800">{s.clean_address}</span>
+                      {s.secondary_text && (
+                        <span className="text-[11px] text-stone-400 truncate">{s.secondary_text}</span>
+                      )}
                     </button>
                   ))}
                 </div>
