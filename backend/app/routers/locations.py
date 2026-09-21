@@ -14,6 +14,13 @@ router = APIRouter(
 def read_locations(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return crud_locations.get_locations(db, skip=skip, limit=limit)
 
+@router.get("/slug/{slug}", response_model=schemas.LocationResponse)
+def read_location_by_slug(slug: str, db: Session = Depends(get_db)):
+    db_loc = crud_locations.get_location_by_slug(db, slug=slug)
+    if not db_loc:
+        raise HTTPException(status_code=404, detail="Location not found")
+    return db_loc
+
 @router.get("/{location_id}", response_model=schemas.LocationResponse)
 def read_location(location_id: str, db: Session = Depends(get_db)):
     db_loc = crud_locations.get_location(db, location_id=location_id)

@@ -15,6 +15,7 @@ import ScrollIndicator from '@/components/ScrollIndicator';
 import Footer from '@/components/Footer';
 import PublicNavbar from '@/components/PublicNavbar';
 import BotonReservaPro from '@/components/BotonReservaPro';
+import JsonLd from '@/components/seo/JsonLd';
 
 async function getServiceData(slug: string, tenantId: string) {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -221,8 +222,33 @@ export default async function TreatmentDynamicPage({ params }: { params: { treat
     return url.startsWith('/') && baseUrl ? `${baseUrl}${url}` : url;
   };
 
+  const serviceSchema = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": translatedName,
+    "description": translatedDescription || undefined,
+    "provider": {
+      "@type": "HealthAndBeautyBusiness",
+      "name": settings?.clinic_name || 'Clínica',
+      "telephone": settings?.clinic_phone || undefined,
+      "address": settings?.clinic_address ? {
+        "@type": "PostalAddress",
+        "streetAddress": settings.clinic_address,
+        "addressCountry": "ES"
+      } : undefined
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": service.price,
+      "priceCurrency": "EUR",
+      "availability": "https://schema.org/InStock"
+    },
+    ...(service.image_url ? { "image": service.image_url } : {})
+  };
+
   return (
     <TreatmentScrollHandler>
+      <JsonLd id={`service-jsonld-${service.id}`} data={serviceSchema} />
       <style dangerouslySetInnerHTML={{
         __html: `
         .hide-scroll::-webkit-scrollbar { display: none; }

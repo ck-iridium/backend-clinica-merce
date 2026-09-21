@@ -195,7 +195,19 @@ export default function BookingPage() {
           const activeLocs = locs.filter((l: any) => l.is_active);
           setLocations(activeLocs);
           hasLocsLocal = activeLocs.length > 1;
-          if (activeLocs.length === 1) {
+          
+          let preselectedLoc = null;
+          if (typeof window !== 'undefined') {
+            const qs = new URLSearchParams(window.location.search);
+            const qLoc = qs.get('location_id') || qs.get('location') || qs.get('sede');
+            if (qLoc) {
+              preselectedLoc = activeLocs.find((l: any) => String(l.id) === String(qLoc) || String(l.slug) === String(qLoc));
+            }
+          }
+
+          if (preselectedLoc) {
+            setSelectedLocation(preselectedLoc);
+          } else if (activeLocs.length === 1) {
             setSelectedLocation(activeLocs[0]);
           }
         }

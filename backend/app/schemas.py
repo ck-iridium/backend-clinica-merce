@@ -430,6 +430,7 @@ class ClinicSettingsResponse(ClinicSettingsBase):
 # --- Locations ---
 class LocationBase(BaseModel):
     name: str
+    slug: Optional[str] = None
     address: str
     phone: Optional[str] = None
     email: Optional[str] = None
@@ -442,6 +443,7 @@ class LocationCreate(LocationBase):
 
 class LocationUpdate(BaseModel):
     name: Optional[str] = None
+    slug: Optional[str] = None
     address: Optional[str] = None
     phone: Optional[str] = None
     email: Optional[str] = None

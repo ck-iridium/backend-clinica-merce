@@ -94,7 +94,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const headers = { 'X-Tenant-ID': tenantId };
 
     try {
-      const [categoriesRes, servicesRes, navRes] = await Promise.all([
+      const [categoriesRes, servicesRes, navRes, locationsRes] = await Promise.all([
         fetch(`${apiUrl}/service-categories/`, {
           headers,
           next: { revalidate: 3600, tags: [`tenant-${tenantId}-sitemap-categories`] },
@@ -114,6 +114,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           next: { revalidate: 3600, tags: [`tenant-${tenantId}-sitemap-nav`] },
         }).catch((e) => {
           console.error('[SITEMAP CMS NAV FETCH ERROR]', e);
+          return null;
+        }),
+        fetch(`${apiUrl}/locations/`, {
+          headers,
+          next: { revalidate: 3600, tags: [`tenant-${tenantId}-sitemap-locations`] },
+        }).catch((e) => {
+          console.error('[SITEMAP LOCATIONS FETCH ERROR]', e);
           return null;
         }),
       ]);
@@ -188,6 +195,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
                   lastModified: now,
                   changeFrequency: 'monthly',
                   priority: 0.6,
+                });
+              }
+            }
+          }
+        }
+      }
+
+      // D. Inyectar Sedes Activas (/sedes/[slug])
+      if (locationsRes && locationsRes.ok) {
+        const locations = await locationsRes.json();
+        if (Array.isArray(locations)) {
+          for (const loc of locations) {
+            if (loc.slug && loc.is_active !== false) {
+              const locationUrl = `${baseUrl}/sedes/${loc.slug}`;
+              if (!seenUrls.has(locationUrl)) {
+                seenUrls.add(locationUrl);
+                tenantRoutes.push({
+                  url: locationUrl,
+                  lastModified: now,
+                  changeFrequency: 'weekly',
+                  priority: 0.9,
                 });
               }
             }

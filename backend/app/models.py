@@ -206,6 +206,7 @@ class Location(Base):
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
     name = Column(String, nullable=False)
+    slug = Column(String(100), nullable=True, index=True)
     address = Column(Text, nullable=False)
     phone = Column(String, nullable=True)
     email = Column(String, nullable=True)
@@ -213,6 +214,10 @@ class Location(Base):
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        UniqueConstraint('tenant_id', 'slug', name='uq_locations_tenant_slug'),
+    )
 
     tenant = relationship("Tenant")
 

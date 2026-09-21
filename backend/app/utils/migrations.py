@@ -236,7 +236,8 @@ $function$;
             "ALTER TABLE clinic_settings ADD COLUMN gtm_container_id VARCHAR(50) NULL",
             "ALTER TABLE clinic_settings ADD COLUMN google_ads_id VARCHAR(50) NULL",
             "ALTER TABLE clinic_settings ADD COLUMN google_ads_conversion_label VARCHAR(100) NULL",
-            f"ALTER TABLE clinic_settings ADD COLUMN integrations_config {json_type} DEFAULT '{{}}'"
+            f"ALTER TABLE clinic_settings ADD COLUMN integrations_config {json_type} DEFAULT '{{}}'",
+            "ALTER TABLE locations ADD COLUMN slug VARCHAR(100) NULL"
         ]
         
         for m in migrations:
@@ -308,6 +309,28 @@ $function$;
                 logger.info(f"✅ Auto-reparación: Se han asignado especialista y sede a {total_fixed} citas sin staff_id.")
         except Exception as e:
             logger.warning(f"⚠️ Nota al auto-asignar staff_id a citas huérfanas: {e}")
+
+        # 5. Auto-asignación de slug para sedes existentes sin slug
+        try:
+            from ..models import Location
+            from ..crud.locations import slugify
+            all_locs = db.query(Location).all()
+            locs_updated = 0
+            for l in all_locs:
+                if not l.slug and l.name:
+                    base_slug = slugify(l.name) or "sede"
+                    slug = base_slug
+                    counter = 1
+                    while db.query(Location).filter(Location.tenant_id == l.tenant_id, Location.slug == slug, Location.id != l.id).first():
+                        counter += 1
+                        slug = f"{base_slug}-{counter}"
+                    l.slug = slug
+                    locs_updated += 1
+            if locs_updated > 0:
+                db.commit()
+                logger.info(f"✅ Auto-migración: Se asignaron slugs SEO a {locs_updated} sedes.")
+        except Exception as e:
+            logger.warning(f"⚠️ Nota al auto-asignar slug a sedes: {e}")
                 
     except Exception as e:
         logger.error(f"❌ Error crítico en auto-migración: {e}")

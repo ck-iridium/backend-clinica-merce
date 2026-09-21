@@ -214,7 +214,7 @@ import { Providers } from "@/components/Providers";
 import InviteHandler from "@/components/InviteHandler";
 import TenantInitializer from "@/components/TenantInitializer";
 import TenantTracking from "@/components/analytics/TenantTracking";
-
+import JsonLd from "@/components/seo/JsonLd";
 
 import { CreditCard } from "lucide-react";
 
@@ -361,12 +361,51 @@ export default async function RootLayout({
 
   const isDashboardRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/super-admin') || pathname.startsWith('/login');
 
+  const host = requestHeaders.get("host") || "";
+  const localBusinessSchema = (!isMarketing && !isDashboardRoute && settings) ? {
+    "@context": "https://schema.org",
+    "@type": "HealthAndBeautyBusiness",
+    "name": settings.clinic_name || "Centro de Estética",
+    "description": settings.clinic_description || settings.seo_description || undefined,
+    "url": host ? `https://${host}` : undefined,
+    "telephone": settings.clinic_phone || undefined,
+    "email": settings.clinic_email || undefined,
+    "address": settings.clinic_address ? {
+      "@type": "PostalAddress",
+      "streetAddress": settings.clinic_address,
+      "addressCountry": "ES"
+    } : undefined,
+    "image": settings.logo_app_b64 || undefined,
+    "priceRange": "€€",
+    ...(settings.operations_center_latitude && settings.operations_center_longitude ? {
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": settings.operations_center_latitude,
+        "longitude": settings.operations_center_longitude
+      }
+    } : {}),
+    ...(settings.open_time && settings.close_time ? {
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+          "opens": settings.open_time,
+          "closes": settings.close_time
+        }
+      ]
+    } : {}),
+    ...(settings.instagram_url || settings.maps_url ? {
+      "sameAs": [settings.instagram_url, settings.maps_url].filter(Boolean)
+    } : {})
+  } : null;
+
   return (
     <html lang="es" suppressHydrationWarning className={`${fontClasses} ${isDark && !isDashboardRoute ? 'dark' : ''}`}>
       <head>
         <link rel="icon" href={favicon} />
         <link rel="preconnect" href="https://ypimdbkiuguiszaddzaj.supabase.co" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://ypimdbkiuguiszaddzaj.supabase.co" />
+        {localBusinessSchema && <JsonLd id="tenant-business-jsonld" data={localBusinessSchema} />}
         <style dangerouslySetInnerHTML={{
           __html: `
           :root {
