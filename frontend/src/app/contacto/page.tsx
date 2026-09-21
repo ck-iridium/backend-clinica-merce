@@ -13,6 +13,7 @@ import { useState, useEffect, useRef } from 'react';
 import BotonReservaPro from '@/components/BotonReservaPro';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatInstagramUrl, formatMapsUrl } from '@/lib/utils';
 
 const DAYS_MAP_LOCAL: Record<string, Record<number, string>> = {
   es: { 1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado', 7: 'Domingo' },
@@ -600,9 +601,10 @@ export default function ContactoPage() {
                         </p>
                         <a 
                           href={
-                            locations[selectedLocationIndex]
-                              ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(locations[selectedLocationIndex].address)}`
-                              : settings?.maps_url || `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(settings?.clinic_address || '')}`
+                            formatMapsUrl(
+                              settings?.maps_url,
+                              locations[selectedLocationIndex]?.address || settings?.clinic_address
+                            ) || '#'
                           }
                           target="_blank" 
                           rel="noopener noreferrer"
@@ -645,8 +647,8 @@ export default function ContactoPage() {
 
             {/* Redes Sociales con impacto */}
             <motion.div variants={itemVariants} className="mt-12 flex justify-center gap-10">
-              {settings?.instagram_url && (
-                <a href={settings.instagram_url} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-3 group">
+              {formatInstagramUrl(settings?.instagram_url) && (
+                <a href={formatInstagramUrl(settings?.instagram_url)!} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-3 group">
                   <div className="w-14 h-14 rounded-luxury-btn bg-white shadow-sm flex items-center justify-center text-stone-400 group-hover:text-primary group-hover:shadow-md transition-all">
                     <Camera size={24} strokeWidth={1.5} />
                   </div>

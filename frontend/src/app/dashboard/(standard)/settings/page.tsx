@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthRole } from '@/hooks/useAuthRole';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { formatInstagramUrl, formatMapsUrl } from '@/lib/utils';
 import { Save, Building2, SearchCode, ImageIcon, Hash, Clock, Calendar, Trash2, CreditCard, LayoutTemplate, Wallet, MapPin, FileText, TrendingUp } from 'lucide-react';
 import {
   Dialog,
@@ -251,6 +252,12 @@ export default function SettingsPage() {
       }
       if (typeof payload.google_ads_conversion_label === 'string') {
         payload.google_ads_conversion_label = payload.google_ads_conversion_label.trim() || null;
+      }
+      if (typeof payload.instagram_url === 'string') {
+        payload.instagram_url = formatInstagramUrl(payload.instagram_url) || null;
+      }
+      if (typeof payload.maps_url === 'string') {
+        payload.maps_url = formatMapsUrl(payload.maps_url, null) || null;
       }
 
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/`, {

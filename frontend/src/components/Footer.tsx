@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { Camera, Share2, MapPin, Phone, Mail, Clock, ChevronRight } from 'lucide-react';
 import LanguageSelector from './LanguageSelector';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { formatInstagramUrl, formatMapsUrl } from '@/lib/utils';
 
 const DAYS_MAP: Record<number, string> = {
   1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado', 7: 'Domingo'
@@ -142,6 +143,9 @@ export default function Footer() {
   const isOpenOnSaturday = settings?.working_days?.includes(6);
   const isOpenOnSunday = settings?.working_days?.includes(7);
 
+  const instagramUrl = formatInstagramUrl(settings?.instagram_url);
+  const mapsUrl = formatMapsUrl(settings?.maps_url, settings?.clinic_address);
+
   return (
     <footer className="bg-[#1c1917] text-stone-400 py-24 print:hidden border-t border-stone-800/50">
       <div className="max-w-7xl mx-auto px-6">
@@ -156,13 +160,14 @@ export default function Footer() {
             <p className="text-sm font-medium leading-relaxed opacity-70 max-w-xs">
               {settings?.clinic_description || siteContent?.about_text || translateStatic('footer.about_text', "Tu centro de confianza para servicios personalizados y bienestar de primer nivel.")}
             </p>
-            {settings?.instagram_url && (
+            {instagramUrl && (
               <div className="flex items-center gap-4 pt-2">
                 <a 
-                  href={settings.instagram_url} 
+                  href={instagramUrl} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="w-10 h-10 rounded-luxury-btn bg-stone-900 border border-stone-800 flex items-center justify-center text-white hover:text-primary hover:border-primary transition-all duration-300"
+                  aria-label="Instagram"
                 >
                   <Camera size={18} />
                 </a>
@@ -183,9 +188,21 @@ export default function Footer() {
                 {settings?.clinic_address && (
                   <li className="flex items-start gap-3">
                     <MapPin size={18} className="text-primary shrink-0 mt-0.5" />
-                    <span className="text-sm font-medium leading-snug">
-                      {settings.clinic_address}
-                    </span>
+                    {mapsUrl ? (
+                      <a 
+                        href={mapsUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-sm font-medium leading-snug hover:text-primary transition-colors"
+                        title="Abrir ubicación en Google Maps"
+                      >
+                        {settings.clinic_address}
+                      </a>
+                    ) : (
+                      <span className="text-sm font-medium leading-snug">
+                        {settings.clinic_address}
+                      </span>
+                    )}
                   </li>
                 )}
                 {settings?.clinic_phone && (

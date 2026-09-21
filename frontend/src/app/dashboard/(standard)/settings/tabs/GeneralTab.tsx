@@ -66,15 +66,39 @@ export default function GeneralTab({ settings, setSettings }: GeneralTabProps) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="block text-xs font-bold text-stone-500 mb-2">{t('dashboard.settings.instagram_url')}</label>
-            <input id="general-instagram-url" type="text" value={settings.instagram_url || ''} onChange={e => setSettings({...settings, instagram_url: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] transition-all text-stone-800 dark:text-stone-800 outline-none" placeholder="https://instagram.com/..." />
+            <input 
+              id="general-instagram-url" 
+              type="text" 
+              value={settings.instagram_url || ''} 
+              onChange={e => setSettings({...settings, instagram_url: e.target.value})} 
+              className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] transition-all text-stone-800 dark:text-stone-800 outline-none" 
+              placeholder="@usuario o https://instagram.com/..." 
+            />
+            <p className="text-[10px] text-stone-400 mt-1.5">Acepta usuario (ej. @merce.estetica) o enlace completo.</p>
           </div>
           <div>
             <label className="block text-xs font-bold text-stone-500 mb-2">{t('dashboard.settings.whatsapp')}</label>
-            <input id="general-whatsapp-number" type="text" value={settings.whatsapp_number || ''} onChange={e => setSettings({...settings, whatsapp_number: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] transition-all text-stone-800 dark:text-stone-800 outline-none" placeholder="600000000" />
+            <input 
+              id="general-whatsapp-number" 
+              type="text" 
+              value={settings.whatsapp_number || ''} 
+              onChange={e => setSettings({...settings, whatsapp_number: e.target.value})} 
+              className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] transition-all text-stone-800 dark:text-stone-800 outline-none" 
+              placeholder="600000000" 
+            />
+            <p className="text-[10px] text-stone-400 mt-1.5">Número con o sin prefijo para chat directo.</p>
           </div>
           <div>
             <label className="block text-xs font-bold text-stone-500 mb-2">{t('dashboard.settings.maps_url')}</label>
-            <input id="general-maps-url" type="text" value={settings.maps_url || ''} onChange={e => setSettings({...settings, maps_url: e.target.value})} className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] transition-all text-stone-800 dark:text-stone-800 outline-none" placeholder="https://goo.gl/maps/..." />
+            <input 
+              id="general-maps-url" 
+              type="text" 
+              value={settings.maps_url || ''} 
+              onChange={e => setSettings({...settings, maps_url: e.target.value})} 
+              className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] transition-all text-stone-800 dark:text-stone-800 outline-none" 
+              placeholder="https://maps.app.goo.gl/..." 
+            />
+            <p className="text-[10px] text-stone-400 mt-1.5">Enlace directo a tu ficha de Google Business / Maps para navegación GPS.</p>
           </div>
         </div>
       </div>
