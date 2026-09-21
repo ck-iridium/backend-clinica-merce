@@ -328,6 +328,10 @@ $function$;
                     locs_updated += 1
             if locs_updated > 0:
                 db.commit()
+                logger.info(f"✅ Auto-migración: Se asignaron slugs SEO a {locs_updated} sedes.")
+        except Exception as e:
+            logger.warning(f"⚠️ Nota al auto-asignar slug a sedes: {e}")
+
         # 6. Migración Multi-Tenant: Clave Primaria Compuesta en profiles (id, tenant_id)
         if not is_sqlite:
             try:
@@ -345,6 +349,19 @@ $function$;
                 if "tenant_id" not in pk_columns:
                     logger.info("Iniciando migración de clave primaria compuesta en public.profiles...")
                     db.execute(text("UPDATE public.profiles SET tenant_id = '00000000-0000-0000-0000-000000000001' WHERE tenant_id IS NULL;"))
+                    db.execute(text("""
+                        DO $$
+                        BEGIN
+                            IF EXISTS (
+                                SELECT 1 FROM information_schema.table_constraints 
+                                WHERE table_name = 'notifications' AND constraint_name = 'notifications_user_id_fkey'
+                            ) THEN
+                                ALTER TABLE public.notifications DROP CONSTRAINT notifications_user_id_fkey;
+                                ALTER TABLE public.notifications ADD CONSTRAINT notifications_user_id_fkey 
+                                    FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+                            END IF;
+                        END $$;
+                    """))
                     db.execute(text("ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_pkey;"))
                     db.execute(text("ALTER TABLE public.profiles ADD CONSTRAINT profiles_pkey PRIMARY KEY (id, tenant_id);"))
                     db.execute(text("CREATE INDEX IF NOT EXISTS idx_profiles_email_tenant ON public.profiles(email, tenant_id);"))
