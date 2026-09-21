@@ -222,11 +222,15 @@
     "no_changes": "No pending changes",
     "tabs": {
       "general": "General",
+      "subscription": "Plan & Subscription",
       "agenda": "Calendar",
+      "mobile_services": "Home Services",
       "billing": "Invoicing",
       "payments": "Payments",
       "branding": "Branding",
       "booking_ui": "Booking Design",
+      "consents": "Consents",
+      "integrations": "Integrations",
       "advanced": "Advanced"
     },
     "mobile_services": {
@@ -493,7 +497,12 @@
     "toast_error_update": "Error updating location.",
     "toast_error_status": "Error changing location status.",
     "toast_error_delete": "Error deleting location.",
-    "limit_exceeded": "Plan limit exceeded."
+    "limit_exceeded": "Plan limit exceeded.",
+    "public_seo_page": "View public SEO page",
+    "public_seo_tooltip": "View public web page optimized for Google",
+    "open_public_page": "Open public page",
+    "status_active": "Active",
+    "status_inactive": "Inactive"
   },
   "my_schedule": {
     "title": "My Schedule & Locations",

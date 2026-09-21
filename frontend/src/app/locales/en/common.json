@@ -130,7 +130,9 @@
     "emailNote2": "to your inbox with all details.",
     "addToCalendar": "Add to Google Calendar",
     "contactWhatsApp": "Contact via WhatsApp",
-    "backHome": "Back to Home"
+    "backHome": "Back to Home",
+    "location_label": "Location",
+    "loading": "Loading confirmation..."
   },
   "otp": {
     "modal_title": "Verify your Appointment",

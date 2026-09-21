@@ -87,9 +87,33 @@ def consultar_manual_ayuda(tema: str) -> str:
         "email-personal": "ajustes",
         "email_personal": "ajustes",
         "correo-personal": "ajustes",
-        "correo_personal": "ajustes",
         "cambiar-usuario": "ajustes",
         "cambiar_usuario": "ajustes",
+        # Integraciones y Analítica
+        "integraciones": "ajustes",
+        "integracion": "ajustes",
+        "gtm": "ajustes",
+        "google-ads": "ajustes",
+        "google_ads": "ajustes",
+        "analitica": "ajustes",
+        "analítica": "ajustes",
+        "conversiones": "ajustes",
+        "conversion": "ajustes",
+        "conversión": "ajustes",
+        "tracking": "ajustes",
+        # Sedes y SEO Local
+        "sede": "gestion",
+        "sucursales": "gestion",
+        "sucursal": "gestion",
+        "seo-local": "gestion",
+        "seo_local": "gestion",
+        "sedes-web": "gestion",
+        # Duración de Turnos / Citas
+        "duracion-cita": "agenda",
+        "duracion_cita": "agenda",
+        "duracion-manual": "agenda",
+        "alargar-cita": "agenda",
+        "tiempo-cita": "agenda",
     }
     
     if tema_clean in sinonimos:

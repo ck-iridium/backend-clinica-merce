@@ -116,7 +116,19 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL `/dashboa
 - Selector de Modelo OpenAI (Imagen): `id="advanced-openai-model-image-trigger"`
 - Permitir Indexación en Motores de Búsqueda (SEO): `id="advanced-allow-indexing-checkbox"`
 - Habilitar Gestión de Consentimiento Obligatoria: `id="advanced-enable-consents-checkbox"`
-- Sector Comercial de la Clínica: `id="advanced-business-sector-trigger"`
+### Pestaña: Integraciones & Analítica (GTM y Google Ads)
+*Esta pestaña (`tab=integrations`) permite configurar el seguimiento de conversiones y analítica web mediante un Sistema Declarativo de IDs Nativos, garantizando aislamiento de código y cumplimiento estricto del RGPD.*
+- **ID del Contenedor Google Tag Manager (GTM):** Permite introducir el identificador con formato `GTM-XXXXXXX`.
+  - Selector: `id="integrations-gtm-container-input"`
+  - Emite automáticamente el evento `appointment_booked` con valor monetario de la reserva, nombre del tratamiento e ID hacia el `dataLayer`.
+- **ID de Conversión de Google Ads:** Permite atribuir citas a campañas de Google Ads con formato `AW-XXXXXXXXX`.
+  - Selector: `id="integrations-google-ads-id-input"`
+- **Etiqueta de Conversión de Google Ads (Label):** Etiqueta alfanumérica de la acción de conversión.
+  - Selector: `id="integrations-google-ads-label-input"`
+- **Página Física de Confirmación (`/reservar/confirmada`):**
+  - Todas las reservas finalizadas aterrizan en esta URL física dedicada (procesando searchParams de la cita).
+  - Ejecuta la función `trackBookingConversion` que alimenta Enhanced Conversions de Google Ads y GTM.
+  - Genera el botón interactivo *"Añadir a Google Calendar"* y el enlace de contacto directo por WhatsApp.
 
 ## 4. Mi Perfil Digital
 La sección de Perfil Personal (`/dashboard/profile`) permite al usuario cambiar su información de cuenta, preferencias de notificaciones y contraseñas:

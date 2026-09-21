@@ -378,17 +378,17 @@ export default function SettingsPage() {
         <aside className="w-full md:w-64 shrink-0 z-40 sticky top-1 md:top-6 bg-white border border-stone-200/50 rounded-2xl md:rounded-[2rem] p-3 shadow-sm md:shadow-none md:bg-transparent md:border-none md:p-0">
           <nav className="flex flex-row md:flex-col gap-1.5 overflow-x-auto md:overflow-x-visible scrollbar-hide">
             {[
-              { id: 'general', label: t('dashboard.settings.tabs.general'), icon: Building2 },
-              { id: 'subscription', label: 'Plan & Suscripción', icon: CreditCard },
-              { id: 'agenda', label: t('dashboard.settings.tabs.agenda'), icon: Clock },
-              { id: 'mobile_services', label: 'Servicios Domicilio', icon: MapPin },
-              { id: 'billing', label: t('dashboard.settings.tabs.billing'), icon: Hash },
-              { id: 'payments', label: t('dashboard.settings.tabs.payments'), icon: Wallet },
-              { id: 'branding', label: t('dashboard.settings.tabs.branding'), icon: ImageIcon },
-              { id: 'booking_ui', label: t('dashboard.settings.tabs.booking_ui'), icon: LayoutTemplate },
-              ...(settings.enable_consents ?? true ? [{ id: 'consents', label: 'Consentimientos', icon: FileText }] : []),
-              { id: 'integrations', label: 'Integraciones', icon: TrendingUp },
-              { id: 'advanced', label: t('dashboard.settings.tabs.advanced'), icon: SearchCode },
+              { id: 'general', label: t('dashboard.settings.tabs.general') || 'General', icon: Building2 },
+              { id: 'subscription', label: t('dashboard.settings.tabs.subscription') || 'Plan & Suscripción', icon: CreditCard },
+              { id: 'agenda', label: t('dashboard.settings.tabs.agenda') || 'Agenda', icon: Clock },
+              { id: 'mobile_services', label: t('dashboard.settings.tabs.mobile_services') || 'Servicios Domicilio', icon: MapPin },
+              { id: 'billing', label: t('dashboard.settings.tabs.billing') || 'Facturación', icon: Hash },
+              { id: 'payments', label: t('dashboard.settings.tabs.payments') || 'Pagos', icon: Wallet },
+              { id: 'branding', label: t('dashboard.settings.tabs.branding') || 'Branding', icon: ImageIcon },
+              { id: 'booking_ui', label: t('dashboard.settings.tabs.booking_ui') || 'Diseño de Reserva', icon: LayoutTemplate },
+              ...(settings.enable_consents ?? true ? [{ id: 'consents', label: t('dashboard.settings.tabs.consents') || 'Consentimientos', icon: FileText }] : []),
+              { id: 'integrations', label: t('dashboard.settings.tabs.integrations') || 'Integraciones', icon: TrendingUp },
+              { id: 'advanced', label: t('dashboard.settings.tabs.advanced') || 'Avanzado', icon: SearchCode },
             ].map((tab) => (
               <button
                 key={tab.id}

@@ -222,11 +222,15 @@
     "no_changes": "No hay cambios pendientes",
     "tabs": {
       "general": "General",
+      "subscription": "Plan & Suscripción",
       "agenda": "Agenda",
+      "mobile_services": "Servicios Domicilio",
       "billing": "Facturación",
       "payments": "Pagos",
       "branding": "Branding",
       "booking_ui": "Diseño de Reserva",
+      "consents": "Consentimientos",
+      "integrations": "Integraciones",
       "advanced": "Avanzado"
     },
     "mobile_services": {
@@ -493,7 +497,12 @@
     "toast_error_update": "Error al actualizar la sede.",
     "toast_error_status": "Error al cambiar el estado de la sede.",
     "toast_error_delete": "Error al eliminar la sede.",
-    "limit_exceeded": "Límite del plan excedido."
+    "limit_exceeded": "Límite del plan excedido.",
+    "public_seo_page": "Ver página SEO pública",
+    "public_seo_tooltip": "Ver ficha web pública optimizada para Google",
+    "open_public_page": "Abrir página pública",
+    "status_active": "Activa",
+    "status_inactive": "Inactiva"
   },
   "my_schedule": {
     "title": "Mi Horario y Sedes",

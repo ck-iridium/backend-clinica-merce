@@ -203,7 +203,7 @@ function ConfirmacionContent() {
                   <MapPin size={18} className="md:scale-125" />
                 </div>
                 <div>
-                  <p className="text-[10px] md:text-xs uppercase font-bold text-muted-foreground">UBICACIÓN / SEDE</p>
+                  <p className="text-[10px] md:text-xs uppercase font-bold text-muted-foreground">{t('success.location_label') || 'UBICACIÓN / SEDE'}</p>
                   <p className="text-sm md:text-base font-bold text-foreground">{locName}</p>
                   {locAddress && (
                     <p className="text-xs md:text-sm text-muted-foreground mt-0.5">{locAddress}</p>

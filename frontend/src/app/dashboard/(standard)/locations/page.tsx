@@ -732,10 +732,10 @@ export default function LocationsPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 text-xs text-[#b08e23] hover:text-stone-900 font-semibold bg-[#d4af37]/10 hover:bg-[#d4af37]/20 px-3 py-1.5 rounded-lg transition-colors"
-                        title="Ver ficha web pública optimizada para Google"
+                        title={t('dashboard.locations.public_seo_tooltip') || "Ver ficha web pública optimizada para Google"}
                       >
                         <Globe size={13} />
-                        <span>Ver página SEO pública</span>
+                        <span>{t('dashboard.locations.public_seo_page') || "Ver página SEO pública"}</span>
                         <ExternalLink size={12} className="opacity-70" />
                       </a>
                     </div>
@@ -761,7 +761,7 @@ export default function LocationsPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-2 text-stone-400 hover:text-[#d4af37] hover:bg-stone-50 rounded-xl transition-all"
-                    title="Abrir página pública"
+                    title={t('dashboard.locations.open_public_page') || "Abrir página pública"}
                   >
                     <ExternalLink size={16} />
                   </a>

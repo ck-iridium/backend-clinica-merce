@@ -129,7 +129,9 @@
     "emailNote2": "a tu correo con todos los datos.",
     "addToCalendar": "Añadir a Google Calendar",
     "contactWhatsApp": "Contactar por WhatsApp",
-    "backHome": "Volver al Inicio"
+    "backHome": "Volver al Inicio",
+    "location_label": "Ubicación / Sede",
+    "loading": "Cargando confirmación..."
   },
   "otp": {
     "modal_title": "Verifica tu Reserva",

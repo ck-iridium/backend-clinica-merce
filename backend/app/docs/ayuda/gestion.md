@@ -71,13 +71,22 @@ Comparte los mismos selectores del planificador de turnos del equipo, aplicados 
 
 ---
 
-## 3. Módulo: Sedes / Sucursales (`/dashboard/locations`)
+## 3. Módulo: Sedes / Sucursales (`/dashboard/locations`) y SEO Local
 
 ### Reglas de Negocio
-Permite dar de alta y editar los centros físicos de la clínica. Cada sede almacena su dirección, teléfono y correo electrónico de contacto para la facturación y la asignación en los cuadrantes de personal.
+Permite dar de alta, editar y administrar los centros físicos y sucursales de la clínica con optimización SEO Local automática:
+- **Gestión Multi-Sede:** Cada sede cuenta con nombre, slug SEO autogenerado único, dirección postal, teléfono, email y geocoordenadas (latitud/longitud).
+- **Autocompletado Inteligente con OpenStreetMap (Nominatim):** Al escribir una dirección, el sistema detecta y preserva el número de portal exacto (ej. `57`) incluso si el mapa no tiene el nodo mapeado, y filtra las redundancias administrativas (barrios, comarcas o comunidades repetidas) para generar un formato postal limpio y profesional español.
+- **Geocodificación con Mapa Interactivo (Leaflet):** Selector visual con pin dorado para ajuste milimétrico de la entrada del centro sin sobreescribir la dirección manual.
+- **Páginas Públicas de SEO Local (`/sedes` y `/sedes/[slug]`):**
+  - **Índice General (`/sedes`):** Listado público de todos los centros físicos activos con información de contacto, horarios y botón directo de reserva.
+  - **Landing Individual (`/sedes/[slug]`):** Ficha web pública optimizada para Google con breadcrumbs, mapa interactivo, catálogo de tratamientos prestados y profesionales asignados.
+  - **Inyección de Schema.org JSON-LD:** Microdatos estructurados (`HealthAndBeautyBusiness` / `MedicalBusiness`) para posicionamiento orgánico en Google Rich Snippets y Google Maps.
+  - **Reserva Pre-filtrada por Sede:** Botón *"Reservar en esta sede"* que abre el flujo `/reservar?location=ID` cargando directamente el centro seleccionado.
+- **Sitemap Dinámico:** Las sedes activas se indexan automáticamente en tiempo real en `/sitemap.xml` para Googlebot.
 
 ### Seguridad (RBAC)
-- **Administrador:** Control completo de altas, bajas, toggles de activación y modificaciones de sedes.
+- **Administrador:** Control completo de altas, bajas, toggles de activación, borrado y modificaciones de sedes.
 - **Recepción / Especialista:** Bloqueado de forma absoluta.
 
 ### Acciones y Coordenadas (Selectores CSS)
@@ -90,7 +99,7 @@ Permite dar de alta y editar los centros físicos de la clínica. Cada sede alma
 - **Formulario de Creación (Modal):**
   - Contenedor: `id="locations-create-form"`
   - Nombre: `id="locations-create-name-input"`
-  - Dirección: `id="locations-create-address-input"`
+  - Dirección (con autocompletado): `id="locations-create-address-input"`
   - Teléfono: `id="locations-create-phone-input"`
   - Email: `id="locations-create-email-input"`
   - Cancelar: `id="locations-create-cancel-btn"`
@@ -102,7 +111,7 @@ Permite dar de alta y editar los centros físicos de la clínica. Cada sede alma
   - Teléfono: `id="locations-edit-phone-input"`
   - Email: `id="locations-edit-email-input"`
   - Cancelar: `id="locations-edit-cancel-btn"`
-  - Guardar Cambios: `id="locations-edit-save-btn"`
+  - Guardar Cambios: `id="locations-edit-form"` (botón submit)
 
 ---
 

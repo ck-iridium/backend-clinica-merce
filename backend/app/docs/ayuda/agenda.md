@@ -68,9 +68,9 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL `/dashboa
 - **Selector de Servicio:** Desplegable para seleccionar el tratamiento base.
   - Ruta: `/dashboard/calendar` (Modal abierto)
   - Selector: `id="create-appt-service-select-trigger"`
-- **Minutos de Duración Rápidos:** Botones de ajuste de duración a 15, 30, 45 o 60 minutos.
-  - Ruta: `/dashboard/calendar` (Modal abierto)
-  - Selector: `id="create-appt-minute-btn-[minutes]"` (ej: `create-appt-minute-btn-30`)
+- **Sobrescritura Manual de Duración (Crear Cita):** Permite extender o reducir la duración del tratamiento para casos particulares sin alterar el catálogo general:
+  - Píldoras de ajuste rápido (15, 30, 45, 60, 90, 120 min): `id="create-appt-duration-[mins]-btn"` (ej: `create-appt-duration-90-btn`)
+  - Campo numérico de minutos personalizados: `id="create-appt-duration-custom-input"`
 - **Área de Notas:** Campo de comentarios libres de la cita.
   - Ruta: `/dashboard/calendar` (Modal abierto)
   - Selector: `id="create-appt-notes-textarea"`
@@ -88,6 +88,10 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL `/dashboa
   - Selector: `id="create-appt-submit-btn"`
 
 ### Modal de Edición de Citas y Bloqueos
+- **Modificar Duración Manual de Cita Existente:**
+  - Píldoras rápidas (15, 30, 45, 60, 90, 120 min): `id="edit-appt-duration-[mins]-btn"`
+  - Campo numérico personalizado: `id="edit-appt-custom-duration-input"`
+  - Restaurar duración estándar del catálogo: `id="edit-appt-restore-duration-btn"`
 - **Modificar Notas:** Campo de comentarios en la cita seleccionada.
   - Ruta: `/dashboard/calendar` (Modal abierto)
   - Selector: `id="edit-appt-notes-textarea"`

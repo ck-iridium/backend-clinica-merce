@@ -127,7 +127,9 @@
     "emailNote2": "à votre adresse e-mail.",
     "addToCalendar": "Ajouter à Google Calendar",
     "contactWhatsApp": "Contacter par WhatsApp",
-    "backHome": "Retour à l'accueil"
+    "backHome": "Retour à l'accueil",
+    "location_label": "Lieu / Cabinet",
+    "loading": "Chargement de la confirmation..."
   },
   "otp": {
     "modal_title": "Vérifiez votre Réservation",
