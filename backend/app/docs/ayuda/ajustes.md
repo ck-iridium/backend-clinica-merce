@@ -115,9 +115,11 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL `/dashboa
 - Selector de Modelo OpenAI (Texto): `id="advanced-openai-model-text-trigger"`
 - Selector de Modelo OpenAI (Imagen): `id="advanced-openai-model-image-trigger"`
 - Permitir Indexación en Motores de Búsqueda (SEO): `id="advanced-allow-indexing-checkbox"`
+- Verificación de Google Search Console (Avanzado): `id="advanced-google-verification"`
 - Habilitar Gestión de Consentimiento Obligatoria: `id="advanced-enable-consents-checkbox"`
-### Pestaña: Integraciones & Analítica (GTM y Google Ads)
-*Esta pestaña (`tab=integrations`) permite configurar el seguimiento de conversiones y analítica web mediante un Sistema Declarativo de IDs Nativos, garantizando aislamiento de código y cumplimiento estricto del RGPD.*
+
+### Pestaña: Integraciones & Analítica (GTM, Google Ads y Search Console)
+*Esta pestaña (`tab=integrations`) permite configurar el seguimiento de conversiones, analítica web y verificación de motores de búsqueda de Google (GTM, Google Ads y Search Console).*
 - **ID del Contenedor Google Tag Manager (GTM):** Permite introducir el identificador con formato `GTM-XXXXXXX`.
   - Selector: `id="integrations-gtm-container-input"`
   - Emite automáticamente el evento `appointment_booked` con valor monetario de la reserva, nombre del tratamiento e ID hacia el `dataLayer`.
@@ -125,6 +127,9 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL `/dashboa
   - Selector: `id="integrations-google-ads-id-input"`
 - **Etiqueta de Conversión de Google Ads (Label):** Etiqueta alfanumérica de la acción de conversión.
   - Selector: `id="integrations-google-ads-label-input"`
+- **Verificación de Google Search Console:**
+  - Selector: `id="integrations-google-verification-input"`
+  - Permite introducir el código o etiqueta HTML completa de Google Search Console. ProBookia inyecta automáticamente la metaetiqueta `<meta name="google-site-verification" content="..." />` en la cabecera `<head>` de la web para validar la propiedad del dominio en 1 clic.
 - **Página Física de Confirmación (`/reservar/confirmada`):**
   - Todas las reservas finalizadas aterrizan en esta URL física dedicada (procesando searchParams de la cita).
   - Ejecuta la función `trackBookingConversion` que alimenta Enhanced Conversions de Google Ads y GTM.

@@ -11,7 +11,8 @@ import {
   HelpCircle,
   Lock,
   Layers,
-  BarChart3
+  BarChart3,
+  Search
 } from 'lucide-react';
 
 interface IntegrationsTabProps {
@@ -23,6 +24,19 @@ export default function IntegrationsTab({ settings, setSettings }: IntegrationsT
   const gtmId = settings.gtm_container_id || '';
   const googleAdsId = settings.google_ads_id || '';
   const googleAdsLabel = settings.google_ads_conversion_label || '';
+  const googleVerification = settings.google_site_verification || '';
+
+  const handleSearchConsoleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value;
+    // Auto-limpieza: Si pegan la etiqueta HTML completa <meta name="..." content="..." />
+    if (val.includes('content=')) {
+      const match = val.match(/content=["']([^"']+)["']/i);
+      if (match && match[1]) {
+        val = match[1];
+      }
+    }
+    setSettings({ ...settings, google_site_verification: val.trim() });
+  };
 
   // Validación en vivo de GTM
   const gtmValidation = useMemo(() => {
@@ -269,7 +283,69 @@ export default function IntegrationsTab({ settings, setSettings }: IntegrationsT
         </div>
       </div>
 
-      {/* Tarjeta 3: Ecosistema Extensible (Próximas Integraciones) */}
+      {/* Tarjeta 3: Google Search Console (Verificación de Propiedad) */}
+      <div className="bg-white rounded-3xl md:rounded-[2.5rem] border border-stone-100 p-6 md:p-8 shadow-sm">
+        <div className="flex items-center justify-between pb-4 border-b border-stone-100 mb-6">
+          <div className="flex items-center gap-3">
+            <span className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+              <Search size={20} />
+            </span>
+            <div>
+              <h3 className="text-xl font-serif font-semibold text-stone-900">Google Search Console</h3>
+              <p className="text-xs text-stone-400">Verificación de propiedad para monitorizar posicionamiento y SEO en Google</p>
+            </div>
+          </div>
+          <a
+            href="https://search.google.com/search-console"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 text-xs text-stone-500 hover:text-emerald-600 transition-colors font-medium"
+          >
+            <span>Consola de Search Console</span>
+            <ExternalLink size={13} />
+          </a>
+        </div>
+
+        <div className="space-y-4">
+          <label className="block">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-bold text-stone-700">Código o Metaetiqueta de Verificación</span>
+              {googleVerification ? (
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
+                  <CheckCircle2 size={12} />
+                  Verificación configurada
+                </span>
+              ) : (
+                <span className="text-[11px] font-semibold text-stone-400 bg-stone-50 px-2.5 py-1 rounded-full">
+                  No configurado (opcional)
+                </span>
+              )}
+            </div>
+            <input
+              type="text"
+              id="integrations-google-verification-input"
+              value={googleVerification}
+              onChange={handleSearchConsoleChange}
+              placeholder="ej. dX8bQ7y1Z_AbCdEfGhIjKlMnOpQrStUvWxYz o etiqueta <meta name=...>"
+              className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-stone-50 text-stone-900 font-mono text-sm placeholder:text-stone-400 transition-all focus:outline-none focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+            />
+          </label>
+
+          <div className="bg-stone-50 rounded-2xl p-4 border border-stone-100 flex items-start gap-3">
+            <HelpCircle className="text-stone-400 shrink-0 mt-0.5" size={16} />
+            <div className="text-xs text-stone-500 space-y-1">
+              <p>
+                Pega aquí tu código de verificación alfanumérico o la etiqueta HTML completa proporcionada por Google.
+              </p>
+              <p>
+                ProBookia inyectará automáticamente la metaetiqueta <code className="bg-white px-1.5 py-0.5 rounded border border-stone-200 font-mono text-stone-700">&lt;meta name=&quot;google-site-verification&quot; content=&quot;...&quot; /&gt;</code> en la cabecera <code className="text-stone-700">&lt;head&gt;</code> de tu web para validar la propiedad en 1 clic.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tarjeta 4: Ecosistema Extensible (Próximas Integraciones) */}
       <div className="bg-stone-50/70 border border-stone-200/80 rounded-3xl p-6 md:p-8">
         <div className="flex items-center gap-3 mb-4">
           <span className="w-8 h-8 rounded-xl bg-stone-200/60 text-stone-600 flex items-center justify-center">

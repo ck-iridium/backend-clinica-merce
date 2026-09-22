@@ -279,8 +279,17 @@ export default function AdvancedTab({ settings, setSettings }: AdvancedTabProps)
                 id="advanced-google-verification"
                 type="text"
                 value={settings.google_site_verification || ''}
-                onChange={e => setSettings({ ...settings, google_site_verification: e.target.value })}
-                placeholder="ej. dX8bQ7y1Z_AbCdEfGhIjKlMnOpQrStUvWxYz o google-site-verification=..."
+                onChange={e => {
+                  let val = e.target.value;
+                  if (val.includes('content=')) {
+                    const match = val.match(/content=["']([^"']+)["']/i);
+                    if (match && match[1]) {
+                      val = match[1];
+                    }
+                  }
+                  setSettings({ ...settings, google_site_verification: val.trim() });
+                }}
+                placeholder="ej. dX8bQ7y1Z_AbCdEfGhIjKlMnOpQrStUvWxYz o etiqueta <meta name=...>"
                 className="w-full px-4 py-3 rounded-xl bg-stone-50 border border-stone-200 text-stone-900 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#d4af37]/50 focus:border-[#d4af37] transition-all"
               />
             </div>
