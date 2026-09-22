@@ -334,3 +334,40 @@ def send_appointment_notification(appointment_id: str, type: str, otp_code: str 
         logger.error(f"Error en flujo de notificación: {str(e)}")
     finally:
         db.close()
+
+
+def send_team_invitation_email(to_email: str, full_name: str, role: str, clinic_name: str, invite_url: str, settings=None):
+    """
+    Envía un correo de invitación formal de equipo con estética Quiet Luxury.
+    """
+    subject = f"Invitación para unirte al equipo de {clinic_name} en ProBookia"
+    content_html = f"""
+    <div style="text-align: left; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1c1917;">
+        <h2 style="margin: 0 0 16px 0; color: #1c1917; font-size: 22px; font-weight: 700; letter-spacing: -0.5px;">
+            Hola, {full_name}:
+        </h2>
+        <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #57534e;">
+            Has sido invitado a formar parte del equipo profesional de <strong>{clinic_name}</strong> en ProBookia con el rol de:
+        </p>
+        <div style="background-color: #f7f7f5; border: 1px solid #e7e5e4; border-radius: 16px; padding: 18px 24px; margin-bottom: 24px; text-align: center;">
+            <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #a8a29e; display: block; margin-bottom: 4px;">Rol Propuesto</span>
+            <span style="font-size: 20px; font-weight: 800; color: #1c1917;">{role}</span>
+        </div>
+        <p style="margin: 0 0 28px 0; font-size: 14px; line-height: 1.6; color: #57534e;">
+            Como ya dispones de una cuenta en ProBookia, solo necesitas confirmar esta invitación para activar tu perfil y acceder al panel de gestión de este negocio.
+        </p>
+        <div style="text-align: center; margin-bottom: 28px;">
+            <a href="{invite_url}" style="display: inline-block; background-color: #1c1917; color: #ffffff; text-decoration: none; padding: 15px 34px; border-radius: 14px; font-size: 15px; font-weight: 700; letter-spacing: 0.5px; box-shadow: 0 4px 14px rgba(0,0,0,0.15);">
+                Aceptar Invitación
+            </a>
+        </div>
+        <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #a8a29e; text-align: center;">
+            Si no reconoces este negocio o crees que se trata de un error, puedes ignorar este mensaje con total tranquilidad. Tu cuenta no será vinculada sin tu aprobación.
+        </p>
+    </div>
+    """
+    
+    clinic_phone = settings.clinic_phone if settings and settings.clinic_phone else "Soporte ProBookia"
+    full_body = get_html_template(content_html, clinic_name, clinic_phone)
+    return send_email(to_email, subject, full_body, settings=settings)
+

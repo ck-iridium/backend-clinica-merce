@@ -31,11 +31,20 @@ export async function updatePasswordAndActivate(newPassword: string, accessToken
       return { success: false, error: passwordError.message };
     }
 
-    // 5. Actualizar estado a 'Activo'
-    const { error: dbError } = await adminSupabase
+    // 5. Actualizar estado a 'Activo' (respetando el aislamiento multi-tenant)
+    const cookieStore = cookies();
+    const tenantId = cookieStore.get('tenant_id')?.value;
+
+    let updateQuery = adminSupabase
       .from('profiles')
       .update({ status: 'Activo' })
       .eq('id', user.id);
+
+    if (tenantId && tenantId !== 'undefined') {
+      updateQuery = updateQuery.eq('tenant_id', tenantId);
+    }
+
+    const { error: dbError } = await updateQuery;
 
     if (dbError) {
       console.error("Error activando perfil:", dbError);

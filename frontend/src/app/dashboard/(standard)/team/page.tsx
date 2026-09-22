@@ -11,11 +11,12 @@ import {
   Stethoscope,
   UserCircle,
   Loader2,
-  CalendarDays
+  CalendarDays,
+  Send
 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useFeedback } from "@/app/contexts/FeedbackContext"
-import { getTeamMembers, inviteTeamMember, deleteTeamMember, updateTeamMemberRole } from "@/app/actions/team"
+import { getTeamMembers, inviteTeamMember, deleteTeamMember, updateTeamMemberRole, resendTeamInvitation } from "@/app/actions/team"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { useAuthRole } from "@/hooks/useAuthRole"
@@ -63,6 +64,27 @@ export default function TeamPage() {
   // Estados para Planificación (Rostering)
   const [isRosterModalOpen, setIsRosterModalOpen] = React.useState(false);
   const [rosterMember, setRosterMember] = React.useState<any>(null);
+
+  // Estado para Reenviar Invitación
+  const [resendingId, setResendingId] = React.useState<string | null>(null);
+
+  const handleResend = async (memberId: string, memberEmail: string) => {
+    try {
+      setResendingId(memberId);
+      const res = await resendTeamInvitation(memberId);
+      if (res.success) {
+        toast.success(
+          (t('dashboard.team.resend_success') || "Invitación reenviada correctamente a {email}").replace('{email}', memberEmail)
+        );
+      } else {
+        toast.error(res.error || t('dashboard.team.resend_error') || "Error al reenviar la invitación.");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Error al reenviar la invitación.");
+    } finally {
+      setResendingId(null);
+    }
+  };
 
   React.useEffect(() => {
     if (!loadingRole) {
@@ -357,9 +379,11 @@ export default function TeamPage() {
                   </td>
                   <td className="py-5 px-4">
                     <div className="flex items-center gap-2">
-                      <div className={`w-1.5 h-1.5 rounded-full ${(member.status === 'Activo' || member.status === 'active') ? 'bg-green-500 animate-pulse' : 'bg-stone-300'}`} />
-                      <span className={`text-[10px] font-black uppercase tracking-widest ${(member.status === 'Activo' || member.status === 'active') ? 'text-green-600' : 'text-stone-400'}`}>
-                        {t(`dashboard.team.statuses.${(member.status === 'Activo' || member.status === 'active') ? 'active' : 'invited'}`) || member.status}
+                      <div className={`w-1.5 h-1.5 rounded-full ${(member.status === 'Activo' || member.status === 'active') ? 'bg-green-500 animate-pulse' : 'bg-amber-400'}`} />
+                      <span className={`text-[10px] font-black uppercase tracking-widest ${(member.status === 'Activo' || member.status === 'active') ? 'text-green-600' : 'text-amber-600'}`}>
+                        {(member.status === 'Activo' || member.status === 'active') 
+                          ? (t('dashboard.team.statuses.active') || 'ACTIVO') 
+                          : (t('dashboard.team.statuses.invited') || 'PENDIENTE')}
                       </span>
                     </div>
                   </td>
@@ -368,6 +392,17 @@ export default function TeamPage() {
                   </td>
                   <td className="py-5 px-4 text-right">
                     <div className="flex items-center justify-end gap-2 transition-opacity">
+                        {(member.status !== 'Activo' && member.status !== 'active') && (
+                          <button
+                            id={`team-resend-btn-${member.id}`}
+                            onClick={() => handleResend(member.id, member.email)}
+                            disabled={resendingId === member.id}
+                            className="p-2.5 rounded-xl hover:bg-white hover:shadow-md text-stone-400 hover:text-[#d4af37] transition-all border border-transparent hover:border-stone-100 disabled:opacity-50"
+                            title="Reenviar Invitación"
+                          >
+                            {resendingId === member.id ? <Loader2 size={16} className="animate-spin text-[#d4af37]" /> : <Send size={16} strokeWidth={1.5} />}
+                          </button>
+                        )}
                         {(member.role === 'Especialista' || member.role === 'specialist') && (
                           <button
                             id={`team-roster-btn-${member.id}`}

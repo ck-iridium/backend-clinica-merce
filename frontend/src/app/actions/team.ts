@@ -70,7 +70,8 @@ export async function inviteTeamMember(data: { email: string, full_name: string,
     const headersList = headers();
     const host = headersList.get('host') || 'localhost:3000';
     const protocol = host.includes('localhost') ? 'http' : 'https';
-    const redirectTo = `${protocol}://${host}/`;
+    // Redirigir a activar-cuenta para usuarios nuevos que necesitan configurar contraseña
+    const redirectTo = `${protocol}://${host}/activar-cuenta`;
 
     let targetUserId: string | null = null;
     let isExistingUser = false;
@@ -126,23 +127,28 @@ export async function inviteTeamMember(data: { email: string, full_name: string,
     if (isExistingUser) {
       const { data: existingProfile } = await supabaseAdmin
         .from('profiles')
-        .select('role')
+        .select('role, status')
         .eq('id', targetUserId)
         .eq('tenant_id', tenantId)
         .maybeSingle();
 
       if (existingProfile) {
-        return {
-          success: false,
-          error: "Este usuario ya forma parte del equipo de este negocio."
-        };
+        if (existingProfile.status === 'Activo' || existingProfile.status === 'active') {
+          return {
+            success: false,
+            error: "Este usuario ya forma parte del equipo activo de este negocio."
+          };
+        } else {
+          return {
+            success: false,
+            error: "Ya existe una invitación pendiente para este usuario en este negocio. Puedes reenviarla desde la lista."
+          };
+        }
       }
     }
 
-    // Estado del miembro:
-    // Si ya existía globalmente, ya configuró su contraseña -> 'Activo'
-    // Si es nuevo y se le envió el email de configuración -> 'Pendiente'
-    const memberStatus = isExistingUser ? 'Activo' : 'Pendiente';
+    // REGLA FUNDAMENTAL: Todo miembro invitado nace SIEMPRE como 'Pendiente'
+    const memberStatus = 'Pendiente';
 
     const { error: dbError } = await supabaseAdmin.from('profiles').upsert(
       {
@@ -161,6 +167,29 @@ export async function inviteTeamMember(data: { email: string, full_name: string,
       return { success: false, error: dbError.message };
     }
 
+    // Si el usuario ya existía en la plataforma, Supabase Auth NO envía email de invitación.
+    // Enviamos nuestro correo transaccional ProBookia con enlace de aprobación directa.
+    if (isExistingUser) {
+      const inviteUrl = `${protocol}://${host}/aceptar-invitacion?tenant=${tenantId}&email=${encodeURIComponent(cleanEmail)}`;
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+      try {
+        await fetch(`${apiUrl}/users/send-team-invitation`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: cleanEmail,
+            full_name: data.full_name,
+            role: data.role,
+            tenant_id: tenantId,
+            invite_url: inviteUrl
+          })
+        });
+      } catch (mailErr) {
+        console.error("Error contactando con el servicio de correo para invitación:", mailErr);
+      }
+    }
+
     revalidatePath('/dashboard/team');
     return { success: true, alreadyRegistered: isExistingUser };
   } catch (error: any) {
@@ -168,6 +197,227 @@ export async function inviteTeamMember(data: { email: string, full_name: string,
     return { success: false, error: error.message };
   }
 }
+
+/**
+ * Reenvía el correo de invitación a un miembro que se encuentra en estado 'Pendiente'.
+ */
+export async function resendTeamInvitation(memberId: string) {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    const cookieStore = cookies();
+    let tenantId = cookieStore.get('tenant_id')?.value;
+    const isImpersonating = cookieStore.get('is_impersonating')?.value === 'true';
+    const impersonateTenantId = cookieStore.get('impersonate_tenant_id')?.value;
+
+    if (isImpersonating && impersonateTenantId) {
+      tenantId = impersonateTenantId;
+    }
+
+    if (!tenantId) {
+      return { success: false, error: "No autorizado." };
+    }
+
+    // Obtener perfil del miembro
+    const { data: member, error: memberError } = await supabaseAdmin
+      .from('profiles')
+      .select('*')
+      .eq('id', memberId)
+      .eq('tenant_id', tenantId)
+      .single();
+
+    if (memberError || !member) {
+      return { success: false, error: "Miembro no encontrado en este negocio." };
+    }
+
+    if (member.status === 'Activo' || member.status === 'active') {
+      return { success: false, error: "Este miembro ya ha aceptado la invitación y está activo." };
+    }
+
+    const headersList = headers();
+    const host = headersList.get('host') || 'localhost:3000';
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const cleanEmail = member.email.trim().toLowerCase();
+
+    // Comprobar si el usuario ya tiene cuenta confirmada en Auth
+    const { data: authUserData } = await supabaseAdmin.auth.admin.getUserById(memberId);
+    const isConfirmedUser = Boolean(authUserData?.user?.email_confirmed_at || authUserData?.user?.last_sign_in_at);
+
+    if (isConfirmedUser) {
+      // Enviar correo transaccional ProBookia de invitación existente
+      const inviteUrl = `${protocol}://${host}/aceptar-invitacion?tenant=${tenantId}&email=${encodeURIComponent(cleanEmail)}`;
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+      const res = await fetch(`${apiUrl}/users/send-team-invitation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: cleanEmail,
+          full_name: member.full_name || cleanEmail,
+          role: member.role,
+          tenant_id: tenantId,
+          invite_url: inviteUrl
+        })
+      });
+
+      if (!res.ok) {
+        return { success: false, error: "Error enviando correo de invitación." };
+      }
+    } else {
+      // Usuario nuevo sin confirmar: reenviar invitación de Supabase
+      const redirectTo = `${protocol}://${host}/activar-cuenta`;
+      const { error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(cleanEmail, {
+        data: { full_name: member.full_name, role: member.role },
+        redirectTo: redirectTo
+      });
+
+      if (inviteError) {
+        console.error("Error reenviando invitación de Supabase:", inviteError);
+        return { success: false, error: inviteError.message };
+      }
+    }
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("Excepción en resendTeamInvitation:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Obtiene los detalles de una invitación pendiente para un tenant específico.
+ */
+export async function getInvitationDetails(targetTenantId: string, email?: string) {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+
+    // 1. Obtener información del negocio
+    const { data: tenant } = await supabaseAdmin
+      .from('tenants')
+      .select('id, name, slug')
+      .eq('id', targetTenantId)
+      .maybeSingle();
+
+    let businessName = tenant?.name || "Clínica";
+
+    const { data: settings } = await supabaseAdmin
+      .from('clinic_settings')
+      .select('clinic_name, logo_url')
+      .eq('tenant_id', targetTenantId)
+      .maybeSingle();
+
+    if (settings?.clinic_name) {
+      businessName = settings.clinic_name;
+    }
+
+    let role = null;
+    let status = null;
+
+    if (email) {
+      const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('role, status, full_name')
+        .eq('email', email.trim().toLowerCase())
+        .eq('tenant_id', targetTenantId)
+        .maybeSingle();
+
+      if (profile) {
+        role = profile.role;
+        status = profile.status;
+      }
+    }
+
+    return {
+      success: true,
+      businessName,
+      logoUrl: settings?.logo_url || null,
+      role,
+      status
+    };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Acepta formalmente la invitación a un negocio, pasando el perfil a 'Activo'.
+ */
+export async function acceptTeamInvitation(targetTenantId: string, accessToken: string) {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+
+    // Validar token del usuario autenticado
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(accessToken);
+    if (userError || !user) {
+      return { success: false, error: "Sesión inválida o expirada. Por favor inicia sesión de nuevo." };
+    }
+
+    // Verificar que existe una invitación pendiente para este usuario en ese tenant
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .eq('tenant_id', targetTenantId)
+      .maybeSingle();
+
+    if (profileError || !profile) {
+      return { success: false, error: "No se encontró ninguna invitación pendiente para tu cuenta en este negocio." };
+    }
+
+    if (profile.status === 'Activo' || profile.status === 'active') {
+      return { success: true, message: "Ya eres miembro activo de este equipo." };
+    }
+
+    // Activar perfil
+    const { error: updateError } = await supabaseAdmin
+      .from('profiles')
+      .update({ status: 'Activo' })
+      .eq('id', user.id)
+      .eq('tenant_id', targetTenantId);
+
+    if (updateError) {
+      return { success: false, error: updateError.message };
+    }
+
+    revalidatePath('/dashboard/team');
+    revalidatePath('/dashboard');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Rechaza la invitación a un negocio, eliminando el perfil pendiente.
+ */
+export async function rejectTeamInvitation(targetTenantId: string, accessToken: string) {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+
+    // Validar token del usuario autenticado
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(accessToken);
+    if (userError || !user) {
+      return { success: false, error: "Sesión inválida o expirada." };
+    }
+
+    // Eliminar perfil pendiente
+    const { error: deleteError } = await supabaseAdmin
+      .from('profiles')
+      .delete()
+      .eq('id', user.id)
+      .eq('tenant_id', targetTenantId)
+      .eq('status', 'Pendiente');
+
+    if (deleteError) {
+      return { success: false, error: deleteError.message };
+    }
+
+    revalidatePath('/dashboard/team');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
 
 export async function getTeamMembers() {
   try {
