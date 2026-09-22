@@ -73,11 +73,13 @@ export default function TeamPage() {
       setResendingId(memberId);
       const res = await resendTeamInvitation(memberId, language || 'es');
       if (res.success) {
-        toast.success(
-          (t('dashboard.team.resend_success') || "Invitación reenviada correctamente a {email}").replace('{email}', memberEmail)
-        );
+        const translated = t('dashboard.team.resend_success', { email: memberEmail });
+        const fallback = `Invitación reenviada correctamente a ${memberEmail}`;
+        toast.success(translated && translated !== 'dashboard.team.resend_success' ? translated : fallback);
       } else {
-        toast.error(res.error || t('dashboard.team.resend_error') || "Error al reenviar la invitación.");
+        const translatedErr = t('dashboard.team.resend_error');
+        const fallbackErr = "Error al reenviar la invitación.";
+        toast.error(res.error || (translatedErr && translatedErr !== 'dashboard.team.resend_error' ? translatedErr : fallbackErr));
       }
     } catch (err: any) {
       toast.error(err.message || "Error al reenviar la invitación.");

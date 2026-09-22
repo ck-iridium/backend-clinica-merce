@@ -22,6 +22,10 @@
     "search_placeholder": "Rechercher (Ctrl K)",
     "language": "Langue"
   },
+  "team": {
+    "resend_success": "Invitation renvoyée avec succès à {email}",
+    "resend_error": "Erreur lors du renvoi de l'invitation."
+  },
   "general": {
     "save": "Enregistrer",
     "cancel": "Annuler",
