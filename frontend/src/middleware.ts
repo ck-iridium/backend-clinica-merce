@@ -69,30 +69,66 @@ export async function middleware(request: NextRequest) {
     tenantId = impersonateTenantId;
     subdomain = impersonateTenantSlug;
   } else if (subdomain && subdomain !== "www") {
-    // Intentar resolver dinámicamente usando las cookies del navegador para evitar peticiones redundantes
-    const cachedId = request.cookies.get("cached_tenant_id")?.value;
-    const cachedSlug = request.cookies.get("cached_tenant_slug")?.value;
+    // 1. Prioridad: Si la URL trae explícitamente el parámetro tenant o tenant_id (ej. aceptar-invitacion, activar-cuenta)
+    const queryTenant = url.searchParams.get("tenant") || url.searchParams.get("tenant_id");
+    if (queryTenant && /^[0-9a-fA-F-]{36}$/.test(queryTenant)) {
+      tenantId = queryTenant;
+    }
 
-    if (cachedSlug === subdomain && cachedId) {
-      tenantId = cachedId;
-    } else {
-      // Consultar a la API del backend para resolver el subdominio de forma real
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (!apiUrl) {
-        console.error("[MIDDLEWARE ERROR] NEXT_PUBLIC_API_URL environment variable is not defined");
-        return new NextResponse("API URL not configured", { status: 500 });
+    // 2. Prioridad: Intentar resolver dinámicamente usando las cookies del navegador para evitar peticiones redundantes
+    if (!tenantId) {
+      const cachedId = request.cookies.get("cached_tenant_id")?.value;
+      const cachedSlug = request.cookies.get("cached_tenant_slug")?.value;
+      if (cachedSlug === subdomain && cachedId) {
+        tenantId = cachedId;
       }
-      try {
-        const res = await fetch(`${apiUrl}/stripe/resolve-tenant/${subdomain}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.tenant_id) {
-            tenantId = data.tenant_id;
+    }
+
+    // 3. Prioridad: Consultar a Supabase REST API directamente (latencia ultrabaja ~30ms, sin riesgo de cold-start de Render)
+    if (!tenantId) {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      if (supabaseUrl && serviceKey) {
+        try {
+          const supaRes = await fetch(`${supabaseUrl}/rest/v1/tenants?select=id&slug=eq.${encodeURIComponent(subdomain)}&limit=1`, {
+            headers: {
+              apikey: serviceKey,
+              Authorization: `Bearer ${serviceKey}`,
+            },
+          });
+          if (supaRes.ok) {
+            const data = await supaRes.json();
+            if (Array.isArray(data) && data.length > 0 && data[0]?.id) {
+              tenantId = data[0].id;
+            }
           }
+        } catch (supaErr) {
+          console.warn("[MIDDLEWARE SUPABASE RESOLVE WARN]", supaErr);
         }
-      } catch (err) {
-        console.error("[MIDDLEWARE RESOLVE ERROR]", err);
       }
+    }
+
+    // 4. Prioridad: Consultar a la API del backend en Render
+    if (!tenantId) {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (apiUrl) {
+        try {
+          const res = await fetch(`${apiUrl}/stripe/resolve-tenant/${subdomain}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.tenant_id) {
+              tenantId = data.tenant_id;
+            }
+          }
+        } catch (err) {
+          console.error("[MIDDLEWARE RESOLVE ERROR]", err);
+        }
+      }
+    }
+
+    // 5. Fallback de emergencia para enlaces de invitación con query param
+    if (!tenantId && queryTenant) {
+      tenantId = queryTenant;
     }
 
     if (!tenantId) {
