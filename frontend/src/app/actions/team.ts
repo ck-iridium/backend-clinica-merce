@@ -180,9 +180,10 @@ export async function inviteTeamMember(data: { email: string, full_name: string,
       : (actionLink || `${protocol}://${host}/activar-cuenta?tenant=${tenantId}`);
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    let emailSent = false;
 
     try {
-      await fetch(`${apiUrl}/users/send-team-invitation`, {
+      const mailRes = await fetch(`${apiUrl}/users/send-team-invitation`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -195,12 +196,24 @@ export async function inviteTeamMember(data: { email: string, full_name: string,
           is_new_user: !isExistingUser
         })
       });
+
+      if (mailRes.ok) {
+        const mailJson = await mailRes.json();
+        emailSent = Boolean(mailJson.success);
+      } else {
+        const errText = await mailRes.text();
+        console.error("Fallo en endpoint send-team-invitation:", mailRes.status, errText);
+      }
     } catch (mailErr) {
       console.error("Error contactando con el servicio de correo para invitación:", mailErr);
     }
 
     revalidatePath('/dashboard/team');
-    return { success: true, alreadyRegistered: isExistingUser };
+    return { 
+      success: true, 
+      emailSent,
+      alreadyRegistered: isExistingUser 
+    };
   } catch (error: any) {
     console.error("Excepción en inviteTeamMember:", error);
     return { success: false, error: error.message };

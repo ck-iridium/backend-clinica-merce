@@ -1,6 +1,7 @@
 import logging
 import json
 import urllib.request
+import urllib.error
 import os
 import smtplib
 from email.mime.text import MIMEText
@@ -17,9 +18,10 @@ def send_email(to_email: str, subject: str, body_html: str, settings=None):
     """
     # 1. Prioridad: Resend API si existe la KEY
     api_key = os.environ.get("RESEND_API_KEY", "").strip()
-    sender_name = settings.clinic_name if settings and settings.clinic_name else "Clínica"
+    sender_name = settings.clinic_name if settings and settings.clinic_name else "ProBookia"
     
-    from_email = os.environ.get("FROM_EMAIL") or os.environ.get("SMTP_FROM_EMAIL") or "notifications@probookia.com"
+    # Remitente de la plataforma SaaS (configurable vía variable de entorno FROM_EMAIL)
+    from_email = os.environ.get("FROM_EMAIL") or os.environ.get("RESEND_FROM_EMAIL") or "notifications@probookia.com"
     
     if api_key:
         try:
@@ -49,8 +51,12 @@ def send_email(to_email: str, subject: str, body_html: str, settings=None):
                     logger.info(f"✅ Email enviado vía Resend a {to_email}")
                     return True
                 return False
+        except urllib.error.HTTPError as he:
+            err_body = he.read().decode('utf-8', errors='ignore')
+            logger.error(f"❌ Resend API HTTPError ({he.code}): {err_body}")
+            logger.warning(f"⚠️ Intentando SMTP fallback tras fallo de Resend...")
         except Exception as e:
-            logger.warning(f"⚠️ Resend falló, intentando SMTP: {str(e)}")
+            logger.warning(f"⚠️ Resend falló: {str(e)}, intentando SMTP...")
 
     # 2. Fallback: SMTP (Gmail u otros)
     try:
