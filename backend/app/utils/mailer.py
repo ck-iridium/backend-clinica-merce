@@ -19,6 +19,8 @@ def send_email(to_email: str, subject: str, body_html: str, settings=None):
     api_key = os.environ.get("RESEND_API_KEY", "").strip()
     sender_name = settings.clinic_name if settings and settings.clinic_name else "Clínica"
     
+    from_email = os.environ.get("FROM_EMAIL") or os.environ.get("SMTP_FROM_EMAIL") or "notifications@probookia.com"
+    
     if api_key:
         try:
             url = "https://api.resend.com/emails"
@@ -29,7 +31,7 @@ def send_email(to_email: str, subject: str, body_html: str, settings=None):
             }
             
             data = {
-                "from": f"{sender_name} <info@esteticamerce.com>",
+                "from": f"{sender_name} <{from_email}>",
                 "to": [to_email],
                 "subject": subject,
                 "html": body_html
@@ -92,34 +94,34 @@ def send_email(to_email: str, subject: str, body_html: str, settings=None):
         logger.error(f"❌ ERROR TOTAL EN MAILER: {str(e)}")
         return False
 
-def get_html_template(content_html, clinic_name, clinic_phone):
-    """Plantilla base para correos corporativos de Estética Merce"""
+def get_html_template(content_html, clinic_name, clinic_phone, subtitle="ProBookia", footer_text=None):
+    """Plantilla base para correos corporativos de ProBookia"""
+    footer_content = footer_text or f"Este es un mensaje automático de <b>{clinic_name}</b> en ProBookia.<br>Cualquier duda, contáctanos en el <b>{clinic_phone}</b>."
     return f"""
     <html>
     <body style="margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #fcfaf9;">
         <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #fcfaf9;">
             <tr>
                 <td align="center" style="padding: 40px 0;">
-                    <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(217, 119, 127, 0.08); border: 1px solid #f3e8e9;">
+                    <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04); border: 1px solid #f0eeeb;">
                         <!-- Header -->
                         <tr>
-                            <td align="center" style="padding: 40px 0; background-color: #fef8f8;">
-                                <h1 style="margin: 0; color: #d9777f; font-size: 28px; letter-spacing: -1px; font-weight: 800;">{clinic_name}</h1>
-                                <p style="margin: 5px 0 0 0; color: #b08d91; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px;">Belleza y Bienestar</p>
+                            <td align="center" style="padding: 36px 0; background-color: #faf9f7; border-bottom: 1px solid #f0eeeb;">
+                                <h1 style="margin: 0; color: #1c1917; font-size: 26px; letter-spacing: -0.5px; font-weight: 800;">{clinic_name}</h1>
+                                <p style="margin: 6px 0 0 0; color: #a8a29e; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;">{subtitle}</p>
                             </td>
                         </tr>
                         <!-- Content -->
                         <tr>
-                            <td style="padding: 50px 40px;">
+                            <td style="padding: 44px 40px;">
                                 {content_html}
                             </td>
                         </tr>
                         <!-- Footer -->
                         <tr>
-                            <td align="center" style="padding: 30px; background-color: #faf9f8; border-top: 1px solid #f3e8e9;">
-                                <p style="margin: 0; color: #948b8c; font-size: 12px; line-height: 1.6;">
-                                    Este es un mensaje automático de <b>{clinic_name}</b>.<br>
-                                    Cualquier duda, contáctanos por teléfono en el <b>{clinic_phone}</b>.
+                            <td align="center" style="padding: 24px 30px; background-color: #faf9f7; border-top: 1px solid #f0eeeb;">
+                                <p style="margin: 0; color: #a8a29e; font-size: 12px; line-height: 1.6;">
+                                    {footer_content}
                                 </p>
                             </td>
                         </tr>
@@ -336,38 +338,98 @@ def send_appointment_notification(appointment_id: str, type: str, otp_code: str 
         db.close()
 
 
-def send_team_invitation_email(to_email: str, full_name: str, role: str, clinic_name: str, invite_url: str, settings=None):
+def send_team_invitation_email(
+    to_email: str, 
+    full_name: str, 
+    role: str, 
+    clinic_name: str, 
+    invite_url: str, 
+    settings=None, 
+    lang: str = "es", 
+    is_new_user: bool = False
+):
     """
-    Envía un correo de invitación formal de equipo con estética Quiet Luxury.
+    Envía un correo de invitación formal de equipo con estética Quiet Luxury
+    en el idioma correspondiente (es, fr, en).
     """
-    subject = f"Invitación para unirte al equipo de {clinic_name} en ProBookia"
+    clean_lang = (lang or "es").strip().lower()
+    if clean_lang not in ["es", "fr", "en"]:
+        clean_lang = "es"
+
+    TRANSLATIONS = {
+        "es": {
+            "subject": f"Invitación para unirte al equipo de {clinic_name} en ProBookia",
+            "greeting": f"Hola, {full_name}:",
+            "intro": f"Has sido invitado a formar parte del equipo profesional de <strong>{clinic_name}</strong> en ProBookia con el rol de:",
+            "role_badge": "Rol Asignado",
+            "body_new": "Para activar tu perfil y configurar tu contraseña de acceso para este negocio, pulsa el botón a continuación:",
+            "body_existing": "Como ya dispones de una cuenta en ProBookia, solo necesitas confirmar esta invitación para activar tu perfil y acceder al panel de gestión de este negocio.",
+            "btn_new": "Activar Cuenta y Aceptar",
+            "btn_existing": "Aceptar Invitación",
+            "disclaimer": "Si no reconoces este negocio o crees que se trata de un error, puedes ignorar este mensaje con total tranquilidad. Tu cuenta no será vinculada sin tu aprobación.",
+            "subtitle": "Gestión y Agenda Profesional",
+            "footer": f"Este es un mensaje automático de <b>{clinic_name}</b> en ProBookia.<br>Si tienes dudas, contáctanos en el soporte de tu centro."
+        },
+        "fr": {
+            "subject": f"Invitation à rejoindre l'équipe de {clinic_name} sur ProBookia",
+            "greeting": f"Bonjour {full_name},",
+            "intro": f"Vous avez été invité(e) à rejoindre l'équipe professionnelle de <strong>{clinic_name}</strong> sur ProBookia avec le rôle de :",
+            "role_badge": "Rôle Attribué",
+            "body_new": "Pour activer votre profil et définir votre mot de passe pour cet établissement, veuillez cliquer sur le bouton ci-dessous :",
+            "body_existing": "Comme vous possédez déjà un compte sur ProBookia, il vous suffit de confirmer cette invitation pour activer votre profil et accéder à cet établissement.",
+            "btn_new": "Activer mon compte et accepter",
+            "btn_existing": "Accepter l'invitation",
+            "disclaimer": "Si vous ne reconnaissez pas cet établissement ou s'il s'agit d'une erreur, vous pouvez ignorer ce message en toute sécurité. Votre compte ne sera pas lié sans votre accord.",
+            "subtitle": "Gestion et Réservation Professionnelle",
+            "footer": f"Ceci est un message automatique envoyé par <b>{clinic_name}</b> via ProBookia."
+        },
+        "en": {
+            "subject": f"Invitation to join the team of {clinic_name} on ProBookia",
+            "greeting": f"Hello {full_name},",
+            "intro": f"You have been invited to join the professional team of <strong>{clinic_name}</strong> on ProBookia with the role of:",
+            "role_badge": "Assigned Role",
+            "body_new": "To activate your profile and set your password for this business, please click the button below:",
+            "body_existing": "As you already have a ProBookia account, simply confirm this invitation to activate your profile and access this business.",
+            "btn_new": "Activate Account & Accept",
+            "btn_existing": "Accept Invitation",
+            "disclaimer": "If you do not recognize this business or think this is an error, you can safely disregard this message. Your account will not be linked without your approval.",
+            "subtitle": "Professional Scheduling & Management",
+            "footer": f"This is an automated message from <b>{clinic_name}</b> via ProBookia."
+        }
+    }
+
+    t = TRANSLATIONS[clean_lang]
+    body_text = t["body_new"] if is_new_user else t["body_existing"]
+    btn_text = t["btn_new"] if is_new_user else t["btn_existing"]
+
     content_html = f"""
     <div style="text-align: left; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1c1917;">
         <h2 style="margin: 0 0 16px 0; color: #1c1917; font-size: 22px; font-weight: 700; letter-spacing: -0.5px;">
-            Hola, {full_name}:
+            {t["greeting"]}
         </h2>
         <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #57534e;">
-            Has sido invitado a formar parte del equipo profesional de <strong>{clinic_name}</strong> en ProBookia con el rol de:
+            {t["intro"]}
         </p>
         <div style="background-color: #f7f7f5; border: 1px solid #e7e5e4; border-radius: 16px; padding: 18px 24px; margin-bottom: 24px; text-align: center;">
-            <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #a8a29e; display: block; margin-bottom: 4px;">Rol Propuesto</span>
+            <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #a8a29e; display: block; margin-bottom: 4px;">{t["role_badge"]}</span>
             <span style="font-size: 20px; font-weight: 800; color: #1c1917;">{role}</span>
         </div>
         <p style="margin: 0 0 28px 0; font-size: 14px; line-height: 1.6; color: #57534e;">
-            Como ya dispones de una cuenta en ProBookia, solo necesitas confirmar esta invitación para activar tu perfil y acceder al panel de gestión de este negocio.
+            {body_text}
         </p>
         <div style="text-align: center; margin-bottom: 28px;">
             <a href="{invite_url}" style="display: inline-block; background-color: #1c1917; color: #ffffff; text-decoration: none; padding: 15px 34px; border-radius: 14px; font-size: 15px; font-weight: 700; letter-spacing: 0.5px; box-shadow: 0 4px 14px rgba(0,0,0,0.15);">
-                Aceptar Invitación
+                {btn_text}
             </a>
         </div>
         <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #a8a29e; text-align: center;">
-            Si no reconoces este negocio o crees que se trata de un error, puedes ignorar este mensaje con total tranquilidad. Tu cuenta no será vinculada sin tu aprobación.
+            {t["disclaimer"]}
         </p>
     </div>
     """
-    
+
     clinic_phone = settings.clinic_phone if settings and settings.clinic_phone else "Soporte ProBookia"
-    full_body = get_html_template(content_html, clinic_name, clinic_phone)
-    return send_email(to_email, subject, full_body, settings=settings)
+    full_body = get_html_template(content_html, clinic_name, clinic_phone, subtitle=t["subtitle"], footer_text=t["footer"])
+    return send_email(to_email, t["subject"], full_body, settings=settings)
+
 

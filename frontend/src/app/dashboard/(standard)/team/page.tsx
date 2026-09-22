@@ -41,7 +41,7 @@ import PlanLimitsCard from "@/components/PlanLimitsCard"
 import RosteringManager from "@/components/RosteringManager"
 
 export default function TeamPage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const router = useRouter();
   const { role, loading: loadingRole } = useAuthRole();
   const { showFeedback } = useFeedback();
@@ -71,7 +71,7 @@ export default function TeamPage() {
   const handleResend = async (memberId: string, memberEmail: string) => {
     try {
       setResendingId(memberId);
-      const res = await resendTeamInvitation(memberId);
+      const res = await resendTeamInvitation(memberId, language || 'es');
       if (res.success) {
         toast.success(
           (t('dashboard.team.resend_success') || "Invitación reenviada correctamente a {email}").replace('{email}', memberEmail)
@@ -141,7 +141,7 @@ export default function TeamPage() {
     }
 
     setIsSubmitting(true);
-    const result = await inviteTeamMember(formData);
+    const result = await inviteTeamMember({ ...formData, lang: language || 'es' });
     setIsSubmitting(false);
 
     if (result.success) {

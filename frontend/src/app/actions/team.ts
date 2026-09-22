@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { cookies, headers } from 'next/headers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
-export async function inviteTeamMember(data: { email: string, full_name: string, role: string }) {
+export async function inviteTeamMember(data: { email: string, full_name: string, role: string, lang?: string }) {
   try {
     const supabaseAdmin = getSupabaseAdmin(); // Instanciado dentro de la zona segura
     
@@ -70,21 +70,27 @@ export async function inviteTeamMember(data: { email: string, full_name: string,
     const headersList = headers();
     const host = headersList.get('host') || 'localhost:3000';
     const protocol = host.includes('localhost') ? 'http' : 'https';
-    // Redirigir a activar-cuenta para usuarios nuevos que necesitan configurar contraseña
-    const redirectTo = `${protocol}://${host}/activar-cuenta`;
+    // Redirigir a activar-cuenta para usuarios nuevos, incluyendo explícitamente el tenant
+    const redirectTo = `${protocol}://${host}/activar-cuenta?tenant=${tenantId}`;
+    const cleanLang = (data.lang || cookieStore.get('preferred_language')?.value || 'es').toLowerCase();
 
     let targetUserId: string | null = null;
     let isExistingUser = false;
+    let actionLink: string | null = null;
     const cleanEmail = data.email.trim().toLowerCase();
 
-    // Intentar invitar mediante Supabase Admin Auth
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.inviteUserByEmail(cleanEmail, {
-      data: { full_name: data.full_name, role: data.role },
-      redirectTo: redirectTo
+    // Generar enlace seguro mediante Supabase Admin Auth (¡generateLink NO envía correos feos de Supabase!)
+    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+      type: 'invite',
+      email: cleanEmail,
+      options: {
+        redirectTo: redirectTo,
+        data: { full_name: data.full_name, role: data.role }
+      }
     });
 
-    if (authError) {
-      const errorMsg = (authError.message || '').toLowerCase();
+    if (linkError) {
+      const errorMsg = (linkError.message || '').toLowerCase();
       
       // Comprobar si el correo ya está registrado en Supabase Auth
       if (
@@ -112,11 +118,12 @@ export async function inviteTeamMember(data: { email: string, full_name: string,
 
         targetUserId = existingAuthUser.id;
       } else {
-        console.error("Error invitando usuario:", authError);
-        return { success: false, error: authError.message };
+        console.error("Error generando enlace de invitación:", linkError);
+        return { success: false, error: linkError.message };
       }
     } else {
-      targetUserId = authData.user?.id || null;
+      targetUserId = linkData.user?.id || null;
+      actionLink = linkData.properties?.action_link || null;
     }
 
     if (!targetUserId) {
@@ -167,27 +174,29 @@ export async function inviteTeamMember(data: { email: string, full_name: string,
       return { success: false, error: dbError.message };
     }
 
-    // Si el usuario ya existía en la plataforma, Supabase Auth NO envía email de invitación.
-    // Enviamos nuestro correo transaccional ProBookia con enlace de aprobación directa.
-    if (isExistingUser) {
-      const inviteUrl = `${protocol}://${host}/aceptar-invitacion?tenant=${tenantId}&email=${encodeURIComponent(cleanEmail)}`;
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    // Enviamos nuestro correo transaccional ProBookia con diseño Quiet Luxury en el idioma correspondiente
+    const inviteUrl = isExistingUser 
+      ? `${protocol}://${host}/aceptar-invitacion?tenant=${tenantId}&email=${encodeURIComponent(cleanEmail)}`
+      : (actionLink || `${protocol}://${host}/activar-cuenta?tenant=${tenantId}`);
 
-      try {
-        await fetch(`${apiUrl}/users/send-team-invitation`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: cleanEmail,
-            full_name: data.full_name,
-            role: data.role,
-            tenant_id: tenantId,
-            invite_url: inviteUrl
-          })
-        });
-      } catch (mailErr) {
-        console.error("Error contactando con el servicio de correo para invitación:", mailErr);
-      }
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+    try {
+      await fetch(`${apiUrl}/users/send-team-invitation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: cleanEmail,
+          full_name: data.full_name,
+          role: data.role,
+          tenant_id: tenantId,
+          invite_url: inviteUrl,
+          lang: cleanLang,
+          is_new_user: !isExistingUser
+        })
+      });
+    } catch (mailErr) {
+      console.error("Error contactando con el servicio de correo para invitación:", mailErr);
     }
 
     revalidatePath('/dashboard/team');
@@ -201,7 +210,7 @@ export async function inviteTeamMember(data: { email: string, full_name: string,
 /**
  * Reenvía el correo de invitación a un miembro que se encuentra en estado 'Pendiente'.
  */
-export async function resendTeamInvitation(memberId: string) {
+export async function resendTeamInvitation(memberId: string, lang?: string) {
   try {
     const supabaseAdmin = getSupabaseAdmin();
     const cookieStore = cookies();
@@ -237,43 +246,52 @@ export async function resendTeamInvitation(memberId: string) {
     const host = headersList.get('host') || 'localhost:3000';
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const cleanEmail = member.email.trim().toLowerCase();
+    const cleanLang = (lang || cookieStore.get('preferred_language')?.value || 'es').toLowerCase();
 
     // Comprobar si el usuario ya tiene cuenta confirmada en Auth
     const { data: authUserData } = await supabaseAdmin.auth.admin.getUserById(memberId);
     const isConfirmedUser = Boolean(authUserData?.user?.email_confirmed_at || authUserData?.user?.last_sign_in_at);
 
+    let inviteUrl = '';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
     if (isConfirmedUser) {
-      // Enviar correo transaccional ProBookia de invitación existente
-      const inviteUrl = `${protocol}://${host}/aceptar-invitacion?tenant=${tenantId}&email=${encodeURIComponent(cleanEmail)}`;
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
-      const res = await fetch(`${apiUrl}/users/send-team-invitation`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: cleanEmail,
-          full_name: member.full_name || cleanEmail,
-          role: member.role,
-          tenant_id: tenantId,
-          invite_url: inviteUrl
-        })
-      });
-
-      if (!res.ok) {
-        return { success: false, error: "Error enviando correo de invitación." };
-      }
+      inviteUrl = `${protocol}://${host}/aceptar-invitacion?tenant=${tenantId}&email=${encodeURIComponent(cleanEmail)}`;
     } else {
-      // Usuario nuevo sin confirmar: reenviar invitación de Supabase
-      const redirectTo = `${protocol}://${host}/activar-cuenta`;
-      const { error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(cleanEmail, {
-        data: { full_name: member.full_name, role: member.role },
-        redirectTo: redirectTo
+      // Usuario nuevo sin confirmar: generar nuevo enlace seguro sin correo nativo de Supabase
+      const redirectTo = `${protocol}://${host}/activar-cuenta?tenant=${tenantId}`;
+      const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+        type: 'invite',
+        email: cleanEmail,
+        options: {
+          redirectTo: redirectTo,
+          data: { full_name: member.full_name, role: member.role }
+        }
       });
 
-      if (inviteError) {
-        console.error("Error reenviando invitación de Supabase:", inviteError);
-        return { success: false, error: inviteError.message };
+      if (linkError || !linkData?.properties?.action_link) {
+        inviteUrl = redirectTo;
+      } else {
+        inviteUrl = linkData.properties.action_link;
       }
+    }
+
+    const res = await fetch(`${apiUrl}/users/send-team-invitation`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: cleanEmail,
+        full_name: member.full_name || cleanEmail,
+        role: member.role,
+        tenant_id: tenantId,
+        invite_url: inviteUrl,
+        lang: cleanLang,
+        is_new_user: !isConfirmedUser
+      })
+    });
+
+    if (!res.ok) {
+      return { success: false, error: "Error enviando correo de invitación." };
     }
 
     return { success: true };

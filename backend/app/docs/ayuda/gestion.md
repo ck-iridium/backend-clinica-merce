@@ -8,13 +8,14 @@ Este manual sirve como la única fuente de verdad (RAG) para guiar al usuario en
 
 ### Reglas de Negocio
 Permite administrar la plantilla de profesionales de la clínica:
-- **Invitaciones por Correo:** Envío de enlaces de activación a nuevos miembros especificando su rol.
+- **Invitaciones por Correo y Multi-idioma:** Envío de enlaces de activación a nuevos miembros especificando su rol. El correo se envía automáticamente en el idioma activo del usuario/panel (Español, Francés o Inglés) utilizando la plantilla institucional de ProBookia con estética Quiet Luxury y el remitente oficial de notificaciones.
+- **Aislamiento Multi-Tenant Estricto:** Cada invitación está anclada exclusivamente al negocio emisor y a su subdominio (`[tenant].probookia.com`). Si un usuario no ha sido explícitamente invitado y no figura como 'Pendiente' en la lista de miembros de ese negocio, el sistema deniega tajantemente la activación de la cuenta y el acceso al panel. Un mismo usuario puede pertenecer a varios negocios, pero sus credenciales, estados ('Pendiente'/'Activo') y roles permanecen estrictamente aislados por negocio.
 - **Asignación de Roles:** Administrar y cambiar los permisos (Administrador, Recepción, Especialista).
 - **Planificador de Turnos (Rostering):** Configuración individual de turnos recurrentes semanales y excepciones puntuales (festivos, bajas, guardias) asociándolos a sucursales físicas.
 
 ### Seguridad (RBAC)
 - **Administrador:** Acceso y control total. Único con permisos para invitar, editar roles, eliminar personal y definir cuadrantes de turnos de todo el equipo.
-- **Recepción / Especialista:** Acceso denegado a la lista general del equipo.
+- **Recepción / Especialista:** Acceso denegado a la lista general del equipo. Nunca pueden invitar ni gestionar personal.
 
 ### Acciones y Coordenadas (Selectores CSS)
 - **Invitar Miembro del Equipo:** Abre el modal de registro de personal.

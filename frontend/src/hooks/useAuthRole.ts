@@ -42,8 +42,15 @@ export function useAuthRole() {
           
           if (profileRes.success && profileRes.profile) {
             const p = profileRes.profile;
+            // Si el estado no es 'Activo' (por ejemplo, sigue 'Pendiente'), no se conceden permisos en este negocio
+            if (p.status !== 'Activo' && p.status !== 'active') {
+              setRole(null);
+              setUserName(p.full_name || p.name || 'Usuario (Invitación Pendiente)');
+              return;
+            }
+
             const name = p.full_name || p.name || 'Usuario';
-            const r = p.role?.toLowerCase() || user.role?.toLowerCase() || null;
+            const r = p.role?.toLowerCase() || null;
             
             setUserName(name);
             setRole(r);
@@ -53,9 +60,6 @@ export function useAuthRole() {
               localStorage.setItem('user', JSON.stringify({ ...user, full_name: name }));
             }
             return;
-          } else if (user.role) {
-             // Fallback a los datos de la sesión si la DB falla
-             setRole(user.role.toLowerCase());
           }
         }
         setRole(null);

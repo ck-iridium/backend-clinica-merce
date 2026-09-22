@@ -43,6 +43,8 @@ class TeamInvitationRequest(BaseModel):
     role: str
     tenant_id: str
     invite_url: str
+    lang: str = "es"
+    is_new_user: bool = False
 
 
 @router.post("/send-team-invitation")
@@ -59,7 +61,9 @@ def send_team_invitation(request: TeamInvitationRequest, db: Session = Depends(d
         role=request.role.strip(),
         clinic_name=clinic_name,
         invite_url=request.invite_url.strip(),
-        settings=clinic_settings
+        settings=clinic_settings,
+        lang=request.lang,
+        is_new_user=request.is_new_user
     )
     return {"success": sent, "clinic_name": clinic_name}
 

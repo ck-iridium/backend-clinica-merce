@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ShieldCheck, Lock, Loader2, AlertCircle } from 'lucide-react';
 import { updatePasswordAndActivate } from '@/app/actions/profile';
+import { getInvitationDetails } from '@/app/actions/team';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 
@@ -16,21 +17,36 @@ export default function ActivarCuentaPage() {
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [errorUrl, setErrorUrl] = useState(false);
+  const [tenantParam, setTenantParam] = useState<string | null>(null);
   const [tenantName, setTenantName] = useState('PROBOOKIA');
 
   useEffect(() => {
     setMounted(true);
 
+    let extractedTenant: string | null = null;
     if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      extractedTenant = urlParams.get('tenant');
+      if (extractedTenant) {
+        setTenantParam(extractedTenant);
+        getInvitationDetails(extractedTenant).then(res => {
+          if (res.success && res.businessName) {
+            setTenantName(res.businessName.toUpperCase());
+          }
+        }).catch(() => {});
+      }
+
       const hostname = window.location.hostname.toLowerCase();
-      if (hostname.includes('.localhost') && hostname !== 'localhost') {
-        const sub = hostname.split('.')[0];
-        setTenantName(sub === 'merce' ? 'CLÍNICA MERCÈ' : sub.split('-').join(' ').toUpperCase());
-      } else if (hostname.endsWith('.probookia.com')) {
-        const sub = hostname.replace('.probookia.com', '');
-        setTenantName(sub === 'merce' ? 'CLÍNICA MERCÈ' : sub.split('-').join(' ').toUpperCase());
-      } else if (hostname.includes('esteticamerce.com')) {
-        setTenantName('CLÍNICA MERCÈ');
+      if (!extractedTenant) {
+        if (hostname.includes('.localhost') && hostname !== 'localhost') {
+          const sub = hostname.split('.')[0];
+          setTenantName(sub === 'merce' ? 'CLÍNICA MERCÈ' : sub.split('-').join(' ').toUpperCase());
+        } else if (hostname.endsWith('.probookia.com')) {
+          const sub = hostname.replace('.probookia.com', '');
+          setTenantName(sub === 'merce' ? 'CLÍNICA MERCÈ' : sub.split('-').join(' ').toUpperCase());
+        } else if (hostname.includes('esteticamerce.com')) {
+          setTenantName('CLÍNICA MERCÈ');
+        }
       }
     }
 
@@ -39,17 +55,17 @@ export default function ActivarCuentaPage() {
 
       let token = null;
 
-      // 1. Intentar extraer del hash (método estándar de invitación)
+      // 1. Intentar extraer del hash (método estándar de invitación de Supabase)
       if (window.location.hash) {
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const hashToken = hashParams.get('access_token');
         const type = hashParams.get('type');
         
-        if (hashToken && type === 'invite') {
+        if (hashToken && (type === 'invite' || type === 'recovery' || type === 'signup')) {
            token = hashToken;
            setAccessToken(token);
-           // Limpiar el hash para seguridad
-           window.history.replaceState(null, '', window.location.pathname);
+           // Limpiar el hash para seguridad manteniendo el search query (?tenant=...)
+           window.history.replaceState(null, '', window.location.pathname + window.location.search);
         }
       }
 
@@ -91,8 +107,8 @@ export default function ActivarCuentaPage() {
     }
 
     setLoading(true);
-    // Ejecutamos la acción del servidor que actualiza Auth y la tabla profiles
-    const result = await updatePasswordAndActivate(password, accessToken);
+    // Ejecutamos la acción del servidor que valida estrictamente la invitación del tenant y activa el perfil
+    const result = await updatePasswordAndActivate(password, accessToken, tenantParam || undefined);
 
     if (result.success) {
       toast.success("Cuenta activada correctamente. Redirigiendo al sistema...");
