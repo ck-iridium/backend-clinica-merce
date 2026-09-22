@@ -185,7 +185,10 @@ export async function inviteTeamMember(data: { email: string, full_name: string,
     try {
       const mailRes = await fetch(`${apiUrl}/users/send-team-invitation`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Tenant-ID': tenantId
+        },
         body: JSON.stringify({
           email: cleanEmail,
           full_name: data.full_name,
@@ -291,7 +294,10 @@ export async function resendTeamInvitation(memberId: string, lang?: string) {
 
     const res = await fetch(`${apiUrl}/users/send-team-invitation`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-Tenant-ID': tenantId
+      },
       body: JSON.stringify({
         email: cleanEmail,
         full_name: member.full_name || cleanEmail,
@@ -304,7 +310,14 @@ export async function resendTeamInvitation(memberId: string, lang?: string) {
     });
 
     if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      console.error("Fallo reenviando invitación:", res.status, errText);
       return { success: false, error: "Error enviando correo de invitación." };
+    }
+
+    const mailJson = await res.json().catch(() => ({ success: false }));
+    if (!mailJson.success) {
+      return { success: false, error: "El proveedor de correo no pudo entregar el mensaje." };
     }
 
     return { success: true };
