@@ -401,7 +401,7 @@ export default async function CategoryDynamicPage({ params }: { params: { catego
 
         {/* 5. FOOTER */}
         <div className="snap-start snap-stop-always">
-          <Footer />
+          <Footer initialSettings={settings} />
         </div>
 
       </main>

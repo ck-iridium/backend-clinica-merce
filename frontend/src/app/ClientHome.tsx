@@ -703,7 +703,7 @@ export default function ClientHome({ content, settings, services, categories }: 
         })}
 
         <div className="snap-start snap-stop-always md:snap-none w-full">
-          <Footer />
+          <Footer initialSettings={settings} />
         </div>
       </main>
     </div>

@@ -98,7 +98,20 @@ const footerTranslations: Record<string, Record<string, string>> = {
   }
 };
 
-export default function Footer() {
+// Helper para leer cookies de tenant en el lado del cliente
+const getTenantId = () => {
+  if (typeof document === 'undefined') return '';
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; tenant_id=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || '';
+  return '';
+};
+
+interface FooterProps {
+  initialSettings?: any;
+}
+
+export default function Footer({ initialSettings }: FooterProps = {}) {
   const { language } = useLanguage();
   
   const translateStatic = (key: string, defaultValue: string) => {
@@ -108,19 +121,42 @@ export default function Footer() {
 
   const pathname = usePathname();
   const isDashboard = pathname?.startsWith('/dashboard');
-  const [settings, setSettings] = useState<any>(null);
+  const [settings, setSettings] = useState<any>(initialSettings || null);
   const [siteContent, setSiteContent] = useState<any>(null);
+  const [logoError, setLogoError] = useState(false);
+
+  useEffect(() => {
+    if (initialSettings) {
+      setSettings(initialSettings);
+    }
+  }, [initialSettings]);
 
   useEffect(() => {
     if (isDashboard) return;
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/settings/`)
+
+    const tenantId = getTenantId();
+    const headers: Record<string, string> = {};
+    if (tenantId) {
+      headers['X-Tenant-ID'] = tenantId;
+    }
+
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/settings/`, { headers })
       .then(res => res.json())
-      .then(data => setSettings(data))
+      .then(data => {
+        if (data && typeof data === 'object') {
+          setSettings(data);
+          setLogoError(false);
+        }
+      })
       .catch(() => { });
 
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/site-content/`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/site-content/`, { headers })
       .then(res => res.json())
-      .then(data => setSiteContent(data))
+      .then(data => {
+        if (data && typeof data === 'object') {
+          setSiteContent(data);
+        }
+      })
       .catch(() => { });
   }, [isDashboard]);
 
@@ -155,11 +191,22 @@ export default function Footer() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-20">
 
-          {/* Columna 1: Identidad */}
+          {/* Columna 1: Identidad (Logo o Nombre) */}
           <div className="space-y-6">
-              <Link href="/" className="inline-block text-2xl font-serif font-black text-white tracking-tighter hover:text-primary transition-colors">
-                 {settings?.clinic_name ? settings.clinic_name.toUpperCase() : 'CENTRO'}
+            {settings?.logo_app_b64 && !logoError ? (
+              <Link href="/" className="inline-block group focus:outline-none">
+                <img
+                  src={settings.logo_app_b64}
+                  alt={settings?.clinic_name || 'Logo'}
+                  onError={() => setLogoError(true)}
+                  className="h-12 md:h-14 w-auto max-w-[220px] object-contain brightness-0 invert opacity-90 group-hover:opacity-100 transition-all duration-300 drop-shadow-[0_2px_8px_rgba(255,255,255,0.08)]"
+                />
               </Link>
+            ) : (
+              <Link href="/" className="inline-block text-2xl font-serif font-black text-white tracking-tighter hover:text-primary transition-colors">
+                {settings?.clinic_name ? settings.clinic_name.toUpperCase() : 'CENTRO'}
+              </Link>
+            )}
             <p className="text-sm font-medium leading-relaxed opacity-70 max-w-xs">
               {settings?.clinic_description || siteContent?.about_text || translateStatic('footer.about_text', "Tu centro de confianza para servicios personalizados y bienestar de primer nivel.")}
             </p>

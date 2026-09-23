@@ -407,7 +407,7 @@ export default async function TreatmentDynamicPage({ params }: { params: { treat
       )}
 
       <div className="snap-start snap-stop-always">
-        <Footer />
+        <Footer initialSettings={settings} />
       </div>
     </TreatmentScrollHandler>
   );
