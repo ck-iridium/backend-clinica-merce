@@ -70,7 +70,20 @@ export default function LoginPage() {
       const role = data.user.app_metadata?.role || data.user.user_metadata?.role;
       localStorage.setItem('user', JSON.stringify(userPayload));
       
-      if (role === 'super_admin') {
+      // 1. Si venía con un parámetro redirect explícito (ej. aceptar invitación)
+      const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+      const redirectTarget = params?.get('redirect');
+
+      if (redirectTarget) {
+        router.push(redirectTarget);
+        return;
+      }
+
+      // 2. Si es super_admin y está en el dominio principal de la plataforma
+      const hostname = typeof window !== 'undefined' ? window.location.hostname.toLowerCase() : '';
+      const isMainDomain = hostname === 'probookia.com' || hostname === 'www.probookia.com' || hostname === 'localhost';
+
+      if (role === 'super_admin' && isMainDomain) {
         router.push('/super-admin');
       } else {
         router.push('/dashboard');
