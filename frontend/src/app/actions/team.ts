@@ -541,16 +541,9 @@ export async function deleteTeamMember(userId: string) {
       return { success: false, error: deleteProfileError.message };
     }
 
-    // 2. Comprobar si al usuario le quedan otras clínicas asociadas en profiles
-    const { data: remainingProfiles } = await supabaseAdmin
-      .from('profiles')
-      .select('tenant_id')
-      .eq('id', userId);
-
-    // Solo si no pertenece a ningún otro tenant en la plataforma, purgar de Supabase Auth
-    if (!remainingProfiles || remainingProfiles.length === 0) {
-      await supabaseAdmin.auth.admin.deleteUser(userId);
-    }
+    // REGLA CRÍTICA MULTI-TENANT (Slack/Notion Model):
+    // NUNCA eliminar la cuenta global en auth.users. La identidad pertenece al usuario
+    // y puede tener otros espacios de trabajo o rol de super_admin en la plataforma.
 
     revalidatePath('/dashboard/team');
     return { success: true };

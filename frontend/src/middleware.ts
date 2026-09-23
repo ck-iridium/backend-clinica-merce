@@ -56,6 +56,12 @@ export async function middleware(request: NextRequest) {
 
   console.log(`[MIDDLEWARE] subdomain resolved to: "${subdomain}" (cleanHost: "${cleanHost}")`);
 
+  // 3.1. BLOQUEO ESTRICTO: /super-admin SOLO puede existir en el dominio central (probookia.com)
+  // En cualquier subdominio de inquilino, /super-admin debe dar 404 para no filtrar la consola central
+  if (url.pathname.startsWith('/super-admin') && subdomain && subdomain !== "www") {
+    return new NextResponse("Not Found", { status: 404 });
+  }
+
   // 4. Resolver tenant_id para el subdominio
   let tenantId = "";
 
