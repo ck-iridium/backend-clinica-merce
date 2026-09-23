@@ -45,6 +45,16 @@ def update_clinic_settings(db: Session, update_data: schemas.ClinicSettingsUpdat
             
     for key, value in data.items():
         setattr(settings, key, value)
+        
+    # Sincronizar automáticamente el nombre en la tabla tenants
+    if 'clinic_name' in data and data['clinic_name']:
+        from ..database import current_tenant_var
+        tenant_id = current_tenant_var.get()
+        if tenant_id:
+            tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
+            if tenant:
+                tenant.name = data['clinic_name'].strip()
+
     db.commit()
     db.refresh(settings)
     return settings
