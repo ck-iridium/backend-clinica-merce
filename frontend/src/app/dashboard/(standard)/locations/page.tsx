@@ -1,192 +1,107 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { 
-  MapPin, 
-  Phone, 
-  Mail, 
-  Plus, 
-  Edit2, 
-  Trash2, 
-  Building, 
-  Check, 
-  X,
-  Home,
-  ChevronRight,
-  Globe,
-  ExternalLink
-} from "lucide-react"
-import { Skeleton } from "@/components/ui/skeleton"
-import { useFeedback } from "@/app/contexts/FeedbackContext"
-import { toast } from "sonner"
-import { useRouter } from "next/navigation"
-import { useAuthRole } from "@/hooks/useAuthRole"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog"
-import { useLanguage } from "@/app/contexts/LanguageContext"
-import PlanLimitsCard from "@/components/PlanLimitsCard"
+import React, { useState, useEffect } from "react";
+import { Plus, Building } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useFeedback } from "@/app/contexts/FeedbackContext";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { useAuthRole } from "@/hooks/useAuthRole";
+import { useLanguage } from "@/app/contexts/LanguageContext";
+import PlanLimitsCard from "@/components/PlanLimitsCard";
 
-interface Location {
-  id: string
-  name: string
-  slug?: string
-  address: string
-  phone?: string
-  email?: string
-  is_active: boolean
-  latitude?: number
-  longitude?: number
-  created_at: string
-}
+import { Location, LocationFormData } from "./components/types";
+import { getCookie, getPublicLocationUrl } from "./components/locationUtils";
+import LocationCard from "./components/LocationCard";
+import LocationFormModal from "./components/LocationFormModal";
+import HomeServiceBanner from "./components/HomeServiceBanner";
 
 export default function LocationsPage() {
-  const { t } = useLanguage()
-  const router = useRouter()
-  const { role, loading: loadingRole } = useAuthRole()
-  const { showFeedback } = useFeedback()
-  
-  const [locations, setLocations] = React.useState<Location[]>([])
-  const [limitsData, setLimitsData] = React.useState<any>(null)
-  const [tenantSlug, setTenantSlug] = React.useState<string>('')
-  const [customDomain, setCustomDomain] = React.useState<string | null>(null)
-  const [serviceModality, setServiceModality] = React.useState<string>('clinic') // 'clinic', 'home', 'both'
-  const [loading, setLoading] = React.useState(true)
-  const [isCreateOpen, setIsCreateOpen] = React.useState(false)
-  const [isEditOpen, setIsEditOpen] = React.useState(false)
-  const [isSubmitting, setIsSubmitting] = React.useState(false)
-  
-  const [locationToEdit, setLocationToEdit] = React.useState<Location | null>(null)
-  const [formData, setFormData] = React.useState({
-    name: '',
-    address: '',
-    phone: '',
-    email: '',
-    is_active: true,
-    latitude: null as number | null,
-    longitude: null as number | null
-  })
+  const { t } = useLanguage();
+  const router = useRouter();
+  const { role, loading: loadingRole } = useAuthRole();
+  const { showFeedback } = useFeedback();
 
-  const [suggestions, setSuggestions] = React.useState<any[]>([])
-  const [loadingSuggestions, setLoadingSuggestions] = React.useState(false)
-  const searchTimeoutRef = React.useRef<any>(null)
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [limitsData, setLimitsData] = useState<any>(null);
+  const [tenantSlug, setTenantSlug] = useState<string>('');
+  const [customDomain, setCustomDomain] = useState<string | null>(null);
+  const [serviceModality, setServiceModality] = useState<string>('clinic');
+  const [loading, setLoading] = useState(true);
 
-  const mapContainerRef = React.useRef<HTMLDivElement | null>(null)
-  const mapRef = React.useRef<any | null>(null)
-  const markerRef = React.useRef<any | null>(null)
-
-  const getCookie = (name: string): string | null => {
-    if (typeof document === 'undefined') return null
-    const value = `; ${document.cookie}`
-    const parts = value.split(`; ${name}=`)
-    if (parts.length === 2) return parts.pop()?.split(';').shift() || null
-    return null
-  }
+  // Estado del Modal Unificado
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const getAuthHeaders = () => {
-    const userSession = localStorage.getItem('user')
-    let tenantId = getCookie('tenant_id') || ''
-    let authToken = ''
+    const userSession = localStorage.getItem('user');
+    let tenantId = getCookie('tenant_id') || '';
+    let authToken = '';
     if (userSession) {
       try {
-        const parsed = JSON.parse(userSession)
-        if (!tenantId) tenantId = parsed.tenant_id || ''
-        authToken = parsed.access_token || parsed.token || ''
+        const parsed = JSON.parse(userSession);
+        if (!tenantId) tenantId = parsed.tenant_id || '';
+        authToken = parsed.access_token || parsed.token || '';
       } catch (e) { /* ignore */ }
     }
     return {
       'X-Tenant-ID': tenantId,
       'Authorization': authToken ? `Bearer ${authToken}` : '',
       'Content-Type': 'application/json'
-    }
-  }
+    };
+  };
 
   const fetchLocationsAndLimits = async () => {
     try {
-      setLoading(true)
-      const headers = getAuthHeaders()
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      setLoading(true);
+      const headers = getAuthHeaders();
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       
       const [locRes, limitsRes, settingsRes] = await Promise.all([
         fetch(`${API_URL}/locations/`, { headers }),
         fetch(`${API_URL}/settings/limits`, { headers }),
         fetch(`${API_URL}/settings/`, { headers })
-      ])
+      ]);
 
-      if (locRes.ok) setLocations(await locRes.json() || [])
+      if (locRes.ok) setLocations(await locRes.json() || []);
       if (limitsRes.ok) {
-        const limits = await limitsRes.json()
-        setLimitsData(limits)
-        if (limits.custom_domain) setCustomDomain(limits.custom_domain)
-        if (limits.tenant_slug) setTenantSlug(limits.tenant_slug)
+        const limits = await limitsRes.json();
+        setLimitsData(limits);
+        if (limits.custom_domain) setCustomDomain(limits.custom_domain);
+        if (limits.tenant_slug) setTenantSlug(limits.tenant_slug);
       }
       if (settingsRes.ok) {
-        const settings = await settingsRes.json()
-        setServiceModality(settings.service_modality || 'clinic')
+        const settings = await settingsRes.json();
+        setServiceModality(settings.service_modality || 'clinic');
       }
     } catch (err) {
-      toast.error(t('dashboard.locations.toast_error_load'))
+      toast.error(t('dashboard.locations.toast_error_load'));
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
-
-  const getPublicLocationUrl = (loc: Location) => {
-    const slug = loc.slug || loc.id;
-    
-    // 1. Dominio personalizado configurado en base de datos
-    if (customDomain) {
-      const clean = customDomain.trim().replace(/\/+$/, '');
-      return `${clean.startsWith('http') ? clean : `https://${clean}`}/sedes/${slug}`;
-    }
-    
-    // 2. Mapeo específico para tenant merce
-    const currentSlug = tenantSlug || getCookie('impersonate_tenant_slug') || getCookie('tenant_slug');
-    if (currentSlug === 'merce') {
-      return `https://www.esteticamerce.com/sedes/${slug}`;
-    }
-    
-    // 3. Modo Soporte en probookia.com
-    if (typeof window !== 'undefined' && (window.location.hostname === 'probookia.com' || window.location.hostname === 'www.probookia.com')) {
-      if (currentSlug) {
-        return `https://${currentSlug}.probookia.com/sedes/${slug}`;
-      }
-    }
-
-    // 4. Entorno de desarrollo localhost
-    if (typeof window !== 'undefined' && window.location.hostname.includes('localhost')) {
-      if (currentSlug) {
-        return `http://${currentSlug}.localhost:${window.location.port || 3000}/sedes/${slug}`;
-      }
-    }
-    
-    // 5. En el dominio propio de la clínica
-    return `/sedes/${slug}`;
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!loadingRole) {
-      const currentRole = role?.toLowerCase()
+      const currentRole = role?.toLowerCase();
       if (currentRole !== 'administrador' && currentRole !== 'admin') {
-        toast.error("Acceso denegado")
-        router.replace('/dashboard')
+        toast.error("Acceso denegado");
+        router.replace('/dashboard');
       } else {
-        fetchLocationsAndLimits()
+        fetchLocationsAndLimits();
       }
     }
-  }, [role, loadingRole, router])
+  }, [role, loadingRole, router]);
 
-  const isHomeOnly = serviceModality === 'home'
+  const isHomeOnly = serviceModality === 'home';
 
+  // Abrir Modal de Creación con validación de límites
   const handleCreateOpen = () => {
     if (limitsData) {
-      const maxLocations = limitsData.limits?.locations || 1
-      const activeCount = locations.filter(l => l.is_active).length
+      const maxLocations = limitsData.limits?.locations || 1;
+      const activeCount = locations.filter(l => l.is_active).length;
       if (activeCount >= maxLocations) {
         showFeedback({
           type: 'confirm',
@@ -195,356 +110,72 @@ export default function LocationsPage() {
           confirmText: t('dashboard.locations.paywall_upgrade'),
           cancelText: t('dashboard.locations.paywall_later'),
           onConfirm: () => router.push('/dashboard/settings?tab=subscription')
-        })
-        return
-      }
-    }
-    setFormData({ name: '', address: '', phone: '', email: '', is_active: true, latitude: 39.151, longitude: -0.437 })
-    setIsCreateOpen(true)
-  }
-
-  // Load Leaflet resources and initialize/destroy map inside Dialogs
-  React.useEffect(() => {
-    if (isCreateOpen || isEditOpen) {
-      const linkId = 'leaflet-css-cdn';
-      if (!document.getElementById(linkId)) {
-        const link = document.createElement('link');
-        link.id = linkId;
-        link.rel = 'stylesheet';
-        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-        document.head.appendChild(link);
-      }
-
-      if (!(window as any).L) {
-        const scriptId = 'leaflet-js-cdn';
-        if (!document.getElementById(scriptId)) {
-          const script = document.createElement('script');
-          script.id = scriptId;
-          script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-          script.onload = () => {
-            initDialogMap();
-          };
-          document.body.appendChild(script);
-        }
-      } else {
-        setTimeout(() => {
-          initDialogMap();
-        }, 150);
-      }
-    } else {
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-        markerRef.current = null;
-      }
-    }
-  }, [isCreateOpen, isEditOpen]);
-
-  // Synchronize Leaflet marker position when coordinates change manually
-  React.useEffect(() => {
-    if ((isCreateOpen || isEditOpen) && mapRef.current && formData.latitude && formData.longitude) {
-      const L = (window as any).L;
-      if (!L) return;
-      
-      const newPos = [formData.latitude, formData.longitude] as [number, number];
-      mapRef.current.setView(newPos, 15);
-      
-      if (markerRef.current) {
-        markerRef.current.setLatLng(newPos);
-      } else {
-        const goldIcon = L.icon({
-          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
-          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-          iconSize: [25, 41],
-          iconAnchor: [12, 41],
-          popupAnchor: [1, -34],
-          shadowSize: [41, 41]
         });
-        const marker = L.marker(newPos, { icon: goldIcon, draggable: true }).addTo(mapRef.current);
-        markerRef.current = marker;
-        
-        marker.on('dragend', () => {
-          const latLng = marker.getLatLng();
-          setFormData(prev => {
-            if (!prev.address || !prev.address.trim()) {
-              reverseGeocode(latLng.lat, latLng.lng);
-            }
-            return {
-              ...prev,
-              latitude: latLng.lat,
-              longitude: latLng.lng
-            };
-          });
-        });
+        return;
       }
     }
-  }, [formData.latitude, formData.longitude]);
-
-  const extractHouseNumber = (query: string, rawPostcode?: string): string | null => {
-    if (!query) return null;
-    let text = query;
-    if (rawPostcode) {
-      text = text.replace(new RegExp(`\\b${rawPostcode}\\b`, 'g'), '');
-    }
-    // Eliminar códigos postales estándar españoles de 5 dígitos (01000 - 52999) para no confundirlos con números
-    text = text.replace(/\b[0-5][0-9]{4}\b/g, '');
-
-    // Buscar número de calle: 57, nº 57, n. 57, num 57, 57A, 57-B, 57 bis
-    const match = text.match(/(?:(?:n[º°.]?|n[uú]m(?:ero)?\.?|#)\s*)?(\b\d{1,4}(?:\s*[-/]\s*\d{1,4})?(?:\s*(?:bis|[a-zA-Z]))?\b)/i);
-    return match ? match[1].trim() : null;
+    setSelectedLocation(null);
+    setModalMode('create');
+    setIsModalOpen(true);
   };
 
-  const formatCleanAddress = (item: any, userQuery: string = ''): string => {
-    if (!item) return '';
-    const addr = item.address || {};
-
-    const road =
-      addr.road ||
-      addr.pedestrian ||
-      addr.street ||
-      addr.footway ||
-      addr.path ||
-      addr.cycleway ||
-      addr.square ||
-      addr.avenue ||
-      addr.place ||
-      '';
-
-    const postcode = addr.postcode || '';
-    const userNum = extractHouseNumber(userQuery, postcode);
-    const houseNumber = addr.house_number || userNum || '';
-
-    const city =
-      addr.city ||
-      addr.town ||
-      addr.village ||
-      addr.municipality ||
-      addr.hamlet ||
-      '';
-
-    const province =
-      addr.province ||
-      addr.state_district ||
-      (addr.state && addr.state !== city && addr.state !== 'Comunidad Valenciana' ? addr.state : '') ||
-      '';
-
-    if (!road) {
-      return [city, postcode, province].filter(Boolean).join(', ') || item.display_name || '';
-    }
-
-    const parts: string[] = [];
-
-    // 1. Calle y número exacto
-    if (houseNumber) {
-      parts.push(`${road}, ${houseNumber}`);
-    } else {
-      parts.push(road);
-    }
-
-    // 2. Código postal y localidad
-    if (city) {
-      if (postcode) {
-        parts.push(`${postcode} ${city}`);
-      } else {
-        parts.push(city);
-      }
-    } else if (postcode) {
-      parts.push(postcode);
-    }
-
-    // 3. Provincia (solo si difiere del municipio)
-    if (province && province.toLowerCase() !== city.toLowerCase()) {
-      parts.push(province);
-    }
-
-    return parts.join(', ');
-  };
-
-  const initDialogMap = () => {
-    if (!mapContainerRef.current) return;
-    const L = (window as any).L;
-    if (!L) return;
-
-    if (mapRef.current) {
-      mapRef.current.remove();
-    }
-
-    const lat = formData.latitude || 39.151;
-    const lon = formData.longitude || -0.437;
-
-    const map = L.map(mapContainerRef.current).setView([lat, lon], 15);
-    mapRef.current = map;
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap'
-    }).addTo(map);
-
-    const goldIcon = L.icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
-      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-      shadowSize: [41, 41]
-    });
-
-    const marker = L.marker([lat, lon], { icon: goldIcon, draggable: true }).addTo(map);
-    markerRef.current = marker;
-
-    marker.on('dragend', () => {
-      const latLng = marker.getLatLng();
-      setFormData(prev => {
-        // Solo autocompletar si no hay una dirección escrita para no borrar el número manual
-        if (!prev.address || !prev.address.trim()) {
-          reverseGeocode(latLng.lat, latLng.lng);
-        }
-        return {
-          ...prev,
-          latitude: latLng.lat,
-          longitude: latLng.lng
-        };
-      });
-    });
-  };
-
-  const reverseGeocode = async (lat: number, lon: number) => {
-    try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data) {
-          const clean = formatCleanAddress(data, '');
-          if (clean) {
-            setFormData(prev => {
-              if (prev.address && prev.address.trim().length > 0) return prev;
-              return { ...prev, address: clean };
-            });
-          }
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setFormData(prev => ({ ...prev, address: value }));
-
-    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-
-    if (value.length < 3) {
-      setSuggestions([]);
-      return;
-    }
-
-    setLoadingSuggestions(true);
-    searchTimeoutRef.current = setTimeout(async () => {
-      try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-            value
-          )}&limit=5&addressdetails=1&countrycodes=es,fr`
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setSuggestions(
-            data.map((item: any) => {
-              const cleanAddress = formatCleanAddress(item, value);
-              const secondary = [
-                item.address?.town || item.address?.city || item.address?.village,
-                item.address?.province || item.address?.state
-              ].filter(Boolean).join(', ');
-
-              return {
-                id: item.place_id,
-                clean_address: cleanAddress,
-                secondary_text: secondary,
-                display_name: item.display_name,
-                lat: parseFloat(item.lat),
-                lon: parseFloat(item.lon)
-              };
-            })
-          );
-        }
-      } catch (err) {
-        console.error('Error al obtener sugerencias de dirección:', err);
-      } finally {
-        setLoadingSuggestions(false);
-      }
-    }, 450);
-  };
-
-  const handleSelectSuggestion = (suggestion: any) => {
-    setSuggestions([]);
-    setFormData(prev => ({
-      ...prev,
-      address: suggestion.clean_address || suggestion.display_name,
-      latitude: suggestion.lat,
-      longitude: suggestion.lon
-    }));
-  };
-
-  const handleCreateLocation = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    try {
-      const headers = getAuthHeaders()
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      const res = await fetch(`${API_URL}/locations/`, { method: 'POST', headers, body: JSON.stringify(formData) })
-      if (res.status === 403) {
-        toast.error(t('dashboard.locations.limit_exceeded'))
-        setIsCreateOpen(false)
-        return
-      }
-      if (!res.ok) throw new Error()
-      toast.success(t('dashboard.locations.toast_created'))
-      setIsCreateOpen(false)
-      fetchLocationsAndLimits()
-    } catch {
-      toast.error(t('dashboard.locations.toast_error_save'))
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
+  // Abrir Modal de Edición
   const handleEditOpen = (location: Location) => {
-    setLocationToEdit(location)
-    setFormData({ 
-      name: location.name, 
-      address: location.address, 
-      phone: location.phone || '', 
-      email: location.email || '', 
-      is_active: location.is_active,
-      latitude: location.latitude || 39.151,
-      longitude: location.longitude || -0.437
-    })
-    setIsEditOpen(true)
-  }
+    setSelectedLocation(location);
+    setModalMode('edit');
+    setIsModalOpen(true);
+  };
 
-  const handleUpdateLocation = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!locationToEdit) return
-    setIsSubmitting(true)
+  // Enviar Formulario (Crear o Actualizar)
+  const handleFormSubmit = async (formData: LocationFormData) => {
+    setIsSubmitting(true);
+    const headers = getAuthHeaders();
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
     try {
-      const headers = getAuthHeaders()
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      const res = await fetch(`${API_URL}/locations/${locationToEdit.id}`, { method: 'PUT', headers, body: JSON.stringify(formData) })
-      if (!res.ok) throw new Error()
-      toast.success(t('dashboard.locations.toast_updated'))
-      setIsEditOpen(false)
-      fetchLocationsAndLimits()
-    } catch {
-      toast.error(t('dashboard.locations.toast_error_update'))
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+      if (modalMode === 'create') {
+        const res = await fetch(`${API_URL}/locations/`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(formData)
+        });
 
+        if (res.status === 403) {
+          toast.error(t('dashboard.locations.limit_exceeded'));
+          setIsModalOpen(false);
+          return;
+        }
+        if (!res.ok) throw new Error();
+        toast.success(t('dashboard.locations.toast_created'));
+      } else {
+        if (!selectedLocation) return;
+        const res = await fetch(`${API_URL}/locations/${selectedLocation.id}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify(formData)
+        });
+        if (!res.ok) throw new Error();
+        toast.success(t('dashboard.locations.toast_updated'));
+      }
+
+      setIsModalOpen(false);
+      fetchLocationsAndLimits();
+    } catch {
+      toast.error(
+        modalMode === 'create'
+          ? t('dashboard.locations.toast_error_save')
+          : t('dashboard.locations.toast_error_update')
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Alternar Estado Activa / Inactiva
   const handleToggleStatus = async (location: Location) => {
     if (!location.is_active && limitsData) {
-      const maxLocations = limitsData.limits?.locations || 1
-      const activeCount = locations.filter(l => l.is_active).length
+      const maxLocations = limitsData.limits?.locations || 1;
+      const activeCount = locations.filter(l => l.is_active).length;
       if (activeCount >= maxLocations) {
         showFeedback({
           type: 'confirm',
@@ -553,22 +184,32 @@ export default function LocationsPage() {
           confirmText: t('dashboard.locations.paywall_upgrade'),
           cancelText: "Cerrar",
           onConfirm: () => router.push('/dashboard/settings?tab=subscription')
-        })
-        return
+        });
+        return;
       }
     }
-    try {
-      const headers = getAuthHeaders()
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      const res = await fetch(`${API_URL}/locations/${location.id}`, { method: 'PUT', headers, body: JSON.stringify({ ...location, is_active: !location.is_active }) })
-      if (!res.ok) throw new Error()
-      toast.success(location.is_active ? t('dashboard.locations.toast_deactivated') : t('dashboard.locations.toast_activated'))
-      fetchLocationsAndLimits()
-    } catch {
-      toast.error(t('dashboard.locations.toast_error_status'))
-    }
-  }
 
+    try {
+      const headers = getAuthHeaders();
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const res = await fetch(`${API_URL}/locations/${location.id}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ ...location, is_active: !location.is_active })
+      });
+      if (!res.ok) throw new Error();
+      toast.success(
+        location.is_active
+          ? t('dashboard.locations.toast_deactivated')
+          : t('dashboard.locations.toast_activated')
+      );
+      fetchLocationsAndLimits();
+    } catch {
+      toast.error(t('dashboard.locations.toast_error_status'));
+    }
+  };
+
+  // Eliminar Sede
   const handleDeleteLocation = (location: Location) => {
     showFeedback({
       type: 'confirm',
@@ -578,31 +219,36 @@ export default function LocationsPage() {
       cancelText: t('dashboard.locations.cancel'),
       onConfirm: async () => {
         try {
-          const headers = getAuthHeaders()
-          const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-          const res = await fetch(`${API_URL}/locations/${location.id}`, { method: 'DELETE', headers })
-          if (!res.ok) throw new Error()
-          toast.success(t('dashboard.locations.toast_deleted'))
-          fetchLocationsAndLimits()
+          const headers = getAuthHeaders();
+          const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+          const res = await fetch(`${API_URL}/locations/${location.id}`, {
+            method: 'DELETE',
+            headers
+          });
+          if (!res.ok) throw new Error();
+          toast.success(t('dashboard.locations.toast_deleted'));
+          fetchLocationsAndLimits();
         } catch {
-          toast.error(t('dashboard.locations.toast_error_delete'))
+          toast.error(t('dashboard.locations.toast_error_delete'));
         }
       }
-    })
-  }
+    });
+  };
 
+  // Pantalla de carga mientras se verifican permisos
   if (loadingRole || (role?.toLowerCase() !== 'administrador' && role?.toLowerCase() !== 'admin')) {
     return (
       <div className="flex flex-col gap-4 justify-center items-center h-[60vh] animate-in fade-in duration-500">
         <Skeleton className="w-16 h-16 rounded-2xl" />
         <Skeleton className="w-48 h-6 rounded-xl" />
       </div>
-    )
+    );
   }
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500 pb-16">
-      {/* Header */}
+      
+      {/* ── CABECERA Y ACCIÓN PRINCIPAL ── */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-4">
@@ -628,31 +274,12 @@ export default function LocationsPage() {
         )}
       </div>
 
-      {/* Banner para profesionales a domicilio */}
+      {/* ── BANNER PARA MODALIDAD A DOMICILIO ── */}
       {isHomeOnly && (
-        <div className="bg-[#d4af37]/5 border border-[#d4af37]/20 rounded-[2rem] p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-[#d4af37]/10 border border-[#d4af37]/20 flex items-center justify-center text-[#bf9b30] shrink-0">
-              <Home size={22} strokeWidth={1.5} />
-            </div>
-            <div className="space-y-1">
-              <h3 className="font-bold text-stone-800 text-lg">{t('dashboard.locations.home_service_notice')}</h3>
-              <p className="text-stone-500 text-sm font-medium max-w-lg leading-relaxed">
-                {t('dashboard.locations.home_service_desc')}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => router.push('/dashboard/settings?tab=domicilio')}
-            className="flex items-center gap-2 text-[#bf9b30] font-bold text-sm border border-[#d4af37]/30 px-4 py-2.5 rounded-xl hover:bg-[#d4af37]/10 transition-all shrink-0"
-          >
-            {t('dashboard.locations.home_service_config')}
-            <ChevronRight size={14} />
-          </button>
-        </div>
+        <HomeServiceBanner onConfigure={() => router.push('/dashboard/settings?tab=domicilio')} />
       )}
 
-      {/* Content */}
+      {/* ── LISTADO / GRID DE SEDES ── */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array(3).fill(0).map((_, i) => (
@@ -686,254 +313,28 @@ export default function LocationsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {locations.map((loc) => (
-            <div
+            <LocationCard
               key={loc.id}
-              className={`bg-white border transition-all duration-300 rounded-2xl p-6 flex flex-col justify-between hover:shadow-lg relative overflow-hidden ${
-                loc.is_active ? 'border-stone-200/60 shadow-sm' : 'border-stone-100 opacity-60'
-              }`}
-            >
-              {loc.is_active && (
-                <div className="absolute top-0 right-0 w-24 h-1 bg-gradient-to-r from-stone-900 via-[#d4af37] to-stone-900" />
-              )}
-              <div className="space-y-4">
-                <div className="space-y-1">
-                  <h3 className="font-serif text-2xl font-light text-stone-800 tracking-tight leading-tight">{loc.name}</h3>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                    loc.is_active
-                      ? 'bg-[#d4af37]/10 text-[#bf9b30] border border-[#d4af37]/15'
-                      : 'bg-stone-100 text-stone-400 border border-stone-200/40'
-                  }`}>
-                    {loc.is_active ? t('dashboard.locations.active_badge') : t('dashboard.locations.inactive_badge')}
-                  </span>
-                </div>
-
-                <div className="space-y-2.5 pt-2 text-stone-500 font-medium text-sm">
-                  <div className="flex items-start gap-2.5">
-                    <MapPin size={16} className="text-[#d4af37] shrink-0 mt-0.5" />
-                    <span>{loc.address}</span>
-                  </div>
-                  {loc.phone && (
-                    <div className="flex items-center gap-2.5">
-                      <Phone size={16} className="text-[#d4af37] shrink-0" />
-                      <span>{loc.phone}</span>
-                    </div>
-                  )}
-                  {loc.email && (
-                    <div className="flex items-center gap-2.5">
-                      <Mail size={16} className="text-[#d4af37] shrink-0" />
-                      <span className="truncate max-w-[200px]">{loc.email}</span>
-                    </div>
-                  )}
-
-                  {loc.slug && (
-                    <div className="pt-1">
-                      <a
-                        href={getPublicLocationUrl(loc)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs text-[#b08e23] hover:text-stone-900 font-semibold bg-[#d4af37]/10 hover:bg-[#d4af37]/20 px-3 py-1.5 rounded-lg transition-colors"
-                        title={t('dashboard.locations.public_seo_tooltip') || "Ver ficha web pública optimizada para Google"}
-                      >
-                        <Globe size={13} />
-                        <span>{t('dashboard.locations.public_seo_page') || "Ver página SEO pública"}</span>
-                        <ExternalLink size={12} className="opacity-70" />
-                      </a>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between border-t border-stone-100 mt-6 pt-4 gap-2">
-                <button
-                  id={`locations-toggle-status-btn-${loc.id}`}
-                  onClick={() => handleToggleStatus(loc)}
-                  className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition-all duration-300 flex items-center gap-1.5 ${
-                    loc.is_active
-                      ? 'border-stone-200 text-stone-500 hover:bg-stone-50'
-                      : 'border-[#d4af37]/30 text-[#bf9b30] hover:bg-[#d4af37]/5'
-                  }`}
-                >
-                  {loc.is_active ? <><X size={12} />{t('dashboard.locations.deactivate_btn')}</> : <><Check size={12} />{t('dashboard.locations.activate_btn')}</>}
-                </button>
-                <div className="flex items-center gap-1.5">
-                  <a
-                    href={getPublicLocationUrl(loc)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 text-stone-400 hover:text-[#d4af37] hover:bg-stone-50 rounded-xl transition-all"
-                    title={t('dashboard.locations.open_public_page') || "Abrir página pública"}
-                  >
-                    <ExternalLink size={16} />
-                  </a>
-                  <button id={`locations-edit-btn-${loc.id}`} onClick={() => handleEditOpen(loc)} className="p-2 text-stone-400 hover:text-stone-800 hover:bg-stone-50 rounded-xl transition-all" title={t('dashboard.locations.edit_btn')}>
-                    <Edit2 size={16} />
-                  </button>
-                  <button id={`locations-delete-btn-${loc.id}`} onClick={() => handleDeleteLocation(loc)} className="p-2 text-stone-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all" title={t('dashboard.locations.delete_btn')}>
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
-            </div>
+              location={loc}
+              publicUrl={getPublicLocationUrl(loc, tenantSlug, customDomain)}
+              onToggleStatus={handleToggleStatus}
+              onEdit={handleEditOpen}
+              onDelete={handleDeleteLocation}
+            />
           ))}
         </div>
       )}
 
-      {/* DIALOG CREACIÓN */}
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="sm:max-w-[450px] rounded-[2rem] p-8 bg-white border-stone-100 shadow-2xl">
-          <DialogHeader className="mb-4">
-            <DialogTitle className="font-serif italic text-2xl text-stone-800">{t('dashboard.locations.create_title')}</DialogTitle>
-            <DialogDescription className="text-stone-400 font-medium">{t('dashboard.locations.create_desc')}</DialogDescription>
-          </DialogHeader>
-          <form id="locations-create-form" onSubmit={handleCreateLocation} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.locations.name_label')}</label>
-              <input id="locations-create-name-input" type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all"
-                placeholder={t('dashboard.locations.name_placeholder')} required />
-            </div>
+      {/* ── MODAL UNIFICADO: CREAR / EDITAR SEDE ── */}
+      <LocationFormModal
+        isOpen={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        mode={modalMode}
+        initialData={selectedLocation}
+        onSubmit={handleFormSubmit}
+        isSubmitting={isSubmitting}
+      />
 
-            <div className="space-y-1.5 relative">
-              <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.locations.address_label')}</label>
-              <div className="relative">
-                <input id="locations-create-address-input" type="text" value={formData.address} onChange={handleAddressChange}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all"
-                  placeholder={t('dashboard.locations.address_placeholder')} required />
-                {loadingSuggestions && (
-                  <div className="absolute right-3 top-3.5 w-4 h-4 rounded-full border-2 border-stone-300 border-t-stone-900 animate-spin" />
-                )}
-              </div>
-              
-              {suggestions.length > 0 && (
-                <div className="absolute z-[100] left-0 right-0 top-full mt-1 bg-white border border-stone-200 rounded-2xl shadow-xl max-h-52 overflow-y-auto divide-y divide-stone-100">
-                  {suggestions.map((s) => (
-                    <button
-                      key={s.id}
-                      type="button"
-                      onClick={() => handleSelectSuggestion(s)}
-                      className="w-full text-left px-4 py-3 hover:bg-stone-50 transition-colors flex flex-col gap-0.5 text-stone-700 hover:text-stone-950 font-sans"
-                    >
-                      <span className="text-xs font-semibold text-stone-800">{s.clean_address}</span>
-                      {s.secondary_text && (
-                        <span className="text-[11px] text-stone-400 truncate">{s.secondary_text}</span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">Verificar ubicación en mapa (Arrastra el pin para precisión)</label>
-              <div 
-                ref={mapContainerRef} 
-                className="w-full h-40 rounded-xl border border-stone-200 overflow-hidden relative z-10"
-                style={{ minHeight: '160px' }}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.locations.phone_label')}</label>
-                <input id="locations-create-phone-input" type="text" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all" />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.locations.email_label')}</label>
-                <input id="locations-create-email-input" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder={t('dashboard.locations.email_placeholder')}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all" />
-              </div>
-            </div>
-            <DialogFooter className="pt-6">
-              <button id="locations-create-cancel-btn" type="button" onClick={() => setIsCreateOpen(false)} className="text-stone-400 hover:text-stone-700 transition-all font-bold text-xs uppercase tracking-wider px-4 py-2">
-                {t('dashboard.locations.cancel')}
-              </button>
-              <button id="locations-create-submit-btn" type="submit" disabled={isSubmitting} className="bg-stone-950 hover:bg-[#d4af37] hover:text-stone-950 text-white font-bold text-xs uppercase tracking-widest px-6 py-3.5 rounded-full transition-all duration-300 active:scale-95 disabled:opacity-50">
-                {isSubmitting ? t('dashboard.locations.creating') : t('dashboard.locations.create_submit')}
-              </button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* DIALOG EDICIÓN */}
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-[450px] rounded-[2rem] p-8 bg-white border-stone-100 shadow-2xl">
-          <DialogHeader className="mb-4">
-            <DialogTitle className="font-serif italic text-2xl text-stone-800">{t('dashboard.locations.edit_title')}</DialogTitle>
-            <DialogDescription className="text-stone-400 font-medium">{t('dashboard.locations.edit_desc')}</DialogDescription>
-          </DialogHeader>
-          <form id="locations-edit-form" onSubmit={handleUpdateLocation} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.locations.name_label')}</label>
-              <input id="locations-edit-name-input" type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all"
-                required />
-            </div>
-
-            <div className="space-y-1.5 relative">
-              <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.locations.address_label')}</label>
-              <div className="relative">
-                <input id="locations-edit-address-input" type="text" value={formData.address} onChange={handleAddressChange}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all"
-                  required />
-                {loadingSuggestions && (
-                  <div className="absolute right-3 top-3.5 w-4 h-4 rounded-full border-2 border-stone-300 border-t-stone-900 animate-spin" />
-                )}
-              </div>
-              
-              {suggestions.length > 0 && (
-                <div className="absolute z-[100] left-0 right-0 top-full mt-1 bg-white border border-stone-200 rounded-2xl shadow-xl max-h-52 overflow-y-auto divide-y divide-stone-100">
-                  {suggestions.map((s) => (
-                    <button
-                      key={s.id}
-                      type="button"
-                      onClick={() => handleSelectSuggestion(s)}
-                      className="w-full text-left px-4 py-3 hover:bg-stone-50 transition-colors flex flex-col gap-0.5 text-stone-700 hover:text-stone-950 font-sans"
-                    >
-                      <span className="text-xs font-semibold text-stone-800">{s.clean_address}</span>
-                      {s.secondary_text && (
-                        <span className="text-[11px] text-stone-400 truncate">{s.secondary_text}</span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">Verificar ubicación en mapa (Arrastra el pin para precisión)</label>
-              <div 
-                ref={mapContainerRef} 
-                className="w-full h-40 rounded-xl border border-stone-200 overflow-hidden relative z-10"
-                style={{ minHeight: '160px' }}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.locations.phone_label')}</label>
-                <input id="locations-edit-phone-input" type="text" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all" />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">{t('dashboard.locations.email_label')}</label>
-                <input id="locations-edit-email-input" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all" />
-              </div>
-            </div>
-            <DialogFooter className="pt-6">
-              <button id="locations-edit-cancel-btn" type="button" onClick={() => setIsEditOpen(false)} className="text-stone-400 hover:text-stone-700 transition-all font-bold text-xs uppercase tracking-wider px-4 py-2">
-                {t('dashboard.locations.cancel')}
-              </button>
-              <button id="locations-edit-save-btn" type="submit" disabled={isSubmitting} className="bg-stone-950 hover:bg-[#d4af37] hover:text-stone-950 text-white font-bold text-xs uppercase tracking-widest px-6 py-3.5 rounded-full transition-all duration-300 active:scale-95 disabled:opacity-50">
-                {isSubmitting ? t('dashboard.locations.saving') : t('dashboard.locations.save_btn')}
-              </button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
-  )
+  );
 }

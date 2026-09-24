@@ -12,6 +12,7 @@ import {
   Sun, 
   Eye 
 } from 'lucide-react';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 interface HeaderLogoSectionProps {
   settings: any;
@@ -26,6 +27,7 @@ export default function HeaderLogoSection({
   logoAppRef,
   handleImageUpload
 }: HeaderLogoSectionProps) {
+  const { t } = useLanguage();
   const [previewDarkBg, setPreviewDarkBg] = useState(false);
 
   // Valores de calibración del header con fallbacks armónicos
@@ -52,19 +54,24 @@ export default function HeaderLogoSection({
             <Building2 size={18} strokeWidth={1.8} />
           </span>
           <div>
-            <h4 className="text-base font-bold text-stone-900">Logotipo Principal & Cabecera</h4>
-            <p className="text-[11px] text-stone-400 font-bold uppercase tracking-wider mt-0.5">Identidad Corporativa y Calibración de Escala</p>
+            <h4 className="text-base font-bold text-stone-900">
+              {t('dashboard.branding.desktop_logo.title') || 'Logotipo Principal & Cabecera'}
+            </h4>
+            <p className="text-[11px] text-stone-400 font-bold uppercase tracking-wider mt-0.5">
+              {t('dashboard.branding.desktop_logo.subtitle') || 'Identidad Corporativa y Calibración de Escala'}
+            </p>
           </div>
         </div>
 
         <button
+          id="branding-logo-reset-defaults-btn"
           type="button"
           onClick={resetHeaderLogoDefaults}
           className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-stone-600 hover:text-stone-900 bg-stone-50 hover:bg-stone-100 border border-stone-200/70 rounded-xl transition-all self-start sm:self-auto active:scale-95"
-          title="Restablecer proporciones recomendadas del logo en cabecera"
+          title={t('dashboard.branding.desktop_logo.reset_defaults') || 'Restablecer proporciones recomendadas del logo en cabecera'}
         >
           <RotateCcw size={13} />
-          <span>Restablecer Proporciones</span>
+          <span>{t('dashboard.branding.desktop_logo.reset_defaults') || 'Restablecer Valores'}</span>
         </button>
       </div>
 
@@ -73,7 +80,7 @@ export default function HeaderLogoSection({
         {/* SUB-COLUMNA 1: SUBIDA DEL LOGO (5 COLS) */}
         <div className="lg:col-span-5 space-y-4">
           <label className="text-xs font-black uppercase tracking-widest text-stone-500 block">
-            Archivo de Logotipo
+            {t('dashboard.branding.desktop_logo.current_logo') || 'Archivo de Logotipo'}
           </label>
 
           <div className="w-full h-52 bg-stone-50 border border-stone-200/60 rounded-2xl flex items-center justify-center p-6 relative group/logo transition-all duration-300 hover:border-stone-300">
@@ -89,7 +96,7 @@ export default function HeaderLogoSection({
                   type="button"
                   onClick={() => updateSetting('logo_app_b64', null)}
                   className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/95 backdrop-blur-md shadow-md border border-stone-200/80 flex items-center justify-center text-stone-500 hover:text-red-600 hover:bg-red-50 hover:border-red-200 transition-all duration-300 active:scale-90"
-                  title="Eliminar Logotipo"
+                  title={t('dashboard.branding.desktop_logo.delete_btn') || 'Eliminar Logotipo'}
                 >
                   <Trash2 size={14} />
                 </button>
@@ -97,13 +104,15 @@ export default function HeaderLogoSection({
             ) : (
               <div className="flex flex-col items-center gap-2 text-stone-300">
                 <Building2 size={54} strokeWidth={1.2} />
-                <span className="text-xs font-bold text-stone-400">Sin logotipo asignado</span>
+                <span className="text-xs font-bold text-stone-400">
+                  {t('dashboard.branding.desktop_logo.no_logo') || 'Sin logotipo asignado'}
+                </span>
               </div>
             )}
           </div>
 
           <p className="text-xs text-stone-500 font-medium leading-relaxed">
-            Compatible con <strong className="text-stone-700">SVG, PNG transparente o JPG</strong>. Ajusta el tamaño y los márgenes con los controles de la derecha para adaptarlo a cualquier pantalla.
+            {t('dashboard.branding.desktop_logo.subtitle') || 'Compatible con SVG, PNG transparente o JPG. Ajusta el tamaño y los márgenes con los controles de la derecha.'}
           </p>
 
           <input 
@@ -121,7 +130,12 @@ export default function HeaderLogoSection({
             onClick={() => logoAppRef.current?.click()}
             className="text-xs font-black uppercase tracking-wider text-white bg-stone-900 px-6 py-3.5 rounded-xl hover:bg-[#d4af37] hover:text-stone-950 transition-all w-full shadow-md hover:shadow-lg active:scale-95 duration-300 flex items-center justify-center gap-2"
           >
-            <span>{settings.logo_app_b64 ? 'Cambiar Logotipo' : 'Subir Logotipo'}</span>
+            <span>
+              {settings.logo_app_b64 
+                ? (t('dashboard.branding.desktop_logo.change_btn') || 'Cambiar Logotipo')
+                : (t('dashboard.branding.desktop_logo.upload_btn') || 'Subir Logotipo')
+              }
+            </span>
           </button>
         </div>
 
@@ -130,7 +144,7 @@ export default function HeaderLogoSection({
           
           <div className="flex items-center gap-2 text-stone-800 font-bold text-xs uppercase tracking-wider border-b border-stone-200/60 pb-3">
             <SlidersHorizontal size={15} className="text-[#d4af37]" />
-            <span>Calibración de Margen y Posición en el Header</span>
+            <span>{t('dashboard.branding.desktop_logo.calibration_title') || 'Calibración de Margen y Posición en el Header'}</span>
           </div>
 
           {/* Control 1: Altura del Logo */}
@@ -138,7 +152,7 @@ export default function HeaderLogoSection({
             <div className="flex justify-between items-center text-xs">
               <span className="font-bold text-stone-700 flex items-center gap-1.5">
                 <Maximize2 size={13} className="text-stone-400" />
-                Altura Máxima en Cabecera
+                {t('dashboard.branding.desktop_logo.height_label') || 'Altura Máxima en Cabecera'}
               </span>
               <div className="flex items-center gap-1.5">
                 <span className="text-stone-400 text-[11px] font-medium">Recomendado: 38-48px</span>
@@ -149,6 +163,7 @@ export default function HeaderLogoSection({
             </div>
             <div className="flex items-center gap-3">
               <input
+                id="branding-logo-height-range"
                 type="range"
                 min="24"
                 max="68"
@@ -158,6 +173,7 @@ export default function HeaderLogoSection({
                 className="w-full accent-[#d4af37] cursor-pointer"
               />
               <input
+                id="branding-logo-height-number"
                 type="number"
                 min="24"
                 max="68"
@@ -173,17 +189,18 @@ export default function HeaderLogoSection({
             <div className="flex justify-between items-center text-xs">
               <span className="font-bold text-stone-700 flex items-center gap-1.5">
                 <MoveVertical size={13} className="text-stone-400" />
-                Alineación Vertical (Subir / Bajar)
+                {t('dashboard.branding.desktop_logo.offset_y_label') || 'Alineación Vertical (Subir / Bajar)'}
               </span>
               <div className="flex items-center gap-1.5">
                 <span className="text-stone-400 text-[11px] font-medium">0 = centrado</span>
                 <span className="font-mono font-bold text-stone-900 bg-white px-2 py-0.5 rounded border border-stone-200 text-xs">
-                  {logoOffsetY === 0 ? '0px (Centrado)' : logoOffsetY > 0 ? `+${logoOffsetY}px (Bajar)` : `${logoOffsetY}px (Subir)`}
+                  {logoOffsetY === 0 ? '0px' : logoOffsetY > 0 ? `+${logoOffsetY}px` : `${logoOffsetY}px`}
                 </span>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <input
+                id="branding-logo-offsety-range"
                 type="range"
                 min="-24"
                 max="24"
@@ -193,6 +210,7 @@ export default function HeaderLogoSection({
                 className="w-full accent-[#d4af37] cursor-pointer"
               />
               <input
+                id="branding-logo-offsety-number"
                 type="number"
                 min="-24"
                 max="24"
@@ -208,7 +226,7 @@ export default function HeaderLogoSection({
             <div className="flex justify-between items-center text-xs">
               <span className="font-bold text-stone-700 flex items-center gap-1.5">
                 <MoveHorizontal size={13} className="text-stone-400" />
-                Margen Derecho (Separación del Menú)
+                {t('dashboard.branding.desktop_logo.margin_right_label') || 'Margen Derecho (Separación del Menú)'}
               </span>
               <div className="flex items-center gap-1.5">
                 <span className="text-stone-400 text-[11px] font-medium">Recomendado: 16-36px</span>
@@ -219,6 +237,7 @@ export default function HeaderLogoSection({
             </div>
             <div className="flex items-center gap-3">
               <input
+                id="branding-logo-marginright-range"
                 type="range"
                 min="8"
                 max="80"
@@ -228,6 +247,7 @@ export default function HeaderLogoSection({
                 className="w-full accent-[#d4af37] cursor-pointer"
               />
               <input
+                id="branding-logo-marginright-number"
                 type="number"
                 min="8"
                 max="80"
@@ -243,7 +263,7 @@ export default function HeaderLogoSection({
             <div className="flex justify-between items-center text-xs">
               <span className="font-bold text-stone-700 flex items-center gap-1.5">
                 <MoveHorizontal size={13} className="text-stone-400" />
-                Margen Izquierdo (Separación del Borde)
+                {t('dashboard.branding.desktop_logo.margin_left_label') || 'Margen Izquierdo (Separación del Borde)'}
               </span>
               <div className="flex items-center gap-1.5">
                 <span className="text-stone-400 text-[11px] font-medium">0 = alineado normal</span>
@@ -254,6 +274,7 @@ export default function HeaderLogoSection({
             </div>
             <div className="flex items-center gap-3">
               <input
+                id="branding-logo-marginleft-range"
                 type="range"
                 min="0"
                 max="48"
@@ -263,6 +284,7 @@ export default function HeaderLogoSection({
                 className="w-full accent-[#d4af37] cursor-pointer"
               />
               <input
+                id="branding-logo-marginleft-number"
                 type="number"
                 min="0"
                 max="48"
@@ -278,14 +300,20 @@ export default function HeaderLogoSection({
             <div className="flex justify-between items-center text-xs">
               <span className="font-bold text-stone-700 flex items-center gap-1.5">
                 <Sun size={13} className="text-stone-400" />
-                Color del Logotipo en Cabecera (Dark / Light)
+                {t('dashboard.branding.desktop_logo.color_mode_label') || 'Color del Logotipo en Cabecera'}
               </span>
               <span className="text-stone-400 text-[11px] font-medium">
-                {headerLogoMode === 'white' ? 'Blanco Puro' : headerLogoMode === 'adaptive' ? 'Adaptativo' : 'Original'}
+                {headerLogoMode === 'white' 
+                  ? (t('dashboard.branding.desktop_logo.mode_white') || 'Blanco Puro')
+                  : headerLogoMode === 'adaptive' 
+                    ? (t('dashboard.branding.desktop_logo.mode_adaptive') || 'Adaptativo')
+                    : (t('dashboard.branding.desktop_logo.mode_original') || 'Original')
+                }
               </span>
             </div>
             <div className="grid grid-cols-3 gap-2">
               <button
+                id="branding-logo-mode-original-btn"
                 type="button"
                 onClick={() => updateSetting('header_logo_mode', 'original')}
                 className={`py-2 px-2 rounded-xl border text-center transition-all text-xs ${
@@ -294,9 +322,10 @@ export default function HeaderLogoSection({
                     : 'border-stone-200 bg-white text-stone-600 hover:border-stone-300'
                 }`}
               >
-                Original / Oscuro
+                {t('dashboard.branding.desktop_logo.mode_original') || 'Original'}
               </button>
               <button
+                id="branding-logo-mode-white-btn"
                 type="button"
                 onClick={() => updateSetting('header_logo_mode', 'white')}
                 className={`py-2 px-2 rounded-xl border text-center transition-all text-xs ${
@@ -305,9 +334,10 @@ export default function HeaderLogoSection({
                     : 'border-stone-200 bg-white text-stone-600 hover:border-stone-300'
                 }`}
               >
-                Blanco Puro
+                {t('dashboard.branding.desktop_logo.mode_white') || 'Blanco Puro'}
               </button>
               <button
+                id="branding-logo-mode-adaptive-btn"
                 type="button"
                 onClick={() => updateSetting('header_logo_mode', 'adaptive')}
                 className={`py-2 px-2 rounded-xl border text-center transition-all text-xs ${
@@ -315,13 +345,13 @@ export default function HeaderLogoSection({
                     ? 'border-[#d4af37] bg-[#d4af37]/15 text-stone-900 font-bold shadow-sm'
                     : 'border-stone-200 bg-white text-stone-600 hover:border-stone-300'
                 }`}
-                title="Blanco en portada transparente, Original al hacer scroll"
+                title={t('dashboard.branding.desktop_logo.mode_adaptive_desc') || 'Blanco en portada transparente, Original al hacer scroll'}
               >
-                Adaptativo
+                {t('dashboard.branding.desktop_logo.mode_adaptive') || 'Adaptativo'}
               </button>
             </div>
             <p className="text-[11px] text-stone-400 leading-tight">
-              <strong className="text-stone-600">Adaptativo</strong> muestra el logotipo en blanco cuando la cabecera es transparente sobre el hero, y recupera su color original cuando el usuario hace scroll.
+              {t('dashboard.branding.desktop_logo.mode_adaptive_desc') || 'Adaptativo muestra el logotipo en blanco cuando la cabecera es transparente sobre el hero, y recupera su color original al hacer scroll.'}
             </p>
           </div>
 
@@ -334,11 +364,12 @@ export default function HeaderLogoSection({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <span className="text-xs font-black uppercase tracking-widest text-stone-500 flex items-center gap-2">
             <Eye size={14} className="text-[#d4af37]" />
-            Vista Previa en Tiempo Real de la Cabecera
+            {t('dashboard.branding.desktop_logo.preview_title') || 'Vista Previa en Tiempo Real de la Cabecera'}
           </span>
           <div className="flex items-center gap-2">
-            <span className="text-[11px] text-stone-400 font-semibold mr-1">Simular Fondo:</span>
+            <span className="text-[11px] text-stone-400 font-semibold mr-1">Fondo:</span>
             <button
+              id="branding-header-preview-light-btn"
               type="button"
               onClick={() => setPreviewDarkBg(false)}
               className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
@@ -347,9 +378,10 @@ export default function HeaderLogoSection({
                   : 'text-stone-400 hover:text-stone-700'
               }`}
             >
-              Claro (Scroll)
+              {t('dashboard.branding.desktop_logo.preview_light_btn') || 'Claro (Scroll)'}
             </button>
             <button
+              id="branding-header-preview-dark-btn"
               type="button"
               onClick={() => setPreviewDarkBg(true)}
               className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
@@ -358,7 +390,7 @@ export default function HeaderLogoSection({
                   : 'text-stone-400 hover:text-stone-700'
               }`}
             >
-              Oscuro (Portada)
+              {t('dashboard.branding.desktop_logo.preview_dark_btn') || 'Oscuro (Portada)'}
             </button>
           </div>
         </div>
@@ -409,17 +441,21 @@ export default function HeaderLogoSection({
             <div className={`hidden sm:flex items-center gap-6 text-xs font-bold transition-all duration-150 shrink-0 ${
               previewDarkBg ? 'text-stone-300' : 'text-stone-600'
             }`}>
-              <span className={previewDarkBg ? 'hover:text-white cursor-default' : 'hover:text-stone-900 cursor-default'}>Inicio</span>
-              <span className="text-[#d4af37] font-semibold flex items-center gap-1 cursor-default">
-                Tratamientos
+              <span className={previewDarkBg ? 'hover:text-white cursor-default' : 'hover:text-stone-900 cursor-default'}>
+                {t('dashboard.branding.desktop_logo.preview_nav_home') || 'Inicio'}
               </span>
-              <span className={previewDarkBg ? 'hover:text-white cursor-default' : 'hover:text-stone-900 cursor-default'}>Contacto</span>
+              <span className="text-[#d4af37] font-semibold flex items-center gap-1 cursor-default">
+                {t('dashboard.branding.desktop_logo.preview_nav_services') || 'Tratamientos'}
+              </span>
+              <span className={previewDarkBg ? 'hover:text-white cursor-default' : 'hover:text-stone-900 cursor-default'}>
+                {t('dashboard.branding.desktop_logo.preview_nav_contact') || 'Contacto'}
+              </span>
             </div>
 
             {/* Botón CTA empujado a la derecha con ml-auto */}
             <div className="ml-auto hidden sm:flex items-center shrink-0 pl-4">
               <div className="h-8 px-4 rounded-xl bg-[#d4af37] text-white flex items-center justify-center text-xs font-bold shadow-sm cursor-default">
-                Reservar Cita
+                {t('dashboard.branding.desktop_logo.preview_cta') || 'Reservar Cita'}
               </div>
             </div>
 

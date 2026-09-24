@@ -2,6 +2,7 @@
 
 import { Palette, Sparkles } from 'lucide-react';
 import { RefObject } from 'react';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 import HeaderLogoSection from './branding/HeaderLogoSection';
 import MobileLogoSection from './branding/MobileLogoSection';
 import FaviconSection from './branding/FaviconSection';
@@ -23,6 +24,7 @@ export default function BrandingTab({
   logoAppRef, 
   handleImageUpload 
 }: BrandingTabProps) {
+  const { t } = useLanguage();
   
   // Helper de actualización unificado y seguro
   const updateSetting = (field: string, value: any) => {
@@ -45,13 +47,15 @@ export default function BrandingTab({
           </span>
           <div className="space-y-1">
             <div className="flex items-center gap-2.5">
-              <h3 className="text-lg md:text-xl font-serif font-semibold tracking-wide text-white">Identidad Visual & Branding Premium</h3>
+              <h3 className="text-lg md:text-xl font-serif font-semibold tracking-wide text-white">
+                {t('dashboard.branding.header_title') || 'Identidad Visual & Branding Premium'}
+              </h3>
               <span className="bg-[#d4af37]/20 text-[#d4af37] text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full border border-[#d4af37]/30">
-                Deluxe
+                {t('dashboard.branding.header_badge') || 'Deluxe'}
               </span>
             </div>
             <p className="text-xs md:text-sm text-stone-300 leading-relaxed max-w-2xl font-normal">
-              Gestiona el logotipo, dimensiones de cabecera, paleta de colores de lujo, tipografías y geometría inyectadas en tu web pública y panel de control.
+              {t('dashboard.branding.header_desc') || 'Gestiona el logotipo, dimensiones de cabecera, paleta de colores de lujo, tipografías y geometría inyectadas en tu web pública y panel de control.'}
             </p>
           </div>
         </div>
@@ -61,8 +65,12 @@ export default function BrandingTab({
             <Sparkles size={13} className="text-[#d4af37] animate-pulse" />
           </div>
           <div className="text-left">
-            <p className="text-[9px] text-stone-400 font-black uppercase tracking-widest leading-none">Diseño & Estilo</p>
-            <p className="text-xs text-[#d4af37] font-bold mt-1">Activo</p>
+            <p className="text-[9px] text-stone-400 font-black uppercase tracking-widest leading-none">
+              {t('dashboard.branding.header_status_label') || 'Diseño & Estilo'}
+            </p>
+            <p className="text-xs text-[#d4af37] font-bold mt-1">
+              {t('dashboard.branding.header_status_active') || 'Activo'}
+            </p>
           </div>
         </div>
       </div>

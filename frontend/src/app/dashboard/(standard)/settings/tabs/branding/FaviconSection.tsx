@@ -2,6 +2,7 @@
 
 import { useRef } from 'react';
 import { Compass, Trash2 } from 'lucide-react';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 interface FaviconSectionProps {
   settings: any;
@@ -14,6 +15,7 @@ export default function FaviconSection({
   updateSetting,
   handleImageUpload
 }: FaviconSectionProps) {
+  const { t } = useLanguage();
   const faviconInputRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -24,8 +26,12 @@ export default function FaviconSection({
           <Compass size={18} strokeWidth={1.8} />
         </span>
         <div>
-          <h4 className="text-base font-bold text-stone-900">Icono de la Pestaña (Favicon)</h4>
-          <p className="text-[10px] text-stone-400 font-bold uppercase tracking-wider mt-0.5">Browser Tab Icon</p>
+          <h4 className="text-base font-bold text-stone-900">
+            {t('dashboard.branding.favicon.title') || 'Icono de la Pestaña (Favicon)'}
+          </h4>
+          <p className="text-[10px] text-stone-400 font-bold uppercase tracking-wider mt-0.5">
+            {t('dashboard.branding.favicon.subtitle') || 'Browser Tab Icon'}
+          </p>
         </div>
       </div>
 
@@ -38,14 +44,16 @@ export default function FaviconSection({
                 <div className="w-14 h-14 bg-white rounded-2xl shadow-sm border border-stone-200 flex items-center justify-center p-2.5">
                   <img src={settings.favicon_b64} alt="Favicon" className="max-h-full max-w-full object-contain" />
                 </div>
-                <span className="text-[10px] font-bold text-stone-400">Favicon Activo</span>
+                <span className="text-[10px] font-bold text-stone-400">
+                  {t('dashboard.branding.favicon.current_favicon') || 'Favicon Activo'}
+                </span>
               </div>
               <button
                 id="branding-favicon-delete-btn"
                 type="button"
                 onClick={() => updateSetting('favicon_b64', null)}
                 className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/95 backdrop-blur-md shadow-md border border-stone-200/80 flex items-center justify-center text-stone-500 hover:text-red-600 hover:bg-red-50 hover:border-red-200 transition-all duration-300 active:scale-90"
-                title="Eliminar Favicon"
+                title={t('dashboard.branding.favicon.delete_btn') || 'Eliminar Favicon'}
               >
                 <Trash2 size={14} />
               </button>
@@ -53,14 +61,16 @@ export default function FaviconSection({
           ) : (
             <div className="flex flex-col items-center gap-2 text-stone-300">
               <Compass size={40} />
-              <span className="text-[10px] font-bold text-stone-400">Por Defecto</span>
+              <span className="text-[10px] font-bold text-stone-400">
+                {t('dashboard.branding.favicon.no_favicon') || 'Por Defecto'}
+              </span>
             </div>
           )}
         </div>
 
         <div className="md:col-span-8 space-y-3">
           <p className="text-xs text-stone-600 font-medium leading-relaxed">
-            Este icono se visualiza en la pestaña del navegador, marcadores y accesos directos de tus clientes. Sube una imagen cuadrada nítida en formato PNG o ICO.
+            {t('dashboard.branding.favicon.desc') || 'Este icono se visualiza en la pestaña del navegador, marcadores y accesos directos de tus clientes. Sube una imagen cuadrada nítida en formato PNG o ICO.'}
           </p>
           
           <input 
@@ -78,7 +88,7 @@ export default function FaviconSection({
             onClick={() => faviconInputRef.current?.click()}
             className="text-xs font-black uppercase tracking-wider text-stone-800 bg-stone-50 border border-stone-200 px-6 py-3 rounded-xl hover:bg-stone-100 transition-all active:scale-95 duration-300"
           >
-            Cargar Favicon
+            {t('dashboard.branding.favicon.upload_btn') || 'Cargar Favicon'}
           </button>
         </div>
 

@@ -35,17 +35,55 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL `/dashboa
 - Enlace Google Maps: `id="general-maps-url"`
 
 ### Pestaña: Identidad de Marca (Branding)
+*Esta pestaña (`tab=branding`) permite personalizar la identidad visual, tipografías, logotipos independientes (escritorio, móvil, footer), modos de color y calibración milimétrica de cabecera.*
+
+#### 1. Logotipo Principal de Cabecera (Escritorio)
 - Cargar/Cambiar Logo: `id="branding-logo-change-btn"` (Dispara input de archivo `id="branding-logo-file-input"`)
 - Quitar Logo: `id="branding-logo-delete-btn"`
+- Restablecer Calibración por Defecto: `id="branding-logo-reset-defaults-btn"`
+- Altura Máxima en Cabecera (slider): `id="branding-logo-height-range"` (o numérico `id="branding-logo-height-number"`)
+- Desplazamiento Vertical / Alineación (slider): `id="branding-logo-offsety-range"` (o numérico `id="branding-logo-offsety-number"`)
+- Margen Separador Derecho (slider): `id="branding-logo-marginright-range"` (o numérico `id="branding-logo-marginright-number"`)
+- Margen Separador Izquierdo (slider): `id="branding-logo-marginleft-range"` (o numérico `id="branding-logo-marginleft-number"`)
+- Modo de Color en Cabecera:
+  - Modo Original: `id="branding-logo-mode-original-btn"`
+  - Modo Blanco Puro: `id="branding-logo-mode-white-btn"`
+  - Modo Adaptativo (blanco en portada, original en scroll): `id="branding-logo-mode-adaptive-btn"`
+- Simulador de Fondo en Tiempo Real:
+  - Fondo Claro: `id="branding-header-preview-light-btn"`
+  - Fondo Oscuro: `id="branding-header-preview-dark-btn"`
+
+#### 2. Logotipo Móvil Dedicado (Smartphones & Tablets)
+- Cargar/Cambiar Isotipo Móvil: `id="branding-mobile-logo-change-btn"` (Dispara input de archivo `id="branding-mobile-logo-file-input"`)
+- Eliminar Isotipo (usar el de cabecera): `id="branding-mobile-logo-delete-btn"`
+- Altura del Logo Móvil (slider): `id="branding-mobile-logo-height-range"` (o numérico `id="branding-mobile-logo-height-number"`)
+- Modo de Color Móvil:
+  - Modo Original: `id="branding-mobile-logo-mode-original-btn"`
+  - Modo Blanco Puro: `id="branding-mobile-logo-mode-white-btn"`
+  - Modo Adaptativo: `id="branding-mobile-logo-mode-adaptive-btn"`
+- Previsualizador Móvil:
+  - Fondo Scroll: `id="branding-mobile-preview-scroll-btn"`
+  - Fondo Portada: `id="branding-mobile-preview-portada-btn"`
+
+#### 3. Icono de Pestaña (Favicon)
 - Cargar Favicon: `id="branding-favicon-load-btn"` (Dispara input de archivo `id="branding-favicon-file-input"`)
 - Quitar Favicon: `id="branding-favicon-delete-btn"`
-- Paletas de Colores Rápidas: `id="branding-palette-btn-[id]"` (ej: `branding-palette-btn-gold`)
+
+#### 4. Logotipo Dedicado para Pie de Página (Footer)
+- Cargar/Cambiar Logo Footer: `id="branding-footer-logo-change-btn"` (Dispara input de archivo `id="branding-footer-logo-file-input"`)
+- Eliminar Logo Footer (heredar de cabecera): `id="branding-footer-logo-delete-btn"`
+- Modo de Color en Footer:
+  - Modo Blanco Puro (recomendado para fondo oscuro): `id="branding-footer-mode-white-btn"`
+  - Modo Original: `id="branding-footer-mode-original-btn"`
+
+#### 5. Paletas de Colores, Tipografías & Geometría
+- Paletas de Colores Rápidas: `id="branding-palette-btn-[id]"` (ej: `branding-palette-btn-gold`, `branding-palette-btn-esmeralda-lino`)
 - Selectores de Color Personalizados:
   - Color Primario: `id="branding-color-primary-input"`
   - Color Secundario: `id="branding-color-secondary-input"`
 - Tipografía de Títulos: `id="branding-font-headings-select"`
 - Tipografía del Cuerpo: `id="branding-font-body-select"`
-- Estilo de Bordes (Redondeado): `id="branding-border-radius-btn-[value]"` (ej: `branding-border-radius-btn-2xl`)
+- Estilo de Bordes (Redondeado): `id="branding-border-radius-btn-[value]"` (ej: `branding-border-radius-btn-recto`, `branding-border-radius-btn-suave`, `branding-border-radius-btn-organico`)
 - Toggle de Modo Oscuro por Defecto: `id="branding-dark-mode-toggle"`
 
 ### Pestaña: Plantillas de Consentimientos
