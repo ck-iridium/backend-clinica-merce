@@ -331,6 +331,10 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
   const headerLogoMode = settings?.header_logo_mode || 'original';
   const isWhiteLogo = headerLogoMode === 'white' || (headerLogoMode === 'adaptive' && useTransparent);
 
+  const mobileLogoMode = settings?.mobile_logo_mode || 'adaptive';
+  const isWhiteMobileLogo = mobileLogoMode === 'white' || (mobileLogoMode === 'adaptive' && useTransparent);
+  const mobileLogoHeight = settings?.mobile_logo_height ?? 36;
+
   return (
     <>
       <nav className={`w-full z-[100] transition-all duration-500 ease-in-out ${!useTransparent ? 'bg-white/90 dark:bg-stone-950/90 backdrop-blur-xl border-b border-stone-200/50 dark:border-stone-900/50 shadow-sm py-0 sticky top-0' : 'bg-transparent border-transparent py-0 absolute top-0 left-0'}`}>
@@ -347,25 +351,45 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
           >
             {!mounted || loadingSettings ? (
               <div className="h-6 w-32 bg-stone-200/40 animate-pulse rounded-md" />
-            ) : settings?.logo_app_b64 ? (
+            ) : settings?.logo_app_b64 || settings?.logo_mobile_b64 ? (
               <Link 
                 href="/" 
                 onClick={() => setIsOpen(false)} 
                 className="flex items-center group focus:outline-none transition-all duration-200"
               >
+                {/* Logo Desktop (visible en pantallas medianas y grandes) */}
                 <img
-                  src={settings.logo_app_b64}
+                  src={settings.logo_app_b64 || settings.logo_mobile_b64}
                   alt={settings?.clinic_name || 'Logo'}
                   style={{
                     height: `${settings?.header_logo_height ?? 42}px`,
                     maxHeight: `${settings?.header_logo_height ?? 42}px`,
                   }}
                   className={`w-auto max-w-[240px] md:max-w-[340px] object-contain transition-all duration-200 group-hover:opacity-90 ${
+                    settings.logo_mobile_b64 ? 'hidden md:block' : 'block'
+                  } ${
                     isWhiteLogo 
                       ? 'brightness-0 invert drop-shadow-[0_2px_8px_rgba(255,255,255,0.12)]' 
                       : 'drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
                   }`}
                 />
+
+                {/* Logo Mobile (exclusivo para smartphones si se ha subido) */}
+                {settings.logo_mobile_b64 && (
+                  <img
+                    src={settings.logo_mobile_b64}
+                    alt={settings?.clinic_name || 'Logo'}
+                    style={{
+                      height: `${mobileLogoHeight}px`,
+                      maxHeight: `${mobileLogoHeight}px`,
+                    }}
+                    className={`w-auto max-w-[160px] object-contain transition-all duration-200 group-hover:opacity-90 block md:hidden ${
+                      isWhiteMobileLogo 
+                        ? 'brightness-0 invert drop-shadow-[0_2px_8px_rgba(255,255,255,0.12)]' 
+                        : 'drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
+                    }`}
+                  />
+                )}
               </Link>
             ) : (
               <Link href="/" onClick={() => setIsOpen(false)} className={`font-extrabold text-2xl tracking-tighter transition-colors ${!useTransparent ? 'text-primary' : 'text-white hover:text-primary'}`}>

@@ -248,6 +248,9 @@ class ClinicSettingsBase(BaseModel):
     header_logo_margin_right: Optional[int] = 24
     header_logo_margin_left: Optional[int] = 0
     header_logo_mode: Optional[str] = "original"
+    logo_mobile_b64: Optional[str] = None
+    mobile_logo_mode: Optional[str] = "adaptive"
+    mobile_logo_height: Optional[int] = 36
     enable_consents: Optional[bool] = True
 
     ai_provider: Optional[str] = "gemini"
@@ -333,6 +336,9 @@ class ClinicSettingsUpdate(BaseModel):
     header_logo_margin_right: Optional[int] = None
     header_logo_margin_left: Optional[int] = None
     header_logo_mode: Optional[str] = None
+    logo_mobile_b64: Optional[str] = None
+    mobile_logo_mode: Optional[str] = None
+    mobile_logo_height: Optional[int] = None
     enable_consents: Optional[bool] = None
     gtm_container_id: Optional[str] = None
     google_ads_id: Optional[str] = None
