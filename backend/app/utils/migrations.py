@@ -173,6 +173,10 @@ $function$;
             "ALTER TABLE clinic_settings ADD COLUMN branding_palette_id VARCHAR DEFAULT 'dorado-antracita'",
             "ALTER TABLE clinic_settings ADD COLUMN accent_color_primary VARCHAR DEFAULT '#D4AF37'",
             "ALTER TABLE clinic_settings ADD COLUMN accent_color_secondary VARCHAR DEFAULT '#1C1917'",
+            "ALTER TABLE clinic_settings ADD COLUMN header_logo_height INTEGER DEFAULT 42",
+            "ALTER TABLE clinic_settings ADD COLUMN header_logo_padding_y INTEGER DEFAULT 0",
+            "ALTER TABLE clinic_settings ADD COLUMN header_logo_margin_right INTEGER DEFAULT 24",
+            "ALTER TABLE clinic_settings ADD COLUMN header_logo_margin_left INTEGER DEFAULT 0",
             # ── CMS: Imágenes rotativas de la portada hero ───────────────────────
             "ALTER TABLE landing_marketing_settings ADD COLUMN hero_image_1 VARCHAR",
             "ALTER TABLE landing_marketing_settings ADD COLUMN hero_image_2 VARCHAR",

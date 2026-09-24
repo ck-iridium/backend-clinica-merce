@@ -334,15 +334,30 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between relative">
 
           {/* LOGO */}
-          <div className="flex items-center gap-4 z-[110] relative">
+          <div 
+            className="flex items-center z-[100] relative shrink-0 transition-all duration-200"
+            style={{ 
+              marginRight: `${settings?.header_logo_margin_right ?? 24}px`,
+              marginLeft: `${settings?.header_logo_margin_left ?? 0}px`,
+              transform: `translateY(${settings?.header_logo_padding_y ?? 0}px)`,
+            }}
+          >
             {!mounted || loadingSettings ? (
               <div className="h-6 w-32 bg-stone-200/40 animate-pulse rounded-md" />
             ) : settings?.logo_app_b64 ? (
-              <Link href="/" onClick={() => setIsOpen(false)} className="relative block h-10 w-24 md:w-32">
+              <Link 
+                href="/" 
+                onClick={() => setIsOpen(false)} 
+                className="flex items-center group focus:outline-none transition-all duration-200"
+              >
                 <img
                   src={settings.logo_app_b64}
-                  alt="Logo"
-                  className="absolute left-0 top-1/2 -translate-y-1/2 h-16 md:h-20 max-w-none object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300"
+                  alt={settings?.clinic_name || 'Logo'}
+                  style={{
+                    height: `${settings?.header_logo_height ?? 42}px`,
+                    maxHeight: `${settings?.header_logo_height ?? 42}px`,
+                  }}
+                  className="w-auto max-w-[240px] md:max-w-[340px] object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-200 group-hover:opacity-90"
                 />
               </Link>
             ) : (
@@ -411,7 +426,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
             <div
               onMouseEnter={() => setShowMegaMenu(true)}
               onMouseLeave={() => setShowMegaMenu(false)}
-              className={`absolute top-[calc(100%-8px)] left-6 right-6 bg-white dark:bg-stone-950 rounded-luxury-card border border-stone-100 dark:border-stone-900 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] overflow-hidden transition-all duration-300 origin-top ${showMegaMenu ? 'opacity-100 scale-y-100 translate-y-0' : 'opacity-0 scale-y-95 -translate-y-2 pointer-events-none'}`}
+              className={`absolute top-[calc(100%-8px)] left-6 right-6 bg-white dark:bg-stone-950 rounded-luxury-card border border-stone-100 dark:border-stone-900 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.25)] overflow-hidden transition-all duration-300 origin-top z-[150] ${showMegaMenu ? 'opacity-100 scale-y-100 translate-y-0' : 'opacity-0 scale-y-95 -translate-y-2 pointer-events-none'}`}
             >
               {activeLayout === 'bento' ? (
                 /* --- Bento Grid Layout with Vertical Snap Scroll --- */

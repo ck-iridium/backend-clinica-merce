@@ -392,6 +392,10 @@ class ClinicSettings(Base):
     dark_mode_enabled = Column(Boolean, default=False)
     border_radius = Column(String, default="suave")
     favicon_b64 = Column(Text, nullable=True)
+    header_logo_height = Column(Integer, default=42, nullable=True)
+    header_logo_padding_y = Column(Integer, default=0, nullable=True)
+    header_logo_margin_right = Column(Integer, default=24, nullable=True)
+    header_logo_margin_left = Column(Integer, default=0, nullable=True)
 
 
 class Invoice(Base):

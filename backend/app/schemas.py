@@ -241,6 +241,10 @@ class ClinicSettingsBase(BaseModel):
     dark_mode_enabled: Optional[bool] = False
     border_radius: Optional[str] = "suave"
     favicon_b64: Optional[str] = None
+    header_logo_height: Optional[int] = 42
+    header_logo_padding_y: Optional[int] = 0
+    header_logo_margin_right: Optional[int] = 24
+    header_logo_margin_left: Optional[int] = 0
     enable_consents: Optional[bool] = True
 
     ai_provider: Optional[str] = "gemini"
@@ -319,6 +323,10 @@ class ClinicSettingsUpdate(BaseModel):
     dark_mode_enabled: Optional[bool] = None
     border_radius: Optional[str] = None
     favicon_b64: Optional[str] = None
+    header_logo_height: Optional[int] = None
+    header_logo_padding_y: Optional[int] = None
+    header_logo_margin_right: Optional[int] = None
+    header_logo_margin_left: Optional[int] = None
     enable_consents: Optional[bool] = None
     gtm_container_id: Optional[str] = None
     google_ads_id: Optional[str] = None

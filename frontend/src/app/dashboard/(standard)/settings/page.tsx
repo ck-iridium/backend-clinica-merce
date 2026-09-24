@@ -366,7 +366,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="animate-in fade-in duration-500 max-w-[1400px] w-full px-0 sm:px-4 md:px-8 pt-4 md:pt-0 pb-32 md:pb-20">
+    <div className="animate-in fade-in duration-500 max-w-[1720px] w-full px-0 sm:px-4 md:px-8 pt-4 md:pt-0 pb-32 md:pb-20">
       {/* CABECERA (Desktop & Mobile) */}
       <div className="mb-3 md:mb-8 px-3 sm:px-0">
         <h1 className="text-3xl md:text-4xl font-serif font-semibold text-stone-800 tracking-tight">{t('dashboard.settings.title')}</h1>
