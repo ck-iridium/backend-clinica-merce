@@ -328,9 +328,12 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
 
   const hasCategories = filteredCategories.length > 0;
 
+  const headerLogoMode = settings?.header_logo_mode || 'original';
+  const isWhiteLogo = headerLogoMode === 'white' || (headerLogoMode === 'adaptive' && useTransparent);
+
   return (
     <>
-      <nav className={`w-full z-[100] transition-all duration-500 ease-in-out ${!useTransparent ? 'bg-white/90 dark:bg-stone-950/90 backdrop-blur-xl border-b border-stone-200/50 dark:border-stone-900/50 shadow-sm py-0 sticky top-0' : 'bg-transparent border-transparent py-2 absolute top-0 left-0'}`}>
+      <nav className={`w-full z-[100] transition-all duration-500 ease-in-out ${!useTransparent ? 'bg-white/90 dark:bg-stone-950/90 backdrop-blur-xl border-b border-stone-200/50 dark:border-stone-900/50 shadow-sm py-0 sticky top-0' : 'bg-transparent border-transparent py-0 absolute top-0 left-0'}`}>
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between relative">
 
           {/* LOGO */}
@@ -357,7 +360,11 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                     height: `${settings?.header_logo_height ?? 42}px`,
                     maxHeight: `${settings?.header_logo_height ?? 42}px`,
                   }}
-                  className="w-auto max-w-[240px] md:max-w-[340px] object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-200 group-hover:opacity-90"
+                  className={`w-auto max-w-[240px] md:max-w-[340px] object-contain transition-all duration-200 group-hover:opacity-90 ${
+                    isWhiteLogo 
+                      ? 'brightness-0 invert drop-shadow-[0_2px_8px_rgba(255,255,255,0.12)]' 
+                      : 'drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
+                  }`}
                 />
               </Link>
             ) : (

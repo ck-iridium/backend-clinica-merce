@@ -334,6 +334,11 @@ export default function SettingsPage() {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (event) => {
+      const result = event.target?.result as string;
+      if (file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg')) {
+        setSettings({ ...settings, [field]: result });
+        return;
+      }
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
@@ -351,7 +356,7 @@ export default function SettingsPage() {
         const dataUrl = canvas.toDataURL('image/png', 0.8);
         setSettings({ ...settings, [field]: dataUrl });
       };
-      img.src = event.target?.result as string;
+      img.src = result;
     };
     reader.readAsDataURL(file);
   };

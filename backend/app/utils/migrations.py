@@ -177,6 +177,9 @@ $function$;
             "ALTER TABLE clinic_settings ADD COLUMN header_logo_padding_y INTEGER DEFAULT 0",
             "ALTER TABLE clinic_settings ADD COLUMN header_logo_margin_right INTEGER DEFAULT 24",
             "ALTER TABLE clinic_settings ADD COLUMN header_logo_margin_left INTEGER DEFAULT 0",
+            "ALTER TABLE clinic_settings ADD COLUMN header_logo_mode VARCHAR DEFAULT 'original'",
+            "ALTER TABLE clinic_settings ADD COLUMN logo_footer_b64 TEXT",
+            "ALTER TABLE clinic_settings ADD COLUMN footer_logo_mode VARCHAR DEFAULT 'white'",
             # ── CMS: Imágenes rotativas de la portada hero ───────────────────────
             "ALTER TABLE landing_marketing_settings ADD COLUMN hero_image_1 VARCHAR",
             "ALTER TABLE landing_marketing_settings ADD COLUMN hero_image_2 VARCHAR",

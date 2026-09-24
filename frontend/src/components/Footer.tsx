@@ -193,20 +193,31 @@ export default function Footer({ initialSettings }: FooterProps = {}) {
 
           {/* Columna 1: Identidad (Logo o Nombre) */}
           <div className="space-y-6">
-            {settings?.logo_app_b64 && !logoError ? (
-              <Link href="/" className="inline-block group focus:outline-none">
-                <img
-                  src={settings.logo_app_b64}
-                  alt={settings?.clinic_name || 'Logo'}
-                  onError={() => setLogoError(true)}
-                  className="h-12 md:h-14 w-auto max-w-[220px] object-contain brightness-0 invert opacity-90 group-hover:opacity-100 transition-all duration-300 drop-shadow-[0_2px_8px_rgba(255,255,255,0.08)]"
-                />
-              </Link>
-            ) : (
-              <Link href="/" className="inline-block text-2xl font-serif font-black text-white tracking-tighter hover:text-primary transition-colors">
-                {settings?.clinic_name ? settings.clinic_name.toUpperCase() : 'CENTRO'}
-              </Link>
-            )}
+            {(() => {
+              const footerLogo = settings?.logo_footer_b64 || settings?.logo_app_b64;
+              const isWhiteFooterLogo = (settings?.footer_logo_mode ?? 'white') === 'white';
+              
+              if (footerLogo && !logoError) {
+                return (
+                  <Link href="/" className="inline-block group focus:outline-none">
+                    <img
+                      src={footerLogo}
+                      alt={settings?.clinic_name || 'Logo'}
+                      onError={() => setLogoError(true)}
+                      className={`h-12 md:h-14 w-auto max-w-[220px] object-contain opacity-90 group-hover:opacity-100 transition-all duration-300 drop-shadow-[0_2px_8px_rgba(255,255,255,0.08)] ${
+                        isWhiteFooterLogo ? 'brightness-0 invert' : ''
+                      }`}
+                    />
+                  </Link>
+                );
+              }
+              
+              return (
+                <Link href="/" className="inline-block text-2xl font-serif font-black text-white tracking-tighter hover:text-primary transition-colors">
+                  {settings?.clinic_name ? settings.clinic_name.toUpperCase() : 'CENTRO'}
+                </Link>
+              );
+            })()}
             <p className="text-sm font-medium leading-relaxed opacity-70 max-w-xs">
               {settings?.clinic_description || siteContent?.about_text || translateStatic('footer.about_text', "Tu centro de confianza para servicios personalizados y bienestar de primer nivel.")}
             </p>

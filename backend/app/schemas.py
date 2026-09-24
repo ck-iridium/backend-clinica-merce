@@ -194,6 +194,8 @@ class ClinicSettingsBase(BaseModel):
     smtp_use_tls: bool = True
 
     logo_app_b64: Optional[str] = None
+    logo_footer_b64: Optional[str] = None
+    footer_logo_mode: Optional[str] = "white"
     logo_pdf_b64: Optional[str] = None
     signature_b64: Optional[str] = None
     invoice_prefix: str
@@ -245,6 +247,7 @@ class ClinicSettingsBase(BaseModel):
     header_logo_padding_y: Optional[int] = 0
     header_logo_margin_right: Optional[int] = 24
     header_logo_margin_left: Optional[int] = 0
+    header_logo_mode: Optional[str] = "original"
     enable_consents: Optional[bool] = True
 
     ai_provider: Optional[str] = "gemini"
@@ -275,6 +278,8 @@ class ClinicSettingsUpdate(BaseModel):
     smtp_from_email: Optional[str] = None
     smtp_use_tls: Optional[bool] = None
     logo_app_b64: Optional[str] = None
+    logo_footer_b64: Optional[str] = None
+    footer_logo_mode: Optional[str] = None
     logo_pdf_b64: Optional[str] = None
     signature_b64: Optional[str] = None
     invoice_prefix: Optional[str] = None
@@ -327,6 +332,7 @@ class ClinicSettingsUpdate(BaseModel):
     header_logo_padding_y: Optional[int] = None
     header_logo_margin_right: Optional[int] = None
     header_logo_margin_left: Optional[int] = None
+    header_logo_mode: Optional[str] = None
     enable_consents: Optional[bool] = None
     gtm_container_id: Optional[str] = None
     google_ads_id: Optional[str] = None

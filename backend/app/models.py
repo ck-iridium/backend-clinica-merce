@@ -396,6 +396,9 @@ class ClinicSettings(Base):
     header_logo_padding_y = Column(Integer, default=0, nullable=True)
     header_logo_margin_right = Column(Integer, default=24, nullable=True)
     header_logo_margin_left = Column(Integer, default=0, nullable=True)
+    header_logo_mode = Column(String, default="original", nullable=True)
+    logo_footer_b64 = Column(Text, nullable=True)
+    footer_logo_mode = Column(String, default="white", nullable=True)
 
 
 class Invoice(Base):
