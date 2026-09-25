@@ -737,6 +737,13 @@ class SiteContentBase(BaseModel):
     hero_content_fullwidth: Optional[bool] = False
     hero_title_size: Optional[str] = "large"
     hero_subtitle_size: Optional[str] = "medium"
+    hero_title_max_width: Optional[int] = 100
+    hero_price_enabled: Optional[bool] = False
+    hero_price_prefix: Optional[str] = "Desde"
+    hero_price_amount: Optional[str] = ""
+    hero_price_suffix: Optional[str] = "€"
+    hero_price_size: Optional[str] = "large"
+    hero_button_style: Optional[str] = "glass"
     
     about_title: Optional[str] = None
     about_text: Optional[str] = None
@@ -774,6 +781,13 @@ class SiteContentUpdate(BaseModel):
     hero_content_fullwidth: Optional[bool] = None
     hero_title_size: Optional[str] = None
     hero_subtitle_size: Optional[str] = None
+    hero_title_max_width: Optional[int] = None
+    hero_price_enabled: Optional[bool] = None
+    hero_price_prefix: Optional[str] = None
+    hero_price_amount: Optional[str] = None
+    hero_price_suffix: Optional[str] = None
+    hero_price_size: Optional[str] = None
+    hero_button_style: Optional[str] = None
     
     about_title: Optional[str] = None
     about_text: Optional[str] = None

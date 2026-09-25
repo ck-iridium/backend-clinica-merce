@@ -515,34 +515,122 @@ export default function ClientHome({ content, settings, services, categories }: 
                   <div className="absolute inset-0 z-0 bg-stone-900" />
                 )}
 
-                <div className={`relative z-10 w-full px-6 ${
-                  content.hero_content_fullwidth
-                    ? `max-w-7xl ${content.hero_horizontal_alignment === 'left' ? 'text-left ml-0 mr-auto' : content.hero_horizontal_alignment === 'right' ? 'text-right mr-0 ml-auto' : 'text-center mx-auto'}`
-                    : `max-w-7xl mx-auto ${content.hero_horizontal_alignment === 'left' ? 'text-left' : content.hero_horizontal_alignment === 'right' ? 'text-right' : 'text-center'}`
-                }`}>
-                  <h1 className={`${
-                    content.hero_title_size === 'medium' ? 'text-4xl md:text-6xl lg:text-7xl' :
-                    content.hero_title_size === 'xl' ? 'text-6xl md:text-8xl lg:text-[8.5rem]' :
-                    'text-5xl md:text-7xl lg:text-[7rem]'
-                  } leading-none font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]`}>
-                    {cleanTitle(translate(content.hero_title, content.translations, 'hero_title'))}
-                  </h1>
-                  <p className={`${
-                    content.hero_subtitle_size === 'small' ? 'text-base md:text-xl' :
-                    content.hero_subtitle_size === 'large' ? 'text-xl md:text-3xl' :
-                    'text-lg md:text-2xl'
-                  } text-white/90 font-medium font-sans tracking-wide leading-relaxed drop-shadow-md mt-6 ${content.hero_horizontal_alignment === 'center' ? 'max-w-3xl mx-auto' : 'max-w-3xl'
-                    } ${content.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''}`}>
-                    {translate(content.hero_subtitle, content.translations, 'hero_subtitle')}
-                  </p>
-                  {content.hero_show_button !== false && (
-                    <div className="pt-8">
-                      <Link href={content.hero_button_link || '#'} className="inline-block bg-white/10 backdrop-blur-md border border-white/20 text-white px-12 py-5 rounded-full font-bold text-lg hover:bg-white hover:text-stone-900 transition-all duration-500 shadow-2xl hover:scale-105 active:scale-95 group">
-                        {translate(content.hero_button_text, content.translations, 'hero_button_text')} <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">→</span>
-                      </Link>
+                {(() => {
+                  const titleMaxWidth = content.hero_title_max_width || 100;
+                  const isPriceActive = !!content.hero_price_enabled && (content.hero_price_amount || content.hero_price_prefix);
+                  const getButtonStyle = (style?: string) => {
+                    switch (style) {
+                      case 'gold_solid':
+                        return 'bg-[#d4af37] text-white border border-[#b8952b] hover:bg-[#b8952b] shadow-[0_10px_25px_rgba(212,175,55,0.4)]';
+                      case 'outline':
+                        return 'bg-transparent border-2 border-white/90 text-white hover:bg-white hover:text-stone-900';
+                      case 'solid_white':
+                        return 'bg-white text-stone-900 border border-stone-200 hover:bg-stone-100 shadow-xl';
+                      case 'glass':
+                      default:
+                        return 'bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white hover:text-stone-900 shadow-2xl';
+                    }
+                  };
+
+                  return (
+                    <div className={`relative z-10 w-full px-6 ${
+                      content.hero_content_fullwidth
+                        ? `max-w-7xl ${content.hero_horizontal_alignment === 'left' ? 'text-left ml-0 mr-auto' : content.hero_horizontal_alignment === 'right' ? 'text-right mr-0 ml-auto' : 'text-center mx-auto'}`
+                        : `max-w-7xl mx-auto ${content.hero_horizontal_alignment === 'left' ? 'text-left' : content.hero_horizontal_alignment === 'right' ? 'text-right' : 'text-center'}`
+                    }`}>
+                      {isPriceActive ? (
+                        /* Disposición en 2 Columnas */
+                        <div className={`flex flex-col md:flex-row items-stretch gap-6 md:gap-12 ${
+                          content.hero_horizontal_alignment === 'right' ? 'md:flex-row-reverse' : ''
+                        } ${content.hero_horizontal_alignment === 'center' ? 'items-center justify-center' : 'justify-between'}`}>
+                          {/* Columna de Título y Subtítulo */}
+                          <div className="flex-1 min-w-0">
+                            <h1 
+                              style={{ maxWidth: `${titleMaxWidth}%` }}
+                              className={`${
+                                content.hero_title_size === 'medium' ? 'text-4xl md:text-5xl lg:text-6xl' :
+                                content.hero_title_size === 'xl' ? 'text-6xl md:text-7xl lg:text-8xl' :
+                                'text-5xl md:text-6xl lg:text-7xl'
+                              } leading-none font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] ${
+                                content.hero_horizontal_alignment === 'center' ? 'mx-auto' : content.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''
+                              }`}
+                            >
+                              {cleanTitle(translate(content.hero_title, content.translations, 'hero_title'))}
+                            </h1>
+                            <p className={`${
+                              content.hero_subtitle_size === 'small' ? 'text-base md:text-lg' :
+                              content.hero_subtitle_size === 'large' ? 'text-lg md:text-2xl' :
+                              'text-base md:text-xl'
+                            } text-white/90 font-medium font-sans tracking-wide leading-relaxed drop-shadow-md mt-5 ${
+                              content.hero_horizontal_alignment === 'center' ? 'max-w-2xl mx-auto' : 'max-w-2xl'
+                            } ${content.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''}`}>
+                              {translate(content.hero_subtitle, content.translations, 'hero_subtitle')}
+                            </p>
+                          </div>
+
+                          {/* Columna de Precio Destacado */}
+                          <div className={`flex flex-col justify-center shrink-0 py-2 ${
+                            content.hero_horizontal_alignment === 'center' ? 'items-center text-center' : content.hero_horizontal_alignment === 'right' ? 'items-end text-right' : 'items-start md:items-end text-left md:text-right'
+                          }`}>
+                            <div className="bg-stone-900/40 backdrop-blur-md border border-white/20 rounded-3xl p-6 md:p-8 shadow-2xl flex flex-col justify-center">
+                              <span className="text-xs md:text-sm uppercase tracking-[0.25em] font-extrabold text-[#d4af37] block mb-1">
+                                {translate(content.hero_price_prefix, content.translations, 'hero_price_prefix') || 'Desde'}
+                              </span>
+                              <div className="flex items-baseline gap-1.5 leading-none">
+                                <span className={`${
+                                  content.hero_price_size === 'medium' ? 'text-5xl md:text-6xl lg:text-7xl' :
+                                  content.hero_price_size === 'xl' ? 'text-7xl md:text-8xl lg:text-[9rem]' :
+                                  'text-6xl md:text-7xl lg:text-8xl'
+                                } font-serif font-extrabold text-white tracking-tight drop-shadow-[0_10px_15px_rgba(0,0,0,0.5)]`}>
+                                  {content.hero_price_amount || '45'}
+                                </span>
+                                <span className="text-2xl md:text-4xl font-serif font-bold text-[#d4af37] drop-shadow-md">
+                                  {content.hero_price_suffix || '€'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        /* Disposición Clásica */
+                        <>
+                          <h1 
+                            style={{ maxWidth: `${titleMaxWidth}%` }}
+                            className={`${
+                              content.hero_title_size === 'medium' ? 'text-4xl md:text-6xl lg:text-7xl' :
+                              content.hero_title_size === 'xl' ? 'text-6xl md:text-8xl lg:text-[8.5rem]' :
+                              'text-5xl md:text-7xl lg:text-[7rem]'
+                            } leading-none font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] ${
+                              content.hero_horizontal_alignment === 'center' ? 'mx-auto' : content.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''
+                            }`}
+                          >
+                            {cleanTitle(translate(content.hero_title, content.translations, 'hero_title'))}
+                          </h1>
+                          <p className={`${
+                            content.hero_subtitle_size === 'small' ? 'text-base md:text-xl' :
+                            content.hero_subtitle_size === 'large' ? 'text-xl md:text-3xl' :
+                            'text-lg md:text-2xl'
+                          } text-white/90 font-medium font-sans tracking-wide leading-relaxed drop-shadow-md mt-6 ${
+                            content.hero_horizontal_alignment === 'center' ? 'max-w-3xl mx-auto' : 'max-w-3xl'
+                          } ${content.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''}`}>
+                            {translate(content.hero_subtitle, content.translations, 'hero_subtitle')}
+                          </p>
+                        </>
+                      )}
+
+                      {content.hero_show_button !== false && (
+                        <div className="pt-8">
+                          <Link 
+                            href={content.hero_button_link || '#'} 
+                            className={`inline-block px-12 py-5 rounded-full font-bold text-lg transition-all duration-500 hover:scale-105 active:scale-95 group ${getButtonStyle(content.hero_button_style)}`}
+                          >
+                            {translate(content.hero_button_text, content.translations, 'hero_button_text')} <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                          </Link>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
+                  );
+                })()}
               </section>
             );
           }

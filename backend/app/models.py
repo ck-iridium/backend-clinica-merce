@@ -450,6 +450,13 @@ class SiteContent(Base):
     hero_content_fullwidth = Column(Boolean, default=False)
     hero_title_size = Column(String, default="large") # medium, large, xl
     hero_subtitle_size = Column(String, default="medium") # small, medium, large
+    hero_title_max_width = Column(Integer, default=100, nullable=True) # % de 30 a 100
+    hero_price_enabled = Column(Boolean, default=False, nullable=True)
+    hero_price_prefix = Column(String, default="Desde", nullable=True)
+    hero_price_amount = Column(String, default="", nullable=True)
+    hero_price_suffix = Column(String, default="€", nullable=True)
+    hero_price_size = Column(String, default="large", nullable=True) # medium, large, xl
+    hero_button_style = Column(String, default="glass", nullable=True) # glass, gold_solid, outline, solid_white
     
     # About Section
     about_title = Column(String, default="Sobre Nosotros")

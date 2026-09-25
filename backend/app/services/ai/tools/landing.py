@@ -15,16 +15,23 @@ def update_landing_config(
     hero_content_fullwidth: Optional[bool] = None,
     hero_title_size: Optional[str] = None,
     hero_subtitle_size: Optional[str] = None,
+    hero_title_max_width: Optional[int] = None,
+    hero_price_enabled: Optional[bool] = None,
+    hero_price_prefix: Optional[str] = None,
+    hero_price_amount: Optional[str] = None,
+    hero_price_suffix: Optional[str] = None,
+    hero_price_size: Optional[str] = None,
     hero_show_button: Optional[bool] = None,
     hero_button_text: Optional[str] = None,
     hero_button_link: Optional[str] = None,
+    hero_button_style: Optional[str] = None,
     about_title: Optional[str] = None,
     about_text: Optional[str] = None,
     cta_title: Optional[str] = None,
     cta_subtitle: Optional[str] = None
 ) -> str:
     """
-    Actualiza la configuración, estilos de alineación, tamaños tipográficos y textos principales de la landing page pública del inquilino.
+    Actualiza la configuración, estilos de alineación, tamaños tipográficos, bloque de precios y textos principales de la landing page pública del inquilino.
     Solo se actualizarán los campos que no sean nulos (None).
 
     Args:
@@ -35,9 +42,16 @@ def update_landing_config(
         hero_content_fullwidth: Booleano que define el ancho del contenido. False = alineado a la cuadrícula de la web y el logotipo (recomendado); True = ancho completo hasta el borde de la pantalla.
         hero_title_size: Escala tipográfica del título ('medium' = mediano, 'large' = grande por defecto, 'xl' = monumental).
         hero_subtitle_size: Escala tipográfica del subtítulo ('small' = discreto, 'medium' = equilibrado por defecto, 'large' = destacado).
+        hero_title_max_width: Porcentaje de ancho máximo del título (ej: 100 para ancho total, 70, 60, 50 para titulares más compactos).
+        hero_price_enabled: Activa o desactiva el bloque de precio/oferta destacado junto al título.
+        hero_price_prefix: Texto superior del bloque de precio (ej: 'Desde', 'Solo').
+        hero_price_amount: Importe numérico a destacar (ej: '45', '120').
+        hero_price_suffix: Moneda o sufijo (ej: '€', '€/sesión').
+        hero_price_size: Tamaño visual del precio ('medium', 'large', 'xl').
         hero_show_button: Mostrar u ocultar el botón de acción principal del Hero.
         hero_button_text: Texto del botón de acción del Hero (ej: 'Reservar Cita').
-        hero_button_link: Enlace de destino del botón del Hero (ej: '/reservar').
+        hero_button_link: Enlace de destino del botón del Hero (ej: '/reservar', '#tratamientos').
+        hero_button_style: Estilo visual del botón ('glass' = cristalino moderno, 'gold_solid' = dorado joya, 'outline' = borde minimalista, 'solid_white' = blanco contraste).
         about_title: Título de la sección 'Sobre Nosotros'.
         about_text: Contenido textual descriptivo de la sección 'Sobre Nosotros'.
         cta_title: Título de la sección de llamada a la acción (CTA).
@@ -58,9 +72,16 @@ def update_landing_config(
             hero_content_fullwidth=hero_content_fullwidth,
             hero_title_size=hero_title_size,
             hero_subtitle_size=hero_subtitle_size,
+            hero_title_max_width=hero_title_max_width,
+            hero_price_enabled=hero_price_enabled,
+            hero_price_prefix=hero_price_prefix,
+            hero_price_amount=hero_price_amount,
+            hero_price_suffix=hero_price_suffix,
+            hero_price_size=hero_price_size,
             hero_show_button=hero_show_button,
             hero_button_text=hero_button_text,
             hero_button_link=hero_button_link,
+            hero_button_style=hero_button_style,
             about_title=about_title,
             about_text=about_text,
             cta_title=cta_title,

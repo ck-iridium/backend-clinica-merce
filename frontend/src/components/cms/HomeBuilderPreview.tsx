@@ -53,33 +53,119 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
           </div>
         )}
 
-        <div className={`relative z-10 space-y-4 w-full ${
-          formData?.hero_content_fullwidth
-            ? (formData?.hero_horizontal_alignment === 'left' ? 'max-w-xl text-left ml-0 mr-auto' : formData?.hero_horizontal_alignment === 'right' ? 'max-w-xl text-right mr-0 ml-auto' : 'max-w-xl text-center mx-auto')
-            : (formData?.hero_horizontal_alignment === 'left' ? 'max-w-2xl text-left' : formData?.hero_horizontal_alignment === 'right' ? 'max-w-2xl text-right' : 'max-w-2xl text-center mx-auto')
-        }`}>
-          <h1 className={`${
-            formData?.hero_title_size === 'medium' ? 'text-2xl md:text-3xl lg:text-4xl' :
-            formData?.hero_title_size === 'xl' ? 'text-5xl md:text-6xl lg:text-7xl' :
-            'text-4xl md:text-5xl'
-          } font-serif font-extrabold text-white drop-shadow-md leading-tight`}>
-            {cleanTitle(translate(formData?.hero_title || 'Título Principal', formData?.translations, 'hero_title'))}
-          </h1>
-          <p className={`${
-            formData?.hero_subtitle_size === 'small' ? 'text-xs md:text-sm' :
-            formData?.hero_subtitle_size === 'large' ? 'text-base md:text-xl' :
-            'text-sm md:text-lg'
-          } text-white/90 font-medium drop-shadow-sm leading-relaxed`}>
-            {translate(formData?.hero_subtitle || 'Subtítulo descriptivo que acompaña a la imagen principal.', formData?.translations, 'hero_subtitle')}
-          </p>
-          {formData?.hero_show_button !== false && (
-            <div className="pt-4">
-              <div className="inline-block bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-3 rounded-full font-bold text-sm">
-                {translate(formData?.hero_button_text || 'Reservar Ahora', formData?.translations, 'hero_button_text')} <span className="ml-1">→</span>
-              </div>
+        {(() => {
+          const titleMaxWidth = formData?.hero_title_max_width || 100;
+          const isPriceActive = !!formData?.hero_price_enabled && (formData?.hero_price_amount || formData?.hero_price_prefix);
+          const getButtonStyle = (style?: string) => {
+            switch (style) {
+              case 'gold_solid':
+                return 'bg-[#d4af37] text-white border border-[#b8952b] shadow-md';
+              case 'outline':
+                return 'bg-transparent border-2 border-white/90 text-white';
+              case 'solid_white':
+                return 'bg-white text-stone-900 border border-stone-200 shadow-md';
+              case 'glass':
+              default:
+                return 'bg-white/10 backdrop-blur-md border border-white/20 text-white';
+            }
+          };
+
+          return (
+            <div className={`relative z-10 w-full ${
+              formData?.hero_content_fullwidth
+                ? (formData?.hero_horizontal_alignment === 'left' ? 'max-w-2xl text-left ml-0 mr-auto' : formData?.hero_horizontal_alignment === 'right' ? 'max-w-2xl text-right mr-0 ml-auto' : 'max-w-2xl text-center mx-auto')
+                : (formData?.hero_horizontal_alignment === 'left' ? 'max-w-3xl text-left' : formData?.hero_horizontal_alignment === 'right' ? 'max-w-3xl text-right' : 'max-w-3xl text-center mx-auto')
+            }`}>
+              {isPriceActive ? (
+                /* Disposición en 2 Columnas en la Preview */
+                <div className={`flex flex-col sm:flex-row items-stretch gap-4 sm:gap-8 ${
+                  formData?.hero_horizontal_alignment === 'right' ? 'sm:flex-row-reverse' : ''
+                } ${formData?.hero_horizontal_alignment === 'center' ? 'items-center justify-center' : 'justify-between'}`}>
+                  {/* Columna de Texto */}
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <h1 
+                      style={{ maxWidth: `${titleMaxWidth}%` }}
+                      className={`${
+                        formData?.hero_title_size === 'medium' ? 'text-xl sm:text-2xl md:text-3xl' :
+                        formData?.hero_title_size === 'xl' ? 'text-3xl sm:text-4xl md:text-5xl' :
+                        'text-2xl sm:text-3xl md:text-4xl'
+                      } font-serif font-extrabold text-white drop-shadow-md leading-tight ${
+                        formData?.hero_horizontal_alignment === 'center' ? 'mx-auto' : formData?.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''
+                      }`}
+                    >
+                      {cleanTitle(translate(formData?.hero_title || 'Título Principal', formData?.translations, 'hero_title'))}
+                    </h1>
+                    <p className={`${
+                      formData?.hero_subtitle_size === 'small' ? 'text-xs' :
+                      formData?.hero_subtitle_size === 'large' ? 'text-sm sm:text-base' :
+                      'text-xs sm:text-sm'
+                    } text-white/90 font-medium drop-shadow-sm leading-relaxed ${
+                      formData?.hero_horizontal_alignment === 'center' ? 'max-w-xl mx-auto' : 'max-w-xl'
+                    } ${formData?.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''}`}>
+                      {translate(formData?.hero_subtitle || 'Subtítulo descriptivo que acompaña a la imagen principal.', formData?.translations, 'hero_subtitle')}
+                    </p>
+                  </div>
+
+                  {/* Columna de Precio */}
+                  <div className={`flex flex-col justify-center shrink-0 ${
+                    formData?.hero_horizontal_alignment === 'center' ? 'items-center text-center' : formData?.hero_horizontal_alignment === 'right' ? 'items-end text-right' : 'items-start sm:items-end text-left sm:text-right'
+                  }`}>
+                    <div className="bg-stone-900/40 backdrop-blur-md border border-white/20 rounded-2xl p-4 shadow-xl">
+                      <span className="text-[10px] uppercase tracking-widest font-extrabold text-[#d4af37] block">
+                        {translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix') || 'Desde'}
+                      </span>
+                      <div className="flex items-baseline gap-1 leading-none">
+                        <span className={`${
+                          formData?.hero_price_size === 'medium' ? 'text-3xl sm:text-4xl' :
+                          formData?.hero_price_size === 'xl' ? 'text-5xl sm:text-6xl' :
+                          'text-4xl sm:text-5xl'
+                        } font-serif font-extrabold text-white`}>
+                          {formData?.hero_price_amount || '45'}
+                        </span>
+                        <span className="text-lg font-serif font-bold text-[#d4af37]">
+                          {formData?.hero_price_suffix || '€'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* Disposición Clásica */
+                <div className="space-y-3">
+                  <h1 
+                    style={{ maxWidth: `${titleMaxWidth}%` }}
+                    className={`${
+                      formData?.hero_title_size === 'medium' ? 'text-2xl md:text-3xl lg:text-4xl' :
+                      formData?.hero_title_size === 'xl' ? 'text-5xl md:text-6xl lg:text-7xl' :
+                      'text-4xl md:text-5xl'
+                    } font-serif font-extrabold text-white drop-shadow-md leading-tight ${
+                      formData?.hero_horizontal_alignment === 'center' ? 'mx-auto' : formData?.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''
+                    }`}
+                  >
+                    {cleanTitle(translate(formData?.hero_title || 'Título Principal', formData?.translations, 'hero_title'))}
+                  </h1>
+                  <p className={`${
+                    formData?.hero_subtitle_size === 'small' ? 'text-xs md:text-sm' :
+                    formData?.hero_subtitle_size === 'large' ? 'text-base md:text-xl' :
+                    'text-sm md:text-lg'
+                  } text-white/90 font-medium drop-shadow-sm leading-relaxed ${
+                    formData?.hero_horizontal_alignment === 'center' ? 'max-w-xl mx-auto' : 'max-w-xl'
+                  } ${formData?.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''}`}>
+                    {translate(formData?.hero_subtitle || 'Subtítulo descriptivo que acompaña a la imagen principal.', formData?.translations, 'hero_subtitle')}
+                  </p>
+                </div>
+              )}
+
+              {formData?.hero_show_button !== false && (
+                <div className="pt-4">
+                  <div className={`inline-block px-8 py-3 rounded-full font-bold text-sm transition-all shadow-md ${getButtonStyle(formData?.hero_button_style)}`}>
+                    {translate(formData?.hero_button_text || 'Reservar Ahora', formData?.translations, 'hero_button_text')} <span className="ml-1">→</span>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          );
+        })()}
       </section>
 
       {/* ─── 2. ABOUT SECTION ─── */}

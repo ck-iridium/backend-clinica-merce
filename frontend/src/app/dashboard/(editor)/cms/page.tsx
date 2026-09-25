@@ -371,7 +371,9 @@ export default function CMSPage() {
           <HeroTab 
             formData={formData} 
             setFormData={setFormData} 
-            setPickerTarget={setPickerTarget} 
+            setPickerTarget={setPickerTarget}
+            categories={categories}
+            services={services}
           />
         );
       case 'SOBRE MÍ':

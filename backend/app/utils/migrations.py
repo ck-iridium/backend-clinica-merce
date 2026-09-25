@@ -250,7 +250,17 @@ $function$;
             "ALTER TABLE clinic_settings ADD COLUMN google_ads_id VARCHAR(50) NULL",
             "ALTER TABLE clinic_settings ADD COLUMN google_ads_conversion_label VARCHAR(100) NULL",
             f"ALTER TABLE clinic_settings ADD COLUMN integrations_config {json_type} DEFAULT '{{}}'",
-            "ALTER TABLE locations ADD COLUMN slug VARCHAR(100) NULL"
+            "ALTER TABLE locations ADD COLUMN slug VARCHAR(100) NULL",
+            "ALTER TABLE site_content ADD COLUMN hero_title_size VARCHAR DEFAULT 'large'",
+            "ALTER TABLE site_content ADD COLUMN hero_subtitle_size VARCHAR DEFAULT 'medium'",
+            "ALTER TABLE site_content ADD COLUMN hero_content_fullwidth BOOLEAN DEFAULT FALSE",
+            "ALTER TABLE site_content ADD COLUMN hero_title_max_width INTEGER DEFAULT 100",
+            "ALTER TABLE site_content ADD COLUMN hero_price_enabled BOOLEAN DEFAULT FALSE",
+            "ALTER TABLE site_content ADD COLUMN hero_price_prefix VARCHAR DEFAULT 'Desde'",
+            "ALTER TABLE site_content ADD COLUMN hero_price_amount VARCHAR DEFAULT ''",
+            "ALTER TABLE site_content ADD COLUMN hero_price_suffix VARCHAR DEFAULT '€'",
+            "ALTER TABLE site_content ADD COLUMN hero_price_size VARCHAR DEFAULT 'large'",
+            "ALTER TABLE site_content ADD COLUMN hero_button_style VARCHAR DEFAULT 'glass'"
         ]
         
         for m in migrations:

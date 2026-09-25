@@ -10,7 +10,11 @@ El panel de Editor Web y CMS centraliza la gestión del portal público de la cl
     - *Alineación Vertical:* Superior (`top`), Centrado (`center`), Inferior (`bottom`).
     - *Alineación Horizontal:* Izquierda (`left`), Centrado (`center`), Derecha (`right`).
     - *Tamaño del Título (H1):* `medium` (Mediano), `large` (Grande - por defecto), `xl` (Monumental / XL).
+    - *Ancho Máximo del Título (`hero_title_max_width`):* Control deslizante del 30% al 100% que acota la amplitud del titular para favorecer quiebres de línea editoriales sin afectar al resto de elementos.
     - *Tamaño del Subtítulo:* `small` (Discreto), `medium` (Equilibrado - por defecto), `large` (Destacado).
+    - *Bloque de Precio / Oferta Destacada (`hero_price_enabled`):* Disposición en 2 columnas armónicas. Muestra al lado del título un bloque de gran impacto visual que iguala la altura del conjunto título+subtítulo con prefijo refinado (ej: "Desde"), cifra en tipografía serif de lujo y símbolo de divisa o unidad ("€", "$").
+    - *Estilos del Botón de Acción (`hero_button_style`):* Variantes `glass` (cristalino moderno con hover dorado), `gold_solid` (dorado joya de lujo), `outline` (borde fino minimalista) y `solid_white` (blanco contraste).
+    - *Selector Inteligente de Enlaces (Smart Link Picker):* Modal interactivo que permite vincular el botón directamente a páginas clave (`/reservar`, contacto), tratamientos específicos o categorías sin necesidad de teclear o copiar URLs manualmente.
     - *Ancho Completo (`hero_content_fullwidth`):* Control toggle que define el comportamiento del contenedor de texto:
       - Desactivado (Recomendado): Mantiene el contenido acotado a la cuadrícula de la web (`max-w-7xl mx-auto px-6`). La alineación izquierda coincide exactamente con la vertical del logotipo del Navbar.
       - Activado (Fullwidth): Extiende el contenido hasta el borde físico exterior de la pantalla.
@@ -44,8 +48,16 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL del Hub `
   - Selector: `id="cms-hero-horizontal-alignment-select"`
 - **Tamaño del Título del Hero:** Selector para definir escala de tamaño del título H1.
   - Selector: `id="cms-hero-title-size-select"`
+- **Ancho Máximo del Título del Hero:** Selector para ajustar el % de ancho del título.
+  - Selector: `id="cms-hero-title-max-width-slider"`
 - **Tamaño del Subtítulo del Hero:** Selector para definir escala de tamaño del subtítulo.
   - Selector: `id="cms-hero-subtitle-size-select"`
+- **Conmutador Bloque de Precio:** Activar o desactivar la oferta destacada junto al título.
+  - Selector: `id="cms-hero-price-toggle"`
+- **Estilo de Botón CTA:** Selector visual de diseño del botón.
+  - Selector: `id="cms-hero-button-style-select"`
+- **Selector Inteligente de Enlace:** Abre el modal de selección de destinos y tratamientos.
+  - Selector: `id="cms-hero-smart-link-btn"`
 - **Gestionar Enlaces del Menú (Navegación):** Acceso al reordenamiento de links superiores y megamenú.
   - Selector: `id="cms-bento-nav-editor"`
 - **Configurar Tipografía y Colores (Branding):** Redirecciona a la sección de marca en Ajustes generales.

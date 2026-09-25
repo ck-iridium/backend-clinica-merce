@@ -40,7 +40,7 @@ def update_site_content(db: Session, update_data: schemas.SiteContentUpdate):
     content = get_site_content(db)
     
     translatable_keys = [
-        "hero_title", "hero_subtitle", "hero_button_text",
+        "hero_title", "hero_subtitle", "hero_button_text", "hero_price_prefix",
         "about_title", "about_text", "about_button_text",
         "cta_title", "cta_subtitle", "cta_button_text"
     ]
