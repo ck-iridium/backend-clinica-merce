@@ -410,6 +410,8 @@
       "alignment_bottom": "Inferior",
       "alignment_left": "Izquierda",
       "alignment_right": "Derecha",
+      "content_fullwidth": "Ancho completo (Fullwidth)",
+      "content_fullwidth_desc": "Extiende el texto al borde de la pantalla. Desactivado: se alinea con la cuadrícula de la web y el logotipo.",
       "bg_video": "Video de Fondo (Opcional - Reemplaza la imagen)"
     },
     "about": {

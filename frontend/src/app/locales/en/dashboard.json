@@ -410,6 +410,8 @@
       "alignment_bottom": "Bottom",
       "alignment_left": "Left",
       "alignment_right": "Right",
+      "content_fullwidth": "Full width content",
+      "content_fullwidth_desc": "Extends text to screen edges. Disabled: aligns with the website grid and header logo.",
       "bg_video": "Background Video (Optional - Replaces the image)"
     },
     "about": {

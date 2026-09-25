@@ -149,6 +149,7 @@ $function$;
             # ── CMS: Personalización Hero & Sobre Mí ─────────────────────────────
             "ALTER TABLE site_content ADD COLUMN hero_show_button BOOLEAN DEFAULT TRUE",
             "ALTER TABLE site_content ADD COLUMN hero_horizontal_alignment VARCHAR DEFAULT 'center'",
+            "ALTER TABLE site_content ADD COLUMN hero_content_fullwidth BOOLEAN DEFAULT FALSE",
             "ALTER TABLE site_content ADD COLUMN about_layout VARCHAR DEFAULT 'right'",
             "ALTER TABLE site_content ADD COLUMN about_show_button BOOLEAN DEFAULT FALSE",
             "ALTER TABLE site_content ADD COLUMN about_button_text VARCHAR DEFAULT 'Saber Más'",

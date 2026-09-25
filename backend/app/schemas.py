@@ -734,6 +734,7 @@ class SiteContentBase(BaseModel):
     hero_video_url: Optional[str] = None
     hero_alignment: Optional[str] = "center"
     hero_horizontal_alignment: Optional[str] = "center"
+    hero_content_fullwidth: Optional[bool] = False
     
     about_title: Optional[str] = None
     about_text: Optional[str] = None
@@ -768,6 +769,7 @@ class SiteContentUpdate(BaseModel):
     hero_video_url: Optional[str] = None
     hero_alignment: Optional[str] = None
     hero_horizontal_alignment: Optional[str] = None
+    hero_content_fullwidth: Optional[bool] = None
     
     about_title: Optional[str] = None
     about_text: Optional[str] = None

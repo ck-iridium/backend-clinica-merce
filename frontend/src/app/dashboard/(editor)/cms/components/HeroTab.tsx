@@ -108,6 +108,7 @@ export default function HeroTab({
               {t('cms.hero.horizontal_alignment')}
             </label>
             <select 
+              id="cms-hero-horizontal-alignment-select"
               value={formData.hero_horizontal_alignment || "center"} 
               onChange={e => setFormData((prev: any) => ({ ...prev, hero_horizontal_alignment: e.target.value }))} 
               className="w-full px-4 py-3 rounded-xl border border-border/50 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 text-sm font-bold"
@@ -117,6 +118,36 @@ export default function HeroTab({
               <option value="right">{t('cms.hero.alignment_right')}</option>
             </select>
           </div>
+        </div>
+
+        {/* Conmutador Ancho Completo (Fullwidth) vs Cuadrícula Web */}
+        <div 
+          id="cms-hero-fullwidth-toggle"
+          className="mt-6 p-4 rounded-2xl bg-stone-50/80 dark:bg-stone-900/40 border border-stone-200/60 dark:border-stone-800 flex items-center justify-between gap-4 transition-all"
+        >
+          <div className="space-y-0.5">
+            <label className="text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300 block">
+              {t('cms.hero.content_fullwidth')}
+            </label>
+            <p className="text-xs text-stone-500 dark:text-stone-400 max-w-sm">
+              {t('cms.hero.content_fullwidth_desc')}
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={!!formData.hero_content_fullwidth}
+            onClick={() => setFormData((prev: any) => ({ ...prev, hero_content_fullwidth: !prev.hero_content_fullwidth }))}
+            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+              formData.hero_content_fullwidth ? 'bg-[#d4af37]' : 'bg-stone-300 dark:bg-stone-700'
+            }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                formData.hero_content_fullwidth ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </button>
         </div>
       </div>
       <div className="pt-8 border-t border-border/30 mt-8">

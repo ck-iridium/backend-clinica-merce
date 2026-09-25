@@ -33,6 +33,7 @@ export default function CMSPage() {
   const defaultContent = {
     hero_title: '', hero_subtitle: '', hero_button_text: '', hero_button_link: '',
     hero_image_url: '', hero_video_url: '', hero_alignment: 'center', hero_horizontal_alignment: 'center',
+    hero_content_fullwidth: false,
     hero_show_button: true,
     about_title: '', about_text: '', about_image_url: '', about_layout: 'right',
     about_show_button: false, about_button_text: 'Saber Más', about_button_link: '/contacto',

@@ -6,7 +6,12 @@ Este manual sirve como la única fuente de verdad (RAG) para guiar al usuario en
 El panel de Editor Web y CMS centraliza la gestión del portal público de la clínica y sus subpáginas:
 - **Hub de CMS (`/dashboard/cms`):** Panel principal estilo Bento Grid con accesos a la edición de la portada principal (Home Builder), el menú dinámico de navegación superior, los estilos globales de branding y el gestor de páginas independientes.
 - **Home Builder (Editor de Portada):** Permite configurar de forma visual las secciones que componen la página de inicio pública:
-  - **HERO:** Imagen o vídeo de fondo, título principal, subtítulo, y botón de acción directa (con texto y enlace personalizado).
+  - **HERO:** Imagen o vídeo de fondo, título principal, subtítulo, y botón de acción directa (con texto y enlace personalizado). Permite configurar:
+    - *Alineación Vertical:* Superior (`top`), Centrado (`center`), Inferior (`bottom`).
+    - *Alineación Horizontal:* Izquierda (`left`), Centrado (`center`), Derecha (`right`).
+    - *Ancho Completo (`hero_content_fullwidth`):* Control toggle que define el comportamiento del contenedor de texto:
+      - Desactivado (Recomendado): Mantiene el contenido acotado a la cuadrícula de la web (`max-w-7xl mx-auto px-6`). La alineación izquierda coincide exactamente con la vertical del logotipo del Navbar.
+      - Activado (Fullwidth): Extiende el contenido hasta el borde físico exterior de la pantalla.
   - **SOBRE MÍ / CLÍNICA:** Descripción de la historia, fotografía del equipo o del local, alineación del diseño (imagen a la izquierda o derecha) y botón opcional.
   - **CATEGORÍAS:** Mosaico/carrusel de categorías de servicios para destacar tratamientos (ej. Facial, Corporal, Uñas) e inyectar accesos rápidos.
   - **CTA (Llamada a la Acción):** Banner de cierre de la página web para incentivar reservas con título, subtítulo y enlace al flujo de cita previa.
@@ -31,6 +36,10 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL del Hub `
 ### Bento Grid del Hub Principal (`/dashboard/cms`)
 - **Editar Portada Principal (Home Builder):** Acceso al editor visual de secciones de inicio.
   - Selector: `id="cms-bento-home-builder"`
+- **Conmutador Ancho Completo Hero (Fullwidth):** Selector para activar o desactivar que el contenido del Hero se extienda a los extremos de la pantalla.
+  - Selector: `id="cms-hero-fullwidth-toggle"`
+- **Alineación Horizontal del Hero:** Selector para definir posición izquierda, centrada o derecha.
+  - Selector: `id="cms-hero-horizontal-alignment-select"`
 - **Gestionar Enlaces del Menú (Navegación):** Acceso al reordenamiento de links superiores y megamenú.
   - Selector: `id="cms-bento-nav-editor"`
 - **Configurar Tipografía y Colores (Branding):** Redirecciona a la sección de marca en Ajustes generales.

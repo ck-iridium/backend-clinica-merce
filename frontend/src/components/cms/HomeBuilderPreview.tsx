@@ -30,7 +30,11 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
     <div className="w-full h-full flex flex-col overflow-y-auto bg-stone-50 select-none custom-scrollbar">
       
       {/* ─── 1. HERO SECTION (16:9) ─── */}
-      <section className={`relative w-full aspect-video flex ${formData?.hero_alignment === 'top' ? 'items-start pt-20' : formData?.hero_alignment === 'bottom' ? 'items-end pb-16' : 'items-center'} ${formData?.hero_horizontal_alignment === 'left' ? 'justify-start text-left pl-12' : formData?.hero_horizontal_alignment === 'right' ? 'justify-end text-right pr-12' : 'justify-center text-center'} p-6 overflow-hidden`}>
+      <section className={`relative w-full aspect-video flex ${formData?.hero_alignment === 'top' ? 'items-start pt-20' : formData?.hero_alignment === 'bottom' ? 'items-end pb-16' : 'items-center'} ${
+        formData?.hero_content_fullwidth
+          ? (formData?.hero_horizontal_alignment === 'left' ? 'justify-start text-left pl-6' : formData?.hero_horizontal_alignment === 'right' ? 'justify-end text-right pr-6' : 'justify-center text-center')
+          : 'justify-center'
+      } p-6 overflow-hidden`}>
         {formData?.hero_video_url ? (
           <div className="absolute inset-0 z-0 bg-stone-900">
             <video autoPlay loop muted playsInline className="w-full h-full object-cover">
@@ -49,10 +53,10 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
           </div>
         )}
 
-        <div className={`relative z-10 space-y-4 ${
-          formData?.hero_horizontal_alignment === 'left' ? 'max-w-xl ml-0 mr-auto' : 
-          formData?.hero_horizontal_alignment === 'right' ? 'max-w-xl mr-0 ml-auto' : 
-          'max-w-xl mx-auto'
+        <div className={`relative z-10 space-y-4 w-full ${
+          formData?.hero_content_fullwidth
+            ? (formData?.hero_horizontal_alignment === 'left' ? 'max-w-xl text-left ml-0 mr-auto' : formData?.hero_horizontal_alignment === 'right' ? 'max-w-xl text-right mr-0 ml-auto' : 'max-w-xl text-center mx-auto')
+            : (formData?.hero_horizontal_alignment === 'left' ? 'max-w-2xl text-left' : formData?.hero_horizontal_alignment === 'right' ? 'max-w-2xl text-right' : 'max-w-2xl text-center mx-auto')
         }`}>
           <h1 className="text-4xl md:text-5xl font-serif font-extrabold text-white drop-shadow-md leading-tight">
             {cleanTitle(translate(formData?.hero_title || 'Título Principal', formData?.translations, 'hero_title'))}

@@ -447,6 +447,7 @@ class SiteContent(Base):
     hero_video_url = Column(String, nullable=True)
     hero_alignment = Column(String, default="center") # top, center, bottom
     hero_horizontal_alignment = Column(String, default="center") # left, center, right
+    hero_content_fullwidth = Column(Boolean, default=False)
     
     # About Section
     about_title = Column(String, default="Sobre Nosotros")

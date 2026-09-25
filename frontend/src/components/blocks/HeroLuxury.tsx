@@ -13,8 +13,11 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
   const bgImage = data?.hero_image_url || settings?.hero_image_url;
 
   // Alignments mapping
+  const isFullwidth = data?.hero_content_fullwidth;
   const alignY = data?.hero_alignment === 'top' ? 'items-start pt-48' : data?.hero_alignment === 'bottom' ? 'items-end pb-32' : 'items-center';
-  const alignX = data?.hero_horizontal_alignment === 'left' ? 'justify-start text-left px-6' : data?.hero_horizontal_alignment === 'right' ? 'justify-end text-right px-6' : 'justify-center text-center px-6';
+  const alignX = isFullwidth
+    ? (data?.hero_horizontal_alignment === 'left' ? 'justify-start text-left px-6' : data?.hero_horizontal_alignment === 'right' ? 'justify-end text-right px-6' : 'justify-center text-center px-6')
+    : 'justify-center text-center px-6';
 
   return (
     <section className={`relative h-[100dvh] min-h-[600px] w-full flex snap-start snap-stop-always md:snap-none ${alignY} ${alignX} overflow-hidden mt-0`}>
@@ -59,7 +62,11 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, ease: 'easeOut' }}
-        className={`relative z-10 max-w-7xl w-full ${data?.hero_horizontal_alignment === 'left' ? 'ml-0 mr-auto' : data?.hero_horizontal_alignment === 'right' ? 'mr-0 ml-auto' : 'mx-auto'}`}
+        className={`relative z-10 w-full ${
+          isFullwidth
+            ? `max-w-7xl ${data?.hero_horizontal_alignment === 'left' ? 'ml-0 mr-auto text-left' : data?.hero_horizontal_alignment === 'right' ? 'mr-0 ml-auto text-right' : 'mx-auto text-center'}`
+            : `max-w-7xl mx-auto ${data?.hero_horizontal_alignment === 'left' ? 'text-left' : data?.hero_horizontal_alignment === 'right' ? 'text-right' : 'text-center'}`
+        }`}
       >
         <h1 className="text-5xl md:text-7xl lg:text-[6.5rem] leading-none font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.4)]">
           {data?.hero_title || 'Descubre tu Mejor Versión'}
