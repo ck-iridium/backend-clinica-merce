@@ -14,7 +14,7 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
 
   // Alignments mapping
   const alignY = data?.hero_alignment === 'top' ? 'items-start pt-48' : data?.hero_alignment === 'bottom' ? 'items-end pb-32' : 'items-center';
-  const alignX = data?.hero_horizontal_alignment === 'left' ? 'justify-start text-left px-6 md:px-12 lg:px-24' : data?.hero_horizontal_alignment === 'right' ? 'justify-end text-right px-6 md:px-12 lg:px-24' : 'justify-center text-center px-6';
+  const alignX = data?.hero_horizontal_alignment === 'left' ? 'justify-start text-left px-6' : data?.hero_horizontal_alignment === 'right' ? 'justify-end text-right px-6' : 'justify-center text-center px-6';
 
   return (
     <section className={`relative h-[100dvh] min-h-[600px] w-full flex snap-start snap-stop-always md:snap-none ${alignY} ${alignX} overflow-hidden mt-0`}>

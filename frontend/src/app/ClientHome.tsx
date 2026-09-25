@@ -478,17 +478,17 @@ export default function ClientHome({ content, settings, services, categories }: 
                 className={`relative h-[100dvh] min-h-[600px] w-full flex snap-start snap-stop-always md:snap-none
                   ${content.hero_alignment === 'top' ? 'items-start pt-48' : content.hero_alignment === 'bottom' ? 'items-end pb-32' : 'items-center'}
                   ${content.hero_horizontal_alignment === 'left' ? 'justify-start' : content.hero_horizontal_alignment === 'right' ? 'justify-end' : 'justify-center'}
-                  p-6 md:p-12 overflow-hidden mt-0`}
+                  overflow-hidden mt-0`}
               >
 
                 {content.hero_video_url ? (
                   <div className="absolute inset-0 z-0 bg-stone-900">
-                    <video 
-                      autoPlay 
-                      loop 
-                      muted 
-                      playsInline 
-                      preload="metadata" 
+                    <video
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      preload="metadata"
                       poster={content.hero_image_url ? (content.hero_image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${content.hero_image_url}` : content.hero_image_url) : undefined}
                       className="w-full h-full object-cover"
                     >
@@ -498,13 +498,13 @@ export default function ClientHome({ content, settings, services, categories }: 
                   </div>
                 ) : content.hero_image_url ? (
                   <div className="absolute inset-0 z-0 bg-stone-900">
-                    <img 
-                      src={content.hero_image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${content.hero_image_url}` : content.hero_image_url} 
-                      alt={cleanTitle(translate(content.hero_title, content.translations, 'hero_title')) || "Hero"} 
+                    <img
+                      src={content.hero_image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${content.hero_image_url}` : content.hero_image_url}
+                      alt={cleanTitle(translate(content.hero_title, content.translations, 'hero_title')) || "Hero"}
                       fetchPriority="high"
                       loading="eager"
                       decoding="async"
-                      className="w-full h-full object-cover" 
+                      className="w-full h-full object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-stone-900/20 to-stone-900/60 mix-blend-multiply" />
                   </div>
@@ -512,9 +512,9 @@ export default function ClientHome({ content, settings, services, categories }: 
                   <div className="absolute inset-0 z-0 bg-stone-900" />
                 )}
 
-                <div className={`relative z-10 max-w-7xl w-full ${content.hero_horizontal_alignment === 'left' ? 'text-left px-6 md:px-12 lg:px-24 ml-0 mr-auto' :
-                    content.hero_horizontal_alignment === 'right' ? 'text-right px-6 md:px-12 lg:px-24 mr-0 ml-auto' :
-                      'text-center px-6 mx-auto'
+                <div className={`relative z-10 max-w-7xl w-full px-6 ${content.hero_horizontal_alignment === 'left' ? 'text-left ml-0 mr-auto' :
+                  content.hero_horizontal_alignment === 'right' ? 'text-right mr-0 ml-auto' :
+                    'text-center mx-auto'
                   }`}>
                   <h1 className="text-6xl md:text-8xl lg:text-[7rem] leading-none font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
                     {cleanTitle(translate(content.hero_title, content.translations, 'hero_title'))}
