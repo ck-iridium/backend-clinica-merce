@@ -48,8 +48,9 @@ def update_landing_config(
         hero_price_prefix: Texto superior del bloque de precio (ej: 'Desde', 'Solo').
         hero_price_amount: Importe numérico a destacar (ej: '45', '120').
         hero_price_suffix: Moneda o sufijo (ej: '€', '€/sesión').
-        hero_price_size: Tamaño visual del precio ('medium', 'large', 'xl').
+        hero_price_size: Tamaño visual del precio ('medium', 'large', 'xl', o porcentaje numérico de escala).
         hero_price_offset_y: Ajuste vertical en píxeles del precio respecto al prefijo (ej: -5 para subirlo, 0 para normal, 5 para bajarlo).
+        hero_price_style: Estilo visual del precio ('capsule_dark' = cápsula oscura traslúcida, 'outline' = borde fino sin fondo, 'minimal' = sin fondo ni borde, 'solid_white' = cápsula blanca de contraste).
         hero_show_button: Mostrar u ocultar el botón de acción principal del Hero.
         hero_button_text: Texto del botón de acción del Hero (ej: 'Reservar Cita').
         hero_button_link: Enlace de destino del botón del Hero (ej: '/reservar', '#tratamientos').
@@ -80,6 +81,8 @@ def update_landing_config(
             hero_price_amount=hero_price_amount,
             hero_price_suffix=hero_price_suffix,
             hero_price_size=hero_price_size,
+            hero_price_offset_y=hero_price_offset_y,
+            hero_price_style=hero_price_style,
             hero_show_button=hero_show_button,
             hero_button_text=hero_button_text,
             hero_button_link=hero_button_link,

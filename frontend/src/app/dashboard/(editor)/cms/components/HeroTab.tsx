@@ -22,6 +22,17 @@ interface HeroTabProps {
   services?: any[];
 }
 
+const parseSizeScale = (val: any, fallback: number = 100): number => {
+  if (typeof val === 'number') return val;
+  if (!val) return fallback;
+  if (val === 'small') return 80;
+  if (val === 'medium') return 90;
+  if (val === 'large') return 100;
+  if (val === 'xl') return 125;
+  const parsed = parseInt(val, 10);
+  return isNaN(parsed) ? fallback : parsed;
+};
+
 export default function HeroTab({ 
   formData, 
   setFormData, 
@@ -38,9 +49,14 @@ export default function HeroTab({
     : 100;
 
   const buttonStyle = formData.hero_button_style || 'glass';
+  const priceStyle = formData.hero_price_style || 'capsule_dark';
   const priceOffsetY = formData.hero_price_offset_y !== undefined && formData.hero_price_offset_y !== null
     ? formData.hero_price_offset_y
     : 0;
+
+  const titleScale = parseSizeScale(formData.hero_title_size, 100);
+  const subtitleScale = parseSizeScale(formData.hero_subtitle_size, 100);
+  const priceScale = parseSizeScale(formData.hero_price_size, 100);
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300 pb-12">
@@ -139,26 +155,14 @@ export default function HeroTab({
         </div>
 
         {/* TÍTULO PRINCIPAL H1 */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
             <label className="text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">
               {t('cms.hero.main_title')}
             </label>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] uppercase font-bold text-stone-400">
-                {t('cms.hero.title_size')}:
-              </span>
-              <select
-                id="cms-hero-title-size-select"
-                value={formData.hero_title_size || "large"}
-                onChange={e => setFormData((prev: any) => ({ ...prev, hero_title_size: e.target.value }))}
-                className="text-xs px-2.5 py-1 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 font-bold focus:outline-none focus:ring-1 focus:ring-[#d4af37]"
-              >
-                <option value="medium">{t('cms.hero.size_medium')}</option>
-                <option value="large">{t('cms.hero.size_large')}</option>
-                <option value="xl">{t('cms.hero.size_xl')}</option>
-              </select>
-            </div>
+            <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2.5 py-0.5 rounded-full">
+              {titleScale}%
+            </span>
           </div>
           <input 
             type="text" 
@@ -168,8 +172,59 @@ export default function HeroTab({
             className="w-full px-4 py-3 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 transition-all font-serif font-bold text-lg" 
           />
 
+          {/* SLIDER DE ESCALA / TAMAÑO DEL TÍTULO */}
+          <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/60 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <Sliders size={13} className="text-[#d4af37]" />
+                <span className="text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">
+                  {t('cms.hero.title_size_slider') || 'Escala / Tamaño del Titular'}
+                </span>
+              </div>
+              <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2 py-0.5 rounded-full">
+                {titleScale}%
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] font-bold text-stone-400">60%</span>
+              <input
+                id="cms-hero-title-size-slider"
+                type="range"
+                min="60"
+                max="160"
+                step="5"
+                value={titleScale}
+                onChange={e => setFormData((prev: any) => ({ ...prev, hero_title_size: e.target.value }))}
+                className="w-full accent-[#d4af37] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
+              />
+              <span className="text-[10px] font-bold text-stone-400">160%</span>
+            </div>
+
+            {/* Presets rápidos */}
+            <div className="flex items-center justify-between pt-1 text-[10px] font-bold">
+              <span className="text-stone-400">{t('cms.hero.presets') || 'Ajustes Rápidos'}:</span>
+              <div className="flex items-center gap-1">
+                {[80, 100, 120, 140].map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => setFormData((prev: any) => ({ ...prev, hero_title_size: String(preset) }))}
+                    className={`px-2 py-0.5 rounded-md transition-all ${
+                      titleScale === preset
+                        ? 'bg-[#d4af37] text-white'
+                        : 'bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-200'
+                    }`}
+                  >
+                    {preset}%
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
           {/* CONTROL DE ANCHO MÁXIMO DEL TÍTULO (%) */}
-          <div className="mt-3 p-3.5 rounded-2xl bg-white dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/60 space-y-2.5">
+          <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/60 space-y-2.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <Sliders size={13} className="text-[#d4af37]" />
@@ -219,26 +274,14 @@ export default function HeroTab({
         </div>
 
         {/* SUBTÍTULO */}
-        <div className="space-y-2 pt-2">
+        <div className="space-y-3 pt-2">
           <div className="flex items-center justify-between">
             <label className="text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">
               {t('cms.hero.subtitle')}
             </label>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] uppercase font-bold text-stone-400">
-                {t('cms.hero.subtitle_size')}:
-              </span>
-              <select
-                id="cms-hero-subtitle-size-select"
-                value={formData.hero_subtitle_size || "medium"}
-                onChange={e => setFormData((prev: any) => ({ ...prev, hero_subtitle_size: e.target.value }))}
-                className="text-xs px-2.5 py-1 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 font-bold focus:outline-none focus:ring-1 focus:ring-[#d4af37]"
-              >
-                <option value="small">{t('cms.hero.size_small')}</option>
-                <option value="medium">{t('cms.hero.size_medium')}</option>
-                <option value="large">{t('cms.hero.size_large')}</option>
-              </select>
-            </div>
+            <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2.5 py-0.5 rounded-full">
+              {subtitleScale}%
+            </span>
           </div>
           <textarea 
             rows={2} 
@@ -247,6 +290,57 @@ export default function HeroTab({
             placeholder="Donde la belleza y el bienestar se encuentran en perfecta armonía."
             className="w-full px-4 py-3 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 transition-all font-medium text-sm leading-relaxed" 
           />
+
+          {/* SLIDER DE ESCALA / TAMAÑO DEL SUBTÍTULO */}
+          <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/60 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <Sliders size={13} className="text-[#d4af37]" />
+                <span className="text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">
+                  {t('cms.hero.subtitle_size_slider') || 'Escala / Tamaño del Subtítulo'}
+                </span>
+              </div>
+              <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2 py-0.5 rounded-full">
+                {subtitleScale}%
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] font-bold text-stone-400">70%</span>
+              <input
+                id="cms-hero-subtitle-size-slider"
+                type="range"
+                min="70"
+                max="140"
+                step="5"
+                value={subtitleScale}
+                onChange={e => setFormData((prev: any) => ({ ...prev, hero_subtitle_size: e.target.value }))}
+                className="w-full accent-[#d4af37] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
+              />
+              <span className="text-[10px] font-bold text-stone-400">140%</span>
+            </div>
+
+            {/* Presets rápidos */}
+            <div className="flex items-center justify-between pt-1 text-[10px] font-bold">
+              <span className="text-stone-400">{t('cms.hero.presets') || 'Ajustes Rápidos'}:</span>
+              <div className="flex items-center gap-1">
+                {[85, 100, 115, 130].map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => setFormData((prev: any) => ({ ...prev, hero_subtitle_size: String(preset) }))}
+                    className={`px-2 py-0.5 rounded-md transition-all ${
+                      subtitleScale === preset
+                        ? 'bg-[#d4af37] text-white'
+                        : 'bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-200'
+                    }`}
+                  >
+                    {preset}%
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -333,19 +427,136 @@ export default function HeroTab({
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-1">
-              <label className="text-xs font-bold uppercase tracking-wider text-stone-500">
-                {t('cms.hero.price_size') || 'Escala Visual del Precio'}
+            {/* SELECTOR DE ESTILOS VISUALES DEL PRECIO (2 POR FILA) */}
+            <div className="space-y-2 pt-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">
+                {t('cms.hero.price_style_label') || 'Estilo Visual del Precio'}
               </label>
-              <select
-                value={formData.hero_price_size || "large"}
-                onChange={e => setFormData((prev: any) => ({ ...prev, hero_price_size: e.target.value }))}
-                className="text-xs px-3 py-1.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 font-bold focus:outline-none focus:ring-1 focus:ring-[#d4af37]"
-              >
-                <option value="medium">{t('cms.hero.size_medium') || 'Mediano'}</option>
-                <option value="large">{t('cms.hero.size_large') || 'Grande (Impacto)'}</option>
-                <option value="xl">{t('cms.hero.size_xl') || 'Extra Grande (Monumento)'}</option>
-              </select>
+
+              <div className="grid grid-cols-2 gap-3" id="cms-hero-price-style-select">
+                {/* 1. Cápsula Oscura */}
+                <button
+                  type="button"
+                  onClick={() => setFormData((prev: any) => ({ ...prev, hero_price_style: 'capsule_dark' }))}
+                  className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center gap-1.5 ${
+                    priceStyle === 'capsule_dark'
+                      ? 'border-[#d4af37] bg-[#d4af37]/10 shadow-xs'
+                      : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 hover:border-stone-300'
+                  }`}
+                >
+                  <div className="w-full py-1.5 px-3 rounded-xl bg-stone-900/80 border border-white/20 text-white text-xs font-serif font-black">
+                    15€
+                  </div>
+                  <span className="text-[11px] font-bold text-stone-600 dark:text-stone-300">
+                    {t('cms.hero.price_style_capsule_dark') || 'Cápsula Oscura'}
+                  </span>
+                </button>
+
+                {/* 2. Solo Borde */}
+                <button
+                  type="button"
+                  onClick={() => setFormData((prev: any) => ({ ...prev, hero_price_style: 'outline' }))}
+                  className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center gap-1.5 ${
+                    priceStyle === 'outline'
+                      ? 'border-[#d4af37] bg-[#d4af37]/10 shadow-xs'
+                      : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 hover:border-stone-300'
+                  }`}
+                >
+                  <div className="w-full py-1.5 px-3 rounded-xl bg-transparent border-2 border-stone-800 dark:border-white text-stone-800 dark:text-white text-xs font-serif font-black">
+                    15€
+                  </div>
+                  <span className="text-[11px] font-bold text-stone-600 dark:text-stone-300">
+                    {t('cms.hero.price_style_outline') || 'Solo Borde'}
+                  </span>
+                </button>
+
+                {/* 3. Sin Fondo / Minimal */}
+                <button
+                  type="button"
+                  onClick={() => setFormData((prev: any) => ({ ...prev, hero_price_style: 'minimal' }))}
+                  className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center gap-1.5 ${
+                    priceStyle === 'minimal'
+                      ? 'border-[#d4af37] bg-[#d4af37]/10 shadow-xs'
+                      : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 hover:border-stone-300'
+                  }`}
+                >
+                  <div className="w-full py-1.5 px-3 rounded-xl border border-dashed border-stone-300 dark:border-stone-700 text-stone-800 dark:text-white text-xs font-serif font-black">
+                    15€
+                  </div>
+                  <span className="text-[11px] font-bold text-stone-600 dark:text-stone-300">
+                    {t('cms.hero.price_style_minimal') || 'Sin Fondo / Minimal'}
+                  </span>
+                </button>
+
+                {/* 4. Cápsula Clara */}
+                <button
+                  type="button"
+                  onClick={() => setFormData((prev: any) => ({ ...prev, hero_price_style: 'solid_white' }))}
+                  className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center gap-1.5 ${
+                    priceStyle === 'solid_white'
+                      ? 'border-[#d4af37] bg-[#d4af37]/10 shadow-xs'
+                      : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 hover:border-stone-300'
+                  }`}
+                >
+                  <div className="w-full py-1.5 px-3 rounded-xl bg-white text-stone-900 border border-stone-200 text-xs font-serif font-black shadow-xs">
+                    15€
+                  </div>
+                  <span className="text-[11px] font-bold text-stone-600 dark:text-stone-300">
+                    {t('cms.hero.price_style_solid_white') || 'Cápsula Clara'}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* SLIDER DE ESCALA / TAMAÑO DEL PRECIO */}
+            <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/60 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Sliders size={13} className="text-[#d4af37]" />
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">
+                    {t('cms.hero.price_size') || 'Escala Visual del Precio'}
+                  </span>
+                </div>
+                <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2.5 py-0.5 rounded-full">
+                  {priceScale}%
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-bold text-stone-400">70%</span>
+                <input
+                  id="cms-hero-price-size-slider"
+                  type="range"
+                  min="70"
+                  max="160"
+                  step="5"
+                  value={priceScale}
+                  onChange={e => setFormData((prev: any) => ({ ...prev, hero_price_size: e.target.value }))}
+                  className="w-full accent-[#d4af37] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
+                />
+                <span className="text-[10px] font-bold text-stone-400">160%</span>
+              </div>
+
+              {/* Presets rápidos */}
+              <div className="flex items-center justify-between pt-1 text-[10px] font-bold">
+                <span className="text-stone-400">{t('cms.hero.presets') || 'Ajustes Rápidos'}:</span>
+                <div className="flex items-center gap-1">
+                  {[85, 100, 120, 140].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setFormData((prev: any) => ({ ...prev, hero_price_size: String(preset) }))}
+                      className={`px-2 py-0.5 rounded-md transition-all ${
+                        priceScale === preset
+                          ? 'bg-[#d4af37] text-white'
+                          : 'bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-200'
+                      }`}
+                    >
+                      {preset}%
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* CONTROL DE AJUSTE VERTICAL / SEPARACIÓN DEL PRECIO (px) */}
@@ -415,19 +626,26 @@ export default function HeroTab({
                   </div>
                 </div>
 
-                {/* Col 2: Cápsula de Precio Encapsulada */}
-                <div className="shrink-0 px-4 py-2.5 rounded-2xl bg-black/60 border border-white/20 shadow-md text-center">
-                  <span className="text-[9px] uppercase tracking-widest font-black text-[#d4af37] block leading-none">
+                {/* Col 2: Cápsula de Precio con Estilo Seleccionado */}
+                <div className={`shrink-0 text-center transition-all ${
+                  priceStyle === 'outline' ? 'px-4 py-2.5 rounded-2xl bg-transparent border-2 border-white/40' :
+                  priceStyle === 'minimal' ? 'p-1 bg-transparent border-0' :
+                  priceStyle === 'solid_white' ? 'px-4 py-2.5 rounded-2xl bg-white border border-stone-200 text-stone-900 shadow-md' :
+                  'px-4 py-2.5 rounded-2xl bg-black/60 border border-white/20 shadow-md text-white'
+                }`}>
+                  <span className={`text-[9px] uppercase tracking-widest font-black block leading-none ${
+                    priceStyle === 'minimal' ? 'text-white/80' : 'text-[#d4af37]'
+                  }`}>
                     {formData.hero_price_prefix || 'Desde'}
                   </span>
                   <div 
                     className="flex items-baseline justify-center gap-0.5 leading-none"
                     style={{ marginTop: `${-6 + Math.round(priceOffsetY * 0.7)}px` }}
                   >
-                    <span className="font-serif font-black text-2xl text-white">
+                    <span className={`font-serif font-black text-2xl ${priceStyle === 'solid_white' ? 'text-stone-900' : 'text-white'}`}>
                       {formData.hero_price_amount || '15'}
                     </span>
-                    <span className="text-xs font-serif font-bold text-[#d4af37]">
+                    <span className={`text-xs font-serif font-bold ${priceStyle === 'minimal' ? 'text-white' : 'text-[#d4af37]'}`}>
                       {formData.hero_price_suffix || '€'}
                     </span>
                   </div>

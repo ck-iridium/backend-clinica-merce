@@ -16,6 +16,51 @@ const cleanTitle = (text: string) => {
     .trim();
 };
 
+const parseSizeScale = (val: any, fallback: number = 100): number => {
+  if (typeof val === 'number') return val;
+  if (!val) return fallback;
+  if (val === 'small') return 80;
+  if (val === 'medium') return 90;
+  if (val === 'large') return 100;
+  if (val === 'xl') return 125;
+  const parsed = parseInt(val, 10);
+  return isNaN(parsed) ? fallback : parsed;
+};
+
+const getPriceStyleConfig = (style?: string) => {
+  switch (style) {
+    case 'outline':
+      return {
+        boxClass: 'bg-transparent border-2 border-white/40 rounded-2xl px-4 py-2 sm:px-5 sm:py-3 text-white backdrop-blur-xs',
+        prefixClass: 'text-[#d4af37]',
+        amountClass: 'text-white drop-shadow-md',
+        suffixClass: 'text-[#d4af37]'
+      };
+    case 'minimal':
+      return {
+        boxClass: 'bg-transparent border-0 p-0 text-white shadow-none',
+        prefixClass: 'text-white/80',
+        amountClass: 'text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]',
+        suffixClass: 'text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]'
+      };
+    case 'solid_white':
+      return {
+        boxClass: 'bg-white/95 dark:bg-stone-900/95 backdrop-blur-md border border-white/50 dark:border-stone-800 rounded-2xl px-4 py-2 sm:px-5 sm:py-3 text-stone-900 dark:text-white shadow-md',
+        prefixClass: 'text-[#d4af37]',
+        amountClass: 'text-stone-900 dark:text-white',
+        suffixClass: 'text-[#d4af37]'
+      };
+    case 'capsule_dark':
+    default:
+      return {
+        boxClass: 'backdrop-blur-xl bg-black/45 dark:bg-stone-950/60 border border-white/25 rounded-2xl px-4 py-2.5 sm:px-5 sm:py-3.5 text-white',
+        prefixClass: 'text-[#d4af37]',
+        amountClass: 'text-white drop-shadow-md',
+        suffixClass: 'text-[#d4af37]'
+      };
+  }
+};
+
 // Memoizar el componente para que no se re-renderice si sus props no cambian (fundamental para el drag & drop)
 const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: PreviewProps) => {
   const { translate, t } = useLanguage();
@@ -56,6 +101,11 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
         {(() => {
           const titleMaxWidth = formData?.hero_title_max_width || 100;
           const isPriceActive = !!formData?.hero_price_enabled && (formData?.hero_price_amount || formData?.hero_price_prefix);
+          const titleScale = parseSizeScale(formData?.hero_title_size, 100) / 100;
+          const subtitleScale = parseSizeScale(formData?.hero_subtitle_size, 100) / 100;
+          const priceScale = parseSizeScale(formData?.hero_price_size, 100) / 100;
+          const priceConfig = getPriceStyleConfig(formData?.hero_price_style);
+
           const getButtonStyle = (style?: string) => {
             switch (style) {
               case 'gold_solid':
@@ -70,16 +120,6 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
             }
           };
 
-          const priceSizeClass = 
-            formData?.hero_price_size === 'medium' ? 'text-2xl sm:text-3xl' :
-            formData?.hero_price_size === 'xl' ? 'text-4xl sm:text-5xl' :
-            'text-3xl sm:text-4xl';
-
-          const priceSuffixClass = 
-            formData?.hero_price_size === 'medium' ? 'text-lg sm:text-xl' :
-            formData?.hero_price_size === 'xl' ? 'text-2xl sm:text-3xl' :
-            'text-xl sm:text-2xl';
-
           const renderPriceCapsule = (isMobile: boolean = false) => {
             if (!isPriceActive) return null;
             return (
@@ -87,10 +127,10 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
                 formData?.hero_horizontal_alignment === 'center' ? 'mx-auto' :
                 formData?.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''
               }`}>
-                <div className="relative group overflow-hidden rounded-2xl px-4 py-2.5 sm:px-5 sm:py-3.5 backdrop-blur-xl bg-black/45 dark:bg-stone-950/60 border border-white/25 select-none">
+                <div className={`relative group overflow-hidden ${priceConfig.boxClass} select-none`}>
                   <div className="relative flex flex-col items-center justify-center text-center">
                     {translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix') && (
-                      <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-[#d4af37] block leading-none">
+                      <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] ${priceConfig.prefixClass} block leading-none`}>
                         {translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix')}
                       </span>
                     )}
@@ -98,10 +138,16 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
                       className="flex items-baseline justify-center gap-0.5 sm:gap-1 leading-none"
                       style={{ marginTop: `${-8 + Math.round((formData?.hero_price_offset_y || 0) * 0.7)}px` }}
                     >
-                      <span className={`${priceSizeClass} font-serif font-black text-white tracking-tight drop-shadow-md`}>
+                      <span 
+                        style={{ fontSize: `clamp(${(1.5 * priceScale).toFixed(2)}rem, ${(2.6 * priceScale).toFixed(2)}vw, ${(3.0 * priceScale).toFixed(2)}rem)` }}
+                        className={`font-serif font-black ${priceConfig.amountClass} tracking-tight drop-shadow-md`}
+                      >
                         {formData?.hero_price_amount || '15'}
                       </span>
-                      <span className={`${priceSuffixClass} font-serif font-bold text-[#d4af37]`}>
+                      <span 
+                        style={{ fontSize: `clamp(${(0.85 * priceScale).toFixed(2)}rem, ${(1.3 * priceScale).toFixed(2)}vw, ${(1.5 * priceScale).toFixed(2)}rem)` }}
+                        className={`font-serif font-bold ${priceConfig.suffixClass}`}
+                      >
                         {formData?.hero_price_suffix || '€'}
                       </span>
                     </div>
@@ -134,12 +180,11 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
                 >
                   {/* Fila 1: Título H1 (el ancho máximo % solo afecta en pantallas medianas/grandes) */}
                   <h1 
-                    style={{ '--hero-title-max-w': `${titleMaxWidth}%` } as React.CSSProperties}
-                    className={`${
-                      formData?.hero_title_size === 'medium' ? 'text-xl sm:text-2xl md:text-3xl' :
-                      formData?.hero_title_size === 'xl' ? 'text-3xl sm:text-4xl md:text-5xl' :
-                      'text-2xl sm:text-3xl md:text-4xl'
-                    } font-serif font-extrabold text-white drop-shadow-md leading-tight tracking-tight max-w-full sm:max-w-[var(--hero-title-max-w)] ${
+                    style={{ 
+                      '--hero-title-max-w': `${titleMaxWidth}%`,
+                      fontSize: `clamp(${(1.25 * titleScale).toFixed(2)}rem, ${(2.7 * titleScale).toFixed(2)}vw, ${(2.6 * titleScale).toFixed(2)}rem)`
+                    } as React.CSSProperties}
+                    className={`font-serif font-extrabold text-white drop-shadow-md leading-tight tracking-tight max-w-full sm:max-w-[var(--hero-title-max-w)] ${
                       formData?.hero_horizontal_alignment === 'center' ? 'mx-auto' : ''
                     }`}
                   >
@@ -147,13 +192,14 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
                   </h1>
 
                   {/* Fila 2: Subtítulo */}
-                  <p className={`${
-                    formData?.hero_subtitle_size === 'small' ? 'text-xs' :
-                    formData?.hero_subtitle_size === 'large' ? 'text-sm sm:text-base' :
-                    'text-xs sm:text-sm'
-                  } text-white/90 font-medium drop-shadow-sm leading-relaxed ${
-                    formData?.hero_horizontal_alignment === 'center' ? 'max-w-xl mx-auto' : 'max-w-xl'
-                  }`}>
+                  <p 
+                    style={{
+                      fontSize: `clamp(${(0.75 * subtitleScale).toFixed(2)}rem, ${(1.0 * subtitleScale).toFixed(2)}vw, ${(0.95 * subtitleScale).toFixed(2)}rem)`
+                    }}
+                    className={`text-white/90 font-medium drop-shadow-sm leading-relaxed ${
+                      formData?.hero_horizontal_alignment === 'center' ? 'max-w-xl mx-auto' : 'max-w-xl'
+                    }`}
+                  >
                     {translate(formData?.hero_subtitle || 'Subtítulo descriptivo que acompaña a la imagen principal.', formData?.translations, 'hero_subtitle')}
                   </p>
 

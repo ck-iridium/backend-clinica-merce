@@ -17,6 +17,51 @@ const cleanTitle = (text: string) => {
     .trim();
 };
 
+const parseSizeScale = (val: any, fallback: number = 100): number => {
+  if (typeof val === 'number') return val;
+  if (!val) return fallback;
+  if (val === 'small') return 80;
+  if (val === 'medium') return 90;
+  if (val === 'large') return 100;
+  if (val === 'xl') return 125;
+  const parsed = parseInt(val, 10);
+  return isNaN(parsed) ? fallback : parsed;
+};
+
+const getPriceStyleConfig = (style?: string) => {
+  switch (style) {
+    case 'outline':
+      return {
+        boxClass: 'bg-transparent border-2 border-white/40 rounded-3xl px-6 py-3.5 sm:px-8 sm:py-4.5 md:px-9 md:py-6 text-white backdrop-blur-xs',
+        prefixClass: 'text-[#d4af37]',
+        amountClass: 'text-white drop-shadow-md',
+        suffixClass: 'text-[#d4af37]'
+      };
+    case 'minimal':
+      return {
+        boxClass: 'bg-transparent border-0 p-0 text-white shadow-none',
+        prefixClass: 'text-white/80',
+        amountClass: 'text-white drop-shadow-[0_8px_16px_rgba(0,0,0,0.8)]',
+        suffixClass: 'text-white drop-shadow-[0_8px_16px_rgba(0,0,0,0.8)]'
+      };
+    case 'solid_white':
+      return {
+        boxClass: 'bg-white/95 dark:bg-stone-900/95 backdrop-blur-md border border-white/50 dark:border-stone-800 rounded-3xl px-6 py-3.5 sm:px-8 sm:py-4.5 md:px-9 md:py-6 text-stone-900 dark:text-white shadow-lg',
+        prefixClass: 'text-[#d4af37]',
+        amountClass: 'text-stone-900 dark:text-white',
+        suffixClass: 'text-[#d4af37]'
+      };
+    case 'capsule_dark':
+    default:
+      return {
+        boxClass: 'backdrop-blur-xl bg-black/45 dark:bg-stone-950/60 border border-white/25 rounded-3xl px-6 py-3.5 sm:px-8 sm:py-4.5 md:px-9 md:py-6 text-white hover:border-[#d4af37]/60 transition-all duration-300',
+        prefixClass: 'text-[#d4af37]',
+        amountClass: 'text-white drop-shadow-[0_8px_16px_rgba(0,0,0,0.7)]',
+        suffixClass: 'text-[#d4af37]'
+      };
+  }
+};
+
 // ─── Componente de Tarjeta Bento/Grid Symmetrical con Video Hover y Precarga ──
 function BentoCategoryCard({ svc, idx, gridClass, total }: { svc: any, idx: number, gridClass: string, total: number }) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -518,6 +563,11 @@ export default function ClientHome({ content, settings, services, categories }: 
                 {(() => {
                   const titleMaxWidth = content.hero_title_max_width || 100;
                   const isPriceActive = !!content.hero_price_enabled && (content.hero_price_amount || content.hero_price_prefix);
+                  const titleScale = parseSizeScale(content.hero_title_size, 100) / 100;
+                  const subtitleScale = parseSizeScale(content.hero_subtitle_size, 100) / 100;
+                  const priceScale = parseSizeScale(content.hero_price_size, 100) / 100;
+                  const priceConfig = getPriceStyleConfig(content.hero_price_style);
+
                   const getButtonStyle = (style?: string) => {
                     switch (style) {
                       case 'gold_solid':
@@ -532,16 +582,6 @@ export default function ClientHome({ content, settings, services, categories }: 
                     }
                   };
 
-                  const priceSizeClass = 
-                    content.hero_price_size === 'medium' ? 'text-5xl sm:text-6xl md:text-7xl' :
-                    content.hero_price_size === 'xl' ? 'text-7xl sm:text-8xl md:text-9xl lg:text-[7.5rem]' :
-                    'text-6xl sm:text-7xl md:text-8xl';
-
-                  const priceSuffixClass = 
-                    content.hero_price_size === 'medium' ? 'text-2xl sm:text-3xl md:text-4xl' :
-                    content.hero_price_size === 'xl' ? 'text-4xl sm:text-5xl md:text-6xl' :
-                    'text-3xl sm:text-4xl md:text-5xl';
-
                   const renderPriceCapsule = (isMobile: boolean = false) => {
                     if (!isPriceActive) return null;
                     return (
@@ -549,10 +589,10 @@ export default function ClientHome({ content, settings, services, categories }: 
                         content.hero_horizontal_alignment === 'center' ? 'mx-auto' :
                         content.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''
                       }`}>
-                        <div className="relative group overflow-hidden rounded-3xl px-6 py-3.5 sm:px-8 sm:py-4.5 md:px-9 md:py-6 backdrop-blur-xl bg-black/45 dark:bg-stone-950/60 border border-white/25 transition-all duration-300 hover:border-[#d4af37]/60 select-none">
+                        <div className={`relative group overflow-hidden ${priceConfig.boxClass} select-none`}>
                           <div className="relative flex flex-col items-center justify-center text-center">
                             {translate(content.hero_price_prefix, content.translations, 'hero_price_prefix') && (
-                              <span className="text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.25em] text-[#d4af37] block leading-none">
+                              <span className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.25em] ${priceConfig.prefixClass} block leading-none`}>
                                 {translate(content.hero_price_prefix, content.translations, 'hero_price_prefix')}
                               </span>
                             )}
@@ -560,10 +600,16 @@ export default function ClientHome({ content, settings, services, categories }: 
                               className="flex items-baseline justify-center gap-1 sm:gap-1.5 leading-none"
                               style={{ marginTop: `${-12 + (content.hero_price_offset_y || 0)}px` }}
                             >
-                              <span className={`${priceSizeClass} font-serif font-black text-white tracking-tight drop-shadow-[0_8px_16px_rgba(0,0,0,0.7)]`}>
+                              <span 
+                                style={{ fontSize: `clamp(${(3.0 * priceScale).toFixed(2)}rem, ${(5.0 * priceScale).toFixed(2)}vw, ${(6.8 * priceScale).toFixed(2)}rem)` }}
+                                className={`font-serif font-black ${priceConfig.amountClass} tracking-tight`}
+                              >
                                 {content.hero_price_amount || '15'}
                               </span>
-                              <span className={`${priceSuffixClass} font-serif font-bold text-[#d4af37] drop-shadow-md`}>
+                              <span 
+                                style={{ fontSize: `clamp(${(1.4 * priceScale).toFixed(2)}rem, ${(2.3 * priceScale).toFixed(2)}vw, ${(3.0 * priceScale).toFixed(2)}rem)` }}
+                                className={`font-serif font-bold ${priceConfig.suffixClass}`}
+                              >
                                 {content.hero_price_suffix || '€'}
                               </span>
                             </div>
@@ -596,12 +642,11 @@ export default function ClientHome({ content, settings, services, categories }: 
                         >
                           {/* Fila 1: Título H1 (el ancho máximo % solo afecta en escritorio, nunca en móvil) */}
                           <h1 
-                            style={{ '--hero-title-max-w': `${titleMaxWidth}%` } as React.CSSProperties}
-                            className={`${
-                              content.hero_title_size === 'medium' ? 'text-4xl md:text-6xl lg:text-7xl' :
-                              content.hero_title_size === 'xl' ? 'text-6xl md:text-8xl lg:text-[8.5rem]' :
-                              'text-5xl md:text-7xl lg:text-[7.2rem]'
-                            } leading-none font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] tracking-tight max-w-full md:max-w-[var(--hero-title-max-w)] ${
+                            style={{ 
+                              '--hero-title-max-w': `${titleMaxWidth}%`,
+                              fontSize: `clamp(${(2.2 * titleScale).toFixed(2)}rem, ${(5.5 * titleScale).toFixed(2)}vw, ${(7.2 * titleScale).toFixed(2)}rem)`
+                            } as React.CSSProperties}
+                            className={`leading-none font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] tracking-tight max-w-full md:max-w-[var(--hero-title-max-w)] ${
                               content.hero_horizontal_alignment === 'center' ? 'mx-auto' : ''
                             }`}
                           >
@@ -609,13 +654,14 @@ export default function ClientHome({ content, settings, services, categories }: 
                           </h1>
 
                           {/* Fila 2: Subtítulo */}
-                          <p className={`${
-                            content.hero_subtitle_size === 'small' ? 'text-sm md:text-base' :
-                            content.hero_subtitle_size === 'large' ? 'text-lg md:text-2xl' :
-                            'text-base md:text-xl'
-                          } text-white/90 font-medium font-sans tracking-wide leading-relaxed drop-shadow-md ${
-                            content.hero_horizontal_alignment === 'center' ? 'max-w-2xl mx-auto' : 'max-w-xl'
-                          }`}>
+                          <p 
+                            style={{
+                              fontSize: `clamp(${(0.9 * subtitleScale).toFixed(2)}rem, ${(1.25 * subtitleScale).toFixed(2)}vw, ${(1.35 * subtitleScale).toFixed(2)}rem)`
+                            }}
+                            className={`text-white/90 font-medium font-sans tracking-wide leading-relaxed drop-shadow-md ${
+                              content.hero_horizontal_alignment === 'center' ? 'max-w-2xl mx-auto' : 'max-w-xl'
+                            }`}
+                          >
                             {translate(content.hero_subtitle, content.translations, 'hero_subtitle')}
                           </p>
 

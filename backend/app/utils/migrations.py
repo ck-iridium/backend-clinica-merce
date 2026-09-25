@@ -261,6 +261,7 @@ $function$;
             "ALTER TABLE site_content ADD COLUMN hero_price_suffix VARCHAR DEFAULT '€'",
             "ALTER TABLE site_content ADD COLUMN hero_price_size VARCHAR DEFAULT 'large'",
             "ALTER TABLE site_content ADD COLUMN hero_price_offset_y INTEGER DEFAULT 0",
+            "ALTER TABLE site_content ADD COLUMN hero_price_style VARCHAR DEFAULT 'capsule_dark'",
             "ALTER TABLE site_content ADD COLUMN hero_button_style VARCHAR DEFAULT 'glass'"
         ]
         
