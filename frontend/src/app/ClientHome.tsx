@@ -542,13 +542,47 @@ export default function ClientHome({ content, settings, services, categories }: 
                     content.hero_price_size === 'xl' ? 'text-4xl sm:text-5xl md:text-6xl' :
                     'text-3xl sm:text-4xl md:text-5xl';
 
+                  const renderPriceCapsule = (isMobile: boolean = false) => {
+                    if (!isPriceActive) return null;
+                    return (
+                      <div className={`shrink-0 ${isMobile ? 'block md:hidden my-2 w-fit' : 'hidden md:block self-start md:self-center'} ${
+                        content.hero_horizontal_alignment === 'center' ? 'mx-auto' :
+                        content.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''
+                      }`}>
+                        <div className="relative group overflow-hidden rounded-3xl px-6 py-3.5 sm:px-8 sm:py-4.5 md:px-9 md:py-6 backdrop-blur-xl bg-black/45 dark:bg-stone-950/60 border border-white/25 shadow-[0_20px_50px_rgba(0,0,0,0.6)] ring-1 ring-white/10 transition-all duration-300 hover:border-[#d4af37]/60 hover:shadow-[0_20px_50px_rgba(212,175,55,0.25)] select-none">
+                          {/* Luz ambiental sutil de lujo en esquina */}
+                          <div className="absolute -top-10 -right-10 w-28 h-28 bg-[#d4af37]/20 rounded-full blur-2xl pointer-events-none" />
+                          
+                          <div className="relative flex flex-col items-center justify-center text-center">
+                            {translate(content.hero_price_prefix, content.translations, 'hero_price_prefix') && (
+                              <span className="text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.25em] text-[#d4af37] block leading-none">
+                                {translate(content.hero_price_prefix, content.translations, 'hero_price_prefix')}
+                              </span>
+                            )}
+                            <div 
+                              className="flex items-baseline justify-center gap-1 sm:gap-1.5 leading-none"
+                              style={{ marginTop: `${-12 + (content.hero_price_offset_y || 0)}px` }}
+                            >
+                              <span className={`${priceSizeClass} font-serif font-black text-white tracking-tight drop-shadow-[0_8px_16px_rgba(0,0,0,0.7)]`}>
+                                {content.hero_price_amount || '15'}
+                              </span>
+                              <span className={`${priceSuffixClass} font-serif font-bold text-[#d4af37] drop-shadow-md`}>
+                                {content.hero_price_suffix || '€'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  };
+
                   return (
                     <div className={`relative z-10 w-full px-6 ${
                       content.hero_content_fullwidth
                         ? `max-w-7xl ${content.hero_horizontal_alignment === 'left' ? 'text-left ml-0 mr-auto' : content.hero_horizontal_alignment === 'right' ? 'text-right mr-0 ml-auto' : 'text-center mx-auto'}`
                         : `max-w-7xl mx-auto ${content.hero_horizontal_alignment === 'left' ? 'text-left' : content.hero_horizontal_alignment === 'right' ? 'text-right' : 'text-center'}`
                     }`}>
-                      {/* Bloque Principal Hero: Col 1 (H1 + Subtítulo + Botón) y Col 2 (Precio Encapsulado) */}
+                      {/* Bloque Principal Hero: Col 1 (H1 + Subtítulo + [Precio Móvil] + Botón) y Col 2 (Precio Escritorio) */}
                       <div className={`flex flex-col ${
                         content.hero_horizontal_alignment === 'center'
                           ? 'md:flex-row items-center justify-center'
@@ -556,20 +590,24 @@ export default function ClientHome({ content, settings, services, categories }: 
                           ? 'md:flex-row-reverse items-end justify-start'
                           : 'md:flex-row items-start md:items-center justify-start'
                       } gap-6 md:gap-10 lg:gap-14`}>
-                        {/* Columna 1: Fila 1 = H1, Fila 2 = Subtítulo, Fila 3 = Botón CTA */}
+                        {/* Columna 1: Textos */}
                         <div 
-                          style={{ maxWidth: titleMaxWidth < 100 ? `${titleMaxWidth}%` : undefined }}
-                          className={`space-y-3 md:space-y-4 ${
+                          className={`w-full space-y-3 md:space-y-4 ${
                             content.hero_horizontal_alignment === 'center' ? 'text-center' :
                             content.hero_horizontal_alignment === 'right' ? 'text-right' : 'text-left'
-                          } ${isPriceActive ? 'max-w-2xl' : 'max-w-3xl'}`}
+                          } ${isPriceActive ? 'md:max-w-2xl' : 'md:max-w-3xl'}`}
                         >
-                          {/* Fila 1: Título H1 */}
-                          <h1 className={`${
-                            content.hero_title_size === 'medium' ? 'text-4xl md:text-6xl lg:text-7xl' :
-                            content.hero_title_size === 'xl' ? 'text-6xl md:text-8xl lg:text-[8.5rem]' :
-                            'text-5xl md:text-7xl lg:text-[7.2rem]'
-                          } leading-none font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] tracking-tight`}>
+                          {/* Fila 1: Título H1 (el ancho máximo % solo afecta en escritorio, nunca en móvil) */}
+                          <h1 
+                            style={{ '--hero-title-max-w': `${titleMaxWidth}%` } as React.CSSProperties}
+                            className={`${
+                              content.hero_title_size === 'medium' ? 'text-4xl md:text-6xl lg:text-7xl' :
+                              content.hero_title_size === 'xl' ? 'text-6xl md:text-8xl lg:text-[8.5rem]' :
+                              'text-5xl md:text-7xl lg:text-[7.2rem]'
+                            } leading-none font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] tracking-tight max-w-full md:max-w-[var(--hero-title-max-w)] ${
+                              content.hero_horizontal_alignment === 'center' ? 'mx-auto' : ''
+                            }`}
+                          >
                             {cleanTitle(translate(content.hero_title, content.translations, 'hero_title'))}
                           </h1>
 
@@ -584,49 +622,28 @@ export default function ClientHome({ content, settings, services, categories }: 
                             {translate(content.hero_subtitle, content.translations, 'hero_subtitle')}
                           </p>
 
-                          {/* Fila 3: Botón de Acción pegado a los textos */}
+                          {/* En Móvil: Cápsula de Precio ubicada exactamente entre Subtítulo y Botón */}
+                          {renderPriceCapsule(true)}
+
+                          {/* Fila 3: Botón de Acción CTA (100% ancho en móvil, sin estrecharse ni partirse) */}
                           {content.hero_show_button !== false && (
-                            <div className="pt-2 md:pt-3">
+                            <div className={`pt-2 md:pt-3 w-full ${
+                              content.hero_horizontal_alignment === 'center' ? 'flex justify-center' :
+                              content.hero_horizontal_alignment === 'right' ? 'flex justify-end' : 'flex justify-start'
+                            }`}>
                               <Link 
                                 href={content.hero_button_link || '#'} 
-                                className={`inline-block px-9 py-3.5 md:px-11 md:py-4 rounded-full font-bold text-base md:text-lg transition-all duration-500 hover:scale-105 active:scale-95 group ${getButtonStyle(content.hero_button_style)}`}
+                                className={`w-full sm:w-auto inline-flex items-center justify-center px-9 py-4 md:px-11 md:py-4 rounded-full font-bold text-base md:text-lg transition-all duration-500 hover:scale-105 active:scale-95 group text-center whitespace-nowrap shadow-lg ${getButtonStyle(content.hero_button_style)}`}
                               >
-                                {translate(content.hero_button_text, content.translations, 'hero_button_text')} <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                                <span>{translate(content.hero_button_text, content.translations, 'hero_button_text')}</span>
+                                <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">→</span>
                               </Link>
                             </div>
                           )}
                         </div>
 
-                        {/* Columna 2: Cápsula de Precio Encapsulada y Compacta */}
-                        {isPriceActive && (
-                          <div className={`shrink-0 self-start md:self-center ${
-                            content.hero_horizontal_alignment === 'center' ? 'mx-auto' : ''
-                          }`}>
-                            <div className="relative group overflow-hidden rounded-3xl px-6 py-4 sm:px-8 sm:py-5 md:px-9 md:py-6 backdrop-blur-xl bg-black/45 dark:bg-stone-950/60 border border-white/25 shadow-[0_20px_50px_rgba(0,0,0,0.6)] ring-1 ring-white/10 transition-all duration-300 hover:border-[#d4af37]/60 hover:shadow-[0_20px_50px_rgba(212,175,55,0.25)] select-none">
-                              {/* Luz ambiental sutil de lujo en esquina */}
-                              <div className="absolute -top-10 -right-10 w-28 h-28 bg-[#d4af37]/20 rounded-full blur-2xl pointer-events-none" />
-                              
-                              <div className="relative flex flex-col items-center justify-center text-center">
-                                {translate(content.hero_price_prefix, content.translations, 'hero_price_prefix') && (
-                                  <span className="text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.25em] text-[#d4af37] block leading-none">
-                                    {translate(content.hero_price_prefix, content.translations, 'hero_price_prefix')}
-                                  </span>
-                                )}
-                                <div 
-                                  className="flex items-baseline justify-center gap-1 sm:gap-1.5 leading-none"
-                                  style={{ marginTop: `${-12 + (content.hero_price_offset_y || 0)}px` }}
-                                >
-                                  <span className={`${priceSizeClass} font-serif font-black text-white tracking-tight drop-shadow-[0_8px_16px_rgba(0,0,0,0.7)]`}>
-                                    {content.hero_price_amount || '15'}
-                                  </span>
-                                  <span className={`${priceSuffixClass} font-serif font-bold text-[#d4af37] drop-shadow-md`}>
-                                    {content.hero_price_suffix || '€'}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        )}
+                        {/* En Escritorio: Columna 2 lateral con la Cápsula de Precio */}
+                        {renderPriceCapsule(false)}
                       </div>
                     </div>
                   );

@@ -76,9 +76,40 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
             'text-3xl sm:text-4xl';
 
           const priceSuffixClass = 
-            formData?.hero_price_size === 'medium' ? 'text-sm sm:text-base' :
-            formData?.hero_price_size === 'xl' ? 'text-lg sm:text-xl' :
-            'text-base sm:text-lg';
+            formData?.hero_price_size === 'medium' ? 'text-lg sm:text-xl' :
+            formData?.hero_price_size === 'xl' ? 'text-2xl sm:text-3xl' :
+            'text-xl sm:text-2xl';
+
+          const renderPriceCapsule = (isMobile: boolean = false) => {
+            if (!isPriceActive) return null;
+            return (
+              <div className={`shrink-0 ${isMobile ? 'block sm:hidden my-1.5 w-fit' : 'hidden sm:block self-start sm:self-center'} ${
+                formData?.hero_horizontal_alignment === 'center' ? 'mx-auto' :
+                formData?.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''
+              }`}>
+                <div className="relative group overflow-hidden rounded-2xl px-4 py-2.5 sm:px-5 sm:py-3.5 backdrop-blur-xl bg-black/45 dark:bg-stone-950/60 border border-white/25 shadow-lg ring-1 ring-white/10 select-none">
+                  <div className="relative flex flex-col items-center justify-center text-center">
+                    {translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix') && (
+                      <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-[#d4af37] block leading-none">
+                        {translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix')}
+                      </span>
+                    )}
+                    <div 
+                      className="flex items-baseline justify-center gap-0.5 sm:gap-1 leading-none"
+                      style={{ marginTop: `${-8 + Math.round((formData?.hero_price_offset_y || 0) * 0.7)}px` }}
+                    >
+                      <span className={`${priceSizeClass} font-serif font-black text-white tracking-tight drop-shadow-md`}>
+                        {formData?.hero_price_amount || '15'}
+                      </span>
+                      <span className={`${priceSuffixClass} font-serif font-bold text-[#d4af37]`}>
+                        {formData?.hero_price_suffix || '€'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          };
 
           return (
             <div className={`relative z-10 w-full px-6 ${
@@ -86,7 +117,7 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
                 ? `max-w-4xl ${formData?.hero_horizontal_alignment === 'left' ? 'text-left ml-0 mr-auto' : formData?.hero_horizontal_alignment === 'right' ? 'text-right mr-0 ml-auto' : 'text-center mx-auto'}`
                 : `max-w-4xl mx-auto ${formData?.hero_horizontal_alignment === 'left' ? 'text-left' : formData?.hero_horizontal_alignment === 'right' ? 'text-right' : 'text-center'}`
             }`}>
-              {/* Bloque Principal Hero: Col 1 (H1 + Subtítulo + Botón) y Col 2 (Precio Encapsulado) */}
+              {/* Bloque Principal Hero: Col 1 (H1 + Subtítulo + [Precio Móvil] + Botón) y Col 2 (Precio Escritorio) */}
               <div className={`flex flex-col ${
                 formData?.hero_horizontal_alignment === 'center'
                   ? 'sm:flex-row items-center justify-center'
@@ -94,20 +125,24 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
                   ? 'sm:flex-row-reverse items-end justify-start'
                   : 'sm:flex-row items-start sm:items-center justify-start'
               } gap-4 sm:gap-6 md:gap-8`}>
-                {/* Columna 1: Fila 1 = H1, Fila 2 = Subtítulo, Fila 3 = Botón CTA */}
+                {/* Columna 1: Textos */}
                 <div 
-                  style={{ maxWidth: titleMaxWidth < 100 ? `${titleMaxWidth}%` : undefined }}
-                  className={`space-y-2 ${
+                  className={`w-full space-y-2 ${
                     formData?.hero_horizontal_alignment === 'center' ? 'text-center' :
                     formData?.hero_horizontal_alignment === 'right' ? 'text-right' : 'text-left'
-                  } ${isPriceActive ? 'max-w-xl' : 'max-w-2xl'}`}
+                  } ${isPriceActive ? 'sm:max-w-xl' : 'sm:max-w-2xl'}`}
                 >
-                  {/* Fila 1: Título H1 */}
-                  <h1 className={`${
-                    formData?.hero_title_size === 'medium' ? 'text-xl sm:text-2xl md:text-3xl' :
-                    formData?.hero_title_size === 'xl' ? 'text-3xl sm:text-4xl md:text-5xl' :
-                    'text-2xl sm:text-3xl md:text-4xl'
-                  } font-serif font-extrabold text-white drop-shadow-md leading-tight tracking-tight`}>
+                  {/* Fila 1: Título H1 (el ancho máximo % solo afecta en pantallas medianas/grandes) */}
+                  <h1 
+                    style={{ '--hero-title-max-w': `${titleMaxWidth}%` } as React.CSSProperties}
+                    className={`${
+                      formData?.hero_title_size === 'medium' ? 'text-xl sm:text-2xl md:text-3xl' :
+                      formData?.hero_title_size === 'xl' ? 'text-3xl sm:text-4xl md:text-5xl' :
+                      'text-2xl sm:text-3xl md:text-4xl'
+                    } font-serif font-extrabold text-white drop-shadow-md leading-tight tracking-tight max-w-full sm:max-w-[var(--hero-title-max-w)] ${
+                      formData?.hero_horizontal_alignment === 'center' ? 'mx-auto' : ''
+                    }`}
+                  >
                     {cleanTitle(translate(formData?.hero_title || 'Título Principal', formData?.translations, 'hero_title'))}
                   </h1>
 
@@ -122,43 +157,25 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
                     {translate(formData?.hero_subtitle || 'Subtítulo descriptivo que acompaña a la imagen principal.', formData?.translations, 'hero_subtitle')}
                   </p>
 
-                  {/* Fila 3: Botón de Acción pegado a los textos */}
+                  {/* En Móvil: Cápsula de Precio entre Subtítulo y Botón */}
+                  {renderPriceCapsule(true)}
+
+                  {/* Fila 3: Botón de Acción CTA (100% ancho en móvil, sin estrecharse) */}
                   {formData?.hero_show_button !== false && (
-                    <div className="pt-1.5 sm:pt-2">
-                      <div className={`inline-block px-6 py-2 rounded-full font-bold text-xs sm:text-sm transition-all shadow-md ${getButtonStyle(formData?.hero_button_style)}`}>
-                        {translate(formData?.hero_button_text || 'Reservar Ahora', formData?.translations, 'hero_button_text')} <span className="ml-1">→</span>
+                    <div className={`pt-1.5 sm:pt-2 w-full ${
+                      formData?.hero_horizontal_alignment === 'center' ? 'flex justify-center' :
+                      formData?.hero_horizontal_alignment === 'right' ? 'flex justify-end' : 'flex justify-start'
+                    }`}>
+                      <div className={`w-full sm:w-auto inline-flex items-center justify-center px-6 py-2.5 rounded-full font-bold text-xs sm:text-sm transition-all shadow-md text-center whitespace-nowrap ${getButtonStyle(formData?.hero_button_style)}`}>
+                        <span>{translate(formData?.hero_button_text || 'Reservar Ahora', formData?.translations, 'hero_button_text')}</span>
+                        <span className="ml-1.5">→</span>
                       </div>
                     </div>
                   )}
                 </div>
 
-                {/* Columna 2: Cápsula de Precio Encapsulada y Compacta */}
-                {isPriceActive && (
-                  <div className={`shrink-0 self-start sm:self-center ${
-                    formData?.hero_horizontal_alignment === 'center' ? 'mx-auto' : ''
-                  }`}>
-                    <div className="relative group overflow-hidden rounded-2xl px-4 py-2.5 sm:px-5 sm:py-3.5 backdrop-blur-xl bg-black/45 dark:bg-stone-950/60 border border-white/25 shadow-lg ring-1 ring-white/10 select-none">
-                      <div className="relative flex flex-col items-center justify-center text-center">
-                        {translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix') && (
-                          <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-[#d4af37] block leading-none">
-                            {translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix')}
-                          </span>
-                        )}
-                        <div 
-                          className="flex items-baseline justify-center gap-0.5 sm:gap-1 leading-none"
-                          style={{ marginTop: `${-8 + Math.round((formData?.hero_price_offset_y || 0) * 0.7)}px` }}
-                        >
-                          <span className={`${priceSizeClass} font-serif font-black text-white tracking-tight drop-shadow-md`}>
-                            {formData?.hero_price_amount || '15'}
-                          </span>
-                          <span className={`${priceSuffixClass} font-serif font-bold text-[#d4af37]`}>
-                            {formData?.hero_price_suffix || '€'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                {/* En Escritorio: Columna 2 lateral con la Cápsula de Precio */}
+                {renderPriceCapsule(false)}
               </div>
             </div>
           );
