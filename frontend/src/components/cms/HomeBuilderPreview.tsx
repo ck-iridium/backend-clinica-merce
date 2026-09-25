@@ -127,13 +127,13 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
               <div className={`relative group ${priceConfig.boxClass} select-none`}>
                 <div className="relative flex flex-col items-start text-left">
                   {translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix') && (
-                    <span className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.22em] ${priceConfig.prefixClass} block mb-0 leading-none pl-0.5`}>
+                    <span className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.22em] ${priceConfig.prefixClass} block mb-0 leading-none pl-0.5 select-none`}>
                       {translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix')}
                     </span>
                   )}
                   <div 
-                    className="flex items-center gap-2.5 sm:gap-3.5 leading-none"
-                    style={{ marginTop: `${-28 + Math.round(formData?.hero_price_offset_y || 0)}px` }}
+                    className="flex items-center gap-2 sm:gap-3.5 leading-none mt-[-5px] sm:mt-[var(--hero-price-mt)]"
+                    style={{ '--hero-price-mt': `${-28 + Math.round(formData?.hero_price_offset_y || 0)}px` } as React.CSSProperties}
                   >
                     <span 
                       style={{ 
