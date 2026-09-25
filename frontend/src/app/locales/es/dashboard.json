@@ -438,6 +438,7 @@
       "preview_badge_desc": "Así se presentará en la columna lateral del Hero:",
       "action_button_desc": "Personaliza el botón de llamada a la acción, su enlace inteligente y apariencia visual.",
       "button_style_label": "Estilo Visual del Botón",
+      "style_solid_color": "Relleno de Color",
       "open_link_picker": "Elegir Enlace Smart",
       "card_layout_title": "Distribución y Posición",
       "card_layout_desc": "Ajusta la posición vertical, horizontal y la cuadrícula del contenido."

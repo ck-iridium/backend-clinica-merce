@@ -8,13 +8,10 @@ import {
   Film, 
   Type, 
   Tag, 
-  Sparkles, 
   MousePointerClick, 
   Layout, 
   Sliders, 
-  Wand2, 
-  ExternalLink,
-  ChevronDown
+  Wand2
 } from 'lucide-react';
 
 interface HeroTabProps {
@@ -46,9 +43,10 @@ export default function HeroTab({
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300 pb-12">
       {/* ─── TARJETA 1: FONDO Y MULTIMEDIA ─── */}
       <div className="p-6 rounded-3xl bg-stone-50/70 dark:bg-stone-900/40 border border-stone-200/70 dark:border-stone-800 shadow-sm space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-stone-200/60 dark:border-stone-800">
+        {/* Cabecera a ancho completo */}
+        <div className="space-y-3 pb-3 border-b border-stone-200/60 dark:border-stone-800">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-[#d4af37]/10 text-[#d4af37]">
+            <div className="p-2 rounded-xl bg-[#d4af37]/10 text-[#d4af37] shrink-0">
               <ImageIcon size={18} />
             </div>
             <div>
@@ -61,29 +59,30 @@ export default function HeroTab({
             </div>
           </div>
           
-          <div className="flex bg-stone-200/60 dark:bg-stone-800 p-1 rounded-xl text-xs font-bold">
+          {/* Fila dedicada para botones de Imagen / Vídeo */}
+          <div className="grid grid-cols-2 bg-stone-200/60 dark:bg-stone-800 p-1 rounded-xl text-xs font-bold w-full">
             <button
               type="button"
               onClick={() => setMediaTypeTab('image')}
-              className={`px-3 py-1 rounded-lg transition-all flex items-center gap-1.5 ${
+              className={`py-2 px-3 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
                 mediaTypeTab === 'image' 
                   ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-white shadow-xs' 
                   : 'text-stone-500 hover:text-stone-800 dark:hover:text-stone-300'
               }`}
             >
-              <ImageIcon size={13} />
+              <ImageIcon size={14} />
               {t('cms.hero.tab_image') || 'Imagen'}
             </button>
             <button
               type="button"
               onClick={() => setMediaTypeTab('video')}
-              className={`px-3 py-1 rounded-lg transition-all flex items-center gap-1.5 ${
+              className={`py-2 px-3 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
                 mediaTypeTab === 'video' 
                   ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-white shadow-xs' 
                   : 'text-stone-500 hover:text-stone-800 dark:hover:text-stone-300'
               }`}
             >
-              <Film size={13} />
+              <Film size={14} />
               {t('cms.hero.tab_video') || 'Vídeo (Opcional)'}
               {formData.hero_video_url && (
                 <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
@@ -265,7 +264,7 @@ export default function HeroTab({
                 )}
               </h4>
               <p className="text-xs text-stone-500 dark:text-stone-400">
-                {t('cms.hero.card_price_desc') || 'Destaca una tarifa de entrada o precio estrella alineado en 2 columnas junto al titular.'}
+                {t('cms.hero.card_price_desc') || 'Destaca una tarifa de entrada o precio estrella pegado directamente junto al titular.'}
               </p>
             </div>
           </div>
@@ -346,28 +345,27 @@ export default function HeroTab({
               </select>
             </div>
 
-            {/* Vista previa en miniatura del bloque de precio */}
-            <div className="p-4 rounded-2xl bg-stone-900 text-white flex items-center justify-between">
-              <div>
-                <span className="text-[10px] uppercase font-bold tracking-widest text-[#d4af37] block">
-                  {t('cms.hero.preview_badge') || 'Previsualización del Badge'}
+            {/* Vista previa compacta inline pegada al título */}
+            <div className="p-3.5 rounded-2xl bg-stone-900 text-white space-y-2">
+              <span className="text-[10px] uppercase font-bold tracking-widest text-[#d4af37] block">
+                {t('cms.hero.preview_badge') || 'Previsualización (Pegado al Título)'}
+              </span>
+              <div className="flex items-baseline gap-2.5 flex-wrap">
+                <span className="font-serif font-extrabold text-lg text-white">
+                  {formData.hero_title || 'Título Principal'}
                 </span>
-                <p className="text-xs text-stone-400">
-                  {t('cms.hero.preview_badge_desc') || 'Así se presentará en la columna lateral del Hero:'}
-                </p>
-              </div>
-
-              <div className="text-right">
-                <span className="block text-[11px] uppercase tracking-widest font-semibold text-[#d4af37]">
-                  {formData.hero_price_prefix || 'Desde'}
-                </span>
-                <div className="flex items-baseline justify-end gap-1">
-                  <span className="font-serif font-extrabold text-3xl leading-none text-white">
-                    {formData.hero_price_amount || '45'}
+                <div className="inline-flex flex-col justify-end text-left pl-1">
+                  <span className="text-[9px] uppercase tracking-widest font-extrabold text-[#d4af37] leading-none">
+                    {formData.hero_price_prefix || 'Desde'}
                   </span>
-                  <span className="text-sm font-serif font-bold text-white/80">
-                    {formData.hero_price_suffix || '€'}
-                  </span>
+                  <div className="flex items-baseline gap-0.5 leading-none">
+                    <span className="font-serif font-extrabold text-xl text-white">
+                      {formData.hero_price_amount || '15'}
+                    </span>
+                    <span className="text-xs font-serif font-bold text-[#d4af37]">
+                      {formData.hero_price_suffix || '€'}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -411,13 +409,13 @@ export default function HeroTab({
         
         {formData.hero_show_button !== false && (
           <div className="space-y-4 pt-1 animate-in fade-in slide-in-from-top-2 duration-300">
-            {/* SELECTOR DE ESTILOS VISUALES DEL BOTÓN */}
+            {/* SELECTOR DE ESTILOS VISUALES DEL BOTÓN (2 POR FILA) */}
             <div className="space-y-2">
               <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">
                 {t('cms.hero.button_style_label') || 'Estilo Visual del Botón'}
               </label>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5" id="cms-hero-button-style-select">
+              <div className="grid grid-cols-2 gap-3" id="cms-hero-button-style-select">
                 {/* 1. Glassmorphism */}
                 <button
                   type="button"
@@ -428,15 +426,15 @@ export default function HeroTab({
                       : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 hover:border-stone-300'
                   }`}
                 >
-                  <div className="w-full py-1.5 px-3 rounded-full bg-stone-900/60 backdrop-blur-md border border-white/30 text-white text-[11px] font-bold">
+                  <div className="w-full py-2 px-3 rounded-full bg-stone-900/60 backdrop-blur-md border border-white/30 text-white text-xs font-bold">
                     Glass
                   </div>
-                  <span className="text-[10px] font-bold text-stone-500 dark:text-stone-400">
+                  <span className="text-[11px] font-bold text-stone-600 dark:text-stone-300">
                     Cristalino
                   </span>
                 </button>
 
-                {/* 2. Dorado Sólido */}
+                {/* 2. Color de Marca (Sólido) */}
                 <button
                   type="button"
                   onClick={() => setFormData((prev: any) => ({ ...prev, hero_button_style: 'gold_solid' }))}
@@ -446,11 +444,11 @@ export default function HeroTab({
                       : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 hover:border-stone-300'
                   }`}
                 >
-                  <div className="w-full py-1.5 px-3 rounded-full bg-[#d4af37] text-white text-[11px] font-bold shadow-xs">
-                    Dorado
+                  <div className="w-full py-2 px-3 rounded-full bg-[#d4af37] text-white text-xs font-bold shadow-xs">
+                    Color
                   </div>
-                  <span className="text-[10px] font-bold text-stone-500 dark:text-stone-400">
-                    Oro Joya
+                  <span className="text-[11px] font-bold text-stone-600 dark:text-stone-300">
+                    {t('cms.hero.style_solid_color') || 'Relleno de Color'}
                   </span>
                 </button>
 
@@ -464,10 +462,10 @@ export default function HeroTab({
                       : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 hover:border-stone-300'
                   }`}
                 >
-                  <div className="w-full py-1.5 px-3 rounded-full border-2 border-stone-800 dark:border-white text-stone-800 dark:text-white text-[11px] font-bold">
+                  <div className="w-full py-2 px-3 rounded-full border-2 border-stone-800 dark:border-white text-stone-800 dark:text-white text-xs font-bold">
                     Outline
                   </div>
-                  <span className="text-[10px] font-bold text-stone-500 dark:text-stone-400">
+                  <span className="text-[11px] font-bold text-stone-600 dark:text-stone-300">
                     Línea Fina
                   </span>
                 </button>
@@ -482,11 +480,11 @@ export default function HeroTab({
                       : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 hover:border-stone-300'
                   }`}
                 >
-                  <div className="w-full py-1.5 px-3 rounded-full bg-white text-stone-900 border border-stone-200 text-[11px] font-bold shadow-xs">
+                  <div className="w-full py-2 px-3 rounded-full bg-white text-stone-900 border border-stone-200 text-xs font-bold shadow-xs">
                     Blanco
                   </div>
-                  <span className="text-[10px] font-bold text-stone-500 dark:text-stone-400">
-                    Contraste
+                  <span className="text-[11px] font-bold text-stone-600 dark:text-stone-300">
+                    Blanco Contraste
                   </span>
                 </button>
               </div>

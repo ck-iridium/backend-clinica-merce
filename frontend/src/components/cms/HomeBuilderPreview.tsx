@@ -76,89 +76,58 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
                 ? (formData?.hero_horizontal_alignment === 'left' ? 'max-w-2xl text-left ml-0 mr-auto' : formData?.hero_horizontal_alignment === 'right' ? 'max-w-2xl text-right mr-0 ml-auto' : 'max-w-2xl text-center mx-auto')
                 : (formData?.hero_horizontal_alignment === 'left' ? 'max-w-3xl text-left' : formData?.hero_horizontal_alignment === 'right' ? 'max-w-3xl text-right' : 'max-w-3xl text-center mx-auto')
             }`}>
-              {isPriceActive ? (
-                /* Disposición en 2 Columnas en la Preview */
-                <div className={`flex flex-col sm:flex-row items-stretch gap-4 sm:gap-8 ${
-                  formData?.hero_horizontal_alignment === 'right' ? 'sm:flex-row-reverse' : ''
-                } ${formData?.hero_horizontal_alignment === 'center' ? 'items-center justify-center' : 'justify-between'}`}>
-                  {/* Columna de Texto */}
-                  <div className="flex-1 min-w-0 space-y-2">
-                    <h1 
-                      style={{ maxWidth: `${titleMaxWidth}%` }}
-                      className={`${
-                        formData?.hero_title_size === 'medium' ? 'text-xl sm:text-2xl md:text-3xl' :
-                        formData?.hero_title_size === 'xl' ? 'text-3xl sm:text-4xl md:text-5xl' :
-                        'text-2xl sm:text-3xl md:text-4xl'
-                      } font-serif font-extrabold text-white drop-shadow-md leading-tight ${
-                        formData?.hero_horizontal_alignment === 'center' ? 'mx-auto' : formData?.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''
-                      }`}
-                    >
-                      {cleanTitle(translate(formData?.hero_title || 'Título Principal', formData?.translations, 'hero_title'))}
-                    </h1>
-                    <p className={`${
-                      formData?.hero_subtitle_size === 'small' ? 'text-xs' :
-                      formData?.hero_subtitle_size === 'large' ? 'text-sm sm:text-base' :
-                      'text-xs sm:text-sm'
-                    } text-white/90 font-medium drop-shadow-sm leading-relaxed ${
-                      formData?.hero_horizontal_alignment === 'center' ? 'max-w-xl mx-auto' : 'max-w-xl'
-                    } ${formData?.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''}`}>
-                      {translate(formData?.hero_subtitle || 'Subtítulo descriptivo que acompaña a la imagen principal.', formData?.translations, 'hero_subtitle')}
-                    </p>
-                  </div>
+              {/* Título Principal con Bloque de Precio pegado al lado en la misma fila */}
+              <div className={`flex flex-row items-baseline gap-2.5 sm:gap-4 flex-nowrap ${
+                formData?.hero_horizontal_alignment === 'center' ? 'justify-center text-center' : formData?.hero_horizontal_alignment === 'right' ? 'justify-end text-right' : 'justify-start text-left'
+              }`}>
+                <h1 
+                  style={{ maxWidth: titleMaxWidth < 100 ? `${titleMaxWidth}%` : undefined }}
+                  className={`${
+                    formData?.hero_title_size === 'medium' ? 'text-xl sm:text-2xl md:text-3xl' :
+                    formData?.hero_title_size === 'xl' ? 'text-3xl sm:text-4xl md:text-5xl' :
+                    'text-2xl sm:text-3xl md:text-4xl'
+                  } font-serif font-extrabold text-white drop-shadow-md leading-tight shrink min-w-0 ${
+                    formData?.hero_horizontal_alignment === 'center' ? 'mx-auto' : formData?.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''
+                  }`}
+                >
+                  {cleanTitle(translate(formData?.hero_title || 'Título Principal', formData?.translations, 'hero_title'))}
+                </h1>
 
-                  {/* Columna de Precio */}
-                  <div className={`flex flex-col justify-center shrink-0 ${
-                    formData?.hero_horizontal_alignment === 'center' ? 'items-center text-center' : formData?.hero_horizontal_alignment === 'right' ? 'items-end text-right' : 'items-start sm:items-end text-left sm:text-right'
-                  }`}>
-                    <div className="bg-stone-900/40 backdrop-blur-md border border-white/20 rounded-2xl p-4 shadow-xl">
-                      <span className="text-[10px] uppercase tracking-widest font-extrabold text-[#d4af37] block">
-                        {translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix') || 'Desde'}
+                {isPriceActive && (
+                  <div className="shrink-0 inline-flex flex-col justify-end text-left self-baseline pb-0.5 select-none">
+                    <span className="text-[9px] sm:text-[10px] uppercase tracking-widest font-extrabold text-[#d4af37] block leading-none mb-0.5">
+                      {translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix') || 'Desde'}
+                    </span>
+                    <div className="flex items-baseline gap-0.5 leading-none">
+                      <span className={`${
+                        formData?.hero_price_size === 'medium' ? 'text-2xl sm:text-3xl' :
+                        formData?.hero_price_size === 'xl' ? 'text-4xl sm:text-5xl' :
+                        'text-3xl sm:text-4xl'
+                      } font-serif font-extrabold text-white`}>
+                        {formData?.hero_price_amount || '45'}
                       </span>
-                      <div className="flex items-baseline gap-1 leading-none">
-                        <span className={`${
-                          formData?.hero_price_size === 'medium' ? 'text-3xl sm:text-4xl' :
-                          formData?.hero_price_size === 'xl' ? 'text-5xl sm:text-6xl' :
-                          'text-4xl sm:text-5xl'
-                        } font-serif font-extrabold text-white`}>
-                          {formData?.hero_price_amount || '45'}
-                        </span>
-                        <span className="text-lg font-serif font-bold text-[#d4af37]">
-                          {formData?.hero_price_suffix || '€'}
-                        </span>
-                      </div>
+                      <span className="text-base sm:text-lg font-serif font-bold text-[#d4af37]">
+                        {formData?.hero_price_suffix || '€'}
+                      </span>
                     </div>
                   </div>
-                </div>
-              ) : (
-                /* Disposición Clásica */
-                <div className="space-y-3">
-                  <h1 
-                    style={{ maxWidth: `${titleMaxWidth}%` }}
-                    className={`${
-                      formData?.hero_title_size === 'medium' ? 'text-2xl md:text-3xl lg:text-4xl' :
-                      formData?.hero_title_size === 'xl' ? 'text-5xl md:text-6xl lg:text-7xl' :
-                      'text-4xl md:text-5xl'
-                    } font-serif font-extrabold text-white drop-shadow-md leading-tight ${
-                      formData?.hero_horizontal_alignment === 'center' ? 'mx-auto' : formData?.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''
-                    }`}
-                  >
-                    {cleanTitle(translate(formData?.hero_title || 'Título Principal', formData?.translations, 'hero_title'))}
-                  </h1>
-                  <p className={`${
-                    formData?.hero_subtitle_size === 'small' ? 'text-xs md:text-sm' :
-                    formData?.hero_subtitle_size === 'large' ? 'text-base md:text-xl' :
-                    'text-sm md:text-lg'
-                  } text-white/90 font-medium drop-shadow-sm leading-relaxed ${
-                    formData?.hero_horizontal_alignment === 'center' ? 'max-w-xl mx-auto' : 'max-w-xl'
-                  } ${formData?.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''}`}>
-                    {translate(formData?.hero_subtitle || 'Subtítulo descriptivo que acompaña a la imagen principal.', formData?.translations, 'hero_subtitle')}
-                  </p>
-                </div>
-              )}
+                )}
+              </div>
+
+              {/* Subtítulo pegado al título */}
+              <p className={`${
+                formData?.hero_subtitle_size === 'small' ? 'text-xs' :
+                formData?.hero_subtitle_size === 'large' ? 'text-sm sm:text-base' :
+                'text-xs sm:text-sm'
+              } text-white/90 font-medium drop-shadow-sm leading-relaxed mt-2 sm:mt-2.5 ${
+                formData?.hero_horizontal_alignment === 'center' ? 'max-w-xl mx-auto' : 'max-w-xl'
+              } ${formData?.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''}`}>
+                {translate(formData?.hero_subtitle || 'Subtítulo descriptivo que acompaña a la imagen principal.', formData?.translations, 'hero_subtitle')}
+              </p>
 
               {formData?.hero_show_button !== false && (
-                <div className="pt-4">
-                  <div className={`inline-block px-8 py-3 rounded-full font-bold text-sm transition-all shadow-md ${getButtonStyle(formData?.hero_button_style)}`}>
+                <div className="pt-2.5 sm:pt-3">
+                  <div className={`inline-block px-7 py-2.5 rounded-full font-bold text-xs sm:text-sm transition-all shadow-md ${getButtonStyle(formData?.hero_button_style)}`}>
                     {translate(formData?.hero_button_text || 'Reservar Ahora', formData?.translations, 'hero_button_text')} <span className="ml-1">→</span>
                   </div>
                 </div>

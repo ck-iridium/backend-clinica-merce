@@ -438,6 +438,7 @@
       "preview_badge_desc": "Here is how it will appear in the lateral column of the Hero:",
       "action_button_desc": "Customize the call-to-action button, its smart destination link, and visual appearance.",
       "button_style_label": "Button Visual Style",
+      "style_solid_color": "Solid Brand Color",
       "open_link_picker": "Pick Smart Link",
       "card_layout_title": "Layout & Position",
       "card_layout_desc": "Adjust vertical alignment, horizontal alignment, and content grid width."

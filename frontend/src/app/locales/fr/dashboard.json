@@ -438,6 +438,7 @@
       "preview_badge_desc": "Voici comment il apparaîtra dans la colonne latérale du Hero :",
       "action_button_desc": "Personnalisez le bouton d'action, son lien de destination intelligent et son apparence visuelle.",
       "button_style_label": "Style Visuel du Bouton",
+      "style_solid_color": "Remplissage de Couleur",
       "open_link_picker": "Choisir un Lien Intelligent",
       "card_layout_title": "Disposition et Position",
       "card_layout_desc": "Ajustez l'alignement vertical, horizontal et la grille de contenu."
