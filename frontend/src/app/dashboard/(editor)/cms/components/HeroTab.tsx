@@ -345,21 +345,29 @@ export default function HeroTab({
               </select>
             </div>
 
-            {/* Vista previa compacta inline pegada al título */}
-            <div className="p-3.5 rounded-2xl bg-stone-900 text-white space-y-2">
+            {/* Vista previa compacta de 2 columnas con precio encapsulado */}
+            <div className="p-4 rounded-2xl bg-stone-950 text-white space-y-2 border border-stone-800">
               <span className="text-[10px] uppercase font-bold tracking-widest text-[#d4af37] block">
-                {t('cms.hero.preview_badge') || 'Previsualización (Pegado al Título)'}
+                {t('cms.hero.preview_badge') || 'Previsualización Adaptativa (2 Columnas)'}
               </span>
-              <div className="flex items-baseline gap-2.5 flex-wrap">
-                <span className="font-serif font-extrabold text-lg text-white">
-                  {formData.hero_title || 'Título Principal'}
-                </span>
-                <div className="inline-flex flex-col justify-end text-left pl-1">
-                  <span className="text-[9px] uppercase tracking-widest font-extrabold text-[#d4af37] leading-none">
+              <div className="flex items-center justify-between gap-4">
+                {/* Col 1: Textos */}
+                <div className="space-y-1 min-w-0">
+                  <div className="font-serif font-extrabold text-base text-white truncate">
+                    {formData.hero_title || 'Título Principal'}
+                  </div>
+                  <div className="text-[11px] text-stone-400 truncate max-w-xs">
+                    {formData.hero_subtitle || 'Subtítulo descriptivo del tratamiento o clínica.'}
+                  </div>
+                </div>
+
+                {/* Col 2: Cápsula de Precio Encapsulada */}
+                <div className="shrink-0 p-3 rounded-2xl bg-black/60 border border-white/20 shadow-md text-center">
+                  <span className="text-[9px] uppercase tracking-widest font-black text-[#d4af37] block leading-none mb-0.5">
                     {formData.hero_price_prefix || 'Desde'}
                   </span>
-                  <div className="flex items-baseline gap-0.5 leading-none">
-                    <span className="font-serif font-extrabold text-xl text-white">
+                  <div className="flex items-baseline justify-center gap-0.5 leading-none">
+                    <span className="font-serif font-black text-2xl text-white">
                       {formData.hero_price_amount || '15'}
                     </span>
                     <span className="text-xs font-serif font-bold text-[#d4af37]">
