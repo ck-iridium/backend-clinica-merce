@@ -588,22 +588,28 @@ export default function ClientHome({ content, settings, services, categories }: 
                       <div className={`relative group ${priceConfig.boxClass} select-none`}>
                         <div className="relative flex flex-col items-center justify-center text-center">
                           {translate(content.hero_price_prefix, content.translations, 'hero_price_prefix') && (
-                            <span className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.2em] ${priceConfig.prefixClass} block leading-none`}>
+                            <span className={`text-xs sm:text-sm md:text-base font-black uppercase tracking-[0.25em] ${priceConfig.prefixClass} block mb-1 leading-none`}>
                               {translate(content.hero_price_prefix, content.translations, 'hero_price_prefix')}
                             </span>
                           )}
                           <div 
-                            className="flex items-baseline justify-center gap-0.5 sm:gap-1.5 leading-none"
-                            style={{ marginTop: `${-8 + (content.hero_price_offset_y || 0)}px` }}
+                            className="flex items-baseline justify-center gap-1 sm:gap-2 leading-none"
+                            style={{ transform: `translateY(${content.hero_price_offset_y || 0}px)` }}
                           >
                             <span 
-                              style={{ fontSize: `clamp(${(2.4 * priceScale).toFixed(2)}rem, ${(4.8 * priceScale).toFixed(2)}vw, ${(6.5 * priceScale).toFixed(2)}rem)` }}
-                              className={`font-serif font-black ${priceConfig.amountClass} tracking-tight`}
+                              style={{ 
+                                fontSize: `clamp(${(3.4 * priceScale).toFixed(2)}rem, ${(7.2 * priceScale).toFixed(2)}vw, ${(9.5 * priceScale).toFixed(2)}rem)`,
+                                fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
+                              }}
+                              className={`font-serif font-black ${priceConfig.amountClass} tracking-tight drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]`}
                             >
                               {content.hero_price_amount || '15'}
                             </span>
                             <span 
-                              style={{ fontSize: `clamp(${(1.2 * priceScale).toFixed(2)}rem, ${(2.2 * priceScale).toFixed(2)}vw, ${(2.8 * priceScale).toFixed(2)}rem)` }}
+                              style={{ 
+                                fontSize: `clamp(${(1.6 * priceScale).toFixed(2)}rem, ${(3.2 * priceScale).toFixed(2)}vw, ${(4.2 * priceScale).toFixed(2)}rem)`,
+                                fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
+                              }}
                               className={`font-serif font-bold ${priceConfig.suffixClass}`}
                             >
                               {content.hero_price_suffix || '€'}
@@ -643,7 +649,8 @@ export default function ClientHome({ content, settings, services, categories }: 
                               style={{ 
                                 fontSize: isPriceActive 
                                   ? `clamp(${(1.75 * titleScale).toFixed(2)}rem, ${(4.8 * titleScale).toFixed(2)}vw, ${(6.8 * titleScale).toFixed(2)}rem)`
-                                  : `clamp(${(2.2 * titleScale).toFixed(2)}rem, ${(5.5 * titleScale).toFixed(2)}vw, ${(7.2 * titleScale).toFixed(2)}rem)`
+                                  : `clamp(${(2.2 * titleScale).toFixed(2)}rem, ${(5.5 * titleScale).toFixed(2)}vw, ${(7.2 * titleScale).toFixed(2)}rem)`,
+                                fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
                               }}
                               className={`leading-[1.05] font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] tracking-tight ${
                                 content.hero_horizontal_alignment === 'center' ? 'mx-auto' : ''

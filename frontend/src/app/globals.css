@@ -40,6 +40,8 @@
     --ring: 46 65% 52%; /* Dorado */
  
     --radius: var(--radius-base, 1rem); /* rounded-2xl base roughly */
+    --font-playfair: var(--font-playfair-base), 'Playfair', 'Playfair Display', Georgia, serif;
+    --font-inter: var(--font-inter), sans-serif;
   }
  
   .dark {

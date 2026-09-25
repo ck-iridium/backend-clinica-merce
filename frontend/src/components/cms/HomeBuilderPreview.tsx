@@ -75,11 +75,11 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
     <div className="w-full h-full flex flex-col overflow-y-auto bg-stone-50 select-none custom-scrollbar">
       
       {/* ─── 1. HERO SECTION (16:9) ─── */}
-      <section className={`relative w-full aspect-video flex ${formData?.hero_alignment === 'top' ? 'items-start pt-20' : formData?.hero_alignment === 'bottom' ? 'items-end pb-16' : 'items-center'} ${
+      <section className={`relative w-full aspect-video min-h-[500px] flex ${formData?.hero_alignment === 'top' ? 'items-start pt-20 pb-8' : formData?.hero_alignment === 'bottom' ? 'items-end pb-16 pt-8' : 'items-center'} ${
         formData?.hero_content_fullwidth
-          ? (formData?.hero_horizontal_alignment === 'left' ? 'justify-start text-left pl-6' : formData?.hero_horizontal_alignment === 'right' ? 'justify-end text-right pr-6' : 'justify-center text-center')
+          ? (formData?.hero_horizontal_alignment === 'left' ? 'justify-start text-left pl-6 sm:pl-10' : formData?.hero_horizontal_alignment === 'right' ? 'justify-end text-right pr-6 sm:pr-10' : 'justify-center text-center')
           : 'justify-center'
-      } p-6 overflow-hidden`}>
+      } p-6 sm:p-10 overflow-hidden`}>
         {formData?.hero_video_url ? (
           <div className="absolute inset-0 z-0 bg-stone-900">
             <video autoPlay loop muted playsInline className="w-full h-full object-cover">
@@ -126,22 +126,28 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
               <div className={`relative group ${priceConfig.boxClass} select-none`}>
                 <div className="relative flex flex-col items-center justify-center text-center">
                   {translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix') && (
-                    <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] ${priceConfig.prefixClass} block leading-none`}>
+                    <span className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.22em] ${priceConfig.prefixClass} block mb-1`}>
                       {translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix')}
                     </span>
                   )}
                   <div 
-                    className="flex items-baseline justify-center gap-0.5 sm:gap-1 leading-none"
-                    style={{ marginTop: `${-6 + Math.round((formData?.hero_price_offset_y || 0) * 0.7)}px` }}
+                    className="flex items-baseline justify-center gap-1 sm:gap-1.5 leading-none"
+                    style={{ transform: `translateY(${Math.round(formData?.hero_price_offset_y || 0)}px)` }}
                   >
                     <span 
-                      style={{ fontSize: `clamp(${(1.35 * priceScale).toFixed(2)}rem, ${(2.4 * priceScale).toFixed(2)}vw, ${(2.8 * priceScale).toFixed(2)}rem)` }}
+                      style={{ 
+                        fontSize: `clamp(${(2.8 * priceScale).toFixed(2)}rem, ${(6.2 * priceScale).toFixed(2)}vw, ${(7.8 * priceScale).toFixed(2)}rem)`,
+                        fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
+                      }}
                       className={`font-serif font-black ${priceConfig.amountClass} tracking-tight drop-shadow-md`}
                     >
                       {formData?.hero_price_amount || '15'}
                     </span>
                     <span 
-                      style={{ fontSize: `clamp(${(0.8 * priceScale).toFixed(2)}rem, ${(1.2 * priceScale).toFixed(2)}vw, ${(1.4 * priceScale).toFixed(2)}rem)` }}
+                      style={{ 
+                        fontSize: `clamp(${(1.4 * priceScale).toFixed(2)}rem, ${(2.8 * priceScale).toFixed(2)}vw, ${(3.6 * priceScale).toFixed(2)}rem)`,
+                        fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
+                      }}
                       className={`font-serif font-bold ${priceConfig.suffixClass}`}
                     >
                       {formData?.hero_price_suffix || '€'}
@@ -155,22 +161,22 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
           return (
             <div className={`relative z-10 w-full px-6 ${
               formData?.hero_content_fullwidth
-                ? `max-w-4xl ${formData?.hero_horizontal_alignment === 'left' ? 'text-left ml-0 mr-auto' : formData?.hero_horizontal_alignment === 'right' ? 'text-right mr-0 ml-auto' : 'text-center mx-auto'}`
-                : `max-w-4xl mx-auto ${formData?.hero_horizontal_alignment === 'left' ? 'text-left' : formData?.hero_horizontal_alignment === 'right' ? 'text-right' : 'text-center'}`
+                ? `max-w-7xl ${formData?.hero_horizontal_alignment === 'left' ? 'text-left ml-0 mr-auto' : formData?.hero_horizontal_alignment === 'right' ? 'text-right mr-0 ml-auto' : 'text-center mx-auto'}`
+                : `max-w-7xl mx-auto ${formData?.hero_horizontal_alignment === 'left' ? 'text-left' : formData?.hero_horizontal_alignment === 'right' ? 'text-right' : 'text-center'}`
             }`}>
               <div className={`flex flex-col ${
                 formData?.hero_horizontal_alignment === 'center' ? 'items-center' :
                 formData?.hero_horizontal_alignment === 'right' ? 'items-end' : 'items-start'
               }`}>
                 {/* Fila Principal: Textos a la izquierda y Precio pegado inmediatamente a la derecha */}
-                <div className={`flex flex-row items-center gap-3 sm:gap-5 md:gap-6 max-w-full ${
+                <div className={`flex flex-row items-center gap-4 sm:gap-6 md:gap-8 max-w-full ${
                   formData?.hero_horizontal_alignment === 'center' ? 'justify-center' :
                   formData?.hero_horizontal_alignment === 'right' ? 'justify-end' : 'justify-start'
                 }`}>
                   {/* Columna Izquierda: Título y Subtítulo */}
                   <div 
                     style={{ '--hero-title-max-w': `${titleMaxWidth}%` } as React.CSSProperties}
-                    className={`min-w-0 space-y-1.5 sm:space-y-2 ${
+                    className={`min-w-0 space-y-2 sm:space-y-3.5 ${
                       isPriceActive ? 'flex-1 sm:max-w-[var(--hero-title-max-w)]' : 'w-full sm:max-w-[var(--hero-title-max-w)]'
                     } ${
                       formData?.hero_horizontal_alignment === 'center' ? 'text-center' :
@@ -180,10 +186,11 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
                     <h1 
                       style={{ 
                         fontSize: isPriceActive
-                          ? `clamp(${(1.1 * titleScale).toFixed(2)}rem, ${(2.3 * titleScale).toFixed(2)}vw, ${(2.4 * titleScale).toFixed(2)}rem)`
-                          : `clamp(${(1.25 * titleScale).toFixed(2)}rem, ${(2.7 * titleScale).toFixed(2)}vw, ${(2.6 * titleScale).toFixed(2)}rem)`
+                          ? `clamp(${(1.75 * titleScale).toFixed(2)}rem, ${(4.4 * titleScale).toFixed(2)}vw, ${(5.8 * titleScale).toFixed(2)}rem)`
+                          : `clamp(${(2.1 * titleScale).toFixed(2)}rem, ${(5.0 * titleScale).toFixed(2)}vw, ${(6.5 * titleScale).toFixed(2)}rem)`,
+                        fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
                       }}
-                      className={`font-serif font-extrabold text-white drop-shadow-md leading-tight tracking-tight ${
+                      className={`font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] leading-[1.05] tracking-tight ${
                         formData?.hero_horizontal_alignment === 'center' ? 'mx-auto' : ''
                       }`}
                     >
@@ -192,9 +199,9 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
 
                     <p 
                       style={{
-                        fontSize: `clamp(${(0.7 * subtitleScale).toFixed(2)}rem, ${(0.95 * subtitleScale).toFixed(2)}vw, ${(0.9 * subtitleScale).toFixed(2)}rem)`
+                        fontSize: `clamp(${(0.85 * subtitleScale).toFixed(2)}rem, ${(1.15 * subtitleScale).toFixed(2)}vw, ${(1.3 * subtitleScale).toFixed(2)}rem)`
                       }}
-                      className={`text-white/90 font-medium drop-shadow-sm leading-relaxed ${
+                      className={`text-white/90 font-medium font-sans drop-shadow-md leading-relaxed ${
                         formData?.hero_horizontal_alignment === 'center' ? 'max-w-xl mx-auto' : 'max-w-xl'
                       }`}
                     >
@@ -212,13 +219,13 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
 
                 {/* Fila Inferior: Botón de Acción CTA (debajo del bloque de textos y precio) */}
                 {formData?.hero_show_button !== false && (
-                  <div className={`pt-2 sm:pt-3.5 w-full ${
+                  <div className={`pt-3 sm:pt-4 md:pt-6 w-full ${
                     formData?.hero_horizontal_alignment === 'center' ? 'flex justify-center' :
                     formData?.hero_horizontal_alignment === 'right' ? 'flex justify-end' : 'flex justify-start'
                   }`}>
-                    <div className={`inline-flex items-center justify-center px-6 py-2.5 rounded-full font-bold text-xs sm:text-sm transition-all text-center whitespace-nowrap w-fit ${getButtonStyle(formData?.hero_button_style)}`}>
+                    <div className={`inline-flex items-center justify-center px-8 py-3 md:px-10 md:py-3.5 rounded-full font-bold text-sm md:text-base transition-all duration-300 shadow-md text-center whitespace-nowrap w-fit ${getButtonStyle(formData?.hero_button_style)}`}>
                       <span>{translate(formData?.hero_button_text || 'Reservar Ahora', formData?.translations, 'hero_button_text')}</span>
-                      <span className="ml-1.5">→</span>
+                      <span className="ml-2">→</span>
                     </div>
                   </div>
                 )}

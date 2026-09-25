@@ -42,7 +42,7 @@ function getFontVar(fontName: string, fallback: string): string {
       return 'var(--font-cormorant), serif';
     case 'Playfair':
     case 'Playfair Display':
-      return 'var(--font-playfair-base), serif';
+      return "var(--font-playfair-base), 'Playfair', 'Playfair Display', serif";
     case 'Montserrat':
       return 'var(--font-montserrat), sans-serif';
     case 'Outfit':
@@ -225,7 +225,8 @@ export default async function RootLayout({
   const requestHeaders = headers();
   const tenantSlug = requestHeaders.get("x-tenant-slug") || "";
   const pathname = requestHeaders.get("x-pathname") || "";
-  const isMarketing = !tenantSlug || tenantSlug === "www";
+  const isDashboardRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/super-admin') || pathname.startsWith('/login');
+  const isMarketing = (!tenantSlug || tenantSlug === "www") && !isDashboardRoute;
   const isBypassRoute = pathname.startsWith("/super-admin") || pathname.startsWith("/login");
 
   console.log('[RootLayout SSR Debug]', {
@@ -320,7 +321,9 @@ export default async function RootLayout({
           <style dangerouslySetInnerHTML={{
             __html: `
             :root {
-              --font-playfair: var(--font-cormorant) !important;
+              --font-playfair: var(--font-playfair-base), 'Playfair', 'Playfair Display', serif !important;
+              --font-cormorant: var(--font-cormorant), serif !important;
+              --font-inter: var(--font-inter), sans-serif !important;
             }
           ` }} />
         </head>
@@ -357,8 +360,6 @@ export default async function RootLayout({
     radiusCard = "2.5rem";
     radiusBtn = "9999px";
   }
-
-  const isDashboardRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/super-admin') || pathname.startsWith('/login');
 
   const host = requestHeaders.get("host") || "";
   const localBusinessSchema = (!isMarketing && !isDashboardRoute && settings) ? {
