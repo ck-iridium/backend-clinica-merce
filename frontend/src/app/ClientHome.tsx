@@ -521,14 +521,14 @@ export default function ClientHome({ content, settings, services, categories }: 
                   const getButtonStyle = (style?: string) => {
                     switch (style) {
                       case 'gold_solid':
-                        return 'bg-[#d4af37] text-white border border-[#b8952b] hover:bg-[#b8952b] shadow-[0_10px_25px_rgba(212,175,55,0.4)]';
+                        return 'bg-[#d4af37] text-white border border-[#b8952b] hover:bg-[#b8952b]';
                       case 'outline':
                         return 'bg-transparent border-2 border-white/90 text-white hover:bg-white hover:text-stone-900';
                       case 'solid_white':
-                        return 'bg-white text-stone-900 border border-stone-200 hover:bg-stone-100 shadow-xl';
+                        return 'bg-white text-stone-900 border border-stone-200 hover:bg-stone-100';
                       case 'glass':
                       default:
-                        return 'bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white hover:text-stone-900 shadow-2xl';
+                        return 'bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white hover:text-stone-900';
                     }
                   };
 
@@ -549,10 +549,7 @@ export default function ClientHome({ content, settings, services, categories }: 
                         content.hero_horizontal_alignment === 'center' ? 'mx-auto' :
                         content.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''
                       }`}>
-                        <div className="relative group overflow-hidden rounded-3xl px-6 py-3.5 sm:px-8 sm:py-4.5 md:px-9 md:py-6 backdrop-blur-xl bg-black/45 dark:bg-stone-950/60 border border-white/25 shadow-[0_20px_50px_rgba(0,0,0,0.6)] ring-1 ring-white/10 transition-all duration-300 hover:border-[#d4af37]/60 hover:shadow-[0_20px_50px_rgba(212,175,55,0.25)] select-none">
-                          {/* Luz ambiental sutil de lujo en esquina */}
-                          <div className="absolute -top-10 -right-10 w-28 h-28 bg-[#d4af37]/20 rounded-full blur-2xl pointer-events-none" />
-                          
+                        <div className="relative group overflow-hidden rounded-3xl px-6 py-3.5 sm:px-8 sm:py-4.5 md:px-9 md:py-6 backdrop-blur-xl bg-black/45 dark:bg-stone-950/60 border border-white/25 transition-all duration-300 hover:border-[#d4af37]/60 select-none">
                           <div className="relative flex flex-col items-center justify-center text-center">
                             {translate(content.hero_price_prefix, content.translations, 'hero_price_prefix') && (
                               <span className="text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.25em] text-[#d4af37] block leading-none">
@@ -625,15 +622,15 @@ export default function ClientHome({ content, settings, services, categories }: 
                           {/* En Móvil: Cápsula de Precio ubicada exactamente entre Subtítulo y Botón */}
                           {renderPriceCapsule(true)}
 
-                          {/* Fila 3: Botón de Acción CTA (100% ancho en móvil, sin estrecharse ni partirse) */}
+                          {/* Fila 3: Botón de Acción CTA (ancho natural en móvil y escritorio, sin sombreado ni glow) */}
                           {content.hero_show_button !== false && (
-                            <div className={`pt-2 md:pt-3 w-full ${
+                            <div className={`pt-2 md:pt-3 ${
                               content.hero_horizontal_alignment === 'center' ? 'flex justify-center' :
                               content.hero_horizontal_alignment === 'right' ? 'flex justify-end' : 'flex justify-start'
                             }`}>
                               <Link 
                                 href={content.hero_button_link || '#'} 
-                                className={`w-full sm:w-auto inline-flex items-center justify-center px-9 py-4 md:px-11 md:py-4 rounded-full font-bold text-base md:text-lg transition-all duration-500 hover:scale-105 active:scale-95 group text-center whitespace-nowrap shadow-lg ${getButtonStyle(content.hero_button_style)}`}
+                                className={`inline-flex items-center justify-center px-8 py-3.5 md:px-11 md:py-4 rounded-full font-bold text-base md:text-lg transition-all duration-300 hover:scale-105 active:scale-95 group text-center whitespace-nowrap w-fit ${getButtonStyle(content.hero_button_style)}`}
                               >
                                 <span>{translate(content.hero_button_text, content.translations, 'hero_button_text')}</span>
                                 <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">→</span>

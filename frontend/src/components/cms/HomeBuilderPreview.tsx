@@ -59,11 +59,11 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
           const getButtonStyle = (style?: string) => {
             switch (style) {
               case 'gold_solid':
-                return 'bg-[#d4af37] text-white border border-[#b8952b] shadow-md';
+                return 'bg-[#d4af37] text-white border border-[#b8952b]';
               case 'outline':
                 return 'bg-transparent border-2 border-white/90 text-white';
               case 'solid_white':
-                return 'bg-white text-stone-900 border border-stone-200 shadow-md';
+                return 'bg-white text-stone-900 border border-stone-200';
               case 'glass':
               default:
                 return 'bg-white/10 backdrop-blur-md border border-white/20 text-white';
@@ -87,7 +87,7 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
                 formData?.hero_horizontal_alignment === 'center' ? 'mx-auto' :
                 formData?.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''
               }`}>
-                <div className="relative group overflow-hidden rounded-2xl px-4 py-2.5 sm:px-5 sm:py-3.5 backdrop-blur-xl bg-black/45 dark:bg-stone-950/60 border border-white/25 shadow-lg ring-1 ring-white/10 select-none">
+                <div className="relative group overflow-hidden rounded-2xl px-4 py-2.5 sm:px-5 sm:py-3.5 backdrop-blur-xl bg-black/45 dark:bg-stone-950/60 border border-white/25 select-none">
                   <div className="relative flex flex-col items-center justify-center text-center">
                     {translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix') && (
                       <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-[#d4af37] block leading-none">
@@ -160,13 +160,13 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
                   {/* En Móvil: Cápsula de Precio entre Subtítulo y Botón */}
                   {renderPriceCapsule(true)}
 
-                  {/* Fila 3: Botón de Acción CTA (100% ancho en móvil, sin estrecharse) */}
+                  {/* Fila 3: Botón de Acción CTA (ancho natural en móvil y escritorio, sin sombreado ni glow) */}
                   {formData?.hero_show_button !== false && (
-                    <div className={`pt-1.5 sm:pt-2 w-full ${
+                    <div className={`pt-1.5 sm:pt-2 ${
                       formData?.hero_horizontal_alignment === 'center' ? 'flex justify-center' :
                       formData?.hero_horizontal_alignment === 'right' ? 'flex justify-end' : 'flex justify-start'
                     }`}>
-                      <div className={`w-full sm:w-auto inline-flex items-center justify-center px-6 py-2.5 rounded-full font-bold text-xs sm:text-sm transition-all shadow-md text-center whitespace-nowrap ${getButtonStyle(formData?.hero_button_style)}`}>
+                      <div className={`inline-flex items-center justify-center px-6 py-2.5 rounded-full font-bold text-xs sm:text-sm transition-all text-center whitespace-nowrap w-fit ${getButtonStyle(formData?.hero_button_style)}`}>
                         <span>{translate(formData?.hero_button_text || 'Reservar Ahora', formData?.translations, 'hero_button_text')}</span>
                         <span className="ml-1.5">→</span>
                       </div>
