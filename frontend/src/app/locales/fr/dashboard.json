@@ -471,7 +471,11 @@
       "custom_url_help": "Vous pouvez saisir un chemin interne (ex. : /contact) ou une URL web externe complète.",
       "apply_link": "Appliquer le Lien",
       "current_selection": "Sélectionné",
-      "close": "Fermer"
+      "close": "Fermer",
+      "btn_view_service": "Voir la Fiche",
+      "btn_book_service": "Réserver Directement",
+      "btn_view_category": "Voir le Catalogue",
+      "btn_book_category": "Réserver dans la Catégorie"
     },
     "about": {
       "title": "À Propos de la Clinique",

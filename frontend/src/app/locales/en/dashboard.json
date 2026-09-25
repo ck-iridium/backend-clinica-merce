@@ -471,7 +471,11 @@
       "custom_url_help": "You can provide an internal path (e.g., /contact) or a full external web URL.",
       "apply_link": "Apply Link",
       "current_selection": "Selected",
-      "close": "Close"
+      "close": "Close",
+      "btn_view_service": "View Details",
+      "btn_book_service": "Book Directly",
+      "btn_view_category": "View Catalog",
+      "btn_book_category": "Book in Category"
     },
     "about": {
       "title": "About the Clinic",

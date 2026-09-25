@@ -221,16 +221,17 @@ export default function BookingPage() {
           }
         }
 
+        let loadedCategories: any[] = [];
         if (catRes.ok) {
           const cats = await catRes.json();
           const hasOtherCategories = cats.some((c: any) => c.name.toUpperCase() !== 'GENERAL');
-          const validCats = hasOtherCategories 
+          loadedCategories = hasOtherCategories 
             ? cats.filter((c: any) => c.name.toUpperCase() !== 'GENERAL')
             : cats;
-          setCategories(validCats);
+          setCategories(loadedCategories);
 
-          if (validCats.length === 1) {
-            setActiveCategory(validCats[0]);
+          if (loadedCategories.length === 1) {
+            setActiveCategory(loadedCategories[0]);
           }
         }
 
@@ -239,21 +240,39 @@ export default function BookingPage() {
           const activeSrvs = data.filter((s: any) => s.is_active);
           setServices(activeSrvs);
 
-          // Check if we came from a rebook link or treatment page with service ID
+          // Check if we came from a direct service or category link
           if (typeof window !== 'undefined') {
             const qs = new URLSearchParams(window.location.search);
-            const srvId = qs.get('servicio') || qs.get('srvId') || qs.get('serviceId');
+            const srvId = qs.get('service') || qs.get('service_id') || qs.get('servicio') || qs.get('srvId') || qs.get('serviceId') || qs.get('tratamiento');
             
             if (srvId) {
-              const targetSrv = activeSrvs.find((s: any) => String(s.id) === String(srvId));
+              const targetSrv = activeSrvs.find((s: any) => 
+                String(s.id).toLowerCase() === String(srvId).toLowerCase() || 
+                (s.slug && String(s.slug).toLowerCase() === String(srvId).toLowerCase())
+              );
               if (targetSrv) {
                 setSelectedService(targetSrv);
+                if (targetSrv.category_id && loadedCategories.length > 0) {
+                  const parentCat = loadedCategories.find((c: any) => String(c.id) === String(targetSrv.category_id));
+                  if (parentCat) setActiveCategory(parentCat);
+                }
                 if (staffData.length > 1) {
                   setStep(2);
                 } else {
                   setStep(3);
                 }
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            } else {
+              const catParam = qs.get('categoria') || qs.get('category') || qs.get('catId') || qs.get('categoria_id');
+              if (catParam && loadedCategories.length > 0) {
+                const targetCat = loadedCategories.find((c: any) => 
+                  String(c.id).toLowerCase() === String(catParam).toLowerCase() || 
+                  (c.slug && String(c.slug).toLowerCase() === String(catParam).toLowerCase())
+                );
+                if (targetCat) {
+                  setActiveCategory(targetCat);
+                }
               }
             }
           }

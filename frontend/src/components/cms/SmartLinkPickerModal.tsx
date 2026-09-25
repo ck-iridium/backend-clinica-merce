@@ -242,30 +242,29 @@ export default function SmartLinkPickerModal({
 
           {/* TAB: TRATAMIENTOS / SERVICIOS */}
           {activeTab === 'services' && (
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {filteredServices.length === 0 ? (
                 <div className="text-center py-12 text-stone-400 text-sm">
                   {t('cms.link_picker.no_services_found') || 'No se encontraron tratamientos.'}
                 </div>
               ) : (
                 filteredServices.map((service: any) => {
-                  const targetUrl = `/reservar?service=${service.id}`;
-                  const isSelected = currentValue === targetUrl;
+                  const categorySlug = service.category_slug || service.category?.slug || categories?.find((c: any) => c.id === service.category_id)?.slug || 'general';
+                  const detailUrl = `/tratamientos/${categorySlug}/${service.slug || service.id}`;
+                  const bookingUrl = `/reservar?service=${service.id}`;
+                  const isDetailSelected = currentValue === detailUrl;
+                  const isBookingSelected = currentValue === bookingUrl;
+
                   return (
-                    <button
+                    <div
                       key={service.id}
-                      type="button"
-                      onClick={() => {
-                        onSelect(targetUrl, `Reservar ${service.name}`);
-                        onClose();
-                      }}
-                      className={`w-full text-left p-3.5 rounded-2xl border transition-all flex items-center justify-between group ${
-                        isSelected
+                      className={`w-full p-3.5 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                        isDetailSelected || isBookingSelected
                           ? 'border-[#d4af37] bg-[#d4af37]/5 dark:bg-[#d4af37]/10'
-                          : 'border-stone-200/80 dark:border-stone-800 hover:border-[#d4af37]/60 hover:bg-stone-50 dark:hover:bg-stone-800/50'
+                          : 'border-stone-200/80 dark:border-stone-800 hover:border-[#d4af37]/50 bg-white dark:bg-stone-900/40'
                       }`}
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
                         {service.image_url ? (
                           <img
                             src={service.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${service.image_url}` : service.image_url}
@@ -277,9 +276,9 @@ export default function SmartLinkPickerModal({
                             <Sparkles size={18} />
                           </div>
                         )}
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-xs md:text-sm text-stone-800 dark:text-stone-200">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-bold text-xs md:text-sm text-stone-800 dark:text-stone-200 truncate">
                               {service.name}
                             </span>
                             {service.price && (
@@ -291,15 +290,48 @@ export default function SmartLinkPickerModal({
                           <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5 line-clamp-1">
                             {service.duration_minutes ? `${service.duration_minutes} min` : ''} {service.category?.name ? `• ${service.category.name}` : ''}
                           </p>
-                          <span className="text-[10px] font-mono text-stone-400 mt-0.5 block">
-                            {targetUrl}
-                          </span>
                         </div>
                       </div>
-                      <div className="text-stone-400 group-hover:text-[#d4af37] transition-colors shrink-0 ml-2">
-                        {isSelected ? <Check size={18} className="text-[#d4af37]" /> : <ChevronRight size={18} />}
+
+                      {/* Botones de selección: Ver Ficha vs Reservar Directo */}
+                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onSelect(detailUrl, `Ver ${service.name}`);
+                            onClose();
+                          }}
+                          className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all ${
+                            isDetailSelected
+                              ? 'border-[#d4af37] bg-[#d4af37]/20 text-[#b8952b] dark:text-[#f3d36b]'
+                              : 'border-stone-200 dark:border-stone-700 hover:border-[#d4af37] text-stone-700 dark:text-stone-300 hover:text-[#d4af37] bg-stone-50 dark:bg-stone-800/60'
+                          }`}
+                          title={detailUrl}
+                        >
+                          <BookOpen size={13} />
+                          <span>{t('cms.link_picker.btn_view_service') || 'Ver Ficha'}</span>
+                          {isDetailSelected && <Check size={13} className="text-[#d4af37]" />}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onSelect(bookingUrl, `Reservar ${service.name}`);
+                            onClose();
+                          }}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                            isBookingSelected
+                              ? 'bg-[#b8952b] text-white ring-2 ring-[#d4af37]/40'
+                              : 'bg-[#d4af37] hover:bg-[#b8952b] text-white shadow-sm'
+                          }`}
+                          title={bookingUrl}
+                        >
+                          <Calendar size={13} />
+                          <span>{t('cms.link_picker.btn_book_service') || 'Reservar Directo'}</span>
+                          {isBookingSelected && <Check size={13} className="text-white" />}
+                        </button>
                       </div>
-                    </button>
+                    </div>
                   );
                 })
               )}
@@ -308,46 +340,81 @@ export default function SmartLinkPickerModal({
 
           {/* TAB: CATEGORÍAS */}
           {activeTab === 'categories' && (
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {filteredCategories.length === 0 ? (
                 <div className="text-center py-12 text-stone-400 text-sm">
                   {t('cms.link_picker.no_categories_found') || 'No se encontraron categorías.'}
                 </div>
               ) : (
                 filteredCategories.map((category: any) => {
-                  const targetUrl = `#categoria-${category.id}`;
-                  const isSelected = currentValue === targetUrl;
+                  const catSlug = category.slug || category.id;
+                  const catUrl = `/tratamientos/${catSlug}`;
+                  const catBookingUrl = `/reservar?categoria=${catSlug}`;
+                  const isCatSelected = currentValue === catUrl;
+                  const isCatBookingSelected = currentValue === catBookingUrl;
+
                   return (
-                    <button
+                    <div
                       key={category.id}
-                      type="button"
-                      onClick={() => {
-                        onSelect(targetUrl, `Ver ${category.name}`);
-                        onClose();
-                      }}
-                      className={`w-full text-left p-3.5 rounded-2xl border transition-all flex items-center justify-between group ${
-                        isSelected
+                      className={`w-full p-3.5 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                        isCatSelected || isCatBookingSelected
                           ? 'border-[#d4af37] bg-[#d4af37]/5 dark:bg-[#d4af37]/10'
-                          : 'border-stone-200/80 dark:border-stone-800 hover:border-[#d4af37]/60 hover:bg-stone-50 dark:hover:bg-stone-800/50'
+                          : 'border-stone-200/80 dark:border-stone-800 hover:border-[#d4af37]/50 bg-white dark:bg-stone-900/40'
                       }`}
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
                         <div className="w-10 h-10 rounded-xl bg-[#d4af37]/10 text-[#d4af37] flex items-center justify-center font-bold text-xs shrink-0">
                           <Layers size={18} />
                         </div>
-                        <div>
-                          <span className="font-bold text-sm text-stone-800 dark:text-stone-200">
+                        <div className="min-w-0">
+                          <span className="font-bold text-sm text-stone-800 dark:text-stone-200 block truncate">
                             {category.name}
                           </span>
-                          <span className="text-[10px] font-mono text-stone-400 mt-0.5 block">
-                            {targetUrl}
+                          <span className="text-[10px] font-mono text-stone-400 mt-0.5 block truncate">
+                            {catUrl}
                           </span>
                         </div>
                       </div>
-                      <div className="text-stone-400 group-hover:text-[#d4af37] transition-colors shrink-0">
-                        {isSelected ? <Check size={18} className="text-[#d4af37]" /> : <ChevronRight size={18} />}
+
+                      {/* Botones de acción: Ver Catálogo vs Reservar en Categoría */}
+                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onSelect(catUrl, `Ver ${category.name}`);
+                            onClose();
+                          }}
+                          className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all ${
+                            isCatSelected
+                              ? 'border-[#d4af37] bg-[#d4af37]/20 text-[#b8952b] dark:text-[#f3d36b]'
+                              : 'border-stone-200 dark:border-stone-700 hover:border-[#d4af37] text-stone-700 dark:text-stone-300 hover:text-[#d4af37] bg-stone-50 dark:bg-stone-800/60'
+                          }`}
+                          title={catUrl}
+                        >
+                          <Layers size={13} />
+                          <span>{t('cms.link_picker.btn_view_category') || 'Ver Catálogo'}</span>
+                          {isCatSelected && <Check size={13} className="text-[#d4af37]" />}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onSelect(catBookingUrl, `Reservar ${category.name}`);
+                            onClose();
+                          }}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                            isCatBookingSelected
+                              ? 'bg-[#b8952b] text-white ring-2 ring-[#d4af37]/40'
+                              : 'bg-[#d4af37] hover:bg-[#b8952b] text-white shadow-sm'
+                          }`}
+                          title={catBookingUrl}
+                        >
+                          <Calendar size={13} />
+                          <span>{t('cms.link_picker.btn_book_category') || 'Reservar en Categoría'}</span>
+                          {isCatBookingSelected && <Check size={13} className="text-white" />}
+                        </button>
                       </div>
-                    </button>
+                    </div>
                   );
                 })
               )}
