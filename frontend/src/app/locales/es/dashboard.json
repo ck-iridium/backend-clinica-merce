@@ -433,6 +433,7 @@
       "price_prefix": "Etiqueta Superior",
       "price_amount": "Importe / Precio",
       "price_suffix": "Símbolo / Unidad",
+      "price_period": "Periodo / Frecuencia",
       "price_size": "Escala Visual del Precio",
       "price_offset_y": "Ajuste Vertical / Proximidad",
       "price_style_label": "Estilo Visual del Precio",

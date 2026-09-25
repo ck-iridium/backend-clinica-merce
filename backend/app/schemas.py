@@ -742,6 +742,7 @@ class SiteContentBase(BaseModel):
     hero_price_prefix: Optional[str] = "Desde"
     hero_price_amount: Optional[str] = ""
     hero_price_suffix: Optional[str] = "€"
+    hero_price_period: Optional[str] = ""
     hero_price_size: Optional[str] = "large"
     hero_price_offset_y: Optional[int] = 0
     hero_price_style: Optional[str] = "capsule_dark"
@@ -788,6 +789,7 @@ class SiteContentUpdate(BaseModel):
     hero_price_prefix: Optional[str] = None
     hero_price_amount: Optional[str] = None
     hero_price_suffix: Optional[str] = None
+    hero_price_period: Optional[str] = None
     hero_price_size: Optional[str] = None
     hero_price_offset_y: Optional[int] = None
     hero_price_style: Optional[str] = None

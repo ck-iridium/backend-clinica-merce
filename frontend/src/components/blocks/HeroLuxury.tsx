@@ -90,15 +90,15 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
     if (!isPriceActive) return null;
     return (
       <div className={`relative group ${priceConfig.boxClass} select-none`}>
-        <div className="relative flex flex-col items-center justify-center text-center">
+        <div className="relative flex flex-col items-start text-left">
           {data?.hero_price_prefix && (
-            <span className={`text-xs sm:text-sm md:text-base font-black uppercase tracking-[0.25em] ${priceConfig.prefixClass} block mb-0 leading-none`}>
+            <span className={`text-xs sm:text-sm md:text-base font-black uppercase tracking-[0.25em] ${priceConfig.prefixClass} block mb-0 leading-none pl-0.5`}>
               {data?.hero_price_prefix}
             </span>
           )}
           <div 
-            className="flex items-baseline justify-center gap-1 sm:gap-2 leading-none"
-            style={{ transform: `translateY(${-18 + (data?.hero_price_offset_y || 0)}px)` }}
+            className="flex items-center gap-2.5 sm:gap-4 leading-none"
+            style={{ marginTop: `${-32 + (data?.hero_price_offset_y || 0)}px` }}
           >
             <span 
               style={{ 
@@ -109,15 +109,22 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
             >
               {data?.hero_price_amount || '15'}
             </span>
-            <span 
-              style={{ 
-                fontSize: `clamp(${(1.6 * priceScale).toFixed(2)}rem, ${(3.2 * priceScale).toFixed(2)}vw, ${(4.2 * priceScale).toFixed(2)}rem)`,
-                fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
-              }}
-              className={`font-serif font-bold ${priceConfig.suffixClass}`}
-            >
-              {data?.hero_price_suffix || '€'}
-            </span>
+            <div className="flex flex-col items-start justify-center leading-none pl-1">
+              <span 
+                style={{ 
+                  fontSize: `clamp(${(1.6 * priceScale).toFixed(2)}rem, ${(3.2 * priceScale).toFixed(2)}vw, ${(4.2 * priceScale).toFixed(2)}rem)`,
+                  fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
+                }}
+                className={`font-serif font-bold ${priceConfig.suffixClass} leading-none`}
+              >
+                {data?.hero_price_suffix || '€'}
+              </span>
+              {data?.hero_price_period && (
+                <span className={`text-xs sm:text-sm md:text-base font-black uppercase tracking-wider ${priceConfig.suffixClass} opacity-90 leading-tight mt-1 sm:mt-1.5`}>
+                  {data?.hero_price_period}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>

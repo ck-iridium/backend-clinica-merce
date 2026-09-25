@@ -433,6 +433,7 @@
       "price_prefix": "Top Label",
       "price_amount": "Amount / Price",
       "price_suffix": "Symbol / Unit",
+      "price_period": "Period / Frequency",
       "price_size": "Visual Price Scale",
       "price_offset_y": "Vertical Adjustment / Proximity",
       "price_style_label": "Price Visual Style",

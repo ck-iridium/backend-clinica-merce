@@ -455,6 +455,7 @@ class SiteContent(Base):
     hero_price_prefix = Column(String, default="Desde", nullable=True)
     hero_price_amount = Column(String, default="", nullable=True)
     hero_price_suffix = Column(String, default="€", nullable=True)
+    hero_price_period = Column(String, default="", nullable=True) # MES, AÑO, SESIÓN, etc.
     hero_price_size = Column(String, default="large", nullable=True) # medium, large, xl
     hero_price_offset_y = Column(Integer, default=0, nullable=True) # desplazamiento vertical en px (-20 a 20)
     hero_price_style = Column(String, default="capsule_dark", nullable=True) # capsule_dark, outline, minimal, solid_white
