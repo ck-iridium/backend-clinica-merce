@@ -95,9 +95,11 @@ def build_used_urls_map(db: Session) -> dict:
 def check_global_file_usage(filename: str, db: Session) -> bool:
     """
     Checks if a file is referenced by ANY tenant on the platform.
-    This prevents cross-tenant file deletion.
+    This prevents cross-tenant file deletion while allowing the current tenant
+    to delete its own unattached gallery files.
     """
     search_pattern = f"%/{filename}"
+    tenant_id = current_tenant_var.get()
     
     if db.query(models.Service).filter(
         or_(
@@ -126,10 +128,27 @@ def check_global_file_usage(filename: str, db: Session) -> bool:
     ).first():
         return True
         
-    if db.query(models.Media).filter(
-        models.Media.url.like(search_pattern)
-    ).first():
-        return True
+    # Media table:
+    # A file in models.Media is in use globally if:
+    # 1. It is linked to a specific service (service_id is not null)
+    # 2. Or it belongs to another tenant (cross-tenant safety)
+    media_query = db.query(models.Media).filter(
+        or_(
+            models.Media.url.like(search_pattern),
+            models.Media.filename == filename
+        )
+    )
+    if tenant_id:
+        if media_query.filter(
+            or_(
+                models.Media.service_id.isnot(None),
+                models.Media.tenant_id != tenant_id
+            )
+        ).first():
+            return True
+    else:
+        if media_query.filter(models.Media.service_id.isnot(None)).first():
+            return True
         
     if db.query(models.LandingShowcaseSector).filter(
         or_(
@@ -226,18 +245,22 @@ async def delete_media_file(filename: str, db: Session = Depends(get_db)):
         )
 
     # 2. Check ownership (must be registered in models.Media or once referenced by current tenant)
-    media_record = db.query(models.Media).filter(
-        models.Media.url.like(f"%/{filename}"),
+    media_records = db.query(models.Media).filter(
+        or_(
+            models.Media.url.like(f"%/{filename}"),
+            models.Media.filename == filename
+        ),
         models.Media.tenant_id == current_tenant_var.get()
-    ).first()
+    ).all()
     
     supabase = get_supabase()
     try:
         supabase.storage.from_("media").remove([filename])
-        if media_record:
-            db.delete(media_record)
-            db.commit()
+        for record in media_records:
+            db.delete(record)
+        db.commit()
     except Exception as e:
+        db.rollback()
         raise HTTPException(status_code=500, detail=f"Error al eliminar el archivo en Supabase: {e}")
 
     return {"message": f"Archivo '{filename}' eliminado correctamente."}
@@ -265,8 +288,10 @@ async def bulk_delete_media_files(payload: BulkDeleteRequest, db: Session = Depe
         )
 
     # Get media records to delete
+    url_patterns = [models.Media.url.like(f"%/{name}") for name in payload.filenames]
+    filename_patterns = [models.Media.filename == name for name in payload.filenames]
     media_records = db.query(models.Media).filter(
-        or_(*[models.Media.url.like(f"%/{name}") for name in payload.filenames]),
+        or_(*url_patterns, *filename_patterns),
         models.Media.tenant_id == current_tenant_var.get()
     ).all()
 
@@ -277,6 +302,7 @@ async def bulk_delete_media_files(payload: BulkDeleteRequest, db: Session = Depe
             db.delete(record)
         db.commit()
     except Exception as e:
+        db.rollback()
         raise HTTPException(status_code=500, detail=f"Error al eliminar archivos en Supabase: {e}")
 
     return {

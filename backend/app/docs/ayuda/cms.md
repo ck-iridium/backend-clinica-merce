@@ -9,6 +9,8 @@ El panel de Editor Web y CMS centraliza la gestión del portal público de la cl
   - **HERO:** Imagen o vídeo de fondo, título principal, subtítulo, y botón de acción directa (con texto y enlace personalizado). Permite configurar:
     - *Alineación Vertical:* Superior (`top`), Centrado (`center`), Inferior (`bottom`).
     - *Alineación Horizontal:* Izquierda (`left`), Centrado (`center`), Derecha (`right`).
+    - *Tamaño del Título (H1):* `medium` (Mediano), `large` (Grande - por defecto), `xl` (Monumental / XL).
+    - *Tamaño del Subtítulo:* `small` (Discreto), `medium` (Equilibrado - por defecto), `large` (Destacado).
     - *Ancho Completo (`hero_content_fullwidth`):* Control toggle que define el comportamiento del contenedor de texto:
       - Desactivado (Recomendado): Mantiene el contenido acotado a la cuadrícula de la web (`max-w-7xl mx-auto px-6`). La alineación izquierda coincide exactamente con la vertical del logotipo del Navbar.
       - Activado (Fullwidth): Extiende el contenido hasta el borde físico exterior de la pantalla.
@@ -40,6 +42,10 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL del Hub `
   - Selector: `id="cms-hero-fullwidth-toggle"`
 - **Alineación Horizontal del Hero:** Selector para definir posición izquierda, centrada o derecha.
   - Selector: `id="cms-hero-horizontal-alignment-select"`
+- **Tamaño del Título del Hero:** Selector para definir escala de tamaño del título H1.
+  - Selector: `id="cms-hero-title-size-select"`
+- **Tamaño del Subtítulo del Hero:** Selector para definir escala de tamaño del subtítulo.
+  - Selector: `id="cms-hero-subtitle-size-select"`
 - **Gestionar Enlaces del Menú (Navegación):** Acceso al reordenamiento de links superiores y megamenú.
   - Selector: `id="cms-bento-nav-editor"`
 - **Configurar Tipografía y Colores (Branding):** Redirecciona a la sección de marca en Ajustes generales.

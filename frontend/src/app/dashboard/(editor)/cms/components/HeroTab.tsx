@@ -26,9 +26,26 @@ export default function HeroTab({
       />
       <div className="space-y-6">
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">
-            {t('cms.hero.main_title')}
-          </label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs font-bold uppercase tracking-wider text-stone-500">
+              {t('cms.hero.main_title')}
+            </label>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] uppercase font-bold text-stone-400">
+                {t('cms.hero.title_size')}:
+              </span>
+              <select
+                id="cms-hero-title-size-select"
+                value={formData.hero_title_size || "large"}
+                onChange={e => setFormData((prev: any) => ({ ...prev, hero_title_size: e.target.value }))}
+                className="text-xs px-2.5 py-1 rounded-lg border border-border/50 bg-stone-50 font-bold focus:outline-none focus:ring-1 focus:ring-[#d4af37]"
+              >
+                <option value="medium">{t('cms.hero.size_medium')}</option>
+                <option value="large">{t('cms.hero.size_large')}</option>
+                <option value="xl">{t('cms.hero.size_xl')}</option>
+              </select>
+            </div>
+          </div>
           <input 
             type="text" 
             value={formData.hero_title || ""} 
@@ -37,9 +54,26 @@ export default function HeroTab({
           />
         </div>
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">
-            {t('cms.hero.subtitle')}
-          </label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs font-bold uppercase tracking-wider text-stone-500">
+              {t('cms.hero.subtitle')}
+            </label>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] uppercase font-bold text-stone-400">
+                {t('cms.hero.subtitle_size')}:
+              </span>
+              <select
+                id="cms-hero-subtitle-size-select"
+                value={formData.hero_subtitle_size || "medium"}
+                onChange={e => setFormData((prev: any) => ({ ...prev, hero_subtitle_size: e.target.value }))}
+                className="text-xs px-2.5 py-1 rounded-lg border border-border/50 bg-stone-50 font-bold focus:outline-none focus:ring-1 focus:ring-[#d4af37]"
+              >
+                <option value="small">{t('cms.hero.size_small')}</option>
+                <option value="medium">{t('cms.hero.size_medium')}</option>
+                <option value="large">{t('cms.hero.size_large')}</option>
+              </select>
+            </div>
+          </div>
           <textarea 
             rows={2} 
             value={formData.hero_subtitle || ""} 

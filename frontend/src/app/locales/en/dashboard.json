@@ -412,6 +412,12 @@
       "alignment_right": "Right",
       "content_fullwidth": "Full width content",
       "content_fullwidth_desc": "Extends text to screen edges. Disabled: aligns with the website grid and header logo.",
+      "title_size": "Title Size",
+      "subtitle_size": "Subtitle Size",
+      "size_small": "Subtle",
+      "size_medium": "Medium",
+      "size_large": "Large",
+      "size_xl": "Monumental (XL)",
       "bg_video": "Background Video (Optional - Replaces the image)"
     },
     "about": {

@@ -448,6 +448,8 @@ class SiteContent(Base):
     hero_alignment = Column(String, default="center") # top, center, bottom
     hero_horizontal_alignment = Column(String, default="center") # left, center, right
     hero_content_fullwidth = Column(Boolean, default=False)
+    hero_title_size = Column(String, default="large") # medium, large, xl
+    hero_subtitle_size = Column(String, default="medium") # small, medium, large
     
     # About Section
     about_title = Column(String, default="Sobre Nosotros")

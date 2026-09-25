@@ -520,10 +520,18 @@ export default function ClientHome({ content, settings, services, categories }: 
                     ? `max-w-7xl ${content.hero_horizontal_alignment === 'left' ? 'text-left ml-0 mr-auto' : content.hero_horizontal_alignment === 'right' ? 'text-right mr-0 ml-auto' : 'text-center mx-auto'}`
                     : `max-w-7xl mx-auto ${content.hero_horizontal_alignment === 'left' ? 'text-left' : content.hero_horizontal_alignment === 'right' ? 'text-right' : 'text-center'}`
                 }`}>
-                  <h1 className="text-6xl md:text-8xl lg:text-[7rem] leading-none font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
+                  <h1 className={`${
+                    content.hero_title_size === 'medium' ? 'text-4xl md:text-6xl lg:text-7xl' :
+                    content.hero_title_size === 'xl' ? 'text-6xl md:text-8xl lg:text-[8.5rem]' :
+                    'text-5xl md:text-7xl lg:text-[7rem]'
+                  } leading-none font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]`}>
                     {cleanTitle(translate(content.hero_title, content.translations, 'hero_title'))}
                   </h1>
-                  <p className={`text-xl md:text-3xl text-white/90 font-medium font-sans tracking-wide leading-relaxed drop-shadow-md mt-6 ${content.hero_horizontal_alignment === 'center' ? 'max-w-3xl mx-auto' : 'max-w-3xl'
+                  <p className={`${
+                    content.hero_subtitle_size === 'small' ? 'text-base md:text-xl' :
+                    content.hero_subtitle_size === 'large' ? 'text-xl md:text-3xl' :
+                    'text-lg md:text-2xl'
+                  } text-white/90 font-medium font-sans tracking-wide leading-relaxed drop-shadow-md mt-6 ${content.hero_horizontal_alignment === 'center' ? 'max-w-3xl mx-auto' : 'max-w-3xl'
                     } ${content.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''}`}>
                     {translate(content.hero_subtitle, content.translations, 'hero_subtitle')}
                   </p>

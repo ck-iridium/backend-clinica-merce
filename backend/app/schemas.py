@@ -735,6 +735,8 @@ class SiteContentBase(BaseModel):
     hero_alignment: Optional[str] = "center"
     hero_horizontal_alignment: Optional[str] = "center"
     hero_content_fullwidth: Optional[bool] = False
+    hero_title_size: Optional[str] = "large"
+    hero_subtitle_size: Optional[str] = "medium"
     
     about_title: Optional[str] = None
     about_text: Optional[str] = None
@@ -770,6 +772,8 @@ class SiteContentUpdate(BaseModel):
     hero_alignment: Optional[str] = None
     hero_horizontal_alignment: Optional[str] = None
     hero_content_fullwidth: Optional[bool] = None
+    hero_title_size: Optional[str] = None
+    hero_subtitle_size: Optional[str] = None
     
     about_title: Optional[str] = None
     about_text: Optional[str] = None

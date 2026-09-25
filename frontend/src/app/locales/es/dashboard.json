@@ -412,6 +412,12 @@
       "alignment_right": "Derecha",
       "content_fullwidth": "Ancho completo (Fullwidth)",
       "content_fullwidth_desc": "Extiende el texto al borde de la pantalla. Desactivado: se alinea con la cuadrícula de la web y el logotipo.",
+      "title_size": "Tamaño del Título",
+      "subtitle_size": "Tamaño del Subtítulo",
+      "size_small": "Discreto",
+      "size_medium": "Mediano",
+      "size_large": "Grande",
+      "size_xl": "Monumental (XL)",
       "bg_video": "Video de Fondo (Opcional - Reemplaza la imagen)"
     },
     "about": {

@@ -68,10 +68,18 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
             : `max-w-7xl mx-auto ${data?.hero_horizontal_alignment === 'left' ? 'text-left' : data?.hero_horizontal_alignment === 'right' ? 'text-right' : 'text-center'}`
         }`}
       >
-        <h1 className="text-5xl md:text-7xl lg:text-[6.5rem] leading-none font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.4)]">
+        <h1 className={`${
+          data?.hero_title_size === 'medium' ? 'text-4xl md:text-6xl lg:text-7xl' :
+          data?.hero_title_size === 'xl' ? 'text-6xl md:text-8xl lg:text-[8.5rem]' :
+          'text-5xl md:text-7xl lg:text-[7rem]'
+        } leading-none font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.4)]`}>
           {data?.hero_title || 'Descubre tu Mejor Versión'}
         </h1>
-        <p className={`text-lg md:text-2xl text-white/90 font-medium font-sans tracking-wide leading-relaxed drop-shadow-md mt-6 ${data?.hero_horizontal_alignment === 'center' ? 'max-w-3xl mx-auto' : 'max-w-2xl'} ${data?.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''}`}>
+        <p className={`${
+          data?.hero_subtitle_size === 'small' ? 'text-base md:text-xl' :
+          data?.hero_subtitle_size === 'large' ? 'text-xl md:text-3xl' :
+          'text-lg md:text-2xl'
+        } text-white/90 font-medium font-sans tracking-wide leading-relaxed drop-shadow-md mt-6 ${data?.hero_horizontal_alignment === 'center' ? 'max-w-3xl mx-auto' : 'max-w-2xl'} ${data?.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''}`}>
           {data?.hero_subtitle || 'Tratamientos estéticos avanzados y bienestar en un ambiente exclusivo.'}
         </p>
 

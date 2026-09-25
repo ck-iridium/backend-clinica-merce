@@ -412,6 +412,12 @@
       "alignment_right": "Droite",
       "content_fullwidth": "Contenu pleine largeur",
       "content_fullwidth_desc": "Étend le texte aux bords de l'écran. Désactivé : s'aligne sur la grille du site et le logo.",
+      "title_size": "Taille du Titre",
+      "subtitle_size": "Taille du Sous-titre",
+      "size_small": "Discret",
+      "size_medium": "Moyen",
+      "size_large": "Grand",
+      "size_xl": "Monumental (XL)",
       "bg_video": "Vidéo d'Arrière-plan (Optionnel - Remplace l'image)"
     },
     "about": {

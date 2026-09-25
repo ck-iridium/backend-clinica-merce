@@ -13,6 +13,8 @@ def update_landing_config(
     hero_alignment: Optional[str] = None,
     hero_horizontal_alignment: Optional[str] = None,
     hero_content_fullwidth: Optional[bool] = None,
+    hero_title_size: Optional[str] = None,
+    hero_subtitle_size: Optional[str] = None,
     hero_show_button: Optional[bool] = None,
     hero_button_text: Optional[str] = None,
     hero_button_link: Optional[str] = None,
@@ -22,7 +24,7 @@ def update_landing_config(
     cta_subtitle: Optional[str] = None
 ) -> str:
     """
-    Actualiza la configuración, estilos de alineación y textos principales de la landing page pública del inquilino.
+    Actualiza la configuración, estilos de alineación, tamaños tipográficos y textos principales de la landing page pública del inquilino.
     Solo se actualizarán los campos que no sean nulos (None).
 
     Args:
@@ -31,6 +33,8 @@ def update_landing_config(
         hero_alignment: Alineación vertical del Hero ('top' = superior, 'center' = centrado, 'bottom' = inferior).
         hero_horizontal_alignment: Alineación horizontal del Hero ('left' = izquierda, 'center' = centrado, 'right' = derecha).
         hero_content_fullwidth: Booleano que define el ancho del contenido. False = alineado a la cuadrícula de la web y el logotipo (recomendado); True = ancho completo hasta el borde de la pantalla.
+        hero_title_size: Escala tipográfica del título ('medium' = mediano, 'large' = grande por defecto, 'xl' = monumental).
+        hero_subtitle_size: Escala tipográfica del subtítulo ('small' = discreto, 'medium' = equilibrado por defecto, 'large' = destacado).
         hero_show_button: Mostrar u ocultar el botón de acción principal del Hero.
         hero_button_text: Texto del botón de acción del Hero (ej: 'Reservar Cita').
         hero_button_link: Enlace de destino del botón del Hero (ej: '/reservar').
@@ -52,6 +56,8 @@ def update_landing_config(
             hero_alignment=hero_alignment,
             hero_horizontal_alignment=hero_horizontal_alignment,
             hero_content_fullwidth=hero_content_fullwidth,
+            hero_title_size=hero_title_size,
+            hero_subtitle_size=hero_subtitle_size,
             hero_show_button=hero_show_button,
             hero_button_text=hero_button_text,
             hero_button_link=hero_button_link,

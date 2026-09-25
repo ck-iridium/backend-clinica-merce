@@ -58,10 +58,18 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
             ? (formData?.hero_horizontal_alignment === 'left' ? 'max-w-xl text-left ml-0 mr-auto' : formData?.hero_horizontal_alignment === 'right' ? 'max-w-xl text-right mr-0 ml-auto' : 'max-w-xl text-center mx-auto')
             : (formData?.hero_horizontal_alignment === 'left' ? 'max-w-2xl text-left' : formData?.hero_horizontal_alignment === 'right' ? 'max-w-2xl text-right' : 'max-w-2xl text-center mx-auto')
         }`}>
-          <h1 className="text-4xl md:text-5xl font-serif font-extrabold text-white drop-shadow-md leading-tight">
+          <h1 className={`${
+            formData?.hero_title_size === 'medium' ? 'text-2xl md:text-3xl lg:text-4xl' :
+            formData?.hero_title_size === 'xl' ? 'text-5xl md:text-6xl lg:text-7xl' :
+            'text-4xl md:text-5xl'
+          } font-serif font-extrabold text-white drop-shadow-md leading-tight`}>
             {cleanTitle(translate(formData?.hero_title || 'Título Principal', formData?.translations, 'hero_title'))}
           </h1>
-          <p className="text-sm md:text-lg text-white/90 font-medium drop-shadow-sm leading-relaxed">
+          <p className={`${
+            formData?.hero_subtitle_size === 'small' ? 'text-xs md:text-sm' :
+            formData?.hero_subtitle_size === 'large' ? 'text-base md:text-xl' :
+            'text-sm md:text-lg'
+          } text-white/90 font-medium drop-shadow-sm leading-relaxed`}>
             {translate(formData?.hero_subtitle || 'Subtítulo descriptivo que acompaña a la imagen principal.', formData?.translations, 'hero_subtitle')}
           </p>
           {formData?.hero_show_button !== false && (
