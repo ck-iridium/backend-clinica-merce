@@ -588,13 +588,13 @@ export default function ClientHome({ content, settings, services, categories }: 
                       <div className={`relative group ${priceConfig.boxClass} select-none`}>
                         <div className="relative flex flex-col items-center justify-center text-center">
                           {translate(content.hero_price_prefix, content.translations, 'hero_price_prefix') && (
-                            <span className={`text-xs sm:text-sm md:text-base font-black uppercase tracking-[0.25em] ${priceConfig.prefixClass} block mb-1 leading-none`}>
+                            <span className={`text-xs sm:text-sm md:text-base font-black uppercase tracking-[0.25em] ${priceConfig.prefixClass} block mb-0 leading-none`}>
                               {translate(content.hero_price_prefix, content.translations, 'hero_price_prefix')}
                             </span>
                           )}
                           <div 
                             className="flex items-baseline justify-center gap-1 sm:gap-2 leading-none"
-                            style={{ transform: `translateY(${content.hero_price_offset_y || 0}px)` }}
+                            style={{ transform: `translateY(${-18 + (content.hero_price_offset_y || 0)}px)` }}
                           >
                             <span 
                               style={{ 

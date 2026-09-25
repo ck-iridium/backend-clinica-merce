@@ -574,11 +574,11 @@ export default function HeroTab({
               </div>
 
               <div className="flex items-center gap-3">
-                <span className="text-[10px] font-bold text-stone-400">Pegar (-20)</span>
+                <span className="text-[10px] font-bold text-stone-400">Pegar (-40)</span>
                 <input
                   id="cms-hero-price-offset-y-slider"
                   type="range"
-                  min="-20"
+                  min="-40"
                   max="20"
                   step="1"
                   value={priceOffsetY}
@@ -592,7 +592,7 @@ export default function HeroTab({
               <div className="flex items-center justify-between pt-1 text-[10px] font-bold">
                 <span className="text-stone-400">{t('cms.hero.presets') || 'Ajustes Rápidos'}:</span>
                 <div className="flex items-center gap-1">
-                  {[-10, -5, 0, 5, 10].map((preset) => (
+                  {[-30, -20, -10, 0, 10].map((preset) => (
                     <button
                       key={preset}
                       type="button"
@@ -636,14 +636,14 @@ export default function HeroTab({
                   priceStyle === 'solid_white' ? 'px-4 py-2.5 rounded-2xl bg-white border border-stone-200 text-stone-900 shadow-md' :
                   'px-4 py-2.5 rounded-2xl bg-black/60 border border-white/20 shadow-md text-white'
                 }`}>
-                  <span className={`text-[9px] uppercase tracking-widest font-black block mb-1 leading-none ${
+                  <span className={`text-[9px] uppercase tracking-widest font-black block mb-0 leading-none ${
                     priceStyle === 'minimal' ? 'text-white/80' : 'text-[#d4af37]'
                   }`}>
                     {formData.hero_price_prefix || 'Desde'}
                   </span>
                   <div 
                     className="flex items-baseline justify-center gap-1 leading-none"
-                    style={{ transform: `translateY(${Math.round(priceOffsetY * 0.7)}px)` }}
+                    style={{ transform: `translateY(${-8 + Math.round(priceOffsetY * 0.7)}px)` }}
                   >
                     <span 
                       style={{ fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif" }}
