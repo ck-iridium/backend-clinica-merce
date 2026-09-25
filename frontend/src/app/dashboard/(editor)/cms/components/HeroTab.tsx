@@ -38,6 +38,9 @@ export default function HeroTab({
     : 100;
 
   const buttonStyle = formData.hero_button_style || 'glass';
+  const priceOffsetY = formData.hero_price_offset_y !== undefined && formData.hero_price_offset_y !== null
+    ? formData.hero_price_offset_y
+    : 0;
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300 pb-12">
@@ -345,6 +348,57 @@ export default function HeroTab({
               </select>
             </div>
 
+            {/* CONTROL DE AJUSTE VERTICAL / SEPARACIÓN DEL PRECIO (px) */}
+            <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/60 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Sliders size={13} className="text-[#d4af37]" />
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">
+                    {t('cms.hero.price_offset_y') || 'Ajuste Vertical / Proximidad'}
+                  </span>
+                </div>
+                <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2.5 py-0.5 rounded-full">
+                  {priceOffsetY > 0 ? `+${priceOffsetY}px` : `${priceOffsetY}px`}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-bold text-stone-400">Pegar (-20)</span>
+                <input
+                  id="cms-hero-price-offset-y-slider"
+                  type="range"
+                  min="-20"
+                  max="20"
+                  step="1"
+                  value={priceOffsetY}
+                  onChange={e => setFormData((prev: any) => ({ ...prev, hero_price_offset_y: parseInt(e.target.value, 10) }))}
+                  className="w-full accent-[#d4af37] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
+                />
+                <span className="text-[10px] font-bold text-stone-400">Separar (+20)</span>
+              </div>
+
+              {/* Presets rápidos */}
+              <div className="flex items-center justify-between pt-1 text-[10px] font-bold">
+                <span className="text-stone-400">{t('cms.hero.presets') || 'Ajustes Rápidos'}:</span>
+                <div className="flex items-center gap-1">
+                  {[-10, -5, 0, 5, 10].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setFormData((prev: any) => ({ ...prev, hero_price_offset_y: preset }))}
+                      className={`px-2 py-0.5 rounded-md transition-all ${
+                        priceOffsetY === preset
+                          ? 'bg-[#d4af37] text-white'
+                          : 'bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-200'
+                      }`}
+                    >
+                      {preset > 0 ? `+${preset}` : preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             {/* Vista previa compacta de 2 columnas con precio encapsulado */}
             <div className="p-4 rounded-2xl bg-stone-950 text-white space-y-2 border border-stone-800">
               <span className="text-[10px] uppercase font-bold tracking-widest text-[#d4af37] block">
@@ -362,11 +416,14 @@ export default function HeroTab({
                 </div>
 
                 {/* Col 2: Cápsula de Precio Encapsulada */}
-                <div className="shrink-0 p-3 rounded-2xl bg-black/60 border border-white/20 shadow-md text-center">
-                  <span className="text-[9px] uppercase tracking-widest font-black text-[#d4af37] block leading-none mb-0.5">
+                <div className="shrink-0 px-4 py-2.5 rounded-2xl bg-black/60 border border-white/20 shadow-md text-center">
+                  <span className="text-[9px] uppercase tracking-widest font-black text-[#d4af37] block leading-none">
                     {formData.hero_price_prefix || 'Desde'}
                   </span>
-                  <div className="flex items-baseline justify-center gap-0.5 leading-none">
+                  <div 
+                    className="flex items-baseline justify-center gap-0.5 leading-none"
+                    style={{ marginTop: `${-6 + Math.round(priceOffsetY * 0.7)}px` }}
+                  >
                     <span className="font-serif font-black text-2xl text-white">
                       {formData.hero_price_amount || '15'}
                     </span>

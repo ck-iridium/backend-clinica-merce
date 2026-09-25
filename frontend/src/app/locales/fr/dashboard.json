@@ -434,6 +434,7 @@
       "price_amount": "Montant / Prix",
       "price_suffix": "Symbole / Unité",
       "price_size": "Échelle Visuelle du Prix",
+      "price_offset_y": "Ajustement Vertical / Proximité",
       "preview_badge": "Aperçu du Badge",
       "preview_badge_desc": "Voici comment il apparaîtra dans la colonne latérale du Hero :",
       "action_button_desc": "Personnalisez le bouton d'action, son lien de destination intelligent et son apparence visuelle.",

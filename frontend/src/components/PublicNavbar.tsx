@@ -184,10 +184,8 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
   };
   const navT = navTranslations[language] || navTranslations.es;
 
-  const fallbackBtnText = t('common.book_appointment');
-  const btnText = siteContent
-    ? translateClient(siteContent.hero_button_text || fallbackBtnText, siteContent.translations, 'hero_button_text')
-    : fallbackBtnText;
+  // El botón principal del Header siempre es la llamada a la reserva de la clínica
+  const btnText = t('common.book_appointment') || 'Reservar Cita';
 
   useEffect(() => {
     setMounted(true);
@@ -212,7 +210,6 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
       .then(res => res.json())
       .then(data => {
         setSiteContent(data);
-        if (data.hero_button_link) setBtnLink(data.hero_button_link);
       })
       .catch(() => { });
 

@@ -434,6 +434,7 @@
       "price_amount": "Amount / Price",
       "price_suffix": "Symbol / Unit",
       "price_size": "Visual Price Scale",
+      "price_offset_y": "Vertical Adjustment / Proximity",
       "preview_badge": "Badge Preview",
       "preview_badge_desc": "Here is how it will appear in the lateral column of the Hero:",
       "action_button_desc": "Customize the call-to-action button, its smart destination link, and visual appearance.",

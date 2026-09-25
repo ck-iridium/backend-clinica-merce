@@ -434,6 +434,7 @@
       "price_amount": "Importe / Precio",
       "price_suffix": "Símbolo / Unidad",
       "price_size": "Escala Visual del Precio",
+      "price_offset_y": "Ajuste Vertical / Proximidad",
       "preview_badge": "Previsualización del Badge",
       "preview_badge_desc": "Así se presentará en la columna lateral del Hero:",
       "action_button_desc": "Personaliza el botón de llamada a la acción, su enlace inteligente y apariencia visual.",

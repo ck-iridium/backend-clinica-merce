@@ -137,14 +137,17 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
                   <div className={`shrink-0 self-start sm:self-center ${
                     formData?.hero_horizontal_alignment === 'center' ? 'mx-auto' : ''
                   }`}>
-                    <div className="relative group overflow-hidden rounded-2xl p-3.5 sm:p-4 md:p-5 backdrop-blur-xl bg-black/45 dark:bg-stone-950/60 border border-white/25 shadow-lg ring-1 ring-white/10 select-none">
-                      <div className="relative flex flex-col items-center justify-center text-center space-y-0.5">
+                    <div className="relative group overflow-hidden rounded-2xl px-4 py-2.5 sm:px-5 sm:py-3.5 backdrop-blur-xl bg-black/45 dark:bg-stone-950/60 border border-white/25 shadow-lg ring-1 ring-white/10 select-none">
+                      <div className="relative flex flex-col items-center justify-center text-center">
                         {translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix') && (
-                          <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-[#d4af37] block leading-none mb-0.5">
+                          <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-[#d4af37] block leading-none">
                             {translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix')}
                           </span>
                         )}
-                        <div className="flex items-baseline justify-center gap-0.5 sm:gap-1 leading-none">
+                        <div 
+                          className="flex items-baseline justify-center gap-0.5 sm:gap-1 leading-none"
+                          style={{ marginTop: `${-8 + Math.round((formData?.hero_price_offset_y || 0) * 0.7)}px` }}
+                        >
                           <span className={`${priceSizeClass} font-serif font-black text-white tracking-tight drop-shadow-md`}>
                             {formData?.hero_price_amount || '15'}
                           </span>

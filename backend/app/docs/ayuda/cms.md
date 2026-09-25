@@ -54,6 +54,8 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL del Hub `
   - Selector: `id="cms-hero-subtitle-size-select"`
 - **Conmutador Bloque de Precio:** Activar o desactivar la oferta destacada junto al título.
   - Selector: `id="cms-hero-price-toggle"`
+- **Ajuste Vertical del Precio (Offset Y):** Selector tipo slider para acercar o separar con precisión el número del importe respecto al prefijo ('Desde').
+  - Selector: `id="cms-hero-price-offset-y-slider"`
 - **Estilo de Botón CTA:** Selector visual de diseño del botón.
   - Selector: `id="cms-hero-button-style-select"`
 - **Selector Inteligente de Enlace:** Abre el modal de selección de destinos y tratamientos.

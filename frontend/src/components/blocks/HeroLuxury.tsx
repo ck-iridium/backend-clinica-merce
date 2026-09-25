@@ -151,17 +151,20 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
             <div className={`shrink-0 self-start md:self-center ${
               data?.hero_horizontal_alignment === 'center' ? 'mx-auto' : ''
             }`}>
-              <div className="relative group overflow-hidden rounded-3xl p-5 sm:p-6 md:p-8 backdrop-blur-xl bg-black/45 dark:bg-stone-950/60 border border-white/25 shadow-[0_20px_50px_rgba(0,0,0,0.6)] ring-1 ring-white/10 transition-all duration-300 hover:border-[#d4af37]/60 hover:shadow-[0_20px_50px_rgba(212,175,55,0.25)] select-none">
+              <div className="relative group overflow-hidden rounded-3xl px-6 py-4 sm:px-8 sm:py-5 md:px-9 md:py-6 backdrop-blur-xl bg-black/45 dark:bg-stone-950/60 border border-white/25 shadow-[0_20px_50px_rgba(0,0,0,0.6)] ring-1 ring-white/10 transition-all duration-300 hover:border-[#d4af37]/60 hover:shadow-[0_20px_50px_rgba(212,175,55,0.25)] select-none">
                 {/* Luz ambiental sutil de lujo en esquina */}
                 <div className="absolute -top-10 -right-10 w-28 h-28 bg-[#d4af37]/20 rounded-full blur-2xl pointer-events-none" />
                 
-                <div className="relative flex flex-col items-center justify-center text-center space-y-1">
+                <div className="relative flex flex-col items-center justify-center text-center">
                   {data?.hero_price_prefix && (
-                    <span className="text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.25em] text-[#d4af37] block leading-none mb-1">
+                    <span className="text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.25em] text-[#d4af37] block leading-none">
                       {data?.hero_price_prefix}
                     </span>
                   )}
-                  <div className="flex items-baseline justify-center gap-1 sm:gap-1.5 leading-none">
+                  <div 
+                    className="flex items-baseline justify-center gap-1 sm:gap-1.5 leading-none"
+                    style={{ marginTop: `${-12 + (data?.hero_price_offset_y || 0)}px` }}
+                  >
                     <span className={`${priceSizeClass} font-serif font-black text-white tracking-tight drop-shadow-[0_8px_16px_rgba(0,0,0,0.7)]`}>
                       {data?.hero_price_amount || '15'}
                     </span>
