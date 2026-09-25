@@ -1,6 +1,6 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
-import { Inter, Cormorant_Garamond, Playfair_Display, Montserrat, Outfit } from 'next/font/google';
+import { Inter, Cormorant_Garamond, Playfair, Montserrat, Outfit } from 'next/font/google';
 
 const inter = Inter({ 
   subsets: ['latin'], 
@@ -15,7 +15,7 @@ const cormorantGaramond = Cormorant_Garamond({
   display: 'swap',
 });
 
-const playfairDisplay = Playfair_Display({
+const playfair = Playfair({
   weight: ['400', '500', '600', '700', '800', '900'],
   subsets: ['latin'],
   variable: '--font-playfair-base',
@@ -34,12 +34,13 @@ const outfit = Outfit({
   display: 'swap',
 });
 
-const fontClasses = `${inter.variable} ${cormorantGaramond.variable} ${playfairDisplay.variable} ${montserrat.variable} ${outfit.variable}`;
+const fontClasses = `${inter.variable} ${cormorantGaramond.variable} ${playfair.variable} ${montserrat.variable} ${outfit.variable}`;
 
 function getFontVar(fontName: string, fallback: string): string {
   switch (fontName) {
     case 'Cormorant Garamond':
       return 'var(--font-cormorant), serif';
+    case 'Playfair':
     case 'Playfair Display':
       return 'var(--font-playfair-base), serif';
     case 'Montserrat':
@@ -339,7 +340,7 @@ export default async function RootLayout({
   const secondaryHsl = hexToHsl(secondaryColor);
   const isDark = settings?.dark_mode_enabled || false;
   const borderRadiusStyle = settings?.border_radius || 'suave';
-  const headingsFont = settings?.branding_font_headings || 'Playfair Display';
+  const headingsFont = settings?.branding_font_headings || 'Playfair';
   const bodyFont = settings?.branding_font_body || 'Inter';
   const favicon = settings?.favicon_b64 || settings?.logo_app_b64 || settings?.logo_pdf_b64 || '/favicon_probookia.ico';
 

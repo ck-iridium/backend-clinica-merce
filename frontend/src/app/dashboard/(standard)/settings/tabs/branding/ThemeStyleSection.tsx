@@ -11,7 +11,7 @@ interface ThemeStyleSectionProps {
 
 export const PREMIUM_FONTS_HEADINGS = [
   { value: 'Cormorant Garamond', label: 'Cormorant Garamond (Elegancia Suprema)' },
-  { value: 'Playfair Display', label: 'Playfair Display (Lujo Clásico)' },
+  { value: 'Playfair', label: 'Playfair (Lujo Clásico)' },
   { value: 'Inter', label: 'Inter (Modernidad SaaS)' },
   { value: 'Montserrat', label: 'Montserrat (Impacto e Identidad)' },
   { value: 'Outfit', label: 'Outfit (Minimalismo Sofisticado)' }
@@ -192,7 +192,7 @@ export default function ThemeStyleSection({
             </label>
             <select
               id="branding-font-headings-select"
-              value={settings.branding_font_headings || 'Playfair Display'}
+              value={settings.branding_font_headings === 'Playfair Display' ? 'Playfair' : (settings.branding_font_headings || 'Playfair')}
               onChange={e => updateSetting('branding_font_headings', e.target.value)}
               className="w-full text-xs font-bold bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-800 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-1 focus:ring-[#d4af37]/50 focus:border-[#d4af37] transition-all cursor-pointer font-serif"
             >

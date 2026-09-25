@@ -232,7 +232,7 @@ class ClinicSettingsBase(BaseModel):
     whitelist_zones: Optional[str] = None
 
     # Design & Onboarding Tokens
-    branding_font_headings: Optional[str] = "Playfair Display"
+    branding_font_headings: Optional[str] = "Playfair"
     branding_font_body: Optional[str] = "Inter"
     onboarding_completed: bool = False
     theme_palette: Optional[str] = "charcoal-gold"

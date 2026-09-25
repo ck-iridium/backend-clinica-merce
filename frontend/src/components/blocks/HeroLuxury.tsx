@@ -86,37 +86,32 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
   const priceScale = parseSizeScale(data?.hero_price_size, 100) / 100;
   const priceConfig = getPriceStyleConfig(data?.hero_price_style);
 
-  const renderPriceCapsule = (isMobile: boolean = false) => {
+  const renderPriceCapsule = () => {
     if (!isPriceActive) return null;
     return (
-      <div className={`shrink-0 ${isMobile ? 'block md:hidden my-2 w-fit' : 'hidden md:block self-start md:self-center'} ${
-        data?.hero_horizontal_alignment === 'center' ? 'mx-auto' :
-        data?.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''
-      }`}>
-        <div className={`relative group overflow-hidden ${priceConfig.boxClass} select-none`}>
-          <div className="relative flex flex-col items-center justify-center text-center">
-            {data?.hero_price_prefix && (
-              <span className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.25em] ${priceConfig.prefixClass} block leading-none`}>
-                {data?.hero_price_prefix}
-              </span>
-            )}
-            <div 
-              className="flex items-baseline justify-center gap-1 sm:gap-1.5 leading-none"
-              style={{ marginTop: `${-12 + (data?.hero_price_offset_y || 0)}px` }}
+      <div className={`relative group ${priceConfig.boxClass} select-none`}>
+        <div className="relative flex flex-col items-center justify-center text-center">
+          {data?.hero_price_prefix && (
+            <span className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.2em] ${priceConfig.prefixClass} block leading-none`}>
+              {data?.hero_price_prefix}
+            </span>
+          )}
+          <div 
+            className="flex items-baseline justify-center gap-0.5 sm:gap-1.5 leading-none"
+            style={{ marginTop: `${-8 + (data?.hero_price_offset_y || 0)}px` }}
+          >
+            <span 
+              style={{ fontSize: `clamp(${(2.4 * priceScale).toFixed(2)}rem, ${(4.8 * priceScale).toFixed(2)}vw, ${(6.5 * priceScale).toFixed(2)}rem)` }}
+              className={`font-serif font-black ${priceConfig.amountClass} tracking-tight`}
             >
-              <span 
-                style={{ fontSize: `clamp(${(3.0 * priceScale).toFixed(2)}rem, ${(5.0 * priceScale).toFixed(2)}vw, ${(6.8 * priceScale).toFixed(2)}rem)` }}
-                className={`font-serif font-black ${priceConfig.amountClass} tracking-tight`}
-              >
-                {data?.hero_price_amount || '15'}
-              </span>
-              <span 
-                style={{ fontSize: `clamp(${(1.4 * priceScale).toFixed(2)}rem, ${(2.3 * priceScale).toFixed(2)}vw, ${(3.0 * priceScale).toFixed(2)}rem)` }}
-                className={`font-serif font-bold ${priceConfig.suffixClass}`}
-              >
-                {data?.hero_price_suffix || '€'}
-              </span>
-            </div>
+              {data?.hero_price_amount || '15'}
+            </span>
+            <span 
+              style={{ fontSize: `clamp(${(1.2 * priceScale).toFixed(2)}rem, ${(2.2 * priceScale).toFixed(2)}vw, ${(2.8 * priceScale).toFixed(2)}rem)` }}
+              className={`font-serif font-bold ${priceConfig.suffixClass}`}
+            >
+              {data?.hero_price_suffix || '€'}
+            </span>
           </div>
         </div>
       </div>
@@ -172,68 +167,73 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
             : `max-w-7xl mx-auto ${data?.hero_horizontal_alignment === 'left' ? 'text-left' : data?.hero_horizontal_alignment === 'right' ? 'text-right' : 'text-center'}`
         }`}
       >
-        {/* Bloque Principal Hero: Col 1 (H1 + Subtítulo + [Precio Móvil] + Botón) y Col 2 (Precio Escritorio) */}
         <div className={`flex flex-col ${
-          data?.hero_horizontal_alignment === 'center'
-            ? 'md:flex-row items-center justify-center'
-            : data?.hero_horizontal_alignment === 'right'
-            ? 'md:flex-row-reverse items-end justify-start'
-            : 'md:flex-row items-start md:items-center justify-start'
-        } gap-6 md:gap-10 lg:gap-14`}>
-          {/* Columna 1: Textos */}
-          <div 
-            className={`w-full space-y-3 md:space-y-4 ${
-              data?.hero_horizontal_alignment === 'center' ? 'text-center' :
-              data?.hero_horizontal_alignment === 'right' ? 'text-right' : 'text-left'
-            } ${isPriceActive ? 'md:max-w-2xl' : 'md:max-w-3xl'}`}
-          >
-            {/* Fila 1: Título H1 (el ancho máximo % solo afecta en escritorio, nunca en móvil) */}
-            <h1 
-              style={{ 
-                '--hero-title-max-w': `${titleMaxWidth}%`,
-                fontSize: `clamp(${(2.2 * titleScale).toFixed(2)}rem, ${(5.5 * titleScale).toFixed(2)}vw, ${(7.2 * titleScale).toFixed(2)}rem)`
-              } as React.CSSProperties}
-              className={`leading-none font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] tracking-tight max-w-full md:max-w-[var(--hero-title-max-w)] ${
-                data?.hero_horizontal_alignment === 'center' ? 'mx-auto' : ''
+          data?.hero_horizontal_alignment === 'center' ? 'items-center' :
+          data?.hero_horizontal_alignment === 'right' ? 'items-end' : 'items-start'
+        }`}>
+          {/* Fila Principal: Textos (Título + Subtítulo) a la izquierda y Precio pegado inmediatamente a la derecha */}
+          <div className={`flex flex-row items-center gap-4 sm:gap-6 md:gap-8 max-w-full ${
+            data?.hero_horizontal_alignment === 'center' ? 'justify-center' :
+            data?.hero_horizontal_alignment === 'right' ? 'justify-end' : 'justify-start'
+          }`}>
+            {/* Columna Izquierda: Título H1 y Subtítulo */}
+            <div 
+              style={{ '--hero-title-max-w': `${titleMaxWidth}%` } as React.CSSProperties}
+              className={`min-w-0 space-y-2 sm:space-y-3.5 ${
+                isPriceActive ? 'flex-1 md:max-w-[var(--hero-title-max-w)]' : 'w-full md:max-w-[var(--hero-title-max-w)]'
+              } ${
+                data?.hero_horizontal_alignment === 'center' ? 'text-center' :
+                data?.hero_horizontal_alignment === 'right' ? 'text-right' : 'text-left'
               }`}
             >
-              {data?.hero_title || 'Descubre tu Mejor Versión'}
-            </h1>
+              <h1 
+                style={{ 
+                  fontSize: isPriceActive 
+                    ? `clamp(${(1.75 * titleScale).toFixed(2)}rem, ${(4.8 * titleScale).toFixed(2)}vw, ${(6.8 * titleScale).toFixed(2)}rem)`
+                    : `clamp(${(2.2 * titleScale).toFixed(2)}rem, ${(5.5 * titleScale).toFixed(2)}vw, ${(7.2 * titleScale).toFixed(2)}rem)`
+                }}
+                className={`leading-[1.05] font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] tracking-tight ${
+                  data?.hero_horizontal_alignment === 'center' ? 'mx-auto' : ''
+                }`}
+              >
+                {data?.hero_title || 'Descubre tu Mejor Versión'}
+              </h1>
 
-            {/* Fila 2: Subtítulo */}
-            <p 
-              style={{
-                fontSize: `clamp(${(0.9 * subtitleScale).toFixed(2)}rem, ${(1.25 * subtitleScale).toFixed(2)}vw, ${(1.35 * subtitleScale).toFixed(2)}rem)`
-              }}
-              className={`text-white/90 font-medium font-sans tracking-wide leading-relaxed drop-shadow-md ${
-                data?.hero_horizontal_alignment === 'center' ? 'max-w-2xl mx-auto' : 'max-w-xl'
-              }`}
-            >
-              {data?.hero_subtitle || 'Tratamientos estéticos avanzados y bienestar en un ambiente exclusivo.'}
-            </p>
+              <p 
+                style={{
+                  fontSize: `clamp(${(0.85 * subtitleScale).toFixed(2)}rem, ${(1.2 * subtitleScale).toFixed(2)}vw, ${(1.35 * subtitleScale).toFixed(2)}rem)`
+                }}
+                className={`text-white/90 font-medium font-sans tracking-wide leading-relaxed drop-shadow-md ${
+                  data?.hero_horizontal_alignment === 'center' ? 'max-w-2xl mx-auto' : 'max-w-xl'
+                }`}
+              >
+                {data?.hero_subtitle || 'Tratamientos estéticos avanzados y bienestar en un ambiente exclusivo.'}
+              </p>
+            </div>
 
-            {/* En Móvil: Cápsula de Precio ubicada exactamente entre Subtítulo y Botón */}
-            {renderPriceCapsule(true)}
-
-            {/* Fila 3: Botón de Acción CTA (ancho natural en móvil y escritorio, sin sombreado ni glow) */}
-            {data?.hero_show_button !== false && (
-              <div className={`pt-2 md:pt-3 ${
-                data?.hero_horizontal_alignment === 'center' ? 'flex justify-center' :
-                data?.hero_horizontal_alignment === 'right' ? 'flex justify-end' : 'flex justify-start'
-              }`}>
-                <Link 
-                  href={data?.hero_button_link || "/reservar"} 
-                  className={`inline-flex items-center justify-center px-8 py-3.5 md:px-11 md:py-4 rounded-full font-bold text-base md:text-lg transition-all duration-300 hover:scale-105 active:scale-95 group text-center whitespace-nowrap w-fit ${getButtonStyle(data?.hero_button_style)}`}
-                >
-                  <span>{data?.hero_button_text || 'Reservar Cita'}</span>
-                  <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">→</span>
-                </Link>
+            {/* Columna Derecha: Bloque de Precio Pegado Inmediatamente al Título y Subtítulo */}
+            {isPriceActive && (
+              <div className="shrink-0 self-center">
+                {renderPriceCapsule()}
               </div>
             )}
           </div>
 
-          {/* En Escritorio: Columna 2 lateral con la Cápsula de Precio */}
-          {renderPriceCapsule(false)}
+          {/* Fila Inferior: Botón de Acción CTA (debajo del bloque de textos y precio) */}
+          {data?.hero_show_button !== false && (
+            <div className={`pt-3 sm:pt-4 md:pt-6 w-full ${
+              data?.hero_horizontal_alignment === 'center' ? 'flex justify-center' :
+              data?.hero_horizontal_alignment === 'right' ? 'flex justify-end' : 'flex justify-start'
+            }`}>
+              <Link 
+                href={data?.hero_button_link || "/reservar"} 
+                className={`inline-flex items-center justify-center px-8 py-3.5 md:px-11 md:py-4 rounded-full font-bold text-base md:text-lg transition-all duration-300 hover:scale-105 active:scale-95 group text-center whitespace-nowrap w-fit ${getButtonStyle(data?.hero_button_style)}`}
+              >
+                <span>{data?.hero_button_text || 'Reservar Cita'}</span>
+                <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">→</span>
+              </Link>
+            </div>
+          )}
         </div>
       </motion.div>
     </section>

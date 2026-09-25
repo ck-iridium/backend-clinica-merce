@@ -120,37 +120,32 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
             }
           };
 
-          const renderPriceCapsule = (isMobile: boolean = false) => {
+          const renderPriceCapsule = () => {
             if (!isPriceActive) return null;
             return (
-              <div className={`shrink-0 ${isMobile ? 'block sm:hidden my-1.5 w-fit' : 'hidden sm:block self-start sm:self-center'} ${
-                formData?.hero_horizontal_alignment === 'center' ? 'mx-auto' :
-                formData?.hero_horizontal_alignment === 'right' ? 'ml-auto' : ''
-              }`}>
-                <div className={`relative group overflow-hidden ${priceConfig.boxClass} select-none`}>
-                  <div className="relative flex flex-col items-center justify-center text-center">
-                    {translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix') && (
-                      <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] ${priceConfig.prefixClass} block leading-none`}>
-                        {translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix')}
-                      </span>
-                    )}
-                    <div 
-                      className="flex items-baseline justify-center gap-0.5 sm:gap-1 leading-none"
-                      style={{ marginTop: `${-8 + Math.round((formData?.hero_price_offset_y || 0) * 0.7)}px` }}
+              <div className={`relative group ${priceConfig.boxClass} select-none`}>
+                <div className="relative flex flex-col items-center justify-center text-center">
+                  {translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix') && (
+                    <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] ${priceConfig.prefixClass} block leading-none`}>
+                      {translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix')}
+                    </span>
+                  )}
+                  <div 
+                    className="flex items-baseline justify-center gap-0.5 sm:gap-1 leading-none"
+                    style={{ marginTop: `${-6 + Math.round((formData?.hero_price_offset_y || 0) * 0.7)}px` }}
+                  >
+                    <span 
+                      style={{ fontSize: `clamp(${(1.35 * priceScale).toFixed(2)}rem, ${(2.4 * priceScale).toFixed(2)}vw, ${(2.8 * priceScale).toFixed(2)}rem)` }}
+                      className={`font-serif font-black ${priceConfig.amountClass} tracking-tight drop-shadow-md`}
                     >
-                      <span 
-                        style={{ fontSize: `clamp(${(1.5 * priceScale).toFixed(2)}rem, ${(2.6 * priceScale).toFixed(2)}vw, ${(3.0 * priceScale).toFixed(2)}rem)` }}
-                        className={`font-serif font-black ${priceConfig.amountClass} tracking-tight drop-shadow-md`}
-                      >
-                        {formData?.hero_price_amount || '15'}
-                      </span>
-                      <span 
-                        style={{ fontSize: `clamp(${(0.85 * priceScale).toFixed(2)}rem, ${(1.3 * priceScale).toFixed(2)}vw, ${(1.5 * priceScale).toFixed(2)}rem)` }}
-                        className={`font-serif font-bold ${priceConfig.suffixClass}`}
-                      >
-                        {formData?.hero_price_suffix || '€'}
-                      </span>
-                    </div>
+                      {formData?.hero_price_amount || '15'}
+                    </span>
+                    <span 
+                      style={{ fontSize: `clamp(${(0.8 * priceScale).toFixed(2)}rem, ${(1.2 * priceScale).toFixed(2)}vw, ${(1.4 * priceScale).toFixed(2)}rem)` }}
+                      className={`font-serif font-bold ${priceConfig.suffixClass}`}
+                    >
+                      {formData?.hero_price_suffix || '€'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -163,65 +158,70 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
                 ? `max-w-4xl ${formData?.hero_horizontal_alignment === 'left' ? 'text-left ml-0 mr-auto' : formData?.hero_horizontal_alignment === 'right' ? 'text-right mr-0 ml-auto' : 'text-center mx-auto'}`
                 : `max-w-4xl mx-auto ${formData?.hero_horizontal_alignment === 'left' ? 'text-left' : formData?.hero_horizontal_alignment === 'right' ? 'text-right' : 'text-center'}`
             }`}>
-              {/* Bloque Principal Hero: Col 1 (H1 + Subtítulo + [Precio Móvil] + Botón) y Col 2 (Precio Escritorio) */}
               <div className={`flex flex-col ${
-                formData?.hero_horizontal_alignment === 'center'
-                  ? 'sm:flex-row items-center justify-center'
-                  : formData?.hero_horizontal_alignment === 'right'
-                  ? 'sm:flex-row-reverse items-end justify-start'
-                  : 'sm:flex-row items-start sm:items-center justify-start'
-              } gap-4 sm:gap-6 md:gap-8`}>
-                {/* Columna 1: Textos */}
-                <div 
-                  className={`w-full space-y-2 ${
-                    formData?.hero_horizontal_alignment === 'center' ? 'text-center' :
-                    formData?.hero_horizontal_alignment === 'right' ? 'text-right' : 'text-left'
-                  } ${isPriceActive ? 'sm:max-w-xl' : 'sm:max-w-2xl'}`}
-                >
-                  {/* Fila 1: Título H1 (el ancho máximo % solo afecta en pantallas medianas/grandes) */}
-                  <h1 
-                    style={{ 
-                      '--hero-title-max-w': `${titleMaxWidth}%`,
-                      fontSize: `clamp(${(1.25 * titleScale).toFixed(2)}rem, ${(2.7 * titleScale).toFixed(2)}vw, ${(2.6 * titleScale).toFixed(2)}rem)`
-                    } as React.CSSProperties}
-                    className={`font-serif font-extrabold text-white drop-shadow-md leading-tight tracking-tight max-w-full sm:max-w-[var(--hero-title-max-w)] ${
-                      formData?.hero_horizontal_alignment === 'center' ? 'mx-auto' : ''
+                formData?.hero_horizontal_alignment === 'center' ? 'items-center' :
+                formData?.hero_horizontal_alignment === 'right' ? 'items-end' : 'items-start'
+              }`}>
+                {/* Fila Principal: Textos a la izquierda y Precio pegado inmediatamente a la derecha */}
+                <div className={`flex flex-row items-center gap-3 sm:gap-5 md:gap-6 max-w-full ${
+                  formData?.hero_horizontal_alignment === 'center' ? 'justify-center' :
+                  formData?.hero_horizontal_alignment === 'right' ? 'justify-end' : 'justify-start'
+                }`}>
+                  {/* Columna Izquierda: Título y Subtítulo */}
+                  <div 
+                    style={{ '--hero-title-max-w': `${titleMaxWidth}%` } as React.CSSProperties}
+                    className={`min-w-0 space-y-1.5 sm:space-y-2 ${
+                      isPriceActive ? 'flex-1 sm:max-w-[var(--hero-title-max-w)]' : 'w-full sm:max-w-[var(--hero-title-max-w)]'
+                    } ${
+                      formData?.hero_horizontal_alignment === 'center' ? 'text-center' :
+                      formData?.hero_horizontal_alignment === 'right' ? 'text-right' : 'text-left'
                     }`}
                   >
-                    {cleanTitle(translate(formData?.hero_title || 'Título Principal', formData?.translations, 'hero_title'))}
-                  </h1>
+                    <h1 
+                      style={{ 
+                        fontSize: isPriceActive
+                          ? `clamp(${(1.1 * titleScale).toFixed(2)}rem, ${(2.3 * titleScale).toFixed(2)}vw, ${(2.4 * titleScale).toFixed(2)}rem)`
+                          : `clamp(${(1.25 * titleScale).toFixed(2)}rem, ${(2.7 * titleScale).toFixed(2)}vw, ${(2.6 * titleScale).toFixed(2)}rem)`
+                      }}
+                      className={`font-serif font-extrabold text-white drop-shadow-md leading-tight tracking-tight ${
+                        formData?.hero_horizontal_alignment === 'center' ? 'mx-auto' : ''
+                      }`}
+                    >
+                      {cleanTitle(translate(formData?.hero_title || 'Título Principal', formData?.translations, 'hero_title'))}
+                    </h1>
 
-                  {/* Fila 2: Subtítulo */}
-                  <p 
-                    style={{
-                      fontSize: `clamp(${(0.75 * subtitleScale).toFixed(2)}rem, ${(1.0 * subtitleScale).toFixed(2)}vw, ${(0.95 * subtitleScale).toFixed(2)}rem)`
-                    }}
-                    className={`text-white/90 font-medium drop-shadow-sm leading-relaxed ${
-                      formData?.hero_horizontal_alignment === 'center' ? 'max-w-xl mx-auto' : 'max-w-xl'
-                    }`}
-                  >
-                    {translate(formData?.hero_subtitle || 'Subtítulo descriptivo que acompaña a la imagen principal.', formData?.translations, 'hero_subtitle')}
-                  </p>
+                    <p 
+                      style={{
+                        fontSize: `clamp(${(0.7 * subtitleScale).toFixed(2)}rem, ${(0.95 * subtitleScale).toFixed(2)}vw, ${(0.9 * subtitleScale).toFixed(2)}rem)`
+                      }}
+                      className={`text-white/90 font-medium drop-shadow-sm leading-relaxed ${
+                        formData?.hero_horizontal_alignment === 'center' ? 'max-w-xl mx-auto' : 'max-w-xl'
+                      }`}
+                    >
+                      {translate(formData?.hero_subtitle || 'Subtítulo descriptivo que acompaña a la imagen principal.', formData?.translations, 'hero_subtitle')}
+                    </p>
+                  </div>
 
-                  {/* En Móvil: Cápsula de Precio entre Subtítulo y Botón */}
-                  {renderPriceCapsule(true)}
-
-                  {/* Fila 3: Botón de Acción CTA (ancho natural en móvil y escritorio, sin sombreado ni glow) */}
-                  {formData?.hero_show_button !== false && (
-                    <div className={`pt-1.5 sm:pt-2 ${
-                      formData?.hero_horizontal_alignment === 'center' ? 'flex justify-center' :
-                      formData?.hero_horizontal_alignment === 'right' ? 'flex justify-end' : 'flex justify-start'
-                    }`}>
-                      <div className={`inline-flex items-center justify-center px-6 py-2.5 rounded-full font-bold text-xs sm:text-sm transition-all text-center whitespace-nowrap w-fit ${getButtonStyle(formData?.hero_button_style)}`}>
-                        <span>{translate(formData?.hero_button_text || 'Reservar Ahora', formData?.translations, 'hero_button_text')}</span>
-                        <span className="ml-1.5">→</span>
-                      </div>
+                  {/* Columna Derecha: Bloque de Precio Pegado Inmediatamente al Título y Subtítulo */}
+                  {isPriceActive && (
+                    <div className="shrink-0 self-center">
+                      {renderPriceCapsule()}
                     </div>
                   )}
                 </div>
 
-                {/* En Escritorio: Columna 2 lateral con la Cápsula de Precio */}
-                {renderPriceCapsule(false)}
+                {/* Fila Inferior: Botón de Acción CTA (debajo del bloque de textos y precio) */}
+                {formData?.hero_show_button !== false && (
+                  <div className={`pt-2 sm:pt-3.5 w-full ${
+                    formData?.hero_horizontal_alignment === 'center' ? 'flex justify-center' :
+                    formData?.hero_horizontal_alignment === 'right' ? 'flex justify-end' : 'flex justify-start'
+                  }`}>
+                    <div className={`inline-flex items-center justify-center px-6 py-2.5 rounded-full font-bold text-xs sm:text-sm transition-all text-center whitespace-nowrap w-fit ${getButtonStyle(formData?.hero_button_style)}`}>
+                      <span>{translate(formData?.hero_button_text || 'Reservar Ahora', formData?.translations, 'hero_button_text')}</span>
+                      <span className="ml-1.5">→</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           );

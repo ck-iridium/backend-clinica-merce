@@ -380,7 +380,7 @@ class ClinicSettings(Base):
     global_deposit_amount = Column(Numeric(10, 2), nullable=True, default=0.0)
 
     # Design & Onboarding Tokens
-    branding_font_headings = Column(String, default="Playfair Display")
+    branding_font_headings = Column(String, default="Playfair")
     branding_font_body = Column(String, default="Inter")
     onboarding_completed = Column(Boolean, default=False)
     theme_palette = Column(String, default="charcoal-gold")

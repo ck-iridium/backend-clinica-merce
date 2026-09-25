@@ -651,6 +651,15 @@ export default function HeroTab({
                   </div>
                 </div>
               </div>
+
+              {/* Botón CTA debajo */}
+              {formData.hero_show_button !== false && (
+                <div className="pt-2 border-t border-stone-800/60 flex items-center">
+                  <span className="text-[10px] px-3 py-1 rounded-full bg-white/10 border border-white/20 text-white/90 font-bold inline-flex items-center gap-1">
+                    {formData.hero_button_text || 'Reservar Cita'} <span className="text-[#d4af37]">→</span>
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         )}
