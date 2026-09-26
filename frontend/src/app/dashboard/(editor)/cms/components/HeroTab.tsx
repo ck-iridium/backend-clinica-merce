@@ -208,6 +208,8 @@ export default function HeroTab({
   const titleScale = parseSizeScale(getResponsiveValue('hero_title_size', formData.hero_title_size ?? 100), 100);
   const subtitleScale = parseSizeScale(getResponsiveValue('hero_subtitle_size', formData.hero_subtitle_size ?? 100), 100);
   const priceScale = parseSizeScale(getResponsiveValue('hero_price_size', formData.hero_price_size ?? 100), 100);
+  const pricePeriodSize = parseSizeScale(getResponsiveValue('hero_price_period_size', formData.hero_price_period_size ?? 100), 100);
+  const pricePeriodOffsetY = getResponsiveValue('hero_price_period_offset_y', formData.hero_price_period_offset_y ?? 0);
 
   const heroAlignment = getResponsiveValue('hero_alignment', formData.hero_alignment || 'center');
   const heroHorizontalAlignment = getResponsiveValue('hero_horizontal_alignment', formData.hero_horizontal_alignment || 'center');
@@ -737,13 +739,13 @@ export default function HeroTab({
               </div>
             </div>
 
-            {/* CONTROL DE AJUSTE VERTICAL / SEPARACIÓN DEL PRECIO (px) */}
+            {/* CONTROL DE AJUSTE VERTICAL / SEPARACIÓN DEL DESDE (px) */}
             <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/60 space-y-2.5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <Sliders size={13} className="text-[#d4af37]" />
                   <span className="text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">
-                    {t('cms.hero.price_offset_y') || 'Ajuste Vertical / Proximidad'}
+                    {t('cms.hero.price_offset_y') || 'Proximidad / Separación del DESDE'}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -755,31 +757,139 @@ export default function HeroTab({
               </div>
 
               <div className="flex items-center gap-3">
-                <span className="text-[10px] font-bold text-stone-400">Pegar (-10)</span>
+                <span className="text-[10px] font-bold text-stone-400">Pegar al Precio (-40)</span>
                 <input
                   id="cms-hero-price-offset-y-slider"
                   type="range"
-                  min="-10"
-                  max="10"
+                  min="-40"
+                  max="40"
                   step="1"
                   value={priceOffsetY}
                   onChange={e => setResponsiveValue('hero_price_offset_y', parseInt(e.target.value, 10))}
                   className="w-full accent-[#d4af37] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
                 />
-                <span className="text-[10px] font-bold text-stone-400">Separar (+10)</span>
+                <span className="text-[10px] font-bold text-stone-400">Separar (+40)</span>
               </div>
 
               {/* Presets rápidos */}
               <div className="flex items-center justify-between pt-1 text-[10px] font-bold">
                 <span className="text-stone-400">{t('cms.hero.presets') || 'Ajustes Rápidos'}:</span>
                 <div className="flex items-center gap-1">
-                  {[-8, -4, 0, 4, 8].map((preset) => (
+                  {[-30, -15, 0, 15, 30].map((preset) => (
                     <button
                       key={preset}
                       type="button"
                       onClick={() => setResponsiveValue('hero_price_offset_y', preset)}
                       className={`px-2 py-0.5 rounded-md transition-all ${
                         priceOffsetY === preset
+                          ? 'bg-[#d4af37] text-white'
+                          : 'bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-200'
+                      }`}
+                    >
+                      {preset > 0 ? `+${preset}` : preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* CONTROL DE TAMAÑO / ESCALA DE SESIÓN (PERIODO) */}
+            <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/60 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Sliders size={13} className="text-[#d4af37]" />
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">
+                    {t('cms.hero.price_period_size') || 'Escala / Tamaño de SESIÓN (Periodo)'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {renderBadge('hero_price_period_size')}
+                  <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2 py-0.5 rounded-full">
+                    {pricePeriodSize}%
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-bold text-stone-400">50%</span>
+                <input
+                  id="cms-hero-price-period-size-slider"
+                  type="range"
+                  min="50"
+                  max="160"
+                  step="5"
+                  value={pricePeriodSize}
+                  onChange={e => setResponsiveValue('hero_price_period_size', e.target.value)}
+                  className="w-full accent-[#d4af37] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
+                />
+                <span className="text-[10px] font-bold text-stone-400">160%</span>
+              </div>
+
+              {/* Presets rápidos */}
+              <div className="flex items-center justify-between pt-1 text-[10px] font-bold">
+                <span className="text-stone-400">{t('cms.hero.presets') || 'Ajustes Rápidos'}:</span>
+                <div className="flex items-center gap-1">
+                  {[70, 85, 100, 120, 140].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setResponsiveValue('hero_price_period_size', String(preset))}
+                      className={`px-2 py-0.5 rounded-md transition-all ${
+                        pricePeriodSize === preset
+                          ? 'bg-[#d4af37] text-white'
+                          : 'bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-200'
+                      }`}
+                    >
+                      {preset}%
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* CONTROL DE AJUSTE VERTICAL / SEPARACIÓN DE SESIÓN (px) */}
+            <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/60 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Sliders size={13} className="text-[#d4af37]" />
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">
+                    {t('cms.hero.price_period_offset_y') || 'Ajuste Vertical / Separación de SESIÓN'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {renderBadge('hero_price_period_offset_y')}
+                  <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2.5 py-0.5 rounded-full">
+                    {pricePeriodOffsetY > 0 ? `+${pricePeriodOffsetY}px` : `${pricePeriodOffsetY}px`}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-bold text-stone-400">Pegar al € (-20)</span>
+                <input
+                  id="cms-hero-price-period-offset-y-slider"
+                  type="range"
+                  min="-20"
+                  max="20"
+                  step="1"
+                  value={pricePeriodOffsetY}
+                  onChange={e => setResponsiveValue('hero_price_period_offset_y', parseInt(e.target.value, 10))}
+                  className="w-full accent-[#d4af37] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
+                />
+                <span className="text-[10px] font-bold text-stone-400">Separar (+20)</span>
+              </div>
+
+              {/* Presets rápidos */}
+              <div className="flex items-center justify-between pt-1 text-[10px] font-bold">
+                <span className="text-stone-400">{t('cms.hero.presets') || 'Ajustes Rápidos'}:</span>
+                <div className="flex items-center gap-1">
+                  {[-12, -6, 0, 6, 12].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setResponsiveValue('hero_price_period_offset_y', preset)}
+                      className={`px-2 py-0.5 rounded-md transition-all ${
+                        pricePeriodOffsetY === preset
                           ? 'bg-[#d4af37] text-white'
                           : 'bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-200'
                       }`}
@@ -817,28 +927,45 @@ export default function HeroTab({
                   priceStyle === 'solid_white' ? 'px-4 py-2.5 rounded-2xl bg-white border border-stone-200 text-stone-900 shadow-md' :
                   'px-4 py-2.5 rounded-2xl bg-black/60 border border-white/20 shadow-md text-white'
                 }`}>
-                  <div className="flex flex-col items-start gap-1">
-                    <span className={`text-[9px] uppercase tracking-widest font-black block leading-none select-none ${
-                      priceStyle === 'minimal' ? 'text-white/80' : 'text-[#d4af37]'
-                    }`}>
+                  <div className="flex flex-col items-start">
+                    <span 
+                      style={{
+                        marginBottom: `${-4 + Math.round(priceOffsetY / 5)}px`
+                      }}
+                      className={`text-[9px] uppercase tracking-widest font-black block leading-none select-none transition-all ${
+                        priceStyle === 'minimal' ? 'text-white/80' : 'text-[#d4af37]'
+                      }`}
+                    >
                       {formData.hero_price_prefix || 'Desde'}
                     </span>
-                    <div className="flex items-center gap-2 leading-none">
+                    <div className="flex items-center gap-1.5 leading-none">
                       <span 
-                        style={{ fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif" }}
-                        className={`font-serif font-black text-2xl ${priceStyle === 'solid_white' ? 'text-stone-900' : 'text-white'}`}
+                        style={{ 
+                          fontSize: `${(1.5 * (priceScale / 100)).toFixed(2)}rem`,
+                          fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif" 
+                        }}
+                        className={`font-serif font-bold ${priceStyle === 'solid_white' ? 'text-stone-900' : 'text-white'}`}
                       >
                         {formData.hero_price_amount || '15'}
                       </span>
                       <div className="flex flex-col items-start justify-center leading-none pl-0.5">
                         <span 
-                          style={{ fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif" }}
-                          className={`text-xs font-serif font-bold ${priceStyle === 'minimal' ? 'text-white' : 'text-[#d4af37]'}`}
+                          style={{ 
+                            fontSize: `${(0.85 * (priceScale / 100)).toFixed(2)}rem`,
+                            fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif" 
+                          }}
+                          className={`font-serif font-bold ${priceStyle === 'minimal' ? 'text-white' : 'text-[#d4af37]'}`}
                         >
                           {formData.hero_price_suffix || '€'}
                         </span>
                         {formData.hero_price_period && (
-                          <span className={`text-[9px] font-black uppercase tracking-wider ${priceStyle === 'minimal' ? 'text-white/80' : 'text-[#d4af37]'} mt-0.5 leading-none`}>
+                          <span 
+                            style={{
+                              fontSize: `${(0.55 * (pricePeriodSize / 100)).toFixed(2)}rem`,
+                              marginTop: `${2 + Math.round(pricePeriodOffsetY / 2)}px`
+                            }}
+                            className={`font-black uppercase tracking-wider ${priceStyle === 'minimal' ? 'text-white/80' : 'text-[#d4af37]'} leading-tight block transition-all`}
+                          >
                             {formData.hero_price_period}
                           </span>
                         )}

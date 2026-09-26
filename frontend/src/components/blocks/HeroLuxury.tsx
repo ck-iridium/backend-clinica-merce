@@ -105,6 +105,22 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
   const tabletPriceOffsetY = data?.hero_responsive_config?.tablet?.hero_price_offset_y ?? desktopPriceOffsetY;
   const mobilePriceOffsetY = data?.hero_responsive_config?.mobile?.hero_price_offset_y ?? tabletPriceOffsetY;
 
+  const desktopPeriodScale = parseSizeScale(data?.hero_price_period_size, 100) / 100;
+  const tabletPeriodScale = parseSizeScale(data?.hero_responsive_config?.tablet?.hero_price_period_size ?? data?.hero_price_period_size, 100) / 100;
+  const mobilePeriodScale = parseSizeScale(data?.hero_responsive_config?.mobile?.hero_price_period_size ?? data?.hero_responsive_config?.tablet?.hero_price_period_size ?? data?.hero_price_period_size, 100) / 100;
+
+  const desktopPeriodOffsetY = data?.hero_price_period_offset_y ?? 0;
+  const tabletPeriodOffsetY = data?.hero_responsive_config?.tablet?.hero_price_period_offset_y ?? desktopPeriodOffsetY;
+  const mobilePeriodOffsetY = data?.hero_responsive_config?.mobile?.hero_price_period_offset_y ?? tabletPeriodOffsetY;
+
+  const mobileDesdeMb = -6 + mobilePriceOffsetY;
+  const tabletDesdeMb = -12 + tabletPriceOffsetY;
+  const desktopDesdeMb = -20 + desktopPriceOffsetY;
+
+  const mobilePeriodMt = 3 + mobilePeriodOffsetY;
+  const tabletPeriodMt = 3 + tabletPeriodOffsetY;
+  const desktopPeriodMt = 3 + desktopPeriodOffsetY;
+
   const desktopTitleMaxWidth = data?.hero_title_max_width || 100;
   const tabletTitleMaxWidth = data?.hero_responsive_config?.tablet?.hero_title_max_width ?? desktopTitleMaxWidth;
   const mobileTitleMaxWidth = data?.hero_responsive_config?.mobile?.hero_title_max_width ?? tabletTitleMaxWidth;
@@ -120,29 +136,29 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
           {data?.hero_price_prefix && (
             <span 
               style={{
-                '--hero-price-prefix-mb': `${-26 + desktopPriceOffsetY}px`,
-                '--hero-price-prefix-mobile-mb': `${-14 + mobilePriceOffsetY}px`,
-                marginBottom: 'var(--hero-price-prefix-mobile-mb)'
+                '--hero-price-prefix-mb-mobile': `${mobileDesdeMb}px`,
+                '--hero-price-prefix-mb-tablet': `${tabletDesdeMb}px`,
+                '--hero-price-prefix-mb-desktop': `${desktopDesdeMb}px`,
               } as React.CSSProperties}
-              className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.22em] ${priceConfig.prefixClass} block leading-none pl-0.5 select-none relative z-10 md:[margin-bottom:var(--hero-price-prefix-mb)]`}
+              className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.22em] ${priceConfig.prefixClass} block leading-none pl-0.5 select-none relative z-10 transition-all mb-[var(--hero-price-prefix-mb-mobile)] md:mb-[var(--hero-price-prefix-mb-tablet)] lg:mb-[var(--hero-price-prefix-mb-desktop)]`}
             >
               {data?.hero_price_prefix}
             </span>
           )}
-          <div className="flex items-center gap-2 sm:gap-3.5 leading-none">
+          <div className="flex items-end gap-1.5 sm:gap-2.5">
             <span 
               style={{ 
-                fontSize: `clamp(${(3.4 * mobilePriceScale).toFixed(2)}rem, ${(7.2 * tabletPriceScale).toFixed(2)}vw, ${(9.5 * desktopPriceScale).toFixed(2)}rem)`,
+                fontSize: `clamp(${(3.4 * mobilePriceScale).toFixed(2)}rem, ${(5.0 * tabletPriceScale).toFixed(2)}rem, ${(7.5 * desktopPriceScale).toFixed(2)}rem)`,
                 fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
               }}
-              className={`font-serif font-black ${priceConfig.amountClass} tracking-tight drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]`}
+              className={`font-serif font-bold ${priceConfig.amountClass} leading-[0.88] tracking-tight drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]`}
             >
               {data?.hero_price_amount || '15'}
             </span>
             <div className="flex flex-col items-start justify-center leading-none pl-1">
               <span 
                 style={{ 
-                  fontSize: `clamp(${(1.6 * mobilePriceScale).toFixed(2)}rem, ${(3.2 * tabletPriceScale).toFixed(2)}vw, ${(4.2 * desktopPriceScale).toFixed(2)}rem)`,
+                  fontSize: `clamp(${(1.6 * mobilePriceScale).toFixed(2)}rem, ${(2.2 * tabletPriceScale).toFixed(2)}rem, ${(3.2 * desktopPriceScale).toFixed(2)}rem)`,
                   fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
                 }}
                 className={`font-serif font-bold ${priceConfig.suffixClass} leading-none`}
@@ -150,7 +166,15 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
                 {data?.hero_price_suffix || '€'}
               </span>
               {data?.hero_price_period && (
-                <span className={`text-[8px] sm:text-[9px] md:text-[10px] font-black uppercase tracking-[0.18em] ${priceConfig.suffixClass} opacity-90 leading-tight mt-1`}>
+                <span 
+                  style={{
+                    '--hero-price-period-mt-mobile': `${mobilePeriodMt}px`,
+                    '--hero-price-period-mt-tablet': `${tabletPeriodMt}px`,
+                    '--hero-price-period-mt-desktop': `${desktopPeriodMt}px`,
+                    fontSize: `clamp(${(0.55 * mobilePeriodScale).toFixed(2)}rem, ${(0.62 * tabletPeriodScale).toFixed(2)}rem, ${(0.70 * desktopPeriodScale).toFixed(2)}rem)`,
+                  } as React.CSSProperties}
+                  className={`font-black uppercase tracking-[0.18em] ${priceConfig.suffixClass} opacity-90 leading-tight block mt-[var(--hero-price-period-mt-mobile)] md:mt-[var(--hero-price-period-mt-tablet)] lg:mt-[var(--hero-price-period-mt-desktop)] transition-all`}
+                >
                   {data?.hero_price_period}
                 </span>
               )}

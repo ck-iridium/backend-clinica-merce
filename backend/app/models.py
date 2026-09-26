@@ -456,8 +456,10 @@ class SiteContent(Base):
     hero_price_amount = Column(String, default="", nullable=True)
     hero_price_suffix = Column(String, default="€", nullable=True)
     hero_price_period = Column(String, default="", nullable=True) # MES, AÑO, SESIÓN, etc.
+    hero_price_period_size = Column(Integer, default=100, nullable=True) # % escala de 50 a 160
+    hero_price_period_offset_y = Column(Integer, default=0, nullable=True) # desplazamiento vertical en px (-15 a 15)
     hero_price_size = Column(String, default="large", nullable=True) # medium, large, xl
-    hero_price_offset_y = Column(Integer, default=0, nullable=True) # desplazamiento vertical en px (-20 a 20)
+    hero_price_offset_y = Column(Integer, default=0, nullable=True) # desplazamiento vertical en px (-30 a 30)
     hero_price_style = Column(String, default="capsule_dark", nullable=True) # capsule_dark, outline, minimal, solid_white
     hero_button_style = Column(String, default="glass", nullable=True) # glass, gold_solid, outline, solid_white
     hero_responsive_config = Column(JSONB, default=dict, nullable=True) # {"tablet": {...}, "mobile": {...}}

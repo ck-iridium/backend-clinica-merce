@@ -577,6 +577,22 @@ export default function ClientHome({ content, settings, services, categories }: 
                   const tabletPriceOffsetY = content.hero_responsive_config?.tablet?.hero_price_offset_y ?? desktopPriceOffsetY;
                   const mobilePriceOffsetY = content.hero_responsive_config?.mobile?.hero_price_offset_y ?? tabletPriceOffsetY;
 
+                  const desktopPeriodScale = parseSizeScale(content.hero_price_period_size, 100) / 100;
+                  const tabletPeriodScale = parseSizeScale(content.hero_responsive_config?.tablet?.hero_price_period_size ?? content.hero_price_period_size, 100) / 100;
+                  const mobilePeriodScale = parseSizeScale(content.hero_responsive_config?.mobile?.hero_price_period_size ?? content.hero_responsive_config?.tablet?.hero_price_period_size ?? content.hero_price_period_size, 100) / 100;
+
+                  const desktopPeriodOffsetY = content.hero_price_period_offset_y ?? 0;
+                  const tabletPeriodOffsetY = content.hero_responsive_config?.tablet?.hero_price_period_offset_y ?? desktopPeriodOffsetY;
+                  const mobilePeriodOffsetY = content.hero_responsive_config?.mobile?.hero_price_period_offset_y ?? tabletPeriodOffsetY;
+
+                  const mobileDesdeMb = -6 + mobilePriceOffsetY;
+                  const tabletDesdeMb = -12 + tabletPriceOffsetY;
+                  const desktopDesdeMb = -20 + desktopPriceOffsetY;
+
+                  const mobilePeriodMt = 3 + mobilePeriodOffsetY;
+                  const tabletPeriodMt = 3 + tabletPeriodOffsetY;
+                  const desktopPeriodMt = 3 + desktopPeriodOffsetY;
+
                   const desktopTitleMaxWidth = content.hero_title_max_width || 100;
                   const tabletTitleMaxWidth = content.hero_responsive_config?.tablet?.hero_title_max_width ?? desktopTitleMaxWidth;
                   const mobileTitleMaxWidth = content.hero_responsive_config?.mobile?.hero_title_max_width ?? tabletTitleMaxWidth;
@@ -607,38 +623,33 @@ export default function ClientHome({ content, settings, services, categories }: 
                         <div className="relative flex flex-col items-start text-left">
                           {translate(content.hero_price_prefix, content.translations, 'hero_price_prefix') && (
                             <span 
-                              style={{
-                                '--hero-price-prefix-mb': `${-26 + desktopPriceOffsetY}px`,
-                                '--hero-price-prefix-mobile-mb': `${-14 + mobilePriceOffsetY}px`,
-                                marginBottom: 'var(--hero-price-prefix-mobile-mb)'
-                              } as React.CSSProperties}
-                              className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.22em] ${priceConfig.prefixClass} block leading-none pl-0.5 select-none relative z-10 md:[margin-bottom:var(--hero-price-prefix-mb)]`}
+                              className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.22em] ${priceConfig.prefixClass} block leading-none pl-0.5 select-none relative z-10 transition-all mb-[var(--hero-prefix-mb-mobile)] md:mb-[var(--hero-prefix-mb-tablet)] lg:mb-[var(--hero-prefix-mb-desktop)]`}
                             >
                               {translate(content.hero_price_prefix, content.translations, 'hero_price_prefix')}
                             </span>
                           )}
-                          <div className="flex items-center gap-2 sm:gap-3.5 leading-none">
+                          <div className="flex items-end gap-1.5 sm:gap-2.5">
                             <span 
                               style={{ 
-                                fontSize: `clamp(${(3.4 * mobilePriceScale).toFixed(2)}rem, ${(7.2 * tabletPriceScale).toFixed(2)}vw, ${(9.5 * desktopPriceScale).toFixed(2)}rem)`,
                                 fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
                               }}
-                              className={`font-serif font-black ${priceConfig.amountClass} tracking-tight drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]`}
+                              className={`font-serif font-bold text-[length:var(--hero-price-size-mobile)] md:text-[length:var(--hero-price-size-tablet)] lg:text-[length:var(--hero-price-size-desktop)] leading-[0.88] ${priceConfig.amountClass} tracking-tight drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]`}
                             >
                               {content.hero_price_amount || '15'}
                             </span>
                             <div className="flex flex-col items-start justify-center leading-none pl-1">
                               <span 
                                 style={{ 
-                                  fontSize: `clamp(${(1.6 * mobilePriceScale).toFixed(2)}rem, ${(3.2 * tabletPriceScale).toFixed(2)}vw, ${(4.2 * desktopPriceScale).toFixed(2)}rem)`,
                                   fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
                                 }}
-                                className={`font-serif font-bold ${priceConfig.suffixClass} leading-none`}
+                                className={`font-serif font-bold text-[length:var(--hero-suffix-size-mobile)] md:text-[length:var(--hero-suffix-size-tablet)] lg:text-[length:var(--hero-suffix-size-desktop)] leading-none ${priceConfig.suffixClass}`}
                               >
                                 {content.hero_price_suffix || '€'}
                               </span>
                               {periodText && (
-                                <span className={`text-[8px] sm:text-[9px] md:text-[10px] font-black uppercase tracking-[0.18em] ${priceConfig.suffixClass} opacity-90 leading-tight mt-1`}>
+                                <span 
+                                  className={`font-black uppercase tracking-[0.18em] text-[length:var(--hero-period-size-mobile)] md:text-[length:var(--hero-period-size-tablet)] lg:text-[length:var(--hero-period-size-desktop)] mt-[var(--hero-period-mt-mobile)] md:mt-[var(--hero-period-mt-tablet)] lg:mt-[var(--hero-period-mt-desktop)] ${priceConfig.suffixClass} opacity-90 leading-tight block transition-all`}
+                                >
                                   {periodText}
                                 </span>
                               )}
@@ -650,18 +661,49 @@ export default function ClientHome({ content, settings, services, categories }: 
                   };
 
                   return (
-                    <div className={`relative z-10 w-full px-6 ${
-                      content.hero_content_fullwidth
-                        ? `max-w-7xl ${content.hero_horizontal_alignment === 'left' ? 'text-left ml-0 mr-auto' : content.hero_horizontal_alignment === 'right' ? 'text-right mr-0 ml-auto' : 'text-center mx-auto'}`
-                        : `max-w-7xl mx-auto ${content.hero_horizontal_alignment === 'left' ? 'text-left' : content.hero_horizontal_alignment === 'right' ? 'text-right' : 'text-center'}`
-                    }`}>
+                    <div 
+                      style={{
+                        '--hero-title-size-mobile': isPriceActive ? `${(2.2 * mobileTitleScale).toFixed(2)}rem` : `${(2.5 * mobileTitleScale).toFixed(2)}rem`,
+                        '--hero-title-size-tablet': isPriceActive ? `${(3.2 * tabletTitleScale).toFixed(2)}rem` : `${(3.8 * tabletTitleScale).toFixed(2)}rem`,
+                        '--hero-title-size-desktop': isPriceActive ? `${(5.2 * desktopTitleScale).toFixed(2)}rem` : `${(6.0 * desktopTitleScale).toFixed(2)}rem`,
+
+                        '--hero-sub-size-mobile': `${(1.15 * mobileSubtitleScale).toFixed(2)}rem`,
+                        '--hero-sub-size-tablet': `${(1.35 * tabletSubtitleScale).toFixed(2)}rem`,
+                        '--hero-sub-size-desktop': `${(1.55 * desktopSubtitleScale).toFixed(2)}rem`,
+
+                        '--hero-price-size-mobile': `${(3.4 * mobilePriceScale).toFixed(2)}rem`,
+                        '--hero-price-size-tablet': `${(5.0 * tabletPriceScale).toFixed(2)}rem`,
+                        '--hero-price-size-desktop': `${(7.5 * desktopPriceScale).toFixed(2)}rem`,
+
+                        '--hero-suffix-size-mobile': `${(1.6 * mobilePriceScale).toFixed(2)}rem`,
+                        '--hero-suffix-size-tablet': `${(2.2 * tabletPriceScale).toFixed(2)}rem`,
+                        '--hero-suffix-size-desktop': `${(3.2 * desktopPriceScale).toFixed(2)}rem`,
+
+                        '--hero-period-size-mobile': `${(0.55 * mobilePeriodScale).toFixed(2)}rem`,
+                        '--hero-period-size-tablet': `${(0.62 * tabletPeriodScale).toFixed(2)}rem`,
+                        '--hero-period-size-desktop': `${(0.70 * desktopPeriodScale).toFixed(2)}rem`,
+
+                        '--hero-prefix-mb-mobile': `${mobileDesdeMb}px`,
+                        '--hero-prefix-mb-tablet': `${tabletDesdeMb}px`,
+                        '--hero-prefix-mb-desktop': `${desktopDesdeMb}px`,
+
+                        '--hero-period-mt-mobile': `${mobilePeriodMt}px`,
+                        '--hero-period-mt-tablet': `${tabletPeriodMt}px`,
+                        '--hero-period-mt-desktop': `${desktopPeriodMt}px`,
+                        '--hero-title-max-w': `${desktopTitleMaxWidth}%`,
+                      } as React.CSSProperties}
+                      className={`relative z-10 w-full px-6 ${
+                        content.hero_content_fullwidth
+                          ? `max-w-7xl ${content.hero_horizontal_alignment === 'left' ? 'text-left ml-0 mr-auto' : content.hero_horizontal_alignment === 'right' ? 'text-right mr-0 ml-auto' : 'text-center mx-auto'}`
+                          : `max-w-7xl mx-auto ${content.hero_horizontal_alignment === 'left' ? 'text-left' : content.hero_horizontal_alignment === 'right' ? 'text-right' : 'text-center'}`
+                      }`}
+                    >
                       <div className={`flex flex-col ${
                         content.hero_horizontal_alignment === 'center' ? 'items-center' :
                         content.hero_horizontal_alignment === 'right' ? 'items-end' : 'items-start'
                       }`}>
                         {/* Contenedor Grid con Distribución Especial: Móvil (H1 100% + Subtítulo/Botón | Precio) vs Desktop/Tablet (3 filas | Precio) */}
                         <div 
-                          style={{ '--hero-title-max-w': `${desktopTitleMaxWidth}%` } as React.CSSProperties}
                           className={`w-full ${
                             isPriceActive
                               ? `grid grid-cols-[1fr_auto] gap-x-3.5 sm:gap-x-6 md:gap-x-8 gap-y-2 sm:gap-y-3.5 items-center [grid-template-areas:'title_title'_'subtitle_price'_'button_price'] md:[grid-template-areas:'title_price'_'subtitle_price'_'button_price'] ${
@@ -679,12 +721,9 @@ export default function ClientHome({ content, settings, services, categories }: 
                           <div className="[grid-area:title] min-w-0">
                             <h1 
                               style={{ 
-                                fontSize: isPriceActive 
-                                  ? `clamp(${(2.1 * mobileTitleScale).toFixed(2)}rem, ${(4.8 * tabletTitleScale).toFixed(2)}vw, ${(6.8 * desktopTitleScale).toFixed(2)}rem)`
-                                  : `clamp(${(2.4 * mobileTitleScale).toFixed(2)}rem, ${(5.5 * tabletTitleScale).toFixed(2)}vw, ${(7.2 * desktopTitleScale).toFixed(2)}rem)`,
                                 fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
                               }}
-                              className={`leading-[1.05] font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] tracking-tight ${
+                              className={`leading-[1.08] font-serif font-extrabold text-white text-[length:var(--hero-title-size-mobile)] md:text-[length:var(--hero-title-size-tablet)] lg:text-[length:var(--hero-title-size-desktop)] drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] tracking-tight ${
                                 content.hero_horizontal_alignment === 'center' ? 'mx-auto' : ''
                               }`}
                             >
@@ -695,10 +734,7 @@ export default function ClientHome({ content, settings, services, categories }: 
                           {/* Subtítulo (Fila 2 en móvil, inmediatamente debajo del H1 a la izquierda) */}
                           <div className="[grid-area:subtitle] min-w-0">
                             <p 
-                              style={{
-                                fontSize: `clamp(${(1.15 * mobileSubtitleScale).toFixed(2)}rem, ${(1.55 * tabletSubtitleScale).toFixed(2)}vw, ${(1.65 * desktopSubtitleScale).toFixed(2)}rem)`
-                              }}
-                              className={`text-white/90 font-medium font-sans tracking-wide leading-relaxed drop-shadow-md ${
+                              className={`text-white/90 font-medium font-sans text-[length:var(--hero-sub-size-mobile)] md:text-[length:var(--hero-sub-size-tablet)] lg:text-[length:var(--hero-sub-size-desktop)] tracking-wide leading-relaxed drop-shadow-md ${
                                 content.hero_horizontal_alignment === 'center' ? 'max-w-2xl mx-auto' : 'max-w-xl'
                               }`}
                             >

@@ -436,6 +436,8 @@
       "price_period": "Period / Frequency",
       "price_size": "Visual Price Scale",
       "price_offset_y": "Vertical Adjustment / Proximity",
+      "price_period_size": "SESSION Scale / Size",
+      "price_period_offset_y": "SESSION Vertical Adjustment / Proximity",
       "price_style_label": "Price Visual Style",
       "price_style_capsule_dark": "Dark Capsule",
       "price_style_outline": "Outline Only",
