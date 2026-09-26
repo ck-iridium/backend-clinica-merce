@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '@/app/contexts/LanguageContext';
@@ -31,6 +31,7 @@ interface Message {
 
 export default function AICopilotWidget() {
   const router = useRouter();
+  const pathname = usePathname();
   const { language, t } = useLanguage();
   const { role, userName: authUserName, loading: loadingRole } = useAuthRole();
   const firstName = authUserName ? authUserName.trim().split(' ')[0] : '';
@@ -279,30 +280,49 @@ export default function AICopilotWidget() {
     if (isOpen) messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isOpen]);
 
-  // ── Redimensionamiento ────────────────────────────────────────────────────
-  const handleResize = (e: MouseEvent) => {
+  // ── Redimensionamiento Suave (60fps sin lag) ───────────────────────────────
+  const [isResizingActive, setIsResizingActive] = useState(false);
+  const currentDimensions = useRef({ width: chatWidth, height: chatHeight });
+
+  useEffect(() => {
+    currentDimensions.current = { width: chatWidth, height: chatHeight };
+  }, [chatWidth, chatHeight]);
+
+  const handleResize = useCallback((e: MouseEvent) => {
     if (!isResizing.current) return;
     const paddingRight = 24;
-    const paddingBottom = 90;
-    const newWidth = Math.max(300, Math.min(window.innerWidth - 32, window.innerWidth - e.clientX - paddingRight));
-    const newHeight = Math.max(300, Math.min(window.innerHeight - 32, window.innerHeight - e.clientY - paddingBottom));
+    const paddingBottom = 24;
+    const newWidth = Math.max(320, Math.min(window.innerWidth - 32, window.innerWidth - e.clientX - paddingRight));
+    const newHeight = Math.max(380, Math.min(window.innerHeight - 32, window.innerHeight - e.clientY - paddingBottom));
+    
+    currentDimensions.current = { width: newWidth, height: newHeight };
     setChatWidth(newWidth);
     setChatHeight(newHeight);
-    try {
-      localStorage.setItem('probookia_copilot_width', String(newWidth));
-      localStorage.setItem('probookia_copilot_height', String(newHeight));
-    } catch (_) {}
-  };
+  }, []);
 
-  const stopResize = () => {
+  const stopResize = useCallback(() => {
+    if (!isResizing.current) return;
     isResizing.current = false;
+    setIsResizingActive(false);
     document.removeEventListener('mousemove', handleResize);
     document.removeEventListener('mouseup', stopResize);
-  };
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
+    
+    // Guardar en almacenamiento únicamente al soltar el ratón
+    try {
+      localStorage.setItem('probookia_copilot_width', String(currentDimensions.current.width));
+      localStorage.setItem('probookia_copilot_height', String(currentDimensions.current.height));
+    } catch (_) {}
+  }, [handleResize]);
 
   const startResize = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     isResizing.current = true;
+    setIsResizingActive(true);
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'nwse-resize';
     document.addEventListener('mousemove', handleResize);
     document.addEventListener('mouseup', stopResize);
   };
@@ -312,7 +332,7 @@ export default function AICopilotWidget() {
       document.removeEventListener('mousemove', handleResize);
       document.removeEventListener('mouseup', stopResize);
     };
-  }, []);
+  }, [handleResize, stopResize]);
 
   // ── Limpiar historial ─────────────────────────────────────────────────────
   const handleClearHistory = () => {
@@ -494,32 +514,53 @@ export default function AICopilotWidget() {
   };
 
   const isAuthorized = role ? ['admin', 'administrador', 'recepcion', 'especialista'].includes(role.toLowerCase()) : false;
-  if (loadingRole || !isAuthorized) return null;
+  // Ocultar completamente el widget flotante si no está autorizado o si ya estamos dentro de /dashboard/ai-webmaster
+  if (loadingRole || !isAuthorized || pathname === '/dashboard/ai-webmaster') return null;
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className={
-      isOpen
-        ? 'fixed bottom-6 right-6 z-30 flex flex-col items-end gap-3 font-sans transition-all duration-300 max-sm:!fixed max-sm:!inset-0 max-sm:!w-full max-sm:!h-full max-sm:!p-0 max-sm:!m-0 max-sm:!z-[80]'
-        : 'fixed bottom-[110px] md:bottom-6 right-0 md:right-6 z-30 flex flex-col items-end gap-3 font-sans transition-all duration-300'
-    }>
-
-      {/* ── PANEL ABIERTO ── */}
-      {isOpen && (
+    <>
+      {/* Overlay invisible mientras se redimensiona para no perder eventos al pasar sobre iframes u otros elementos */}
+      {isResizingActive && (
         <div
-          style={{ width: `${chatWidth}px`, height: `${chatHeight}px` }}
-          className="bg-white/95 backdrop-blur-md border border-stone-200/80 rounded-luxury-card shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-300 ease-out relative select-none mr-4 md:mr-0 max-sm:!w-full max-sm:!h-full max-sm:!max-w-none max-sm:!max-h-none max-sm:!mr-0 max-sm:!rounded-none max-sm:!border-none max-sm:!h-[100dvh]"
-        >
-          {/* Handles de Redimensionamiento */}
+          className="fixed inset-0 z-[99999] cursor-nwse-resize select-none bg-transparent"
+          onMouseMove={(e) => handleResize(e.nativeEvent)}
+          onMouseUp={stopResize}
+        />
+      )}
+
+      <div className={
+        isOpen
+          ? 'fixed bottom-6 right-6 z-30 flex flex-col items-end gap-3 font-sans transition-all duration-300 max-sm:!fixed max-sm:!inset-0 max-sm:!w-full max-sm:!h-full max-sm:!p-0 max-sm:!m-0 max-sm:!z-[80]'
+          : 'fixed bottom-[110px] md:bottom-6 right-0 md:right-6 z-30 flex flex-col items-end gap-3 font-sans transition-all duration-300'
+      }>
+
+        {/* ── PANEL ABIERTO ── */}
+        {isOpen && (
           <div
-            onMouseDown={startResize}
-            className="absolute top-0 left-0 w-4 h-4 cursor-nwse-resize z-50 group/resize flex items-center justify-center max-sm:hidden"
-            title="Redimensionar chat"
+            style={{ width: `${chatWidth}px`, height: `${chatHeight}px` }}
+            className={`bg-white/95 backdrop-blur-md border border-stone-200/80 rounded-luxury-card shadow-2xl flex flex-col overflow-hidden relative select-none mr-4 md:mr-0 max-sm:!w-full max-sm:!h-full max-sm:!max-w-none max-sm:!max-h-none max-sm:!mr-0 max-sm:!rounded-none max-sm:!border-none max-sm:!h-[100dvh] ${
+              isResizingActive ? 'transition-none pointer-events-auto' : 'transition-all duration-300 ease-out animate-in fade-in slide-in-from-bottom-6'
+            }`}
           >
-            <div className="w-2.5 h-2.5 border-l-2 border-t-2 border-stone-400/40 group-hover/resize:border-primary transition-colors rounded-tl" />
-          </div>
-          <div onMouseDown={startResize} className="absolute top-0 left-0 bottom-0 w-1.5 cursor-ew-resize z-40 hover:bg-primary/20 transition-all duration-300 max-sm:hidden" />
-          <div onMouseDown={startResize} className="absolute top-0 left-0 right-0 h-1.5 cursor-ns-resize z-40 hover:bg-primary/20 transition-all duration-300 max-sm:hidden" />
+            {/* Handles de Redimensionamiento */}
+            <div
+              onMouseDown={startResize}
+              className="absolute top-0 left-0 w-6 h-6 cursor-nwse-resize z-50 group/resize flex items-center justify-center max-sm:hidden touch-none"
+              title="Arrastra para redimensionar"
+            >
+              <div className="w-2.5 h-2.5 border-l-2 border-t-2 border-stone-400/60 group-hover/resize:border-[#d4af37] transition-colors rounded-tl" />
+            </div>
+            <div 
+              onMouseDown={startResize} 
+              className="absolute top-0 left-0 bottom-0 w-2 cursor-ew-resize z-40 hover:bg-[#d4af37]/20 transition-colors max-sm:hidden touch-none" 
+              title="Arrastra para cambiar ancho"
+            />
+            <div 
+              onMouseDown={startResize} 
+              className="absolute top-0 left-0 right-0 h-2 cursor-ns-resize z-40 hover:bg-[#d4af37]/20 transition-colors max-sm:hidden touch-none" 
+              title="Arrastra para cambiar alto"
+            />
 
           {/* Cabecera */}
           <CopilotHeader
@@ -617,5 +658,6 @@ export default function AICopilotWidget() {
       )}
 
     </div>
+    </>
   );
 }

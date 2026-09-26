@@ -70,11 +70,12 @@ export async function middleware(request: NextRequest) {
   const impersonateTenantId = request.cookies.get("impersonate_tenant_id")?.value;
   const impersonateTenantSlug = request.cookies.get("impersonate_tenant_slug")?.value;
   const isSuperAdminPath = url.pathname.startsWith('/super-admin');
-
   if (isImpersonating && impersonateTenantId && impersonateTenantSlug && !isSuperAdminPath) {
     tenantId = impersonateTenantId;
     subdomain = impersonateTenantSlug;
-  } else if (subdomain && subdomain !== "www") {
+  }
+
+  if (tenantId || (subdomain && subdomain !== "www")) {
     // 1. Prioridad: Si la URL trae explícitamente el parámetro tenant o tenant_id (ej. aceptar-invitacion, activar-cuenta)
     const queryTenant = url.searchParams.get("tenant") || url.searchParams.get("tenant_id");
     if (queryTenant && /^[0-9a-fA-F-]{36}$/.test(queryTenant)) {

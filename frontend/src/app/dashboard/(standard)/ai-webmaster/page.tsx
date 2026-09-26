@@ -5,6 +5,15 @@ import AIChatContainer from '@/components/ai/AIChatContainer';
 import { RefreshCw, ExternalLink, Monitor, Smartphone, Globe, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
+// Helper simple para leer cookies del lado del cliente
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+}
+
 export default function AIWebmasterPage() {
   const [iframeUrl, setIframeUrl] = useState('');
   const [iframeKey, setIframeKey] = useState(0);
@@ -14,14 +23,6 @@ export default function AIWebmasterPage() {
   const [checkingPlan, setCheckingPlan] = useState(true);
 
   useEffect(() => {
-    // Helper simple para leer cookies del lado del cliente
-    function getCookie(name: string): string | null {
-      if (typeof document === 'undefined') return null;
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
-      return null;
-    }
 
     // 1. Intentar cargar rápido de localStorage
     try {
@@ -91,18 +92,27 @@ export default function AIWebmasterPage() {
     }
     fetchPlan();
 
+    const isSupportMode = getCookie('is_impersonating') === 'true' || Boolean(getCookie('impersonate_tenant_id'));
+    if (isSupportMode) {
+      setPlanType('gold');
+      setCheckingPlan(false);
+    }
+
     if (typeof window !== 'undefined') {
-      // Usar la raíz de la app actual (incluyendo subdominio de inquilino) para la vista previa
       const origin = window.location.origin;
-      // Añadir timestamp para evitar caché agresiva en cargas de iframe
-      setIframeUrl(`${origin}/`);
+      const activeSlug = getCookie('impersonate_tenant_slug') || getCookie('tenant_slug') || '';
+      const previewUrl = activeSlug ? `${origin}/?tenant=${encodeURIComponent(activeSlug)}` : `${origin}/`;
+      setIframeUrl(previewUrl);
     }
   }, []);
 
   const handleFieldsUpdated = (updatedFields: string[], redirectUrl?: string) => {
     if (redirectUrl) {
       const origin = window.location.origin;
-      setIframeUrl(`${origin}${redirectUrl}`);
+      const activeSlug = getCookie('impersonate_tenant_slug') || getCookie('tenant_slug') || '';
+      const separator = redirectUrl.includes('?') ? '&' : '?';
+      const tenantParam = activeSlug ? `${separator}tenant=${encodeURIComponent(activeSlug)}` : '';
+      setIframeUrl(`${origin}${redirectUrl}${tenantParam}`);
     }
     // Si la IA modificó campos de la landing page, recargar el iframe automáticamente
     setIframeKey((prev) => prev + 1);
@@ -130,7 +140,12 @@ export default function AIWebmasterPage() {
     );
   }
 
-  if (planType !== 'gold') {
+  const isSupportMode = typeof document !== 'undefined' && Boolean(
+    getCookie('is_impersonating') === 'true' || 
+    getCookie('impersonate_tenant_id')
+  );
+
+  if (planType !== 'gold' && !isSupportMode) {
     return (
       <div className="absolute inset-0 bg-[#FAFAFA] flex items-center justify-center p-6 z-50 overflow-auto">
         <div className="w-full max-w-lg bg-white rounded-3xl p-8 md:p-10 border border-stone-200/60 shadow-xl text-center space-y-6 animate-in fade-in zoom-in-95 duration-300">
