@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import PublicNavbar from '@/components/PublicNavbar';
+import HeroSlider from './HeroSlider';
 
 const parseSizeScale = (val: any, fallback: number = 100): number => {
   if (typeof val === 'number') return val;
@@ -49,6 +50,10 @@ const getPriceStyleConfig = (style?: string) => {
 };
 
 export default function HeroLuxury({ data, settings }: { data: any, settings?: any }) {
+  if (Array.isArray(data?.hero_slides) && data.hero_slides.length > 1) {
+    return <HeroSlider content={data} />;
+  }
+
   const getFullUrl = (url: string) => {
     if (!url) return '';
     return url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${url}` : url;

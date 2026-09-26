@@ -46,6 +46,14 @@ export interface HeroSlideData {
 
 export type DeviceType = 'desktop' | 'tablet' | 'mobile';
 
+export interface HeroSliderConfig {
+  hero_slider_autoplay?: boolean;
+  hero_slider_interval?: number;
+  hero_slider_effect?: string;
+  hero_slider_show_arrows?: boolean;
+  hero_slider_show_dots?: boolean;
+}
+
 export interface HeroSubCardProps {
   data: HeroSlideData;
   onChange: (field: string, value: any) => void;

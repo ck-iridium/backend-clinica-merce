@@ -1,5 +1,5 @@
-import React from 'react';
-import { Image as ImageIcon } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Image as ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 
 interface PreviewProps {
@@ -67,6 +67,26 @@ const getPriceStyleConfig = (style?: string) => {
 const HomeBuilderPreview = React.memo(({ formData, categories, services = [], viewportDevice = 'desktop', settings }: PreviewProps) => {
   const { translate, t } = useLanguage();
   
+  // Lista normalizada de diapositivas
+  const slides = useMemo(() => {
+    if (Array.isArray(formData?.hero_slides) && formData.hero_slides.length > 0) {
+      return formData.hero_slides;
+    }
+    return [formData];
+  }, [formData?.hero_slides, formData]);
+
+  const [previewSlideIdx, setPreviewSlideIdx] = useState<number>(0);
+
+  // Sincronizar automáticamente con la diapositiva seleccionada en el editor
+  useEffect(() => {
+    if (typeof formData?._activeSlideIndex === 'number') {
+      setPreviewSlideIdx(formData._activeSlideIndex);
+    }
+  }, [formData?._activeSlideIndex]);
+
+  const activeIndex = Math.min(Math.max(0, previewSlideIdx), Math.max(0, slides.length - 1));
+  const activeSlide = slides[activeIndex] || slides[0] || formData;
+
   // Función auxiliar para forzar la ruta de la imagen si es relativa
   const getImageUrl = (url: string) => {
     if (!url) return '';
@@ -75,22 +95,25 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
 
   // Helper para resolver propiedades responsivas según la resolución activa
   const getResponsiveVal = (field: string, fallback: any) => {
+    const resp = activeSlide?.hero_responsive_config || formData?.hero_responsive_config;
     if (viewportDevice === 'mobile') {
-      return formData?.hero_responsive_config?.mobile?.[field] 
-        ?? formData?.hero_responsive_config?.tablet?.[field] 
+      return resp?.mobile?.[field] 
+        ?? resp?.tablet?.[field] 
+        ?? activeSlide?.[field]
         ?? formData?.[field] 
         ?? fallback;
     }
     if (viewportDevice === 'tablet') {
-      return formData?.hero_responsive_config?.tablet?.[field] 
+      return resp?.tablet?.[field] 
+        ?? activeSlide?.[field]
         ?? formData?.[field] 
         ?? fallback;
     }
-    return formData?.[field] ?? fallback;
+    return activeSlide?.[field] ?? formData?.[field] ?? fallback;
   };
 
-  const heroAlignment = getResponsiveVal('hero_alignment', formData?.hero_alignment || 'center');
-  const heroHorizontalAlignment = getResponsiveVal('hero_horizontal_alignment', formData?.hero_horizontal_alignment || 'center');
+  const heroAlignment = getResponsiveVal('hero_alignment', activeSlide?.hero_alignment || formData?.hero_alignment || 'center');
+  const heroHorizontalAlignment = getResponsiveVal('hero_horizontal_alignment', activeSlide?.hero_horizontal_alignment || formData?.hero_horizontal_alignment || 'center');
 
   return (
     <div className="w-full h-full flex flex-col overflow-y-auto bg-stone-50 select-none custom-scrollbar">
@@ -155,16 +178,16 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
         )}
 
         {/* Fondo Multimedia */}
-        {formData?.hero_video_url ? (
+        {activeSlide?.hero_video_url ? (
           <div className="absolute inset-0 z-0 bg-stone-900">
             <video autoPlay loop muted playsInline className="w-full h-full object-cover">
-              <source src={getImageUrl(formData.hero_video_url)} type="video/mp4" />
+              <source src={getImageUrl(activeSlide.hero_video_url)} type="video/mp4" />
             </video>
             <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-stone-900/20 to-stone-900/60 mix-blend-multiply"></div>
           </div>
-        ) : formData?.hero_image_url ? (
+        ) : activeSlide?.hero_image_url ? (
           <div className="absolute inset-0 z-0 bg-stone-900">
-            <img src={getImageUrl(formData.hero_image_url)} alt="Hero" className="w-full h-full object-cover" />
+            <img src={getImageUrl(activeSlide.hero_image_url)} alt="Hero" className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-stone-900/20 to-stone-900/60 mix-blend-multiply"></div>
           </div>
         ) : (
@@ -174,15 +197,15 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
         )}
 
         {(() => {
-          const titleMaxWidth = getResponsiveVal('hero_title_max_width', formData?.hero_title_max_width || 100);
-          const isPriceActive = !!formData?.hero_price_enabled && (formData?.hero_price_amount || formData?.hero_price_prefix);
-          const titleScale = parseSizeScale(getResponsiveVal('hero_title_size', formData?.hero_title_size || 100), 100) / 100;
-          const subtitleScale = parseSizeScale(getResponsiveVal('hero_subtitle_size', formData?.hero_subtitle_size || 100), 100) / 100;
-          const priceScale = parseSizeScale(getResponsiveVal('hero_price_size', formData?.hero_price_size || 100), 100) / 100;
-          const priceOffsetY = getResponsiveVal('hero_price_offset_y', formData?.hero_price_offset_y ?? 0);
-          const periodScale = parseSizeScale(getResponsiveVal('hero_price_period_size', formData?.hero_price_period_size || 100), 100) / 100;
-          const periodOffsetY = getResponsiveVal('hero_price_period_offset_y', formData?.hero_price_period_offset_y ?? 0);
-          const priceConfig = getPriceStyleConfig(formData?.hero_price_style);
+          const titleMaxWidth = getResponsiveVal('hero_title_max_width', activeSlide?.hero_title_max_width || formData?.hero_title_max_width || 100);
+          const isPriceActive = !!(activeSlide?.hero_price_enabled ?? formData?.hero_price_enabled) && (activeSlide?.hero_price_amount || activeSlide?.hero_price_prefix || formData?.hero_price_amount || formData?.hero_price_prefix);
+          const titleScale = parseSizeScale(getResponsiveVal('hero_title_size', activeSlide?.hero_title_size || formData?.hero_title_size || 100), 100) / 100;
+          const subtitleScale = parseSizeScale(getResponsiveVal('hero_subtitle_size', activeSlide?.hero_subtitle_size || formData?.hero_subtitle_size || 100), 100) / 100;
+          const priceScale = parseSizeScale(getResponsiveVal('hero_price_size', activeSlide?.hero_price_size || formData?.hero_price_size || 100), 100) / 100;
+          const priceOffsetY = getResponsiveVal('hero_price_offset_y', activeSlide?.hero_price_offset_y ?? formData?.hero_price_offset_y ?? 0);
+          const periodScale = parseSizeScale(getResponsiveVal('hero_price_period_size', activeSlide?.hero_price_period_size || formData?.hero_price_period_size || 100), 100) / 100;
+          const periodOffsetY = getResponsiveVal('hero_price_period_offset_y', activeSlide?.hero_price_period_offset_y ?? formData?.hero_price_period_offset_y ?? 0);
+          const priceConfig = getPriceStyleConfig(activeSlide?.hero_price_style || formData?.hero_price_style);
 
           // Cálculo tipográfico adaptativo para el canvas de preview (sin usar vw que deformarían con el monitor del editor)
           let titleFontSize = '';
@@ -242,8 +265,8 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
 
           const renderPriceCapsule = () => {
             if (!isPriceActive) return null;
-            const prefixText = translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix');
-            const periodText = translate(formData?.hero_price_period, formData?.translations, 'hero_price_period');
+            const prefixText = translate(activeSlide?.hero_price_prefix ?? formData?.hero_price_prefix, activeSlide?.translations || formData?.translations, 'hero_price_prefix');
+            const periodText = translate(activeSlide?.hero_price_period ?? formData?.hero_price_period, activeSlide?.translations || formData?.translations, 'hero_price_period');
             return (
               <div className={`relative group ${priceConfig.boxClass} select-none`}>
                 <div className="relative flex flex-col items-start text-left">
@@ -265,7 +288,7 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
                       }}
                       className={`font-serif font-bold ${priceConfig.amountClass} leading-[0.88] tracking-tight drop-shadow-md`}
                     >
-                      {formData?.hero_price_amount || '15'}
+                      {activeSlide?.hero_price_amount || formData?.hero_price_amount || '15'}
                     </span>
                     <div className="flex flex-col items-start justify-center leading-none pl-1">
                       <span 
@@ -275,7 +298,7 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
                         }}
                         className={`font-serif font-bold ${priceConfig.suffixClass} leading-none`}
                       >
-                        {formData?.hero_price_suffix || '€'}
+                        {activeSlide?.hero_price_suffix || formData?.hero_price_suffix || '€'}
                       </span>
                       {periodText && (
                         <span 
@@ -302,7 +325,7 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
                 : viewportDevice === 'tablet'
                 ? `px-8 ${heroAlignment === 'top' ? 'pt-8 pb-auto' : heroAlignment === 'center' ? 'my-auto' : 'pb-14 pt-auto'}`
                 : `px-10 ${heroAlignment === 'top' ? 'pt-8 pb-auto' : heroAlignment === 'center' ? 'my-auto' : 'pb-16 pt-auto'} ${
-                    formData?.hero_content_fullwidth
+                    (activeSlide?.hero_content_fullwidth ?? formData?.hero_content_fullwidth)
                       ? `max-w-7xl ${heroHorizontalAlignment === 'left' ? 'text-left ml-0 mr-auto' : heroHorizontalAlignment === 'right' ? 'text-right mr-0 ml-auto' : 'text-center mx-auto'}`
                       : `max-w-7xl mx-auto ${heroHorizontalAlignment === 'left' ? 'text-left' : heroHorizontalAlignment === 'right' ? 'text-right' : 'text-center'}`
                   }`
@@ -321,10 +344,10 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
                             ? `[grid-template-areas:'title_title'_'subtitle_price'_'button_price']`
                             : `[grid-template-areas:'title_price'_'subtitle_price'_'button_price']`
                         } ${
-                          formData?.hero_content_fullwidth ? '' : 'sm:max-w-[var(--hero-title-max-w)]'
+                          (activeSlide?.hero_content_fullwidth ?? formData?.hero_content_fullwidth) ? '' : 'sm:max-w-[var(--hero-title-max-w)]'
                         }`
                       : `flex flex-col gap-2.5 sm:gap-4 ${
-                          formData?.hero_content_fullwidth ? '' : 'sm:max-w-[var(--hero-title-max-w)]'
+                          (activeSlide?.hero_content_fullwidth ?? formData?.hero_content_fullwidth) ? '' : 'sm:max-w-[var(--hero-title-max-w)]'
                         }`
                   } ${
                     heroHorizontalAlignment === 'center' ? 'text-center' :
@@ -342,7 +365,7 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
                         heroHorizontalAlignment === 'center' ? 'mx-auto' : ''
                       }`}
                     >
-                      {cleanTitle(translate(formData?.hero_title || 'Título Principal', formData?.translations, 'hero_title'))}
+                      {cleanTitle(translate(activeSlide?.hero_title || formData?.hero_title || 'Título Principal', activeSlide?.translations || formData?.translations, 'hero_title'))}
                     </h1>
                   </div>
 
@@ -354,18 +377,18 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
                         heroHorizontalAlignment === 'center' ? 'max-w-xl mx-auto' : 'max-w-xl'
                       }`}
                     >
-                      {translate(formData?.hero_subtitle || 'Subtítulo descriptivo que acompaña a la imagen principal.', formData?.translations, 'hero_subtitle')}
+                      {translate(activeSlide?.hero_subtitle || formData?.hero_subtitle || 'Subtítulo descriptivo que acompaña a la imagen principal.', activeSlide?.translations || formData?.translations, 'hero_subtitle')}
                     </p>
                   </div>
 
                   {/* Botón de Acción CTA (Fila 3 en móvil, debajo del subtítulo en la columna izquierda) */}
-                  {formData?.hero_show_button !== false && (
+                  {(activeSlide?.hero_show_button !== false && formData?.hero_show_button !== false) && (
                     <div className={`[grid-area:button] pt-1 md:pt-2 w-full ${
                       heroHorizontalAlignment === 'center' ? 'flex justify-center' :
                       heroHorizontalAlignment === 'right' ? 'flex justify-end' : 'flex justify-start'
                     }`}>
-                      <div className={`inline-flex items-center justify-center px-6 py-2.5 sm:px-8 sm:py-3 rounded-full font-bold text-xs sm:text-sm transition-all duration-300 shadow-md text-center whitespace-nowrap w-fit ${getButtonStyle(formData?.hero_button_style)}`}>
-                        <span>{translate(formData?.hero_button_text || 'Reservar Ahora', formData?.translations, 'hero_button_text')}</span>
+                      <div className={`inline-flex items-center justify-center px-6 py-2.5 sm:px-8 sm:py-3 rounded-full font-bold text-xs sm:text-sm transition-all duration-300 shadow-md text-center whitespace-nowrap w-fit ${getButtonStyle(activeSlide?.hero_button_style || formData?.hero_button_style)}`}>
+                        <span>{translate(activeSlide?.hero_button_text || formData?.hero_button_text || 'Reservar Ahora', activeSlide?.translations || formData?.translations, 'hero_button_text')}</span>
                         <span className="ml-2">→</span>
                       </div>
                     </div>
@@ -382,6 +405,56 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
             </div>
           );
         })()}
+
+        {/* ─── NAVEGACIÓN DEL CARRUSEL EN PREVIEW (Solo si hay múltiples diapositivas) ─── */}
+        {slides.length > 1 && (
+          <>
+            {formData?.hero_slider_show_arrows !== false && (
+              <div className="absolute inset-y-0 inset-x-2 sm:inset-x-4 flex items-center justify-between pointer-events-none z-30">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPreviewSlideIdx((prev) => (prev - 1 + slides.length) % slides.length);
+                  }}
+                  className="pointer-events-auto p-2 rounded-full bg-stone-900/50 hover:bg-stone-900/80 backdrop-blur-md border border-white/20 text-white transition-all hover:scale-105 shadow-lg"
+                  title="Anterior diapositiva"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPreviewSlideIdx((prev) => (prev + 1) % slides.length);
+                  }}
+                  className="pointer-events-auto p-2 rounded-full bg-stone-900/50 hover:bg-stone-900/80 backdrop-blur-md border border-white/20 text-white transition-all hover:scale-105 shadow-lg"
+                  title="Siguiente diapositiva"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            )}
+
+            {formData?.hero_slider_show_dots !== false && (
+              <div className="absolute bottom-4 left-0 right-0 z-30 flex items-center justify-center gap-2 pointer-events-auto">
+                {slides.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setPreviewSlideIdx(i)}
+                    className={`transition-all duration-300 rounded-full ${
+                      i === activeIndex 
+                        ? 'w-6 h-2 bg-[#d4af37] shadow-sm' 
+                        : 'w-2 h-2 bg-white/50 hover:bg-white/80'
+                    }`}
+                    title={`Diapositiva ${i + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        )}
       </section>
 
       {/* ─── 2. ABOUT SECTION ─── */}

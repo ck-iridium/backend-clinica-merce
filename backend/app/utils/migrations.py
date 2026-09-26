@@ -266,7 +266,13 @@ $function$;
             "ALTER TABLE site_content ADD COLUMN hero_price_offset_y INTEGER DEFAULT 0",
             "ALTER TABLE site_content ADD COLUMN hero_price_style VARCHAR DEFAULT 'capsule_dark'",
             "ALTER TABLE site_content ADD COLUMN hero_button_style VARCHAR DEFAULT 'glass'",
-            f"ALTER TABLE site_content ADD COLUMN hero_responsive_config {json_type} DEFAULT '{{}}'"
+            f"ALTER TABLE site_content ADD COLUMN hero_responsive_config {json_type} DEFAULT '{{}}'",
+            f"ALTER TABLE site_content ADD COLUMN hero_slides {json_type} DEFAULT '[]'",
+            "ALTER TABLE site_content ADD COLUMN hero_slider_autoplay BOOLEAN DEFAULT TRUE",
+            "ALTER TABLE site_content ADD COLUMN hero_slider_interval INTEGER DEFAULT 5",
+            "ALTER TABLE site_content ADD COLUMN hero_slider_effect VARCHAR DEFAULT 'fade'",
+            "ALTER TABLE site_content ADD COLUMN hero_slider_show_arrows BOOLEAN DEFAULT TRUE",
+            "ALTER TABLE site_content ADD COLUMN hero_slider_show_dots BOOLEAN DEFAULT TRUE"
         ]
         
         for m in migrations:

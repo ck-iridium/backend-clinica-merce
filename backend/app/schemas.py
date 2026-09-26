@@ -750,6 +750,12 @@ class SiteContentBase(BaseModel):
     hero_price_style: Optional[str] = "capsule_dark"
     hero_button_style: Optional[str] = "glass"
     hero_responsive_config: Optional[Dict[str, Any]] = None
+    hero_slides: Optional[List[Dict[str, Any]]] = None
+    hero_slider_autoplay: Optional[bool] = True
+    hero_slider_interval: Optional[int] = 5
+    hero_slider_effect: Optional[str] = "fade"
+    hero_slider_show_arrows: Optional[bool] = True
+    hero_slider_show_dots: Optional[bool] = True
     
     about_title: Optional[str] = None
     about_text: Optional[str] = None
@@ -800,6 +806,12 @@ class SiteContentUpdate(BaseModel):
     hero_price_style: Optional[str] = None
     hero_button_style: Optional[str] = None
     hero_responsive_config: Optional[Dict[str, Any]] = None
+    hero_slides: Optional[List[Dict[str, Any]]] = None
+    hero_slider_autoplay: Optional[bool] = None
+    hero_slider_interval: Optional[int] = None
+    hero_slider_effect: Optional[str] = None
+    hero_slider_show_arrows: Optional[bool] = None
+    hero_slider_show_dots: Optional[bool] = None
     
     about_title: Optional[str] = None
     about_text: Optional[str] = None

@@ -6,7 +6,13 @@ Este manual sirve como la única fuente de verdad (RAG) para guiar al usuario en
 El panel de Editor Web y CMS centraliza la gestión del portal público de la clínica y sus subpáginas:
 - **Hub de CMS (`/dashboard/cms`):** Panel principal estilo Bento Grid con accesos a la edición de la portada principal (Home Builder), el menú dinámico de navegación superior, los estilos globales de branding y el gestor de páginas independientes.
 - **Home Builder (Editor de Portada):** Permite configurar de forma visual las secciones que componen la página de inicio pública:
-  - **HERO:** Imagen o vídeo de fondo, título principal, subtítulo, y botón de acción directa (con texto y enlace personalizado). Permite configurar:
+  - **HERO (Slider Multidiapositiva):** Permite configurar una o múltiples diapositivas independientes en carrusel con transiciones fluidas estilo Quiet Luxury:
+    - *Gestor de Diapositivas (`hero_slides`):* Pestañas para crear, duplicar, ordenar y eliminar diapositivas. Cada diapositiva cuenta con su propia imagen o vídeo de fondo, titular, subtítulo, bloque de precio opcional, botón de llamada a la acción y personalización de alineación responsiva (Desktop, Tablet y Móvil).
+    - *Ajustes Globales del Carrusel:*
+      - *Autoplay (`hero_slider_autoplay`):* Reproducción automática con pausa inteligente en hover o toque.
+      - *Intervalo (`hero_slider_interval`):* Tiempo de transición en segundos (recomendado: 4 a 7s).
+      - *Efecto (`hero_slider_effect`):* Transición `fade` (crossfade suave) o `slide` (deslizamiento).
+      - *Navegación (`hero_slider_show_arrows`, `hero_slider_show_dots`):* Activación de flechas y puntos indicadores minimalistas en tonos dorados/cristal.
     - *Alineación Vertical:* Superior (`top`), Centrado (`center`), Inferior (`bottom`).
     - *Alineación Horizontal:* Izquierda (`left`), Centrado (`center`), Derecha (`right`).
     - *Tamaño del Título (H1):* `medium` (Mediano), `large` (Grande - por defecto), `xl` (Monumental / XL).
@@ -42,6 +48,12 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL del Hub `
 ### Bento Grid del Hub Principal (`/dashboard/cms`)
 - **Editar Portada Principal (Home Builder):** Acceso al editor visual de secciones de inicio.
   - Selector: `id="cms-bento-home-builder"`
+- **Gestor de Diapositivas del Hero:** Barra interactiva superior de diapositivas para añadir, duplicar, ordenar o alternar la diapositiva en edición.
+  - Selector: `id="cms-hero-slide-manager"`
+- **Añadir Nueva Diapositiva al Hero:** Botón para crear una diapositiva adicional.
+  - Selector: `id="cms-hero-add-slide-btn"`
+- **Ajustes Globales del Carrusel Hero:** Botón para configurar autoplay, intervalos y efectos del slider.
+  - Selector: `id="cms-hero-slider-settings-btn"`
 - **Conmutador Ancho Completo Hero (Fullwidth):** Selector para activar o desactivar que el contenido del Hero se extienda a los extremos de la pantalla.
   - Selector: `id="cms-hero-fullwidth-toggle"`
 - **Alineación Horizontal del Hero:** Selector para definir posición izquierda, centrada o derecha.

@@ -463,6 +463,12 @@ class SiteContent(Base):
     hero_price_style = Column(String, default="capsule_dark", nullable=True) # capsule_dark, outline, minimal, solid_white
     hero_button_style = Column(String, default="glass", nullable=True) # glass, gold_solid, outline, solid_white
     hero_responsive_config = Column(JSONB, default=dict, nullable=True) # {"tablet": {...}, "mobile": {...}}
+    hero_slides = Column(JSONB, default=list, nullable=True) # Lista de slides configuradas
+    hero_slider_autoplay = Column(Boolean, default=True, nullable=True)
+    hero_slider_interval = Column(Integer, default=5, nullable=True) # Segundos entre diapositivas
+    hero_slider_effect = Column(String, default="fade", nullable=True) # fade, slide
+    hero_slider_show_arrows = Column(Boolean, default=True, nullable=True)
+    hero_slider_show_dots = Column(Boolean, default=True, nullable=True)
     
     # About Section
     about_title = Column(String, default="Sobre Nosotros")
