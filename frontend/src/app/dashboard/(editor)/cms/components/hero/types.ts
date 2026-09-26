@@ -3,8 +3,8 @@ import React from 'react';
 export interface HeroSlideData {
   id?: string;
   // Multimedia
-  hero_image_url?: string;
-  hero_video_url?: string;
+  hero_image_url?: string | null;
+  hero_video_url?: string | null;
   
   // Tipografía
   hero_title?: string;

@@ -75,7 +75,7 @@ export default function HeroMediaCard({
         <div>
           <ImageUploadBlock 
             label={t('cms.hero.main_image')}
-            value={data.hero_image_url} 
+            value={data.hero_image_url ?? null} 
             onSelect={() => setPickerTarget({ type: 'form', field: 'hero_image_url' })} 
             onClear={() => onChange('hero_image_url', '')} 
             onUpload={(url) => onChange('hero_image_url', url)}
@@ -86,7 +86,7 @@ export default function HeroMediaCard({
         <div className="space-y-3">
           <ImageUploadBlock 
             label={t('cms.hero.bg_video')}
-            value={data.hero_video_url} 
+            value={data.hero_video_url ?? null} 
             onSelect={() => setPickerTarget({ type: 'form', field: 'hero_video_url' })} 
             onClear={() => onChange('hero_video_url', '')} 
             onUpload={(url) => onChange('hero_video_url', url)}

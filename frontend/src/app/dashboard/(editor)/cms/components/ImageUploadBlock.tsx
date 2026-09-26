@@ -15,7 +15,7 @@ export default function ImageUploadBlock({
   token
 }: { 
   label: string, 
-  value: string | null, 
+  value: string | null | undefined, 
   onSelect: () => void, 
   onClear: () => void, 
   onUpload: (url: string) => void,
