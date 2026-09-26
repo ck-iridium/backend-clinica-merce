@@ -68,7 +68,7 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
   const { translate, t } = useLanguage();
   
   // Lista normalizada de diapositivas
-  const slides = useMemo(() => {
+  const slides: any[] = useMemo(() => {
     if (Array.isArray(formData?.hero_slides) && formData.hero_slides.length > 0) {
       return formData.hero_slides;
     }
@@ -438,7 +438,7 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
 
             {formData?.hero_slider_show_dots !== false && (
               <div className="absolute bottom-4 left-0 right-0 z-30 flex items-center justify-center gap-2 pointer-events-auto">
-                {slides.map((_, i) => (
+                {slides.map((_: any, i: number) => (
                   <button
                     key={i}
                     type="button"
