@@ -18,6 +18,30 @@ function getCookie(name: string): string | null {
   return null;
 }
 
+// Constantes de persistencia para el Asistente AI Webmaster
+const CHAT_STORAGE_KEY_PREFIX = 'probookia_webmaster_chat_';
+const MAX_SAVED_MESSAGES = 30; // Ventana rodante para no sobrecargar el almacenamiento
+const CHAT_TTL_MS = 24 * 60 * 60 * 1000; // 24 horas de caducidad por inactividad
+
+// Obtener tenantId activo considerando modo soporte (Super Admin) o sesión directa
+function getActiveTenantId(): string | null {
+  if (typeof window === 'undefined') return null;
+  const impersonated = getCookie('impersonate_tenant_id');
+  if (impersonated) return impersonated;
+  const directCookie = getCookie('tenant_id');
+  if (directCookie) return directCookie;
+  try {
+    const session = localStorage.getItem('user');
+    if (session) {
+      const parsed = JSON.parse(session);
+      return parsed.tenant_id || null;
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
 interface Message {
   role: 'user' | 'model';
   content: string;
@@ -53,6 +77,61 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
     slug: string;
     target: string;
   } | null>(null);
+
+  // Bandera para evitar sobreescribir el historial antes de haberlo cargado
+  const hasLoadedSavedChat = useRef(false);
+
+  // 1. Restaurar historial guardado en localStorage al montar (aislado por tenant y con TTL de 24h)
+  useEffect(() => {
+    const tenantId = getActiveTenantId();
+    if (!tenantId) {
+      hasLoadedSavedChat.current = true;
+      return;
+    }
+
+    const storageKey = `${CHAT_STORAGE_KEY_PREFIX}${tenantId}`;
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const data = JSON.parse(raw);
+        const isNotExpired = data?.updatedAt && (Date.now() - data.updatedAt < CHAT_TTL_MS);
+        if (isNotExpired && Array.isArray(data.messages) && data.messages.length > 0) {
+          setMessages(data.messages);
+        } else {
+          // Si expiró o está corrupto, limpiar el almacenamiento
+          localStorage.removeItem(storageKey);
+        }
+      }
+    } catch (e) {
+      console.warn('Error al restaurar sesión de chat persistente:', e);
+    } finally {
+      hasLoadedSavedChat.current = true;
+    }
+  }, []);
+
+  // 2. Persistir automáticamente cambios en la conversación (ventana rodante de hasta 30 mensajes)
+  useEffect(() => {
+    if (!hasLoadedSavedChat.current) return;
+    const tenantId = getActiveTenantId();
+    if (!tenantId) return;
+
+    const storageKey = `${CHAT_STORAGE_KEY_PREFIX}${tenantId}`;
+
+    // Solo guardar si hay conversación real (más allá del saludo inicial)
+    if (messages.length > 1) {
+      try {
+        const trimmed = messages.slice(-MAX_SAVED_MESSAGES);
+        const payload = {
+          tenantId,
+          updatedAt: Date.now(),
+          messages: trimmed,
+        };
+        localStorage.setItem(storageKey, JSON.stringify(payload));
+      } catch (e) {
+        console.warn('Error al guardar historial del chat en localStorage:', e);
+      }
+    }
+  }, [messages]);
 
   // Cargar foto de perfil real del usuario
   useEffect(() => {
@@ -191,15 +270,16 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
     if (!queryText || isLoading) return;
 
     // 1. Obtener y validar credenciales antes de proceder
+    const tenantId = getActiveTenantId() || '';
     const userSession = localStorage.getItem('user');
-    let tenantId = getCookie('tenant_id') || '';
     let authToken = '';
     if (userSession) {
-      const parsed = JSON.parse(userSession);
-      if (!tenantId) {
-        tenantId = parsed.tenant_id || '';
+      try {
+        const parsed = JSON.parse(userSession);
+        authToken = parsed.access_token || parsed.token || '';
+      } catch {
+        // ignore
       }
-      authToken = parsed.access_token || parsed.token || '';
     }
 
     if (!tenantId) {
@@ -376,6 +456,15 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
             onClick={() => {
               if (typeof window !== 'undefined' && window.speechSynthesis) {
                 window.speechSynthesis.cancel();
+              }
+              // Eliminar historial persistido de este tenant
+              const tenantId = getActiveTenantId();
+              if (tenantId) {
+                try {
+                  localStorage.removeItem(`${CHAT_STORAGE_KEY_PREFIX}${tenantId}`);
+                } catch (e) {
+                  console.warn('Error al limpiar chat persistente:', e);
+                }
               }
               setMessages([
                 {

@@ -55,7 +55,8 @@ def get_hero_slides() -> str:
         slides = _normalize_slides(content)
         total = len(slides)
 
-        autoplay = "Activado" if (content.hero_slider_autoplay ?? True) else "Pausado"
+        autoplay_val = content.hero_slider_autoplay if content.hero_slider_autoplay is not None else True
+        autoplay = "Activado" if autoplay_val else "Pausado"
         interval = content.hero_slider_interval or 5
         effect = content.hero_slider_effect or "fade"
 
