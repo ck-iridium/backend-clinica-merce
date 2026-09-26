@@ -193,21 +193,21 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
             titleFontSize = isPriceActive 
               ? `${(2.2 * titleScale).toFixed(2)}rem` 
               : `${(2.5 * titleScale).toFixed(2)}rem`;
-            subtitleFontSize = `${(0.85 * subtitleScale).toFixed(2)}rem`;
+            subtitleFontSize = `${(1.15 * subtitleScale).toFixed(2)}rem`;
             priceAmountFontSize = `${(3.4 * priceScale).toFixed(2)}rem`;
             priceSuffixFontSize = `${(1.6 * priceScale).toFixed(2)}rem`;
           } else if (viewportDevice === 'tablet') {
             titleFontSize = isPriceActive 
               ? `${(3.2 * titleScale).toFixed(2)}rem` 
               : `${(3.8 * titleScale).toFixed(2)}rem`;
-            subtitleFontSize = `${(1.05 * subtitleScale).toFixed(2)}rem`;
+            subtitleFontSize = `${(1.35 * subtitleScale).toFixed(2)}rem`;
             priceAmountFontSize = `${(5.6 * priceScale).toFixed(2)}rem`;
             priceSuffixFontSize = `${(2.5 * priceScale).toFixed(2)}rem`;
           } else {
             titleFontSize = isPriceActive 
               ? `${(5.2 * titleScale).toFixed(2)}rem` 
               : `${(6.0 * titleScale).toFixed(2)}rem`;
-            subtitleFontSize = `${(1.2 * subtitleScale).toFixed(2)}rem`;
+            subtitleFontSize = `${(1.55 * subtitleScale).toFixed(2)}rem`;
             priceAmountFontSize = `${(8.2 * priceScale).toFixed(2)}rem`;
             priceSuffixFontSize = `${(3.6 * priceScale).toFixed(2)}rem`;
           }
@@ -236,9 +236,15 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
                   {prefixText && (
                     <span 
                       style={{
-                        transform: `translateY(${Math.min(8, Math.max(-10, priceOffsetY))}px)`
+                        marginBottom: `${
+                          viewportDevice === 'mobile' 
+                            ? -14 + priceOffsetY 
+                            : viewportDevice === 'tablet' 
+                            ? -18 + priceOffsetY 
+                            : -26 + priceOffsetY
+                        }px`
                       }}
-                      className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.22em] ${priceConfig.prefixClass} block mb-1 leading-none pl-0.5 select-none transition-transform`}
+                      className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.22em] ${priceConfig.prefixClass} block leading-none pl-0.5 select-none relative z-10 transition-all`}
                     >
                       {prefixText}
                     </span>

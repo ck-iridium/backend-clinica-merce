@@ -76,7 +76,7 @@ function ResponsiveBadge({
         <button
           type="button"
           onClick={() => onDeviceChange?.('tablet')}
-          className={`p-1 rounded-md relative transition-all ${
+          className={`p-1 rounded-md transition-all ${
             device === 'tablet'
               ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-white shadow-xs'
               : 'text-stone-400 hover:text-stone-700'
@@ -84,14 +84,11 @@ function ResponsiveBadge({
           title="Tablet (768px)"
         >
           <Tablet size={11} className={device === 'tablet' ? 'text-[#d4af37]' : ''} />
-          {hasTabletConfig && (
-            <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
-          )}
         </button>
         <button
           type="button"
           onClick={() => onDeviceChange?.('mobile')}
-          className={`p-1 rounded-md relative transition-all ${
+          className={`p-1 rounded-md transition-all ${
             device === 'mobile'
               ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-white shadow-xs'
               : 'text-stone-400 hover:text-stone-700'
@@ -99,9 +96,6 @@ function ResponsiveBadge({
           title="Móvil (390px)"
         >
           <Smartphone size={11} className={device === 'mobile' ? 'text-[#d4af37]' : ''} />
-          {hasMobileConfig && (
-            <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
-          )}
         </button>
       </div>
 
@@ -474,25 +468,25 @@ export default function HeroTab({
             </div>
 
             <div className="flex items-center gap-3">
-              <span className="text-[10px] font-bold text-stone-400">70%</span>
+              <span className="text-[10px] font-bold text-stone-400">100%</span>
               <input
                 id="cms-hero-subtitle-size-slider"
                 type="range"
-                min="70"
-                max="140"
+                min="100"
+                max="200"
                 step="5"
-                value={subtitleScale}
+                value={Math.max(100, subtitleScale)}
                 onChange={e => setResponsiveValue('hero_subtitle_size', e.target.value)}
                 className="w-full accent-[#d4af37] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
               />
-              <span className="text-[10px] font-bold text-stone-400">140%</span>
+              <span className="text-[10px] font-bold text-stone-400">200%</span>
             </div>
 
             {/* Presets rápidos */}
             <div className="flex items-center justify-between pt-1 text-[10px] font-bold">
               <span className="text-stone-400">{t('cms.hero.presets') || 'Ajustes Rápidos'}:</span>
               <div className="flex items-center gap-1">
-                {[85, 100, 115, 130].map((preset) => (
+                {[100, 120, 140, 160, 180].map((preset) => (
                   <button
                     key={preset}
                     type="button"

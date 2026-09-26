@@ -120,9 +120,11 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
           {data?.hero_price_prefix && (
             <span 
               style={{
-                transform: `translateY(${Math.min(8, Math.max(-10, desktopPriceOffsetY))}px)`
-              }}
-              className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.22em] ${priceConfig.prefixClass} block mb-1 leading-none pl-0.5 select-none transition-transform`}
+                '--hero-price-prefix-mb': `${-26 + desktopPriceOffsetY}px`,
+                '--hero-price-prefix-mobile-mb': `${-14 + mobilePriceOffsetY}px`,
+                marginBottom: 'var(--hero-price-prefix-mobile-mb)'
+              } as React.CSSProperties}
+              className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.22em] ${priceConfig.prefixClass} block leading-none pl-0.5 select-none relative z-10 md:[margin-bottom:var(--hero-price-prefix-mb)]`}
             >
               {data?.hero_price_prefix}
             </span>
@@ -255,7 +257,7 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
             <div className="[grid-area:subtitle] min-w-0">
               <p 
                 style={{
-                  fontSize: `clamp(${(0.85 * mobileSubtitleScale).toFixed(2)}rem, ${(1.2 * tabletSubtitleScale).toFixed(2)}vw, ${(1.35 * desktopSubtitleScale).toFixed(2)}rem)`
+                  fontSize: `clamp(${(1.15 * mobileSubtitleScale).toFixed(2)}rem, ${(1.55 * tabletSubtitleScale).toFixed(2)}vw, ${(1.65 * desktopSubtitleScale).toFixed(2)}rem)`
                 }}
                 className={`text-white/90 font-medium font-sans tracking-wide leading-relaxed drop-shadow-md ${
                   desktopAlignX === 'center' ? 'md:max-w-2xl md:mx-auto' : 'max-w-xl'
