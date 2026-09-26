@@ -52,7 +52,6 @@ export const navLinks = [
   { href: '/dashboard/calendar', label: 'Agenda', icon: CalendarDays, style: 'normal' },
   { href: '/dashboard/my-schedule', label: 'Mi Horario', icon: Clock, style: 'normal' },
   { href: '/dashboard/settings', label: 'Ajustes Generales', icon: Settings, style: 'normal' },
-  { href: '/dashboard/backups', label: 'Copias de Seguridad', icon: Database, style: 'normal' },
   { href: '/dashboard/media', label: 'Galería de Medios', icon: ImageIcon, style: 'highlight' },
   { href: '/dashboard/cms', label: 'Editor Web (CMS)', icon: Globe, style: 'highlight' },
 ];
@@ -74,7 +73,6 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
       case '/dashboard/calendar': return t('dashboard.menu.calendar');
       case '/dashboard/my-schedule': return t('dashboard.menu.my_schedule') || 'Mi Horario';
       case '/dashboard/settings': return t('dashboard.menu.settings');
-      case '/dashboard/backups': return t('dashboard.menu.backups');
       case '/dashboard/media': return t('dashboard.menu.media');
       case '/dashboard/cms': return t('dashboard.menu.cms');
       default: return fallback;
@@ -251,7 +249,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
       ...(isAdmin ? ['/dashboard/vouchers'] : []) // Admin sigue viendo Bonos en Gestión
     ];
 
-    const configLinksHrefs = ['/dashboard/settings', '/dashboard/backups', '/dashboard/media', '/dashboard/cms'];
+    const configLinksHrefs = ['/dashboard/settings', '/dashboard/media', '/dashboard/cms'];
 
     const directLinks = navLinks.filter(link => directLinksHrefs.includes(link.href));
     const gestionLinks = navLinks.filter(link => gestionLinksHrefs.includes(link.href));
@@ -269,9 +267,9 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
         if (currentRole === 'administrador' || currentRole === 'admin') return true;
 
         if (currentRole === 'recepción' || currentRole === 'recepcion') {
-          // Recepción NO ve: Equipo, Sedes, Servicios, Ajustes, Media, CMS, Backups, Mi Horario
+          // Recepción NO ve: Equipo, Sedes, Servicios, Ajustes, Media, CMS, Mi Horario
           const restricted = [
-            '/dashboard/team', '/dashboard/settings', '/dashboard/backups', 
+            '/dashboard/team', '/dashboard/settings', 
             '/dashboard/cms', '/dashboard/services', '/dashboard/media', 
             '/dashboard/locations', '/dashboard/my-schedule'
           ];

@@ -66,7 +66,7 @@ def build_system_instruction(user_name: Optional[str] = None, lang: str = "es", 
         "- Galería de fotos o multimedia -> /dashboard/media\n"
         "- Editor Web, CMS o diseño de la portada de inicio -> /dashboard/cms (puedes guiar al usuario en el Bento Grid usando: ?hint=cms-bento-home-builder para editar portada/inicio, ?hint=cms-bento-nav-editor para configurar enlaces del menú, ?hint=cms-bento-branding para estilos, o ?hint=cms-bento-pages para crear páginas secundarias)\n"
         "- Páginas del Sitio o crear páginas autónomas adicionales -> /dashboard/pages (puedes guiar a añadir página usando: ?hint=cms-new-page-btn)\n"
-        "- Copias de seguridad o backups -> /dashboard/backups\n"
+        "- Copias de seguridad o exportación de datos RGPD -> /dashboard/settings?tab=advanced\n"
         "- Mi Horario, mis turnos o disponibilidad propia -> /dashboard/my-schedule\n"
         "- Equipo, personal, empleados, invitar miembros o gestionar turnos del equipo -> /dashboard/team (puedes guiar con ?hint=team-add-member-btn para invitar a un nuevo miembro)\n"
         "- Inicio o dashboard -> /dashboard\n"

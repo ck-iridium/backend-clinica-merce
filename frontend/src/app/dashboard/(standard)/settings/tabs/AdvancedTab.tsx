@@ -1,4 +1,6 @@
-import { SearchCode, Sparkles, Key, ChevronDown, AlertTriangle, Building, FileText } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { SearchCode, Sparkles, Key, ChevronDown, AlertTriangle, Building, FileText, Database, Download, ShieldCheck } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -13,6 +15,37 @@ interface AdvancedTabProps {
 }
 
 export default function AdvancedTab({ settings, setSettings }: AdvancedTabProps) {
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportData = async () => {
+    try {
+      setIsExporting(true);
+      toast.info('Preparando la copia de datos de tu clínica...');
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/backup/export`, {
+        credentials: 'include'
+      });
+      if (!res.ok) {
+        throw new Error('Error al obtener la copia de datos');
+      }
+      const data = await res.json();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `backup_clinica_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success('Copia de datos descargada correctamente');
+    } catch (e) {
+      console.error(e);
+      toast.error('No se pudo generar la copia de seguridad');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="space-y-4 md:space-y-8 animate-in slide-in-from-bottom-2 duration-300">
       
@@ -327,6 +360,51 @@ export default function AdvancedTab({ settings, setSettings }: AdvancedTabProps)
               <span className="text-[10px] text-stone-400 font-medium uppercase tracking-wider mt-0.5">Estado actual del módulo</span>
             </div>
           </label>
+        </div>
+      </div>
+
+      {/* Sección Copia de Seguridad y Portabilidad RGPD */}
+      <div className="bg-white rounded-3xl md:rounded-[2.5rem] border border-stone-100 p-5 md:p-8 shadow-sm">
+        <div className="flex items-center gap-3 mb-4 md:mb-6 pb-3 md:pb-4 border-b border-stone-100">
+          <span className="w-9 h-9 rounded-2xl bg-amber-50 flex items-center justify-center text-[#d4af37]">
+            <Database size={18} strokeWidth={1.5} />
+          </span>
+          <div>
+            <h3 className="text-2xl font-serif font-semibold text-stone-800">Copia de Seguridad y Portabilidad (RGPD)</h3>
+            <span className="text-[10px] text-stone-400 uppercase tracking-widest font-semibold">Respaldo exclusivo de los datos de tu clínica</span>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <div className="p-6 bg-stone-50 rounded-[2rem] border border-stone-100 flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#d4af37] shrink-0 shadow-sm">
+              <ShieldCheck size={20} strokeWidth={1.5} />
+            </div>
+            <div>
+              <h4 className="font-serif font-bold text-stone-800">Descarga Completa de Información</h4>
+              <p className="text-sm text-stone-500 mt-1 leading-relaxed">
+                Descarga un archivo estructurado (.json) con todos los registros de tu clínica: pacientes, citas, servicios, bonos, facturación y ajustes. Esta funcionalidad garantiza el cumplimiento del <strong>derecho a la portabilidad de datos (Art. 20 RGPD)</strong> y te permite conservar un respaldo local en frío siempre que lo necesites.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 bg-white rounded-[2rem] border border-stone-100 shadow-sm">
+            <div>
+              <span className="font-bold text-stone-850 block text-sm">Exportación Segura de la Clínica</span>
+              <span className="text-xs text-stone-400 font-medium">Tus datos en Supabase se respaldan de manera continua y cifrada en la nube.</span>
+            </div>
+
+            <button
+              type="button"
+              id="advanced-export-data-btn"
+              onClick={handleExportData}
+              disabled={isExporting}
+              className="w-full sm:w-auto px-6 py-3.5 bg-stone-900 hover:bg-stone-800 active:scale-95 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-all duration-300 disabled:opacity-50"
+            >
+              <Download size={16} className={isExporting ? 'animate-bounce text-[#d4af37]' : ''} />
+              {isExporting ? 'Generando Archivo...' : 'Descargar Copia (.json)'}
+            </button>
+          </div>
         </div>
       </div>
 

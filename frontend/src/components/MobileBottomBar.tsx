@@ -146,7 +146,6 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
 
   const submenuConfig = [
     { href: '/dashboard/settings', label: t('dashboard.menu.settings') || 'Ajustes Generales', icon: Settings },
-    { href: '/dashboard/backups', label: t('dashboard.menu.backups') || 'Copias de Seguridad', icon: Database },
     { href: '/dashboard/media', label: t('dashboard.menu.media') || 'Galería de Medios', icon: ImageIcon },
     { href: '/dashboard/cms', label: t('dashboard.menu.cms') || 'Editor Web (CMS)', icon: Globe },
   ].filter(item => {

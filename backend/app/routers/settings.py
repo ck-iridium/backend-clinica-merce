@@ -120,86 +120,13 @@ def export_database(db: Session = Depends(database.get_db)):
     return data
 
 @router.post("/backup/restore")
-async def restore_database(backup_data: Dict[str, Any], db: Session = Depends(database.get_db)):
-    try:
-        tenant_id = database.current_tenant_var.get()
-        if not tenant_id:
-            import logging
-            logging.error("Seguridad: Intento de restaurar base de datos sin tenant_id en el contexto")
-            raise HTTPException(status_code=400, detail="No autorizado. Inquilino no identificado.")
+async def restore_database():
+    """
+    Endpoint deshabilitado en entornos SaaS multi-tenant.
+    La restauración de datos la realiza el equipo de soporte técnico/superadmin para garantizar la integridad referencial y legal (facturación/RGPD).
+    """
+    raise HTTPException(
+        status_code=403, 
+        detail="La restauración manual directa de base de datos está deshabilitada por integridad legal y seguridad del sistema. Contacte con soporte técnico para recuperaciones asistidas."
+    )
 
-        # Detectar el tipo de base de datos
-        is_sqlite = db.bind.dialect.name == "sqlite"
-        
-        # Desactivar temporalmente las claves foráneas
-        if is_sqlite:
-            db.execute(text("PRAGMA foreign_keys = OFF;"))
-        else:
-            db.execute(text("SET session_replication_role = 'replica';"))
-        
-        db.query(models.Invoice).filter(models.Invoice.tenant_id == tenant_id).delete()
-        db.query(models.Appointment).filter(models.Appointment.tenant_id == tenant_id).delete()
-        db.query(models.Voucher).filter(models.Voucher.tenant_id == tenant_id).delete()
-        
-        # We must clear Client and Service after tables that depend on them
-        db.query(models.Client).filter(models.Client.tenant_id == tenant_id).delete()
-        db.query(models.Service).filter(models.Service.tenant_id == tenant_id).delete()
-        db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).delete()
-        db.commit()
-
-        # Insert items back. 
-        from datetime import datetime, date
-        def parse_dates(item):
-            for k, v in item.items():
-                if isinstance(v, str) and len(v) >= 10:
-                    try:
-                        if "T" in v:
-                            item[k] = datetime.fromisoformat(v)
-                        else:
-                            item[k] = date.fromisoformat(v)
-                    except ValueError:
-                        pass
-            return item
-            
-        for s in backup_data.get("settings", []):
-            item = parse_dates(s)
-            item["tenant_id"] = tenant_id
-            db.add(models.ClinicSettings(**item))
-            
-        for c in backup_data.get("clients", []):
-            item = parse_dates(c)
-            item["tenant_id"] = tenant_id
-            db.add(models.Client(**item))
-            
-        for s in backup_data.get("services", []):
-            item = parse_dates(s)
-            item["tenant_id"] = tenant_id
-            db.add(models.Service(**item))
-        db.commit()
-        
-        for a in backup_data.get("appointments", []):
-            item = parse_dates(a)
-            item["tenant_id"] = tenant_id
-            db.add(models.Appointment(**item))
-            
-        for v in backup_data.get("vouchers", []):
-            item = parse_dates(v)
-            item["tenant_id"] = tenant_id
-            db.add(models.Voucher(**item))
-            
-        for i in backup_data.get("invoices", []):
-            item = parse_dates(i)
-            item["tenant_id"] = tenant_id
-            db.add(models.Invoice(**item))
-        db.commit()
-        
-        # Volver al modo normal
-        if is_sqlite:
-            db.execute(text("PRAGMA foreign_keys = ON;"))
-        else:
-            db.execute(text("SET session_replication_role = 'origin';"))
-        
-        return {"ok": True, "message": "Database restored and repopulated"}
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
