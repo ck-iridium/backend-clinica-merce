@@ -97,10 +97,8 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
       
       {/* ─── 1. HERO SECTION (Adaptativo según Viewport) ─── */}
       <section className={`relative w-full ${
-        viewportDevice === 'mobile'
-          ? 'h-[660px] min-h-[660px] shrink-0 flex flex-col justify-between'
-          : viewportDevice === 'tablet'
-          ? 'h-[720px] min-h-[720px] shrink-0 flex flex-col justify-between'
+        viewportDevice === 'mobile' || viewportDevice === 'tablet'
+          ? 'h-full min-h-[580px] shrink-0 flex flex-col justify-between'
           : `aspect-video min-h-[500px] flex ${heroAlignment === 'top' ? 'items-start pt-20 pb-8' : heroAlignment === 'bottom' ? 'items-end pb-16 pt-8' : 'items-center'} ${
               formData?.hero_content_fullwidth
                 ? (heroHorizontalAlignment === 'left' ? 'justify-start text-left pl-6 sm:pl-10' : heroHorizontalAlignment === 'right' ? 'justify-end text-right pr-6 sm:pr-10' : 'justify-center text-center')
@@ -169,20 +167,20 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
 
           if (viewportDevice === 'mobile') {
             titleFontSize = isPriceActive 
-              ? `${(1.35 * titleScale).toFixed(2)}rem` 
-              : `${(1.65 * titleScale).toFixed(2)}rem`;
-            subtitleFontSize = `${(0.80 * subtitleScale).toFixed(2)}rem`;
-            priceAmountFontSize = `${(2.8 * priceScale).toFixed(2)}rem`;
-            priceSuffixFontSize = `${(1.3 * priceScale).toFixed(2)}rem`;
-            pricePeriodFontSize = `${(0.68 * priceScale).toFixed(2)}rem`;
+              ? `${(1.48 * titleScale).toFixed(2)}rem` 
+              : `${(1.85 * titleScale).toFixed(2)}rem`;
+            subtitleFontSize = `${(0.85 * subtitleScale).toFixed(2)}rem`;
+            priceAmountFontSize = `${(3.1 * priceScale).toFixed(2)}rem`;
+            priceSuffixFontSize = `${(1.45 * priceScale).toFixed(2)}rem`;
+            pricePeriodFontSize = `${(0.72 * priceScale).toFixed(2)}rem`;
           } else if (viewportDevice === 'tablet') {
             titleFontSize = isPriceActive 
-              ? `${(1.85 * titleScale).toFixed(2)}rem` 
-              : `${(2.2 * titleScale).toFixed(2)}rem`;
-            subtitleFontSize = `${(0.9 * subtitleScale).toFixed(2)}rem`;
-            priceAmountFontSize = `${(4.0 * priceScale).toFixed(2)}rem`;
-            priceSuffixFontSize = `${(1.8 * priceScale).toFixed(2)}rem`;
-            pricePeriodFontSize = `${(0.85 * priceScale).toFixed(2)}rem`;
+              ? `${(2.1 * titleScale).toFixed(2)}rem` 
+              : `${(2.5 * titleScale).toFixed(2)}rem`;
+            subtitleFontSize = `${(0.98 * subtitleScale).toFixed(2)}rem`;
+            priceAmountFontSize = `${(4.4 * priceScale).toFixed(2)}rem`;
+            priceSuffixFontSize = `${(2.0 * priceScale).toFixed(2)}rem`;
+            pricePeriodFontSize = `${(0.90 * priceScale).toFixed(2)}rem`;
           } else {
             titleFontSize = isPriceActive 
               ? `${(2.2 * titleScale).toFixed(2)}rem` 

@@ -174,8 +174,8 @@ export default function HomeBuilderLayout({
           </div>
         </div>
 
-        {/* CONTENEDOR DEL PREVIEW (Adaptativo por resolución y Centrado) */}
-        <div className="flex-1 w-full overflow-y-auto flex items-center justify-center p-4 lg:p-6 custom-scrollbar bg-stone-100/70">
+        {/* CONTENEDOR DEL PREVIEW (Adaptativo por resolución y Centrado según pantalla) */}
+        <div className="flex-1 w-full overflow-y-auto flex items-center justify-center p-3 lg:p-6 custom-scrollbar bg-stone-100/70">
           {currentDevice === 'desktop' && (
             <div className="w-full bg-white min-h-full shadow-sm transition-all duration-300">
               {preview}
@@ -183,7 +183,7 @@ export default function HomeBuilderLayout({
           )}
 
           {currentDevice === 'tablet' && (
-            <div className="w-[720px] h-[720px] my-auto bg-white rounded-[2rem] shadow-2xl border-[7px] border-stone-850 overflow-hidden shrink-0 flex flex-col transition-all duration-300">
+            <div className="w-[780px] max-w-[94vw] h-[calc(100vh-130px)] min-h-[760px] max-h-[980px] my-auto bg-white rounded-[2.5rem] shadow-2xl border-[8px] border-stone-850 overflow-hidden shrink-0 flex flex-col transition-all duration-300">
               <div className="flex-1 w-full h-full overflow-y-auto custom-scrollbar flex flex-col bg-white">
                 {preview}
               </div>
@@ -191,7 +191,7 @@ export default function HomeBuilderLayout({
           )}
 
           {currentDevice === 'mobile' && (
-            <div className="w-[375px] h-[660px] my-auto bg-white rounded-[2.8rem] shadow-2xl border-[7px] border-stone-850 overflow-hidden shrink-0 flex flex-col transition-all duration-300">
+            <div className="w-[420px] max-w-[92vw] h-[calc(100vh-130px)] min-h-[700px] max-h-[880px] my-auto bg-white rounded-[3rem] shadow-2xl border-[8px] border-stone-850 overflow-hidden shrink-0 flex flex-col transition-all duration-300">
               <div className="flex-1 w-full h-full overflow-y-auto custom-scrollbar flex flex-col bg-white">
                 {preview}
               </div>
