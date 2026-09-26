@@ -99,7 +99,7 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
       <section className={`relative w-full ${
         viewportDevice === 'mobile' || viewportDevice === 'tablet'
           ? 'h-full min-h-[580px] shrink-0 flex flex-col justify-between'
-          : 'min-h-[580px] lg:min-h-[640px] shrink-0 flex flex-col justify-between'
+          : 'min-h-[700px] lg:min-h-[760px] h-[calc(100vh-140px)] shrink-0 flex flex-col justify-between'
       } overflow-hidden`}>
         
         {/* Navbar Simulado para Vista Móvil y Tablet (con Logo Real de la Clínica) */}
@@ -191,28 +191,25 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
 
           if (viewportDevice === 'mobile') {
             titleFontSize = isPriceActive 
-              ? `${(1.95 * titleScale).toFixed(2)}rem` 
-              : `${(2.35 * titleScale).toFixed(2)}rem`;
-            subtitleFontSize = `${(0.88 * subtitleScale).toFixed(2)}rem`;
-            priceAmountFontSize = `${(3.2 * priceScale).toFixed(2)}rem`;
-            priceSuffixFontSize = `${(1.5 * priceScale).toFixed(2)}rem`;
-            pricePeriodFontSize = `${(0.75 * priceScale).toFixed(2)}rem`;
+              ? `${(2.2 * titleScale).toFixed(2)}rem` 
+              : `${(2.5 * titleScale).toFixed(2)}rem`;
+            subtitleFontSize = `${(0.85 * subtitleScale).toFixed(2)}rem`;
+            priceAmountFontSize = `${(3.4 * priceScale).toFixed(2)}rem`;
+            priceSuffixFontSize = `${(1.6 * priceScale).toFixed(2)}rem`;
           } else if (viewportDevice === 'tablet') {
             titleFontSize = isPriceActive 
-              ? `${(2.1 * titleScale).toFixed(2)}rem` 
-              : `${(2.5 * titleScale).toFixed(2)}rem`;
-            subtitleFontSize = `${(0.98 * subtitleScale).toFixed(2)}rem`;
-            priceAmountFontSize = `${(4.4 * priceScale).toFixed(2)}rem`;
-            priceSuffixFontSize = `${(2.0 * priceScale).toFixed(2)}rem`;
-            pricePeriodFontSize = `${(0.90 * priceScale).toFixed(2)}rem`;
+              ? `${(3.2 * titleScale).toFixed(2)}rem` 
+              : `${(3.8 * titleScale).toFixed(2)}rem`;
+            subtitleFontSize = `${(1.05 * subtitleScale).toFixed(2)}rem`;
+            priceAmountFontSize = `${(5.6 * priceScale).toFixed(2)}rem`;
+            priceSuffixFontSize = `${(2.5 * priceScale).toFixed(2)}rem`;
           } else {
             titleFontSize = isPriceActive 
-              ? `${(2.2 * titleScale).toFixed(2)}rem` 
-              : `${(2.7 * titleScale).toFixed(2)}rem`;
-            subtitleFontSize = `${(1.0 * subtitleScale).toFixed(2)}rem`;
-            priceAmountFontSize = `${(5.2 * priceScale).toFixed(2)}rem`;
-            priceSuffixFontSize = `${(2.4 * priceScale).toFixed(2)}rem`;
-            pricePeriodFontSize = `${(0.95 * priceScale).toFixed(2)}rem`;
+              ? `${(5.2 * titleScale).toFixed(2)}rem` 
+              : `${(6.0 * titleScale).toFixed(2)}rem`;
+            subtitleFontSize = `${(1.2 * subtitleScale).toFixed(2)}rem`;
+            priceAmountFontSize = `${(8.2 * priceScale).toFixed(2)}rem`;
+            priceSuffixFontSize = `${(3.6 * priceScale).toFixed(2)}rem`;
           }
 
           const getButtonStyle = (style?: string) => {
@@ -231,19 +228,22 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
 
           const renderPriceCapsule = () => {
             if (!isPriceActive) return null;
+            const prefixText = translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix');
             const periodText = translate(formData?.hero_price_period, formData?.translations, 'hero_price_period');
             return (
               <div className={`relative group ${priceConfig.boxClass} select-none`}>
                 <div className="relative flex flex-col items-start text-left">
-                  {translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix') && (
-                    <span className={`text-[10px] sm:text-xs font-black uppercase tracking-[0.22em] ${priceConfig.prefixClass} block mb-0 leading-none pl-0.5 select-none`}>
-                      {translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix')}
+                  {prefixText && (
+                    <span 
+                      style={{
+                        transform: `translateY(${Math.min(8, Math.max(-10, priceOffsetY))}px)`
+                      }}
+                      className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.22em] ${priceConfig.prefixClass} block mb-1 leading-none pl-0.5 select-none transition-transform`}
+                    >
+                      {prefixText}
                     </span>
                   )}
-                  <div 
-                    className="flex items-center gap-1.5 sm:gap-3 leading-none"
-                    style={{ marginTop: `${-18 + Math.round(priceOffsetY)}px` }}
-                  >
+                  <div className="flex items-center gap-1.5 sm:gap-3 leading-none">
                     <span 
                       style={{ 
                         fontSize: priceAmountFontSize,
@@ -264,10 +264,7 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
                         {formData?.hero_price_suffix || '€'}
                       </span>
                       {periodText && (
-                        <span 
-                          style={{ fontSize: pricePeriodFontSize }}
-                          className={`font-black uppercase tracking-wider ${priceConfig.suffixClass} opacity-90 leading-tight mt-0.5 sm:mt-1`}
-                        >
+                        <span className={`text-[8px] sm:text-[9px] md:text-[10px] font-black uppercase tracking-[0.18em] ${priceConfig.suffixClass} opacity-90 leading-tight mt-1`}>
                           {periodText}
                         </span>
                       )}

@@ -761,25 +761,25 @@ export default function HeroTab({
               </div>
 
               <div className="flex items-center gap-3">
-                <span className="text-[10px] font-bold text-stone-400">Pegar (-60)</span>
+                <span className="text-[10px] font-bold text-stone-400">Pegar (-10)</span>
                 <input
                   id="cms-hero-price-offset-y-slider"
                   type="range"
-                  min="-60"
-                  max="30"
+                  min="-10"
+                  max="10"
                   step="1"
                   value={priceOffsetY}
                   onChange={e => setResponsiveValue('hero_price_offset_y', parseInt(e.target.value, 10))}
                   className="w-full accent-[#d4af37] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
                 />
-                <span className="text-[10px] font-bold text-stone-400">Separar (+30)</span>
+                <span className="text-[10px] font-bold text-stone-400">Separar (+10)</span>
               </div>
 
               {/* Presets rápidos */}
               <div className="flex items-center justify-between pt-1 text-[10px] font-bold">
                 <span className="text-stone-400">{t('cms.hero.presets') || 'Ajustes Rápidos'}:</span>
                 <div className="flex items-center gap-1">
-                  {[-40, -20, 0, 10, 20].map((preset) => (
+                  {[-8, -4, 0, 4, 8].map((preset) => (
                     <button
                       key={preset}
                       type="button"

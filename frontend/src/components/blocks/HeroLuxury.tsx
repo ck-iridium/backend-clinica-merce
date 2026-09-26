@@ -118,17 +118,16 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
       <div className={`relative group ${priceConfig.boxClass} select-none`}>
         <div className="relative flex flex-col items-start text-left">
           {data?.hero_price_prefix && (
-            <span className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.22em] ${priceConfig.prefixClass} block mb-0 leading-none pl-0.5 select-none`}>
+            <span 
+              style={{
+                transform: `translateY(${Math.min(8, Math.max(-10, desktopPriceOffsetY))}px)`
+              }}
+              className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.22em] ${priceConfig.prefixClass} block mb-1 leading-none pl-0.5 select-none transition-transform`}
+            >
               {data?.hero_price_prefix}
             </span>
           )}
-          <div 
-            className="flex items-center gap-2 sm:gap-3.5 leading-none mt-[var(--hero-price-mobile-mt)] sm:mt-[var(--hero-price-mt)]"
-            style={{ 
-              '--hero-price-mt': `${-32 + tabletPriceOffsetY}px`,
-              '--hero-price-mobile-mt': `${-28 + mobilePriceOffsetY}px`
-            } as React.CSSProperties}
-          >
+          <div className="flex items-center gap-2 sm:gap-3.5 leading-none">
             <span 
               style={{ 
                 fontSize: `clamp(${(3.4 * mobilePriceScale).toFixed(2)}rem, ${(7.2 * tabletPriceScale).toFixed(2)}vw, ${(9.5 * desktopPriceScale).toFixed(2)}rem)`,
@@ -149,7 +148,7 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
                 {data?.hero_price_suffix || '€'}
               </span>
               {data?.hero_price_period && (
-                <span className={`text-xs sm:text-sm md:text-base font-black uppercase tracking-wider ${priceConfig.suffixClass} opacity-90 leading-tight mt-1 sm:mt-1.5`}>
+                <span className={`text-[8px] sm:text-[9px] md:text-[10px] font-black uppercase tracking-[0.18em] ${priceConfig.suffixClass} opacity-90 leading-tight mt-1`}>
                   {data?.hero_price_period}
                 </span>
               )}
