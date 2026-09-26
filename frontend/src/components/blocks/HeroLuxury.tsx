@@ -209,39 +209,39 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
             : `max-w-7xl mx-auto ${mobileAlignX === 'left' ? 'text-left' : mobileAlignX === 'right' ? 'text-right' : 'text-center'} ${desktopAlignX === 'left' ? 'md:text-left' : desktopAlignX === 'right' ? 'md:text-right' : 'md:text-center'}`
         }`}
       >
-        <div className={`flex flex-col ${
+        <div className={`w-full flex flex-col ${
           mobileAlignX === 'center' ? 'items-center' :
           mobileAlignX === 'right' ? 'items-end' : 'items-start'
         } ${
           desktopAlignX === 'center' ? 'md:items-center' :
           desktopAlignX === 'right' ? 'md:items-end' : 'md:items-start'
         }`}>
-          {/* Fila Principal: Textos (Título + Subtítulo) a la izquierda y Precio pegado inmediatamente a la derecha */}
-          <div className={`flex flex-row items-center gap-4 sm:gap-6 md:gap-8 max-w-full ${
-            mobileAlignX === 'center' ? 'justify-center' :
-            mobileAlignX === 'right' ? 'justify-end' : 'justify-start'
-          } ${
-            desktopAlignX === 'center' ? 'md:justify-center' :
-            desktopAlignX === 'right' ? 'md:justify-end' : 'md:justify-start'
-          }`}>
-            {/* Columna Izquierda: Título H1 y Subtítulo */}
-            <div 
-              style={{ '--hero-title-max-w': `${desktopTitleMaxWidth}%` } as React.CSSProperties}
-              className={`min-w-0 space-y-2 sm:space-y-3.5 ${
-                isPriceActive ? 'flex-1 md:max-w-[var(--hero-title-max-w)]' : 'w-full md:max-w-[var(--hero-title-max-w)]'
-              } ${
-                mobileAlignX === 'center' ? 'text-center' :
-                mobileAlignX === 'right' ? 'text-right' : 'text-left'
-              } ${
-                desktopAlignX === 'center' ? 'md:text-center' :
-                desktopAlignX === 'right' ? 'md:text-right' : 'md:text-left'
-              }`}
-            >
+          {/* Contenedor Grid con Distribución Especial: Móvil (H1 100% + Subtítulo/Botón | Precio) vs Desktop (3 filas | Precio) */}
+          <div 
+            style={{ '--hero-title-max-w': `${desktopTitleMaxWidth}%` } as React.CSSProperties}
+            className={`w-full ${
+              isPriceActive
+                ? `grid grid-cols-[1fr_auto] gap-x-3.5 sm:gap-x-6 md:gap-x-8 gap-y-2 sm:gap-y-3.5 items-center [grid-template-areas:'title_title'_'subtitle_price'_'button_price'] md:[grid-template-areas:'title_price'_'subtitle_price'_'button_price'] ${
+                    isFullwidth ? '' : 'md:max-w-[var(--hero-title-max-w)]'
+                  }`
+                : `flex flex-col gap-2.5 sm:gap-4 ${
+                    isFullwidth ? '' : 'md:max-w-[var(--hero-title-max-w)]'
+                  }`
+            } ${
+              mobileAlignX === 'center' ? 'text-center' :
+              mobileAlignX === 'right' ? 'text-right' : 'text-left'
+            } ${
+              desktopAlignX === 'center' ? 'md:text-center' :
+              desktopAlignX === 'right' ? 'md:text-right' : 'md:text-left'
+            }`}
+          >
+            {/* Título H1 (Fila 1 completa al 100% de ancho en móvil) */}
+            <div className="[grid-area:title] min-w-0">
               <h1 
                 style={{ 
                   fontSize: isPriceActive 
-                    ? `clamp(${(1.75 * mobileTitleScale).toFixed(2)}rem, ${(4.8 * tabletTitleScale).toFixed(2)}vw, ${(6.8 * desktopTitleScale).toFixed(2)}rem)`
-                    : `clamp(${(2.2 * mobileTitleScale).toFixed(2)}rem, ${(5.5 * tabletTitleScale).toFixed(2)}vw, ${(7.2 * desktopTitleScale).toFixed(2)}rem)`,
+                    ? `clamp(${(2.1 * mobileTitleScale).toFixed(2)}rem, ${(4.8 * tabletTitleScale).toFixed(2)}vw, ${(6.8 * desktopTitleScale).toFixed(2)}rem)`
+                    : `clamp(${(2.4 * mobileTitleScale).toFixed(2)}rem, ${(5.5 * tabletTitleScale).toFixed(2)}vw, ${(7.2 * desktopTitleScale).toFixed(2)}rem)`,
                   fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
                 }}
                 className={`leading-[1.05] font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] tracking-tight ${
@@ -250,7 +250,10 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
               >
                 {data?.hero_title || 'Descubre tu Mejor Versión'}
               </h1>
+            </div>
 
+            {/* Subtítulo (Fila 2 en móvil, inmediatamente debajo del H1 a la izquierda) */}
+            <div className="[grid-area:subtitle] min-w-0">
               <p 
                 style={{
                   fontSize: `clamp(${(0.85 * mobileSubtitleScale).toFixed(2)}rem, ${(1.2 * tabletSubtitleScale).toFixed(2)}vw, ${(1.35 * desktopSubtitleScale).toFixed(2)}rem)`
@@ -263,32 +266,32 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
               </p>
             </div>
 
-            {/* Columna Derecha: Bloque de Precio Pegado Inmediatamente al Título y Subtítulo */}
+            {/* Botón de Acción CTA (Fila 3 en móvil, debajo del subtítulo en la columna izquierda) */}
+            {data?.hero_show_button !== false && (
+              <div className={`[grid-area:button] pt-1 md:pt-2 w-full ${
+                mobileAlignX === 'center' ? 'flex justify-center' :
+                mobileAlignX === 'right' ? 'flex justify-end' : 'flex justify-start'
+              } ${
+                desktopAlignX === 'center' ? 'md:flex md:justify-center' :
+                desktopAlignX === 'right' ? 'md:flex md:justify-end' : 'md:flex md:justify-start'
+              }`}>
+                <Link 
+                  href={data?.hero_button_link || "/reservar"} 
+                  className={`inline-flex items-center justify-center px-6 py-2.5 sm:px-8 sm:py-3.5 md:px-11 md:py-4 rounded-full font-bold text-sm sm:text-base md:text-lg transition-all duration-300 hover:scale-105 active:scale-95 group text-center whitespace-nowrap w-fit ${getButtonStyle(data?.hero_button_style)}`}
+                >
+                  <span>{data?.hero_button_text || 'Reservar Cita'}</span>
+                  <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                </Link>
+              </div>
+            )}
+
+            {/* Bloque de Precio (Columna derecha centrado verticalmente frente a subtítulo + botón en móvil, o frente a H1 + subtítulo + botón en desktop) */}
             {isPriceActive && (
-              <div className="shrink-0 self-center">
+              <div className="[grid-area:price] self-center shrink-0">
                 {renderPriceCapsule()}
               </div>
             )}
           </div>
-
-          {/* Fila Inferior: Botón de Acción CTA (debajo del bloque de textos y precio) */}
-          {data?.hero_show_button !== false && (
-            <div className={`pt-3 sm:pt-4 md:pt-6 w-full ${
-              mobileAlignX === 'center' ? 'flex justify-center' :
-              mobileAlignX === 'right' ? 'flex justify-end' : 'flex justify-start'
-            } ${
-              desktopAlignX === 'center' ? 'md:flex md:justify-center' :
-              desktopAlignX === 'right' ? 'md:flex md:justify-end' : 'md:flex md:justify-start'
-            }`}>
-              <Link 
-                href={data?.hero_button_link || "/reservar"} 
-                className={`inline-flex items-center justify-center px-8 py-3.5 md:px-11 md:py-4 rounded-full font-bold text-base md:text-lg transition-all duration-300 hover:scale-105 active:scale-95 group text-center whitespace-nowrap w-fit ${getButtonStyle(data?.hero_button_style)}`}
-              >
-                <span>{data?.hero_button_text || 'Reservar Cita'}</span>
-                <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">→</span>
-              </Link>
-            </div>
-          )}
         </div>
       </motion.div>
     </section>

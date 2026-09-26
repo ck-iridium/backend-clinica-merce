@@ -580,6 +580,7 @@ export default function ClientHome({ content, settings, services, categories }: 
                   const desktopTitleMaxWidth = content.hero_title_max_width || 100;
                   const tabletTitleMaxWidth = content.hero_responsive_config?.tablet?.hero_title_max_width ?? desktopTitleMaxWidth;
                   const mobileTitleMaxWidth = content.hero_responsive_config?.mobile?.hero_title_max_width ?? tabletTitleMaxWidth;
+                  const isFullwidth = content.hero_content_fullwidth;
 
                   const isPriceActive = !!content.hero_price_enabled && (content.hero_price_amount || content.hero_price_prefix);
                   const priceConfig = getPriceStyleConfig(content.hero_price_style);
@@ -657,26 +658,29 @@ export default function ClientHome({ content, settings, services, categories }: 
                         content.hero_horizontal_alignment === 'center' ? 'items-center' :
                         content.hero_horizontal_alignment === 'right' ? 'items-end' : 'items-start'
                       }`}>
-                        {/* Fila Principal: Textos (Título + Subtítulo) a la izquierda y Precio pegado inmediatamente a la derecha */}
-                        <div className={`flex flex-row items-center gap-4 sm:gap-6 md:gap-8 max-w-full ${
-                          content.hero_horizontal_alignment === 'center' ? 'justify-center' :
-                          content.hero_horizontal_alignment === 'right' ? 'justify-end' : 'justify-start'
-                        }`}>
-                          {/* Columna Izquierda: Título H1 y Subtítulo */}
-                          <div 
-                            style={{ '--hero-title-max-w': `${desktopTitleMaxWidth}%` } as React.CSSProperties}
-                            className={`min-w-0 space-y-2 sm:space-y-3.5 ${
-                              isPriceActive ? 'flex-1 md:max-w-[var(--hero-title-max-w)]' : 'w-full md:max-w-[var(--hero-title-max-w)]'
-                            } ${
-                              content.hero_horizontal_alignment === 'center' ? 'text-center' :
-                              content.hero_horizontal_alignment === 'right' ? 'text-right' : 'text-left'
-                            }`}
-                          >
+                        {/* Contenedor Grid con Distribución Especial: Móvil (H1 100% + Subtítulo/Botón | Precio) vs Desktop/Tablet (3 filas | Precio) */}
+                        <div 
+                          style={{ '--hero-title-max-w': `${desktopTitleMaxWidth}%` } as React.CSSProperties}
+                          className={`w-full ${
+                            isPriceActive
+                              ? `grid grid-cols-[1fr_auto] gap-x-3.5 sm:gap-x-6 md:gap-x-8 gap-y-2 sm:gap-y-3.5 items-center [grid-template-areas:'title_title'_'subtitle_price'_'button_price'] md:[grid-template-areas:'title_price'_'subtitle_price'_'button_price'] ${
+                                  isFullwidth ? '' : 'md:max-w-[var(--hero-title-max-w)]'
+                                }`
+                              : `flex flex-col gap-2.5 sm:gap-4 ${
+                                  isFullwidth ? '' : 'md:max-w-[var(--hero-title-max-w)]'
+                                }`
+                          } ${
+                            content.hero_horizontal_alignment === 'center' ? 'text-center' :
+                            content.hero_horizontal_alignment === 'right' ? 'text-right' : 'text-left'
+                          }`}
+                        >
+                          {/* Título H1 (Fila 1 completa al 100% de ancho en móvil) */}
+                          <div className="[grid-area:title] min-w-0">
                             <h1 
                               style={{ 
                                 fontSize: isPriceActive 
-                                  ? `clamp(${(1.75 * mobileTitleScale).toFixed(2)}rem, ${(4.8 * tabletTitleScale).toFixed(2)}vw, ${(6.8 * desktopTitleScale).toFixed(2)}rem)`
-                                  : `clamp(${(2.2 * mobileTitleScale).toFixed(2)}rem, ${(5.5 * tabletTitleScale).toFixed(2)}vw, ${(7.2 * desktopTitleScale).toFixed(2)}rem)`,
+                                  ? `clamp(${(2.1 * mobileTitleScale).toFixed(2)}rem, ${(4.8 * tabletTitleScale).toFixed(2)}vw, ${(6.8 * desktopTitleScale).toFixed(2)}rem)`
+                                  : `clamp(${(2.4 * mobileTitleScale).toFixed(2)}rem, ${(5.5 * tabletTitleScale).toFixed(2)}vw, ${(7.2 * desktopTitleScale).toFixed(2)}rem)`,
                                 fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
                               }}
                               className={`leading-[1.05] font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] tracking-tight ${
@@ -685,7 +689,10 @@ export default function ClientHome({ content, settings, services, categories }: 
                             >
                               {cleanTitle(translate(content.hero_title, content.translations, 'hero_title'))}
                             </h1>
+                          </div>
 
+                          {/* Subtítulo (Fila 2 en móvil, inmediatamente debajo del H1 a la izquierda) */}
+                          <div className="[grid-area:subtitle] min-w-0">
                             <p 
                               style={{
                                 fontSize: `clamp(${(0.85 * mobileSubtitleScale).toFixed(2)}rem, ${(1.2 * tabletSubtitleScale).toFixed(2)}vw, ${(1.35 * desktopSubtitleScale).toFixed(2)}rem)`
@@ -698,29 +705,29 @@ export default function ClientHome({ content, settings, services, categories }: 
                             </p>
                           </div>
 
-                          {/* Columna Derecha: Bloque de Precio Pegado Inmediatamente al Título y Subtítulo */}
+                          {/* Botón de Acción CTA (Fila 3 en móvil, debajo del subtítulo en la columna izquierda) */}
+                          {content.hero_show_button !== false && (
+                            <div className={`[grid-area:button] pt-1 md:pt-2 w-full ${
+                              content.hero_horizontal_alignment === 'center' ? 'flex justify-center' :
+                              content.hero_horizontal_alignment === 'right' ? 'flex justify-end' : 'flex justify-start'
+                            }`}>
+                              <Link 
+                                href={content.hero_button_link || '#'} 
+                                className={`inline-flex items-center justify-center px-6 py-2.5 sm:px-8 sm:py-3.5 md:px-11 md:py-4 rounded-full font-bold text-sm sm:text-base md:text-lg transition-all duration-300 hover:scale-105 active:scale-95 group text-center whitespace-nowrap w-fit ${getButtonStyle(content.hero_button_style)}`}
+                              >
+                                <span>{translate(content.hero_button_text, content.translations, 'hero_button_text')}</span>
+                                <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                              </Link>
+                            </div>
+                          )}
+
+                          {/* Bloque de Precio (Columna derecha centrado verticalmente frente a subtítulo + botón en móvil, o frente a H1 + subtítulo + botón en desktop) */}
                           {isPriceActive && (
-                            <div className="shrink-0 self-center">
+                            <div className="[grid-area:price] self-center shrink-0">
                               {renderPriceCapsule()}
                             </div>
                           )}
                         </div>
-
-                        {/* Fila Inferior: Botón de Acción CTA (debajo del bloque de textos y precio) */}
-                        {content.hero_show_button !== false && (
-                          <div className={`pt-3 sm:pt-4 md:pt-6 w-full ${
-                            content.hero_horizontal_alignment === 'center' ? 'flex justify-center' :
-                            content.hero_horizontal_alignment === 'right' ? 'flex justify-end' : 'flex justify-start'
-                          }`}>
-                            <Link 
-                              href={content.hero_button_link || '#'} 
-                              className={`inline-flex items-center justify-center px-8 py-3.5 md:px-11 md:py-4 rounded-full font-bold text-base md:text-lg transition-all duration-300 hover:scale-105 active:scale-95 group text-center whitespace-nowrap w-fit ${getButtonStyle(content.hero_button_style)}`}
-                            >
-                              <span>{translate(content.hero_button_text, content.translations, 'hero_button_text')}</span>
-                              <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">→</span>
-                            </Link>
-                          </div>
-                        )}
                       </div>
                     </div>
                   );

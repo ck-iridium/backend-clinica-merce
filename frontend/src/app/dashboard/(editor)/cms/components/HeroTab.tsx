@@ -349,25 +349,25 @@ export default function HeroTab({
             </div>
 
             <div className="flex items-center gap-3">
-              <span className="text-[10px] font-bold text-stone-400">60%</span>
+              <span className="text-[10px] font-bold text-stone-400">50%</span>
               <input
                 id="cms-hero-title-size-slider"
                 type="range"
-                min="60"
-                max="160"
+                min="50"
+                max="220"
                 step="5"
                 value={titleScale}
                 onChange={e => setResponsiveValue('hero_title_size', e.target.value)}
                 className="w-full accent-[#d4af37] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
               />
-              <span className="text-[10px] font-bold text-stone-400">160%</span>
+              <span className="text-[10px] font-bold text-stone-400">220%</span>
             </div>
 
             {/* Presets rápidos */}
             <div className="flex items-center justify-between pt-1 text-[10px] font-bold">
               <span className="text-stone-400">{t('cms.hero.presets') || 'Ajustes Rápidos'}:</span>
               <div className="flex items-center gap-1">
-                {[80, 100, 120, 140].map((preset) => (
+                {[80, 100, 130, 160, 200].map((preset) => (
                   <button
                     key={preset}
                     type="button"

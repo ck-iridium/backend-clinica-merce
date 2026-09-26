@@ -99,11 +99,7 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
       <section className={`relative w-full ${
         viewportDevice === 'mobile' || viewportDevice === 'tablet'
           ? 'h-full min-h-[580px] shrink-0 flex flex-col justify-between'
-          : `aspect-video min-h-[500px] flex ${heroAlignment === 'top' ? 'items-start pt-20 pb-8' : heroAlignment === 'bottom' ? 'items-end pb-16 pt-8' : 'items-center'} ${
-              formData?.hero_content_fullwidth
-                ? (heroHorizontalAlignment === 'left' ? 'justify-start text-left pl-6 sm:pl-10' : heroHorizontalAlignment === 'right' ? 'justify-end text-right pr-6 sm:pr-10' : 'justify-center text-center')
-                : 'justify-center'
-            } p-6 sm:p-10`
+          : 'min-h-[580px] lg:min-h-[640px] shrink-0 flex flex-col justify-between'
       } overflow-hidden`}>
         
         {/* Navbar Simulado para Vista Móvil y Tablet (con Logo Real de la Clínica) */}
@@ -126,6 +122,34 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
             <div className="flex flex-col gap-1.5 items-end justify-center w-6 h-6">
               <span className="w-5 h-0.5 bg-white/90 rounded-full drop-shadow"></span>
               <span className="w-3.5 h-0.5 bg-white/90 rounded-full drop-shadow"></span>
+            </div>
+          </div>
+        )}
+
+        {/* Navbar Simulado para Vista Desktop (con Logo Real de la Clínica y Enlaces) */}
+        {viewportDevice === 'desktop' && (
+          <div className="relative z-20 w-full px-10 pt-6 pb-4 flex items-center justify-between pointer-events-none select-none">
+            {settings?.logo_app_b64 || settings?.logo_mobile_b64 ? (
+              <img 
+                src={settings.logo_app_b64 || settings.logo_mobile_b64}
+                alt={settings?.clinic_name || 'Logo'}
+                className="h-8 max-h-8 w-auto max-w-[180px] object-contain brightness-0 invert drop-shadow-md"
+              />
+            ) : (
+              <span 
+                style={{ fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif" }}
+                className="text-lg text-white font-serif font-medium tracking-wide drop-shadow-md"
+              >
+                {settings?.clinic_name || 'Clínica Mercè'}
+              </span>
+            )}
+            <div className="flex items-center gap-7 text-xs text-white/90 font-medium drop-shadow">
+              <span>Tratamientos</span>
+              <span>Sobre Mí</span>
+              <span>Contacto</span>
+              <span className="px-4 py-2 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-bold tracking-wide">
+                Reservar Cita
+              </span>
             </div>
           </div>
         )}
@@ -167,12 +191,12 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
 
           if (viewportDevice === 'mobile') {
             titleFontSize = isPriceActive 
-              ? `${(1.48 * titleScale).toFixed(2)}rem` 
-              : `${(1.85 * titleScale).toFixed(2)}rem`;
-            subtitleFontSize = `${(0.85 * subtitleScale).toFixed(2)}rem`;
-            priceAmountFontSize = `${(3.1 * priceScale).toFixed(2)}rem`;
-            priceSuffixFontSize = `${(1.45 * priceScale).toFixed(2)}rem`;
-            pricePeriodFontSize = `${(0.72 * priceScale).toFixed(2)}rem`;
+              ? `${(1.95 * titleScale).toFixed(2)}rem` 
+              : `${(2.35 * titleScale).toFixed(2)}rem`;
+            subtitleFontSize = `${(0.88 * subtitleScale).toFixed(2)}rem`;
+            priceAmountFontSize = `${(3.2 * priceScale).toFixed(2)}rem`;
+            priceSuffixFontSize = `${(1.5 * priceScale).toFixed(2)}rem`;
+            pricePeriodFontSize = `${(0.75 * priceScale).toFixed(2)}rem`;
           } else if (viewportDevice === 'tablet') {
             titleFontSize = isPriceActive 
               ? `${(2.1 * titleScale).toFixed(2)}rem` 
@@ -260,31 +284,38 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
                 ? `px-5 ${heroAlignment === 'top' ? 'pt-4 pb-auto' : heroAlignment === 'center' ? 'my-auto' : 'pb-10 pt-auto'}`
                 : viewportDevice === 'tablet'
                 ? `px-8 ${heroAlignment === 'top' ? 'pt-8 pb-auto' : heroAlignment === 'center' ? 'my-auto' : 'pb-14 pt-auto'}`
-                : `px-6 ${
+                : `px-10 ${heroAlignment === 'top' ? 'pt-8 pb-auto' : heroAlignment === 'center' ? 'my-auto' : 'pb-16 pt-auto'} ${
                     formData?.hero_content_fullwidth
                       ? `max-w-7xl ${heroHorizontalAlignment === 'left' ? 'text-left ml-0 mr-auto' : heroHorizontalAlignment === 'right' ? 'text-right mr-0 ml-auto' : 'text-center mx-auto'}`
                       : `max-w-7xl mx-auto ${heroHorizontalAlignment === 'left' ? 'text-left' : heroHorizontalAlignment === 'right' ? 'text-right' : 'text-center'}`
                   }`
             }`}>
-              <div className={`flex flex-col ${
+              <div className={`w-full flex flex-col ${
                 heroHorizontalAlignment === 'center' ? 'items-center' :
                 heroHorizontalAlignment === 'right' ? 'items-end' : 'items-start'
               }`}>
-                {/* Fila Principal: Textos a la izquierda y Precio pegado inmediatamente a la derecha */}
-                <div className={`flex flex-row items-center gap-3 sm:gap-6 max-w-full ${
-                  heroHorizontalAlignment === 'center' ? 'justify-center' :
-                  heroHorizontalAlignment === 'right' ? 'justify-end' : 'justify-start'
-                }`}>
-                  {/* Columna Izquierda: Título y Subtítulo */}
-                  <div 
-                    style={{ '--hero-title-max-w': `${titleMaxWidth}%` } as React.CSSProperties}
-                    className={`min-w-0 space-y-1.5 sm:space-y-3 ${
-                      isPriceActive ? 'flex-1 sm:max-w-[var(--hero-title-max-w)]' : 'w-full sm:max-w-[var(--hero-title-max-w)]'
-                    } ${
-                      heroHorizontalAlignment === 'center' ? 'text-center' :
-                      heroHorizontalAlignment === 'right' ? 'text-right' : 'text-left'
-                    }`}
-                  >
+                {/* Contenedor Grid con Distribución Especial: Móvil (H1 100% + Subtítulo/Botón | Precio) vs Desktop/Tablet (3 filas | Precio) */}
+                <div 
+                  style={{ '--hero-title-max-w': `${titleMaxWidth}%` } as React.CSSProperties}
+                  className={`w-full ${
+                    isPriceActive
+                      ? `grid grid-cols-[1fr_auto] gap-x-3.5 sm:gap-x-6 md:gap-x-8 gap-y-2 sm:gap-y-3.5 items-center ${
+                          viewportDevice === 'mobile'
+                            ? `[grid-template-areas:'title_title'_'subtitle_price'_'button_price']`
+                            : `[grid-template-areas:'title_price'_'subtitle_price'_'button_price']`
+                        } ${
+                          formData?.hero_content_fullwidth ? '' : 'sm:max-w-[var(--hero-title-max-w)]'
+                        }`
+                      : `flex flex-col gap-2.5 sm:gap-4 ${
+                          formData?.hero_content_fullwidth ? '' : 'sm:max-w-[var(--hero-title-max-w)]'
+                        }`
+                  } ${
+                    heroHorizontalAlignment === 'center' ? 'text-center' :
+                    heroHorizontalAlignment === 'right' ? 'text-right' : 'text-left'
+                  }`}
+                >
+                  {/* Título H1 (Fila 1 completa al 100% de ancho en móvil) */}
+                  <div className="[grid-area:title] min-w-0">
                     <h1 
                       style={{ 
                         fontSize: titleFontSize,
@@ -296,7 +327,10 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
                     >
                       {cleanTitle(translate(formData?.hero_title || 'Título Principal', formData?.translations, 'hero_title'))}
                     </h1>
+                  </div>
 
+                  {/* Subtítulo (Fila 2 en móvil, inmediatamente debajo del H1 a la izquierda) */}
+                  <div className="[grid-area:subtitle] min-w-0">
                     <p 
                       style={{ fontSize: subtitleFontSize }}
                       className={`text-white/90 font-medium font-sans drop-shadow-md leading-relaxed ${
@@ -307,26 +341,26 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
                     </p>
                   </div>
 
-                  {/* Columna Derecha: Bloque de Precio Pegado Inmediatamente al Título y Subtítulo */}
+                  {/* Botón de Acción CTA (Fila 3 en móvil, debajo del subtítulo en la columna izquierda) */}
+                  {formData?.hero_show_button !== false && (
+                    <div className={`[grid-area:button] pt-1 md:pt-2 w-full ${
+                      heroHorizontalAlignment === 'center' ? 'flex justify-center' :
+                      heroHorizontalAlignment === 'right' ? 'flex justify-end' : 'flex justify-start'
+                    }`}>
+                      <div className={`inline-flex items-center justify-center px-6 py-2.5 sm:px-8 sm:py-3 rounded-full font-bold text-xs sm:text-sm transition-all duration-300 shadow-md text-center whitespace-nowrap w-fit ${getButtonStyle(formData?.hero_button_style)}`}>
+                        <span>{translate(formData?.hero_button_text || 'Reservar Ahora', formData?.translations, 'hero_button_text')}</span>
+                        <span className="ml-2">→</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Bloque de Precio (Columna derecha centrado verticalmente frente a subtítulo + botón en móvil, o frente a H1 + subtítulo + botón en desktop) */}
                   {isPriceActive && (
-                    <div className="shrink-0 self-center">
+                    <div className="[grid-area:price] self-center shrink-0">
                       {renderPriceCapsule()}
                     </div>
                   )}
                 </div>
-
-                {/* Fila Inferior: Botón de Acción CTA (debajo del bloque de textos y precio) */}
-                {formData?.hero_show_button !== false && (
-                  <div className={`pt-3 sm:pt-4 w-full ${
-                    heroHorizontalAlignment === 'center' ? 'flex justify-center' :
-                    heroHorizontalAlignment === 'right' ? 'flex justify-end' : 'flex justify-start'
-                  }`}>
-                    <div className={`inline-flex items-center justify-center px-6 py-2.5 sm:px-8 sm:py-3 rounded-full font-bold text-xs sm:text-sm transition-all duration-300 shadow-md text-center whitespace-nowrap w-fit ${getButtonStyle(formData?.hero_button_style)}`}>
-                      <span>{translate(formData?.hero_button_text || 'Reservar Ahora', formData?.translations, 'hero_button_text')}</span>
-                      <span className="ml-2">→</span>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           );

@@ -175,16 +175,18 @@ export default function HomeBuilderLayout({
         </div>
 
         {/* CONTENEDOR DEL PREVIEW (Adaptativo por resolución y Centrado según pantalla) */}
-        <div className="flex-1 w-full overflow-y-auto flex items-center justify-center p-3 lg:p-6 custom-scrollbar bg-stone-100/70">
+        <div className={`flex-1 w-full h-full overflow-hidden bg-stone-100/70 relative ${
+          currentDevice === 'desktop' ? '' : 'flex items-center justify-center p-3 lg:p-6 overflow-y-auto custom-scrollbar'
+        }`}>
           {currentDevice === 'desktop' && (
-            <div className="w-full bg-white min-h-full shadow-sm transition-all duration-300">
+            <div className="w-full h-full bg-white shadow-sm overflow-hidden">
               {preview}
             </div>
           )}
 
           {currentDevice === 'tablet' && (
             <div className="w-[780px] max-w-[94vw] h-[calc(100vh-130px)] min-h-[760px] max-h-[980px] my-auto bg-white rounded-[2.5rem] shadow-2xl border-[8px] border-stone-850 overflow-hidden shrink-0 flex flex-col transition-all duration-300">
-              <div className="flex-1 w-full h-full overflow-y-auto custom-scrollbar flex flex-col bg-white">
+              <div className="flex-1 w-full h-full overflow-hidden flex flex-col bg-white">
                 {preview}
               </div>
             </div>
@@ -192,7 +194,7 @@ export default function HomeBuilderLayout({
 
           {currentDevice === 'mobile' && (
             <div className="w-[420px] max-w-[92vw] h-[calc(100vh-130px)] min-h-[700px] max-h-[880px] my-auto bg-white rounded-[3rem] shadow-2xl border-[8px] border-stone-850 overflow-hidden shrink-0 flex flex-col transition-all duration-300">
-              <div className="flex-1 w-full h-full overflow-y-auto custom-scrollbar flex flex-col bg-white">
+              <div className="flex-1 w-full h-full overflow-hidden flex flex-col bg-white">
                 {preview}
               </div>
             </div>
