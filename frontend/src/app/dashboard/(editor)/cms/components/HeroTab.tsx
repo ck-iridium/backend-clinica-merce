@@ -398,7 +398,19 @@ export default function HeroTab({
       <HeroMediaCard
         data={currentSlide}
         onChange={handleSlideFieldChange}
-        setPickerTarget={setPickerTarget}
+        setPickerTarget={(target: any) => {
+          if (typeof target === 'function') {
+            setPickerTarget(target);
+          } else if (target) {
+            setPickerTarget({
+              ...target,
+              type: 'hero_slide',
+              slideIndex: activeIndex
+            });
+          } else {
+            setPickerTarget(null);
+          }
+        }}
       />
 
       {/* ─── TARJETA 2: TIPOGRAFÍA Y TEXTOS DE LA DIAPOSITIVA ACTIVA ─── */}

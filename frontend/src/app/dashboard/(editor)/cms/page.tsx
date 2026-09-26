@@ -327,8 +327,59 @@ export default function CMSPage() {
   const handleImageSelected = (url: string) => {
     if (!pickerTarget) return;
 
-    if (pickerTarget.type === 'form') {
-      setFormData((prev: any) => ({ ...prev, [pickerTarget.field]: url }));
+    if (pickerTarget.type === 'hero_slide') {
+      const slideIndex = pickerTarget.slideIndex ?? 0;
+      setFormData((prev: any) => {
+        const currentSlides = (Array.isArray(prev.hero_slides) && prev.hero_slides.length > 0)
+          ? [...prev.hero_slides]
+          : [{ ...prev, id: 'slide-1' }];
+
+        const safeIdx = Math.min(Math.max(0, slideIndex), currentSlides.length - 1);
+        currentSlides[safeIdx] = {
+          ...currentSlides[safeIdx],
+          [pickerTarget.field]: url
+        };
+
+        const next = {
+          ...prev,
+          hero_slides: currentSlides
+        };
+
+        if (safeIdx === 0) {
+          next[pickerTarget.field] = url;
+        }
+
+        return next;
+      });
+    } else if (pickerTarget.type === 'form') {
+      setFormData((prev: any) => {
+        const next = { ...prev, [pickerTarget.field]: url };
+
+        // Si es un campo multimedia del Hero, sincronizar también con la diapositiva activa
+        if (pickerTarget.field === 'hero_image_url' || pickerTarget.field === 'hero_video_url') {
+          const currentSlides = (Array.isArray(prev.hero_slides) && prev.hero_slides.length > 0)
+            ? [...prev.hero_slides]
+            : [{ ...prev, id: 'slide-1' }];
+
+          const activeIdx = Math.min(
+            Math.max(0, prev._activeSlideIndex ?? 0),
+            currentSlides.length - 1
+          );
+
+          currentSlides[activeIdx] = {
+            ...currentSlides[activeIdx],
+            [pickerTarget.field]: url
+          };
+
+          next.hero_slides = currentSlides;
+
+          if (activeIdx === 0) {
+            next[pickerTarget.field] = url;
+          }
+        }
+
+        return next;
+      });
     } else if (pickerTarget.type === 'category' && pickerTarget.id) {
       setCategories(prev => prev.map(cat => 
         cat.id === pickerTarget.id ? { ...cat, [pickerTarget.field]: url } : cat

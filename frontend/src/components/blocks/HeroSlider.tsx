@@ -79,11 +79,11 @@ export default function HeroSlider({ content }: HeroSliderProps) {
   const { translate } = useLanguage();
 
   // Normalizar diapositivas
-  const slides = useMemo(() => {
-    if (Array.isArray(content.hero_slides) && content.hero_slides.length > 0) {
+  const slides: any[] = useMemo(() => {
+    if (Array.isArray(content?.hero_slides) && content.hero_slides.length > 0) {
       return content.hero_slides;
     }
-    return [content];
+    return [content || {}];
   }, [content]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -145,131 +145,137 @@ export default function HeroSlider({ content }: HeroSliderProps) {
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      className="relative h-[100dvh] min-h-[600px] w-full flex snap-start snap-stop-always md:snap-none overflow-hidden mt-0"
+      className="relative h-[100dvh] min-h-[600px] w-full snap-start snap-stop-always md:snap-none overflow-hidden mt-0 bg-stone-950"
     >
-      {slides.map((slide: any, index: number) => {
-        const isActive = index === currentIndex;
+      {/* Contenedor de diapositivas (Track continuo para 'slide' o Relativo superpuesto para 'fade') */}
+      <div
+        className={`w-full h-full ${
+          effect === 'slide'
+            ? 'flex transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]'
+            : 'relative'
+        }`}
+        style={
+          effect === 'slide'
+            ? { transform: `translate3d(-${currentIndex * 100}%, 0, 0)` }
+            : undefined
+        }
+      >
+        {slides.map((slide: any, index: number) => {
+          const isActive = index === currentIndex;
 
-        // Cálculos responsivos individuales por diapositiva
-        const desktopTitleScale = parseSizeScale(slide.hero_title_size || content.hero_title_size, 100) / 100;
-        const tabletTitleScale = parseSizeScale(slide.hero_responsive_config?.tablet?.hero_title_size ?? slide.hero_title_size ?? content.hero_title_size, 100) / 100;
-        const mobileTitleScale = parseSizeScale(slide.hero_responsive_config?.mobile?.hero_title_size ?? slide.hero_responsive_config?.tablet?.hero_title_size ?? slide.hero_title_size ?? content.hero_title_size, 100) / 100;
+          // Cálculos responsivos individuales por diapositiva
+          const desktopTitleScale = parseSizeScale(slide.hero_title_size || content.hero_title_size, 100) / 100;
+          const tabletTitleScale = parseSizeScale(slide.hero_responsive_config?.tablet?.hero_title_size ?? slide.hero_title_size ?? content.hero_title_size, 100) / 100;
+          const mobileTitleScale = parseSizeScale(slide.hero_responsive_config?.mobile?.hero_title_size ?? slide.hero_responsive_config?.tablet?.hero_title_size ?? slide.hero_title_size ?? content.hero_title_size, 100) / 100;
 
-        const desktopSubtitleScale = parseSizeScale(slide.hero_subtitle_size || content.hero_subtitle_size, 100) / 100;
-        const tabletSubtitleScale = parseSizeScale(slide.hero_responsive_config?.tablet?.hero_subtitle_size ?? slide.hero_subtitle_size ?? content.hero_subtitle_size, 100) / 100;
-        const mobileSubtitleScale = parseSizeScale(slide.hero_responsive_config?.mobile?.hero_subtitle_size ?? slide.hero_responsive_config?.tablet?.hero_subtitle_size ?? slide.hero_subtitle_size ?? content.hero_subtitle_size, 100) / 100;
+          const desktopSubtitleScale = parseSizeScale(slide.hero_subtitle_size || content.hero_subtitle_size, 100) / 100;
+          const tabletSubtitleScale = parseSizeScale(slide.hero_responsive_config?.tablet?.hero_subtitle_size ?? slide.hero_subtitle_size ?? content.hero_subtitle_size, 100) / 100;
+          const mobileSubtitleScale = parseSizeScale(slide.hero_responsive_config?.mobile?.hero_subtitle_size ?? slide.hero_responsive_config?.tablet?.hero_subtitle_size ?? slide.hero_subtitle_size ?? content.hero_subtitle_size, 100) / 100;
 
-        const desktopPriceScale = parseSizeScale(slide.hero_price_size || content.hero_price_size, 100) / 100;
-        const tabletPriceScale = parseSizeScale(slide.hero_responsive_config?.tablet?.hero_price_size ?? slide.hero_price_size ?? content.hero_price_size, 100) / 100;
-        const mobilePriceScale = parseSizeScale(slide.hero_responsive_config?.mobile?.hero_price_size ?? slide.hero_responsive_config?.tablet?.hero_price_size ?? slide.hero_price_size ?? content.hero_price_size, 100) / 100;
+          const desktopPriceScale = parseSizeScale(slide.hero_price_size || content.hero_price_size, 100) / 100;
+          const tabletPriceScale = parseSizeScale(slide.hero_responsive_config?.tablet?.hero_price_size ?? slide.hero_price_size ?? content.hero_price_size, 100) / 100;
+          const mobilePriceScale = parseSizeScale(slide.hero_responsive_config?.mobile?.hero_price_size ?? slide.hero_responsive_config?.tablet?.hero_price_size ?? slide.hero_price_size ?? content.hero_price_size, 100) / 100;
 
-        const desktopPriceOffsetY = slide.hero_price_offset_y ?? content.hero_price_offset_y ?? 0;
-        const tabletPriceOffsetY = slide.hero_responsive_config?.tablet?.hero_price_offset_y ?? desktopPriceOffsetY;
-        const mobilePriceOffsetY = slide.hero_responsive_config?.mobile?.hero_price_offset_y ?? tabletPriceOffsetY;
+          const desktopPriceOffsetY = slide.hero_price_offset_y ?? content.hero_price_offset_y ?? 0;
+          const tabletPriceOffsetY = slide.hero_responsive_config?.tablet?.hero_price_offset_y ?? desktopPriceOffsetY;
+          const mobilePriceOffsetY = slide.hero_responsive_config?.mobile?.hero_price_offset_y ?? tabletPriceOffsetY;
 
-        const desktopPeriodScale = parseSizeScale(slide.hero_price_period_size || content.hero_price_period_size, 100) / 100;
-        const tabletPeriodScale = parseSizeScale(slide.hero_responsive_config?.tablet?.hero_price_period_size ?? slide.hero_price_period_size ?? content.hero_price_period_size, 100) / 100;
-        const mobilePeriodScale = parseSizeScale(slide.hero_responsive_config?.mobile?.hero_price_period_size ?? slide.hero_responsive_config?.tablet?.hero_price_period_size ?? slide.hero_price_period_size ?? content.hero_price_period_size, 100) / 100;
+          const desktopPeriodScale = parseSizeScale(slide.hero_price_period_size || content.hero_price_period_size, 100) / 100;
+          const tabletPeriodScale = parseSizeScale(slide.hero_responsive_config?.tablet?.hero_price_period_size ?? slide.hero_price_period_size ?? content.hero_price_period_size, 100) / 100;
+          const mobilePeriodScale = parseSizeScale(slide.hero_responsive_config?.mobile?.hero_price_period_size ?? slide.hero_responsive_config?.tablet?.hero_price_period_size ?? slide.hero_price_period_size ?? content.hero_price_period_size, 100) / 100;
 
-        const desktopPeriodOffsetY = slide.hero_price_period_offset_y ?? content.hero_price_period_offset_y ?? 0;
-        const tabletPeriodOffsetY = slide.hero_responsive_config?.tablet?.hero_price_period_offset_y ?? desktopPeriodOffsetY;
-        const mobilePeriodOffsetY = slide.hero_responsive_config?.mobile?.hero_price_period_offset_y ?? tabletPeriodOffsetY;
+          const desktopPeriodOffsetY = slide.hero_price_period_offset_y ?? content.hero_price_period_offset_y ?? 0;
+          const tabletPeriodOffsetY = slide.hero_responsive_config?.tablet?.hero_price_period_offset_y ?? desktopPeriodOffsetY;
+          const mobilePeriodOffsetY = slide.hero_responsive_config?.mobile?.hero_price_period_offset_y ?? tabletPeriodOffsetY;
 
-        const mobileDesdeMb = -6 + mobilePriceOffsetY;
-        const tabletDesdeMb = -12 + tabletPriceOffsetY;
-        const desktopDesdeMb = -20 + desktopPriceOffsetY;
+          const mobileDesdeMb = -6 + mobilePriceOffsetY;
+          const tabletDesdeMb = -12 + tabletPriceOffsetY;
+          const desktopDesdeMb = -20 + desktopPriceOffsetY;
 
-        const mobilePeriodMt = 3 + mobilePeriodOffsetY;
-        const tabletPeriodMt = 3 + tabletPeriodOffsetY;
-        const desktopPeriodMt = 3 + desktopPeriodOffsetY;
+          const mobilePeriodMt = 3 + mobilePeriodOffsetY;
+          const tabletPeriodMt = 3 + tabletPeriodOffsetY;
+          const desktopPeriodMt = 3 + desktopPeriodOffsetY;
 
-        const desktopTitleMaxWidth = slide.hero_title_max_width || content.hero_title_max_width || 100;
-        const tabletTitleMaxWidth = slide.hero_responsive_config?.tablet?.hero_title_max_width ?? desktopTitleMaxWidth;
-        const mobileTitleMaxWidth = slide.hero_responsive_config?.mobile?.hero_title_max_width ?? tabletTitleMaxWidth;
+          const desktopTitleMaxWidth = slide.hero_title_max_width || content.hero_title_max_width || 100;
+          const tabletTitleMaxWidth = slide.hero_responsive_config?.tablet?.hero_title_max_width ?? desktopTitleMaxWidth;
+          const mobileTitleMaxWidth = slide.hero_responsive_config?.mobile?.hero_title_max_width ?? tabletTitleMaxWidth;
 
-        const isFullwidth = slide.hero_content_fullwidth ?? content.hero_content_fullwidth;
-        const isPriceActive = !!(slide.hero_price_enabled ?? content.hero_price_enabled) && (slide.hero_price_amount || slide.hero_price_prefix || content.hero_price_amount || content.hero_price_prefix);
-        const priceConfig = getPriceStyleConfig(slide.hero_price_style || content.hero_price_style);
+          const isFullwidth = slide.hero_content_fullwidth ?? content.hero_content_fullwidth;
+          const isPriceActive = !!(slide.hero_price_enabled ?? content.hero_price_enabled) && (slide.hero_price_amount || slide.hero_price_prefix || content.hero_price_amount || content.hero_price_prefix);
+          const priceConfig = getPriceStyleConfig(slide.hero_price_style || content.hero_price_style);
 
-        const alignment = slide.hero_alignment || content.hero_alignment || 'center';
-        const horizontalAlignment = slide.hero_horizontal_alignment || content.hero_horizontal_alignment || 'center';
+          const alignment = slide.hero_alignment || content.hero_alignment || 'center';
+          const horizontalAlignment = slide.hero_horizontal_alignment || content.hero_horizontal_alignment || 'center';
 
-        const alignClasses = `
-          ${alignment === 'top' ? 'items-start pt-48' : alignment === 'bottom' ? 'items-end pb-32' : 'items-center'}
-          ${isFullwidth 
-            ? (horizontalAlignment === 'left' ? 'justify-start' : horizontalAlignment === 'right' ? 'justify-end' : 'justify-center') 
-            : 'justify-center'
-          }
-        `;
+          const alignClasses = `
+            ${alignment === 'top' ? 'items-start pt-48' : alignment === 'bottom' ? 'items-end pb-32' : 'items-center'}
+            ${isFullwidth 
+              ? (horizontalAlignment === 'left' ? 'justify-start' : horizontalAlignment === 'right' ? 'justify-end' : 'justify-center') 
+              : 'justify-center'
+            }
+          `;
 
-        // Renderizado del bloque de precio
-        const renderPriceCapsule = () => {
-          if (!isPriceActive) return null;
-          const periodText = translate(slide.hero_price_period ?? content.hero_price_period, slide.translations || content.translations, 'hero_price_period');
-          const prefixText = translate(slide.hero_price_prefix ?? content.hero_price_prefix, slide.translations || content.translations, 'hero_price_prefix');
+          // Renderizado del bloque de precio
+          const renderPriceCapsule = () => {
+            if (!isPriceActive) return null;
+            const periodText = translate(slide.hero_price_period ?? content.hero_price_period, slide.translations || content.translations, 'hero_price_period');
+            const prefixText = translate(slide.hero_price_prefix ?? content.hero_price_prefix, slide.translations || content.translations, 'hero_price_prefix');
 
-          return (
-            <div className={`relative group ${priceConfig.boxClass} select-none`}>
-              <div className="relative flex flex-col items-start text-left">
-                {prefixText && (
-                  <span 
-                    className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.22em] ${priceConfig.prefixClass} block leading-none pl-0.5 select-none relative z-10 transition-all mb-[var(--hero-prefix-mb-mobile)] md:mb-[var(--hero-prefix-mb-tablet)] lg:mb-[var(--hero-prefix-mb-desktop)]`}
-                  >
-                    {prefixText}
-                  </span>
-                )}
-                <div className="flex items-end gap-1.5 sm:gap-2.5">
-                  <span 
-                    style={{ 
-                      fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
-                    }}
-                    className={`font-serif font-bold text-[length:var(--hero-price-size-mobile)] md:text-[length:var(--hero-price-size-tablet)] lg:text-[length:var(--hero-price-size-desktop)] leading-[0.88] ${priceConfig.amountClass} tracking-tight drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]`}
-                  >
-                    {slide.hero_price_amount || content.hero_price_amount || '15'}
-                  </span>
-                  <div className="flex flex-col items-start justify-center leading-none pl-1">
+            return (
+              <div className={`relative group ${priceConfig.boxClass} select-none`}>
+                <div className="relative flex flex-col items-start text-left">
+                  {prefixText && (
+                    <span 
+                      className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.22em] ${priceConfig.prefixClass} block leading-none pl-0.5 select-none relative z-10 transition-all mb-[var(--hero-prefix-mb-mobile)] md:mb-[var(--hero-prefix-mb-tablet)] lg:mb-[var(--hero-prefix-mb-desktop)]`}
+                    >
+                      {prefixText}
+                    </span>
+                  )}
+                  <div className="flex items-end gap-1.5 sm:gap-2.5">
                     <span 
                       style={{ 
                         fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
                       }}
-                      className={`font-serif font-bold text-[length:var(--hero-suffix-size-mobile)] md:text-[length:var(--hero-suffix-size-tablet)] lg:text-[length:var(--hero-suffix-size-desktop)] leading-none ${priceConfig.suffixClass}`}
+                      className={`font-serif font-bold text-[length:var(--hero-price-size-mobile)] md:text-[length:var(--hero-price-size-tablet)] lg:text-[length:var(--hero-price-size-desktop)] leading-[0.88] ${priceConfig.amountClass} tracking-tight drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]`}
                     >
-                      {slide.hero_price_suffix || content.hero_price_suffix || '€'}
+                      {slide.hero_price_amount || content.hero_price_amount || '15'}
                     </span>
-                    {periodText && (
+                    <div className="flex flex-col items-start justify-center leading-none pl-1">
                       <span 
-                        className={`font-black uppercase tracking-[0.18em] text-[length:var(--hero-period-size-mobile)] md:text-[length:var(--hero-period-size-tablet)] lg:text-[length:var(--hero-period-size-desktop)] mt-[var(--hero-period-mt-mobile)] md:mt-[var(--hero-period-mt-tablet)] lg:mt-[var(--hero-period-mt-desktop)] ${priceConfig.suffixClass} opacity-90 leading-tight block transition-all`}
+                        style={{ 
+                          fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
+                        }}
+                        className={`font-serif font-bold text-[length:var(--hero-suffix-size-mobile)] md:text-[length:var(--hero-suffix-size-tablet)] lg:text-[length:var(--hero-suffix-size-desktop)] leading-none ${priceConfig.suffixClass}`}
                       >
-                        {periodText}
+                        {slide.hero_price_suffix || content.hero_price_suffix || '€'}
                       </span>
-                    )}
+                      {periodText && (
+                        <span 
+                          className={`font-black uppercase tracking-[0.18em] text-[length:var(--hero-period-size-mobile)] md:text-[length:var(--hero-period-size-tablet)] lg:text-[length:var(--hero-period-size-desktop)] mt-[var(--hero-period-mt-mobile)] md:mt-[var(--hero-period-mt-tablet)] lg:mt-[var(--hero-period-mt-desktop)] ${priceConfig.suffixClass} opacity-90 leading-tight block transition-all`}
+                        >
+                          {periodText}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          );
-        };
+            );
+          };
 
-        // Clases de transición según efecto
-        const transitionClasses = effect === 'slide'
-          ? `transform transition-transform duration-700 ease-out ${
-              index === currentIndex
-                ? 'translate-x-0 z-10 opacity-100 pointer-events-auto'
-                : index < currentIndex
-                ? '-translate-x-full z-0 opacity-0 pointer-events-none'
-                : 'translate-x-full z-0 opacity-0 pointer-events-none'
-            }`
-          : `transition-opacity duration-1000 ease-in-out ${
-              isActive 
-                ? 'opacity-100 z-10 pointer-events-auto' 
-                : 'opacity-0 z-0 pointer-events-none'
-            }`;
+          // Clases de envoltura según el efecto elegido (slide continuo o crossfade)
+          const slideWrapperClass = effect === 'slide'
+            ? `relative w-full h-full flex-none flex ${alignClasses} ${isActive ? 'pointer-events-auto' : 'pointer-events-none'}`
+            : `absolute inset-0 w-full h-full flex ${alignClasses} transition-opacity duration-1000 ease-in-out ${
+                isActive ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
+              }`;
 
-        return (
-          <div
-            key={slide.id || `slide-${index}`}
-            className={`absolute inset-0 w-full h-full flex ${alignClasses} ${transitionClasses}`}
-          >
+          return (
+            <div
+              key={slide.id || `slide-${index}`}
+              className={slideWrapperClass}
+              style={effect === 'slide' ? { width: '100%' } : undefined}
+            >
             {/* Fondo Multimedia */}
             {slide.hero_video_url ? (
               <div className="absolute inset-0 z-0 bg-stone-900">
@@ -414,6 +420,7 @@ export default function HeroSlider({ content }: HeroSliderProps) {
           </div>
         );
       })}
+      </div>
 
       {/* Controles de Navegación (Flechas) si hay más de 1 diapositiva */}
       {slides.length > 1 && showArrows && (
@@ -440,7 +447,7 @@ export default function HeroSlider({ content }: HeroSliderProps) {
       {/* Indicadores (Dots) si hay más de 1 diapositiva */}
       {slides.length > 1 && showDots && (
         <div className="absolute bottom-8 left-0 right-0 z-20 flex items-center justify-center gap-2.5 pointer-events-auto">
-          {slides.map((_, i) => (
+          {slides.map((_: any, i: number) => (
             <button
               key={i}
               type="button"
