@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { Monitor, Tablet, Smartphone } from 'lucide-react';
 
 interface HomeBuilderLayoutProps {
   tabs: string[];
@@ -10,11 +11,34 @@ interface HomeBuilderLayoutProps {
   onSave: () => void;
   isSaving: boolean;
   onBack?: () => void;
+  viewportDevice?: 'desktop' | 'tablet' | 'mobile';
+  onViewportDeviceChange?: (device: 'desktop' | 'tablet' | 'mobile') => void;
 }
 
-export default function HomeBuilderLayout({ tabs, activeTab, onTabChange, panel, preview, onSave, isSaving, onBack }: HomeBuilderLayoutProps) {
+export default function HomeBuilderLayout({ 
+  tabs, 
+  activeTab, 
+  onTabChange, 
+  panel, 
+  preview, 
+  onSave, 
+  isSaving, 
+  onBack,
+  viewportDevice: controlledDevice,
+  onViewportDeviceChange
+}: HomeBuilderLayoutProps) {
   const { t } = useLanguage();
+  const [internalDevice, setInternalDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   
+  const currentDevice = controlledDevice !== undefined ? controlledDevice : internalDevice;
+  const setDevice = (dev: 'desktop' | 'tablet' | 'mobile') => {
+    if (onViewportDeviceChange) {
+      onViewportDeviceChange(dev);
+    } else {
+      setInternalDevice(dev);
+    }
+  };
+
   const titleText = t('cms.edit_homepage');
   const subtitleText = t('cms.visual_cms');
   const saveBtnText = isSaving ? t('cms.saving') : t('cms.save');
@@ -23,7 +47,7 @@ export default function HomeBuilderLayout({ tabs, activeTab, onTabChange, panel,
     <div className="flex flex-col md:flex-row h-screen overflow-hidden bg-[#FAFAFA] w-full animate-in fade-in duration-300">
       
       {/* ─── PANEL IZQUIERDO: Configuración (30% Desktop) ─────────────────────────────── */}
-      <aside className="w-full md:w-[30%] md:min-w-[350px] md:max-w-[450px] h-full bg-white border-r border-stone-200 flex flex-col shadow-sm overflow-hidden shrink-0 z-20">
+      <aside className="w-full md:w-[32%] md:min-w-[370px] md:max-w-[460px] h-full bg-white border-r border-stone-200 flex flex-col shadow-sm overflow-hidden shrink-0 z-20">
         
         {/* Cabecera del Panel */}
         <div className="px-6 py-5 border-b border-stone-100 flex items-center gap-4 shrink-0">
@@ -56,7 +80,6 @@ export default function HomeBuilderLayout({ tabs, activeTab, onTabChange, panel,
             </button>
           </div>
         </div>
-
 
         {/* Navegación por Pestañas */}
         <div className="flex px-6 pt-4 gap-4 border-b border-stone-100 shrink-0 overflow-x-auto hide-scroll">
@@ -91,24 +114,89 @@ export default function HomeBuilderLayout({ tabs, activeTab, onTabChange, panel,
         </div>
       </aside>
 
-      {/* ─── PANEL DERECHO: Live Preview (Ocupa el resto) ────────────────────────────────── */}
-      <div className="hidden md:block flex-1 h-full overflow-y-auto bg-stone-100/60 relative flex flex-col">
+      {/* ─── PANEL DERECHO: Live Preview (Responsive Canvas) ────────────────────────────────── */}
+      <div className="hidden md:flex flex-1 h-full overflow-y-auto bg-stone-100/70 relative flex-col">
         
-        {/* Barra Superior del Preview */}
-        <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-stone-200 px-8 py-3 flex items-center gap-3 shadow-sm">
-          <span className="text-xs font-black uppercase tracking-widest text-stone-500">
-            {t('cms.live_preview')}
-          </span>
-          <div className="ml-auto flex gap-1.5 items-center">
-            <div className="w-2.5 h-2.5 rounded-full bg-stone-300" />
-            <div className="w-2.5 h-2.5 rounded-full bg-stone-300" />
-            <div className="w-2.5 h-2.5 rounded-full bg-stone-300" />
+        {/* Barra Superior del Preview con selector de resolución */}
+        <div className="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-stone-200/80 px-6 py-2.5 flex items-center justify-between shadow-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-black uppercase tracking-widest text-stone-600">
+              {t('cms.live_preview')}
+            </span>
+            <span className="text-[10px] font-bold text-stone-400 bg-stone-100 px-2 py-0.5 rounded-md uppercase">
+              {currentDevice === 'desktop' ? 'Desktop 100%' : currentDevice === 'tablet' ? 'Tablet 768px' : 'Móvil 390px'}
+            </span>
+          </div>
+
+          {/* Conmutador de Dispositivos (Desktop / Tablet / Móvil) */}
+          <div className="flex items-center bg-stone-100/80 p-1 rounded-xl border border-stone-200/60 shadow-inner">
+            <button
+              type="button"
+              onClick={() => setDevice('desktop')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                currentDevice === 'desktop'
+                  ? 'bg-white text-stone-900 shadow-sm border border-stone-200/50'
+                  : 'text-stone-500 hover:text-stone-800'
+              }`}
+              title="Resolución de Escritorio (Desktop)"
+            >
+              <Monitor className="w-3.5 h-3.5 text-[#d4af37]" />
+              <span className="hidden lg:inline text-[11px]">Desktop</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setDevice('tablet')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                currentDevice === 'tablet'
+                  ? 'bg-white text-stone-900 shadow-sm border border-stone-200/50'
+                  : 'text-stone-500 hover:text-stone-800'
+              }`}
+              title="Resolución de Tablet (768px)"
+            >
+              <Tablet className="w-3.5 h-3.5 text-[#d4af37]" />
+              <span className="hidden lg:inline text-[11px]">Tablet</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setDevice('mobile')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                currentDevice === 'mobile'
+                  ? 'bg-white text-stone-900 shadow-sm border border-stone-200/50'
+                  : 'text-stone-500 hover:text-stone-800'
+              }`}
+              title="Resolución de Smartphone (390px)"
+            >
+              <Smartphone className="w-3.5 h-3.5 text-[#d4af37]" />
+              <span className="hidden lg:inline text-[11px]">Móvil</span>
+            </button>
           </div>
         </div>
 
-        {/* CONTENEDOR DEL PREVIEW (Reducido un tercio) */}
-        <div className="w-2/3 bg-white min-h-full shadow-xl overflow-hidden">
-          {preview}
+        {/* CONTENEDOR DEL PREVIEW (Adaptativo por resolución y Centrado) */}
+        <div className="flex-1 w-full overflow-y-auto flex items-center justify-center p-4 lg:p-6 custom-scrollbar bg-stone-100/70">
+          {currentDevice === 'desktop' && (
+            <div className="w-full bg-white min-h-full shadow-sm transition-all duration-300">
+              {preview}
+            </div>
+          )}
+
+          {currentDevice === 'tablet' && (
+            <div className="w-[720px] h-[720px] my-auto bg-white rounded-[2rem] shadow-2xl border-[7px] border-stone-850 overflow-hidden shrink-0 flex flex-col transition-all duration-300">
+              <div className="flex-1 w-full h-full overflow-y-auto custom-scrollbar flex flex-col bg-white">
+                {preview}
+              </div>
+            </div>
+          )}
+
+          {currentDevice === 'mobile' && (
+            <div className="w-[375px] h-[660px] my-auto bg-white rounded-[2.8rem] shadow-2xl border-[7px] border-stone-850 overflow-hidden shrink-0 flex flex-col transition-all duration-300">
+              <div className="flex-1 w-full h-full overflow-y-auto custom-scrollbar flex flex-col bg-white">
+                {preview}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

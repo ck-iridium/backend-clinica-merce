@@ -263,7 +263,8 @@ $function$;
             "ALTER TABLE site_content ADD COLUMN hero_price_size VARCHAR DEFAULT 'large'",
             "ALTER TABLE site_content ADD COLUMN hero_price_offset_y INTEGER DEFAULT 0",
             "ALTER TABLE site_content ADD COLUMN hero_price_style VARCHAR DEFAULT 'capsule_dark'",
-            "ALTER TABLE site_content ADD COLUMN hero_button_style VARCHAR DEFAULT 'glass'"
+            "ALTER TABLE site_content ADD COLUMN hero_button_style VARCHAR DEFAULT 'glass'",
+            f"ALTER TABLE site_content ADD COLUMN hero_responsive_config {json_type} DEFAULT '{{}}'"
         ]
         
         for m in migrations:

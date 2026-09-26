@@ -11,8 +11,13 @@ import {
   MousePointerClick, 
   Layout, 
   Sliders, 
-  Wand2
+  Wand2,
+  Monitor,
+  Tablet,
+  Smartphone,
+  RotateCcw
 } from 'lucide-react';
+import { SelectSimple } from '@/components/ui/select';
 
 interface HeroTabProps {
   formData: any;
@@ -20,6 +25,8 @@ interface HeroTabProps {
   setPickerTarget: React.Dispatch<React.SetStateAction<any>>;
   categories?: any[];
   services?: any[];
+  activeDevice?: 'desktop' | 'tablet' | 'mobile';
+  setActiveDevice?: (device: 'desktop' | 'tablet' | 'mobile') => void;
 }
 
 const parseSizeScale = (val: any, fallback: number = 100): number => {
@@ -33,30 +40,183 @@ const parseSizeScale = (val: any, fallback: number = 100): number => {
   return isNaN(parsed) ? fallback : parsed;
 };
 
+// Componente fuera de HeroTab para evitar recreaciones y errores de parsing JSX
+function ResponsiveBadge({
+  field,
+  device,
+  isOverridden,
+  hasTabletConfig,
+  hasMobileConfig,
+  onDeviceChange,
+  onReset
+}: {
+  field: string;
+  device: 'desktop' | 'tablet' | 'mobile';
+  isOverridden: boolean;
+  hasTabletConfig: boolean;
+  hasMobileConfig: boolean;
+  onDeviceChange?: (device: 'desktop' | 'tablet' | 'mobile') => void;
+  onReset: (field: string) => void;
+}) {
+  return (
+    <div className="flex items-center gap-1.5 ml-auto">
+      <div className="inline-flex items-center bg-stone-100 dark:bg-stone-800 p-0.5 rounded-lg border border-stone-200/60 dark:border-stone-700/60">
+        <button
+          type="button"
+          onClick={() => onDeviceChange?.('desktop')}
+          className={`p-1 rounded-md transition-all ${
+            device === 'desktop'
+              ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-white shadow-xs'
+              : 'text-stone-400 hover:text-stone-700'
+          }`}
+          title="Escritorio (Desktop)"
+        >
+          <Monitor size={11} className={device === 'desktop' ? 'text-[#d4af37]' : ''} />
+        </button>
+        <button
+          type="button"
+          onClick={() => onDeviceChange?.('tablet')}
+          className={`p-1 rounded-md relative transition-all ${
+            device === 'tablet'
+              ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-white shadow-xs'
+              : 'text-stone-400 hover:text-stone-700'
+          }`}
+          title="Tablet (768px)"
+        >
+          <Tablet size={11} className={device === 'tablet' ? 'text-[#d4af37]' : ''} />
+          {hasTabletConfig && (
+            <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
+          )}
+        </button>
+        <button
+          type="button"
+          onClick={() => onDeviceChange?.('mobile')}
+          className={`p-1 rounded-md relative transition-all ${
+            device === 'mobile'
+              ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-white shadow-xs'
+              : 'text-stone-400 hover:text-stone-700'
+          }`}
+          title="Móvil (390px)"
+        >
+          <Smartphone size={11} className={device === 'mobile' ? 'text-[#d4af37]' : ''} />
+          {hasMobileConfig && (
+            <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
+          )}
+        </button>
+      </div>
+
+      {device !== 'desktop' && isOverridden && (
+        <button
+          type="button"
+          onClick={() => onReset(field)}
+          className="flex items-center gap-1 text-[9px] font-bold text-stone-400 hover:text-red-500 bg-stone-100 hover:bg-red-50 dark:bg-stone-800 px-1.5 py-0.5 rounded-md transition-all"
+          title="Restablecer a heredar de Escritorio"
+        >
+          <RotateCcw size={9} />
+          <span>Reset</span>
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function HeroTab({ 
   formData, 
   setFormData, 
   setPickerTarget,
   categories = [],
-  services = []
+  services = [],
+  activeDevice = 'desktop',
+  setActiveDevice
 }: HeroTabProps) {
   const { t } = useLanguage();
   const [isLinkPickerOpen, setIsLinkPickerOpen] = useState(false);
   const [mediaTypeTab, setMediaTypeTab] = useState<'image' | 'video'>('image');
 
-  const titleMaxWidth = formData.hero_title_max_width !== undefined && formData.hero_title_max_width !== null
-    ? formData.hero_title_max_width 
-    : 100;
+  const device = activeDevice || 'desktop';
 
+  // Responsive getters & setters
+  const getResponsiveValue = (field: string, fallback: any) => {
+    if (device === 'mobile') {
+      return formData.hero_responsive_config?.mobile?.[field] 
+        ?? formData.hero_responsive_config?.tablet?.[field] 
+        ?? formData[field] 
+        ?? fallback;
+    }
+    if (device === 'tablet') {
+      return formData.hero_responsive_config?.tablet?.[field] 
+        ?? formData[field] 
+        ?? fallback;
+    }
+    return formData[field] ?? fallback;
+  };
+
+  const hasOverride = (field: string) => {
+    if (device === 'desktop') return false;
+    return formData.hero_responsive_config?.[device]?.[field] !== undefined;
+  };
+
+  const setResponsiveValue = (field: string, value: any) => {
+    if (device === 'desktop') {
+      setFormData((prev: any) => ({
+        ...prev,
+        [field]: value
+      }));
+    } else {
+      setFormData((prev: any) => {
+        const currentConfig = prev.hero_responsive_config || {};
+        const deviceConfig = { ...(currentConfig[device] || {}) };
+        deviceConfig[field] = value;
+        return {
+          ...prev,
+          hero_responsive_config: {
+            ...currentConfig,
+            [device]: deviceConfig
+          }
+        };
+      });
+    }
+  };
+
+  const resetResponsiveValue = (field: string) => {
+    if (device === 'desktop') return;
+    setFormData((prev: any) => {
+      const currentConfig = prev.hero_responsive_config || {};
+      const deviceConfig = { ...(currentConfig[device] || {}) };
+      delete deviceConfig[field];
+      return {
+        ...prev,
+        hero_responsive_config: {
+          ...currentConfig,
+          [device]: deviceConfig
+        }
+      };
+    });
+  };
+
+  const renderBadge = (field: string) => (
+    <ResponsiveBadge
+      field={field}
+      device={device}
+      isOverridden={hasOverride(field)}
+      hasTabletConfig={formData.hero_responsive_config?.tablet?.[field] !== undefined}
+      hasMobileConfig={formData.hero_responsive_config?.mobile?.[field] !== undefined}
+      onDeviceChange={setActiveDevice}
+      onReset={resetResponsiveValue}
+    />
+  );
+
+  const titleMaxWidth = getResponsiveValue('hero_title_max_width', formData.hero_title_max_width ?? 100);
   const buttonStyle = formData.hero_button_style || 'glass';
   const priceStyle = formData.hero_price_style || 'capsule_dark';
-  const priceOffsetY = formData.hero_price_offset_y !== undefined && formData.hero_price_offset_y !== null
-    ? formData.hero_price_offset_y
-    : 0;
+  const priceOffsetY = getResponsiveValue('hero_price_offset_y', formData.hero_price_offset_y ?? 0);
 
-  const titleScale = parseSizeScale(formData.hero_title_size, 100);
-  const subtitleScale = parseSizeScale(formData.hero_subtitle_size, 100);
-  const priceScale = parseSizeScale(formData.hero_price_size, 100);
+  const titleScale = parseSizeScale(getResponsiveValue('hero_title_size', formData.hero_title_size ?? 100), 100);
+  const subtitleScale = parseSizeScale(getResponsiveValue('hero_subtitle_size', formData.hero_subtitle_size ?? 100), 100);
+  const priceScale = parseSizeScale(getResponsiveValue('hero_price_size', formData.hero_price_size ?? 100), 100);
+
+  const heroAlignment = getResponsiveValue('hero_alignment', formData.hero_alignment || 'center');
+  const heroHorizontalAlignment = getResponsiveValue('hero_horizontal_alignment', formData.hero_horizontal_alignment || 'center');
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300 pb-12">
@@ -168,7 +328,6 @@ export default function HeroTab({
             type="text" 
             value={formData.hero_title || ""} 
             onChange={e => setFormData((prev: any) => ({ ...prev, hero_title: e.target.value }))} 
-            placeholder="Bienvenidos a Clínica Mercè"
             className="w-full px-4 py-3 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 transition-all font-serif font-bold text-lg" 
           />
 
@@ -181,9 +340,12 @@ export default function HeroTab({
                   {t('cms.hero.title_size_slider') || 'Escala / Tamaño del Titular'}
                 </span>
               </div>
-              <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2 py-0.5 rounded-full">
-                {titleScale}%
-              </span>
+              <div className="flex items-center gap-2">
+                {renderBadge('hero_title_size')}
+                <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2 py-0.5 rounded-full">
+                  {titleScale}%
+                </span>
+              </div>
             </div>
 
             <div className="flex items-center gap-3">
@@ -195,7 +357,7 @@ export default function HeroTab({
                 max="160"
                 step="5"
                 value={titleScale}
-                onChange={e => setFormData((prev: any) => ({ ...prev, hero_title_size: e.target.value }))}
+                onChange={e => setResponsiveValue('hero_title_size', e.target.value)}
                 className="w-full accent-[#d4af37] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
               />
               <span className="text-[10px] font-bold text-stone-400">160%</span>
@@ -209,7 +371,7 @@ export default function HeroTab({
                   <button
                     key={preset}
                     type="button"
-                    onClick={() => setFormData((prev: any) => ({ ...prev, hero_title_size: String(preset) }))}
+                    onClick={() => setResponsiveValue('hero_title_size', String(preset))}
                     className={`px-2 py-0.5 rounded-md transition-all ${
                       titleScale === preset
                         ? 'bg-[#d4af37] text-white'
@@ -232,9 +394,12 @@ export default function HeroTab({
                   {t('cms.hero.title_max_width') || 'Ancho Máximo del Titular'}
                 </span>
               </div>
-              <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2.5 py-0.5 rounded-full">
-                {titleMaxWidth}%
-              </span>
+              <div className="flex items-center gap-2">
+                {renderBadge('hero_title_max_width')}
+                <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2.5 py-0.5 rounded-full">
+                  {titleMaxWidth}%
+                </span>
+              </div>
             </div>
 
             <div className="flex items-center gap-3">
@@ -245,7 +410,7 @@ export default function HeroTab({
                 max="100"
                 step="5"
                 value={titleMaxWidth}
-                onChange={e => setFormData((prev: any) => ({ ...prev, hero_title_max_width: parseInt(e.target.value, 10) }))}
+                onChange={e => setResponsiveValue('hero_title_max_width', parseInt(e.target.value, 10))}
                 className="w-full accent-[#d4af37] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
               />
             </div>
@@ -258,7 +423,7 @@ export default function HeroTab({
                   <button
                     key={preset}
                     type="button"
-                    onClick={() => setFormData((prev: any) => ({ ...prev, hero_title_max_width: preset }))}
+                    onClick={() => setResponsiveValue('hero_title_max_width', preset)}
                     className={`px-2 py-0.5 rounded-md transition-all ${
                       titleMaxWidth === preset
                         ? 'bg-[#d4af37] text-white'
@@ -300,9 +465,12 @@ export default function HeroTab({
                   {t('cms.hero.subtitle_size_slider') || 'Escala / Tamaño del Subtítulo'}
                 </span>
               </div>
-              <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2 py-0.5 rounded-full">
-                {subtitleScale}%
-              </span>
+              <div className="flex items-center gap-2">
+                {renderBadge('hero_subtitle_size')}
+                <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2 py-0.5 rounded-full">
+                  {subtitleScale}%
+                </span>
+              </div>
             </div>
 
             <div className="flex items-center gap-3">
@@ -314,7 +482,7 @@ export default function HeroTab({
                 max="140"
                 step="5"
                 value={subtitleScale}
-                onChange={e => setFormData((prev: any) => ({ ...prev, hero_subtitle_size: e.target.value }))}
+                onChange={e => setResponsiveValue('hero_subtitle_size', e.target.value)}
                 className="w-full accent-[#d4af37] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
               />
               <span className="text-[10px] font-bold text-stone-400">140%</span>
@@ -328,7 +496,7 @@ export default function HeroTab({
                   <button
                     key={preset}
                     type="button"
-                    onClick={() => setFormData((prev: any) => ({ ...prev, hero_subtitle_size: String(preset) }))}
+                    onClick={() => setResponsiveValue('hero_subtitle_size', String(preset))}
                     className={`px-2 py-0.5 rounded-md transition-all ${
                       subtitleScale === preset
                         ? 'bg-[#d4af37] text-white'
@@ -530,9 +698,12 @@ export default function HeroTab({
                     {t('cms.hero.price_size') || 'Escala Visual del Precio'}
                   </span>
                 </div>
-                <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2.5 py-0.5 rounded-full">
-                  {priceScale}%
-                </span>
+                <div className="flex items-center gap-2">
+                  {renderBadge('hero_price_size')}
+                  <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2.5 py-0.5 rounded-full">
+                    {priceScale}%
+                  </span>
+                </div>
               </div>
 
               <div className="flex items-center gap-3">
@@ -544,7 +715,7 @@ export default function HeroTab({
                   max="200"
                   step="5"
                   value={priceScale}
-                  onChange={e => setFormData((prev: any) => ({ ...prev, hero_price_size: e.target.value }))}
+                  onChange={e => setResponsiveValue('hero_price_size', e.target.value)}
                   className="w-full accent-[#d4af37] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
                 />
                 <span className="text-[10px] font-bold text-stone-400">200%</span>
@@ -558,7 +729,7 @@ export default function HeroTab({
                     <button
                       key={preset}
                       type="button"
-                      onClick={() => setFormData((prev: any) => ({ ...prev, hero_price_size: String(preset) }))}
+                      onClick={() => setResponsiveValue('hero_price_size', String(preset))}
                       className={`px-2 py-0.5 rounded-md transition-all ${
                         priceScale === preset
                           ? 'bg-[#d4af37] text-white'
@@ -581,9 +752,12 @@ export default function HeroTab({
                     {t('cms.hero.price_offset_y') || 'Ajuste Vertical / Proximidad'}
                   </span>
                 </div>
-                <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2.5 py-0.5 rounded-full">
-                  {priceOffsetY > 0 ? `+${priceOffsetY}px` : `${priceOffsetY}px`}
-                </span>
+                <div className="flex items-center gap-2">
+                  {renderBadge('hero_price_offset_y')}
+                  <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2.5 py-0.5 rounded-full">
+                    {priceOffsetY > 0 ? `+${priceOffsetY}px` : `${priceOffsetY}px`}
+                  </span>
+                </div>
               </div>
 
               <div className="flex items-center gap-3">
@@ -595,7 +769,7 @@ export default function HeroTab({
                   max="30"
                   step="1"
                   value={priceOffsetY}
-                  onChange={e => setFormData((prev: any) => ({ ...prev, hero_price_offset_y: parseInt(e.target.value, 10) }))}
+                  onChange={e => setResponsiveValue('hero_price_offset_y', parseInt(e.target.value, 10))}
                   className="w-full accent-[#d4af37] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
                 />
                 <span className="text-[10px] font-bold text-stone-400">Separar (+30)</span>
@@ -609,7 +783,7 @@ export default function HeroTab({
                     <button
                       key={preset}
                       type="button"
-                      onClick={() => setFormData((prev: any) => ({ ...prev, hero_price_offset_y: preset }))}
+                      onClick={() => setResponsiveValue('hero_price_offset_y', preset)}
                       className={`px-2 py-0.5 rounded-md transition-all ${
                         priceOffsetY === preset
                           ? 'bg-[#d4af37] text-white'
@@ -882,34 +1056,41 @@ export default function HeroTab({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-2">
-              {t('cms.hero.vertical_alignment')}
-            </label>
-            <select 
-              value={formData.hero_alignment || "center"} 
-              onChange={e => setFormData((prev: any) => ({ ...prev, hero_alignment: e.target.value }))} 
-              className="w-full px-4 py-3 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 text-sm font-bold"
-            >
-              <option value="top">{t('cms.hero.alignment_top')}</option>
-              <option value="center">{t('cms.hero.alignment_center')}</option>
-              <option value="bottom">{t('cms.hero.alignment_bottom')}</option>
-            </select>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
+                {t('cms.hero.vertical_alignment')}
+              </label>
+              {renderBadge('hero_alignment')}
+            </div>
+            <SelectSimple 
+              id="cms-hero-vertical-alignment-select"
+              value={heroAlignment} 
+              onChange={val => setResponsiveValue('hero_alignment', val)} 
+              options={[
+                { value: "top", label: t('cms.hero.alignment_top') },
+                { value: "center", label: t('cms.hero.alignment_center') },
+                { value: "bottom", label: t('cms.hero.alignment_bottom') }
+              ]}
+            />
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-2">
-              {t('cms.hero.horizontal_alignment')}
-            </label>
-            <select 
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
+                {t('cms.hero.horizontal_alignment')}
+              </label>
+              {renderBadge('hero_horizontal_alignment')}
+            </div>
+            <SelectSimple 
               id="cms-hero-horizontal-alignment-select"
-              value={formData.hero_horizontal_alignment || "center"} 
-              onChange={e => setFormData((prev: any) => ({ ...prev, hero_horizontal_alignment: e.target.value }))} 
-              className="w-full px-4 py-3 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 text-sm font-bold"
-            >
-              <option value="left">{t('cms.hero.alignment_left')}</option>
-              <option value="center">{t('cms.hero.alignment_center')}</option>
-              <option value="right">{t('cms.hero.alignment_right')}</option>
-            </select>
+              value={heroHorizontalAlignment} 
+              onChange={val => setResponsiveValue('hero_horizontal_alignment', val)} 
+              options={[
+                { value: "left", label: t('cms.hero.alignment_left') },
+                { value: "center", label: t('cms.hero.alignment_center') },
+                { value: "right", label: t('cms.hero.alignment_right') }
+              ]}
+            />
           </div>
         </div>
 

@@ -561,11 +561,27 @@ export default function ClientHome({ content, settings, services, categories }: 
                 )}
 
                 {(() => {
-                  const titleMaxWidth = content.hero_title_max_width || 100;
+                  const desktopTitleScale = parseSizeScale(content.hero_title_size, 100) / 100;
+                  const tabletTitleScale = parseSizeScale(content.hero_responsive_config?.tablet?.hero_title_size ?? content.hero_title_size, 100) / 100;
+                  const mobileTitleScale = parseSizeScale(content.hero_responsive_config?.mobile?.hero_title_size ?? content.hero_responsive_config?.tablet?.hero_title_size ?? content.hero_title_size, 100) / 100;
+
+                  const desktopSubtitleScale = parseSizeScale(content.hero_subtitle_size, 100) / 100;
+                  const tabletSubtitleScale = parseSizeScale(content.hero_responsive_config?.tablet?.hero_subtitle_size ?? content.hero_subtitle_size, 100) / 100;
+                  const mobileSubtitleScale = parseSizeScale(content.hero_responsive_config?.mobile?.hero_subtitle_size ?? content.hero_responsive_config?.tablet?.hero_subtitle_size ?? content.hero_subtitle_size, 100) / 100;
+
+                  const desktopPriceScale = parseSizeScale(content.hero_price_size, 100) / 100;
+                  const tabletPriceScale = parseSizeScale(content.hero_responsive_config?.tablet?.hero_price_size ?? content.hero_price_size, 100) / 100;
+                  const mobilePriceScale = parseSizeScale(content.hero_responsive_config?.mobile?.hero_price_size ?? content.hero_responsive_config?.tablet?.hero_price_size ?? content.hero_price_size, 100) / 100;
+
+                  const desktopPriceOffsetY = content.hero_price_offset_y ?? 0;
+                  const tabletPriceOffsetY = content.hero_responsive_config?.tablet?.hero_price_offset_y ?? desktopPriceOffsetY;
+                  const mobilePriceOffsetY = content.hero_responsive_config?.mobile?.hero_price_offset_y ?? tabletPriceOffsetY;
+
+                  const desktopTitleMaxWidth = content.hero_title_max_width || 100;
+                  const tabletTitleMaxWidth = content.hero_responsive_config?.tablet?.hero_title_max_width ?? desktopTitleMaxWidth;
+                  const mobileTitleMaxWidth = content.hero_responsive_config?.mobile?.hero_title_max_width ?? tabletTitleMaxWidth;
+
                   const isPriceActive = !!content.hero_price_enabled && (content.hero_price_amount || content.hero_price_prefix);
-                  const titleScale = parseSizeScale(content.hero_title_size, 100) / 100;
-                  const subtitleScale = parseSizeScale(content.hero_subtitle_size, 100) / 100;
-                  const priceScale = parseSizeScale(content.hero_price_size, 100) / 100;
                   const priceConfig = getPriceStyleConfig(content.hero_price_style);
 
                   const getButtonStyle = (style?: string) => {
@@ -594,12 +610,15 @@ export default function ClientHome({ content, settings, services, categories }: 
                             </span>
                           )}
                           <div 
-                            className="flex items-center gap-2 sm:gap-3.5 leading-none mt-[-5px] sm:mt-[var(--hero-price-mt)]"
-                            style={{ '--hero-price-mt': `${-32 + (content.hero_price_offset_y || 0)}px` } as React.CSSProperties}
+                            className="flex items-center gap-2 sm:gap-3.5 leading-none mt-[var(--hero-price-mobile-mt)] sm:mt-[var(--hero-price-mt)]"
+                            style={{ 
+                              '--hero-price-mt': `${-32 + tabletPriceOffsetY}px`,
+                              '--hero-price-mobile-mt': `${-28 + mobilePriceOffsetY}px`
+                            } as React.CSSProperties}
                           >
                             <span 
                               style={{ 
-                                fontSize: `clamp(${(3.4 * priceScale).toFixed(2)}rem, ${(7.2 * priceScale).toFixed(2)}vw, ${(9.5 * priceScale).toFixed(2)}rem)`,
+                                fontSize: `clamp(${(3.4 * mobilePriceScale).toFixed(2)}rem, ${(7.2 * tabletPriceScale).toFixed(2)}vw, ${(9.5 * desktopPriceScale).toFixed(2)}rem)`,
                                 fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
                               }}
                               className={`font-serif font-black ${priceConfig.amountClass} tracking-tight drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]`}
@@ -609,7 +628,7 @@ export default function ClientHome({ content, settings, services, categories }: 
                             <div className="flex flex-col items-start justify-center leading-none pl-1">
                               <span 
                                 style={{ 
-                                  fontSize: `clamp(${(1.6 * priceScale).toFixed(2)}rem, ${(3.2 * priceScale).toFixed(2)}vw, ${(4.2 * priceScale).toFixed(2)}rem)`,
+                                  fontSize: `clamp(${(1.6 * mobilePriceScale).toFixed(2)}rem, ${(3.2 * tabletPriceScale).toFixed(2)}vw, ${(4.2 * desktopPriceScale).toFixed(2)}rem)`,
                                   fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
                                 }}
                                 className={`font-serif font-bold ${priceConfig.suffixClass} leading-none`}
@@ -645,7 +664,7 @@ export default function ClientHome({ content, settings, services, categories }: 
                         }`}>
                           {/* Columna Izquierda: Título H1 y Subtítulo */}
                           <div 
-                            style={{ '--hero-title-max-w': `${titleMaxWidth}%` } as React.CSSProperties}
+                            style={{ '--hero-title-max-w': `${desktopTitleMaxWidth}%` } as React.CSSProperties}
                             className={`min-w-0 space-y-2 sm:space-y-3.5 ${
                               isPriceActive ? 'flex-1 md:max-w-[var(--hero-title-max-w)]' : 'w-full md:max-w-[var(--hero-title-max-w)]'
                             } ${
@@ -656,8 +675,8 @@ export default function ClientHome({ content, settings, services, categories }: 
                             <h1 
                               style={{ 
                                 fontSize: isPriceActive 
-                                  ? `clamp(${(1.75 * titleScale).toFixed(2)}rem, ${(4.8 * titleScale).toFixed(2)}vw, ${(6.8 * titleScale).toFixed(2)}rem)`
-                                  : `clamp(${(2.2 * titleScale).toFixed(2)}rem, ${(5.5 * titleScale).toFixed(2)}vw, ${(7.2 * titleScale).toFixed(2)}rem)`,
+                                  ? `clamp(${(1.75 * mobileTitleScale).toFixed(2)}rem, ${(4.8 * tabletTitleScale).toFixed(2)}vw, ${(6.8 * desktopTitleScale).toFixed(2)}rem)`
+                                  : `clamp(${(2.2 * mobileTitleScale).toFixed(2)}rem, ${(5.5 * tabletTitleScale).toFixed(2)}vw, ${(7.2 * desktopTitleScale).toFixed(2)}rem)`,
                                 fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
                               }}
                               className={`leading-[1.05] font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] tracking-tight ${
@@ -669,7 +688,7 @@ export default function ClientHome({ content, settings, services, categories }: 
 
                             <p 
                               style={{
-                                fontSize: `clamp(${(0.85 * subtitleScale).toFixed(2)}rem, ${(1.2 * subtitleScale).toFixed(2)}vw, ${(1.35 * subtitleScale).toFixed(2)}rem)`
+                                fontSize: `clamp(${(0.85 * mobileSubtitleScale).toFixed(2)}rem, ${(1.2 * tabletSubtitleScale).toFixed(2)}vw, ${(1.35 * desktopSubtitleScale).toFixed(2)}rem)`
                               }}
                               className={`text-white/90 font-medium font-sans tracking-wide leading-relaxed drop-shadow-md ${
                                 content.hero_horizontal_alignment === 'center' ? 'max-w-2xl mx-auto' : 'max-w-xl'

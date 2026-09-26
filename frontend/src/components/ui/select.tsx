@@ -146,6 +146,48 @@ const SelectSeparator = React.forwardRef<
 ))
 SelectSeparator.displayName = SelectPrimitive.Separator.displayName
 
+export interface SelectSimpleOption {
+  value: string;
+  label: string;
+}
+
+export function SelectSimple({
+  id,
+  value,
+  onChange,
+  options,
+  placeholder,
+  className
+}: {
+  id?: string;
+  value: string;
+  onChange: (val: string) => void;
+  options: SelectSimpleOption[];
+  placeholder?: string;
+  className?: string;
+}) {
+  return (
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger 
+        id={id} 
+        className={cn(
+          "w-full rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-800 dark:text-stone-100 font-bold focus:ring-2 focus:ring-[#d4af37]/30 transition-all", 
+          className
+        )}
+      >
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((opt) => (
+          <SelectItem key={opt.value} value={opt.value}>
+            {opt.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
 export {
   Select,
   SelectGroup,

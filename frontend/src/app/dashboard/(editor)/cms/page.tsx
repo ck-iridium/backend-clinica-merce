@@ -26,6 +26,7 @@ export default function CMSPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('HERO');
+  const [viewportDevice, setViewportDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [sections, setSections] = useState<any[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [pickerTarget, setPickerTarget] = useState<{ type: 'form' | 'category', id?: string, field: string } | null>(null);
@@ -37,6 +38,7 @@ export default function CMSPage() {
     hero_title_size: 'large',
     hero_subtitle_size: 'medium',
     hero_show_button: true,
+    hero_responsive_config: {},
     about_title: '', about_text: '', about_image_url: '', about_layout: 'right',
     about_show_button: false, about_button_text: 'Saber Más', about_button_link: '/contacto',
     cta_title: '', cta_subtitle: '', cta_button_text: '', cta_button_link: '',
@@ -47,6 +49,7 @@ export default function CMSPage() {
   const [formData, setFormData] = useState<any>(defaultContent);
   const [categories, setCategories] = useState<any[]>([]); 
   const [services, setServices] = useState<any[]>([]);
+  const [settings, setSettings] = useState<any>(null);
 
   // Navigation Editor States
   const [navigationItems, setNavigationItems] = useState<any[]>([]);
@@ -70,21 +73,28 @@ export default function CMSPage() {
       formData={formData}
       categories={categories}
       services={services}
+      viewportDevice={viewportDevice}
+      settings={settings}
     />
-  ), [formData, categories, services]);
+  ), [formData, categories, services, viewportDevice, settings]);
 
   const fetchContent = async () => {
     try {
-      const [resContent, resCats, resServices] = await Promise.all([
+      const [resContent, resCats, resServices, resSettings] = await Promise.all([
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/site-content/`),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/service-categories/`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/`)
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/`)
       ]);
       
       if (resContent.ok && resCats.ok && resServices.ok) {
         const data = await resContent.json();
         const cats = await resCats.json();
         const svcs = await resServices.json();
+        if (resSettings && resSettings.ok) {
+          const settingsData = await resSettings.json();
+          setSettings(settingsData);
+        }
         
         setFormData(data);
         setCategories(cats);
@@ -374,6 +384,8 @@ export default function CMSPage() {
             setPickerTarget={setPickerTarget}
             categories={categories}
             services={services}
+            activeDevice={viewportDevice}
+            setActiveDevice={setViewportDevice}
           />
         );
       case 'SOBRE MÍ':
@@ -447,6 +459,8 @@ export default function CMSPage() {
           panel={renderActiveTabContent()}
           preview={memoizedPreview}
           onBack={() => setActiveMode('HUB')}
+          viewportDevice={viewportDevice}
+          onViewportDeviceChange={setViewportDevice}
         />
         
         {/* Selector de Medios */}

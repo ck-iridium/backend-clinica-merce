@@ -6,6 +6,8 @@ interface PreviewProps {
   formData: any;
   categories: any[];
   services: any[];
+  viewportDevice?: 'desktop' | 'tablet' | 'mobile';
+  settings?: any;
 }
 
 const cleanTitle = (text: string) => {
@@ -62,7 +64,7 @@ const getPriceStyleConfig = (style?: string) => {
 };
 
 // Memoizar el componente para que no se re-renderice si sus props no cambian (fundamental para el drag & drop)
-const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: PreviewProps) => {
+const HomeBuilderPreview = React.memo(({ formData, categories, services = [], viewportDevice = 'desktop', settings }: PreviewProps) => {
   const { translate, t } = useLanguage();
   
   // Función auxiliar para forzar la ruta de la imagen si es relativa
@@ -71,15 +73,66 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
     return url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${url}` : url;
   };
 
+  // Helper para resolver propiedades responsivas según la resolución activa
+  const getResponsiveVal = (field: string, fallback: any) => {
+    if (viewportDevice === 'mobile') {
+      return formData?.hero_responsive_config?.mobile?.[field] 
+        ?? formData?.hero_responsive_config?.tablet?.[field] 
+        ?? formData?.[field] 
+        ?? fallback;
+    }
+    if (viewportDevice === 'tablet') {
+      return formData?.hero_responsive_config?.tablet?.[field] 
+        ?? formData?.[field] 
+        ?? fallback;
+    }
+    return formData?.[field] ?? fallback;
+  };
+
+  const heroAlignment = getResponsiveVal('hero_alignment', formData?.hero_alignment || 'center');
+  const heroHorizontalAlignment = getResponsiveVal('hero_horizontal_alignment', formData?.hero_horizontal_alignment || 'center');
+
   return (
     <div className="w-full h-full flex flex-col overflow-y-auto bg-stone-50 select-none custom-scrollbar">
       
-      {/* ─── 1. HERO SECTION (16:9) ─── */}
-      <section className={`relative w-full aspect-video min-h-[500px] flex ${formData?.hero_alignment === 'top' ? 'items-start pt-20 pb-8' : formData?.hero_alignment === 'bottom' ? 'items-end pb-16 pt-8' : 'items-center'} ${
-        formData?.hero_content_fullwidth
-          ? (formData?.hero_horizontal_alignment === 'left' ? 'justify-start text-left pl-6 sm:pl-10' : formData?.hero_horizontal_alignment === 'right' ? 'justify-end text-right pr-6 sm:pr-10' : 'justify-center text-center')
-          : 'justify-center'
-      } p-6 sm:p-10 overflow-hidden`}>
+      {/* ─── 1. HERO SECTION (Adaptativo según Viewport) ─── */}
+      <section className={`relative w-full ${
+        viewportDevice === 'mobile'
+          ? 'h-[660px] min-h-[660px] shrink-0 flex flex-col justify-between'
+          : viewportDevice === 'tablet'
+          ? 'h-[720px] min-h-[720px] shrink-0 flex flex-col justify-between'
+          : `aspect-video min-h-[500px] flex ${heroAlignment === 'top' ? 'items-start pt-20 pb-8' : heroAlignment === 'bottom' ? 'items-end pb-16 pt-8' : 'items-center'} ${
+              formData?.hero_content_fullwidth
+                ? (heroHorizontalAlignment === 'left' ? 'justify-start text-left pl-6 sm:pl-10' : heroHorizontalAlignment === 'right' ? 'justify-end text-right pr-6 sm:pr-10' : 'justify-center text-center')
+                : 'justify-center'
+            } p-6 sm:p-10`
+      } overflow-hidden`}>
+        
+        {/* Navbar Simulado para Vista Móvil y Tablet (con Logo Real de la Clínica) */}
+        {(viewportDevice === 'mobile' || viewportDevice === 'tablet') && (
+          <div className="relative z-20 w-full px-6 pt-5 pb-3 flex items-center justify-between pointer-events-none select-none">
+            {settings?.logo_mobile_b64 || settings?.logo_app_b64 ? (
+              <img 
+                src={settings.logo_mobile_b64 || settings.logo_app_b64}
+                alt={settings?.clinic_name || 'Logo'}
+                className="h-7 max-h-7 w-auto max-w-[150px] object-contain brightness-0 invert drop-shadow-md"
+              />
+            ) : (
+              <span 
+                style={{ fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif" }}
+                className="text-base text-white font-serif font-medium tracking-wide drop-shadow-md"
+              >
+                {settings?.clinic_name || 'Clínica Mercè'}
+              </span>
+            )}
+            <div className="flex flex-col gap-1.5 items-end justify-center w-6 h-6">
+              <span className="w-5 h-0.5 bg-white/90 rounded-full drop-shadow"></span>
+              <span className="w-3.5 h-0.5 bg-white/90 rounded-full drop-shadow"></span>
+            </div>
+          </div>
+        )}
+
+        {/* Fondo Multimedia */}
         {formData?.hero_video_url ? (
           <div className="absolute inset-0 z-0 bg-stone-900">
             <video autoPlay loop muted playsInline className="w-full h-full object-cover">
@@ -99,12 +152,46 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
         )}
 
         {(() => {
-          const titleMaxWidth = formData?.hero_title_max_width || 100;
+          const titleMaxWidth = getResponsiveVal('hero_title_max_width', formData?.hero_title_max_width || 100);
           const isPriceActive = !!formData?.hero_price_enabled && (formData?.hero_price_amount || formData?.hero_price_prefix);
-          const titleScale = parseSizeScale(formData?.hero_title_size, 100) / 100;
-          const subtitleScale = parseSizeScale(formData?.hero_subtitle_size, 100) / 100;
-          const priceScale = parseSizeScale(formData?.hero_price_size, 100) / 100;
+          const titleScale = parseSizeScale(getResponsiveVal('hero_title_size', formData?.hero_title_size || 100), 100) / 100;
+          const subtitleScale = parseSizeScale(getResponsiveVal('hero_subtitle_size', formData?.hero_subtitle_size || 100), 100) / 100;
+          const priceScale = parseSizeScale(getResponsiveVal('hero_price_size', formData?.hero_price_size || 100), 100) / 100;
+          const priceOffsetY = getResponsiveVal('hero_price_offset_y', formData?.hero_price_offset_y ?? 0);
           const priceConfig = getPriceStyleConfig(formData?.hero_price_style);
+
+          // Cálculo tipográfico adaptativo para el canvas de preview (sin usar vw que deformarían con el monitor del editor)
+          let titleFontSize = '';
+          let subtitleFontSize = '';
+          let priceAmountFontSize = '';
+          let priceSuffixFontSize = '';
+          let pricePeriodFontSize = '';
+
+          if (viewportDevice === 'mobile') {
+            titleFontSize = isPriceActive 
+              ? `${(1.35 * titleScale).toFixed(2)}rem` 
+              : `${(1.65 * titleScale).toFixed(2)}rem`;
+            subtitleFontSize = `${(0.80 * subtitleScale).toFixed(2)}rem`;
+            priceAmountFontSize = `${(2.8 * priceScale).toFixed(2)}rem`;
+            priceSuffixFontSize = `${(1.3 * priceScale).toFixed(2)}rem`;
+            pricePeriodFontSize = `${(0.68 * priceScale).toFixed(2)}rem`;
+          } else if (viewportDevice === 'tablet') {
+            titleFontSize = isPriceActive 
+              ? `${(1.85 * titleScale).toFixed(2)}rem` 
+              : `${(2.2 * titleScale).toFixed(2)}rem`;
+            subtitleFontSize = `${(0.9 * subtitleScale).toFixed(2)}rem`;
+            priceAmountFontSize = `${(4.0 * priceScale).toFixed(2)}rem`;
+            priceSuffixFontSize = `${(1.8 * priceScale).toFixed(2)}rem`;
+            pricePeriodFontSize = `${(0.85 * priceScale).toFixed(2)}rem`;
+          } else {
+            titleFontSize = isPriceActive 
+              ? `${(2.2 * titleScale).toFixed(2)}rem` 
+              : `${(2.7 * titleScale).toFixed(2)}rem`;
+            subtitleFontSize = `${(1.0 * subtitleScale).toFixed(2)}rem`;
+            priceAmountFontSize = `${(5.2 * priceScale).toFixed(2)}rem`;
+            priceSuffixFontSize = `${(2.4 * priceScale).toFixed(2)}rem`;
+            pricePeriodFontSize = `${(0.95 * priceScale).toFixed(2)}rem`;
+          }
 
           const getButtonStyle = (style?: string) => {
             switch (style) {
@@ -127,17 +214,17 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
               <div className={`relative group ${priceConfig.boxClass} select-none`}>
                 <div className="relative flex flex-col items-start text-left">
                   {translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix') && (
-                    <span className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.22em] ${priceConfig.prefixClass} block mb-0 leading-none pl-0.5 select-none`}>
+                    <span className={`text-[10px] sm:text-xs font-black uppercase tracking-[0.22em] ${priceConfig.prefixClass} block mb-0 leading-none pl-0.5 select-none`}>
                       {translate(formData?.hero_price_prefix, formData?.translations, 'hero_price_prefix')}
                     </span>
                   )}
                   <div 
-                    className="flex items-center gap-2 sm:gap-3.5 leading-none mt-[-5px] sm:mt-[var(--hero-price-mt)]"
-                    style={{ '--hero-price-mt': `${-28 + Math.round(formData?.hero_price_offset_y || 0)}px` } as React.CSSProperties}
+                    className="flex items-center gap-1.5 sm:gap-3 leading-none"
+                    style={{ marginTop: `${-18 + Math.round(priceOffsetY)}px` }}
                   >
                     <span 
                       style={{ 
-                        fontSize: `clamp(${(2.8 * priceScale).toFixed(2)}rem, ${(6.2 * priceScale).toFixed(2)}vw, ${(7.8 * priceScale).toFixed(2)}rem)`,
+                        fontSize: priceAmountFontSize,
                         fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
                       }}
                       className={`font-serif font-black ${priceConfig.amountClass} tracking-tight drop-shadow-md`}
@@ -147,7 +234,7 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
                     <div className="flex flex-col items-start justify-center leading-none pl-1">
                       <span 
                         style={{ 
-                          fontSize: `clamp(${(1.4 * priceScale).toFixed(2)}rem, ${(2.8 * priceScale).toFixed(2)}vw, ${(3.6 * priceScale).toFixed(2)}rem)`,
+                          fontSize: priceSuffixFontSize,
                           fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
                         }}
                         className={`font-serif font-bold ${priceConfig.suffixClass} leading-none`}
@@ -155,7 +242,10 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
                         {formData?.hero_price_suffix || '€'}
                       </span>
                       {periodText && (
-                        <span className={`text-[11px] sm:text-xs md:text-sm font-black uppercase tracking-wider ${priceConfig.suffixClass} opacity-90 leading-tight mt-1 sm:mt-1.5`}>
+                        <span 
+                          style={{ fontSize: pricePeriodFontSize }}
+                          className={`font-black uppercase tracking-wider ${priceConfig.suffixClass} opacity-90 leading-tight mt-0.5 sm:mt-1`}
+                        >
                           {periodText}
                         </span>
                       )}
@@ -167,50 +257,52 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
           };
 
           return (
-            <div className={`relative z-10 w-full px-6 ${
-              formData?.hero_content_fullwidth
-                ? `max-w-7xl ${formData?.hero_horizontal_alignment === 'left' ? 'text-left ml-0 mr-auto' : formData?.hero_horizontal_alignment === 'right' ? 'text-right mr-0 ml-auto' : 'text-center mx-auto'}`
-                : `max-w-7xl mx-auto ${formData?.hero_horizontal_alignment === 'left' ? 'text-left' : formData?.hero_horizontal_alignment === 'right' ? 'text-right' : 'text-center'}`
+            <div className={`relative z-10 w-full ${
+              viewportDevice === 'mobile' 
+                ? `px-5 ${heroAlignment === 'top' ? 'pt-4 pb-auto' : heroAlignment === 'center' ? 'my-auto' : 'pb-10 pt-auto'}`
+                : viewportDevice === 'tablet'
+                ? `px-8 ${heroAlignment === 'top' ? 'pt-8 pb-auto' : heroAlignment === 'center' ? 'my-auto' : 'pb-14 pt-auto'}`
+                : `px-6 ${
+                    formData?.hero_content_fullwidth
+                      ? `max-w-7xl ${heroHorizontalAlignment === 'left' ? 'text-left ml-0 mr-auto' : heroHorizontalAlignment === 'right' ? 'text-right mr-0 ml-auto' : 'text-center mx-auto'}`
+                      : `max-w-7xl mx-auto ${heroHorizontalAlignment === 'left' ? 'text-left' : heroHorizontalAlignment === 'right' ? 'text-right' : 'text-center'}`
+                  }`
             }`}>
               <div className={`flex flex-col ${
-                formData?.hero_horizontal_alignment === 'center' ? 'items-center' :
-                formData?.hero_horizontal_alignment === 'right' ? 'items-end' : 'items-start'
+                heroHorizontalAlignment === 'center' ? 'items-center' :
+                heroHorizontalAlignment === 'right' ? 'items-end' : 'items-start'
               }`}>
                 {/* Fila Principal: Textos a la izquierda y Precio pegado inmediatamente a la derecha */}
-                <div className={`flex flex-row items-center gap-4 sm:gap-6 md:gap-8 max-w-full ${
-                  formData?.hero_horizontal_alignment === 'center' ? 'justify-center' :
-                  formData?.hero_horizontal_alignment === 'right' ? 'justify-end' : 'justify-start'
+                <div className={`flex flex-row items-center gap-3 sm:gap-6 max-w-full ${
+                  heroHorizontalAlignment === 'center' ? 'justify-center' :
+                  heroHorizontalAlignment === 'right' ? 'justify-end' : 'justify-start'
                 }`}>
                   {/* Columna Izquierda: Título y Subtítulo */}
                   <div 
                     style={{ '--hero-title-max-w': `${titleMaxWidth}%` } as React.CSSProperties}
-                    className={`min-w-0 space-y-2 sm:space-y-3.5 ${
+                    className={`min-w-0 space-y-1.5 sm:space-y-3 ${
                       isPriceActive ? 'flex-1 sm:max-w-[var(--hero-title-max-w)]' : 'w-full sm:max-w-[var(--hero-title-max-w)]'
                     } ${
-                      formData?.hero_horizontal_alignment === 'center' ? 'text-center' :
-                      formData?.hero_horizontal_alignment === 'right' ? 'text-right' : 'text-left'
+                      heroHorizontalAlignment === 'center' ? 'text-center' :
+                      heroHorizontalAlignment === 'right' ? 'text-right' : 'text-left'
                     }`}
                   >
                     <h1 
                       style={{ 
-                        fontSize: isPriceActive
-                          ? `clamp(${(1.75 * titleScale).toFixed(2)}rem, ${(4.4 * titleScale).toFixed(2)}vw, ${(5.8 * titleScale).toFixed(2)}rem)`
-                          : `clamp(${(2.1 * titleScale).toFixed(2)}rem, ${(5.0 * titleScale).toFixed(2)}vw, ${(6.5 * titleScale).toFixed(2)}rem)`,
+                        fontSize: titleFontSize,
                         fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
                       }}
-                      className={`font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] leading-[1.05] tracking-tight ${
-                        formData?.hero_horizontal_alignment === 'center' ? 'mx-auto' : ''
+                      className={`font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] leading-[1.08] tracking-tight ${
+                        heroHorizontalAlignment === 'center' ? 'mx-auto' : ''
                       }`}
                     >
                       {cleanTitle(translate(formData?.hero_title || 'Título Principal', formData?.translations, 'hero_title'))}
                     </h1>
 
                     <p 
-                      style={{
-                        fontSize: `clamp(${(0.85 * subtitleScale).toFixed(2)}rem, ${(1.15 * subtitleScale).toFixed(2)}vw, ${(1.3 * subtitleScale).toFixed(2)}rem)`
-                      }}
+                      style={{ fontSize: subtitleFontSize }}
                       className={`text-white/90 font-medium font-sans drop-shadow-md leading-relaxed ${
-                        formData?.hero_horizontal_alignment === 'center' ? 'max-w-xl mx-auto' : 'max-w-xl'
+                        heroHorizontalAlignment === 'center' ? 'max-w-xl mx-auto' : 'max-w-xl'
                       }`}
                     >
                       {translate(formData?.hero_subtitle || 'Subtítulo descriptivo que acompaña a la imagen principal.', formData?.translations, 'hero_subtitle')}
@@ -227,11 +319,11 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
 
                 {/* Fila Inferior: Botón de Acción CTA (debajo del bloque de textos y precio) */}
                 {formData?.hero_show_button !== false && (
-                  <div className={`pt-3 sm:pt-4 md:pt-6 w-full ${
-                    formData?.hero_horizontal_alignment === 'center' ? 'flex justify-center' :
-                    formData?.hero_horizontal_alignment === 'right' ? 'flex justify-end' : 'flex justify-start'
+                  <div className={`pt-3 sm:pt-4 w-full ${
+                    heroHorizontalAlignment === 'center' ? 'flex justify-center' :
+                    heroHorizontalAlignment === 'right' ? 'flex justify-end' : 'flex justify-start'
                   }`}>
-                    <div className={`inline-flex items-center justify-center px-8 py-3 md:px-10 md:py-3.5 rounded-full font-bold text-sm md:text-base transition-all duration-300 shadow-md text-center whitespace-nowrap w-fit ${getButtonStyle(formData?.hero_button_style)}`}>
+                    <div className={`inline-flex items-center justify-center px-6 py-2.5 sm:px-8 sm:py-3 rounded-full font-bold text-xs sm:text-sm transition-all duration-300 shadow-md text-center whitespace-nowrap w-fit ${getButtonStyle(formData?.hero_button_style)}`}>
                       <span>{translate(formData?.hero_button_text || 'Reservar Ahora', formData?.translations, 'hero_button_text')}</span>
                       <span className="ml-2">→</span>
                     </div>
@@ -244,39 +336,73 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [] }: 
       </section>
 
       {/* ─── 2. ABOUT SECTION ─── */}
-      <section className="py-16 bg-white flex items-center">
-        <div className={`px-12 grid grid-cols-1 md:grid-cols-2 gap-12 items-center w-full ${formData?.about_layout === 'left' ? 'md:flex-row-reverse' : ''}`}>
-          <div className={`space-y-6 ${formData?.about_layout === 'left' ? 'order-2' : 'order-1'}`}>
-            <h2 className="text-3xl font-serif font-extrabold text-stone-900 leading-tight">
+      <section className="py-12 md:py-16 bg-white flex items-center">
+        {viewportDevice === 'mobile' ? (
+          <div className="px-6 flex flex-col items-center text-center w-full space-y-4">
+            <h2 className="text-2xl font-serif font-extrabold text-stone-900 leading-tight">
               {cleanTitle(translate(formData?.about_title || 'Sobre Nosotros', formData?.translations, 'about_title'))}
             </h2>
-            <div className="text-sm text-stone-500 leading-relaxed whitespace-pre-wrap font-medium">
+
+            {formData?.about_image_url ? (
+              <div className="rounded-[2.5rem] overflow-hidden shadow-2xl aspect-[4/5] w-full max-w-[280px] mx-auto relative group shrink-0">
+                <img src={getImageUrl(formData.about_image_url)} alt="Sobre Mí" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-stone-900/5 mix-blend-multiply"></div>
+              </div>
+            ) : (
+              <div className="rounded-[2.5rem] bg-stone-50 aspect-[4/5] w-full max-w-[280px] mx-auto flex flex-col items-center justify-center text-stone-300 border-2 border-dashed border-stone-200">
+                <ImageIcon size={40} strokeWidth={1} />
+                <p className="font-bold text-[9px] uppercase tracking-widest mt-3">
+                  {t('cms.section_image')}
+                </p>
+              </div>
+            )}
+
+            <div className="text-xs text-stone-600 leading-relaxed whitespace-pre-wrap font-medium max-w-sm px-2">
               {translate(formData?.about_text || 'Texto introductorio sobre la filosofía de la clínica...', formData?.translations, 'about_text')}
             </div>
+
             {formData?.about_show_button && (
               <div className="pt-2">
-                <div className="inline-block border border-stone-200 text-stone-800 px-8 py-3 rounded-full font-bold text-xs uppercase tracking-widest">
+                <div className="inline-block border border-stone-200 text-stone-800 px-7 py-2.5 rounded-full font-bold text-[11px] uppercase tracking-widest">
                   {translate(formData?.about_button_text || 'Saber Más', formData?.translations, 'about_button_text')}
                 </div>
               </div>
             )}
           </div>
-          <div className={`${formData?.about_layout === 'left' ? 'order-1' : 'order-2'}`}>
-            {formData?.about_image_url ? (
-              <div className="rounded-3xl overflow-hidden shadow-luxury aspect-[4/5] w-full max-w-[400px] mx-auto relative group transition-transform hover:scale-[1.02] duration-500">
-                <img src={getImageUrl(formData.about_image_url)} alt="Sobre Mí" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-stone-900/5 mix-blend-multiply"></div>
+        ) : (
+          <div className={`px-12 grid grid-cols-1 md:grid-cols-2 gap-12 items-center w-full ${formData?.about_layout === 'left' ? 'md:flex-row-reverse' : ''}`}>
+            <div className={`space-y-6 ${formData?.about_layout === 'left' ? 'order-2' : 'order-1'}`}>
+              <h2 className="text-3xl font-serif font-extrabold text-stone-900 leading-tight">
+                {cleanTitle(translate(formData?.about_title || 'Sobre Nosotros', formData?.translations, 'about_title'))}
+              </h2>
+              <div className="text-sm text-stone-500 leading-relaxed whitespace-pre-wrap font-medium">
+                {translate(formData?.about_text || 'Texto introductorio sobre la filosofía de la clínica...', formData?.translations, 'about_text')}
               </div>
-            ) : (
-              <div className="rounded-3xl bg-stone-50 aspect-[4/5] w-full max-w-[400px] mx-auto flex flex-col items-center justify-center text-stone-300 border-2 border-dashed border-stone-200">
-                <ImageIcon size={48} strokeWidth={1} />
-                <p className="font-bold text-[10px] uppercase tracking-widest mt-4">
-                  {t('cms.section_image')}
-                </p>
-              </div>
-            )}
+              {formData?.about_show_button && (
+                <div className="pt-2">
+                  <div className="inline-block border border-stone-200 text-stone-800 px-8 py-3 rounded-full font-bold text-xs uppercase tracking-widest">
+                    {translate(formData?.about_button_text || 'Saber Más', formData?.translations, 'about_button_text')}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className={`${formData?.about_layout === 'left' ? 'order-1' : 'order-2'}`}>
+              {formData?.about_image_url ? (
+                <div className="rounded-3xl overflow-hidden shadow-luxury aspect-[4/5] w-full max-w-[400px] mx-auto relative group transition-transform hover:scale-[1.02] duration-500">
+                  <img src={getImageUrl(formData.about_image_url)} alt="Sobre Mí" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-stone-900/5 mix-blend-multiply"></div>
+                </div>
+              ) : (
+                <div className="rounded-3xl bg-stone-50 aspect-[4/5] w-full max-w-[400px] mx-auto flex flex-col items-center justify-center text-stone-300 border-2 border-dashed border-stone-200">
+                  <ImageIcon size={48} strokeWidth={1} />
+                  <p className="font-bold text-[10px] uppercase tracking-widest mt-4">
+                    {t('cms.section_image')}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </section>
 
       {/* ─── 3. CATEGORÍAS ─── */}

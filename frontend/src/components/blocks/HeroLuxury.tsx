@@ -59,9 +59,19 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
 
   // Alignments mapping
   const isFullwidth = data?.hero_content_fullwidth;
-  const alignY = data?.hero_alignment === 'top' ? 'items-start pt-48' : data?.hero_alignment === 'bottom' ? 'items-end pb-32' : 'items-center';
-  const alignX = isFullwidth
-    ? (data?.hero_horizontal_alignment === 'left' ? 'justify-start text-left px-6' : data?.hero_horizontal_alignment === 'right' ? 'justify-end text-right px-6' : 'justify-center text-center px-6')
+  const mobileAlignY = data?.hero_responsive_config?.mobile?.hero_alignment ?? data?.hero_alignment ?? 'bottom';
+  const desktopAlignY = data?.hero_alignment ?? 'bottom';
+  const alignYClass = `${
+    mobileAlignY === 'top' ? 'items-start pt-28' : mobileAlignY === 'bottom' ? 'items-end pb-16' : 'items-center'
+  } ${
+    desktopAlignY === 'top' ? 'md:items-start md:pt-48' : desktopAlignY === 'bottom' ? 'md:items-end md:pb-32' : 'md:items-center'
+  }`;
+
+  const mobileAlignX = data?.hero_responsive_config?.mobile?.hero_horizontal_alignment ?? data?.hero_horizontal_alignment ?? 'left';
+  const desktopAlignX = data?.hero_horizontal_alignment ?? 'center';
+
+  const alignXClass = isFullwidth
+    ? `${mobileAlignX === 'left' ? 'justify-start text-left' : mobileAlignX === 'right' ? 'justify-end text-right' : 'justify-center text-center'} ${desktopAlignX === 'left' ? 'md:justify-start md:text-left' : desktopAlignX === 'right' ? 'md:justify-end md:text-right' : 'md:justify-center md:text-center'} px-6`
     : 'justify-center text-center px-6';
 
   // Button Style helper
@@ -79,11 +89,27 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
     }
   };
 
-  const titleMaxWidth = data?.hero_title_max_width || 100;
+  const desktopTitleScale = parseSizeScale(data?.hero_title_size, 100) / 100;
+  const tabletTitleScale = parseSizeScale(data?.hero_responsive_config?.tablet?.hero_title_size ?? data?.hero_title_size, 100) / 100;
+  const mobileTitleScale = parseSizeScale(data?.hero_responsive_config?.mobile?.hero_title_size ?? data?.hero_responsive_config?.tablet?.hero_title_size ?? data?.hero_title_size, 100) / 100;
+
+  const desktopSubtitleScale = parseSizeScale(data?.hero_subtitle_size, 100) / 100;
+  const tabletSubtitleScale = parseSizeScale(data?.hero_responsive_config?.tablet?.hero_subtitle_size ?? data?.hero_subtitle_size, 100) / 100;
+  const mobileSubtitleScale = parseSizeScale(data?.hero_responsive_config?.mobile?.hero_subtitle_size ?? data?.hero_responsive_config?.tablet?.hero_subtitle_size ?? data?.hero_subtitle_size, 100) / 100;
+
+  const desktopPriceScale = parseSizeScale(data?.hero_price_size, 100) / 100;
+  const tabletPriceScale = parseSizeScale(data?.hero_responsive_config?.tablet?.hero_price_size ?? data?.hero_price_size, 100) / 100;
+  const mobilePriceScale = parseSizeScale(data?.hero_responsive_config?.mobile?.hero_price_size ?? data?.hero_responsive_config?.tablet?.hero_price_size ?? data?.hero_price_size, 100) / 100;
+
+  const desktopPriceOffsetY = data?.hero_price_offset_y ?? 0;
+  const tabletPriceOffsetY = data?.hero_responsive_config?.tablet?.hero_price_offset_y ?? desktopPriceOffsetY;
+  const mobilePriceOffsetY = data?.hero_responsive_config?.mobile?.hero_price_offset_y ?? tabletPriceOffsetY;
+
+  const desktopTitleMaxWidth = data?.hero_title_max_width || 100;
+  const tabletTitleMaxWidth = data?.hero_responsive_config?.tablet?.hero_title_max_width ?? desktopTitleMaxWidth;
+  const mobileTitleMaxWidth = data?.hero_responsive_config?.mobile?.hero_title_max_width ?? tabletTitleMaxWidth;
+
   const isPriceActive = !!data?.hero_price_enabled && (data?.hero_price_amount || data?.hero_price_prefix);
-  const titleScale = parseSizeScale(data?.hero_title_size, 100) / 100;
-  const subtitleScale = parseSizeScale(data?.hero_subtitle_size, 100) / 100;
-  const priceScale = parseSizeScale(data?.hero_price_size, 100) / 100;
   const priceConfig = getPriceStyleConfig(data?.hero_price_style);
 
   const renderPriceCapsule = () => {
@@ -97,12 +123,15 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
             </span>
           )}
           <div 
-            className="flex items-center gap-2 sm:gap-3.5 leading-none mt-[-5px] sm:mt-[var(--hero-price-mt)]"
-            style={{ '--hero-price-mt': `${-32 + (data?.hero_price_offset_y || 0)}px` } as React.CSSProperties}
+            className="flex items-center gap-2 sm:gap-3.5 leading-none mt-[var(--hero-price-mobile-mt)] sm:mt-[var(--hero-price-mt)]"
+            style={{ 
+              '--hero-price-mt': `${-32 + tabletPriceOffsetY}px`,
+              '--hero-price-mobile-mt': `${-28 + mobilePriceOffsetY}px`
+            } as React.CSSProperties}
           >
             <span 
               style={{ 
-                fontSize: `clamp(${(3.4 * priceScale).toFixed(2)}rem, ${(7.2 * priceScale).toFixed(2)}vw, ${(9.5 * priceScale).toFixed(2)}rem)`,
+                fontSize: `clamp(${(3.4 * mobilePriceScale).toFixed(2)}rem, ${(7.2 * tabletPriceScale).toFixed(2)}vw, ${(9.5 * desktopPriceScale).toFixed(2)}rem)`,
                 fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
               }}
               className={`font-serif font-black ${priceConfig.amountClass} tracking-tight drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]`}
@@ -112,7 +141,7 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
             <div className="flex flex-col items-start justify-center leading-none pl-1">
               <span 
                 style={{ 
-                  fontSize: `clamp(${(1.6 * priceScale).toFixed(2)}rem, ${(3.2 * priceScale).toFixed(2)}vw, ${(4.2 * priceScale).toFixed(2)}rem)`,
+                  fontSize: `clamp(${(1.6 * mobilePriceScale).toFixed(2)}rem, ${(3.2 * tabletPriceScale).toFixed(2)}vw, ${(4.2 * desktopPriceScale).toFixed(2)}rem)`,
                   fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
                 }}
                 className={`font-serif font-bold ${priceConfig.suffixClass} leading-none`}
@@ -132,7 +161,7 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
   };
 
   return (
-    <section className={`relative h-[100dvh] min-h-[600px] w-full flex snap-start snap-stop-always md:snap-none ${alignY} ${alignX} overflow-hidden mt-0`}>
+    <section className={`relative h-[100dvh] min-h-[600px] w-full flex snap-start snap-stop-always md:snap-none ${alignYClass} ${alignXClass} overflow-hidden mt-0`}>
       {/* Dynamic Navbar overlaid inside snap home section */}
       <div className="absolute top-0 left-0 w-full z-[100]">
         <PublicNavbar transparent={true} />
@@ -176,38 +205,47 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
         transition={{ duration: 1, ease: 'easeOut' }}
         className={`relative z-10 w-full px-6 ${
           isFullwidth
-            ? `max-w-7xl ${data?.hero_horizontal_alignment === 'left' ? 'ml-0 mr-auto text-left' : data?.hero_horizontal_alignment === 'right' ? 'mr-0 ml-auto text-right' : 'mx-auto text-center'}`
-            : `max-w-7xl mx-auto ${data?.hero_horizontal_alignment === 'left' ? 'text-left' : data?.hero_horizontal_alignment === 'right' ? 'text-right' : 'text-center'}`
+            ? `max-w-7xl ${mobileAlignX === 'left' ? 'ml-0 mr-auto text-left' : mobileAlignX === 'right' ? 'mr-0 ml-auto text-right' : 'mx-auto text-center'} ${desktopAlignX === 'left' ? 'md:ml-0 md:mr-auto md:text-left' : desktopAlignX === 'right' ? 'md:mr-0 md:ml-auto md:text-right' : 'md:mx-auto md:text-center'}`
+            : `max-w-7xl mx-auto ${mobileAlignX === 'left' ? 'text-left' : mobileAlignX === 'right' ? 'text-right' : 'text-center'} ${desktopAlignX === 'left' ? 'md:text-left' : desktopAlignX === 'right' ? 'md:text-right' : 'md:text-center'}`
         }`}
       >
         <div className={`flex flex-col ${
-          data?.hero_horizontal_alignment === 'center' ? 'items-center' :
-          data?.hero_horizontal_alignment === 'right' ? 'items-end' : 'items-start'
+          mobileAlignX === 'center' ? 'items-center' :
+          mobileAlignX === 'right' ? 'items-end' : 'items-start'
+        } ${
+          desktopAlignX === 'center' ? 'md:items-center' :
+          desktopAlignX === 'right' ? 'md:items-end' : 'md:items-start'
         }`}>
           {/* Fila Principal: Textos (Título + Subtítulo) a la izquierda y Precio pegado inmediatamente a la derecha */}
           <div className={`flex flex-row items-center gap-4 sm:gap-6 md:gap-8 max-w-full ${
-            data?.hero_horizontal_alignment === 'center' ? 'justify-center' :
-            data?.hero_horizontal_alignment === 'right' ? 'justify-end' : 'justify-start'
+            mobileAlignX === 'center' ? 'justify-center' :
+            mobileAlignX === 'right' ? 'justify-end' : 'justify-start'
+          } ${
+            desktopAlignX === 'center' ? 'md:justify-center' :
+            desktopAlignX === 'right' ? 'md:justify-end' : 'md:justify-start'
           }`}>
             {/* Columna Izquierda: Título H1 y Subtítulo */}
             <div 
-              style={{ '--hero-title-max-w': `${titleMaxWidth}%` } as React.CSSProperties}
+              style={{ '--hero-title-max-w': `${desktopTitleMaxWidth}%` } as React.CSSProperties}
               className={`min-w-0 space-y-2 sm:space-y-3.5 ${
                 isPriceActive ? 'flex-1 md:max-w-[var(--hero-title-max-w)]' : 'w-full md:max-w-[var(--hero-title-max-w)]'
               } ${
-                data?.hero_horizontal_alignment === 'center' ? 'text-center' :
-                data?.hero_horizontal_alignment === 'right' ? 'text-right' : 'text-left'
+                mobileAlignX === 'center' ? 'text-center' :
+                mobileAlignX === 'right' ? 'text-right' : 'text-left'
+              } ${
+                desktopAlignX === 'center' ? 'md:text-center' :
+                desktopAlignX === 'right' ? 'md:text-right' : 'md:text-left'
               }`}
             >
               <h1 
                 style={{ 
                   fontSize: isPriceActive 
-                    ? `clamp(${(1.75 * titleScale).toFixed(2)}rem, ${(4.8 * titleScale).toFixed(2)}vw, ${(6.8 * titleScale).toFixed(2)}rem)`
-                    : `clamp(${(2.2 * titleScale).toFixed(2)}rem, ${(5.5 * titleScale).toFixed(2)}vw, ${(7.2 * titleScale).toFixed(2)}rem)`,
+                    ? `clamp(${(1.75 * mobileTitleScale).toFixed(2)}rem, ${(4.8 * tabletTitleScale).toFixed(2)}vw, ${(6.8 * desktopTitleScale).toFixed(2)}rem)`
+                    : `clamp(${(2.2 * mobileTitleScale).toFixed(2)}rem, ${(5.5 * tabletTitleScale).toFixed(2)}vw, ${(7.2 * desktopTitleScale).toFixed(2)}rem)`,
                   fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
                 }}
                 className={`leading-[1.05] font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] tracking-tight ${
-                  data?.hero_horizontal_alignment === 'center' ? 'mx-auto' : ''
+                  desktopAlignX === 'center' ? 'md:mx-auto' : ''
                 }`}
               >
                 {data?.hero_title || 'Descubre tu Mejor Versión'}
@@ -215,10 +253,10 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
 
               <p 
                 style={{
-                  fontSize: `clamp(${(0.85 * subtitleScale).toFixed(2)}rem, ${(1.2 * subtitleScale).toFixed(2)}vw, ${(1.35 * subtitleScale).toFixed(2)}rem)`
+                  fontSize: `clamp(${(0.85 * mobileSubtitleScale).toFixed(2)}rem, ${(1.2 * tabletSubtitleScale).toFixed(2)}vw, ${(1.35 * desktopSubtitleScale).toFixed(2)}rem)`
                 }}
                 className={`text-white/90 font-medium font-sans tracking-wide leading-relaxed drop-shadow-md ${
-                  data?.hero_horizontal_alignment === 'center' ? 'max-w-2xl mx-auto' : 'max-w-xl'
+                  desktopAlignX === 'center' ? 'md:max-w-2xl md:mx-auto' : 'max-w-xl'
                 }`}
               >
                 {data?.hero_subtitle || 'Tratamientos estéticos avanzados y bienestar en un ambiente exclusivo.'}
@@ -236,8 +274,11 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
           {/* Fila Inferior: Botón de Acción CTA (debajo del bloque de textos y precio) */}
           {data?.hero_show_button !== false && (
             <div className={`pt-3 sm:pt-4 md:pt-6 w-full ${
-              data?.hero_horizontal_alignment === 'center' ? 'flex justify-center' :
-              data?.hero_horizontal_alignment === 'right' ? 'flex justify-end' : 'flex justify-start'
+              mobileAlignX === 'center' ? 'flex justify-center' :
+              mobileAlignX === 'right' ? 'flex justify-end' : 'flex justify-start'
+            } ${
+              desktopAlignX === 'center' ? 'md:flex md:justify-center' :
+              desktopAlignX === 'right' ? 'md:flex md:justify-end' : 'md:flex md:justify-start'
             }`}>
               <Link 
                 href={data?.hero_button_link || "/reservar"} 

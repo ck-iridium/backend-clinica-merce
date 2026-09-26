@@ -747,6 +747,7 @@ class SiteContentBase(BaseModel):
     hero_price_offset_y: Optional[int] = 0
     hero_price_style: Optional[str] = "capsule_dark"
     hero_button_style: Optional[str] = "glass"
+    hero_responsive_config: Optional[Dict[str, Any]] = None
     
     about_title: Optional[str] = None
     about_text: Optional[str] = None
@@ -794,6 +795,7 @@ class SiteContentUpdate(BaseModel):
     hero_price_offset_y: Optional[int] = None
     hero_price_style: Optional[str] = None
     hero_button_style: Optional[str] = None
+    hero_responsive_config: Optional[Dict[str, Any]] = None
     
     about_title: Optional[str] = None
     about_text: Optional[str] = None

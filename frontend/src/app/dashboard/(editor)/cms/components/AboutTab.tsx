@@ -1,6 +1,7 @@
 "use client"
 import React from 'react';
 import ImageUploadBlock from './ImageUploadBlock';
+import { SelectSimple } from '@/components/ui/select';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 
 export default function AboutTab({ 
@@ -38,14 +39,14 @@ export default function AboutTab({
               <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">
                 {t('cms.about.image_position')}
               </label>
-              <select 
-                value={formData.about_layout || "right"} 
-                onChange={e => setFormData((prev: any) => ({ ...prev, about_layout: e.target.value }))} 
-                className="w-full px-4 py-3 rounded-xl border border-border/50 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 text-sm font-bold"
-              >
-                <option value="left">{t('cms.about.img_left')}</option>
-                <option value="right">{t('cms.about.img_right')}</option>
-              </select>
+              <SelectSimple
+                value={formData.about_layout || "right"}
+                onChange={(val) => setFormData((prev: any) => ({ ...prev, about_layout: val }))}
+                options={[
+                  { value: "left", label: t('cms.about.img_left') },
+                  { value: "right", label: t('cms.about.img_right') }
+                ]}
+              />
            </div>
            <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">
