@@ -79,10 +79,38 @@ def reorder_navigation(payload: schemas.NavigationReorderRequest, db: Session = 
     return {"status": "success", "message": "Navegación reordenada correctamente"}
 
 
+@router.post("/navigation", response_model=schemas.NavigationItemOut, status_code=201)
+def create_navigation_item(payload: schemas.NavigationItemCreate, db: Session = Depends(database.get_db)):
+    """
+    Crea un nuevo enlace en el menú de navegación (ej. enlace a página existente, ancla o URL externa).
+    """
+    tenant_id = current_tenant_var.get()
+    if not tenant_id:
+        raise HTTPException(status_code=400, detail="Falta cabecera X-Tenant-ID")
+
+    max_order = db.query(models.SiteNavigation)\
+        .filter(models.SiteNavigation.tenant_id == tenant_id)\
+        .count()
+
+    db_item = models.SiteNavigation(
+        id=str(uuid.uuid4()),
+        tenant_id=tenant_id,
+        label=payload.label.strip(),
+        path=payload.path.strip(),
+        order_index=max_order,
+        is_visible=payload.is_visible,
+        is_custom=True
+    )
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    return db_item
+
+
 @router.put("/navigation/{item_id}", response_model=schemas.NavigationItemOut)
 def update_navigation(item_id: str, payload: schemas.NavigationUpdateRequest, db: Session = Depends(database.get_db)):
     """
-    Permite modificar las etiquetas y estados de visibilidad de los elementos del menú.
+    Permite modificar las etiquetas, rutas y estados de visibilidad de los elementos del menú.
     """
     tenant_id = current_tenant_var.get()
     if not tenant_id:
@@ -96,13 +124,36 @@ def update_navigation(item_id: str, payload: schemas.NavigationUpdateRequest, db
         raise HTTPException(status_code=404, detail="Elemento de navegación no encontrado")
 
     if payload.label is not None:
-        db_item.label = payload.label
+        db_item.label = payload.label.strip()
+    if payload.path is not None:
+        db_item.path = payload.path.strip()
     if payload.is_visible is not None:
         db_item.is_visible = payload.is_visible
 
     db.commit()
     db.refresh(db_item)
     return db_item
+
+
+@router.delete("/navigation/{item_id}", status_code=200)
+def delete_navigation_item(item_id: str, db: Session = Depends(database.get_db)):
+    """
+    Elimina un enlace del menú de navegación.
+    """
+    tenant_id = current_tenant_var.get()
+    if not tenant_id:
+        raise HTTPException(status_code=400, detail="Falta cabecera X-Tenant-ID")
+
+    db_item = db.query(models.SiteNavigation)\
+        .filter(models.SiteNavigation.id == item_id, models.SiteNavigation.tenant_id == tenant_id)\
+        .first()
+
+    if not db_item:
+        raise HTTPException(status_code=404, detail="Elemento de navegación no encontrado")
+
+    db.delete(db_item)
+    db.commit()
+    return {"status": "success", "message": "Elemento de navegación eliminado correctamente"}
 
 
 # ---------------------------------------------------------------------

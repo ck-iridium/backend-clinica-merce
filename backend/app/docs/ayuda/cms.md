@@ -72,16 +72,18 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL del Hub `
   - Selector: `id="cms-hero-button-style-select"`
 - **Selector Inteligente de Enlace:** Abre el modal de selección de destinos y tratamientos.
   - Selector: `id="cms-hero-smart-link-btn"`
-- **Gestionar Enlaces del Menú (Navegación):** Acceso al reordenamiento de links superiores y megamenú.
+- **Gestionar Enlaces del Menú (Navegación):** Permite añadir enlaces directamente al menú superior (enlazando a una página creada o introduciendo una URL/ancla personalizada), reordenar los enlaces existentes con flechas, renombrarlos, ocultarlos con el icono del ojo o eliminarlos, además de configurar el megamenú interactivo.
   - Selector: `id="cms-bento-nav-editor"`
 - **Configurar Tipografía y Colores (Branding):** Redirecciona a la sección de marca en Ajustes generales.
   - Selector: `id="cms-bento-branding"`
-- **Gestionar Páginas Autónomas (Páginas del Sitio):** Redirecciona al listado de páginas de la clínica.
+- **Gestionar Páginas Autónomas (Páginas del Sitio):** Redirecciona al listado de páginas de la clínica (`/dashboard/pages`).
   - Selector: `id="cms-bento-pages"`
 
 ### Gestor de Páginas Independientes (`/dashboard/pages`)
-- **Crear Nueva Página:** Abre el modal de configuración de nueva URL estática.
-  - Selector en la página principal: `id="cms-new-page-btn"` (Nota: busca por texto "Nueva Página" si no se localiza).
-- **Listar Páginas:** Lista de páginas publicadas.
-- **Eliminar Página:** Elimina definitivamente la página seleccionada.
+- **Crear Nueva Página:** Abre el modal de configuración de nueva página autónoma y permite activar el switch "Mostrar en el menú de navegación".
+  - Selector en la página principal: `id="cms-new-page-btn"` (o botón "Nueva Página").
+- **Diseñar Página:** Botón para abrir el editor visual de bloques y secciones de esa página (`/dashboard/pages/[slug]`).
+- **Ajustes de Página:** Botón para reabrir el modal y editar título, URL/slug o conmutar si se muestra en el menú superior.
+- **Menú Superior (Píldora interactiva):** Conmutador rápido con 1 clic para mostrar u ocultar la página del menú público.
+- **Eliminar Página:** Elimina definitivamente la página seleccionada y sus bloques.
   - Selector: `id="cms-delete-page-btn-[id]"` o `id="delete-page-btn-[id]"`

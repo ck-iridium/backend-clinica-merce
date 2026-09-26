@@ -138,8 +138,14 @@ class NavigationItemOut(NavigationItemBase):
 class NavigationReorderRequest(BaseModel):
     ids: List[str]
 
+class NavigationItemCreate(BaseModel):
+    label: str
+    path: str
+    is_visible: bool = True
+
 class NavigationUpdateRequest(BaseModel):
     label: Optional[str] = None
+    path: Optional[str] = None
     is_visible: Optional[bool] = None
 
 # --- CMS Modular Blocks ---

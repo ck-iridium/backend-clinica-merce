@@ -1,7 +1,8 @@
 "use client";
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useLanguage } from '@/app/contexts/LanguageContext';
-import { X, Search, Sparkles, Calendar, BookOpen, Layers, Globe, ExternalLink, Check, ChevronRight } from 'lucide-react';
+import { X, Search, Sparkles, Calendar, BookOpen, Layers, Globe, ExternalLink, Check, ChevronRight, FileText } from 'lucide-react';
 
 interface SmartLinkPickerModalProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface SmartLinkPickerModalProps {
   currentValue?: string;
   categories?: any[];
   services?: any[];
+  customPages?: any[];
 }
 
 export default function SmartLinkPickerModal({
@@ -19,48 +21,74 @@ export default function SmartLinkPickerModal({
   currentValue = '',
   categories = [],
   services = [],
+  customPages = [],
 }: SmartLinkPickerModalProps) {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'pages' | 'services' | 'categories' | 'custom'>('pages');
   const [searchQuery, setSearchQuery] = useState('');
   const [customUrl, setCustomUrl] = useState(currentValue);
 
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Listado de páginas predefinidas
-  const predefinedPages = useMemo(() => [
-    {
-      id: 'booking',
-      title: t('cms.link_picker.page_booking') || 'Reserva de Cita (Paso a paso)',
-      description: t('cms.link_picker.page_booking_desc') || 'Abre el asistente de reserva de citas para clientes',
-      url: '/reservar',
-      suggestedText: t('cms.link_picker.suggest_booking') || 'Reservar Cita',
-      icon: Calendar,
-      badge: 'Recomendado'
-    },
-    {
-      id: 'treatments_section',
-      title: t('cms.link_picker.page_treatments') || 'Sección de Tratamientos',
-      description: t('cms.link_picker.page_treatments_desc') || 'Desplaza la vista a las categorías y servicios de la portada',
-      url: '#tratamientos',
-      suggestedText: t('cms.link_picker.suggest_treatments') || 'Ver Tratamientos',
-      icon: Sparkles
-    },
-    {
-      id: 'about_section',
-      title: t('cms.link_picker.page_about') || 'Sección Sobre Mí / Clínica',
-      description: t('cms.link_picker.page_about_desc') || 'Desplaza la vista a la historia y filosofía de la clínica',
-      url: '#sobre-mi',
-      suggestedText: t('cms.link_picker.suggest_about') || 'Conócenos',
-      icon: BookOpen
-    },
-    {
-      id: 'contact_section',
-      title: t('cms.link_picker.page_contact') || 'Sección de Contacto y Ubicación',
-      description: t('cms.link_picker.page_contact_desc') || 'Desplaza la vista al pie de página con mapa y teléfono',
-      url: '#contacto',
-      suggestedText: t('cms.link_picker.suggest_contact') || 'Contactar',
-      icon: Globe
-    },
-  ], [t]);
+  const predefinedPages = useMemo(() => {
+    const list = [
+      {
+        id: 'booking',
+        title: t('cms.link_picker.page_booking') || 'Reserva de Cita (Paso a paso)',
+        description: t('cms.link_picker.page_booking_desc') || 'Abre el asistente de reserva de citas para clientes',
+        url: '/reservar',
+        suggestedText: t('cms.link_picker.suggest_booking') || 'Reservar Cita',
+        icon: Calendar,
+        badge: 'Recomendado'
+      },
+      {
+        id: 'treatments_section',
+        title: t('cms.link_picker.page_treatments') || 'Sección de Tratamientos',
+        description: t('cms.link_picker.page_treatments_desc') || 'Desplaza la vista a las categorías y servicios de la portada',
+        url: '#tratamientos',
+        suggestedText: t('cms.link_picker.suggest_treatments') || 'Ver Tratamientos',
+        icon: Sparkles
+      },
+      {
+        id: 'about_section',
+        title: t('cms.link_picker.page_about') || 'Sección Sobre Mí / Clínica',
+        description: t('cms.link_picker.page_about_desc') || 'Desplaza la vista a la historia y filosofía de la clínica',
+        url: '#sobre-mi',
+        suggestedText: t('cms.link_picker.suggest_about') || 'Conócenos',
+        icon: BookOpen
+      },
+      {
+        id: 'contact_section',
+        title: t('cms.link_picker.page_contact') || 'Sección de Contacto y Ubicación',
+        description: t('cms.link_picker.page_contact_desc') || 'Desplaza la vista al pie de página con mapa y teléfono',
+        url: '#contacto',
+        suggestedText: t('cms.link_picker.suggest_contact') || 'Contactar',
+        icon: Globe
+      },
+    ];
+
+    if (customPages && customPages.length > 0) {
+      customPages.forEach((cp: any) => {
+        const path = cp.path || (cp.slug ? `/${cp.slug}` : '/');
+        const title = cp.label || cp.title || 'Página Web';
+        list.push({
+          id: `custom_page_${cp.id || path}`,
+          title,
+          description: `Página del sitio: ${path}`,
+          url: path,
+          suggestedText: title,
+          icon: FileText,
+          badge: 'Página Web'
+        });
+      });
+    }
+
+    return list;
+  }, [t, customPages]);
 
   // Filtrado de servicios
   const filteredServices = useMemo(() => {
@@ -82,10 +110,10 @@ export default function SmartLinkPickerModal({
     return categories.filter((c: any) => c.name?.toLowerCase().includes(q));
   }, [categories, searchQuery]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999] bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
       <div className="bg-white dark:bg-stone-900 rounded-3xl shadow-2xl border border-stone-200/80 dark:border-stone-800 max-w-2xl w-full overflow-hidden flex flex-col max-h-[85vh]">
         {/* Cabecera del Modal */}
         <div className="px-6 py-5 border-b border-stone-200/70 dark:border-stone-800 flex items-center justify-between bg-stone-50/60 dark:bg-stone-900/60">
@@ -482,4 +510,6 @@ export default function SmartLinkPickerModal({
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : null;
 }

@@ -277,6 +277,53 @@ export default function CMSPage() {
     }
   };
 
+  const handleAddNavItem = async (newItem: { label: string; path: string; is_visible: boolean }) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cms/navigation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newItem)
+      });
+      if (!res.ok) throw new Error();
+      const created = await res.json();
+      setNavigationItems(prev => [...prev, created]);
+      showFeedback({
+        type: 'success',
+        title: 'Enlace Añadido',
+        message: `"${created.label}" se ha incorporado al menú superior.`
+      });
+    } catch (err) {
+      console.error(err);
+      showFeedback({
+        type: 'error',
+        title: 'Error',
+        message: 'No se pudo añadir el enlace al menú.'
+      });
+    }
+  };
+
+  const handleDeleteNavItem = async (itemId: string) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cms/navigation/${itemId}`, {
+        method: 'DELETE'
+      });
+      if (!res.ok) throw new Error();
+      setNavigationItems(prev => prev.filter(item => item.id !== itemId));
+      showFeedback({
+        type: 'success',
+        title: 'Enlace Eliminado',
+        message: 'El enlace ha sido quitado del menú de navegación.'
+      });
+    } catch (err) {
+      console.error(err);
+      showFeedback({
+        type: 'error',
+        title: 'Error',
+        message: 'No se pudo eliminar el enlace del menú.'
+      });
+    }
+  };
+
   const toggleMegamenuCategory = (categoryId: string) => {
     const activeCats = categories.filter(c => c.is_active).map(c => c.id);
     if (megamenuCategories === null) {
@@ -607,6 +654,10 @@ export default function CMSPage() {
                 onMoveNavItem={moveNavItem}
                 onUpdateNavItemLabel={updateNavItemLabel}
                 onToggleNavItemVisibility={toggleNavItemVisibility}
+                onAddNavItem={handleAddNavItem}
+                onDeleteNavItem={handleDeleteNavItem}
+                categories={categories}
+                services={services}
               />
             ) : (
               <MegamenuEditorTab
