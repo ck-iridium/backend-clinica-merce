@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import AIChatContainer from '@/components/ai/AIChatContainer';
-import { RefreshCw, ExternalLink, Monitor, Smartphone, Globe, Sparkles } from 'lucide-react';
+import { RefreshCw, ExternalLink, Monitor, Smartphone, Tablet, Globe, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 // Helper simple para leer cookies del lado del cliente
@@ -17,7 +17,7 @@ function getCookie(name: string): string | null {
 export default function AIWebmasterPage() {
   const [iframeUrl, setIframeUrl] = useState('');
   const [iframeKey, setIframeKey] = useState(0);
-  const [viewMode, setViewMode] = useState<'desktop' | 'mobile'>('desktop');
+  const [viewMode, setViewMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [isLoadingIframe, setIsLoadingIframe] = useState(true);
   const [planType, setPlanType] = useState<string | null>(null);
   const [checkingPlan, setCheckingPlan] = useState(true);
@@ -206,45 +206,56 @@ export default function AIWebmasterPage() {
       <div className="flex-1 h-[50vh] lg:h-full flex flex-col bg-stone-50 overflow-hidden relative">
         
         {/* Cabecera de la Vista Previa (Quiet Luxury / Simulación de Navegador) */}
-        <div className="flex items-center justify-between px-6 bg-white border-b border-stone-200/50 shrink-0 gap-3 h-[72px]">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 shrink-0">
-              <span className="w-3 h-3 rounded-full bg-red-400/80" />
-              <span className="w-3 h-3 rounded-full bg-yellow-400/80" />
-              <span className="w-3 h-3 rounded-full bg-green-400/80" />
-            </div>
-            {/* Barra de dirección simulada */}
-            <div className="hidden md:flex items-center gap-2 bg-stone-50 border border-stone-200/60 rounded-lg px-3 py-1 text-[11px] font-mono text-stone-400 w-80 truncate select-all">
-              <Globe size={11} className="text-stone-300" />
-              {iframeUrl}
+        <div className="flex items-center justify-between px-6 bg-white border-b border-stone-200/50 shrink-0 gap-3 h-[68px]">
+          <div className="flex items-center gap-3 min-w-0">
+            {/* Barra de dirección simulada (Estilo Quiet Luxury sin botones Mac) */}
+            <div className="flex items-center gap-2 bg-stone-50 border border-stone-200/70 rounded-xl px-3.5 py-1.5 text-[11px] font-mono text-stone-600 max-w-sm sm:max-w-md truncate select-all shadow-2xs">
+              <Globe size={13} className="text-[#d4af37] shrink-0" />
+              <span className="truncate">{iframeUrl}</span>
             </div>
           </div>
 
           {/* Controles de Vista Previa */}
           <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-            {/* Cambiar dispositivo */}
-            <div className="flex items-center bg-stone-100 rounded-lg p-0.5 border border-stone-200/40">
+            {/* Selector de Dispositivos */}
+            <div className="flex items-center bg-stone-100/80 rounded-xl p-1 border border-stone-200/50">
               <button
                 onClick={() => setViewMode('desktop')}
-                className={`p-1.5 rounded-md transition-all ${
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
                   viewMode === 'desktop'
-                    ? 'bg-white text-stone-800 shadow-sm'
-                    : 'text-stone-400 hover:text-stone-600'
+                    ? 'bg-white text-stone-900 shadow-xs'
+                    : 'text-stone-400 hover:text-stone-700'
                 }`}
-                title="Vista de Escritorio"
+                title="Escritorio (Ancho Completo)"
               >
-                <Monitor size={15} />
+                <Monitor size={14} />
+                <span className="hidden sm:inline">Escritorio</span>
               </button>
+
+              <button
+                onClick={() => setViewMode('tablet')}
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                  viewMode === 'tablet'
+                    ? 'bg-white text-stone-900 shadow-xs'
+                    : 'text-stone-400 hover:text-stone-700'
+                }`}
+                title="Tablet (768px)"
+              >
+                <Tablet size={14} />
+                <span className="hidden sm:inline">Tablet</span>
+              </button>
+
               <button
                 onClick={() => setViewMode('mobile')}
-                className={`p-1.5 rounded-md transition-all ${
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
                   viewMode === 'mobile'
-                    ? 'bg-white text-stone-800 shadow-sm'
-                    : 'text-stone-400 hover:text-stone-600'
+                    ? 'bg-white text-stone-900 shadow-xs'
+                    : 'text-stone-400 hover:text-stone-700'
                 }`}
-                title="Vista Móvil"
+                title="Móvil (Responsivo)"
               >
-                <Smartphone size={15} />
+                <Smartphone size={14} />
+                <span className="hidden sm:inline">Móvil</span>
               </button>
             </div>
 
@@ -274,12 +285,16 @@ export default function AIWebmasterPage() {
         </div>
 
         {/* Iframe Viewport Container */}
-        <div className={`flex-1 overflow-auto bg-stone-100/60 flex items-start justify-start shadow-inner ${viewMode === 'mobile' ? 'p-6' : 'p-0'}`}>
+        <div className={`flex-1 overflow-auto bg-stone-100/70 flex items-center justify-center relative ${
+          viewMode === 'desktop' ? 'p-0' : 'p-4 sm:p-6'
+        }`}>
           <div
-            className={`relative bg-white shadow-2xl border border-stone-200/80 transition-all duration-500 ease-out flex flex-col shrink-0 ${
-              viewMode === 'mobile'
-                ? 'w-[375px] h-[667px] rounded-[2.5rem] border-[10px] border-stone-900 shadow-stone-400/50 mx-auto'
-                : 'w-[1500px] h-full min-h-[750px] rounded-xl'
+            className={`relative bg-white transition-all duration-300 ease-out flex flex-col ${
+              viewMode === 'desktop'
+                ? 'w-full h-full border-0 shadow-none rounded-none'
+                : viewMode === 'tablet'
+                  ? 'w-[768px] max-w-full h-[95%] max-h-[960px] rounded-3xl border border-stone-200/90 shadow-2xl overflow-hidden'
+                  : 'w-[420px] max-w-full h-[95%] max-h-[860px] rounded-3xl border border-stone-200/90 shadow-2xl overflow-hidden'
             }`}
           >
             {/* Pantalla del Iframe */}

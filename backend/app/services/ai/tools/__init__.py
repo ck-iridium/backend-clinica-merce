@@ -1,4 +1,11 @@
-from .landing import update_landing_config
+from .landing import (
+    update_landing_config,
+    get_hero_slides,
+    add_hero_slide,
+    update_hero_slide,
+    delete_hero_slide,
+    update_hero_slider_settings
+)
 from .branding import update_tenant_branding
 from .services import (
     update_service_fields, 
@@ -17,6 +24,11 @@ from .help import consultar_manual_ayuda
 
 # Lista de herramientas unificada disponible para Gemini
 AGENT_TOOLS = [
+    get_hero_slides,
+    add_hero_slide,
+    update_hero_slide,
+    delete_hero_slide,
+    update_hero_slider_settings,
     update_landing_config, 
     update_tenant_branding,
     update_service_fields, 
