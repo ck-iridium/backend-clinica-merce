@@ -1,11 +1,14 @@
 "use client"
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
-import { Clock, Pencil, Trash2, Search, CheckCircle, HelpCircle, AlertCircle, Eye, EyeOff, Loader2 } from 'lucide-react';
-import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from 'sonner';
-import { useFeedback } from '@/app/contexts/FeedbackContext';
 import MediaPickerModal from '@/components/MediaPickerModal';
+import {
+  DataGridFilters,
+  DataGridBulkBar,
+  DataGridRow,
+  DataGridSkeleton,
+  useServiceMutations,
+} from './datagrid';
 
 interface ServicesDataGridProps {
   services: any[];
@@ -24,54 +27,40 @@ export default function ServicesDataGrid({
   onEditClick,
   onRefresh,
 }: ServicesDataGridProps) {
-  const { t, language } = useLanguage();
-  const { showFeedback } = useFeedback();
+  const { language } = useLanguage();
 
-  // Estados locales
+  // Estados locales de filtrado y selección
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  
-  // Seguimiento de cambios rápidos
-  const [updatingPrices, setUpdatingPrices] = useState<Record<string, string>>({});
-  const [savingPriceId, setSavingPriceId] = useState<string | null>(null);
-  const [updatingDurations, setUpdatingDurations] = useState<Record<string, string>>({});
-  const [savingDurationId, setSavingDurationId] = useState<string | null>(null);
-  const [savingCategoryId, setSavingCategoryId] = useState<string | null>(null);
-  const [activeImagePickerServiceId, setActiveImagePickerServiceId] = useState<string | null>(null);
-  const [updatingStatusIds, setUpdatingStatusIds] = useState<Set<string>>(new Set());
-  const [bulkActionLoading, setBulkActionLoading] = useState<boolean>(false);
 
-  // Obtener headers de autenticación con aislamiento Tenant
-  const getAuthHeaders = () => {
-    const getCookie = (name: string): string | null => {
-      if (typeof document === 'undefined') return null;
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
-      return null;
-    };
-
-    const userSession = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
-    let tenantId = getCookie('tenant_id') || '';
-    let authToken = '';
-    if (userSession) {
-      try {
-        const parsed = JSON.parse(userSession);
-        if (!tenantId) {
-          tenantId = parsed.tenant_id || '';
-        }
-        authToken = parsed.access_token || parsed.token || '';
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return {
-      'Content-Type': 'application/json',
-      'X-Tenant-ID': tenantId,
-      ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {})
-    };
-  };
+  // Hook desacoplado de mutaciones y acciones rápidas
+  const {
+    updatingPrices,
+    savingPriceId,
+    handlePriceChange,
+    handlePriceSave,
+    updatingDurations,
+    savingDurationId,
+    handleDurationChange,
+    handleDurationSave,
+    savingCategoryId,
+    handleCategorySave,
+    activeImagePickerServiceId,
+    setActiveImagePickerServiceId,
+    handleImageSave,
+    updatingStatusIds,
+    handleToggleStatus,
+    handleDeleteIndividual,
+    bulkActionLoading,
+    handleBulkStatusChange,
+    handleBulkDelete,
+  } = useServiceMutations({
+    language,
+    onRefresh,
+    selectedIds,
+    setSelectedIds,
+  });
 
   const getCategoryName = (id: string) => categories.find(c => c.id === id)?.name || "General";
 
@@ -94,7 +83,7 @@ export default function ServicesDataGrid({
       result = result.filter(s => s.category_id === selectedCategory);
     }
 
-    // C. Filtrado por término de búsqueda (búsqueda difusa básica)
+    // C. Filtrado por término de búsqueda
     if (searchQuery.trim() !== '') {
       const term = searchQuery.toLowerCase().trim();
       result = result.filter(s => 
@@ -133,412 +122,35 @@ export default function ServicesDataGrid({
     setSelectedIds(newSelected);
   };
 
-  // ── Mutaciones Directas Premium ──
-
-  // 1. Toggled de estado Activo/Inactivo directo
-  const handleToggleStatus = async (service: any) => {
-    const newStatus = !service.is_active;
-    const targetId = service.id;
-
-    setUpdatingStatusIds(prev => {
-      const next = new Set(prev);
-      next.add(targetId);
-      return next;
-    });
-
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/${targetId}`, {
-        method: 'PATCH',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ is_active: newStatus }),
-      });
-      if (res.ok) {
-        toast.success(`Servicio "${service.name}" ${newStatus ? 'activado' : 'desactivado'} con éxito.`);
-        if (onRefresh) onRefresh();
-      } else {
-        throw new Error();
-      }
-    } catch (err) {
-      toast.error('Error al actualizar el estado del servicio.');
-    } finally {
-      setUpdatingStatusIds(prev => {
-        const next = new Set(prev);
-        next.delete(targetId);
-        return next;
-      });
-    }
-  };
-
-  // 2. Modificación de precio rápida por fila (Blur / Enter)
-  const handlePriceChange = (id: string, val: string) => {
-    setUpdatingPrices(prev => ({ ...prev, [id]: val }));
-  };
-
-  const handlePriceSave = async (service: any, val: string) => {
-    const originalPrice = parseFloat(service.price);
-    const newPrice = parseFloat(val);
-
-    if (isNaN(newPrice) || newPrice < 0) {
-      toast.error('Por favor, ingresa un precio numérico válido.');
-      // Revertir input local
-      setUpdatingPrices(prev => {
-        const next = { ...prev };
-        delete next[service.id];
-        return next;
-      });
-      return;
-    }
-
-    if (newPrice === originalPrice) return; // No hay cambios reales
-
-    setSavingPriceId(service.id);
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/${service.id}`, {
-        method: 'PATCH',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ price: newPrice }),
-      });
-      if (res.ok) {
-        toast.success(`Precio de "${service.name}" actualizado a ${newPrice} €.`);
-        if (onRefresh) onRefresh();
-      } else {
-        throw new Error();
-      }
-    } catch (err) {
-      toast.error('Error al actualizar el precio.');
-    } finally {
-      setSavingPriceId(null);
-      setUpdatingPrices(prev => {
-        const next = { ...prev };
-        delete next[service.id];
-        return next;
-      });
-    }
-  };
-
-  // Modificación de duración rápida por fila (Blur / Enter)
-  const handleDurationChange = (id: string, val: string) => {
-    setUpdatingDurations(prev => ({ ...prev, [id]: val }));
-  };
-
-  const handleDurationSave = async (service: any, val: string) => {
-    const originalDuration = parseInt(service.duration_minutes);
-    const newDuration = parseInt(val);
-
-    if (isNaN(newDuration) || newDuration <= 0) {
-      toast.error(language === 'fr' ? 'Veuillez saisir una durée valide.' : language === 'en' ? 'Please enter a valid duration.' : 'Por favor, ingresa una duración válida.');
-      setUpdatingDurations(prev => {
-        const next = { ...prev };
-        delete next[service.id];
-        return next;
-      });
-      return;
-    }
-
-    if (newDuration === originalDuration) return;
-
-    setSavingDurationId(service.id);
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/${service.id}`, {
-        method: 'PATCH',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ duration_minutes: newDuration }),
-      });
-      if (res.ok) {
-        toast.success(language === 'fr' ? `Durée de "${service.name}" mise à jour à ${newDuration} min.` : language === 'en' ? `Duration of "${service.name}" updated to ${newDuration} min.` : `Duración de "${service.name}" actualizada a ${newDuration} min.`);
-        if (onRefresh) onRefresh();
-      } else {
-        throw new Error();
-      }
-    } catch (err) {
-      toast.error(language === 'fr' ? 'Erreur lors de la mise à jour de la duración.' : language === 'en' ? 'Error updating duration.' : 'Error al actualizar la duración.');
-    } finally {
-      setSavingDurationId(null);
-      setUpdatingDurations(prev => {
-        const next = { ...prev };
-        delete next[service.id];
-        return next;
-      });
-    }
-  };
-
-  // Modificación de categoría rápida por fila
-  const handleCategorySave = async (service: any, newCategoryId: string) => {
-    const finalValue = newCategoryId === "" ? null : newCategoryId;
-    if (service.category_id === finalValue) return;
-
-    setSavingCategoryId(service.id);
-    const toastId = toast.loading(
-      language === 'fr' ? 'Mise à jour de la catégorie...' : 
-      language === 'en' ? 'Updating category...' : 
-      'Actualizando categoría...'
-    );
-
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/${service.id}`, {
-        method: 'PATCH',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ category_id: finalValue }),
-      });
-      if (res.ok) {
-        toast.success(
-          language === 'fr' ? 'Catégorie mise à jour.' : 
-          language === 'en' ? 'Category updated.' : 
-          'Categoría actualizada con éxito.', 
-          { id: toastId }
-        );
-        if (onRefresh) onRefresh();
-      } else {
-        throw new Error();
-      }
-    } catch (err) {
-      toast.error(
-        language === 'fr' ? 'Erreur lors de la mise à jour.' : 
-        language === 'en' ? 'Error updating category.' : 
-        'Error al actualizar la categoría.', 
-        { id: toastId }
-      );
-    } finally {
-      setSavingCategoryId(null);
-    }
-  };
-
-  const handleImageSave = async (id: string, url: string) => {
-    const toastId = toast.loading(language === 'fr' ? "Mise à jour de l'image..." : language === 'en' ? "Updating image..." : "Actualizando imagen...");
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/${id}`, {
-        method: 'PATCH',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ image_url: url }),
-      });
-      if (res.ok) {
-        toast.success(language === 'fr' ? "Image mise à jour avec succès." : language === 'en' ? "Image updated successfully." : "Imagen actualizada con éxito.", { id: toastId });
-        if (onRefresh) onRefresh();
-      } else {
-        throw new Error();
-      }
-    } catch (err) {
-      toast.error(language === 'fr' ? "Erreur de mise à jour." : language === 'en' ? "Error updating image." : "Error al actualizar la imagen.", { id: toastId });
-    } finally {
-      setActiveImagePickerServiceId(null);
-    }
-  };
-
-  // 3. Eliminar individual con FeedbackModal
-  const handleDeleteIndividual = async (id: string, name: string) => {
-    showFeedback({
-      type: 'confirm',
-      title: '¿Eliminar servicio?',
-      message: `¿Estás seguro de que deseas eliminar el servicio "${name}"? Esta acción no se puede deshacer.`,
-      confirmText: 'Sí, eliminar',
-      cancelText: 'Cancelar',
-      onConfirm: async () => {
-        const toastId = toast.loading('Eliminando servicio...');
-        try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/${id}`, {
-            method: 'DELETE',
-            headers: getAuthHeaders(),
-          });
-          if (res.ok) {
-            toast.success('Servicio eliminado con éxito.', { id: toastId });
-            if (onRefresh) onRefresh();
-          } else {
-            const data = await res.json();
-            toast.error(data.detail || 'Error al eliminar el servicio.', { id: toastId });
-          }
-        } catch (err) {
-          toast.error('Error de red al eliminar el servicio.', { id: toastId });
-        }
-      }
-    });
-  };
-
-  // 4. Acciones Masivas en Lote (Bulk Actions)
-  const handleBulkStatusChange = async (is_active: boolean) => {
-    if (selectedIds.size === 0) return;
-    setBulkActionLoading(true);
-    const toastId = toast.loading(`Actualizando estado de ${selectedIds.size} servicios...`);
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/bulk-status`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          ids: Array.from(selectedIds),
-          is_active: is_active
-        })
-      });
-      if (res.ok) {
-        toast.success(`Estado de ${selectedIds.size} servicios actualizado con éxito.`, { id: toastId });
-        setSelectedIds(new Set());
-        if (onRefresh) onRefresh();
-      } else {
-        const data = await res.json();
-        toast.error(data.detail || 'Error al actualizar el lote.', { id: toastId });
-      }
-    } catch (err) {
-      toast.error('Error de red al actualizar los servicios en lote.', { id: toastId });
-    } finally {
-      setBulkActionLoading(false);
-    }
-  };
-
-  const handleBulkDelete = () => {
-    if (selectedIds.size === 0) return;
-    showFeedback({
-      type: 'confirm',
-      title: '¿Eliminar servicios en lote?',
-      message: `¿Estás seguro de que deseas eliminar permanentemente los ${selectedIds.size} servicios seleccionados? Esta acción es irreversible.`,
-      confirmText: 'Sí, eliminar lote',
-      cancelText: 'Cancelar',
-      onConfirm: async () => {
-        setBulkActionLoading(true);
-        const toastId = toast.loading(`Eliminando ${selectedIds.size} servicios...`);
-        try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/bulk-delete`, {
-            method: 'POST',
-            headers: getAuthHeaders(),
-            body: JSON.stringify({
-              ids: Array.from(selectedIds)
-            })
-          });
-          if (res.ok) {
-            toast.success(`¡Lote de ${selectedIds.size} servicios eliminado con éxito!`, { id: toastId });
-            setSelectedIds(new Set());
-            if (onRefresh) onRefresh();
-          } else {
-            const data = await res.json();
-            toast.error(data.detail || 'Error al eliminar el lote de servicios.', { id: toastId });
-          }
-        } catch (err) {
-          toast.error('Error de red al eliminar el lote de servicios.', { id: toastId });
-        } finally {
-          setBulkActionLoading(false);
-        }
-      }
-    });
-  };
-
   // Loading Skeleton
   if (loading) {
-    return (
-      <div className="space-y-4 animate-in fade-in duration-500">
-        <div className="flex gap-4">
-          <Skeleton className="w-24 h-10 rounded-xl" />
-          <Skeleton className="w-24 h-10 rounded-xl" />
-          <Skeleton className="w-24 h-10 rounded-xl" />
-        </div>
-        <div className="bg-white rounded-2xl p-6 border border-stone-100 shadow-sm space-y-4">
-          {Array(5).fill(0).map((_, i) => (
-            <div key={i} className="flex items-center justify-between py-3 border-b border-stone-50">
-              <Skeleton className="w-6 h-6 rounded-md" />
-              <Skeleton className="w-1/4 h-6 rounded-lg" />
-              <Skeleton className="w-20 h-6 rounded-lg" />
-              <Skeleton className="w-16 h-8 rounded-lg" />
-              <Skeleton className="w-10 h-6 rounded-full" />
-              <Skeleton className="w-16 h-8 rounded-lg" />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
+    return <DataGridSkeleton />;
   }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       
-      {/* ── SECCIÓN DE FILTROS SUPERIORES Y BÚSQUEDA (Premium + Quiet Luxury) ── */}
-      <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 bg-white p-4 rounded-2xl border border-stone-100 shadow-sm">
-        
-        {/* Filtros de Categorías */}
-        <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
-          <button
-            id="services-category-filter-all-btn"
-            type="button"
-            onClick={() => setSelectedCategory('all')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              selectedCategory === 'all'
-                ? 'bg-stone-900 text-white shadow-sm'
-                : 'bg-stone-50 text-stone-500 hover:bg-stone-100'
-            }`}
-          >
-            {language === 'fr' ? 'Tous' : language === 'en' ? 'All' : 'Todos'}
-          </button>
-          {categories.map(cat => (
-            <button
-              id={`services-category-filter-btn-${cat.id}`}
-              key={cat.id}
-              type="button"
-              onClick={() => setSelectedCategory(cat.id)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                selectedCategory === cat.id
-                  ? 'bg-[#d4af37] text-white shadow-sm'
-                  : 'bg-stone-50 text-stone-500 hover:bg-stone-100'
-              }`}
-            >
-              {cat.name}
-            </button>
-          ))}
-        </div>
+      {/* ── SECCIÓN DE FILTROS SUPERIORES Y BÚSQUEDA ── */}
+      <DataGridFilters
+        categories={categories}
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        language={language}
+      />
 
-        {/* Input de Búsqueda */}
-        <div className="relative min-w-[260px]">
-          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" />
-          <input
-            id="services-search-input"
-            type="text"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder={language === 'fr' ? 'Rechercher des traitements...' : language === 'en' ? 'Search services...' : 'Buscar tratamientos...'}
-            className="w-full pl-11 pr-4 py-2.5 bg-stone-50 hover:bg-stone-100/50 focus:bg-white border border-stone-200 focus:border-[#d4af37] rounded-xl text-xs font-medium text-stone-800 dark:text-stone-800 outline-none transition-all focus:ring-1 focus:ring-[#d4af37]"
-          />
-        </div>
-      </div>
+      {/* ── BARRA FLOTANTE DE ACCIONES EN MASA ── */}
+      <DataGridBulkBar
+        selectedCount={selectedIds.size}
+        bulkActionLoading={bulkActionLoading}
+        onBulkActivate={() => handleBulkStatusChange(true)}
+        onBulkDeactivate={() => handleBulkStatusChange(false)}
+        onBulkDelete={handleBulkDelete}
+        language={language}
+      />
 
-      {/* ── BARRA FLOTANTE DE ACCIONES EN MASA (BULK ACTIONS BAR) ── */}
-      {selectedIds.size > 0 && (
-        <div className="bg-[#1c1917] text-white rounded-2xl p-4 md:px-6 shadow-xl border border-stone-800 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in slide-in-from-top-4 duration-300">
-          <div className="flex items-center gap-3">
-            <span className="w-6 h-6 rounded-full bg-[#d4af37] text-stone-950 flex items-center justify-center text-xs font-black">
-              {selectedIds.size}
-            </span>
-            <span className="text-xs font-bold text-stone-300 tracking-wide">
-              {language === 'fr' ? 'services sélectionnés pour action groupée' : language === 'en' ? 'services selected for bulk action' : 'servicios seleccionados para acción masiva'}
-            </span>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
-            <button
-              id="services-bulk-activate-btn"
-              type="button"
-              disabled={bulkActionLoading}
-              onClick={() => handleBulkStatusChange(true)}
-              className="px-4 py-2 bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 disabled:opacity-50"
-            >
-              <Eye size={14} /> {language === 'fr' ? 'Tout activer' : language === 'en' ? 'Activate All' : 'Activar Todos'}
-            </button>
-            <button
-              id="services-bulk-deactivate-btn"
-              type="button"
-              disabled={bulkActionLoading}
-              onClick={() => handleBulkStatusChange(false)}
-              className="px-4 py-2 bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 disabled:opacity-50"
-            >
-              <EyeOff size={14} /> {language === 'fr' ? 'Tout désactiver' : language === 'en' ? 'Deactivate All' : 'Desactivar Todos'}
-            </button>
-            <button
-              id="services-bulk-delete-btn"
-              type="button"
-              disabled={bulkActionLoading}
-              onClick={handleBulkDelete}
-              className="px-4 py-2 bg-rose-950 hover:bg-rose-900 border border-rose-800/40 text-rose-200 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 disabled:opacity-50"
-            >
-              <Trash2 size={14} /> {language === 'fr' ? 'Supprimer le lot' : language === 'en' ? 'Delete Bulk' : 'Eliminar Lote'}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ── DATA TABLE DE SERVICIOS PREMIUM (Quiet Luxury + Compact) ── */}
+      {/* ── DATA TABLE DE SERVICIOS PREMIUM ── */}
       {filteredServices.length === 0 ? (
         <div className="text-center py-20 text-stone-400 bg-stone-50/50 rounded-2xl border border-stone-200 border-dashed">
           {language === 'fr' ? 'Aucun traitement trouvé avec los filtres actuels.' : language === 'en' ? 'No services found with current filters.' : 'No se encontraron tratamientos con los filtros actuales.'}
@@ -604,7 +216,6 @@ export default function ServicesDataGrid({
                   const displayCategory = getCategoryName(svc.category_id);
                   const isStatusUpdating = updatingStatusIds.has(svc.id);
 
-                  // Obtener valor temporal del precio si se está escribiendo
                   const inputPriceVal = updatingPrices[svc.id] !== undefined 
                     ? updatingPrices[svc.id] 
                     : svc.price.toString();
@@ -614,209 +225,30 @@ export default function ServicesDataGrid({
                     : svc.duration_minutes.toString();
 
                   return (
-                    <tr 
-                      key={svc.id} 
-                      className={`hover:bg-stone-50/50 transition-colors ${
-                        !svc.is_active ? 'bg-stone-50/20 text-stone-400' : 'text-stone-800'
-                      }`}
-                    >
-                      
-                      {/* Checkbox Fila */}
-                      <td className="p-4 text-center">
-                        <label className="relative flex items-center justify-center cursor-pointer select-none">
-                          <input
-                            id={`services-select-checkbox-${svc.id}`}
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={() => handleSelectRowToggle(svc.id)}
-                            className="sr-only"
-                          />
-                          <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
-                            isChecked 
-                              ? 'bg-[#d4af37] border-[#d4af37]' 
-                              : 'border-stone-300 bg-white hover:border-stone-400'
-                          }`}>
-                            {isChecked && (
-                              <svg className="w-3.5 h-3.5 text-white animate-in zoom-in-50 duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                              </svg>
-                            )}
-                          </div>
-                        </label>
-                      </td>
-
-                      {/* Imagen con MediaPicker Directo */}
-                      <td className="p-4 w-20 text-center">
-                        <div className="flex items-center justify-center">
-                          {svc.image_url ? (
-                            <div 
-                              id={`services-image-cover-div-${svc.id}`}
-                              onClick={() => setActiveImagePickerServiceId(svc.id)}
-                              className="relative w-12 h-12 rounded-xl overflow-hidden cursor-pointer group shadow-sm border border-stone-200 hover:border-[#d4af37] hover:scale-105 transition-all"
-                              title={language === 'fr' ? "Changer l'image" : language === 'en' ? "Change image" : "Cambiar imagen"}
-                            >
-                              <img 
-                                src={svc.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${svc.image_url}` : svc.image_url} 
-                                alt={svc.name}
-                                className="w-full h-full object-cover group-hover:opacity-75 transition-all"
-                              />
-                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all text-white text-[9px] font-black uppercase tracking-widest">
-                                {language === 'fr' ? 'Edit' : language === 'en' ? 'Edit' : 'Editar'}
-                              </div>
-                            </div>
-                          ) : (
-                            <button
-                              id={`services-image-placeholder-btn-${svc.id}`}
-                              type="button"
-                              onClick={() => setActiveImagePickerServiceId(svc.id)}
-                              className="w-12 h-12 rounded-xl border border-dashed border-stone-300 hover:border-[#d4af37] flex items-center justify-center text-stone-400 hover:text-[#d4af37] hover:bg-stone-50 transition-all cursor-pointer group bg-stone-50/50"
-                              title={language === 'fr' ? "Ajouter une image" : language === 'en' ? "Add image" : "Añadir imagen"}
-                            >
-                              <span className="text-lg font-light group-hover:scale-110 transition-all text-stone-400 group-hover:text-[#d4af37]">+</span>
-                            </button>
-                          )}
-                        </div>
-                      </td>
-
-                      {/* Nombre y Badge de Categoría */}
-                      <td className="p-4">
-                        <div className="flex items-center gap-3">
-                          <div className="font-bold text-stone-800 text-sm">{svc.name}</div>
-                          {svc.is_featured && (
-                            <span className="px-2 py-0.5 text-[9px] rounded-full font-black uppercase tracking-wider bg-yellow-50 text-yellow-700 border border-yellow-200">
-                              {language === 'fr' ? 'À la une' : language === 'en' ? 'Featured' : 'Destacado'}
-                            </span>
-                          )}
-                        </div>
-                        {svc.description && (
-                          <div className="text-stone-400 text-xs mt-0.5 line-clamp-1 max-w-xl font-medium">
-                            {svc.description}
-                          </div>
-                        )}
-                      </td>
-
-                      {/* Categoría (Select Moderno) */}
-                      <td className="p-4">
-                        <div className="relative flex items-center min-w-[140px] max-w-[180px]">
-                          <select
-                            id={`services-category-select-${svc.id}`}
-                            value={svc.category_id || ''}
-                            disabled={savingCategoryId === svc.id}
-                            onChange={e => handleCategorySave(svc, e.target.value)}
-                            className="w-full pl-3 pr-8 py-1.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 focus:border-[#d4af37] rounded-lg text-xs font-bold text-stone-800 outline-none transition-all cursor-pointer focus:ring-1 focus:ring-[#d4af37] appearance-none"
-                          >
-                            <option value="">{language === 'fr' ? 'Sans catégorie' : language === 'en' ? 'No Category' : 'Sin Categoría'}</option>
-                            {categories.map(cat => (
-                              <option key={cat.id} value={cat.id}>
-                                {cat.name}
-                              </option>
-                            ))}
-                          </select>
-                          <div className="absolute right-2.5 pointer-events-none text-stone-400">
-                            {savingCategoryId === svc.id ? (
-                              <Loader2 size={12} className="animate-spin text-[#d4af37]" />
-                            ) : (
-                              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                              </svg>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Duración (Entrada de Duración Directa con Auto-guardado) */}
-                      <td className="p-4">
-                        <div className="relative flex items-center max-w-[110px]">
-                          <input
-                            id={`services-duration-input-${svc.id}`}
-                            type="text"
-                            value={inputDurationVal}
-                            onChange={e => handleDurationChange(svc.id, e.target.value)}
-                            onBlur={e => handleDurationSave(svc, e.target.value)}
-                            onKeyDown={e => {
-                              if (e.key === 'Enter') {
-                                handleDurationSave(svc, inputDurationVal);
-                                (e.target as HTMLInputElement).blur();
-                              }
-                            }}
-                            className="w-full pr-10 pl-3 py-1.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 focus:border-[#d4af37] rounded-lg text-xs font-bold text-stone-800 dark:text-stone-800 outline-none text-right transition-all focus:ring-1 focus:ring-[#d4af37]"
-                          />
-                          <span className="absolute right-2.5 text-stone-400 text-[10px] font-bold pointer-events-none">min</span>
-                          {savingDurationId === svc.id && (
-                            <Loader2 size={12} className="absolute left-1 animate-spin text-[#d4af37]" />
-                          )}
-                        </div>
-                      </td>
-
-                      {/* Entrada de Precio Directa (Auto-guardado) */}
-                      <td className="p-4">
-                        <div className="relative flex items-center max-w-[100px]">
-                          <input
-                            id={`services-price-input-${svc.id}`}
-                            type="text"
-                            value={inputPriceVal}
-                            onChange={e => handlePriceChange(svc.id, e.target.value)}
-                            onBlur={e => handlePriceSave(svc, e.target.value)}
-                            onKeyDown={e => {
-                              if (e.key === 'Enter') {
-                                handlePriceSave(svc, inputPriceVal);
-                                (e.target as HTMLInputElement).blur();
-                              }
-                            }}
-                            className="w-full pr-7 pl-3 py-1.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 focus:border-[#d4af37] rounded-lg text-xs font-bold text-stone-800 dark:text-stone-800 outline-none text-right transition-all focus:ring-1 focus:ring-[#d4af37]"
-                          />
-                          <span className="absolute right-2.5 text-stone-400 text-xs font-bold pointer-events-none">€</span>
-                          {savingPriceId === svc.id && (
-                            <Loader2 size={12} className="absolute left-1 animate-spin text-[#d4af37]" />
-                          )}
-                        </div>
-                      </td>
-
-                      {/* Interruptor de Estado (Toggle Switch) */}
-                      <td className="p-4 text-center">
-                        <div className="flex justify-center items-center">
-                          {isStatusUpdating ? (
-                            <Loader2 size={16} className="animate-spin text-primary" />
-                          ) : (
-                            <label className="relative inline-flex items-center cursor-pointer">
-                              <input
-                                id={`services-status-toggle-${svc.id}`}
-                                type="checkbox"
-                                checked={svc.is_active}
-                                onChange={() => handleToggleStatus(svc)}
-                                className="sr-only peer"
-                              />
-                              <div className="w-9 h-5 bg-stone-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
-                            </label>
-                          )}
-                        </div>
-                      </td>
-
-                      {/* Iconos de Edición Detallada y Borrado */}
-                      <td className="p-4 text-center">
-                        <div className="flex justify-center items-center gap-2">
-                          <button
-                            id={`services-edit-details-btn-${svc.id}`}
-                            type="button"
-                            onClick={() => onEditClick(svc)}
-                            className="p-1.5 text-stone-400 hover:text-stone-700 bg-white border border-stone-200 hover:border-stone-400 rounded-lg shadow-sm active:scale-95 transition-all"
-                            title={language === 'fr' ? 'Modifier en détail' : language === 'en' ? 'Edit details' : 'Editar detalladamente'}
-                          >
-                            <Pencil size={13} strokeWidth={1.5} />
-                          </button>
-                          <button
-                            id={`services-delete-btn-${svc.id}`}
-                            type="button"
-                            onClick={() => handleDeleteIndividual(svc.id, svc.name)}
-                            className="p-1.5 text-rose-400 hover:text-rose-600 bg-white border border-stone-200 hover:border-rose-300 rounded-lg shadow-sm active:scale-95 transition-all"
-                            title={language === 'fr' ? 'Supprimer définitivement' : language === 'en' ? 'Delete permanently' : 'Eliminar permanentemente'}
-                          >
-                            <Trash2 size={13} strokeWidth={1.5} />
-                          </button>
-                        </div>
-                      </td>
-
-                    </tr>
+                    <DataGridRow
+                      key={svc.id}
+                      svc={svc}
+                      isChecked={isChecked}
+                      onToggleSelect={() => handleSelectRowToggle(svc.id)}
+                      categories={categories}
+                      displayCategory={displayCategory}
+                      isStatusUpdating={isStatusUpdating}
+                      onToggleStatus={() => handleToggleStatus(svc)}
+                      onOpenImagePicker={() => setActiveImagePickerServiceId(svc.id)}
+                      inputPriceVal={inputPriceVal}
+                      onPriceChange={(val) => handlePriceChange(svc.id, val)}
+                      onPriceSave={(val) => handlePriceSave(svc, val)}
+                      isSavingPrice={savingPriceId === svc.id}
+                      inputDurationVal={inputDurationVal}
+                      onDurationChange={(val) => handleDurationChange(svc.id, val)}
+                      onDurationSave={(val) => handleDurationSave(svc, val)}
+                      isSavingDuration={savingDurationId === svc.id}
+                      isSavingCategory={savingCategoryId === svc.id}
+                      onCategorySave={(newCatId) => handleCategorySave(svc, newCatId)}
+                      onEditClick={onEditClick}
+                      onDeleteClick={() => handleDeleteIndividual(svc.id, svc.name)}
+                      language={language}
+                    />
                   );
                 })}
               </tbody>
