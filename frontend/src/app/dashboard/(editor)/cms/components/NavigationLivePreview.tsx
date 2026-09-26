@@ -1,5 +1,7 @@
 "use client"
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { ArrowRight, ChevronDown } from 'lucide-react';
 
 interface NavigationLivePreviewProps {
   navTab: 'links' | 'megamenu';
@@ -10,7 +12,8 @@ interface NavigationLivePreviewProps {
   megamenuCategories: string[] | null;
   previewActiveCategory: string | null;
   setPreviewActiveCategory: (id: string | null) => void;
-  settings: any;
+  settings?: any;
+  siteContent?: any;
 }
 
 export default function NavigationLivePreview({
@@ -22,239 +25,297 @@ export default function NavigationLivePreview({
   megamenuCategories,
   previewActiveCategory,
   setPreviewActiveCategory,
-  settings
+  settings,
+  siteContent
 }: NavigationLivePreviewProps) {
-  
-  // Filtrar categorías según la lógica de tres estados
-  const previewFilteredCats = categories.filter(c => 
-    c.is_active && 
-    (megamenuCategories === null || megamenuCategories.includes(c.id))
+  const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(true);
+
+  // Asegurar que en la pestaña de Megamenú siempre esté desplegado
+  useEffect(() => {
+    if (navTab === 'megamenu') {
+      setIsMegaMenuOpen(true);
+    }
+  }, [navTab]);
+
+  // URL del API para resolver imágenes relativas
+  const getFullUrl = (url: string | null | undefined) => {
+    if (!url) return '';
+    return url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${url}` : url;
+  };
+
+  // Filtrar categorías activas excluyendo GENERAL
+  const activeCats = (Array.isArray(categories) ? categories : []).filter(c => 
+    c.is_active && c.name?.trim().toUpperCase() !== 'GENERAL'
   );
 
+  const previewFilteredCats = activeCats.filter(c => {
+    if (megamenuCategories === null || megamenuCategories === undefined) return true;
+    if (Array.isArray(megamenuCategories) && megamenuCategories.length === 0) return false;
+    return megamenuCategories.includes(c.id);
+  });
+
+  // Ordenar según el orden guardado en megamenuCategories
+  if (Array.isArray(megamenuCategories) && megamenuCategories.length > 0) {
+    previewFilteredCats.sort((a, b) => {
+      const idxA = megamenuCategories.indexOf(a.id);
+      const idxB = megamenuCategories.indexOf(b.id);
+      return idxA - idxB;
+    });
+  }
+
+  // Resolver categoría activa
   const activePreviewCatId = previewActiveCategory && previewFilteredCats.some(c => c.id === previewActiveCategory)
     ? previewActiveCategory
     : (previewFilteredCats[0]?.id || null);
 
-  const previewServices = services.filter(s => s.is_active && s.category_id === activePreviewCatId);
+  const allServicesList = Array.isArray(services) ? services : [];
+  const previewServices = allServicesList.filter(s => s.is_active && s.category_id === activePreviewCatId);
+
+  // Máximo 6 servicios en el Bento Grid (exactamente 2 filas de 3 columnas)
+  const activeBentoServices = previewServices.slice(0, 6);
+  const isFew = activeBentoServices.length <= 3;
+
+  // Resolver logo real de la clínica
+  const clinicName = settings?.clinic_name || siteContent?.clinic_name || 'Estética Merce';
+  const logoSrc = settings?.logo_app_b64 || settings?.logo_mobile_b64 || settings?.clinic_logo || settings?.logo_url || siteContent?.logo_url;
+  const logoHeight = Math.min(Math.max(settings?.header_logo_height ?? 42, 28), 52);
+
+  // Lista de items de navegación dinámica
+  const visibleNavItems = Array.isArray(navigationItems) && navigationItems.length > 0
+    ? navigationItems.filter(item => item.is_visible !== false)
+    : [
+        { id: '1', label: 'Inicio', path: '/' },
+        { id: '2', label: 'Tratamientos', path: '/tratamientos' },
+        { id: '3', label: 'Contacto', path: '/contacto' }
+      ];
+
+  const showDropdown = navTab === 'megamenu' || isMegaMenuOpen;
 
   return (
-    <div className="hidden md:flex flex-1 h-full items-center justify-center bg-stone-100/60 p-12 overflow-y-auto relative">
+    <div className="hidden md:flex flex-1 h-full overflow-y-auto bg-stone-100/60 p-6 lg:p-10 flex-col items-center justify-start select-none">
       
-      <div className="absolute top-0 left-0 right-0 z-20 bg-white/80 backdrop-blur-md border-b border-stone-200 px-8 py-3 flex items-center gap-3 shadow-sm">
-        <span className="text-xs font-black uppercase tracking-widest text-stone-500">
-          Previsualización del Menú
-        </span>
-        <div className="ml-auto flex gap-1.5 items-center">
-          <div className="w-2.5 h-2.5 rounded-full bg-stone-300" />
-          <div className="w-2.5 h-2.5 rounded-full bg-[#d4af37]/60" />
-          <div className="w-2.5 h-2.5 rounded-full bg-stone-300" />
-        </div>
-      </div>
-
-      {/* Header & Megamenu Mockup */}
-      <div className="w-full max-w-3xl bg-white border border-stone-200 rounded-3xl p-8 shadow-[0_20px_50px_rgba(0,0,0,0.06)] animate-in zoom-in-95 duration-500">
+      {/* ── Contenedor del Navbar + Megamenú idéntico al Frontend Público ── */}
+      <div className="w-full max-w-6xl flex flex-col relative transition-all duration-300">
         
-        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-stone-400 block mb-6 text-center">
-          VISTA PÚBLICA EN VIVO
-        </span>
+        {/* ── BARRA SUPERIOR (HEADER) ── */}
+        <header className="w-full bg-white rounded-t-3xl border-t border-x border-stone-200/70 shadow-sm px-8 lg:px-10 h-20 flex items-center justify-between relative z-40">
+          
+          {/* Logo */}
+          <div 
+            className="flex items-center shrink-0 cursor-default"
+            style={{
+              marginRight: `${settings?.header_logo_margin_right ?? 24}px`,
+              marginLeft: `${settings?.header_logo_margin_left ?? 0}px`,
+              transform: `translateY(${settings?.header_logo_padding_y ?? 0}px)`,
+            }}
+          >
+            {logoSrc ? (
+              <img
+                src={getFullUrl(logoSrc)}
+                alt={clinicName}
+                style={{
+                  height: `${logoHeight}px`,
+                  maxHeight: '52px',
+                }}
+                className="w-auto object-contain transition-all duration-200"
+                onError={(e) => {
+                  (e.target as HTMLElement).style.display = 'none';
+                  const fallbackEl = document.getElementById('preview-front-logo-fallback');
+                  if (fallbackEl) fallbackEl.style.display = 'block';
+                }}
+              />
+            ) : null}
 
-        {/* Navbar Mock */}
-        <div className="flex items-center justify-between border-b border-stone-100 pb-5">
-          <div className="font-serif text-[#d4af37] font-bold text-lg leading-none">
-            {settings?.clinic_name || 'Clínica Mercè'}
+            <span 
+              id="preview-front-logo-fallback" 
+              className={`font-serif font-extrabold text-2xl tracking-tight text-stone-900 ${logoSrc ? 'hidden' : 'block'}`}
+            >
+              {clinicName}
+            </span>
           </div>
 
-          {/* Menu Links */}
-          <div className="flex items-center gap-6">
-            <span className="text-stone-400 text-xs font-bold transition-all cursor-default">
-              Inicio
-            </span>
-            <span className={`text-xs font-bold transition-all cursor-default relative pb-5 -mb-5 ${
-              navTab === 'megamenu' ? 'text-[#d4af37]' : 'text-stone-600'
-            }`}>
-              Servicios
-              {navTab === 'megamenu' && (
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#d4af37] rounded-full"></span>
-              )}
-            </span>
-            <span className="text-stone-400 text-xs font-bold transition-all cursor-default">
-              Contacto
-            </span>
-          </div>
+          {/* Enlaces de Navegación + Selector Idioma + Botón Reservar */}
+          <div className="flex items-center gap-7 lg:gap-8">
+            <nav className="flex items-center gap-6 lg:gap-8">
+              {visibleNavItems.map((item, idx) => {
+                const isTreatments = item.path === '/services' || item.path === '/tratamientos' || 
+                                     item.label.toLowerCase().includes('tratamiento') || 
+                                     item.label.toLowerCase().includes('servicio');
+                const isItemActive = isTreatments ? showDropdown : idx === 0;
 
-          <div className="bg-[#d4af37] text-white px-4 py-1.5 rounded-full text-[11px] font-bold shadow-sm cursor-default">
-            Reservar
-          </div>
-        </div>
+                return (
+                  <button
+                    key={item.id || idx}
+                    type="button"
+                    onClick={() => {
+                      if (isTreatments) setIsMegaMenuOpen(!isMegaMenuOpen);
+                    }}
+                    className={`text-sm font-bold tracking-tight transition-all duration-200 cursor-pointer relative py-2 ${
+                      isItemActive
+                        ? 'text-[#d4af37]'
+                        : 'text-stone-700 hover:text-stone-900'
+                    }`}
+                  >
+                    {item.label}
+                    {isItemActive && (
+                      <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#d4af37] rounded-full" />
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
 
-        {/* Megamenu Mockup (Solo si estamos en la pestaña Megamenú) */}
-        {navTab === 'megamenu' && (
-          <div className="mt-6 border border-stone-100 rounded-2xl p-6 bg-stone-50/50 shadow-inner animate-in fade-in duration-300">
+            {/* Selector de idioma mock */}
+            <div className="hidden lg:flex items-center gap-1 text-xs font-bold text-stone-600 bg-stone-100/80 px-2.5 py-1.5 rounded-full border border-stone-200/50">
+              <span>ES</span>
+              <ChevronDown size={12} className="text-stone-400" />
+            </div>
+
+            {/* Botón de Reserva (CTA de Lujo) */}
+            <button
+              type="button"
+              className="bg-[#d4af37] hover:bg-[#b38f2b] text-white px-5 py-2 rounded-full text-xs font-bold tracking-wide shadow-sm transition-all duration-300 cursor-default shrink-0"
+            >
+              {settings?.booking_button_text || 'Reservar Cita'}
+            </button>
+          </div>
+        </header>
+
+        {/* ── MEGAMENÚ DESPLEGABLE (IDÉNTICO A PUBLICNAVBAR) ── */}
+        {showDropdown && (
+          <div className="w-full bg-white rounded-b-3xl border-b border-x border-stone-200/70 shadow-2xl overflow-hidden relative z-30 transition-all duration-300">
             {previewFilteredCats.length === 0 ? (
-              <div className="text-center py-10">
-                <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1">
-                  Megamenú Desactivado
+              /* Sin categorías seleccionadas */
+              <div className="p-16 text-center bg-stone-50/40">
+                <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-1">
+                  Megamenú Oculto
                 </p>
-                <p className="text-[10px] text-stone-400 max-w-xs mx-auto">
-                  No has seleccionado ninguna categoría o has guardado un listado vacío. El megamenú no se renderizará.
+                <p className="text-xs text-stone-400 max-w-sm mx-auto">
+                  No hay categorías seleccionadas para el megamenú.
                 </p>
               </div>
             ) : megamenuLayout === 'bento' ? (
-              /* --- Bento Layout Preview --- */
-              <div className="grid grid-cols-3 gap-6 h-[280px]">
-                {/* Left category list with vertical snap scroll in blocks of 5 */}
-                {(() => {
-                  const previewCategoryPages: any[][] = [];
-                  for (let i = 0; i < previewFilteredCats.length; i += 5) {
-                    previewCategoryPages.push(previewFilteredCats.slice(i, i + 5));
-                  }
-                  return (
-                    <div className="col-span-1 border-r border-stone-200/60 pr-2 flex flex-col h-full overflow-hidden">
-                      <div className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-3 shrink-0">
-                        Tratamientos
-                      </div>
-                      <div className="flex-1 flex flex-col overflow-y-auto snap-y snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pr-2">
-                        {previewCategoryPages.map((page, pageIdx) => (
-                          <div key={pageIdx} className="snap-start h-full shrink-0 flex flex-col justify-start gap-1 pb-4">
-                            {page.map(cat => (
-                              <div
-                                key={cat.id}
-                                onClick={() => setPreviewActiveCategory(cat.id)}
-                                className={`p-2 rounded-xl text-left cursor-pointer transition-all shrink-0 ${
-                                  activePreviewCatId === cat.id
-                                    ? 'bg-white text-[#d4af37] font-bold shadow-sm'
-                                    : 'text-stone-500 hover:text-stone-800'
-                                }`}
-                              >
-                                <div className="text-xs truncate">{cat.name}</div>
-                              </div>
-                            ))}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })()}
+              /* ── DISEÑO A: BENTO GRID (EXACTAMENTE COMO EL FRONTEND) ── */
+              <div className="flex h-[380px] bg-white">
+                
+                {/* Columna Izquierda: CATEGORÍAS (Fondo Negro/Oscuro con Pestaña Activa Blanca) */}
+                <div className="w-[280px] shrink-0 bg-stone-900 py-6 pl-8 pr-0 border-r border-stone-800 relative flex flex-col justify-between">
+                  <div>
+                    <h4 className="text-[13px] font-black uppercase tracking-[0.3em] text-stone-300 mb-6 shrink-0">
+                      CATEGORÍAS
+                    </h4>
 
-                {/* Right Bento Grid mockup */}
-                <div className="col-span-2 flex flex-col justify-between">
-                  <div className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-3">
-                    Servicios Destacados
+                    <div className="flex flex-col space-y-1">
+                      {previewFilteredCats.map((cat) => {
+                        const isActive = activePreviewCatId === cat.id;
+                        return (
+                          <button
+                            key={cat.id}
+                            type="button"
+                            onClick={() => setPreviewActiveCategory(cat.id)}
+                            className={`w-full text-left px-6 py-2.5 transition-all font-serif text-lg leading-tight whitespace-normal relative ${
+                              isActive
+                                ? 'bg-white text-[#d4af37] font-semibold rounded-l-2xl -mr-[1px] z-10 shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.02)]'
+                                : 'text-stone-300 hover:text-white rounded-xl mr-4 hover:bg-white/5'
+                            }`}
+                          >
+                            {cat.name}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                  
-                  {previewServices.length === 0 ? (
-                    <div className="flex-1 flex items-center justify-center border border-dashed border-stone-200 rounded-2xl bg-white p-4">
-                      <p className="text-xs text-stone-400">No hay servicios en esta categoría.</p>
+                </div>
+
+                {/* Columna Derecha: BENTO GRID (Máximo 2 Filas x 3 Columnas) */}
+                <div className="flex-1 py-6 px-8 bg-white overflow-hidden">
+                  {activeBentoServices.length === 0 ? (
+                    <div className="h-full flex items-center justify-center text-stone-400 text-sm font-medium">
+                      No hay tratamientos destacados en esta categoría.
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 gap-3 flex-1 overflow-y-auto scrollbar-none">
-                      {/* Main Service Card (Bento Style) */}
-                      {previewServices[0] && (
-                        <div className="col-span-2 bg-[#1C1917] text-white p-4 rounded-2xl flex flex-col justify-between shadow-sm relative overflow-hidden group">
-                          <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-[#d4af37]/20 to-transparent rounded-bl-full"></div>
-                          <div>
-                            <span className="text-[8px] font-bold uppercase tracking-wider text-[#d4af37] bg-[#d4af37]/10 px-2 py-0.5 rounded-full mb-1 inline-block">
-                              Recomendado
-                            </span>
-                            <h4 className="text-sm font-serif font-bold text-stone-100 line-clamp-1">{previewServices[0].name}</h4>
-                            <p className="text-[10px] text-stone-400 line-clamp-1 mt-1">{previewServices[0].description}</p>
-                          </div>
-                          <div className="flex justify-between items-end mt-4">
-                            <span className="text-[10px] text-stone-400">{previewServices[0].duration_minutes} min</span>
-                            <span className="text-xs font-bold text-[#d4af37]">{previewServices[0].price}€</span>
-                          </div>
-                        </div>
-                      )}
+                    <div className={`grid grid-cols-3 gap-5 h-full ${
+                      isFew ? 'items-center' : 'grid-rows-2'
+                    }`}>
+                      {activeBentoServices.map((svc) => {
+                        const svcImage = svc.image_url ? getFullUrl(svc.image_url) : null;
 
-                      {/* Secondary Service Cards */}
-                      {previewServices.slice(1, 3).map(svc => (
-                        <div key={svc.id} className="bg-white p-3 rounded-2xl border border-stone-100 flex flex-col justify-between shadow-sm hover:border-[#d4af37]/50 transition-colors">
-                          <div>
-                            <h5 className="text-xs font-bold text-stone-800 line-clamp-1">{svc.name}</h5>
-                            <p className="text-[9px] text-stone-400 line-clamp-1 mt-0.5">{svc.description}</p>
+                        return (
+                          <div
+                            key={svc.id}
+                            className={`group relative rounded-2xl overflow-hidden border border-stone-100 bg-stone-50 transition-all duration-300 shadow-sm hover:shadow-xl ${
+                              isFew ? 'h-[200px]' : 'h-full'
+                            }`}
+                          >
+                            {/* Imagen de Fondo de Tratamiento */}
+                            {svcImage ? (
+                              <img
+                                src={svcImage}
+                                alt={svc.name}
+                                className="absolute inset-0 w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="absolute inset-0 bg-stone-100 flex items-center justify-center">
+                                <span className="font-serif text-stone-300 text-xs italic">{clinicName}</span>
+                              </div>
+                            )}
+
+                            {/* Gradiente Oscuro en la parte inferior para legibilidad del título */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent z-20 flex items-end p-5 transition-all duration-300">
+                              <h5 className="text-white font-serif font-bold leading-tight line-clamp-2 text-base md:text-lg [text-shadow:_0_1px_4px_rgba(0,0,0,0.7)]">
+                                {svc.name}
+                              </h5>
+                            </div>
+
+                            {/* Duración (hover badge como en el front) */}
+                            {svc.duration_minutes && (
+                              <div className="absolute top-3 right-3 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <div className="bg-black/50 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/20">
+                                  <span className="text-[#d4af37] text-[11px] font-bold">
+                                    {svc.duration_minutes} min
+                                  </span>
+                                </div>
+                              </div>
+                            )}
                           </div>
-                          <div className="flex justify-between items-end mt-2">
-                            <span className="text-[9px] text-stone-400">{svc.duration_minutes} min</span>
-                            <span className="text-xs font-bold text-[#d4af37]">{svc.price}€</span>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
               </div>
             ) : (
-              /* --- Directory Layout Preview --- */
-              <div className="relative">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">
-                    Directorio Completo (Vila Columnas)
-                  </span>
-                  {/* Visual Paging Controls mock */}
-                  <div className="flex gap-1">
-                    <button className="w-5 h-5 rounded-full border border-stone-200 bg-white flex items-center justify-center text-xs text-stone-400 hover:text-stone-800 hover:border-stone-300">
-                      ‹
-                    </button>
-                    <button className="w-5 h-5 rounded-full border border-stone-200 bg-white flex items-center justify-center text-xs text-stone-400 hover:text-stone-800 hover:border-stone-300">
-                      ›
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-6 h-[250px] overflow-hidden">
-                  {previewFilteredCats.slice(0, 3).map(cat => {
-                    const catServices = services.filter(s => s.is_active && s.category_id === cat.id);
+              /* ── DISEÑO B: DIRECTORIO (3 COLUMNAS) ── */
+              <div className="h-[380px] p-8 bg-white flex items-center">
+                <div className="w-full grid grid-cols-3 gap-8 h-full">
+                  {previewFilteredCats.slice(0, 3).map((cat) => {
+                    const catServices = allServicesList.filter(s => s.is_active && s.category_id === cat.id);
                     return (
-                      <div key={cat.id} className="flex flex-col bg-white p-4 rounded-2xl border border-stone-100 shadow-sm overflow-hidden h-full">
-                        <span className="text-[10px] font-bold text-[#d4af37] uppercase tracking-wider block mb-3 border-b border-stone-50 pb-1.5 truncate shrink-0">
+                      <div
+                        key={cat.id}
+                        className="flex flex-col h-full bg-stone-50/50 p-6 rounded-3xl border border-stone-100/70"
+                      >
+                        <span className="text-[12px] font-black uppercase tracking-[0.2em] text-[#d4af37] border-b border-stone-200/50 pb-3 mb-4 truncate shrink-0">
                           {cat.name}
                         </span>
-                        
-                        {catServices.length <= 4 ? (
-                          <div className="flex-1 min-h-0 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                            <div className="flex flex-col gap-2.5 pb-2">
-                              {catServices.length === 0 ? (
-                                <p className="text-[10px] text-stone-400 italic">Sin servicios</p>
-                              ) : (
-                                catServices.map(svc => (
-                                  <div key={svc.id} className="group cursor-default shrink-0">
-                                    <div className="text-xs font-bold text-stone-800 truncate group-hover:text-[#d4af37] transition-colors">
-                                      {svc.name}
-                                    </div>
-                                    <div className="flex justify-between items-center text-[9px] text-stone-400 mt-0.5">
-                                      <span>{svc.duration_minutes} min</span>
-                                      <span className="font-medium text-stone-600">{svc.price}€</span>
-                                    </div>
-                                  </div>
-                                ))
-                              )}
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex-1 min-h-0 flex flex-col overflow-y-auto snap-y snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                            {(() => {
-                              const serviceChunks: any[][] = [];
-                              for (let i = 0; i < catServices.length; i += 4) {
-                                serviceChunks.push(catServices.slice(i, i + 4));
-                              }
-                              return serviceChunks.map((chunk, chunkIdx) => (
-                                <div key={chunkIdx} className="snap-start h-full shrink-0 flex flex-col justify-start gap-2.5 pb-2">
-                                  {chunk.map(svc => (
-                                    <div key={svc.id} className="group cursor-default shrink-0">
-                                      <div className="text-xs font-bold text-stone-800 truncate group-hover:text-[#d4af37] transition-colors">
-                                        {svc.name}
-                                      </div>
-                                      <div className="flex justify-between items-center text-[9px] text-stone-400 mt-0.5">
-                                        <span>{svc.duration_minutes} min</span>
-                                        <span className="font-medium text-stone-600">{svc.price}€</span>
-                                      </div>
-                                    </div>
-                                  ))}
+
+                        <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+                          {catServices.length === 0 ? (
+                            <p className="text-xs text-stone-400 italic">No hay tratamientos en esta categoría.</p>
+                          ) : (
+                            catServices.slice(0, 6).map((svc) => (
+                              <div key={svc.id} className="block group shrink-0">
+                                <div className="text-sm font-bold text-stone-800 truncate group-hover:text-[#d4af37] transition-colors">
+                                  {svc.name}
                                 </div>
-                              ));
-                            })()}
-                          </div>
-                        )}
+                                <div className="flex justify-between items-center text-[10px] text-stone-400 mt-0.5">
+                                  <span>{svc.duration_minutes ? `${svc.duration_minutes} min` : ''}</span>
+                                  {svc.price && <span className="font-semibold text-stone-600">{svc.price}€</span>}
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
                       </div>
                     );
                   })}
@@ -264,13 +325,8 @@ export default function NavigationLivePreview({
           </div>
         )}
 
-        {navTab === 'links' && (
-          <div className="text-[10px] text-stone-400 text-center mt-6">
-            El menú superior se actualizará en tiempo real y soportará traducciones locales de forma automática.
-          </div>
-        )}
-
       </div>
+
     </div>
   );
 }

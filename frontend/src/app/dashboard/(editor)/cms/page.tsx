@@ -631,7 +631,8 @@ export default function CMSPage() {
           megamenuCategories={megamenuCategories}
           previewActiveCategory={previewActiveCategory}
           setPreviewActiveCategory={setPreviewActiveCategory}
-          settings={formData}
+          settings={settings}
+          siteContent={formData}
         />
 
       </div>
