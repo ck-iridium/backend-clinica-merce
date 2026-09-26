@@ -176,6 +176,11 @@ class CustomPageCreate(BaseModel):
     slug: str                    # Ej: "politica-privacidad" → genera la ruta /politica-privacidad
     is_visible: bool = True      # Si aparece en el menú de navegación
 
+class CustomPageUpdate(BaseModel):
+    title: Optional[str] = None
+    slug: Optional[str] = None
+    is_visible: Optional[bool] = None
+
 class CustomPageOut(BaseModel):
     id: str
     tenant_id: str

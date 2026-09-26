@@ -1,4 +1,5 @@
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 import { headers } from 'next/headers';
 import { cache } from 'react';
@@ -11,10 +12,7 @@ const getData = cache(async (tenantId: string) => {
       const timeoutId = setTimeout(() => controller.abort(), 8000);
 
       const res = await fetch(url, { 
-        next: { 
-          revalidate: 3600, 
-          tags: [`tenant-${tenantId}`, `tenant-${tenantId}-${subtag}`] 
-        },
+        cache: 'no-store',
         signal: controller.signal,
         headers: { "X-Tenant-ID": tenantId }
       });

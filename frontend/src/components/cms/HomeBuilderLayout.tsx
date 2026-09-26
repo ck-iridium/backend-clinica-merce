@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
-import { Monitor, Tablet, Smartphone } from 'lucide-react';
+import { Monitor, Tablet, Smartphone, ExternalLink } from 'lucide-react';
+import { getTenantPublicUrl } from '@/utils/tenantUrl';
 
 interface HomeBuilderLayoutProps {
   tabs: string[];
@@ -70,7 +71,15 @@ export default function HomeBuilderLayout({
               {subtitleText}
             </p>
           </div>
-          <div className="shrink-0 flex gap-2">
+          <div className="shrink-0 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => window.open(getTenantPublicUrl('/'), '_blank')}
+              className="p-2 text-stone-400 hover:text-[#d4af37] hover:bg-stone-50 border border-stone-200 hover:border-amber-200 rounded-xl transition-all"
+              title="Ver Web Pública"
+            >
+              <ExternalLink className="w-4 h-4" />
+            </button>
             <button
               onClick={onSave}
               disabled={isSaving}

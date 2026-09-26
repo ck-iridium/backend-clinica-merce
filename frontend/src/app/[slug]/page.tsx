@@ -1,4 +1,5 @@
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
@@ -50,7 +51,7 @@ export async function generateMetadata({ params }: PageProps) {
 
   try {
     const res = await fetch(`${baseUrl}/cms/navigation`, {
-      next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-${tenantId}-nav`] },
+      cache: 'no-store',
       headers: { 'X-Tenant-ID': tenantId },
     });
     if (res.ok) {
@@ -86,7 +87,7 @@ export default async function CustomPage({ params }: PageProps) {
   let pageTitle = slug;
   try {
     const resNav = await fetch(`${baseUrl}/cms/navigation`, {
-      next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-${tenantId}-nav`] },
+      cache: 'no-store',
       headers: { 'X-Tenant-ID': tenantId },
     });
     if (resNav.ok) {
@@ -107,7 +108,7 @@ export default async function CustomPage({ params }: PageProps) {
   let rawBlocks: any[] = [];
   try {
     const resBlocks = await fetch(`${baseUrl}/cms/blocks/${slug}`, {
-      next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-${tenantId}-blocks-${slug}`] },
+      cache: 'no-store',
       headers: { 'X-Tenant-ID': tenantId },
     });
     if (resBlocks.ok) {

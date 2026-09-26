@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getTenantPublicUrl, getTenantPublicHost } from '@/utils/tenantUrl';
 
 interface CustomPage {
   id: string;
@@ -31,6 +32,7 @@ export default function PagesManagerPage() {
   const [pages, setPages] = useState<CustomPage[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [editingPage, setEditingPage] = useState<CustomPage | null>(null);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeletePage, setConfirmDeletePage] = useState<CustomPage | null>(null);
@@ -43,10 +45,12 @@ export default function PagesManagerPage() {
 
   useEffect(() => { fetchPages(); }, []);
 
-  // Auto-genera el slug desde el título, a menos que el usuario lo haya editado manualmente
+  // Auto-genera el slug desde el título al crear, a menos que el usuario lo haya editado manualmente
   useEffect(() => {
-    if (!slugManual) setSlug(toSlug(title));
-  }, [title, slugManual]);
+    if (!editingPage && !slugManual) {
+      setSlug(toSlug(title));
+    }
+  }, [title, slugManual, editingPage]);
 
   const fetchPages = async () => {
     setLoading(true);
@@ -60,37 +64,90 @@ export default function PagesManagerPage() {
     }
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !slug.trim()) return;
     setSaving(true);
     try {
-      const res = await fetch(`${API}/cms/pages`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: title.trim(), slug: slug.trim(), is_visible: isVisible }),
-      });
-      if (res.status === 409) {
-        showFeedback({ type: 'error', title: 'URL duplicada', message: `Ya existe una página con la ruta "/${slug}".` });
-        return;
+      if (editingPage) {
+        // Actualizar página existente
+        const res = await fetch(`${API}/cms/pages/${editingPage.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: title.trim(),
+            slug: slug.trim(),
+            is_visible: isVisible,
+          }),
+        });
+        if (res.status === 409) {
+          showFeedback({ type: 'error', title: 'URL duplicada', message: `Ya existe otra página con la ruta "/${slug}".` });
+          return;
+        }
+        if (!res.ok) throw new Error();
+        const updated: CustomPage = await res.json();
+        setPages(prev => prev.map(p => p.id === updated.id ? updated : p));
+        showFeedback({ type: 'success', title: 'Ajustes guardados', message: `"${updated.label}" se ha actualizado correctamente.` });
+      } else {
+        // Crear nueva página
+        const res = await fetch(`${API}/cms/pages`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: title.trim(),
+            slug: slug.trim(),
+            is_visible: isVisible,
+          }),
+        });
+        if (res.status === 409) {
+          showFeedback({ type: 'error', title: 'URL duplicada', message: `Ya existe una página con la ruta "/${slug}".` });
+          return;
+        }
+        if (!res.ok) throw new Error();
+        const created: CustomPage = await res.json();
+        setPages(prev => [...prev, created]);
+        showFeedback({ type: 'success', title: 'Página creada', message: `La página "/${slug}" ya está publicada.` });
       }
-      if (!res.ok) throw new Error();
-      showFeedback({ type: 'success', title: 'Página creada', message: `La página "/${slug}" ya está publicada.` });
+
       setShowModal(false);
       resetForm();
-      fetchPages();
     } catch {
-      showFeedback({ type: 'error', title: 'Error', message: 'No se pudo crear la página.' });
+      showFeedback({ type: 'error', title: 'Error', message: 'No se pudo guardar la página.' });
     } finally {
       setSaving(false);
     }
   };
 
+  const handleToggleVisibility = async (page: CustomPage) => {
+    const nextState = !page.is_visible;
+    // Actualización optimista
+    setPages(prev => prev.map(p => p.id === page.id ? { ...p, is_visible: nextState } : p));
+    try {
+      const res = await fetch(`${API}/cms/pages/${page.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_visible: nextState }),
+      });
+      if (!res.ok) throw new Error();
+      showFeedback({
+        type: 'success',
+        title: nextState ? 'Visible en menú' : 'Oculta del menú',
+        message: nextState
+          ? `"${page.label}" ahora aparece en el menú superior.`
+          : `"${page.label}" se ha ocultado del menú superior.`,
+      });
+    } catch {
+      // Revertir
+      setPages(prev => prev.map(p => p.id === page.id ? { ...p, is_visible: !nextState } : p));
+      showFeedback({ type: 'error', title: 'Error', message: 'No se pudo actualizar el menú de navegación.' });
+    }
+  };
+
   const handleDelete = async (page: CustomPage) => {
-    const slug = page.path.replace('/', '');
+    const pageSlug = page.path.replace('/', '');
     setDeletingId(page.id);
     try {
-      const res = await fetch(`${API}/cms/pages/${slug}`, { method: 'DELETE' });
+      const res = await fetch(`${API}/cms/pages/${pageSlug}`, { method: 'DELETE' });
       if (!res.ok) throw new Error();
       showFeedback({ type: 'success', title: 'Página eliminada', message: `"${page.label}" ha sido borrada correctamente.` });
       setPages(prev => prev.filter(p => p.id !== page.id));
@@ -107,9 +164,22 @@ export default function PagesManagerPage() {
     setSlug('');
     setSlugManual(false);
     setIsVisible(true);
+    setEditingPage(null);
   };
 
-  const openModal = () => { resetForm(); setShowModal(true); };
+  const openCreateModal = () => {
+    resetForm();
+    setShowModal(true);
+  };
+
+  const openEditModal = (page: CustomPage) => {
+    setEditingPage(page);
+    setTitle(page.label);
+    setSlug(page.path.replace(/^\//, ''));
+    setSlugManual(true);
+    setIsVisible(page.is_visible);
+    setShowModal(true);
+  };
 
   return (
     <div className="animate-in fade-in duration-500">
@@ -129,7 +199,7 @@ export default function PagesManagerPage() {
         </div>
 
         <button
-          onClick={openModal}
+          onClick={openCreateModal}
           className="flex items-center gap-2 bg-stone-900 hover:bg-[#d4af37] text-white px-5 py-3 rounded-2xl text-sm font-bold transition-all duration-300 shadow-sm shrink-0"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
@@ -161,76 +231,125 @@ export default function PagesManagerPage() {
           <div className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-4 px-6 py-3 bg-stone-50/60 border-b border-stone-100">
             <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">Título</span>
             <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">URL</span>
-            <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">Visible</span>
-            <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">Acciones</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-stone-400 text-center">Menú Superior</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-stone-400 text-right pr-2">Acciones</span>
           </div>
 
           {/* Filas */}
           {pages.map((page, idx) => (
             <div
               key={page.id}
-              className={`grid grid-cols-[1fr_auto_auto_auto] items-center gap-4 px-6 py-5 transition-all duration-200 hover:bg-stone-50/40 ${idx < pages.length - 1 ? 'border-b border-stone-100' : ''}`}
+              className={`grid grid-cols-[1fr_auto_auto_auto] items-center gap-4 px-6 py-4 transition-all duration-200 hover:bg-stone-50/40 ${idx < pages.length - 1 ? 'border-b border-stone-100' : ''}`}
             >
               {/* Título */}
-              <Link 
-                href={`/dashboard/pages${page.path}`}
-                className="flex items-center gap-3 min-w-0 group cursor-pointer"
-              >
-                <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center shrink-0 group-hover:bg-[#d4af37]/10 transition-colors">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-amber-50/80 border border-amber-100 flex items-center justify-center shrink-0">
                   <svg className="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                   </svg>
                 </div>
-                <span className="font-bold text-sm text-stone-800 truncate group-hover:text-[#d4af37] transition-colors">{page.label}</span>
-              </Link>
+                <div className="min-w-0">
+                  <span className="font-bold text-sm text-stone-800 block truncate">{page.label}</span>
+                  <span className="text-[10px] text-stone-400 font-mono">Página autónoma</span>
+                </div>
+              </div>
 
               {/* URL */}
               <a
-                href={page.path}
+                href={getTenantPublicUrl(page.path)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs font-mono text-stone-400 hover:text-[#d4af37] transition-colors bg-stone-50 px-3 py-1.5 rounded-xl border border-stone-100 hover:border-amber-100"
+                className="text-xs font-mono text-stone-400 hover:text-[#d4af37] transition-colors bg-stone-50 px-3 py-1.5 rounded-xl border border-stone-100 hover:border-amber-200 flex items-center gap-1.5"
+                title={`Abrir ${getTenantPublicUrl(page.path)}`}
               >
-                {page.path}
+                <span>{page.path}</span>
+                <svg className="w-3 h-3 text-stone-300" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                </svg>
               </a>
 
-              {/* Visible badge */}
-              <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${page.is_visible ? 'bg-green-50 text-green-600' : 'bg-stone-100 text-stone-400'}`}>
-                {page.is_visible ? 'Sí' : 'No'}
-              </span>
-
-              {/* Botón borrar */}
+              {/* Visible en Menú Superior (Toggle con 1 clic) */}
               <button
-                onClick={() => setConfirmDeletePage(page)}
-                disabled={deletingId === page.id}
-                className="p-2 rounded-xl text-stone-300 hover:text-red-500 hover:bg-red-50 border border-transparent hover:border-red-100 transition-all duration-200 disabled:opacity-30"
-                title="Eliminar página"
+                type="button"
+                onClick={() => handleToggleVisibility(page)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold tracking-tight transition-all duration-200 border ${
+                  page.is_visible
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100/70 shadow-sm'
+                    : 'bg-stone-100 text-stone-400 border-stone-200 hover:bg-stone-200/70'
+                }`}
+                title={page.is_visible ? "Clic para ocultar del menú superior" : "Clic para mostrar en el menú superior"}
               >
-                {deletingId === page.id ? (
-                  <div className="w-4 h-4 border-2 border-stone-300 border-t-stone-600 rounded-full animate-spin" />
-                ) : (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                  </svg>
-                )}
+                <span className={`w-1.5 h-1.5 rounded-full ${page.is_visible ? 'bg-emerald-500 animate-pulse' : 'bg-stone-300'}`} />
+                {page.is_visible ? 'En el Menú' : 'Oculto'}
               </button>
+
+              {/* Botones de acción claros */}
+              <div className="flex items-center gap-2">
+                {/* Botón 1: Reabrir modal de ajustes */}
+                <button
+                  onClick={() => openEditModal(page)}
+                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-stone-700 bg-white hover:bg-amber-50 hover:text-[#d4af37] border border-stone-200 hover:border-amber-200 rounded-xl transition-all shadow-sm group"
+                  title="Configurar título, slug y menú"
+                >
+                  <svg className="w-3.5 h-3.5 text-stone-400 group-hover:text-[#d4af37] transition-colors" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
+                  </svg>
+                  <span>Ajustes</span>
+                </button>
+
+                {/* Botón 2: Diseñar / Editar bloques de la página */}
+                <Link
+                  href={`/dashboard/pages${page.path}`}
+                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-stone-900 bg-stone-100 hover:bg-[#d4af37] hover:text-white rounded-xl transition-all shadow-sm group"
+                  title="Abrir editor visual y bloques de la página"
+                >
+                  <svg className="w-3.5 h-3.5 text-stone-500 group-hover:text-white transition-colors" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                  </svg>
+                  <span>Diseñar</span>
+                </Link>
+
+                {/* Botón 3: Borrar página */}
+                <button
+                  onClick={() => setConfirmDeletePage(page)}
+                  disabled={deletingId === page.id}
+                  className="p-2 rounded-xl text-stone-300 hover:text-red-500 hover:bg-red-50 border border-transparent hover:border-red-100 transition-all duration-200 disabled:opacity-30"
+                  title="Eliminar página"
+                >
+                  {deletingId === page.id ? (
+                    <div className="w-4 h-4 border-2 border-stone-300 border-t-stone-600 rounded-full animate-spin" />
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* ── MODAL CREAR PÁGINA ────────────────────────────────────── */}
+      {/* ── MODAL CREAR / EDITAR AJUSTES DE PÁGINA ───────────────── */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 animate-in zoom-in-95 duration-300">
 
             <div className="mb-7">
-              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#d4af37] block mb-1">Nueva Página</span>
-              <h2 className="font-serif text-2xl font-bold text-stone-800">Crear página autónoma</h2>
-              <p className="text-stone-400 text-xs mt-1">La página aparecerá como una ruta pública en tu portal.</p>
+              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#d4af37] block mb-1">
+                {editingPage ? 'Ajustes de Página' : 'Nueva Página'}
+              </span>
+              <h2 className="font-serif text-2xl font-bold text-stone-800">
+                {editingPage ? 'Configurar página' : 'Crear página autónoma'}
+              </h2>
+              <p className="text-stone-400 text-xs mt-1">
+                {editingPage
+                  ? 'Modifica el título, la URL o si debe aparecer en el menú superior.'
+                  : 'La página aparecerá como una ruta pública en tu portal.'}
+              </p>
             </div>
 
-            <form onSubmit={handleCreate} className="space-y-5">
+            <form onSubmit={handleSave} className="space-y-5">
               {/* Título */}
               <div>
                 <label className="block text-xs font-bold text-stone-600 mb-2 uppercase tracking-wider">
@@ -254,7 +373,7 @@ export default function PagesManagerPage() {
                 </label>
                 <div className="flex items-center border border-stone-200 rounded-xl overflow-hidden focus-within:border-[#d4af37] focus-within:ring-2 focus-within:ring-[#d4af37]/20 transition-all">
                   <span className="px-3 py-3 bg-stone-50 text-stone-400 text-sm font-mono border-r border-stone-200 shrink-0">
-                    tudominio.com/
+                    {getTenantPublicHost()}/
                   </span>
                   <input
                     type="text"
@@ -289,7 +408,7 @@ export default function PagesManagerPage() {
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => { setShowModal(false); resetForm(); }}
                   className="flex-1 py-3 rounded-xl border border-stone-200 text-sm font-bold text-stone-500 hover:bg-stone-50 transition-all"
                 >
                   Cancelar
@@ -297,9 +416,11 @@ export default function PagesManagerPage() {
                 <button
                   type="submit"
                   disabled={saving || !title.trim() || !slug.trim()}
-                  className="flex-1 py-3 rounded-xl bg-stone-900 hover:bg-[#d4af37] text-white text-sm font-bold transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex-1 py-3 rounded-xl bg-stone-900 hover:bg-[#d4af37] text-white text-sm font-bold transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
                 >
-                  {saving ? 'Creando...' : 'Crear página'}
+                  {saving
+                    ? (editingPage ? 'Guardando...' : 'Creando...')
+                    : (editingPage ? 'Guardar cambios' : 'Crear página')}
                 </button>
               </div>
             </form>

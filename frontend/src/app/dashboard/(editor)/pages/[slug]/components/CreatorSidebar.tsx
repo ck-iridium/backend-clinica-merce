@@ -2,6 +2,7 @@
 import React from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import Link from 'next/link';
+import { getTenantPublicUrl } from '@/utils/tenantUrl';
 
 // ── Íconos SVG para cada tipo de bloque ──────────────────────────────
 const ICONS: Record<string, React.ReactNode> = {
@@ -143,9 +144,9 @@ export default function CreatorSidebar({
           </button>
 
           <button
-            onClick={() => window.open(`/${slug}`, '_blank')}
+            onClick={() => window.open(getTenantPublicUrl(`/${slug}`), '_blank')}
             className="flex items-center justify-center gap-2 px-4 py-3 bg-stone-100 hover:bg-stone-200 border border-stone-200 text-stone-700 hover:text-stone-900 text-xs font-bold rounded-xl transition-all duration-300 active:scale-95 shadow-sm"
-            title="Vista Previa Pública"
+            title="Vista Previa Pública en el subdominio del inquilino"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.43 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />

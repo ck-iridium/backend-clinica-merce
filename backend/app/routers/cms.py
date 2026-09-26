@@ -168,6 +168,72 @@ def create_page(payload: schemas.CustomPageCreate, db: Session = Depends(databas
     return nav_item
 
 
+@router.put("/pages/{page_id}", response_model=schemas.CustomPageOut)
+def update_page(page_id: str, payload: schemas.CustomPageUpdate, db: Session = Depends(database.get_db)):
+    """
+    Actualiza título, slug y/o visibilidad en el menú de navegación de una página personalizada.
+    Si se modifica el slug, actualiza en cascada los bloques SiteBlock asociados.
+    """
+    tenant_id = current_tenant_var.get()
+    if not tenant_id:
+        raise HTTPException(status_code=400, detail="Falta cabecera X-Tenant-ID")
+
+    nav_item = db.query(models.SiteNavigation)\
+        .filter(
+            models.SiteNavigation.tenant_id == tenant_id,
+            models.SiteNavigation.id == page_id,
+            models.SiteNavigation.is_custom == True
+        ).first()
+
+    if not nav_item:
+        # Fallback por si enviaron slug en lugar del ID
+        nav_item = db.query(models.SiteNavigation)\
+            .filter(
+                models.SiteNavigation.tenant_id == tenant_id,
+                models.SiteNavigation.path == f"/{page_id}",
+                models.SiteNavigation.is_custom == True
+            ).first()
+
+    if not nav_item:
+        raise HTTPException(status_code=404, detail="Página no encontrada")
+
+    old_slug = nav_item.path.lstrip("/")
+
+    if payload.slug is not None:
+        new_slug = payload.slug.strip().lstrip("/")
+        if new_slug and new_slug != old_slug:
+            # Comprobar colisión de slug con otra página
+            conflict = db.query(models.SiteNavigation)\
+                .filter(
+                    models.SiteNavigation.tenant_id == tenant_id,
+                    models.SiteNavigation.path == f"/{new_slug}",
+                    models.SiteNavigation.id != nav_item.id
+                ).first()
+            if conflict:
+                raise HTTPException(status_code=409, detail=f"Ya existe una página con la ruta '/{new_slug}'")
+
+            # Actualizar page_slug en los bloques SiteBlock
+            blocks = db.query(models.SiteBlock)\
+                .filter(
+                    models.SiteBlock.tenant_id == tenant_id,
+                    models.SiteBlock.page_slug == old_slug
+                ).all()
+            for block in blocks:
+                block.page_slug = new_slug
+
+            nav_item.path = f"/{new_slug}"
+
+    if payload.title is not None:
+        nav_item.label = payload.title.strip()
+
+    if payload.is_visible is not None:
+        nav_item.is_visible = payload.is_visible
+
+    db.commit()
+    db.refresh(nav_item)
+    return nav_item
+
+
 @router.delete("/pages/{slug}", status_code=200)
 def delete_page(slug: str, db: Session = Depends(database.get_db)):
     """
