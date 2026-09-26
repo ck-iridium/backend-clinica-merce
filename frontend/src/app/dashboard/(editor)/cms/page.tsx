@@ -29,7 +29,7 @@ export default function CMSPage() {
   const [viewportDevice, setViewportDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [sections, setSections] = useState<any[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
-  const [pickerTarget, setPickerTarget] = useState<{ type: 'form' | 'category', id?: string, field: string } | null>(null);
+  const [pickerTarget, setPickerTarget] = useState<{ type: 'form' | 'category' | 'hero_slide', id?: string, field: string, slideIndex?: number } | null>(null);
 
   const defaultContent = {
     hero_title: '', hero_subtitle: '', hero_button_text: '', hero_button_link: '',

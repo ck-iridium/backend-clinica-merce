@@ -151,12 +151,15 @@ export default function HeroSlider({ content }: HeroSliderProps) {
       <div
         className={`w-full h-full ${
           effect === 'slide'
-            ? 'flex transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]'
+            ? 'flex transition-transform duration-700 ease-out'
             : 'relative'
         }`}
         style={
           effect === 'slide'
-            ? { transform: `translate3d(-${currentIndex * 100}%, 0, 0)` }
+            ? { 
+                transform: `translate3d(-${currentIndex * 100}%, 0, 0)`,
+                transitionTimingFunction: 'cubic-bezier(0.25, 1, 0.5, 1)'
+              }
             : undefined
         }
       >
