@@ -215,7 +215,7 @@ import TenantInitializer from "@/components/TenantInitializer";
 import TenantTracking from "@/components/analytics/TenantTracking";
 import JsonLd from "@/components/seo/JsonLd";
 
-import { CreditCard } from "lucide-react";
+import { CreditCard, Sparkles } from "lucide-react";
 
 export default async function RootLayout({
   children,
@@ -272,57 +272,113 @@ export default async function RootLayout({
   }
 
   if (isSuspended) {
-    const bizumPhone = process.env.NEXT_PUBLIC_BIZUM_PHONE || "+34 630 338 538";
-    const cleanPhone = bizumPhone.replace(/[^0-9]/g, '');
-    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent("Hola, deseo reactivar la suscripción de mi clínica en ProBookia.")}`;
+    if (isDashboardRoute) {
+      // ── PANTALLA PRIVADA PARA EL PROPIETARIO (Dashboard) ──
+      const bizumPhone = process.env.NEXT_PUBLIC_BIZUM_PHONE || "+34 630 338 538";
+      const cleanPhone = bizumPhone.replace(/[^0-9]/g, '');
+      const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent("Hola, deseo reactivar la suscripción de mi clínica en ProBookia.")}`;
 
-    return (
-      <html lang="es" suppressHydrationWarning className={fontClasses}>
-        <body className="antialiased bg-[#F7F7F5] text-[#1F2937] flex items-center justify-center min-h-screen p-6 font-sans">
-          <div className="max-w-md w-full bg-white rounded-[2.5rem] p-10 md:p-12 shadow-luxury border border-[#d4af37]/20 text-center relative overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-2 bg-[#d4af37]"></div>
+      return (
+        <html lang="es" suppressHydrationWarning className={fontClasses}>
+          <body className="antialiased bg-[#F7F7F5] text-[#1F2937] flex items-center justify-center min-h-screen p-6 font-sans">
+            <div className="max-w-md w-full bg-white rounded-[2.5rem] p-10 md:p-12 shadow-luxury border border-[#d4af37]/20 text-center relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-2 bg-[#d4af37]"></div>
 
-            <div className="w-16 h-16 bg-[#fcf8e5] text-[#b08e23] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
-              <CreditCard className="w-8 h-8" />
-            </div>
+              <div className="w-16 h-16 bg-[#fcf8e5] text-[#b08e23] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+                <CreditCard className="w-8 h-8" />
+              </div>
 
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d4af37] block mb-2">Clínica Inactiva</span>
-            <h1 className="text-2xl md:text-3xl font-serif font-extrabold text-[#1F2937] leading-tight mb-4">
-              Suscripción Suspendida
-            </h1>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d4af37] block mb-2">Panel Administrativo</span>
+              <h1 className="text-2xl md:text-3xl font-serif font-extrabold text-[#1F2937] leading-tight mb-4">
+                Suscripción Pendiente
+              </h1>
 
-            <p className="text-stone-500 font-medium text-xs leading-relaxed mb-6">
-              El acceso a esta clínica ha vencido o requiere renovación. Si eres el propietario, puedes reactivar tu servicio inmediatamente mediante Bizum o contactando a nuestro equipo.
-            </p>
-
-            <div className="bg-[#FAF8F5] border border-[#d4af37]/30 rounded-2xl p-4 mb-6 text-left">
-              <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider block mb-1">Reactivación Rápida con Bizum</span>
-              <p className="text-xs font-bold text-stone-800">
-                Bizum al: <span className="font-mono text-[#b08e23] font-black">{bizumPhone}</span>
+              <p className="text-stone-500 font-medium text-xs leading-relaxed mb-6">
+                El acceso al panel de control de esta clínica requiere renovación. Puedes reactivar tu cuenta de inmediato mediante Bizum o contactando con soporte.
               </p>
-              <p className="text-[10px] text-stone-400 mt-1">Indica el nombre de tu clínica en el concepto para reactivación inmediata.</p>
-            </div>
 
-            <div className="space-y-3">
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block w-full bg-[#1F2937] hover:bg-[#d4af37] text-white font-bold py-3.5 rounded-xl text-xs shadow-sm transition-all duration-300 active:scale-95"
-              >
-                Reactivar por WhatsApp
-              </a>
-              <a
-                href="/login"
-                className="block w-full bg-white hover:bg-stone-50 text-stone-700 border border-stone-200 font-bold py-3 rounded-xl text-xs transition-all duration-300"
-              >
-                Iniciar Sesión
-              </a>
+              <div className="bg-[#FAF8F5] border border-[#d4af37]/30 rounded-2xl p-4 mb-6 text-left">
+                <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider block mb-1">Reactivación Rápida con Bizum</span>
+                <p className="text-xs font-bold text-stone-800">
+                  Bizum al: <span className="font-mono text-[#b08e23] font-black">{bizumPhone}</span>
+                </p>
+                <p className="text-[10px] text-stone-400 mt-1">Indica el nombre de tu clínica en el concepto para reactivación inmediata.</p>
+              </div>
+
+              <div className="space-y-3">
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full bg-[#1F2937] hover:bg-[#d4af37] text-white font-bold py-3.5 rounded-xl text-xs shadow-sm transition-all duration-300 active:scale-95"
+                >
+                  Reactivar por WhatsApp
+                </a>
+                <a
+                  href="/login"
+                  className="block w-full bg-white hover:bg-stone-50 text-stone-700 border border-stone-200 font-bold py-3 rounded-xl text-xs transition-all duration-300"
+                >
+                  Cambiar de Cuenta
+                </a>
+              </div>
             </div>
-          </div>
-        </body>
-      </html>
-    );
+          </body>
+        </html>
+      );
+    } else {
+      // ── PANTALLA PÚBLICA PARA CLIENTES / PACIENTES (Aceternity Quiet Luxury) ──
+      // Cero mención a impagos: Discreta, minimalista y con branding sutil de ProBookia
+      return (
+        <html lang="es" suppressHydrationWarning className={fontClasses}>
+          <body className="antialiased bg-[#FAF9F6] text-[#1c1917] flex items-center justify-center min-h-screen p-6 font-sans relative overflow-hidden select-none">
+            {/* 1. Fondo de cuadrícula sutil (Aceternity style) */}
+            <div className="absolute inset-0 bg-[radial-gradient(#e5e1cc_1px,transparent_1px)] [background-size:28px_28px] opacity-60 pointer-events-none"></div>
+
+            {/* 2. Halo de luz dorada ambiental (Glow) */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[520px] bg-gradient-to-tr from-[#d4af37]/15 to-amber-200/10 rounded-full blur-[130px] pointer-events-none"></div>
+
+            {/* 3. Tarjeta Monolítica Glassmorphism */}
+            <div className="max-w-md w-full bg-white/70 backdrop-blur-2xl rounded-[2.5rem] p-10 md:p-12 shadow-[0_20px_70px_-20px_rgba(212,175,55,0.12)] border border-white/80 relative z-10 text-center">
+              
+              {/* Monograma ProBookia */}
+              <div className="w-16 h-16 rounded-[1.25rem] bg-gradient-to-b from-[#1c1917] to-stone-900 text-[#d4af37] border border-[#d4af37]/30 shadow-xl shadow-stone-900/10 flex items-center justify-center mx-auto mb-5">
+                <span className="font-serif text-3xl font-bold tracking-tighter">P</span>
+              </div>
+
+              {/* Logo y Sello */}
+              <div className="inline-flex items-center justify-center gap-2 mb-6">
+                <span className="font-serif tracking-[0.3em] text-sm font-semibold text-stone-900 uppercase">
+                  PROBOOKIA
+                </span>
+                <span className="text-[9px] font-mono tracking-widest uppercase px-2 py-0.5 rounded-full bg-[#fcf8e5] text-[#b08e23] border border-[#e5e1cc] font-bold">
+                  SaaS
+                </span>
+              </div>
+
+              {/* Mensaje Neutro y Discreto */}
+              <h1 className="text-xl md:text-2xl font-serif text-stone-850 font-medium tracking-tight mb-2">
+                Portal Temporalmente en Pausa
+              </h1>
+
+              <p className="text-xs text-stone-400 font-sans max-w-xs mx-auto leading-relaxed mb-8">
+                Este espacio no se encuentra disponible actualmente.
+              </p>
+
+              {/* Publicidad Sutil ProBookia */}
+              <div className="pt-6 border-t border-stone-100 flex flex-col items-center">
+                <a
+                  href="/marketing"
+                  className="group inline-flex items-center gap-1.5 text-[11px] font-medium text-stone-500 hover:text-stone-950 transition-colors py-1 px-3 rounded-full hover:bg-stone-50/80"
+                >
+                  <span>Tecnología y reservas para clínicas de autor</span>
+                  <span className="text-[#d4af37] group-hover:translate-x-0.5 transition-transform text-xs">↗</span>
+                </a>
+              </div>
+            </div>
+          </body>
+        </html>
+      );
+    }
   }
 
   if (isMarketing) {
