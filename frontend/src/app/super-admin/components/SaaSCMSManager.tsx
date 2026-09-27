@@ -10,6 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ColorPicker } from '@/components/ui/color-picker';
+import { Button } from '@/components/ui/button';
 import MediaPickerModal from '@/components/MediaPickerModal';
 import Showcase3DPreview, { MappedPreviewSector } from './Showcase3DPreview';
 import SaaSCMSHeroForm from './SaaSCMSHeroForm';
@@ -579,65 +581,38 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                     <div className="grid grid-cols-3 gap-3">
                       {/* Primary Color */}
                       <div className="space-y-1">
-                        <label className="text-[8px] font-black text-stone-450 uppercase tracking-wider block truncate">
+                        <label className="text-[8px] font-black text-stone-500 uppercase tracking-wider block truncate">
                           Primario
                         </label>
-                        <div className="flex items-center gap-1 bg-stone-50 border border-stone-200 rounded-xl px-1.5 py-1.5">
-                          <input 
-                            type="color" 
-                            value={settings.primary_color || '#3b82f6'} 
-                            onChange={(e) => setSettings(prev => ({ ...prev, primary_color: e.target.value }))}
-                            className="w-4 h-4 border border-stone-200 rounded cursor-pointer bg-transparent outline-none shrink-0"
-                          />
-                          <input 
-                            type="text" 
-                            value={settings.primary_color || '#3b82f6'} 
-                            onChange={(e) => setSettings(prev => ({ ...prev, primary_color: e.target.value }))}
-                            className="w-full bg-transparent outline-none text-[9px] font-mono select-all text-stone-700 min-w-0"
-                          />
-                        </div>
+                        <ColorPicker 
+                          value={settings.primary_color || '#3b82f6'} 
+                          onChange={(val) => setSettings(prev => ({ ...prev, primary_color: val }))}
+                          label="Primario"
+                        />
                       </div>
                       
                       {/* Secondary Color */}
                       <div className="space-y-1">
-                        <label className="text-[8px] font-black text-stone-455 uppercase tracking-wider block truncate">
+                        <label className="text-[8px] font-black text-stone-500 uppercase tracking-wider block truncate">
                           Secundario
                         </label>
-                        <div className="flex items-center gap-1 bg-stone-50 border border-stone-200 rounded-xl px-1.5 py-1.5">
-                          <input 
-                            type="color" 
-                            value={settings.secondary_color || '#1c1917'} 
-                            onChange={(e) => setSettings(prev => ({ ...prev, secondary_color: e.target.value }))}
-                            className="w-4 h-4 border border-stone-200 rounded cursor-pointer bg-transparent outline-none shrink-0"
-                          />
-                          <input 
-                            type="text" 
-                            value={settings.secondary_color || '#1c1917'} 
-                            onChange={(e) => setSettings(prev => ({ ...prev, secondary_color: e.target.value }))}
-                            className="w-full bg-transparent outline-none text-[9px] font-mono select-all text-stone-700 min-w-0"
-                          />
-                        </div>
+                        <ColorPicker 
+                          value={settings.secondary_color || '#1c1917'} 
+                          onChange={(val) => setSettings(prev => ({ ...prev, secondary_color: val }))}
+                          label="Secundario"
+                        />
                       </div>
 
                       {/* Tertiary Color */}
                       <div className="space-y-1">
-                        <label className="text-[8px] font-black text-stone-455 uppercase tracking-wider block truncate">
+                        <label className="text-[8px] font-black text-stone-500 uppercase tracking-wider block truncate">
                           Terciario
                         </label>
-                        <div className="flex items-center gap-1 bg-stone-50 border border-stone-200 rounded-xl px-1.5 py-1.5">
-                          <input 
-                            type="color" 
-                            value={settings.tertiary_color || '#d4af37'} 
-                            onChange={(e) => setSettings(prev => ({ ...prev, tertiary_color: e.target.value }))}
-                            className="w-4 h-4 border border-stone-200 rounded cursor-pointer bg-transparent outline-none shrink-0"
-                          />
-                          <input 
-                            type="text" 
-                            value={settings.tertiary_color || '#d4af37'} 
-                            onChange={(e) => setSettings(prev => ({ ...prev, tertiary_color: e.target.value }))}
-                            className="w-full bg-transparent outline-none text-[9px] font-mono select-all text-stone-700 min-w-0"
-                          />
-                        </div>
+                        <ColorPicker 
+                          value={settings.tertiary_color || '#d4af37'} 
+                          onChange={(val) => setSettings(prev => ({ ...prev, tertiary_color: val }))}
+                          label="Terciario"
+                        />
                       </div>
                     </div>
                   </div>
@@ -740,13 +715,14 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                     </div>
                   </div>
 
-                  <button 
+                  <Button 
                     type="submit"
+                    variant="luxury"
                     disabled={savingSettings}
-                    className="w-full bg-stone-950 hover:bg-[#d4af37] text-white py-3 rounded-xl text-xxs font-black uppercase tracking-widest transition-all duration-300 shadow-sm active:scale-98"
+                    className="w-full py-3 h-11"
                   >
                     {savingSettings ? 'Guardando Ajustes...' : 'Guardar Branding'}
-                  </button>
+                  </Button>
                 </form>
               )}
             </div>

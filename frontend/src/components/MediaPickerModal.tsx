@@ -6,7 +6,7 @@ import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { processVideo } from '@/lib/videoProcessor';
 import { type MediaFile, formatBytes, isDocumentFile } from '@/lib/mediaTypes';
-import { Loader2, Sparkles, FileText, FileSpreadsheet } from 'lucide-react';
+import { Loader2, Sparkles, FileText, FileSpreadsheet, ImagePlus, Video, Folder, UploadCloud, X, Play } from 'lucide-react';
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { 
   Dialog, 
@@ -15,7 +15,6 @@ import {
   DialogDescription 
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
-import { X, Play } from "lucide-react";
 
 interface MediaPickerModalProps {
   onClose: () => void;
@@ -302,11 +301,16 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                         </div>
                     </div>
 
-                    {/* Tabs */}
-                    <div className="flex border-b border-stone-100 px-6 sm:px-8 bg-white shrink-0">
+                    {/* Tabs Segmentados Modernos */}
+                    <div className="flex border-b border-stone-100 px-6 sm:px-8 py-3 bg-stone-50/70 gap-2 shrink-0">
                         <button
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveTab('gallery'); }}
-                            className={`px-6 py-4 text-sm font-bold border-b-[3px] transition-all flex-[0_0_auto] ${activeTab === 'gallery' ? 'border-primary text-stone-900' : 'border-transparent text-stone-400 hover:text-stone-600'}`}
+                            className={cn(
+                              "px-5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 select-none",
+                              activeTab === 'gallery'
+                                ? "bg-white text-stone-900 shadow-sm border border-stone-200/80 font-extrabold"
+                                : "text-stone-500 hover:text-stone-900 hover:bg-white/50"
+                            )}
                         >
                             {mediaType === 'video' 
                               ? (language === 'fr' ? 'Vidéos Disponibles' : language === 'en' ? 'Available Videos' : 'Vídeos Disponibles') 
@@ -316,7 +320,12 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                         </button>
                         <button
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveTab('upload'); }}
-                            className={`px-6 py-4 text-sm font-bold border-b-[3px] transition-all flex-[0_0_auto] ${activeTab === 'upload' ? 'border-primary text-stone-900' : 'border-transparent text-stone-400 hover:text-stone-600'}`}
+                            className={cn(
+                              "px-5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 select-none",
+                              activeTab === 'upload'
+                                ? "bg-white text-stone-900 shadow-sm border border-stone-200/80 font-extrabold"
+                                : "text-stone-500 hover:text-stone-900 hover:bg-white/50"
+                            )}
                         >
                             {language === 'fr' ? 'Télécharger' : language === 'en' ? 'Upload' : 'Subir'}{' '}
                             {mediaType === 'video' 
@@ -512,8 +521,8 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                                               "border-2 border-dashed rounded-3xl p-16 text-center transition-all bg-white shadow-sm group-hover:shadow-md",
                                               isDragging ? "border-primary bg-primary/[0.03]" : "border-stone-300 group-hover:border-primary group-hover:bg-primary/[0.03]"
                                             )}>
-                                                <div className="text-6xl mb-6 transform group-hover:scale-110 transition-transform duration-300">
-                                                  {mediaType === 'video' ? '📹' : mediaType === 'all' ? '📁' : '🖼️'}
+                                                <div className="w-16 h-16 rounded-2xl bg-amber-50/80 border border-[#D4AF37]/35 flex items-center justify-center text-[#D4AF37] mx-auto mb-4 group-hover:scale-105 transition-transform duration-300 shadow-sm shadow-[#D4AF37]/10">
+                                                  {mediaType === 'video' ? <Video className="w-8 h-8 text-[#D4AF37]" /> : mediaType === 'all' ? <Folder className="w-8 h-8 text-[#D4AF37]" /> : <ImagePlus className="w-8 h-8 text-[#D4AF37]" />}
                                                 </div>
                                                 <p className="font-extrabold text-stone-800 text-xl mb-2">
                                                   {language === 'fr' ? 'Télécharger' : language === 'en' ? 'Upload' : 'Subir'}{' '}
