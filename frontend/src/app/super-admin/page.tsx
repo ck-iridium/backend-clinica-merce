@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, ShieldAlert } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 
 import SuperAdminSidebar from './components/SuperAdminSidebar';
 import TenantList from './components/TenantList';
@@ -237,40 +239,49 @@ export default function SuperAdminPage() {
   // Acceso Denegado con opción a Iniciar Sesión como Super Admin
   if (!user || user.role !== 'super_admin') {
     return (
-      <div className="min-h-screen bg-[#F7F7F5] flex items-center justify-center p-6">
-        <div className="max-w-md w-full bg-white rounded-[2rem] border border-stone-200/60 p-10 text-center shadow-luxury">
-          <div className="inline-flex justify-center items-center w-16 h-16 rounded-full bg-stone-100 text-stone-600 mb-6 text-2xl">
-            🔒
+      <div className="min-h-screen bg-[#FAF9F6] flex items-center justify-center p-6 relative overflow-hidden">
+        {/* Halos dorados ambientales */}
+        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-[#D4AF37]/10 rounded-full blur-[120px] pointer-events-none" />
+
+        <Card className="max-w-md w-full bg-white/90 backdrop-blur-2xl rounded-[2rem] border border-stone-200/70 p-9 text-center shadow-xl relative z-10">
+          <div className="inline-flex justify-center items-center w-14 h-14 rounded-2xl bg-stone-900 border border-[#D4AF37]/30 text-[#D4AF37] mb-6 shadow-md shadow-[#D4AF37]/10">
+            <ShieldAlert className="w-6 h-6" />
           </div>
-          <h1 className="text-3xl font-serif font-bold text-stone-900 mb-4">Acceso Denegado</h1>
-          <p className="text-stone-500 mb-8 font-sans font-medium text-sm leading-relaxed">
-            Esta área está estrictamente reservada para el Super Administrador global del SaaS. Tu cuenta actual no dispone de los privilegios requeridos.
+          <h1 className="text-2xl font-serif font-bold text-stone-900 mb-2">Acceso Reservado</h1>
+          <p className="text-stone-500 mb-8 font-sans text-xs leading-relaxed">
+            Esta consola está estrictamente restringida a administradores de la plataforma global. Si eres propietario de una clínica, accede a través de tu subdominio correspondiente.
           </p>
           <div className="space-y-3">
-            <button
+            <Button
+              variant="luxury"
+              size="lg"
               onClick={() => router.push('/login')}
-              className="w-full bg-[#d4af37] hover:bg-[#c29f2e] text-stone-950 font-bold py-4 rounded-xl shadow-md transition-all duration-300">
-              Iniciar Sesión como Super Admin
-            </button>
-            <button
+              className="w-full text-xs"
+            >
+              Iniciar Sesión como Administrador
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
               onClick={() => router.push('/')}
-              className="w-full bg-white border border-stone-200 hover:bg-stone-50 text-stone-700 font-bold py-4 rounded-xl shadow-sm transition-all duration-300">
-              Volver a la Página Principal
-            </button>
+              className="w-full text-xs text-stone-600"
+            >
+              Volver al Portal Público
+            </Button>
           </div>
-        </div>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="h-screen overflow-hidden bg-[#F7F7F5] text-stone-850 flex">
+    <div className="h-screen overflow-hidden bg-[#FAF9F6] text-stone-850 flex">
       {/* Sidebar Modular */}
       <SuperAdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {/* Área Principal */}
       <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
-        <header className="h-20 shrink-0 bg-white border-b border-stone-200/50 px-8 flex items-center justify-between">
+        <header className="h-20 shrink-0 bg-white/80 backdrop-blur-xl border-b border-stone-200/60 px-8 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-stone-400 font-sans">
               <span>Consola SaaS</span>

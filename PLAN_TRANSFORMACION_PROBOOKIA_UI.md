@@ -22,17 +22,17 @@
 - [x] **1.4** Integrar `<Input />` de shadcn con botón interactivo de **mostrar/ocultar contraseña** (icono ojo).
 - [x] **1.5** Integrar `<Button variant="luxury" />` con micro-interacción de carga (animación fluida en submit).
 - [x] **1.6** Limpieza completa de código viejo y estilos fucsia/rosa en desuso.
-- [ ] **1.7** *Validación visual del usuario en navegador y aprobación.*
+- [x] **1.7** *Validación visual del usuario en navegador y aprobación.*
 
 ---
 
 ### 👑 FASE 2: La Consola Central — Super Admin (`/super-admin`)
 *Objetivo: Transformar el Backoffice Master en un panel de control con la solidez de Stripe/Vercel.*
 
-- [ ] **2.1** Barra lateral de navegación de Super Admin con iconos y estados activos limpios.
-- [ ] **2.2** Lista de clínicas/tenants en tarjeta refinada con badges de estado (`Activo`, `Periodo de Gracia`, `Suspendido`).
-- [ ] **2.3** Ficha de detalle de clínica con Bento Grid de KPIs (Ingresos, especialistas, plan actual).
-- [ ] **2.4** Modales de acción rápida (Cambiar Plan, Suspender, Reactivar Acceso) con `<Dialog />` de shadcn.
+- [x] **2.1** Barra lateral de navegación de Super Admin con iconos y estados activos limpios.
+- [x] **2.2** Lista de clínicas/tenants en tarjeta refinada con badges de estado (`Activo`, `Periodo de Gracia`, `Suspendido`).
+- [x] **2.3** Ficha de detalle de clínica con Bento Grid de KPIs (Ingresos, especialistas, plan actual).
+- [x] **2.4** Modales de acción rápida (Cambiar Plan, Suspender, Reactivar Acceso) con `<Dialog />` de shadcn.
 - [ ] **2.5** *Validación visual del usuario en navegador y aprobación.*
 
 ---
