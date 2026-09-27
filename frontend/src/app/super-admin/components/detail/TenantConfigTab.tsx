@@ -1,29 +1,51 @@
 "use client"
 
-import React from 'react';
-import { Globe, Shield, AlertTriangle, Building } from 'lucide-react';
+import React from 'react'
+import { 
+  Globe, 
+  ShieldCheck, 
+  AlertTriangle, 
+  Building2, 
+  ExternalLink,
+  Trash2,
+  Stethoscope,
+  Sparkles,
+  Scissors,
+  Briefcase,
+  Layers,
+  ChevronDown
+} from 'lucide-react'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 interface Tenant {
-  id: string;
-  name: string;
-  slug: string;
-  stripe_customer_id: string | null;
-  subscription_status: string;
-  stripe_subscription_id?: string | null;
-  plan_type?: string;
-  subscription_expires_at?: string | null;
-  created_at: string | null;
-  custom_domain?: string | null;
-  business_sector?: string | null;
+  id: string
+  name: string
+  slug: string
+  stripe_customer_id: string | null
+  subscription_status: string
+  stripe_subscription_id?: string | null
+  plan_type?: string
+  subscription_expires_at?: string | null
+  created_at: string | null
+  custom_domain?: string | null
+  business_sector?: string | null
 }
 
 interface TenantConfigTabProps {
-  tenant: Tenant;
-  customDomain: string | null;
-  onDisconnectDomain: () => Promise<void>;
-  onOpenDomainModal: () => void;
-  onOpenDeleteModal: () => void;
-  onUpdateSector: (sector: string) => Promise<void>;
+  tenant: Tenant
+  customDomain: string | null
+  onDisconnectDomain: () => Promise<void>
+  onOpenDomainModal: () => void
+  onOpenDeleteModal: () => void
+  onUpdateSector: (sector: string) => Promise<void>
 }
 
 export default function TenantConfigTab({
@@ -34,131 +56,165 @@ export default function TenantConfigTab({
   onOpenDeleteModal,
   onUpdateSector
 }: TenantConfigTabProps) {
+  const sectors = [
+    { value: 'clinical', label: 'Medicina y Clínica de Salud' },
+    { value: 'beauty', label: 'Estética, Belleza y Wellness' },
+    { value: 'barber', label: 'Barbería y Salón de Peluquería' },
+    { value: 'veterinary', label: 'Veterinaria y Cuidados' },
+    { value: 'automotive', label: 'Automoción y Mecánica' },
+    { value: 'home_services', label: 'Servicios a Domicilio' },
+    { value: 'professional', label: 'Consultoría y Asesoría' },
+    { value: 'general', label: 'General / Otros Servicios' },
+  ]
+
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      <h3 className="text-lg font-bold font-serif text-stone-900 border-b border-stone-100 pb-2">
-        Estructura de Ruteo e Infraestructura
-      </h3>
+    <div className="space-y-6 animate-in fade-in duration-200">
+      <div>
+        <h3 className="text-base font-serif font-bold text-stone-900 tracking-tight">
+          Enrutamiento y Configuración de Infraestructura
+        </h3>
+        <p className="text-xs text-stone-400 mt-0.5">
+          Parámetros de dominio personalizado, sector de actividad y protección de datos
+        </p>
+      </div>
+
       <div className="space-y-4">
-        {/* Tarjeta de Dominios Personalizados Condicional */}
-        <div className="bg-[#FAFAFA] p-5 rounded-2xl border border-stone-200/30 flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition-all duration-300">
-          <div className="flex items-start gap-4">
-            <span className="w-12 h-12 rounded-xl bg-white border border-stone-100 text-stone-400 flex items-center justify-center shrink-0 shadow-sm">
-              <Globe className="w-6 h-6" />
-            </span>
-            <div className="space-y-1">
-              <p className="font-bold text-stone-900 text-sm">Dominios Personalizados</p>
+        {/* Dominio Personalizado */}
+        <Card className="p-5 border-stone-200/70 bg-white/90 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+          <div className="flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center text-stone-700 shrink-0 border border-stone-200/60">
+              <Globe className="w-5 h-5" />
+            </div>
+            <div className="space-y-0.5">
+              <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
+                Dominio Comercial Personalizado
+              </h4>
               {customDomain ? (
                 <div className="space-y-0.5">
-                  <p className="text-stone-400 text-xs">Mapeo DNS activo para el dominio:</p>
-                  <p className="text-base font-serif font-bold text-[#d4af37]">{customDomain}</p>
+                  <span className="text-[11px] text-stone-400">Mapeo DNS activo en CNAME:</span>
+                  <p className="text-sm font-semibold font-mono text-[#B38F26]">{customDomain}</p>
                 </div>
               ) : (
-                <div className="space-y-0.5">
-                  <p className="text-stone-400 text-xs">Usando subdominio de la plataforma:</p>
-                  <p className="text-stone-700 font-mono text-xs">{tenant.slug}.probookia.com</p>
-                </div>
+                <p className="text-xs text-stone-500 font-mono">
+                  {tenant.slug}.probookia.com
+                </p>
               )}
             </div>
           </div>
           
-          <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
+          <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-center">
             {customDomain ? (
               <>
-                <span className="bg-emerald-50 text-emerald-600 border border-emerald-100 px-3 py-1 rounded-full text-xxs font-black uppercase tracking-wider">
-                  🟢 Activo
+                <span className="bg-emerald-50 text-emerald-700 border border-emerald-200/80 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                  Conectado
                 </span>
-                <button 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={onDisconnectDomain}
-                  className="text-stone-400 hover:text-red-500 text-[10px] font-bold uppercase tracking-wider transition-colors"
+                  className="text-stone-400 hover:text-rose-600 text-xs"
                 >
                   Desconectar
-                </button>
+                </Button>
               </>
             ) : (
               <>
-                <span className="bg-stone-100 text-stone-500 border border-stone-200 px-3 py-1 rounded-full text-xxs font-bold uppercase tracking-wider">
-                  Sin dominio personalizado
+                <span className="bg-stone-100 text-stone-500 border border-stone-200 px-2.5 py-0.5 rounded-full text-[10px] font-medium">
+                  Subdominio Estándar
                 </span>
-                <button 
+                <Button
+                  variant="luxury"
+                  size="sm"
                   onClick={onOpenDomainModal}
-                  className="bg-stone-900 hover:bg-[#d4af37] text-white px-4 py-2 rounded-xl text-xxs font-black uppercase tracking-wider transition-all duration-300 shadow-sm active:scale-95"
+                  className="text-xs"
                 >
                   Conectar Dominio
-                </button>
+                </Button>
               </>
             )}
           </div>
-        </div>
+        </Card>
 
-        {/* Selector de Sector del Negocio */}
-        <div className="bg-[#FAFAFA] p-5 rounded-2xl border border-stone-200/30 flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition-all duration-300">
-          <div className="flex items-start gap-4">
-            <span className="w-12 h-12 rounded-xl bg-white border border-stone-100 text-stone-400 flex items-center justify-center shrink-0 shadow-sm">
-              <Building className="w-6 h-6 text-[#d4af37]" />
-            </span>
-            <div className="space-y-1">
-              <p className="font-bold text-stone-900 text-sm">Sector del Negocio (Inquilino)</p>
-              <p className="text-stone-400 text-xs font-medium">Define la interfaz y los campos dinámicos visibles en la ficha de clientes.</p>
+        {/* Selector de Sector de Actividad (con shadcn Select) */}
+        <Card className="p-5 border-stone-200/70 bg-white/90 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+          <div className="flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center text-stone-700 shrink-0 border border-stone-200/60">
+              <Building2 className="w-5 h-5 text-[#D4AF37]" />
+            </div>
+            <div className="space-y-0.5">
+              <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
+                Sector del Negocio
+              </h4>
+              <p className="text-xs text-stone-500">
+                Ajusta las terminologías clínicas y formularios médicos de la plataforma
+              </p>
             </div>
           </div>
           
           <div className="w-full sm:w-64 shrink-0">
-            <select
+            <Select
               value={tenant.business_sector || 'general'}
-              onChange={(e) => onUpdateSector(e.target.value)}
-              className="w-full bg-white border border-stone-200 rounded-xl px-4 py-2.5 text-xs font-bold text-stone-850 focus:outline-none focus:ring-2 focus:ring-[#d4af37]/10 focus:border-[#d4af37] transition-all shadow-sm cursor-pointer"
+              onValueChange={(val) => onUpdateSector(val)}
             >
-              <option value="clinical">🏥 Medicina / Clínica de Salud</option>
-               <option value="beauty">✨ Estética y Bienestar</option>
-              <option value="barber">💈 Salones y Barberías</option>
-              <option value="veterinary">🐾 Veterinaria</option>
-              <option value="automotive">🚗 Automoción y Mecánica</option>
-              <option value="home_services">🧹 Servicios a Domicilio</option>
-              <option value="professional">💼 Profesional / Asesoría</option>
-              <option value="general">📦 General / Otros</option>
-            </select>
+              <SelectTrigger className="h-10 text-xs bg-white border-stone-200">
+                <SelectValue placeholder="Seleccionar sector" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border-stone-200 shadow-xl rounded-xl">
+                {sectors.map((sec) => (
+                  <SelectItem key={sec.value} value={sec.value} className="text-xs">
+                    {sec.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        </div>
+        </Card>
 
-        <div className="flex justify-between items-center bg-[#FAFAFA] p-4 rounded-xl text-sm border border-stone-200/30">
+        {/* Políticas de Seguridad RLS */}
+        <Card className="p-4 border-stone-200/70 bg-white/90 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <Shield className="w-5 h-5 text-stone-400" />
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+              <ShieldCheck className="w-4 h-4" />
+            </div>
             <div>
-              <p className="font-bold text-stone-900">Políticas RLS en Base de Datos</p>
-              <p className="text-xs text-stone-400">Aislamiento por Row Level Security (RLS) habilitado</p>
+              <p className="text-xs font-bold text-stone-900">Aislamiento RLS en Base de Datos</p>
+              <p className="text-[11px] text-stone-400">Row Level Security activo en todas las tablas del tenant</p>
             </div>
           </div>
-          <span className="bg-green-50 text-green-600 border border-green-100 px-3 py-1 rounded-full text-xxs font-black uppercase">
+          <span className="bg-emerald-50 text-emerald-700 border border-emerald-200/80 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
             Protegido
           </span>
-        </div>
+        </Card>
 
-        {/* Zona de Peligro - Hard Delete */}
-        <div className="bg-red-50/10 p-5 rounded-2xl border border-red-200/40 flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition-all duration-300 mt-6">
-          <div className="flex items-start gap-4">
-            <span className="w-12 h-12 rounded-xl bg-white border border-red-100 text-red-500 flex items-center justify-center shrink-0 shadow-sm">
-              <AlertTriangle className="w-6 h-6" />
-            </span>
-            <div className="space-y-1">
-              <p className="font-bold text-red-900 text-sm">Zona de Peligro: Borrado en Cascada</p>
-              <p className="text-stone-500 text-xs leading-relaxed max-w-xl">
-                Esta acción es irreversible. Eliminará de forma definitiva toda la base de datos de la clínica (citas, facturas, clientes, servicios) y todos sus archivos multimedia del storage.
+        {/* Zona de Peligro - Borrado */}
+        <Card className="p-5 border-rose-200/80 bg-rose-50/20 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+          <div className="flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200/80 text-rose-600 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+            <div className="space-y-0.5">
+              <h4 className="text-xs font-bold text-rose-900 uppercase tracking-wider">
+                Zona de Riesgo: Eliminación en Cascada
+              </h4>
+              <p className="text-xs text-stone-500 leading-relaxed max-w-lg">
+                Esta acción elimina permanentemente el historial de citas, expedientes, facturación y archivos del storage asociados a este tenant.
               </p>
             </div>
           </div>
           
           <div className="shrink-0 self-end sm:self-center">
-            <button 
+            <Button
+              variant="destructive"
+              size="sm"
               onClick={onOpenDeleteModal}
-              className="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl text-xxs font-black uppercase tracking-wider transition-all duration-300 shadow-sm active:scale-95 border border-red-600 focus:outline-none"
+              className="text-xs gap-1.5"
             >
+              <Trash2 className="w-3.5 h-3.5" />
               Eliminar Clínica
-            </button>
+            </Button>
           </div>
-        </div>
-
+        </Card>
       </div>
     </div>
-  );
+  )
 }

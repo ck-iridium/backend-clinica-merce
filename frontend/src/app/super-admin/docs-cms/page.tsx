@@ -5,6 +5,13 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import RichTextEditor from '@/components/cms/RichTextEditor';
 import SuperAdminSidebar from '../components/SuperAdminSidebar';
 import { 
@@ -743,17 +750,21 @@ export default function SuperAdminDocsCMSPage() {
                           <label className="block text-[10px] font-black uppercase tracking-wider text-stone-400 mb-1.5">
                             Sección contenedora
                           </label>
-                          <select
+                          <Select
                             value={selectedSectionId}
-                            onChange={e => setSelectedSectionId(e.target.value)}
-                            className="w-full border border-stone-200 rounded-xl px-4 py-2.5 text-xs text-stone-700 focus:outline-none focus:border-[#d4af37]"
+                            onValueChange={setSelectedSectionId}
                           >
-                            {sections.map(sec => (
-                              <option key={sec.id} value={sec.id}>
-                                {sec.title?.es || sec.slug}
-                              </option>
-                            ))}
-                          </select>
+                            <SelectTrigger className="h-10 text-xs bg-white border-stone-200">
+                              <SelectValue placeholder="Seleccionar sección" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-white border-stone-200 shadow-xl rounded-xl">
+                              {sections.map(sec => (
+                                <SelectItem key={sec.id} value={sec.id} className="text-xs">
+                                  {sec.title?.es || sec.slug}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                       </div>
 
@@ -900,17 +911,21 @@ export default function SuperAdminDocsCMSPage() {
                 <label className="block text-xs font-bold text-stone-600 mb-2 uppercase tracking-wider">
                   Sección Destino
                 </label>
-                <select
+                <Select
                   value={targetSectionId}
-                  onChange={e => setTargetSectionId(e.target.value)}
-                  className="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-750 focus:outline-none focus:border-[#d4af37]"
+                  onValueChange={setTargetSectionId}
                 >
-                  {sections.map(sec => (
-                    <option key={sec.id} value={sec.id}>
-                      {sec.title?.es || sec.slug}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="h-11 text-xs bg-white border-stone-200">
+                    <SelectValue placeholder="Seleccionar sección destino" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border-stone-200 shadow-xl rounded-xl">
+                    {sections.map(sec => (
+                      <SelectItem key={sec.id} value={sec.id} className="text-xs">
+                        {sec.title?.es || sec.slug}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>

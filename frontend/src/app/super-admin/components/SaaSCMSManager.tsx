@@ -3,6 +3,13 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Sparkles, Settings2, Palette, Globe } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import MediaPickerModal from '@/components/MediaPickerModal';
 import Showcase3DPreview, { MappedPreviewSector } from './Showcase3DPreview';
 import SaaSCMSHeroForm from './SaaSCMSHeroForm';
@@ -523,18 +530,22 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                     <label className="text-[9px] font-black text-stone-400 uppercase tracking-widest block">
                       Tipografía Corporativa
                     </label>
-                    <select
+                    <Select
                       value={settings.font_family || 'playfair_inter'}
-                      onChange={(e) => setSettings(prev => ({ ...prev, font_family: e.target.value }))}
-                      className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-900 transition-colors text-xs font-sans appearance-none cursor-pointer"
+                      onValueChange={(val) => setSettings(prev => ({ ...prev, font_family: val }))}
                     >
-                      <option value="playfair_inter">Playfair Display & Inter (Serif de Lujo + Sans Limpia)</option>
-                      <option value="outfit">Outfit (Geométrica Moderna)</option>
-                      <option value="fredoka">Fredoka (Amigable & Redondeada)</option>
-                      <option value="cormorant_montserrat">Cormorant Garamond & Montserrat (Boutique de Lujo)</option>
-                      <option value="cinzel_roboto">Cinzel & Roboto (Serif Imperial + Tech Sans)</option>
-                      <option value="inter">Inter (Estética Pura SaaS/Minimalista)</option>
-                    </select>
+                      <SelectTrigger className="h-10 text-xs bg-white border-stone-200">
+                        <SelectValue placeholder="Seleccionar tipografía" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border-stone-200 shadow-xl rounded-xl">
+                        <SelectItem value="playfair_inter" className="text-xs">Playfair Display & Inter (Serif de Lujo + Sans Limpia)</SelectItem>
+                        <SelectItem value="outfit" className="text-xs">Outfit (Geométrica Moderna)</SelectItem>
+                        <SelectItem value="fredoka" className="text-xs">Fredoka (Amigable & Redondeada)</SelectItem>
+                        <SelectItem value="cormorant_montserrat" className="text-xs">Cormorant Garamond & Montserrat (Boutique de Lujo)</SelectItem>
+                        <SelectItem value="cinzel_roboto" className="text-xs">Cinzel & Roboto (Serif Imperial + Tech Sans)</SelectItem>
+                        <SelectItem value="inter" className="text-xs">Inter (Estética Pura SaaS/Minimalista)</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   {/* Title Font Weight Dropdown */}
@@ -542,17 +553,21 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                     <label className="text-[9px] font-black text-stone-400 uppercase tracking-widest block">
                       Grosor de Títulos
                     </label>
-                    <select
+                    <Select
                       value={settings.font_weight_headings || 'semibold'}
-                      onChange={(e) => setSettings(prev => ({ ...prev, font_weight_headings: e.target.value }))}
-                      className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-900 transition-colors text-xs font-sans appearance-none cursor-pointer"
+                      onValueChange={(val) => setSettings(prev => ({ ...prev, font_weight_headings: val }))}
                     >
-                      <option value="light">Fino (Light - 300)</option>
-                      <option value="normal">Elegante (Normal - 400)</option>
-                      <option value="medium">Suave (Medium - 500)</option>
-                      <option value="semibold">Imprenta (Semibold - 600)</option>
-                      <option value="bold">Sólido (Bold - 700)</option>
-                    </select>
+                      <SelectTrigger className="h-10 text-xs bg-white border-stone-200">
+                        <SelectValue placeholder="Seleccionar grosor" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border-stone-200 shadow-xl rounded-xl">
+                        <SelectItem value="light" className="text-xs">Fino (Light - 300)</SelectItem>
+                        <SelectItem value="normal" className="text-xs">Elegante (Normal - 400)</SelectItem>
+                        <SelectItem value="medium" className="text-xs">Suave (Medium - 500)</SelectItem>
+                        <SelectItem value="semibold" className="text-xs">Imprenta (Semibold - 600)</SelectItem>
+                        <SelectItem value="bold" className="text-xs">Sólido (Bold - 700)</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   {/* 3 Colors in 1 Row */}
