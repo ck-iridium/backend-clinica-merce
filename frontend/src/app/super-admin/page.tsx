@@ -54,7 +54,7 @@ export default function SuperAdminPage() {
           if (tokenParts.length === 3) {
             const payload = JSON.parse(atob(tokenParts[1]));
             const role = payload.app_metadata?.role || payload.user_metadata?.role;
-            
+
             if (role === 'super_admin') {
               const fullName = session.user.user_metadata?.full_name || '';
               const avatarUrl = session.user.user_metadata?.avatar_url || '';
@@ -152,9 +152,9 @@ export default function SuperAdminPage() {
         throw new Error('Error al actualizar los ajustes del SaaS');
       }
       setSaasSettings({ allow_search_engine_indexing: newIndexValue });
-      toast.success(newIndexValue 
-        ? 'Indexación global de motores de búsqueda ACTIVADA para el SaaS' 
-        : 'Indexación global de motores de búsqueda DESACTIVADA para el SaaS', 
+      toast.success(newIndexValue
+        ? 'Indexación global de motores de búsqueda ACTIVADA para el SaaS'
+        : 'Indexación global de motores de búsqueda DESACTIVADA para el SaaS',
         { id: loadingToast }
       );
     } catch (err: any) {
@@ -167,7 +167,7 @@ export default function SuperAdminPage() {
   // 3. Modificar estado de suscripción (Suspender / Activar)
   async function updateTenantStatus(tenantId: string, newStatus: 'active' | 'suspended') {
     if (!user?.access_token) return;
-    
+
     const loadingToast = toast.loading('Actualizando estado del inquilino...');
     try {
       const response = await fetch(`${API_URL}/super-admin/tenants/${tenantId}/status`, {
@@ -185,14 +185,14 @@ export default function SuperAdminPage() {
       }
 
       const updatedTenant = await response.json();
-      
+
       setTenants(prev => prev.map(t => t.id === tenantId ? updatedTenant : t));
       if (selectedTenant && selectedTenant.id === tenantId) {
         setSelectedTenant(updatedTenant);
       }
-      
+
       toast.success(
-        newStatus === 'suspended' 
+        newStatus === 'suspended'
           ? `Acceso para '${updatedTenant.name}' suspendido correctamente.`
           : `Acceso para '${updatedTenant.name}' reactivado correctamente.`,
         { id: loadingToast }
@@ -247,12 +247,12 @@ export default function SuperAdminPage() {
             Esta área está estrictamente reservada para el Super Administrador global del SaaS. Tu cuenta actual no dispone de los privilegios requeridos.
           </p>
           <div className="space-y-3">
-            <button 
+            <button
               onClick={() => router.push('/login')}
               className="w-full bg-[#d4af37] hover:bg-[#c29f2e] text-stone-950 font-bold py-4 rounded-xl shadow-md transition-all duration-300">
               Iniciar Sesión como Super Admin
             </button>
-            <button 
+            <button
               onClick={() => router.push('/')}
               className="w-full bg-white border border-stone-200 hover:bg-stone-50 text-stone-700 font-bold py-4 rounded-xl shadow-sm transition-all duration-300">
               Volver a la Página Principal
@@ -314,21 +314,21 @@ export default function SuperAdminPage() {
               )}
             </div>
             <h1 className="text-2xl font-bold font-serif text-stone-900">
-              {activeTab === 'settings' 
-                ? 'Configuración Global del SaaS' 
+              {activeTab === 'settings'
+                ? 'Configuración Global del SaaS'
                 : activeTab === 'cms'
-                ? 'CMS Portada & Sectores'
-                : activeTab === 'profile'
-                ? 'Mi Perfil Administrativo'
-                : activeTab === 'analytics' 
-                ? 'Rendimiento y Métricas del Sistema' 
-                : activeTab === 'finance'
-                ? 'Finanzas y Control de Ingresos'
-                : 'Backoffice Master'}
+                  ? 'CMS Portada & Sectores'
+                  : activeTab === 'profile'
+                    ? 'Mi Perfil Administrativo'
+                    : activeTab === 'analytics'
+                      ? 'Rendimiento y Métricas del Sistema'
+                      : activeTab === 'finance'
+                        ? 'Finanzas y Control de Ingresos'
+                        : 'Backoffice Master'}
             </h1>
           </div>
 
-          <div 
+          <div
             onClick={() => setActiveTab('profile')}
             className="flex items-center gap-4 cursor-pointer hover:opacity-85 active:scale-95 transition-all select-none"
             title="Mi Perfil Administrativo"
@@ -367,7 +367,7 @@ export default function SuperAdminPage() {
         ) : (
           <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
             {/* Listado Modular */}
-            <TenantList 
+            <TenantList
               tenants={tenants}
               selectedTenant={selectedTenant}
               onSelectTenant={setSelectedTenant}
@@ -380,7 +380,7 @@ export default function SuperAdminPage() {
 
             {/* Ficha Detallada Modular */}
             {selectedTenant ? (
-              <TenantDetail 
+              <TenantDetail
                 tenant={selectedTenant}
                 onUpdateStatus={updateTenantStatus}
                 onUpdateTenant={(updated) => {

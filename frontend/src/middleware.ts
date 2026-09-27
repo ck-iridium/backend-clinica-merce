@@ -50,7 +50,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // D. Forzar limpieza de subdominio si acceden a la raíz de los dominios corporativos para mostrar la Landing limpia
-  if ((cleanHost === "probookia.com" || cleanHost === "www.probookia.com" || cleanHost === "localhost") && !url.searchParams.has("tenant") && url.pathname === "/") {
+  const isSassCorporateRoot = (cleanHost === "probookia.com" || cleanHost === "www.probookia.com" || cleanHost === "localhost") && !url.searchParams.has("tenant") && url.pathname === "/";
+  if (isSassCorporateRoot) {
     subdomain = "";
   }
 
@@ -66,11 +67,13 @@ export async function middleware(request: NextRequest) {
   let tenantId = "";
 
   // Impersonación (Modo Soporte)
+  // Solo debe aplicar a rutas internas o dashboard, NUNCA a la landing corporativa (probookia.com / localhost:3000 /)
   const isImpersonating = request.cookies.get("is_impersonating")?.value === "true";
   const impersonateTenantId = request.cookies.get("impersonate_tenant_id")?.value;
   const impersonateTenantSlug = request.cookies.get("impersonate_tenant_slug")?.value;
   const isSuperAdminPath = url.pathname.startsWith('/super-admin');
-  if (isImpersonating && impersonateTenantId && impersonateTenantSlug && !isSuperAdminPath) {
+  
+  if (isImpersonating && impersonateTenantId && impersonateTenantSlug && !isSuperAdminPath && !isSassCorporateRoot) {
     tenantId = impersonateTenantId;
     subdomain = impersonateTenantSlug;
   }

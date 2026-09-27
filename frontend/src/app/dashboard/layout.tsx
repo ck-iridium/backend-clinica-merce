@@ -39,7 +39,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <AIImageProvider>
-      <div className="h-screen overflow-hidden bg-background md:flex font-sans text-foreground print:bg-white">
+      <div 
+        className="h-screen overflow-hidden bg-background md:flex font-sans text-foreground print:bg-white"
+        style={{
+          ['--font-heading' as any]: 'var(--font-inter), sans-serif',
+          ['--font-playfair' as any]: 'var(--font-inter), sans-serif',
+          ['--font-cormorant' as any]: 'var(--font-inter), sans-serif',
+        }}
+      >
         <RouteGuard />
         <OnboardingGuard />
 
