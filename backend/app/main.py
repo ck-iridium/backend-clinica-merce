@@ -183,6 +183,9 @@ def check_concurrent_session(auth_header: str, db) -> bool:
 import time
 TENANT_STATUS_CACHE = {} # {tenant_id: {"status": str, "name": str, "timestamp": float}}
 
+def invalidate_tenant_cache(tenant_id: str):
+    TENANT_STATUS_CACHE.pop(tenant_id, None)
+
 @app.middleware("http")
 async def resolve_tenant_middleware(request, call_next):
     # Ignorar peticiones de preflight de CORS
@@ -257,13 +260,13 @@ async def resolve_tenant_middleware(request, call_next):
             try:
                 tenant = db.query(Tenant).filter(Tenant.id == tenant_id).first()
                 if tenant:
-                    # 1. Comprobar expiración del trial
-                    if tenant.subscription_status == "trial" and tenant.subscription_expires_at:
+                    # 1. Comprobar expiración de suscripción (trial, grace, active)
+                    if tenant.subscription_status in ("trial", "grace", "active") and tenant.subscription_expires_at:
                         if tenant.subscription_expires_at < datetime.utcnow():
                             tenant.subscription_status = "suspended"
                             db.commit()
                             db.refresh(tenant)
-                            print(f"[MIDDLEWARE] Tenant {tenant.id} trial expirado. Estado cambiado a suspended.")
+                            print(f"[MIDDLEWARE] Tenant {tenant.id} ({tenant.name}) expirado. Estado cambiado a suspended.")
                             
                     status = tenant.subscription_status
                     name = tenant.name

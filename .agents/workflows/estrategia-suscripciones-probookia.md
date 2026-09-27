@@ -91,67 +91,50 @@ Todo lo que el cliente obtiene se clasifica en 4 pilares tangibles:
 
 ---
 
-## 4. Estructura de Planes Propuesta (Para Debate)
+## 4. Matriz Real de Módulos por Plan (Pantallas Reales del Sistema)
 
-```
-        ┌────────────────────────────────────────────────────────┐
-        │        PRUEBA GRATUITA DE 14 DÍAS (Sin tarjeta)        │
-        │               Acceso completo al Plan Pro              │
-        └────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│     PLAN INDIVIDUAL     │  │        PLAN PRO         │  │       PLAN ELITE        │
-│    (Autónomo / Solo)    │  │  (Clínica con Equipo)   │  │ (Policlínica & AI Power)│
-│                         │  │      ⭐ RECOMENDADO      │  │                         │
-│       39€ / mes         │  │        69€ / mes        │  │       129€ / mes        │
-│   (32€/mes pago anual)  │  │   (58€/mes pago anual)  │  │  (109€/mes pago anual)  │
-├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ • 1 Especialista / Sede │  │ • Hasta 4 Especialistas │  │ • Hasta 10 Especialistas│
-│ • Web Builder Completo  │  │ • Todo lo del Plan Solo │  │ • Todo lo del Plan Pro  │
-│ • Reservas 24/7 con TPV │  │ • Firmas en Tablet LOPD │  │ • AI Webmaster (Voz/Chat│
-│ • Fianza con Tarjeta    │  │ • Control de Bonos      │  │ • Multisede (hasta 5)   │
-│ • Recordatorios básicos │  │ • Facturación con IVA   │  │ • Informes Financieros  │
-│ • Servicios Ilimitados  │  │ • Hasta 2 Sedes         │  │ • Soporte VIP 24h       │
-└─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
-                                                                       │
-                                           ¿Más de 10 especialistas? ──┴─► +15€/mes por especialista extra
-```
+Sin florituras teóricas: basándonos en las pantallas y botones reales de tu aplicación:
+
+| Pantalla real en tu menú | 🟢 Plan Individual (39€/mes)<br>*Autónomo / Solo* | 🟡 Plan Pro (69€/mes)<br>*Clínica con Equipo (Recomendado)* | 🟣 Plan Elite (129€/mes)<br>*Grandes clínicas / Multisede* |
+| :--- | :---: | :---: | :---: |
+| **Agenda (`/calendar`)** | ✅ Total (Cuadrícula, citas, estados) | ✅ Total | ✅ Total |
+| **Caja / TPV (`/pos`)** | ✅ Total (Cobro rápido, precio libre, ticket) | ✅ Total | ✅ Total |
+| **Servicios (`/services`)** | ✅ **Ilimitados** (Sin frustrar al cliente) | ✅ **Ilimitados** | ✅ **Ilimitados** |
+| **Fianzas Stripe (`/settings`)** | ✅ Sí (Cobro de señal anti-plantones) | ✅ Sí | ✅ Sí |
+| **Clientes (`/clients`)** | ✅ Ficha, teléfono, historial | ✅ Ficha, teléfono, historial | ✅ Ficha, teléfono, historial |
+| **Equipo (`/team`)** | ⚠️ **1 solo usuario** (la dueña/autónomo) | 👥 **Hasta 4 miembros** | 👥 **Hasta 10 miembros** *(+15€/mes extra)* |
+| **Sedes (`/locations`)** | ⚠️ **1 sola ubicación** | 🏢 **Hasta 2 sedes** | 🏢 **Hasta 5 sedes** *(+20€/mes extra)* |
+| **Consentimientos / Tablet** | 🚫 Bloqueado | ✍️ **Incluido (Firma digital en pantalla)** | ✍️ **Incluido (Firma digital en pantalla)** |
+| **Bonos de Sesiones (`/vouchers`)** | 🚫 Bloqueado | 🎟️ **Incluido (Crear y vender bonos)** | 🎟️ **Incluido (Crear y vender bonos)** |
+| **Facturas PDF con NIF (`/invoices`)**| 🚫 Solo ticket de caja | 📄 **Facturación oficial con IVA** | 📄 **Facturación oficial con IVA** |
+| **AI Webmaster (`/ai-webmaster`)** | 🚫 Desactivado | 🚫 Desactivado | 🧠 **Incluido (Asistente IA, voz y fotos)** |
 
 ---
 
-## 5. El Desglose Comercial de las Tarjetas (Lo que lee el cliente que no nos conoce)
+## 5. El Modelo de Cobro Real: Bizum & Transferencia (Vía Super Admin)
 
-### 🟢 Tarjeta 1: Plan Individual (39€/mes)
-* ✔️ **1 Especialista / Agenda exclusiva** (Servicios ilimitados)
-* ✔️ **Tu Sitio Web de Lujo 24/7** con constructor visual y subdominio propio
-* ✔️ **Cobro de Fianza con Tarjeta**: Exige depósitos online y elimina los plantones
-* ✔️ **Recordatorios Automáticos por Email**: Tus pacientes nunca olvidan su cita
-* ✔️ **TPV de Mostrador**: Cobro rápido en cabina (efectivo o tarjeta)
-* ✔️ **Ficha de Pacientes y Alertas**: Historial médico básico y alergias
+### ¿Por qué NO dependemos de Stripe Billing automático desde el día 1?
+1. **Situación Legal / Fiscal**: Permite empezar a operar, captar clientes y validar el negocio **sin necesidad de estar dado de alta como autónomo** de inmediato.
+2. **Confianza del Cliente B2B**: En el sector de estética, barberías y clínicas en España, pagar 39€ o 69€ por Bizum a un teléfono o cuenta conocida genera **cero fricción**.
 
-### 🟡 Tarjeta 2: Plan Pro (69€/mes) — *Recomendado*
-* ✔️ **Todo lo del Plan Individual, y además:**
-* ✔️ **Hasta 4 Especialistas**: Agendas y calendarios independientes para tu equipo
-* ✔️ **Consentimientos con Firma Digital en Tablet**: Cero papeles, 100% legal
-* ✔️ **Gestión y Control de Bonos**: Control de sesiones gastadas y restantes
-* ✔️ **Facturación Oficial**: Series correlativas con NIF y desglose de IVA para gestoría
-* ✔️ **Marca Blanca en Correos**: Los emails salen con tu propio remitente y logo
-* ✔️ **Multisede básica**: Hasta 2 centros o ubicaciones
-
-### 🟣 Tarjeta 3: Plan Elite / Gold (129€/mes)
-* ✔️ **Todo lo del Plan Pro, y además:**
-* ✔️ **Hasta 10 Especialistas** *(escalable a +15€/mes por especialista adicional)*
-* ✔️ **AI Webmaster Completo**: Gestiona tu web, citas y servicios por voz o chat
-* ✔️ **Director Creativo IA**: Generador de textos SEO y fotos publicitarias
-* ✔️ **Multisede Total**: Hasta 5 clínicas gestionadas en el mismo panel
-* ✔️ **Informes Avanzados**: Facturación por especialista y ocupación de cabinas
-* ✔️ **Soporte Prioritario VIP y Puesta en Marcha**: Configuración guiada en 24h
+### Flujo Operativo de Pago:
+1. **Prueba Inicial de 14 Días**: La clínica se registra y disfruta de 14 días completos (Plan Pro).
+2. **Solicitud de Renovación**: Al vencer (o en Ajustes > Suscripción), la clínica selecciona su plan (Individual 39€, Pro 69€ o Elite 129€).
+3. **Código de Referencia Automático**: El sistema genera un código único (ej. `PB-84A2X`) con el importe exacto y tu teléfono de Bizum.
+4. **Activación y Control en Backoffice (`/super-admin`)**:
+   - Cuando el cliente avisa de que ha pagado (o pulsa "Ya he enviado el Bizum"), tú recibes el aviso.
+   - En tu **Backoffice Master**, localizas la clínica y con el botón **"Reactivar Acceso" / "Aprobar"** extiendes su suscripción por 30 días (`active`).
 
 ---
 
-## 6. Próximos Pasos para la Conversación
+## 6. Diagnóstico del Bug: Periodo de Gracia y Expiración
 
-1. **Revisar y afinar este documento**: Modificar precios, nombres o asignación de funcionalidades según tu visión.
-2. **Validar la frontera entre planes**: Confirmar si el *Web Builder* va en todos los planes y si las *Firmas en Tablet* se quedan como el gancho principal de Plan Pro.
-3. **Paso a la acción técnica**: Solo cuando el modelo esté 100% aprobado por ti, procederemos a actualizar la landing, el backend de límites y la pasarela de Stripe.
+### ¿Por qué `barbero4` seguía activo habiendo vencido el 30 de junio de 2026?
+En el middleware del backend ([backend/app/main.py](file:///c:/Users/Juan/MERCE/CLINICA%20MERCE/backend/app/main.py#L261)), la comprobación de expiración estaba programada con:
+```python
+if tenant.subscription_status == "trial" and tenant.subscription_expires_at:
+    if tenant.subscription_expires_at < datetime.utcnow():
+        tenant.subscription_status = "suspended"
+```
+**El fallo**: Solo evaluaba si el estado era `"trial"`. Si la clínica estaba en `"grace"` (periodo de gracia) o `"active"` (mensualidad vencida), el middleware **nunca la suspendía**.
+**La solución**: Ampliar la comprobación para que cualquier estado (`trial`, `grace`, `active`) con `subscription_expires_at < datetime.utcnow()` pase automáticamente a `suspended` (402 Payment Required).

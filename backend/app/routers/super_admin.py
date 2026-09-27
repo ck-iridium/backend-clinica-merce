@@ -109,8 +109,16 @@ def update_tenant_status(
         raise HTTPException(status_code=404, detail="Inquilino no encontrado")
         
     tenant.subscription_status = payload.status
+    if payload.status == "active":
+        if not tenant.subscription_expires_at or tenant.subscription_expires_at < datetime.utcnow():
+            tenant.subscription_expires_at = datetime.utcnow() + timedelta(days=30)
     db.commit()
     db.refresh(tenant)
+    try:
+        from ..main import invalidate_tenant_cache
+        invalidate_tenant_cache(tenant.id)
+    except Exception:
+        pass
     return get_tenant_out(tenant, db)
 
 @router.put("/tenants/{tenant_id}/plan", response_model=TenantOut)

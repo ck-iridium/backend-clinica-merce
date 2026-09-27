@@ -245,7 +245,7 @@ export default async function RootLayout({
   if (baseUrl && tenantId && !isMarketing && !isBypassRoute) {
     try {
       const resSettings = await fetch(`${baseUrl}/settings/`, {
-        next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-settings-${tenantId}`] },
+        cache: 'no-store',
         headers: { "X-Tenant-ID": tenantId }
       });
       if (resSettings.status === 402) {
@@ -272,37 +272,51 @@ export default async function RootLayout({
   }
 
   if (isSuspended) {
+    const bizumPhone = process.env.NEXT_PUBLIC_BIZUM_PHONE || "+34 630 338 538";
+    const cleanPhone = bizumPhone.replace(/[^0-9]/g, '');
+    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent("Hola, deseo reactivar la suscripción de mi clínica en ProBookia.")}`;
+
     return (
       <html lang="es" suppressHydrationWarning className={fontClasses}>
         <body className="antialiased bg-[#F7F7F5] text-[#1F2937] flex items-center justify-center min-h-screen p-6 font-sans">
           <div className="max-w-md w-full bg-white rounded-[2.5rem] p-10 md:p-12 shadow-luxury border border-[#d4af37]/20 text-center relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-2 bg-[#d4af37]"></div>
 
-            <div className="w-16 h-16 bg-[#fcf8e5] text-[#b08e23] rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-sm">
+            <div className="w-16 h-16 bg-[#fcf8e5] text-[#b08e23] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
               <CreditCard className="w-8 h-8" />
             </div>
 
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d4af37] block mb-3">Clínica Inactiva</span>
-            <h1 className="text-3xl md:text-4xl font-serif font-extrabold text-[#1F2937] leading-tight mb-6">
-              Servicio Suspendido
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d4af37] block mb-2">Clínica Inactiva</span>
+            <h1 className="text-2xl md:text-3xl font-serif font-extrabold text-[#1F2937] leading-tight mb-4">
+              Suscripción Suspendida
             </h1>
 
-            <p className="text-stone-500 font-medium text-sm leading-relaxed mb-8">
-              El acceso a esta clínica ha sido suspendido temporalmente debido a un pago pendiente o suscripción inactiva. Si eres el propietario, puedes reactivar el acceso realizando tu pago en el panel de control o contactando a soporte técnico.
+            <p className="text-stone-500 font-medium text-xs leading-relaxed mb-6">
+              El acceso a esta clínica ha vencido o requiere renovación. Si eres el propietario, puedes reactivar tu servicio inmediatamente mediante Bizum o contactando a nuestro equipo.
             </p>
 
-            <div className="space-y-4">
+            <div className="bg-[#FAF8F5] border border-[#d4af37]/30 rounded-2xl p-4 mb-6 text-left">
+              <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider block mb-1">Reactivación Rápida con Bizum</span>
+              <p className="text-xs font-bold text-stone-800">
+                Bizum al: <span className="font-mono text-[#b08e23] font-black">{bizumPhone}</span>
+              </p>
+              <p className="text-[10px] text-stone-400 mt-1">Indica el nombre de tu clínica en el concepto para reactivación inmediata.</p>
+            </div>
+
+            <div className="space-y-3">
               <a
-                href="/login"
-                className="block w-full bg-[#1F2937] hover:bg-[#d4af37] text-white font-bold py-3.5 rounded-xl text-sm shadow-sm transition-all duration-300 active:scale-95"
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full bg-[#1F2937] hover:bg-[#d4af37] text-white font-bold py-3.5 rounded-xl text-xs shadow-sm transition-all duration-300 active:scale-95"
               >
-                Acceder al Panel de Control
+                Reactivar por WhatsApp
               </a>
               <a
-                href="mailto:soporte@merce-saas.com"
-                className="block w-full bg-white hover:bg-stone-50 text-stone-600 border border-stone-200 font-bold py-3.5 rounded-xl text-sm transition-all duration-300"
+                href="/login"
+                className="block w-full bg-white hover:bg-stone-50 text-stone-700 border border-stone-200 font-bold py-3 rounded-xl text-xs transition-all duration-300"
               >
-                Contactar con Soporte B2B
+                Iniciar Sesión
               </a>
             </div>
           </div>
