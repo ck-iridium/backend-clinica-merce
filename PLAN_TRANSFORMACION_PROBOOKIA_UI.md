@@ -16,12 +16,12 @@
 ### 🚪 FASE 1: La Puerta de Entrada — Login (`/login`)
 *Objetivo: Convertir la pantalla de acceso en una tarjeta monolítica de lujo tecnológico con halo sutil.*
 
-- [ ] **1.1** Reemplazar el contenedor con efecto Glassmorphism suave y halo dorado ambiental (Aceternity Glow).
-- [ ] **1.2** Sustituir el emoji infantil (`🔐`) por el **Monograma tallado oficial de ProBookia**.
-- [ ] **1.3** Corregir el bug que muestra `"www"` como subtítulo cuando entran desde el dominio principal.
-- [ ] **1.4** Integrar `<Input />` de shadcn con botón interactivo de **mostrar/ocultar contraseña** (icono ojo).
-- [ ] **1.5** Integrar `<Button variant="luxury" />` con micro-interacción de carga (animación fluida en submit).
-- [ ] **1.6** Limpieza completa de código viejo y estilos fucsia/rosa en desuso.
+- [x] **1.1** Reemplazar el contenedor con efecto Glassmorphism suave y halo dorado ambiental (Aceternity Glow).
+- [x] **1.2** Sustituir el emoji infantil (`🔐`) por el **Monograma tallado oficial de ProBookia**.
+- [x] **1.3** Corregir el bug que muestra `"www"` como subtítulo cuando entran desde el dominio principal.
+- [x] **1.4** Integrar `<Input />` de shadcn con botón interactivo de **mostrar/ocultar contraseña** (icono ojo).
+- [x] **1.5** Integrar `<Button variant="luxury" />` con micro-interacción de carga (animación fluida en submit).
+- [x] **1.6** Limpieza completa de código viejo y estilos fucsia/rosa en desuso.
 - [ ] **1.7** *Validación visual del usuario en navegador y aprobación.*
 
 ---
