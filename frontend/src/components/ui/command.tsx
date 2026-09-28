@@ -2,8 +2,9 @@
 
 import * as React from "react"
 import { type DialogProps } from "@radix-ui/react-dialog"
+import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { Command as CommandPrimitive } from "cmdk"
-import { Search } from "lucide-react"
+import { Search, X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog"
@@ -28,12 +29,18 @@ interface CommandDialogProps extends DialogProps {}
 const CommandDialog = ({ children, ...props }: CommandDialogProps) => {
   return (
     <Dialog {...props}>
-      <DialogContent className="overflow-hidden p-0 shadow-2xl rounded-xl bg-white sm:max-w-2xl">
+      <DialogContent hideCloseButton className="overflow-hidden p-0 shadow-2xl rounded-2xl bg-white sm:max-w-2xl border border-stone-200/80">
         <DialogTitle className="sr-only">Buscador global</DialogTitle>
         <DialogDescription className="sr-only">Buscador para elementos generales del panel de control de la clínica</DialogDescription>
-        <Command className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-serif [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-stone-400 [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:tracking-widest [&_[cmdk-group-heading]]:pt-4 [&_[cmdk-group-heading]]:pb-2 [&_[cmdk-group]:not([hidden])~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-14 [&_[cmdk-item]]:px-3 [&_[cmdk-item]]:py-4 [&_[cmdk-item]]:rounded-xl [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">
-          {children}
-        </Command>
+        <div className="relative w-full">
+          <Command className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:font-serif [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-stone-400 [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:tracking-widest [&_[cmdk-group-heading]]:pt-4 [&_[cmdk-group-heading]]:pb-2 [&_[cmdk-group]:not([hidden])~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-14 [&_[cmdk-item]]:px-3 [&_[cmdk-item]]:py-3 [&_[cmdk-item]]:rounded-xl [&_[cmdk-item]_svg]:h-4 [&_[cmdk-item]_svg]:w-4 [&_[cmdk-item][data-selected='true']]:bg-stone-100 [&_[cmdk-item][aria-selected='true']]:bg-stone-100 [&_[cmdk-item][data-selected='true']]:text-stone-950 [&_[cmdk-item][aria-selected='true']]:text-stone-950 [&_[cmdk-item][data-selected='true']]:ring-1 [&_[cmdk-item][data-selected='true']]:ring-[#D4AF37]/30">
+            {children}
+          </Command>
+          <DialogPrimitive.Close className="absolute right-3.5 top-3 z-30 rounded-lg p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors focus:outline-none focus:ring-1 focus:ring-stone-300">
+            <X className="h-4 w-4" />
+            <span className="sr-only">Cerrar</span>
+          </DialogPrimitive.Close>
+        </div>
       </DialogContent>
     </Dialog>
   )
@@ -43,12 +50,12 @@ const CommandInput = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Input>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
 >(({ className, ...props }, ref) => (
-  <div className="flex items-center border-b px-4" cmdk-input-wrapper="">
-    <Search className="mr-3 h-4 w-4 shrink-0 opacity-50" />
+  <div className="flex items-center border-b px-4 pr-16" cmdk-input-wrapper="">
+    <Search className="mr-3 h-4 w-4 shrink-0 text-[#D4AF37]" />
     <CommandPrimitive.Input
       ref={ref}
       className={cn(
-        "flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 font-medium",
+        "flex h-12 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-stone-400 disabled:cursor-not-allowed disabled:opacity-50 font-medium",
         className
       )}
       {...props}
@@ -119,7 +126,7 @@ const CommandItem = React.forwardRef<
   <CommandPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none data-[aria-selected=true]:bg-stone-50 data-[aria-selected=true]:text-stone-900 data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 transition-colors font-medium",
+      "relative flex cursor-pointer select-none items-center rounded-xl px-3 py-2.5 text-sm outline-none transition-all duration-150 font-medium data-[selected='true']:bg-stone-100 data-[selected=true]:bg-stone-100 aria-selected:bg-stone-100 data-[selected='true']:text-stone-950 aria-selected:text-stone-950 data-[selected='true']:ring-1 data-[selected='true']:ring-[#D4AF37]/30 data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50",
       className
     )}
     {...props}

@@ -32,6 +32,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAIImage } from '@/app/contexts/AIImageContext';
 import { toast } from 'sonner';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { useIsMac } from '@/hooks/useIsMac';
 
 
 interface DashboardSidebarProps {
@@ -58,6 +59,7 @@ export const navLinks = [
 
 export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSidebarProps) {
   const { t, language, setLanguage } = useLanguage();
+  const isMac = useIsMac();
 
   const getTranslatedLabel = (href: string, fallback: string) => {
     switch (href) {
@@ -304,7 +306,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
           <Search size={22} strokeWidth={1.5} />
           <span className="absolute left-full top-1/2 -translate-y-1/2 ml-5 px-4 py-2 bg-stone-900 text-white text-[12px] font-bold rounded-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-300 whitespace-nowrap z-[110] shadow-2xl border border-stone-800 translate-x-[-15px] group-hover/item:translate-x-0 pointer-events-none flex items-center gap-2">
             <span>{t('dashboard.menu.search_placeholder') || 'Buscar...'}</span>
-            <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-white/10 text-stone-300 rounded border border-white/20">⌘K</kbd>
+            <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-white/10 text-stone-300 rounded border border-white/20">{isMac ? '⌘K' : 'Ctrl+K'}</kbd>
           </span>
         </button>
 

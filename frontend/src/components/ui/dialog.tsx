@@ -27,10 +27,15 @@ const DialogOverlay = React.forwardRef<
 ))
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
+interface DialogContentProps
+  extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
+  hideCloseButton?: boolean
+}
+
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+  DialogContentProps
+>(({ className, children, hideCloseButton = false, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
     {/* CAPA 2: CONTENEDOR DE SCROLL HERMANO (Z-210) */}
@@ -49,11 +54,13 @@ const DialogContent = React.forwardRef<
           className
         )}
       >
-        {/* BOTÓN DE CIERRE ABSOLUTO (Flota siempre en la esquina superior sin interrumpir la cabecera) */}
-        <DialogPrimitive.Close className="absolute top-6 right-6 rounded-full ring-offset-background transition-colors hover:bg-stone-200 focus:outline-none focus:ring-2 focus:ring-ring disabled:pointer-events-none w-10 h-10 flex items-center justify-center bg-white shadow-[0_4px_10px_rgba(0,0,0,0.1)] border border-stone-100 z-[150]">
-          <X size={20} strokeWidth={2.5} className="text-stone-800" />
-          <span className="sr-only">Cerrar</span>
-        </DialogPrimitive.Close>
+        {/* BOTÓN DE CIERRE ABSOLUTO */}
+        {!hideCloseButton && (
+          <DialogPrimitive.Close className="absolute top-4 right-4 rounded-full ring-offset-background transition-colors hover:bg-stone-100 text-stone-400 hover:text-stone-800 focus:outline-none focus:ring-2 focus:ring-ring disabled:pointer-events-none w-8 h-8 flex items-center justify-center bg-white shadow-sm border border-stone-200/60 z-[150]">
+            <X size={16} strokeWidth={2} />
+            <span className="sr-only">Cerrar</span>
+          </DialogPrimitive.Close>
+        )}
 
         {/* ÁREA DE SCROLL INTERNA */}
         <div className="overflow-y-auto custom-scrollbar flex-1 w-full">

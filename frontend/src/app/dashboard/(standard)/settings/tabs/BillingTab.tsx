@@ -1,4 +1,4 @@
-import { Hash, ImageIcon, FileText, CheckCircle } from 'lucide-react';
+import { Hash, ImageIcon, FileText, CheckCircle, Trash2 } from 'lucide-react';
 import { RefObject } from 'react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
@@ -104,45 +104,109 @@ export default function BillingTab({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Logo PDF */}
           <div className="border border-stone-200/80 rounded-2xl p-5 bg-stone-50/50 flex flex-col items-start gap-4 transition-all hover:bg-stone-50">
-            <div className="w-full h-36 bg-white border-2 border-stone-200/80 border-dashed rounded-xl flex items-center justify-center p-3 shadow-2xs">
+            <div className="w-full h-36 bg-white border-2 border-stone-200/80 border-dashed rounded-xl flex items-center justify-center p-3 shadow-2xs relative group/logo">
               {settings.logo_pdf_b64 ? (
-                <img src={settings.logo_pdf_b64} alt="PDF Logo" className="max-h-full object-contain" />
+                <>
+                  <img src={settings.logo_pdf_b64} alt="PDF Logo" className="max-h-full object-contain" />
+                  <button
+                    id="billing-logo-pdf-delete-float-btn"
+                    type="button"
+                    onClick={() => {
+                      setSettings({ ...settings, logo_pdf_b64: null });
+                      if (logoPdfRef.current) logoPdfRef.current.value = '';
+                    }}
+                    className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-white/95 backdrop-blur-md shadow-md border border-stone-200 flex items-center justify-center text-stone-400 hover:text-red-600 hover:bg-red-50 hover:border-red-200 transition-all active:scale-95"
+                    title="Eliminar logo de facturas"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </>
               ) : (
                 <span className="text-stone-300 text-[10px] uppercase tracking-widest font-bold">{t('dashboard.settings.billing.invoice_logo')}</span>
               )}
             </div>
             <input id="billing-logo-pdf-input" type="file" accept="image/*" ref={logoPdfRef} className="hidden" onChange={e => handleImageUpload('logo_pdf_b64', e)} />
-            <Button 
-              id="billing-logo-pdf-btn" 
-              type="button" 
-              variant="outline" 
-              size="sm"
-              onClick={() => logoPdfRef.current?.click()} 
-              className="w-full rounded-xl font-bold text-xs border-stone-200 text-stone-800 hover:border-[#D4AF37] hover:text-[#b08e23]"
-            >
-              {t('dashboard.settings.billing.change_logo')}
-            </Button>
+            <div className="flex items-center gap-2 w-full">
+              <Button 
+                id="billing-logo-pdf-btn" 
+                type="button" 
+                variant="outline" 
+                size="sm"
+                onClick={() => logoPdfRef.current?.click()} 
+                className="flex-1 rounded-xl font-bold text-xs border-stone-200 text-stone-800 hover:border-[#D4AF37] hover:text-[#b08e23]"
+              >
+                {settings.logo_pdf_b64 ? t('dashboard.settings.billing.change_logo') : 'Subir Logo Documentos'}
+              </Button>
+              {settings.logo_pdf_b64 && (
+                <Button
+                  id="billing-logo-pdf-remove-btn"
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSettings({ ...settings, logo_pdf_b64: null });
+                    if (logoPdfRef.current) logoPdfRef.current.value = '';
+                  }}
+                  className="rounded-xl font-bold text-xs border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 px-3 transition-colors"
+                  title="Eliminar logo"
+                >
+                  <Trash2 size={13} className="mr-1.5" /> Quitar
+                </Button>
+              )}
+            </div>
           </div>
           {/* Firma */}
           <div className="border border-stone-200/80 rounded-2xl p-5 bg-stone-50/50 flex flex-col items-start gap-4 transition-all hover:bg-stone-50">
-            <div className="w-full h-36 bg-white border-2 border-stone-200/80 border-dashed rounded-xl flex items-center justify-center p-3 shadow-2xs">
+            <div className="w-full h-36 bg-white border-2 border-stone-200/80 border-dashed rounded-xl flex items-center justify-center p-3 shadow-2xs relative group/sig">
               {settings.signature_b64 ? (
-                <img src={settings.signature_b64} alt="Signature" className="max-h-full object-contain mix-blend-multiply" />
+                <>
+                  <img src={settings.signature_b64} alt="Signature" className="max-h-full object-contain mix-blend-multiply" />
+                  <button
+                    id="billing-signature-delete-float-btn"
+                    type="button"
+                    onClick={() => {
+                      setSettings({ ...settings, signature_b64: null });
+                      if (sigRef.current) sigRef.current.value = '';
+                    }}
+                    className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-white/95 backdrop-blur-md shadow-md border border-stone-200 flex items-center justify-center text-stone-400 hover:text-red-600 hover:bg-red-50 hover:border-red-200 transition-all active:scale-95"
+                    title="Eliminar sello y firma"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </>
               ) : (
                 <span className="text-stone-300 text-[10px] uppercase tracking-widest font-bold">{t('dashboard.settings.billing.signature')}</span>
               )}
             </div>
             <input id="billing-signature-input" type="file" accept="image/*" ref={sigRef} className="hidden" onChange={e => handleImageUpload('signature_b64', e)} />
-            <Button 
-              id="billing-signature-btn" 
-              type="button" 
-              variant="outline" 
-              size="sm"
-              onClick={() => sigRef.current?.click()} 
-              className="w-full rounded-xl font-bold text-xs border-stone-200 text-stone-800 hover:border-[#D4AF37] hover:text-[#b08e23]"
-            >
-              {t('dashboard.settings.billing.change_signature')}
-            </Button>
+            <div className="flex items-center gap-2 w-full">
+              <Button 
+                id="billing-signature-btn" 
+                type="button" 
+                variant="outline" 
+                size="sm"
+                onClick={() => sigRef.current?.click()} 
+                className="flex-1 rounded-xl font-bold text-xs border-stone-200 text-stone-800 hover:border-[#D4AF37] hover:text-[#b08e23]"
+              >
+                {settings.signature_b64 ? t('dashboard.settings.billing.change_signature') : 'Subir Sello / Firma'}
+              </Button>
+              {settings.signature_b64 && (
+                <Button
+                  id="billing-signature-remove-btn"
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSettings({ ...settings, signature_b64: null });
+                    if (sigRef.current) sigRef.current.value = '';
+                  }}
+                  className="rounded-xl font-bold text-xs border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 px-3 transition-colors"
+                  title="Eliminar sello y firma"
+                >
+                  <Trash2 size={13} className="mr-1.5" /> Quitar
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>

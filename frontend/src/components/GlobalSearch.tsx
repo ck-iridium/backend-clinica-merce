@@ -20,12 +20,12 @@ import {
   Ticket,
   UserCheck,
   Sparkles,
-  Command as CommandIcon,
   ArrowRight
 } from "lucide-react"
 
 import { useAuthRole } from "@/hooks/useAuthRole"
 import { useLanguage } from "@/app/contexts/LanguageContext"
+import { useIsMac } from "@/hooks/useIsMac"
 
 import {
   CommandDialog,
@@ -35,7 +35,6 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-  CommandShortcut,
 } from "@/components/ui/command"
 
 interface Client {
@@ -49,6 +48,7 @@ export function GlobalSearch({ open, setOpen }: { open: boolean, setOpen: (open:
   const router = useRouter()
   const { t } = useLanguage()
   const { role } = useAuthRole()
+  const isMac = useIsMac()
   const currentRole = role?.toLowerCase()
   const isEspecialista = currentRole === 'especialista'
   const isRecepcion = currentRole === 'recepción' || currentRole === 'recepcion'
@@ -58,7 +58,7 @@ export function GlobalSearch({ open, setOpen }: { open: boolean, setOpen: (open:
   const [loadingClients, setLoadingClients] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState('')
 
-  // Atajo de teclado global: ⌘K / Ctrl+K
+  // Atajo de teclado global: ⌘K (Mac) / Ctrl+K (Windows/Linux)
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.key === "k" || e.key === "K") && (e.metaKey || e.ctrlKey)) {
@@ -106,16 +106,11 @@ export function GlobalSearch({ open, setOpen }: { open: boolean, setOpen: (open:
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
-      <div className="relative">
-        <CommandInput 
-          placeholder={t('search.placeholder') || "Buscar pacientes, módulos o teclear una acción..."} 
-          onValueChange={setSearchQuery} 
-          className="text-sm font-sans"
-        />
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-40">
-          <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-stone-100 rounded border border-stone-200">ESC</kbd>
-        </div>
-      </div>
+      <CommandInput 
+        placeholder={t('search.placeholder') || "Buscar pacientes, módulos o escribir una acción..."} 
+        onValueChange={setSearchQuery} 
+        className="text-sm font-sans"
+      />
 
       <CommandList className="py-2">
         <CommandEmpty className="py-10 text-center text-sm font-medium text-stone-400">
@@ -135,7 +130,7 @@ export function GlobalSearch({ open, setOpen }: { open: boolean, setOpen: (open:
               <span className="font-semibold text-stone-800 text-sm">Agendar Cita en Calendario</span>
               <span className="text-[11px] text-stone-400">Abrir cuadrícula interactiva de turnos</span>
             </div>
-            <CommandShortcut className="text-[10px]">C</CommandShortcut>
+            <ArrowRight size={14} className="text-stone-300 ml-auto shrink-0" />
           </CommandItem>
 
           {!isEspecialista && (
@@ -150,7 +145,7 @@ export function GlobalSearch({ open, setOpen }: { open: boolean, setOpen: (open:
                 <span className="font-semibold text-stone-800 text-sm">Cobrar en TPV / Caja Rápida</span>
                 <span className="text-[11px] text-stone-400">Ticket express, cobro por Bizum o tarjeta</span>
               </div>
-              <CommandShortcut className="text-[10px]">T</CommandShortcut>
+              <ArrowRight size={14} className="text-stone-300 ml-auto shrink-0" />
             </CommandItem>
           )}
 
@@ -165,7 +160,7 @@ export function GlobalSearch({ open, setOpen }: { open: boolean, setOpen: (open:
               <span className="font-semibold text-stone-800 text-sm">Directorio de Pacientes</span>
               <span className="text-[11px] text-stone-400">Crear o consultar fichas médicas</span>
             </div>
-            <CommandShortcut className="text-[10px]">P</CommandShortcut>
+            <ArrowRight size={14} className="text-stone-300 ml-auto shrink-0" />
           </CommandItem>
 
           {!isEspecialista && (
@@ -180,6 +175,7 @@ export function GlobalSearch({ open, setOpen }: { open: boolean, setOpen: (open:
                 <span className="font-semibold text-stone-800 text-sm">Emitir Bono / Pack de Sesiones</span>
                 <span className="text-[11px] text-stone-400">Asignar tratamientos multisesión</span>
               </div>
+              <ArrowRight size={14} className="text-stone-300 ml-auto shrink-0" />
             </CommandItem>
           )}
         </CommandGroup>
@@ -311,8 +307,13 @@ export function GlobalSearch({ open, setOpen }: { open: boolean, setOpen: (open:
             <kbd className="px-1.5 py-0.5 text-[9px] font-mono bg-white rounded border border-stone-200 text-stone-600 shadow-2xs">ESC</kbd> Cerrar
           </span>
         </div>
-        <div className="flex items-center gap-1 text-[#b08e23] font-semibold">
-          <CommandIcon size={11} /> ProBookia Spotlight
+        <div className="flex items-center gap-2 text-[#b08e23] font-semibold text-[11px]">
+          <kbd className="px-1.5 py-0.5 text-[9px] font-mono bg-amber-500/10 rounded border border-amber-500/20 text-[#b08e23]">
+            {isMac ? "⌘K" : "Ctrl+K"}
+          </kbd>
+          <span className="flex items-center gap-1.5">
+            <Sparkles size={12} className="text-[#D4AF37]" /> ProBookia Spotlight
+          </span>
         </div>
       </div>
     </CommandDialog>
