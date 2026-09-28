@@ -52,6 +52,5 @@
 ---
 
 ### 🌐 FASE 4: El Escaparate Público (Webs de los Tenants y Landing)
-*Se abordará al final una vez que todo el ecosistema interno esté 100% blindado.*
-- [ ] **4.1** Landing comercial de ProBookia (`/marketing`).
-- [ ] **4.2** Plantillas públicas para las webs de las clínicas.
+- [x] **4.1** Landing comercial de ProBookia (`/marketing`): Nueva propuesta Todo-en-Uno (El Dolor del Mercado vs Solución ProBookia), Bento Grid de los 4 Pilares del Ecosistema, diseño Quiet Luxury (blanco roto, oro y antracita) y tabla de suscripciones (0€, 29€, 69€, 149€).
+- [ ] **4.2** Plantillas públicas para las webs de las clínicas (Web del paciente y flujo de reservas `/reservar`).

@@ -7,14 +7,14 @@ export default async function Page() {
 
   // 1. Valores por defecto (fallback)
   const defaultSettings = {
-    hero_title: 'La elegancia de tu negocio traducida en un SaaS de Lujo',
-    hero_subtitle: 'Diseñado exclusivamente para centros de estética, wellness, spas y salones premium independientes. Agendas fluidas, expedientes médicos asimétricos y reservas de doble opt-in integradas en una experiencia sublime.',
+    hero_title: 'La Suite Todo-en-Uno que Eleva tu Clínica al Estándar de Lujo',
+    hero_subtitle: 'Web boutique de alta gama, motor de reservas 24/7 con fianza anti-plantones, expedientes médicos con firma digital LOPD, caja rápida y Copiloto IA. Todo integrado en una sola suscripción para que tu negocio brille.',
     hero_image_1: null as string | null,
     hero_image_2: null as string | null,
     hero_image_3: null as string | null,
     logo_svg: null as string | null,
-    primary_color: '#3b82f6',
-    secondary_color: '#1c1917',
+    primary_color: '#1c1917',
+    secondary_color: '#FAF9F6',
     tertiary_color: '#d4af37',
     font_family: 'playfair_inter',
     font_weight_headings: 'semibold',
