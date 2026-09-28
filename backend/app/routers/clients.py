@@ -54,3 +54,10 @@ def read_single_consent(client_id: str, consent_id: str, db: Session = Depends(d
     if not db_consent or db_consent.client_id != client_id:
         raise HTTPException(status_code=404, detail="Consent not found")
     return db_consent
+
+@router.delete("/{client_id}/consents/{consent_id}")
+def delete_client_consent(client_id: str, consent_id: str, db: Session = Depends(database.get_db)):
+    success = monolithic_crud.delete_consent(db, consent_id=consent_id, client_id=client_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Consent not found or unauthorized")
+    return {"message": "Consent deleted successfully", "id": consent_id}

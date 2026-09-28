@@ -4,12 +4,16 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { useLanguage } from '@/app/contexts/LanguageContext';
-import { ArrowLeft, Scale, Printer } from 'lucide-react';
+import { useAuthRole } from '@/hooks/useAuthRole';
+import { toast } from 'sonner';
+import { ArrowLeft, Scale, Printer, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function ConsentPreviewPage() {
   const { t, language } = useLanguage();
   const { showFeedback } = useFeedback();
+  const { role } = useAuthRole();
+  const isEspecialista = role?.toLowerCase() === 'especialista';
   const { id: clientId, consent_id: consentId } = useParams();
   const router = useRouter();
   
@@ -47,6 +51,32 @@ export default function ConsentPreviewPage() {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleDelete = () => {
+    showFeedback({
+      type: 'confirm',
+      title: 'Eliminar Consentimiento',
+      message: '¿Estás seguro de que deseas eliminar este consentimiento informado firmado? Esta acción destruirá permanentemente la prueba documental y la firma registrada.',
+      confirmText: 'Sí, eliminar',
+      cancelText: 'Cancelar',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/${clientId}/consents/${consentId}`, {
+            method: 'DELETE',
+          });
+          if (res.ok) {
+            toast.success('Consentimiento eliminado correctamente');
+            router.push(`/dashboard/clients/${clientId}`);
+          } else {
+            const err = await res.json().catch(() => ({}));
+            toast.error(err.detail || 'Error al eliminar');
+          }
+        } catch {
+          toast.error('Error de conexión al eliminar');
+        }
+      }
+    });
   };
 
   if (loading) {
@@ -94,7 +124,19 @@ export default function ConsentPreviewPage() {
            </div>
         </div>
  
-        <div className="flex gap-4">
+        <div className="flex items-center gap-3">
+           {!isEspecialista && (
+             <Button
+               id="delete-consent-preview-btn"
+               onClick={handleDelete}
+               variant="outline"
+               size="default"
+               className="h-11 px-4 text-stone-500 hover:text-rose-600 hover:bg-rose-50 border-stone-200/80 rounded-xl gap-2 transition-colors"
+             >
+               <Trash2 className="w-4 h-4" />
+               <span>Eliminar</span>
+             </Button>
+           )}
            <Button 
              id="print-consent-btn"
              onClick={handlePrint}

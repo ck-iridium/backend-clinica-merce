@@ -31,3 +31,16 @@ def create_consent(db: Session, consent: schemas.ConsentCreate):
     db.commit()
     db.refresh(db_consent)
     return db_consent
+
+def delete_consent(db: Session, consent_id: str, client_id: str):
+    tenant_id = current_tenant_var.get()
+    db_consent = db.query(models.Consent).filter(
+        models.Consent.id == consent_id,
+        models.Consent.client_id == client_id,
+        models.Consent.tenant_id == tenant_id,
+    ).first()
+    if not db_consent:
+        return False
+    db.delete(db_consent)
+    db.commit()
+    return True

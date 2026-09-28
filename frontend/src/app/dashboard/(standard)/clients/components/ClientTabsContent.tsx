@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
-import { Calendar, ClipboardList, FileText, Scale, Printer } from "lucide-react";
+import { Calendar, ClipboardList, FileText, Scale, Printer, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SectorMetadataDisplay } from './SectorMetadataDisplay';
@@ -17,6 +17,7 @@ interface ClientTabsContentProps {
   onOpenPayModal: (v: any) => void;
   dateLocale: string;
   onNewConsentClick: () => void;
+  onDeleteConsent?: (consentId: string) => void;
   clientId: string;
   businessSector?: string;
   sectorMetadata?: any;
@@ -32,6 +33,7 @@ export function ClientTabsContent({
   onOpenPayModal,
   dateLocale,
   onNewConsentClick,
+  onDeleteConsent,
   clientId,
   businessSector = 'general',
   sectorMetadata = {}
@@ -264,18 +266,33 @@ export function ClientTabsContent({
                     {t('dashboard.clients.signed_on') || 'Firmado:'} {new Date(c.signed_at).toLocaleString(dateLocale, { dateStyle: 'medium', timeStyle: 'short' })}
                   </p>
                 </div>
-                <Button 
-                  id={`view-consent-link-${c.id}`} 
-                  variant="outline" 
-                  size="sm" 
-                  asChild
-                  className="w-full sm:w-auto gap-1.5 text-xs font-semibold h-9 px-3.5 bg-white hover:border-[#D4AF37] hover:text-[#D4AF37]"
-                >
-                  <a href={`/dashboard/clients/${clientId}/consents/${c.id}`}>
-                    <Printer className="w-3.5 h-3.5 text-stone-400" />
-                    <span>{t('dashboard.clients.view_print') || 'Ver / Imprimir'}</span>
-                  </a>
-                </Button>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <Button 
+                    id={`view-consent-link-${c.id}`} 
+                    variant="outline" 
+                    size="sm" 
+                    asChild
+                    className="flex-1 sm:flex-initial gap-1.5 text-xs font-semibold h-9 px-3.5 bg-white hover:border-[#D4AF37] hover:text-[#D4AF37]"
+                  >
+                    <a href={`/dashboard/clients/${clientId}/consents/${c.id}`}>
+                      <Printer className="w-3.5 h-3.5 text-stone-400" />
+                      <span>{t('dashboard.clients.view_print') || 'Ver / Imprimir'}</span>
+                    </a>
+                  </Button>
+                  
+                  {onDeleteConsent && !isEspecialista && (
+                    <Button
+                      id={`delete-consent-btn-${c.id}`}
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onDeleteConsent(c.id)}
+                      className="h-9 px-2.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors shrink-0"
+                      title={t('dashboard.clients.delete_consent') || 'Eliminar Consentimiento'}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
               </div>
             ))}
           </div>

@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { SignaturePadModal } from '@/components/SignaturePadModal';
 import { useAuthRole } from '@/hooks/useAuthRole';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Dialog,
@@ -58,6 +59,7 @@ interface Client {
 
 export default function ClientProfilePage({ params }: { params: { id: string } }) {
   const { t, language } = useLanguage();
+  const { showFeedback } = useFeedback();
   const router = useRouter();
   const { role } = useAuthRole();
   const isEspecialista = role?.toLowerCase() === 'especialista';
@@ -259,6 +261,32 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
       console.error(e);
       toast.error(t('dashboard.clients.server_connection_error') || 'Error de conexión');
     }
+  };
+
+  const handleDeleteConsent = (consentId: string) => {
+    showFeedback({
+      type: 'confirm',
+      title: 'Eliminar Consentimiento',
+      message: '¿Estás seguro de que deseas eliminar este consentimiento informado? Esta acción destruirá permanentemente la prueba documental y la firma registrada.',
+      confirmText: 'Sí, eliminar',
+      cancelText: 'Cancelar',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/${params.id}/consents/${consentId}`, {
+            method: 'DELETE',
+          });
+          if (res.ok) {
+            setConsents(prev => prev.filter(c => c.id !== consentId));
+            toast.success('Consentimiento eliminado correctamente');
+          } else {
+            const err = await res.json().catch(() => ({}));
+            toast.error(err.detail || 'Error al eliminar el consentimiento');
+          }
+        } catch {
+          toast.error('Error de conexión al eliminar el consentimiento');
+        }
+      }
+    });
   };
 
   const handleOpenPayModal = (v: any) => {
@@ -494,6 +522,7 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
             onOpenPayModal={handleOpenPayModal}
             dateLocale={dateLocale}
             onNewConsentClick={() => setIsSignatureModalOpen(true)}
+            onDeleteConsent={handleDeleteConsent}
             clientId={params.id}
             businessSector={businessSector}
             sectorMetadata={sectorMetadata}
