@@ -24,20 +24,23 @@ export default function BookingLayoutTab({ settings, setSettings }: BookingLayou
 
   return (
     <div className="space-y-4 md:space-y-8 animate-in slide-in-from-bottom-2 duration-300">
-      <div className="bg-white rounded-3xl md:rounded-[2.5rem] border border-stone-100 p-5 md:p-8 shadow-sm">
+      <div className="bg-white rounded-3xl md:rounded-[2.5rem] border border-stone-200/80 p-5 md:p-8 shadow-sm">
         <div className="flex items-center gap-3 mb-4 md:mb-6 pb-3 md:pb-4 border-b border-stone-100">
-          <span className="w-9 h-9 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-500">
+          <span className="w-10 h-10 rounded-2xl bg-[#D4AF37]/10 border border-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] shadow-inner">
             <LayoutTemplate size={18} strokeWidth={1.5} />
           </span>
-          <h3 className="text-2xl font-serif font-semibold text-stone-800">{t('dashboard.settings.booking_ui.title')}</h3>
+          <div>
+            <h3 className="text-xl md:text-2xl font-serif font-semibold text-stone-900">{t('dashboard.settings.booking_ui.title')}</h3>
+            <p className="text-xs text-stone-400 mt-0.5">{t('dashboard.settings.booking_ui.layout_desc')}</p>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Opciones de Diseño */}
           <div className="space-y-6">
             <div>
-              <h4 className="text-lg font-serif font-bold text-stone-800">{t('dashboard.settings.booking_ui.layout_title')}</h4>
-              <p className="text-sm text-stone-500 mt-1">{t('dashboard.settings.booking_ui.layout_desc')}</p>
+              <h4 className="text-base font-serif font-bold text-stone-850">{t('dashboard.settings.booking_ui.layout_title')}</h4>
+              <p className="text-xs text-stone-400 mt-1">{t('dashboard.settings.booking_ui.layout_desc')}</p>
             </div>
 
             <div className="flex flex-col gap-4">
@@ -45,18 +48,18 @@ export default function BookingLayoutTab({ settings, setSettings }: BookingLayou
               <button
                 id="booking-layout-grid-btn"
                 onClick={() => handleLayoutChange('grid')}
-                className={`text-left w-full relative overflow-hidden transition-all duration-300 p-5 rounded-[2rem] border-2 group
+                className={`text-left w-full relative overflow-hidden transition-all duration-300 p-5 rounded-3xl border-2 group
                   ${currentLayout === 'grid' 
-                    ? 'border-[#d4af37] bg-stone-50 shadow-md' 
-                    : 'border-stone-100 bg-white hover:border-stone-300 hover:bg-stone-50'}`}
+                    ? 'border-[#D4AF37] bg-[#D4AF37]/5 shadow-sm' 
+                    : 'border-stone-200/80 bg-white hover:border-stone-300 hover:bg-stone-50/50'}`}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`p-3 rounded-2xl ${currentLayout === 'grid' ? 'bg-[#d4af37]/10 text-[#d4af37]' : 'bg-stone-100 text-stone-400 group-hover:bg-stone-200'}`}>
-                    <Grip size={24} />
+                  <div className={`p-3 rounded-2xl transition-colors ${currentLayout === 'grid' ? 'bg-[#D4AF37] text-stone-950 shadow-sm' : 'bg-stone-100 text-stone-400 group-hover:bg-stone-200'}`}>
+                    <Grip size={22} strokeWidth={1.5} />
                   </div>
                   <div>
-                    <h5 className={`font-bold text-lg ${currentLayout === 'grid' ? 'text-stone-900' : 'text-stone-700'}`}>{t('dashboard.settings.booking_ui.grid_title')}</h5>
-                    <p className="text-sm text-stone-500 mt-1">{t('dashboard.settings.booking_ui.grid_desc')}</p>
+                    <h5 className={`font-bold text-base ${currentLayout === 'grid' ? 'text-stone-900' : 'text-stone-700'}`}>{t('dashboard.settings.booking_ui.grid_title')}</h5>
+                    <p className="text-xs text-stone-500 mt-1 leading-relaxed font-sans">{t('dashboard.settings.booking_ui.grid_desc')}</p>
                   </div>
                 </div>
               </button>
@@ -65,18 +68,18 @@ export default function BookingLayoutTab({ settings, setSettings }: BookingLayou
               <button
                 id="booking-layout-list-btn"
                 onClick={() => handleLayoutChange('list')}
-                className={`text-left w-full relative overflow-hidden transition-all duration-300 p-5 rounded-[2rem] border-2 group
+                className={`text-left w-full relative overflow-hidden transition-all duration-300 p-5 rounded-3xl border-2 group
                   ${currentLayout === 'list' 
-                    ? 'border-[#d4af37] bg-stone-50 shadow-md' 
-                    : 'border-stone-100 bg-white hover:border-stone-300 hover:bg-stone-50'}`}
+                    ? 'border-[#D4AF37] bg-[#D4AF37]/5 shadow-sm' 
+                    : 'border-stone-200/80 bg-white hover:border-stone-300 hover:bg-stone-50/50'}`}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`p-3 rounded-2xl ${currentLayout === 'list' ? 'bg-[#d4af37]/10 text-[#d4af37]' : 'bg-stone-100 text-stone-400 group-hover:bg-stone-200'}`}>
-                    <ListIcon size={24} />
+                  <div className={`p-3 rounded-2xl transition-colors ${currentLayout === 'list' ? 'bg-[#D4AF37] text-stone-950 shadow-sm' : 'bg-stone-100 text-stone-400 group-hover:bg-stone-200'}`}>
+                    <ListIcon size={22} strokeWidth={1.5} />
                   </div>
                   <div>
-                    <h5 className={`font-bold text-lg ${currentLayout === 'list' ? 'text-stone-900' : 'text-stone-700'}`}>{t('dashboard.settings.booking_ui.list_title')}</h5>
-                    <p className="text-sm text-stone-500 mt-1">{t('dashboard.settings.booking_ui.list_desc')}</p>
+                    <h5 className={`font-bold text-base ${currentLayout === 'list' ? 'text-stone-900' : 'text-stone-700'}`}>{t('dashboard.settings.booking_ui.list_title')}</h5>
+                    <p className="text-xs text-stone-500 mt-1 leading-relaxed font-sans">{t('dashboard.settings.booking_ui.list_desc')}</p>
                   </div>
                 </div>
               </button>

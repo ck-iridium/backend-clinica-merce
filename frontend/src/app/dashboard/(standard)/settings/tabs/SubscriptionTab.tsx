@@ -1,7 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
-import { CreditCard, CheckCircle2, Sparkles, TrendingUp, Loader2, Check } from 'lucide-react';
+import { CreditCard, CheckCircle2, Sparkles, TrendingUp, Loader2, Check, Copy, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 export default function SubscriptionTab() {
   const { t } = useLanguage();
@@ -302,36 +310,36 @@ export default function SubscriptionTab() {
   return (
     <div className="space-y-6 md:space-y-8 animate-in slide-in-from-bottom-2 duration-300">
       {/* Active Plan Premium Card */}
-      <div className="bg-[#1c1917] text-white rounded-[2.5rem] p-6 md:p-10 border border-stone-800 shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-[#d4af37]/20 to-transparent rounded-full filter blur-xl"></div>
+      <div className="bg-[#1C1917] text-white rounded-[2.5rem] p-6 md:p-10 border border-stone-800 shadow-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-60 h-60 bg-gradient-to-bl from-[#D4AF37]/20 to-transparent rounded-full filter blur-2xl pointer-events-none"></div>
         
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div>
             <div className="flex items-center gap-3">
-              <span className="bg-[#d4af37]/20 text-[#e4c257] text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border border-[#d4af37]/30">
+              <span className="bg-[#D4AF37]/20 text-[#D4AF37] text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border border-[#D4AF37]/30">
                 Suscripción Activa
               </span>
               {currentPlan === 'gold' && (
-                <span className="bg-yellow-500/10 text-yellow-400 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border border-yellow-500/20 flex items-center gap-1">
+                <span className="bg-amber-500/10 text-amber-400 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border border-amber-500/20 flex items-center gap-1">
                   <Sparkles size={10} /> IA VIP
                 </span>
               )}
             </div>
             <h2 className="text-3xl md:text-4xl font-serif font-extrabold tracking-tight mt-3 text-white">
-              {currentPlan === 'gold' && '🥇 Plan Gold Elite'}
-              {currentPlan === 'pro' && '🥈 Plan Pro Premium'}
-              {currentPlan === 'basic' && '🥉 Plan Básico'}
-              {currentPlan === 'free' && '🌱 Plan Demo Gratuito'}
+              {currentPlan === 'gold' && 'Plan Gold Elite'}
+              {currentPlan === 'pro' && 'Plan Pro Premium'}
+              {currentPlan === 'basic' && 'Plan Básico'}
+              {currentPlan === 'free' && 'Plan Demo Gratuito'}
             </h2>
-            <p className="text-stone-400 text-sm mt-2 max-w-xl leading-relaxed">
+            <p className="text-stone-300 text-sm mt-2 max-w-xl leading-relaxed">
               Tu cuenta tiene asignados límites de cuota específicos según tu plan actual. Si necesitas ampliar tus recursos o usar IA maestra, actualiza a continuación.
             </p>
           </div>
 
           <div className="bg-white/5 border border-white/10 rounded-2xl p-5 shrink-0 text-center md:text-right min-w-[200px]">
-            <p className="text-[10px] font-black uppercase tracking-widest text-[#d4af37]">Estado del Pago</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-[#D4AF37]">Estado del Pago</p>
             <p className="text-xl font-bold mt-1 text-white flex items-center justify-center md:justify-end gap-1.5">
-              <CheckCircle2 className="w-5 h-5 text-[#d4af37]" />
+              <CheckCircle2 className="w-5 h-5 text-[#D4AF37]" />
               Sincronizado
             </p>
             <p className="text-[10px] font-medium text-stone-400 mt-1">Tenant ID: {data.tenant_id.slice(0, 8)}...</p>
@@ -351,7 +359,7 @@ export default function SubscriptionTab() {
               </div>
               <div className="w-full bg-white/10 h-2.5 rounded-full overflow-hidden">
                 <div 
-                  className="bg-gradient-to-r from-[#d4af37] to-amber-500 h-full rounded-full transition-all duration-500"
+                  className="bg-gradient-to-r from-[#D4AF37] to-amber-500 h-full rounded-full transition-all duration-500"
                   style={{ width: `${Math.min(100, (data.usage.specialists / data.limits.specialists) * 100)}%` }}
                 ></div>
               </div>
@@ -368,7 +376,7 @@ export default function SubscriptionTab() {
               </div>
               <div className="w-full bg-white/10 h-2.5 rounded-full overflow-hidden">
                 <div 
-                  className="bg-gradient-to-r from-[#d4af37] to-amber-500 h-full rounded-full transition-all duration-500"
+                  className="bg-gradient-to-r from-[#D4AF37] to-amber-500 h-full rounded-full transition-all duration-500"
                   style={{ width: `${Math.min(100, (data.usage.services / data.limits.services) * 100)}%` }}
                 ></div>
               </div>
@@ -381,25 +389,27 @@ export default function SubscriptionTab() {
       {/* Grid of Plans for Upgrade/Downgrade */}
       <div>
         <div className="flex items-center gap-3 mb-6 pb-2 border-b border-stone-100">
-          <span className="w-9 h-9 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-500">
+          <span className="w-10 h-10 rounded-2xl bg-[#D4AF37]/10 border border-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] shadow-inner">
             <TrendingUp size={18} strokeWidth={1.5} />
           </span>
-          <h3 className="text-2xl font-serif font-semibold text-stone-800">Planes Disponibles</h3>
+          <div>
+            <h3 className="text-2xl font-serif font-semibold text-stone-900">Planes Disponibles</h3>
+            <p className="text-xs text-stone-400 mt-0.5">Selecciona el nivel que mejor se adapta al crecimiento de tu clínica</p>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {plansList.map((plan) => {
             const isCurrent = currentPlan === plan.id;
-            const canContratar = !isCurrent;
 
             return (
               <div 
                 key={plan.id}
                 className={`bg-white rounded-3xl p-6 md:p-8 border transition-all duration-300 flex flex-col justify-between hover:shadow-lg
-                  ${isCurrent ? 'border-[#d4af37] shadow-sm relative overflow-hidden' : 'border-stone-200/60'}`}
+                  ${isCurrent ? 'border-[#D4AF37] ring-1 ring-[#D4AF37]/30 shadow-sm relative overflow-hidden' : 'border-stone-200/80 hover:border-[#D4AF37]/40'}`}
               >
                 {isCurrent && (
-                  <div className="absolute top-0 right-0 bg-[#d4af37] text-white px-3 py-1 rounded-bl-xl text-[9px] font-black uppercase tracking-widest">
+                  <div className="absolute top-0 right-0 bg-[#D4AF37] text-stone-950 px-3 py-1 rounded-bl-xl text-[9px] font-black uppercase tracking-widest">
                     Activo
                   </div>
                 )}
@@ -412,7 +422,7 @@ export default function SubscriptionTab() {
                     <span className="text-stone-400 text-xs font-semibold ml-1">/ mes</span>
                   </div>
 
-                  <p className="text-xs text-stone-500 mb-6 leading-relaxed">{plan.limits}</p>
+                  <p className="text-xs text-stone-500 mb-6 leading-relaxed font-sans">{plan.limits}</p>
 
                   <div className="space-y-3 mb-8 border-t border-stone-100 pt-6">
                     {plan.features.map((feature, idx) => (
@@ -420,20 +430,20 @@ export default function SubscriptionTab() {
                         <div className="w-4 h-4 rounded-full bg-stone-50 border border-stone-200 flex items-center justify-center text-stone-400 shrink-0 mt-0.5">
                           <Check className="w-2.5 h-2.5" />
                         </div>
-                        <span className="text-xs font-medium text-stone-600 leading-tight">{feature}</span>
+                        <span className="text-xs font-medium text-stone-600 leading-tight font-sans">{feature}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <button
+                <Button
                   id={`subscription-upgrade-btn-${plan.id}`}
                   onClick={() => handleSelectPlanBizum(plan)}
                   disabled={isCurrent || creatingBizumRequest}
-                  className={`w-full py-3 rounded-xl text-xs font-bold transition-all duration-300 active:scale-95 flex items-center justify-center gap-1.5
-                    ${isCurrent 
-                      ? 'bg-stone-50 text-stone-400 cursor-not-allowed border border-stone-200/50' 
-                      : 'bg-stone-900 hover:bg-[#d4af37] text-white shadow-sm'}`}
+                  variant={isCurrent ? "outline" : "luxury"}
+                  className={`w-full py-5 rounded-2xl text-xs font-bold transition-all duration-300 flex items-center justify-center gap-1.5 ${
+                    isCurrent ? 'opacity-50 cursor-not-allowed bg-stone-50' : 'shadow-luxury text-stone-950'
+                  }`}
                 >
                   {creatingBizumRequest && selectedPlanForBizum?.id === plan.id ? (
                     <>
@@ -445,97 +455,85 @@ export default function SubscriptionTab() {
                   ) : (
                     'Mejorar / Contratar'
                   )}
-                </button>
+                </Button>
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* ── MODAL DE PAGO BIZUM (QUIET LUXURY) ────────────────────────── */}
-      {showBizumModal && selectedPlanForBizum && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/40 backdrop-blur-md p-4 animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-stone-900 rounded-[2.25rem] border border-stone-200/60 dark:border-stone-850 p-6 md:p-8 max-w-md w-full shadow-2xl relative animate-in zoom-in-95 duration-300">
-            {/* Botón Cerrar */}
-            <button 
-              onClick={() => setShowBizumModal(false)}
-              className="absolute top-5 right-5 text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+      {/* ── MODAL DE PAGO BIZUM (QUIET LUXURY SHADCN) ────────────────────────── */}
+      <Dialog open={showBizumModal} onOpenChange={setShowBizumModal}>
+        <DialogContent className="sm:max-w-md rounded-3xl p-0 overflow-hidden border border-stone-200/80 shadow-2xl bg-white">
+          <DialogHeader className="p-6 pb-4 border-b border-stone-100 bg-white/95">
+            <span className="text-[10px] font-black uppercase tracking-widest text-[#D4AF37] block mb-0.5">Soft-Launch ProBookia</span>
+            <DialogTitle className="text-2xl font-serif font-bold text-stone-900">
+              Pago Manual vía Bizum
+            </DialogTitle>
+            <DialogDescription className="text-stone-400 text-xs mt-1 leading-relaxed">
+              Hemos habilitado una forma de pago directa por Bizum para agilizar tu acceso. Por favor, realiza el envío y copia el concepto exacto.
+            </DialogDescription>
+          </DialogHeader>
 
+          <div className="p-6 pt-4 space-y-5">
             {creatingBizumRequest ? (
-              <div className="flex flex-col items-center justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-[#d4af37] mb-2" />
+              <div className="flex flex-col items-center justify-center py-10">
+                <Loader2 className="w-8 h-8 animate-spin text-[#D4AF37] mb-2" />
                 <span className="text-xs font-semibold text-stone-400">Generando código de referencia único...</span>
               </div>
             ) : bizumRequestData ? (
-              <div className="space-y-6">
-                <div>
-                  <span className="text-[9px] font-black uppercase tracking-[0.25em] text-[#d4af37] block mb-1">Soft-Launch ProBookia</span>
-                  <h3 className="text-2xl font-serif font-extrabold tracking-tight text-stone-900 dark:text-white">
-                    Pago Manual vía Bizum
-                  </h3>
-                  <p className="text-stone-500 dark:text-stone-400 text-xs mt-2 leading-relaxed">
-                    Hemos habilitado una forma de pago directa por Bizum para agilizar tu acceso. Por favor, realiza el envío y copia el concepto de manera exacta.
+              <div className="space-y-5">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-stone-50/70 border border-stone-200 rounded-2xl p-4 text-center">
+                    <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest block">Monto a Enviar</span>
+                    <span className="text-xl font-mono font-black text-stone-900 mt-1 block">
+                      {bizumRequestData.amount}€
+                    </span>
+                  </div>
+                  <div className="bg-stone-50/70 border border-stone-200 rounded-2xl p-4 text-center">
+                    <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest block">Teléfono Bizum</span>
+                    <span className="text-sm font-mono font-bold text-stone-900 mt-1.5 block">
+                      {process.env.NEXT_PUBLIC_BIZUM_PHONE || "+34 600 000 000"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Concepto Obligatorio */}
+                <div className="bg-[#D4AF37]/5 border border-[#D4AF37]/20 rounded-2xl p-5 text-center space-y-3">
+                  <span className="text-[9px] font-black text-[#D4AF37] uppercase tracking-[0.2em] block">
+                    CONCEPTO OBLIGATORIO EN BIZUM
+                  </span>
+                  
+                  <div className="flex items-center justify-center gap-3">
+                    <span className="text-2xl font-mono font-black text-stone-900 tracking-widest">
+                      {bizumRequestData.reference_code}
+                    </span>
+                    
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        navigator.clipboard.writeText(bizumRequestData.reference_code);
+                        toast.success('¡Código copiado al portapapeles!');
+                      }}
+                      className="w-8 h-8 rounded-xl bg-white hover:bg-stone-50 border-stone-200 text-[#D4AF37] shadow-2xs"
+                      title="Copiar código"
+                    >
+                      <Copy size={14} />
+                    </Button>
+                  </div>
+                  
+                  <p className="text-[10px] text-stone-500 font-medium leading-relaxed">
+                    Es fundamental incluir este código exacto para que podamos validar tu transferencia.
                   </p>
                 </div>
 
-                <div className="space-y-4">
-                  {/* Datos del pago */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-stone-50 dark:bg-stone-900/40 border border-stone-150 dark:border-stone-850 rounded-2xl p-4 text-center">
-                      <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest block">Monto a Enviar</span>
-                      <span className="text-xl font-mono font-black text-stone-900 dark:text-white mt-1 block">
-                        {bizumRequestData.amount}€
-                      </span>
-                    </div>
-                    <div className="bg-stone-50 dark:bg-stone-900/40 border border-stone-150 dark:border-stone-850 rounded-2xl p-4 text-center">
-                      <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest block">Teléfono Bizum</span>
-                      <span className="text-sm font-mono font-bold text-stone-900 dark:text-white mt-1.5 block">
-                        {process.env.NEXT_PUBLIC_BIZUM_PHONE || "+34 600 000 000"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Concepto Obligatorio */}
-                  <div className="bg-[#fcf8e5] dark:bg-yellow-500/5 border border-[#f5ebc5] dark:border-yellow-500/10 rounded-2xl p-5 text-center space-y-3">
-                    <span className="text-[9px] font-black text-[#d4af37] uppercase tracking-[0.2em] block">
-                      CONCEPTO OBLIGATORIO EN BIZUM
-                    </span>
-                    
-                    <div className="flex items-center justify-center gap-3">
-                      <span className="text-2xl font-mono font-black text-stone-900 dark:text-white tracking-widest">
-                        {bizumRequestData.reference_code}
-                      </span>
-                      
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(bizumRequestData.reference_code);
-                          toast.success('¡Código copiado al portapapeles!');
-                        }}
-                        className="p-2 rounded-xl bg-white dark:bg-stone-900 hover:bg-stone-50 dark:hover:bg-stone-850 border border-stone-200/50 dark:border-stone-800 text-[#d4af37] transition-all hover:scale-105 active:scale-95 shadow-sm"
-                        title="Copiar código"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                        </svg>
-                      </button>
-                    </div>
-                    
-                    <p className="text-[10px] text-amber-700/80 font-bold leading-relaxed">
-                      ⚠️ Es fundamental incluir este código exacto para que podamos validar tu transferencia.
-                    </p>
-                  </div>
-                </div>
-
                 <div className="pt-2">
-                  <button
+                  <Button
                     onClick={handleConfirmBizumSent}
                     disabled={confirmingBizumSent}
-                    className="w-full bg-stone-900 hover:bg-[#d4af37] text-white py-3.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center gap-1.5 shadow-md active:scale-95 disabled:bg-stone-300 disabled:cursor-not-allowed"
+                    variant="luxury"
+                    className="w-full py-5 rounded-2xl text-xs font-bold shadow-luxury text-stone-950 flex items-center justify-center gap-1.5"
                   >
                     {confirmingBizumSent ? (
                       <>
@@ -545,13 +543,13 @@ export default function SubscriptionTab() {
                     ) : (
                       'Ya he enviado el Bizum'
                     )}
-                  </button>
+                  </Button>
                 </div>
               </div>
             ) : null}
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

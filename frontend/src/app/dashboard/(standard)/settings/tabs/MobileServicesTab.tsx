@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { MapPin, Truck, Home, Building2, Plus, X, Globe } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { Button } from '@/components/ui/button';
 
 interface MobileServicesTabProps {
   settings: any;
@@ -275,17 +276,16 @@ export default function MobileServicesTab({ settings, setSettings }: MobileServi
   return (
     <div className="space-y-4 md:space-y-6 animate-in slide-in-from-bottom-2 duration-300">
       {/* Tarjeta 1: Modalidad de Trabajo */}
-      <div className="bg-white rounded-3xl md:rounded-[2rem] border border-stone-100 p-5 md:p-6 shadow-sm">
+      <div className="bg-white rounded-3xl md:rounded-[2rem] border border-stone-200/80 p-5 md:p-6 shadow-sm">
         <div className="flex items-center gap-3 mb-4 pb-3 border-b border-stone-100">
-          <span className="w-9 h-9 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-500">
+          <span className="w-10 h-10 rounded-2xl bg-[#D4AF37]/10 border border-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] shadow-inner">
             <Truck size={18} strokeWidth={1.5} />
           </span>
-          <h3 className="text-xl font-serif font-semibold text-stone-800">{t('settings.mobile_services.work_modality')}</h3>
+          <div>
+            <h3 className="text-xl font-serif font-semibold text-stone-900">{t('settings.mobile_services.work_modality')}</h3>
+            <p className="text-xs text-stone-400 mt-0.5">{t('settings.mobile_services.work_modality_desc')}</p>
+          </div>
         </div>
-
-        <p className="text-xs text-stone-400 mb-4 font-medium leading-relaxed">
-          {t('settings.mobile_services.work_modality_desc')}
-        </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
@@ -315,28 +315,28 @@ export default function MobileServicesTab({ settings, setSettings }: MobileServi
                 id={`mobile-work-modality-btn-${mode.id}`}
                 type="button"
                 onClick={() => setSettings({ ...settings, work_modality: mode.id })}
-                className={`p-4 rounded-xl border text-left transition-all duration-300 flex flex-col gap-2 group outline-none
+                className={`p-5 rounded-2xl border text-left transition-all duration-300 flex flex-col gap-2.5 group outline-none
                   ${
                     isSelected
-                      ? 'border-[#d4af37] bg-stone-50/50 shadow-sm'
-                      : 'border-stone-200 hover:border-stone-400 bg-white'
+                      ? 'border-[#D4AF37] bg-[#D4AF37]/5 shadow-sm ring-1 ring-[#D4AF37]/20'
+                      : 'border-stone-200/80 hover:border-[#D4AF37]/40 bg-white'
                   }`}
               >
                 <span
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors
                     ${
                       isSelected
-                        ? 'bg-[#d4af37] text-white'
-                        : 'bg-stone-50 text-stone-400 group-hover:bg-stone-100 group-hover:text-stone-600'
+                        ? 'bg-[#D4AF37] text-stone-950 shadow-sm'
+                        : 'bg-stone-100 text-stone-400 group-hover:bg-stone-200'
                     }`}
                 >
-                  <mode.icon size={16} strokeWidth={1.5} />
+                  <mode.icon size={17} strokeWidth={1.5} />
                 </span>
                 <div>
-                  <h4 className={`font-bold text-xs leading-tight transition-colors ${isSelected ? 'text-stone-800' : 'text-stone-600'}`}>
+                  <h4 className={`font-bold text-sm leading-tight transition-colors ${isSelected ? 'text-stone-900' : 'text-stone-700'}`}>
                     {mode.label}
                   </h4>
-                  <p className="text-[10px] text-stone-400 mt-1 font-medium leading-relaxed">
+                  <p className="text-xs text-stone-400 mt-1 font-normal leading-relaxed font-sans">
                     {mode.desc}
                   </p>
                 </div>
@@ -444,16 +444,18 @@ export default function MobileServicesTab({ settings, setSettings }: MobileServi
                     value={whitelistInput}
                     onChange={(e) => setWhitelistInput(e.target.value)}
                     placeholder={t('settings.mobile_services.whitelist_placeholder')}
-                    className="flex-1 p-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:border-[#d4af37] outline-none text-xs font-semibold text-stone-700"
+                    className="flex-1 p-2.5 bg-stone-50/70 border border-stone-200 rounded-xl focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/30 outline-none text-xs font-semibold text-stone-800"
                   />
-                  <button
+                  <Button
                     id="mobile-add-zone-btn"
                     type="submit"
-                    className="px-4 py-2 bg-stone-950 hover:bg-stone-800 text-white rounded-xl font-bold text-xs transition-colors flex items-center gap-1.5 shadow-sm"
+                    variant="luxury"
+                    size="sm"
+                    className="rounded-xl px-4 font-bold text-xs shadow-luxury text-stone-950 flex items-center gap-1.5"
                   >
-                    <Plus size={12} />
+                    <Plus size={13} strokeWidth={2} />
                     {t('settings.mobile_services.add')}
-                  </button>
+                  </Button>
                 </form>
 
                 {zonesList.length > 0 ? (
