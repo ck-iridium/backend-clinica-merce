@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Tag, ShoppingCart } from 'lucide-react';
+import { Tag, ShoppingCart, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { useAuthRole } from '@/hooks/useAuthRole';
@@ -287,26 +288,34 @@ export default function POSPage() {
     <div className="min-h-screen bg-[#FAFAFA] py-12 px-4 md:px-8 font-sans text-stone-800 animate-in fade-in duration-700 pb-32 lg:pb-12">
       <div className="max-w-7xl mx-auto space-y-10">
         {/* Cabecera Principal */}
-        <header className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-stone-200/50 pb-8">
+        <header className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-stone-200/60 pb-8 relative">
           <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <span className="p-2.5 bg-stone-900 text-white rounded-2xl flex items-center justify-center shadow-md">
-                <Tag size={24} className="text-[#d4af37]" />
+            <div className="flex items-center gap-3.5">
+              <span className="w-12 h-12 rounded-2xl bg-stone-900 border border-amber-400/20 text-[#D4AF37] flex items-center justify-center shadow-md shrink-0">
+                <Tag size={22} className="text-[#D4AF37]" />
               </span>
-              <h1 className="text-4xl font-serif text-stone-900 tracking-tight font-medium">
-                {t('dashboard.pos.quick_sale') || 'Venta Rápida'}
-              </h1>
+              <div>
+                <div className="flex items-center gap-2.5">
+                  <h1 className="text-3xl sm:text-4xl font-serif font-bold text-stone-900 tracking-tight">
+                    {t('dashboard.pos.quick_sale') || 'Caja & Venta Rápida'}
+                  </h1>
+                  <Badge variant="luxury" className="text-[10px] hidden sm:inline-flex py-0.5 px-2.5">
+                    TPV Directo
+                  </Badge>
+                </div>
+                <p className="text-stone-500 font-normal text-xs sm:text-sm mt-0.5">
+                  {t('dashboard.pos.direct_billing_desc') ||
+                    'Terminal de cobro directo y emisión instantánea de ticket unificado.'}
+                </p>
+              </div>
             </div>
-            <p className="text-stone-500 font-normal max-w-xl text-sm">
-              {t('dashboard.pos.direct_billing_desc') ||
-                'Terminal de cobro directo y facturación instantánea bajo demanda.'}
-            </p>
           </div>
 
           <div className="mt-4 md:mt-0 flex items-center gap-3">
-            <span className="px-4 py-2 bg-[#F7F7F5] rounded-full text-xs font-semibold text-stone-600 border border-stone-200/40">
-              Terminal POS activo
-            </span>
+            <div className="flex items-center gap-2 px-3.5 py-1.5 bg-white/90 backdrop-blur-md rounded-full border border-stone-200/80 shadow-2xs text-xs font-semibold text-stone-700">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Terminal Activo</span>
+            </div>
           </div>
         </header>
 
@@ -336,17 +345,19 @@ export default function POSPage() {
             />
 
             {/* Columna Derecha: Ticket de Escritorio */}
-            <div className="hidden lg:block lg:col-span-5 bg-stone-950 text-white rounded-3xl p-8 border border-stone-900 shadow-luxury space-y-8 relative overflow-hidden">
-              <div className="absolute top-[-50px] right-[-50px] w-64 h-64 bg-white/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="hidden lg:block lg:col-span-5 bg-[#141416] text-white rounded-[2rem] p-7 sm:p-8 border border-stone-800/80 shadow-luxury space-y-6 relative overflow-hidden backdrop-blur-2xl">
+              <div className="absolute top-[-60px] right-[-60px] w-72 h-72 bg-[#D4AF37]/10 rounded-full blur-3xl pointer-events-none" />
 
               <div className="flex justify-between items-center border-b border-white/10 pb-4">
-                <div className="flex items-center gap-2">
-                  <ShoppingCart size={18} className="text-[#d4af37]" />
-                  <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-white/50">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37]">
+                    <ShoppingCart size={16} />
+                  </div>
+                  <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#D4AF37]">
                     {t('dashboard.pos.ticket_summary') || '2. Resumen & Ticket'}
                   </h3>
                 </div>
-                <span className="text-[10px] font-bold px-2.5 py-1 bg-white/10 text-white/80 rounded-full font-mono uppercase tracking-wider">
+                <span className="text-[11px] font-bold px-3 py-1 bg-white/10 text-white/90 rounded-full font-mono uppercase tracking-wider border border-white/10">
                   {cartHook.cart.length === 1
                     ? t('dashboard.pos.items_count_one')?.replace('{count}', String(cartHook.cart.length)) || '1 ítem'
                     : t('dashboard.pos.items_count')?.replace('{count}', String(cartHook.cart.length)) ||
@@ -360,13 +371,15 @@ export default function POSPage() {
         )}
 
         {/* Aviso Legal y Fiscalidad */}
-        <footer className="p-6 bg-stone-50 border border-stone-200/50 rounded-3xl flex items-start gap-4 text-stone-500 max-w-4xl mx-auto shadow-sm">
-          <span className="text-xl p-1 bg-stone-100 rounded-lg text-stone-600 shrink-0">ℹ️</span>
+        <footer className="p-6 bg-white/80 backdrop-blur-xl border border-stone-200/70 rounded-3xl flex items-start gap-4 text-stone-500 max-w-4xl mx-auto shadow-2xs">
+          <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-300/30 flex items-center justify-center text-[#B38F26] shrink-0 font-serif font-bold text-sm">
+            §
+          </div>
           <div className="space-y-1">
-            <h4 className="text-xs font-bold text-stone-700 uppercase tracking-wider">
+            <h4 className="text-xs font-bold text-stone-800 uppercase tracking-wider">
               {t('dashboard.pos.legal_disclaimer') || 'Aviso Legal y Fiscalidad'}
             </h4>
-            <p className="text-[11px] leading-relaxed font-normal">
+            <p className="text-xs leading-relaxed text-stone-500 font-normal">
               {t('dashboard.pos.disclaimer') ||
                 'Este módulo genera y registra de manera automática facturas de venta directa marcadas como cobradas y sujetas al tipo impositivo de IVA general. El documento resultante se almacena en el módulo fiscal y queda registrado para fines contables.'}
             </p>
