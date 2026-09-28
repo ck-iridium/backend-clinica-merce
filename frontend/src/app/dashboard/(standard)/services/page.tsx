@@ -6,10 +6,12 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Settings2, Plus, Download, Loader2 } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { toast } from 'sonner';
 import PlanLimitsCard from '@/components/PlanLimitsCard';
 import ServicesDataGrid from './components/ServicesDataGrid';
 import ManageCategoriesModal from './components/ManageCategoriesModal';
+import { DataGridSkeleton } from './components/datagrid/DataGridSkeleton';
 
 function getCookie(name: string): string | null {
   if (typeof document === 'undefined') return null;
@@ -213,58 +215,82 @@ export default function ServicesPage() {
 
   if (loadingRole) {
     return (
-      <div className="flex flex-col gap-4 justify-center items-center h-[60vh] animate-in fade-in duration-500">
-        <Skeleton className="w-16 h-16 rounded-2xl" />
-        <Skeleton className="w-48 h-6 rounded-xl" />
+      <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="space-y-2">
+            <Skeleton className="w-56 h-9 rounded-xl" />
+            <Skeleton className="w-80 h-4 rounded-lg" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="w-28 h-10 rounded-xl" />
+            <Skeleton className="w-32 h-10 rounded-xl" />
+          </div>
+        </div>
+        <DataGridSkeleton />
       </div>
     );
   }
 
   return (
-    <div className="animate-in fade-in duration-500">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-wrap items-center gap-4">
-            <h1 className="text-3xl font-extrabold text-stone-800">{t('dashboard.services.title')}</h1>
+    <div className="animate-in fade-in duration-500 space-y-8">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-2 border-b border-stone-200/60">
+        <div className="flex flex-col gap-1.5">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-3xl font-serif font-bold text-stone-900 tracking-tight">{t('dashboard.services.title')}</h1>
             <PlanLimitsCard type="services" />
           </div>
-          <p className="text-stone-500 font-medium">{t('dashboard.services.subtitle')}</p>
+          <p className="text-stone-500 font-medium text-sm">{t('dashboard.services.subtitle')}</p>
         </div>
-        <div className="flex items-center gap-3">
-          <button 
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Button 
             id="services-archived-toggle-btn"
             type="button"
+            variant={showArchived ? "default" : "outline"}
+            size="sm"
             onClick={() => setShowArchived(!showArchived)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${showArchived ? 'bg-stone-800 text-white border-stone-800' : 'bg-white text-stone-500 border-stone-200 hover:border-stone-400'}`}>
+            className="rounded-xl h-10 text-xs font-semibold px-3.5 transition-all"
+          >
             {showArchived ? t('dashboard.services.hide_archived') : t('dashboard.services.show_archived')}
-          </button>
-          <button 
+          </Button>
+          <Button 
             id="services-export-btn"
             type="button"
+            variant="outline"
+            size="sm"
             disabled={exporting}
             onClick={handleExport}
-            className="px-4 py-3 rounded-xl bg-white text-stone-600 border border-stone-200 font-bold transition-all hover:bg-stone-50 active:scale-95 shadow-sm flex items-center gap-2 disabled:opacity-50">
+            className="rounded-xl h-10 text-xs font-semibold px-3.5 gap-2 transition-all hover:bg-stone-50"
+          >
             {exporting ? (
-              <Loader2 size={18} className="animate-spin text-stone-400" />
+              <Loader2 size={16} className="animate-spin text-[#D4AF37]" />
             ) : (
-              <Download size={18} strokeWidth={1.5} className="text-stone-400" />
+              <Download size={16} strokeWidth={1.75} className="text-stone-500" />
             )}
             <span className="hidden sm:inline">Exportar a Galería</span>
-          </button>
-          <button 
+          </Button>
+          <Button 
             id="services-categories-btn"
             type="button"
+            variant="outline"
+            size="sm"
             onClick={() => setShowManageCategoriesModal(true)}
-            className="px-4 py-3 rounded-xl bg-white text-stone-600 border border-stone-200 font-bold transition-all hover:bg-stone-50 active:scale-95 shadow-sm flex items-center gap-2">
-            <Settings2 size={18} strokeWidth={1.5} className="text-stone-400" /> <span className="hidden sm:inline">{t('dashboard.services.categories')}</span>
-          </button>
-          <Link 
+            className="rounded-xl h-10 text-xs font-semibold px-3.5 gap-2 transition-all hover:bg-stone-50"
+          >
+            <Settings2 size={16} strokeWidth={1.75} className="text-stone-500" />
+            <span className="hidden sm:inline">{t('dashboard.services.categories')}</span>
+          </Button>
+          <Button
             id="services-new-btn"
-            href="/dashboard/services/new"
-            className="px-6 py-3 rounded-xl font-bold transition-all shadow-md active:scale-95 flex items-center gap-2 bg-[#d4af37] hover:bg-[#b08e23] border border-transparent text-white">
-            <Plus size={18} strokeWidth={1.5} />
-            {t('dashboard.services.new_service')}
-          </Link>
+            asChild
+            variant="luxury"
+            size="sm"
+            className="rounded-xl h-10 text-xs font-bold px-4 gap-1.5 shadow-luxury text-stone-950"
+          >
+            <Link href="/dashboard/services/new">
+              <Plus size={16} strokeWidth={2} />
+              {t('dashboard.services.new_service')}
+            </Link>
+          </Button>
         </div>
       </div>
 

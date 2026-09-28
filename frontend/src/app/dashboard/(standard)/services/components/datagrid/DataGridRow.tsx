@@ -136,7 +136,7 @@ export function DataGridRow({
             value={svc.category_id || ''}
             disabled={isSavingCategory}
             onChange={e => onCategorySave(e.target.value)}
-            className="w-full pl-3 pr-8 py-1.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 focus:border-[#d4af37] rounded-lg text-xs font-bold text-stone-800 outline-none transition-all cursor-pointer focus:ring-1 focus:ring-[#d4af37] appearance-none"
+            className="w-full pl-3 pr-8 py-2 bg-stone-50/70 hover:bg-stone-100/70 border border-stone-200 focus:border-[#D4AF37] rounded-xl text-xs font-semibold text-stone-800 outline-none transition-all cursor-pointer focus:ring-1 focus:ring-[#D4AF37] appearance-none"
           >
             <option value="">{language === 'fr' ? 'Sans catégorie' : language === 'en' ? 'No Category' : 'Sin Categoría'}</option>
             {categories.map(cat => (
@@ -147,9 +147,9 @@ export function DataGridRow({
           </select>
           <div className="absolute right-2.5 pointer-events-none text-stone-400">
             {isSavingCategory ? (
-              <Loader2 size={12} className="animate-spin text-[#d4af37]" />
+              <Loader2 size={12} className="animate-spin text-[#D4AF37]" />
             ) : (
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
               </svg>
             )}
@@ -172,11 +172,11 @@ export function DataGridRow({
                 (e.target as HTMLInputElement).blur();
               }
             }}
-            className="w-full pr-10 pl-3 py-1.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 focus:border-[#d4af37] rounded-lg text-xs font-bold text-stone-800 dark:text-stone-800 outline-none text-right transition-all focus:ring-1 focus:ring-[#d4af37]"
+            className="w-full pr-10 pl-3 py-2 bg-stone-50/70 hover:bg-stone-100/70 focus:bg-white border border-stone-200 focus:border-[#D4AF37] rounded-xl text-xs font-bold text-stone-800 outline-none text-right transition-all focus:ring-1 focus:ring-[#D4AF37]"
           />
           <span className="absolute right-2.5 text-stone-400 text-[10px] font-bold pointer-events-none">min</span>
           {isSavingDuration && (
-            <Loader2 size={12} className="absolute left-1 animate-spin text-[#d4af37]" />
+            <Loader2 size={12} className="absolute left-2 animate-spin text-[#D4AF37]" />
           )}
         </div>
       </td>
@@ -196,11 +196,11 @@ export function DataGridRow({
                 (e.target as HTMLInputElement).blur();
               }
             }}
-            className="w-full pr-7 pl-3 py-1.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 focus:border-[#d4af37] rounded-lg text-xs font-bold text-stone-800 dark:text-stone-800 outline-none text-right transition-all focus:ring-1 focus:ring-[#d4af37]"
+            className="w-full pr-7 pl-3 py-2 bg-stone-50/70 hover:bg-stone-100/70 focus:bg-white border border-stone-200 focus:border-[#D4AF37] rounded-xl text-xs font-bold text-stone-800 outline-none text-right transition-all focus:ring-1 focus:ring-[#D4AF37]"
           />
           <span className="absolute right-2.5 text-stone-400 text-xs font-bold pointer-events-none">€</span>
           {isSavingPrice && (
-            <Loader2 size={12} className="absolute left-1 animate-spin text-[#d4af37]" />
+            <Loader2 size={12} className="absolute left-2 animate-spin text-[#D4AF37]" />
           )}
         </div>
       </td>
@@ -209,7 +209,7 @@ export function DataGridRow({
       <td className="p-4 text-center">
         <div className="flex justify-center items-center">
           {isStatusUpdating ? (
-            <Loader2 size={16} className="animate-spin text-primary" />
+            <Loader2 size={16} className="animate-spin text-[#D4AF37]" />
           ) : (
             <label className="relative inline-flex items-center cursor-pointer">
               <input
@@ -219,7 +219,7 @@ export function DataGridRow({
                 onChange={onToggleStatus}
                 className="sr-only peer"
               />
-              <div className="w-9 h-5 bg-stone-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+              <div className="w-9 h-5 bg-stone-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 shadow-2xs"></div>
             </label>
           )}
         </div>
@@ -232,19 +232,19 @@ export function DataGridRow({
             id={`services-edit-details-btn-${svc.id}`}
             type="button"
             onClick={() => onEditClick(svc)}
-            className="p-1.5 text-stone-400 hover:text-stone-700 bg-white border border-stone-200 hover:border-stone-400 rounded-lg shadow-sm active:scale-95 transition-all"
+            className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-800 bg-white border border-stone-200/80 hover:border-stone-300 rounded-xl shadow-2xs active:scale-95 transition-all"
             title={language === 'fr' ? 'Modifier en détail' : language === 'en' ? 'Edit details' : 'Editar detalladamente'}
           >
-            <Pencil size={13} strokeWidth={1.5} />
+            <Pencil size={13} strokeWidth={1.75} />
           </button>
           <button
             id={`services-delete-btn-${svc.id}`}
             type="button"
             onClick={onDeleteClick}
-            className="p-1.5 text-rose-400 hover:text-rose-600 bg-white border border-stone-200 hover:border-rose-300 rounded-lg shadow-sm active:scale-95 transition-all"
+            className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-rose-600 bg-white border border-stone-200/80 hover:border-rose-200 hover:bg-rose-50/50 rounded-xl shadow-2xs active:scale-95 transition-all"
             title={language === 'fr' ? 'Supprimer définitivement' : language === 'en' ? 'Delete permanently' : 'Eliminar permanentemente'}
           >
-            <Trash2 size={13} strokeWidth={1.5} />
+            <Trash2 size={13} strokeWidth={1.75} />
           </button>
         </div>
       </td>

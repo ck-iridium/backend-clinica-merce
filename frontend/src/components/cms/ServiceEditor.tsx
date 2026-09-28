@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import MediaPickerModal from '@/components/MediaPickerModal';
 import FeedbackModal from '@/components/FeedbackModal';
+import { Button } from '@/components/ui/button';
 import AIGeneratorModal from './AIGeneratorModal';
 import { useAIImage } from '@/app/contexts/AIImageContext';
 import { useLanguage } from '@/app/contexts/LanguageContext';
@@ -330,26 +331,30 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
               </div>
             </div>
             <div className="flex gap-2">
-              <button
+              <Button
                 id="service-editor-save-btn"
                 type="submit"
+                variant="outline"
+                size="sm"
                 disabled={saving || isGeneratingAI || (!isDirty && !isNew)}
                 onClick={() => setExitAfterSave(false)}
-                className="bg-stone-100 hover:bg-stone-200 text-stone-700 px-4 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-30 disabled:grayscale shadow-sm"
+                className="rounded-xl text-xs font-semibold h-9 px-3.5 transition-all"
                 title={isGeneratingAI ? t('dashboard.services.no_save_ai_generating') : ""}
               >
                 {saving && !exitAfterSave ? '...' : t('dashboard.services.save_changes')}
-              </button>
-              <button
+              </Button>
+              <Button
                 id="service-editor-save-exit-btn"
                 type="submit"
+                variant="luxury"
+                size="sm"
                 disabled={saving || isGeneratingAI || (!isDirty && !isNew)}
                 onClick={() => setExitAfterSave(true)}
-                className="bg-[#d4af37] hover:bg-[#c29e2f] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-30 disabled:grayscale shadow-sm"
+                className="rounded-xl text-xs font-bold h-9 px-3.5 shadow-luxury text-stone-950 transition-all"
                 title={isGeneratingAI ? t('dashboard.services.no_save_ai_generating') : ""}
               >
                 {saving && exitAfterSave ? t('dashboard.services.saving') : t('dashboard.services.save_and_exit')}
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -415,31 +420,38 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
           <div className="px-6 py-4 border-t border-stone-100 bg-stone-50/50 shrink-0">
             <div className="flex gap-3">
               {!isNew && (
-                <button
+                <Button
                   id="service-editor-delete-btn"
                   type="button"
+                  variant="ghost"
+                  size="icon"
                   disabled={isGeneratingAI}
                   onClick={() => setShowDeleteModal(true)}
-                  className="w-12 h-12 flex items-center justify-center rounded-xl bg-white border border-stone-200 text-red-400 hover:text-red-600 hover:border-red-100 hover:bg-red-50 transition-all shrink-0 disabled:opacity-30 disabled:grayscale"
+                  className="w-12 h-12 rounded-xl bg-white border border-stone-200/80 text-stone-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50/50 transition-all shrink-0 disabled:opacity-30"
                   title={t('dashboard.services.delete_service')}
                 >
-                  <Trash2 size={18} />
-                </button>
+                  <Trash2 size={18} strokeWidth={1.75} />
+                </Button>
               )}
-              <Link
+              <Button
                 id="service-editor-cancel-btn"
-                href="/dashboard/services"
-                onClick={(e) => {
-                  if (isGeneratingAI) {
-                    e.preventDefault();
-                    toast.warning(t('dashboard.services.wait_ai_warning'));
-                  }
-                }}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white border border-stone-200 text-stone-600 font-bold text-sm hover:bg-stone-50 hover:border-stone-300 transition-all shadow-sm ${isGeneratingAI ? 'opacity-30 grayscale cursor-not-allowed' : ''}`}
+                asChild
+                variant="outline"
+                className={`flex-1 h-12 rounded-xl font-bold text-sm text-stone-700 hover:bg-stone-50 transition-all ${isGeneratingAI ? 'opacity-30 grayscale pointer-events-none' : ''}`}
               >
-                <ArrowLeft size={15} strokeWidth={2} />
-                {t('dashboard.services.cancel')}
-              </Link>
+                <Link
+                  href="/dashboard/services"
+                  onClick={(e) => {
+                    if (isGeneratingAI) {
+                      e.preventDefault();
+                      toast.warning(t('dashboard.services.wait_ai_warning'));
+                    }
+                  }}
+                >
+                  <ArrowLeft size={16} strokeWidth={2} className="mr-1.5" />
+                  {t('dashboard.services.cancel')}
+                </Link>
+              </Button>
             </div>
           </div>
         </form>

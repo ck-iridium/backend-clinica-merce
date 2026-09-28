@@ -152,15 +152,15 @@ export default function ServicesDataGrid({
 
       {/* ── DATA TABLE DE SERVICIOS PREMIUM ── */}
       {filteredServices.length === 0 ? (
-        <div className="text-center py-20 text-stone-400 bg-stone-50/50 rounded-2xl border border-stone-200 border-dashed">
-          {language === 'fr' ? 'Aucun traitement trouvé avec los filtres actuels.' : language === 'en' ? 'No services found with current filters.' : 'No se encontraron tratamientos con los filtros actuales.'}
+        <div className="text-center py-20 text-stone-400 bg-stone-50/50 rounded-3xl border border-stone-200/80 border-dashed">
+          {language === 'fr' ? 'Aucun traitement trouvé avec les filtres actuels.' : language === 'en' ? 'No services found with current filters.' : 'No se encontraron tratamientos con los filtros actuales.'}
         </div>
       ) : (
-        <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
+        <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-xs border border-stone-200/80 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-stone-50 border-b border-stone-100">
+                <tr className="bg-stone-50/70 border-b border-stone-200/60">
                   
                   {/* Columna Checkbox Maestro */}
                   <th className="p-4 w-12 text-center">
@@ -174,11 +174,11 @@ export default function ServicesDataGrid({
                       />
                       <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
                         isAllSelected 
-                          ? 'bg-[#d4af37] border-[#d4af37]' 
+                          ? 'bg-[#D4AF37] border-[#D4AF37]' 
                           : 'border-stone-300 bg-white hover:border-stone-400'
                       }`}>
                         {isAllSelected && (
-                          <svg className="w-3.5 h-3.5 text-white animate-in zoom-in-50 duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <svg className="w-3.5 h-3.5 text-stone-950 animate-in zoom-in-50 duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
                         )}
@@ -187,25 +187,25 @@ export default function ServicesDataGrid({
                   </th>
 
                   {/* Cabeceras de Columnas */}
-                  <th className="p-4 text-xs font-black uppercase tracking-wider text-stone-400 w-20 text-center">
+                  <th className="p-4 text-[11px] font-bold uppercase tracking-wider text-stone-400 w-20 text-center">
                     {language === 'fr' ? 'Image' : language === 'en' ? 'Image' : 'Imagen'}
                   </th>
-                  <th className="p-4 text-xs font-black uppercase tracking-wider text-stone-400">
+                  <th className="p-4 text-[11px] font-bold uppercase tracking-wider text-stone-400">
                     {language === 'fr' ? 'Service / Traitement' : language === 'en' ? 'Service / Treatment' : 'Servicio / Tratamiento'}
                   </th>
-                  <th className="p-4 text-xs font-black uppercase tracking-wider text-stone-400 w-44">
+                  <th className="p-4 text-[11px] font-bold uppercase tracking-wider text-stone-400 w-44">
                     {language === 'fr' ? 'Catégorie' : language === 'en' ? 'Category' : 'Categoría'}
                   </th>
-                  <th className="p-4 text-xs font-black uppercase tracking-wider text-stone-400 w-32">
+                  <th className="p-4 text-[11px] font-bold uppercase tracking-wider text-stone-400 w-32">
                     {language === 'fr' ? 'Durée' : language === 'en' ? 'Duration' : 'Duración'}
                   </th>
-                  <th className="p-4 text-xs font-black uppercase tracking-wider text-stone-400 w-36">
+                  <th className="p-4 text-[11px] font-bold uppercase tracking-wider text-stone-400 w-36">
                     {language === 'fr' ? 'Prix (€)' : language === 'en' ? 'Price (€)' : 'Precio (€)'}
                   </th>
-                  <th className="p-4 text-xs font-black uppercase tracking-wider text-stone-400 w-28 text-center">
+                  <th className="p-4 text-[11px] font-bold uppercase tracking-wider text-stone-400 w-28 text-center">
                     {language === 'fr' ? 'Statut' : language === 'en' ? 'Status' : 'Estado'}
                   </th>
-                  <th className="p-4 text-xs font-black uppercase tracking-wider text-stone-400 w-28 text-center">
+                  <th className="p-4 text-[11px] font-bold uppercase tracking-wider text-stone-400 w-28 text-center">
                     {language === 'fr' ? 'Actions' : language === 'en' ? 'Actions' : 'Acciones'}
                   </th>
                 </tr>

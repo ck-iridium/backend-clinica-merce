@@ -20,17 +20,17 @@ export function DataGridFilters({
   language,
 }: DataGridFiltersProps) {
   return (
-    <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 bg-white p-4 rounded-2xl border border-stone-100 shadow-sm">
+    <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 bg-white/90 backdrop-blur-xl p-4 rounded-3xl border border-stone-200/80 shadow-xs">
       {/* Filtros de Categorías */}
-      <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+      <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
         <button
           id="services-category-filter-all-btn"
           type="button"
           onClick={() => onSelectCategory('all')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
             selectedCategory === 'all'
-              ? 'bg-stone-900 text-white shadow-sm'
-              : 'bg-stone-50 text-stone-500 hover:bg-stone-100'
+              ? 'bg-stone-900 text-white shadow-xs'
+              : 'bg-stone-100/80 text-stone-600 hover:bg-stone-200/80 hover:text-stone-900'
           }`}
         >
           {language === 'fr' ? 'Tous' : language === 'en' ? 'All' : 'Todos'}
@@ -41,10 +41,10 @@ export function DataGridFilters({
             key={cat.id}
             type="button"
             onClick={() => onSelectCategory(cat.id)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
               selectedCategory === cat.id
-                ? 'bg-[#d4af37] text-white shadow-sm'
-                : 'bg-stone-50 text-stone-500 hover:bg-stone-100'
+                ? 'bg-[#D4AF37] text-stone-950 font-bold shadow-xs'
+                : 'bg-stone-100/80 text-stone-600 hover:bg-stone-200/80 hover:text-stone-900'
             }`}
           >
             {cat.name}
@@ -61,7 +61,7 @@ export function DataGridFilters({
           value={searchQuery}
           onChange={e => onSearchChange(e.target.value)}
           placeholder={language === 'fr' ? 'Rechercher des traitements...' : language === 'en' ? 'Search services...' : 'Buscar tratamientos...'}
-          className="w-full pl-11 pr-4 py-2.5 bg-stone-50 hover:bg-stone-100/50 focus:bg-white border border-stone-200 focus:border-[#d4af37] rounded-xl text-xs font-medium text-stone-800 dark:text-stone-800 outline-none transition-all focus:ring-1 focus:ring-[#d4af37]"
+          className="w-full pl-11 pr-4 py-2.5 bg-stone-50/80 hover:bg-stone-100/60 focus:bg-white border border-stone-200 focus:border-[#D4AF37] rounded-xl text-xs font-medium text-stone-800 outline-none transition-all focus:ring-1 focus:ring-[#D4AF37]"
         />
       </div>
     </div>
