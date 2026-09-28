@@ -8,8 +8,9 @@ import ScrollToTop from "./ScrollToTop";
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isDashboard = pathname?.startsWith('/dashboard') || pathname?.startsWith('/super-admin') || pathname === '/login';
+  const isMarketing = pathname?.startsWith('/marketing') || pathname?.startsWith('/onboarding') || pathname?.startsWith('/docs');
 
-  if (isDashboard) return (
+  if (isDashboard || isMarketing) return (
     <>
       {children}
     </>

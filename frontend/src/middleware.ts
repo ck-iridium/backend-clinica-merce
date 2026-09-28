@@ -63,6 +63,14 @@ export async function middleware(request: NextRequest) {
     return new NextResponse("Not Found", { status: 404 });
   }
 
+  // 3.2. BLOQUEO ESTRICTO: /marketing y /onboarding SOLO pueden existir en el dominio corporativo central (probookia.com)
+  // En cualquier subdominio o dominio de clínica (ej. merce.localhost:3000), redirigir a la web principal de la clínica
+  if ((url.pathname.startsWith('/marketing') || url.pathname.startsWith('/onboarding')) && subdomain && subdomain !== "www") {
+    console.log(`[MIDDLEWARE] Redirecting /marketing on tenant "${subdomain}" to tenant root "/"`);
+    url.pathname = "/";
+    return NextResponse.redirect(url);
+  }
+
   // 4. Resolver tenant_id para el subdominio
   let tenantId = "";
 
