@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Calendar, Clock, AlertTriangle } from 'lucide-react';
+import { Calendar, Clock, AlertTriangle, Lock, Sparkles, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
@@ -228,23 +228,27 @@ export function CreateAppointmentModal({
     <Dialog open={showModal} onOpenChange={setShowModal}>
       <DialogContent className="p-0 border border-stone-200/80 w-[95vw] sm:max-w-lg lg:max-w-[36em] h-fit max-h-[100dvh] sm:max-h-[calc(100vh-2rem)] rounded-3xl shadow-2xl bg-white overflow-hidden">
         <DialogHeader className="sticky top-0 z-30 shrink-0 p-6 sm:p-8 border-b border-stone-100 bg-white/95 backdrop-blur-md">
-          <div className="flex gap-1.5 mb-3 p-1 bg-stone-100 rounded-2xl w-fit">
+          <div className="flex p-1 bg-stone-100/90 rounded-2xl w-fit border border-stone-200/50 mb-3">
             <button
               id="create-appt-appointment-tab"
+              type="button"
               onClick={() => setModalType('appointment')}
-              className={`px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
-                modalType === 'appointment' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-500 hover:text-stone-800'
+              className={`px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${
+                modalType === 'appointment' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-500 hover:text-stone-900'
               }`}
             >
+              <Sparkles size={13} className={modalType === 'appointment' ? 'text-[#D4AF37]' : 'text-stone-400'} />
               {t('dashboard.calendar.new_appointment') || 'Nueva Cita'}
             </button>
             <button
               id="create-appt-block-tab"
+              type="button"
               onClick={() => setModalType('block')}
-              className={`px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
-                modalType === 'block' ? 'bg-stone-900 text-white shadow-xs' : 'text-stone-500 hover:text-stone-800'
+              className={`px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${
+                modalType === 'block' ? 'bg-stone-900 text-white shadow-xs' : 'text-stone-500 hover:text-stone-900'
               }`}
             >
+              <Lock size={13} className={modalType === 'block' ? 'text-[#D4AF37]' : 'text-stone-400'} />
               {t('dashboard.calendar.modal.block') || 'Bloqueo'}
             </button>
           </div>
@@ -264,47 +268,57 @@ export function CreateAppointmentModal({
         <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
           {modalType === 'appointment' ? (
             <form id="appointment-form" onSubmit={handleSubmit} className="space-y-6">
-              <div className="flex gap-2 mb-2 p-1 bg-stone-50 border border-stone-100 rounded-xl w-fit mx-auto sm:mx-0">
+              <div className="flex gap-1.5 mb-2 p-1 bg-stone-100/80 border border-stone-200/50 rounded-xl w-fit mx-auto sm:mx-0">
                 {(selectedSlot?.hour === startHour ? [30, 45] : [0, 15, 30, 45]).map(m => (
                   <button
                     key={m}
                     id={`create-appt-minute-btn-${m}`}
                     type="button"
                     onClick={() => setSelectedMinutes(m)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${selectedMinutes === m ? 'bg-stone-800 text-white shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      selectedMinutes === m ? 'bg-stone-900 text-white shadow-xs' : 'text-stone-500 hover:text-stone-800'
+                    }`}
                   >
                     :{m.toString().padStart(2, '0')}
                   </button>
                 ))}
               </div>
 
-              <div className="mb-4">
-                <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">{t('dashboard.calendar.modal.available_slot') || 'Hueco Disponible'}</p>
-                <p className="text-xs font-bold text-stone-600 flex items-center gap-1">
-                  <Clock size={14} strokeWidth={1.5} /> {availableGapMinutes} {t('dashboard.calendar.modal.free_minutes') || 'minutos libres'}
-                </p>
+              <div className="p-3 bg-stone-50 border border-stone-200/70 rounded-xl flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{t('dashboard.calendar.modal.available_slot') || 'Hueco Disponible'}</p>
+                  <p className="text-xs font-bold text-stone-700 flex items-center gap-1.5 mt-0.5">
+                    <Clock size={14} className="text-[#D4AF37]" strokeWidth={2} />
+                    <span>{availableGapMinutes} {t('dashboard.calendar.modal.free_minutes') || 'minutos libres'}</span>
+                  </p>
+                </div>
               </div>
 
               <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">{t('dashboard.calendar.modal.client_req') || 'Cliente *'}</label>
+                  <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wider">{t('dashboard.calendar.modal.client_req') || 'Cliente *'}</label>
                   <Select required value={selectedClientId} onValueChange={setSelectedClientId}>
                     <SelectTrigger id="create-appt-client-select-trigger" className="w-full">
                       <SelectValue placeholder={t('dashboard.calendar.modal.choose_client') || '-- Elige un cliente --'} />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="max-h-60 rounded-2xl border border-stone-200/80 shadow-2xl p-1 bg-white">
                       {(() => {
                         const filteredClients = clients.filter(c => c.email !== 'contado@generico.local');
                         if (filteredClients.length === 0) {
                           return (
-                            <SelectItem value="none" disabled className="text-stone-400 font-bold py-3 text-center">
+                            <SelectItem value="none" disabled className="text-stone-400 font-medium py-3 text-center">
                               {t('dashboard.calendar.modal.no_clients') || 'No hay clientes registrados'}
                             </SelectItem>
                           );
                         }
                         return filteredClients.map(c => (
-                          <SelectItem key={c.id} value={c.id}>
-                            {c.name}
+                          <SelectItem key={c.id} value={c.id} className="py-2.5 rounded-xl font-medium">
+                            <div className="flex items-center gap-2.5">
+                              <span className="w-6 h-6 rounded-full bg-stone-100 text-stone-600 text-[10px] font-bold flex items-center justify-center shrink-0 border border-stone-200/60">
+                                {c.name ? c.name.charAt(0).toUpperCase() : 'C'}
+                              </span>
+                              <span>{c.name}</span>
+                            </div>
                           </SelectItem>
                         ));
                       })()}
@@ -313,7 +327,7 @@ export function CreateAppointmentModal({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">{t('dashboard.calendar.modal.treatment_req') || 'Tratamiento *'}</label>
+                  <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wider">{t('dashboard.calendar.modal.treatment_req') || 'Tratamiento *'}</label>
                   <Select
                     value={selectedServiceId}
                     onValueChange={(val) => {
@@ -327,12 +341,23 @@ export function CreateAppointmentModal({
                     <SelectTrigger id="create-appt-service-select-trigger" className="w-full">
                       <SelectValue placeholder={t('dashboard.calendar.modal.select_service') || '-- Selecciona el servicio --'} />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="max-h-60 rounded-2xl border border-stone-200/80 shadow-2xl p-1 bg-white">
                       {services.map(s => {
                         const isExceeded = availableGapMinutes > 0 && s.duration_minutes > availableGapMinutes;
                         return (
-                          <SelectItem key={s.id} value={s.id} disabled={isExceeded}>
-                            {s.name} ({s.duration_minutes} min) {isExceeded ? `⚠️ ${t('dashboard.calendar.modal.exceeded') || 'EXCEDIDO'}` : ''}
+                          <SelectItem key={s.id} value={s.id} disabled={isExceeded} className="py-2.5 rounded-xl font-medium">
+                            <div className="flex items-center justify-between w-full gap-3">
+                              <span className="truncate">{s.name}</span>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className="text-xs text-stone-400 font-normal">{s.duration_minutes} min</span>
+                                {isExceeded && (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/70">
+                                    <AlertTriangle size={11} className="text-amber-600 shrink-0" />
+                                    {t('dashboard.calendar.modal.exceeded') || 'Excedido'}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </SelectItem>
                         );
                       })}
@@ -342,16 +367,16 @@ export function CreateAppointmentModal({
 
                 {staffList.length > 1 && (
                   <div>
-                    <label className="block text-sm font-semibold text-stone-700 mb-2">
+                    <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wider">
                       {t('dashboard.calendar.modal.specialist') || 'Especialista *'}
                     </label>
                     <Select value={selectedStaffId} onValueChange={setSelectedStaffId}>
                       <SelectTrigger id="create-appt-staff-select-trigger" className="w-full">
                         <SelectValue placeholder="-- Selecciona especialista --" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="max-h-60 rounded-2xl border border-stone-200/80 shadow-2xl p-1 bg-white">
                         {staffList.map((s: any) => (
-                          <SelectItem key={s.id} value={s.id}>
+                          <SelectItem key={s.id} value={s.id} className="py-2.5 rounded-xl font-medium">
                             {s.full_name || s.name || s.email}
                           </SelectItem>
                         ))}
@@ -375,7 +400,7 @@ export function CreateAppointmentModal({
                         const stdLabel = stdT && !stdT.includes('.') ? stdT : 'Estándar';
                         const cstLabel = cstT && !cstT.includes('.') ? cstT : 'Personalizada';
                         return (
-                          <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${isStandard ? 'bg-stone-200/60 text-stone-600' : 'bg-primary/10 text-primary font-black'}`}>
+                          <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${isStandard ? 'bg-stone-200/60 text-stone-600' : 'bg-[#D4AF37]/15 text-[#B38F26] font-black'}`}>
                             {isStandard ? stdLabel : cstLabel}
                           </span>
                         );
@@ -396,7 +421,7 @@ export function CreateAppointmentModal({
                               onClick={() => setCustomDuration(mins)}
                               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
                                 isExceeded ? 'opacity-30 cursor-not-allowed bg-stone-100 text-stone-400 border-stone-100' :
-                                customDuration === mins ? 'bg-stone-800 text-white border-stone-800 shadow-sm' :
+                                customDuration === mins ? 'bg-stone-900 text-white border-stone-900 shadow-xs' :
                                 'bg-white text-stone-600 border-stone-200 hover:border-stone-300'
                               }`}
                             >
@@ -425,13 +450,13 @@ export function CreateAppointmentModal({
                 )}
 
                 <div>
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">{t('dashboard.calendar.notes') || 'Notas'}</label>
+                  <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wider">{t('dashboard.calendar.notes') || 'Notas'}</label>
                   <textarea
                     id="create-appt-notes-textarea"
                     value={appointmentNotes}
                     onChange={e => setAppointmentNotes(e.target.value)}
                     placeholder={t('dashboard.calendar.modal.appt_obs') || 'Observaciones de la cita...'}
-                    className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-primary outline-none bg-stone-50 min-h-[100px] resize-none text-sm"
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#D4AF37]/30 focus:border-[#D4AF37] outline-none bg-white min-h-[90px] resize-none text-sm transition-all placeholder:text-stone-400"
                   />
                 </div>
               </div>
@@ -439,27 +464,29 @@ export function CreateAppointmentModal({
           ) : (
             <form id="block-form" onSubmit={handleBlockSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">{t('dashboard.calendar.modal.reason') || 'Motivo'}</label>
+                <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wider">{t('dashboard.calendar.modal.reason') || 'Motivo'}</label>
                 <input
                   id="create-appt-block-reason-input"
                   type="text"
                   value={blockReason}
                   onChange={e => setBlockReason(e.target.value)}
                   placeholder={t('dashboard.calendar.modal.reason_placeholder') || 'Ej: Descanso, Formación...'}
-                  className="w-full px-5 py-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-stone-800 outline-none bg-stone-50"
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#D4AF37]/30 focus:border-[#D4AF37] outline-none bg-white text-sm transition-all placeholder:text-stone-400"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">{t('dashboard.calendar.modal.duration') || 'Duración'}</label>
-                <div className="grid grid-cols-3 gap-2">
+                <label className="block text-xs font-bold text-stone-700 mb-2 uppercase tracking-wider">{t('dashboard.calendar.modal.duration') || 'Duración'}</label>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                   {[30, 60, 120, 240, -1].map(mins => (
                     <button
                       key={mins}
                       id={`create-appt-block-duration-btn-${mins}`}
                       type="button"
                       onClick={() => setBlockDuration(mins)}
-                      className={`py-3 rounded-xl font-bold text-[10px] transition-all border-2 ${blockDuration === mins ? 'bg-stone-800 border-stone-800 text-white' : 'bg-white border-stone-100 text-stone-500 hover:border-stone-300'}`}
+                      className={`py-3 px-2 rounded-xl font-bold text-xs transition-all border ${
+                        blockDuration === mins ? 'bg-stone-900 border-stone-900 text-white shadow-xs' : 'bg-white border-stone-200 text-stone-600 hover:border-stone-300'
+                      }`}
                     >
                       {mins === -1 ? (t('dashboard.calendar.modal.full_day') || 'Día Completo') : (mins >= 60 ? `${mins / 60}h` : `${mins}min`)}
                     </button>

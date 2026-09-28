@@ -1,5 +1,19 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Calendar, Sparkles, Trash2, AlertTriangle, Save, MessageCircle, Clock } from 'lucide-react';
+import { 
+  Calendar, 
+  Sparkles, 
+  Trash2, 
+  AlertTriangle, 
+  Save, 
+  MessageCircle, 
+  Clock, 
+  Globe, 
+  CreditCard, 
+  CheckCircle2, 
+  Check, 
+  UserX, 
+  XCircle 
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
@@ -85,6 +99,89 @@ export function EditAppointmentModal({
     setDuration(currentApptDuration);
   }, [currentApptDuration]);
 
+  // Status configuration helper with clean Lucide icons and quiet luxury badges
+  const getStatusConfig = (statusKey?: string) => {
+    const key = (statusKey || 'pending').toLowerCase().trim();
+    switch (key) {
+      case 'completed':
+        return {
+          label: t('dashboard.calendar.completed') || 'Realizada',
+          icon: Check,
+          color: 'text-emerald-700',
+          badgeClasses: 'bg-emerald-50 text-emerald-800 border-emerald-200/80',
+          triggerClasses: 'bg-emerald-50/80 text-emerald-900 border-emerald-200/80 hover:bg-emerald-50',
+        };
+      case 'confirmed':
+        return {
+          label: t('dashboard.calendar.confirmed') || 'Confirmada',
+          icon: CheckCircle2,
+          color: 'text-emerald-600',
+          badgeClasses: 'bg-emerald-50 text-emerald-800 border-emerald-200/70',
+          triggerClasses: 'bg-emerald-50/70 text-emerald-900 border-emerald-200/70 hover:bg-emerald-50',
+        };
+      case 'web_pending':
+        return {
+          label: t('dashboard.calendar.modal.web_reservation') || 'Reserva Web',
+          icon: Globe,
+          color: 'text-amber-600',
+          badgeClasses: 'bg-amber-50 text-amber-900 border-amber-200',
+          triggerClasses: 'bg-amber-50/80 text-amber-900 border-amber-200 hover:bg-amber-50',
+        };
+      case 'pending_verification':
+        return {
+          label: t('dashboard.calendar.modal.pending_web') || 'Pendiente (Web)',
+          icon: Globe,
+          color: 'text-sky-600',
+          badgeClasses: 'bg-sky-50 text-sky-900 border-sky-200',
+          triggerClasses: 'bg-sky-50/80 text-sky-900 border-sky-200 hover:bg-sky-50',
+        };
+      case 'awaiting_payment':
+        return {
+          label: t('dashboard.calendar.modal.pending_payment') || 'Pago Pendiente',
+          icon: CreditCard,
+          color: 'text-amber-700',
+          badgeClasses: 'bg-amber-50 text-amber-900 border-amber-200',
+          triggerClasses: 'bg-amber-50/80 text-amber-900 border-amber-200 hover:bg-amber-50',
+        };
+      case 'no_show':
+        return {
+          label: t('dashboard.calendar.no_show') || 'No Asistió',
+          icon: UserX,
+          color: 'text-stone-500',
+          badgeClasses: 'bg-stone-50 text-stone-700 border-stone-200',
+          triggerClasses: 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100',
+        };
+      case 'cancelled':
+        return {
+          label: t('dashboard.calendar.cancelled') || 'Cancelada',
+          icon: XCircle,
+          color: 'text-rose-600',
+          badgeClasses: 'bg-rose-50 text-rose-800 border-rose-200',
+          triggerClasses: 'bg-rose-50/80 text-rose-900 border-rose-200 hover:bg-rose-50',
+        };
+      case 'pending':
+      default:
+        return {
+          label: t('dashboard.calendar.modal.pending_manual') || 'Pendiente (Manual)',
+          icon: Clock,
+          color: 'text-amber-600',
+          badgeClasses: 'bg-amber-50 text-amber-900 border-amber-200',
+          triggerClasses: 'bg-amber-50/80 text-amber-900 border-amber-200 hover:bg-amber-50',
+        };
+    }
+  };
+
+  const statusOptions = [
+    { key: 'pending', ...getStatusConfig('pending') },
+    { key: 'pending_verification', ...getStatusConfig('pending_verification') },
+    { key: 'web_pending', ...getStatusConfig('web_pending') },
+    { key: 'awaiting_payment', ...getStatusConfig('awaiting_payment') },
+    { key: 'confirmed', ...getStatusConfig('confirmed') },
+    { key: 'completed', ...getStatusConfig('completed') },
+    { key: 'no_show', ...getStatusConfig('no_show') },
+    { key: 'cancelled', ...getStatusConfig('cancelled') },
+  ];
+
   // Cálculo del hueco libre máximo disponible desde el inicio de la cita sin invadir descansos, cierres u otras citas
   const availableGapMinutes = useMemo(() => {
     if (!selectedAppt?.start_time) return 480;
@@ -132,39 +229,12 @@ export function EditAppointmentModal({
         <DialogHeader className="sticky top-0 z-30 shrink-0 p-6 sm:p-8 border-b border-stone-100 bg-white/95 backdrop-blur-md">
           <div className="flex flex-col gap-2">
             {selectedAppt && (() => {
-              const status = (selectedAppt.status || 'pending').toLowerCase().trim();
-              let label = t('dashboard.calendar.pending') || 'Pendiente';
-              let colorClasses = 'bg-amber-50 text-amber-900 border-amber-200/70';
-
-              if (status === 'completed') {
-                label = t('dashboard.calendar.completed') || 'Realizada';
-                colorClasses = 'bg-emerald-50 text-emerald-800 border-emerald-200/70';
-              } else if (status === 'cancelled') {
-                label = t('dashboard.calendar.cancelled') || 'Cancelada';
-                colorClasses = 'bg-rose-50 text-rose-800 border-rose-200/70';
-              } else if (status === 'web_pending') {
-                label = t('dashboard.calendar.modal.web_reservation') || 'Reserva Web';
-                colorClasses = 'bg-amber-50 text-amber-900 border-amber-300';
-              } else if (status === 'awaiting_payment') {
-                label = t('dashboard.calendar.modal.pending_payment') || 'Pago Pendiente';
-                colorClasses = 'bg-amber-50 text-amber-900 border-amber-200';
-              } else if (status === 'pending_verification') {
-                label = t('dashboard.calendar.modal.pending_web') || 'Pendiente (Web)';
-                colorClasses = 'bg-amber-50 text-amber-900 border-amber-200';
-              } else if (status === 'pending') {
-                label = t('dashboard.calendar.modal.pending_manual') || 'Pendiente (Manual)';
-                colorClasses = 'bg-amber-50 text-amber-900 border-amber-200';
-              } else if (status === 'confirmed') {
-                label = t('dashboard.calendar.confirmed') || 'Confirmada';
-                colorClasses = 'bg-sky-50 text-sky-900 border-sky-200/70';
-              } else if (status === 'no_show') {
-                label = t('dashboard.calendar.no_show') || 'No Asistió';
-                colorClasses = 'bg-stone-50 text-stone-600 border-stone-200';
-              }
-
+              const currentStatus = getStatusConfig(selectedAppt.status);
+              const StIcon = currentStatus.icon;
               return (
-                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border w-fit shadow-2xs ${colorClasses}`}>
-                  {label}
+                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border w-fit shadow-2xs flex items-center gap-1.5 ${currentStatus.badgeClasses}`}>
+                  <StIcon size={12} className={currentStatus.color} />
+                  {currentStatus.label}
                 </span>
               );
             })()}
@@ -191,7 +261,7 @@ export function EditAppointmentModal({
               <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{t('dashboard.calendar.service') || 'Tratamiento'}</p>
             </div>
             <div className="flex items-center gap-2 py-1.5 border-b border-stone-100">
-              <Sparkles size={16} strokeWidth={2} className="text-primary" />
+              <Sparkles size={16} strokeWidth={2} className="text-[#D4AF37]" />
               <p className="text-base font-bold text-stone-700">
                 {selectedAppt ? serviceMap.get(selectedAppt.service_id)?.name : '...'}
               </p>
@@ -226,7 +296,7 @@ export function EditAppointmentModal({
                       disabled={isExceeded || updatingStatus}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
                         isExceeded ? 'opacity-30 cursor-not-allowed bg-stone-100 text-stone-400 border-stone-100' :
-                        duration === mins ? 'bg-stone-800 text-white border-stone-800 shadow-sm' :
+                        duration === mins ? 'bg-stone-900 text-white border-stone-900 shadow-xs' :
                         'bg-white text-stone-600 border-stone-200 hover:border-stone-300'
                       }`}
                     >
@@ -253,8 +323,9 @@ export function EditAppointmentModal({
             </div>
 
             {duration !== currentApptDuration && (
-              <button
+              <Button
                 id="edit-appt-save-duration-btn"
+                type="button"
                 onClick={() => {
                   if (availableGapMinutes > 0 && duration > availableGapMinutes) {
                     toast.error(`La duración no puede superar los ${availableGapMinutes} min disponibles (evita invadir descansos o citas).`);
@@ -263,13 +334,15 @@ export function EditAppointmentModal({
                   handleUpdateDuration(duration);
                 }}
                 disabled={updatingStatus}
-                className="w-full bg-stone-800 hover:bg-stone-900 text-white text-[10px] font-bold uppercase py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 active:scale-95 shadow-xs"
+                variant="default"
+                size="sm"
+                className="w-full bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold py-2 rounded-xl shadow-xs"
               >
-                <Save size={12} /> {(() => {
+                <Save size={13} className="mr-1.5" /> {(() => {
                   const s = t('dashboard.calendar.modal.save_duration');
                   return s && !s.includes('.') ? s : 'Guardar Duración';
                 })()} ({duration} min)
-              </button>
+              </Button>
             )}
           </div>
 
@@ -279,18 +352,21 @@ export function EditAppointmentModal({
               id="edit-appt-notes-textarea"
               value={editNotes}
               onChange={e => setEditNotes(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-stone-100 focus:ring-2 focus:ring-primary/20 outline-none bg-stone-50 min-h-[42px] h-auto resize-none text-[13px] placeholder:italic shadow-inner overflow-hidden"
+              className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#D4AF37]/30 focus:border-[#D4AF37] outline-none bg-stone-50 min-h-[56px] h-auto resize-none text-[13px] placeholder:italic shadow-2xs overflow-hidden transition-all"
               placeholder={t('dashboard.calendar.modal.add_notes') || 'Añadir nota...'}
             />
             {selectedAppt && editNotes !== (selectedAppt.notes || '') && (
-              <button
+              <Button
                 id="edit-appt-save-notes-btn"
+                type="button"
                 onClick={() => handleUpdateNotes()}
                 disabled={updatingStatus}
-                className="mt-2 w-full bg-stone-800 text-white text-[10px] font-bold uppercase py-2.5 rounded-lg hover:bg-stone-900 transition-all flex items-center justify-center gap-2"
+                variant="default"
+                size="sm"
+                className="mt-2 w-full bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold py-2 rounded-xl shadow-xs"
               >
-                <Save size={12} /> {t('dashboard.calendar.modal.save_notes') || 'Guardar Notas'}
-              </button>
+                <Save size={13} className="mr-1.5" /> {t('dashboard.calendar.modal.save_notes') || 'Guardar Notas'}
+              </Button>
             )}
           </div>
 
@@ -299,14 +375,15 @@ export function EditAppointmentModal({
               <p className="text-[10px] text-orange-600 font-bold uppercase tracking-widest mb-3 flex items-center gap-1">
                 <AlertTriangle size={12} /> {t('dashboard.calendar.modal.web_pending_res') || 'Reserva pendiente'}
               </p>
-              <button
+              <Button
                 id="edit-appt-confirm-web-booking-btn"
                 onClick={() => handleStatusChange('confirmed')}
                 disabled={updatingStatus}
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold py-3 rounded-xl transition-all active:scale-95"
+                variant="luxury"
+                className="w-full font-bold py-3 rounded-xl"
               >
                 {t('dashboard.calendar.modal.confirm_now') || 'Confirmar Ahora'}
-              </button>
+              </Button>
             </div>
           )}
 
@@ -316,6 +393,7 @@ export function EditAppointmentModal({
             <div className="flex items-center gap-3">
               <button
                 id="edit-appt-whatsapp-btn"
+                type="button"
                 onClick={() => {
                   if (selectedAppt) {
                     const client = clientMap.get(selectedAppt.client_id);
@@ -323,46 +401,45 @@ export function EditAppointmentModal({
                     if (client && service) openWhatsApp(client.name, client.phone, service.name, selectedAppt.start_time);
                   }
                 }}
-                className="w-12 h-12 shrink-0 bg-[#25D366] hover:bg-[#128C7E] text-white rounded-xl shadow-lg shadow-green-100 transition-all active:scale-95 flex items-center justify-center outline-none"
+                className="w-12 h-12 shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs transition-all active:scale-95 flex items-center justify-center outline-none"
                 title={t('dashboard.calendar.modal.whatsapp_title') || 'Contactar por WhatsApp'}
               >
                 <MessageCircle size={20} strokeWidth={2} />
               </button>
 
               <div className="flex-1">
-                <Select
-                  value={(selectedAppt?.status || 'pending').toLowerCase().trim()}
-                  onValueChange={(val) => handleStatusChange(val)}
-                  disabled={updatingStatus}
-                >
-                  {(() => {
-                    const status = (selectedAppt?.status || 'pending').toLowerCase().trim();
-                    let colorClasses = 'bg-[#fffbeb] text-[#92400e] border-[#fef3c7]';
+                {(() => {
+                  const currentStatus = getStatusConfig(selectedAppt?.status);
+                  const CurrentIcon = currentStatus.icon;
 
-                    if (status === 'completed') colorClasses = 'bg-emerald-50 text-emerald-700 border-emerald-300';
-                    else if (status === 'cancelled') colorClasses = 'bg-[#fef2f2] text-[#991b1b] border-[#fee2e2]';
-                    else if (status === 'web_pending') colorClasses = 'bg-orange-50 text-orange-700 border-orange-300';
-                    else if (status === 'confirmed') colorClasses = 'bg-[#f0f9f4] text-[#2d6a4f] border-[#d8f3dc]';
-                    else if (status === 'awaiting_payment') colorClasses = 'bg-amber-50 text-amber-700 border-amber-300';
-                    else if (status === 'no_show') colorClasses = 'bg-stone-50 text-stone-600 border-stone-200';
-
-                    return (
-                      <SelectTrigger id="edit-appt-status-select-trigger" className={`w-full h-12 rounded-xl font-bold border transition-all text-[11px] ${colorClasses}`}>
-                        <SelectValue placeholder={t('dashboard.calendar.modal.select_status') || 'Seleccionar estado...'} />
+                  return (
+                    <Select
+                      value={(selectedAppt?.status || 'pending').toLowerCase().trim()}
+                      onValueChange={(val) => handleStatusChange(val)}
+                      disabled={updatingStatus}
+                    >
+                      <SelectTrigger id="edit-appt-status-select-trigger" className={`w-full h-12 rounded-xl font-bold border transition-all text-xs shadow-2xs ${currentStatus.triggerClasses}`}>
+                        <div className="flex items-center gap-2.5 truncate">
+                          <CurrentIcon size={16} className={`shrink-0 ${currentStatus.color}`} />
+                          <span className="truncate">{currentStatus.label}</span>
+                        </div>
                       </SelectTrigger>
-                    );
-                  })()}
-                  <SelectContent className="rounded-xl border-none shadow-2xl">
-                    <SelectItem value="pending">⏳ {t('dashboard.calendar.modal.pending_manual') || 'Pendiente (Manual)'}</SelectItem>
-                    <SelectItem value="pending_verification">🌐 {t('dashboard.calendar.modal.pending_web') || 'Pendiente (Web)'}</SelectItem>
-                    <SelectItem value="web_pending">🌐 {t('dashboard.calendar.modal.web_reservation') || 'Reserva Web'}</SelectItem>
-                    <SelectItem value="awaiting_payment">💳 {t('dashboard.calendar.modal.pending_payment') || 'Esperando Pago'}</SelectItem>
-                    <SelectItem value="confirmed" className="font-bold text-[#2d6a4f]">✨ {t('dashboard.calendar.confirmed') || 'Confirmada'}</SelectItem>
-                    <SelectItem value="completed" className="font-bold text-emerald-600">✅ {t('dashboard.calendar.completed') || 'Realizada'}</SelectItem>
-                    <SelectItem value="no_show">{t('dashboard.calendar.no_show') || 'No Asistió'}</SelectItem>
-                    <SelectItem value="cancelled" className="font-bold text-[#991b1b]">❌ {t('dashboard.calendar.cancelled') || 'Cancelada'}</SelectItem>
-                  </SelectContent>
-                </Select>
+                      <SelectContent className="rounded-2xl border border-stone-200/80 shadow-2xl p-1.5 bg-white">
+                        {statusOptions.map((opt) => {
+                          const Icon = opt.icon;
+                          return (
+                            <SelectItem key={opt.key} value={opt.key} className="py-2.5 rounded-xl text-xs font-semibold">
+                              <div className="flex items-center gap-2.5">
+                                <Icon size={15} className={`shrink-0 ${opt.color}`} />
+                                <span>{opt.label}</span>
+                              </div>
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  );
+                })()}
               </div>
 
               <Button
@@ -372,7 +449,7 @@ export function EditAppointmentModal({
                 size="icon"
                 onClick={handleDeleteAppointment}
                 disabled={updatingStatus}
-                className="w-12 h-12 shrink-0 bg-stone-50 hover:bg-rose-50 text-stone-400 hover:text-rose-600 rounded-xl transition-all"
+                className="w-12 h-12 shrink-0 bg-stone-100 hover:bg-rose-50 text-stone-400 hover:text-rose-600 rounded-xl transition-all"
                 title={t('dashboard.calendar.modal.delete_appt') || 'Eliminar cita'}
               >
                 <Trash2 size={18} strokeWidth={2} />
