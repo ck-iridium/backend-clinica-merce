@@ -425,9 +425,9 @@ export default function HeroSlider({ content }: HeroSliderProps) {
       })}
       </div>
 
-      {/* Controles de Navegación (Flechas) si hay más de 1 diapositiva */}
+      {/* Controles de Navegación (Flechas) si hay más de 1 diapositiva (solo en desktop/tablet) */}
       {slides.length > 1 && showArrows && (
-        <div className="absolute inset-y-0 inset-x-4 sm:inset-x-8 flex items-center justify-between pointer-events-none z-20">
+        <div className="hidden md:flex absolute inset-y-0 inset-x-4 sm:inset-x-8 items-center justify-between pointer-events-none z-20">
           <button
             type="button"
             onClick={prevSlide}

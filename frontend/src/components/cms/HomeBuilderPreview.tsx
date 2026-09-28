@@ -409,8 +409,8 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
         {/* ─── NAVEGACIÓN DEL CARRUSEL EN PREVIEW (Solo si hay múltiples diapositivas) ─── */}
         {slides.length > 1 && (
           <>
-            {formData?.hero_slider_show_arrows !== false && (
-              <div className="absolute inset-y-0 inset-x-2 sm:inset-x-4 flex items-center justify-between pointer-events-none z-30">
+            {formData?.hero_slider_show_arrows !== false && viewportDevice !== 'mobile' && (
+              <div className="hidden md:flex absolute inset-y-0 inset-x-2 sm:inset-x-4 items-center justify-between pointer-events-none z-30">
                 <button
                   type="button"
                   onClick={(e) => {
