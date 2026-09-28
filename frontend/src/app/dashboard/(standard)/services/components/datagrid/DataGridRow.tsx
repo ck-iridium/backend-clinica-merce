@@ -1,6 +1,13 @@
 "use client"
 import React from 'react';
 import { Pencil, Trash2, Loader2 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface DataGridRowProps {
   svc: any;
@@ -128,32 +135,36 @@ export function DataGridRow({
         )}
       </td>
 
-      {/* Categoría (Select Moderno) */}
+      {/* Categoría (Select Moderno Luxury) */}
       <td className="p-4">
-        <div className="relative flex items-center min-w-[140px] max-w-[180px]">
-          <select
-            id={`services-category-select-${svc.id}`}
-            value={svc.category_id || ''}
+        <div className="min-w-[150px] max-w-[190px]">
+          <Select
+            value={svc.category_id || 'none'}
             disabled={isSavingCategory}
-            onChange={e => onCategorySave(e.target.value)}
-            className="w-full pl-3 pr-8 py-2 bg-stone-50/70 hover:bg-stone-100/70 border border-stone-200 focus:border-[#D4AF37] rounded-xl text-xs font-semibold text-stone-800 outline-none transition-all cursor-pointer focus:ring-1 focus:ring-[#D4AF37] appearance-none"
+            onValueChange={(val) => onCategorySave(val === 'none' ? '' : val)}
           >
-            <option value="">{language === 'fr' ? 'Sans catégorie' : language === 'en' ? 'No Category' : 'Sin Categoría'}</option>
-            {categories.map(cat => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
-          <div className="absolute right-2.5 pointer-events-none text-stone-400">
-            {isSavingCategory ? (
-              <Loader2 size={12} className="animate-spin text-[#D4AF37]" />
-            ) : (
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            )}
-          </div>
+            <SelectTrigger
+              id={`services-category-select-${svc.id}`}
+              className="h-8.5 rounded-xl bg-stone-50/80 hover:bg-stone-100/80 border-stone-200/80 focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] text-xs font-semibold text-stone-800 transition-all shadow-2xs gap-1.5"
+            >
+              <div className="flex items-center gap-1.5 truncate">
+                {isSavingCategory && (
+                  <Loader2 size={12} className="animate-spin text-[#D4AF37] shrink-0" />
+                )}
+                <SelectValue placeholder={language === 'fr' ? 'Sans catégorie' : language === 'en' ? 'No Category' : 'Sin Categoría'} />
+              </div>
+            </SelectTrigger>
+            <SelectContent className="rounded-2xl border-stone-200/80 shadow-luxury bg-white/95 backdrop-blur-md py-1 max-h-60">
+              <SelectItem value="none" className="text-xs font-medium text-stone-500 rounded-lg cursor-pointer">
+                {language === 'fr' ? 'Sans catégorie' : language === 'en' ? 'No Category' : 'Sin Categoría'}
+              </SelectItem>
+              {categories.map(cat => (
+                <SelectItem key={cat.id} value={cat.id} className="text-xs font-semibold text-stone-800 rounded-lg cursor-pointer">
+                  {cat.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </td>
 

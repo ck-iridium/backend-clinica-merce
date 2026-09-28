@@ -1,5 +1,21 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Sparkles, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { 
+  Sparkles, 
+  Image as ImageIcon, 
+  Loader2, 
+  Smartphone, 
+  Square, 
+  Monitor, 
+  SlidersHorizontal, 
+  Layers, 
+  X, 
+  ChevronRight,
+  Camera,
+  Crown,
+  Leaf,
+  Focus,
+  Maximize2
+} from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -15,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { toast } from 'sonner';
 import { useAIImage } from '@/app/contexts/AIImageContext';
 import { useLanguage } from '@/app/contexts/LanguageContext';
@@ -223,34 +240,38 @@ export default function AIImageGeneratorModal({
   return (
     <Dialog open={open} onOpenChange={(val) => !val && !isGenerating && onClose()}>
       <DialogContent 
-        className="p-0 border-none max-w-lg overflow-hidden bg-white max-h-[95vh] overflow-y-auto"
+        className="p-0 border border-stone-200/80 max-w-lg rounded-3xl shadow-2xl bg-white overflow-hidden max-h-[92vh] flex flex-col"
         onInteractOutside={(e) => e.preventDefault()}
         onPointerDownOutside={(e) => e.preventDefault()}
       >
-        <DialogHeader className="p-6 bg-gradient-to-r from-stone-50 to-yellow-50/30 border-b border-stone-100 relative">
-          <div className="absolute right-0 top-0 w-32 h-32 bg-gradient-to-bl from-yellow-100/50 to-transparent rounded-bl-full pointer-events-none"></div>
-          <DialogTitle className="text-xl font-extrabold text-stone-800 flex items-center gap-2">
-            <span className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#d4af37] to-yellow-200 flex items-center justify-center text-white shadow-md">
-              <ImageIcon size={14} strokeWidth={2.5} />
-            </span>
-            {language === 'fr' 
-              ? "Studio Photo IA" 
-              : language === 'en' 
-                ? "AI Photo Studio" 
-                : "Estudio Fotográfico IA"}
-          </DialogTitle>
-          <DialogDescription className="text-stone-500 mt-2 text-sm max-w-[90%] font-sans">
-            {language === 'fr' 
-              ? "Décrivez ce que vous souhaitez voir. L'IA créera une photo premium dans le style 'Quiet Luxury' de la clinique. (Nécessite votre propre clé API configurée dans Paramètres)." 
-              : language === 'en' 
-                ? "Describe what you want to see. The AI will create a premium photo matching the clinic's 'Quiet Luxury' style. (Requires your own configured API Key in Settings)." 
-                : "Describe lo que quieres ver. La IA creará una foto premium con el estilo 'Quiet Luxury' de la clínica. (Requiere tu propia clave de API configurada en Ajustes)."}
-          </DialogDescription>
+        <DialogHeader className="p-6 sm:p-7 pb-5 bg-gradient-to-b from-[#d4af37]/10 via-[#d4af37]/5 to-transparent border-b border-stone-100 relative">
+          <div className="flex items-center gap-3.5 pr-10">
+            <div className="w-10 h-10 rounded-2xl bg-[#D4AF37]/15 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37] shadow-xs shrink-0">
+              <Sparkles size={20} strokeWidth={2} />
+            </div>
+            <div>
+              <DialogTitle className="text-2xl font-serif font-bold text-stone-900 tracking-tight">
+                {language === 'fr' 
+                  ? "Studio Photo IA" 
+                  : language === 'en' 
+                    ? "AI Photo Studio" 
+                    : "Estudio Fotográfico IA"}
+              </DialogTitle>
+              <DialogDescription className="text-stone-400 text-xs sm:text-sm font-sans mt-0.5 leading-relaxed">
+                {language === 'fr' 
+                  ? "Décrivez ce que vous souhaitez voir. L'IA créera une photo premium dans le style 'Quiet Luxury' de la clinique." 
+                  : language === 'en' 
+                    ? "Describe what you want to see. The AI will create a premium photo matching the clinic's 'Quiet Luxury' style." 
+                    : "Describe lo que quieres ver. La IA creará una foto premium con el estilo 'Quiet Luxury' de la clínica."}
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
-        <div className="p-6 space-y-5 relative">
+
+        <div className="p-6 space-y-5 overflow-y-auto flex-1">
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest block">
+              <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest block">
                 {language === 'fr' 
                   ? "Description de la scène *" 
                   : language === 'en' 
@@ -261,18 +282,18 @@ export default function AIImageGeneratorModal({
                 type="button"
                 onClick={handleOptimizePrompt}
                 disabled={isOptimizing || isGenerating || !serviceName}
-                className="text-[10px] font-bold text-[#d4af37] hover:text-[#b08e23] flex items-center gap-1.5 px-2 py-1 rounded-lg bg-yellow-50 hover:bg-yellow-100 transition-all disabled:opacity-50"
+                className="text-[11px] font-bold text-stone-800 flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#D4AF37]/10 hover:bg-[#D4AF37]/20 border border-[#D4AF37]/30 transition-all disabled:opacity-50 shadow-2xs"
               >
                 {isOptimizing ? (
-                  <Loader2 size={10} className="animate-spin" />
+                  <Loader2 size={12} className="animate-spin text-[#D4AF37]" />
                 ) : (
-                  <Sparkles size={10} />
+                  <Sparkles size={12} className="text-[#D4AF37]" />
                 )}
                 {language === 'fr' 
-                  ? "✨ Remplissage automatique IA" 
+                  ? "Autocompléter avec IA" 
                   : language === 'en' 
-                    ? "✨ Auto-complete with AI" 
-                    : "✨ Autocompletar con IA"}
+                    ? "Auto-complete with AI" 
+                    : "Autocompletar con IA"}
               </button>
             </div>
             <textarea
@@ -285,64 +306,96 @@ export default function AIImageGeneratorModal({
                     ? "Describe what you want to see or use auto-complete..." 
                     : "Describe lo que quieres ver o usa el autocompletado..."
               }
-              className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all text-sm resize-none min-h-[120px]"
+              className="w-full px-4 py-3.5 rounded-2xl border border-stone-200/80 bg-stone-50/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 focus:border-[#D4AF37] transition-all text-sm font-medium text-stone-800 resize-none min-h-[110px] leading-relaxed placeholder:text-stone-400"
               disabled={isGenerating || isOptimizing}
             />
           </div>
 
           <div className="flex flex-col gap-4">
-            <details className="group">
-              <summary className="text-[10px] font-black text-stone-400 uppercase tracking-widest cursor-pointer hover:text-stone-600 transition-all flex items-center gap-2 list-none">
-                <span className="w-4 h-4 rounded-full bg-stone-100 flex items-center justify-center group-open:rotate-90 transition-transform">+</span>
-                {language === 'fr' 
-                  ? "Options de style avancées (Optionnel)" 
-                  : language === 'en' 
-                    ? "Advanced Style Options (Optional)" 
-                    : "Opciones de Estilo Avanzadas (Opcional)"}
+            <details className="group border border-stone-200/70 rounded-2xl p-4 bg-stone-50/40 transition-all">
+              <summary className="text-[11px] font-bold text-stone-600 uppercase tracking-wider cursor-pointer hover:text-stone-900 transition-all flex items-center justify-between list-none">
+                <span className="flex items-center gap-2.5">
+                  <div className="w-5 h-5 rounded-lg bg-white border border-stone-200 flex items-center justify-center text-stone-500 group-open:rotate-90 transition-transform">
+                    <ChevronRight size={13} strokeWidth={2.5} />
+                  </div>
+                  <SlidersHorizontal size={13} className="text-stone-400" />
+                  <span>
+                    {language === 'fr' 
+                      ? "Options de style avancées (Optionnel)" 
+                      : language === 'en' 
+                        ? "Advanced Style Options (Optional)" 
+                        : "Opciones de Estilo Avanzadas (Opcional)"}
+                  </span>
+                </span>
+                <span className="text-[10px] text-stone-400 lowercase font-medium group-open:hidden">
+                  {shotType === 'closeup_beauty' ? 'Primer plano' : shotType} · {visualStyle}
+                </span>
               </summary>
-              <div className="grid grid-cols-2 gap-4 mt-4 animate-in slide-in-from-top-2 duration-200">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 pt-4 border-t border-stone-100 animate-in slide-in-from-top-2 duration-200">
                 <div>
-                  <label className="text-[9px] font-bold text-stone-400 uppercase mb-1.5 block">
-                    {language === 'fr' ? "Prise de vue" : language === 'en' ? "Shot Type" : "Toma"}
+                  <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                    <Camera size={12} className="text-stone-400" />
+                    <span>{language === 'fr' ? "Prise de vue" : language === 'en' ? "Shot Type" : "Toma"}</span>
                   </label>
                   <Select disabled={isGenerating} value={shotType} onValueChange={setShotType}>
-                    <SelectTrigger className="w-full h-[40px] rounded-xl border-stone-100 bg-stone-50/50 text-[11px]">
+                    <SelectTrigger className="w-full h-10 rounded-xl border-stone-200 bg-white text-xs font-semibold text-stone-800 focus:ring-1 focus:ring-[#D4AF37]">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="closeup_beauty">
-                        {language === 'fr' 
-                          ? "Gros Plan / Macro Beauty" 
-                          : language === 'en' 
-                            ? "Closeup / Macro Beauty" 
-                            : "Primer Plano / Macro Beauty"}
+                    <SelectContent className="rounded-2xl border-stone-200/80 shadow-luxury bg-white/95 backdrop-blur-md">
+                      <SelectItem value="closeup_beauty" className="text-xs font-medium cursor-pointer">
+                        <div className="flex items-center gap-2">
+                          <Camera size={13} className="text-stone-500" />
+                          <span>
+                            {language === 'fr' 
+                              ? "Gros Plan / Macro Beauty" 
+                              : language === 'en' 
+                                ? "Closeup / Macro Beauty" 
+                                : "Primer Plano / Macro Beauty"}
+                          </span>
+                        </div>
                       </SelectItem>
-                      <SelectItem value="closeup">
-                        {language === 'fr' ? "Macro Technique" : language === 'en' ? "Technical Macro" : "Macro Técnico"}
+                      <SelectItem value="closeup" className="text-xs font-medium cursor-pointer">
+                        <div className="flex items-center gap-2">
+                          <Focus size={13} className="text-stone-500" />
+                          <span>{language === 'fr' ? "Macro Technique" : language === 'en' ? "Technical Macro" : "Macro Técnico"}</span>
+                        </div>
                       </SelectItem>
-                      <SelectItem value="scene">
-                        {language === 'fr' ? "Scène / Ambiance" : language === 'en' ? "Scene / Ambiance" : "Escena / Ambiente"}
+                      <SelectItem value="scene" className="text-xs font-medium cursor-pointer">
+                        <div className="flex items-center gap-2">
+                          <Sparkles size={13} className="text-stone-500" />
+                          <span>{language === 'fr' ? "Scène / Ambiance" : language === 'en' ? "Scene / Ambiance" : "Escena / Ambiente"}</span>
+                        </div>
                       </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <label className="text-[9px] font-bold text-stone-400 uppercase mb-1.5 block">
-                    {language === 'fr' ? "Style" : language === 'en' ? "Style" : "Estilo"}
+                  <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                    <Crown size={12} className="text-stone-400" />
+                    <span>{language === 'fr' ? "Style" : language === 'en' ? "Style" : "Estilo"}</span>
                   </label>
                   <Select disabled={isGenerating} value={visualStyle} onValueChange={setVisualStyle}>
-                    <SelectTrigger className="w-full h-[40px] rounded-xl border-stone-100 bg-stone-50/50 text-[11px]">
+                    <SelectTrigger className="w-full h-10 rounded-xl border-stone-200 bg-white text-xs font-semibold text-stone-800 focus:ring-1 focus:ring-[#D4AF37]">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="clean">
-                        {language === 'fr' ? "Épuré" : language === 'en' ? "Clean" : "Limpio"}
+                    <SelectContent className="rounded-2xl border-stone-200/80 shadow-luxury bg-white/95 backdrop-blur-md">
+                      <SelectItem value="clean" className="text-xs font-medium cursor-pointer">
+                        <div className="flex items-center gap-2">
+                          <Sparkles size={13} className="text-stone-500" />
+                          <span>{language === 'fr' ? "Épuré" : language === 'en' ? "Clean" : "Limpio"}</span>
+                        </div>
                       </SelectItem>
-                      <SelectItem value="luxury">
-                        {language === 'fr' ? "Luxe" : language === 'en' ? "Luxury" : "Lujo"}
+                      <SelectItem value="luxury" className="text-xs font-medium cursor-pointer">
+                        <div className="flex items-center gap-2">
+                          <Crown size={13} className="text-[#D4AF37]" />
+                          <span>{language === 'fr' ? "Luxe" : language === 'en' ? "Luxury" : "Lujo"}</span>
+                        </div>
                       </SelectItem>
-                      <SelectItem value="zen">
-                        {language === 'fr' ? "Zen" : language === 'en' ? "Zen" : "Zen"}
+                      <SelectItem value="zen" className="text-xs font-medium cursor-pointer">
+                        <div className="flex items-center gap-2">
+                          <Leaf size={13} className="text-emerald-600" />
+                          <span>{language === 'fr' ? "Zen" : language === 'en' ? "Zen" : "Zen"}</span>
+                        </div>
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -351,7 +404,7 @@ export default function AIImageGeneratorModal({
             </details>
 
             <div>
-              <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 block">
+              <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2 block">
                 {language === 'fr' 
                   ? "Format (Aspect Ratio) *" 
                   : language === 'en' 
@@ -359,30 +412,62 @@ export default function AIImageGeneratorModal({
                     : "Formato (Aspect Ratio) *"}
               </label>
               <Select disabled={isGenerating} value={aspectRatio} onValueChange={setAspectRatio}>
-                <SelectTrigger className="w-full h-[46px] rounded-xl border-stone-200 bg-stone-50 focus:bg-white text-xs font-medium">
-                  <SelectValue placeholder={language === 'fr' ? "Sélectionner le format" : language === 'en' ? "Select format" : "Selecciona formato"} />
+                <SelectTrigger className="w-full h-11 rounded-xl border-stone-200/80 bg-stone-50/60 hover:bg-stone-50 focus:bg-white text-xs font-semibold text-stone-800 focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] shadow-2xs">
+                  <div className="flex items-center gap-2.5">
+                    {aspectRatio === '9:16' && <Smartphone size={14} className="text-[#D4AF37] shrink-0" strokeWidth={2} />}
+                    {aspectRatio === '1:1' && <Square size={13} className="text-[#D4AF37] shrink-0" strokeWidth={2} />}
+                    {aspectRatio === '16:9' && <Monitor size={14} className="text-[#D4AF37] shrink-0" strokeWidth={2} />}
+                    <span>
+                      {aspectRatio === '9:16' 
+                        ? (language === 'fr' ? "Vertical (9:16 - Mobile)" : language === 'en' ? "Vertical (9:16 - Mobile)" : "Vertical (9:16 - Móvil)")
+                        : aspectRatio === '1:1'
+                          ? (language === 'fr' ? "Carré (1:1 - Couvertures)" : language === 'en' ? "Square (1:1 - Covers)" : "Cuadrada (1:1 - Portadas)")
+                          : (language === 'fr' ? "Horizontal (16:9 - En-têtes)" : language === 'en' ? "Horizontal (16:9 - Headers)" : "Horizontal (16:9 - Cabeceras)")}
+                    </span>
+                  </div>
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="9:16">
-                    {language === 'fr' ? "Vertical (9:16 - Mobile)" : language === 'en' ? "Vertical (9:16 - Mobile)" : "Vertical (9:16 - Móvil)"}
+                <SelectContent className="rounded-2xl border-stone-200/80 shadow-luxury bg-white/95 backdrop-blur-md">
+                  <SelectItem value="9:16" className="text-xs font-medium cursor-pointer py-2.5">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-6 h-6 rounded-lg bg-stone-100 flex items-center justify-center text-stone-600 shrink-0">
+                        <Smartphone size={13} strokeWidth={2} />
+                      </div>
+                      <span className="font-semibold text-stone-800">
+                        {language === 'fr' ? "Vertical (9:16 - Mobile)" : language === 'en' ? "Vertical (9:16 - Mobile)" : "Vertical (9:16 - Móvil)"}
+                      </span>
+                    </div>
                   </SelectItem>
-                  <SelectItem value="1:1">
-                    {language === 'fr' ? "Carré (1:1 - Couvertures)" : language === 'en' ? "Square (1:1 - Covers)" : "Cuadrada (1:1 - Portadas)"}
+                  <SelectItem value="1:1" className="text-xs font-medium cursor-pointer py-2.5">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-6 h-6 rounded-lg bg-stone-100 flex items-center justify-center text-stone-600 shrink-0">
+                        <Square size={12} strokeWidth={2} />
+                      </div>
+                      <span className="font-semibold text-stone-800">
+                        {language === 'fr' ? "Carré (1:1 - Couvertures)" : language === 'en' ? "Square (1:1 - Covers)" : "Cuadrada (1:1 - Portadas)"}
+                      </span>
+                    </div>
                   </SelectItem>
-                  <SelectItem value="16:9">
-                    {language === 'fr' ? "Horizontal (16:9 - En-têtes)" : language === 'en' ? "Horizontal (16:9 - Headers)" : "Horizontal (16:9 - Cabeceras)"}
+                  <SelectItem value="16:9" className="text-xs font-medium cursor-pointer py-2.5">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-6 h-6 rounded-lg bg-stone-100 flex items-center justify-center text-stone-600 shrink-0">
+                        <Monitor size={13} strokeWidth={2} />
+                      </div>
+                      <span className="font-semibold text-stone-800">
+                        {language === 'fr' ? "Horizontal (16:9 - En-têtes)" : language === 'en' ? "Horizontal (16:9 - Headers)" : "Horizontal (16:9 - Cabeceras)"}
+                      </span>
+                    </div>
                   </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Filtros de Calidad */}
-            <div className="flex items-center justify-between p-4 bg-stone-50 rounded-2xl border border-stone-100 mb-2">
+            <div className="flex items-center justify-between p-4 bg-stone-50/70 rounded-2xl border border-stone-200/70">
               <div className="flex flex-col">
-                <span className="text-[11px] font-bold text-stone-700">
+                <span className="text-xs font-bold text-stone-800">
                   {language === 'fr' ? "Éviter les textes" : language === 'en' ? "Avoid Texts" : "Evitar Textos"}
                 </span>
-                <span className="text-[9px] text-stone-400 font-medium leading-tight">
+                <span className="text-[11px] text-stone-400 font-medium leading-tight">
                   {language === 'fr' 
                     ? "Supprime automatiquement les filigranes et les polices" 
                     : language === 'en' 
@@ -390,7 +475,7 @@ export default function AIImageGeneratorModal({
                       : "Elimina automáticamente marcas de agua y tipografías"}
                 </span>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
+              <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-4">
                 <input 
                   type="checkbox" 
                   className="sr-only peer" 
@@ -402,13 +487,16 @@ export default function AIImageGeneratorModal({
             </div>
 
             {/* Componente de Imagen de Referencia */}
-            <div className="pt-2">
-              <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 block">
-                {language === 'fr' 
-                  ? "🖼️ Image de référence (Optionnel)" 
-                  : language === 'en' 
-                    ? "🖼️ Reference Image (Optional)" 
-                    : "🖼️ Imagen de Referencia (Opcional)"}
+            <div className="pt-1">
+              <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                <ImageIcon size={13} className="text-stone-400" />
+                <span>
+                  {language === 'fr' 
+                    ? "Image de référence (Optionnel)" 
+                    : language === 'en' 
+                      ? "Reference Image (Optional)" 
+                      : "Imagen de Referencia (Opcional)"}
+                </span>
               </label>
               
               {!referenceImage ? (
@@ -421,15 +509,15 @@ export default function AIImageGeneratorModal({
                     const file = e.dataTransfer.files?.[0];
                     if (file) processImageFile(file);
                   }}
-                  className="w-full py-5 border-2 border-dashed border-stone-100 rounded-2xl flex flex-col items-center justify-center text-stone-400 hover:border-[#d4af37] hover:bg-yellow-50/20 transition-all cursor-pointer group"
+                  className="w-full py-5 border-2 border-dashed border-stone-200/80 hover:border-[#d4af37] bg-stone-50/50 hover:bg-[#d4af37]/5 rounded-2xl flex flex-col items-center justify-center text-stone-400 hover:text-stone-700 transition-all cursor-pointer group"
                 >
-                  <ImageIcon size={20} className="mb-1 group-hover:scale-110 transition-transform" />
-                  <span className="text-[10px] font-bold">
+                  <ImageIcon size={22} className="mb-1 text-stone-400 group-hover:text-[#D4AF37] group-hover:scale-110 transition-all" />
+                  <span className="text-[11px] font-semibold">
                     {language === 'fr' 
                       ? "Cliquez, glissez ou collez (Ctrl+V) une image" 
                       : language === 'en' 
                         ? "Click, drag or paste (Ctrl+V) an image" 
-                        : "Clic, arrastrar o pega (Ctrl+V) una imagen"}
+                        : "Clic, arrastra o pega (Ctrl+V) una imagen"}
                   </span>
                   <input 
                     id="ref-image-input"
@@ -448,39 +536,41 @@ export default function AIImageGeneratorModal({
                     <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-[#d4af37] shadow-md shrink-0">
                       <img src={referenceImage} alt="Referencia" className="w-full h-full object-cover" />
                       <button 
+                        type="button"
                         onClick={() => setReferenceImage(null)}
-                        className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg border-2 border-white z-10"
+                        className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-rose-500 hover:bg-rose-600 text-white rounded-full flex items-center justify-center transition-all shadow-md border-2 border-white z-10"
                         title={language === 'fr' ? "Supprimer l'image" : language === 'en' ? "Remove image" : "Quitar imagen"}
                       >
-                        ×
+                        <X size={12} strokeWidth={2.5} />
                       </button>
                     </div>
                     
-                    <div className="flex-1 bg-gradient-to-br from-yellow-50 to-orange-50/30 p-3.5 rounded-2xl border border-yellow-100 shadow-sm">
-                      <label className="text-[10px] font-black text-[#b08e23] uppercase mb-2 block tracking-wider">
-                        {language === 'fr' ? "🎯 Mode de référence" : language === 'en' ? "🎯 Reference Mode" : "🎯 Modo de Referencia"}
+                    <div className="flex-1 bg-stone-50/80 p-3.5 rounded-2xl border border-stone-200 shadow-2xs">
+                      <label className="text-[10px] font-bold text-[#b08e23] uppercase mb-1.5 flex items-center gap-1.5 tracking-wider">
+                        <Layers size={13} className="text-[#b08e23]" />
+                        <span>{language === 'fr' ? "Mode de référence" : language === 'en' ? "Reference Mode" : "Modo de Referencia"}</span>
                       </label>
                       <Select disabled={isGenerating} value={referenceType} onValueChange={setReferenceType}>
-                        <SelectTrigger className="w-full h-[38px] rounded-xl border-white bg-white/80 backdrop-blur-sm text-[11px] font-bold text-stone-800 shadow-inner">
+                        <SelectTrigger className="w-full h-9 rounded-xl border-stone-200 bg-white text-[11px] font-bold text-stone-800 shadow-2xs">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl border-stone-100 shadow-2xl">
-                          <SelectItem value="style" className="py-2.5">
+                        <SelectContent className="rounded-2xl border-stone-200/80 shadow-luxury bg-white/95 backdrop-blur-md">
+                          <SelectItem value="style" className="py-2.5 cursor-pointer">
                             <div className="flex flex-col">
-                              <span className="font-bold">
+                              <span className="font-bold text-stone-800 text-xs">
                                 {language === 'fr' ? "Hériter de l'esthétique" : language === 'en' ? "Inherit Aesthetics" : "Heredar Estética"}
                               </span>
-                              <span className="text-[9px] text-stone-400">
+                              <span className="text-[10px] text-stone-400">
                                 {language === 'fr' ? "Nouveau modèle, même lumière" : language === 'en' ? "New model, same light" : "Nueva modelo, misma luz"}
                               </span>
                             </div>
                           </SelectItem>
-                          <SelectItem value="composition" className="py-2.5">
+                          <SelectItem value="composition" className="py-2.5 cursor-pointer">
                             <div className="flex flex-col">
-                              <span className="font-bold">
+                              <span className="font-bold text-stone-800 text-xs">
                                 {language === 'fr' ? "Calquer la composition" : language === 'en' ? "Trace Composition" : "Calcar Composición"}
                               </span>
-                              <span className="text-[9px] text-stone-400">
+                              <span className="text-[10px] text-stone-400">
                                 {language === 'fr' ? "Même modèle et pose" : language === 'en' ? "Same model and pose" : "Misma modelo y pose"}
                               </span>
                             </div>
@@ -494,31 +584,38 @@ export default function AIImageGeneratorModal({
             </div>
           </div>
         </div>
-        <DialogFooter className="p-4 border-t border-stone-100 bg-stone-50/50 flex justify-end gap-2">
-          <button
+
+        <DialogFooter className="p-4 sm:p-5 border-t border-stone-100 bg-stone-50/50 flex flex-row items-center justify-end gap-2.5 rounded-b-3xl">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
             onClick={onClose}
             disabled={isGenerating}
-            className="px-5 py-2.5 rounded-xl font-bold text-xs text-stone-600 hover:bg-stone-100 transition-all disabled:opacity-50"
+            className="rounded-xl px-5 font-bold text-xs text-stone-600 hover:bg-stone-100 h-10 border-stone-200"
           >
             {language === 'fr' ? "Annuler" : language === 'en' ? "Cancel" : "Cancelar"}
-          </button>
-          <button
+          </Button>
+          <Button
+            type="button"
+            variant="luxury"
+            size="sm"
             onClick={handleGenerate}
             disabled={isGenerating || !prompt.trim()}
-            className="bg-gradient-to-r from-stone-900 to-stone-800 hover:from-[#d4af37] hover:to-[#b08e23] text-white px-5 py-2.5 rounded-xl font-bold text-xs transition-all shadow-md active:scale-95 disabled:opacity-50 flex items-center gap-2 border border-transparent"
+            className="rounded-xl px-6 font-bold text-xs text-stone-950 shadow-luxury h-10 gap-2"
           >
             {isGenerating ? (
               <>
-                <Loader2 size={16} className="animate-spin" />
+                <Loader2 size={16} className="animate-spin text-stone-950" />
                 {language === 'fr' ? "Traitement" : language === 'en' ? "Processing" : "Procesando"} ({generationTime}s)...
               </>
             ) : (
               <>
-                <Sparkles size={16} />
+                <Sparkles size={16} strokeWidth={2} />
                 {language === 'fr' ? "Générer l'image" : language === 'en' ? "Generate Image" : "Generar Imagen"}
               </>
             )}
-          </button>
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

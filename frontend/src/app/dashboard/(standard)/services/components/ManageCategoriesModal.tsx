@@ -123,23 +123,28 @@ export default function ManageCategoriesModal({
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
         <DialogContent className={`p-0 border border-stone-200/80 max-w-lg rounded-3xl shadow-2xl bg-white overflow-hidden transition-all duration-300 ${showCategoryModal ? 'blur-[2.5px] opacity-60 scale-[0.98] pointer-events-none' : ''}`}>
-          <DialogHeader className="p-8 pr-16 border-b border-stone-100 bg-white/95 backdrop-blur-md">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
+          <DialogHeader className="p-7 pb-5 border-b border-stone-100 bg-white/95 backdrop-blur-md">
+            <div className="flex flex-col gap-4">
+              <div className="pr-12">
                 <DialogTitle className="text-2xl font-serif font-bold text-stone-900">{t('dashboard.services.manage_categories')}</DialogTitle>
                 <DialogDescription className="text-stone-400 text-sm mt-1">
                   {t('dashboard.services.manage_categories_desc')}
                 </DialogDescription>
               </div>
-              <Button 
-                id="services-manage-categories-add-btn"
-                onClick={() => setShowCategoryModal(true)}
-                variant="luxury"
-                size="sm"
-                className="rounded-xl px-4 font-bold shadow-luxury text-stone-950 gap-1.5 self-start sm:self-center shrink-0"
-              >
-                <Plus size={16} strokeWidth={2} /> {t('dashboard.services.new')}
-              </Button>
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-xs font-semibold text-stone-400">
+                  {categories.length} {categories.length === 1 ? 'categoría' : 'categorías'}
+                </span>
+                <Button 
+                  id="services-manage-categories-add-btn"
+                  onClick={() => setShowCategoryModal(true)}
+                  variant="luxury"
+                  size="sm"
+                  className="rounded-xl px-4 py-2 font-bold shadow-luxury text-stone-950 gap-1.5 shrink-0"
+                >
+                  <Plus size={16} strokeWidth={2} /> {t('dashboard.services.new_category')}
+                </Button>
+              </div>
             </div>
           </DialogHeader>
 
