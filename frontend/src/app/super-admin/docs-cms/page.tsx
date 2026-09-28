@@ -25,7 +25,8 @@ import {
   ChevronUp, 
   ChevronDown, 
   Folder, 
-  FileText 
+  FileText,
+  Lock 
 } from 'lucide-react';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -452,8 +453,8 @@ export default function SuperAdminDocsCMSPage() {
     return (
       <div className="min-h-screen bg-[#F7F7F5] flex items-center justify-center p-6">
         <div className="max-w-md w-full bg-white rounded-[2rem] border border-stone-200/60 p-10 text-center shadow-luxury">
-          <div className="inline-flex justify-center items-center w-16 h-16 rounded-full bg-stone-100 text-stone-600 mb-6 text-2xl">
-            🔒
+          <div className="inline-flex justify-center items-center w-16 h-16 rounded-full bg-stone-100 text-stone-600 mb-6">
+            <Lock className="w-7 h-7 text-stone-700" />
           </div>
           <h1 className="text-3xl font-serif font-bold text-stone-900 mb-4">Acceso Denegado</h1>
           <p className="text-stone-500 mb-8 font-sans font-medium text-sm leading-relaxed">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from 'react';
-import { Monitor, ChevronRight } from 'lucide-react';
+import { Monitor, ChevronRight, RotateCw, Pause } from 'lucide-react';
 
 export interface MappedPreviewSector {
   id: string;
@@ -475,11 +475,18 @@ export default function Showcase3DPreview({
           </div>
 
           <div className="text-center">
-            <span className="text-[8.5px] font-semibold text-stone-500 bg-stone-100/80 px-2.5 py-1 rounded-full border border-stone-200/60 preview-sans">
-              {selectedIdx === null 
-                ? "🔄 Giro continuo automático • Arrastra para mover o pulsa una tarjeta"
-                : "⏸️ Ficha seleccionada • Reanudando giro en breve"
-              }
+            <span className="inline-flex items-center gap-1.5 text-[8.5px] font-semibold text-stone-500 bg-stone-100/80 px-3 py-1 rounded-full border border-stone-200/60 preview-sans">
+              {selectedIdx === null ? (
+                <>
+                  <RotateCw className="w-2.5 h-2.5 text-stone-400 animate-spin [animation-duration:6s]" />
+                  <span>Giro continuo automático • Arrastra para mover o pulsa una tarjeta</span>
+                </>
+              ) : (
+                <>
+                  <Pause className="w-2.5 h-2.5 text-amber-500" />
+                  <span>Ficha seleccionada • Reanudando giro en breve</span>
+                </>
+              )}
             </span>
           </div>
 

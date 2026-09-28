@@ -57,7 +57,8 @@ export default function DomainConnectionModal({
 
           <div className="bg-stone-50/80 p-5 rounded-2xl border border-stone-200/60 space-y-3">
             <h5 className="text-xs font-bold text-stone-700 uppercase tracking-wider flex items-center gap-1.5">
-              📋 Registros DNS Requeridos
+              <Globe className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <span>Registros DNS Requeridos</span>
             </h5>
             <p className="text-xs text-stone-500 leading-relaxed">
               Accede a tu proveedor de dominios y añade el siguiente registro CNAME para habilitar el mapeo:

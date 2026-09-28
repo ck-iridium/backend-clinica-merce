@@ -50,7 +50,8 @@ export default function DeleteConfirmModal({
         <div className="space-y-5 pt-2 font-sans">
           <div className="bg-rose-50/70 p-4 rounded-xl border border-rose-100 text-xs text-rose-800 space-y-1.5 leading-relaxed">
             <p className="font-bold flex items-center gap-1.5 text-rose-900">
-              🚨 Advertencia de borrado en cascada
+              <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+              <span>Advertencia de borrado en cascada</span>
             </p>
             <ul className="list-disc pl-4 space-y-1 text-rose-700">
               <li>Todos los expedientes médicos e historiales de clientes serán purgados.</li>
