@@ -52,12 +52,12 @@ export default function ProfilePreferencesForm({
               checked={receiveEmailAppointments}
               onChange={(e) => setReceiveEmailAppointments(e.target.checked)}
             />
-            <div className="w-14 h-7 bg-stone-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner"></div>
+            <div className="w-13 h-7 bg-stone-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:border-gray-200 after:border after:rounded-full after:h-5.5 after:w-5.5 after:transition-all peer-checked:bg-[#D4AF37] shadow-inner"></div>
           </label>
         </div>
 
         <div 
-          className="group flex items-center justify-between p-4 sm:p-6 rounded-3xl border border-stone-50 hover:bg-stone-50/50 hover:border-stone-100 transition-all cursor-pointer gap-4" 
+          className="group flex items-center justify-between p-4 sm:p-6 rounded-3xl border border-stone-100 hover:bg-stone-50/50 hover:border-stone-200/60 transition-all cursor-pointer gap-4" 
           onClick={() => setReceiveAgendaReminders(!receiveAgendaReminders)}
         >
           <div className="flex items-center gap-4 sm:gap-5">
@@ -77,7 +77,7 @@ export default function ProfilePreferencesForm({
               checked={receiveAgendaReminders}
               onChange={(e) => setReceiveAgendaReminders(e.target.checked)}
             />
-            <div className="w-14 h-7 bg-stone-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner"></div>
+            <div className="w-13 h-7 bg-stone-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:border-gray-200 after:border after:rounded-full after:h-5.5 after:w-5.5 after:transition-all peer-checked:bg-[#D4AF37] shadow-inner"></div>
           </label>
         </div>
 

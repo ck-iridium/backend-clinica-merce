@@ -109,7 +109,7 @@ export default function AgendaTab({
                     }}
                     className={`w-11 h-11 rounded-2xl font-bold transition-all flex items-center justify-center text-xs shadow-2xs
                       ${isActive 
-                        ? 'bg-stone-900 text-white shadow-sm scale-105' 
+                        ? 'bg-stone-950 text-[#D4AF37] border border-[#D4AF37]/40 shadow-sm scale-105' 
                         : 'bg-stone-50/80 border border-stone-200/80 text-stone-400 hover:text-stone-700 hover:border-stone-300'}
                     `}
                   >

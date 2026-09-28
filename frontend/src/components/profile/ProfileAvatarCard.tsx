@@ -126,12 +126,12 @@ export default function ProfileAvatarCard({
           id="profile-save-all-btn"
           onClick={handleSaveAll}
           disabled={savingPrefs || !isDirty}
-          className="w-full bg-emerald-600 text-white hover:bg-emerald-700 px-6 sm:px-8 py-4 rounded-2xl sm:rounded-[2.5rem] font-bold text-sm shadow-lg hover:shadow-emerald-200/50 transition-all active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed flex items-center justify-center gap-3 group py-4 sm:py-5"
+          className="w-full bg-stone-950 text-white hover:bg-[#D4AF37] hover:text-stone-950 px-6 sm:px-8 py-4 rounded-2xl font-bold text-sm shadow-luxury transition-all duration-300 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-3 group"
         >
           {savingPrefs ? (
             <Loader2 className="animate-spin" size={18} />
           ) : (
-            <CheckCircle2 size={18} className="text-emerald-100 group-hover:scale-110 transition-transform" />
+            <CheckCircle2 size={18} className="text-[#D4AF37] group-hover:text-stone-950 group-hover:scale-110 transition-transform" />
           )}
           {isDirty ? 'Guardar Cambios' : 'Sin cambios pendientes'}
         </button>

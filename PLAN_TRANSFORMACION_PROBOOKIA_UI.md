@@ -42,11 +42,12 @@
 
 - [x] **3.1** Cabecera de bienvenida y tarjetas de resumen (KPIs de Citas, Clientes e Ingresos) con Bento Grid y shadcn Button/Card.
 - [x] **3.2** Barra lateral y Navegación del Tenant (`DashboardSidebar.tsx`): Estados dorados activos y menús refinados.
-- [ ] **3.3** Ajustes Generales (`/dashboard/settings`): Pestaña de Empresa y Suscripción Bizum con `<Tabs />` de shadcn.
+- [x] **3.3** Ajustes Generales (`/dashboard/settings` y `/dashboard/profile`): Navegación lateral de 11 submódulos, Pestaña de Empresa, Perfil digital y Suscripción Bizum con `<Dialog />` de shadcn.
 - [x] **3.4** Clientes (`/dashboard/clients`): Directorio con buscador rápido, avatares monograma, fichas de clientes y visor legal.
 - [x] **3.5** Agenda (`/dashboard/calendar`): Cuadrícula elástica modernizada, skeletons de carga multi-columna, tarjetas Quiet Luxury pastel y modales shadcn/ui.
 - [x] **3.6** Caja y TPV (`/dashboard/pos`): Unificación de ticket y botones de cobro rápido con estética dark luxury y Bento catalog.
 - [x] **3.7** Servicios y Catálogo (`/dashboard/services`): DataGrid premium con bordes suaves, inputs de edición directa en línea, modales de categorías y editor editorial con Live Preview.
+- [ ] **3.8** Integración de Componentes PRO (Command Menu `⌘K`, Spotlight Cards y Drawers laterales para vistas rápidas).
 
 ---
 
