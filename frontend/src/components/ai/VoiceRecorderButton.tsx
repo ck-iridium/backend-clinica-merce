@@ -9,6 +9,7 @@ interface VoiceRecorderButtonProps {
   disabled?: boolean;
   lang?: string;
   onStartClick?: () => void;
+  size?: 'sm' | 'md';
 }
 
 export default function VoiceRecorderButton({
@@ -16,6 +17,7 @@ export default function VoiceRecorderButton({
   disabled = false,
   lang = 'es-ES',
   onStartClick,
+  size = 'sm',
 }: VoiceRecorderButtonProps) {
   const [isRecording, setIsRecording] = useState(false);
   const recognitionRef = useRef<any>(null);
@@ -163,23 +165,25 @@ export default function VoiceRecorderButton({
     }
   };
 
+  const isSmall = size === 'sm';
+
   return (
     <div className="relative flex items-center justify-center shrink-0">
       {isRecording && (
-        <span className="absolute inline-flex h-12 w-12 rounded-full bg-[#d4af37]/20 animate-ping" />
+        <span className={`absolute inline-flex ${isSmall ? 'h-9 w-9' : 'h-11 w-11'} rounded-full bg-[#d4af37]/25 animate-ping`} />
       )}
       <button
         type="button"
         onClick={handleToggle}
         disabled={disabled}
-        className={`relative z-10 flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-300 shadow-md ${
+        className={`relative z-10 flex ${isSmall ? 'h-8 w-8 rounded-xl' : 'h-10 w-10 rounded-xl'} items-center justify-center transition-all duration-300 shadow-xs ${
           isRecording
-            ? 'bg-[#d4af37] text-stone-950 scale-105 shadow-[#d4af37]/20 border border-[#d4af37]'
-            : 'bg-white hover:bg-stone-50 border border-stone-200 text-stone-500 hover:text-stone-800'
+            ? 'bg-[#d4af37] text-stone-950 scale-105 shadow-[#d4af37]/30 border border-[#d4af37]'
+            : 'bg-white hover:bg-stone-50 border border-stone-200/80 text-stone-500 hover:text-stone-800'
         } ${disabled ? 'opacity-40 cursor-not-allowed' : 'active:scale-95'}`}
         title={isRecording ? 'Detener escucha' : 'Hablar al Asistente'}
       >
-        <Mic size={20} className={isRecording ? 'animate-pulse' : ''} strokeWidth={isRecording ? 2.5 : 1.8} />
+        <Mic size={isSmall ? 15 : 18} className={isRecording ? 'animate-pulse' : ''} strokeWidth={isRecording ? 2.5 : 1.8} />
       </button>
     </div>
   );

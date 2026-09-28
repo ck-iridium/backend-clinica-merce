@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Sparkles, User, Bot, RefreshCw, Volume2, VolumeX } from 'lucide-react';
+import { Send, Sparkles, User, Bot, RefreshCw, Volume2, VolumeX, AudioLines } from 'lucide-react';
 import VoiceRecorderButton from './VoiceRecorderButton';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
@@ -402,34 +402,43 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#FCFAF6] border-r border-stone-200/80 shadow-inner">
-      {/* Cabecera del Asistente - Premium Styling */}
-      <div className="flex items-center justify-between px-6 bg-white border-b border-stone-200/60 shadow-sm shrink-0 h-[72px]">
-        <div className="flex items-center gap-3.5">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-stone-900 to-stone-850 text-white shadow-md border border-stone-800/20">
-            <Sparkles size={18} className="text-[#d4af37] animate-pulse" />
+    <div className="flex flex-col h-full bg-[#FAFAFA] border-r border-stone-200/80">
+      {/* Cabecera del Asistente - Quiet Luxury Styling */}
+      <div className="flex items-center justify-between px-6 bg-white border-b border-stone-200/60 shadow-xs shrink-0 h-[68px]">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 border border-amber-300/40 text-[#d4af37] shadow-xs">
+            <Sparkles size={18} className="animate-pulse" />
           </div>
           <div>
-            <h2 className="text-[14.5px] font-bold text-stone-900 tracking-tight font-serif">{t('ai_chat.title') || 'Co-Piloto ProBookia'}</h2>
-            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mt-0.5">{t('ai_chat.subtitle') || 'AI Webmaster en línea'}</p>
+            <h2 className="text-[15px] font-semibold text-stone-900 tracking-wide font-serif">{t('ai_chat.title') || 'Co-Piloto ProBookia'}</h2>
+            <p className="text-[10px] font-semibold text-[#d4af37] uppercase tracking-widest mt-0.5">{t('ai_chat.subtitle') || 'AI Webmaster en línea'}</p>
           </div>
         </div>
 
         {/* Controles de Cabecera (Voz, Silencio y Reinicio) */}
         <div className="flex items-center gap-2">
-          {/* Selector de Género */}
-          <select
-            value={voiceGender}
-            onChange={(e) => {
-              setVoiceGender(e.target.value as 'female' | 'male');
+          {/* Selector de Género de Voz */}
+          <button
+            onClick={() => {
+              const next = voiceGender === 'female' ? 'male' : 'female';
+              setVoiceGender(next);
               toast.success(language === 'fr' ? 'Voix configurée' : language === 'en' ? 'Voice configured' : 'Voz configurada');
             }}
-            className="text-[11px] font-semibold bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-700 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#d4af37]/50 focus:border-[#d4af37] cursor-pointer transition-all duration-300"
-            title={language === 'fr' ? 'Sélectionner le genre de voix' : language === 'en' ? 'Select voice gender' : 'Seleccionar género de voz'}
+            className={`px-3 py-1.5 rounded-full text-[11px] font-medium border transition-all duration-200 flex items-center gap-1.5 ${
+              voiceGender === 'male'
+                ? 'border-amber-300/80 bg-amber-50/80 text-amber-900 shadow-xs'
+                : 'border-stone-200/80 bg-white text-stone-600 hover:text-stone-900 hover:border-stone-300 shadow-xs'
+            }`}
+            title={language === 'fr' ? 'Changer de voix' : language === 'en' ? 'Change voice' : 'Cambiar voz'}
           >
-            <option value="female">{language === 'fr' ? '👩 Voix Féminine' : language === 'en' ? '👩 Female Voice' : '👩 Voz Femenina'}</option>
-            <option value="male">{language === 'fr' ? '👨 Voix Masculine' : language === 'en' ? '👨 Male Voice' : '👨 Voz Masculina'}</option>
-          </select>
+            <AudioLines size={13} className={voiceGender === 'male' ? 'text-amber-700' : 'text-[#d4af37]'} strokeWidth={2} />
+            <span>
+              {voiceGender === 'female'
+                ? (language === 'fr' ? 'Voix Féminine' : language === 'en' ? 'Female Voice' : 'Voz Femenina')
+                : (language === 'fr' ? 'Voix Masculine' : language === 'en' ? 'Male Voice' : 'Voz Masculina')
+              }
+            </span>
+          </button>
 
           <button
             onClick={() => {
@@ -544,29 +553,32 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
       </div>
 
       {/* Input de Envío */}
-      <div className="p-5 bg-white border-t border-stone-200/60 shadow-md shrink-0">
-        <div className="flex items-center gap-3">
-          {/* Botón de Grabación por Voz NATIVA (SpeechRecognition) */}
-          <VoiceRecorderButton disabled={isLoading} lang={chatLanguage} onVoiceTranscribed={(text) => handleSend(`🎙️ [Voz]: "${text}"`)} />
+      <div className="p-4 bg-white border-t border-stone-200/60 shadow-xs shrink-0">
+        <div className="flex items-center gap-2.5 bg-stone-50 hover:bg-stone-50/80 border border-stone-200/80 focus-within:bg-white focus-within:border-[#d4af37] focus-within:ring-2 focus-within:ring-[#d4af37]/15 rounded-2xl p-2 transition-all shadow-xs">
+          <VoiceRecorderButton
+            disabled={isLoading}
+            lang={chatLanguage}
+            onVoiceTranscribed={(text) => handleSend(`[Voz]: "${text}"`)}
+            size="sm"
+          />
 
-          <div className="relative flex-1 flex items-center">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              disabled={isLoading}
-              placeholder={t('ai_chat.input_placeholder') || 'Pregúntame algo o envíame un comando de voz...'}
-              className="w-full bg-stone-50 hover:bg-stone-50/50 focus:bg-white text-stone-800 placeholder-stone-400 text-[13.5px] rounded-xl border border-stone-200/60 pl-4 pr-12 py-3.5 focus:outline-none focus:ring-1 focus:ring-[#d4af37]/50 focus:border-[#d4af37] transition-all duration-300 shadow-inner"
-            />
-            <button
-              onClick={() => handleSend()}
-              disabled={!input.trim() || isLoading}
-              className="absolute right-2.5 p-2 rounded-lg bg-stone-900 hover:bg-[#d4af37] text-white disabled:opacity-30 disabled:hover:bg-stone-900 transition-all duration-300 active:scale-95 shadow-sm"
-            >
-              <Send size={13} />
-            </button>
-          </div>
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            disabled={isLoading}
+            placeholder={t('ai_chat.input_placeholder') || 'Pregúntame algo o envíame un comando de voz...'}
+            className="flex-1 bg-transparent border-none text-[13px] text-stone-800 placeholder-stone-400 focus:outline-none px-2 py-1 leading-relaxed"
+          />
+
+          <button
+            onClick={() => handleSend()}
+            disabled={!input.trim() || isLoading}
+            className="h-8 w-8 rounded-xl bg-stone-900 hover:bg-[#d4af37] hover:text-stone-950 text-white flex items-center justify-center transition-all duration-300 disabled:opacity-30 disabled:hover:bg-stone-900 active:scale-95 shadow-xs shrink-0"
+          >
+            <Send size={14} />
+          </button>
         </div>
       </div>
 

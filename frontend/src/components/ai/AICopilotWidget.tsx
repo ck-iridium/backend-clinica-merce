@@ -539,7 +539,7 @@ export default function AICopilotWidget() {
         {isOpen && (
           <div
             style={{ width: `${chatWidth}px`, height: `${chatHeight}px` }}
-            className={`bg-white/95 backdrop-blur-md border border-stone-200/80 rounded-luxury-card shadow-2xl flex flex-col overflow-hidden relative select-none mr-4 md:mr-0 max-sm:!w-full max-sm:!h-full max-sm:!max-w-none max-sm:!max-h-none max-sm:!mr-0 max-sm:!rounded-none max-sm:!border-none max-sm:!h-[100dvh] ${
+            className={`bg-white/95 backdrop-blur-xl border border-stone-200/80 rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden relative select-none mr-4 md:mr-0 max-sm:!w-full max-sm:!h-full max-sm:!max-w-none max-sm:!max-h-none max-sm:!mr-0 max-sm:!rounded-none max-sm:!border-none max-sm:!h-[100dvh] ${
               isResizingActive ? 'transition-none pointer-events-auto' : 'transition-all duration-300 ease-out animate-in fade-in slide-in-from-bottom-6'
             }`}
           >
@@ -619,7 +619,7 @@ export default function AICopilotWidget() {
             language={language}
             audioLanguage={audioLanguage}
             onVoiceTranscribed={(txt) =>
-              handleSend(language === 'fr' ? `🎙️ [Voix]: "${txt}"` : language === 'en' ? `🎙️ [Voice]: "${txt}"` : `🎙️ [Voz]: "${txt}"`)
+              handleSend(language === 'fr' ? `[Voix]: "${txt}"` : language === 'en' ? `[Voice]: "${txt}"` : `[Voz]: "${txt}"`)
             }
             onUnlockAudio={unlockAudioContext}
           />
@@ -630,11 +630,11 @@ export default function AICopilotWidget() {
       {!isOpen && (
         <button
           onClick={() => { setIsOpen(true); unlockAudioContext(); }}
-          className="h-14 w-14 rounded-full bg-stone-900 text-white shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center relative border border-primary/40 z-10 group overflow-hidden hover:bg-stone-800 max-md:translate-x-[35%] max-md:hover:translate-x-0 max-md:rounded-l-2xl max-md:rounded-r-none"
-          title="Copiloto de Navegación IA"
+          className="h-14 w-14 rounded-2xl bg-stone-900 text-white shadow-[0_10px_30px_rgba(0,0,0,0.15)] hover:shadow-[0_15px_35px_rgba(212,175,55,0.25)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center relative border border-[#d4af37]/40 z-10 group overflow-hidden hover:bg-stone-800 max-md:translate-x-[35%] max-md:hover:translate-x-0 max-md:rounded-l-2xl max-md:rounded-r-none"
+          title="Co-Piloto AI"
         >
-          <span className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <Sparkles size={22} className="text-primary animate-pulse" strokeWidth={1.8} />
+          <span className="absolute inset-0 bg-gradient-to-tr from-[#d4af37]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <Sparkles size={22} className="text-[#d4af37] animate-pulse" strokeWidth={1.8} />
         </button>
       )}
 

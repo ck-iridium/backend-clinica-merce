@@ -77,31 +77,31 @@ export default function CopilotInputBar({
         : 'Adjuntar archivo seguro (CSV, TXT, JSON, Imagen)');
 
   return (
-    <div className="flex flex-col shrink-0">
+    <div className="p-3 bg-white border-t border-stone-200/60 flex flex-col gap-2 shrink-0 select-text pb-safe">
       {/* Vista previa de archivo adjunto */}
       {attachedFile && (
-        <div className="px-3.5 py-2 bg-stone-50 border-t border-stone-200/60 flex items-center justify-between gap-2 shrink-0 select-text">
+        <div className="px-3 py-1.5 bg-amber-50/70 border border-amber-200/50 rounded-xl flex items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-2 text-stone-700 min-w-0">
             {attachedFile.type === 'image' && attachedFile.url ? (
-              <img src={attachedFile.url} className="w-8 h-8 rounded-lg object-cover border border-stone-200 shrink-0" alt="Preview" />
+              <img src={attachedFile.url} className="w-7 h-7 rounded-lg object-cover border border-amber-200/60 shrink-0" alt="Preview" />
             ) : (
-              <FileText size={16} className="text-primary shrink-0" />
+              <FileText size={15} className="text-[#d4af37] shrink-0" />
             )}
             <div className="flex flex-col min-w-0">
-              <span className="text-xs font-semibold text-stone-700 truncate max-w-[180px]">
+              <span className="text-xs font-medium text-stone-800 truncate max-w-[200px]">
                 {attachedFile.name}
               </span>
-              <span className="text-[9px] text-stone-400 font-bold uppercase tracking-wider">
+              <span className="text-[9px] text-amber-700/80 font-medium">
                 {attachedFile.type === 'image'
-                  ? (language === 'fr' ? 'Image pour service/catégorie' : language === 'en' ? 'Image for service/category' : 'Imagen para servicio/categoría')
-                  : (language === 'fr' ? 'Document sécurisé (CSV/TXT/JSON)' : language === 'en' ? 'Secure document (CSV/TXT/JSON)' : 'Documento seguro (CSV/TXT/JSON)')
+                  ? (language === 'fr' ? 'Image pour service' : language === 'en' ? 'Image for service' : 'Imagen para servicio')
+                  : (language === 'fr' ? 'Document sécurisé' : language === 'en' ? 'Secure document' : 'Documento seguro')
                 }
               </span>
             </div>
           </div>
           <button
             onClick={onRemoveFile}
-            className="p-1 rounded-full text-stone-400 hover:text-stone-600 hover:bg-stone-200/50 transition-all shrink-0"
+            className="p-1 rounded-full text-stone-400 hover:text-stone-700 hover:bg-amber-100/50 transition-all shrink-0"
             title={language === 'fr' ? 'Retirer le fichier' : language === 'en' ? 'Remove file' : 'Quitar archivo'}
           >
             <X size={14} />
@@ -109,57 +109,17 @@ export default function CopilotInputBar({
         </div>
       )}
 
-      {/* Fila 1: Controles multimedia */}
-      <div className="px-4 py-2.5 bg-stone-50 border-t border-stone-100 flex items-center justify-between gap-3 shrink-0">
-        {/* Input de archivo oculto */}
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={onFileChange}
-          accept=".txt,.csv,.json,.png,.jpg,.jpeg,.webp"
-          className="hidden"
-        />
+      {/* Input de archivo oculto */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={onFileChange}
+        accept=".txt,.csv,.json,.png,.jpg,.jpeg,.webp"
+        className="hidden"
+      />
 
-        {/* Botón de Adjuntar */}
-        <button
-          onClick={handleAttachClick}
-          disabled={isLoading || isUploading}
-          className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-all active:scale-95 shrink-0 ${
-            isUploading
-              ? 'animate-pulse border-primary bg-primary/10 text-primary'
-              : 'border-stone-200/80 bg-white hover:bg-stone-50 text-stone-600 hover:text-stone-800'
-          }`}
-          title={attachButtonTitle}
-        >
-          {!canAttachFiles ? (
-            <Lock size={15} className="text-amber-500" />
-          ) : (
-            <Paperclip size={15} />
-          )}
-          <span>
-            {isUploading
-              ? (language === 'fr' ? 'Téléchargement...' : language === 'en' ? 'Uploading...' : 'Subiendo...')
-              : (language === 'fr' ? 'Joindre un fichier' : language === 'en' ? 'Attach File' : 'Adjuntar Archivo')
-            }
-          </span>
-        </button>
-
-        {/* Grabadora de Voz */}
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider">
-            {language === 'fr' ? 'Préférez-vous parler ?' : language === 'en' ? 'Prefer to speak?' : '¿Prefieres hablar?'}
-          </span>
-          <VoiceRecorderButton
-            onVoiceTranscribed={onVoiceTranscribed}
-            disabled={isLoading || isUploading}
-            lang={audioLanguage}
-            onStartClick={onUnlockAudio}
-          />
-        </div>
-      </div>
-
-      {/* Fila 2: Textarea + Enviar */}
-      <div className="p-3 bg-white border-t border-stone-200/80 flex items-center gap-2.5 shrink-0 select-text pb-safe">
+      {/* Cápsula Unificada de Entrada */}
+      <div className="bg-stone-50 hover:bg-stone-50/80 border border-stone-200/80 focus-within:bg-white focus-within:border-[#d4af37] focus-within:ring-2 focus-within:ring-[#d4af37]/15 rounded-2xl p-2.5 transition-all flex flex-col gap-2 shadow-xs">
         <textarea
           value={input}
           onChange={(e) => onInputChange(e.target.value)}
@@ -167,21 +127,62 @@ export default function CopilotInputBar({
           disabled={isLoading || isUploading}
           rows={2}
           placeholder={language === 'fr' ? 'Écrire un message...' : language === 'en' ? 'Type a message...' : 'Escribe tu mensaje...'}
-          className="flex-1 bg-stone-50 border border-stone-200/80 rounded-xl px-3 py-2.5 text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:border-primary transition-all font-medium resize-none min-h-[48px] max-h-32 overflow-y-auto leading-relaxed"
+          className="w-full bg-transparent border-none text-[12.5px] text-stone-800 placeholder-stone-400 focus:outline-none resize-none leading-relaxed min-h-[38px] max-h-28 overflow-y-auto px-1 py-0.5"
         />
 
-        <button
-          onClick={onSend}
-          disabled={isLoading || isUploading || (!input.trim() && !attachedFile)}
-          className={`flex h-12 w-12 items-center justify-center rounded-xl bg-stone-900 text-white transition-all duration-300 border border-stone-800 shadow-md shrink-0 active:scale-95 ${
-            isLoading || isUploading || (!input.trim() && !attachedFile)
-              ? 'opacity-40 cursor-not-allowed'
-              : 'hover:bg-primary hover:text-stone-900 hover:border-primary'
-          }`}
-          title={language === 'fr' ? 'Envoyer le message' : language === 'en' ? 'Send Message' : 'Enviar Mensaje'}
-        >
-          <Send size={18} />
-        </button>
+        {/* Fila de Herramientas Inferior */}
+        <div className="flex items-center justify-between gap-2 pt-1 border-t border-stone-200/40">
+          {/* Botón de Adjuntar */}
+          <button
+            type="button"
+            onClick={handleAttachClick}
+            disabled={isLoading || isUploading}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all active:scale-95 shrink-0 ${
+              isUploading
+                ? 'animate-pulse bg-amber-50 text-amber-800'
+                : 'text-stone-500 hover:text-stone-800 hover:bg-stone-200/50'
+            }`}
+            title={attachButtonTitle}
+          >
+            {!canAttachFiles ? (
+              <Lock size={13} className="text-amber-500" />
+            ) : (
+              <Paperclip size={13} />
+            )}
+            <span className="text-[11px]">
+              {isUploading
+                ? (language === 'fr' ? 'Envoi...' : language === 'en' ? 'Uploading...' : 'Subiendo...')
+                : (language === 'fr' ? 'Joindre' : language === 'en' ? 'Attach' : 'Adjuntar')
+              }
+            </span>
+          </button>
+
+          {/* Grabadora de Voz + Enviar */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] text-stone-400 font-medium hidden sm:inline-block">
+              {language === 'fr' ? 'Parler ?' : language === 'en' ? 'Speak?' : '¿Hablar?'}
+            </span>
+            <VoiceRecorderButton
+              onVoiceTranscribed={onVoiceTranscribed}
+              disabled={isLoading || isUploading}
+              lang={audioLanguage}
+              onStartClick={onUnlockAudio}
+              size="sm"
+            />
+            <button
+              onClick={onSend}
+              disabled={isLoading || isUploading || (!input.trim() && !attachedFile)}
+              className={`flex h-8 w-8 items-center justify-center rounded-xl bg-stone-900 text-white transition-all duration-300 border border-stone-800 shadow-xs shrink-0 active:scale-95 ${
+                isLoading || isUploading || (!input.trim() && !attachedFile)
+                  ? 'opacity-30 cursor-not-allowed'
+                  : 'hover:bg-[#d4af37] hover:text-stone-950 hover:border-[#d4af37]'
+              }`}
+              title={language === 'fr' ? 'Envoyer le message' : language === 'en' ? 'Send Message' : 'Enviar Mensaje'}
+            >
+              <Send size={14} />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
