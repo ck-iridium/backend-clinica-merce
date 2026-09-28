@@ -6,6 +6,8 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useAuthRole } from '@/hooks/useAuthRole';
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 import { 
   Select, 
   SelectContent, 
@@ -346,37 +348,43 @@ export default function VouchersPage() {
   }
 
   return (
-    <div className="animate-in fade-in duration-500">
+    <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500 pb-16">
       
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-extrabold text-stone-800">{t('dashboard.vouchers.title') || 'Dirección de Bonos'}</h1>
-          <p className="text-stone-500 mt-1 font-medium">{t('dashboard.vouchers.subtitle') || 'Control de tratamientos emitidos y catálogo de bonos base'}</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
+        <div className="space-y-2">
+          <h1 className="text-4xl sm:text-5xl font-serif font-semibold text-stone-900 tracking-tight">
+            {t('dashboard.vouchers.title') || 'Dirección de Bonos'}
+          </h1>
+          <p className="text-stone-400 font-medium max-w-lg">
+            {t('dashboard.vouchers.subtitle') || 'Control de tratamientos emitidos y catálogo de bonos base'}
+          </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex bg-white border border-stone-200 p-1 rounded-xl shadow-sm">
+          <div className="flex bg-stone-100/80 p-1 rounded-2xl border border-stone-200/60 shadow-inner">
             <button 
               id="vouchers-tab-issued"
               onClick={() => setActiveTab('vendidos')}
-              className={`px-4 py-2 rounded-lg font-bold text-xs transition-all ${activeTab === 'vendidos' ? 'bg-stone-900 text-white shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
+              className={`px-5 py-2 rounded-xl font-bold text-xs transition-all ${activeTab === 'vendidos' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-800'}`}
             >
                {t('dashboard.vouchers.tab_issued') || 'Emitidos'}
             </button>
             <button 
               id="vouchers-tab-catalog"
               onClick={() => setActiveTab('catalogo')}
-              className={`px-4 py-2 rounded-lg font-bold text-xs transition-all ${activeTab === 'catalogo' ? 'bg-stone-900 text-white shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
+              className={`px-5 py-2 rounded-xl font-bold text-xs transition-all ${activeTab === 'catalogo' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-800'}`}
             >
                {t('dashboard.vouchers.tab_catalog') || 'Catálogo'}
             </button>
           </div>
-          <button 
+          <Button 
             id="vouchers-action-btn"
+            variant="luxury"
             onClick={() => activeTab === 'vendidos' ? setShowAssignModal(true) : setShowTemplateModal(true)}
-            className="px-6 py-3 rounded-xl bg-[#d4af37] hover:bg-[#b08e23] border border-transparent text-white font-bold transition-all shadow-md active:scale-95 flex items-center gap-2"
+            className="gap-2 px-6 py-3 rounded-2xl shrink-0"
           >
-            <span className="text-lg">+</span> {activeTab === 'vendidos' ? (t('dashboard.vouchers.emit_voucher') || 'Emitir Bono') : (t('dashboard.vouchers.new_template') || 'Nueva Plantilla')}
-          </button>
+            <Plus size={18} strokeWidth={2} />
+            {activeTab === 'vendidos' ? (t('dashboard.vouchers.emit_voucher') || 'Emitir Bono') : (t('dashboard.vouchers.new_template') || 'Nueva Plantilla')}
+          </Button>
         </div>
       </div>
 

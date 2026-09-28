@@ -9,6 +9,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/app/contexts/LanguageContext";
 import { Location, LocationFormData, LocationSuggestion } from './types';
 import { formatCleanAddress } from './locationUtils';
@@ -266,26 +267,28 @@ export default function LocationFormModal({
           </div>
 
           {/* Footer del Modal */}
-          <DialogFooter className="pt-6">
-            <button 
+          <DialogFooter className="pt-6 gap-2">
+            <Button 
               id={cancelBtnId} 
               type="button" 
+              variant="ghost"
               onClick={() => onOpenChange(false)} 
-              className="text-stone-400 hover:text-stone-700 transition-all font-bold text-xs uppercase tracking-wider px-4 py-2"
+              className="text-stone-500 hover:text-stone-800 rounded-xl"
             >
               {t('dashboard.locations.cancel')}
-            </button>
-            <button 
+            </Button>
+            <Button 
               id={submitBtnId} 
               type="submit" 
+              variant="luxury"
               disabled={isSubmitting} 
-              className="bg-stone-950 hover:bg-[#d4af37] hover:text-stone-950 text-white font-bold text-xs uppercase tracking-widest px-6 py-3.5 rounded-full transition-all duration-300 active:scale-95 disabled:opacity-50"
+              className="rounded-xl px-6"
             >
               {isSubmitting 
                 ? (isEdit ? t('dashboard.locations.saving') : t('dashboard.locations.creating'))
                 : (isEdit ? t('dashboard.locations.save_btn') : t('dashboard.locations.create_submit'))
               }
-            </button>
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

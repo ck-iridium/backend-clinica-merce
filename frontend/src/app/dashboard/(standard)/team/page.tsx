@@ -36,6 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/app/contexts/LanguageContext"
 import PlanLimitsCard from "@/components/PlanLimitsCard"
 import RosteringManager from "@/components/RosteringManager"
@@ -224,21 +225,21 @@ export default function TeamPage() {
         {(role?.toLowerCase() === 'administrador' || role?.toLowerCase() === 'admin') ? (
           <Dialog open={isInviteModalOpen} onOpenChange={setIsInviteModalOpen}>
             <DialogTrigger asChild>
-              <button id="team-add-member-btn" className="flex items-center gap-2.5 bg-stone-900 hover:bg-[#d9777f] text-white px-6 py-3.5 rounded-2xl font-bold text-sm transition-all shadow-lg shadow-stone-200 active:scale-95">
+              <Button id="team-add-member-btn" variant="luxury" className="rounded-2xl px-6 h-12 text-sm font-semibold gap-2.5 shadow-sm">
                 <UserPlus size={18} strokeWidth={1.5} />
-                {t('dashboard.team.add_member_btn') || "Añadir Miembro"}
-              </button>
+                <span>{t('dashboard.team.add_member_btn') || "Añadir Miembro"}</span>
+              </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px] rounded-[2rem] p-6 bg-white border-stone-100 shadow-2xl">
               <DialogHeader className="mb-4">
-                <DialogTitle className="font-serif italic text-2xl text-stone-800">{t('dashboard.team.invite_modal_title') || "Invitar al Equipo"}</DialogTitle>
-                <DialogDescription className="text-stone-500">
+                <DialogTitle className="font-serif text-2xl text-stone-900 font-semibold">{t('dashboard.team.invite_modal_title') || "Invitar al Equipo"}</DialogTitle>
+                <DialogDescription className="text-stone-500 text-sm">
                   {t('dashboard.team.invite_modal_desc') || "Enviaremos un correo de invitación para que el usuario configure su contraseña."}
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleInvite} className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-[11px] font-black uppercase tracking-widest text-stone-400">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-stone-400">
                     {t('dashboard.team.full_name_label') || "Nombre Completo"}
                   </label>
                   <input
@@ -246,13 +247,13 @@ export default function TeamPage() {
                     type="text"
                     value={formData.full_name}
                     onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d9777f]/20 focus:border-[#d9777f] transition-all"
+                    className="w-full bg-white border border-stone-200/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] text-stone-800 transition-all shadow-xs"
                     placeholder={t('dashboard.team.full_name_placeholder') || "Ej. Dra. Laura Gil"}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[11px] font-black uppercase tracking-widest text-stone-400">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-stone-400">
                     {t('dashboard.team.email_label') || "Correo Electrónico"}
                   </label>
                   <input
@@ -260,20 +261,20 @@ export default function TeamPage() {
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d9777f]/20 focus:border-[#d9777f] transition-all"
+                    className="w-full bg-white border border-stone-200/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] text-stone-800 transition-all shadow-xs"
                     placeholder={t('dashboard.team.email_placeholder') || "laura@clinicamerce.com"}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[11px] font-black uppercase tracking-widest text-stone-400">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-stone-400">
                     {t('dashboard.team.role_label') || "Rol"}
                   </label>
                   <Select
                     value={formData.role}
                     onValueChange={(val) => setFormData({ ...formData, role: val })}
                   >
-                    <SelectTrigger id="team-invite-role-trigger" className="w-full bg-stone-50 border-stone-200 rounded-xl px-4 py-3 h-auto text-sm focus:ring-[#d9777f]/20 focus:border-[#d9777f]">
+                    <SelectTrigger id="team-invite-role-trigger" className="w-full bg-white border-stone-200/80 rounded-xl px-4 py-3 h-auto text-sm focus:ring-[#D4AF37] focus:border-[#D4AF37] text-stone-800 shadow-xs">
                       <SelectValue placeholder={t('dashboard.team.select_role_placeholder') || "Selecciona un rol"} />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl border-stone-100 shadow-xl">
@@ -283,25 +284,27 @@ export default function TeamPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <DialogFooter className="pt-4">
-                  <button
+                <DialogFooter className="pt-4 flex gap-2">
+                  <Button
                     id="team-invite-cancel-btn"
                     type="button"
+                    variant="ghost"
                     onClick={() => setIsInviteModalOpen(false)}
-                    className="px-5 py-2.5 rounded-xl font-bold text-stone-500 hover:bg-stone-100 transition-colors text-sm"
+                    className="rounded-xl text-stone-500 hover:text-stone-800"
                     disabled={isSubmitting}
                   >
                     {t('dashboard.team.cancel_btn') || "Cancelar"}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     id="team-invite-submit-btn"
                     type="submit"
+                    variant="luxury"
                     disabled={isSubmitting}
-                    className="flex items-center gap-2 bg-stone-900 hover:bg-[#d9777f] text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
+                    className="rounded-xl px-6 gap-2"
                   >
                     {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <UserPlus size={16} />}
-                    {isSubmitting ? (t('dashboard.team.sending_invite') || "Enviando...") : (t('dashboard.team.send_invite_btn') || "Enviar Invitación")}
-                  </button>
+                    <span>{isSubmitting ? (t('dashboard.team.sending_invite') || "Enviando...") : (t('dashboard.team.send_invite_btn') || "Enviar Invitación")}</span>
+                  </Button>
                 </DialogFooter>
               </form>
             </DialogContent>
@@ -502,7 +505,7 @@ export default function TeamPage() {
                   value={editRole}
                   onValueChange={setEditRole}
                 >
-                  <SelectTrigger id="team-edit-role-trigger" className="w-full bg-stone-50 border-stone-200 rounded-xl px-4 py-3 h-auto text-sm focus:ring-[#d9777f]/20 focus:border-[#d9777f]">
+                  <SelectTrigger id="team-edit-role-trigger" className="w-full bg-white border-stone-200/80 rounded-xl px-4 py-3 h-auto text-sm focus:ring-[#D4AF37] focus:border-[#D4AF37] text-stone-800 shadow-xs">
                     <SelectValue placeholder={t('dashboard.team.select_role_placeholder') || "Selecciona un rol"} />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-stone-100 shadow-xl">
@@ -512,25 +515,27 @@ export default function TeamPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <DialogFooter className="pt-4">
-                <button
+              <DialogFooter className="pt-4 flex gap-2">
+                <Button
                   id="team-edit-cancel-btn"
                   type="button"
+                  variant="ghost"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl font-bold text-stone-500 hover:bg-stone-100 transition-colors text-sm"
+                  className="rounded-xl text-stone-500 hover:text-stone-800"
                   disabled={isEditing}
                 >
                   {t('dashboard.team.cancel_btn') || "Cancelar"}
-                </button>
-                <button
+                </Button>
+                <Button
                   id="team-edit-submit-btn"
                   type="submit"
+                  variant="luxury"
                   disabled={isEditing}
-                  className="flex items-center gap-2 bg-stone-900 hover:bg-[#d9777f] text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
+                  className="rounded-xl px-6 gap-2"
                 >
                   {isEditing ? <Loader2 size={16} className="animate-spin" /> : <Edit2 size={16} />}
-                  {isEditing ? (t('dashboard.team.saving_btn') || "Guardando...") : (t('dashboard.team.save_changes_btn') || "Guardar Cambios")}
-                </button>
+                  <span>{isEditing ? (t('dashboard.team.saving_btn') || "Guardando...") : (t('dashboard.team.save_changes_btn') || "Guardar Cambios")}</span>
+                </Button>
               </DialogFooter>
             </form>
           )}

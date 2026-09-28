@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 
 
@@ -268,34 +269,40 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
     <div className="bg-card rounded-[2.5rem] border border-border/40 shadow-sm overflow-hidden flex flex-col">
       
       {/* Header Tools */}
-      <div className="p-4 border-b border-border/40 flex justify-end gap-3 bg-stone-50/50">
-        <button 
+      <div className="p-4 border-b border-stone-100 flex justify-end gap-3 bg-stone-50/50">
+        <Button 
           id="invoice-export-pdf-btn"
+          variant="outline"
+          size="sm"
           onClick={exportToPDF}
           disabled={invoices.length === 0}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-stone-200 rounded-xl text-sm font-bold text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-all shadow-sm disabled:opacity-50"
+          className="rounded-xl h-10 px-4 text-xs font-semibold gap-2 border-stone-200/80 shadow-xs hover:border-[#D4AF37]/50"
         >
-          <FileText size={16} className="text-rose-600" />
-          {t('dashboard.invoices.download_pdf') || 'Descargar PDF'}
-        </button>
-        <button 
+          <FileText size={15} className="text-rose-600" />
+          <span>{t('dashboard.invoices.download_pdf') || 'Descargar PDF'}</span>
+        </Button>
+        <Button 
           id="invoice-export-csv-btn"
+          variant="outline"
+          size="sm"
           onClick={exportToCSV}
           disabled={invoices.length === 0}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-stone-200 rounded-xl text-sm font-bold text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-all shadow-sm disabled:opacity-50"
+          className="rounded-xl h-10 px-4 text-xs font-semibold gap-2 border-stone-200/80 shadow-xs hover:border-[#D4AF37]/50"
         >
-          <FileSpreadsheet size={16} className="text-emerald-600" />
-          {t('dashboard.invoices.export_csv') || 'Exportar CSV'}
-        </button>
+          <FileSpreadsheet size={15} className="text-emerald-600" />
+          <span>{t('dashboard.invoices.export_csv') || 'Exportar CSV'}</span>
+        </Button>
       </div>
 
       {invoices.length === 0 ? (
-        <div className="py-20 text-center">
-          <span className="text-5xl opacity-30 mb-4 block">🧾</span>
-          <p className="text-stone-500 font-bold text-lg mb-1">
+        <div className="py-20 text-center space-y-2">
+          <div className="w-12 h-12 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-400 mx-auto mb-3">
+            <FileText size={22} strokeWidth={1.5} />
+          </div>
+          <p className="text-stone-800 font-serif font-semibold text-lg">
             {t('dashboard.invoices.no_results') || 'Sin Resultados'}
           </p>
-          <p className="text-stone-400 font-medium text-sm">
+          <p className="text-stone-400 font-medium text-xs max-w-sm mx-auto">
             {t('dashboard.invoices.no_results_desc') || 'No se encontraron facturas con los filtros actuales.'}
           </p>
         </div>
@@ -322,35 +329,36 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
                   key={inv.id} 
                   className="hover:bg-stone-50 transition-colors group bg-white"
                  >
-                  <td className="px-6 py-4 font-bold text-stone-500 whitespace-nowrap">
+                  <td className="px-6 py-5 font-bold text-stone-500 whitespace-nowrap">
                     {new Date(inv.date).toLocaleDateString(dateLocale)}
                   </td>
-                  <td className="px-6 py-4 font-mono font-bold whitespace-nowrap">
-                    <span className="bg-stone-100 text-stone-900 border border-stone-200/60 px-2.5 py-1 rounded-xl text-xs shadow-sm">
+                  <td className="px-6 py-5 font-mono font-bold whitespace-nowrap">
+                    <span className="bg-stone-100 text-stone-900 border border-stone-200/60 px-2.5 py-1 rounded-xl text-xs shadow-xs">
                       #{inv.number || inv.id}
                     </span>
                   </td>
-                  <td className="px-6 py-4 font-bold text-stone-800">
+                  <td className="px-6 py-5 font-bold text-stone-800">
                     {getClientName(inv.client_id)}
                   </td>
-                  <td className="px-6 py-4 font-medium text-stone-600">
+                  <td className="px-6 py-5 font-medium text-stone-600">
                     {inv.concept}
                   </td>
-                  <td className="px-6 py-4 text-center">
-                    <div 
-                      className={`inline-flex px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${
+                  <td className="px-6 py-5 text-center">
+                    <span 
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
                         inv.status === 'paid' 
-                          ? 'bg-emerald-50 text-emerald-600 border border-emerald-100/50 shadow-sm' 
-                          : 'bg-amber-50 text-amber-600 border border-amber-100/50 shadow-sm'
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-xs' 
+                          : 'bg-amber-50 text-amber-700 border border-amber-200/60 shadow-xs'
                       }`}
                     >
-                      {inv.status === 'paid' ? (t('dashboard.invoices.paid') + ' ✓') : (t('dashboard.invoices.pending') + ' ⏳')}
-                    </div>
+                      <span className={`w-1.5 h-1.5 rounded-full ${inv.status === 'paid' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
+                      {inv.status === 'paid' ? t('dashboard.invoices.paid') : t('dashboard.invoices.pending')}
+                    </span>
                   </td>
-                  <td className="px-6 py-4 font-black text-stone-900 text-right text-base whitespace-nowrap">
+                  <td className="px-6 py-5 font-black text-stone-900 text-right text-base whitespace-nowrap">
                     {Number(inv.amount).toFixed(2)} €
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-6 py-5 text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger id={`invoice-actions-trigger-${index}`} className="p-2 rounded-xl hover:bg-stone-200 text-stone-400 hover:text-stone-700 transition-colors focus:outline-none ml-auto border border-transparent hover:border-stone-200">
                         <MoreHorizontal size={18} />

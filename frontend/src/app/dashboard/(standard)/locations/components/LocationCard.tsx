@@ -34,25 +34,25 @@ export default function LocationCard({
 
   return (
     <div
-      className={`bg-white border transition-all duration-300 rounded-2xl p-6 flex flex-col justify-between hover:shadow-lg relative overflow-hidden ${
-        location.is_active ? 'border-stone-200/60 shadow-sm' : 'border-stone-100 opacity-60'
+      className={`bg-white border transition-all duration-300 rounded-3xl p-7 flex flex-col justify-between hover:shadow-[0_12px_36px_-12px_rgba(0,0,0,0.08)] relative overflow-hidden ${
+        location.is_active ? 'border-stone-200/70 shadow-sm' : 'border-stone-100 opacity-60'
       }`}
     >
       {/* Detalle sutil de lujo en la cabecera de la tarjeta activa */}
       {location.is_active && (
-        <div className="absolute top-0 right-0 w-24 h-1 bg-gradient-to-r from-stone-900 via-[#d4af37] to-stone-900" />
+        <div className="absolute top-0 right-0 w-28 h-1 bg-gradient-to-r from-stone-900 via-[#d4af37] to-stone-900" />
       )}
 
       <div className="space-y-4">
         {/* Nombre y Badge de Estado */}
-        <div className="space-y-1">
-          <h3 className="font-serif text-2xl font-light text-stone-800 tracking-tight leading-tight">
+        <div className="space-y-1.5">
+          <h3 className="font-serif text-2xl font-normal text-stone-900 tracking-tight leading-tight">
             {location.name}
           </h3>
           <span
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
               location.is_active
-                ? 'bg-[#d4af37]/10 text-[#bf9b30] border border-[#d4af37]/15'
+                ? 'bg-[#d4af37]/10 text-[#bf9b30] border border-[#d4af37]/20'
                 : 'bg-stone-100 text-stone-400 border border-stone-200/40'
             }`}
           >
@@ -103,30 +103,30 @@ export default function LocationCard({
       </div>
 
       {/* Barra de Acciones Inferior */}
-      <div className="flex items-center justify-between border-t border-stone-100 mt-6 pt-4 gap-2">
+      <div className="flex items-center justify-between border-t border-stone-100/80 mt-6 pt-4 gap-2">
         <button
           id={`locations-toggle-status-btn-${location.id}`}
           onClick={() => onToggleStatus(location)}
-          className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition-all duration-300 flex items-center gap-1.5 ${
+          className={`text-xs font-semibold px-3 py-1.5 rounded-xl border transition-all duration-300 flex items-center gap-1.5 ${
             location.is_active
-              ? 'border-stone-200 text-stone-500 hover:bg-stone-50'
-              : 'border-[#d4af37]/30 text-[#bf9b30] hover:bg-[#d4af37]/5'
+              ? 'border-stone-200 text-stone-600 hover:bg-stone-50 hover:border-stone-300'
+              : 'border-[#d4af37]/40 text-[#bf9b30] hover:bg-[#d4af37]/10'
           }`}
         >
           {location.is_active ? (
             <>
-              <X size={12} />
+              <X size={13} />
               {t('dashboard.locations.deactivate_btn')}
             </>
           ) : (
             <>
-              <Check size={12} />
+              <Check size={13} />
               {t('dashboard.locations.activate_btn')}
             </>
           )}
         </button>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           <a
             href={publicUrl}
             target="_blank"

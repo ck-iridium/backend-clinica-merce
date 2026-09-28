@@ -14,6 +14,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { useLanguage } from '@/app/contexts/LanguageContext';
 
 export default function CreateTemplateModal({
@@ -87,10 +88,17 @@ export default function CreateTemplateModal({
           </form>
         </div>
 
-        <DialogFooter className="sticky bottom-0 left-0 w-full p-6 border-t border-stone-50 bg-gradient-to-t from-white via-white to-white/0 rounded-b-2xl z-20">
-          <button id="template-submit-btn" form="template-form" type="submit" disabled={saving} className="w-full py-4 bg-[#bf7d6b] text-white font-extrabold rounded-xl hover:bg-[#a66a5a] transition-all flex justify-center items-center shadow-lg shadow-[#bf7d6b]/20 active:scale-95">
+        <DialogFooter className="sticky bottom-0 left-0 w-full p-6 border-t border-stone-100 bg-white rounded-b-2xl z-20">
+          <Button 
+            id="template-submit-btn" 
+            form="template-form" 
+            type="submit" 
+            variant="luxury"
+            disabled={saving} 
+            className="w-full py-3.5 rounded-xl font-bold"
+          >
             {saving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : (t('dashboard.vouchers.save_template') || "Guardar Plantilla")}
-          </button>
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

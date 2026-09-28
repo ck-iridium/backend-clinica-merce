@@ -486,41 +486,41 @@ export default function ClientsPage() {
                   return (
                     <tr 
                       key={client.id} 
-                      className="hover:bg-stone-50/60 group transition-colors"
+                      className="hover:bg-stone-50/70 group transition-colors border-b border-stone-100/70 last:border-b-0"
                     >
-                      <td className="px-6 sm:px-8 py-4.5">
+                      <td className="px-6 sm:px-8 py-6">
                         <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-2xl bg-stone-100/90 border border-stone-200/60 flex items-center justify-center text-stone-700 font-serif font-bold text-base shadow-xs group-hover:border-[#D4AF37]/50 group-hover:bg-amber-500/10 group-hover:text-[#B38F26] transition-colors">
+                          <div className="w-11 h-11 rounded-2xl bg-stone-100/90 border border-stone-200/60 flex items-center justify-center text-stone-700 font-serif font-bold text-base shadow-xs group-hover:border-[#D4AF37]/50 group-hover:bg-amber-500/10 group-hover:text-[#B38F26] transition-colors shrink-0">
                             {initial}
                           </div>
                           <div>
                             <div className="font-semibold text-stone-900 text-sm sm:text-base group-hover:text-stone-950 transition-colors">
                               {client.first_name} {client.last_name || ''}
                             </div>
-                            <div className="text-[11px] text-stone-400 mt-0.5 font-mono">ID: {client.id.split('-')[0]}</div>
+                            <div className="text-[11px] text-stone-400 mt-1 font-mono tracking-wide">ID: {client.id.split('-')[0]}</div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 sm:px-8 py-4.5">
-                        <div className="text-stone-800 font-medium text-xs sm:text-sm flex items-center gap-1.5">
+                      <td className="px-6 sm:px-8 py-6">
+                        <div className="text-stone-800 font-medium text-xs sm:text-sm flex items-center gap-2">
                           <Mail className="w-3.5 h-3.5 text-stone-400 shrink-0" />
                           <span className="truncate">{client.email}</span>
                         </div>
-                        <div className="text-stone-400 text-xs mt-1 font-medium flex items-center gap-1.5 font-mono">
+                        <div className="text-stone-400 text-xs mt-1.5 font-medium flex items-center gap-2 font-mono">
                           <Phone className="w-3 h-3 text-stone-400 shrink-0" />
                           <span>{client.phone || (t('dashboard.clients.no_phone') || 'Sin teléfono')}</span>
                         </div>
                       </td>
-                      <td className="px-6 sm:px-8 py-4.5">
+                      <td className="px-6 sm:px-8 py-6">
                         {getDynamicColumnValue(client)}
                       </td>
-                      <td className="px-6 sm:px-8 py-4.5 text-right">
+                      <td className="px-6 sm:px-8 py-6 text-right">
                         <Button
                           id={`view-client-details-btn-${index}`}
                           asChild
                           variant="ghost"
                           size="sm"
-                          className="h-9 px-3 rounded-xl hover:bg-stone-100 hover:text-[#D4AF37] gap-1.5 text-stone-500 font-medium group/eye"
+                          className="h-9 px-3.5 rounded-xl hover:bg-amber-500/10 hover:text-[#B38F26] gap-2 text-stone-500 font-medium group/eye transition-all"
                         >
                           <Link href={`/dashboard/clients/${client.id}`}>
                             <span className="hidden sm:inline text-xs font-semibold">Ver ficha</span>

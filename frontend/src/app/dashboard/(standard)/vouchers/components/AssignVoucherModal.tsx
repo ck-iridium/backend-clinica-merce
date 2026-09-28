@@ -14,6 +14,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { useLanguage } from '@/app/contexts/LanguageContext';
 
 export default function AssignVoucherModal({
@@ -78,7 +79,7 @@ export default function AssignVoucherModal({
                       placeholder={t('dashboard.vouchers.search_template_placeholder') || "Buscar plantilla..."} 
                       value={searchTerm}
                       onChange={e => setSearchTerm(e.target.value)}
-                      className="w-full p-3 mb-2 bg-white border border-stone-200 rounded-xl text-sm outline-none"
+                      className="w-full p-3 mb-2 bg-white border border-stone-200 rounded-xl text-sm outline-none focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37]"
                     />
                     <div className="max-h-40 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
                        {filteredTemplates.length === 0 && <p className="text-xs text-stone-400">{t('dashboard.vouchers.no_templates_found') || 'No se encontraron plantillas.'}</p>}
@@ -87,22 +88,22 @@ export default function AssignVoucherModal({
                             id={`assign-voucher-template-result-${tmpl.id}`}
                             key={tmpl.id} 
                             onClick={() => handleSelectTemplateForAssignment(tmpl.id)}
-                            className="p-3 bg-white border border-stone-100 rounded-xl hover:border-[#d9777f] hover:shadow-sm cursor-pointer transition-all flex justify-between items-center"
+                            className="p-3 bg-white border border-stone-100 rounded-xl hover:border-[#d4af37] hover:shadow-sm cursor-pointer transition-all flex justify-between items-center"
                           >
                              <div>
                                <p className="font-bold text-stone-700 text-sm">{tmpl.name}</p>
                                <p className="text-xs text-stone-400">{(t('dashboard.vouchers.sessions_count_plural') || '{sessions} Sesiones').replace('{sessions}', tmpl.total_sessions.toString())}</p>
                              </div>
-                             <span className="font-extrabold text-[#d9777f]">{tmpl.price}€</span>
+                             <span className="font-extrabold text-[#b08e23]">{tmpl.price}€</span>
                           </div>
                        ))}
                     </div>
                  </>
               ) : (
-                 <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-[#f3c7cb] shadow-inner">
+                 <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-[#d4af37]/30 shadow-inner">
                     <div>
                        <p className="font-bold text-stone-800 text-sm">{templates.find((t: any) => t.id === selectedTemplateId)?.name}</p>
-                       <p className="text-xs text-[#d9777f] font-semibold mt-0.5">
+                       <p className="text-xs text-[#b08e23] font-semibold mt-0.5">
                          {(t('dashboard.vouchers.sessions_to_consume') || '{sessions} Sesiones a consumir').replace('{sessions}', (templates.find((t: any) => t.id === selectedTemplateId)?.total_sessions || 0).toString())}
                        </p>
                     </div>
@@ -124,7 +125,7 @@ export default function AssignVoucherModal({
                   id="assign-voucher-price-input"
                   type="number" step="0.01" required 
                   value={assignPrice} onChange={e => setAssignPrice(Number(e.target.value))}
-                  className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-extrabold text-[#b08e23] outline-none"
+                  className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-extrabold text-[#b08e23] outline-none focus:ring-1 focus:ring-[#d4af37]"
                 />
               </div>
 
@@ -134,7 +135,7 @@ export default function AssignVoucherModal({
                   id="assign-voucher-initial-pay-input"
                   type="number" step="0.01" required min="0" max={Number(assignPrice)}
                   value={assignAmountPaid} onChange={e => setAssignAmountPaid(Number(e.target.value))}
-                  className="w-full p-3 bg-white border border-stone-200 border-l-4 border-l-emerald-400 rounded-xl font-extrabold text-stone-800 outline-none focus:border-l-emerald-600 focus:bg-emerald-50/30"
+                  className="w-full p-3 bg-white border border-stone-200 border-l-4 border-l-emerald-500 rounded-xl font-extrabold text-stone-800 outline-none focus:border-l-emerald-600 focus:bg-emerald-50/20"
                 />
               </div>
 
@@ -156,16 +157,17 @@ export default function AssignVoucherModal({
           </form>
         </div>
 
-        <DialogFooter className="sticky bottom-0 left-0 w-full p-8 border-t border-stone-100 bg-gradient-to-t from-white via-white to-white/0 rounded-b-2xl z-20">
-          <button 
+        <DialogFooter className="sticky bottom-0 left-0 w-full p-8 border-t border-stone-100 bg-white rounded-b-2xl z-20">
+          <Button 
             id="assign-voucher-submit-btn"
             form="assign-voucher-form"
             type="submit" 
+            variant="luxury"
             disabled={saving || !selectedTemplateId} 
-            className="w-full py-4 bg-stone-800 text-white font-extrabold rounded-xl hover:bg-stone-900 transition-all flex justify-center items-center shadow-lg disabled:opacity-50"
+            className="w-full py-3.5 rounded-xl font-bold"
           >
             {saving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : (t('dashboard.vouchers.emit_confirm') || "Crear y Asignar Bono")}
-          </button>
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

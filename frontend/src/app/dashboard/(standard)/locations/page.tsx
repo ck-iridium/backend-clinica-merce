@@ -10,6 +10,7 @@ import { useAuthRole } from "@/hooks/useAuthRole";
 import { useLanguage } from "@/app/contexts/LanguageContext";
 import PlanLimitsCard from "@/components/PlanLimitsCard";
 
+import { Button } from "@/components/ui/button";
 import { Location, LocationFormData } from "./components/types";
 import { getCookie, getPublicLocationUrl } from "./components/locationUtils";
 import LocationCard from "./components/LocationCard";
@@ -263,14 +264,15 @@ export default function LocationsPage() {
         </div>
 
         {!isHomeOnly && (
-          <button
+          <Button
             id="locations-add-btn"
+            variant="luxury"
             onClick={handleCreateOpen}
-            className="flex items-center gap-2.5 bg-stone-900 hover:bg-[#d4af37] hover:text-stone-950 text-white px-6 py-3.5 rounded-2xl font-bold text-sm transition-all shadow-lg active:scale-95 duration-300 shrink-0"
+            className="gap-2.5 px-6 py-3.5 rounded-2xl shrink-0"
           >
             <Plus size={18} strokeWidth={2} />
             {t('dashboard.locations.add_btn')}
-          </button>
+          </Button>
         )}
       </div>
 
