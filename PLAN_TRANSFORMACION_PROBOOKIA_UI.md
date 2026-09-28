@@ -47,7 +47,7 @@
 - [x] **3.5** Agenda (`/dashboard/calendar`): Cuadrícula elástica modernizada, skeletons de carga multi-columna, tarjetas Quiet Luxury pastel y modales shadcn/ui.
 - [x] **3.6** Caja y TPV (`/dashboard/pos`): Unificación de ticket y botones de cobro rápido con estética dark luxury y Bento catalog.
 - [x] **3.7** Servicios y Catálogo (`/dashboard/services`): DataGrid premium con bordes suaves, inputs de edición directa en línea, modales de categorías y editor editorial con Live Preview.
-- [ ] **3.8** Integración de Componentes PRO (Command Menu `⌘K`, Spotlight Cards y Drawers laterales para vistas rápidas).
+- [x] **3.8** Integración de Componentes PRO: Command Menu Global (`⌘K` / `Ctrl+K`) omnipotente con búsqueda en vivo de pacientes y acciones directas + Primitiva `SpotlightCard` (estilo Lightswind/Aceternity) con halo dorado interactivo en planes y sedes.
 
 ---
 

@@ -302,8 +302,9 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
           className={`w-full group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 text-stone-500 hover:bg-stone-900 hover:text-white border border-transparent hover:border-stone-800 mb-2 dashboard-sidebar-nav-item ${isGenerating ? 'opacity-30 grayscale cursor-not-allowed' : ''}`}
         >
           <Search size={22} strokeWidth={1.5} />
-          <span className="absolute left-full top-1/2 -translate-y-1/2 ml-5 px-4 py-2 bg-stone-800 text-white text-[12px] font-black uppercase tracking-[0.15em] rounded-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-300 whitespace-nowrap z-[110] shadow-2xl border border-stone-700 translate-x-[-15px] group-hover/item:translate-x-0 pointer-events-none">
-            {t('dashboard.menu.search_placeholder')}
+          <span className="absolute left-full top-1/2 -translate-y-1/2 ml-5 px-4 py-2 bg-stone-900 text-white text-[12px] font-bold rounded-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-300 whitespace-nowrap z-[110] shadow-2xl border border-stone-800 translate-x-[-15px] group-hover/item:translate-x-0 pointer-events-none flex items-center gap-2">
+            <span>{t('dashboard.menu.search_placeholder') || 'Buscar...'}</span>
+            <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-white/10 text-stone-300 rounded border border-white/20">⌘K</kbd>
           </span>
         </button>
 

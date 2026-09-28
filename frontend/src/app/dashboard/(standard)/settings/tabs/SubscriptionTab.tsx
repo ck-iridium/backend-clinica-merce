@@ -3,6 +3,7 @@ import { useLanguage } from '@/app/contexts/LanguageContext';
 import { CreditCard, CheckCircle2, Sparkles, TrendingUp, Loader2, Check, Copy, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { SpotlightCard } from '@/components/ui/spotlight-card';
 import {
   Dialog,
   DialogContent,
@@ -403,13 +404,14 @@ export default function SubscriptionTab() {
             const isCurrent = currentPlan === plan.id;
 
             return (
-              <div 
+              <SpotlightCard 
                 key={plan.id}
-                className={`bg-white rounded-3xl p-6 md:p-8 border transition-all duration-300 flex flex-col justify-between hover:shadow-lg
-                  ${isCurrent ? 'border-[#D4AF37] ring-1 ring-[#D4AF37]/30 shadow-sm relative overflow-hidden' : 'border-stone-200/80 hover:border-[#D4AF37]/40'}`}
+                spotlightColor={isCurrent ? "rgba(212, 175, 55, 0.22)" : "rgba(212, 175, 55, 0.12)"}
+                className={`p-6 md:p-8 flex flex-col justify-between
+                  ${isCurrent ? 'border-[#D4AF37] ring-1 ring-[#D4AF37]/30 shadow-sm relative' : 'border-stone-200/80 hover:border-[#D4AF37]/40'}`}
               >
                 {isCurrent && (
-                  <div className="absolute top-0 right-0 bg-[#D4AF37] text-stone-950 px-3 py-1 rounded-bl-xl text-[9px] font-black uppercase tracking-widest">
+                  <div className="absolute top-0 right-0 bg-[#D4AF37] text-stone-950 px-3 py-1 rounded-bl-xl text-[9px] font-black uppercase tracking-widest z-20">
                     Activo
                   </div>
                 )}
@@ -456,7 +458,7 @@ export default function SubscriptionTab() {
                     'Mejorar / Contratar'
                   )}
                 </Button>
-              </div>
+              </SpotlightCard>
             );
           })}
         </div>

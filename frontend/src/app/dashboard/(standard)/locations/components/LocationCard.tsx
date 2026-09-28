@@ -13,6 +13,7 @@ import {
   ExternalLink 
 } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { SpotlightCard } from '@/components/ui/spotlight-card';
 import { Location } from './types';
 
 interface LocationCardProps {
@@ -33,14 +34,15 @@ export default function LocationCard({
   const { t } = useLanguage();
 
   return (
-    <div
-      className={`bg-white border transition-all duration-300 rounded-3xl p-7 flex flex-col justify-between hover:shadow-[0_12px_36px_-12px_rgba(0,0,0,0.08)] relative overflow-hidden ${
+    <SpotlightCard
+      spotlightColor={location.is_active ? "rgba(212, 175, 55, 0.16)" : "rgba(212, 175, 55, 0.05)"}
+      className={`p-7 flex flex-col justify-between relative ${
         location.is_active ? 'border-stone-200/70 shadow-sm' : 'border-stone-100 opacity-60'
       }`}
     >
       {/* Detalle sutil de lujo en la cabecera de la tarjeta activa */}
       {location.is_active && (
-        <div className="absolute top-0 right-0 w-28 h-1 bg-gradient-to-r from-stone-900 via-[#d4af37] to-stone-900" />
+        <div className="absolute top-0 right-0 w-28 h-1 bg-gradient-to-r from-stone-900 via-[#d4af37] to-stone-900 z-20" />
       )}
 
       <div className="space-y-4">
@@ -154,6 +156,6 @@ export default function LocationCard({
           </button>
         </div>
       </div>
-    </div>
+    </SpotlightCard>
   );
 }
