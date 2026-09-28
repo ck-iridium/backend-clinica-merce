@@ -1,7 +1,8 @@
 "use client"
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { AlertCircle, CheckCircle2, XCircle, Info } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, XCircle, Info, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export interface FeedbackConfig {
   type: 'success' | 'error' | 'confirm' | 'info';
@@ -27,34 +28,42 @@ export default function FeedbackModal({
   cancelText = 'Cancelar'
 }: FeedbackModalProps) {
   
+  const isDestructive = 
+    type === 'confirm' && 
+    /eliminar|borrar|anular|cancelar|delete|remover/i.test(`${title} ${message} ${confirmText}`);
+
   const iconMap = {
     success: { 
-      icon: <CheckCircle2 size={42} strokeWidth={1.2} />, 
-      color: 'text-emerald-500', 
-      bg: 'bg-emerald-50', 
+      icon: <CheckCircle2 size={28} strokeWidth={1.5} />, 
+      color: 'text-emerald-600', 
+      bg: 'bg-emerald-50/80', 
       border: 'border-emerald-100', 
-      button: 'bg-stone-800 hover:bg-stone-900' 
+      buttonClass: 'bg-stone-900 hover:bg-[#d4af37] hover:text-stone-950 text-white' 
     },
     error: { 
-      icon: <XCircle size={42} strokeWidth={1.2} />, 
-      color: 'text-rose-500', 
-      bg: 'bg-rose-50', 
+      icon: <XCircle size={28} strokeWidth={1.5} />, 
+      color: 'text-rose-600', 
+      bg: 'bg-rose-50/80', 
       border: 'border-rose-100', 
-      button: 'bg-stone-800 hover:bg-stone-900' 
+      buttonClass: 'bg-stone-900 hover:bg-stone-800 text-white' 
     },
     confirm: { 
-      icon: <AlertCircle size={42} strokeWidth={1.2} />, 
-      color: 'text-[#d9a05b]', 
-      bg: 'bg-[#fdf8f3]', 
-      border: 'border-[#f3e9df]', 
-      button: 'bg-[#bf7d6b] hover:bg-[#a66a5a] shadow-lg shadow-[#bf7d6b]/20' 
+      icon: isDestructive 
+        ? <Trash2 size={26} strokeWidth={1.5} /> 
+        : <AlertTriangle size={26} strokeWidth={1.5} />, 
+      color: isDestructive ? 'text-rose-600' : 'text-[#b08e23]', 
+      bg: isDestructive ? 'bg-rose-50/80' : 'bg-amber-50/80', 
+      border: isDestructive ? 'border-rose-100' : 'border-amber-100/60', 
+      buttonClass: isDestructive
+        ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-sm'
+        : 'bg-stone-950 hover:bg-[#d4af37] hover:text-stone-950 text-white'
     },
     info: { 
-      icon: <Info size={42} strokeWidth={1.2} />, 
-      color: 'text-sky-500', 
-      bg: 'bg-sky-50', 
+      icon: <Info size={28} strokeWidth={1.5} />, 
+      color: 'text-sky-600', 
+      bg: 'bg-sky-50/80', 
       border: 'border-sky-100', 
-      button: 'bg-stone-800 hover:bg-stone-900' 
+      buttonClass: 'bg-stone-900 hover:bg-stone-800 text-white' 
     }
   };
 
@@ -67,60 +76,77 @@ export default function FeedbackModal({
     setMounted(true);
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
     return () => {
       document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [onClose]);
 
   if (!mounted) return null;
 
   // Renderizamos en un Portal para romper cualquier contexto de apilamiento conflictivo
   return createPortal(
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-6 sm:p-4 pointer-events-auto">
-      {/* Backdrop con Blur y bloqueo total */}
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 pointer-events-auto">
+      {/* Backdrop con Blur y oscurecimiento suave */}
       <div 
-        className="absolute inset-0 bg-stone-900/40 backdrop-blur-md transition-opacity duration-300" 
+        className="absolute inset-0 bg-stone-950/40 backdrop-blur-md transition-opacity duration-300" 
         onClick={(e) => {
           e.stopPropagation();
           if (type !== 'confirm') onClose();
         }}
-      ></div>
+      />
       
-      {/* Modal Box: Isla Blanca Premium con radio 0.75rem (rounded-xl) */}
+      {/* Modal Box: Quiet Luxury Card */}
       <div 
-        className="relative w-full max-w-md bg-white rounded-xl p-10 sm:p-12 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.15)] border border-stone-100 transform animate-in zoom-in-95 fade-in duration-300 pointer-events-auto"
+        className="relative w-full max-w-[420px] bg-white rounded-3xl p-8 sm:p-9 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18)] border border-stone-200/60 transform animate-in zoom-in-95 fade-in duration-200 pointer-events-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-col items-center text-center">
-          {/* Icon Container Soft con radio 0.75rem unificado */}
-          <div className={`w-24 h-24 rounded-xl flex items-center justify-center mb-8 rotate-3 ${theme.color} ${theme.bg} border ${theme.border} shadow-sm`}>
+          {/* Icon Container Armónico */}
+          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-5 ${theme.color} ${theme.bg} border ${theme.border} shadow-sm`}>
             {theme.icon}
           </div>
           
-          <h2 className="text-3xl font-serif font-light text-stone-800 mb-4 tracking-tight leading-none">
+          <h2 className="text-2xl font-serif font-normal text-stone-900 mb-2 tracking-tight leading-snug">
             {title}
           </h2>
           
-          <p className="text-stone-400 font-medium mb-10 text-base leading-relaxed max-w-[280px]">
+          <p className="text-stone-500 font-medium mb-8 text-sm leading-relaxed max-w-[320px]">
             {message}
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 w-full justify-center items-center">
+          <div className="flex flex-col-reverse sm:flex-row gap-3 w-full justify-center">
             {type === 'confirm' && (
-               <button 
+              <Button 
+                variant="outline"
                 onClick={(e) => { e.stopPropagation(); onClose(); }}
-                className="order-2 sm:order-1 text-sm font-bold text-stone-400 hover:text-stone-600 transition-all border-b-2 border-transparent hover:border-stone-200 py-1"
-               >
-                 {cancelText}
-               </button>
+                className="w-full sm:w-auto flex-1 rounded-xl border-stone-200 text-stone-600 hover:text-stone-900 hover:bg-stone-50 font-semibold"
+              >
+                {cancelText}
+              </Button>
             )}
             
-            <button 
-              onClick={(e) => { e.stopPropagation(); type === 'confirm' ? onConfirmHandler() : onClose(); }}
-              className={`order-1 sm:order-2 px-10 py-4 rounded-full font-bold text-white transition-all active:scale-95 text-sm uppercase tracking-widest ${theme.button}`}
+            <Button 
+              onClick={(e) => { 
+                e.stopPropagation(); 
+                if (type === 'confirm') {
+                  onConfirmHandler();
+                } else {
+                  onClose();
+                }
+              }}
+              className={`w-full sm:w-auto flex-1 rounded-xl font-semibold transition-all duration-200 ${theme.buttonClass}`}
             >
               {type === 'confirm' ? confirmText : 'Entendido'}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
