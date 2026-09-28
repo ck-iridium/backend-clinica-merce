@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
-import { Calendar } from "lucide-react";
+import { Calendar, ClipboardList, FileText, Scale, Printer } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { SectorMetadataDisplay } from './SectorMetadataDisplay';
 
 interface ClientTabsContentProps {
@@ -44,10 +46,12 @@ export function ClientTabsContent({
 
   if (activeTab === 'overview') {
     return (
-      <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-stone-100 space-y-6">
-        <h3 className="text-lg font-serif font-light text-stone-800 border-b border-stone-55 pb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-full bg-stone-50 border border-stone-150 flex items-center justify-center text-xs">📋</span>
-          {t(`dashboard.clients.sectors.${businessSector}`) || 'Notas Internas'}
+      <Card className="rounded-[2rem] border-stone-200/70 bg-white/80 backdrop-blur-xl p-6 sm:p-8 shadow-sm space-y-6">
+        <h3 className="text-xl font-serif font-bold text-stone-900 border-b border-stone-100 pb-4 flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-300/30 flex items-center justify-center text-[#B38F26] shadow-xs">
+            <ClipboardList className="w-4 h-4" />
+          </div>
+          <span>{t(`dashboard.clients.sectors.${businessSector}`) || 'Notas Internas'}</span>
         </h3>
         
         <div className="px-1">
@@ -56,7 +60,7 @@ export function ClientTabsContent({
             value={sectorMetadata}
           />
         </div>
-      </div>
+      </Card>
     );
   }
 
@@ -221,49 +225,62 @@ export function ClientTabsContent({
 
   if (activeTab === 'consents') {
     return (
-      <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-stone-100 space-y-6">
-        <div className="flex justify-between items-center border-b border-stone-50 pb-4">
-          <h3 className="text-lg font-serif font-light text-stone-800">
+      <Card className="rounded-[2rem] border-stone-200/70 bg-white/80 backdrop-blur-xl p-6 sm:p-8 shadow-sm space-y-6">
+        <div className="flex justify-between items-center border-b border-stone-100 pb-4">
+          <h3 className="text-xl font-serif font-bold text-stone-900">
             {t('dashboard.clients.consents_signatures_title') || 'Consentimientos y Firmas'}
           </h3>
-          <button 
+          <Button
             id="sign-consent-btn"
             onClick={onNewConsentClick}
-            className="text-xs font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 hover:bg-emerald-100 transition-colors shadow-sm"
+            variant="luxury"
+            size="sm"
+            className="shadow-luxury gap-1.5 text-xs h-9 px-4"
           >
-            {t('dashboard.clients.new_consent') || '+ Firmar Consentimiento'}
-          </button>
+            <span>{t('dashboard.clients.new_consent') || '+ Firmar Consentimiento'}</span>
+          </Button>
         </div>
 
         {consents.length === 0 ? (
-          <div className="text-center py-10">
-            <span className="text-stone-300 text-3xl mb-2 block">⚖️</span>
-            <p className="text-stone-500 font-medium text-sm">
+          <div className="text-center py-12 space-y-2">
+            <Scale className="w-10 h-10 text-stone-300 mx-auto mb-2" strokeWidth={1.5} />
+            <p className="text-stone-700 font-serif font-bold text-sm">
               {t('dashboard.clients.no_signed_docs_body') || 'No hay documentos firmados.'}
             </p>
-            <p className="text-stone-400 text-xs mt-1">
+            <p className="text-stone-400 text-xs max-w-sm mx-auto">
               {t('dashboard.clients.no_signed_docs_desc_custom') || 'El paciente aún no ha firmado ningún consentimiento informado.'}
             </p>
           </div>
         ) : (
           <div className="space-y-3">
             {consents.map(c => (
-              <div key={c.id} className="flex flex-col sm:flex-row gap-4 items-start sm:items-center p-4 rounded-xl border border-stone-100 bg-[#FAFAFA] hover:bg-stone-50 transition-colors">
-                <div className="w-9 h-9 rounded-lg bg-stone-200 flex items-center justify-center text-stone-500 shrink-0">📄</div>
-                <div className="flex-1">
-                  <p className="font-bold text-stone-850 text-sm">{c.document_title}</p>
-                  <p className="text-[10px] text-stone-400 font-semibold mt-0.5">
+              <div key={c.id} className="flex flex-col sm:flex-row gap-4 items-start sm:items-center p-4 rounded-2xl border border-stone-200/60 bg-white/70 hover:bg-stone-50 transition-colors shadow-2xs">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-300/30 flex items-center justify-center text-[#B38F26] shrink-0 shadow-xs">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-stone-900 text-sm truncate">{c.document_title}</p>
+                  <p className="text-[11px] text-stone-400 font-medium mt-0.5 font-mono">
                     {t('dashboard.clients.signed_on') || 'Firmado:'} {new Date(c.signed_at).toLocaleString(dateLocale, { dateStyle: 'medium', timeStyle: 'short' })}
                   </p>
                 </div>
-                <a id={`view-consent-link-${c.id}`} href={`/dashboard/clients/${clientId}/consents/${c.id}`} className="w-full sm:w-auto text-center px-4 py-2 bg-white border border-stone-200 text-stone-600 font-bold text-xs rounded-lg shadow-sm hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors">
-                  {t('dashboard.clients.view_print') || 'Ver / Imprimir'}
-                </a>
+                <Button 
+                  id={`view-consent-link-${c.id}`} 
+                  variant="outline" 
+                  size="sm" 
+                  asChild
+                  className="w-full sm:w-auto gap-1.5 text-xs font-semibold h-9 px-3.5 bg-white hover:border-[#D4AF37] hover:text-[#D4AF37]"
+                >
+                  <a href={`/dashboard/clients/${clientId}/consents/${c.id}`}>
+                    <Printer className="w-3.5 h-3.5 text-stone-400" />
+                    <span>{t('dashboard.clients.view_print') || 'Ver / Imprimir'}</span>
+                  </a>
+                </Button>
               </div>
             ))}
           </div>
         )}
-      </div>
+      </Card>
     );
   }
 

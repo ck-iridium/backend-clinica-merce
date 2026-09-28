@@ -33,18 +33,19 @@
 - [x] **2.2** Lista de clínicas/tenants en tarjeta refinada con badges de estado (`Activo`, `Periodo de Gracia`, `Suspendido`).
 - [x] **2.3** Ficha de detalle de clínica con Bento Grid de KPIs (Ingresos, especialistas, plan actual).
 - [x] **2.4** Modales de acción rápida (Cambiar Plan, Suspender, Reactivar Acceso) con `<Dialog />` de shadcn.
-- [ ] **2.5** *Validación visual del usuario en navegador y aprobación.*
+- [x] **2.5** *Validación visual del usuario en navegador y aprobación.*
 
 ---
 
 ### 📊 FASE 3: El Dashboard de los Tenants (`/dashboard`)
 *Objetivo: Unificar la experiencia operativa de las clínicas con consistencia total.*
 
-- [ ] **3.1** Cabecera de bienvenida y tarjetas de resumen (KPIs de Citas, Clientes e Ingresos) con Bento Grid.
-- [ ] **3.2** Ajustes Generales (`/dashboard/settings`): Pestaña de Empresa y Suscripción Bizum con `<Tabs />` de shadcn.
-- [ ] **3.3** Clientes (`/dashboard/clients`): Tabla de clientes con buscador rápido y menú desplegable de 3 puntos.
-- [ ] **3.4** Agenda (`/dashboard/calendar`): Preservar la cuadrícula funcional aplicando el nuevo sistema de botones y tarjetas.
-- [ ] **3.5** Caja y TPV (`/dashboard/pos`): Unificación de ticket y botones de cobro rápido.
+- [x] **3.1** Cabecera de bienvenida y tarjetas de resumen (KPIs de Citas, Clientes e Ingresos) con Bento Grid y shadcn Button/Card.
+- [x] **3.2** Barra lateral y Navegación del Tenant (`DashboardSidebar.tsx`): Estados dorados activos y menús refinados.
+- [ ] **3.3** Ajustes Generales (`/dashboard/settings`): Pestaña de Empresa y Suscripción Bizum con `<Tabs />` de shadcn.
+- [x] **3.4** Clientes (`/dashboard/clients`): Directorio con buscador rápido, avatares monograma, fichas de clientes y visor legal.
+- [ ] **3.5** Agenda (`/dashboard/calendar`): Preservar la cuadrícula funcional aplicando el nuevo sistema de botones y tarjetas.
+- [ ] **3.6** Caja y TPV (`/dashboard/pos`): Unificación de ticket y botones de cobro rápido.
 
 ---
 

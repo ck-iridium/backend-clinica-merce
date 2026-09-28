@@ -1,8 +1,10 @@
 "use client"
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { CalendarDays, Users, Banknote, Activity, Plus, UserPlus, Zap, ChevronRight, CalendarCheck } from 'lucide-react';
+import { CalendarDays, Users, Banknote, Activity, Plus, UserPlus, Zap, ChevronRight, CalendarCheck, Clock, Sparkles } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { useAuthRole } from '@/hooks/useAuthRole';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 
@@ -85,8 +87,10 @@ export default function DashboardPage() {
       label: t('dashboard.home.today_appointments'),
       value: todayAppointments.length.toString(),
       icon: CalendarDays,
-      color: 'text-[#d9777f]',
-      bg: 'bg-[#fdf2f3]',
+      color: 'text-[#B38F26]',
+      bg: 'bg-amber-500/10',
+      border: 'border-amber-200/50',
+      glow: 'from-amber-500/10 to-transparent',
     },
     {
       id: 'new_clients',
@@ -94,7 +98,9 @@ export default function DashboardPage() {
       value: clients.length.toString(),
       icon: Users,
       color: 'text-sky-600',
-      bg: 'bg-sky-50',
+      bg: 'bg-sky-500/10',
+      border: 'border-sky-200/50',
+      glow: 'from-sky-500/10 to-transparent',
     },
     {
       id: 'estimated_revenue',
@@ -102,15 +108,19 @@ export default function DashboardPage() {
       value: `${estimatedRevenueValue} €`,
       icon: Banknote,
       color: 'text-emerald-600',
-      bg: 'bg-emerald-50',
+      bg: 'bg-emerald-500/10',
+      border: 'border-emerald-200/50',
+      glow: 'from-emerald-500/10 to-transparent',
     },
     {
       id: 'occupancy_rate',
       label: t('dashboard.home.occupancy_rate'),
       value: `${occupancyRateValue}%`,
       icon: Activity,
-      color: 'text-[#d4af37]',
-      bg: 'bg-amber-50',
+      color: 'text-[#D4AF37]',
+      bg: 'bg-stone-900/5',
+      border: 'border-stone-200/60',
+      glow: 'from-amber-400/10 to-transparent',
     },
   ].filter(m => {
     if (role?.toLowerCase() === 'especialista') {
@@ -125,155 +135,189 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="animate-in fade-in duration-500">
+    <div className="animate-in fade-in duration-500 space-y-8">
 
-      {/* ── Bienvenida ── */}
-      <div className="mb-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-1">{t('dashboard.home.control_panel')}</p>
-          <h1 className="text-4xl md:text-5xl font-serif font-semibold text-stone-800 leading-tight">
-            {t('dashboard.home.welcome')}, {userName}
+      {/* ── Bienvenida & Acciones Rápidas ── */}
+      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 pb-2">
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-100/80 border border-stone-200/60 text-[10px] font-bold uppercase tracking-widest text-stone-500">
+            <Sparkles className="w-3 h-3 text-[#D4AF37]" />
+            <span>{t('dashboard.home.control_panel')}</span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-stone-900 tracking-tight">
+            {t('dashboard.home.welcome')}, <span className="text-stone-700">{userName || 'Equipo'}</span>
           </h1>
-          <p className="text-stone-400 font-medium mt-2 text-sm capitalize">
+          <p className="text-stone-400 font-sans font-medium text-xs sm:text-sm capitalize">
             {getFormattedDate()}
           </p>
         </div>
 
-        {/* ── Acciones Rápidas ── */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <button
+        {/* ── Acciones Rápidas con shadcn Button ── */}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <Button
             onClick={() => router.push('/dashboard/calendar')}
-            className="flex items-center gap-2 bg-stone-900 hover:bg-[#d9777f] text-white px-5 py-3 rounded-2xl font-bold text-sm shadow-sm transition-all active:scale-95"
+            variant="luxury"
+            size="default"
+            className="gap-2 shadow-luxury h-11"
           >
-            <Plus size={18} strokeWidth={1.5} />
-            {t('dashboard.home.new_appointment')}
-          </button>
-          <button
+            <Plus className="w-4 h-4" strokeWidth={2} />
+            <span>{t('dashboard.home.new_appointment')}</span>
+          </Button>
+
+          <Button
             onClick={() => router.push('/dashboard/clients')}
-            className="flex items-center gap-2 bg-white hover:bg-stone-50 text-stone-700 border border-stone-200 px-5 py-3 rounded-2xl font-bold text-sm shadow-sm transition-all active:scale-95"
+            variant="outline"
+            size="default"
+            className="gap-2 h-11 bg-white/90 border-stone-200/80 hover:bg-stone-50 text-stone-700 font-semibold"
           >
-            <UserPlus size={18} strokeWidth={1.5} />
-            {t('dashboard.home.new_client')}
-          </button>
+            <UserPlus className="w-4 h-4 text-stone-500" strokeWidth={2} />
+            <span>{t('dashboard.home.new_client')}</span>
+          </Button>
           
           {(role?.toLowerCase() !== 'especialista') && (
-            <button
+            <Button
               onClick={() => router.push('/dashboard/pos')}
-              className="flex items-center gap-2 bg-white hover:bg-stone-50 text-stone-700 border border-stone-200 px-5 py-3 rounded-2xl font-bold text-sm shadow-sm transition-all active:scale-95"
+              variant="outline"
+              size="default"
+              className="gap-2 h-11 bg-white/90 border-stone-200/80 hover:bg-stone-50 text-stone-700 font-semibold"
             >
-              <Zap size={18} strokeWidth={1.5} />
-              {t('dashboard.home.quick_sale')}
-            </button>
+              <Zap className="w-4 h-4 text-amber-500" strokeWidth={2} />
+              <span>{t('dashboard.home.quick_sale')}</span>
+            </Button>
           )}
         </div>
       </div>
 
-      {/* ── Grid de Métricas ── */}
+      {/* ── Grid de Métricas (Bento Grid KPIs) ── */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {Array(4).fill(0).map((_, i) => (
-            <div key={i} className="bg-white rounded-[2.5rem] border border-stone-100 shadow-sm p-7 flex items-center justify-between">
+            <Card key={i} className="rounded-[2rem] border-stone-200/60 p-6 flex items-center justify-between">
               <div className="space-y-3">
-                <Skeleton className="h-3 w-20 rounded-full" />
-                <Skeleton className="h-8 w-16 rounded-lg" />
+                <Skeleton className="h-3 w-24 rounded-full" />
+                <Skeleton className="h-8 w-16 rounded-xl" />
               </div>
-              <Skeleton className="w-14 h-14 rounded-2xl" />
-            </div>
+              <Skeleton className="w-13 h-13 rounded-2xl" />
+            </Card>
           ))}
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {metrics.map((m) => {
               const Icon = m.icon;
               return (
-                <div
+                <Card
                   key={m.label}
-                  className="bg-white rounded-[2.5rem] border border-stone-100 shadow-sm p-7 flex items-center justify-between hover:shadow-md transition-shadow"
+                  className="relative overflow-hidden rounded-[2rem] border border-stone-200/70 bg-white/80 backdrop-blur-xl p-6 shadow-sm hover:shadow-luxury hover:-translate-y-0.5 transition-all duration-300 group"
                 >
-                  <div>
-                    <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-2">{m.label}</p>
-                    <p className="text-4xl font-extrabold text-stone-800">{m.value}</p>
+                  <div className={`absolute top-0 right-0 w-28 h-28 bg-gradient-to-bl ${m.glow} rounded-bl-full pointer-events-none opacity-60 group-hover:opacity-100 transition-opacity`} />
+                  
+                  <div className="flex items-center justify-between relative z-10">
+                    <div className="space-y-1.5">
+                      <p className="text-[11px] font-bold text-stone-400 uppercase tracking-widest">{m.label}</p>
+                      <p className="text-3xl sm:text-4xl font-extrabold text-stone-900 tracking-tight font-sans">{m.value}</p>
+                    </div>
+                    <div className={`w-13 h-13 rounded-2xl ${m.bg} ${m.border} border flex items-center justify-center ${m.color} shrink-0 shadow-xs transition-transform duration-300 group-hover:scale-105`}>
+                      <Icon className="w-6 h-6" strokeWidth={1.75} />
+                    </div>
                   </div>
-                  <div className={`w-14 h-14 rounded-2xl ${m.bg} flex items-center justify-center ${m.color} shrink-0`}>
-                    <Icon size={26} strokeWidth={1.5} />
-                  </div>
-                </div>
+                </Card>
               );
             })}
           </div>
 
           {/* ── Panel Tu Día de un Vistazo ── */}
-          <div className="mt-8 bg-white rounded-[2.5rem] border border-stone-100 shadow-sm p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-serif font-semibold text-stone-800">{t('dashboard.home.day_at_glance')}</h2>
-              <span className="text-xs font-bold text-stone-400 uppercase tracking-widest">
+          <Card className="rounded-[2rem] border border-stone-200/70 bg-white/80 backdrop-blur-xl p-6 sm:p-8 shadow-sm">
+            <div className="flex items-center justify-between pb-6 border-b border-stone-100/80">
+              <div className="space-y-1">
+                <h2 className="text-2xl font-serif font-bold text-stone-900 tracking-tight">{t('dashboard.home.day_at_glance')}</h2>
+                <p className="text-xs text-stone-400 font-sans font-medium">Programación del día en tiempo real</p>
+              </div>
+              <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-stone-600 bg-stone-100/90 px-3.5 py-1.5 rounded-full border border-stone-200/60 shadow-xs">
+                <Clock className="w-3.5 h-3.5 text-[#D4AF37]" />
                 {todayAppointments.length} {t('dashboard.home.citas_hoy')}
               </span>
             </div>
 
             {todayAppointments.length === 0 ? (
               // ── Empty State ──
-              <div className="flex flex-col items-center justify-center py-16 gap-4">
-                <CalendarCheck size={72} strokeWidth={1} className="text-stone-200" />
-                <p className="text-stone-400 font-semibold text-base text-center max-w-xs">
-                  {t('dashboard.home.no_appointments')}<br />
-                  <span className="text-stone-300 font-medium text-sm">{t('dashboard.home.rest_or_manage')}</span>
-                </p>
-                <button
+              <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-stone-50 border border-stone-200/60 flex items-center justify-center text-stone-400 shadow-xs">
+                  <CalendarCheck className="w-8 h-8 text-stone-300" strokeWidth={1.5} />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-stone-800 font-serif font-bold text-lg">
+                    {t('dashboard.home.no_appointments')}
+                  </p>
+                  <p className="text-stone-400 font-sans text-xs max-w-sm leading-relaxed">
+                    {t('dashboard.home.rest_or_manage')}
+                  </p>
+                </div>
+                <Button
                   onClick={() => router.push('/dashboard/calendar')}
-                  className="mt-2 flex items-center gap-2 bg-stone-900 hover:bg-[#d9777f] text-white px-5 py-2.5 rounded-2xl font-bold text-sm transition-all active:scale-95"
+                  variant="luxury"
+                  size="default"
+                  className="mt-2 gap-2 shadow-luxury"
                 >
-                  <Plus size={16} strokeWidth={1.5} /> {t('dashboard.home.new_appointment')}
-                </button>
+                  <Plus className="w-4 h-4" strokeWidth={2} />
+                  <span>{t('dashboard.home.new_appointment')}</span>
+                </Button>
               </div>
             ) : (
-              // ── Lista de citas ──
-              <div className="divide-y divide-stone-100">
+              // ── Lista de Citas Refinada ──
+              <div className="divide-y divide-stone-100/80 pt-2">
                 {todayAppointments.map((appt: any) => {
                   const apptDate = new Date(appt.start_time.endsWith('Z') ? appt.start_time.slice(0, -1) : appt.start_time);
                   const hora = apptDate.toLocaleTimeString(language === 'es' ? 'es-ES' : language === 'en' ? 'en-US' : 'fr-FR', { hour: '2-digit', minute: '2-digit' });
-                  const clientName = clientMap.get(appt.client_id) || 'Cliente desconocido';
-                  const serviceName = serviceMap.get(appt.service_id) || 'Tratamiento';
+                  const clientName = clientMap.get(appt.client_id) || 'Cliente';
+                  const serviceName = serviceMap.get(appt.service_id) || 'Tratamiento General';
+                  
+                  const isConfirmed = appt.status === 'confirmed';
+                  const isWeb = appt.status === 'web_pending';
+
                   return (
                     <div
                       key={appt.id}
                       onClick={() => router.push('/dashboard/calendar')}
-                      className="flex items-center gap-5 py-4 cursor-pointer group hover:bg-stone-50 -mx-2 px-2 rounded-2xl transition-colors"
+                      className="flex items-center gap-4 sm:gap-6 py-4.5 cursor-pointer group hover:bg-stone-50/70 -mx-3 px-3 sm:-mx-4 sm:px-4 rounded-2xl transition-all duration-200"
                     >
                       {/* Hora */}
-                      <div className="w-16 shrink-0 text-center">
-                        <span className="text-lg font-extrabold text-stone-800 leading-none">{hora}</span>
-                        <p className="text-[10px] font-bold text-stone-300 uppercase tracking-widest mt-0.5">h</p>
+                      <div className="w-16 shrink-0 text-center bg-stone-50/80 border border-stone-200/50 py-2 rounded-xl group-hover:border-[#D4AF37]/40 transition-colors">
+                        <span className="text-base font-bold text-stone-900 leading-none font-mono">{hora}</span>
+                        <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mt-0.5">hrs</p>
                       </div>
-
-                      {/* Separador vertical */}
-                      <div className="w-px h-10 bg-stone-100 shrink-0" />
 
                       {/* Cliente + Tratamiento */}
                       <div className="flex-1 min-w-0">
-                        <p className="font-bold text-stone-800 truncate">{clientName}</p>
-                        <p className="text-sm text-stone-400 font-medium truncate">{serviceName}</p>
+                        <p className="font-semibold text-stone-900 truncate text-sm sm:text-base group-hover:text-stone-950 transition-colors">
+                          {clientName}
+                        </p>
+                        <p className="text-xs text-stone-400 font-medium truncate mt-0.5">
+                          {serviceName}
+                        </p>
                       </div>
 
                       {/* Estado badge */}
-                      <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shrink-0
-                        ${ appt.status === 'confirmed' ? 'bg-[#fdf2f3] text-[#d9777f]'
-                          : appt.status === 'web_pending' ? 'bg-orange-50 text-orange-500'
-                          : 'bg-stone-100 text-stone-400'}`}>
-                        {appt.status === 'confirmed' ? t('dashboard.home.confirmed')
-                          : appt.status === 'web_pending' ? t('dashboard.home.web')
+                      <span className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shrink-0 border
+                        ${isConfirmed 
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200/60'
+                          : isWeb 
+                          ? 'bg-amber-50 text-amber-700 border-amber-200/60'
+                          : 'bg-stone-100 text-stone-600 border-stone-200/60'}`}>
+                        {isConfirmed ? t('dashboard.home.confirmed')
+                          : isWeb ? t('dashboard.home.web')
                           : t('dashboard.home.pending')}
                       </span>
 
                       {/* Chevron */}
-                      <ChevronRight size={18} strokeWidth={1.5} className="text-stone-300 group-hover:text-stone-500 transition-colors shrink-0" />
+                      <ChevronRight className="w-4 h-4 text-stone-300 group-hover:text-stone-700 group-hover:translate-x-0.5 transition-all shrink-0" strokeWidth={2} />
                     </div>
                   );
                 })}
               </div>
             )}
-          </div>
+          </Card>
         </>
       )}
     </div>

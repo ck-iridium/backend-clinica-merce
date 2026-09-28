@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { ArrowLeft, Scale, Printer } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function ConsentPreviewPage() {
   const { t, language } = useLanguage();
@@ -72,27 +74,37 @@ export default function ConsentPreviewPage() {
       {/* HEADER DE NAVEGACION (No se imprime) */}
       <div className="flex justify-between items-center mb-10 print:hidden relative z-10">
         <div className="flex items-center gap-4">
-           <button id="back-to-consents-btn" onClick={() => router.back()} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-stone-200 text-stone-400 hover:text-stone-700 hover:border-stone-400 transition-all font-bold">
-             ←
-           </button>
+           <Button 
+             id="back-to-consents-btn" 
+             variant="outline"
+             size="icon"
+             onClick={() => router.back()} 
+             className="w-11 h-11 bg-white/90 rounded-2xl border-stone-200/80 hover:bg-stone-50 text-stone-600 shadow-xs"
+           >
+             <ArrowLeft className="w-4 h-4" />
+           </Button>
            <div>
-              <h1 className="text-3xl font-extrabold text-[#d9777f] drop-shadow-sm flex items-center gap-3">
-                <span className="text-2xl">⚖️</span>
-                {t('dashboard.clients.legal_viewer') || 'Visor Legal'}
+              <h1 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900 tracking-tight flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-300/30 flex items-center justify-center text-[#B38F26] shadow-xs">
+                  <Scale className="w-4 h-4" />
+                </div>
+                <span>{t('dashboard.clients.legal_viewer') || 'Visor Legal'}</span>
               </h1>
-              <p className="text-stone-500 font-medium">{consent.document_title}</p>
+              <p className="text-stone-400 font-sans text-xs sm:text-sm font-medium mt-0.5">{consent.document_title}</p>
            </div>
         </div>
  
         <div className="flex gap-4">
-           {/* Botón Flotante de Imprimir */}
-           <button 
+           <Button 
              id="print-consent-btn"
              onClick={handlePrint}
-             className="px-6 py-3 font-extrabold text-white bg-[#d9777f] hover:bg-[#c6646b] rounded-xl shadow-lg hover:shadow-xl transition-all border border-[#c6646b] flex items-center gap-2"
+             variant="luxury"
+             size="default"
+             className="h-11 px-6 shadow-luxury gap-2"
            >
-             <span>🖨️</span> {t('dashboard.clients.print_document_a4') || 'Imprimir Documento (A4)'}
-           </button>
+             <Printer className="w-4 h-4" />
+             <span>{t('dashboard.clients.print_document_a4') || 'Imprimir Documento (A4)'}</span>
+           </Button>
         </div>
       </div>
 

@@ -346,7 +346,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
                 {getTranslatedLabel(link.href, link.label)}
               </span>
               {active && (
-                <div className="absolute -left-1 w-1 h-6 bg-white rounded-r-full shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
+                <div className="absolute -left-1 w-1.5 h-6 bg-[#D4AF37] rounded-r-full shadow-[0_0_12px_rgba(212,175,55,0.7)]"></div>
               )}
             </Link>
           );
@@ -364,7 +364,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
                   {t('dashboard.menu.management')}
                 </span>
                 {filteredGestion.some(l => isActive(l.href)) && (
-                  <div className="absolute -left-1 w-1 h-6 bg-white rounded-r-full shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
+                  <div className="absolute -left-1 w-1.5 h-6 bg-[#D4AF37] rounded-r-full shadow-[0_0_12px_rgba(212,175,55,0.7)]"></div>
                 )}
               </button>
             </DropdownMenuTrigger>
@@ -403,7 +403,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
                   {t('dashboard.menu.configuration')}
                 </span>
                 {filteredConfig.some(l => isActive(l.href)) && (
-                  <div className="absolute -left-1 w-1 h-6 bg-white rounded-r-full shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
+                  <div className="absolute -left-1 w-1.5 h-6 bg-[#D4AF37] rounded-r-full shadow-[0_0_12px_rgba(212,175,55,0.7)]"></div>
                 )}
               </button>
             </DropdownMenuTrigger>

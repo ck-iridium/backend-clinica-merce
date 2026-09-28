@@ -4,9 +4,12 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { Eye, UserPlus } from "lucide-react";
+import { Eye, UserPlus, Search, X, Users, Sparkles, Phone, Mail, ArrowUpRight } from "lucide-react";
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import {
   Dialog,
@@ -46,6 +49,7 @@ export default function ClientsPage() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [businessSector, setBusinessSector] = useState<string>('general');
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Validation and Data States
   const [formData, setFormData] = useState({
@@ -220,6 +224,16 @@ export default function ClientsPage() {
     }
   };
 
+  const filteredClients = clients.filter((c: Client) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase().trim();
+    const fullName = `${c.first_name || ''} ${c.last_name || ''} ${c.name || ''}`.toLowerCase();
+    const email = (c.email || '').toLowerCase();
+    const phone = (c.phone || '').toLowerCase();
+    const dni = (c.dni || '').toLowerCase();
+    return fullName.includes(q) || email.includes(q) || phone.includes(q) || dni.includes(q);
+  });
+
   const getDynamicColumnHeader = () => {
     switch (businessSector) {
       case 'clinical': return 'Alertas Clínicas';
@@ -238,12 +252,12 @@ export default function ClientsPage() {
     switch (businessSector) {
       case 'clinical':
         return meta.allergies ? (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-destructive/10 text-destructive border border-destructive/20 shadow-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-destructive mr-1.5"></span>
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200/60 shadow-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mr-1.5"></span>
             {meta.allergies}
           </span>
         ) : (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-sm">
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-xs">
             Ninguna
           </span>
         );
@@ -277,15 +291,20 @@ export default function ClientsPage() {
   };
 
   return (
-    <div className="animate-in fade-in duration-500 bg-[#FAFAFA] min-h-screen p-1">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
-        <div>
-          <h1 className="text-4xl font-serif font-light text-stone-800 tracking-tight">
+    <div className="animate-in fade-in duration-500 space-y-6">
+      
+      {/* ── Header ── */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 pb-2">
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-100/80 border border-stone-200/60 text-[10px] font-bold uppercase tracking-widest text-stone-500">
+            <Users className="w-3 h-3 text-[#D4AF37]" />
+            <span>Fichas & Clientes</span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-stone-900 tracking-tight">
             {t('dashboard.clients.directory_title') || 'Directorio de Clientes'}
           </h1>
-          <p className="text-stone-400 mt-1.5 text-sm font-medium">
-            {businessSector === 'clinical' && 'Gestión de fichas médicas e historiales clínicos'}
+          <p className="text-stone-400 text-xs sm:text-sm font-sans font-medium">
+            {businessSector === 'clinical' && 'Gestión de expedientes médicos e historiales clínicos'}
             {businessSector === 'beauty' && 'Fichas de cuidado facial, corporal y bienestar'}
             {businessSector === 'barber' && 'Fichas de cuidado personal, estilo y color'}
             {businessSector === 'veterinary' && 'Directorio de propietarios y mascotas'}
@@ -298,23 +317,28 @@ export default function ClientsPage() {
         
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogTrigger asChild>
-            <button id="add-client-btn" className="bg-stone-900 text-white px-8 py-3 rounded-full text-sm font-bold hover:bg-[#D4AF37] hover:text-stone-950 transition-all active:scale-95 shadow-lg shadow-stone-200 flex items-center gap-2 group">
-              <UserPlus size={18} className="group-hover:rotate-12 transition-transform" />
-              {t('dashboard.clients.add_client') || 'Añadir Cliente'}
-            </button>
+            <Button 
+              id="add-client-btn" 
+              variant="luxury" 
+              size="default" 
+              className="gap-2 shadow-luxury h-11 px-6 shrink-0"
+            >
+              <UserPlus className="w-4 h-4" strokeWidth={2} />
+              <span>{t('dashboard.clients.add_client') || 'Añadir Cliente'}</span>
+            </Button>
           </DialogTrigger>
-          <DialogContent className="p-0 border-none max-w-2xl bg-white rounded-2xl overflow-hidden shadow-2xl">
-            <DialogHeader className="p-8 md:p-10 pb-6 border-b border-stone-100 bg-white relative z-10 rounded-t-xl">
-              <DialogTitle className="text-3xl font-serif font-light text-stone-800 tracking-tight">
+          <DialogContent className="p-0 border border-stone-200/80 max-w-2xl bg-white rounded-3xl overflow-hidden shadow-2xl">
+            <DialogHeader className="p-7 sm:p-9 pb-5 border-b border-stone-100 bg-white relative z-10">
+              <DialogTitle className="text-2xl sm:text-3xl font-serif font-bold text-stone-900 tracking-tight">
                 {t('dashboard.clients.new_medical_record') || 'Registrar Ficha de Cliente'}
               </DialogTitle>
-              <DialogDescription className="text-stone-400 text-sm mt-1">
+              <DialogDescription className="text-stone-400 text-xs sm:text-sm mt-1 font-sans">
                 Completa los datos del cliente. Los campos obligatorios están marcados con (*).
               </DialogDescription>
             </DialogHeader>
 
             <form id="client-form" onSubmit={handleSubmit} className="flex flex-col bg-white">
-              <div className="px-8 md:px-10 py-6 pb-20 max-h-[60vh] overflow-y-auto">
+              <div className="px-7 sm:px-9 py-6 max-h-[60vh] overflow-y-auto space-y-6">
                 {/* Contact and address form fields */}
                 <ClientFormFields
                   formData={formData}
@@ -325,8 +349,8 @@ export default function ClientsPage() {
                 />
 
                 {/* Sector dynamic fields inputs */}
-                <div className="border-t border-stone-100 pt-6 mt-6">
-                  <h4 className="text-xs font-black uppercase tracking-[0.2em] text-stone-500 mb-4">
+                <div className="border-t border-stone-100 pt-6">
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-4">
                     {businessSector === 'clinical' && 'Información Clínica / Médica'}
                     {businessSector === 'beauty' && 'Ficha de Estética & Bienestar'}
                     {businessSector === 'barber' && 'Ficha de Estilo & Belleza'}
@@ -344,121 +368,174 @@ export default function ClientsPage() {
                 </div>
               </div>
 
-              <div className="sticky bottom-0 left-0 w-full flex justify-end gap-3 p-8 md:p-10 py-6 border-t border-stone-100 bg-white rounded-b-2xl z-20">
-                <button 
+              <div className="sticky bottom-0 left-0 w-full flex justify-end items-center gap-3 p-6 sm:p-8 border-t border-stone-100 bg-white/95 backdrop-blur-md rounded-b-3xl z-20">
+                <Button 
                   id="cancel-add-client-btn"
                   type="button" 
+                  variant="ghost"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-8 py-4 rounded-full text-xs font-bold text-stone-400 hover:text-stone-600 transition-all"
+                  className="text-stone-500 hover:text-stone-800"
                 >
                   {t('dashboard.clients.cancel') || 'Cancelar'}
-                </button>
-                <button 
+                </Button>
+                <Button 
                   id="submit-client-form-btn"
                   disabled={saving} 
                   type="submit" 
-                  className="bg-[#D4AF37] text-stone-950 hover:bg-[#c49f27] disabled:opacity-50 px-10 py-4 rounded-full text-xs font-bold uppercase tracking-widest transition-all shadow-lg active:scale-95 animate-in fade-in"
+                  variant="luxury"
+                  className="shadow-luxury px-8 h-11"
                 >
                   {saving ? (t('dashboard.clients.registering') || 'Registrando...') : (t('dashboard.clients.register_record') || 'Registrar Ficha')}
-                </button>
+                </Button>
               </div>
             </form>
           </DialogContent>
         </Dialog>
       </div>
 
-      {/* Table Section (SaaS Island) */}
-      <div className="bg-card rounded-[2rem] shadow-sm overflow-hidden border border-border/40 bg-white">
+      {/* ── Search & Filter Bar ── */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Buscar por nombre, email, teléfono o DNI..."
+            className="pl-10 pr-9 h-11 bg-white/90 border-stone-200/80 rounded-xl focus-visible:ring-1 focus-visible:ring-[#D4AF37] text-xs sm:text-sm font-sans"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 p-1 rounded-full hover:bg-stone-100 transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 self-start sm:self-center">
+          <span className="text-xs font-mono font-bold text-stone-500 bg-stone-100/90 px-3 py-1.5 rounded-full border border-stone-200/60 shadow-xs">
+            {filteredClients.length} {filteredClients.length === 1 ? 'cliente' : 'clientes'}
+            {searchQuery && ` (de ${clients.length})`}
+          </span>
+        </div>
+      </div>
+
+      {/* ── Clients Table Card (Quiet Luxury Island) ── */}
+      <Card className="rounded-[2rem] border border-stone-200/70 bg-white/80 backdrop-blur-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse font-sans">
             <thead>
-              <tr className="bg-muted/50 border-b border-border/50 text-muted-foreground text-xs font-bold tracking-widest uppercase">
-                <th className="px-8 py-4 font-semibold">{t('dashboard.clients.client') || 'Cliente'}</th>
-                <th className="px-8 py-4 font-semibold">{t('dashboard.clients.contact') || 'Contacto'}</th>
-                <th className="px-8 py-4 font-semibold">{getDynamicColumnHeader()}</th>
-                <th className="px-8 py-4 font-semibold text-right">{t('dashboard.clients.actions') || 'Acciones'}</th>
+              <tr className="bg-stone-50/70 border-b border-stone-100 text-stone-400 text-[10px] font-bold tracking-widest uppercase">
+                <th className="px-6 sm:px-8 py-4 font-semibold">{t('dashboard.clients.client') || 'Cliente'}</th>
+                <th className="px-6 sm:px-8 py-4 font-semibold">{t('dashboard.clients.contact') || 'Contacto'}</th>
+                <th className="px-6 sm:px-8 py-4 font-semibold">{getDynamicColumnHeader()}</th>
+                <th className="px-6 sm:px-8 py-4 font-semibold text-right">{t('dashboard.clients.actions') || 'Acciones'}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border/30">
+            <tbody className="divide-y divide-stone-100/80">
               {loading ? (
                 Array(5).fill(0).map((_, i) => (
                   <tr key={i}>
-                    <td className="px-8 py-6">
+                    <td className="px-6 sm:px-8 py-5">
                       <div className="flex items-center gap-4">
-                        <Skeleton className="w-10 h-10 rounded-full" />
+                        <Skeleton className="w-10 h-10 rounded-2xl" />
                         <div className="space-y-2">
-                          <Skeleton className="h-4 w-32" />
-                          <Skeleton className="h-3 w-16" />
+                          <Skeleton className="h-4 w-32 rounded-lg" />
+                          <Skeleton className="h-3 w-16 rounded-md" />
                         </div>
                       </div>
                     </td>
-                    <td className="px-8 py-6">
+                    <td className="px-6 sm:px-8 py-5">
                       <div className="space-y-2">
-                        <Skeleton className="h-4 w-40" />
-                        <Skeleton className="h-3 w-24" />
+                        <Skeleton className="h-4 w-40 rounded-lg" />
+                        <Skeleton className="h-3 w-24 rounded-md" />
                       </div>
                     </td>
-                    <td className="px-8 py-6"><Skeleton className="h-6 w-20 rounded-full" /></td>
-                    <td className="px-8 py-6"><Skeleton className="h-8 w-8 ml-auto rounded-md" /></td>
+                    <td className="px-6 sm:px-8 py-5"><Skeleton className="h-6 w-20 rounded-full" /></td>
+                    <td className="px-6 sm:px-8 py-5"><Skeleton className="h-8 w-8 ml-auto rounded-xl" /></td>
                   </tr>
                 ))
-              ) : clients.length === 0 ? (
+              ) : filteredClients.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="text-center py-24 text-muted-foreground font-medium text-sm">
-                    {t('dashboard.clients.no_clients') || 'Aún no hay clientes registrados en el sistema.'}
+                  <td colSpan={4} className="text-center py-20 text-stone-400 font-medium text-sm">
+                    {searchQuery ? (
+                      <div className="space-y-2">
+                        <p className="font-serif font-bold text-stone-700 text-base">No se encontraron resultados</p>
+                        <p className="text-xs text-stone-400">Ningún cliente coincide con la búsqueda &ldquo;{searchQuery}&rdquo;</p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSearchQuery('')}
+                          className="mt-2 text-xs"
+                        >
+                          Limpiar filtro
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <p className="font-serif font-bold text-stone-700 text-base">Sin clientes registrados</p>
+                        <p className="text-xs text-stone-400">{t('dashboard.clients.no_clients') || 'Aún no hay clientes registrados en el sistema.'}</p>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ) : (
-                clients
-                  .filter(c => {
-                    if (!c.email) return true;
-                    const lower = c.email.toLowerCase();
-                    return !(lower.endsWith('@generico.local') || lower.startsWith('contado@') || lower.startsWith('contado_'));
-                  })
-                  .map((client, index) => (
-                  <tr 
-                    key={client.id} 
-                    className="hover:bg-muted/30 group transition-colors"
-                  >
-                    <td className="px-8 py-5">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center text-stone-500 font-serif font-bold shadow-sm border border-stone-200">
-                          {client.first_name ? client.first_name.charAt(0).toUpperCase() : client.name.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <div className="font-bold text-stone-800 text-sm">
-                            {client.first_name} {client.last_name || ''}
+                filteredClients.map((client, index) => {
+                  const initial = client.first_name ? client.first_name.charAt(0).toUpperCase() : client.name.charAt(0).toUpperCase();
+                  return (
+                    <tr 
+                      key={client.id} 
+                      className="hover:bg-stone-50/60 group transition-colors"
+                    >
+                      <td className="px-6 sm:px-8 py-4.5">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-2xl bg-stone-100/90 border border-stone-200/60 flex items-center justify-center text-stone-700 font-serif font-bold text-base shadow-xs group-hover:border-[#D4AF37]/50 group-hover:bg-amber-500/10 group-hover:text-[#B38F26] transition-colors">
+                            {initial}
                           </div>
-                          <div className="text-[11px] text-stone-400 mt-0.5 font-mono">ID: {client.id.split('-')[0]}</div>
+                          <div>
+                            <div className="font-semibold text-stone-900 text-sm sm:text-base group-hover:text-stone-950 transition-colors">
+                              {client.first_name} {client.last_name || ''}
+                            </div>
+                            <div className="text-[11px] text-stone-400 mt-0.5 font-mono">ID: {client.id.split('-')[0]}</div>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-8 py-5">
-                      <div className="text-stone-700 font-medium text-sm">{client.email}</div>
-                      <div className="text-stone-400 text-xs mt-0.5 font-medium">
-                        {client.phone || (t('dashboard.clients.no_phone') || 'Sin teléfono')}
-                      </div>
-                    </td>
-                    <td className="px-8 py-5">
-                      {getDynamicColumnValue(client)}
-                    </td>
-                    <td className="px-8 py-5 text-right">
-                      <Link 
-                        id={`view-client-details-btn-${index}`}
-                        href={`/dashboard/clients/${client.id}`}
-                        className="p-2.5 rounded-xl hover:bg-stone-100 text-stone-400 hover:text-[#D4AF37] transition-all border border-transparent hover:border-stone-100 inline-flex items-center justify-center group/eye"
-                        title={t('dashboard.clients.view_full_record') || "Ver ficha completa"}
-                      >
-                        <Eye size={18} strokeWidth={1.5} className="group-hover/eye:scale-110 transition-transform" />
-                      </Link>
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                      <td className="px-6 sm:px-8 py-4.5">
+                        <div className="text-stone-800 font-medium text-xs sm:text-sm flex items-center gap-1.5">
+                          <Mail className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+                          <span className="truncate">{client.email}</span>
+                        </div>
+                        <div className="text-stone-400 text-xs mt-1 font-medium flex items-center gap-1.5 font-mono">
+                          <Phone className="w-3 h-3 text-stone-400 shrink-0" />
+                          <span>{client.phone || (t('dashboard.clients.no_phone') || 'Sin teléfono')}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 sm:px-8 py-4.5">
+                        {getDynamicColumnValue(client)}
+                      </td>
+                      <td className="px-6 sm:px-8 py-4.5 text-right">
+                        <Button
+                          id={`view-client-details-btn-${index}`}
+                          asChild
+                          variant="ghost"
+                          size="sm"
+                          className="h-9 px-3 rounded-xl hover:bg-stone-100 hover:text-[#D4AF37] gap-1.5 text-stone-500 font-medium group/eye"
+                        >
+                          <Link href={`/dashboard/clients/${client.id}`}>
+                            <span className="hidden sm:inline text-xs font-semibold">Ver ficha</span>
+                            <Eye className="w-4 h-4 text-stone-400 group-hover/eye:text-[#D4AF37] transition-colors" />
+                          </Link>
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

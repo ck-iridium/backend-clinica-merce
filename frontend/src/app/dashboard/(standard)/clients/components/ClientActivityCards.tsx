@@ -1,6 +1,7 @@
 "use client";
 
-import { Calendar } from "lucide-react";
+import { Calendar, Coins } from "lucide-react";
+import { Card } from "@/components/ui/card";
 
 interface ClientActivityCardsProps {
   appointments: any[];
@@ -23,16 +24,18 @@ export function ClientActivityCards({
   return (
     <div className="space-y-6">
       {totalDebt > 0 && (
-        <div className="bg-white p-6 rounded-2xl border border-red-100 shadow-sm flex flex-col items-center justify-center text-center">
-          <span className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-500 mb-2">💰</span>
-          <h3 className="text-sm font-bold text-stone-800">Deuda Pendiente</h3>
-          <p className="text-2xl font-black text-red-600 mt-1">{totalDebt}€</p>
-          <p className="text-[10px] text-stone-400 mt-1 leading-tight max-w-[200px]">El cliente tiene importes de bonos pendientes por liquidar.</p>
-        </div>
+        <Card className="p-6 rounded-2xl border-rose-200/80 bg-rose-50/40 shadow-xs flex flex-col items-center justify-center text-center">
+          <div className="w-10 h-10 rounded-xl bg-rose-100/80 flex items-center justify-center text-rose-600 mb-2 shadow-xs">
+            <Coins className="w-5 h-5" />
+          </div>
+          <h3 className="text-sm font-bold text-stone-900">Deuda Pendiente</h3>
+          <p className="text-2xl font-black text-rose-600 mt-1 font-mono">{totalDebt}€</p>
+          <p className="text-[11px] text-stone-400 mt-1 leading-relaxed max-w-[220px]">El cliente tiene importes de bonos pendientes por liquidar.</p>
+        </Card>
       )}
 
-      <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-stone-100 space-y-6">
-        <h3 className="text-lg font-serif font-light text-stone-800 border-b border-stone-50 pb-4">Actividad Reciente</h3>
+      <Card className="p-6 sm:p-7 rounded-[2rem] border-stone-200/70 bg-white/80 backdrop-blur-xl shadow-sm space-y-5">
+        <h3 className="text-base font-serif font-bold text-stone-900 border-b border-stone-100 pb-3">Actividad Reciente</h3>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="p-4 rounded-xl bg-[#FAFAFA] border border-stone-100 flex flex-col justify-between">
@@ -62,7 +65,7 @@ export function ClientActivityCards({
             </div>
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

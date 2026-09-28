@@ -16,12 +16,18 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { 
   ArrowLeft,
   User,
   MapPin,
   CreditCard,
-  AlertTriangle
+  AlertTriangle,
+  CalendarDays,
+  Edit3,
+  Sparkles
 } from "lucide-react";
 
 // Import modular components
@@ -311,59 +317,79 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
   return (
     <div className="animate-in fade-in duration-500 bg-[#FAFAFA] min-h-screen pb-12">
       {/* Back Button */}
-      <Link id="back-to-directory-link" href="/dashboard/clients" className="text-xs font-black uppercase tracking-[0.2em] text-stone-400 hover:text-stone-800 mb-8 inline-flex items-center gap-2 transition-colors">
-        <ArrowLeft size={14} />
-        {t('dashboard.clients.back_to_directory') || 'Volver al directorio'}
+      <Link 
+        id="back-to-directory-link" 
+        href="/dashboard/clients" 
+        className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-stone-400 hover:text-stone-800 mb-6 transition-colors group"
+      >
+        <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+        <span>{t('dashboard.clients.back_to_directory') || 'Volver al directorio'}</span>
       </Link>
 
       {/* Main Profile Showcase Card */}
-      <div className="bg-white p-5 md:p-6 md:px-8 rounded-2xl shadow-sm border border-stone-100/80 mb-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-60 h-60 bg-gradient-to-bl from-stone-50 to-white rounded-full blur-3xl opacity-60 -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+      <Card className="rounded-[2rem] border border-stone-200/70 bg-white/80 backdrop-blur-xl p-6 md:p-8 shadow-sm mb-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-amber-500/10 via-amber-400/5 to-transparent rounded-full blur-2xl pointer-events-none" />
         
-        <div className="flex flex-col md:flex-row gap-6 items-center justify-between relative z-10">
+        <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between relative z-10">
           <div className="flex items-center gap-5 w-full md:w-auto">
-            <div className="w-16 h-16 rounded-xl bg-stone-50 border border-stone-200 flex items-center justify-center text-stone-600 font-serif text-3xl shadow-sm shrink-0 font-bold uppercase">
+            <div className="w-16 h-16 rounded-2xl bg-stone-100/90 border border-stone-200/70 flex items-center justify-center text-stone-800 font-serif text-3xl shadow-xs shrink-0 font-bold uppercase">
               {client.first_name ? client.first_name.charAt(0) : client.name.charAt(0)}
             </div>
             
-            <div>
-              <h1 className="text-2xl md:text-3xl font-serif font-light text-stone-800 tracking-tight leading-none">
+            <div className="space-y-1">
+              <h1 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900 tracking-tight leading-none">
                 {client.first_name} {client.last_name || ''}
               </h1>
-              <p className="text-stone-400 text-xs font-semibold mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+              <p className="text-stone-400 text-xs sm:text-sm font-sans font-medium flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span>{client.email}</span>
                 {client.phone && <span className="text-stone-300">•</span>}
-                {client.phone && <span>{client.phone}</span>}
+                {client.phone && <span className="font-mono">{client.phone}</span>}
                 {client.dni && <span className="text-stone-300">•</span>}
-                {client.dni && <span className="font-mono text-stone-550">NIF/DNI: {client.dni}</span>}
+                {client.dni && <span className="font-mono text-stone-500">DNI: {client.dni}</span>}
               </p>
             </div>
           </div>
           
-          <div className="flex gap-2 w-full md:w-auto justify-end border-t md:border-t-0 pt-4 md:pt-0 border-stone-50">
-            <a id="book-appointment-link" href={`/dashboard/calendar?client_id=${params.id}`} className="bg-stone-900 text-white px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-[#D4AF37] hover:text-stone-950 transition-all active:scale-95 shadow-sm">
-              {t('dashboard.clients.book_appointment') || 'Reservar Cita'}
-            </a>
-            <button id="edit-client-profile-btn" onClick={() => setIsEditing(true)} className="bg-white border border-stone-200 text-stone-600 px-5 py-2.5 rounded-full text-xs font-bold hover:bg-stone-50 transition-all active:scale-95 shadow-sm">
-              Editar Ficha
-            </button>
+          <div className="flex items-center gap-2.5 w-full md:w-auto justify-end border-t md:border-t-0 pt-4 md:pt-0 border-stone-100">
+            <Button 
+              id="book-appointment-link" 
+              variant="luxury" 
+              size="default" 
+              asChild 
+              className="gap-2 shadow-luxury h-11 px-5"
+            >
+              <Link href={`/dashboard/calendar?client_id=${params.id}`}>
+                <CalendarDays className="w-4 h-4" strokeWidth={2} />
+                <span>{t('dashboard.clients.book_appointment') || 'Reservar Cita'}</span>
+              </Link>
+            </Button>
+            <Button 
+              id="edit-client-profile-btn" 
+              variant="outline" 
+              size="default" 
+              onClick={() => setIsEditing(true)} 
+              className="gap-2 h-11 px-5 bg-white/90 border-stone-200/80 hover:bg-stone-50 text-stone-700 font-semibold"
+            >
+              <Edit3 className="w-4 h-4 text-stone-500" strokeWidth={2} />
+              <span>Editar Ficha</span>
+            </Button>
           </div>
         </div>
 
         {/* Subinfo Grid */}
         {(client.service_address || (isBillingDifferent && client.billing_address)) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-stone-50 text-stone-500 text-xs font-medium">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5 pt-4 border-t border-stone-100 text-stone-500 text-xs font-medium">
             {client.service_address && (
               <div className="flex items-center gap-2">
-                <MapPin size={12} className="text-stone-400 shrink-0" />
-                <span className="truncate">Domicilio: <strong className="text-stone-700">{client.service_address}</strong> {(client.service_postal_code || client.service_city) && `(${client.service_postal_code} ${client.service_city})`}</span>
+                <MapPin className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+                <span className="truncate">Domicilio: <strong className="text-stone-800 font-semibold">{client.service_address}</strong> {(client.service_postal_code || client.service_city) && `(${client.service_postal_code} ${client.service_city})`}</span>
               </div>
             )}
 
             {isBillingDifferent && client.billing_address && (
               <div className="flex items-center gap-2">
-                <CreditCard size={12} className="text-stone-400 shrink-0" />
-                <span className="truncate">Facturación: <strong className="text-stone-750 font-mono text-[10px]">NIF {client.billing_nif}</strong> - <strong className="text-stone-700">{client.billing_address}</strong></span>
+                <CreditCard className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+                <span className="truncate">Facturación: <strong className="text-stone-750 font-mono text-[10px]">NIF {client.billing_nif}</strong> - <strong className="text-stone-800 font-semibold">{client.billing_address}</strong></span>
               </div>
             )}
           </div>
@@ -386,21 +412,21 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
           if (allergyList.length === 0) return null;
 
           return (
-            <div className="mt-4 p-4 bg-rose-50/50 border border-rose-100 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs text-rose-800 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="mt-5 p-4 bg-rose-50/70 border border-rose-200/60 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs text-rose-800 animate-in fade-in duration-300">
               <div className="flex items-center gap-2.5">
-                <AlertTriangle className="text-rose-650 shrink-0 animate-pulse" size={16} />
+                <AlertTriangle className="text-rose-600 shrink-0 animate-pulse w-4 h-4" />
                 <div>
-                  <strong className="block text-rose-900 font-bold uppercase tracking-wide text-[10px]">
+                  <strong className="block text-rose-950 font-bold uppercase tracking-wide text-[10px]">
                     {t('dashboard.clients.allergy_alert_title') || 'ALERTA DE ALERGIAS / INCOMPATIBILIDADES:'}
                   </strong>
-                  <span className="font-semibold text-rose-700">
+                  <span className="font-semibold text-rose-700 text-xs">
                     {t('dashboard.clients.allergy_alert_desc') || 'Este paciente presenta sensibilidades o riesgos registrados.'}
                   </span>
                 </div>
               </div>
               <div className="flex flex-wrap gap-1.5 md:justify-end">
                 {allergyList.map((tag: string, idx: number) => (
-                  <span key={idx} className="px-2.5 py-1 bg-rose-100 text-rose-800 border border-rose-200/50 rounded-full font-bold uppercase tracking-wider text-[9px]">
+                  <span key={idx} className="px-2.5 py-1 bg-white text-rose-800 border border-rose-200 rounded-full font-bold uppercase tracking-wider text-[9px] shadow-xs">
                     {tag}
                   </span>
                 ))}
@@ -408,28 +434,28 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
             </div>
           );
         })()}
-      </div>
+      </Card>
 
       {/* Tabs Menu (Segmented Controls Styling) */}
-      <div className="bg-stone-100/70 p-1.5 rounded-2xl flex border border-stone-200/50 mb-6 max-w-max overflow-x-auto gap-1.5">
+      <div className="bg-stone-100/80 p-1.5 rounded-2xl flex border border-stone-200/60 mb-6 max-w-max overflow-x-auto gap-1 shadow-xs">
         <button 
           id="tab-overview-btn"
           onClick={() => setActiveTab('overview')} 
-          className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.12em] transition-all duration-300 ${activeTab === 'overview' ? 'bg-white text-stone-900 shadow-sm border border-stone-200/20' : 'text-stone-500 hover:text-stone-850'}`}
+          className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${activeTab === 'overview' ? 'bg-white text-stone-900 shadow-sm border border-stone-200/50' : 'text-stone-500 hover:text-stone-900'}`}
         >
           Resumen & Ficha
         </button>
         <button 
           id="tab-appointments-btn"
           onClick={() => setActiveTab('appointments')} 
-          className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.12em] transition-all duration-300 ${activeTab === 'appointments' ? 'bg-white text-stone-900 shadow-sm border border-stone-200/20' : 'text-stone-500 hover:text-stone-850'}`}
+          className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${activeTab === 'appointments' ? 'bg-white text-stone-900 shadow-sm border border-stone-200/50' : 'text-stone-500 hover:text-stone-900'}`}
         >
           Servicios ({appointments.length})
         </button>
         <button 
           id="tab-vouchers-btn"
           onClick={() => setActiveTab('vouchers')} 
-          className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.12em] transition-all duration-300 ${activeTab === 'vouchers' ? 'bg-white text-stone-900 shadow-sm border border-stone-200/20' : 'text-stone-500 hover:text-stone-850'}`}
+          className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${activeTab === 'vouchers' ? 'bg-white text-stone-900 shadow-sm border border-stone-200/50' : 'text-stone-500 hover:text-stone-900'}`}
         >
           Bonos ({vouchers.length})
         </button>
@@ -437,7 +463,7 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
           <button 
             id="tab-consents-btn"
             onClick={() => setActiveTab('consents')} 
-            className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.12em] transition-all duration-300 ${activeTab === 'consents' ? 'bg-white text-stone-900 shadow-sm border border-stone-200/20' : 'text-stone-500 hover:text-stone-850'}`}
+            className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${activeTab === 'consents' ? 'bg-white text-stone-900 shadow-sm border border-stone-200/50' : 'text-stone-500 hover:text-stone-900'}`}
           >
             Consentimientos ({consents.length})
           </button>
@@ -520,23 +546,25 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
               </div>
             </div>
 
-            <DialogFooter className="p-6 border-t border-stone-100 bg-white flex gap-3">
-              <button 
+            <DialogFooter className="p-6 border-t border-stone-100 bg-white/95 backdrop-blur-md flex gap-3">
+              <Button 
                 id="cancel-edit-client-btn"
                 type="button" 
+                variant="ghost"
                 onClick={() => { setIsEditing(false); fetchClient(); }} 
-                className="flex-1 py-3 bg-stone-100 text-stone-600 font-bold rounded-xl hover:bg-stone-200 text-xs"
+                className="flex-1 text-stone-600 hover:text-stone-900"
               >
                 Cancelar
-              </button>
-              <button 
+              </Button>
+              <Button 
                 id="submit-edit-client-btn"
                 type="submit" 
                 disabled={saving} 
-                className="flex-1 py-3 text-white bg-stone-900 hover:bg-stone-800 disabled:opacity-50 font-bold rounded-xl shadow-md flex justify-center items-center text-xs uppercase tracking-wider"
+                variant="luxury"
+                className="flex-1 shadow-luxury"
               >
                 {saving ? 'Guardando...' : 'Guardar Cambios'}
-              </button>
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -544,25 +572,25 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
 
       {/* Collect Debt Dialog */}
       <Dialog open={showPayModal} onOpenChange={setShowPayModal}>
-        <DialogContent className="p-0 border-none max-w-sm bg-white rounded-2xl overflow-hidden shadow-2xl">
-          <DialogHeader className="p-6 border-b border-stone-50 bg-white rounded-t-xl">
-            <DialogTitle className="text-lg font-bold text-stone-800">
+        <DialogContent className="p-0 border border-stone-200/80 max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl">
+          <DialogHeader className="p-6 border-b border-stone-100 bg-white rounded-t-3xl">
+            <DialogTitle className="text-xl font-serif font-bold text-stone-900">
               Registrar Cobro
             </DialogTitle>
-            <DialogDescription className="text-stone-400 text-xs mt-0.5">
+            <DialogDescription className="text-stone-400 text-xs mt-0.5 font-sans">
               Abonar importe a la deuda de bono.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="p-6 pb-24 bg-white">
-            <form id="pay-debt-form-profile" onSubmit={handlePayDebt}>
-              <p className="text-xs text-stone-500 mb-4 bg-stone-50 p-3 rounded-lg border border-stone-100">
-                La deuda pendiente es de: <strong className="text-red-650">{currentDebt}€</strong>.
+          <div className="p-6 pb-6 bg-white space-y-4">
+            <form id="pay-debt-form-profile" onSubmit={handlePayDebt} className="space-y-4">
+              <p className="text-xs text-stone-600 bg-stone-50 p-3.5 rounded-xl border border-stone-100 leading-relaxed">
+                La deuda pendiente es de: <strong className="text-rose-600 font-mono font-bold">{currentDebt}€</strong>.
               </p>
               
-              <div className="space-y-1">
-                <label className="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1">Monto Abonado (€)</label>
-                <input 
+              <div className="space-y-1.5">
+                <label className="block text-[10px] font-bold text-stone-400 uppercase tracking-wider">Monto Abonado (€)</label>
+                <Input 
                   id="pay-debt-amount-input"
                   required 
                   type="number" 
@@ -570,19 +598,19 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
                   max={currentDebt}
                   value={payAmount} 
                   onChange={e => setPayAmount(Number(e.target.value))} 
-                  className="w-full p-3 bg-white border border-stone-200 rounded-xl font-extrabold text-stone-800 outline-none text-lg focus:ring-4 focus:ring-stone-100 transition-all" 
+                  className="h-12 text-lg font-bold font-mono focus-visible:ring-1 focus-visible:ring-[#D4AF37]" 
                 />
               </div>
             </form>
           </div>
  
-          <DialogFooter className="p-6 border-t border-stone-100 bg-white flex gap-3 rounded-b-2xl">
-             <button id="cancel-pay-debt-btn" type="button" onClick={() => setShowPayModal(false)} className="flex-1 py-3 text-stone-600 font-bold border border-stone-200 rounded-xl hover:bg-stone-50 text-xs">
+          <DialogFooter className="p-6 border-t border-stone-100 bg-white/95 backdrop-blur-md flex gap-3 rounded-b-3xl">
+             <Button id="cancel-pay-debt-btn" type="button" variant="ghost" onClick={() => setShowPayModal(false)} className="flex-1 text-stone-600">
                 Cancelar
-             </button>
-             <button id="submit-pay-debt-btn" form="pay-debt-form-profile" type="submit" disabled={paying} className="flex-1 py-3 text-white bg-stone-900 hover:bg-stone-800 font-bold rounded-xl shadow-md flex justify-center items-center text-xs uppercase tracking-wider">
+             </Button>
+             <Button id="submit-pay-debt-btn" form="pay-debt-form-profile" type="submit" disabled={paying} variant="luxury" className="flex-1 shadow-luxury">
                {paying ? 'Procesando...' : 'Confirmar'}
-             </button>
+             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
