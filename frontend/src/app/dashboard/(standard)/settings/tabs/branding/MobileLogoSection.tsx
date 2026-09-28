@@ -11,6 +11,7 @@ import {
   Info 
 } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { Button } from '@/components/ui/button';
 
 interface MobileLogoSectionProps {
   settings: any;
@@ -145,27 +146,29 @@ export default function MobileLogoSection({
           />
 
           <div className="flex items-center gap-3">
-            <button
+            <Button
               id="branding-mobile-logo-change-btn"
               type="button"
+              variant="luxury"
               onClick={() => logoMobileRef.current?.click()}
-              className="text-xs font-black uppercase tracking-wider text-white bg-stone-900 px-5 py-3 rounded-xl hover:bg-[#d4af37] hover:text-stone-950 transition-all flex-1 shadow-md hover:shadow-lg active:scale-95 duration-300"
+              className="text-xs font-bold rounded-2xl py-5 flex-1 shadow-luxury text-stone-950 transition-all duration-300"
             >
               {settings.logo_mobile_b64 
                 ? (t('dashboard.branding.mobile_logo.change_btn') || 'Cambiar Isotipo')
                 : (t('dashboard.branding.mobile_logo.upload_btn') || 'Cargar Isotipo Móvil')
               }
-            </button>
+            </Button>
             {settings.logo_mobile_b64 && (
-              <button
+              <Button
                 id="branding-mobile-logo-delete-btn"
                 type="button"
+                variant="outline"
                 onClick={() => updateSetting('logo_mobile_b64', null)}
-                className="text-xs font-bold text-stone-600 bg-stone-100 hover:bg-red-50 hover:text-red-600 px-4 py-3 rounded-xl transition-all active:scale-95"
+                className="text-xs font-bold rounded-2xl py-5 border-stone-200 hover:bg-stone-50 text-stone-700"
                 title={t('dashboard.branding.mobile_logo.delete_btn') || 'Volver a heredar el logotipo principal de cabecera'}
               >
                 {t('dashboard.branding.mobile_logo.delete_btn') || 'Usar Cabecera'}
-              </button>
+              </Button>
             )}
           </div>
         </div>

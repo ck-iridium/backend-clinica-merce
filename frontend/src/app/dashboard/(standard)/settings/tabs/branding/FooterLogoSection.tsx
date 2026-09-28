@@ -3,6 +3,7 @@
 import { useRef } from 'react';
 import { Layers, Check, Building2, Trash2, Info } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { Button } from '@/components/ui/button';
 
 interface FooterLogoSectionProps {
   settings: any;
@@ -105,26 +106,28 @@ export default function FooterLogoSection({
           />
 
           <div className="flex items-center gap-3">
-            <button
+            <Button
               id="branding-footer-logo-change-btn"
               type="button"
+              variant="luxury"
               onClick={() => logoFooterRef.current?.click()}
-              className="text-xs font-black uppercase tracking-wider text-white bg-stone-900 px-5 py-3 rounded-xl hover:bg-[#d4af37] hover:text-stone-950 transition-all flex-1 shadow-md hover:shadow-lg active:scale-95 duration-300"
+              className="text-xs font-bold rounded-2xl py-5 flex-1 shadow-luxury text-stone-950 transition-all duration-300"
             >
               {settings.logo_footer_b64 
                 ? (t('dashboard.branding.footer_logo.change_btn') || 'Cambiar Logotipo del Footer')
                 : (t('dashboard.branding.footer_logo.upload_btn') || 'Subir Logotipo Exclusivo')
               }
-            </button>
+            </Button>
             {settings.logo_footer_b64 && (
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => updateSetting('logo_footer_b64', null)}
-                className="text-xs font-bold text-stone-600 bg-stone-100 hover:bg-red-50 hover:text-red-600 px-4 py-3 rounded-xl transition-all active:scale-95"
+                className="text-xs font-bold rounded-2xl py-5 border-stone-200 hover:bg-stone-50 text-stone-700"
                 title={t('dashboard.branding.footer_logo.delete_btn') || 'Volver a usar el de la cabecera'}
               >
-                {t('dashboard.branding.footer_logo.delete_btn') || 'Usar Cabecera'}
-              </button>
+                {t('dashboard.branding.footer_logo.delete_btn') || 'Usar de Cabecera'}
+              </Button>
             )}
           </div>
         </div>

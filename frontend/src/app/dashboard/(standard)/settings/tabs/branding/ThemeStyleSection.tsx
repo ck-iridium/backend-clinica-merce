@@ -2,6 +2,13 @@
 
 import { Palette, Check, Moon, Sun, Info } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ThemeStyleSectionProps {
   settings: any;
@@ -190,16 +197,21 @@ export default function ThemeStyleSection({
             <label className="text-xs font-black uppercase tracking-widest text-stone-500 flex items-center gap-1.5">
               {t('dashboard.branding.theme_style.font_headings_label') || 'Fuente de Títulos y Encabezados'}
             </label>
-            <select
-              id="branding-font-headings-select"
+            <Select
               value={settings.branding_font_headings === 'Playfair Display' ? 'Playfair' : (settings.branding_font_headings || 'Playfair')}
-              onChange={e => updateSetting('branding_font_headings', e.target.value)}
-              className="w-full text-xs font-bold bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-800 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-1 focus:ring-[#d4af37]/50 focus:border-[#d4af37] transition-all cursor-pointer font-serif"
+              onValueChange={val => updateSetting('branding_font_headings', val)}
             >
-              {PREMIUM_FONTS_HEADINGS.map(f => (
-                <option key={f.value} value={f.value}>{f.label}</option>
-              ))}
-            </select>
+              <SelectTrigger id="branding-font-headings-select" className="w-full h-12 bg-white border-stone-200 rounded-xl focus:ring-[#D4AF37]/30 font-serif font-bold text-stone-850">
+                <SelectValue placeholder="Seleccionar fuente de títulos" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border-stone-200 shadow-xl bg-white">
+                {PREMIUM_FONTS_HEADINGS.map(f => (
+                  <SelectItem key={f.value} value={f.value} className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-2.5 font-serif">
+                    {f.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Fuente del Cuerpo */}
@@ -207,16 +219,21 @@ export default function ThemeStyleSection({
             <label className="text-xs font-black uppercase tracking-widest text-stone-500 flex items-center gap-1.5">
               {t('dashboard.branding.theme_style.font_body_label') || 'Fuente de Cuerpo y Lectura'}
             </label>
-            <select
-              id="branding-font-body-select"
+            <Select
               value={settings.branding_font_body || 'Inter'}
-              onChange={e => updateSetting('branding_font_body', e.target.value)}
-              className="w-full text-xs font-bold bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-800 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-1 focus:ring-[#d4af37]/50 focus:border-[#d4af37] transition-all cursor-pointer font-sans"
+              onValueChange={val => updateSetting('branding_font_body', val)}
             >
-              {PREMIUM_FONTS_BODY.map(f => (
-                <option key={f.value} value={f.value}>{f.label}</option>
-              ))}
-            </select>
+              <SelectTrigger id="branding-font-body-select" className="w-full h-12 bg-white border-stone-200 rounded-xl focus:ring-[#D4AF37]/30 font-sans font-bold text-stone-850">
+                <SelectValue placeholder="Seleccionar fuente de lectura" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border-stone-200 shadow-xl bg-white">
+                {PREMIUM_FONTS_BODY.map(f => (
+                  <SelectItem key={f.value} value={f.value} className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-2.5 font-sans">
+                    {f.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>

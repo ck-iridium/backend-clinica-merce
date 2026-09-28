@@ -3,6 +3,7 @@
 import { useRef } from 'react';
 import { Compass, Trash2 } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { Button } from '@/components/ui/button';
 
 interface FaviconSectionProps {
   settings: any;
@@ -82,14 +83,15 @@ export default function FaviconSection({
             onChange={e => handleImageUpload('favicon_b64', e)} 
           />
           
-          <button
+          <Button
             id="branding-favicon-load-btn"
             type="button"
+            variant="luxury"
             onClick={() => faviconInputRef.current?.click()}
-            className="text-xs font-black uppercase tracking-wider text-stone-800 bg-stone-50 border border-stone-200 px-6 py-3 rounded-xl hover:bg-stone-100 transition-all active:scale-95 duration-300"
+            className="rounded-2xl px-6 py-5 font-bold text-xs shadow-luxury text-stone-950"
           >
             {t('dashboard.branding.favicon.upload_btn') || 'Cargar Favicon'}
-          </button>
+          </Button>
         </div>
 
       </div>

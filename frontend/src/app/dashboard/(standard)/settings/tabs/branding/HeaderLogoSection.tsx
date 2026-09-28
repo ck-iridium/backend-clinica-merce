@@ -13,6 +13,7 @@ import {
   Eye 
 } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { Button } from '@/components/ui/button';
 
 interface HeaderLogoSectionProps {
   settings: any;
@@ -124,11 +125,12 @@ export default function HeaderLogoSection({
             onChange={e => handleImageUpload('logo_app_b64', e)} 
           />
           
-          <button
+          <Button
             id="branding-logo-change-btn"
             type="button"
+            variant="luxury"
             onClick={() => logoAppRef.current?.click()}
-            className="text-xs font-black uppercase tracking-wider text-white bg-stone-900 px-6 py-3.5 rounded-xl hover:bg-[#d4af37] hover:text-stone-950 transition-all w-full shadow-md hover:shadow-lg active:scale-95 duration-300 flex items-center justify-center gap-2"
+            className="text-xs font-bold rounded-2xl py-5 w-full shadow-luxury text-stone-950 flex items-center justify-center gap-2"
           >
             <span>
               {settings.logo_app_b64 
@@ -136,7 +138,7 @@ export default function HeaderLogoSection({
                 : (t('dashboard.branding.desktop_logo.upload_btn') || 'Subir Logotipo')
               }
             </span>
-          </button>
+          </Button>
         </div>
 
         {/* SUB-COLUMNA 2: CONTROLES DE CALIBRACIÓN DEL HEADER (7 COLS) */}
