@@ -100,15 +100,15 @@ export function DayColumn({
             e.stopPropagation();
             if (closedBlock) onBlockClick(closedBlock);
           }}
-          className="absolute inset-0 z-[60] bg-stone-100/80 backdrop-blur-[1px] flex flex-col items-center justify-center p-4 text-center cursor-pointer border-[3px] border-stone-300 pointer-events-auto hover:bg-stone-200/80 transition-all group/closed"
+          className="absolute inset-0 z-[60] bg-stone-100/85 backdrop-blur-[2px] flex flex-col items-center justify-center p-4 text-center cursor-pointer border-2 border-dashed border-stone-300 pointer-events-auto hover:bg-stone-200/80 transition-all group/closed"
         >
-          <div className="w-16 h-16 bg-white/50 rounded-full flex items-center justify-center mb-3 shadow-sm group-hover/closed:scale-110 transition-transform">
-            <Lock size={viewType === 'mobile' ? 32 : 24} className="text-primary" strokeWidth={2} />
+          <div className="w-14 h-14 bg-white/90 rounded-2xl flex items-center justify-center mb-3 shadow-sm border border-stone-200/60 group-hover/closed:scale-105 transition-transform">
+            <Lock size={viewType === 'mobile' ? 26 : 22} className="text-[#B38F26]" strokeWidth={2} />
           </div>
-          <span className="text-stone-800 font-black uppercase tracking-widest text-xs">
+          <span className="text-stone-800 font-bold uppercase tracking-wider text-xs">
             {closedReason || (t('dashboard.calendar.closed') || 'CERRADO')}
           </span>
-          <p className="text-[10px] text-stone-400 mt-2 font-bold opacity-0 group-hover/closed:opacity-100 transition-opacity">
+          <p className="text-[10px] text-stone-500 mt-2 font-medium opacity-0 group-hover/closed:opacity-100 transition-opacity">
             {t('dashboard.calendar.click_to_manage_block') || 'Hacer click para gestionar bloqueo'}
           </p>
         </div>

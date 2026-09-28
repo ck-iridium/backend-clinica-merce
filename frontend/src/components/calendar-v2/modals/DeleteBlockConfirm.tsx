@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Unlock } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -54,34 +55,41 @@ export function DeleteBlockConfirm({
 
   return (
     <Dialog open={showBlockDeleteModal} onOpenChange={setShowBlockDeleteModal}>
-      <DialogContent className="flex flex-col w-[95vw] sm:max-w-[300px] lg:max-w-[22em] max-h-[85dvh] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-xl">
-        <div className="flex-1 overflow-y-auto p-8 text-center">
-          <div className="w-16 h-16 bg-stone-100 text-stone-400 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Unlock size={32} strokeWidth={1.5} />
+      <DialogContent className="flex flex-col w-[95vw] sm:max-w-sm max-h-[85dvh] p-0 overflow-hidden bg-white border border-stone-200/80 shadow-2xl rounded-3xl">
+        <div className="flex-1 overflow-y-auto p-6 sm:p-8 text-center space-y-4">
+          <div className="w-16 h-16 bg-amber-50 border border-amber-200/60 text-[#B38F26] rounded-2xl flex items-center justify-center mx-auto shadow-xs">
+            <Unlock size={28} strokeWidth={1.75} />
           </div>
           <DialogHeader className="p-0">
-            <DialogTitle className="text-xl font-extrabold text-stone-800 mb-2">{t('dashboard.calendar.modal.release_title') || 'Liberar Horario'}</DialogTitle>
-            <DialogDescription className="text-stone-500 text-sm">
+            <DialogTitle className="text-xl font-serif font-bold text-stone-900 mb-1">
+              {t('dashboard.calendar.modal.release_title') || 'Liberar Horario'}
+            </DialogTitle>
+            <DialogDescription className="text-stone-500 text-xs leading-relaxed">
               {t('dashboard.calendar.modal.release_desc') || '¿Deseas eliminar este bloqueo y permitir nuevas citas en este hueco?'}
             </DialogDescription>
           </DialogHeader>
         </div>
-        <DialogFooter className="shrink-0 p-6 pt-2 flex flex-col gap-2 sm:flex-col border-t-0">
-          <button
+        <DialogFooter className="shrink-0 p-6 pt-0 flex flex-col gap-2.5 sm:flex-col border-t-0">
+          <Button
             id="delete-block-confirm-btn"
             onClick={handleDeleteBlock}
             disabled={updatingStatus}
-            className="w-full bg-stone-900 text-white py-4 rounded-xl font-bold hover:bg-black transition-all active:scale-95"
+            variant="default"
+            size="lg"
+            className="w-full h-12 rounded-xl font-bold bg-stone-900 hover:bg-stone-800 text-white shadow-sm"
           >
             {updatingStatus ? (t('dashboard.calendar.modal.releasing') || 'Liberando...') : (t('dashboard.calendar.modal.confirm_release') || 'Sí, Eliminar Bloqueo')}
-          </button>
-          <button
+          </Button>
+          <Button
             id="delete-block-cancel-btn"
+            type="button"
+            variant="ghost"
+            size="lg"
             onClick={() => setShowBlockDeleteModal(false)}
-            className="w-full bg-stone-50 text-stone-500 py-3 rounded-xl font-bold hover:bg-stone-100 transition-all"
+            className="w-full h-12 rounded-xl font-semibold text-stone-500 hover:text-stone-900"
           >
             {t('dashboard.calendar.modal.cancel') || 'Cancelar'}
-          </button>
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

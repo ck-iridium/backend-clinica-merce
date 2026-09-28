@@ -11,6 +11,7 @@ import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { TimeIndicator } from '@/components/calendar-v2/TimeIndicator';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export const dynamic = 'force-dynamic';
 
@@ -65,9 +66,80 @@ function CalendarContent() {
 
   if (c.loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 animate-pulse">
-        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-6"></div>
-        <p className="text-stone-500 font-serif italic text-lg">{t('dashboard.calendar.loading_agenda')}</p>
+      <div className="flex h-full w-full overflow-hidden bg-stone-50/50 p-4 gap-4 animate-in fade-in duration-500">
+        {/* Sidebar Skeleton */}
+        <div className="hidden md:flex flex-col w-[280px] lg:w-[320px] bg-white rounded-3xl p-5 border border-stone-200/60 shadow-sm space-y-6 shrink-0">
+          <div className="flex items-center gap-3">
+            <Skeleton className="w-10 h-10 rounded-2xl" />
+            <div className="space-y-1.5 flex-1">
+              <Skeleton className="h-4 w-3/4 rounded-lg" />
+              <Skeleton className="h-3 w-1/2 rounded-md" />
+            </div>
+          </div>
+          <Skeleton className="h-10 w-full rounded-2xl" />
+          <div className="p-4 bg-stone-50 rounded-2xl border border-stone-100 space-y-3">
+            <div className="flex justify-between items-center">
+              <Skeleton className="h-4 w-24 rounded-md" />
+              <Skeleton className="h-6 w-16 rounded-md" />
+            </div>
+            <div className="grid grid-cols-7 gap-2 pt-2">
+              {Array.from({ length: 28 }).map((_, i) => (
+                <Skeleton key={i} className="h-7 w-7 rounded-xl mx-auto" />
+              ))}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-12 w-full rounded-2xl" />
+            <Skeleton className="h-12 w-full rounded-2xl" />
+          </div>
+        </div>
+
+        {/* Calendar Grid Skeleton */}
+        <div className="flex-1 flex flex-col bg-white rounded-3xl border border-stone-200/60 shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-stone-100 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Skeleton className="w-8 h-8 rounded-xl" />
+              <Skeleton className="h-6 w-40 rounded-xl" />
+            </div>
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-9 w-20 rounded-xl" />
+              <Skeleton className="h-9 w-28 rounded-xl" />
+            </div>
+          </div>
+          {/* Header columns */}
+          <div className="grid grid-cols-8 border-b border-stone-100 bg-stone-50/40 p-3">
+            <Skeleton className="h-8 w-12 mx-auto rounded-lg" />
+            {Array.from({ length: 7 }).map((_, i) => (
+              <div key={i} className="flex flex-col items-center gap-1">
+                <Skeleton className="h-3 w-8 rounded-md" />
+                <Skeleton className="h-6 w-8 rounded-lg" />
+              </div>
+            ))}
+          </div>
+          {/* Slots grid skeleton */}
+          <div className="flex-1 grid grid-cols-8 p-3 gap-2">
+            <div className="space-y-6 py-2">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <Skeleton key={i} className="h-4 w-8 mx-auto rounded-md" />
+              ))}
+            </div>
+            {Array.from({ length: 7 }).map((_, col) => (
+              <div key={col} className="space-y-4 border-l border-stone-100 pl-2">
+                {col % 2 === 0 ? (
+                  <>
+                    <Skeleton className="h-16 w-full rounded-xl bg-amber-500/10 border border-amber-300/30" />
+                    <Skeleton className="h-24 w-full rounded-xl bg-sky-500/10 border border-sky-300/30" />
+                  </>
+                ) : (
+                  <>
+                    <div className="h-12" />
+                    <Skeleton className="h-20 w-full rounded-xl bg-emerald-500/10 border border-emerald-300/30" />
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -144,15 +216,15 @@ function CalendarContent() {
           id="calendar-toggle-panel"
           onClick={() => setIsPanelOpen(!isPanelOpen)}
           className={`
-            hidden md:flex absolute top-5 left-[50px] -translate-x-1/2 z-50 p-2.5 rounded-full border border-stone-200 shadow-xl transition-all duration-300 group items-center justify-center
-            ${isPanelOpen ? 'bg-white/40 backdrop-blur-sm text-stone-500 hover:text-stone-800' : 'bg-white text-stone-900 hover:scale-110'}
+            hidden md:flex absolute top-5 left-[50px] -translate-x-1/2 z-50 p-2.5 rounded-2xl border border-stone-200/80 shadow-md transition-all duration-300 group items-center justify-center
+            ${isPanelOpen ? 'bg-white/90 backdrop-blur-md text-stone-500 hover:text-stone-900' : 'bg-stone-900 text-white hover:bg-stone-800'}
           `}
           title={isPanelOpen ? t('dashboard.calendar.close_panel') : t('dashboard.calendar.open_panel')}
         >
           {isPanelOpen ? (
             <PanelLeftClose size={18} className="group-hover:-translate-x-0.5 transition-transform" />
           ) : (
-            <PanelLeftOpen size={20} className="text-primary" />
+            <PanelLeftOpen size={18} className="text-[#D4AF37]" />
           )}
         </button>
 
@@ -169,20 +241,27 @@ function CalendarContent() {
           />
           {/* Header de días */}
           <div
-            className="grid border-b border-stone-200 bg-stone-50/30"
+            className="grid border-b border-stone-200/70 bg-stone-50/50 backdrop-blur-md"
             style={{ gridTemplateColumns: `100px repeat(${c.days.length}, minmax(0, 1fr))` }}
           >
-            <div className="border-r border-stone-200" />
-            {c.days.map((date, i) => (
-              <div key={i} className="py-3 px-4 text-center border-r border-stone-200 last:border-r-0">
-                <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-0.5">
-                  {date.toLocaleDateString(getLocaleString(), { weekday: 'short' })}
-                </p>
-                <p className="text-2xl font-serif italic font-black text-stone-900">
-                  {date.getDate()}
-                </p>
-              </div>
-            ))}
+            <div className="border-r border-stone-200/70" />
+            {c.days.map((date, i) => {
+              const isToday = date.toDateString() === new Date().toDateString();
+              return (
+                <div key={i} className={`py-3.5 px-3 text-center border-r border-stone-200/70 last:border-r-0 transition-colors ${isToday ? 'bg-amber-50/20' : ''}`}>
+                  <p className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-1 ${isToday ? 'text-[#B38F26]' : 'text-stone-400'}`}>
+                    {date.toLocaleDateString(getLocaleString(), { weekday: 'short' })}
+                  </p>
+                  <span className={`inline-flex items-center justify-center font-serif text-xl font-bold transition-all ${
+                    isToday
+                      ? 'w-9 h-9 rounded-xl bg-[#D4AF37] text-stone-950 shadow-sm font-black'
+                      : 'text-stone-900'
+                  }`}>
+                    {date.getDate()}
+                  </span>
+                </div>
+              );
+            })}
           </div>
           {/* Cuerpo de la grilla (elástico, sin scroll) */}
           <div className="flex-1 flex flex-col relative overflow-visible h-full">

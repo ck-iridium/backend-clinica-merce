@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, ChevronLeft, ChevronRight, CheckCircle2, Clock, PanelLeftClose } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, CheckCircle2, Clock, PanelLeftClose, Calendar } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { Badge } from '@/components/ui/badge';
 
 interface ContextPanelProps {
     clinicName?: string;
@@ -22,8 +23,7 @@ interface ContextPanelProps {
 
 /**
  * ContextPanel (v2)
- * Barra lateral izquierda para la vista SaaS Edge-to-Edge.
- * Incluye perfil, notificaciones, buscador global, mini-calendario y filtros.
+ * Barra lateral izquierda para la vista SaaS Edge-to-Edge con diseño Quiet Luxury.
  */
 export function ContextPanel({
     clinicName = "Centro",
@@ -52,7 +52,7 @@ export function ContextPanel({
         setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
     };
 
-    // Lógica para generar los días del mes actual
+    // Días de la semana abreviados
     const daysOfWeek = [
         t('dashboard.settings.calendar.days.mon')?.[0] || 'L',
         t('dashboard.settings.calendar.days.tue')?.[0] || 'M',
@@ -85,7 +85,7 @@ export function ContextPanel({
             days.push({ day: i, currentMonth: true, date: new Date(year, month, i) });
         }
 
-        // Días del mes siguiente (relleno opcional)
+        // Días del mes siguiente (relleno)
         const remainingCells = 42 - days.length;
         for (let i = 1; i <= remainingCells; i++) {
             days.push({ day: i, currentMonth: false, date: new Date(year, month + 1, i) });
@@ -101,62 +101,60 @@ export function ContextPanel({
     };
 
     return (
-        <aside className="w-full h-full flex flex-col bg-white border-r border-stone-100 flex-shrink-0 animate-in fade-in slide-in-from-left duration-500">
-
-            {/* Botón de Cierre */}
+        <aside className="w-full h-full flex flex-col bg-white/95 backdrop-blur-xl border-r border-stone-200/70 flex-shrink-0 animate-in fade-in slide-in-from-left duration-300">
             <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-6">
                 
-                {/* 2. BÚSQUEDA Y COLAPSAR */}
+                {/* 1. BÚSQUEDA Y COLAPSAR */}
                 <div className="flex items-center gap-2">
                     <div className="relative flex-1 group">
-                        <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-primary transition-colors" />
+                        <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-[#D4AF37] transition-colors" />
                         <input
                             id="calendar-search-input"
                             type="text"
-                            placeholder={t('dashboard.calendar.search_placeholder')}
+                            placeholder={t('dashboard.calendar.search_placeholder') || 'Buscar cita o paciente...'}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-11 pr-4 py-3 bg-stone-50 border border-stone-100 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:bg-white outline-none transition-all shadow-sm"
+                            className="w-full pl-10 pr-3.5 py-2.5 bg-stone-50 border border-stone-200/80 rounded-2xl text-xs font-medium focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] focus:bg-white outline-none transition-all shadow-2xs placeholder:text-stone-400"
                         />
                     </div>
                     {onClose && (
                         <button
                             id="calendar-close-panel-btn"
                             onClick={onClose}
-                            className="p-3 rounded-2xl bg-stone-50 border border-stone-100 text-stone-500 active:scale-95 transition-all hover:bg-primary/5 hover:text-primary hover:border-primary/10 shrink-0"
+                            className="p-2.5 rounded-2xl bg-stone-50 border border-stone-200/80 text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-all shrink-0"
                             aria-label={t('dashboard.calendar.close_panel')}
                         >
-                            <PanelLeftClose size={20} />
+                            <PanelLeftClose size={18} />
                         </button>
                     )}
                 </div>
 
-                {/* 3. NAVEGACIÓN: Mini-Calendario Compacto */}
+                {/* 2. MINI-CALENDARIO COMPACTO */}
                 <div className="space-y-3">
-                    <div className="bg-white border border-stone-100 rounded-[2rem] p-4 shadow-sm">
-                        <div className="flex items-center justify-between mb-4 px-1">
+                    <div className="bg-white border border-stone-200/70 rounded-3xl p-4 shadow-2xs space-y-3">
+                        <div className="flex items-center justify-between px-1">
                             <button
                                 id="calendar-prev-month-btn"
                                 onClick={handlePrevMonth}
-                                className="p-1.5 rounded-lg hover:bg-stone-50 text-stone-400 transition-colors"
+                                className="p-1.5 rounded-xl hover:bg-stone-100 text-stone-400 hover:text-stone-800 transition-colors"
                             >
-                               <ChevronLeft size={18} />
+                               <ChevronLeft size={16} />
                             </button>
-                            <p className="font-serif italic font-bold text-stone-800 capitalize text-sm">
+                            <p className="font-serif font-bold text-stone-900 capitalize text-sm">
                                 {viewDate.toLocaleDateString(getLocaleString(), { month: 'long', year: 'numeric' })}
                             </p>
                             <button
                                 id="calendar-next-month-btn"
                                 onClick={handleNextMonth}
-                                className="p-1.5 rounded-lg hover:bg-stone-50 text-stone-400 transition-colors"
+                                className="p-1.5 rounded-xl hover:bg-stone-100 text-stone-400 hover:text-stone-800 transition-colors"
                             >
-                                <ChevronRight size={18} />
+                                <ChevronRight size={16} />
                             </button>
                         </div>
                         
-                        <div className="grid grid-cols-7 gap-1 text-center mb-2">
+                        <div className="grid grid-cols-7 gap-1 text-center">
                             {daysOfWeek.map(d => (
-                                <span key={d} className="text-[9px] font-black text-stone-300 uppercase">{d}</span>
+                                <span key={d} className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">{d}</span>
                             ))}
                         </div>
                         <div className="grid grid-cols-7 gap-1 text-center">
@@ -171,9 +169,13 @@ export function ContextPanel({
                                         key={i}
                                         id={item.currentMonth ? `calendar-mini-day-btn-${item.day}` : undefined}
                                         onClick={() => item.currentMonth && onDateChange?.(item.date)}
-                                        className={`w-8 h-8 flex items-center justify-center text-xs font-bold rounded-xl transition-all
-                                            ${isSelected ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-110' :
-                                                item.currentMonth ? 'text-stone-600 hover:bg-stone-50' : 'text-stone-200 pointer-events-none'}
+                                        className={`w-7 h-7 flex items-center justify-center text-xs font-medium rounded-xl transition-all
+                                            ${isSelected 
+                                                ? 'bg-gradient-to-r from-[#D4AF37] to-[#B38F26] text-stone-950 font-bold shadow-xs scale-105' 
+                                                : item.currentMonth 
+                                                ? 'text-stone-700 hover:bg-amber-50 hover:text-amber-900' 
+                                                : 'text-stone-200 pointer-events-none'
+                                            }
                                         `}
                                     >
                                         {item.day}
@@ -183,83 +185,97 @@ export function ContextPanel({
                         </div>
 
                         {/* Navegación Diaria Compacta */}
-                        <div className="flex items-center justify-between mt-4 pt-4 border-t border-stone-50">
+                        <div className="flex items-center justify-between pt-3 border-t border-stone-100">
                             <button 
                                 id="calendar-daily-prev-btn"
                                 onClick={onPrev}
-                                className="p-2 rounded-lg hover:bg-stone-50 text-stone-400 hover:text-primary transition-all"
+                                className="p-1.5 rounded-xl hover:bg-stone-100 text-stone-400 hover:text-stone-800 transition-colors"
                                 title={t('dashboard.calendar.prev_day')}
                             >
-                                <ChevronLeft size={18} />
+                                <ChevronLeft size={16} />
                             </button>
                             <button 
                                 id="calendar-daily-today-btn"
                                 onClick={onToday}
-                                className="px-4 py-1.5 rounded-lg bg-stone-50 border border-stone-100 text-stone-600 font-black text-[10px] uppercase tracking-widest hover:bg-primary/5 hover:text-primary hover:border-primary/10 transition-all"
+                                className="px-3.5 py-1.5 rounded-xl bg-stone-50 hover:bg-white border border-stone-200/70 text-stone-700 hover:text-[#B38F26] font-bold text-[10px] uppercase tracking-wider shadow-2xs transition-all"
                             >
-                                {t('dashboard.calendar.today')}
+                                {t('dashboard.calendar.today') || 'Hoy'}
                             </button>
                             <button 
                                 id="calendar-daily-next-btn"
                                 onClick={onNext}
-                                className="p-2 rounded-lg hover:bg-stone-50 text-stone-400 hover:text-primary transition-all"
+                                className="p-1.5 rounded-xl hover:bg-stone-100 text-stone-400 hover:text-stone-800 transition-colors"
                                 title={t('dashboard.calendar.next_day')}
                             >
-                                <ChevronRight size={18} />
+                                <ChevronRight size={16} />
                             </button>
                         </div>
                     </div>
                 </div>
 
-                {/* 4. FILTROS VISUALES */}
-                <div className="space-y-3">
-                    <p className="text-[10px] font-black text-stone-300 uppercase tracking-[0.2em] ml-1">{t('dashboard.calendar.filters')}</p>
-                    <div className="space-y-2">
+                {/* 3. FILTROS RÁPIDOS */}
+                <div className="space-y-2.5">
+                    <p className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.2em] ml-1">
+                        {t('dashboard.calendar.filters') || 'Filtros Rápidos'}
+                    </p>
+                    <div className="space-y-1.5">
                         <button
                             id="calendar-filter-confirmed-btn"
+                            type="button"
                             onClick={() => setActiveFilter(activeFilter === 'CONFIRMADA' ? 'ALL' : 'CONFIRMADA')}
-                            className={`w-full flex items-center justify-between p-3.5 rounded-2xl transition-all border
-                                ${activeFilter === 'CONFIRMADA' ? 'bg-primary/5 border-primary/10 text-primary' : 'bg-white border-stone-100 text-stone-500 hover:border-stone-200'}
-                            `}
+                            className={`w-full flex items-center justify-between p-3 rounded-2xl transition-all border shadow-2xs ${
+                                activeFilter === 'CONFIRMADA'
+                                    ? 'bg-sky-50 border-sky-200 text-sky-950 font-semibold'
+                                    : 'bg-white border-stone-200/70 text-stone-600 hover:border-stone-300'
+                            }`}
                         >
-                            <div className="flex items-center gap-3">
-                                <CheckCircle2 size={16} />
-                                <span className="text-xs font-bold uppercase tracking-wider">{t('dashboard.calendar.filter_confirmed')}</span>
+                            <div className="flex items-center gap-2.5">
+                                <CheckCircle2 size={15} className={activeFilter === 'CONFIRMADA' ? 'text-sky-600' : 'text-stone-400'} />
+                                <span className="text-xs">{t('dashboard.calendar.filter_confirmed') || 'Confirmadas'}</span>
                             </div>
-                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${activeFilter === 'CONFIRMADA' ? 'bg-white/50' : 'bg-stone-50'}`}>{confirmedCount}</span>
+                            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-stone-100 text-stone-700">
+                                {confirmedCount}
+                            </span>
                         </button>
 
                         <button
                             id="calendar-filter-pending-btn"
+                            type="button"
                             onClick={() => setActiveFilter(activeFilter === 'PENDIENTE' ? 'ALL' : 'PENDIENTE')}
-                            className={`w-full flex items-center justify-between p-3.5 rounded-2xl transition-all border
-                                ${activeFilter === 'PENDIENTE' ? 'bg-orange-50 border-orange-100 text-orange-600' : 'bg-white border-stone-100 text-stone-500 hover:border-stone-200'}
-                            `}
+                            className={`w-full flex items-center justify-between p-3 rounded-2xl transition-all border shadow-2xs ${
+                                activeFilter === 'PENDIENTE'
+                                    ? 'bg-amber-50 border-amber-200 text-amber-950 font-semibold'
+                                    : 'bg-white border-stone-200/70 text-stone-600 hover:border-stone-300'
+                            }`}
                         >
-                            <div className="flex items-center gap-3">
-                                <Clock size={16} />
-                                <span className="text-xs font-bold uppercase tracking-wider">{t('dashboard.calendar.filter_pending')}</span>
+                            <div className="flex items-center gap-2.5">
+                                <Clock size={15} className={activeFilter === 'PENDIENTE' ? 'text-amber-600' : 'text-stone-400'} />
+                                <span className="text-xs">{t('dashboard.calendar.filter_pending') || 'Pendientes'}</span>
                             </div>
-                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${activeFilter === 'PENDIENTE' ? 'bg-white/50' : 'bg-stone-50'}`}>{pendingCount}</span>
+                            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-stone-100 text-stone-700">
+                                {pendingCount}
+                            </span>
                         </button>
 
                         <button
                             id="calendar-filter-paid-btn"
+                            type="button"
                             onClick={() => setActiveFilter(activeFilter === 'PAGADA' ? 'ALL' : 'PAGADA')}
-                            className={`w-full flex items-center justify-between p-3.5 rounded-2xl transition-all border
-                                ${activeFilter === 'PAGADA' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-white border-stone-100 text-stone-500 hover:border-stone-200'}
-                            `}
+                            className={`w-full flex items-center justify-between p-3 rounded-2xl transition-all border shadow-2xs ${
+                                activeFilter === 'PAGADA'
+                                    ? 'bg-emerald-50 border-emerald-200 text-emerald-950 font-semibold'
+                                    : 'bg-white border-stone-200/70 text-stone-600 hover:border-stone-300'
+                            }`}
                         >
-                            <div className="flex items-center gap-3">
-                                <div className={`w-4 h-4 rounded-full border-2 ${activeFilter === 'PAGADA' ? 'border-emerald-500 bg-emerald-100' : 'border-emerald-400'}`}></div>
-                                <span className="text-xs font-bold uppercase tracking-wider">{t('dashboard.calendar.filter_paid')}</span>
+                            <div className="flex items-center gap-2.5">
+                                <div className={`w-3.5 h-3.5 rounded-full border-2 ${activeFilter === 'PAGADA' ? 'border-emerald-500 bg-emerald-100' : 'border-emerald-400'}`} />
+                                <span className="text-xs">{t('dashboard.calendar.filter_paid') || 'Pagadas / Liquidadas'}</span>
                             </div>
                         </button>
                     </div>
                 </div>
 
             </div>
-
         </aside>
     );
 }

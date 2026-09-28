@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Calendar, Clock, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -225,29 +226,33 @@ export function CreateAppointmentModal({
 
   return (
     <Dialog open={showModal} onOpenChange={setShowModal}>
-      <DialogContent className="p-0 border-none w-[95vw] sm:max-w-lg lg:max-w-[35em] h-fit max-h-[100dvh] sm:max-h-[calc(100vh-2rem)] rounded-xl">
-        <DialogHeader className="sticky top-0 z-30 shrink-0 p-8 border-b border-stone-100 bg-white/95 backdrop-blur-md">
-          <div className="flex gap-4 mb-4 p-1 bg-stone-100 rounded-2xl w-fit">
+      <DialogContent className="p-0 border border-stone-200/80 w-[95vw] sm:max-w-lg lg:max-w-[36em] h-fit max-h-[100dvh] sm:max-h-[calc(100vh-2rem)] rounded-3xl shadow-2xl bg-white overflow-hidden">
+        <DialogHeader className="sticky top-0 z-30 shrink-0 p-6 sm:p-8 border-b border-stone-100 bg-white/95 backdrop-blur-md">
+          <div className="flex gap-1.5 mb-3 p-1 bg-stone-100 rounded-2xl w-fit">
             <button
               id="create-appt-appointment-tab"
               onClick={() => setModalType('appointment')}
-              className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${modalType === 'appointment' ? 'bg-white text-stone-800 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
+              className={`px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                modalType === 'appointment' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-500 hover:text-stone-800'
+              }`}
             >
               {t('dashboard.calendar.new_appointment') || 'Nueva Cita'}
             </button>
             <button
               id="create-appt-block-tab"
               onClick={() => setModalType('block')}
-              className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${modalType === 'block' ? 'bg-stone-800 text-white shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
+              className={`px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                modalType === 'block' ? 'bg-stone-900 text-white shadow-xs' : 'text-stone-500 hover:text-stone-800'
+              }`}
             >
               {t('dashboard.calendar.modal.block') || 'Bloqueo'}
             </button>
           </div>
-          <DialogTitle className="text-2xl font-extrabold text-stone-800">
+          <DialogTitle className="text-2xl font-serif font-bold text-stone-900">
             {modalType === 'appointment' ? (t('dashboard.calendar.modal.assign_appt') || 'Asignar Cita') : (t('dashboard.calendar.modal.block_slot') || 'Bloquear Horario')}
           </DialogTitle>
-          <DialogDescription className="text-primary font-bold flex items-center gap-2 mt-1">
-            <Calendar size={16} strokeWidth={1.5} />
+          <DialogDescription className="text-[#B38F26] font-semibold flex items-center gap-2 mt-1 text-xs">
+            <Calendar size={15} strokeWidth={2} />
             {selectedSlot && (
               language === 'es' ? `${selectedSlot.date.toLocaleDateString('es-ES')} a las ${selectedSlot.hour.toString().padStart(2, '0')}:${selectedMinutes.toString().padStart(2, '0')} h` :
               language === 'en' ? `${selectedSlot.date.toLocaleDateString('en-US')} at ${selectedSlot.hour.toString().padStart(2, '0')}:${selectedMinutes.toString().padStart(2, '0')}` :
@@ -465,19 +470,28 @@ export function CreateAppointmentModal({
           )}
         </div>
 
-        <DialogFooter className="sticky bottom-0 left-0 w-full p-6 pt-12 bg-gradient-to-t from-white via-white/95 to-transparent flex flex-row gap-3 rounded-b-xl z-20 pointer-events-none">
-          <button id="create-appt-cancel-btn" type="button" onClick={() => setShowModal(false)} className="flex-1 py-4 rounded-xl font-bold text-stone-600 bg-white border border-stone-100 hover:bg-stone-50 shadow-sm transition-all pointer-events-auto">
+        <DialogFooter className="sticky bottom-0 left-0 w-full p-6 bg-white/95 backdrop-blur-md border-t border-stone-100 flex flex-row gap-3 rounded-b-3xl z-20">
+          <Button 
+            id="create-appt-cancel-btn" 
+            type="button" 
+            variant="outline"
+            size="lg"
+            onClick={() => setShowModal(false)} 
+            className="flex-1 rounded-xl h-12"
+          >
             {t('dashboard.calendar.modal.cancel') || 'Cancelar'}
-          </button>
-          <button
+          </Button>
+          <Button
             id="create-appt-submit-btn"
             form={modalType === 'appointment' ? 'appointment-form' : 'block-form'}
             disabled={saving}
             type="submit"
-            className={`flex-1 ${modalType === 'appointment' ? 'bg-stone-900 border-stone-900' : 'bg-stone-800 border-stone-800'} text-white px-6 py-4 rounded-xl font-bold transition-all disabled:opacity-50 active:scale-95 shadow-lg shadow-stone-900/10 border pointer-events-auto`}
+            variant="luxury"
+            size="lg"
+            className="flex-1 rounded-xl shadow-luxury text-stone-950 font-bold h-12"
           >
-            {saving ? (t('dashboard.calendar.modal.saving') || 'Guardando...') : (modalType === 'appointment' ? (t('dashboard.calendar.modal.schedule') || 'Agendar') : (t('dashboard.calendar.modal.block_btn') || 'Bloquear'))}
-          </button>
+            {saving ? (t('dashboard.calendar.modal.saving') || 'Guardando...') : (modalType === 'appointment' ? (t('dashboard.calendar.modal.schedule') || 'Agendar Cita') : (t('dashboard.calendar.modal.block_btn') || 'Bloquear'))}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

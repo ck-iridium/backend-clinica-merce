@@ -44,8 +44,8 @@
 - [x] **3.2** Barra lateral y Navegación del Tenant (`DashboardSidebar.tsx`): Estados dorados activos y menús refinados.
 - [ ] **3.3** Ajustes Generales (`/dashboard/settings`): Pestaña de Empresa y Suscripción Bizum con `<Tabs />` de shadcn.
 - [x] **3.4** Clientes (`/dashboard/clients`): Directorio con buscador rápido, avatares monograma, fichas de clientes y visor legal.
-- [ ] **3.5** Agenda (`/dashboard/calendar`): Preservar la cuadrícula funcional aplicando el nuevo sistema de botones y tarjetas.
-- [ ] **3.6** Caja y TPV (`/dashboard/pos`): Unificación de ticket y botones de cobro rápido.
+- [x] **3.5** Agenda (`/dashboard/calendar`): Cuadrícula elástica modernizada, skeletons de carga multi-columna, tarjetas Quiet Luxury pastel y modales shadcn/ui.
+- [x] **3.6** Caja y TPV (`/dashboard/pos`): Unificación de ticket y botones de cobro rápido con estética dark luxury y Bento catalog.
 
 ---
 

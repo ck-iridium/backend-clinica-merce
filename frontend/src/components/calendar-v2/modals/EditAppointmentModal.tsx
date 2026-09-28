@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Calendar, Sparkles, Trash2, AlertTriangle, Save, MessageCircle, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -127,52 +128,52 @@ export function EditAppointmentModal({
 
   return (
     <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-      <DialogContent className="p-0 border-none w-[95vw] sm:max-w-[340px] lg:max-w-[35em] h-fit max-h-[100dvh] sm:max-h-[calc(100vh-2rem)] rounded-xl">
-        <DialogHeader className="sticky top-0 z-30 shrink-0 p-8 border-b border-stone-100 bg-white/95 backdrop-blur-md">
+      <DialogContent className="p-0 border border-stone-200/80 w-[95vw] sm:max-w-md lg:max-w-[36em] h-fit max-h-[100dvh] sm:max-h-[calc(100vh-2rem)] rounded-3xl shadow-2xl bg-white overflow-hidden">
+        <DialogHeader className="sticky top-0 z-30 shrink-0 p-6 sm:p-8 border-b border-stone-100 bg-white/95 backdrop-blur-md">
           <div className="flex flex-col gap-2">
             {selectedAppt && (() => {
               const status = (selectedAppt.status || 'pending').toLowerCase().trim();
               let label = t('dashboard.calendar.pending') || 'Pendiente';
-              let colorClasses = 'bg-[#fffbeb] text-[#92400e] border-[#fef3c7]';
+              let colorClasses = 'bg-amber-50 text-amber-900 border-amber-200/70';
 
               if (status === 'completed') {
                 label = t('dashboard.calendar.completed') || 'Realizada';
-                colorClasses = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                colorClasses = 'bg-emerald-50 text-emerald-800 border-emerald-200/70';
               } else if (status === 'cancelled') {
                 label = t('dashboard.calendar.cancelled') || 'Cancelada';
-                colorClasses = 'bg-[#fef2f2] text-[#991b1b] border-[#fee2e2]';
+                colorClasses = 'bg-rose-50 text-rose-800 border-rose-200/70';
               } else if (status === 'web_pending') {
                 label = t('dashboard.calendar.modal.web_reservation') || 'Reserva Web';
-                colorClasses = 'bg-orange-50 text-orange-600 border-orange-200';
+                colorClasses = 'bg-amber-50 text-amber-900 border-amber-300';
               } else if (status === 'awaiting_payment') {
                 label = t('dashboard.calendar.modal.pending_payment') || 'Pago Pendiente';
-                colorClasses = 'bg-amber-50 text-amber-600 border-amber-200';
+                colorClasses = 'bg-amber-50 text-amber-900 border-amber-200';
               } else if (status === 'pending_verification') {
                 label = t('dashboard.calendar.modal.pending_web') || 'Pendiente (Web)';
-                colorClasses = 'bg-[#fffbeb] text-[#92400e] border-[#fef3c7]';
+                colorClasses = 'bg-amber-50 text-amber-900 border-amber-200';
               } else if (status === 'pending') {
                 label = t('dashboard.calendar.modal.pending_manual') || 'Pendiente (Manual)';
-                colorClasses = 'bg-[#fffbeb] text-[#92400e] border-[#fef3c7]';
+                colorClasses = 'bg-amber-50 text-amber-900 border-amber-200';
               } else if (status === 'confirmed') {
                 label = t('dashboard.calendar.confirmed') || 'Confirmada';
-                colorClasses = 'bg-[#f0f9f4] text-[#2d6a4f] border-[#d8f3dc]';
+                colorClasses = 'bg-sky-50 text-sky-900 border-sky-200/70';
               } else if (status === 'no_show') {
                 label = t('dashboard.calendar.no_show') || 'No Asistió';
                 colorClasses = 'bg-stone-50 text-stone-600 border-stone-200';
               }
 
               return (
-                <span className={`px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider border w-fit ${colorClasses}`}>
+                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border w-fit shadow-2xs ${colorClasses}`}>
                   {label}
                 </span>
               );
             })()}
-            <DialogTitle className="text-2xl md:text-3xl font-serif italic font-black text-stone-800 leading-tight">
+            <DialogTitle className="text-2xl sm:text-3xl font-serif font-bold text-stone-900 leading-tight">
               {selectedAppt ? clientMap.get(selectedAppt.client_id)?.name : (t('dashboard.calendar.modal.appt_detail') || 'Detalle Cita')}
             </DialogTitle>
             {selectedAppt && (
-              <DialogDescription className="text-primary font-bold flex items-center gap-2 text-sm">
-                <Calendar size={14} strokeWidth={2.5} />
+              <DialogDescription className="text-[#B38F26] font-semibold flex items-center gap-2 text-xs">
+                <Calendar size={14} strokeWidth={2} />
                 {parseIsoDate(selectedAppt.start_time).toLocaleDateString(getLocaleString(), {
                   day: 'numeric',
                   month: 'long',
@@ -364,15 +365,18 @@ export function EditAppointmentModal({
                 </Select>
               </div>
 
-              <button
+              <Button
                 id="edit-appt-delete-btn"
+                type="button"
+                variant="ghost"
+                size="icon"
                 onClick={handleDeleteAppointment}
                 disabled={updatingStatus}
-                className="w-12 h-12 shrink-0 bg-stone-50 hover:bg-rose-50 text-stone-400 hover:text-rose-500 rounded-xl transition-all active:scale-95 flex items-center justify-center outline-none"
+                className="w-12 h-12 shrink-0 bg-stone-50 hover:bg-rose-50 text-stone-400 hover:text-rose-600 rounded-xl transition-all"
                 title={t('dashboard.calendar.modal.delete_appt') || 'Eliminar cita'}
               >
                 <Trash2 size={18} strokeWidth={2} />
-              </button>
+              </Button>
             </div>
           </div>
         </div>
