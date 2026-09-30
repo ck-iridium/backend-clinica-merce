@@ -49,6 +49,7 @@ interface POSTicketProps {
   handleApplyCustomTotal: () => void;
   handleProcessSale: (e: React.FormEvent) => void;
   isProcessing: boolean;
+  nextInvoiceNumber?: string;
 }
 
 export function POSTicket({
@@ -91,6 +92,7 @@ export function POSTicket({
   handleApplyCustomTotal,
   handleProcessSale,
   isProcessing,
+  nextInvoiceNumber,
 }: POSTicketProps) {
   const { t } = useLanguage();
 
@@ -229,6 +231,7 @@ export function POSTicket({
         setShowClientDropdown={setShowClientDropdown}
         filteredClients={filteredClients}
         clientDropdownRef={clientDropdownRef}
+        nextInvoiceNumber={nextInvoiceNumber}
       />
 
       {/* Selector de Fecha y Método de Pago */}

@@ -49,6 +49,7 @@ export default function POSPage() {
   const [selectedDate, setSelectedDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastInvoice, setLastInvoice] = useState<any>(null);
+  const [nextInvoiceNumber, setNextInvoiceNumber] = useState<string>('');
 
   // Referencias para detección de clics fuera
   const clientDropdownRef = useRef<HTMLDivElement>(null);
@@ -122,6 +123,8 @@ export default function POSPage() {
       if (catRes.ok) {
         setCategories(await catRes.json());
       }
+      
+      await fetchNextInvoiceNumber(selectedDate);
     } catch (e) {
       console.error(e);
       toast.error('Error al cargar los datos del POS');
@@ -129,6 +132,25 @@ export default function POSPage() {
       setLoading(false);
     }
   };
+
+  const fetchNextInvoiceNumber = async (dateStr?: string) => {
+    try {
+      const target = dateStr || selectedDate;
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/invoices/next-number?target_date=${target}`);
+      if (res.ok) {
+        const data = await res.json();
+        setNextInvoiceNumber(data.next_number);
+      }
+    } catch (err) {
+      console.error("Error fetching next invoice number:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (mounted) {
+      fetchNextInvoiceNumber(selectedDate);
+    }
+  }, [selectedDate, mounted]);
 
   // Procesar cobro y emitir factura
   const handleProcessSale = async (e: React.FormEvent) => {
@@ -162,6 +184,7 @@ export default function POSPage() {
         setLastInvoice(invoice);
         setIsCartDrawerOpen(false);
         toast.success('Venta realizada con éxito');
+        fetchNextInvoiceNumber(selectedDate);
       } else {
         const err = await res.json();
         showFeedback({
@@ -282,6 +305,7 @@ export default function POSPage() {
     handleApplyCustomTotal: cartHook.handleApplyCustomTotal,
     handleProcessSale,
     isProcessing,
+    nextInvoiceNumber,
   };
 
   return (

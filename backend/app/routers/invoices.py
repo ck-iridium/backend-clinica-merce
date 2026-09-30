@@ -35,6 +35,16 @@ def read_invoices(
         search=search
     )
 
+@router.get("/next-number")
+def get_next_invoice_number(target_date: Optional[str] = None, db: Session = Depends(database.get_db)):
+    """Devuelve la previsualización del siguiente número correlativo de factura."""
+    return crud.get_next_invoice_preview(db, target_date=target_date)
+
+@router.post("/reassign-numbers")
+def reassign_invoice_numbers(year: Optional[int] = None, db: Session = Depends(database.get_db)):
+    """Reasigna y compacta correlativamente los folios de factura para eliminar saltos o desórdenes."""
+    return crud.reassign_invoice_numbers(db, year=year)
+
 @router.get("/{invoice_id}", response_model=schemas.InvoiceResponse)
 def read_invoice(invoice_id: str, db: Session = Depends(database.get_db)):
     db_invoice = crud.get_invoice(db, invoice_id=invoice_id)

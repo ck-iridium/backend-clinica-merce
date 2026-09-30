@@ -85,7 +85,7 @@ def get_invoices(db: Session, page: int = 1, limit: int = 10, status: str = "all
     vat_quota = total_gross - tax_base
     
     offset = (page - 1) * limit
-    invoices = query.order_by(models.Invoice.date.desc()).offset(offset).limit(limit).all()
+    invoices = query.order_by(models.Invoice.date.desc(), models.Invoice.number.desc()).offset(offset).limit(limit).all()
     
     pages = math.ceil(total / limit) if limit > 0 else 0
     
@@ -99,6 +99,97 @@ def get_invoices(db: Session, page: int = 1, limit: int = 10, status: str = "all
             "vat_quota": round(vat_quota, 2)
         },
         "data": invoices
+    }
+
+def get_next_invoice_preview(db: Session, target_date=None) -> dict:
+    if not target_date:
+        target_date = datetime.now()
+    if isinstance(target_date, str):
+        try:
+            target_date = datetime.strptime(target_date[:10], "%Y-%m-%d")
+        except ValueError:
+            target_date = datetime.now()
+            
+    tenant_id = current_tenant_var.get()
+    settings = get_clinic_settings(db)
+    prefix = settings.invoice_prefix.replace("{YYYY}", str(target_date.year)).replace("{YY}", str(target_date.year)[-2:]).replace("{MM}", f"{target_date.month:02d}")
+    
+    current_num = settings.invoice_next_number
+    if not current_num or current_num < 1:
+        current_num = 1
+
+    new_num = f"{prefix}{current_num:04d}"
+    
+    while db.query(models.Invoice).filter(
+        models.Invoice.tenant_id == tenant_id,
+        or_(models.Invoice.number == new_num, models.Invoice.id == new_num)
+    ).first() is not None:
+        current_num += 1
+        new_num = f"{prefix}{current_num:04d}"
+        
+    return {
+        "next_number": new_num,
+        "sequence": current_num,
+        "prefix": prefix
+    }
+
+def reassign_invoice_numbers(db: Session, year: int = None):
+    tenant_id = current_tenant_var.get()
+    settings = get_clinic_settings(db)
+    
+    query = db.query(models.Invoice).filter(models.Invoice.tenant_id == tenant_id)
+    if year:
+        query = query.filter(models.Invoice.date.like(f"{year}%"))
+        
+    invoices = query.all()
+    if not invoices:
+        return {
+            "total_reassigned": 0,
+            "next_number": settings.invoice_next_number,
+            "message": "No hay facturas registradas para reasignar."
+        }
+        
+    def parse_inv_sort_key(inv):
+        d_val = str(inv.date or '')
+        n_val = str(inv.number or '')
+        return (d_val, n_val, inv.id)
+        
+    invoices.sort(key=parse_inv_sort_key)
+    
+    # Paso 1: Renombrar temporalmente para evitar colisiones de unicidad
+    for inv in invoices:
+        inv.number = f"TEMP-{uuid.uuid4().hex[:12]}"
+    db.commit()
+    
+    # Paso 2: Reasignar números correlativos sin huecos
+    seq = 1
+    sample_first = ""
+    sample_last = ""
+    for inv in invoices:
+        target_date = datetime.now()
+        if inv.date:
+            try:
+                target_date = datetime.strptime(str(inv.date)[:10], "%Y-%m-%d")
+            except Exception:
+                target_date = datetime.now()
+                
+        prefix = settings.invoice_prefix.replace("{YYYY}", str(target_date.year)).replace("{YY}", str(target_date.year)[-2:]).replace("{MM}", f"{target_date.month:02d}")
+        clean_num = f"{prefix}{seq:04d}"
+        inv.number = clean_num
+        if seq == 1:
+            sample_first = clean_num
+        sample_last = clean_num
+        seq += 1
+        
+    settings.invoice_next_number = seq
+    db.add(settings)
+    db.commit()
+    
+    return {
+        "total_reassigned": len(invoices),
+        "next_number": seq,
+        "sample_range": f"{sample_first} ... {sample_last}",
+        "message": f"Se han reasignado {len(invoices)} facturas de forma correlativa."
     }
 
 def create_invoice(db: Session, invoice: schemas.InvoiceCreate):
@@ -134,6 +225,7 @@ def update_invoice(db: Session, invoice_id: str, invoice: schemas.InvoiceUpdate)
     return db_invoice
 
 def delete_invoice(db: Session, invoice_id: str):
+    import re
     tenant_id = current_tenant_var.get()
     db_invoice = db.query(models.Invoice).filter(
         or_(models.Invoice.id == invoice_id, models.Invoice.number == invoice_id),
@@ -143,13 +235,28 @@ def delete_invoice(db: Session, invoice_id: str):
         db.delete(db_invoice)
         db.commit()
 
-        # Auto-reseteo del contador en Ajustes a 1 si la clínica elimina todas sus facturas
-        remaining_count = db.query(models.Invoice).filter(models.Invoice.tenant_id == tenant_id).count()
-        if remaining_count == 0:
-            settings = get_clinic_settings(db)
+        # Comprobar facturas restantes
+        remaining = db.query(models.Invoice).filter(models.Invoice.tenant_id == tenant_id).all()
+        settings = get_clinic_settings(db)
+        if not remaining:
             settings.invoice_next_number = 1
             db.add(settings)
             db.commit()
+        else:
+            # Retroceso inteligente: si se eliminó la última factura de la serie, retroceder el contador
+            max_seq = 0
+            for inv in remaining:
+                if inv.number:
+                    match = re.search(r'(\d+)$', inv.number)
+                    if match:
+                        num_val = int(match.group(1))
+                        if num_val > max_seq:
+                            max_seq = num_val
+            
+            if max_seq > 0 and settings.invoice_next_number > max_seq + 1:
+                settings.invoice_next_number = max_seq + 1
+                db.add(settings)
+                db.commit()
 
     return db_invoice
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Search, User, X, FileCheck2, FileText, CheckCircle2 } from 'lucide-react';
+import { Search, User, X, FileCheck2, FileText, CheckCircle2, Receipt } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Client } from './types';
 
@@ -18,6 +18,7 @@ interface POSClientSelectorProps {
   setShowClientDropdown: (val: boolean) => void;
   filteredClients: Client[];
   clientDropdownRef: React.RefObject<HTMLDivElement>;
+  nextInvoiceNumber?: string;
 }
 
 export function POSClientSelector({
@@ -33,11 +34,29 @@ export function POSClientSelector({
   setShowClientDropdown,
   filteredClients,
   clientDropdownRef,
+  nextInvoiceNumber,
 }: POSClientSelectorProps) {
   const { t } = useLanguage();
 
   return (
     <div className="space-y-3.5 pt-4 border-t border-white/10">
+      {/* Casilla de control visual de Próxima Factura */}
+      {nextInvoiceNumber && (
+        <div className="flex items-center justify-between px-3.5 py-2.5 bg-gradient-to-r from-amber-500/15 via-white/5 to-transparent border border-[#D4AF37]/35 rounded-2xl shadow-2xs">
+          <div className="flex items-center gap-2">
+            <span className="w-6 h-6 rounded-lg bg-[#D4AF37]/20 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37]">
+              <Receipt size={13} strokeWidth={2.2} />
+            </span>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-amber-200/90 font-sans">
+              Próxima Factura:
+            </span>
+          </div>
+          <span className="font-mono text-xs font-bold text-white bg-stone-900/90 px-3 py-1 rounded-xl border border-amber-400/40 shadow-xs tracking-wider">
+            {nextInvoiceNumber}
+          </span>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
         <label className="text-xs font-bold uppercase tracking-wider text-white/70 flex items-center gap-1.5">
           <FileText size={13} className="text-[#D4AF37]" />

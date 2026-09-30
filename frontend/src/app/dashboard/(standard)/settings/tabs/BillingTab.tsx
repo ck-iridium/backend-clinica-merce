@@ -1,7 +1,9 @@
-import { Hash, ImageIcon, FileText, CheckCircle, Trash2 } from 'lucide-react';
-import { RefObject } from 'react';
+import { Hash, ImageIcon, FileText, CheckCircle, Trash2, RotateCcw, Sparkles, Loader2 } from 'lucide-react';
+import { RefObject, useState } from 'react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
+import { useFeedback } from '@/app/contexts/FeedbackContext';
+import { toast } from 'sonner';
 
 interface BillingTabProps {
   settings: any;
@@ -19,6 +21,38 @@ export default function BillingTab({
   handleImageUpload 
 }: BillingTabProps) {
   const { t } = useLanguage();
+  const { showFeedback } = useFeedback();
+  const [isReassigning, setIsReassigning] = useState(false);
+
+  const handleReassignClick = () => {
+    showFeedback({
+      type: 'confirm',
+      title: '¿Reorganizar Numeración de Facturas?',
+      message: 'Esta acción escaneará todas las facturas del centro y las renumerará de forma estrictamente correlativa (0001, 0002...) según su fecha de emisión, compactando huecos por eliminaciones pasadas y sincronizando el siguiente número oficial. ¿Deseas continuar?',
+      confirmText: 'Sí, Reorganizar',
+      cancelText: 'Cancelar',
+      onConfirm: async () => {
+        setIsReassigning(true);
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/invoices/reassign-numbers`, {
+            method: 'POST'
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setSettings((prev: any) => ({ ...prev, invoice_next_number: data.next_number }));
+            toast.success(data.message || 'Numeración reasignada y compactada con éxito.');
+          } else {
+            toast.error('Error al reasignar la numeración de facturas.');
+          }
+        } catch (e) {
+          console.error(e);
+          toast.error('Error de conexión al intentar reasignar la numeración.');
+        } finally {
+          setIsReassigning(false);
+        }
+      }
+    });
+  };
 
   return (
     <div className="space-y-6 md:space-y-8 animate-in slide-in-from-bottom-2 duration-300">
@@ -86,6 +120,41 @@ export default function BillingTab({
             <span className="text-[10px] font-bold text-[#b08e23] uppercase tracking-wider bg-white px-2 py-0.5 rounded-full border border-amber-200">
               Formato Válido
             </span>
+          </div>
+
+          {/* Panel de Auditoría y Reparación de Correlatividad */}
+          <div className="md:col-span-2 p-5 bg-stone-50/80 rounded-2xl border border-stone-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <RotateCcw size={15} className="text-[#B38F26]" />
+                <span className="text-xs font-bold text-stone-800 uppercase tracking-wider">
+                  Correlatividad y Reparación de Saltos
+                </span>
+              </div>
+              <p className="text-xs text-stone-500 max-w-xl">
+                Si has eliminado facturas o detectas huecos en los números, esta acción compacta y reasigna los folios correlativos en orden cronológico según su fecha de emisión y sincroniza el contador oficial.
+              </p>
+            </div>
+            <Button
+              id="billing-reassign-invoices-btn"
+              type="button"
+              variant="outline"
+              onClick={handleReassignClick}
+              disabled={isReassigning}
+              className="rounded-xl border-[#D4AF37]/50 hover:border-[#D4AF37] hover:bg-amber-50/50 text-stone-800 text-xs font-semibold gap-2 shrink-0 shadow-2xs"
+            >
+              {isReassigning ? (
+                <>
+                  <Loader2 size={14} className="animate-spin text-[#B38F26]" />
+                  <span>Reorganizando...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles size={14} className="text-[#B38F26]" />
+                  <span>Reorganizar Numeración</span>
+                </>
+              )}
+            </Button>
           </div>
         </div>
       </div>
