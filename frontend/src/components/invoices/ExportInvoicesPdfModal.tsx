@@ -331,7 +331,9 @@ export default function ExportInvoicesPdfModal({
       });
 
       // Pie de página y encabezados secundarios en TODAS LAS HOJAS
-      const totalPages = doc.internal.getNumberOfPages();
+      const totalPages = typeof doc.getNumberOfPages === 'function' 
+        ? doc.getNumberOfPages() 
+        : ((doc as any).internal?.pages?.length ? (doc as any).internal.pages.length - 1 : 1);
       const nowStr = new Date().toLocaleDateString('es-ES', { 
         day: '2-digit', 
         month: '2-digit', 
