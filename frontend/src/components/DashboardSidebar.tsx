@@ -266,6 +266,11 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
           return false;
         }
 
+        // --- RESTRICCIÓN PLAN INDIVIDUAL (BASIC): Facturas oficiales y Bonos son exclusivos de Plan Pro y Elite ---
+        if (planType === 'basic' && (link.href === '/dashboard/invoices' || link.href === '/dashboard/vouchers')) {
+          return false;
+        }
+
         if (currentRole === 'administrador' || currentRole === 'admin') return true;
 
         if (currentRole === 'recepción' || currentRole === 'recepcion') {

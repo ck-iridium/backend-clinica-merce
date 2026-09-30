@@ -5,25 +5,29 @@ from .database import current_tenant_var
 
 PLAN_LIMITS = {
     "free": {
+        # 14 días de prueba completa (Reverse Trial de Plan Pro)
+        "specialists": 4,
+        "services": 999999,
+        "locations": 2,
+        "ai_smart_actions_daily": 15
+    },
+    "basic": {
+        # Plan Individual (39€/mes): 1 especialista único, 1 sede, servicios ilimitados
         "specialists": 1,
-        "services": 3,
+        "services": 999999,
         "locations": 1,
         "ai_smart_actions_daily": 0
     },
-    "basic": {
-        "specialists": 2,
-        "services": 10,
-        "locations": 1,
-        "ai_smart_actions_daily": 5
-    },
     "pro": {
-        "specialists": 5,
-        "services": 25,
-        "locations": 3,
+        # Plan Pro (69€/mes): hasta 4 especialistas, hasta 2 sedes, servicios ilimitados
+        "specialists": 4,
+        "services": 999999,
+        "locations": 2,
         "ai_smart_actions_daily": 15
     },
     "gold": {
-        "specialists": 999999,
+        # Plan Elite (129€/mes): hasta 10 especialistas, hasta 5 sedes, servicios e IA ilimitada
+        "specialists": 10,
         "services": 999999,
         "locations": 5,
         "ai_smart_actions_daily": 999999

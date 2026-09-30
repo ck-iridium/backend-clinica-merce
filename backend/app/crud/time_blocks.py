@@ -5,15 +5,14 @@ from ..database import current_tenant_var
 
 # --- Time Blocks CRUD ---
 
-def get_time_blocks(db: Session, skip: int = 0, limit: int = 100):
+def get_time_blocks(db: Session, skip: int = 0, limit: int = None):
     tenant_id = current_tenant_var.get()
-    return (
-        db.query(models.TimeBlock)
-        .filter(models.TimeBlock.tenant_id == tenant_id)
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
+    query = db.query(models.TimeBlock).filter(models.TimeBlock.tenant_id == tenant_id).order_by(models.TimeBlock.start_time.asc())
+    if skip:
+        query = query.offset(skip)
+    if limit is not None and limit > 0:
+        query = query.limit(limit)
+    return query.all()
 
 def create_time_block(db: Session, block_in: schemas.TimeBlockCreate):
     tenant_id = current_tenant_var.get()

@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import List
 from .. import crud, schemas, models
 from ..database import get_db
 
@@ -10,7 +10,7 @@ router = APIRouter(
 )
 
 @router.get("/", response_model=List[schemas.TimeBlockResponse])
-def read_time_blocks(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_time_blocks(skip: int = 0, limit: Optional[int] = Query(None), db: Session = Depends(get_db)):
     return crud.get_time_blocks(db, skip=skip, limit=limit)
 
 @router.post("/", response_model=schemas.TimeBlockResponse)

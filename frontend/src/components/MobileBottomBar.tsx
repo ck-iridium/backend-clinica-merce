@@ -135,6 +135,9 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
     { href: '/dashboard/services', label: t('dashboard.menu.services') || 'Servicios', icon: Sparkles },
     { href: '/dashboard/vouchers', label: t('dashboard.menu.vouchers') || 'Bonos', icon: Ticket },
   ].filter(item => {
+    // Plan Individual: Bonos no incluidos
+    if (planType === 'basic' && item.href === '/dashboard/vouchers') return false;
+
     const currentRole = role?.toLowerCase();
 
     // Administrador ve todo
@@ -171,6 +174,13 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
     ...(submenuConfig.length > 0 ? [{ id: 'configuracion', label: t('dashboard.menu.configuration') || 'Configuración', icon: Settings, isSubmenu: true }] : []),
   ].filter(item => {
     if (!item.href) return true; // Los submenús no tienen href directo
+
+    // Restricciones de Plan:
+    // AI Webmaster solo en Gold
+    if (item.href === '/dashboard/ai-webmaster' && planType !== 'gold') return false;
+    // Facturas y Bonos no disponibles en Plan Individual (Basic)
+    if (planType === 'basic' && (item.href === '/dashboard/invoices' || item.href === '/dashboard/vouchers')) return false;
+
     const currentRole = role?.toLowerCase();
 
     // Especialista SOLO ve: Inicio, Agenda, Clientes, Asistente Web IA.

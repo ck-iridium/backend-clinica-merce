@@ -20,6 +20,14 @@ interface SaaSCMSSectorListProps {
   onDelete: (sector: ShowcaseSector) => void;
 }
 
+const DEFAULT_SECTOR_IMAGES: Record<string, string> = {
+  clinicas: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80',
+  barberias: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80',
+  dentistas: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80',
+  peluquerias: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80',
+  tattoos: 'https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&w=800&q=80',
+};
+
 export default function SaaSCMSSectorList({
   sectors,
   loading,
@@ -52,24 +60,26 @@ export default function SaaSCMSSectorList({
         </div>
       ) : (
         <div className="space-y-3 font-sans">
-          {sectors.map(sector => (
-            <div 
-              key={sector.id}
-              className="p-3 bg-stone-50/50 hover:bg-stone-50 border border-stone-200/40 rounded-xl flex items-center justify-between transition-colors duration-200 group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg overflow-hidden bg-stone-200 shrink-0 border border-stone-100 flex items-center justify-center relative">
-                  {sector.video_url ? (
-                    <video src={sector.video_url} className="w-full h-full object-cover" muted />
-                  ) : (
-                    <Film className="w-4 h-4 text-stone-300" />
-                  )}
+          {sectors.map(sector => {
+            const imgSrc = sector.image_url || DEFAULT_SECTOR_IMAGES[sector.slug] || DEFAULT_SECTOR_IMAGES.clinicas;
+            return (
+              <div 
+                key={sector.id}
+                className="p-3 bg-stone-50/50 hover:bg-stone-50 border border-stone-200/40 rounded-xl flex items-center justify-between transition-colors duration-200 group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg overflow-hidden bg-stone-200 shrink-0 border border-stone-200/60 flex items-center justify-center relative shadow-sm">
+                    {imgSrc ? (
+                      <img src={imgSrc} alt={sector.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <Film className="w-4 h-4 text-stone-300" />
+                    )}
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-stone-900 leading-tight">{sector.title}</h5>
+                    <p className="text-[9px] font-mono text-stone-400 mt-0.5">slug: {sector.slug}</p>
+                  </div>
                 </div>
-                <div>
-                  <h5 className="text-xs font-bold text-stone-900 leading-tight">{sector.title}</h5>
-                  <p className="text-[9px] font-mono text-stone-400 mt-0.5">slug: {sector.slug}</p>
-                </div>
-              </div>
 
               <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
                 <button
@@ -88,7 +98,8 @@ export default function SaaSCMSSectorList({
                 </button>
               </div>
             </div>
-          ))}
+          );
+        })}
         </div>
       )}
     </div>

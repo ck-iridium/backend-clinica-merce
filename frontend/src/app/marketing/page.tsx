@@ -1,6 +1,7 @@
 import MarketingClientPage, { Sector } from './MarketingClientPage';
 
-export const revalidate = 60; // Revalidar la página cada minuto en producción para caché eficiente
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function Page() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -75,7 +76,7 @@ export default async function Page() {
   // 2. Fetch de datos en el servidor
   try {
     const response = await fetch(`${API_URL}/super-admin/marketing/public`, {
-      next: { revalidate: 60 }
+      cache: 'no-store'
     });
     if (response.ok) {
       const data = await response.json();

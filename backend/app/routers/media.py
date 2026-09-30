@@ -199,6 +199,36 @@ async def list_all_media(db: Session = Depends(get_db)):
             "usages": [u for u in usages if u != "Galería Multimedia"],
         })
 
+    # Añadir recursos del Showcase de Sectores para que estén siempre accesibles y reutilizables en la galería
+    try:
+        showcase_sectors = db.query(models.LandingShowcaseSector).all()
+        seen_urls = {item["url"] for item in result}
+        for s in showcase_sectors:
+            if s.image_url and s.image_url not in seen_urls:
+                seen_urls.add(s.image_url)
+                result.append({
+                    "name": f"showcase_{s.slug}.jpg",
+                    "url": s.image_url,
+                    "size": 350000,
+                    "content_type": "image/jpeg",
+                    "created_at": "2026-01-01T00:00:00Z",
+                    "status": "in_use",
+                    "usages": [f"Sector Showcase: {s.title}"],
+                })
+            if s.video_url and s.video_url not in seen_urls:
+                seen_urls.add(s.video_url)
+                result.append({
+                    "name": f"showcase_video_{s.slug}.mp4",
+                    "url": s.video_url,
+                    "size": 2500000,
+                    "content_type": "video/mp4",
+                    "created_at": "2026-01-01T00:00:00Z",
+                    "status": "in_use",
+                    "usages": [f"Vídeo Demostrativo: {s.title}"],
+                })
+    except Exception as e:
+        print(f"Error cargando medios de showcase para la galería: {e}")
+
     result.sort(key=lambda x: x["name"])
     return result
 

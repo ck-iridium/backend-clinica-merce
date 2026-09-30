@@ -134,16 +134,30 @@ def check_appointment_collision(db: Session, start_time: datetime, end_time: dat
 
     return None
 
-def get_appointments(db: Session, skip: int = 0, limit: int = 100):
+def get_appointments(
+    db: Session, 
+    skip: int = 0, 
+    limit: int = None,
+    start_date: datetime = None,
+    end_date: datetime = None
+):
     tenant_id = current_tenant_var.get()
     auto_cancel_expired_pending_appointments(db, tenant_id)
-    return (
-        db.query(models.Appointment)
-        .filter(models.Appointment.tenant_id == tenant_id)
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
+    query = db.query(models.Appointment).filter(models.Appointment.tenant_id == tenant_id)
+    
+    if start_date:
+        query = query.filter(models.Appointment.start_time >= start_date)
+    if end_date:
+        query = query.filter(models.Appointment.start_time <= end_date)
+        
+    query = query.order_by(models.Appointment.start_time.asc())
+    
+    if skip:
+        query = query.offset(skip)
+    if limit is not None and limit > 0:
+        query = query.limit(limit)
+        
+    return query.all()
 
 def create_appointment(db: Session, appointment: schemas.AppointmentCreate):
     tenant_id = current_tenant_var.get()

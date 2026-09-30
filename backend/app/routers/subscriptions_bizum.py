@@ -13,9 +13,9 @@ router = APIRouter(
 )
 
 PLAN_PRICES = {
-    "basic": {"monthly": 29.00, "yearly": 290.00},
-    "pro": {"monthly": 59.00, "yearly": 590.00},
-    "gold": {"monthly": 99.00, "yearly": 990.00}
+    "basic": {"monthly": 39.00, "yearly": 390.00},
+    "pro": {"monthly": 69.00, "yearly": 690.00},
+    "gold": {"monthly": 129.00, "yearly": 1290.00}
 }
 
 def generate_reference_code(db: Session) -> str:

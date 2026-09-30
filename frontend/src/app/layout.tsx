@@ -1,6 +1,6 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
-import { Inter, Cormorant_Garamond, Playfair, Montserrat, Outfit } from 'next/font/google';
+import { Inter, Cormorant_Garamond, Playfair, Montserrat, Outfit, Fredoka } from 'next/font/google';
 
 const inter = Inter({ 
   subsets: ['latin'], 
@@ -34,7 +34,14 @@ const outfit = Outfit({
   display: 'swap',
 });
 
-const fontClasses = `${inter.variable} ${cormorantGaramond.variable} ${playfair.variable} ${montserrat.variable} ${outfit.variable}`;
+const fredoka = Fredoka({
+  weight: ['300', '400', '500', '600', '700'],
+  subsets: ['latin'],
+  variable: '--font-fredoka',
+  display: 'swap',
+});
+
+const fontClasses = `${inter.variable} ${cormorantGaramond.variable} ${playfair.variable} ${montserrat.variable} ${outfit.variable} ${fredoka.variable}`;
 
 function getFontVar(fontName: string, fallback: string): string {
   switch (fontName) {
@@ -47,6 +54,8 @@ function getFontVar(fontName: string, fallback: string): string {
       return 'var(--font-montserrat), sans-serif';
     case 'Outfit':
       return 'var(--font-outfit), sans-serif';
+    case 'Fredoka':
+      return "var(--font-fredoka), 'Fredoka', cursive, sans-serif";
     case 'Inter':
       return 'var(--font-inter), sans-serif';
     default:

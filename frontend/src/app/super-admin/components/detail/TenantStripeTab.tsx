@@ -124,27 +124,28 @@ export default function TenantStripeTab({ tenant, onSubscribe, redirectingPlan }
             </button>
           </div>
 
-          {/* Plan Básico */}
+          {/* Plan Individual */}
           <div className={`p-6 rounded-2xl border bg-white flex flex-col justify-between transition-all duration-300 hover:shadow-luxury hover:-translate-y-0.5 ${
             tenant.plan_type === 'basic' ? 'border-[#d4af37]' : 'border-stone-200/40'
           }`}>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-[9px] font-black uppercase tracking-wider text-stone-400 font-sans">Básico</span>
+                <span className="text-[9px] font-black uppercase tracking-wider text-stone-400 font-sans">Individual</span>
                 {tenant.plan_type === 'basic' && (
                   <span className="bg-[#fcf8e5] text-[#d4af37] text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">Activo</span>
                 )}
               </div>
-              <h5 className="text-sm font-bold font-serif text-stone-950">Plan Básico</h5>
-              <p className="text-[11px] text-stone-400 font-sans leading-relaxed">Agenda estándar para equipos pequeños.</p>
+              <h5 className="text-sm font-bold font-serif text-stone-950">Plan Individual</h5>
+              <p className="text-[11px] text-stone-400 font-sans leading-relaxed">Autónomos y gabinetes independientes.</p>
               <div className="pt-1 flex items-baseline gap-0.5">
-                <span className="text-xl font-bold text-stone-900 font-serif">29€</span>
+                <span className="text-xl font-bold text-stone-900 font-serif">39€</span>
                 <span className="text-[10px] text-stone-400 font-sans">/ mes</span>
               </div>
               <ul className="text-[10px] text-stone-500 font-sans space-y-1 pt-2 border-t border-stone-100">
-                <li>✓ Citas y Clientes Ilimitados</li>
-                <li>✓ Hasta 2 Profesionales</li>
-                <li>✓ Agenda Interactiva</li>
+                <li>✓ 1 Especialista Único</li>
+                <li>✓ 1 Sede Física</li>
+                <li>✓ Servicios Ilimitados</li>
+                <li>✓ Agenda & TPV de Caja</li>
               </ul>
             </div>
             <button
@@ -171,16 +172,17 @@ export default function TenantStripeTab({ tenant, onSubscribe, redirectingPlan }
                   <span className="bg-[#fcf8e5] text-[#d4af37] text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">Activo</span>
                 )}
               </div>
-              <h5 className="text-sm font-bold font-serif text-stone-950">Plan Pro Premium</h5>
-              <p className="text-[11px] text-stone-400 font-sans leading-relaxed">Para clínicas de estética de alto crecimiento.</p>
+              <h5 className="text-sm font-bold font-serif text-stone-950">Plan Pro Todo-en-Uno</h5>
+              <p className="text-[11px] text-stone-400 font-sans leading-relaxed">Para clínicas con equipo y recepción.</p>
               <div className="pt-1 flex items-baseline gap-0.5">
-                <span className="text-xl font-bold text-stone-900 font-serif">59€</span>
+                <span className="text-xl font-bold text-stone-900 font-serif">69€</span>
                 <span className="text-[10px] text-stone-400 font-sans">/ mes</span>
               </div>
               <ul className="text-[10px] text-stone-500 font-sans space-y-1 pt-2 border-t border-stone-100">
-                <li>✓ Todo lo del Plan Básico</li>
-                <li>✓ Hasta 10 Profesionales</li>
-                <li>✓ Venta Rápida y Bonos</li>
+                <li>✓ Hasta 4 Especialistas</li>
+                <li>✓ Hasta 2 Sedes Físicas</li>
+                <li>✓ Firma Digital LOPD en Tablet</li>
+                <li>✓ Facturación Oficial PDF & Bonos</li>
               </ul>
             </div>
             <button
@@ -207,16 +209,17 @@ export default function TenantStripeTab({ tenant, onSubscribe, redirectingPlan }
                   <span className="bg-[#fcf8e5] text-[#d4af37] text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">Activo</span>
                 )}
               </div>
-              <h5 className="text-sm font-bold font-serif text-stone-950">Plan Elite Gold</h5>
-              <p className="text-[11px] text-stone-400 font-sans leading-relaxed">Asistentes de IA ilimitados y multi-local.</p>
+              <h5 className="text-sm font-bold font-serif text-stone-950">Plan Elite</h5>
+              <p className="text-[11px] text-stone-400 font-sans leading-relaxed">Multisede y asistente de IA conversacional.</p>
               <div className="pt-1 flex items-baseline gap-0.5">
-                <span className="text-xl font-bold text-stone-900 font-serif">99€</span>
+                <span className="text-xl font-bold text-stone-900 font-serif">129€</span>
                 <span className="text-[10px] text-stone-400 font-sans">/ mes</span>
               </div>
               <ul className="text-[10px] text-stone-500 font-sans space-y-1 pt-2 border-t border-stone-100">
-                <li>✓ Profesionales Ilimitados</li>
-                <li>✓ IA Avanzada Ilimitada</li>
-                <li>✓ Soporte Personalizado 24/7</li>
+                <li>✓ Hasta 10 Especialistas</li>
+                <li>✓ Hasta 5 Sedes Físicas</li>
+                <li>✓ AI Webmaster (Texto, Voz, Fotos)</li>
+                <li>✓ Soporte Prioritario VIP 24/7</li>
               </ul>
             </div>
             <button

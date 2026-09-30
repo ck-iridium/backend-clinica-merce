@@ -24,9 +24,9 @@ export default function SaaSFinance({ tenants }: SaaSFinanceProps) {
   
   const activeMRR = tenants.reduce((acc, t) => {
     if (t.subscription_status === 'active') {
-      if (t.plan_type === 'basic') return acc + 29;
-      if (t.plan_type === 'pro') return acc + 59;
-      if (t.plan_type === 'gold') return acc + 99;
+      if (t.plan_type === 'basic') return acc + 39;
+      if (t.plan_type === 'pro') return acc + 69;
+      if (t.plan_type === 'gold') return acc + 129;
     }
     return acc;
   }, 0);
@@ -100,9 +100,9 @@ export default function SaaSFinance({ tenants }: SaaSFinanceProps) {
               {tenants.map((t) => {
                 let planPrice = 0;
                 if (t.subscription_status === 'active') {
-                  if (t.plan_type === 'basic') planPrice = 29;
-                  if (t.plan_type === 'pro') planPrice = 59;
-                  if (t.plan_type === 'gold') planPrice = 99;
+                  if (t.plan_type === 'basic') planPrice = 39;
+                  if (t.plan_type === 'pro') planPrice = 69;
+                  if (t.plan_type === 'gold') planPrice = 129;
                 }
 
                 return (

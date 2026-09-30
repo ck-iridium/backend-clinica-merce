@@ -84,6 +84,55 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
     return () => clearInterval(interval);
   }, [heroImages.length]);
 
+  // Sincronización dinámica de ajustes de Branding en tiempo real desde el CMS
+  useEffect(() => {
+    fetch(`${API_URL}/super-admin/marketing/public`, { cache: 'no-store' })
+      .then(res => {
+        if (res.ok) return res.json();
+        throw new Error('Failed to fetch public settings');
+      })
+      .then(data => {
+        if (data?.settings) {
+          if (data.settings.hero_title) setHeroTitle(data.settings.hero_title);
+          if (data.settings.hero_subtitle) setHeroSubtitle(data.settings.hero_subtitle);
+          if (data.settings.logo_svg !== undefined) setLogoSvg(data.settings.logo_svg);
+          if (data.settings.primary_color) setPrimaryColor(data.settings.primary_color);
+          if (data.settings.secondary_color) setSecondaryColor(data.settings.secondary_color);
+          if (data.settings.tertiary_color) setTertiaryColor(data.settings.tertiary_color);
+          if (data.settings.font_family) setFontFamily(data.settings.font_family);
+        }
+        if (data?.sectors && data.sectors.length > 0) {
+          setSectors(data.sectors.map((s: any, idx: number) => {
+            const text = `${s.slug || ''} ${s.title || ''} ${s.badge_text || ''}`.toLowerCase();
+            let resolvedImage = s.image_url;
+            if (!resolvedImage || resolvedImage.trim() === '') {
+              if (text.includes('barber') || idx === 1) {
+                resolvedImage = 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80';
+              } else if (text.includes('dent') || text.includes('odont') || idx === 2) {
+                resolvedImage = 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80';
+              } else if (text.includes('peluquer') || text.includes('salon') || idx === 3) {
+                resolvedImage = 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80';
+              } else if (text.includes('tattoo') || text.includes('tatuad') || idx === 4) {
+                resolvedImage = 'https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&w=800&q=80';
+              } else {
+                resolvedImage = 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80';
+              }
+            }
+            return {
+              id: s.id,
+              badge: s.badge_text || s.title,
+              title: s.title,
+              copy: s.copy || '',
+              videoUrl: s.video_url || '',
+              imageUrl: resolvedImage,
+              placeholderGradient: 'from-stone-800 to-stone-900'
+            };
+          }));
+        }
+      })
+      .catch(err => console.warn('[MarketingClientPage] Usando ajustes pre-renderizados:', err.message));
+  }, [API_URL]);
+
   const [activeIndex, setActiveIndex] = useState(0);
   const [animating, setAnimating] = useState(false);
 
@@ -112,7 +161,16 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
     'semibold': '600',
     'bold': '700'
   };
-  const activeWeight = weightMap[initialSettings.font_weight_headings || 'semibold'] || '600';
+  const activeWeight = weightMap[initialSettings.font_weight_headings || 'medium'] || '500';
+
+  const resolvedFont = (
+    fontFamily === 'fredoka' ? "var(--font-fredoka), 'Fredoka', cursive, sans-serif" :
+    fontFamily === 'outfit' ? "var(--font-outfit), 'Outfit', sans-serif" :
+    fontFamily === 'cormorant_montserrat' ? "var(--font-cormorant), 'Cormorant Garamond', serif" :
+    fontFamily === 'cinzel_roboto' ? "'Cinzel', serif" :
+    fontFamily === 'inter' ? "var(--font-inter), 'Inter', sans-serif" :
+    "var(--font-playfair-base), 'Playfair Display', serif"
+  );
 
   return (
     <div 
@@ -124,34 +182,38 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
       className="min-h-screen bg-[#FAF9F6] text-stone-900 font-sans selection:bg-[#d4af37]/20 overflow-x-hidden relative transition-colors duration-300"
     >
       
-      {/* Inyección dinámica de Google Fonts y Clases Tipográficas */}
+      {/* Inyección dinámica de Google Fonts y Clases Tipográficas desde el Panel de Branding */}
       <style dangerouslySetInnerHTML={{ __html: `
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap');
+
         :root {
-          --font-serif: ${
-            fontFamily === 'playfair_inter' ? "var(--font-playfair-base), 'Playfair Display', serif" :
-            fontFamily === 'outfit' ? "var(--font-outfit), 'Outfit', sans-serif" :
-            fontFamily === 'fredoka' ? "'Fredoka', sans-serif" :
-            fontFamily === 'cormorant_montserrat' ? "var(--font-cormorant), 'Cormorant Garamond', serif" :
-            fontFamily === 'cinzel_roboto' ? "'Cinzel', serif" :
-            "var(--font-inter), 'Inter', sans-serif"
-          };
+          --font-serif: ${resolvedFont} !important;
+          --font-heading: ${resolvedFont} !important;
+          --font-playfair: ${resolvedFont} !important;
+          --font-cormorant: ${resolvedFont} !important;
           --font-sans: ${
-            fontFamily === 'playfair_inter' ? "var(--font-inter), 'Inter', sans-serif" :
+            fontFamily === 'fredoka' ? "var(--font-fredoka), 'Fredoka', cursive, sans-serif" :
             fontFamily === 'outfit' ? "var(--font-outfit), 'Outfit', sans-serif" :
-            fontFamily === 'fredoka' ? "'Fredoka', sans-serif" :
             fontFamily === 'cormorant_montserrat' ? "var(--font-montserrat), 'Montserrat', sans-serif" :
             fontFamily === 'cinzel_roboto' ? "'Roboto', sans-serif" :
             "var(--font-inter), 'Inter', sans-serif"
-          };
+          } !important;
+          --primary-accent: ${primaryColor || '#2244C9'} !important;
+          --secondary-accent: ${secondaryColor || '#160888'} !important;
+          --tertiary-accent: ${tertiaryColor || '#E213FF'} !important;
         }
         
-        .font-serif {
-          font-family: var(--font-serif) !important;
+        .font-serif, h1, h2, h3, h4, h5, h6 {
+          font-family: ${resolvedFont} !important;
           font-weight: ${activeWeight} !important;
         }
         
-        .font-sans, body, html, button, input, select, textarea {
-          font-family: var(--font-sans) !important;
+        .font-sans, body, html, button, input, select, textarea, p, span, a {
+          font-family: ${
+            fontFamily === 'fredoka' ? "var(--font-fredoka), 'Fredoka', cursive, sans-serif" :
+            fontFamily === 'outfit' ? "var(--font-outfit), 'Outfit', sans-serif" :
+            "var(--font-inter), 'Inter', sans-serif"
+          } !important;
         }
       ` }} />
       
@@ -192,10 +254,11 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
             </Link>
             <button 
               onClick={() => handleOpenOnboarding('pro')}
-              className="bg-stone-900 hover:bg-stone-950 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all duration-200 hover:scale-[1.02] active:scale-95 border border-stone-800 flex items-center gap-1.5"
+              style={{ backgroundColor: primaryColor || '#1c1917' }}
+              className="hover:opacity-95 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all duration-200 hover:scale-[1.02] active:scale-95 border border-white/20 flex items-center gap-1.5"
             >
               <span>Comenzar Ahora</span>
-              <ChevronRight size={13} className="text-[#D4AF37]" />
+              <ChevronRight size={13} style={{ color: tertiaryColor || '#D4AF37' }} />
             </button>
           </div>
         </div>
@@ -228,8 +291,14 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
 
         {/* Hero Content Layer */}
         <div className="max-w-7xl mx-auto px-6 py-20 relative z-20 text-center animate-in fade-in slide-in-from-bottom-6 duration-1000 flex flex-col justify-center items-center">
-          <div className="inline-flex items-center gap-2 bg-white/95 border border-[#D4AF37]/30 text-[#997715] px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase mb-8 shadow-sm backdrop-blur-md">
-            <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+          <div 
+            style={{ 
+              borderColor: tertiaryColor ? `${tertiaryColor}50` : 'rgba(212,175,55,0.3)', 
+              color: tertiaryColor || '#997715' 
+            }}
+            className="inline-flex items-center gap-2 bg-white/95 border px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase mb-8 shadow-sm backdrop-blur-md"
+          >
+            <Sparkles className="w-3.5 h-3.5" style={{ color: tertiaryColor || '#D4AF37' }} />
             <span>EL NUEVO ESTÁNDAR TODO-EN-UNO PARA CLÍNICAS SELECTAS</span>
           </div>
           
@@ -245,10 +314,11 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
             <button 
               onClick={() => handleOpenOnboarding('pro')}
-              className="w-full sm:w-auto bg-stone-950 hover:bg-black text-white px-8 py-4 rounded-2xl text-xs font-bold shadow-lg transition-all duration-300 flex items-center justify-center gap-2 group active:scale-95 hover:scale-[1.02] border border-[#D4AF37]/30"
+              style={{ backgroundColor: primaryColor || '#1c1917' }}
+              className="w-full sm:w-auto text-white px-8 py-4 rounded-2xl text-xs font-bold shadow-lg transition-all duration-300 flex items-center justify-center gap-2 group active:scale-95 hover:scale-[1.02] border border-white/20"
             >
               <span>Comenzar Prueba Gratuita</span>
-              <ChevronRight className="w-4 h-4 text-[#D4AF37] group-hover:translate-x-1 transition-transform" />
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" style={{ color: tertiaryColor || '#D4AF37' }} />
             </button>
             <a 
               href="#pilares" 
@@ -389,7 +459,7 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
               <div className="mt-8 pt-6 border-t border-stone-800 flex items-center justify-between">
                 <div>
                   <span className="text-[10px] uppercase font-bold text-[#D4AF37] tracking-wider block">Todo Incluido Desde</span>
-                  <span className="text-3xl font-serif font-bold text-white">29€/mes</span>
+                  <span className="text-3xl font-serif font-bold text-white">39€/mes</span>
                 </div>
                 <button
                   onClick={() => handleOpenOnboarding('pro')}
@@ -499,6 +569,9 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
         animating={animating}
         handleNavigate={handleNavigate}
         onConfigureEntorno={handleOpenOnboarding}
+        primaryColor={primaryColor}
+        secondaryColor={secondaryColor}
+        tertiaryColor={tertiaryColor}
       />
 
       {/* ── 6. SECCIÓN DE PRECIOS EDITORIALES (REDISEÑADA) ── */}

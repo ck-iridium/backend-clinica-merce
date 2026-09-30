@@ -230,12 +230,27 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
   const openEditSector = (sector: ShowcaseSector) => {
     setIsAddingSector(false);
     setEditingSector(sector);
+    const defaultImages: Record<string, string> = {
+      clinicas: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80',
+      barberias: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80',
+      dentistas: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80',
+      peluquerias: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80',
+      tattoos: 'https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&w=800&q=80',
+    };
+    const defaultVideos: Record<string, string> = {
+      clinicas: 'https://assets.mixkit.co/videos/preview/mixkit-dermatologist-examining-a-patients-face-with-magnifier-40545-large.mp4',
+      barberias: 'https://assets.mixkit.co/videos/preview/mixkit-barber-shaving-a-man-with-a-razor-41223-large.mp4',
+      dentistas: 'https://assets.mixkit.co/videos/preview/mixkit-dentist-adjusting-a-surgical-light-in-clinic-40549-large.mp4',
+      peluquerias: 'https://assets.mixkit.co/videos/preview/mixkit-hairdresser-cutting-hair-of-a-woman-in-salon-40552-large.mp4',
+      tattoos: 'https://assets.mixkit.co/videos/preview/mixkit-tattoo-artist-working-on-a-design-41224-large.mp4',
+    };
+
     setSectorFormData({
       title: sector.title,
       slug: sector.slug,
       badge_text: sector.badge_text || '',
-      video_url: sector.video_url || '',
-      image_url: sector.image_url || '',
+      video_url: sector.video_url || defaultVideos[sector.slug] || '',
+      image_url: sector.image_url || defaultImages[sector.slug] || '',
       order_index: sector.order_index
     });
   };

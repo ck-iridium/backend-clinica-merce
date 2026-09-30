@@ -600,8 +600,14 @@ def create_appointment(appointment: schemas.AppointmentCreate, db: Session = Dep
         raise HTTPException(status_code=500, detail=f"Error interno al crear cita: {str(e)}")
 
 @router.get("/", response_model=List[schemas.AppointmentResponse])
-def read_appointments(skip: int = 0, limit: int = 100, db: Session = Depends(database.get_db)):
-    return crud.get_appointments(db, skip=skip, limit=limit)
+def read_appointments(
+    skip: int = 0, 
+    limit: Optional[int] = Query(None, description="Límite de citas a devolver (por defecto sin límite)"), 
+    start_date: Optional[datetime] = Query(None, description="Filtrar citas desde esta fecha"),
+    end_date: Optional[datetime] = Query(None, description="Filtrar citas hasta esta fecha"),
+    db: Session = Depends(database.get_db)
+):
+    return crud.get_appointments(db, skip=skip, limit=limit, start_date=start_date, end_date=end_date)
 
 @router.patch("/{appointment_id}", response_model=schemas.AppointmentResponse)
 def update_appointment(appointment_id: str, appointment_update: schemas.AppointmentUpdate, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):

@@ -379,6 +379,87 @@ class LandingShowcaseSectorCreateUpdate(BaseModel):
     order_index: int = 0
 
 
+DEFAULT_SHOWCASE_SECTORS = [
+    {
+        "slug": "clinicas",
+        "title": "Clínicas & Wellness",
+        "badge_text": "Clínicas Estéticas",
+        "image_url": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80",
+        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-dermatologist-examining-a-patients-face-with-magnifier-40545-large.mp4",
+        "order_index": 0
+    },
+    {
+        "slug": "barberias",
+        "title": "Barberías Premium",
+        "badge_text": "Barberías Selectas",
+        "image_url": "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80",
+        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-barber-shaving-a-man-with-a-razor-41223-large.mp4",
+        "order_index": 1
+    },
+    {
+        "slug": "dentistas",
+        "title": "Consultorios Dentales",
+        "badge_text": "Odontología Avanzada",
+        "image_url": "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80",
+        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-dentist-adjusting-a-surgical-light-in-clinic-40549-large.mp4",
+        "order_index": 2
+    },
+    {
+        "slug": "peluquerias",
+        "title": "Salones de Belleza",
+        "badge_text": "Salones de Alta Costura",
+        "image_url": "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80",
+        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-hairdresser-cutting-hair-of-a-woman-in-salon-40552-large.mp4",
+        "order_index": 3
+    },
+    {
+        "slug": "tattoos",
+        "title": "Estudios Tattoo",
+        "badge_text": "Tattoos Shop",
+        "image_url": "https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&w=800&q=80",
+        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-tattoo-artist-working-on-a-design-41224-large.mp4",
+        "order_index": 4
+    }
+]
+
+def ensure_showcase_sectors_defaults(db: Session):
+    try:
+        existing = {s.slug: s for s in db.query(models.LandingShowcaseSector).all()}
+        if not existing:
+            # Solo si la tabla está completamente vacía sembramos los sectores iniciales
+            for default in DEFAULT_SHOWCASE_SECTORS:
+                new_sec = models.LandingShowcaseSector(
+                    title=default["title"],
+                    slug=default["slug"],
+                    badge_text=default["badge_text"],
+                    image_url=default["image_url"],
+                    video_url=default["video_url"],
+                    order_index=default["order_index"]
+                )
+                db.add(new_sec)
+            db.commit()
+        else:
+            # Si ya existen sectores, NUNCA re-insertar sectores eliminados por el usuario
+            modified = False
+            for slug, default in {d["slug"]: d for d in DEFAULT_SHOWCASE_SECTORS}.items():
+                if slug in existing:
+                    s = existing[slug]
+                    if not s.image_url:
+                        s.image_url = default["image_url"]
+                        modified = True
+                    if not s.video_url:
+                        s.video_url = default["video_url"]
+                        modified = True
+                    if not s.badge_text:
+                        s.badge_text = default["badge_text"]
+                        modified = True
+            if modified:
+                db.commit()
+    except Exception as e:
+        db.rollback()
+        print(f"Error sincronizando sectores por defecto: {e}")
+
+
 # 1. PUBLIC ENDPOINT (No authentication required)
 @router.get("/marketing/public")
 def get_public_marketing_content(db: Session = Depends(database.get_db)):
@@ -396,6 +477,7 @@ def get_public_marketing_content(db: Session = Depends(database.get_db)):
         db.commit()
         db.refresh(settings)
         
+    ensure_showcase_sectors_defaults(db)
     sectors = db.query(models.LandingShowcaseSector).order_by(models.LandingShowcaseSector.order_index.asc()).all()
     return {
         "settings": {
@@ -479,6 +561,7 @@ def get_marketing_sectors(
     db: Session = Depends(database.get_db),
     admin_payload: dict = Depends(verify_super_admin)
 ):
+    ensure_showcase_sectors_defaults(db)
     return db.query(models.LandingShowcaseSector).order_by(models.LandingShowcaseSector.order_index.asc()).all()
 
 
