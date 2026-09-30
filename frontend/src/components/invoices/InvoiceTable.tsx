@@ -4,8 +4,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
 import { Download, MoreHorizontal, Eye, Trash2, FileSpreadsheet, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import {
   DropdownMenu,
@@ -16,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useFeedback } from '@/app/contexts/FeedbackContext';
+import ExportInvoicesPdfModal from './ExportInvoicesPdfModal';
 
 
 interface Props {
@@ -30,6 +29,7 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
   const { t, language } = useLanguage();
   const { showFeedback } = useFeedback();
   const [clientsMap, setClientsMap] = useState<Record<string, string>>({});
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/`)
@@ -105,139 +105,7 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
   };
 
   const exportToPDF = () => {
-    if (invoices.length === 0) return;
-
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    
-    // Aesthetic configuration
-    const primaryColor = [28, 25, 23]; // Antracita (#1c1917)
-    const secondaryColor = [120, 113, 108]; // Stone-500
-    
-    // Main Title
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(22);
-    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.text(t('dashboard.invoices.title') || "Registro de Facturación", 20, 25);
-    
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-    const generatedOnLabel = t('dashboard.invoices.generated_on');
-    const pageLabel = t('dashboard.invoices.page_pdf');
-    doc.text(`${generatedOnLabel} ${new Date().toLocaleDateString(dateLocale)} - ${pageLabel} ${pagination.page}`, 20, 32);
-
-    // Totals (KPIs) of current page invoices
-    let totalBruto = 0;
-    let totalBase = 0;
-    let totalIva = 0;
-
-    invoices.forEach(inv => {
-      const bruto = Number(inv.amount);
-      const taxRate = Number(inv.tax_rate);
-      const base = bruto / (1 + (taxRate / 100));
-      const iva = bruto - base;
-      
-      totalBruto += bruto;
-      totalBase += base;
-      totalIva += iva;
-    });
-
-    // Draw total cards
-    const cardWidth = (pageWidth - 50) / 3;
-    const cardY = 45;
-
-    const drawCard = (label: string, value: string, x: number) => {
-        doc.setDrawColor(231, 229, 228); // Stone-200
-        doc.setFillColor(250, 250, 250); // Stone-50
-        doc.roundedRect(x, cardY, cardWidth, 25, 3, 3, "FD");
-        
-        doc.setFontSize(8);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-        doc.text(label.toUpperCase(), x + 5, cardY + 8);
-        
-        doc.setFontSize(14);
-        doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-        doc.text(value, x + 5, cardY + 18);
-    };
-
-    drawCard(t('dashboard.invoices.total_gross') || "Total Bruto", `${totalBruto.toFixed(2)} €`, 20);
-    drawCard(t('dashboard.invoices.taxable_base') || "Base Imponible", `${totalBase.toFixed(2)} €`, 20 + cardWidth + 5);
-    drawCard(t('dashboard.invoices.vat_quota') || "Cuota IVA", `${totalIva.toFixed(2)} €`, 20 + (cardWidth + 5) * 2);
-
-    // Data Table
-    const tableData = invoices.map(inv => {
-      const bruto = Number(inv.amount);
-      const taxRate = Number(inv.tax_rate);
-      const base = bruto / (1 + (taxRate / 100));
-      const iva = bruto - base;
-      
-      // Short format DD/MM/YY to fit nicely
-      const d = new Date(inv.date);
-      const shortDate = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear().toString().slice(-2)}`;
-      
-      return [
-        shortDate,
-        inv.number || inv.id,
-        getClientName(inv.client_id),
-        inv.concept,
-        `${base.toFixed(2)} €`,
-        `${iva.toFixed(2)} €`,
-        `${bruto.toFixed(2)} €`
-      ];
-    });
-
-    autoTable(doc, {
-      startY: 80,
-      head: [[
-        t('dashboard.invoices.date') || 'Fecha',
-        t('dashboard.invoices.invoice_number') || 'Nº Factura',
-        t('dashboard.invoices.client') || 'Cliente',
-        t('dashboard.invoices.concept') || 'Concepto',
-        t('dashboard.invoices.taxable_base') || 'Base',
-        'IVA',
-        t('dashboard.invoices.total') || 'Total'
-      ]],
-      body: tableData,
-      theme: 'striped',
-      headStyles: {
-        fillColor: [28, 25, 23],
-        textColor: [255, 255, 255],
-        fontSize: 9,
-        fontStyle: 'bold',
-        halign: 'left'
-      },
-      bodyStyles: {
-        fontSize: 8,
-        textColor: [68, 64, 60], // Stone-700
-        cellPadding: 3
-      },
-      columnStyles: {
-        0: { cellWidth: 16 }, // short date
-        1: { cellWidth: 26 }, // invoice ID
-        4: { halign: 'right', cellWidth: 20 }, // Base
-        5: { halign: 'right', cellWidth: 16 }, // IVA
-        6: { halign: 'right', cellWidth: 20 }  // Total
-      },
-      margin: { left: 20, right: 20 },
-      styles: {
-        overflow: 'linebreak',
-      },
-      didDrawPage: (data) => {
-        // Page Footer
-        doc.setFontSize(8);
-        doc.setTextColor(168, 162, 158); // Stone-400
-        doc.text(
-          `${pageLabel} ${data.pageNumber}`,
-          pageWidth / 2,
-          doc.internal.pageSize.getHeight() - 10,
-          { align: 'center' }
-        );
-      }
-    });
-
-    doc.save(`facturacion_pagina_${pagination.page}.pdf`);
+    setIsPdfModalOpen(true);
   };
 
   const handleDelete = (id: string) => {
@@ -274,8 +142,7 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
           id="invoice-export-pdf-btn"
           variant="outline"
           size="sm"
-          onClick={exportToPDF}
-          disabled={invoices.length === 0}
+          onClick={() => setIsPdfModalOpen(true)}
           className="rounded-xl h-10 px-4 text-xs font-semibold gap-2 border-stone-200/80 shadow-xs hover:border-[#D4AF37]/50"
         >
           <FileText size={15} className="text-rose-600" />
@@ -422,6 +289,13 @@ export default function InvoiceTable({ invoices, loading, pagination, onPageChan
           </button>
         </div>
       </div>
+
+      {/* Modal para selección de meses y exportación multi-página */}
+      <ExportInvoicesPdfModal
+        isOpen={isPdfModalOpen}
+        onClose={() => setIsPdfModalOpen(false)}
+        clientsMap={clientsMap}
+      />
     </div>
   );
 }
