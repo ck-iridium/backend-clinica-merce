@@ -132,7 +132,7 @@ export async function extractTenantEcosystem(tenantIdOrSlug: string): Promise<Ec
   }
 
   return {
-    tenant,
+    tenant: effectiveTenant,
     settings,
     siteContent,
     categories,
