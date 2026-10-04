@@ -117,7 +117,7 @@ export async function extractTenantEcosystem(tenantIdOrSlug: string): Promise<Ec
     client.from('clinic_settings').select('clinic_name, clinic_description, business_sector, clinic_address, allow_search_engine_indexing, gemini_api_key').eq('tenant_id', effectiveTenantId).maybeSingle(),
     client.from('site_content').select('seo_title, seo_description, seo_keywords, hero_title, hero_subtitle, translations').eq('tenant_id', effectiveTenantId).maybeSingle(),
     client.from('service_categories').select('id, name, slug, description, seo_description, order_index, translations').eq('tenant_id', effectiveTenantId).order('order_index', { ascending: true }),
-    client.from('services').select('id, name, slug, category_id, description, seo_title, seo_description, seo_keywords, price, duration_minutes, is_active, translations').eq('tenant_id', effectiveTenantId).eq('is_active', true),
+    client.from('services').select('id, name, slug, category_id, description, content_html, seo_title, seo_description, seo_keywords, price, duration_minutes, is_active, translations').eq('tenant_id', effectiveTenantId).eq('is_active', true),
     client.from('locations').select('id, name, slug, address, is_active').eq('tenant_id', effectiveTenantId).eq('is_active', true),
   ]);
 
@@ -157,6 +157,7 @@ export async function extractTenantEcosystem(tenantIdOrSlug: string): Promise<Ec
     category_id: svc.category_id || null,
     category_name: svc.category_id ? categoryMap.get(svc.category_id) || null : null,
     description: svc.description || null,
+    content_html: svc.content_html || null,
     seo_title: svc.seo_title || null,
     seo_description: svc.seo_description || null,
     seo_keywords: svc.seo_keywords || null,

@@ -44,6 +44,7 @@ export interface EcosystemService {
   category_id?: string | null;
   category_name?: string | null;
   description?: string | null;
+  content_html?: string | null;
   seo_title?: string | null;
   seo_description?: string | null;
   seo_keywords?: string | null;
