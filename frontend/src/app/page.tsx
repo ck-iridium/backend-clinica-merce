@@ -3,7 +3,13 @@ export const revalidate = 0;
 
 import { headers } from 'next/headers';
 import { cache } from 'react';
+import type { Metadata } from 'next';
 import ClientHome from './ClientHome';
+import { buildTenantMetadata } from '@/lib/tenant-seo';
+
+export async function generateMetadata(): Promise<Metadata> {
+  return await buildTenantMetadata();
+}
 
 const getData = cache(async (tenantId: string) => {
   const fetchSafe = async (url: string, defaultValue: any, subtag: string) => {

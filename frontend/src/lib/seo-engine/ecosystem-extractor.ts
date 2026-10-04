@@ -1,0 +1,134 @@
+import { getSupabaseAdmin, supabase } from '../supabase';
+import {
+  EcosystemData,
+  EcosystemTenant,
+  EcosystemSettings,
+  EcosystemSiteContent,
+  EcosystemCategory,
+  EcosystemService,
+  EcosystemLocation,
+} from './types';
+
+function getClient() {
+  try {
+    return getSupabaseAdmin();
+  } catch {
+    return supabase;
+  }
+}
+
+/**
+ * Extrae la ciudad o municipio principal a partir de una cadena de dirección o sede
+ */
+function extractCityFromText(address?: string | null): string {
+  if (!address) return '';
+  const parts = address.split(',').map((p) => p.trim());
+  if (parts.length > 1) {
+    const candidate = parts[parts.length - 1].replace(/\d{5}/g, '').trim();
+    if (candidate.length > 2) return candidate;
+  }
+  return parts[0] || '';
+}
+
+/**
+ * Conecta con Supabase y extrae todo el catálogo indexable del tenant
+ * en una sola llamada paralela optimizada.
+ */
+export async function extractTenantEcosystem(tenantId: string): Promise<EcosystemData> {
+  const client = getClient();
+  if (!client) {
+    throw new Error('No se pudo inicializar el cliente de Supabase para extraer el ecosistema.');
+  }
+
+  const [
+    tenantRes,
+    settingsRes,
+    contentRes,
+    categoriesRes,
+    servicesRes,
+    locationsRes,
+  ] = await Promise.all([
+    client.from('tenants').select('id, name, slug, custom_domain').eq('id', tenantId).maybeSingle(),
+    client.from('clinic_settings').select('clinic_name, clinic_description, business_sector, clinic_address, allow_search_engine_indexing').eq('tenant_id', tenantId).maybeSingle(),
+    client.from('site_content').select('seo_title, seo_description, seo_keywords, hero_title, hero_subtitle').eq('tenant_id', tenantId).maybeSingle(),
+    client.from('service_categories').select('id, name, slug, description, seo_description, order_index').eq('tenant_id', tenantId).order('order_index', { ascending: true }),
+    client.from('services').select('id, name, slug, category_id, description, seo_title, seo_description, seo_keywords, price, duration_minutes, is_active').eq('tenant_id', tenantId).eq('is_active', true),
+    client.from('locations').select('id, name, slug, address, is_active').eq('tenant_id', tenantId).eq('is_active', true),
+  ]);
+
+  if (tenantRes.error && !tenantRes.data) {
+    console.warn('[ecosystem-extractor] Error leyendo tenant:', tenantRes.error);
+  }
+
+  const tenant: EcosystemTenant = tenantRes.data || {
+    id: tenantId,
+    name: 'Centro Profesional',
+    slug: 'centro',
+  };
+
+  const settings: EcosystemSettings = {
+    clinic_name: settingsRes.data?.clinic_name || tenant.name || 'Centro Profesional',
+    clinic_description: settingsRes.data?.clinic_description || null,
+    business_sector: settingsRes.data?.business_sector || 'general',
+    clinic_address: settingsRes.data?.clinic_address || null,
+    allow_search_engine_indexing: settingsRes.data?.allow_search_engine_indexing !== false,
+  };
+
+  const siteContent: EcosystemSiteContent = contentRes.data || {};
+
+  const categories: EcosystemCategory[] = (categoriesRes.data || []).map((cat: any) => ({
+    id: cat.id,
+    name: cat.name,
+    slug: cat.slug || cat.id,
+    description: cat.description || null,
+    seo_description: cat.seo_description || null,
+    order_index: cat.order_index ?? 0,
+  }));
+
+  const categoryMap = new Map<string, string>();
+  categories.forEach((cat) => {
+    categoryMap.set(cat.id, cat.name);
+  });
+
+  const services: EcosystemService[] = (servicesRes.data || []).map((svc: any) => ({
+    id: svc.id,
+    name: svc.name,
+    slug: svc.slug || svc.id,
+    category_id: svc.category_id || null,
+    category_name: svc.category_id ? categoryMap.get(svc.category_id) || null : null,
+    description: svc.description || null,
+    seo_title: svc.seo_title || null,
+    seo_description: svc.seo_description || null,
+    seo_keywords: svc.seo_keywords || null,
+    price: svc.price ? Number(svc.price) : null,
+    duration_minutes: svc.duration_minutes ? Number(svc.duration_minutes) : null,
+    is_active: svc.is_active !== false,
+  }));
+
+  const locations: EcosystemLocation[] = (locationsRes.data || []).map((loc: any) => ({
+    id: loc.id,
+    name: loc.name,
+    slug: loc.slug || loc.id,
+    address: loc.address || null,
+    city: extractCityFromText(loc.address),
+  }));
+
+  // Detectar la ciudad principal
+  let detectedCity = '';
+  if (locations.length > 0 && locations[0].city) {
+    detectedCity = locations[0].city;
+  } else if (settings.clinic_address) {
+    detectedCity = extractCityFromText(settings.clinic_address);
+  }
+
+  return {
+    tenant,
+    settings,
+    siteContent,
+    categories,
+    services,
+    locations,
+    detectedCity,
+    businessSector: settings.business_sector,
+  };
+}

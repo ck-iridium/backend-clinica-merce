@@ -74,23 +74,16 @@ export const viewport: Viewport = {
 
 import { headers } from "next/headers";
 import { resolveTenantContext } from "@/lib/tenant-resolver";
+import { buildTenantMetadata } from "@/lib/tenant-seo";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { host, cleanHost, tenantSlug, isMarketing, baseUrl: tenantBaseUrl, apiUrl, tenantId } = await resolveTenantContext();
+  const { host, isMarketing, apiUrl } = await resolveTenantContext();
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || apiUrl;
-
-  if (!baseUrl) {
-    console.warn("[layout.tsx] process.env.NEXT_PUBLIC_API_URL is not defined.");
-    return {
-      title: "Probookia | Software de Gestión Premium",
-      description: "Gestión inteligente de citas con diseño Quiet Luxury."
-    };
-  }
 
   if (isMarketing) {
     let allowSaasIndexing = false;
     const systemTenantId = process.env.NEXT_PUBLIC_SYSTEM_TENANT_ID;
-    if (systemTenantId) {
+    if (systemTenantId && baseUrl) {
       try {
         const resSettings = await fetch(`${baseUrl}/settings/`, {
           next: { revalidate: 60 },
@@ -116,105 +109,7 @@ export async function generateMetadata(): Promise<Metadata> {
     };
   }
 
-  const hostParts = host.split('.');
-  let resolvedTenantName = "Centro";
-  if (hostParts.length > 1 && hostParts[0] !== 'www') {
-    resolvedTenantName = hostParts[0]
-      .split('-')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-  }
-
-  let allowIndexing = true;
-  let googleVerification: string | undefined = undefined;
-  let seoData: any = {
-    title: resolvedTenantName,
-    description: `Servicios personalizados y bienestar de primer nivel en ${resolvedTenantName}.`,
-    keywords: [],
-    ogImage: "",
-    favicon: ""
-  };
-
-  if (tenantId) {
-    try {
-      const resSettings = await fetch(`${baseUrl}/settings/`, {
-        next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-settings-${tenantId}`] },
-        headers: { "X-Tenant-ID": tenantId }
-      });
-      if (resSettings.ok) {
-        const data = await resSettings.json();
-        if (data.allow_search_engine_indexing !== undefined) {
-          allowIndexing = data.allow_search_engine_indexing;
-        }
-        if (data.google_site_verification) {
-          let cleanCode = data.google_site_verification.trim();
-          const match = cleanCode.match(/content=["']([^"']+)["']/i);
-          if (match) {
-            cleanCode = match[1];
-          } else if (cleanCode.includes('=')) {
-            cleanCode = cleanCode.split('=').pop()?.replace(/["']/g, '').trim() || cleanCode;
-          }
-          googleVerification = cleanCode;
-        }
-        if (data.clinic_name) {
-          seoData.title = data.clinic_name;
-          seoData.description = data.clinic_description || `Servicios personalizados y bienestar de primer nivel en ${data.clinic_name}.`;
-        }
-        // Jerarquía de favicon del tenant: favicon_b64 -> logo_app_b64 -> logo_pdf_b64
-        seoData.favicon = data.favicon_b64 || data.logo_app_b64 || data.logo_pdf_b64 || "";
-      }
-    } catch (e) { }
-
-    try {
-      const resContent = await fetch(`${baseUrl}/site-content/`, {
-        next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-content-${tenantId}`] },
-        headers: { "X-Tenant-ID": tenantId }
-      });
-      if (resContent.ok) {
-        const data = await resContent.json();
-        if (data.seo_title) seoData.title = data.seo_title;
-        if (data.seo_description) seoData.description = data.seo_description;
-        if (data.seo_keywords) seoData.keywords = data.seo_keywords.split(',').map((k: string) => k.trim());
-        if (data.hero_image_url) {
-          seoData.ogImage = data.hero_image_url.startsWith('/') ? `${baseUrl}${data.hero_image_url}` : data.hero_image_url;
-        }
-      }
-    } catch (e) { }
-  }
-
-  const finalFavicon = seoData.favicon || "/favicon_probookia.ico";
-  const finalOgImage = seoData.ogImage || seoData.favicon || "/favicon_probookia.ico";
-  const protocol = host.includes('localhost') ? 'http' : 'https';
-  const tenantCanonical = `${protocol}://${host}`;
-
-  return {
-    title: seoData.title,
-    description: seoData.description,
-    keywords: seoData.keywords,
-    robots: allowIndexing ? "index, follow" : "noindex, nofollow",
-    alternates: {
-      canonical: tenantCanonical,
-    },
-    verification: googleVerification ? {
-      google: googleVerification,
-    } : undefined,
-    icons: {
-      icon: finalFavicon,
-      shortcut: finalFavicon,
-      apple: finalFavicon,
-    },
-    openGraph: {
-      title: seoData.title,
-      description: seoData.description,
-      images: finalOgImage ? [{ url: finalOgImage }] : [],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: seoData.title,
-      description: seoData.description,
-      images: finalOgImage ? [finalOgImage] : [],
-    }
-  };
+  return await buildTenantMetadata();
 }
 
 import LayoutWrapper from "@/components/LayoutWrapper";

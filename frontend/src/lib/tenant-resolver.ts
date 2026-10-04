@@ -39,7 +39,39 @@ export async function resolveTenantContext(): Promise<ResolvedTenantContext> {
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-  // 3. Si es un tenant pero aún no tenemos tenantId, resolverlo directamente con el backend
+  // 3. Si es un tenant pero aún no tenemos tenantId, resolverlo directamente con Supabase (ultrarrápido)
+  if (!isMarketing && !tenantId) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (supabaseUrl && serviceKey) {
+      try {
+        const queryFilter = tenantSlug 
+          ? `or=(custom_domain.eq.${cleanHost},slug.eq.${encodeURIComponent(tenantSlug)})`
+          : `custom_domain.eq.${cleanHost}`;
+
+        const supaRes = await fetch(`${supabaseUrl}/rest/v1/tenants?select=id,slug&${queryFilter}&limit=1`, {
+          headers: {
+            apikey: serviceKey,
+            Authorization: `Bearer ${serviceKey}`,
+          },
+          next: { revalidate: 3600, tags: [`tenant-${tenantSlug || cleanHost}`, 'tenant-resolver'] }
+        });
+        if (supaRes.ok) {
+          const data = await supaRes.json();
+          if (Array.isArray(data) && data.length > 0 && data[0]?.id) {
+            tenantId = data[0].id;
+            if (!tenantSlug && data[0].slug) {
+              tenantSlug = data[0].slug;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('[TENANT SUPABASE RESOLVE WARN]', e);
+      }
+    }
+  }
+
+  // 4. Fallback secundario al backend FastAPI en Render
   if (!isMarketing && tenantSlug && !tenantId) {
     try {
       const res = await fetch(`${apiUrl}/stripe/resolve-tenant/${tenantSlug}`, {
