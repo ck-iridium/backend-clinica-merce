@@ -7,7 +7,7 @@ import { useAuthRole } from '@/hooks/useAuthRole';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { formatInstagramUrl, formatMapsUrl } from '@/lib/utils';
-import { Save, Building2, SearchCode, ImageIcon, Hash, Clock, Calendar, Trash2, CreditCard, LayoutTemplate, Wallet, MapPin, FileText, TrendingUp, Sparkles } from 'lucide-react';
+import { Save, Building2, SearchCode, ImageIcon, Hash, Clock, Calendar, Trash2, CreditCard, LayoutTemplate, Wallet, MapPin, FileText, TrendingUp, Sparkles, BookOpen } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -30,6 +30,7 @@ import BookingLayoutTab from './tabs/BookingLayoutTab';
 import MobileServicesTab from './tabs/MobileServicesTab';
 import ConsentsTab from './tabs/ConsentsTab';
 import IntegrationsTab from './tabs/IntegrationsTab';
+import ContentTab from './tabs/ContentTab';
 
 export default function SettingsPage() {
   const { t } = useLanguage();
@@ -94,7 +95,7 @@ export default function SettingsPage() {
   // Sincronizar parámetro URL tab al cambiar de pestaña
   useEffect(() => {
     if (tabParam) {
-      const validTabs = ['general', 'subscription', 'agenda', 'mobile_services', 'billing', 'payments', 'branding', 'seo', 'booking_ui', 'consents', 'integrations', 'advanced'];
+      const validTabs = ['general', 'subscription', 'agenda', 'mobile_services', 'billing', 'payments', 'branding', 'seo', 'content', 'booking_ui', 'consents', 'integrations', 'advanced'];
       if (validTabs.includes(tabParam)) {
         setActiveTab(tabParam);
       }
@@ -393,6 +394,7 @@ export default function SettingsPage() {
               { id: 'payments', label: t('dashboard.settings.tabs.payments') || 'Pagos', icon: Wallet },
               { id: 'branding', label: t('dashboard.settings.tabs.branding') || 'Branding', icon: ImageIcon },
               { id: 'seo', label: 'SEO & Visibilidad', icon: Sparkles },
+              { id: 'content', label: 'Contenido & Redacción', icon: BookOpen },
               { id: 'booking_ui', label: t('dashboard.settings.tabs.booking_ui') || 'Diseño de Reserva', icon: LayoutTemplate },
               ...(settings.enable_consents ?? true ? [{ id: 'consents', label: t('dashboard.settings.tabs.consents') || 'Consentimientos', icon: FileText }] : []),
               { id: 'integrations', label: t('dashboard.settings.tabs.integrations') || 'Integraciones', icon: TrendingUp },
@@ -465,6 +467,7 @@ export default function SettingsPage() {
             />
           )}
           {activeTab === 'seo' && <SeoTab settings={settings} setSettings={setSettings} />}
+          {activeTab === 'content' && <ContentTab settings={settings} setSettings={setSettings} />}
           {activeTab === 'payments' && <PaymentsTab settings={settings} setSettings={setSettings} />}
           {activeTab === 'booking_ui' && <BookingLayoutTab settings={settings} setSettings={setSettings} />}
           {activeTab === 'mobile_services' && <MobileServicesTab settings={settings} setSettings={setSettings} />}
