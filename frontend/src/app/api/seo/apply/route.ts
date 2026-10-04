@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidateTag, revalidatePath } from 'next/cache';
 import { getSupabaseAdmin, supabase } from '@/lib/supabase';
+import { resolveRequestTenant } from '@/lib/seo-engine/tenant-request-resolver';
 
 function getClient() {
   try {
@@ -21,7 +22,7 @@ interface ProposalToApply {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
-    const tenantId = body.tenantId || request.headers.get('x-tenant-id');
+    const tenantId = resolveRequestTenant(request, body);
     const proposals: ProposalToApply[] = body.proposals || [];
 
     if (!tenantId) {

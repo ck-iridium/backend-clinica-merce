@@ -41,11 +41,58 @@ interface SeoTabProps {
   setSettings?: (settings: any) => void;
 }
 
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+}
+
+function resolveCurrentTenantId(settings?: any): string {
+  // 1. Modo Soporte (Impersonación de super-admin desde ProBookia central)
+  const isImpersonating = getCookie('is_impersonating') === 'true';
+  const impersonateId = getCookie('impersonate_tenant_id');
+  if (impersonateId && impersonateId.trim()) return impersonateId.trim();
+
+  // 2. Cookie directa tenant_id o cacheadas
+  const cookieTenantId = getCookie('tenant_id') || getCookie('cached_tenant_id');
+  if (cookieTenantId && cookieTenantId.trim()) return cookieTenantId.trim();
+
+  // 3. De settings si viniera
+  if (settings?.tenant_id && typeof settings.tenant_id === 'string' && settings.tenant_id.trim()) {
+    return settings.tenant_id.trim();
+  }
+
+  // 4. De la sesión del usuario en localStorage
+  if (typeof window !== 'undefined') {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const parsed = JSON.parse(userStr);
+        if (parsed.tenant_id && typeof parsed.tenant_id === 'string') {
+          return parsed.tenant_id.trim();
+        }
+      }
+    } catch {}
+  }
+
+  // 5. Slug de soporte o de inquilino como fallback
+  const impersonateSlug = getCookie('impersonate_tenant_slug');
+  if (impersonateSlug && impersonateSlug.trim()) return impersonateSlug.trim();
+
+  const cookieSlug = getCookie('tenant_slug') || getCookie('cached_tenant_slug');
+  if (cookieSlug && cookieSlug.trim()) return cookieSlug.trim();
+
+  return '';
+}
+
 export default function SeoTab({ settings }: SeoTabProps) {
-  const tenantId = settings?.tenant_id;
+  const [resolvedTenantId, setResolvedTenantId] = useState<string>('');
   const clinicName = settings?.clinic_name || 'Tu Centro';
 
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [report, setReport] = useState<SeoAuditReport | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'conflict' | 'warning' | 'optimal'>('all');
   const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({});
@@ -57,43 +104,67 @@ export default function SeoTab({ settings }: SeoTabProps) {
   const [isApplying, setIsApplying] = useState(false);
 
   // 1. Cargar auditoría inicial
-  const loadAudit = async (showToast = false) => {
-    if (!tenantId) return;
+  const loadAudit = async (targetTenantId?: string, showToast = false) => {
+    const tid = targetTenantId || resolvedTenantId || resolveCurrentTenantId(settings);
+    if (!tid) {
+      setLoading(false);
+      setErrorMessage('No se encontró el identificador del tenant en la sesión o en cookies de soporte. Por favor, recarga o vuelve a iniciar sesión.');
+      return;
+    }
+
     setLoading(true);
+    setErrorMessage(null);
     try {
-      const res = await fetch('/api/seo/audit', {
-        headers: { 'x-tenant-id': tenantId },
+      const res = await fetch(`/api/seo/audit?tenantId=${encodeURIComponent(tid)}`, {
+        headers: { 'x-tenant-id': tid },
       });
+
       if (res.ok) {
         const data = await res.json();
         setReport(data);
+        setErrorMessage(null);
         if (showToast) {
           toast.success('Auditoría SEO actualizada con éxito');
         }
       } else {
-        toast.error('Error al cargar la auditoría SEO');
+        const errData = await res.json().catch(() => ({}));
+        const msg = errData.error || `Error ${res.status}: No se pudo completar la auditoría SEO`;
+        setErrorMessage(msg);
+        toast.error(msg);
       }
-    } catch (err) {
-      console.error(err);
-      toast.error('Error de conexión al auditar el ecosistema');
+    } catch (err: any) {
+      console.error('[SeoTab loadAudit Error]:', err);
+      const msg = err.message || 'Error de conexión al auditar el ecosistema SEO';
+      setErrorMessage(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadAudit();
-  }, [tenantId]);
+    const tid = resolveCurrentTenantId(settings);
+    setResolvedTenantId(tid);
+    loadAudit(tid);
+  }, [settings]);
 
   // 2. Ejecutar optimización con IA
   const handleRunOptimization = async () => {
-    if (!tenantId) return;
+    const tid = resolvedTenantId || resolveCurrentTenantId(settings);
+    if (!tid) {
+      toast.error('No se pudo identificar el tenant.');
+      return;
+    }
+
     setIsOptimizing(true);
     try {
       const res = await fetch('/api/seo/optimize', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenantId }),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-tenant-id': tid,
+        },
+        body: JSON.stringify({ tenantId: tid }),
       });
 
       if (res.ok) {
@@ -119,11 +190,12 @@ export default function SeoTab({ settings }: SeoTabProps) {
 
   // 3. Aplicar propuestas en batch en Supabase
   const handleApplyProposals = async () => {
-    if (!tenantId || proposals.length === 0) return;
+    const tid = resolvedTenantId || resolveCurrentTenantId(settings);
+    if (!tid || proposals.length === 0) return;
     setIsApplying(true);
     try {
       const payload = {
-        tenantId,
+        tenantId: tid,
         proposals: proposals.map((p) => ({
           entityId: p.entityId,
           entityType: p.entityType,
@@ -135,19 +207,23 @@ export default function SeoTab({ settings }: SeoTabProps) {
 
       const res = await fetch('/api/seo/apply', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-tenant-id': tid,
+        },
         body: JSON.stringify(payload),
       });
 
       if (res.ok) {
         const data = await res.json();
-        toast.success(`¡Éxito! Se actualizaron ${data.updatedCount} páginas en Supabase.`);
+        toast.success(`¡Éxito! Se actualizaron ${data.updatedCount || proposals.length} páginas en Supabase.`);
         setShowReviewModal(false);
         setProposals([]);
         // Recargar auditoría para mostrar las nuevas métricas
-        loadAudit();
+        loadAudit(tid, false);
       } else {
-        toast.error('Error al persistir las optimizaciones en Supabase');
+        const errData = await res.json().catch(() => ({}));
+        toast.error(errData.error || 'Error al persistir las optimizaciones en Supabase');
       }
     } catch (err) {
       console.error(err);
@@ -197,9 +273,9 @@ export default function SeoTab({ settings }: SeoTabProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => loadAudit(true)}
+            onClick={() => loadAudit(undefined, true)}
             disabled={loading || isOptimizing}
-            className="rounded-xl border-stone-700 text-stone-200 hover:bg-stone-800 hover:text-white transition-all text-xs font-semibold py-5 px-4"
+            className="rounded-xl bg-stone-800 hover:bg-stone-700 border-stone-700 hover:border-stone-600 text-white hover:text-white transition-all text-xs font-semibold py-5 px-4 shadow-sm"
           >
             <RefreshCw size={15} className={`mr-2 ${loading ? 'animate-spin' : ''}`} />
             Re-escanear
@@ -218,8 +294,32 @@ export default function SeoTab({ settings }: SeoTabProps) {
         </div>
       </div>
 
-      {/* ── ESTADO DE CARGA ── */}
-      {loading && !report && (
+      {/* ── MENSAJE DE ERROR VISIBLE EN LA UI SI FALLA ── */}
+      {errorMessage && (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50/90 p-5 md:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-rose-900 shadow-sm animate-in fade-in duration-200">
+          <div className="flex items-start gap-3">
+            <span className="p-2 rounded-xl bg-rose-100 text-rose-600 shrink-0 mt-0.5">
+              <AlertTriangle size={20} />
+            </span>
+            <div className="space-y-1">
+              <h4 className="font-semibold text-sm text-rose-900">Error al cargar la auditoría SEO</h4>
+              <p className="text-xs text-rose-700 leading-relaxed max-w-xl">{errorMessage}</p>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => loadAudit(undefined, true)}
+            className="rounded-xl border-rose-300 text-rose-800 hover:bg-rose-100 shrink-0 font-medium text-xs py-2 px-4 shadow-none"
+          >
+            <RefreshCw size={14} className="mr-2" />
+            Reintentar
+          </Button>
+        </div>
+      )}
+
+      {/* ── ESTADO DE CARGA (SKELETONS) ── */}
+      {loading && !report && !errorMessage && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((i) => (

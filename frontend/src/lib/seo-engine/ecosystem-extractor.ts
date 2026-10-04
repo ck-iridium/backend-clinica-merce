@@ -34,40 +34,50 @@ function extractCityFromText(address?: string | null): string {
  * Conecta con Supabase y extrae todo el catálogo indexable del tenant
  * en una sola llamada paralela optimizada.
  */
-export async function extractTenantEcosystem(tenantId: string): Promise<EcosystemData> {
+export async function extractTenantEcosystem(tenantIdOrSlug: string): Promise<EcosystemData> {
   const client = getClient();
   if (!client) {
     throw new Error('No se pudo inicializar el cliente de Supabase para extraer el ecosistema.');
   }
 
+  // 1. Resolver el tenant (por ID o por Slug) para garantizar el UUID correcto
+  let tenant: EcosystemTenant | null = null;
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tenantIdOrSlug);
+
+  if (isUuid) {
+    const { data } = await client.from('tenants').select('id, name, slug, custom_domain').eq('id', tenantIdOrSlug).maybeSingle();
+    tenant = data;
+  }
+  
+  if (!tenant) {
+    const { data } = await client.from('tenants').select('id, name, slug, custom_domain').eq('slug', tenantIdOrSlug).maybeSingle();
+    tenant = data;
+  }
+
+  const effectiveTenantId = tenant?.id || tenantIdOrSlug;
+  const effectiveTenant: EcosystemTenant = tenant || {
+    id: effectiveTenantId,
+    name: 'Centro Profesional',
+    slug: tenantIdOrSlug,
+  };
+
+  // 2. Extraer el resto de colecciones usando el UUID resuelto
   const [
-    tenantRes,
     settingsRes,
     contentRes,
     categoriesRes,
     servicesRes,
     locationsRes,
   ] = await Promise.all([
-    client.from('tenants').select('id, name, slug, custom_domain').eq('id', tenantId).maybeSingle(),
-    client.from('clinic_settings').select('clinic_name, clinic_description, business_sector, clinic_address, allow_search_engine_indexing').eq('tenant_id', tenantId).maybeSingle(),
-    client.from('site_content').select('seo_title, seo_description, seo_keywords, hero_title, hero_subtitle').eq('tenant_id', tenantId).maybeSingle(),
-    client.from('service_categories').select('id, name, slug, description, seo_description, order_index').eq('tenant_id', tenantId).order('order_index', { ascending: true }),
-    client.from('services').select('id, name, slug, category_id, description, seo_title, seo_description, seo_keywords, price, duration_minutes, is_active').eq('tenant_id', tenantId).eq('is_active', true),
-    client.from('locations').select('id, name, slug, address, is_active').eq('tenant_id', tenantId).eq('is_active', true),
+    client.from('clinic_settings').select('clinic_name, clinic_description, business_sector, clinic_address, allow_search_engine_indexing').eq('tenant_id', effectiveTenantId).maybeSingle(),
+    client.from('site_content').select('seo_title, seo_description, seo_keywords, hero_title, hero_subtitle').eq('tenant_id', effectiveTenantId).maybeSingle(),
+    client.from('service_categories').select('id, name, slug, description, seo_description, order_index').eq('tenant_id', effectiveTenantId).order('order_index', { ascending: true }),
+    client.from('services').select('id, name, slug, category_id, description, seo_title, seo_description, seo_keywords, price, duration_minutes, is_active').eq('tenant_id', effectiveTenantId).eq('is_active', true),
+    client.from('locations').select('id, name, slug, address, is_active').eq('tenant_id', effectiveTenantId).eq('is_active', true),
   ]);
 
-  if (tenantRes.error && !tenantRes.data) {
-    console.warn('[ecosystem-extractor] Error leyendo tenant:', tenantRes.error);
-  }
-
-  const tenant: EcosystemTenant = tenantRes.data || {
-    id: tenantId,
-    name: 'Centro Profesional',
-    slug: 'centro',
-  };
-
   const settings: EcosystemSettings = {
-    clinic_name: settingsRes.data?.clinic_name || tenant.name || 'Centro Profesional',
+    clinic_name: settingsRes.data?.clinic_name || effectiveTenant.name || 'Centro Profesional',
     clinic_description: settingsRes.data?.clinic_description || null,
     business_sector: settingsRes.data?.business_sector || 'general',
     clinic_address: settingsRes.data?.clinic_address || null,

@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { runSeoAudit, optimizeNodesBatch, extractTenantEcosystem } from '@/lib/seo-engine';
+import { resolveRequestTenant } from '@/lib/seo-engine/tenant-request-resolver';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
-    const tenantId = body.tenantId || request.headers.get('x-tenant-id');
+    const tenantId = resolveRequestTenant(request, body);
     const entityIds: string[] | undefined = body.entityIds;
 
     if (!tenantId) {
