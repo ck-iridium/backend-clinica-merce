@@ -11,8 +11,11 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  const rawLang = request.nextUrl.searchParams.get('lang') || 'es';
+  const lang = (rawLang === 'en' || rawLang === 'fr' ? rawLang : 'es') as 'es' | 'en' | 'fr';
+
   try {
-    const report = await runSeoAudit(tenantId);
+    const report = await runSeoAudit(tenantId, lang);
     return NextResponse.json(report);
   } catch (error: any) {
     console.error('[API /api/seo/audit GET Error]:', error);
@@ -31,7 +34,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const report = await runSeoAudit(tenantId);
+    const rawLang = body.lang || body.language || request.nextUrl.searchParams.get('lang') || 'es';
+    const lang = (rawLang === 'en' || rawLang === 'fr' ? rawLang : 'es') as 'es' | 'en' | 'fr';
+
+    const report = await runSeoAudit(tenantId, lang);
     return NextResponse.json(report);
   } catch (error: any) {
     console.error('[API /api/seo/audit POST Error]:', error);

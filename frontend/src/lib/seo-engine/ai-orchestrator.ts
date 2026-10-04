@@ -6,16 +6,19 @@ export interface SeoOptimizationProposal {
   entityType: 'home' | 'category' | 'service' | 'location';
   entityName: string;
   urlPath: string;
+  language?: 'es' | 'en' | 'fr';
   original: {
     seo_title?: string | null;
     seo_description?: string | null;
     seo_keywords?: string | null;
+    slug?: string | null;
     score: number;
   };
   proposed: {
     seo_title: string;
     seo_description: string;
     seo_keywords: string;
+    slug?: string;
     assignedKeyword: string;
     projectedScore: number;
   };
@@ -227,6 +230,21 @@ async function callBackendAiFallback(prompt: string, tenantId: string): Promise<
 }
 
 /**
+ * Helper simple para normalizar slugs en el frontend/orquestador
+ */
+function slugifyText(text: string): string {
+  if (!text) return '';
+  return text
+    .toString()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/[\s-]+/g, '-');
+}
+
+/**
  * Prompt maestro del Agente Estratega SEO Local - 100% Dinámico y Agnóstico al Sector (SaaS Multi-tenant)
  */
 function buildMasterSeoPrompt(params: {
@@ -237,6 +255,7 @@ function buildMasterSeoPrompt(params: {
   city: string;
   province?: string;
   locationsList: string;
+  targetLanguage?: 'es' | 'en' | 'fr';
   itemsToOptimize: Array<{
     id: string;
     type: string;
@@ -257,16 +276,31 @@ function buildMasterSeoPrompt(params: {
     city,
     province,
     locationsList,
+    targetLanguage = 'es',
     itemsToOptimize,
     existingKeywordsInCatalog,
   } = params;
+
+  const isEnglish = targetLanguage === 'en';
+  const isFrench = targetLanguage === 'fr';
+
+  const languageDirective = isEnglish
+    ? `IDIOMA OBJETIVO: ENGLISH (EN). Write all 'seo_title', 'seo_description', 'seo_keywords', 'slug' and 'rationale' strictly in high-quality, natural English targeted at international users, expats and tourists searching in Google.`
+    : isFrench
+    ? `IDIOMA OBJETIVO: FRANÇAIS (FR). Rédigez tous les champs 'seo_title', 'seo_description', 'seo_keywords', 'slug' et 'rationale' en français élégant, naturel et persuasif pour les utilisateurs recherchant sur Google.`
+    : `IDIOMA OBJETIVO: ESPAÑOL (ES). Redacta todos los campos en español natural, profesional y persuasivo adaptado a Google España.`;
 
   const toneContext = toneDirective
     ? `- Directiva de tono de marca: "${toneDirective}"`
     : `- Tono de comunicación: Profesional, cercano, de alta solvencia y adaptado a los estándares de excelencia del sector "${businessSector}".`;
 
-  return `Eres un Consultor Senior de Estrategia SEO Local y Arquitectura Web en España especializado en negocios y empresas del sector: ${businessSector}.
-Tu objetivo es analizar el catálogo de servicios, categorías y sedes de la empresa "${clinicName}" y diseñar los metadatos SEO (Title, Meta Description, Keywords y Keyword Principal Asignada) de máximo rendimiento, visibilidad local y CTR para Google España.
+  return `Eres un Consultor Senior de Estrategia SEO Local y Arquitectura Web especializado en negocios y empresas del sector: ${businessSector}.
+Tu objetivo es analizar el catálogo de servicios, categorías y sedes de la empresa "${clinicName}" y diseñar los metadatos SEO (Title, Meta Description, Keywords, Slug y Keyword Principal Asignada) de máximo rendimiento, visibilidad local y CTR para Google.
+
+==============================================
+DIRECTIVA DE IDIOMA Y AUDIENCIA
+==============================================
+${languageDirective}
 
 ==============================================
 DOSSIER DE INTELIGENCIA DEL NEGOCIO
@@ -285,28 +319,30 @@ Palabras clave ya reservadas en el catálogo (evita canibalizarlas):
 ==============================================
 DIRECTRICES ESTRATÉGICAS DE OBLIGADO CUMPLIMIENTO
 ==============================================
-1. DECODIFICACIÓN DE CÓDIGOS INTERNOS, ABREVIATURAS Y NOMENCLATURAS TÉCNICAS:
-   - Los clientes en Google buscan soluciones, servicios y necesidades reales, NUNCA códigos internos, abreviaturas o nomenclaturas técnicas de catálogo (por ejemplo: códigos alfa-numéricos, packs sin desglosar, abreviaturas de sesiones, tamaños o referencias internas).
-   - Debes LEER con máxima atención la descripción detallada de cada servicio para entender exactamente qué incluye, qué problema soluciona, qué metodología utiliza o qué beneficios concretos aporta al cliente.
-   - Traduce los nombres técnicos o códigos internos de catálogo a intenciones de búsqueda naturales y reales de clientes en España para el sector "${businessSector}".
-   - Ejemplo de adaptación: si un servicio tiene un nombre técnico o abreviado como código de catálogo, identifica en su descripción qué es realmente y titula de forma que el cliente potencial lo encuentre de inmediato (ejemplo: "Nombre del Servicio Principal (Abreviatura o Subtítulo) | ${clinicName}").
+1. DECODIFICACIÓN DE CÓDIGOS INTERNOS, TARIFAS Y NOMENCLATURAS TÉCNICAS A ZONAS ANATÓMICAS REALES:
+   - Los clientes en Google buscan soluciones y necesidades reales, NUNCA nombres de tarifas internas abstractas (ej. "Zona S", "Zona M", "Zona L", "Bono 5 sesiones", "Pack básico", abreviaturas de sesiones o códigos alfa-numéricos).
+   - Debes LEER con máxima atención la descripción detallada de cada servicio para entender exactamente qué incluye, qué problema soluciona o qué zonas anatómicas cubre.
+   - TRADUCCIÓN DE TARIFAS Y ZONAS: Si un servicio tiene un nombre abstracto como "Zona S" y su descripción indica "labio superior, patillas o axilas", debes titular y describir con las zonas anatómicas reales que la gente busca:
+     * En Español: "Depilación Láser Zonas Pequeñas (Labio, Axilas) | ${clinicName}"
+     * En Inglés: "Small Area Laser Hair Removal (Underarms, Lip) | ${clinicName}"
+     * En Francés: "Épilation Laser Petites Zones (Lèvre, Aisselles) | ${clinicName}"
+   - Traduce los nombres técnicos a intenciones de búsqueda cotidianas y profesionales del sector "${businessSector}".
 
 2. GEOLOCALIZACIÓN INTELIGENTE Y NATURAL:
    - Posiciona prioritariamente en el municipio real del negocio ("${city}").
-   - NUNCA utilices anglicismos forzados ni jerga técnica artificial cuando en España los usuarios buscan términos cotidianos y profesionales propios del sector "${businessSector}".
-   - En la página principal (Home) y categorías generales, prioriza términos de búsqueda de alta intención local (ej. "${businessSector} en ${city}" o la actividad principal de la empresa en su localidad).
+   - En la página principal (Home) y categorías generales, prioriza términos de búsqueda de alta intención local (ej. "${businessSector} en ${city}" o su traducción en ${targetLanguage}).
 
 3. PREVENCIÓN ACTIVA DE CANIBALIZACIÓN:
    - Cada servicio y categoría debe responder a una intención de búsqueda única y tener su propia 'assignedKeyword' exclusiva.
-   - Si dos servicios son variantes o modalidades distintas (ej. diferentes niveles, especialidades, tamaños o tipos de cliente), el título y la descripción deben marcar con total claridad la diferencia para que Google los indexe de forma complementaria sin competir entre sí.
+   - Si dos servicios son modalidades o niveles distintos, márcalos con total claridad para que Google no compita consigo mismo.
 
 4. LONGITUDES ESTRICTAS Y REDACCIÓN IMPECABLE (REGLA DE ORO DE GOOGLE):
    - 'seo_title': Longitud entre 48 y 60 caracteres. Debe terminar con " | ${clinicName}". Jamás dejes títulos cortados ni con palabras truncadas a medias.
-   - 'seo_description': Longitud entre 135 y 155 caracteres. Debe ser una o dos oraciones COMPLETAS, fluidas, persuasivas y profesionales con sutil llamada a la acción ("Reserva tu cita online", "Pide cita previa", "Solicita presupuesto", "Contacta con nuestro equipo", etc., según corresponda al sector "${businessSector}").
-   - PROHIBICIÓN ABSOLUTA: Jamás termines una descripción a mitad de frase ni con preposiciones o artículos colgantes (prohibido terminar en "...y un." o "...de."). Toda descripción debe terminar con punto final y perfecto sentido sintáctico.
-   - 'seo_keywords': 3 a 5 palabras clave específicas en español separadas por comas.
+   - 'seo_description': Longitud entre 135 y 155 caracteres. Oraciones COMPLETAS con sutil llamada a la acción. PROHIBICIÓN ABSOLUTA: Jamás termines a mitad de frase ni con preposiciones o artículos colgantes. Debe terminar con punto final.
+   - 'seo_keywords': 3 a 5 palabras clave específicas en el idioma ${targetLanguage.toUpperCase()} separadas por comas.
+   - 'slug': URL-friendly slug en minúsculas y separado por guiones adaptado al idioma (ej. "lifting-pestanas" en ES, "lash-lift" en EN, "rehaussement-cils" en FR).
    - 'assignedKeyword': La frase clave principal exacta (long-tail) asignada exclusivamente a esta página.
-   - 'rationale': Breve justificación estratégica de 1 frase explicando el criterio de búsqueda adoptado.
+   - 'rationale': Breve justificación estratégica de 1 frase explicando el criterio adoptado.
 
 ==============================================
 PÁGINAS A OPTIMIZAR
@@ -321,6 +357,7 @@ Responde ÚNICAMENTE con un JSON válido con esta estructura exacta:
       "seo_title": "string (48-60 caracteres)",
       "seo_description": "string (135-155 caracteres con punto final)",
       "seo_keywords": "string (3 a 5 keywords separadas por comas)",
+      "slug": "string (slug amigable en minúsculas sin acentos ni espacios)",
       "assignedKeyword": "string (keyword principal única)",
       "rationale": "string"
     }
@@ -335,7 +372,8 @@ Responde ÚNICAMENTE con un JSON válido con esta estructura exacta:
 export async function optimizeEcosystemHolistic(
   ecosystem: EcosystemData,
   targetEntityIds?: string[],
-  geminiKey?: string
+  geminiKey?: string,
+  targetLanguage: 'es' | 'en' | 'fr' = 'es'
 ): Promise<SeoOptimizationProposal[]> {
   const apiKey = geminiKey || process.env.GEMINI_API_KEY || '';
   const clinicName = ecosystem.settings.clinic_name;
@@ -344,8 +382,8 @@ export async function optimizeEcosystemHolistic(
   const city = ecosystem.detectedCity || '';
   const province = ecosystem.detectedProvince || '';
 
-  // 1. Construir la jerarquía completa del ecosistema
-  const allEntities = buildSemanticHierarchy(ecosystem);
+  // 1. Construir la jerarquía completa del ecosistema para el idioma solicitado
+  const allEntities = buildSemanticHierarchy(ecosystem, targetLanguage);
 
   // 2. Filtrar entidades a optimizar
   const entitiesToOptimize = targetEntityIds && targetEntityIds.length > 0
@@ -393,6 +431,7 @@ export async function optimizeEcosystemHolistic(
       city,
       province,
       locationsList,
+      targetLanguage,
       itemsToOptimize: chunk,
       existingKeywordsInCatalog: [
         ...existingKeywordsInCatalog,
@@ -470,52 +509,74 @@ export async function optimizeEcosystemHolistic(
         const sanitizedTitle = sanitizeTitle(generated.seo_title || `${item.name} | ${clinicName}`, clinicName);
         const sanitizedDesc = sanitizeDescription(generated.seo_description || '');
         const assignedKw = generated.assignedKeyword || normalizeKeyword(item.name);
+        const proposedSlug = generated.slug ? slugifyText(generated.slug) : slugifyText(sanitizedTitle);
 
         proposals.push({
           entityId: item.id,
           entityType: originalEntity.type,
           entityName: originalEntity.name,
           urlPath: originalEntity.urlPath,
+          language: targetLanguage,
           original: {
             seo_title: originalEntity.currentTitle,
             seo_description: originalEntity.currentDescription,
             seo_keywords: originalEntity.currentKeywords.join(', '),
+            slug: originalEntity.slug || null,
             score: 75,
           },
           proposed: {
             seo_title: sanitizedTitle,
             seo_description: sanitizedDesc,
             seo_keywords: generated.seo_keywords || `${assignedKw}, ${clinicName}`,
+            slug: proposedSlug,
             assignedKeyword: assignedKw,
             projectedScore: 98,
           },
-          rationale: generated.rationale || `Optimizado para búsquedas locales en ${city} sin canibalización.`,
+          rationale: generated.rationale || (targetLanguage === 'en' ? `Optimized for local English Google searches in ${city}.` : targetLanguage === 'fr' ? `Optimisé pour les recherches locales en français à ${city}.` : `Optimizado para búsquedas locales en ${city} sin canibalización.`),
         });
       } else {
-        // Fallback determinista seguro en caso de omisión puntual
-        const fallbackTitle = sanitizeTitle(`${item.name} en ${city} | ${clinicName}`, clinicName);
-        const fallbackDesc = sanitizeDescription(
-          `Descubre ${item.name} en ${clinicName} (${city}). Servicios profesionales de ${businessSector} con la máxima calidad y atención personalizada. Solicita tu cita o presupuesto online.`
+        // Fallback determinista seguro adaptado al idioma en caso de omisión puntual
+        const fallbackTitle = sanitizeTitle(
+          targetLanguage === 'en'
+            ? `${item.name} in ${city} | ${clinicName}`
+            : targetLanguage === 'fr'
+            ? `${item.name} à ${city} | ${clinicName}`
+            : `${item.name} en ${city} | ${clinicName}`,
+          clinicName
         );
+
+        const fallbackDesc = sanitizeDescription(
+          targetLanguage === 'en'
+            ? `Discover ${item.name} at ${clinicName} (${city}). Professional ${businessSector} services with the highest quality and personalized care. Book your appointment online.`
+            : targetLanguage === 'fr'
+            ? `Découvrez ${item.name} chez ${clinicName} (${city}). Soins professionnels d'excellence et sur mesure. Réservez votre rendez-vous en ligne.`
+            : `Descubre ${item.name} en ${clinicName} (${city}). Servicios profesionales de ${businessSector} con la máxima calidad y atención personalizada. Solicita tu cita online.`
+        );
+
+        const proposedSlug = slugifyText(item.name);
+
         proposals.push({
           entityId: item.id,
           entityType: originalEntity.type,
           entityName: originalEntity.name,
           urlPath: originalEntity.urlPath,
+          language: targetLanguage,
           original: {
             seo_title: originalEntity.currentTitle,
             seo_description: originalEntity.currentDescription,
             seo_keywords: originalEntity.currentKeywords.join(', '),
+            slug: originalEntity.slug || null,
             score: 70,
           },
           proposed: {
             seo_title: fallbackTitle,
             seo_description: fallbackDesc,
             seo_keywords: `${normalizeKeyword(item.name)}, ${normalizeKeyword(clinicName)}`,
+            slug: proposedSlug,
             assignedKeyword: normalizeKeyword(item.name),
             projectedScore: 88,
           },
-          rationale: `Metadatos locales estructurados para ${city}.`,
+          rationale: targetLanguage === 'en' ? `Structured local metadata for ${city}.` : targetLanguage === 'fr' ? `Métadonnées locales structurées pour ${city}.` : `Metadatos locales estructurados para ${city}.`,
         });
       }
     }

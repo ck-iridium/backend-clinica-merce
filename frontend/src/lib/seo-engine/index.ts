@@ -11,14 +11,14 @@ export * from './ai-orchestrator';
 
 /**
  * Orquestador principal de la Fase A:
- * Realiza la auditoría SEO completa del ecosistema del tenant de forma 100% determinista.
+ * Realiza la auditoría SEO completa del ecosistema del tenant de forma 100% determinista para el idioma solicitado.
  */
-export async function runSeoAudit(tenantId: string): Promise<SeoAuditReport> {
+export async function runSeoAudit(tenantId: string, language: 'es' | 'en' | 'fr' = 'es'): Promise<SeoAuditReport> {
   // 1. Extraer catálogo y datos desde Supabase
   const ecosystem = await extractTenantEcosystem(tenantId);
 
-  // 2. Construir jerarquía semántica
-  const entities = buildSemanticHierarchy(ecosystem);
+  // 2. Construir jerarquía semántica para el idioma seleccionado
+  const entities = buildSemanticHierarchy(ecosystem, language);
 
   // 3. Ejecutar algoritmo anti-canibalización y scoring
   const nodes = buildAntiCannibalizationMatrix(entities, ecosystem);
@@ -50,6 +50,7 @@ export async function runSeoAudit(tenantId: string): Promise<SeoAuditReport> {
 
   return {
     tenantId,
+    language,
     overallScore,
     summary: {
       totalEntities: total,

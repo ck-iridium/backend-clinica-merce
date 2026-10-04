@@ -21,12 +21,17 @@ export async function POST(request: NextRequest) {
     // 2. Extraer gemini_api_key del payload, de clinic_settings o de variables de entorno
     const geminiKey = (body.geminiKey as string) || ecosystem.settings?.gemini_api_key || process.env.GEMINI_API_KEY;
 
-    // 3. Ejecutar el Agente Estratega SEO Holístico con visión de negocio y sin canibalización
-    const proposals = await optimizeEcosystemHolistic(ecosystem, entityIds, geminiKey);
+    // 3. Extraer idioma objetivo
+    const rawLang = body.targetLanguage || body.language || 'es';
+    const targetLanguage = (rawLang === 'en' || rawLang === 'fr' ? rawLang : 'es') as 'es' | 'en' | 'fr';
+
+    // 4. Ejecutar el Agente Estratega SEO Holístico con visión de negocio y sin canibalización
+    const proposals = await optimizeEcosystemHolistic(ecosystem, entityIds, geminiKey, targetLanguage);
 
     return NextResponse.json({
       success: true,
       count: proposals.length,
+      language: targetLanguage,
       proposals,
       timestamp: new Date().toISOString(),
     });

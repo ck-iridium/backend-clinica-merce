@@ -84,15 +84,20 @@ export function formatSectorName(sector: string): string {
 /**
  * Construye la estructura jerárquica de 3 niveles del ecosistema del tenant
  */
-export function buildSemanticHierarchy(data: EcosystemData): SeoEntity[] {
+export function buildSemanticHierarchy(data: EcosystemData, targetLanguage: 'es' | 'en' | 'fr' = 'es'): SeoEntity[] {
   const entities: SeoEntity[] = [];
   const clinicName = data.settings.clinic_name;
   const city = data.detectedCity;
   const sector = formatSectorName(data.businessSector);
+  const isForeign = targetLanguage !== 'es';
 
   // ── NIVEL 1: Home / Root (Marca + Sector + Localidad) ──
+  const homeTrans = isForeign && data.siteContent.translations?.[targetLanguage] ? data.siteContent.translations[targetLanguage] : null;
   const homeKeywords: string[] = [];
-  if (data.siteContent.seo_keywords) {
+
+  if (homeTrans?.seo_keywords) {
+    homeKeywords.push(...homeTrans.seo_keywords.split(',').map((k: string) => k.trim()).filter(Boolean));
+  } else if (data.siteContent.seo_keywords && !isForeign) {
     homeKeywords.push(...data.siteContent.seo_keywords.split(',').map((k) => k.trim()).filter(Boolean));
   } else {
     homeKeywords.push(clinicName.toLowerCase(), sector.toLowerCase(), city.toLowerCase());
@@ -102,35 +107,51 @@ export function buildSemanticHierarchy(data: EcosystemData): SeoEntity[] {
     id: 'root-home',
     type: 'home',
     name: clinicName,
-    urlPath: '/',
+    urlPath: isForeign ? `/?lang=${targetLanguage}` : '/',
     level: 1,
     parentId: null,
-    currentTitle: data.siteContent.seo_title,
-    currentDescription: data.siteContent.seo_description,
+    currentTitle: homeTrans?.seo_title || (isForeign ? null : data.siteContent.seo_title),
+    currentDescription: homeTrans?.seo_description || (isForeign ? null : data.siteContent.seo_description),
     currentKeywords: homeKeywords.filter(Boolean),
     rawText: `${data.siteContent.hero_title || ''} ${data.siteContent.hero_subtitle || ''} ${data.settings.clinic_description || ''}`,
+    language: targetLanguage,
+    translations: data.siteContent.translations || null,
   });
 
   // ── NIVEL 2: Categorías Paraguas ──
   const categorySlugMap = new Map<string, string>();
 
   data.categories.forEach((cat) => {
-    categorySlugMap.set(cat.id, cat.slug);
+    const catTrans = isForeign && cat.translations?.[targetLanguage] ? cat.translations[targetLanguage] : null;
+    const catSlug = catTrans?.slug || cat.slug;
+    categorySlugMap.set(cat.id, catSlug);
+
+    const catName = catTrans?.name || cat.name;
     const catKeywords: string[] = [];
-    catKeywords.push(cat.name.toLowerCase());
-    if (city) catKeywords.push(`${cat.name.toLowerCase()} ${city.toLowerCase()}`);
+    if (catTrans?.seo_keywords) {
+      catKeywords.push(...catTrans.seo_keywords.split(',').map((k: string) => k.trim()).filter(Boolean));
+    } else {
+      catKeywords.push(catName.toLowerCase());
+      if (city) catKeywords.push(`${catName.toLowerCase()} ${city.toLowerCase()}`);
+    }
+
+    const currentTitle = catTrans?.seo_title || (isForeign ? null : `${cat.name} | ${clinicName}`);
+    const currentDescription = catTrans?.seo_description || catTrans?.description || (isForeign ? null : (cat.seo_description || cat.description));
 
     entities.push({
       id: `category-${cat.id}`,
       type: 'category',
-      name: cat.name,
-      urlPath: `/tratamientos/${cat.slug}`,
+      name: catName,
+      slug: catSlug,
+      urlPath: isForeign ? `/tratamientos/${catSlug}?lang=${targetLanguage}` : `/tratamientos/${cat.slug}`,
       level: 2,
       parentId: 'root-home',
-      currentTitle: `${cat.name} | ${clinicName}`,
-      currentDescription: cat.seo_description || cat.description,
+      currentTitle,
+      currentDescription,
       currentKeywords: catKeywords,
-      rawText: `${cat.name} ${cat.description || ''}`,
+      rawText: `${catName} ${catTrans?.description || cat.description || ''}`,
+      language: targetLanguage,
+      translations: cat.translations || null,
     });
   });
 
@@ -140,42 +161,56 @@ export function buildSemanticHierarchy(data: EcosystemData): SeoEntity[] {
       id: `location-${loc.id}`,
       type: 'location',
       name: loc.name,
-      urlPath: `/sedes/${loc.slug}`,
+      slug: loc.slug,
+      urlPath: isForeign ? `/sedes/${loc.slug}?lang=${targetLanguage}` : `/sedes/${loc.slug}`,
       level: 2,
       parentId: 'root-home',
       currentTitle: `${loc.name} | ${clinicName}`,
       currentDescription: `Visita nuestra sede en ${loc.address || city}. Cita previa y atención personalizada.`,
       currentKeywords: [clinicName.toLowerCase(), loc.name.toLowerCase(), loc.city ? loc.city.toLowerCase() : ''].filter(Boolean),
       rawText: `${loc.name} ${loc.address || ''}`,
+      language: targetLanguage,
     });
   });
 
   // ── NIVEL 3: Servicios / Tratamientos Específicos ──
   data.services.forEach((svc) => {
     const parentCatSlug = svc.category_id ? categorySlugMap.get(svc.category_id) || 'general' : 'general';
+    const svcTrans = isForeign && svc.translations?.[targetLanguage] ? svc.translations[targetLanguage] : null;
+
+    const svcName = svcTrans?.name || svc.name;
+    const svcSlug = svcTrans?.slug || svc.slug;
     const svcKeywords: string[] = [];
 
-    if (svc.seo_keywords) {
+    if (svcTrans?.seo_keywords) {
+      svcKeywords.push(...svcTrans.seo_keywords.split(',').map((k: string) => k.trim()).filter(Boolean));
+    } else if (svc.seo_keywords && !isForeign) {
       svcKeywords.push(...svc.seo_keywords.split(',').map((k) => k.trim()).filter(Boolean));
     } else {
-      svcKeywords.push(svc.name.toLowerCase());
+      svcKeywords.push(svcName.toLowerCase());
       if (svc.category_name) {
-        svcKeywords.push(`${svc.name.toLowerCase()} ${svc.category_name.toLowerCase()}`);
+        svcKeywords.push(`${svcName.toLowerCase()} ${svc.category_name.toLowerCase()}`);
       }
     }
+
+    const currentTitle = svcTrans?.seo_title || (isForeign ? null : svc.seo_title);
+    const currentDescription = svcTrans?.seo_description || svcTrans?.description || (isForeign ? null : (svc.seo_description || svc.description));
 
     entities.push({
       id: `service-${svc.id}`,
       type: 'service',
-      name: svc.name,
-      urlPath: `/tratamientos/${parentCatSlug}/${svc.slug}`,
+      name: svcName,
+      slug: svcSlug,
+      urlPath: isForeign ? `/tratamientos/${parentCatSlug}/${svcSlug}?lang=${targetLanguage}` : `/tratamientos/${parentCatSlug}/${svc.slug}`,
       level: 3,
       parentId: svc.category_id ? `category-${svc.category_id}` : 'root-home',
       categoryName: svc.category_name,
-      currentTitle: svc.seo_title,
-      currentDescription: svc.seo_description || svc.description,
+      currentTitle,
+      currentDescription,
       currentKeywords: svcKeywords,
-      rawText: `${svc.name} ${svc.category_name || ''} ${svc.description || ''}`,
+      rawText: `${svcName} ${svc.category_name || ''} ${svcTrans?.description || svc.description || ''}`,
+      language: targetLanguage,
+      translations: svc.translations || null,
     });
   });
 

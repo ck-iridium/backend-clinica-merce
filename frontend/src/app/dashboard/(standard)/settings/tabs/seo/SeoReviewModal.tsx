@@ -59,6 +59,11 @@ export default function SeoReviewModal({
                   <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-stone-100 text-stone-700">
                     {item.entityType}
                   </span>
+                  {item.language && item.language !== 'es' && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300">
+                      {item.language === 'en' ? '🇬🇧 EN' : '🇫🇷 FR'}
+                    </span>
+                  )}
                   <h5 className="text-sm font-bold text-stone-900">{item.entityName}</h5>
                 </div>
                 <span className="text-[11px] font-mono text-[#D4AF37] font-semibold bg-[#D4AF37]/10 px-2.5 py-0.5 rounded-full border border-[#D4AF37]/20">
@@ -87,6 +92,14 @@ export default function SeoReviewModal({
                       )}
                     </p>
                   </div>
+                  {item.original.slug && (
+                    <div>
+                      <span className="text-[10px] text-stone-400">Slug:</span>
+                      <p className="font-mono text-stone-600 text-[11px]">
+                        {item.original.slug}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Después (Propuesta IA) */}
@@ -113,6 +126,14 @@ export default function SeoReviewModal({
                       {item.proposed.seo_keywords}
                     </p>
                   </div>
+                  {item.proposed.slug && (
+                    <div>
+                      <span className="text-[10px] text-stone-400">Slug Traducido:</span>
+                      <p className="font-mono text-stone-900 font-bold text-[11px]">
+                        {item.proposed.slug}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 

@@ -115,9 +115,9 @@ export async function extractTenantEcosystem(tenantIdOrSlug: string): Promise<Ec
     locationsRes,
   ] = await Promise.all([
     client.from('clinic_settings').select('clinic_name, clinic_description, business_sector, clinic_address, allow_search_engine_indexing, gemini_api_key').eq('tenant_id', effectiveTenantId).maybeSingle(),
-    client.from('site_content').select('seo_title, seo_description, seo_keywords, hero_title, hero_subtitle').eq('tenant_id', effectiveTenantId).maybeSingle(),
-    client.from('service_categories').select('id, name, slug, description, seo_description, order_index').eq('tenant_id', effectiveTenantId).order('order_index', { ascending: true }),
-    client.from('services').select('id, name, slug, category_id, description, seo_title, seo_description, seo_keywords, price, duration_minutes, is_active').eq('tenant_id', effectiveTenantId).eq('is_active', true),
+    client.from('site_content').select('seo_title, seo_description, seo_keywords, hero_title, hero_subtitle, translations').eq('tenant_id', effectiveTenantId).maybeSingle(),
+    client.from('service_categories').select('id, name, slug, description, seo_description, order_index, translations').eq('tenant_id', effectiveTenantId).order('order_index', { ascending: true }),
+    client.from('services').select('id, name, slug, category_id, description, seo_title, seo_description, seo_keywords, price, duration_minutes, is_active, translations').eq('tenant_id', effectiveTenantId).eq('is_active', true),
     client.from('locations').select('id, name, slug, address, is_active').eq('tenant_id', effectiveTenantId).eq('is_active', true),
   ]);
 
@@ -130,7 +130,10 @@ export async function extractTenantEcosystem(tenantIdOrSlug: string): Promise<Ec
     gemini_api_key: settingsRes.data?.gemini_api_key || null,
   };
 
-  const siteContent: EcosystemSiteContent = contentRes.data || {};
+  const siteContent: EcosystemSiteContent = {
+    ...contentRes.data,
+    translations: contentRes.data?.translations || null,
+  };
 
   const categories: EcosystemCategory[] = (categoriesRes.data || []).map((cat: any) => ({
     id: cat.id,
@@ -139,6 +142,7 @@ export async function extractTenantEcosystem(tenantIdOrSlug: string): Promise<Ec
     description: cat.description || null,
     seo_description: cat.seo_description || null,
     order_index: cat.order_index ?? 0,
+    translations: cat.translations || null,
   }));
 
   const categoryMap = new Map<string, string>();
@@ -159,6 +163,7 @@ export async function extractTenantEcosystem(tenantIdOrSlug: string): Promise<Ec
     price: svc.price ? Number(svc.price) : null,
     duration_minutes: svc.duration_minutes ? Number(svc.duration_minutes) : null,
     is_active: svc.is_active !== false,
+    translations: svc.translations || null,
   }));
 
   const locations: EcosystemLocation[] = (locationsRes.data || []).map((loc: any) => {

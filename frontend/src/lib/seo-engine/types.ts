@@ -24,6 +24,7 @@ export interface EcosystemSiteContent {
   seo_keywords?: string | null;
   hero_title?: string | null;
   hero_subtitle?: string | null;
+  translations?: Record<string, any> | null;
 }
 
 export interface EcosystemCategory {
@@ -33,6 +34,7 @@ export interface EcosystemCategory {
   description?: string | null;
   seo_description?: string | null;
   order_index?: number;
+  translations?: Record<string, any> | null;
 }
 
 export interface EcosystemService {
@@ -48,6 +50,7 @@ export interface EcosystemService {
   price?: number | null;
   duration_minutes?: number | null;
   is_active?: boolean;
+  translations?: Record<string, any> | null;
 }
 
 export interface EcosystemLocation {
@@ -84,6 +87,9 @@ export interface SeoEntity {
   currentDescription?: string | null;
   currentKeywords: string[];
   rawText?: string | null;
+  slug?: string | null;
+  language?: 'es' | 'en' | 'fr';
+  translations?: Record<string, any> | null;
 }
 
 export interface CannibalizationIssue {
@@ -108,6 +114,7 @@ export interface SemanticNode {
 
 export interface SeoAuditReport {
   tenantId: string;
+  language: 'es' | 'en' | 'fr';
   overallScore: number;
   summary: {
     totalEntities: number;

@@ -56,11 +56,16 @@ export default function SeoNodeCard({ node }: SeoNodeCardProps) {
           </span>
 
           <div className="min-w-0 space-y-0.5">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h4 className="text-sm sm:text-base font-bold text-stone-900 truncate">
                 {node.entity.name}
               </h4>
-              <span className="text-[11px] font-mono text-stone-400 hidden md:inline truncate max-w-[200px]">
+              {node.entity.language && node.entity.language !== 'es' && (
+                <span className="text-[10px] bg-amber-50 text-[#b08e23] border border-[#d4af37]/30 px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">
+                  {node.entity.language === 'en' ? '🇬🇧 English' : '🇫🇷 Français'}
+                </span>
+              )}
+              <span className="text-[11px] font-mono text-stone-400 hidden md:inline truncate max-w-[260px]">
                 {node.entity.urlPath}
               </span>
             </div>
@@ -125,7 +130,7 @@ export default function SeoNodeCard({ node }: SeoNodeCardProps) {
             <div className="space-y-1 bg-white p-3.5 rounded-xl border border-stone-200/60">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-stone-500 uppercase tracking-wider text-[10px]">
-                  Título SEO Actual
+                  Título SEO ({node.entity.language ? node.entity.language.toUpperCase() : 'ES'})
                 </span>
                 <span
                   className={`text-[10px] font-mono font-bold ${
@@ -139,7 +144,9 @@ export default function SeoNodeCard({ node }: SeoNodeCardProps) {
               </div>
               <p className="text-stone-800 font-medium break-words">
                 {node.entity.currentTitle || (
-                  <span className="italic text-stone-400">Sin título configurado</span>
+                  <span className="italic text-stone-400">
+                    {node.entity.language && node.entity.language !== 'es' ? `Sin título en ${node.entity.language.toUpperCase()} (pendiente)` : 'Sin título configurado'}
+                  </span>
                 )}
               </p>
             </div>
@@ -147,7 +154,7 @@ export default function SeoNodeCard({ node }: SeoNodeCardProps) {
             <div className="space-y-1 bg-white p-3.5 rounded-xl border border-stone-200/60">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-stone-500 uppercase tracking-wider text-[10px]">
-                  Meta Descripción Actual
+                  Meta Descripción ({node.entity.language ? node.entity.language.toUpperCase() : 'ES'})
                 </span>
                 <span
                   className={`text-[10px] font-mono font-bold ${
@@ -161,7 +168,9 @@ export default function SeoNodeCard({ node }: SeoNodeCardProps) {
               </div>
               <p className="text-stone-800 font-medium leading-relaxed break-words">
                 {node.entity.currentDescription || (
-                  <span className="italic text-stone-400">Sin descripción (usando fallback neutro)</span>
+                  <span className="italic text-stone-400">
+                    {node.entity.language && node.entity.language !== 'es' ? `Sin descripción en ${node.entity.language.toUpperCase()} (pendiente)` : 'Sin descripción (usando fallback neutro)'}
+                  </span>
                 )}
               </p>
             </div>

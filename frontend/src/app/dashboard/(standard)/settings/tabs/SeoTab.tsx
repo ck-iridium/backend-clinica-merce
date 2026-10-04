@@ -70,6 +70,7 @@ function resolveCurrentTenantId(settings?: any): string {
 
 export default function SeoTab({ settings }: SeoTabProps) {
   const [resolvedTenantId, setResolvedTenantId] = useState<string>('');
+  const [selectedLanguage, setSelectedLanguage] = useState<'es' | 'en' | 'fr'>('es');
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [report, setReport] = useState<SeoAuditReport | null>(null);
@@ -82,8 +83,8 @@ export default function SeoTab({ settings }: SeoTabProps) {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
 
-  // 1. Cargar auditoría inicial
-  const loadAudit = async (targetTenantId?: string, showToast = false) => {
+  // 1. Cargar auditoría inicial para el idioma seleccionado
+  const loadAudit = async (targetTenantId?: string, showToast = false, lang: 'es' | 'en' | 'fr' = selectedLanguage) => {
     const tid = targetTenantId || resolvedTenantId || resolveCurrentTenantId(settings);
     if (!tid) {
       setLoading(false);
@@ -94,7 +95,7 @@ export default function SeoTab({ settings }: SeoTabProps) {
     setLoading(true);
     setErrorMessage(null);
     try {
-      const res = await fetch(`/api/seo/audit?tenantId=${encodeURIComponent(tid)}`, {
+      const res = await fetch(`/api/seo/audit?tenantId=${encodeURIComponent(tid)}&lang=${lang}`, {
         headers: { 'x-tenant-id': tid },
       });
 
@@ -103,7 +104,7 @@ export default function SeoTab({ settings }: SeoTabProps) {
         setReport(data);
         setErrorMessage(null);
         if (showToast) {
-          toast.success('Auditoría SEO actualizada con éxito');
+          toast.success(`Auditoría SEO (${lang.toUpperCase()}) actualizada con éxito`);
         }
       } else {
         const errData = await res.json().catch(() => ({}));
@@ -121,10 +122,15 @@ export default function SeoTab({ settings }: SeoTabProps) {
     }
   };
 
+  const handleSelectLanguage = (lang: 'es' | 'en' | 'fr') => {
+    setSelectedLanguage(lang);
+    loadAudit(undefined, false, lang);
+  };
+
   useEffect(() => {
     const tid = resolveCurrentTenantId(settings);
     setResolvedTenantId(tid);
-    loadAudit(tid);
+    loadAudit(tid, false, selectedLanguage);
   }, [settings]);
 
   // 2. Ejecutar optimización con IA (soporta modo 'pending' o 'all')
@@ -200,6 +206,7 @@ export default function SeoTab({ settings }: SeoTabProps) {
               tenantId: tid,
               entityIds: chunk.map((n) => n.entity.id),
               geminiKey: settings?.gemini_api_key || undefined,
+              targetLanguage: selectedLanguage,
             }),
           });
 
@@ -238,7 +245,7 @@ export default function SeoTab({ settings }: SeoTabProps) {
             `Se optimizaron ${accumulatedProposals.length} páginas. ${failedNames.length} tuvieron incidencias y se omitieron.`
           );
         } else {
-          toast.success(`¡Optimización completada! ${accumulatedProposals.length} propuestas generadas.`);
+          toast.success(`¡Optimización completada! ${accumulatedProposals.length} propuestas generadas en ${selectedLanguage.toUpperCase()}.`);
         }
       } else {
         toast.error('No se pudo generar ninguna propuesta de optimización. Inténtalo de nuevo.');
@@ -260,12 +267,15 @@ export default function SeoTab({ settings }: SeoTabProps) {
     try {
       const payload = {
         tenantId: tid,
+        language: selectedLanguage,
         proposals: proposals.map((p) => ({
           entityId: p.entityId,
           entityType: p.entityType,
+          language: p.language || selectedLanguage,
           seo_title: p.proposed.seo_title,
           seo_description: p.proposed.seo_description,
           seo_keywords: p.proposed.seo_keywords,
+          slug: p.proposed.slug,
         })),
       };
 
@@ -280,10 +290,10 @@ export default function SeoTab({ settings }: SeoTabProps) {
 
       if (res.ok) {
         const data = await res.json();
-        toast.success(`¡Éxito! Se actualizaron ${data.updatedCount || proposals.length} páginas en Supabase.`);
+        toast.success(`¡Éxito! Se actualizaron ${data.updatedCount || proposals.length} páginas en Supabase (${selectedLanguage.toUpperCase()}).`);
         setShowReviewModal(false);
         setProposals([]);
-        loadAudit(tid, false);
+        loadAudit(tid, false, selectedLanguage);
       } else {
         const errData = await res.json().catch(() => ({}));
         toast.error(errData.error || 'Error al persistir las optimizaciones en Supabase');
@@ -309,14 +319,16 @@ export default function SeoTab({ settings }: SeoTabProps) {
 
   return (
     <div className="space-y-8 md:space-y-10 animate-in slide-in-from-bottom-2 duration-300 font-sans w-full pb-12">
-      {/* ── BANNER PRINCIPAL QUIET LUXURY & SPLIT BUTTON ── */}
+      {/* ── BANNER PRINCIPAL QUIET LUXURY & SPLIT BUTTON & SELECTOR DE IDIOMAS ── */}
       <SeoHeaderBanner
         loading={loading}
         isOptimizing={isOptimizing}
         progress={progress}
         pendingCount={pendingCount}
         totalCount={totalCount}
-        onRescan={() => loadAudit(undefined, true)}
+        selectedLanguage={selectedLanguage}
+        onSelectLanguage={handleSelectLanguage}
+        onRescan={() => loadAudit(undefined, true, selectedLanguage)}
         onOptimize={handleRunOptimization}
       />
 

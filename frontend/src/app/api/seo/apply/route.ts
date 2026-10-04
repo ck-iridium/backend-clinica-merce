@@ -41,46 +41,130 @@ export async function POST(request: NextRequest) {
     let updatedCount = 0;
     const errors: Array<{ entityId: string; error: string }> = [];
 
+    const globalLanguage = body.language || 'es';
+
     // Ejecutar las actualizaciones en Supabase
     for (const item of proposals) {
+      const lang = item.language || globalLanguage || 'es';
+      const isForeign = lang !== 'es';
+
       try {
         if (item.entityType === 'home') {
-          const { error } = await client
-            .from('site_content')
-            .update({
-              seo_title: item.seo_title || null,
-              seo_description: item.seo_description,
-              seo_keywords: item.seo_keywords || null,
-            })
-            .eq('tenant_id', tenantId);
+          if (isForeign) {
+            const { data: current } = await client
+              .from('site_content')
+              .select('translations')
+              .eq('tenant_id', tenantId)
+              .maybeSingle();
 
-          if (error) throw error;
+            let trans = current?.translations || {};
+            if (typeof trans === 'string') {
+              try { trans = JSON.parse(trans); } catch { trans = {}; }
+            }
+            if (!trans[lang]) trans[lang] = {};
+            trans[lang].seo_title = item.seo_title || trans[lang].seo_title;
+            trans[lang].seo_description = item.seo_description;
+            if (item.seo_keywords) trans[lang].seo_keywords = item.seo_keywords;
+
+            const { error } = await client
+              .from('site_content')
+              .update({ translations: trans })
+              .eq('tenant_id', tenantId);
+
+            if (error) throw error;
+          } else {
+            const { error } = await client
+              .from('site_content')
+              .update({
+                seo_title: item.seo_title || null,
+                seo_description: item.seo_description,
+                seo_keywords: item.seo_keywords || null,
+              })
+              .eq('tenant_id', tenantId);
+
+            if (error) throw error;
+          }
           updatedCount++;
         } else if (item.entityType === 'category') {
           const rawCatId = item.entityId.replace('category-', '');
-          const { error } = await client
-            .from('service_categories')
-            .update({
-              seo_description: item.seo_description,
-            })
-            .eq('id', rawCatId)
-            .eq('tenant_id', tenantId);
+          if (isForeign) {
+            const { data: current } = await client
+              .from('service_categories')
+              .select('translations')
+              .eq('id', rawCatId)
+              .eq('tenant_id', tenantId)
+              .maybeSingle();
 
-          if (error) throw error;
+            let trans = current?.translations || {};
+            if (typeof trans === 'string') {
+              try { trans = JSON.parse(trans); } catch { trans = {}; }
+            }
+            if (!trans[lang]) trans[lang] = {};
+            trans[lang].seo_description = item.seo_description;
+            if (item.slug) trans[lang].slug = item.slug;
+
+            const { error } = await client
+              .from('service_categories')
+              .update({ translations: trans })
+              .eq('id', rawCatId)
+              .eq('tenant_id', tenantId);
+
+            if (error) throw error;
+          } else {
+            const { error } = await client
+              .from('service_categories')
+              .update({
+                seo_description: item.seo_description,
+              })
+              .eq('id', rawCatId)
+              .eq('tenant_id', tenantId);
+
+            if (error) throw error;
+          }
           updatedCount++;
         } else if (item.entityType === 'service') {
           const rawSvcId = item.entityId.replace('service-', '');
-          const { error } = await client
-            .from('services')
-            .update({
+          if (isForeign) {
+            const { data: current } = await client
+              .from('services')
+              .select('translations')
+              .eq('id', rawSvcId)
+              .eq('tenant_id', tenantId)
+              .maybeSingle();
+
+            let trans = current?.translations || {};
+            if (typeof trans === 'string') {
+              try { trans = JSON.parse(trans); } catch { trans = {}; }
+            }
+            if (!trans[lang]) trans[lang] = {};
+            trans[lang].seo_title = item.seo_title || trans[lang].seo_title;
+            trans[lang].seo_description = item.seo_description;
+            if (item.seo_keywords) trans[lang].seo_keywords = item.seo_keywords;
+            if (item.slug) trans[lang].slug = item.slug;
+
+            const { error } = await client
+              .from('services')
+              .update({ translations: trans })
+              .eq('id', rawSvcId)
+              .eq('tenant_id', tenantId);
+
+            if (error) throw error;
+          } else {
+            const updatePayload: Record<string, any> = {
               seo_title: item.seo_title || null,
               seo_description: item.seo_description,
               seo_keywords: item.seo_keywords || null,
-            })
-            .eq('id', rawSvcId)
-            .eq('tenant_id', tenantId);
+            };
+            if (item.slug) updatePayload.slug = item.slug;
 
-          if (error) throw error;
+            const { error } = await client
+              .from('services')
+              .update(updatePayload)
+              .eq('id', rawSvcId)
+              .eq('tenant_id', tenantId);
+
+            if (error) throw error;
+          }
           updatedCount++;
         }
       } catch (err: any) {
