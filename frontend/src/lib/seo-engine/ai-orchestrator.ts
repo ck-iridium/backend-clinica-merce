@@ -25,6 +25,8 @@ export interface SeoOptimizationProposal {
 export interface TenantAiContext {
   clinicName: string;
   businessSector: string;
+  clinicDescription?: string | null;
+  toneDirective?: string;
   city: string;
   province?: string;
   tenantId: string;
@@ -51,7 +53,7 @@ export function sanitizeTitle(rawTitle: string, clinicName: string): string {
   // Limpiar separadores colgantes previos
   title = title.replace(/\s*\|\s*$/, '').trim();
 
-  // Si no incluye el nombre de la clínica, añadírselo
+  // Si no incluye el nombre de la clínica o empresa, añadírselo
   if (suffix && !title.toLowerCase().includes(cleanClinic.toLowerCase())) {
     title = `${title}${suffix}`;
   }
@@ -192,11 +194,13 @@ async function callBackendAiFallback(prompt: string, tenantId: string): Promise<
 }
 
 /**
- * Prompt maestro del Agente Estratega SEO Local
+ * Prompt maestro del Agente Estratega SEO Local - 100% Dinámico y Agnóstico al Sector (SaaS Multi-tenant)
  */
 function buildMasterSeoPrompt(params: {
   clinicName: string;
   businessSector: string;
+  clinicDescription?: string | null;
+  toneDirective?: string;
   city: string;
   province?: string;
   locationsList: string;
@@ -215,6 +219,8 @@ function buildMasterSeoPrompt(params: {
   const {
     clinicName,
     businessSector,
+    clinicDescription,
+    toneDirective,
     city,
     province,
     locationsList,
@@ -222,18 +228,23 @@ function buildMasterSeoPrompt(params: {
     existingKeywordsInCatalog,
   } = params;
 
-  return `Eres un Consultor Senior de Estrategia SEO Local y Arquitectura Web en España para clínicas estéticas y centros de bienestar de alta gama (filosofía Quiet Luxury).
-Tu objetivo es analizar el catálogo de tratamientos y sedes de la clínica y diseñar los metadatos SEO (Title, Meta Description, Keywords y Keyword Principal Asignada) de máximo rendimiento y CTR para Google España.
+  const toneContext = toneDirective
+    ? `- Directiva de tono de marca: "${toneDirective}"`
+    : `- Tono de comunicación: Profesional, cercano, de alta solvencia y adaptado a los estándares de excelencia del sector "${businessSector}".`;
+
+  return `Eres un Consultor Senior de Estrategia SEO Local y Arquitectura Web en España especializado en negocios y empresas del sector: ${businessSector}.
+Tu objetivo es analizar el catálogo de servicios, categorías y sedes de la empresa "${clinicName}" y diseñar los metadatos SEO (Title, Meta Description, Keywords y Keyword Principal Asignada) de máximo rendimiento, visibilidad local y CTR para Google España.
 
 ==============================================
 DOSSIER DE INTELIGENCIA DEL NEGOCIO
 ==============================================
-- Nombre de la clínica: "${clinicName}"
+- Nombre comercial / Empresa: "${clinicName}"
 - Sector de actividad: "${businessSector}"
-- Municipio principal: "${city || 'Carcaixent'}"
-- Provincia / Región: "${province || 'Valencia'}"
+${clinicDescription ? `- Propuesta de valor / Descripción: "${clinicDescription}"\n` : ''}${toneContext}
+- Municipio principal: "${city || 'España'}"
+- Provincia / Región: "${province || ''}"
 - Sedes físicas:
-${locationsList || '  - Sede central'}
+${locationsList || '  - Sede principal'}
 
 Palabras clave ya reservadas en el catálogo (evita canibalizarlas):
 [${existingKeywordsInCatalog.slice(0, 15).map((k) => `"${k}"`).join(', ')}]
@@ -241,29 +252,25 @@ Palabras clave ya reservadas en el catálogo (evita canibalizarlas):
 ==============================================
 DIRECTRICES ESTRATÉGICAS DE OBLIGADO CUMPLIMIENTO
 ==============================================
-1. DECODIFICACIÓN DE CÓDIGOS INTERNOS Y TÉRMINOS TÉCNICOS:
-   - Los usuarios en Google NUNCA buscan códigos internos de catálogo como "Zona S", "Zona M", "Zona L" o "Pack 5".
-   - Debes LEER la descripción detallada de cada servicio para entender qué zonas anatómicas o beneficios incluye:
-     * Zona S: Son zonas faciales o pequeñas (labio superior, entrecejo, patillas, línea alba, manos, dedos...).
-     * Zona M: Son zonas medias (axilas, ingles, pubis, medios brazos, medias piernas, hombros...).
-     * Zona L: Son zonas grandes corporales (piernas completas, espalda, pecho y abdomen, brazos completos...).
-   - Traduce esos servicios a búsquedas reales en España:
-     Ejemplo título para Zona S: "Depilación Láser Facial y Zonas Pequeñas | ${clinicName}"
-     Ejemplo descripción para Zona S: "Depilación láser diodo para zonas pequeñas en ${city}: labio superior, entrecejo y línea alba. Resultados seguros y trato exclusivo en ${clinicName}."
+1. DECODIFICACIÓN DE CÓDIGOS INTERNOS, ABREVIATURAS Y NOMENCLATURAS TÉCNICAS:
+   - Los clientes en Google buscan soluciones, servicios y necesidades reales, NUNCA códigos internos, abreviaturas o nomenclaturas técnicas de catálogo (por ejemplo: códigos alfa-numéricos, packs sin desglosar, abreviaturas de sesiones, tamaños o referencias internas).
+   - Debes LEER con máxima atención la descripción detallada de cada servicio para entender exactamente qué incluye, qué problema soluciona, qué metodología utiliza o qué beneficios concretos aporta al cliente.
+   - Traduce los nombres técnicos o códigos internos de catálogo a intenciones de búsqueda naturales y reales de clientes en España para el sector "${businessSector}".
+   - Ejemplo de adaptación: si un servicio tiene un nombre técnico o abreviado como código de catálogo, identifica en su descripción qué es realmente y titula de forma que el cliente potencial lo encuentre de inmediato (ejemplo: "Nombre del Servicio Principal (Abreviatura o Subtítulo) | ${clinicName}").
 
-2. GEOLOCALIZACIÓN PRECISA Y NATURAL:
+2. GEOLOCALIZACIÓN INTELIGENTE Y NATURAL:
    - Posiciona prioritariamente en el municipio real del negocio ("${city}").
-   - NUNCA utilices anglicismos innecesarios como "beauty", "wellness" o "treatment" cuando en España la gente busca "estética", "belleza", "cuidado facial", "depilación láser", etc.
-   - En la página principal (Home) y categorías generales, prioriza términos como "Centro de Estética en ${city}" o "Estética Avanzada en ${city}".
+   - NUNCA utilices anglicismos forzados ni jerga técnica artificial cuando en España los usuarios buscan términos cotidianos y profesionales propios del sector "${businessSector}".
+   - En la página principal (Home) y categorías generales, prioriza términos de búsqueda de alta intención local (ej. "${businessSector} en ${city}" o la actividad principal de la empresa en su localidad).
 
 3. PREVENCIÓN ACTIVA DE CANIBALIZACIÓN:
    - Cada servicio y categoría debe responder a una intención de búsqueda única y tener su propia 'assignedKeyword' exclusiva.
-   - Si dos servicios son variantes (ej. Hombre vs Mujer, Con brazos vs Sin brazos), el título y la descripción deben dejar clarísima la distinción para que Google los indexe de forma complementaria sin colisionar.
+   - Si dos servicios son variantes o modalidades distintas (ej. diferentes niveles, especialidades, tamaños o tipos de cliente), el título y la descripción deben marcar con total claridad la diferencia para que Google los indexe de forma complementaria sin competir entre sí.
 
 4. LONGITUDES ESTRICTAS Y REDACCIÓN IMPECABLE (REGLA DE ORO DE GOOGLE):
    - 'seo_title': Longitud entre 48 y 60 caracteres. Debe terminar con " | ${clinicName}". Jamás dejes títulos cortados ni con palabras truncadas a medias.
-   - 'seo_description': Longitud entre 135 y 155 caracteres. Debe ser una o dos oraciones COMPLETAS, fluidas, elegantes y persuasivas con sutil llamada a la acción ("Reserva tu cita online", "Pide tu cita previa").
-   - PROHIBICIÓN ABSOLUTA: Jamás termines una descripción a mitad de frase ni con preposiciones o artículos colgantes (prohibido terminar en "...innovación y un." o "...de."). Toda descripción debe terminar con punto final y perfecto sentido sintáctico.
+   - 'seo_description': Longitud entre 135 y 155 caracteres. Debe ser una o dos oraciones COMPLETAS, fluidas, persuasivas y profesionales con sutil llamada a la acción ("Reserva tu cita online", "Pide cita previa", "Solicita presupuesto", "Contacta con nuestro equipo", etc., según corresponda al sector "${businessSector}").
+   - PROHIBICIÓN ABSOLUTA: Jamás termines una descripción a mitad de frase ni con preposiciones o artículos colgantes (prohibido terminar en "...y un." o "...de."). Toda descripción debe terminar con punto final y perfecto sentido sintáctico.
    - 'seo_keywords': 3 a 5 palabras clave específicas en español separadas por comas.
    - 'assignedKeyword': La frase clave principal exacta (long-tail) asignada exclusivamente a esta página.
    - 'rationale': Breve justificación estratégica de 1 frase explicando el criterio de búsqueda adoptado.
@@ -300,8 +307,9 @@ export async function optimizeEcosystemHolistic(
   const apiKey = geminiKey || process.env.GEMINI_API_KEY || '';
   const clinicName = ecosystem.settings.clinic_name;
   const businessSector = formatSectorName(ecosystem.businessSector);
-  const city = ecosystem.detectedCity || 'Carcaixent';
-  const province = ecosystem.detectedProvince || 'Valencia';
+  const clinicDescription = ecosystem.settings.clinic_description;
+  const city = ecosystem.detectedCity || '';
+  const province = ecosystem.detectedProvince || '';
 
   // 1. Construir la jerarquía completa del ecosistema
   const allEntities = buildSemanticHierarchy(ecosystem);
@@ -350,6 +358,7 @@ export async function optimizeEcosystemHolistic(
     const chunkPrompt = buildMasterSeoPrompt({
       clinicName,
       businessSector,
+      clinicDescription,
       city,
       province,
       locationsList,
@@ -418,7 +427,7 @@ export async function optimizeEcosystemHolistic(
         // Fallback determinista seguro en caso de omisión puntual
         const fallbackTitle = sanitizeTitle(`${item.name} en ${city} | ${clinicName}`, clinicName);
         const fallbackDesc = sanitizeDescription(
-          `Descubre ${item.name} en ${clinicName} (${city}). Tratamientos de alta calidad y atención personalizada. Solicita tu cita online.`
+          `Descubre ${item.name} en ${clinicName} (${city}). Servicios profesionales de ${businessSector} con la máxima calidad y atención personalizada. Solicita tu cita o presupuesto online.`
         );
         proposals.push({
           entityId: item.id,
@@ -448,7 +457,7 @@ export async function optimizeEcosystemHolistic(
 }
 
 /**
- * Mantiene compatibilidad con generateNodeSeoCopy individual
+ * Mantiene compatibilidad con generateNodeSeoCopy individual - 100% dinámico y agnóstico al sector
  */
 export async function generateNodeSeoCopy(
   node: SemanticNode,
@@ -456,30 +465,36 @@ export async function generateNodeSeoCopy(
   geminiKey?: string
 ): Promise<SeoOptimizationProposal> {
   const { entity, assignedKeyword, forbiddenKeywords } = node;
-  const { clinicName, businessSector, city, tenantId } = context;
+  const { clinicName, businessSector, clinicDescription, toneDirective, city, tenantId } = context;
   const apiKey = geminiKey || process.env.GEMINI_API_KEY || '';
+  const sectorFormatted = formatSectorName(businessSector);
 
-  const prompt = `Eres un Consultor Senior de SEO Local en España para clínicas estéticas y Quiet Luxury.
-Optimiza esta página para Google España evitando totalmente la canibalización.
+  const toneContext = toneDirective
+    ? `- Directiva de tono de marca: "${toneDirective}"`
+    : `- Tono de comunicación: Profesional, de alta solvencia y adaptado a los estándares de excelencia del sector "${sectorFormatted}".`;
+
+  const prompt = `Eres un Consultor Senior de Estrategia SEO Local y Arquitectura Web en España especializado en negocios del sector: ${sectorFormatted}.
+Optimiza esta página para Google España garantizando máxima relevancia local y evitando totalmente la canibalización.
 
 INFORMACIÓN DEL NEGOCIO:
-- Nombre: ${clinicName}
-- Sector: ${formatSectorName(businessSector)}
-- Localidad: ${city || 'Carcaixent'}
+- Nombre de la empresa: ${clinicName}
+- Sector: ${sectorFormatted}
+${clinicDescription ? `- Descripción de la empresa: ${clinicDescription}\n` : ''}${toneContext}
+- Localidad principal: ${city || 'España'}
 
 DATOS DE LA PÁGINA:
 - Tipo: ${entity.type}
 - Nombre: ${entity.name}
 - Categoría: ${entity.categoryName || 'General'}
-- Contexto del tratamiento: ${entity.rawText || entity.name}
+- Contexto descriptivo del servicio: ${entity.rawText || entity.name}
 - Palabra clave asignada exclusiva: "${assignedKeyword}"
-- Palabras clave prohibidas (competidores): [${forbiddenKeywords.slice(0, 10).map((k) => `"${k}"`).join(', ')}]
+- Palabras clave prohibidas (competidores internos): [${forbiddenKeywords.slice(0, 10).map((k) => `"${k}"`).join(', ')}]
 
 REGLAS ESTRICTAS:
 1. 'seo_title': 50 a 60 caracteres. Debe terminar con " | ${clinicName}".
-2. 'seo_description': 135 a 155 caracteres. Frase completa terminada en punto. PROHIBIDO cortar a medias con artículos o preposiciones.
-3. 'seo_keywords': 3 a 5 palabras clave en español.
-4. Idioma: Español natural de España, sin anglicismos ("beauty", "wellness").
+2. 'seo_description': 135 a 155 caracteres. Frase completa terminada en punto con llamada a la acción adecuada al sector "${sectorFormatted}". PROHIBIDO cortar a medias con artículos o preposiciones.
+3. 'seo_keywords': 3 a 5 palabras clave en español adaptadas al sector "${sectorFormatted}".
+4. Idioma: Español natural de España, sin anglicismos forzados ni terminología abstracta.
 
 Responde ÚNICAMENTE en JSON:
 {
@@ -505,7 +520,7 @@ Responde ÚNICAMENTE en JSON:
 
   const sanitizedTitle = sanitizeTitle(rawGenerated?.seo_title || `${entity.name} | ${clinicName}`, clinicName);
   const sanitizedDesc = sanitizeDescription(
-    rawGenerated?.seo_description || `${clinicName} - Servicios de ${assignedKeyword} en ${city || 'Carcaixent'}. Cita previa online.`
+    rawGenerated?.seo_description || `${clinicName} - Servicios profesionales de ${assignedKeyword} en ${city || 'España'}. Consulta información y solicita tu cita.`
   );
 
   return {
@@ -540,6 +555,7 @@ export async function optimizeNodesBatch(
 ): Promise<SeoOptimizationProposal[]> {
   const proposals: SeoOptimizationProposal[] = [];
   const queue = [...nodes];
+  const sectorFormatted = formatSectorName(context.businessSector);
 
   const workers = Array.from({ length: Math.min(concurrencyLimit, queue.length) }, async () => {
     while (queue.length > 0) {
@@ -550,7 +566,7 @@ export async function optimizeNodesBatch(
         proposals.push(proposal);
       } catch (err) {
         console.error(`[ai-orchestrator] Error optimizando nodo ${node.entity.name}:`, err);
-        const city = context.city || 'Carcaixent';
+        const city = context.city || 'España';
         proposals.push({
           entityId: node.entity.id,
           entityType: node.entity.type,
@@ -565,13 +581,13 @@ export async function optimizeNodesBatch(
           proposed: {
             seo_title: sanitizeTitle(`${node.entity.name} en ${city} | ${context.clinicName}`, context.clinicName),
             seo_description: sanitizeDescription(
-              `Descubre ${node.entity.name} en ${context.clinicName}. Tratamientos profesionales en ${city}. Reserva tu cita.`
+              `Descubre ${node.entity.name} en ${context.clinicName}. Servicios profesionales de ${sectorFormatted} en ${city}. Solicita tu cita o presupuesto.`
             ),
             seo_keywords: `${node.assignedKeyword}, ${context.clinicName}`,
             assignedKeyword: node.assignedKeyword,
             projectedScore: 88,
           },
-          rationale: `Optimización neutra generada con éxito.`,
+          rationale: `Optimización neutra generada con éxito para ${city}.`,
         });
       }
     }

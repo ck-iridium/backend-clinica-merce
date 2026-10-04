@@ -34,7 +34,8 @@ export function extractMeaningfulTokens(text: string): string[] {
 }
 
 export function formatSectorName(sector: string): string {
-  const norm = (sector || '').toLowerCase().trim();
+  if (!sector || !sector.trim()) return 'Servicios Profesionales';
+  const norm = sector.toLowerCase().trim();
   const mapping: Record<string, string> = {
     beauty: 'Estética y Belleza',
     estetica: 'Estética y Belleza',
@@ -46,9 +47,38 @@ export function formatSectorName(sector: string): string {
     peluqueria: 'Peluquería y Estilismo',
     spa: 'Spa y Masajes',
     unas: 'Manicura y Pedicura',
-    general: 'Centro de Estética Avanzada',
+    taller: 'Taller Mecánico y Automoción',
+    mecanica: 'Taller Mecánico y Automoción',
+    automocion: 'Taller Mecánico y Automoción',
+    abogados: 'Despacho de Abogados y Asesoría Legal',
+    abogacia: 'Despacho de Abogados y Asesoría Legal',
+    legal: 'Servicios Legales y Jurídicos',
+    asesoria: 'Asesoría Fiscal y Laboral',
+    gestoria: 'Gestoría y Asesoría',
+    psicologia: 'Psicología y Terapia',
+    psiquiatria: 'Psiquiatría y Salud Mental',
+    odontologia: 'Clínica Dental y Odontología',
+    dental: 'Clínica Dental y Odontología',
+    veterinaria: 'Clínica Veterinaria',
+    nutricion: 'Nutrición y Dietética',
+    fitness: 'Entrenamiento y Fitness',
+    yoga: 'Yoga y Pilates',
+    tatuajes: 'Estudio de Tatuajes',
+    fotografia: 'Estudio de Fotografía',
+    reformas: 'Reformas y Construcción',
+    inmobiliaria: 'Servicios Inmobiliarios',
+    consultoria: 'Consultoría Profesional',
+    general: 'Servicios Profesionales',
   };
-  return mapping[norm] || 'Centro de Estética Avanzada';
+
+  if (mapping[norm]) return mapping[norm];
+
+  // Si es un sector nuevo no contemplado, capitalizar limpiamente
+  return norm
+    .split(/[_\s-]+/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
 }
 
 /**

@@ -4,6 +4,7 @@ import {
   CannibalizationIssue,
   NodeStatus,
   EcosystemData,
+} from './types';
 import { normalizeKeyword, extractMeaningfulTokens, formatSectorName } from './semantic-graph';
 
 /**
