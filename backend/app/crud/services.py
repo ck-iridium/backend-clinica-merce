@@ -64,6 +64,12 @@ def create_service(db: Session, service: schemas.ServiceCreate):
             to_translate["name"] = db_service.name
         if db_service.description:
             to_translate["description"] = db_service.description
+        if db_service.seo_title:
+            to_translate["seo_title"] = db_service.seo_title
+        if db_service.seo_description:
+            to_translate["seo_description"] = db_service.seo_description
+        if db_service.seo_keywords:
+            to_translate["seo_keywords"] = db_service.seo_keywords
 
         new_translations = {}
         if to_translate:
@@ -76,6 +82,14 @@ def create_service(db: Session, service: schemas.ServiceCreate):
             if "fr" not in new_translations: new_translations["fr"] = {}
             new_translations["en"]["content_html"] = en_html
             new_translations["fr"]["content_html"] = fr_html
+
+        # Si el usuario envió traducciones explícitas, fusionarlas
+        user_translations = getattr(service, "translations", None) or {}
+        if user_translations:
+            for lang in ["en", "fr"]:
+                if lang in user_translations:
+                    if lang not in new_translations: new_translations[lang] = {}
+                    new_translations[lang].update(user_translations[lang])
 
         if new_translations:
             db_service.translations = new_translations
@@ -99,11 +113,21 @@ def update_service(db: Session, service_id: str, service: schemas.ServiceUpdate)
         name_changed = "name" in update_data and update_data["name"] != db_service.name
         desc_changed = "description" in update_data and update_data["description"] != db_service.description
         content_html_changed = "content_html" in update_data and update_data["content_html"] != db_service.content_html
+        seo_title_changed = "seo_title" in update_data and update_data["seo_title"] != db_service.seo_title
+        seo_desc_changed = "seo_description" in update_data and update_data["seo_description"] != db_service.seo_description
+        seo_kw_changed = "seo_keywords" in update_data and update_data["seo_keywords"] != db_service.seo_keywords
+        user_translations = update_data.get("translations")
 
         for key, value in update_data.items():
             setattr(db_service, key, value)
 
-        if name_changed or desc_changed or content_html_changed or not db_service.translations:
+        needs_translation = (
+            name_changed or desc_changed or content_html_changed or
+            seo_title_changed or seo_desc_changed or seo_kw_changed or
+            not db_service.translations or user_translations is not None
+        )
+
+        if needs_translation:
             try:
                 from ..utils.translator import translate_fields, translate_html_content
                 current_trans = db_service.translations or {}
@@ -112,22 +136,37 @@ def update_service(db: Session, service_id: str, service: schemas.ServiceUpdate)
                     try: current_trans = json.loads(current_trans)
                     except: current_trans = {}
 
-                # Traducir nombre y descripción si es necesario
-                if name_changed or desc_changed or not current_trans:
-                    to_translate = {}
-                    if db_service.name:
-                        to_translate["name"] = db_service.name
-                    if db_service.description:
-                        to_translate["description"] = db_service.description
+                # Si el usuario suministró traducciones personalizadas, respetarlas prioritariamente
+                if user_translations and isinstance(user_translations, dict):
+                    for lang in ["en", "fr"]:
+                        if lang in user_translations:
+                            if lang not in current_trans:
+                                current_trans[lang] = {}
+                            current_trans[lang].update(user_translations[lang])
 
-                    if to_translate:
-                        new_fields = translate_fields(to_translate, db)
-                        if new_fields:
-                            for lang in ["en", "fr"]:
-                                if lang not in current_trans:
-                                    current_trans[lang] = {}
-                                if lang in new_fields:
-                                    current_trans[lang].update(new_fields[lang])
+                # Identificar campos que necesitan auto-traducción (si cambiaron y no fueron provistos manualmente)
+                to_translate = {}
+                if (name_changed or not current_trans.get("en", {}).get("name")) and db_service.name:
+                    to_translate["name"] = db_service.name
+                if (desc_changed or not current_trans.get("en", {}).get("description")) and db_service.description:
+                    to_translate["description"] = db_service.description
+                if (seo_title_changed or not current_trans.get("en", {}).get("seo_title")) and db_service.seo_title:
+                    to_translate["seo_title"] = db_service.seo_title
+                if (seo_desc_changed or not current_trans.get("en", {}).get("seo_description")) and db_service.seo_description:
+                    to_translate["seo_description"] = db_service.seo_description
+                if (seo_kw_changed or not current_trans.get("en", {}).get("seo_keywords")) and db_service.seo_keywords:
+                    to_translate["seo_keywords"] = db_service.seo_keywords
+
+                if to_translate:
+                    new_fields = translate_fields(to_translate, db)
+                    if new_fields:
+                        for lang in ["en", "fr"]:
+                            if lang not in current_trans:
+                                current_trans[lang] = {}
+                            for k, v in new_fields.get(lang, {}).items():
+                                # Solo sobreescribir si el usuario no pasó un valor explícito en esta petición
+                                if not user_translations or not user_translations.get(lang, {}).get(k):
+                                    current_trans[lang][k] = v
 
                 # Traducir content_html si cambió o si falta en las traducciones
                 if content_html_changed or (db_service.content_html and (not current_trans.get("en", {}).get("content_html") or not current_trans.get("fr", {}).get("content_html"))):
@@ -138,8 +177,10 @@ def update_service(db: Session, service_id: str, service: schemas.ServiceUpdate)
                         if "en" not in current_trans: current_trans["en"] = {}
                         if "fr" not in current_trans: current_trans["fr"] = {}
 
-                        current_trans["en"]["content_html"] = en_html
-                        current_trans["fr"]["content_html"] = fr_html
+                        if not user_translations or not user_translations.get("en", {}).get("content_html"):
+                            current_trans["en"]["content_html"] = en_html
+                        if not user_translations or not user_translations.get("fr", {}).get("content_html"):
+                            current_trans["fr"]["content_html"] = fr_html
 
                 import copy
                 from sqlalchemy.orm.attributes import flag_modified

@@ -59,6 +59,7 @@ class ServiceBase(BaseModel):
     requires_deposit: bool = False
     deposit_amount: Optional[float] = None
     allowed_modality: Optional[str] = "clinic"  # "clinic", "home", "both"
+    translations: Optional[Dict[str, Any]] = None
 
 class ServiceCreate(ServiceBase):
     pass
@@ -82,6 +83,7 @@ class ServiceUpdate(BaseModel):
     requires_deposit: Optional[bool] = None
     deposit_amount: Optional[float] = None
     allowed_modality: Optional[str] = None
+    translations: Optional[Dict[str, Any]] = None
 
 class ServiceResponse(ServiceBase):
     id: str

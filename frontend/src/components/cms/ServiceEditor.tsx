@@ -47,6 +47,7 @@ export interface ServiceFormData {
   requires_deposit: boolean;
   deposit_amount: number;
   allowed_modality: 'clinic' | 'home' | 'both';
+  translations?: Record<string, any>;
 }
 
 const DEFAULT_FORM_DATA: ServiceFormData = {
@@ -71,7 +72,8 @@ const DEFAULT_FORM_DATA: ServiceFormData = {
   },
   requires_deposit: false,
   deposit_amount: 0,
-  allowed_modality: 'clinic'
+  allowed_modality: 'clinic',
+  translations: {}
 };
 
 export default function ServiceEditor({ initialData, serviceId }: { initialData?: any, serviceId?: string }) {
@@ -168,7 +170,8 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
         requires_deposit: initialData.requires_deposit || false,
         deposit_amount: initialData.deposit_amount || 0,
         allowed_modality: initialData.allowed_modality || 'clinic',
-        layout_preferences: initialData.layout_preferences || DEFAULT_FORM_DATA.layout_preferences
+        layout_preferences: initialData.layout_preferences || DEFAULT_FORM_DATA.layout_preferences,
+        translations: initialData.translations || {}
       };
 
       reset(safeData);
