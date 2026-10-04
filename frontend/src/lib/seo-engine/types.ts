@@ -54,6 +54,7 @@ export interface EcosystemLocation {
   name: string;
   slug: string;
   city?: string | null;
+  province?: string | null;
   address?: string | null;
 }
 
@@ -65,6 +66,8 @@ export interface EcosystemData {
   services: EcosystemService[];
   locations: EcosystemLocation[];
   detectedCity: string;
+  detectedProvince?: string;
+  allCities?: string[];
   businessSector: string;
 }
 

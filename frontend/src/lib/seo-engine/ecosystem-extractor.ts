@@ -17,17 +17,62 @@ function getClient() {
   }
 }
 
+export interface ParsedAddress {
+  municipality: string;
+  province: string;
+  postalCode: string;
+}
+
 /**
- * Extrae la ciudad o municipio principal a partir de una cadena de dirección o sede
+ * Parser especializado en direcciones de España:
+ * Extrae con precisión el municipio local (ej. Carcaixent/Carcagente),
+ * la provincia (ej. Valencia) y el código postal de 5 dígitos.
  */
-function extractCityFromText(address?: string | null): string {
-  if (!address) return '';
-  const parts = address.split(',').map((p) => p.trim());
-  if (parts.length > 1) {
-    const candidate = parts[parts.length - 1].replace(/\d{5}/g, '').trim();
-    if (candidate.length > 2) return candidate;
+export function parseSpanishAddress(address?: string | null): ParsedAddress {
+  if (!address) {
+    return { municipality: '', province: '', postalCode: '' };
   }
-  return parts[0] || '';
+
+  const clean = address.trim();
+
+  // 1. Buscar código postal de 5 dígitos
+  const cpMatch = clean.match(/\b(\d{5})\b/);
+  const postalCode = cpMatch ? cpMatch[1] : '';
+
+  // 2. Probar coincidencia de patrón habitual: [CP] [Municipio], [Provincia]
+  const patternMatch = clean.match(/\b\d{5}\s+([A-Za-zÀ-ÿ\s.'-]+?)(?:,\s*([A-Za-zÀ-ÿ\s.'-]+))?$/i);
+  if (patternMatch) {
+    const municipality = patternMatch[1].trim();
+    const province = (patternMatch[2] || '').trim();
+    if (municipality.length > 2) {
+      return { municipality, province, postalCode };
+    }
+  }
+
+  // 3. Si no encaja en el patrón regular, separar por comas
+  const parts = clean.split(',').map((p) => p.trim()).filter(Boolean);
+  if (parts.length >= 2) {
+    let last = parts[parts.length - 1];
+    let prev = parts[parts.length - 2];
+    if (/^(españa|spain)$/i.test(last) && parts.length >= 3) {
+      last = parts[parts.length - 2];
+      prev = parts[parts.length - 3];
+    }
+
+    const cleanLast = last.replace(/\b\d{5}\b/g, '').trim();
+    const cleanPrev = prev.replace(/\b\d{5}\b/g, '').trim();
+
+    if (cleanPrev.length > 2 && cleanLast.length > 2) {
+      return { municipality: cleanPrev, province: cleanLast, postalCode };
+    }
+
+    if (cleanLast.length > 2) {
+      return { municipality: cleanLast, province: '', postalCode };
+    }
+  }
+
+  const fallback = parts[0]?.replace(/\b\d{5}\b/g, '').trim() || '';
+  return { municipality: fallback, province: '', postalCode };
 }
 
 /**
@@ -115,21 +160,40 @@ export async function extractTenantEcosystem(tenantIdOrSlug: string): Promise<Ec
     is_active: svc.is_active !== false,
   }));
 
-  const locations: EcosystemLocation[] = (locationsRes.data || []).map((loc: any) => ({
-    id: loc.id,
-    name: loc.name,
-    slug: loc.slug || loc.id,
-    address: loc.address || null,
-    city: extractCityFromText(loc.address),
-  }));
+  const locations: EcosystemLocation[] = (locationsRes.data || []).map((loc: any) => {
+    const parsed = parseSpanishAddress(loc.address);
+    // Si el nombre de la sede menciona explícitamente una variante toponímica (ej. Carcaixent vs Carcagente)
+    let cityCandidate = parsed.municipality;
+    if (loc.name && /carcaixent/i.test(loc.name)) {
+      cityCandidate = 'Carcaixent';
+    }
 
-  // Detectar la ciudad principal
+    return {
+      id: loc.id,
+      name: loc.name,
+      slug: loc.slug || loc.id,
+      address: loc.address || null,
+      city: cityCandidate || null,
+      province: parsed.province || null,
+    };
+  });
+
+  // Detectar la ciudad y provincia principales
   let detectedCity = '';
+  let detectedProvince = '';
+
   if (locations.length > 0 && locations[0].city) {
     detectedCity = locations[0].city;
+    detectedProvince = locations[0].province || '';
   } else if (settings.clinic_address) {
-    detectedCity = extractCityFromText(settings.clinic_address);
+    const parsed = parseSpanishAddress(settings.clinic_address);
+    detectedCity = parsed.municipality;
+    detectedProvince = parsed.province;
   }
+
+  const allCities = Array.from(
+    new Set(locations.map((l) => l.city).filter(Boolean) as string[])
+  );
 
   return {
     tenant: effectiveTenant,
@@ -139,6 +203,8 @@ export async function extractTenantEcosystem(tenantIdOrSlug: string): Promise<Ec
     services,
     locations,
     detectedCity,
+    detectedProvince,
+    allCities,
     businessSector: settings.business_sector,
   };
 }

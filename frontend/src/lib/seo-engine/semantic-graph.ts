@@ -33,20 +33,22 @@ export function extractMeaningfulTokens(text: string): string[] {
     .filter((token) => (token.length > 2 || /^[lms]|xl|xs|\d+$/i.test(token)) && !SPANISH_STOPWORDS.has(token));
 }
 
-/**
- * Traduce el business_sector a un descriptor legible en español
- */
 export function formatSectorName(sector: string): string {
+  const norm = (sector || '').toLowerCase().trim();
   const mapping: Record<string, string> = {
-    estetica: 'Estética y Cuidado Personal',
-    salud: 'Salud y Fisioterapia',
+    beauty: 'Estética y Belleza',
+    estetica: 'Estética y Belleza',
+    medicina_estetica: 'Medicina Estética',
+    wellness: 'Bienestar y Spa',
+    salud: 'Salud y Bienestar',
     fisioterapia: 'Fisioterapia y Rehabilitación',
     barberia: 'Barbería y Peluquería',
-    medicina_estetica: 'Medicina Estética',
-    wellness: 'Bienestar y Masajes',
-    general: 'Servicios Profesionales',
+    peluqueria: 'Peluquería y Estilismo',
+    spa: 'Spa y Masajes',
+    unas: 'Manicura y Pedicura',
+    general: 'Centro de Estética Avanzada',
   };
-  return mapping[sector.toLowerCase()] || sector;
+  return mapping[norm] || 'Centro de Estética Avanzada';
 }
 
 /**

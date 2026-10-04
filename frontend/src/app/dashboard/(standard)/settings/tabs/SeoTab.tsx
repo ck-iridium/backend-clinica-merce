@@ -185,7 +185,7 @@ export default function SeoTab({ settings }: SeoTabProps) {
     }
 
     const total = targetNodes.length;
-    const CHUNK_SIZE = 3; // Lotes de 3 para evitar cualquier timeout de Vercel/servidor
+    const CHUNK_SIZE = 8; // Lotes holísticos equilibrados para máxima velocidad y coherencia semántica
     const chunks: (typeof targetNodes)[] = [];
     for (let i = 0; i < total; i += CHUNK_SIZE) {
       chunks.push(targetNodes.slice(i, i + CHUNK_SIZE));

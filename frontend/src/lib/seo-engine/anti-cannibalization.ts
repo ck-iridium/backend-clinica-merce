@@ -4,8 +4,7 @@ import {
   CannibalizationIssue,
   NodeStatus,
   EcosystemData,
-} from './types';
-import { normalizeKeyword, extractMeaningfulTokens } from './semantic-graph';
+import { normalizeKeyword, extractMeaningfulTokens, formatSectorName } from './semantic-graph';
 
 /**
  * Calcula la similaridad de Jaccard entre dos listas de tokens
@@ -166,7 +165,7 @@ export function assignUniqueKeywords(entities: SeoEntity[], data: EcosystemData)
     .forEach((e) => {
       let candidate = '';
       if (e.type === 'home') {
-        const sector = normalizeKeyword(data.businessSector);
+        const sector = normalizeKeyword(formatSectorName(data.businessSector));
         candidate = city ? `${sector} en ${city}` : sector;
       } else if (e.type === 'category') {
         const catName = normalizeKeyword(e.name);
