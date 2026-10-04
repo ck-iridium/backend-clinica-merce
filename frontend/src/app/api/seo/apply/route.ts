@@ -14,9 +14,11 @@ function getClient() {
 interface ProposalToApply {
   entityId: string;
   entityType: 'home' | 'category' | 'service' | 'location';
+  language?: 'es' | 'en' | 'fr';
   seo_title?: string | null;
   seo_description: string;
   seo_keywords?: string | null;
+  slug?: string | null;
 }
 
 export async function POST(request: NextRequest) {
