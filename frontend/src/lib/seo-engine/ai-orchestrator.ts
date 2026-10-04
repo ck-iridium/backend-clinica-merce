@@ -1,5 +1,5 @@
 import { SemanticNode, SeoEntity } from './types';
-import { normalizeKeyword } from './semantic-graph';
+import { normalizeKeyword, extractMeaningfulTokens } from './semantic-graph';
 
 export interface SeoOptimizationProposal {
   entityId: string;
