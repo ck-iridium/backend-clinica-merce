@@ -87,6 +87,15 @@ function resolveCurrentTenantId(settings?: any): string {
   return '';
 }
 
+interface OptimizationProgress {
+  current: number;
+  total: number;
+  currentTitle: string;
+  percent: number;
+  failedCount: number;
+  failedNames: string[];
+}
+
 export default function SeoTab({ settings }: SeoTabProps) {
   const [resolvedTenantId, setResolvedTenantId] = useState<string>('');
   const clinicName = settings?.clinic_name || 'Tu Centro';
@@ -97,8 +106,9 @@ export default function SeoTab({ settings }: SeoTabProps) {
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'conflict' | 'warning' | 'optimal'>('all');
   const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({});
 
-  // Estados de optimización IA y Modal Before vs After
+  // Estados de optimización IA, Progreso por lotes y Modal Before vs After
   const [isOptimizing, setIsOptimizing] = useState(false);
+  const [progress, setProgress] = useState<OptimizationProgress | null>(null);
   const [proposals, setProposals] = useState<SeoOptimizationProposal[]>([]);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
@@ -148,7 +158,7 @@ export default function SeoTab({ settings }: SeoTabProps) {
     loadAudit(tid);
   }, [settings]);
 
-  // 2. Ejecutar optimización con IA
+  // 2. Ejecutar optimización con IA en lotes concurrentes (chunks) con progreso en vivo
   const handleRunOptimization = async () => {
     const tid = resolvedTenantId || resolveCurrentTenantId(settings);
     if (!tid) {
@@ -156,35 +166,120 @@ export default function SeoTab({ settings }: SeoTabProps) {
       return;
     }
 
-    setIsOptimizing(true);
-    try {
-      const res = await fetch('/api/seo/optimize', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-tenant-id': tid,
-        },
-        body: JSON.stringify({ tenantId: tid }),
-      });
+    if (!report || !report.nodes || report.nodes.length === 0) {
+      toast.error('No hay páginas cargadas en la auditoría para optimizar.');
+      return;
+    }
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data.proposals && data.proposals.length > 0) {
-          setProposals(data.proposals);
-          setShowReviewModal(true);
-          toast.success(`Se generaron ${data.proposals.length} propuestas de optimización con IA`);
+    // Seleccionar páginas a optimizar (priorizando las que tienen alertas o vacías)
+    let targetNodes = report.nodes.filter(
+      (n) => n.status === 'conflict' || n.status === 'warning' || !n.entity.currentDescription
+    );
+    if (targetNodes.length === 0) {
+      targetNodes = report.nodes; // Si todas estuviesen bien, permitir re-optimizar todo
+    }
+
+    if (targetNodes.length === 0) {
+      toast.info('Todo el catálogo ya se encuentra 100% optimizado.');
+      return;
+    }
+
+    const total = targetNodes.length;
+    const CHUNK_SIZE = 3; // Lotes de 3 para evitar cualquier timeout de Vercel/servidor
+    const chunks: (typeof targetNodes)[] = [];
+    for (let i = 0; i < total; i += CHUNK_SIZE) {
+      chunks.push(targetNodes.slice(i, i + CHUNK_SIZE));
+    }
+
+    setIsOptimizing(true);
+    setProgress({
+      current: 0,
+      total,
+      currentTitle: 'Iniciando conexión con el orquestador IA...',
+      percent: 0,
+      failedCount: 0,
+      failedNames: [],
+    });
+
+    const accumulatedProposals: SeoOptimizationProposal[] = [];
+    const failedNames: string[] = [];
+    let processed = 0;
+
+    try {
+      for (let cIdx = 0; cIdx < chunks.length; cIdx++) {
+        const chunk = chunks[cIdx];
+        const namesString = chunk.map((n) => n.entity.name).join(', ');
+
+        setProgress({
+          current: processed,
+          total,
+          currentTitle: namesString,
+          percent: Math.min(99, Math.round((processed / total) * 100)),
+          failedCount: failedNames.length,
+          failedNames: [...failedNames],
+        });
+
+        try {
+          const res = await fetch('/api/seo/optimize', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-tenant-id': tid,
+            },
+            body: JSON.stringify({
+              tenantId: tid,
+              entityIds: chunk.map((n) => n.entity.id),
+            }),
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data.proposals && Array.isArray(data.proposals)) {
+              accumulatedProposals.push(...data.proposals);
+            }
+          } else {
+            console.warn(`[SeoTab] Lote ${cIdx + 1} no completado (${res.status})`);
+            chunk.forEach((n) => failedNames.push(n.entity.name));
+          }
+        } catch (chunkErr) {
+          console.error(`[SeoTab] Error en lote ${cIdx + 1}:`, chunkErr);
+          chunk.forEach((n) => failedNames.push(n.entity.name));
+        }
+
+        processed += chunk.length;
+        const currentPercent = Math.min(100, Math.round((processed / total) * 100));
+
+        setProgress({
+          current: Math.min(processed, total),
+          total,
+          currentTitle: cIdx < chunks.length - 1 ? 'Cargando siguiente lote...' : 'Finalizando y verificando guardrails...',
+          percent: currentPercent,
+          failedCount: failedNames.length,
+          failedNames: [...failedNames],
+        });
+      }
+
+      // Proceso terminado
+      if (accumulatedProposals.length > 0) {
+        setProposals(accumulatedProposals);
+        setShowReviewModal(true);
+        if (failedNames.length > 0) {
+          toast.warning(
+            `Se optimizaron ${accumulatedProposals.length} páginas. ${failedNames.length} tuvieron incidencias y se omitieron.`
+          );
         } else {
-          toast.info('Todo el catálogo ya se encuentra 100% optimizado');
+          toast.success(`¡Optimización completada! ${accumulatedProposals.length} propuestas generadas.`);
         }
       } else {
-        const errData = await res.json().catch(() => ({}));
-        toast.error(errData.error || 'Error al ejecutar la optimización con IA');
+        toast.error('No se pudo generar ninguna propuesta de optimización. Inténtalo de nuevo.');
       }
-    } catch (err) {
-      console.error(err);
-      toast.error('Error al conectar con el orquestador de IA');
+    } catch (globalErr: any) {
+      console.error('[SeoTab handleRunOptimization Error]:', globalErr);
+      toast.error('Ocurrió un error inesperado durante la optimización.');
     } finally {
       setIsOptimizing(false);
+      // Mantener feedback visual brevemente para transición suave
+      setTimeout(() => setProgress(null), 1200);
     }
   };
 
@@ -288,11 +383,67 @@ export default function SeoTab({ settings }: SeoTabProps) {
             disabled={loading || isOptimizing}
             className="rounded-xl font-bold text-xs py-5 px-5 shadow-luxury text-stone-950 flex items-center gap-2 active:scale-95 transition-transform shrink-0"
           >
-            <Sparkles size={16} strokeWidth={2} />
-            {isOptimizing ? 'Optimizando...' : 'Optimizar con IA'}
+            <Sparkles size={16} strokeWidth={2} className={isOptimizing ? 'animate-spin' : ''} />
+            {isOptimizing && progress
+              ? `Optimizando (${progress.current}/${progress.total})...`
+              : isOptimizing
+              ? 'Optimizando...'
+              : 'Optimizar con IA'}
           </Button>
         </div>
       </div>
+
+      {/* ── BARRA DE PROGRESO EN TIEMPO REAL QUIET LUXURY ── */}
+      {isOptimizing && progress && (
+        <div className="rounded-3xl border border-[#D4AF37]/30 bg-gradient-to-r from-[#1C1917] via-[#26221c] to-[#1C1917] text-white p-5 md:p-7 shadow-xl animate-in slide-in-from-top-2 duration-300 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-[#D4AF37]/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-start sm:items-center gap-3.5">
+                <span className="p-2.5 rounded-2xl bg-[#D4AF37]/20 text-[#D4AF37] border border-[#D4AF37]/30 shrink-0 shadow-inner">
+                  <Sparkles size={20} className="animate-pulse" />
+                </span>
+                <div className="space-y-0.5">
+                  <h4 className="font-serif font-semibold text-base text-white flex items-center gap-2 flex-wrap">
+                    Generando Metadatos con IA
+                    <span className="font-mono text-xs font-normal text-stone-400 bg-stone-800/80 px-2 py-0.5 rounded-md border border-stone-700">
+                      Página {progress.current} de {progress.total}
+                    </span>
+                  </h4>
+                  <p className="text-xs text-stone-300 line-clamp-1">
+                    Lote actual: <span className="text-[#D4AF37] font-medium">{progress.currentTitle}</span>
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 self-end sm:self-center">
+                {progress.failedCount > 0 && (
+                  <span className="text-[11px] font-medium text-rose-300 bg-rose-950/70 border border-rose-800/70 px-2.5 py-1 rounded-full">
+                    {progress.failedCount} con error
+                  </span>
+                )}
+                <span className="font-mono text-xs md:text-sm font-bold text-[#D4AF37] bg-[#D4AF37]/15 border border-[#D4AF37]/30 px-3.5 py-1 rounded-xl shadow-inner">
+                  {progress.percent}%
+                </span>
+              </div>
+            </div>
+
+            {/* Barra de Progreso Fluida */}
+            <div className="w-full bg-stone-900/90 rounded-full h-3 overflow-hidden border border-stone-700/60 p-0.5 shadow-inner">
+              <div
+                className="bg-gradient-to-r from-[#b38f26] via-[#D4AF37] to-[#f3d97d] h-full rounded-full transition-all duration-300 ease-out shadow-sm"
+                style={{ width: `${Math.max(4, progress.percent)}%` }}
+              />
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between text-[11px] text-stone-400 gap-1 font-sans">
+              <span>🛡️ Guardrails activos: Anti-canibalización, títulos 50-60 car., descripciones 140-155 car.</span>
+              <span className="text-stone-300 font-medium">Procesando lotes de 3 concurrentes</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── MENSAJE DE ERROR VISIBLE EN LA UI SI FALLA ── */}
       {errorMessage && (
