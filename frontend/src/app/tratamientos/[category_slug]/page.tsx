@@ -189,21 +189,22 @@ export async function generateMetadata({
     try { catTrans = JSON.parse(catTrans); } catch { catTrans = {}; }
   }
 
-  // Inferencia inteligente de idioma según el slug exacto de la categoría
+  // Inferencia inteligente de idioma según el slug exacto de la categoría (solo si coincide con traducción extranjera)
   let inferredLang: 'es' | 'en' | 'fr' | null = null;
   if (params.category_slug === catTrans?.en?.slug) {
     inferredLang = 'en';
   } else if (params.category_slug === catTrans?.fr?.slug) {
     inferredLang = 'fr';
-  } else if (params.category_slug === category.slug) {
-    inferredLang = 'es';
   }
 
   const langParam = searchParams?.lang;
   const cookieStore = cookies();
+  const cookieLang = cookieStore.get('preferred_language')?.value as 'es' | 'en' | 'fr' | undefined;
+
+  // Prioridad: 1. Parámetro explícito (?lang=), 2. Slug internacional explícito (/lash-lift), 3. Cookie de idioma del usuario, 4. 'es' por defecto
   const lang = (langParam === 'en' || langParam === 'fr' || langParam === 'es') 
     ? langParam 
-    : (inferredLang || cookieStore.get('preferred_language')?.value || 'es');
+    : (inferredLang || cookieLang || 'es');
 
   const translatedName = translateField(category.name, category.translations, 'name', lang);
   const translatedDesc = translateField(category.seo_description || category.description, category.translations, 'seo_description', lang) || `Descubre nuestra categoría de ${translatedName}.`;
@@ -284,19 +285,20 @@ export default async function CategoryDynamicPage({
     try { catTrans = JSON.parse(catTrans); } catch { catTrans = {}; }
   }
 
-  // Inferencia inteligente de idioma según el slug exacto de la categoría
+  // Inferencia inteligente de idioma según el slug exacto de la categoría (solo si coincide con traducción extranjera)
   let inferredLang: 'es' | 'en' | 'fr' | null = null;
   if (params.category_slug === catTrans?.en?.slug) {
     inferredLang = 'en';
   } else if (params.category_slug === catTrans?.fr?.slug) {
     inferredLang = 'fr';
-  } else if (params.category_slug === category.slug) {
-    inferredLang = 'es';
   }
 
+  const cookieLang = cookieStore.get('preferred_language')?.value as 'es' | 'en' | 'fr' | undefined;
+
+  // Prioridad: 1. Parámetro explícito (?lang=), 2. Slug internacional explícito (/lash-lift), 3. Cookie de idioma del usuario, 4. 'es' por defecto
   const lang = (langParam === 'en' || langParam === 'fr' || langParam === 'es') 
     ? langParam 
-    : (inferredLang || cookieStore.get('preferred_language')?.value || 'es');
+    : (inferredLang || cookieLang || 'es');
 
   const esSlug = category.slug || params.category_slug;
   const enSlug = catTrans?.en?.slug || esSlug;

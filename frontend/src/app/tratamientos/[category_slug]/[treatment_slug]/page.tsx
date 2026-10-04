@@ -89,21 +89,22 @@ export async function generateMetadata({
     try { parsedTrans = JSON.parse(parsedTrans); } catch { parsedTrans = {}; }
   }
 
-  // Inferencia inteligente de idioma según el slug exacto de la URL
+  // Inferencia inteligente de idioma según el slug exacto de la URL (solo si coincide con traducción extranjera)
   let inferredLang: 'es' | 'en' | 'fr' | null = null;
   if (params.treatment_slug === parsedTrans?.en?.slug) {
     inferredLang = 'en';
   } else if (params.treatment_slug === parsedTrans?.fr?.slug) {
     inferredLang = 'fr';
-  } else if (params.treatment_slug === service.slug) {
-    inferredLang = 'es';
   }
 
   const langParam = searchParams?.lang;
   const cookieStore = cookies();
+  const cookieLang = cookieStore.get('preferred_language')?.value as 'es' | 'en' | 'fr' | undefined;
+
+  // Prioridad: 1. Parámetro explícito (?lang=), 2. Slug internacional explícito (/lash-lift), 3. Cookie de idioma del usuario, 4. 'es' por defecto
   const lang = ((langParam === 'en' || langParam === 'fr' || langParam === 'es') 
     ? langParam 
-    : (inferredLang || cookieStore.get('preferred_language')?.value || 'es')) as 'es' | 'en' | 'fr';
+    : (inferredLang || cookieLang || 'es')) as 'es' | 'en' | 'fr';
 
   const translateServer = (spanishText: string, translations: any, field: string) => {
     if (!translations) return spanishText;
@@ -245,21 +246,22 @@ export default async function TreatmentDynamicPage({
     try { parsedTrans = JSON.parse(parsedTrans); } catch { parsedTrans = {}; }
   }
 
-  // Inferencia inteligente de idioma según el slug exacto de la URL
+  // Inferencia inteligente de idioma según el slug exacto de la URL (solo si coincide con traducción extranjera)
   let inferredLang: 'es' | 'en' | 'fr' | null = null;
   if (params.treatment_slug === parsedTrans?.en?.slug) {
     inferredLang = 'en';
   } else if (params.treatment_slug === parsedTrans?.fr?.slug) {
     inferredLang = 'fr';
-  } else if (params.treatment_slug === service.slug) {
-    inferredLang = 'es';
   }
 
   const langParam = searchParams?.lang;
   const cookieStore = cookies();
+  const cookieLang = cookieStore.get('preferred_language')?.value as 'es' | 'en' | 'fr' | undefined;
+
+  // Prioridad: 1. Parámetro explícito (?lang=), 2. Slug internacional explícito (/lash-lift), 3. Cookie de idioma del usuario, 4. 'es' por defecto
   const lang = ((langParam === 'en' || langParam === 'fr' || langParam === 'es') 
     ? langParam 
-    : (inferredLang || cookieStore.get('preferred_language')?.value || 'es')) as 'es' | 'en' | 'fr';
+    : (inferredLang || cookieLang || 'es')) as 'es' | 'en' | 'fr';
 
   const esServiceSlug = service.slug || params.treatment_slug;
   const enServiceSlug = parsedTrans?.en?.slug || esServiceSlug;
