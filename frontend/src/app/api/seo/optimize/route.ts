@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { extractTenantEcosystem, optimizeEcosystemHolistic } from '@/lib/seo-engine';
 import { resolveRequestTenant } from '@/lib/seo-engine/tenant-request-resolver';
 
+export const maxDuration = 60;
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
@@ -12,11 +15,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'tenantId requerido para la optimización con IA.' }, { status: 400 });
     }
 
-    // 1. Extraer el ecosistema completo del tenant (catálogo, categorías, descripciones y sedes)
+    // 1. Extraer el ecosistema completo del tenant (catálogo, categorías, descripciones, sedes y ajustes)
     const ecosystem = await extractTenantEcosystem(tenantId);
 
-    // 2. Ejecutar el Agente Estratega SEO Holístico con visión de negocio y sin canibalización
-    const proposals = await optimizeEcosystemHolistic(ecosystem, entityIds);
+    // 2. Extraer gemini_api_key del payload, de clinic_settings o de variables de entorno
+    const geminiKey = (body.geminiKey as string) || ecosystem.settings?.gemini_api_key || process.env.GEMINI_API_KEY;
+
+    // 3. Ejecutar el Agente Estratega SEO Holístico con visión de negocio y sin canibalización
+    const proposals = await optimizeEcosystemHolistic(ecosystem, entityIds, geminiKey);
 
     return NextResponse.json({
       success: true,

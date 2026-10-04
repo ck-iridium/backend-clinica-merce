@@ -19,12 +19,21 @@ import {
   Tag,
   Ban,
   Target,
+  Wand2,
   ExternalLink,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import FeedbackModal from '@/components/FeedbackModal';
 import {
   Dialog,
   DialogContent,
@@ -112,6 +121,7 @@ export default function SeoTab({ settings }: SeoTabProps) {
   const [proposals, setProposals] = useState<SeoOptimizationProposal[]>([]);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
+  const [confirmRegenerateModalOpen, setConfirmRegenerateModalOpen] = useState(false);
 
   // 1. Cargar auditoría inicial
   const loadAudit = async (targetTenantId?: string, showToast = false) => {
@@ -158,8 +168,8 @@ export default function SeoTab({ settings }: SeoTabProps) {
     loadAudit(tid);
   }, [settings]);
 
-  // 2. Ejecutar optimización con IA en lotes concurrentes (chunks) con progreso en vivo
-  const handleRunOptimization = async () => {
+  // 2. Ejecutar optimización con IA (soporta modo 'pending' o 'all')
+  const handleRunOptimization = async (mode: 'pending' | 'all' = 'pending') => {
     const tid = resolvedTenantId || resolveCurrentTenantId(settings);
     if (!tid) {
       toast.error('No se pudo identificar el tenant.');
@@ -171,16 +181,18 @@ export default function SeoTab({ settings }: SeoTabProps) {
       return;
     }
 
-    // Seleccionar páginas a optimizar (priorizando las que tienen alertas o vacías)
-    let targetNodes = report.nodes.filter(
-      (n) => n.status === 'conflict' || n.status === 'warning' || !n.entity.currentDescription
-    );
-    if (targetNodes.length === 0) {
-      targetNodes = report.nodes; // Si todas estuviesen bien, permitir re-optimizar todo
+    let targetNodes: SemanticNode[] = [];
+    if (mode === 'all') {
+      targetNodes = report.nodes;
+    } else {
+      // Modo 'pending': solo páginas con alertas, conflictos o sin descripción
+      targetNodes = report.nodes.filter(
+        (n) => n.status === 'conflict' || n.status === 'warning' || !n.entity.currentDescription
+      );
     }
 
     if (targetNodes.length === 0) {
-      toast.info('Todo el catálogo ya se encuentra 100% optimizado.');
+      toast.info('No hay páginas pendientes de optimización en el catálogo.');
       return;
     }
 
@@ -229,6 +241,7 @@ export default function SeoTab({ settings }: SeoTabProps) {
             body: JSON.stringify({
               tenantId: tid,
               entityIds: chunk.map((n) => n.entity.id),
+              geminiKey: settings?.gemini_api_key || undefined,
             }),
           });
 
@@ -332,6 +345,12 @@ export default function SeoTab({ settings }: SeoTabProps) {
     setExpandedNodes((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
+  // Contadores para el Split Button de optimización
+  const pendingCount = (report?.nodes || []).filter(
+    (n) => n.status === 'conflict' || n.status === 'warning' || !n.entity.currentDescription
+  ).length;
+  const totalCount = report?.nodes?.length || 0;
+
   // Filtrado de nodos
   const filteredNodes = (report?.nodes || []).filter((node) => {
     if (selectedFilter === 'all') return true;
@@ -376,20 +395,63 @@ export default function SeoTab({ settings }: SeoTabProps) {
             Re-escanear
           </Button>
 
-          <Button
-            variant="luxury"
-            size="sm"
-            onClick={handleRunOptimization}
-            disabled={loading || isOptimizing}
-            className="rounded-xl font-bold text-xs py-5 px-5 shadow-luxury text-stone-950 flex items-center gap-2 active:scale-95 transition-transform shrink-0"
-          >
-            <Sparkles size={16} strokeWidth={2} className={isOptimizing ? 'animate-spin' : ''} />
-            {isOptimizing && progress
-              ? `Optimizando (${progress.current}/${progress.total})...`
-              : isOptimizing
-              ? 'Optimizando...'
-              : 'Optimizar con IA'}
-          </Button>
+          {/* Botón Dual (Split Button / Dropdown) para optimización inteligente */}
+          <div className="inline-flex rounded-xl shadow-luxury shrink-0">
+            <Button
+              variant="luxury"
+              size="sm"
+              onClick={() => handleRunOptimization('pending')}
+              disabled={loading || isOptimizing}
+              className="rounded-l-xl rounded-r-none font-bold text-xs py-5 px-4 text-stone-950 flex items-center gap-2 active:scale-95 transition-transform"
+            >
+              <Sparkles size={16} strokeWidth={2} className={isOptimizing ? 'animate-spin' : ''} />
+              {isOptimizing && progress
+                ? `Optimizando (${progress.current}/${progress.total})...`
+                : isOptimizing
+                ? 'Optimizando...'
+                : pendingCount > 0
+                ? `Optimizar pendientes (${pendingCount})`
+                : 'Optimizar pendientes (0)'}
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="luxury"
+                  size="sm"
+                  disabled={loading || isOptimizing}
+                  className="rounded-r-xl rounded-l-none border-l border-stone-950/20 py-5 px-2.5 text-stone-950 hover:bg-[#e0bc46] transition-colors"
+                  aria-label="Más opciones de optimización"
+                >
+                  <ChevronDown size={15} strokeWidth={2.5} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-72 p-2 rounded-2xl bg-white border border-stone-200/80 shadow-2xl space-y-1 z-50">
+                <DropdownMenuItem
+                  onClick={() => handleRunOptimization('pending')}
+                  disabled={loading || isOptimizing}
+                  className="flex items-start gap-2.5 p-2.5 rounded-xl cursor-pointer hover:bg-stone-50 focus:bg-stone-50 transition-colors"
+                >
+                  <Target size={16} className="text-[#D4AF37] mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-xs font-bold text-stone-900">Optimizar pendientes ({pendingCount})</p>
+                    <p className="text-[11px] text-stone-500">Solo páginas con alertas, conflictos o sin descripción.</p>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-stone-100 my-1" />
+                <DropdownMenuItem
+                  onClick={() => setConfirmRegenerateModalOpen(true)}
+                  disabled={loading || isOptimizing}
+                  className="flex items-start gap-2.5 p-2.5 rounded-xl cursor-pointer hover:bg-amber-50/60 focus:bg-amber-50/60 transition-colors group"
+                >
+                  <Wand2 size={16} className="text-[#b08e23] mt-0.5 shrink-0 group-hover:rotate-12 transition-transform" />
+                  <div>
+                    <p className="text-xs font-bold text-[#b08e23]">Regenerar todo el catálogo ({totalCount})</p>
+                    <p className="text-[11px] text-stone-500">Salta filtros y reescribe todas las {totalCount} páginas con IA.</p>
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </div>
 
@@ -925,6 +987,22 @@ export default function SeoTab({ settings }: SeoTabProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* ── MODAL DE CONFIRMACIÓN PARA REGENERACIÓN TOTAL (FEEDBACK MODAL) ── */}
+      {confirmRegenerateModalOpen && (
+        <FeedbackModal
+          type="confirm"
+          title="¿Regenerar todo el catálogo con IA?"
+          message={`Esta acción enviará las ${totalCount} páginas de tu catálogo al Agente Estratega IA para reescribir todos los títulos, descripciones y palabras clave con visión holística. Se sobrescribirán las configuraciones actuales al confirmar y aplicar los cambios. ¿Deseas continuar?`}
+          confirmText={`Sí, regenerar las ${totalCount} páginas`}
+          cancelText="Cancelar"
+          onClose={() => setConfirmRegenerateModalOpen(false)}
+          onConfirmHandler={() => {
+            setConfirmRegenerateModalOpen(false);
+            handleRunOptimization('all');
+          }}
+        />
+      )}
     </div>
   );
 }

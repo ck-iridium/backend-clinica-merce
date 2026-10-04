@@ -114,7 +114,7 @@ export async function extractTenantEcosystem(tenantIdOrSlug: string): Promise<Ec
     servicesRes,
     locationsRes,
   ] = await Promise.all([
-    client.from('clinic_settings').select('clinic_name, clinic_description, business_sector, clinic_address, allow_search_engine_indexing').eq('tenant_id', effectiveTenantId).maybeSingle(),
+    client.from('clinic_settings').select('clinic_name, clinic_description, business_sector, clinic_address, allow_search_engine_indexing, gemini_api_key').eq('tenant_id', effectiveTenantId).maybeSingle(),
     client.from('site_content').select('seo_title, seo_description, seo_keywords, hero_title, hero_subtitle').eq('tenant_id', effectiveTenantId).maybeSingle(),
     client.from('service_categories').select('id, name, slug, description, seo_description, order_index').eq('tenant_id', effectiveTenantId).order('order_index', { ascending: true }),
     client.from('services').select('id, name, slug, category_id, description, seo_title, seo_description, seo_keywords, price, duration_minutes, is_active').eq('tenant_id', effectiveTenantId).eq('is_active', true),
@@ -127,6 +127,7 @@ export async function extractTenantEcosystem(tenantIdOrSlug: string): Promise<Ec
     business_sector: settingsRes.data?.business_sector || 'general',
     clinic_address: settingsRes.data?.clinic_address || null,
     allow_search_engine_indexing: settingsRes.data?.allow_search_engine_indexing !== false,
+    gemini_api_key: settingsRes.data?.gemini_api_key || null,
   };
 
   const siteContent: EcosystemSiteContent = contentRes.data || {};

@@ -15,6 +15,7 @@ export interface EcosystemSettings {
   clinic_address?: string | null;
   clinic_city?: string | null;
   allow_search_engine_indexing: boolean;
+  gemini_api_key?: string | null;
 }
 
 export interface EcosystemSiteContent {

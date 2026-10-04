@@ -127,6 +127,39 @@ export function sanitizeDescription(rawDesc: string): string {
 }
 
 /**
+ * Extrae y parsea JSON de forma tolerante a bloques markdown o texto periférico
+ */
+function extractJsonFromText(text: string): any {
+  if (!text) throw new Error('Contenido de texto vacío');
+  const cleaned = text.replace(/```(?:json)?/gi, '').replace(/```/g, '').trim();
+
+  try {
+    return JSON.parse(cleaned);
+  } catch (err1) {
+    const firstBracket = cleaned.indexOf('[');
+    const firstBrace = cleaned.indexOf('{');
+    
+    let startIdx = -1;
+    let endIdx = -1;
+
+    if (firstBracket !== -1 && (firstBrace === -1 || firstBracket < firstBrace)) {
+      startIdx = firstBracket;
+      endIdx = cleaned.lastIndexOf(']');
+    } else if (firstBrace !== -1) {
+      startIdx = firstBrace;
+      endIdx = cleaned.lastIndexOf('}');
+    }
+
+    if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+      const sub = cleaned.slice(startIdx, endIdx + 1);
+      return JSON.parse(sub);
+    }
+
+    throw new Error(`Error parseando respuesta JSON de Gemini: ${err1}`);
+  }
+}
+
+/**
  * Llama a la API de Gemini para estructurar la respuesta JSON
  */
 async function callGeminiAi(prompt: string, apiKey: string): Promise<any> {
@@ -147,10 +180,12 @@ async function callGeminiAi(prompt: string, apiKey: string): Promise<any> {
         temperature: 0.25, // Baja temperatura para máximo apego a las instrucciones estratégicas
       },
     }),
+    signal: AbortSignal.timeout(45000),
   });
 
   if (!response.ok) {
     const errText = await response.text();
+    console.error(`[callGeminiAi Error] HTTP ${response.status}:`, errText);
     throw new Error(`Gemini API Error (${response.status}): ${errText}`);
   }
 
@@ -160,9 +195,7 @@ async function callGeminiAi(prompt: string, apiKey: string): Promise<any> {
     throw new Error('Gemini no devolvió contenido de texto.');
   }
 
-  // Limpiar posibles bloques markdown ```json ... ``` si viniesen
-  const cleaned = textContent.replace(/```(?:json)?/g, '').trim();
-  return JSON.parse(cleaned);
+  return extractJsonFromText(textContent);
 }
 
 /**
@@ -337,19 +370,16 @@ export async function optimizeEcosystemHolistic(
     }
   });
 
-  // 5. Preparar ítems para el prompt
+  // 5. Preparar ítems optimizados para el prompt (payload ligero y conciso)
   const itemsToOptimize = entitiesToOptimize.map((e) => ({
     id: e.id,
     type: e.type,
     name: e.name,
-    category: e.categoryName || (e.type === 'home' ? 'Página Principal' : null),
-    description: e.rawText || e.currentDescription || null,
-    currentTitle: e.currentTitle,
-    currentDescription: e.currentDescription,
-    urlPath: e.urlPath,
+    category: e.categoryName || (e.type === 'home' ? 'Página Principal' : undefined),
+    description: e.rawText ? e.rawText.slice(0, 350) : (e.currentDescription || undefined),
   }));
 
-  // Procesar en un solo bloque si son hasta 25 items, o en chunks si es un catálogo muy extenso
+  // Procesar en lotes equilibrados
   const CHUNK_SIZE = 20;
   const proposals: SeoOptimizationProposal[] = [];
 
@@ -379,23 +409,60 @@ export async function optimizeEcosystemHolistic(
       }
     }
 
-    if (!rawData || !rawData.proposals) {
+    // Normalizar la lista devuelta por Gemini (soporta array directo, { proposals: [] }, { data: [] }, etc.)
+    let returnedProposals: any[] = [];
+    if (Array.isArray(rawData)) {
+      returnedProposals = rawData;
+    } else if (rawData && typeof rawData === 'object') {
+      if (Array.isArray(rawData.proposals)) {
+        returnedProposals = rawData.proposals;
+      } else if (Array.isArray(rawData.data)) {
+        returnedProposals = rawData.data;
+      } else if (Array.isArray(rawData.items)) {
+        returnedProposals = rawData.items;
+      } else {
+        returnedProposals = Object.entries(rawData).map(([k, v]: [string, any]) => ({
+          entityId: v?.entityId || v?.id || k,
+          ...(typeof v === 'object' ? v : {}),
+        }));
+      }
+    }
+
+    if (returnedProposals.length === 0) {
       try {
-        rawData = await callBackendAiFallback(chunkPrompt, ecosystem.tenant.id);
+        const backendData = await callBackendAiFallback(chunkPrompt, ecosystem.tenant.id);
+        if (Array.isArray(backendData)) {
+          returnedProposals = backendData;
+        } else if (Array.isArray(backendData?.proposals)) {
+          returnedProposals = backendData.proposals;
+        }
       } catch (backendErr) {
         console.error('[ai-orchestrator] Fallback a backend también falló:', backendErr);
       }
     }
 
-    const returnedProposals: any[] = rawData?.proposals || [];
+    // Mapeo ultra-robusto: admite id, entityId, entity_id, coincidencia por nombre o posición en el chunk
     const proposalMap = new Map<string, any>();
-    returnedProposals.forEach((p) => {
-      if (p.entityId) proposalMap.set(p.entityId, p);
+    returnedProposals.forEach((p, idx) => {
+      if (!p) return;
+      const key = p.entityId || p.entity_id || p.id;
+      if (key) proposalMap.set(key, p);
+      const nameKey = p.name || p.entityName;
+      if (nameKey && typeof nameKey === 'string') {
+        proposalMap.set(`name:${nameKey.toLowerCase().trim()}`, p);
+      }
+      if (chunk[idx]) {
+        proposalMap.set(`idx:${idx}`, p);
+      }
     });
 
     // Mapear y sanitizar cada entidad
-    for (const item of chunk) {
-      const generated = proposalMap.get(item.id);
+    for (let cIdx = 0; cIdx < chunk.length; cIdx++) {
+      const item = chunk[cIdx];
+      const generated =
+        proposalMap.get(item.id) ||
+        proposalMap.get(`name:${item.name.toLowerCase().trim()}`) ||
+        (chunk.length === returnedProposals.length ? proposalMap.get(`idx:${cIdx}`) : undefined);
       const originalEntity = entitiesToOptimize.find((e) => e.id === item.id)!;
 
       if (generated) {
