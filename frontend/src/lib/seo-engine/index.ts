@@ -7,6 +7,7 @@ export * from './types';
 export * from './ecosystem-extractor';
 export * from './semantic-graph';
 export * from './anti-cannibalization';
+export * from './ai-orchestrator';
 
 /**
  * Orquestador principal de la Fase A:
