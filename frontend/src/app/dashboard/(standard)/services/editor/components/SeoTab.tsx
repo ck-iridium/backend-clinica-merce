@@ -161,18 +161,33 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
     }
   };
 
+  // Helper para generar slugs limpios compatibles con URLs
+  function slugifyText(text: string): string {
+    if (!text) return '';
+    return text
+      .toString()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9\s-]/g, '')
+      .trim()
+      .replace(/[\s-]+/g, '-');
+  }
+
   // Actualizar campo de traducción de forma reactiva
-  const updateTranslationField = (field: 'seo_title' | 'seo_description' | 'seo_keywords', val: string) => {
+  const updateTranslationField = (field: 'seo_title' | 'seo_description' | 'seo_keywords' | 'slug', val: string) => {
     if (selectedLang === 'es') return;
     const curTrans = formValues.translations || {};
     const langTrans = curTrans[selectedLang] || {};
+    const finalVal = field === 'slug' ? slugifyText(val) : val;
+
     setValue(
       'translations',
       {
         ...curTrans,
         [selectedLang]: {
           ...langTrans,
-          [field]: val,
+          [field]: finalVal,
         },
       },
       { shouldDirty: true }
@@ -208,11 +223,12 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
       const langName = selectedLang === 'en' ? 'English' : 'French';
       const prompt =
         `Translate the following Spanish SEO metadata into natural, engaging, and high-CTR ${langName} for Google search results.\n` +
-        `Return ONLY a raw JSON object with keys: "seo_title", "seo_description", "seo_keywords".\n` +
+        `Return ONLY a raw JSON object with keys: "seo_title", "seo_description", "seo_keywords", "slug" (a short, URL-friendly hyphenated slug based on the title, e.g. "lash-lift").\n` +
         JSON.stringify({
           seo_title: baseTitle || formValues.name || '',
           seo_description: baseDesc || formValues.description || '',
           seo_keywords: baseKw || formValues.name || '',
+          slug: formValues.slug || '',
         });
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/ai/generate`, {
@@ -237,6 +253,8 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
       const data = await res.json();
       const curTrans = formValues.translations || {};
       const langTrans = curTrans[selectedLang] || {};
+      const translatedTitle = data.seo_title || baseTitle || '';
+      const translatedSlug = data.slug ? slugifyText(data.slug) : slugifyText(translatedTitle || formValues.name || '');
 
       setValue(
         'translations',
@@ -244,15 +262,16 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
           ...curTrans,
           [selectedLang]: {
             ...langTrans,
-            seo_title: data.seo_title || baseTitle || '',
+            seo_title: translatedTitle,
             seo_description: data.seo_description || baseDesc || '',
             seo_keywords: data.seo_keywords || baseKw || '',
+            slug: translatedSlug || langTrans.slug || '',
           },
         },
         { shouldDirty: true }
       );
 
-      toast.success(`Metadatos SEO traducidos al ${langName} con éxito.`);
+      toast.success(`Metadatos SEO y Slug traducidos al ${langName} con éxito.`);
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || 'Error al traducir con IA');
@@ -265,6 +284,7 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
   const activeTitle = selectedLang === 'es' ? formValues.seo_title || '' : currentTrans.seo_title || '';
   const activeDesc = selectedLang === 'es' ? formValues.seo_description || '' : currentTrans.seo_description || '';
   const activeKw = selectedLang === 'es' ? formValues.seo_keywords || '' : currentTrans.seo_keywords || '';
+  const activeSlug = selectedLang === 'es' ? formValues.slug || '' : currentTrans.slug || formValues.slug || '';
 
   return (
     <div className="space-y-5">
@@ -516,6 +536,64 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
             className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all text-sm"
             placeholder="keywords, separated, by, commas"
           />
+        )}
+      </div>
+
+      {/* ── SECCIÓN: SLUG Y URL INTERNACIONAL ── */}
+      <div className="pt-2 border-t border-stone-100">
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest">
+            {selectedLang === 'es' ? 'URL Slug Canónico (Español)' : `Slug Internacional (${selectedLang.toUpperCase()})`}
+          </label>
+          {selectedLang !== 'es' && (
+            <button
+              type="button"
+              onClick={() => {
+                const targetText = activeTitle || formValues.name || '';
+                if (targetText) {
+                  updateTranslationField('slug', slugifyText(targetText));
+                  toast.success('Slug generado a partir del título.');
+                }
+              }}
+              className="text-[11px] font-bold text-[#d4af37] hover:underline"
+            >
+              Autogenerar de título
+            </button>
+          )}
+        </div>
+
+        {selectedLang === 'es' ? (
+          <div className="space-y-2">
+            <input
+              id="service-editor-slug-input"
+              {...register('slug')}
+              className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-stone-50/70 text-stone-800 font-mono text-xs focus:ring-2 focus:ring-[#d4af37] outline-none transition-all"
+              placeholder="url-amigable-del-servicio"
+            />
+            <p className="text-[11px] text-stone-400 font-mono">
+              URL Base: /tratamientos/[categoria]/<span className="text-stone-700 font-bold">{formValues.slug || 'slug-servicio'}</span>
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <div className="relative">
+              <input
+                id={`service-editor-slug-${selectedLang}-input`}
+                value={currentTrans.slug || ''}
+                onChange={(e) => updateTranslationField('slug', e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 font-mono text-xs focus:ring-2 focus:ring-[#d4af37] outline-none transition-all"
+                placeholder={slugifyText(activeTitle || formValues.name || 'translated-slug')}
+              />
+            </div>
+            <div className="p-2.5 rounded-xl bg-stone-50 border border-stone-200/60 flex items-center justify-between gap-2 text-[11px] text-stone-600 font-mono">
+              <span className="truncate">
+                URL Indexable: /tratamientos/[categoria]/<strong className="text-stone-900">{currentTrans.slug || slugifyText(activeTitle || formValues.name || 'slug')}</strong>?lang={selectedLang}
+              </span>
+              <span className="text-[10px] bg-[#d4af37]/15 text-[#9a7e20] px-2 py-0.5 rounded font-sans font-bold whitespace-nowrap">
+                hreflang="{selectedLang}"
+              </span>
+            </div>
+          </div>
         )}
       </div>
     </div>

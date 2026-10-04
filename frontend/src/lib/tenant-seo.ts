@@ -185,10 +185,25 @@ export async function getTenantSeoData(): Promise<TenantSeoData> {
 }
 
 /**
- * Genera el objeto Metadata completo de Next.js para páginas de tenants
+ * Genera el objeto Metadata completo de Next.js para páginas de tenants con soporte multi-idioma (hreflang)
  */
-export async function buildTenantMetadata(): Promise<Metadata> {
+export async function buildTenantMetadata(options?: { lang?: string; path?: string }): Promise<Metadata> {
   const seo = await getTenantSeoData();
+  const lang = options?.lang || 'es';
+  const cleanBase = seo.canonical.replace(/\/$/, '');
+  const rawPath = options?.path || '';
+  const cleanPath = rawPath.startsWith('/') ? rawPath : (rawPath ? `/${rawPath}` : '');
+
+  const esUrl = `${cleanBase}${cleanPath}`;
+  const enUrl = `${cleanBase}${cleanPath}${cleanPath.includes('?') ? '&' : '?'}lang=en`;
+  const frUrl = `${cleanBase}${cleanPath}${cleanPath.includes('?') ? '&' : '?'}lang=fr`;
+  const canonicalUrl = lang === 'en' ? enUrl : lang === 'fr' ? frUrl : esUrl;
+
+  const localeMap: Record<string, string> = {
+    es: 'es_ES',
+    en: 'en_US',
+    fr: 'fr_FR',
+  };
 
   return {
     title: seo.title,
@@ -196,7 +211,13 @@ export async function buildTenantMetadata(): Promise<Metadata> {
     keywords: seo.keywords,
     robots: seo.allowIndexing ? "index, follow" : "noindex, nofollow",
     alternates: {
-      canonical: seo.canonical,
+      canonical: canonicalUrl,
+      languages: {
+        'es': esUrl,
+        'en': enUrl,
+        'fr': frUrl,
+        'x-default': esUrl,
+      },
     },
     verification: seo.googleVerification
       ? {
@@ -211,10 +232,10 @@ export async function buildTenantMetadata(): Promise<Metadata> {
     openGraph: {
       title: seo.title,
       description: seo.description,
-      url: seo.canonical,
+      url: canonicalUrl,
       siteName: seo.clinicName,
       images: seo.ogImage ? [{ url: seo.ogImage }] : [],
-      locale: "es_ES",
+      locale: localeMap[lang] || 'es_ES',
       type: "website",
     },
     twitter: {

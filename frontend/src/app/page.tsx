@@ -7,8 +7,8 @@ import type { Metadata } from 'next';
 import ClientHome from './ClientHome';
 import { buildTenantMetadata } from '@/lib/tenant-seo';
 
-export async function generateMetadata(): Promise<Metadata> {
-  return await buildTenantMetadata();
+export async function generateMetadata({ searchParams }: { searchParams?: { lang?: string } }): Promise<Metadata> {
+  return await buildTenantMetadata({ lang: searchParams?.lang });
 }
 
 const getData = cache(async (tenantId: string) => {

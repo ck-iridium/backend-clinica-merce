@@ -66,7 +66,13 @@ async function getRelatedServices(currentServiceId: number, tenantId: string) {
   }
 }
 
-export async function generateMetadata({ params }: { params: { category_slug: string; treatment_slug: string } }): Promise<Metadata> {
+export async function generateMetadata({ 
+  params, 
+  searchParams 
+}: { 
+  params: { category_slug: string; treatment_slug: string }; 
+  searchParams?: { lang?: string };
+}): Promise<Metadata> {
   const requestHeaders = headers();
   const tenantId = requestHeaders.get('x-tenant-id');
   if (!tenantId) return { title: 'Centro no resuelto' };
@@ -77,8 +83,11 @@ export async function generateMetadata({ params }: { params: { category_slug: st
   const settings = await getSettings(tenantId);
   const clinicName = settings?.clinic_name || 'Clínica';
 
+  const langParam = searchParams?.lang;
   const cookieStore = cookies();
-  const lang = (cookieStore.get('preferred_language')?.value || 'es') as 'es' | 'en' | 'fr';
+  const lang = ((langParam === 'en' || langParam === 'fr' || langParam === 'es') 
+    ? langParam 
+    : (cookieStore.get('preferred_language')?.value || 'es')) as 'es' | 'en' | 'fr';
 
   const translateServer = (spanishText: string, translations: any, field: string) => {
     if (!translations) return spanishText;
@@ -91,6 +100,9 @@ export async function generateMetadata({ params }: { params: { category_slug: st
 
   const name = translateServer(service.name, service.translations, 'name');
   const description = translateServer(service.description, service.translations, 'description');
+  const localizedSeoTitle = translateServer(service.seo_title, service.translations, 'seo_title');
+  const localizedSeoDesc = translateServer(service.seo_description, service.translations, 'seo_description');
+  const localizedSeoKeywords = translateServer(service.seo_keywords, service.translations, 'seo_keywords');
 
   const seoTranslations: Record<string, Record<string, string>> = {
     es: { suffix: `| ${clinicName}`, defaultDesc: `Descubre más sobre nuestro tratamiento ${name}.`, keywords: 'tratamiento, estética, clínica' },
@@ -109,18 +121,49 @@ export async function generateMetadata({ params }: { params: { category_slug: st
       ? `${siteUrl}${rawImageUrl}` 
       : `${siteUrl}/${rawImageUrl}`;
 
-  const shareUrl = `${siteUrl}/tratamientos/${params.category_slug}/${params.treatment_slug}`;
-  const finalTitle = service.seo_title || `${name} ${seoT.suffix}`;
-  const finalDesc = service.seo_description || description || seoT.defaultDesc;
+  let parsedTrans = service.translations;
+  if (typeof parsedTrans === 'string') {
+    try { parsedTrans = JSON.parse(parsedTrans); } catch { parsedTrans = {}; }
+  }
+
+  const esServiceSlug = service.slug || params.treatment_slug;
+  const enServiceSlug = parsedTrans?.en?.slug || esServiceSlug;
+  const frServiceSlug = parsedTrans?.fr?.slug || esServiceSlug;
+
+  let catTrans = service.category?.translations;
+  if (typeof catTrans === 'string') {
+    try { catTrans = JSON.parse(catTrans); } catch { catTrans = {}; }
+  }
+
+  const esCatSlug = service.category?.slug || params.category_slug;
+  const enCatSlug = catTrans?.en?.slug || esCatSlug;
+  const frCatSlug = catTrans?.fr?.slug || esCatSlug;
+
+  const esUrl = `${siteUrl}/tratamientos/${esCatSlug}/${esServiceSlug}`;
+  const enUrl = `${siteUrl}/tratamientos/${enCatSlug}/${enServiceSlug}?lang=en`;
+  const frUrl = `${siteUrl}/tratamientos/${frCatSlug}/${frServiceSlug}?lang=fr`;
+  const canonicalUrl = lang === 'en' ? enUrl : lang === 'fr' ? frUrl : esUrl;
+
+  const finalTitle = localizedSeoTitle || `${name} ${seoT.suffix}`;
+  const finalDesc = localizedSeoDesc || description || seoT.defaultDesc;
 
   return {
     title: finalTitle,
     description: finalDesc,
-    keywords: service.seo_keywords || seoT.keywords,
+    keywords: localizedSeoKeywords || service.seo_keywords || seoT.keywords,
+    alternates: {
+      canonical: canonicalUrl,
+      languages: {
+        'es': esUrl,
+        'en': enUrl,
+        'fr': frUrl,
+        'x-default': esUrl,
+      },
+    },
     openGraph: {
       title: finalTitle,
       description: finalDesc,
-      url: shareUrl,
+      url: canonicalUrl,
       siteName: clinicName,
       images: [
         {
@@ -157,7 +200,13 @@ async function getSettings(tenantId: string) {
   return null;
 }
 
-export default async function TreatmentDynamicPage({ params }: { params: { treatment_slug: string } }) {
+export default async function TreatmentDynamicPage({ 
+  params, 
+  searchParams 
+}: { 
+  params: { category_slug: string; treatment_slug: string }; 
+  searchParams?: { lang?: string };
+}) {
   const requestHeaders = headers();
   const tenantId = requestHeaders.get('x-tenant-id');
   if (!tenantId) {
@@ -176,8 +225,11 @@ export default async function TreatmentDynamicPage({ params }: { params: { treat
     notFound();
   }
 
+  const langParam = searchParams?.lang;
   const cookieStore = cookies();
-  const lang = (cookieStore.get('preferred_language')?.value || 'es') as 'es' | 'en' | 'fr';
+  const lang = ((langParam === 'en' || langParam === 'fr' || langParam === 'es') 
+    ? langParam 
+    : (cookieStore.get('preferred_language')?.value || 'es')) as 'es' | 'en' | 'fr';
 
   const translateServer = (spanishText: string, translations: any, field: string) => {
     if (!translations) return spanishText;

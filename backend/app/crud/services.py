@@ -2,6 +2,17 @@ from sqlalchemy.orm import Session, joinedload
 from .. import models, schemas
 from ..database import current_tenant_var
 
+import re
+import unicodedata
+import json
+
+def slugify(text: str) -> str:
+    if not text:
+        return ""
+    text = unicodedata.normalize('NFD', text).encode('ascii', 'ignore').decode('utf-8')
+    text = re.sub(r'[^\w\s-]', '', text).strip().lower()
+    return re.sub(r'[-\s]+', '-', text)
+
 # Services
 def get_service(db: Session, service_id: str):
     tenant_id = current_tenant_var.get()
@@ -31,6 +42,26 @@ def get_service_by_slug(db: Session, slug: str):
             .filter(models.Service.id == slug, models.Service.tenant_id == tenant_id)
             .first()
         )
+
+    # Fallback multi-idioma: buscar si el slug coincide con translations.en.slug o translations.fr.slug
+    if not service:
+        all_tenant_services = (
+            db.query(models.Service)
+            .options(joinedload(models.Service.category))
+            .filter(models.Service.tenant_id == tenant_id)
+            .all()
+        )
+        for s in all_tenant_services:
+            trans = s.translations or {}
+            if isinstance(trans, str):
+                try: trans = json.loads(trans)
+                except: trans = {}
+            for lang in ["en", "fr"]:
+                if trans.get(lang, {}).get("slug") == slug:
+                    service = s
+                    break
+            if service:
+                break
 
     if service and service.category:
         service.category_slug = service.category.slug
@@ -90,6 +121,14 @@ def create_service(db: Session, service: schemas.ServiceCreate):
                 if lang in user_translations:
                     if lang not in new_translations: new_translations[lang] = {}
                     new_translations[lang].update(user_translations[lang])
+
+        for lang in ["en", "fr"]:
+            if lang in new_translations:
+                if new_translations[lang].get("slug"):
+                    new_translations[lang]["slug"] = slugify(new_translations[lang]["slug"])
+                else:
+                    translated_name = new_translations[lang].get("name") or db_service.name
+                    new_translations[lang]["slug"] = slugify(translated_name)
 
         if new_translations:
             db_service.translations = new_translations
@@ -181,6 +220,15 @@ def update_service(db: Session, service_id: str, service: schemas.ServiceUpdate)
                             current_trans["en"]["content_html"] = en_html
                         if not user_translations or not user_translations.get("fr", {}).get("content_html"):
                             current_trans["fr"]["content_html"] = fr_html
+
+                # Normalizar o auto-generar slug traducido
+                for lang in ["en", "fr"]:
+                    if lang in current_trans:
+                        if current_trans[lang].get("slug"):
+                            current_trans[lang]["slug"] = slugify(current_trans[lang]["slug"])
+                        else:
+                            translated_name = current_trans[lang].get("name") or db_service.name
+                            current_trans[lang]["slug"] = slugify(translated_name)
 
                 import copy
                 from sqlalchemy.orm.attributes import flag_modified

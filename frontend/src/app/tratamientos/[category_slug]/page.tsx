@@ -164,7 +164,13 @@ const translateField = (fieldVal: string, translations: any, fieldKey: string, l
   return fieldVal;
 };
 
-export async function generateMetadata({ params }: { params: { category_slug: string } }): Promise<Metadata> {
+export async function generateMetadata({ 
+  params, 
+  searchParams 
+}: { 
+  params: { category_slug: string }; 
+  searchParams?: { lang?: string };
+}): Promise<Metadata> {
   const requestHeaders = headers();
   const tenantId = requestHeaders.get('x-tenant-id');
   if (!tenantId) return { title: 'Centro no resuelto' };
@@ -177,18 +183,65 @@ export async function generateMetadata({ params }: { params: { category_slug: st
 
   const clinicName = settings?.clinic_name || 'Estética';
 
+  const langParam = searchParams?.lang;
   const cookieStore = cookies();
-  const lang = cookieStore.get('preferred_language')?.value || 'es';
+  const lang = (langParam === 'en' || langParam === 'fr' || langParam === 'es') 
+    ? langParam 
+    : (cookieStore.get('preferred_language')?.value || 'es');
+
   const translatedName = translateField(category.name, category.translations, 'name', lang);
   const translatedDesc = translateField(category.seo_description || category.description, category.translations, 'seo_description', lang) || `Descubre nuestra categoría de ${translatedName}.`;
 
+  const host = requestHeaders.get('host') || '';
+  const proto = requestHeaders.get('x-forwarded-proto') || 'https';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (host ? `${proto}://${host}` : 'https://probookia.com');
+
+  let catTrans = category.translations;
+  if (typeof catTrans === 'string') {
+    try { catTrans = JSON.parse(catTrans); } catch { catTrans = {}; }
+  }
+
+  const esSlug = category.slug || params.category_slug;
+  const enSlug = catTrans?.en?.slug || esSlug;
+  const frSlug = catTrans?.fr?.slug || esSlug;
+
+  const esUrl = `${siteUrl}/tratamientos/${esSlug}`;
+  const enUrl = `${siteUrl}/tratamientos/${enSlug}?lang=en`;
+  const frUrl = `${siteUrl}/tratamientos/${frSlug}?lang=fr`;
+  const canonicalUrl = lang === 'en' ? enUrl : lang === 'fr' ? frUrl : esUrl;
+
+  const title = `${translatedName} | ${clinicName}`;
+
   return {
-    title: `${translatedName} | ${clinicName}`,
+    title,
     description: translatedDesc,
+    alternates: {
+      canonical: canonicalUrl,
+      languages: {
+        'es': esUrl,
+        'en': enUrl,
+        'fr': frUrl,
+        'x-default': esUrl,
+      },
+    },
+    openGraph: {
+      title,
+      description: translatedDesc,
+      url: canonicalUrl,
+      siteName: clinicName,
+      locale: lang === 'es' ? 'es_ES' : lang === 'fr' ? 'fr_FR' : 'en_US',
+      type: 'website',
+    },
   };
 }
 
-export default async function CategoryDynamicPage({ params }: { params: { category_slug: string } }) {
+export default async function CategoryDynamicPage({ 
+  params, 
+  searchParams 
+}: { 
+  params: { category_slug: string }; 
+  searchParams?: { lang?: string };
+}) {
   const requestHeaders = headers();
   const tenantId = requestHeaders.get('x-tenant-id');
   if (!tenantId) {
@@ -208,8 +261,11 @@ export default async function CategoryDynamicPage({ params }: { params: { catego
     getSettings(tenantId)
   ]);
 
+  const langParam = searchParams?.lang;
   const cookieStore = cookies();
-  const lang = cookieStore.get('preferred_language')?.value || 'es';
+  const lang = (langParam === 'en' || langParam === 'fr' || langParam === 'es') 
+    ? langParam 
+    : (cookieStore.get('preferred_language')?.value || 'es');
 
   const t = (key: string, defaultValue: string) => {
     return categoryPageTranslations[lang]?.[key] || defaultValue;
