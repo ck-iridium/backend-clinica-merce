@@ -160,8 +160,8 @@ export default function ContentTab({ settings }: ContentTabProps) {
     }
 
     const total = targetNodes.length;
-    // Chunks de 3 para asegurar máxima solvencia literaria y evitar timeouts con Gemini
-    const CHUNK_SIZE = 3;
+    // Chunks de 2 para asegurar máxima solvencia literaria, rapidez y evitar timeouts con Gemini
+    const CHUNK_SIZE = 2;
     const chunks: (typeof targetNodes)[] = [];
     for (let i = 0; i < total; i += CHUNK_SIZE) {
       chunks.push(targetNodes.slice(i, i + CHUNK_SIZE));
@@ -179,6 +179,7 @@ export default function ContentTab({ settings }: ContentTabProps) {
 
     const accumulatedProposals: ContentOptimizationProposal[] = [];
     const failedNames: string[] = [];
+    let lastErrorMsg = '';
     let processed = 0;
 
     try {
@@ -215,11 +216,15 @@ export default function ContentTab({ settings }: ContentTabProps) {
               accumulatedProposals.push(...data.proposals);
             }
           } else {
-            console.warn(`[ContentTab] Lote ${cIdx + 1} no completado (${res.status})`);
+            const errData = await res.json().catch(() => ({}));
+            const msg = errData.error || `Error ${res.status} al generar contenidos`;
+            console.error(`[ContentTab] Lote ${cIdx + 1} no completado:`, msg);
+            lastErrorMsg = msg;
             chunk.forEach((n) => failedNames.push(n.name));
           }
-        } catch (chunkErr) {
+        } catch (chunkErr: any) {
           console.error(`[ContentTab] Error en lote ${cIdx + 1}:`, chunkErr);
+          lastErrorMsg = chunkErr.message || 'Error de conexión';
           chunk.forEach((n) => failedNames.push(n.name));
         }
 
@@ -247,7 +252,7 @@ export default function ContentTab({ settings }: ContentTabProps) {
           toast.success(`¡Redacción completada! ${accumulatedProposals.length} propuestas generadas en 3 idiomas (ES, EN, FR).`);
         }
       } else {
-        toast.error('No se pudo generar ninguna propuesta de contenido. Inténtalo de nuevo.');
+        toast.error(lastErrorMsg || 'No se pudo generar ninguna propuesta de contenido. Inténtalo de nuevo.');
       }
     } catch (globalErr: any) {
       console.error('[ContentTab handleRunGeneration Error]:', globalErr);

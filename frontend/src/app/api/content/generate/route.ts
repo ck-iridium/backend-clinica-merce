@@ -19,12 +19,28 @@ export async function POST(request: NextRequest) {
     }
 
     const entityIds = body.entityIds as string[] | undefined;
-    const geminiKey = body.geminiKey as string | undefined;
 
     // 1. Extraer ecosistema completo
     const ecosystem = await extractTenantEcosystem(tenantId);
 
-    // 2. Generar redacción comercial y contenido HTML en 3 idiomas concurrentes
+    // 2. Extraer clave de API: del payload, de clinic_settings en Supabase o de process.env.GEMINI_API_KEY
+    const geminiKey =
+      (body.geminiKey as string)?.trim() ||
+      ecosystem.settings?.gemini_api_key?.trim() ||
+      process.env.GEMINI_API_KEY?.trim() ||
+      '';
+
+    if (!geminiKey) {
+      return NextResponse.json(
+        {
+          error:
+            'No se encontró ninguna clave de API de Gemini válida en el sistema (ni en la configuración de la clínica ni en variables de entorno). Por favor, introduce tu Gemini API Key en Ajustes > Avanzado.',
+        },
+        { status: 400 }
+      );
+    }
+
+    // 3. Generar redacción comercial y contenido HTML en 3 idiomas concurrentes
     const proposals = await generateContentBatch(ecosystem, entityIds, geminiKey);
 
     return NextResponse.json({

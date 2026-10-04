@@ -99,39 +99,91 @@ Responde ÚNICAMENTE con un JSON válido con esta estructura exacta:
 }`;
 }
 
+/**
+ * Extrae y parsea JSON de forma tolerante a bloques markdown o texto periférico
+ */
+function extractJsonFromText(text: string): any {
+  if (!text) throw new Error('Contenido de texto vacío devuelto por Gemini');
+  const cleaned = text.replace(/```(?:json)?/gi, '').replace(/```/g, '').trim();
+
+  try {
+    return JSON.parse(cleaned);
+  } catch (err1) {
+    const firstBracket = cleaned.indexOf('[');
+    const firstBrace = cleaned.indexOf('{');
+
+    let startIdx = -1;
+    let endIdx = -1;
+
+    if (firstBracket !== -1 && (firstBrace === -1 || firstBracket < firstBrace)) {
+      startIdx = firstBracket;
+      endIdx = cleaned.lastIndexOf(']');
+    } else if (firstBrace !== -1) {
+      startIdx = firstBrace;
+      endIdx = cleaned.lastIndexOf('}');
+    }
+
+    if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+      const sub = cleaned.slice(startIdx, endIdx + 1);
+      return JSON.parse(sub);
+    }
+
+    throw new Error(`Error parseando respuesta JSON de Gemini: ${err1}`);
+  }
+}
+
 async function callGeminiAi(prompt: string, apiKey: string): Promise<any> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const modelsToTry = [
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash',
+  ];
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [
-        {
-          role: 'user',
-          parts: [{ text: prompt }],
-        },
-      ],
-      generationConfig: {
-        responseMimeType: 'application/json',
-        temperature: 0.35,
-        maxOutputTokens: 8192,
-      },
-    }),
-  });
+  let lastError: Error | null = null;
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Gemini API Error (${response.status}): ${errorText}`);
+  for (const model of modelsToTry) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: 'user',
+              parts: [{ text: prompt }],
+            },
+          ],
+          generationConfig: {
+            responseMimeType: 'application/json',
+            temperature: 0.35,
+          },
+        }),
+        signal: AbortSignal.timeout(50000),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Gemini API Error (${model} - HTTP ${response.status}): ${errorText}`);
+      }
+
+      const data = await response.json();
+      const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!rawText) {
+        throw new Error(`Gemini (${model}) devolvió una respuesta vacía.`);
+      }
+
+      return extractJsonFromText(rawText);
+    } catch (err: any) {
+      console.warn(`[callGeminiAi] Falló con modelo ${model}:`, err.message || err);
+      lastError = err;
+      // Probar siguiente modelo si este dio error de endpoint o no encontrado
+      continue;
+    }
   }
 
-  const data = await response.json();
-  const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!rawText) {
-    throw new Error('Respuesta vacía o formato desconocido devuelto por Gemini.');
-  }
-
-  return JSON.parse(rawText);
+  throw lastError || new Error('No se pudo obtener respuesta de ningún modelo de Gemini.');
 }
 
 export async function generateContentBatch(
@@ -139,7 +191,18 @@ export async function generateContentBatch(
   targetEntityIds?: string[],
   geminiKey?: string
 ): Promise<ContentOptimizationProposal[]> {
-  const apiKey = geminiKey || process.env.GEMINI_API_KEY || '';
+  const apiKey =
+    geminiKey?.trim() ||
+    ecosystem.settings?.gemini_api_key?.trim() ||
+    process.env.GEMINI_API_KEY?.trim() ||
+    '';
+
+  if (!apiKey) {
+    throw new Error(
+      'No se encontró ninguna clave de API de Gemini válida en el sistema (ni en la configuración de la clínica ni en variables de entorno).'
+    );
+  }
+
   const clinicName = ecosystem.settings.clinic_name;
   const businessSector = formatSectorName(ecosystem.businessSector);
 
@@ -159,7 +222,7 @@ export async function generateContentBatch(
 
   for (const cat of ecosystem.categories) {
     const prefixedId = `category-${cat.id}`;
-    if (!targetEntityIds || targetEntityIds.includes(prefixedId)) {
+    if (!targetEntityIds || targetEntityIds.includes(prefixedId) || targetEntityIds.includes(cat.id)) {
       allCandidates.push({
         id: prefixedId,
         rawId: cat.id,
@@ -175,7 +238,7 @@ export async function generateContentBatch(
 
   for (const svc of ecosystem.services) {
     const prefixedId = `service-${svc.id}`;
-    if (!targetEntityIds || targetEntityIds.includes(prefixedId)) {
+    if (!targetEntityIds || targetEntityIds.includes(prefixedId) || targetEntityIds.includes(svc.id)) {
       allCandidates.push({
         id: prefixedId,
         rawId: svc.id,
@@ -195,8 +258,8 @@ export async function generateContentBatch(
     return [];
   }
 
-  // 2. Procesar en lotes (chunks) de 3 entidades para garantizar máxima calidad en 3 idiomas
-  const CHUNK_SIZE = 3;
+  // 2. Procesar en lotes (chunks) de 2 entidades para máxima velocidad, riqueza y evitar límites de tokens
+  const CHUNK_SIZE = 2;
   const chunks: typeof allCandidates[] = [];
   for (let i = 0; i < allCandidates.length; i += CHUNK_SIZE) {
     chunks.push(allCandidates.slice(i, i + CHUNK_SIZE));
@@ -224,12 +287,11 @@ export async function generateContentBatch(
     });
 
     let rawData: any = null;
-    if (apiKey) {
-      try {
-        rawData = await callGeminiAi(chunkPrompt, apiKey);
-      } catch (geminiErr) {
-        console.error(`[content-orchestrator] Error en llamada a Gemini (Lote ${cIdx + 1}):`, geminiErr);
-      }
+    try {
+      rawData = await callGeminiAi(chunkPrompt, apiKey);
+    } catch (geminiErr: any) {
+      console.error(`[content-orchestrator] Error en lote ${cIdx + 1}:`, geminiErr);
+      throw geminiErr;
     }
 
     let returnedProposals: any[] = [];
@@ -245,11 +307,19 @@ export async function generateContentBatch(
       }
     }
 
+    // Mapeo tolerante y robusto
     const proposalMap = new Map<string, any>();
     returnedProposals.forEach((p, idx) => {
       if (!p) return;
-      const key = p.entityId || p.id;
-      if (key) proposalMap.set(key, p);
+      const key = p.entityId || p.entity_id || p.id;
+      if (key) {
+        proposalMap.set(String(key), p);
+        proposalMap.set(String(key).replace(/^(service|category)-/, ''), p);
+      }
+      if (p.name || p.entityName) {
+        const n = String(p.name || p.entityName).toLowerCase().trim();
+        proposalMap.set(`name:${n}`, p);
+      }
       if (chunk[idx]) {
         proposalMap.set(`idx:${idx}`, p);
       }
@@ -257,7 +327,12 @@ export async function generateContentBatch(
 
     for (let i = 0; i < chunk.length; i++) {
       const item = chunk[i];
-      const generated = proposalMap.get(item.id) || proposalMap.get(`idx:${i}`);
+      const rawId = item.id.replace(/^(service|category)-/, '');
+      const generated =
+        proposalMap.get(item.id) ||
+        proposalMap.get(rawId) ||
+        proposalMap.get(`name:${item.name.toLowerCase().trim()}`) ||
+        (chunk.length === returnedProposals.length ? proposalMap.get(`idx:${i}`) : undefined);
 
       if (generated) {
         proposals.push({
