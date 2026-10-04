@@ -152,6 +152,18 @@ export async function generateNodeSeoCopy(
 
   const apiKey = geminiKey || process.env.GEMINI_API_KEY || '';
 
+  // Priorizar las palabras clave prohibidas de competidores directos con mayor solapamiento
+  const targetTokens = extractMeaningfulTokens(assignedKeyword);
+  const prioritizedForbidden = [...forbiddenKeywords]
+    .sort((a, b) => {
+      const tokensA = extractMeaningfulTokens(a);
+      const tokensB = extractMeaningfulTokens(b);
+      const overlapA = tokensA.filter((t) => targetTokens.includes(t)).length;
+      const overlapB = tokensB.filter((t) => targetTokens.includes(t)).length;
+      return overlapB - overlapA;
+    })
+    .slice(0, 20);
+
   const prompt = `Eres el Especialista Principal en SEO Local y Copywriting Persuasivo para negocios y clínicas premium (filosofía Quiet Luxury).
 Tu objetivo es redactar metadatos de alto rendimiento y máximo CTR para un motor de búsqueda (Google), asegurando la ausencia total de canibalización de palabras clave.
 
@@ -170,8 +182,8 @@ GUARDRAILS ESTRICTOS DE OBLIGADO CUMPLIMIENTO:
 1. PALABRA CLAVE OBJETIVO (IMPRESCINDIBLE):
    Debes integrar de manera orgánica y prioritaria en el título y la descripción la palabra clave asignada: "${assignedKeyword}".
 2. PALABRAS CLAVE PROHIBIDAS (ANTI-CANIBALIZACIÓN):
-   Está TERMINANTEMENTE PROHIBIDO utilizar o posicionar por estos términos, ya que pertenecen a otras páginas del negocio:
-   [${forbiddenKeywords.slice(0, 10).map((k) => `"${k}"`).join(', ')}]
+   Está TERMINANTEMENTE PROHIBIDO utilizar o posicionar por estos términos, ya que pertenecen a otras páginas y servicios competidores:
+   [${prioritizedForbidden.map((k) => `"${k}"`).join(', ')}]
 3. LONGITUDES EXACTAS DE GOOGLE:
    - 'seo_title': Debe tener entre 50 y 60 caracteres. Finaliza con " | ${clinicName}".
    - 'seo_description': Debe tener entre 140 y 155 caracteres. Atractiva, profesional, sin signos de exclamación exagerados.
@@ -206,11 +218,30 @@ Responde ÚNICAMENTE con este JSON:
   const sanitizedDesc = sanitizeDescription(
     rawGenerated.seo_description || `${clinicName} - Servicios profesionales de ${assignedKeyword}. Consulta nuestros horarios y reserva tu cita online.`
   );
-  const sanitizedKeywords = (rawGenerated.seo_keywords || `${assignedKeyword}, ${clinicName}`)
+
+  // Limpieza estricta de keywords: No permitir términos que pertenezcan a los competidores prohibidos ni cruces de género
+  const forbiddenSet = new Set(forbiddenKeywords.map((k) => normalizeKeyword(k)));
+  const normEntityName = normalizeKeyword(entity.name);
+  const rawKeywordsList = (rawGenerated.seo_keywords || '')
     .split(',')
     .map((k: string) => k.trim())
-    .filter(Boolean)
-    .join(', ');
+    .filter(Boolean);
+
+  const cleanKeywords: string[] = [];
+  for (const kw of rawKeywordsList) {
+    const norm = normalizeKeyword(kw);
+    if (!norm || norm.length < 3) continue;
+    // Si la entidad es masculina, prohibir 'mujer'
+    if (normEntityName.includes('hombre') && norm.includes('mujer')) continue;
+    // Si la entidad es femenina, prohibir 'hombre'
+    if (normEntityName.includes('mujer') && norm.includes('hombre')) continue;
+    // Si coincide con alguna keyword prohibida de los competidores directos
+    if (forbiddenSet.has(norm)) continue;
+    cleanKeywords.push(kw);
+  }
+
+  // Garantizar que la assignedKeyword esté siempre al inicio de forma única
+  const sanitizedKeywords = Array.from(new Set([assignedKeyword, ...cleanKeywords])).slice(0, 5).join(', ');
 
   return {
     entityId: entity.id,

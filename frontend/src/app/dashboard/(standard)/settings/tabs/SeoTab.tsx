@@ -903,7 +903,7 @@ export default function SeoTab({ settings }: SeoTabProps) {
               size="sm"
               onClick={() => setShowReviewModal(false)}
               disabled={isApplying}
-              className="rounded-xl px-4 text-xs font-semibold text-stone-600"
+              className="rounded-xl px-4 text-xs font-semibold text-stone-600 hover:bg-stone-100"
             >
               Descartar
             </Button>
@@ -915,7 +915,11 @@ export default function SeoTab({ settings }: SeoTabProps) {
               disabled={isApplying}
               className="rounded-xl px-6 text-xs font-bold shadow-luxury text-stone-950 flex items-center gap-2"
             >
-              <Check size={16} strokeWidth={2} />
+              {isApplying ? (
+                <RefreshCw size={16} className="animate-spin text-stone-900" />
+              ) : (
+                <Check size={16} strokeWidth={2} />
+              )}
               {isApplying ? 'Persistiendo en Supabase...' : `Confirmar y Aplicar (${proposals.length})`}
             </Button>
           </DialogFooter>

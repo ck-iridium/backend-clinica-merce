@@ -1,9 +1,9 @@
 import { EcosystemData, SeoEntity } from './types';
 
 export const SPANISH_STOPWORDS = new Set([
-  'de', 'la', 'el', 'en', 'y', 'a', 'los', 'del', 'las', 'con', 'por', 'para',
+  'de', 'la', 'el', 'en', 'y', 'a', 'los', 'del', 'las', 'por', 'para',
   'un', 'una', 'unos', 'unas', 'al', 'se', 'lo', 'su', 'sus', 'o', 'e', 'u',
-  'mas', 'más', 'pero', 'como', 'este', 'esta', 'estos', 'estas', 'sin', 'sobre',
+  'mas', 'más', 'pero', 'como', 'este', 'esta', 'estos', 'estas', 'sobre',
 ]);
 
 /**
@@ -22,14 +22,15 @@ export function normalizeKeyword(text: string): string {
 }
 
 /**
- * Extrae tokens significativos filtrando stopwords
+ * Extrae tokens significativos filtrando stopwords pero preservando modificadores críticos
+ * de variantes (con/sin, hombre/mujer, l/m/s/xl).
  */
 export function extractMeaningfulTokens(text: string): string[] {
   const normalized = normalizeKeyword(text);
   if (!normalized) return [];
   return normalized
     .split(' ')
-    .filter((token) => token.length > 2 && !SPANISH_STOPWORDS.has(token));
+    .filter((token) => (token.length > 2 || /^[lms]|xl|xs|\d+$/i.test(token)) && !SPANISH_STOPWORDS.has(token));
 }
 
 /**

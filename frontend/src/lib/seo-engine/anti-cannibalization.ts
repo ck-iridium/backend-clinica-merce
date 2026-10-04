@@ -23,6 +23,47 @@ export function calculateTokenSimilarity(tokensA: string[], tokensB: string[]): 
 }
 
 /**
+ * Detecta si dos entidades son variantes legítimas y diferenciadas de un mismo servicio
+ * (ej. Hombre vs Mujer, Con brazos vs Sin brazos, Zona L vs Zona M vs Zona S).
+ * En estos casos, Google reconoce que satisfacen intenciones de búsqueda distintas.
+ */
+function hasDifferentiatingModifier(nameA: string, nameB: string): boolean {
+  const normA = normalizeKeyword(nameA);
+  const normB = normalizeKeyword(nameB);
+
+  // Pares de diferenciadores obvios y opuestos
+  const opposingPairs: Array<[string, string]> = [
+    ['hombre', 'mujer'],
+    ['con brazos', 'sin brazos'],
+    ['con', 'sin'],
+    ['zona l', 'zona m'],
+    ['zona l', 'zona s'],
+    ['zona m', 'zona s'],
+    ['laminado', 'lifting'],
+    ['cejas y labio', 'cejas'],
+  ];
+
+  for (const [modA, modB] of opposingPairs) {
+    if (
+      (normA.includes(modA) && normB.includes(modB)) ||
+      (normA.includes(modB) && normB.includes(modA))
+    ) {
+      return true;
+    }
+  }
+
+  // Comprobar si difieren en tokens de zona o tamaño (ej: zona l vs zona m vs zona s)
+  const regexSize = /\b(zona\s+[lms]|zona\s+xl|zona\s+xs|pack\s+\d+|sesion\s+\d+)\b/i;
+  const matchA = normA.match(regexSize);
+  const matchB = normB.match(regexSize);
+  if (matchA && matchB && matchA[0] !== matchB[0]) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * Evalúa las colisiones de palabras clave entre todas las entidades del ecosistema
  */
 export function detectCannibalizationRisks(entities: SeoEntity[]): Map<string, CannibalizationIssue> {
@@ -48,30 +89,47 @@ export function detectCannibalizationRisks(entities: SeoEntity[]): Map<string, C
       // Ignorar relaciones padre-hijo directas (es normal que un servicio comparta términos con su categoría)
       if (a.parentId === b.id || b.parentId === a.id) continue;
 
+      const isVariant = hasDifferentiatingModifier(
+        `${a.name} ${a.currentTitle || ''}`,
+        `${b.name} ${b.currentTitle || ''}`
+      );
+
       const normKeywordsA = a.currentKeywords.map(normalizeKeyword).filter(Boolean);
       const normKeywordsB = b.currentKeywords.map(normalizeKeyword).filter(Boolean);
 
       // 1. Detección de coincidencia exacta en keywords
+      // Solo consideramos conflicto si comparten una keyword específica (de 3 o más palabras)
+      // y NO son variantes diferenciadas. Las palabras cortas o genéricas (ej: 'depilacion laser', 'estetica')
+      // son atributos comunes de la categoría y no canibalización.
       const shared: string[] = [];
-      normKeywordsA.forEach((ka) => {
-        if (normKeywordsB.includes(ka) && ka.length > 3) {
-          shared.push(ka);
-        }
-      });
+      if (!isVariant) {
+        normKeywordsA.forEach((ka) => {
+          const wordCount = ka.split(' ').filter(Boolean).length;
+          if (wordCount >= 3 && normKeywordsB.includes(ka)) {
+            shared.push(ka);
+          }
+        });
+      }
 
-      // 2. Detección de similaridad léxica alta en los nombres/títulos
+      // 2. Detección de títulos idénticos
+      const hasExactTitleDuplicate =
+        Boolean(a.currentTitle && b.currentTitle && normalizeKeyword(a.currentTitle) === normalizeKeyword(b.currentTitle));
+
+      // 3. Detección de similaridad léxica alta en los nombres/títulos
       const tokensA = extractMeaningfulTokens(`${a.name} ${a.currentTitle || ''}`);
       const tokensB = extractMeaningfulTokens(`${b.name} ${b.currentTitle || ''}`);
       const similarity = calculateTokenSimilarity(tokensA, tokensB);
 
-      const hasExactCollision = shared.length > 0;
-      const hasHighSimilarity = similarity >= 0.65 && a.type === b.type;
+      const hasExactCollision = shared.length > 0 || hasExactTitleDuplicate;
+      const hasHighSimilarity = !isVariant && similarity >= 0.75 && a.type === b.type;
 
       if (hasExactCollision || hasHighSimilarity) {
         const issueA = issuesMap.get(a.id)!;
         const issueB = issuesMap.get(b.id)!;
 
-        const reason = hasExactCollision
+        const reason = hasExactTitleDuplicate
+          ? `Título SEO idéntico o duplicado con otra página.`
+          : hasExactCollision
           ? `Coincidencia exacta de palabras clave: "${shared.join(', ')}"`
           : `Alta similaridad temática (${Math.round(similarity * 100)}%) que puede confundir a Google.`;
 
