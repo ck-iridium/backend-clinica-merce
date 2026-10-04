@@ -133,8 +133,10 @@ function extractJsonFromText(text: string): any {
 }
 
 async function callGeminiAi(prompt: string, apiKey: string): Promise<any> {
+  const sanitizedKey = apiKey.replace(/["']/g, '').trim();
   const modelsToTry = [
     'gemini-2.5-flash',
+    'gemini-flash-latest',
     'gemini-2.0-flash',
     'gemini-1.5-flash',
   ];
@@ -143,7 +145,7 @@ async function callGeminiAi(prompt: string, apiKey: string): Promise<any> {
 
   for (const model of modelsToTry) {
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${sanitizedKey}`;
 
       const response = await fetch(url, {
         method: 'POST',
@@ -178,7 +180,6 @@ async function callGeminiAi(prompt: string, apiKey: string): Promise<any> {
     } catch (err: any) {
       console.warn(`[callGeminiAi] Falló con modelo ${model}:`, err.message || err);
       lastError = err;
-      // Probar siguiente modelo si este dio error de endpoint o no encontrado
       continue;
     }
   }
@@ -191,13 +192,18 @@ export async function generateContentBatch(
   targetEntityIds?: string[],
   geminiKey?: string
 ): Promise<ContentOptimizationProposal[]> {
-  const apiKey =
-    geminiKey?.trim() ||
-    ecosystem.settings?.gemini_api_key?.trim() ||
-    process.env.GEMINI_API_KEY?.trim() ||
-    '';
+  const cleanKey = (k?: string | null) => (k || '').replace(/["']/g, '').trim();
 
-  if (!apiKey) {
+  const keysToTry: string[] = [];
+  const primaryKey = cleanKey(geminiKey);
+  const settingsKey = cleanKey(ecosystem.settings?.gemini_api_key);
+  const envKey = cleanKey(process.env.GEMINI_API_KEY);
+
+  if (primaryKey) keysToTry.push(primaryKey);
+  if (settingsKey && !keysToTry.includes(settingsKey)) keysToTry.push(settingsKey);
+  if (envKey && !keysToTry.includes(envKey)) keysToTry.push(envKey);
+
+  if (keysToTry.length === 0) {
     throw new Error(
       'No se encontró ninguna clave de API de Gemini válida en el sistema (ni en la configuración de la clínica ni en variables de entorno).'
     );
@@ -287,11 +293,20 @@ export async function generateContentBatch(
     });
 
     let rawData: any = null;
-    try {
-      rawData = await callGeminiAi(chunkPrompt, apiKey);
-    } catch (geminiErr: any) {
-      console.error(`[content-orchestrator] Error en lote ${cIdx + 1}:`, geminiErr);
-      throw geminiErr;
+    let lastGeminiError: any = null;
+
+    for (const keyCandidate of keysToTry) {
+      try {
+        rawData = await callGeminiAi(chunkPrompt, keyCandidate);
+        if (rawData) break;
+      } catch (err: any) {
+        lastGeminiError = err;
+        console.warn(`[content-orchestrator] Error con clave candidata (${keyCandidate.slice(0, 8)}...):`, err.message);
+      }
+    }
+
+    if (!rawData) {
+      throw lastGeminiError || new Error('No se pudo generar contenido con las claves de Gemini disponibles.');
     }
 
     let returnedProposals: any[] = [];
