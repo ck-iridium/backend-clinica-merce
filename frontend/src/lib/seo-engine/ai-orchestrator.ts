@@ -245,7 +245,7 @@ function buildMasterSeoPrompt(params: {
     description?: string | null;
     currentTitle?: string | null;
     currentDescription?: string | null;
-    urlPath: string;
+    urlPath?: string | null;
   }>;
   existingKeywordsInCatalog: string[];
 }): string {
@@ -377,6 +377,7 @@ export async function optimizeEcosystemHolistic(
     name: e.name,
     category: e.categoryName || (e.type === 'home' ? 'Página Principal' : undefined),
     description: e.rawText ? e.rawText.slice(0, 350) : (e.currentDescription || undefined),
+    urlPath: e.urlPath,
   }));
 
   // Procesar en lotes equilibrados
