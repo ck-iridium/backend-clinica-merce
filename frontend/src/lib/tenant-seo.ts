@@ -184,19 +184,45 @@ export async function getTenantSeoData(): Promise<TenantSeoData> {
   };
 }
 
+export interface TenantMetadataOptions {
+  lang?: string;
+  path?: string;
+  alternatePaths?: {
+    es?: string;
+    en?: string;
+    fr?: string;
+  };
+}
+
 /**
  * Genera el objeto Metadata completo de Next.js para páginas de tenants con soporte multi-idioma (hreflang)
  */
-export async function buildTenantMetadata(options?: { lang?: string; path?: string }): Promise<Metadata> {
+export async function buildTenantMetadata(options?: TenantMetadataOptions): Promise<Metadata> {
   const seo = await getTenantSeoData();
   const lang = options?.lang || 'es';
   const cleanBase = seo.canonical.replace(/\/$/, '');
   const rawPath = options?.path || '';
   const cleanPath = rawPath.startsWith('/') ? rawPath : (rawPath ? `/${rawPath}` : '');
 
-  const esUrl = `${cleanBase}${cleanPath}`;
-  const enUrl = `${cleanBase}${cleanPath}${cleanPath.includes('?') ? '&' : '?'}lang=en`;
-  const frUrl = `${cleanBase}${cleanPath}${cleanPath.includes('?') ? '&' : '?'}lang=fr`;
+  let esUrl = `${cleanBase}${cleanPath}`;
+  let enUrl = `${cleanBase}${cleanPath}${cleanPath.includes('?') ? '&' : '?'}lang=en`;
+  let frUrl = `${cleanBase}${cleanPath}${cleanPath.includes('?') ? '&' : '?'}lang=fr`;
+
+  if (options?.alternatePaths) {
+    if (options.alternatePaths.es) {
+      const p = options.alternatePaths.es;
+      esUrl = `${cleanBase}${p.startsWith('/') ? p : `/${p}`}`;
+    }
+    if (options.alternatePaths.en) {
+      const p = options.alternatePaths.en;
+      enUrl = `${cleanBase}${p.startsWith('/') ? p : `/${p}`}`;
+    }
+    if (options.alternatePaths.fr) {
+      const p = options.alternatePaths.fr;
+      frUrl = `${cleanBase}${p.startsWith('/') ? p : `/${p}`}`;
+    }
+  }
+
   const canonicalUrl = lang === 'en' ? enUrl : lang === 'fr' ? frUrl : esUrl;
 
   const localeMap: Record<string, string> = {

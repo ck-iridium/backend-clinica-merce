@@ -62,9 +62,17 @@ const fr = {
 
 const dictionaries = { es, en, fr };
 
+export interface AlternateUrls {
+  es?: string;
+  en?: string;
+  fr?: string;
+}
+
 interface LanguageContextType {
   language: Language;
-  setLanguage: (lang: Language) => void;
+  setLanguage: (lang: Language, targetUrl?: string) => void;
+  alternateUrls: AlternateUrls | null;
+  setAlternateUrls: (urls: AlternateUrls | null) => void;
   t: (key: string, variables?: Record<string, string | number>) => string;
   translate: (spanishText: string, translations: any, field: string) => string;
 }
@@ -73,6 +81,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>('es');
+  const [alternateUrls, setAlternateUrls] = useState<AlternateUrls | null>(null);
 
   // Detectar idioma inicial al montar el componente y sincronizar cookies
   useEffect(() => {
@@ -97,7 +106,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const setLanguage = (lang: Language) => {
+  const setLanguage = (lang: Language, targetUrl?: string) => {
     setLanguageState(lang);
     try {
       localStorage.setItem('preferred_language', lang);
@@ -106,6 +115,14 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       try {
         document.cookie = `preferred_language=${lang}; path=/; max-age=31536000; SameSite=Lax`;
       } catch (_) {}
+
+      // Si existe una URL traducida registrada para este idioma (ej. /tratamientos/eye-design/lash-lift)
+      // redirigimos a esa URL limpia actualizando la barra de direcciones.
+      const destUrl = targetUrl || alternateUrls?.[lang];
+      if (destUrl && destUrl !== window.location.pathname) {
+        window.location.href = destUrl;
+        return;
+      }
       
       // Evitamos reiniciar únicamente en el flujo de reserva (para no perder el paso actual y la selección).
       // Para el dashboard y las páginas públicas, recargamos para que Next.js Server Components
@@ -174,7 +191,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t, translate }}>
+    <LanguageContext.Provider value={{ language, setLanguage, alternateUrls, setAlternateUrls, t, translate }}>
       {children}
     </LanguageContext.Provider>
   );

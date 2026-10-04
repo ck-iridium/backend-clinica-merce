@@ -10,6 +10,7 @@ import TreatmentCarousel from '@/components/TreatmentCarousel';
 import ServiceCard from '@/components/ServiceCard';
 import Footer from '@/components/Footer';
 import CategoryHero from '@/components/CategoryHero';
+import AlternateUrlsSetter from '@/components/seo/AlternateUrlsSetter';
 
 // Local static translations
 const categoryPageTranslations: Record<string, Record<string, string>> = {
@@ -183,11 +184,26 @@ export async function generateMetadata({
 
   const clinicName = settings?.clinic_name || 'Estética';
 
+  let catTrans = category.translations;
+  if (typeof catTrans === 'string') {
+    try { catTrans = JSON.parse(catTrans); } catch { catTrans = {}; }
+  }
+
+  // Inferencia inteligente de idioma según el slug exacto de la categoría
+  let inferredLang: 'es' | 'en' | 'fr' | null = null;
+  if (params.category_slug === catTrans?.en?.slug) {
+    inferredLang = 'en';
+  } else if (params.category_slug === catTrans?.fr?.slug) {
+    inferredLang = 'fr';
+  } else if (params.category_slug === category.slug) {
+    inferredLang = 'es';
+  }
+
   const langParam = searchParams?.lang;
   const cookieStore = cookies();
   const lang = (langParam === 'en' || langParam === 'fr' || langParam === 'es') 
     ? langParam 
-    : (cookieStore.get('preferred_language')?.value || 'es');
+    : (inferredLang || cookieStore.get('preferred_language')?.value || 'es');
 
   const translatedName = translateField(category.name, category.translations, 'name', lang);
   const translatedDesc = translateField(category.seo_description || category.description, category.translations, 'seo_description', lang) || `Descubre nuestra categoría de ${translatedName}.`;
@@ -196,18 +212,17 @@ export async function generateMetadata({
   const proto = requestHeaders.get('x-forwarded-proto') || 'https';
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (host ? `${proto}://${host}` : 'https://probookia.com');
 
-  let catTrans = category.translations;
-  if (typeof catTrans === 'string') {
-    try { catTrans = JSON.parse(catTrans); } catch { catTrans = {}; }
-  }
-
   const esSlug = category.slug || params.category_slug;
   const enSlug = catTrans?.en?.slug || esSlug;
   const frSlug = catTrans?.fr?.slug || esSlug;
 
-  const esUrl = `${siteUrl}/tratamientos/${esSlug}`;
-  const enUrl = `${siteUrl}/tratamientos/${enSlug}?lang=en`;
-  const frUrl = `${siteUrl}/tratamientos/${frSlug}?lang=fr`;
+  const esPath = `/tratamientos/${esSlug}`;
+  const enPath = `/tratamientos/${enSlug}`;
+  const frPath = `/tratamientos/${frSlug}`;
+
+  const esUrl = `${siteUrl}${esPath}`;
+  const enUrl = `${siteUrl}${enPath}`;
+  const frUrl = `${siteUrl}${frPath}`;
   const canonicalUrl = lang === 'en' ? enUrl : lang === 'fr' ? frUrl : esUrl;
 
   const title = `${translatedName} | ${clinicName}`;
@@ -263,9 +278,33 @@ export default async function CategoryDynamicPage({
 
   const langParam = searchParams?.lang;
   const cookieStore = cookies();
+
+  let catTrans = category.translations;
+  if (typeof catTrans === 'string') {
+    try { catTrans = JSON.parse(catTrans); } catch { catTrans = {}; }
+  }
+
+  // Inferencia inteligente de idioma según el slug exacto de la categoría
+  let inferredLang: 'es' | 'en' | 'fr' | null = null;
+  if (params.category_slug === catTrans?.en?.slug) {
+    inferredLang = 'en';
+  } else if (params.category_slug === catTrans?.fr?.slug) {
+    inferredLang = 'fr';
+  } else if (params.category_slug === category.slug) {
+    inferredLang = 'es';
+  }
+
   const lang = (langParam === 'en' || langParam === 'fr' || langParam === 'es') 
     ? langParam 
-    : (cookieStore.get('preferred_language')?.value || 'es');
+    : (inferredLang || cookieStore.get('preferred_language')?.value || 'es');
+
+  const esSlug = category.slug || params.category_slug;
+  const enSlug = catTrans?.en?.slug || esSlug;
+  const frSlug = catTrans?.fr?.slug || esSlug;
+
+  const esPath = `/tratamientos/${esSlug}`;
+  const enPath = `/tratamientos/${enSlug}`;
+  const frPath = `/tratamientos/${frSlug}`;
 
   const t = (key: string, defaultValue: string) => {
     return categoryPageTranslations[lang]?.[key] || defaultValue;
@@ -316,6 +355,7 @@ export default async function CategoryDynamicPage({
 
   return (
     <div className="min-h-screen bg-stone-50 font-sans text-stone-900 selection:bg-[#d4af37]/30">
+      <AlternateUrlsSetter urls={{ es: esPath, en: enPath, fr: frPath }} />
 
       {/* CONTENEDOR MAESTRO DE SNAP (Móvil) */}
       <main className="w-full h-[100dvh] overflow-y-auto snap-y-mandatory md:h-auto md:overflow-visible md:snap-none scroll-smooth-premium relative">

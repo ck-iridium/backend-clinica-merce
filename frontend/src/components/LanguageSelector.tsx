@@ -6,7 +6,7 @@ import { ChevronDown, Globe } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function LanguageSelector({ upward = false }: { upward?: boolean }) {
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, alternateUrls } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -58,7 +58,7 @@ export default function LanguageSelector({ upward = false }: { upward?: boolean 
                 <button
                   key={lang.code}
                   onClick={() => {
-                    setLanguage(lang.code);
+                    setLanguage(lang.code, alternateUrls?.[lang.code]);
                     setIsOpen(false);
                   }}
                   className={`w-full flex items-center justify-between text-left px-3 py-2 rounded-luxury-btn text-xs font-bold transition-all ${language === lang.code

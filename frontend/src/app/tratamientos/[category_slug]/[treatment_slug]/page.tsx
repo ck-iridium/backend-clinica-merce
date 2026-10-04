@@ -16,6 +16,7 @@ import Footer from '@/components/Footer';
 import PublicNavbar from '@/components/PublicNavbar';
 import BotonReservaPro from '@/components/BotonReservaPro';
 import JsonLd from '@/components/seo/JsonLd';
+import AlternateUrlsSetter from '@/components/seo/AlternateUrlsSetter';
 
 async function getServiceData(slug: string, tenantId: string) {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -83,11 +84,26 @@ export async function generateMetadata({
   const settings = await getSettings(tenantId);
   const clinicName = settings?.clinic_name || 'Clínica';
 
+  let parsedTrans = service.translations;
+  if (typeof parsedTrans === 'string') {
+    try { parsedTrans = JSON.parse(parsedTrans); } catch { parsedTrans = {}; }
+  }
+
+  // Inferencia inteligente de idioma según el slug exacto de la URL
+  let inferredLang: 'es' | 'en' | 'fr' | null = null;
+  if (params.treatment_slug === parsedTrans?.en?.slug) {
+    inferredLang = 'en';
+  } else if (params.treatment_slug === parsedTrans?.fr?.slug) {
+    inferredLang = 'fr';
+  } else if (params.treatment_slug === service.slug) {
+    inferredLang = 'es';
+  }
+
   const langParam = searchParams?.lang;
   const cookieStore = cookies();
   const lang = ((langParam === 'en' || langParam === 'fr' || langParam === 'es') 
     ? langParam 
-    : (cookieStore.get('preferred_language')?.value || 'es')) as 'es' | 'en' | 'fr';
+    : (inferredLang || cookieStore.get('preferred_language')?.value || 'es')) as 'es' | 'en' | 'fr';
 
   const translateServer = (spanishText: string, translations: any, field: string) => {
     if (!translations) return spanishText;
@@ -121,11 +137,6 @@ export async function generateMetadata({
       ? `${siteUrl}${rawImageUrl}` 
       : `${siteUrl}/${rawImageUrl}`;
 
-  let parsedTrans = service.translations;
-  if (typeof parsedTrans === 'string') {
-    try { parsedTrans = JSON.parse(parsedTrans); } catch { parsedTrans = {}; }
-  }
-
   const esServiceSlug = service.slug || params.treatment_slug;
   const enServiceSlug = parsedTrans?.en?.slug || esServiceSlug;
   const frServiceSlug = parsedTrans?.fr?.slug || esServiceSlug;
@@ -139,9 +150,13 @@ export async function generateMetadata({
   const enCatSlug = catTrans?.en?.slug || esCatSlug;
   const frCatSlug = catTrans?.fr?.slug || esCatSlug;
 
-  const esUrl = `${siteUrl}/tratamientos/${esCatSlug}/${esServiceSlug}`;
-  const enUrl = `${siteUrl}/tratamientos/${enCatSlug}/${enServiceSlug}?lang=en`;
-  const frUrl = `${siteUrl}/tratamientos/${frCatSlug}/${frServiceSlug}?lang=fr`;
+  const esPath = `/tratamientos/${esCatSlug}/${esServiceSlug}`;
+  const enPath = `/tratamientos/${enCatSlug}/${enServiceSlug}`;
+  const frPath = `/tratamientos/${frCatSlug}/${frServiceSlug}`;
+
+  const esUrl = `${siteUrl}${esPath}`;
+  const enUrl = `${siteUrl}${enPath}`;
+  const frUrl = `${siteUrl}${frPath}`;
   const canonicalUrl = lang === 'en' ? enUrl : lang === 'fr' ? frUrl : esUrl;
 
   const finalTitle = localizedSeoTitle || `${name} ${seoT.suffix}`;
@@ -225,11 +240,43 @@ export default async function TreatmentDynamicPage({
     notFound();
   }
 
+  let parsedTrans = service.translations;
+  if (typeof parsedTrans === 'string') {
+    try { parsedTrans = JSON.parse(parsedTrans); } catch { parsedTrans = {}; }
+  }
+
+  // Inferencia inteligente de idioma según el slug exacto de la URL
+  let inferredLang: 'es' | 'en' | 'fr' | null = null;
+  if (params.treatment_slug === parsedTrans?.en?.slug) {
+    inferredLang = 'en';
+  } else if (params.treatment_slug === parsedTrans?.fr?.slug) {
+    inferredLang = 'fr';
+  } else if (params.treatment_slug === service.slug) {
+    inferredLang = 'es';
+  }
+
   const langParam = searchParams?.lang;
   const cookieStore = cookies();
   const lang = ((langParam === 'en' || langParam === 'fr' || langParam === 'es') 
     ? langParam 
-    : (cookieStore.get('preferred_language')?.value || 'es')) as 'es' | 'en' | 'fr';
+    : (inferredLang || cookieStore.get('preferred_language')?.value || 'es')) as 'es' | 'en' | 'fr';
+
+  const esServiceSlug = service.slug || params.treatment_slug;
+  const enServiceSlug = parsedTrans?.en?.slug || esServiceSlug;
+  const frServiceSlug = parsedTrans?.fr?.slug || esServiceSlug;
+
+  let catTrans = service.category?.translations;
+  if (typeof catTrans === 'string') {
+    try { catTrans = JSON.parse(catTrans); } catch { catTrans = {}; }
+  }
+
+  const esCatSlug = service.category?.slug || params.category_slug;
+  const enCatSlug = catTrans?.en?.slug || esCatSlug;
+  const frCatSlug = catTrans?.fr?.slug || esCatSlug;
+
+  const esPath = `/tratamientos/${esCatSlug}/${esServiceSlug}`;
+  const enPath = `/tratamientos/${enCatSlug}/${enServiceSlug}`;
+  const frPath = `/tratamientos/${frCatSlug}/${frServiceSlug}`;
 
   const translateServer = (spanishText: string, translations: any, field: string) => {
     if (!translations) return spanishText;
@@ -251,7 +298,7 @@ export default async function TreatmentDynamicPage({
   const pageTranslations: Record<string, Record<string, string>> = {
     es: { duration: 'Duración', price: 'Precio', book_now: 'Reservar Ahora', complementary: 'Tratamientos Complementarios', discover: 'Descubre otras experiencias diseñadas para potenciar tu bienestar.', see_catalog: 'Ver catálogo completo' },
     en: { duration: 'Duration', price: 'Price', book_now: 'Book Now', complementary: 'Complementary Treatments', discover: 'Discover other experiences designed to enhance your well-being.', see_catalog: 'See full catalog' },
-    fr: { duration: 'Durée', price: 'Prix', book_now: 'Réserver Maintenant', complementary: 'Soins Complémentaires', discover: 'Découvrez d\'autres expériences conçues pour améliorer votre bien-être.', see_catalog: 'Voir le catalogue complet' }
+    fr: { duration: 'Durée', price: 'Prix', book_now: 'Réserver Maintenant', complementary: 'Soins Complémentaires', discover: 'Découvrez d\'autres experiencias conçues pour améliorer votre bien-être.', see_catalog: 'Voir le catalogue complet' }
   };
   const pageT = pageTranslations[lang] || pageTranslations.es;
 
@@ -300,6 +347,7 @@ export default async function TreatmentDynamicPage({
 
   return (
     <TreatmentScrollHandler>
+      <AlternateUrlsSetter urls={{ es: esPath, en: enPath, fr: frPath }} />
       <JsonLd id={`service-jsonld-${service.id}`} data={serviceSchema} />
       <style dangerouslySetInnerHTML={{
         __html: `
