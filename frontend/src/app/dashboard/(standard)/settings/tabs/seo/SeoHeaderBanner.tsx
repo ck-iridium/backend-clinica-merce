@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Sparkles, RefreshCw, ChevronDown, Target, Wand2 } from 'lucide-react';
+import { Sparkles, RefreshCw, ChevronDown, Target, Wand2, Globe2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -52,74 +52,97 @@ export default function SeoHeaderBanner({
 
   return (
     <>
-      <div className="relative overflow-hidden bg-[#1C1917] text-white rounded-3xl py-7 px-6 md:px-8 border border-stone-800 shadow-md flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-        <div className="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-gradient-to-br from-[#d4af37]/20 to-transparent blur-3xl pointer-events-none" />
+      <div className="relative overflow-hidden bg-white/95 backdrop-blur-xl rounded-3xl p-6 sm:p-8 md:p-9 border border-stone-200/80 shadow-[0_12px_44px_-16px_rgba(0,0,0,0.04)] transition-all">
+        {/* Aura luminosa dorada sutil de fondo */}
+        <div className="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-gradient-to-br from-[#d4af37]/10 via-amber-100/20 to-transparent blur-3xl pointer-events-none" />
 
-        <div className="flex items-start md:items-center gap-5 relative z-10">
-          <span className="w-13 h-13 rounded-2xl bg-[#D4AF37]/10 border border-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] shrink-0 shadow-inner p-3">
-            <Sparkles size={24} strokeWidth={1.5} />
-          </span>
-          <div className="space-y-1">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h3 className="text-xl md:text-2xl font-serif font-semibold tracking-wide text-white">
-                SEO & Posicionamiento Local
-              </h3>
-              <span className="bg-[#d4af37]/20 text-[#d4af37] text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full border border-[#d4af37]/30">
-                Auditor Estratega Multi-idioma
-              </span>
+        {/* ── FILA SUPERIOR: TÍTULO, BADGE Y SELECTOR DE IDIOMAS ── */}
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 relative z-10">
+          <div className="flex items-center gap-4">
+            <span className="w-13 h-13 rounded-2xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-[#B38F26] shrink-0 shadow-sm p-3">
+              <Sparkles size={24} strokeWidth={1.75} />
+            </span>
+            <div>
+              <div className="flex items-center gap-3 flex-wrap">
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-serif font-bold text-stone-900 tracking-tight">
+                  SEO & Posicionamiento Local
+                </h3>
+                <span className="bg-amber-50 text-[#997300] text-[10px] sm:text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full border border-amber-200/60 shadow-xs">
+                  Auditor Estratega Multi-idioma
+                </span>
+              </div>
             </div>
-            <p className="text-xs md:text-sm text-stone-300 leading-relaxed max-w-2xl font-normal">
-              Audita y optimiza el posicionamiento en Google. El orquestador decodifica tarifas y códigos internos a intenciones de búsqueda humanas reales con protección anti-canibalización.
-            </p>
+          </div>
+
+          {/* Selector de idiomas con estilo segmented pill */}
+          <div className="flex items-center gap-2 self-stretch sm:self-auto justify-between sm:justify-start">
+            <div className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-stone-400 uppercase tracking-wider mr-1">
+              <Globe2 size={14} className="text-stone-400" />
+              <span>Idioma:</span>
+            </div>
+            <div className="flex items-center gap-1 p-1 bg-stone-100/90 rounded-2xl border border-stone-200/80 shadow-inner w-full sm:w-auto justify-center">
+              {LANGUAGES.map((lang) => {
+                const isSelected = selectedLanguage === lang.code;
+                return (
+                  <button
+                    key={lang.code}
+                    type="button"
+                    onClick={() => onSelectLanguage(lang.code)}
+                    disabled={loading || isOptimizing}
+                    className={`px-3.5 py-2 rounded-xl text-xs flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 ${
+                      isSelected
+                        ? 'bg-white text-stone-900 font-bold shadow-sm border border-stone-200/70'
+                        : 'text-stone-600 hover:text-stone-900 font-medium hover:bg-stone-200/60'
+                    }`}
+                    title={`Auditar y optimizar en ${lang.label}`}
+                  >
+                    <span className="text-base leading-none">{lang.flag}</span>
+                    <span className="font-semibold">{lang.label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
-        {/* ── SELECTOR DE IDIOMAS Y DOBLE BOTÓN ── */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto relative z-10">
-          {/* Selector de idiomas del Auditor */}
-          <div className="flex items-center gap-1 p-1 bg-stone-900 rounded-2xl border border-stone-800 shadow-inner">
-            {LANGUAGES.map((lang) => {
-              const isSelected = selectedLanguage === lang.code;
-              return (
-                <button
-                  key={lang.code}
-                  type="button"
-                  onClick={() => onSelectLanguage(lang.code)}
-                  disabled={loading || isOptimizing}
-                  className={`px-3 py-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 disabled:opacity-50 ${
-                    isSelected
-                      ? 'bg-[#d4af37] text-stone-950 shadow-sm'
-                      : 'text-stone-300 hover:text-white hover:bg-stone-800'
-                  }`}
-                  title={`Auditar y optimizar en ${lang.label}`}
-                >
-                  <span className="text-sm leading-none">{lang.flag}</span>
-                  <span className="hidden sm:inline">{lang.label}</span>
-                </button>
-              );
-            })}
+        {/* Separador fino y elegante */}
+        <div className="my-6 border-t border-stone-100" />
+
+        {/* ── FILA INFERIOR: DESCRIPCIÓN CONTEXTUAL Y BOTONES DE ACCIÓN ── */}
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
+          <div className="space-y-2 max-w-2xl">
+            <p className="text-xs sm:text-sm text-stone-600 leading-relaxed font-normal">
+              Audita y optimiza el posicionamiento en Google de cada idioma. El orquestador decodifica tarifas y códigos internos a intenciones de búsqueda humanas reales con protección anti-canibalización.
+            </p>
+            <div className="flex items-center gap-2 text-xs text-stone-400 pt-1">
+              <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="font-medium text-stone-500">
+                Auditoría activa en <strong className="text-stone-800 font-semibold">{langNames[selectedLanguage]}</strong> ({totalCount} páginas en catálogo)
+              </span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Grupo de Acciones: Re-escanear + Botón Dual */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto shrink-0">
             <Button
               variant="outline"
-              size="sm"
+              size="default"
               onClick={onRescan}
               disabled={loading || isOptimizing}
-              className="rounded-xl bg-stone-800 hover:bg-stone-700 border-stone-700 hover:border-stone-600 text-white hover:text-white transition-all text-xs font-semibold py-5 px-4 shadow-sm"
+              className="rounded-xl border-stone-200/90 bg-stone-50/70 hover:bg-stone-100/80 text-stone-700 hover:text-stone-900 transition-all text-xs font-semibold h-11 px-4 shadow-xs"
             >
               <RefreshCw size={15} className={`mr-2 ${loading ? 'animate-spin' : ''}`} />
               Re-escanear
             </Button>
 
             {/* Botón Dual (Split Button / Dropdown) para optimización inteligente */}
-            <div className="inline-flex rounded-xl shadow-luxury shrink-0">
+            <div className="inline-flex rounded-xl shadow-[0_4px_16px_-4px_rgba(212,175,55,0.35)] shrink-0">
               <Button
                 variant="luxury"
-                size="sm"
+                size="default"
                 onClick={() => onOptimize('pending')}
                 disabled={loading || isOptimizing}
-                className="rounded-l-xl rounded-r-none font-bold text-xs py-5 px-4 text-stone-950 flex items-center gap-2 active:scale-95 transition-transform"
+                className="rounded-l-xl rounded-r-none font-bold text-xs h-11 px-5 text-white flex items-center gap-2 active:scale-95 transition-transform"
               >
                 <Sparkles size={16} strokeWidth={2} className={isOptimizing ? 'animate-spin' : ''} />
                 {isOptimizing && progress
@@ -134,36 +157,40 @@ export default function SeoHeaderBanner({
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="luxury"
-                    size="sm"
+                    size="default"
                     disabled={loading || isOptimizing}
-                    className="rounded-r-xl rounded-l-none border-l border-stone-950/20 py-5 px-2.5 text-stone-950 hover:bg-[#e0bc46] transition-colors"
+                    className="rounded-r-xl rounded-l-none border-l border-white/20 h-11 px-3 text-white hover:brightness-105 transition-colors"
                     aria-label="Más opciones de optimización"
                   >
                     <ChevronDown size={15} strokeWidth={2.5} />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-72 p-2 rounded-2xl bg-white border border-stone-200/80 shadow-2xl space-y-1 z-50">
+                <DropdownMenuContent align="end" className="w-80 p-2 rounded-2xl bg-white border border-stone-200/90 shadow-2xl space-y-1 z-50">
                   <DropdownMenuItem
                     onClick={() => onOptimize('pending')}
                     disabled={loading || isOptimizing}
-                    className="flex items-start gap-2.5 p-2.5 rounded-xl cursor-pointer hover:bg-stone-50 focus:bg-stone-50 transition-colors"
+                    className="flex items-start gap-3 p-3 rounded-xl cursor-pointer hover:bg-stone-50 focus:bg-stone-50 transition-colors"
                   >
                     <Target size={16} className="text-[#D4AF37] mt-0.5 shrink-0" />
                     <div>
                       <p className="text-xs font-bold text-stone-900">Optimizar pendientes ({pendingCount})</p>
-                      <p className="text-[11px] text-stone-500">Solo páginas con advertencias, conflictos o sin datos en {langNames[selectedLanguage]}.</p>
+                      <p className="text-[11px] text-stone-500 mt-0.5 leading-snug">
+                        Solo páginas con advertencias, conflictos o sin datos en {langNames[selectedLanguage]}.
+                      </p>
                     </div>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-stone-100 my-1" />
                   <DropdownMenuItem
                     onClick={() => setConfirmModalOpen(true)}
                     disabled={loading || isOptimizing}
-                    className="flex items-start gap-2.5 p-2.5 rounded-xl cursor-pointer hover:bg-amber-50/60 focus:bg-amber-50/60 transition-colors group"
+                    className="flex items-start gap-3 p-3 rounded-xl cursor-pointer hover:bg-amber-50/70 focus:bg-amber-50/70 transition-colors group"
                   >
                     <Wand2 size={16} className="text-[#b08e23] mt-0.5 shrink-0 group-hover:rotate-12 transition-transform" />
                     <div>
                       <p className="text-xs font-bold text-[#b08e23]">Forzar re-optimización de todo el catálogo ({totalCount})</p>
-                      <p className="text-[11px] text-stone-500">Regenera desde cero y sobrescribe las {totalCount} páginas en {langNames[selectedLanguage]}.</p>
+                      <p className="text-[11px] text-stone-500 mt-0.5 leading-snug">
+                        Regenera desde cero y sobrescribe las {totalCount} páginas en {langNames[selectedLanguage]}.
+                      </p>
                     </div>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
