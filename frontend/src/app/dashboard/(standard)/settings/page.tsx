@@ -7,7 +7,7 @@ import { useAuthRole } from '@/hooks/useAuthRole';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { formatInstagramUrl, formatMapsUrl } from '@/lib/utils';
-import { Save, Building2, SearchCode, ImageIcon, Hash, Clock, Calendar, Trash2, CreditCard, LayoutTemplate, Wallet, MapPin, FileText, TrendingUp } from 'lucide-react';
+import { Save, Building2, SearchCode, ImageIcon, Hash, Clock, Calendar, Trash2, CreditCard, LayoutTemplate, Wallet, MapPin, FileText, TrendingUp, Sparkles } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -23,6 +23,7 @@ import SubscriptionTab from './tabs/SubscriptionTab';
 import AgendaTab from './tabs/AgendaTab';
 import BillingTab from './tabs/BillingTab';
 import BrandingTab from './tabs/BrandingTab';
+import SeoTab from './tabs/SeoTab';
 import AdvancedTab from './tabs/AdvancedTab';
 import PaymentsTab from './tabs/PaymentsTab';
 import BookingLayoutTab from './tabs/BookingLayoutTab';
@@ -93,7 +94,7 @@ export default function SettingsPage() {
   // Sincronizar parámetro URL tab al cambiar de pestaña
   useEffect(() => {
     if (tabParam) {
-      const validTabs = ['general', 'subscription', 'agenda', 'mobile_services', 'billing', 'payments', 'branding', 'booking_ui', 'consents', 'integrations', 'advanced'];
+      const validTabs = ['general', 'subscription', 'agenda', 'mobile_services', 'billing', 'payments', 'branding', 'seo', 'booking_ui', 'consents', 'integrations', 'advanced'];
       if (validTabs.includes(tabParam)) {
         setActiveTab(tabParam);
       }
@@ -113,7 +114,7 @@ export default function SettingsPage() {
         const params = new URLSearchParams(window.location.search);
         const tParam = params.get('tab');
         if (tParam) {
-          const validTabs = ['general', 'subscription', 'agenda', 'mobile_services', 'billing', 'payments', 'branding', 'booking_ui', 'consents', 'integrations', 'advanced'];
+          const validTabs = ['general', 'subscription', 'agenda', 'mobile_services', 'billing', 'payments', 'branding', 'seo', 'booking_ui', 'consents', 'integrations', 'advanced'];
           if (validTabs.includes(tParam)) {
             setActiveTab(tParam);
           }
@@ -391,6 +392,7 @@ export default function SettingsPage() {
               { id: 'billing', label: t('dashboard.settings.tabs.billing') || 'Facturación', icon: Hash },
               { id: 'payments', label: t('dashboard.settings.tabs.payments') || 'Pagos', icon: Wallet },
               { id: 'branding', label: t('dashboard.settings.tabs.branding') || 'Branding', icon: ImageIcon },
+              { id: 'seo', label: 'SEO & Visibilidad', icon: Sparkles },
               { id: 'booking_ui', label: t('dashboard.settings.tabs.booking_ui') || 'Diseño de Reserva', icon: LayoutTemplate },
               ...(settings.enable_consents ?? true ? [{ id: 'consents', label: t('dashboard.settings.tabs.consents') || 'Consentimientos', icon: FileText }] : []),
               { id: 'integrations', label: t('dashboard.settings.tabs.integrations') || 'Integraciones', icon: TrendingUp },
@@ -462,6 +464,7 @@ export default function SettingsPage() {
               handleImageUpload={handleImageUpload}
             />
           )}
+          {activeTab === 'seo' && <SeoTab settings={settings} setSettings={setSettings} />}
           {activeTab === 'payments' && <PaymentsTab settings={settings} setSettings={setSettings} />}
           {activeTab === 'booking_ui' && <BookingLayoutTab settings={settings} setSettings={setSettings} />}
           {activeTab === 'mobile_services' && <MobileServicesTab settings={settings} setSettings={setSettings} />}
