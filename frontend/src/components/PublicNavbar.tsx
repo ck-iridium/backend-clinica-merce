@@ -12,10 +12,21 @@ function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen, 
   const [isHovered, setIsHovered] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
 
-  // Buscar el slug de la categoría para construir la URL Silo
+  // Buscar el slug de la categoría y del servicio para construir la URL localizada
   const category = categories.find(c => c.id === svc.category_id);
-  const categorySlug = category?.slug || category?.id || 'general';
-  const serviceLink = `/tratamientos/${categorySlug}/${svc.slug || svc.id}`;
+  let parsedCatTrans = category?.translations;
+  if (typeof parsedCatTrans === 'string') {
+    try { parsedCatTrans = JSON.parse(parsedCatTrans); } catch { parsedCatTrans = {}; }
+  }
+  const categorySlug = (language === 'en' && parsedCatTrans?.en?.slug) ? parsedCatTrans.en.slug : (category?.slug || category?.id || 'general');
+
+  let parsedSvcTrans = svc.translations;
+  if (typeof parsedSvcTrans === 'string') {
+    try { parsedSvcTrans = JSON.parse(parsedSvcTrans); } catch { parsedSvcTrans = {}; }
+  }
+  const serviceSlug = (language === 'en' && parsedSvcTrans?.en?.slug) ? parsedSvcTrans.en.slug : (svc.slug || svc.id);
+  const basePath = language === 'en' ? '/services' : '/tratamientos';
+  const serviceLink = `${basePath}/${categorySlug}/${serviceSlug}`;
 
   useEffect(() => {
     if (videoRef.current) {
@@ -332,6 +343,76 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
   const isWhiteMobileLogo = mobileLogoMode === 'white' || (mobileLogoMode === 'adaptive' && useTransparent);
   const mobileLogoHeight = settings?.mobile_logo_height ?? 36;
 
+  const getCategorySlug = (cat: any) => {
+    if (!cat) return 'general';
+    let parsed = cat.translations;
+    if (typeof parsed === 'string') {
+      try { parsed = JSON.parse(parsed); } catch { parsed = {}; }
+    }
+    return (language === 'en' && parsed?.en?.slug) ? parsed.en.slug : (cat.slug || cat.id || 'general');
+  };
+
+  const getServiceSlug = (svc: any) => {
+    if (!svc) return '';
+    let parsed = svc.translations;
+    if (typeof parsed === 'string') {
+      try { parsed = JSON.parse(parsed); } catch { parsed = {}; }
+    }
+    return (language === 'en' && parsed?.en?.slug) ? parsed.en.slug : (svc.slug || svc.id);
+  };
+
+  const getCategoryUrl = (cat: any) => {
+    const basePath = language === 'en' ? '/services' : '/tratamientos';
+    return `${basePath}/${getCategorySlug(cat)}`;
+  };
+
+  const getServiceUrl = (cat: any, svc: any) => {
+    const basePath = language === 'en' ? '/services' : '/tratamientos';
+    return `${basePath}/${getCategorySlug(cat)}/${getServiceSlug(svc)}`;
+  };
+
+  const getLocalizedNavItem = (item: any) => {
+    const rawPath = item.path || '';
+    const rawLabel = (item.label || '').trim().toLowerCase();
+
+    // Inicio / Home
+    if (rawPath === '/' || rawLabel === 'inicio' || rawLabel === 'home' || rawLabel === 'accueil') {
+      return {
+        label: navT.home,
+        path: '/',
+        isActive: pathname === '/',
+        isServices: false
+      };
+    }
+
+    // Tratamientos / Services
+    if (rawPath === '/tratamientos' || rawPath === '/services' || rawLabel === 'tratamientos' || rawLabel === 'treatments' || rawLabel === 'soins' || rawLabel === 'services') {
+      return {
+        label: navT.treatments,
+        path: language === 'en' ? '/services' : '/tratamientos',
+        isActive: pathname === '/tratamientos' || pathname === '/services' || pathname?.startsWith('/tratamientos/') || pathname?.startsWith('/services/'),
+        isServices: true
+      };
+    }
+
+    // Contacto / Contact
+    if (rawPath === '/contacto' || rawPath === '/contact' || rawLabel === 'contacto' || rawLabel === 'contact') {
+      return {
+        label: navT.contact,
+        path: language === 'en' ? '/contact' : '/contacto',
+        isActive: pathname === '/contacto' || pathname === '/contact',
+        isServices: false
+      };
+    }
+
+    return {
+      label: item.label,
+      path: item.path,
+      isActive: pathname === item.path,
+      isServices: false
+    };
+  };
+
   return (
     <>
       <nav className={`w-full z-[100] transition-all duration-500 ease-in-out ${!useTransparent ? 'bg-white/90 dark:bg-stone-950/90 backdrop-blur-xl border-b border-stone-200/50 dark:border-stone-900/50 shadow-sm py-0 sticky top-0' : 'bg-transparent border-transparent py-0 absolute top-0 left-0'}`}>
@@ -397,11 +478,9 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
 
           <div className="hidden md:flex items-center gap-8 font-bold text-sm">
             {navigationItems.map((item) => {
-              const isServices = item.path === '/services' || item.path === '/tratamientos';
-              const isActive = pathname === item.path;
-              const label = item.label;
+              const navItem = getLocalizedNavItem(item);
 
-              if (isServices) {
+              if (navItem.isServices) {
                 return (
                   <div
                     key={item.id || item.path}
@@ -410,15 +489,15 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                     onMouseLeave={() => setShowMegaMenu(false)}
                   >
                     <Link
-                      href={item.path}
-                      className={`transition-colors flex items-center gap-1 ${isActive
+                      href={navItem.path}
+                      className={`transition-colors flex items-center gap-1 ${navItem.isActive
                           ? 'text-primary'
                           : !useTransparent
                             ? 'text-stone-800 dark:text-stone-200 hover:text-primary dark:hover:text-primary'
                             : 'text-white hover:text-primary'
                         }`}
                     >
-                      {label}
+                      {navItem.label}
                     </Link>
                   </div>
                 );
@@ -427,15 +506,15 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
               return (
                 <Link
                   key={item.id || item.path}
-                  href={item.path}
-                  className={`transition-colors ${isActive
+                  href={navItem.path}
+                  className={`transition-colors ${navItem.isActive
                       ? 'text-primary'
                       : !useTransparent
                         ? 'text-stone-800 dark:text-stone-200 hover:text-primary dark:hover:text-primary'
                         : 'text-white hover:text-primary'
                     }`}
                 >
-                  {label}
+                  {navItem.label}
                 </Link>
               );
             })}
@@ -477,7 +556,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                                   <button
                                     key={cat.id}
                                     onMouseEnter={() => setActiveCategory(cat.id)}
-                                    onClick={() => { setShowMegaMenu(false); window.location.href = `/tratamientos/${cat.slug || cat.id}` }}
+                                    onClick={() => { setShowMegaMenu(false); window.location.href = getCategoryUrl(cat); }}
                                     className={`w-full text-left px-6 py-2.5 transition-all font-serif text-lg md:text-xl leading-tight whitespace-normal relative ${activeCategory === cat.id
                                       ? 'bg-white dark:bg-stone-900 text-primary font-semibold rounded-l-luxury-card -mr-[1px] z-10 shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.02)] after:absolute after:top-0 after:-right-[1px] after:w-[2px] after:h-full after:bg-white dark:after:bg-stone-900 after:z-20'
                                       : 'text-stone-200 hover:text-white rounded-luxury-btn mr-4 hover:bg-white/5'
@@ -550,7 +629,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                               return (
                                 <div key={cat.id} className="flex flex-col h-full overflow-hidden bg-stone-50/50 dark:bg-stone-900/30 p-6 rounded-3xl border border-stone-100/50 dark:border-stone-900/50">
                                   <span
-                                    onClick={() => { setShowMegaMenu(false); window.location.href = `/tratamientos/${cat.slug || cat.id}` }}
+                                    onClick={() => { setShowMegaMenu(false); window.location.href = getCategoryUrl(cat); }}
                                     className="text-[12px] font-black uppercase tracking-[0.2em] text-[#d4af37] border-b border-stone-200/50 dark:border-stone-800 pb-3 mb-4 cursor-pointer hover:text-stone-800 transition-colors shrink-0"
                                   >
                                     {cat.name}
@@ -565,8 +644,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                                         ) : (
                                           catServices.map(svc => {
                                             const category = categories.find(c => c.id === svc.category_id);
-                                            const categorySlug = category?.slug || category?.id || 'general';
-                                            const serviceLink = `/tratamientos/${categorySlug}/${svc.slug || svc.id}`;
+                                            const serviceLink = getServiceUrl(category, svc);
                                             return (
                                               <Link
                                                 key={svc.id}
@@ -695,24 +773,22 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
 
           {/* Enlaces Dinámicos */}
           {navigationItems.map((item) => {
-            const isServices = item.path === '/services' || item.path === '/tratamientos';
-            const isActive = pathname === item.path;
-            const label = item.label;
+            const navItem = getLocalizedNavItem(item);
 
-            if (isServices) {
+            if (navItem.isServices) {
               return (
                 <div key={item.id || item.path} className="w-full flex flex-col items-center">
                   <div className="flex items-center gap-2 cursor-pointer" onClick={() => setMobileAccordionOpen(!mobileAccordionOpen)}>
-                    <span className={`transition-all duration-300 active:scale-95 ${isActive ? 'text-primary' : 'hover:text-primary'}`}>{label}</span>
+                    <span className={`transition-all duration-300 active:scale-95 ${navItem.isActive ? 'text-primary' : 'hover:text-primary'}`}>{navItem.label}</span>
                     <span className={`text-sm text-primary transition-transform duration-300 ${mobileAccordionOpen ? 'rotate-180' : ''}`}>▼</span>
                   </div>
 
                   <div className={`flex flex-col items-center gap-4 overflow-hidden transition-all duration-500 ease-in-out ${mobileAccordionOpen ? 'max-h-[500px] mt-6 opacity-100' : 'max-h-0 opacity-0 mt-0'}`}>
-                    <Link href={item.path} onClick={() => setIsOpen(false)} className="text-xl font-serif text-primary italic hover:text-stone-900 transition-colors">
+                    <Link href={navItem.path} onClick={() => setIsOpen(false)} className="text-xl font-serif text-primary italic hover:text-stone-900 transition-colors">
                       {navT.see_all}
                     </Link>
                     {translatedCategories.map(cat => (
-                      <Link key={cat.id} href={`/tratamientos/${cat.slug || cat.id}`} onClick={() => setIsOpen(false)} className="text-xl font-serif font-normal text-stone-500 hover:text-stone-800 transition-colors">
+                      <Link key={cat.id} href={getCategoryUrl(cat)} onClick={() => setIsOpen(false)} className="text-xl font-serif font-normal text-stone-500 hover:text-stone-800 transition-colors">
                         {cat.name}
                       </Link>
                     ))}
@@ -724,11 +800,11 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
             return (
               <Link
                 key={item.id || item.path}
-                href={item.path}
+                href={navItem.path}
                 onClick={() => setIsOpen(false)}
-                className={`transition-all duration-300 active:scale-95 ${isActive ? 'text-primary' : 'hover:text-primary'}`}
+                className={`transition-all duration-300 active:scale-95 ${navItem.isActive ? 'text-primary' : 'hover:text-primary'}`}
               >
-                {label}
+                {navItem.label}
               </Link>
             );
           })}

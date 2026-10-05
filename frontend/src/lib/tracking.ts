@@ -41,6 +41,7 @@ export function trackBookingConversion(data: BookingConversionData) {
     currency: data.currency || 'EUR',
     customer_email: data.clientEmail || ''
   });
+  console.log(`[Tracking] dataLayer event "appointment_booked" pushed: ${data.bookingId}`, data);
 
   // 2. Disparo directo a Google Ads Conversion si está disponible gtag y configurado
   if (data.googleAdsId && data.googleAdsConversionLabel) {

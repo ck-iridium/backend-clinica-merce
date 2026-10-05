@@ -76,14 +76,21 @@ function ConfirmacionContent() {
       .catch(err => console.error("Error cargando configuración en confirmación:", err));
   }, []);
 
+  const hasTrackedRef = React.useRef(false);
+
   // Evento DataLayer para Google Tag Manager / Google Ads Enhanced Conversions
+  // Se dispara de manera limpia e inmediata al montar la página, admitiendo también visitas de verificación
   useEffect(() => {
-    if (!bookingId) return;
+    if (hasTrackedRef.current) return;
+    hasTrackedRef.current = true;
+
+    const resolvedBookingId = bookingId || `confirm_${Date.now().toString(36)}`;
+    const numPrice = servicePrice ? parseFloat(servicePrice) : 0;
 
     trackBookingConversion({
-      bookingId,
-      serviceName,
-      value: servicePrice ? parseFloat(servicePrice) : 0,
+      bookingId: resolvedBookingId,
+      serviceName: serviceName || 'Tratamiento',
+      value: numPrice,
       currency: 'EUR',
       clientEmail,
       googleAdsId: settings?.google_ads_id,

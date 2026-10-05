@@ -5,6 +5,7 @@ import { Metadata } from 'next';
 import { cookies, headers } from 'next/headers';
 import { cache } from 'react';
 import CategoryImage from '@/components/CategoryImage';
+import AlternateUrlsSetter from '@/components/seo/AlternateUrlsSetter';
 
 export const metadata: Metadata = {
   title: 'Catálogo de Servicios y Experiencias',
@@ -120,9 +121,11 @@ export default async function CatalogPage() {
 
   // Ordenar las categorías para que las que tienen img salgan antes o por orden alfabético
   const sortedCategoryNames = Object.keys(groupedServices).sort();
+  const basePath = lang === 'en' ? '/services' : '/tratamientos';
 
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 font-sans mt-16 md:mt-0">
+      <AlternateUrlsSetter urls={{ es: '/tratamientos', en: '/services', fr: '/tratamientos' }} />
       <main className="pt-32 pb-24">
         <div className="max-w-7xl mx-auto px-6 mb-16 animate-in slide-in-from-bottom-4 duration-700">
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-stone-900 dark:text-stone-100">{t.title}</h1>
@@ -140,13 +143,19 @@ export default async function CatalogPage() {
             {sortedCategoryNames.map((catName) => {
               const svcs = groupedServices[catName];
               const categoryInfo = svcs[0]?.categoryInfo;
+              let parsedCatTrans = categoryInfo?.translations;
+              if (typeof parsedCatTrans === 'string') {
+                try { parsedCatTrans = JSON.parse(parsedCatTrans); } catch { parsedCatTrans = {}; }
+              }
+              const catSlug = (lang === 'en' && parsedCatTrans?.en?.slug) ? parsedCatTrans.en.slug : (categoryInfo?.slug || categoryInfo?.id);
+              const categoryUrl = `${basePath}/${catSlug}`;
 
               return (
                 <section key={catName} className="max-w-7xl mx-auto px-6">
                   {/* Category Header */}
                   <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-10 border-b border-stone-200 dark:border-stone-800 pb-8">
                     <Link 
-                      href={`/tratamientos/${categoryInfo?.slug || categoryInfo?.id}`} 
+                      href={categoryUrl} 
                       className="w-24 h-24 sm:w-32 sm:h-32 shrink-0 overflow-hidden shadow-lg border border-stone-100 dark:border-stone-800 bg-white dark:bg-stone-900 group relative block"
                       style={{ borderRadius: 'var(--radius-card)' }}
                     >
@@ -157,7 +166,7 @@ export default async function CatalogPage() {
                       />
                     </Link>
                     <div>
-                      <Link href={`/tratamientos/${categoryInfo?.slug || categoryInfo?.id}`} className="hover:text-primary transition-colors">
+                      <Link href={categoryUrl} className="hover:text-primary transition-colors">
                         <h2 className="text-3xl md:text-4xl font-extrabold text-stone-800 dark:text-stone-100 tracking-tight">{catName}</h2>
                       </Link>
                       <p className="text-stone-500 dark:text-stone-400 font-semibold mt-2">{svcs.length} {t.treatments_count}</p>
@@ -167,8 +176,12 @@ export default async function CatalogPage() {
                   {/* Services Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {svcs.map((svc: any) => {
-                      const catSlug = categoryInfo?.slug || categoryInfo?.id || 'general';
-                      const serviceLink = `/tratamientos/${catSlug}/${svc.slug || svc.id}`;
+                      let parsedSvcTrans = svc.translations;
+                      if (typeof parsedSvcTrans === 'string') {
+                        try { parsedSvcTrans = JSON.parse(parsedSvcTrans); } catch { parsedSvcTrans = {}; }
+                      }
+                      const svcSlug = (lang === 'en' && parsedSvcTrans?.en?.slug) ? parsedSvcTrans.en.slug : (svc.slug || svc.id);
+                      const serviceLink = `${basePath}/${catSlug}/${svcSlug}`;
                       return (
                         <Link 
                           href={serviceLink} 

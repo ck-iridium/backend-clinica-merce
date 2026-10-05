@@ -118,6 +118,7 @@ import InviteHandler from "@/components/InviteHandler";
 import TenantInitializer from "@/components/TenantInitializer";
 import TenantTracking from "@/components/analytics/TenantTracking";
 import JsonLd from "@/components/seo/JsonLd";
+import { GoogleTagManager } from "@next/third-parties/google";
 
 import { CreditCard, Sparkles } from "lucide-react";
 
@@ -288,6 +289,7 @@ export default async function RootLayout({
   if (isMarketing) {
     return (
       <html lang="es" suppressHydrationWarning className={fontClasses}>
+        <GoogleTagManager gtmId="GTM-N4FTWCBX" />
         <head>
           <link rel="icon" href={marketingFavicon} />
           <link rel="preconnect" href="https://ypimdbkiuguiszaddzaj.supabase.co" crossOrigin="anonymous" />
@@ -374,8 +376,11 @@ export default async function RootLayout({
     } : {})
   } : null;
 
+  const gtmId = settings?.gtm_container_id?.trim() || "GTM-N4FTWCBX";
+
   return (
     <html lang="es" suppressHydrationWarning className={`${fontClasses} ${isDark && !isDashboardRoute ? 'dark' : ''}`}>
+      <GoogleTagManager gtmId={gtmId} />
       <head>
         <link rel="icon" href={favicon} />
         <link rel="preconnect" href="https://ypimdbkiuguiszaddzaj.supabase.co" crossOrigin="anonymous" />

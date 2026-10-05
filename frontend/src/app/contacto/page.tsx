@@ -15,6 +15,7 @@ import BotonReservaPro from '@/components/BotonReservaPro';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatInstagramUrl, formatMapsUrl } from '@/lib/utils';
+import AlternateUrlsSetter from '@/components/seo/AlternateUrlsSetter';
 
 const DAYS_MAP_LOCAL: Record<string, Record<number, string>> = {
   es: { 1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado', 7: 'Domingo' },
@@ -265,6 +266,7 @@ export default function ContactoPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] pt-32 pb-24 md:pt-48 md:pb-32 overflow-hidden relative">
+      <AlternateUrlsSetter urls={{ es: '/contacto', en: '/contact', fr: '/contact' }} />
       
       {/* Elementos decorativos de fondo para impacto visual */}
       <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/3 rounded-full blur-[120px] -mr-[400px] -mt-[400px] pointer-events-none" />

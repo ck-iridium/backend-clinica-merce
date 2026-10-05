@@ -152,7 +152,7 @@ export async function generateMetadata({
   const frCatSlug = catTrans?.fr?.slug || esCatSlug;
 
   const esPath = `/tratamientos/${esCatSlug}/${esServiceSlug}`;
-  const enPath = `/tratamientos/${enCatSlug}/${enServiceSlug}`;
+  const enPath = `/services/${enCatSlug}/${enServiceSlug}`;
   const frPath = `/tratamientos/${frCatSlug}/${frServiceSlug}`;
 
   const esUrl = `${siteUrl}${esPath}`;
@@ -277,7 +277,7 @@ export default async function TreatmentDynamicPage({
   const frCatSlug = catTrans?.fr?.slug || esCatSlug;
 
   const esPath = `/tratamientos/${esCatSlug}/${esServiceSlug}`;
-  const enPath = `/tratamientos/${enCatSlug}/${enServiceSlug}`;
+  const enPath = `/services/${enCatSlug}/${enServiceSlug}`;
   const frPath = `/tratamientos/${frCatSlug}/${frServiceSlug}`;
 
   const translateServer = (spanishText: string, translations: any, field: string) => {

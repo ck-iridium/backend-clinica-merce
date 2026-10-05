@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Script from 'next/script';
-import { GoogleTagManager } from '@next/third-parties/google';
 
 interface TenantTrackingProps {
   settings?: {
@@ -59,12 +58,7 @@ export default function TenantTracking({ settings }: TenantTrackingProps) {
 
   return (
     <>
-      {/* 1. Google Tag Manager Container (Oficial de Next.js) */}
-      {gtmId && (
-        <GoogleTagManager gtmId={gtmId} />
-      )}
-
-      {/* 2. Google Ads Global Site Tag (gtag) si no se usa GTM o como complemento */}
+      {/* Google Ads Global Site Tag (gtag) si se usa como complemento directo */}
       {googleAdsId && (
         <>
           <Script
