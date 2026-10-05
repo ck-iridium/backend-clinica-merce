@@ -1,6 +1,16 @@
 import { MetadataRoute } from 'next';
 import { resolveTenantContext } from '@/lib/tenant-resolver';
 
+function parseTranslations(trans: any): Record<string, any> {
+  if (!trans) return {};
+  if (typeof trans === 'object') return trans;
+  try {
+    return JSON.parse(trans);
+  } catch {
+    return {};
+  }
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { tenantId, isMarketing, baseUrl, apiUrl } = await resolveTenantContext();
   const now = new Date();
@@ -43,36 +53,103 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // 2. Si es un Tenant (Clínica / Centro)
   const tenantRoutes: MetadataRoute.Sitemap = [
+    // Home
     {
       url: `${baseUrl}/`,
       lastModified: now,
       changeFrequency: 'daily',
       priority: 1.0,
+      alternates: {
+        languages: {
+          es: `${baseUrl}/`,
+          en: `${baseUrl}/`,
+          'x-default': `${baseUrl}/`,
+        },
+      },
     },
+    // Reservas
     {
       url: `${baseUrl}/reservar`,
       lastModified: now,
       changeFrequency: 'daily',
       priority: 0.9,
+      alternates: {
+        languages: {
+          es: `${baseUrl}/reservar`,
+          en: `${baseUrl}/reservar`,
+          'x-default': `${baseUrl}/reservar`,
+        },
+      },
     },
+    // Catálogo Principal: Español e Inglés
     {
       url: `${baseUrl}/tratamientos`,
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.8,
+      alternates: {
+        languages: {
+          es: `${baseUrl}/tratamientos`,
+          en: `${baseUrl}/services`,
+          'x-default': `${baseUrl}/tratamientos`,
+        },
+      },
     },
+    {
+      url: `${baseUrl}/services`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+      alternates: {
+        languages: {
+          es: `${baseUrl}/tratamientos`,
+          en: `${baseUrl}/services`,
+          'x-default': `${baseUrl}/tratamientos`,
+        },
+      },
+    },
+    // Contacto: Español e Inglés
     {
       url: `${baseUrl}/contacto`,
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.8,
+      alternates: {
+        languages: {
+          es: `${baseUrl}/contacto`,
+          en: `${baseUrl}/contact`,
+          'x-default': `${baseUrl}/contacto`,
+        },
+      },
     },
+    {
+      url: `${baseUrl}/contact`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+      alternates: {
+        languages: {
+          es: `${baseUrl}/contacto`,
+          en: `${baseUrl}/contact`,
+          'x-default': `${baseUrl}/contacto`,
+        },
+      },
+    },
+    // Sedes
     {
       url: `${baseUrl}/sedes`,
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.9,
+      alternates: {
+        languages: {
+          es: `${baseUrl}/sedes`,
+          en: `${baseUrl}/sedes`,
+          'x-default': `${baseUrl}/sedes`,
+        },
+      },
     },
+    // Páginas Legales
     {
       url: `${baseUrl}/aviso-legal`,
       lastModified: now,
@@ -131,26 +208,74 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }),
       ]);
 
-      // Mapeo de categorías para lookup rápido de slugs
-      const categoryMap = new Map<string, string>(); // categoryId -> slug
+      // Mapeo de categorías para lookup rápido de slugs y traducciones
+      const categoryMap = new Map<string, { slug: string; translations: any }>();
 
-      // A. Inyectar Categorías de Tratamientos (/tratamientos/[category_slug])
+      // A. Inyectar Categorías de Tratamientos (/tratamientos/[category_slug] & /services/[category_slug])
       if (categoriesRes && categoriesRes.ok) {
         const categories = await categoriesRes.json();
         if (Array.isArray(categories)) {
           for (const cat of categories) {
             if (cat.id && cat.slug) {
-              categoryMap.set(cat.id, cat.slug);
+              categoryMap.set(cat.id, {
+                slug: cat.slug,
+                translations: cat.translations,
+              });
             }
             if (cat.slug && cat.is_active !== false) {
-              const catUrl = `${baseUrl}/tratamientos/${cat.slug}`;
-              if (!seenUrls.has(catUrl)) {
-                seenUrls.add(catUrl);
+              const catTrans = parseTranslations(cat.translations);
+              const esSlug = cat.slug;
+              const enSlug = catTrans?.en?.slug || esSlug;
+              const frSlug = catTrans?.fr?.slug || esSlug;
+
+              const esUrl = `${baseUrl}/tratamientos/${esSlug}`;
+              const enUrl = `${baseUrl}/services/${enSlug}`;
+              const frUrl = `${baseUrl}/tratamientos/${frSlug}`;
+
+              const languages: Record<string, string> = {
+                es: esUrl,
+                en: enUrl,
+                'x-default': esUrl,
+              };
+              if (catTrans?.fr?.slug) {
+                languages.fr = frUrl;
+              }
+
+              const alternates = { languages };
+
+              // 1. URL en Español
+              if (!seenUrls.has(esUrl)) {
+                seenUrls.add(esUrl);
                 tenantRoutes.push({
-                  url: catUrl,
+                  url: esUrl,
                   lastModified: now,
                   changeFrequency: 'weekly',
                   priority: 0.8,
+                  alternates,
+                });
+              }
+
+              // 2. URL en Inglés
+              if (!seenUrls.has(enUrl)) {
+                seenUrls.add(enUrl);
+                tenantRoutes.push({
+                  url: enUrl,
+                  lastModified: now,
+                  changeFrequency: 'weekly',
+                  priority: 0.8,
+                  alternates,
+                });
+              }
+
+              // 3. URL en Francés (si existe slug traducido diferente)
+              if (catTrans?.fr?.slug && !seenUrls.has(frUrl)) {
+                seenUrls.add(frUrl);
+                tenantRoutes.push({
+                  url: frUrl,
+                  lastModified: now,
+                  changeFrequency: 'weekly',
+                  priority: 0.8,
+                  alternates,
                 });
               }
             }
@@ -158,27 +283,73 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }
       }
 
-      // B. Inyectar Tratamientos Individuales (/tratamientos/[category_slug]/[service_slug])
+      // B. Inyectar Tratamientos Individuales (/tratamientos/... & /services/...)
       if (servicesRes && servicesRes.ok) {
         const services = await servicesRes.json();
         if (Array.isArray(services)) {
           for (const s of services) {
             if (s.slug && s.is_active !== false) {
-              // Resolver category_slug
-              const categorySlug =
-                s.category_slug ||
-                s.category?.slug ||
-                (s.category_id ? categoryMap.get(s.category_id) : null) ||
-                'general';
+              // Resolver category_slug y category translations
+              const catData = s.category_id ? categoryMap.get(s.category_id) : null;
+              const catTrans = parseTranslations(catData?.translations || s.category?.translations);
+              const esCatSlug = s.category_slug || s.category?.slug || catData?.slug || 'general';
+              const enCatSlug = catTrans?.en?.slug || esCatSlug;
+              const frCatSlug = catTrans?.fr?.slug || esCatSlug;
 
-              const serviceUrl = `${baseUrl}/tratamientos/${categorySlug}/${s.slug}`;
-              if (!seenUrls.has(serviceUrl)) {
-                seenUrls.add(serviceUrl);
+              // Resolver service translations
+              const svcTrans = parseTranslations(s.translations);
+              const esSvcSlug = s.slug;
+              const enSvcSlug = svcTrans?.en?.slug || esSvcSlug;
+              const frSvcSlug = svcTrans?.fr?.slug || esSvcSlug;
+
+              const esServiceUrl = `${baseUrl}/tratamientos/${esCatSlug}/${esSvcSlug}`;
+              const enServiceUrl = `${baseUrl}/services/${enCatSlug}/${enSvcSlug}`;
+              const frServiceUrl = `${baseUrl}/tratamientos/${frCatSlug}/${frSvcSlug}`;
+
+              const languages: Record<string, string> = {
+                es: esServiceUrl,
+                en: enServiceUrl,
+                'x-default': esServiceUrl,
+              };
+              if (svcTrans?.fr?.slug) {
+                languages.fr = frServiceUrl;
+              }
+
+              const alternates = { languages };
+
+              // 1. URL en Español
+              if (!seenUrls.has(esServiceUrl)) {
+                seenUrls.add(esServiceUrl);
                 tenantRoutes.push({
-                  url: serviceUrl,
+                  url: esServiceUrl,
                   lastModified: now,
                   changeFrequency: 'weekly',
                   priority: 0.7,
+                  alternates,
+                });
+              }
+
+              // 2. URL en Inglés
+              if (!seenUrls.has(enServiceUrl)) {
+                seenUrls.add(enServiceUrl);
+                tenantRoutes.push({
+                  url: enServiceUrl,
+                  lastModified: now,
+                  changeFrequency: 'weekly',
+                  priority: 0.7,
+                  alternates,
+                });
+              }
+
+              // 3. URL en Francés (si existe)
+              if (svcTrans?.fr?.slug && !seenUrls.has(frServiceUrl)) {
+                seenUrls.add(frServiceUrl);
+                tenantRoutes.push({
+                  url: frServiceUrl,
+                  lastModified: now,
+                  changeFrequency: 'weekly',
+                  priority: 0.7,
+                  alternates,
                 });
               }
             }
