@@ -8,6 +8,9 @@ export * from './ecosystem-extractor';
 export * from './semantic-graph';
 export * from './anti-cannibalization';
 export * from './ai-orchestrator';
+export * from './sanitizers';
+export * from './gemini-client';
+export * from './prompts';
 
 /**
  * Orquestador principal de la Fase A:
