@@ -92,10 +92,18 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       } catch (_) {}
 
       if (!savedLang) {
-        const browserLang = typeof navigator !== 'undefined' && navigator.language 
-          ? (navigator.language.split('-')[0] as Language) 
-          : 'es';
-        savedLang = ['es', 'en', 'fr'].includes(browserLang) ? browserLang : 'es';
+        // Solo si la URL actual es explícitamente internacional (/services, /contact) o tiene ?lang=
+        if (typeof window !== 'undefined') {
+          const path = window.location.pathname;
+          const search = window.location.search;
+          if (path.startsWith('/services') || path.startsWith('/contact') || search.includes('lang=en')) {
+            savedLang = 'en';
+          } else {
+            savedLang = 'es';
+          }
+        } else {
+          savedLang = 'es';
+        }
       }
       setLanguageState(savedLang);
       if (typeof document !== 'undefined') {

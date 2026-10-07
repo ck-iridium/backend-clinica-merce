@@ -89,11 +89,20 @@ export async function generateMetadata({
     try { parsedTrans = JSON.parse(parsedTrans); } catch { parsedTrans = {}; }
   }
 
-  // Inferencia inteligente de idioma según el slug exacto de la URL (solo si coincide con traducción extranjera)
+  const esServiceSlug = service.slug || params.treatment_slug;
+  const enServiceSlug = parsedTrans?.en?.slug || esServiceSlug;
+  const frServiceSlug = parsedTrans?.fr?.slug || esServiceSlug;
+
+  const pathname = requestHeaders.get('x-pathname') || '';
+  const isEnRoute = pathname.startsWith('/services');
+
+  // Inferencia inteligente de idioma según la ruta o el slug internacional exclusivo
   let inferredLang: 'es' | 'en' | 'fr' | null = null;
-  if (params.treatment_slug === parsedTrans?.en?.slug) {
+  if (isEnRoute) {
     inferredLang = 'en';
-  } else if (params.treatment_slug === parsedTrans?.fr?.slug) {
+  } else if (parsedTrans?.en?.slug && parsedTrans.en.slug !== esServiceSlug && params.treatment_slug === parsedTrans.en.slug) {
+    inferredLang = 'en';
+  } else if (parsedTrans?.fr?.slug && parsedTrans.fr.slug !== esServiceSlug && params.treatment_slug === parsedTrans.fr.slug) {
     inferredLang = 'fr';
   }
 
@@ -101,10 +110,11 @@ export async function generateMetadata({
   const cookieStore = cookies();
   const cookieLang = cookieStore.get('preferred_language')?.value as 'es' | 'en' | 'fr' | undefined;
 
-  // Prioridad: 1. Parámetro explícito (?lang=), 2. Slug internacional explícito (/lash-lift), 3. Cookie de idioma del usuario, 4. 'es' por defecto
+  // Prioridad: 1. Parámetro explícito (?lang=), 2. Ruta en inglés (/services), 3. Slug traducido único, 4. Cookie (si no está en ruta española /tratamientos), 5. 'es' por defecto
+  const defaultRouteLang = isEnRoute ? 'en' : 'es';
   const lang = ((langParam === 'en' || langParam === 'fr' || langParam === 'es') 
     ? langParam 
-    : (inferredLang || cookieLang || 'es')) as 'es' | 'en' | 'fr';
+    : (inferredLang || (pathname.startsWith('/tratamientos') ? 'es' : cookieLang) || defaultRouteLang)) as 'es' | 'en' | 'fr';
 
   const translateServer = (spanishText: string, translations: any, field: string) => {
     if (!translations) return spanishText;
@@ -246,11 +256,20 @@ export default async function TreatmentDynamicPage({
     try { parsedTrans = JSON.parse(parsedTrans); } catch { parsedTrans = {}; }
   }
 
-  // Inferencia inteligente de idioma según el slug exacto de la URL (solo si coincide con traducción extranjera)
+  const esServiceSlug = service.slug || params.treatment_slug;
+  const enServiceSlug = parsedTrans?.en?.slug || esServiceSlug;
+  const frServiceSlug = parsedTrans?.fr?.slug || esServiceSlug;
+
+  const pathname = requestHeaders.get('x-pathname') || '';
+  const isEnRoute = pathname.startsWith('/services');
+
+  // Inferencia inteligente de idioma según la ruta o el slug internacional exclusivo
   let inferredLang: 'es' | 'en' | 'fr' | null = null;
-  if (params.treatment_slug === parsedTrans?.en?.slug) {
+  if (isEnRoute) {
     inferredLang = 'en';
-  } else if (params.treatment_slug === parsedTrans?.fr?.slug) {
+  } else if (parsedTrans?.en?.slug && parsedTrans.en.slug !== esServiceSlug && params.treatment_slug === parsedTrans.en.slug) {
+    inferredLang = 'en';
+  } else if (parsedTrans?.fr?.slug && parsedTrans.fr.slug !== esServiceSlug && params.treatment_slug === parsedTrans.fr.slug) {
     inferredLang = 'fr';
   }
 
@@ -258,14 +277,11 @@ export default async function TreatmentDynamicPage({
   const cookieStore = cookies();
   const cookieLang = cookieStore.get('preferred_language')?.value as 'es' | 'en' | 'fr' | undefined;
 
-  // Prioridad: 1. Parámetro explícito (?lang=), 2. Slug internacional explícito (/lash-lift), 3. Cookie de idioma del usuario, 4. 'es' por defecto
+  // Prioridad: 1. Parámetro explícito (?lang=), 2. Ruta en inglés (/services), 3. Slug traducido único, 4. Cookie (si no está en ruta española /tratamientos), 5. 'es' por defecto
+  const defaultRouteLang = isEnRoute ? 'en' : 'es';
   const lang = ((langParam === 'en' || langParam === 'fr' || langParam === 'es') 
     ? langParam 
-    : (inferredLang || cookieLang || 'es')) as 'es' | 'en' | 'fr';
-
-  const esServiceSlug = service.slug || params.treatment_slug;
-  const enServiceSlug = parsedTrans?.en?.slug || esServiceSlug;
-  const frServiceSlug = parsedTrans?.fr?.slug || esServiceSlug;
+    : (inferredLang || (pathname.startsWith('/tratamientos') ? 'es' : cookieLang) || defaultRouteLang)) as 'es' | 'en' | 'fr';
 
   let catTrans = service.category?.translations;
   if (typeof catTrans === 'string') {

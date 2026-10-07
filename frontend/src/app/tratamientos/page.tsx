@@ -53,8 +53,11 @@ export default async function CatalogPage() {
   }
   const { categories, services, settings } = await getData(tenantId);
 
+  const pathname = requestHeaders.get('x-pathname') || '';
+  const isEnRoute = pathname.startsWith('/services');
   const cookieStore = cookies();
-  const lang = (cookieStore.get('preferred_language')?.value || 'es') as 'es' | 'en' | 'fr';
+  const cookieLang = cookieStore.get('preferred_language')?.value;
+  const lang = (isEnRoute ? 'en' : (pathname.startsWith('/tratamientos') ? 'es' : (cookieLang || 'es'))) as 'es' | 'en' | 'fr';
 
   const translateServer = (spanishText: string, translations: any, field: string) => {
     if (!translations) return spanishText;
