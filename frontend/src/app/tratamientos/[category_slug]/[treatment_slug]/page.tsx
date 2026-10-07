@@ -148,10 +148,6 @@ export async function generateMetadata({
       ? `${siteUrl}${rawImageUrl}` 
       : `${siteUrl}/${rawImageUrl}`;
 
-  const esServiceSlug = service.slug || params.treatment_slug;
-  const enServiceSlug = parsedTrans?.en?.slug || esServiceSlug;
-  const frServiceSlug = parsedTrans?.fr?.slug || esServiceSlug;
-
   let catTrans = service.category?.translations;
   if (typeof catTrans === 'string') {
     try { catTrans = JSON.parse(catTrans); } catch { catTrans = {}; }

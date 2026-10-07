@@ -223,10 +223,6 @@ export async function generateMetadata({
   const proto = requestHeaders.get('x-forwarded-proto') || 'https';
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (host ? `${proto}://${host}` : 'https://probookia.com');
 
-  const esSlug = category.slug || params.category_slug;
-  const enSlug = catTrans?.en?.slug || esSlug;
-  const frSlug = catTrans?.fr?.slug || esSlug;
-
   const esPath = `/tratamientos/${esSlug}`;
   const enPath = `/services/${enSlug}`;
   const frPath = `/tratamientos/${frSlug}`;
