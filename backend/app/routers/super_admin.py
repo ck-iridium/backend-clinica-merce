@@ -317,10 +317,17 @@ def update_tenant_domain(
 # ---------------------------------------------------------------------
 # CMS MARKETING & SHOWCASE ENDPOINTS
 # ---------------------------------------------------------------------
+class HeroTabItem(BaseModel):
+    id: str
+    label: str
+    image_url: Optional[str] = ""
+
+
 class LandingMarketingSettingsOut(BaseModel):
     id: str
     hero_title: str
     hero_subtitle: str
+    hero_tabs: Optional[List[HeroTabItem]] = []
     hero_image_1: Optional[str] = None
     hero_image_2: Optional[str] = None
     hero_image_3: Optional[str] = None
@@ -342,6 +349,7 @@ class LandingMarketingSettingsOut(BaseModel):
 class LandingMarketingSettingsUpdate(BaseModel):
     hero_title: str
     hero_subtitle: str
+    hero_tabs: Optional[List[HeroTabItem]] = None
     hero_image_1: Optional[str] = None
     hero_image_2: Optional[str] = None
     hero_image_3: Optional[str] = None
@@ -460,6 +468,30 @@ def ensure_showcase_sectors_defaults(db: Session):
         print(f"Error sincronizando sectores por defecto: {e}")
 
 
+DEFAULT_HERO_TABS = [
+    {
+        "id": "tab-agenda",
+        "label": "Agenda & Reservas",
+        "image_url": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1600&q=80"
+    },
+    {
+        "id": "tab-emr",
+        "label": "Fichas Clínicas LOPD",
+        "image_url": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1600&q=80"
+    },
+    {
+        "id": "tab-caja",
+        "label": "Caja y Pagos",
+        "image_url": "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1600&q=80"
+    },
+    {
+        "id": "tab-marketing",
+        "label": "Marketing & Fidelización",
+        "image_url": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1600&q=80"
+    }
+]
+
+
 # 1. PUBLIC ENDPOINT (No authentication required)
 @router.get("/marketing/public")
 def get_public_marketing_content(db: Session = Depends(database.get_db)):
@@ -470,8 +502,9 @@ def get_public_marketing_content(db: Session = Depends(database.get_db)):
     if not settings:
         settings = models.LandingMarketingSettings(
             id="global",
-            hero_title="La elegancia de tu negocio traducida en un SaaS de Lujo",
-            hero_subtitle="Diseñado exclusivamente para centros de estética, wellness, spas y salones premium independientes. Agendas fluidas, expedientes médicos asimétricos y reservas de doble opt-in integradas en una experiencia sublime."
+            hero_title="El único software que tu clínica volverá a necesitar.",
+            hero_subtitle="Probookia unifica tu agenda, cobros, fichas médicas y marketing en una sola pantalla. Menos herramientas, cero fricción, más rentabilidad.",
+            hero_tabs=DEFAULT_HERO_TABS
         )
         db.add(settings)
         db.commit()
@@ -483,6 +516,7 @@ def get_public_marketing_content(db: Session = Depends(database.get_db)):
         "settings": {
             "hero_title": settings.hero_title,
             "hero_subtitle": settings.hero_subtitle,
+            "hero_tabs": settings.hero_tabs or DEFAULT_HERO_TABS,
             "hero_image_1": settings.hero_image_1,
             "hero_image_2": settings.hero_image_2,
             "hero_image_3": settings.hero_image_3,
@@ -519,8 +553,17 @@ def get_marketing_settings(
 ):
     settings = db.query(models.LandingMarketingSettings).filter(models.LandingMarketingSettings.id == "global").first()
     if not settings:
-        settings = models.LandingMarketingSettings(id="global")
+        settings = models.LandingMarketingSettings(
+            id="global",
+            hero_title="El único software que tu clínica volverá a necesitar.",
+            hero_subtitle="Probookia unifica tu agenda, cobros, fichas médicas y marketing en una sola pantalla. Menos herramientas, cero fricción, más rentabilidad.",
+            hero_tabs=DEFAULT_HERO_TABS
+        )
         db.add(settings)
+        db.commit()
+        db.refresh(settings)
+    elif not settings.hero_tabs:
+        settings.hero_tabs = DEFAULT_HERO_TABS
         db.commit()
         db.refresh(settings)
     return settings
@@ -538,6 +581,8 @@ def update_marketing_settings(
         db.add(settings)
     settings.hero_title = payload.hero_title
     settings.hero_subtitle = payload.hero_subtitle
+    if payload.hero_tabs is not None:
+        settings.hero_tabs = [item.dict() for item in payload.hero_tabs]
     settings.hero_image_1 = payload.hero_image_1
     settings.hero_image_2 = payload.hero_image_2
     settings.hero_image_3 = payload.hero_image_3

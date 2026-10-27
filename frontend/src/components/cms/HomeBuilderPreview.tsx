@@ -324,7 +324,7 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
                 ? `px-5 ${heroAlignment === 'top' ? 'pt-4 pb-auto' : heroAlignment === 'center' ? 'my-auto' : 'pb-10 pt-auto'}`
                 : viewportDevice === 'tablet'
                 ? `px-8 ${heroAlignment === 'top' ? 'pt-8 pb-auto' : heroAlignment === 'center' ? 'my-auto' : 'pb-14 pt-auto'}`
-                : `px-10 ${heroAlignment === 'top' ? 'pt-8 pb-auto' : heroAlignment === 'center' ? 'my-auto' : 'pb-16 pt-auto'} ${
+                : `px-0 ${heroAlignment === 'top' ? 'pt-8 pb-auto' : heroAlignment === 'center' ? 'my-auto' : 'pb-16 pt-auto'} ${
                     (activeSlide?.hero_content_fullwidth ?? formData?.hero_content_fullwidth)
                       ? `max-w-7xl ${heroHorizontalAlignment === 'left' ? 'text-left ml-0 mr-auto' : heroHorizontalAlignment === 'right' ? 'text-right mr-0 ml-auto' : 'text-center mx-auto'}`
                       : `max-w-7xl mx-auto ${heroHorizontalAlignment === 'left' ? 'text-left' : heroHorizontalAlignment === 'right' ? 'text-right' : 'text-center'}`

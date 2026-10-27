@@ -346,7 +346,7 @@ export default function HeroSlider({ content }: HeroSliderProps) {
                 '--hero-title-max-w-tablet': `${tabletTitleMaxWidth}%`,
                 '--hero-title-max-w-mobile': `${mobileTitleMaxWidth}%`,
               } as React.CSSProperties}
-              className={`relative z-10 w-full px-6 sm:px-12 md:px-16 ${
+              className={`relative z-10 w-full px-6 sm:px-12 md:px-0 ${
                 isFullwidth 
                   ? (horizontalAlignment === 'left' ? 'text-left ml-0 mr-auto' : horizontalAlignment === 'right' ? 'text-right mr-0 ml-auto' : 'text-center mx-auto')
                   : (horizontalAlignment === 'left' ? 'max-w-7xl mx-auto text-left' : horizontalAlignment === 'right' ? 'max-w-7xl mx-auto text-right' : 'max-w-7xl mx-auto text-center')

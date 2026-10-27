@@ -272,7 +272,8 @@ $function$;
             "ALTER TABLE site_content ADD COLUMN hero_slider_interval INTEGER DEFAULT 5",
             "ALTER TABLE site_content ADD COLUMN hero_slider_effect VARCHAR DEFAULT 'fade'",
             "ALTER TABLE site_content ADD COLUMN hero_slider_show_arrows BOOLEAN DEFAULT TRUE",
-            "ALTER TABLE site_content ADD COLUMN hero_slider_show_dots BOOLEAN DEFAULT TRUE"
+            "ALTER TABLE site_content ADD COLUMN hero_slider_show_dots BOOLEAN DEFAULT TRUE",
+            f"ALTER TABLE landing_marketing_settings ADD COLUMN hero_tabs {json_type} DEFAULT '[]'"
         ]
         
         for m in migrations:

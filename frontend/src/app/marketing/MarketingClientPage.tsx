@@ -39,6 +39,7 @@ interface MarketingClientPageProps {
   initialSettings: {
     hero_title: string;
     hero_subtitle: string;
+    hero_tabs?: any[];
     hero_image_1?: string | null;
     hero_image_2?: string | null;
     hero_image_3?: string | null;

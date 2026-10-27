@@ -14,9 +14,32 @@ import { ColorPicker } from '@/components/ui/color-picker';
 import { Button } from '@/components/ui/button';
 import MediaPickerModal from '@/components/MediaPickerModal';
 import Showcase3DPreview, { MappedPreviewSector } from './Showcase3DPreview';
-import SaaSCMSHeroForm from './SaaSCMSHeroForm';
+import SaaSCMSHeroForm, { HeroTabItem } from './SaaSCMSHeroForm';
 import SaaSCMSSectorList, { ShowcaseSector } from './SaaSCMSSectorList';
 import SaaSCMSSectorForm from './SaaSCMSSectorForm';
+
+export const DEFAULT_HERO_TABS: HeroTabItem[] = [
+  {
+    id: 'tab-agenda',
+    label: 'Agenda & Reservas',
+    image_url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1600&q=80'
+  },
+  {
+    id: 'tab-emr',
+    label: 'Fichas Clínicas LOPD',
+    image_url: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1600&q=80'
+  },
+  {
+    id: 'tab-caja',
+    label: 'Caja y Pagos',
+    image_url: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1600&q=80'
+  },
+  {
+    id: 'tab-marketing',
+    label: 'Marketing & Fidelización',
+    image_url: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1600&q=80'
+  }
+];
 
 interface SaaSCMSManagerProps {
   token: string;
@@ -25,6 +48,7 @@ interface SaaSCMSManagerProps {
 interface MarketingSettings {
   hero_title: string;
   hero_subtitle: string;
+  hero_tabs?: HeroTabItem[];
   hero_image_1?: string | null;
   hero_image_2?: string | null;
   hero_image_3?: string | null;
@@ -46,8 +70,9 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
   
   // Settings state
   const [settings, setSettings] = useState<MarketingSettings>({
-    hero_title: 'La elegancia de tu negocio traducida en un SaaS de Lujo',
-    hero_subtitle: 'Diseñado exclusivamente para centros de estética, wellness, spas y salones premium independientes.',
+    hero_title: 'El único software que tu clínica volverá a necesitar.',
+    hero_subtitle: 'Probookia unifica tu agenda, cobros, fichas médicas y marketing en una sola pantalla. Menos herramientas, cero fricción, más rentabilidad.',
+    hero_tabs: DEFAULT_HERO_TABS,
     hero_image_1: null,
     hero_image_2: null,
     hero_image_3: null,
@@ -62,6 +87,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
     seo_description: '',
     seo_keywords: ''
   });
+  const [activeHeroTabId, setActiveHeroTabId] = useState<string>('tab-agenda');
   const [savingSettings, setSavingSettings] = useState(false);
 
   // Sectors state
@@ -84,7 +110,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
   const [submittingSector, setSubmittingSector] = useState(false);
 
   // Media Picker Dialog target
-  const [pickerTarget, setPickerTarget] = useState<{ field: 'video_url' | 'image_url' | 'hero_image_1' | 'hero_image_2' | 'hero_image_3' } | null>(null);
+  const [pickerTarget, setPickerTarget] = useState<{ field: string; tabId?: string } | null>(null);
 
   // Preview Navigation States
   const [previewIndex, setPreviewIndex] = useState(0);
@@ -159,7 +185,13 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
       if (!response.ok) throw new Error('Error al obtener ajustes de marketing');
       const data = await response.json();
       if (data && data.hero_title) {
+        if (!data.hero_tabs || data.hero_tabs.length === 0) {
+          data.hero_tabs = DEFAULT_HERO_TABS;
+        }
         setSettings(data);
+        if (data.hero_tabs?.[0]?.id) {
+          setActiveHeroTabId(data.hero_tabs[0].id);
+        }
       }
     } catch (err: any) {
       console.error(err);
@@ -451,7 +483,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
             }`}
           >
             <Settings2 className="w-3.5 h-3.5" />
-            <span>Portada</span>
+            <span>Hero</span>
           </button>
           <button 
             onClick={() => {
@@ -503,7 +535,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                   <Sparkles className="w-3.5 h-3.5" /> Marca de Lujo B2B
                 </h4>
                 <p className="text-[10px] text-stone-500 leading-relaxed font-medium">
-                  Los textos introducidos aquí se reflejan instantáneamente en la cabecera editorial del simulador de la derecha.
+                  Los textos y pestañas introducidos aquí se reflejan instantáneamente en el Hero interactivo de la derecha.
                 </p>
               </div>
 
@@ -518,15 +550,51 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                 <SaaSCMSHeroForm 
                   heroTitle={settings.hero_title}
                   heroSubtitle={settings.hero_subtitle}
-                  heroImage1={settings.hero_image_1 || null}
-                  heroImage2={settings.hero_image_2 || null}
-                  heroImage3={settings.hero_image_3 || null}
+                  heroTabs={settings.hero_tabs || DEFAULT_HERO_TABS}
+                  activeTabId={activeHeroTabId}
                   onChangeTitle={(val) => setSettings(prev => ({ ...prev, hero_title: val }))}
                   onChangeSubtitle={(val) => setSettings(prev => ({ ...prev, hero_subtitle: val }))}
-                  onSelectImage={(index) => setPickerTarget({ field: `hero_image_${index}` as any })}
-                  onClearImage={(index) => setSettings(prev => ({ ...prev, [`hero_image_${index}`]: null }))}
+                  onAddTab={() => {
+                    const newId = `tab-${Date.now()}`;
+                    const newTab: HeroTabItem = {
+                      id: newId,
+                      label: `Nueva Función ${(settings.hero_tabs?.length || 0) + 1}`,
+                      image_url: ''
+                    };
+                    setSettings(prev => ({
+                      ...prev,
+                      hero_tabs: [...(prev.hero_tabs || []), newTab]
+                    }));
+                    setActiveHeroTabId(newId);
+                  }}
+                  onUpdateTabLabel={(id, label) => {
+                    setSettings(prev => ({
+                      ...prev,
+                      hero_tabs: (prev.hero_tabs || []).map(t => t.id === id ? { ...t, label } : t)
+                    }));
+                  }}
+                  onUpdateTabImage={(id, image_url) => {
+                    setSettings(prev => ({
+                      ...prev,
+                      hero_tabs: (prev.hero_tabs || []).map(t => t.id === id ? { ...t, image_url } : t)
+                    }));
+                  }}
+                  onDeleteTab={(id) => {
+                    setSettings(prev => {
+                      const updated = (prev.hero_tabs || []).filter(t => t.id !== id);
+                      if (activeHeroTabId === id && updated.length > 0) {
+                        setActiveHeroTabId(updated[0].id);
+                      }
+                      return { ...prev, hero_tabs: updated };
+                    });
+                  }}
+                  onSelectImageFromGallery={(tabId) => {
+                    setPickerTarget({ field: 'hero_tab', tabId });
+                  }}
+                  onSetActiveTab={setActiveHeroTabId}
                   onSubmit={handleSaveSettings}
                   saving={savingSettings}
+                  token={token}
                 />
               )}
             </div>
@@ -878,17 +946,13 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
 
       </div>
 
-      {/* 2. RIGHT VIEWPORT: LIVE 3D MARKETING SIMULATOR */}
+      {/* 2. RIGHT VIEWPORT: LIVE HERO SAAS SIMULATOR */}
       <Showcase3DPreview
         heroTitle={settings.hero_title}
         heroSubtitle={settings.hero_subtitle}
-        heroImage1={settings.hero_image_1}
-        heroImage2={settings.hero_image_2}
-        heroImage3={settings.hero_image_3}
-        previewSectors={previewSectors}
-        previewIndex={previewIndex}
-        previewAnimating={previewAnimating}
-        handlePreviewNavigate={handlePreviewNavigate}
+        heroTabs={settings.hero_tabs || DEFAULT_HERO_TABS}
+        activeHeroTabId={activeHeroTabId}
+        onSelectHeroTab={setActiveHeroTabId}
         primaryColor={settings.primary_color}
         secondaryColor={settings.secondary_color}
         tertiaryColor={settings.tertiary_color}
@@ -902,7 +966,14 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
         <MediaPickerModal
           onClose={() => setPickerTarget(null)}
           onImageSelected={(url) => {
-            if (pickerTarget.field.startsWith('hero_image_')) {
+            if (pickerTarget.field === 'hero_tab' && pickerTarget.tabId) {
+              setSettings(prev => ({
+                ...prev,
+                hero_tabs: (prev.hero_tabs || []).map(tab =>
+                  tab.id === pickerTarget.tabId ? { ...tab, image_url: url } : tab
+                )
+              }));
+            } else if (pickerTarget.field.startsWith('hero_image_')) {
               setSettings(prev => ({ ...prev, [pickerTarget.field]: url }));
             } else {
               setSectorFormData(prev => ({ ...prev, [pickerTarget.field]: url }));
@@ -910,6 +981,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
             setPickerTarget(null);
           }}
           mediaType={pickerTarget.field === 'video_url' ? 'video' : 'image'}
+          forceAspect={pickerTarget.field === 'hero_tab' ? 16 / 9 : undefined}
           tenantId="00000000-0000-0000-0000-000000000000"
           token={token}
         />

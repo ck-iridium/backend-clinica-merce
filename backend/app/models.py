@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, Text, Boolean, Integer, Numeric, DateTime, Date, ForeignKey, Float, UniqueConstraint
+from sqlalchemy import Column, String, Text, Boolean, Integer, Numeric, DateTime, Date, ForeignKey, Float, UniqueConstraint, JSON
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -555,8 +555,9 @@ class SiteBlock(Base):
 class LandingMarketingSettings(Base):
     __tablename__ = "landing_marketing_settings"
     id = Column(String(36), primary_key=True, default="global")
-    hero_title = Column(String, default="La elegancia de tu negocio traducida en un SaaS de Lujo")
-    hero_subtitle = Column(String, default="Diseñado exclusivamente para centros de estética, wellness, spas y salones premium independientes.")
+    hero_title = Column(String, default="El único software que tu clínica volverá a necesitar.")
+    hero_subtitle = Column(String, default="Probookia unifica tu agenda, cobros, fichas médicas y marketing en una sola pantalla. Menos herramientas, cero fricción, más rentabilidad.")
+    hero_tabs = Column(JSON, default=list, nullable=True)
     hero_image_1 = Column(Text, nullable=True)
     hero_image_2 = Column(Text, nullable=True)
     hero_image_3 = Column(Text, nullable=True)
