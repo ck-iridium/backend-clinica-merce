@@ -9,7 +9,7 @@ import MarketingHero, { HeroTab } from './components/MarketingHero';
 import PainComparisonSection from './components/PainComparisonSection';
 import PillarsSection from './components/PillarsSection';
 import MarketingFooter from './components/MarketingFooter';
-import { resolveHeadingFont, resolveBodyFont, FONT_WEIGHT_MAP } from './utils/fonts';
+import { resolveHeadingFont, resolveBodyFont, FONT_WEIGHT_MAP, GOOGLE_FONTS_URL } from './utils/fonts';
 
 export interface Sector {
   id: string;
@@ -171,14 +171,15 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
       style={{
         '--primary-accent': primaryColor,
         '--secondary-accent': secondaryColor,
-        '--tertiary-accent': tertiaryColor
+        '--tertiary-accent': tertiaryColor,
+        backgroundColor: secondaryColor || '#FAF9F6'
       } as React.CSSProperties}
-      className="min-h-screen bg-[#FAF9F6] text-stone-900 font-sans selection:bg-[#d4af37]/20 overflow-x-hidden relative transition-colors duration-300"
+      className="min-h-screen text-stone-900 font-sans selection:bg-[#d4af37]/20 overflow-x-hidden relative transition-colors duration-300"
     >
       {/* Inyección dinámica de Google Fonts y Clases Tipográficas desde el Panel de Branding */}
       <style dangerouslySetInnerHTML={{
         __html: `
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400..800&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Fredoka:wght@300..700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Roboto:wght@300;400;500;700&display=swap');
+        @import url('${GOOGLE_FONTS_URL}');
 
         :root {
           --font-serif: ${resolvedHeadingFont} !important;
@@ -197,7 +198,7 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
           font-weight: ${activeWeight} !important;
         }
         
-        .font-sans, body, html, button, input, select, textarea, p, span, a {
+        .font-sans, p, input, select, textarea {
           font-family: ${resolvedBodyFont} !important;
         }
       ` }} />
@@ -221,10 +222,19 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
       />
 
       {/* ── 3. EL DOLOR DE LA FRAGMENTACIÓN VS PROBOOKIA TODO-EN-UNO ── */}
-      <PainComparisonSection onSelectPlan={handleOpenOnboarding} />
+      <PainComparisonSection 
+        onSelectPlan={handleOpenOnboarding} 
+        primaryColor={primaryColor}
+        secondaryColor={secondaryColor}
+        tertiaryColor={tertiaryColor}
+      />
 
       {/* ── 4. LOS 4 PILARES DEL ECOSISTEMA PROBOOKIA (BENTO GRID) ── */}
-      <PillarsSection />
+      <PillarsSection 
+        primaryColor={primaryColor}
+        secondaryColor={secondaryColor}
+        tertiaryColor={tertiaryColor}
+      />
 
       {/* ── 5. SECCIÓN DE SECTORES EN ANILLO 3D REAL ── */}
       <Showcase3DRing
@@ -239,10 +249,18 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
       />
 
       {/* ── 6. SECCIÓN DE PRECIOS EDITORIALES ── */}
-      <PricingSection onSelectPlan={handleOpenOnboarding} />
+      <PricingSection 
+        onSelectPlan={handleOpenOnboarding} 
+        primaryColor={primaryColor}
+        secondaryColor={secondaryColor}
+        tertiaryColor={tertiaryColor}
+      />
 
       {/* ── 7. FOOTER QUIET LUXURY ── */}
-      <MarketingFooter />
+      <MarketingFooter 
+        primaryColor={primaryColor}
+        tertiaryColor={tertiaryColor}
+      />
 
       {/* ── 8. ONBOARDING REGISTRATION MODAL ── */}
       <OnboardingModal

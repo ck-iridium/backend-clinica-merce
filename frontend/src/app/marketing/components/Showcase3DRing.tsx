@@ -230,8 +230,8 @@ export default function Showcase3DRing({
     setIsPaused(false);
   };
 
-  const accentColor = tertiaryColor || '#E213FF';
-  const brandPrimary = primaryColor || '#2244C9';
+  const accentColor = tertiaryColor || '#D4AF37';
+  const brandPrimary = primaryColor || '#1c1917';
 
   // Sector activo para el visor centrado
   const activeSector = selectedCardIndex !== null && displayItems[selectedCardIndex]

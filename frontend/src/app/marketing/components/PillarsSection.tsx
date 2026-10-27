@@ -2,12 +2,28 @@
 
 import { Globe, Calendar, Receipt, Bot } from 'lucide-react';
 
-export default function PillarsSection() {
+interface PillarsSectionProps {
+  primaryColor?: string;
+  secondaryColor?: string;
+  tertiaryColor?: string;
+}
+
+export default function PillarsSection({
+  primaryColor = '#1c1917',
+  secondaryColor = '#FAF9F6',
+  tertiaryColor = '#D4AF37'
+}: PillarsSectionProps) {
+  const accentColor = tertiaryColor || '#D4AF37';
+  const darkColor = primaryColor || '#1c1917';
+
   return (
     <section id="pilares" className="py-28 bg-[#FAF9F6]">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center max-w-2xl mx-auto mb-20">
-          <span className="text-[#997715] text-[10px] font-black uppercase tracking-[0.25em] block mb-2">
+          <span 
+            style={{ color: accentColor }}
+            className="text-[10px] font-black uppercase tracking-[0.25em] block mb-2"
+          >
             Arquitectura de Producto
           </span>
           <h2 className="text-3xl md:text-5xl font-serif font-bold tracking-tight text-stone-950">
@@ -22,10 +38,20 @@ export default function PillarsSection() {
           {/* Pilar 1 */}
           <div className="bg-white rounded-3xl p-7 border border-stone-200/80 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-[#D4AF37]/10 border border-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] mb-6">
+              <div 
+                style={{ 
+                  backgroundColor: `${accentColor}18`, 
+                  borderColor: `${accentColor}35`, 
+                  color: accentColor 
+                }}
+                className="w-12 h-12 rounded-2xl border flex items-center justify-center mb-6 shadow-2xs"
+              >
                 <Globe size={22} strokeWidth={1.75} />
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#997715] block mb-1">
+              <span 
+                style={{ color: accentColor }}
+                className="text-[10px] font-bold uppercase tracking-widest block mb-1"
+              >
                 Pilar 01
               </span>
               <h3 className="text-xl font-serif font-bold text-stone-950 mb-3">
@@ -43,7 +69,7 @@ export default function PillarsSection() {
           {/* Pilar 2 */}
           <div className="bg-white rounded-3xl p-7 border border-stone-200/80 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200/60 flex items-center justify-center text-emerald-600 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200/60 flex items-center justify-center text-emerald-600 mb-6 shadow-2xs">
                 <Calendar size={22} strokeWidth={1.75} />
               </div>
               <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 block mb-1">
@@ -64,7 +90,7 @@ export default function PillarsSection() {
           {/* Pilar 3 */}
           <div className="bg-white rounded-3xl p-7 border border-stone-200/80 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-700 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-700 mb-6 shadow-2xs">
                 <Receipt size={22} strokeWidth={1.75} />
               </div>
               <span className="text-[10px] font-bold uppercase tracking-widest text-amber-700 block mb-1">
@@ -85,10 +111,20 @@ export default function PillarsSection() {
           {/* Pilar 4 */}
           <div className="bg-white rounded-3xl p-7 border border-stone-200/80 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-[#1C1917] border border-stone-800 flex items-center justify-center text-[#D4AF37] mb-6">
+              <div 
+                style={{ 
+                  backgroundColor: darkColor,
+                  borderColor: `${accentColor}40`,
+                  color: accentColor 
+                }}
+                className="w-12 h-12 rounded-2xl border flex items-center justify-center mb-6 shadow-2xs"
+              >
                 <Bot size={22} strokeWidth={1.75} />
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-stone-900 block mb-1">
+              <span 
+                style={{ color: accentColor }}
+                className="text-[10px] font-bold uppercase tracking-widest block mb-1"
+              >
                 Pilar 04
               </span>
               <h3 className="text-xl font-serif font-bold text-stone-950 mb-3">

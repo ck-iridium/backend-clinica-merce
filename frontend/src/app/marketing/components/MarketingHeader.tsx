@@ -30,7 +30,14 @@ export default function MarketingHeader({
               <span className="text-xl md:text-2xl font-serif tracking-widest text-stone-950 font-bold select-none">
                 PROBOOKIA
               </span>
-              <span className="bg-[#D4AF37]/15 text-[#997715] text-[9px] font-black tracking-[0.2em] uppercase px-2 py-0.5 rounded-full border border-[#D4AF37]/30">
+              <span 
+                style={{ 
+                  backgroundColor: `${tertiaryColor || '#D4AF37'}20`, 
+                  color: tertiaryColor || '#997715', 
+                  borderColor: `${tertiaryColor || '#D4AF37'}40` 
+                }}
+                className="text-[9px] font-black tracking-[0.2em] uppercase px-2 py-0.5 rounded-full border"
+              >
                 SUITE
               </span>
             </div>

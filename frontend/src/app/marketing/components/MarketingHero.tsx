@@ -127,10 +127,11 @@ export default function MarketingHero({
                   style={isSelected ? {
                     backgroundColor: primaryColor || '#1c1917',
                     color: '#ffffff',
-                    borderColor: primaryColor || '#1c1917'
+                    borderColor: primaryColor || '#1c1917',
+                    boxShadow: `0 0 0 2px ${tertiaryColor || '#D4AF37'}40`
                   } : undefined}
                   className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 shadow-xs border ${isSelected
-                      ? 'shadow-lg scale-105 ring-2 ring-[#D4AF37]/30'
+                      ? 'shadow-lg scale-105'
                       : 'bg-white/95 text-stone-600 border-stone-200/90 hover:border-stone-300 hover:text-stone-950 hover:bg-stone-50'
                     }`}
                 >
@@ -242,7 +243,7 @@ export default function MarketingHero({
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full p-8 text-center space-y-3 bg-stone-50 select-none">
                     <div className="w-16 h-16 rounded-2xl bg-white border border-stone-200/80 shadow-xs flex items-center justify-center text-stone-400">
-                      <Sparkles className="w-8 h-8 text-[#D4AF37]" />
+                      <Sparkles className="w-8 h-8" style={{ color: tertiaryColor || '#D4AF37' }} />
                     </div>
                     <div>
                       <h4 className="text-sm sm:text-base font-bold text-stone-800">
@@ -274,13 +275,13 @@ export default function MarketingHero({
       {/* Micro badges de confianza en el pie del hero */}
       <div className="max-w-5xl mx-auto px-6 flex flex-wrap items-center justify-center gap-6 mt-10 text-[11px] font-semibold text-stone-500 relative z-20">
         <span className="flex items-center gap-1.5">
-          <CheckCircle2 size={13} className="text-[#D4AF37]" /> Sin permanencia ni comisiones
+          <CheckCircle2 size={13} style={{ color: tertiaryColor || '#D4AF37' }} /> Sin permanencia ni comisiones
         </span>
         <span className="flex items-center gap-1.5">
-          <CheckCircle2 size={13} className="text-[#D4AF37]" /> Fianza anti-plantones Stripe
+          <CheckCircle2 size={13} style={{ color: tertiaryColor || '#D4AF37' }} /> Fianza anti-plantones Stripe
         </span>
         <span className="flex items-center gap-1.5">
-          <CheckCircle2 size={13} className="text-[#D4AF37]" /> Fichas médicas con firma LOPD
+          <CheckCircle2 size={13} style={{ color: tertiaryColor || '#D4AF37' }} /> Fichas médicas con firma LOPD
         </span>
       </div>
     </section>

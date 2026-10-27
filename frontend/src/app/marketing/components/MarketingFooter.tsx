@@ -2,13 +2,27 @@
 
 import Link from 'next/link';
 
-export default function MarketingFooter() {
+interface MarketingFooterProps {
+  primaryColor?: string;
+  tertiaryColor?: string;
+}
+
+export default function MarketingFooter({
+  primaryColor = '#1c1917',
+  tertiaryColor = '#D4AF37'
+}: MarketingFooterProps) {
+  const darkColor = primaryColor || '#1c1917';
+  const accentColor = tertiaryColor || '#D4AF37';
+
   return (
-    <footer className="bg-stone-950 text-white py-16 border-t border-stone-900">
-      <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8 border-b border-stone-900 pb-12 mb-12">
+    <footer 
+      style={{ backgroundColor: darkColor }}
+      className="text-white py-16 border-t border-white/10"
+    >
+      <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8 border-b border-white/10 pb-12 mb-12">
         <div>
           <span className="text-xl font-serif tracking-widest text-white block mb-2 font-bold">
-            PROBOOKIA SUITE
+            PROBOOKIA <span style={{ color: accentColor }}>SUITE</span>
           </span>
           <p className="text-stone-400 text-xs md:text-sm max-w-sm leading-relaxed font-medium">
             La plataforma invisible de alta gama para presencia web, reservas online, expedientes médicos, facturación y TPV en centros selectos.
@@ -26,7 +40,7 @@ export default function MarketingFooter() {
           </Link>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto px-6 text-center text-xs text-stone-600 font-semibold">
+      <div className="max-w-7xl mx-auto px-6 text-center text-xs text-stone-500 font-semibold">
         &copy; {new Date().getFullYear()} ProBookia. Todos los derechos reservados. SaaS Quiet Luxury B2B.
       </div>
     </footer>

@@ -294,17 +294,8 @@ export default async function RootLayout({
           <link rel="icon" href={marketingFavicon} />
           <link rel="preconnect" href="https://ypimdbkiuguiszaddzaj.supabase.co" crossOrigin="anonymous" />
           <link rel="dns-prefetch" href="https://ypimdbkiuguiszaddzaj.supabase.co" />
-          <style dangerouslySetInnerHTML={{
-            __html: `
-            :root {
-              --font-heading: var(--font-inter), sans-serif !important;
-              --font-playfair: var(--font-inter), sans-serif !important;
-              --font-cormorant: var(--font-inter), sans-serif !important;
-              --font-inter: var(--font-inter), sans-serif !important;
-            }
-          ` }} />
         </head>
-        <body className="antialiased bg-white text-stone-900 flex flex-col min-h-screen">
+        <body className="antialiased bg-white text-stone-900 flex flex-col min-h-screen font-sans">
           <Providers>
             {children}
           </Providers>

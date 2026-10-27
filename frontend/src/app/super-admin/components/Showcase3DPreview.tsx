@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Monitor, Star, Sparkles, ChevronRight, ChevronLeft, Laptop, Layers } from 'lucide-react';
+import { resolveHeadingFont, resolveBodyFont, FONT_WEIGHT_MAP, GOOGLE_FONTS_URL } from '@/app/marketing/utils/fonts';
 
 export interface MappedPreviewSector {
   id: string;
@@ -36,54 +37,6 @@ interface Showcase3DPreviewProps {
   previewSectors?: MappedPreviewSector[];
 }
 
-function resolveHeadingFont(fontKey?: string | null): string {
-  switch (fontKey) {
-    case 'playfair':
-    case 'playfair_inter':
-      return "var(--font-playfair-base), 'Playfair Display', serif";
-    case 'cormorant':
-    case 'cormorant_montserrat':
-      return "var(--font-cormorant), 'Cormorant Garamond', serif";
-    case 'cinzel':
-    case 'cinzel_roboto':
-      return "'Cinzel', serif";
-    case 'outfit':
-      return "var(--font-outfit), 'Outfit', sans-serif";
-    case 'plus_jakarta_sans':
-      return "'Plus Jakarta Sans', sans-serif";
-    case 'montserrat':
-      return "var(--font-montserrat), 'Montserrat', sans-serif";
-    case 'fredoka':
-      return "var(--font-fredoka), 'Fredoka', cursive, sans-serif";
-    case 'inter':
-      return "var(--font-inter), 'Inter', sans-serif";
-    default:
-      return "var(--font-playfair-base), 'Playfair Display', serif";
-  }
-}
-
-function resolveBodyFont(bodyKey?: string | null, headingKey?: string | null): string {
-  if (!bodyKey || bodyKey === 'inter') {
-    if (headingKey === 'cormorant_montserrat') return "var(--font-montserrat), 'Montserrat', sans-serif";
-    if (headingKey === 'cinzel_roboto') return "'Roboto', sans-serif";
-  }
-  switch (bodyKey) {
-    case 'plus_jakarta_sans':
-      return "'Plus Jakarta Sans', sans-serif";
-    case 'montserrat':
-      return "var(--font-montserrat), 'Montserrat', sans-serif";
-    case 'outfit':
-      return "var(--font-outfit), 'Outfit', sans-serif";
-    case 'dm_sans':
-      return "'DM Sans', sans-serif";
-    case 'roboto':
-      return "'Roboto', sans-serif";
-    case 'inter':
-    default:
-      return "var(--font-inter), 'Inter', sans-serif";
-  }
-}
-
 export default function Showcase3DPreview({
   heroTitle,
   heroSubtitle,
@@ -98,14 +51,7 @@ export default function Showcase3DPreview({
   fontWeightHeadings,
   logoSvg
 }: Showcase3DPreviewProps) {
-  const weightMap: Record<string, string> = {
-    'light': '300',
-    'normal': '400',
-    'medium': '500',
-    'semibold': '600',
-    'bold': '700'
-  };
-  const activeWeight = weightMap[fontWeightHeadings || 'semibold'] || '600';
+  const activeWeight = FONT_WEIGHT_MAP[fontWeightHeadings || 'semibold'] || '600';
 
   // Manejo de pestaña activa en el visor
   const [internalActiveId, setInternalActiveId] = useState<string>(
@@ -161,7 +107,7 @@ export default function Showcase3DPreview({
     >
       <style dangerouslySetInnerHTML={{
         __html: `
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400..800&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Roboto:wght@300;400;500;700&display=swap');
+        @import url('${GOOGLE_FONTS_URL}');
 
         .preview-serif {
           font-family: ${resolveHeadingFont(fontFamily)} !important;
