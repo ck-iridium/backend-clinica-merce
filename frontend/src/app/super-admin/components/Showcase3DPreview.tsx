@@ -176,16 +176,6 @@ export default function Showcase3DPreview({
 
           {/* A. ARRIBA: EDITORIAL Y TITULARES */}
           <div className="relative z-10 max-w-2xl mx-auto flex flex-col items-center">
-            
-            {/* Pill Badge de Confianza */}
-            <div 
-              style={{ borderColor: tertiaryColor ? `${tertiaryColor}40` : '#D4AF3740' }}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-bold tracking-wider uppercase bg-white/90 border shadow-2xs backdrop-blur-md mb-4 text-stone-700"
-            >
-              <Sparkles className="w-3 h-3" style={{ color: tertiaryColor || '#D4AF37' }} />
-              <span>EL ESTÁNDAR TODO-EN-UNO PARA CLÍNICAS SELECTAS</span>
-            </div>
-
             {/* Título Principal */}
             <h1 className="text-xl md:text-3xl font-serif font-bold text-stone-950 tracking-tight leading-[1.2] drop-shadow-xs mb-3 preview-serif text-center">
               {heroTitle || 'El único software que tu clínica volverá a necesitar.'}

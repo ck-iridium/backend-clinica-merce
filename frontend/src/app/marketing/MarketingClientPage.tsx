@@ -295,19 +295,6 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
 
         {/* Hero Content Layer */}
         <div className="max-w-7xl mx-auto px-6 relative z-20 text-center animate-in fade-in slide-in-from-bottom-6 duration-1000 flex flex-col justify-center items-center w-full">
-          
-          {/* Trust Pill Badge */}
-          <div 
-            style={{ 
-              borderColor: tertiaryColor ? `${tertiaryColor}40` : 'rgba(212,175,55,0.3)', 
-              color: tertiaryColor || '#997715' 
-            }}
-            className="inline-flex items-center gap-2 bg-white/95 border px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase mb-6 shadow-xs backdrop-blur-md"
-          >
-            <Sparkles className="w-3.5 h-3.5" style={{ color: tertiaryColor || '#D4AF37' }} />
-            <span>EL NUEVO ESTÁNDAR TODO-EN-UNO PARA CLÍNICAS SELECTAS</span>
-          </div>
-          
           {/* Main Title */}
           <h1 
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-stone-950 tracking-tight leading-[1.12] max-w-5xl mx-auto mb-6 filter drop-shadow-xs"
