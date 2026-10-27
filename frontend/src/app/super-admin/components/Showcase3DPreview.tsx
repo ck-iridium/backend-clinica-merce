@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Monitor, Star, Sparkles, ChevronRight, ChevronLeft, Laptop, Layers } from 'lucide-react';
 
 export interface MappedPreviewSector {
@@ -74,12 +75,29 @@ export default function Showcase3DPreview({
   const hasMultipleTabs = heroTabs.length > 1;
   const activeIndex = heroTabs.findIndex(t => t.id === (activeTab?.id || ''));
   const validIndex = activeIndex >= 0 ? activeIndex : 0;
-  const prevTab = hasMultipleTabs ? heroTabs[(validIndex - 1 + heroTabs.length) % heroTabs.length] : null;
-  const nextTab = hasMultipleTabs ? heroTabs[(validIndex + 1) % heroTabs.length] : null;
 
   const handleTabClick = (tabId: string) => {
     setInternalActiveId(tabId);
     onSelectHeroTab?.(tabId);
+  };
+
+  const handleNext = () => {
+    if (heroTabs.length <= 1) return;
+    const nextIdx = (validIndex + 1) % heroTabs.length;
+    handleTabClick(heroTabs[nextIdx].id);
+  };
+
+  const handlePrev = () => {
+    if (heroTabs.length <= 1) return;
+    const prevIdx = (validIndex - 1 + heroTabs.length) % heroTabs.length;
+    handleTabClick(heroTabs[prevIdx].id);
+  };
+
+  const getSlideOffset = (index: number) => {
+    let diff = index - validIndex;
+    while (diff > heroTabs.length / 2) diff -= heroTabs.length;
+    while (diff < -heroTabs.length / 2) diff += heroTabs.length;
+    return diff;
   };
 
   return (
@@ -239,98 +257,111 @@ export default function Showcase3DPreview({
             </div>
           )}
 
-          {/* C. ABAJO: TRÍPTICO SLIDER MANGOMINT (3 CAPTURAS: LATERAL IZQ - CENTRAL - LATERAL DER) */}
-          <div className="relative z-10 w-full overflow-hidden py-3 select-none">
+          {/* C. ABAJO: TRÍPTICO SLIDER PROFESIONAL CON FRAMER MOTION */}
+          <div className="relative z-10 w-full overflow-hidden py-3 select-none flex items-center justify-center">
             {/* Máscara de desvanecimiento lateral izquierda */}
             <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-12 sm:w-24 bg-gradient-to-r from-[#FAF9F6] via-[#FAF9F6]/85 to-transparent z-30" />
             
             {/* Máscara de desvanecimiento lateral derecha */}
             <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 sm:w-24 bg-gradient-to-l from-[#FAF9F6] via-[#FAF9F6]/85 to-transparent z-30" />
 
-            <div className="flex items-center justify-center w-full px-2">
-              
-              {/* 1. Tarjeta Izquierda (Pestaña Anterior - Solo diapositiva) */}
-              {hasMultipleTabs && prevTab && (
-                <div 
-                  onClick={() => handleTabClick(prevTab.id)}
-                  className="w-[46%] aspect-video shrink-0 -mr-14 sm:-mr-20 scale-[0.88] opacity-50 hover:opacity-85 transition-all duration-300 ease-out cursor-pointer z-10 rounded-xl md:rounded-2xl border border-stone-200/80 bg-white shadow-md overflow-hidden relative group"
-                  title={`Ver ${prevTab.label}`}
-                >
-                  {prevTab.image_url ? (
-                    <img 
-                      src={prevTab.image_url} 
-                      alt={prevTab.label}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full p-2 text-center bg-stone-50">
-                      <Sparkles className="w-4 h-4 text-[#D4AF37] mb-1" />
-                      <span className="text-[10px] font-bold text-stone-600">{prevTab.label}</span>
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/5 transition-colors flex items-center justify-start pl-2">
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/95 text-stone-800 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1 border border-stone-200">
-                      <ChevronLeft className="w-3 h-3" />
-                      <span>{prevTab.label}</span>
-                    </span>
-                  </div>
-                </div>
-              )}
+            {/* Flecha Flotante Izquierda */}
+            {heroTabs.length > 1 && (
+              <button
+                type="button"
+                onClick={handlePrev}
+                className="absolute left-2 sm:left-4 z-40 w-8 h-8 rounded-full bg-white/90 backdrop-blur-md border border-stone-200/80 shadow-md text-stone-700 hover:text-stone-950 hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
+                aria-label="Diapositiva anterior"
+              >
+                <ChevronLeft className="w-4 h-4 text-stone-700" />
+              </button>
+            )}
 
-              {/* 2. Tarjeta Central (Pestaña Activa - Solo diapositiva) */}
-              <div className="w-[74%] aspect-video shrink-0 z-20 scale-100 rounded-xl md:rounded-2xl border border-stone-200/90 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.10)] overflow-hidden transition-all duration-300 ring-1 ring-stone-900/5 relative">
-                {activeTab?.image_url ? (
-                  <img
-                    key={activeTab.id}
-                    src={activeTab.image_url}
-                    alt={activeTab.label}
-                    className="w-full h-full object-cover transition-opacity duration-300 ease-out animate-in fade-in"
-                  />
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-full p-6 text-center space-y-2 bg-stone-50">
-                    <div className="w-12 h-12 rounded-xl bg-white border border-stone-200/80 shadow-2xs flex items-center justify-center text-stone-400">
-                      <Laptop className="w-6 h-6 text-[#D4AF37]" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-stone-800">
-                        {activeTab ? `Captura de "${activeTab.label}"` : 'Sin pestañas creadas'}
-                      </h4>
-                      <p className="text-[10px] text-stone-400 max-w-xs mt-0.5 leading-relaxed">
-                        Sube una captura de pantalla 16:9 en el panel izquierdo para verla reflejada aquí.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
+            {/* Flecha Flotante Derecha */}
+            {heroTabs.length > 1 && (
+              <button
+                type="button"
+                onClick={handleNext}
+                className="absolute right-2 sm:right-4 z-40 w-8 h-8 rounded-full bg-white/90 backdrop-blur-md border border-stone-200/80 shadow-md text-stone-700 hover:text-stone-950 hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
+                aria-label="Siguiente diapositiva"
+              >
+                <ChevronRight className="w-4 h-4 text-stone-700" />
+              </button>
+            )}
 
-              {/* 3. Tarjeta Derecha (Pestaña Siguiente - Solo diapositiva) */}
-              {hasMultipleTabs && nextTab && (
-                <div 
-                  onClick={() => handleTabClick(nextTab.id)}
-                  className="w-[46%] aspect-video shrink-0 -ml-14 sm:-ml-20 scale-[0.88] opacity-50 hover:opacity-85 transition-all duration-300 ease-out cursor-pointer z-10 rounded-xl md:rounded-2xl border border-stone-200/80 bg-white shadow-md overflow-hidden relative group"
-                  title={`Ver ${nextTab.label}`}
-                >
-                  {nextTab.image_url ? (
-                    <img 
-                      src={nextTab.image_url} 
-                      alt={nextTab.label}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full p-2 text-center bg-stone-50">
-                      <Sparkles className="w-4 h-4 text-[#D4AF37] mb-1" />
-                      <span className="text-[10px] font-bold text-stone-600">{nextTab.label}</span>
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/5 transition-colors flex items-center justify-end pr-2">
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/95 text-stone-800 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1 border border-stone-200">
-                      <span>{nextTab.label}</span>
-                      <ChevronRight className="w-3 h-3" />
-                    </span>
-                  </div>
-                </div>
-              )}
+            {/* Placeholder de dimensionamiento 16:9 responsivo */}
+            <div className="w-[74%] aspect-video opacity-0 pointer-events-none" />
 
+            {/* Pista de diapositivas animadas */}
+            <div className="absolute inset-0 flex items-center justify-center overflow-visible">
+              {heroTabs.map((tab, idx) => {
+                const offset = getSlideOffset(idx);
+                const isCenter = offset === 0;
+                const isLeft = offset === -1;
+                const isRight = offset === 1;
+                const isVisible = Math.abs(offset) <= 1;
+
+                const xPos = isCenter ? "0%" : isRight ? "52%" : isLeft ? "-52%" : offset > 1 ? "120%" : "-120%";
+
+                return (
+                  <motion.div
+                    key={tab.id}
+                    animate={{
+                      x: xPos,
+                      scale: isCenter ? 1 : isVisible ? 0.88 : 0.75,
+                      opacity: isCenter ? 1 : isVisible ? 0.55 : 0,
+                      zIndex: isCenter ? 25 : isVisible ? 15 : 0,
+                    }}
+                    whileHover={!isCenter && isVisible ? { opacity: 0.85, scale: 0.90 } : undefined}
+                    transition={{
+                      x: { type: "spring", stiffness: 220, damping: 28, mass: 0.9 },
+                      scale: { type: "spring", stiffness: 240, damping: 28 },
+                      opacity: { duration: 0.35 }
+                    }}
+                    onClick={() => {
+                      if (isLeft) handlePrev();
+                      if (isRight) handleNext();
+                    }}
+                    className={`absolute w-[74%] aspect-video rounded-xl md:rounded-2xl overflow-hidden border bg-white ${
+                      isCenter
+                        ? 'border-stone-200/90 shadow-[0_20px_50px_rgba(0,0,0,0.10)] ring-1 ring-stone-900/5 cursor-default'
+                        : isVisible
+                        ? 'border-stone-200/80 shadow-md cursor-pointer'
+                        : 'pointer-events-none'
+                    }`}
+                    style={{ willChange: 'transform, opacity' }}
+                  >
+                    {tab.image_url ? (
+                      <img 
+                        src={tab.image_url} 
+                        alt={tab.label}
+                        className="w-full h-full object-cover pointer-events-none select-none"
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-full p-4 text-center space-y-1.5 bg-stone-50 select-none">
+                        <div className="w-10 h-10 rounded-xl bg-white border border-stone-200/80 shadow-2xs flex items-center justify-center text-stone-400">
+                          <Laptop className="w-5 h-5 text-[#D4AF37]" />
+                        </div>
+                        <div>
+                          <h4 className="text-[11px] font-bold text-stone-800">
+                            {tab.label ? `Captura de "${tab.label}"` : 'Sin etiqueta'}
+                          </h4>
+                        </div>
+                      </div>
+                    )}
+
+                    {!isCenter && isVisible && (
+                      <div className="absolute inset-0 bg-stone-900/0 hover:bg-stone-900/5 transition-colors flex items-center justify-center pointer-events-none">
+                        <span className="bg-white/95 text-stone-800 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-xs flex items-center gap-1 border border-stone-200">
+                          {isLeft && <ChevronLeft className="w-3 h-3" />}
+                          <span>{tab.label}</span>
+                          {isRight && <ChevronRight className="w-3 h-3" />}
+                        </span>
+                      </div>
+                    )}
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
 
