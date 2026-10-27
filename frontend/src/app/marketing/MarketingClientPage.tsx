@@ -69,21 +69,37 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
   const [tertiaryColor, setTertiaryColor] = useState(initialSettings.tertiary_color || '#D4AF37');
   const [fontFamily, setFontFamily] = useState(initialSettings.font_family || 'playfair_inter');
 
-  // Manejo de la galería rotativa del hero
-  const heroImages = [
-    initialSettings.hero_image_1,
-    initialSettings.hero_image_2,
-    initialSettings.hero_image_3
-  ].filter(Boolean) as string[];
-  const [currentHeroImageIndex, setCurrentHeroImageIndex] = useState(0);
+  const defaultHeroTabs = [
+    {
+      id: 'tab-agenda',
+      label: 'Agenda & Reservas',
+      image_url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1600&q=80'
+    },
+    {
+      id: 'tab-emr',
+      label: 'Fichas Clínicas LOPD',
+      image_url: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1600&q=80'
+    },
+    {
+      id: 'tab-caja',
+      label: 'Caja y Pagos',
+      image_url: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1600&q=80'
+    },
+    {
+      id: 'tab-marketing',
+      label: 'Marketing & Fidelización',
+      image_url: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1600&q=80'
+    }
+  ];
 
-  useEffect(() => {
-    if (heroImages.length <= 1) return;
-    const interval = setInterval(() => {
-      setCurrentHeroImageIndex((prev) => (prev + 1) % heroImages.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [heroImages.length]);
+  const [heroTabs, setHeroTabs] = useState<any[]>(
+    initialSettings.hero_tabs && initialSettings.hero_tabs.length > 0
+      ? initialSettings.hero_tabs
+      : defaultHeroTabs
+  );
+  const [activeHeroTabId, setActiveHeroTabId] = useState<string>(
+    initialSettings.hero_tabs?.[0]?.id || 'tab-agenda'
+  );
 
   // Sincronización dinámica de ajustes de Branding en tiempo real desde el CMS
   useEffect(() => {
@@ -96,6 +112,9 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
         if (data?.settings) {
           if (data.settings.hero_title) setHeroTitle(data.settings.hero_title);
           if (data.settings.hero_subtitle) setHeroSubtitle(data.settings.hero_subtitle);
+          if (data.settings.hero_tabs && data.settings.hero_tabs.length > 0) {
+            setHeroTabs(data.settings.hero_tabs);
+          }
           if (data.settings.logo_svg !== undefined) setLogoSvg(data.settings.logo_svg);
           if (data.settings.primary_color) setPrimaryColor(data.settings.primary_color);
           if (data.settings.secondary_color) setSecondaryColor(data.settings.secondary_color);
@@ -265,54 +284,43 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
         </div>
       </header>
 
-      {/* ── 2. HERO SECTION - BOUTIQUE FULL SCREEN ── */}
-      <section className="relative min-h-[calc(100vh-80px)] flex flex-col items-center justify-center overflow-hidden bg-[#FAF9F6]">
+      {/* ── 2. HERO SECTION - SAAS HERO TABS INTERACTIVO (PABAU STYLE) ── */}
+      <section className="relative min-h-[calc(100vh-80px)] flex flex-col items-center justify-start overflow-hidden bg-[#FAF9F6] pt-12 pb-24">
         
-        {/* Full-screen rotating image background */}
-        {heroImages.length > 0 && (
-          <div className="absolute inset-0 w-full h-full z-0 select-none">
-            {heroImages.map((imgUrl, idx) => (
-              <img
-                key={idx}
-                src={imgUrl}
-                alt={`Hero Slideshow ${idx}`}
-                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-                  idx === currentHeroImageIndex ? 'opacity-100' : 'opacity-0'
-                }`}
-              />
-            ))}
-          </div>
-        )}
-
         {/* Halo ambiental dorado */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-[#D4AF37]/8 rounded-full blur-[140px] pointer-events-none z-10" />
-
-        {/* Premium light overlay with very soft blur to guarantee complete text legibility */}
-        <div className="absolute inset-0 bg-[#FAF9F6]/85 backdrop-blur-[3px] z-10"></div>
+        <div 
+          style={{ backgroundColor: tertiaryColor || '#D4AF37' }}
+          className="absolute top-20 left-1/2 -translate-x-1/2 w-[720px] h-[380px] rounded-full blur-[140px] opacity-15 pointer-events-none z-10" 
+        />
 
         {/* Hero Content Layer */}
-        <div className="max-w-7xl mx-auto px-6 py-20 relative z-20 text-center animate-in fade-in slide-in-from-bottom-6 duration-1000 flex flex-col justify-center items-center">
+        <div className="max-w-7xl mx-auto px-6 relative z-20 text-center animate-in fade-in slide-in-from-bottom-6 duration-1000 flex flex-col justify-center items-center w-full">
+          
+          {/* Trust Pill Badge */}
           <div 
             style={{ 
-              borderColor: tertiaryColor ? `${tertiaryColor}50` : 'rgba(212,175,55,0.3)', 
+              borderColor: tertiaryColor ? `${tertiaryColor}40` : 'rgba(212,175,55,0.3)', 
               color: tertiaryColor || '#997715' 
             }}
-            className="inline-flex items-center gap-2 bg-white/95 border px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase mb-8 shadow-sm backdrop-blur-md"
+            className="inline-flex items-center gap-2 bg-white/95 border px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase mb-6 shadow-xs backdrop-blur-md"
           >
             <Sparkles className="w-3.5 h-3.5" style={{ color: tertiaryColor || '#D4AF37' }} />
             <span>EL NUEVO ESTÁNDAR TODO-EN-UNO PARA CLÍNICAS SELECTAS</span>
           </div>
           
+          {/* Main Title */}
           <h1 
-            className="text-4xl md:text-7xl font-serif font-bold text-stone-950 tracking-tight leading-[1.15] max-w-5xl mx-auto mb-8 filter drop-shadow-sm"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-stone-950 tracking-tight leading-[1.12] max-w-5xl mx-auto mb-6 filter drop-shadow-xs"
             dangerouslySetInnerHTML={{ __html: heroTitle.replace(/\n/g, '<br/>') }}
           />
           
-          <p className="text-base md:text-lg text-stone-600 font-medium max-w-2xl mx-auto mb-10 leading-relaxed filter drop-shadow-sm">
+          {/* Subtitle */}
+          <p className="text-base sm:text-lg md:text-xl text-stone-600 font-medium max-w-2xl mx-auto mb-8 leading-relaxed filter drop-shadow-xs">
             {heroSubtitle}
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
+          {/* CTAs */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto mb-8">
             <button 
               onClick={() => handleOpenOnboarding('pro')}
               style={{ backgroundColor: primaryColor || '#1c1917' }}
@@ -329,7 +337,93 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
             </a>
           </div>
 
-          {/* Micro badges de confianza en el hero */}
+          {/* Social Proof Review Stars */}
+          <div className="flex items-center gap-2 text-xs font-semibold text-stone-500 mb-6">
+            <div className="flex items-center text-amber-400">
+              <Star className="w-3.5 h-3.5 fill-amber-400" />
+              <Star className="w-3.5 h-3.5 fill-amber-400" />
+              <Star className="w-3.5 h-3.5 fill-amber-400" />
+              <Star className="w-3.5 h-3.5 fill-amber-400" />
+              <Star className="w-3.5 h-3.5 fill-amber-400" />
+            </div>
+            <span>4.8 de valoración media en Capterra y G2</span>
+          </div>
+
+          {/* ── INTERACTIVE TABS ROW (Estilo Pabau) ── */}
+          {heroTabs && heroTabs.length > 0 && (
+            <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 my-4 z-20">
+              {heroTabs.map((tab: any) => {
+                const isSelected = ((heroTabs.find((t: any) => t.id === activeHeroTabId) || heroTabs[0])?.id === tab.id);
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveHeroTabId(tab.id)}
+                    style={isSelected ? {
+                      backgroundColor: primaryColor || '#1c1917',
+                      color: '#ffffff',
+                      borderColor: primaryColor || '#1c1917'
+                    } : undefined}
+                    className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 shadow-xs border ${
+                      isSelected
+                        ? 'shadow-lg scale-105 ring-2 ring-[#D4AF37]/30'
+                        : 'bg-white/95 text-stone-600 border-stone-200/90 hover:border-stone-300 hover:text-stone-950 hover:bg-stone-50'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* ── 16:9 SHOWCASE CONTAINER (Aspect-video) ── */}
+          <div className="w-full max-w-5xl mx-auto mt-6 z-20">
+            <div className="aspect-video w-full rounded-2xl md:rounded-3xl border border-stone-200/80 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.08)] bg-white overflow-hidden flex flex-col transition-all duration-300">
+              
+              {/* App Top Window Bar */}
+              <div className="h-9 bg-stone-100/90 border-b border-stone-200/60 px-5 flex items-center justify-between shrink-0 select-none">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-stone-300"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-stone-300"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-stone-300"></div>
+                </div>
+                <div className="text-[11px] font-mono text-stone-400 truncate max-w-sm">
+                  Probookia Suite · {(heroTabs.find((t: any) => t.id === activeHeroTabId) || heroTabs[0])?.label || 'Vista Previa'}
+                </div>
+                <div className="w-8"></div>
+              </div>
+
+              {/* 16:9 Screen Image Viewer with smooth transitions */}
+              <div className="relative flex-1 w-full h-full bg-stone-50 flex items-center justify-center overflow-hidden">
+                {(heroTabs.find((t: any) => t.id === activeHeroTabId) || heroTabs[0])?.image_url ? (
+                  <img
+                    key={(heroTabs.find((t: any) => t.id === activeHeroTabId) || heroTabs[0])?.id}
+                    src={(heroTabs.find((t: any) => t.id === activeHeroTabId) || heroTabs[0])?.image_url}
+                    alt={(heroTabs.find((t: any) => t.id === activeHeroTabId) || heroTabs[0])?.label}
+                    className="w-full h-full object-cover transition-opacity duration-300 ease-out animate-in fade-in"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center p-8 text-center space-y-3">
+                    <div className="w-16 h-16 rounded-2xl bg-white border border-stone-200/80 shadow-xs flex items-center justify-center text-stone-400">
+                      <Sparkles className="w-8 h-8 text-[#D4AF37]" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-stone-800">
+                        {(heroTabs.find((t: any) => t.id === activeHeroTabId) || heroTabs[0]) ? `Módulo ${(heroTabs.find((t: any) => t.id === activeHeroTabId) || heroTabs[0]).label}` : 'Módulo'}
+                      </h4>
+                      <p className="text-xs text-stone-400 max-w-sm mt-1 leading-relaxed">
+                        Captura del módulo disponible en la plataforma de gestión Probookia.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+            </div>
+          </div>
+
+          {/* Micro badges de confianza en el pie del hero */}
           <div className="flex flex-wrap items-center justify-center gap-6 mt-12 text-[11px] font-semibold text-stone-500">
             <span className="flex items-center gap-1.5">
               <CheckCircle2 size={13} className="text-[#D4AF37]" /> Sin permanencia ni comisiones
@@ -342,22 +436,6 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
             </span>
           </div>
 
-          {/* Carousel Dot indicators */}
-          {heroImages.length > 1 && (
-            <div className="flex justify-center gap-2 mt-12 select-none z-20">
-              {heroImages.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setCurrentHeroImageIndex(idx)}
-                  className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                    idx === currentHeroImageIndex 
-                      ? 'bg-stone-950 scale-125 shadow-sm' 
-                      : 'bg-stone-950/20 hover:bg-stone-950/40'
-                  }`}
-                />
-              ))}
-            </div>
-          )}
         </div>
       </section>
 

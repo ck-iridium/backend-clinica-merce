@@ -8,8 +8,30 @@ export default async function Page() {
 
   // 1. Valores por defecto (fallback)
   const defaultSettings = {
-    hero_title: 'La Suite Todo-en-Uno que Eleva tu Clínica al Estándar de Lujo',
-    hero_subtitle: 'Web boutique de alta gama, motor de reservas 24/7 con fianza anti-plantones, expedientes médicos con firma digital LOPD, caja rápida y Copiloto IA. Todo integrado en una sola suscripción para que tu negocio brille.',
+    hero_title: 'El único software que tu clínica volverá a necesitar.',
+    hero_subtitle: 'Probookia unifica tu agenda, cobros, fichas médicas y marketing en una sola pantalla. Menos herramientas, cero fricción, más rentabilidad.',
+    hero_tabs: [
+      {
+        id: 'tab-agenda',
+        label: 'Agenda & Reservas',
+        image_url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1600&q=80'
+      },
+      {
+        id: 'tab-emr',
+        label: 'Fichas Clínicas LOPD',
+        image_url: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1600&q=80'
+      },
+      {
+        id: 'tab-caja',
+        label: 'Caja y Pagos',
+        image_url: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1600&q=80'
+      },
+      {
+        id: 'tab-marketing',
+        label: 'Marketing & Fidelización',
+        image_url: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1600&q=80'
+      }
+    ],
     hero_image_1: null as string | null,
     hero_image_2: null as string | null,
     hero_image_3: null as string | null,
@@ -84,6 +106,7 @@ export default async function Page() {
         settings = {
           hero_title: data.settings.hero_title || defaultSettings.hero_title,
           hero_subtitle: data.settings.hero_subtitle || defaultSettings.hero_subtitle,
+          hero_tabs: data.settings.hero_tabs || defaultSettings.hero_tabs,
           hero_image_1: data.settings.hero_image_1 || null,
           hero_image_2: data.settings.hero_image_2 || null,
           hero_image_3: data.settings.hero_image_3 || null,
