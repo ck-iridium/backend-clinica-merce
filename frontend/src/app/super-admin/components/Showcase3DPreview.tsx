@@ -3,6 +3,16 @@
 import { useState, useEffect } from 'react';
 import { Monitor, Star, Sparkles, ChevronRight, Laptop, Layers } from 'lucide-react';
 
+export interface MappedPreviewSector {
+  id: string;
+  badge: string;
+  title: string;
+  copy: string;
+  videoUrl: string;
+  imageUrl?: string;
+  placeholderGradient: string;
+}
+
 export interface HeroTabItem {
   id: string;
   label: string;
@@ -21,6 +31,7 @@ interface Showcase3DPreviewProps {
   fontFamily?: string | null;
   fontWeightHeadings?: string | null;
   logoSvg?: string | null;
+  previewSectors?: MappedPreviewSector[];
 }
 
 export default function Showcase3DPreview({
