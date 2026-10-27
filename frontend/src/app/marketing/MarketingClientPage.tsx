@@ -324,18 +324,6 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
             </a>
           </div>
 
-          {/* Social Proof Review Stars */}
-          <div className="flex items-center gap-2 text-xs font-semibold text-stone-500 mb-6">
-            <div className="flex items-center text-amber-400">
-              <Star className="w-3.5 h-3.5 fill-amber-400" />
-              <Star className="w-3.5 h-3.5 fill-amber-400" />
-              <Star className="w-3.5 h-3.5 fill-amber-400" />
-              <Star className="w-3.5 h-3.5 fill-amber-400" />
-              <Star className="w-3.5 h-3.5 fill-amber-400" />
-            </div>
-            <span>4.8 de valoración media en Capterra y G2</span>
-          </div>
-
           {/* ── INTERACTIVE TABS ROW (Estilo Pabau) ── */}
           {heroTabs && heroTabs.length > 0 && (
             <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 my-4 z-20">

@@ -203,18 +203,6 @@ export default function Showcase3DPreview({
                 Tour del Producto
               </button>
             </div>
-
-            {/* Micro Valoración con Estrellas */}
-            <div className="flex items-center gap-1.5 text-[10px] font-semibold text-stone-500 mb-2">
-              <div className="flex items-center text-amber-400">
-                <Star className="w-3 h-3 fill-amber-400" />
-                <Star className="w-3 h-3 fill-amber-400" />
-                <Star className="w-3 h-3 fill-amber-400" />
-                <Star className="w-3 h-3 fill-amber-400" />
-                <Star className="w-3 h-3 fill-amber-400" />
-              </div>
-              <span>4.8 de valoración media en Capterra y G2</span>
-            </div>
           </div>
 
           {/* B. MEDIO: FILA HORIZONTAL DE BOTONES (TABS) */}
