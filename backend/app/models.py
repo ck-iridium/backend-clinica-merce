@@ -566,6 +566,7 @@ class LandingMarketingSettings(Base):
     secondary_color = Column(String(7), default="#1c1917")
     tertiary_color = Column(String(7), default="#d4af37")
     font_family = Column(String(50), default="playfair_inter")
+    font_family_body = Column(String(50), default="inter")
     font_weight_headings = Column(String(50), default="semibold")
     favicon_url = Column(Text, nullable=True)
     seo_title = Column(String, default="Probookia | El SaaS de Gestión para Centros de Estética y Salones Premium")

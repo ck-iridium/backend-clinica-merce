@@ -1,31 +1,15 @@
-"use client"
+"use client";
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { 
-  Shield, 
-  FileText, 
-  Sparkles, 
-  ChevronRight, 
-  ChevronLeft,
-  BookOpen, 
-  Check, 
-  X, 
-  ArrowRight, 
-  Bot, 
-  Calendar, 
-  Receipt, 
-  ShieldCheck, 
-  Globe, 
-  CheckCircle2, 
-  XCircle,
-  Layers,
-  Star
-} from 'lucide-react';
 import OnboardingModal from './components/OnboardingModal';
 import Showcase3DRing from './components/Showcase3DRing';
 import PricingSection from './components/PricingSection';
+import MarketingHeader from './components/MarketingHeader';
+import MarketingHero, { HeroTab } from './components/MarketingHero';
+import PainComparisonSection from './components/PainComparisonSection';
+import PillarsSection from './components/PillarsSection';
+import MarketingFooter from './components/MarketingFooter';
+import { resolveHeadingFont, resolveBodyFont, FONT_WEIGHT_MAP } from './utils/fonts';
 
 export interface Sector {
   id: string;
@@ -41,7 +25,7 @@ interface MarketingClientPageProps {
   initialSettings: {
     hero_title: string;
     hero_subtitle: string;
-    hero_tabs?: any[];
+    hero_tabs?: HeroTab[];
     hero_image_1?: string | null;
     hero_image_2?: string | null;
     hero_image_3?: string | null;
@@ -50,18 +34,43 @@ interface MarketingClientPageProps {
     secondary_color: string;
     tertiary_color: string;
     font_family: string;
+    font_family_body?: string;
     font_weight_headings: string;
     favicon_url: string | null;
   };
   initialSectors: Sector[];
 }
 
+const DEFAULT_HERO_TABS: HeroTab[] = [
+  {
+    id: 'tab-agenda',
+    label: 'Agenda & Reservas',
+    image_url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1600&q=80'
+  },
+  {
+    id: 'tab-emr',
+    label: 'Fichas Clínicas LOPD',
+    image_url: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1600&q=80'
+  },
+  {
+    id: 'tab-caja',
+    label: 'Caja y Pagos',
+    image_url: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1600&q=80'
+  },
+  {
+    id: 'tab-marketing',
+    label: 'Marketing & Fidelización',
+    image_url: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1600&q=80'
+  }
+];
+
 export default function MarketingClientPage({ initialSettings, initialSectors }: MarketingClientPageProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<'free' | 'basic' | 'pro' | 'gold'>('pro');
-  
+
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
+  // Branding & Contenido del CMS
   const [sectors, setSectors] = useState<Sector[]>(initialSectors);
   const [heroTitle, setHeroTitle] = useState(initialSettings.hero_title);
   const [heroSubtitle, setHeroSubtitle] = useState(initialSettings.hero_subtitle);
@@ -69,38 +78,14 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
   const [primaryColor, setPrimaryColor] = useState(initialSettings.primary_color || '#1C1917');
   const [secondaryColor, setSecondaryColor] = useState(initialSettings.secondary_color || '#FAF9F6');
   const [tertiaryColor, setTertiaryColor] = useState(initialSettings.tertiary_color || '#D4AF37');
-  const [fontFamily, setFontFamily] = useState(initialSettings.font_family || 'playfair_inter');
+  const [fontFamily, setFontFamily] = useState(initialSettings.font_family || 'playfair');
+  const [fontFamilyBody, setFontFamilyBody] = useState(initialSettings.font_family_body || 'inter');
+  const [fontWeightHeadings, setFontWeightHeadings] = useState(initialSettings.font_weight_headings || 'semibold');
 
-  const defaultHeroTabs = [
-    {
-      id: 'tab-agenda',
-      label: 'Agenda & Reservas',
-      image_url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1600&q=80'
-    },
-    {
-      id: 'tab-emr',
-      label: 'Fichas Clínicas LOPD',
-      image_url: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1600&q=80'
-    },
-    {
-      id: 'tab-caja',
-      label: 'Caja y Pagos',
-      image_url: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1600&q=80'
-    },
-    {
-      id: 'tab-marketing',
-      label: 'Marketing & Fidelización',
-      image_url: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1600&q=80'
-    }
-  ];
-
-  const [heroTabs, setHeroTabs] = useState<any[]>(
+  const [heroTabs, setHeroTabs] = useState<HeroTab[]>(
     initialSettings.hero_tabs && initialSettings.hero_tabs.length > 0
       ? initialSettings.hero_tabs
-      : defaultHeroTabs
-  );
-  const [activeHeroTabId, setActiveHeroTabId] = useState<string>(
-    initialSettings.hero_tabs?.[0]?.id || 'tab-agenda'
+      : DEFAULT_HERO_TABS
   );
 
   // Sincronización dinámica de ajustes de Branding en tiempo real desde el CMS
@@ -122,6 +107,8 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
           if (data.settings.secondary_color) setSecondaryColor(data.settings.secondary_color);
           if (data.settings.tertiary_color) setTertiaryColor(data.settings.tertiary_color);
           if (data.settings.font_family) setFontFamily(data.settings.font_family);
+          if (data.settings.font_family_body) setFontFamilyBody(data.settings.font_family_body);
+          if (data.settings.font_weight_headings) setFontWeightHeadings(data.settings.font_weight_headings);
         }
         if (data?.sectors && data.sectors.length > 0) {
           setSectors(data.sectors.map((s: any, idx: number) => {
@@ -155,7 +142,7 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
       .catch(err => console.warn('[MarketingClientPage] Usando ajustes pre-renderizados:', err.message));
   }, [API_URL]);
 
-  // Estado para el Anillo 3D de Sectores (Sección 5)
+  // Estado para el Anillo 3D de Sectores
   const [sectorActiveIndex, setSectorActiveIndex] = useState(0);
   const [sectorAnimating, setSectorAnimating] = useState(false);
 
@@ -175,572 +162,69 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
     setIsModalOpen(true);
   };
 
-  const weightMap: Record<string, string> = {
-    'light': '300',
-    'normal': '400',
-    'medium': '500',
-    'semibold': '600',
-    'bold': '700'
-  };
-  const activeWeight = weightMap[initialSettings.font_weight_headings || 'medium'] || '500';
-
-  const resolvedFont = (
-    fontFamily === 'fredoka' ? "var(--font-fredoka), 'Fredoka', cursive, sans-serif" :
-    fontFamily === 'outfit' ? "var(--font-outfit), 'Outfit', sans-serif" :
-    fontFamily === 'cormorant_montserrat' ? "var(--font-cormorant), 'Cormorant Garamond', serif" :
-    fontFamily === 'cinzel_roboto' ? "'Cinzel', serif" :
-    fontFamily === 'inter' ? "var(--font-inter), 'Inter', sans-serif" :
-    "var(--font-playfair-base), 'Playfair Display', serif"
-  );
-
-  // ── ESTADO DEL HERO SLIDER PROFESIONAL ──
-  const currentTabs = heroTabs && heroTabs.length > 0 ? heroTabs : defaultHeroTabs;
-  const currentTabIndex = currentTabs.findIndex((t: any) => t.id === activeHeroTabId);
-  const heroActiveIndex = currentTabIndex >= 0 ? currentTabIndex : 0;
-
-  const [isSliderPaused, setIsSliderPaused] = useState<boolean>(false);
-  const [isDragging, setIsDragging] = useState<boolean>(false);
-
-  const handleNextSlide = () => {
-    if (currentTabs.length <= 1) return;
-    const nextIdx = (heroActiveIndex + 1) % currentTabs.length;
-    setActiveHeroTabId(currentTabs[nextIdx].id);
-  };
-
-  const handlePrevSlide = () => {
-    if (currentTabs.length <= 1) return;
-    const prevIdx = (heroActiveIndex - 1 + currentTabs.length) % currentTabs.length;
-    setActiveHeroTabId(currentTabs[prevIdx].id);
-  };
-
-  const handleSelectTab = (tabId: string) => {
-    setActiveHeroTabId(tabId);
-  };
-
-  // Autoplay pausado al interactuar o pasar el cursor
-  useEffect(() => {
-    if (isSliderPaused || currentTabs.length <= 1) return;
-    const interval = setInterval(() => {
-      const nextIdx = (heroActiveIndex + 1) % currentTabs.length;
-      setActiveHeroTabId(currentTabs[nextIdx].id);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [isSliderPaused, currentTabs.length, heroActiveIndex]);
-
-  const getSlideOffset = (index: number) => {
-    let diff = index - heroActiveIndex;
-    while (diff > currentTabs.length / 2) diff -= currentTabs.length;
-    while (diff < -currentTabs.length / 2) diff += currentTabs.length;
-    return diff;
-  };
+  const activeWeight = FONT_WEIGHT_MAP[fontWeightHeadings || 'semibold'] || '600';
+  const resolvedHeadingFont = resolveHeadingFont(fontFamily);
+  const resolvedBodyFont = resolveBodyFont(fontFamilyBody, fontFamily);
 
   return (
-    <div 
-      style={{ 
+    <div
+      style={{
         '--primary-accent': primaryColor,
         '--secondary-accent': secondaryColor,
-        '--tertiary-accent': tertiaryColor 
+        '--tertiary-accent': tertiaryColor
       } as React.CSSProperties}
       className="min-h-screen bg-[#FAF9F6] text-stone-900 font-sans selection:bg-[#d4af37]/20 overflow-x-hidden relative transition-colors duration-300"
     >
-      
       {/* Inyección dinámica de Google Fonts y Clases Tipográficas desde el Panel de Branding */}
-      <style dangerouslySetInnerHTML={{ __html: `
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap');
+      <style dangerouslySetInnerHTML={{
+        __html: `
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400..800&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Fredoka:wght@300..700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Roboto:wght@300;400;500;700&display=swap');
 
         :root {
-          --font-serif: ${resolvedFont} !important;
-          --font-heading: ${resolvedFont} !important;
-          --font-playfair: ${resolvedFont} !important;
-          --font-cormorant: ${resolvedFont} !important;
-          --font-sans: ${
-            fontFamily === 'fredoka' ? "var(--font-fredoka), 'Fredoka', cursive, sans-serif" :
-            fontFamily === 'outfit' ? "var(--font-outfit), 'Outfit', sans-serif" :
-            fontFamily === 'cormorant_montserrat' ? "var(--font-montserrat), 'Montserrat', sans-serif" :
-            fontFamily === 'cinzel_roboto' ? "'Roboto', sans-serif" :
-            "var(--font-inter), 'Inter', sans-serif"
-          } !important;
-          --primary-accent: ${primaryColor || '#2244C9'} !important;
-          --secondary-accent: ${secondaryColor || '#160888'} !important;
-          --tertiary-accent: ${tertiaryColor || '#E213FF'} !important;
+          --font-serif: ${resolvedHeadingFont} !important;
+          --font-heading: ${resolvedHeadingFont} !important;
+          --font-playfair: ${resolvedHeadingFont} !important;
+          --font-cormorant: ${resolvedHeadingFont} !important;
+          --font-sans: ${resolvedBodyFont} !important;
+          --font-body: ${resolvedBodyFont} !important;
+          --primary-accent: ${primaryColor || '#1C1917'} !important;
+          --secondary-accent: ${secondaryColor || '#FAF9F6'} !important;
+          --tertiary-accent: ${tertiaryColor || '#D4AF37'} !important;
         }
         
         .font-serif, h1, h2, h3, h4, h5, h6 {
-          font-family: ${resolvedFont} !important;
+          font-family: ${resolvedHeadingFont} !important;
           font-weight: ${activeWeight} !important;
         }
         
         .font-sans, body, html, button, input, select, textarea, p, span, a {
-          font-family: ${
-            fontFamily === 'fredoka' ? "var(--font-fredoka), 'Fredoka', cursive, sans-serif" :
-            fontFamily === 'outfit' ? "var(--font-outfit), 'Outfit', sans-serif" :
-            "var(--font-inter), 'Inter', sans-serif"
-          } !important;
+          font-family: ${resolvedBodyFont} !important;
         }
       ` }} />
-      
-      {/* ── 1. STICKY HEADER EDITORIAL (QUIET LUXURY GLASSMORPHISM) ── */}
-      <header className="sticky top-0 z-40 w-full bg-white/80 backdrop-blur-md border-b border-stone-200/60 py-1 transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {logoSvg ? (
-              <div 
-                className="h-10 flex items-center justify-start [&>svg]:h-full [&>svg]:w-auto"
-                dangerouslySetInnerHTML={{ __html: logoSvg }}
-              />
-            ) : (
-              <div className="flex items-center gap-2">
-                <span className="text-xl md:text-2xl font-serif tracking-widest text-stone-950 font-bold select-none">
-                  PROBOOKIA
-                </span>
-                <span className="bg-[#D4AF37]/15 text-[#997715] text-[9px] font-black tracking-[0.2em] uppercase px-2 py-0.5 rounded-full border border-[#D4AF37]/30">
-                  SUITE
-                </span>
-              </div>
-            )}
-          </div>
-          
-          <div className="flex items-center gap-3 sm:gap-4">
-            <Link
-              href="/docs"
-              className="hidden md:flex items-center gap-1.5 px-3 py-2 text-stone-500 hover:text-stone-950 text-xs font-bold transition-colors"
-            >
-              <BookOpen size={14} />
-              <span>Blueprint</span>
-            </Link>
-            <Link 
-              href="/login" 
-              className="px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold bg-white text-stone-700 border border-stone-200/80 hover:text-stone-950 hover:bg-stone-50 transition-all duration-200 active:scale-95 shadow-2xs"
-            >
-              Acceso Clínicas
-            </Link>
-            <button 
-              onClick={() => handleOpenOnboarding('pro')}
-              style={{ backgroundColor: primaryColor || '#1c1917' }}
-              className="hover:opacity-95 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all duration-200 hover:scale-[1.02] active:scale-95 border border-white/20 flex items-center gap-1.5"
-            >
-              <span>Comenzar Ahora</span>
-              <ChevronRight size={13} style={{ color: tertiaryColor || '#D4AF37' }} />
-            </button>
-          </div>
-        </div>
-      </header>
 
-      {/* ── 2. HERO SECTION - SAAS HERO TABS INTERACTIVO (PABAU STYLE) ── */}
-      <section className="relative min-h-[calc(100vh-80px)] flex flex-col items-center justify-start overflow-hidden bg-[#FAF9F6] pt-12 pb-24">
-        
-        {/* Halo ambiental dorado */}
-        <div 
-          style={{ backgroundColor: tertiaryColor || '#D4AF37' }}
-          className="absolute top-20 left-1/2 -translate-x-1/2 w-[720px] h-[380px] rounded-full blur-[140px] opacity-15 pointer-events-none z-10" 
-        />
+      {/* ── 1. HEADER EDITORIAL (QUIET LUXURY GLASSMORPHISM) ── */}
+      <MarketingHeader
+        logoSvg={logoSvg}
+        primaryColor={primaryColor}
+        tertiaryColor={tertiaryColor}
+        onOpenOnboarding={handleOpenOnboarding}
+      />
 
-        {/* Hero Content Layer */}
-        <div className="max-w-7xl mx-auto px-6 relative z-20 text-center animate-in fade-in slide-in-from-bottom-6 duration-1000 flex flex-col justify-center items-center w-full">
-          {/* Main Title */}
-          <h1 
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-stone-950 tracking-tight leading-[1.12] max-w-5xl mx-auto mb-6 filter drop-shadow-xs"
-            dangerouslySetInnerHTML={{ __html: heroTitle.replace(/\n/g, '<br/>') }}
-          />
-          
-          {/* Subtitle */}
-          <p className="text-base sm:text-lg md:text-xl text-stone-600 font-medium max-w-2xl mx-auto mb-8 leading-relaxed filter drop-shadow-xs">
-            {heroSubtitle}
-          </p>
+      {/* ── 2. HERO SECTION CON TABS Y SLIDER 16:9 ENCAPSULADO ── */}
+      <MarketingHero
+        heroTitle={heroTitle}
+        heroSubtitle={heroSubtitle}
+        heroTabs={heroTabs}
+        primaryColor={primaryColor}
+        tertiaryColor={tertiaryColor}
+        onOpenOnboarding={handleOpenOnboarding}
+      />
 
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto mb-8">
-            <button 
-              onClick={() => handleOpenOnboarding('pro')}
-              style={{ backgroundColor: primaryColor || '#1c1917' }}
-              className="w-full sm:w-auto text-white px-8 py-4 rounded-2xl text-xs font-bold shadow-lg transition-all duration-300 flex items-center justify-center gap-2 group active:scale-95 hover:scale-[1.02] border border-white/20"
-            >
-              <span>Comenzar Prueba Gratuita</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" style={{ color: tertiaryColor || '#D4AF37' }} />
-            </button>
-            <a 
-              href="#pilares" 
-              className="w-full sm:w-auto bg-white/90 backdrop-blur-sm border border-stone-200/80 hover:bg-stone-100 text-stone-800 px-8 py-4 rounded-2xl text-xs font-bold transition-all duration-300 flex items-center justify-center hover:scale-[1.02] shadow-sm"
-            >
-              Explorar los 4 Pilares
-            </a>
-          </div>
+      {/* ── 3. EL DOLOR DE LA FRAGMENTACIÓN VS PROBOOKIA TODO-EN-UNO ── */}
+      <PainComparisonSection onSelectPlan={handleOpenOnboarding} />
 
-          {/* ── INTERACTIVE TABS ROW (Estilo Pabau) ── */}
-          {heroTabs && heroTabs.length > 0 && (
-            <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 my-4 z-20">
-              {heroTabs.map((tab: any) => {
-                const isSelected = ((heroTabs.find((t: any) => t.id === activeHeroTabId) || heroTabs[0])?.id === tab.id);
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => handleSelectTab(tab.id)}
-                    style={isSelected ? {
-                      backgroundColor: primaryColor || '#1c1917',
-                      color: '#ffffff',
-                      borderColor: primaryColor || '#1c1917'
-                    } : undefined}
-                    className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 shadow-xs border ${
-                      isSelected
-                        ? 'shadow-lg scale-105 ring-2 ring-[#D4AF37]/30'
-                        : 'bg-white/95 text-stone-600 border-stone-200/90 hover:border-stone-300 hover:text-stone-950 hover:bg-stone-50'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* ── 16:9 SHOWCASE TRÍPTICO SLIDER PROFESIONAL CON FRAMER MOTION ── */}
-        <div 
-          onMouseEnter={() => setIsSliderPaused(true)}
-          onMouseLeave={() => setIsSliderPaused(false)}
-          className="w-full relative overflow-hidden py-4 sm:py-8 mt-4 z-20 flex items-center justify-center select-none"
-        >
-          {/* Máscara de desvanecimiento lateral izquierda (Quiet Luxury edge blend) */}
-          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-20 sm:w-36 md:w-56 lg:w-72 bg-gradient-to-r from-[#FAF9F6] via-[#FAF9F6]/85 to-transparent z-30" />
-          
-          {/* Máscara de desvanecimiento lateral derecha */}
-          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-20 sm:w-36 md:w-56 lg:w-72 bg-gradient-to-l from-[#FAF9F6] via-[#FAF9F6]/85 to-transparent z-30" />
-
-          {/* Flecha Flotante Izquierda */}
-          {currentTabs.length > 1 && (
-            <button
-              type="button"
-              onClick={handlePrevSlide}
-              className="absolute left-4 sm:left-8 md:left-12 z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/90 backdrop-blur-md border border-stone-200/80 shadow-lg text-stone-700 hover:text-stone-950 hover:scale-105 active:scale-95 transition-all flex items-center justify-center group"
-              aria-label="Diapositiva anterior"
-            >
-              <ChevronLeft className="w-5 h-5 text-stone-700 group-hover:-translate-x-0.5 transition-transform" />
-            </button>
-          )}
-
-          {/* Flecha Flotante Derecha */}
-          {currentTabs.length > 1 && (
-            <button
-              type="button"
-              onClick={handleNextSlide}
-              className="absolute right-4 sm:right-8 md:right-12 z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/90 backdrop-blur-md border border-stone-200/80 shadow-lg text-stone-700 hover:text-stone-950 hover:scale-105 active:scale-95 transition-all flex items-center justify-center group"
-              aria-label="Siguiente diapositiva"
-            >
-              <ChevronRight className="w-5 h-5 text-stone-700 group-hover:translate-x-0.5 transition-transform" />
-            </button>
-          )}
-
-          {/* Elemento de dimensionamiento responsivo 16:9 */}
-          <div className="w-[84vw] max-w-[860px] aspect-video opacity-0 pointer-events-none" />
-
-          {/* Escenario de diapositivas animadas con física de deslizamiento */}
-          <div className="absolute inset-0 flex items-center justify-center overflow-visible">
-            {currentTabs.map((tab: any, idx: number) => {
-              const offset = getSlideOffset(idx);
-              const isCenter = offset === 0;
-              const isLeft = offset === -1;
-              const isRight = offset === 1;
-              const isVisible = Math.abs(offset) <= 1;
-
-              // Coordenada horizontal basada en la posición
-              const xPos = isCenter ? "0%" : isRight ? "56%" : isLeft ? "-56%" : offset > 1 ? "130%" : "-130%";
-
-              return (
-                <motion.div
-                  key={tab.id}
-                  animate={{
-                    x: xPos,
-                    scale: isCenter ? 1 : isVisible ? 0.88 : 0.75,
-                    opacity: isCenter ? 1 : isVisible ? 0.55 : 0,
-                    zIndex: isCenter ? 25 : isVisible ? 15 : 0,
-                  }}
-                  whileHover={!isCenter && isVisible ? { opacity: 0.85, scale: 0.90 } : undefined}
-                  transition={{
-                    x: { type: "spring", stiffness: 220, damping: 28, mass: 0.9 },
-                    scale: { type: "spring", stiffness: 240, damping: 28 },
-                    opacity: { duration: 0.35 }
-                  }}
-                  drag={isCenter ? "x" : false}
-                  dragConstraints={{ left: 0, right: 0 }}
-                  dragElastic={0.25}
-                  onDragStart={() => setIsDragging(true)}
-                  onDragEnd={(_, { offset: dragOffset, velocity }) => {
-                    setTimeout(() => setIsDragging(false), 50);
-                    if (dragOffset.x < -50 || velocity.x < -300) {
-                      handleNextSlide();
-                    } else if (dragOffset.x > 50 || velocity.x > 300) {
-                      handlePrevSlide();
-                    }
-                  }}
-                  onClick={() => {
-                    if (isDragging) return;
-                    if (isLeft) handlePrevSlide();
-                    if (isRight) handleNextSlide();
-                  }}
-                  className={`absolute w-[84vw] max-w-[860px] aspect-video rounded-2xl md:rounded-3xl overflow-hidden border bg-white ${
-                    isCenter
-                      ? 'border-stone-200/90 shadow-[0_25px_65px_-15px_rgba(0,0,0,0.14)] ring-1 ring-stone-900/5 cursor-grab active:cursor-grabbing'
-                      : isVisible
-                      ? 'border-stone-200/80 shadow-lg cursor-pointer'
-                      : 'pointer-events-none'
-                  }`}
-                  style={{ willChange: 'transform, opacity' }}
-                >
-                  {tab.image_url ? (
-                    <img 
-                      src={tab.image_url} 
-                      alt={tab.label}
-                      className="w-full h-full object-cover pointer-events-none select-none"
-                      draggable={false}
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full p-8 text-center space-y-3 bg-stone-50 select-none">
-                      <div className="w-16 h-16 rounded-2xl bg-white border border-stone-200/80 shadow-xs flex items-center justify-center text-stone-400">
-                        <Sparkles className="w-8 h-8 text-[#D4AF37]" />
-                      </div>
-                      <div>
-                        <h4 className="text-sm sm:text-base font-bold text-stone-800">
-                          {tab.label ? `Módulo ${tab.label}` : 'Módulo'}
-                        </h4>
-                        <p className="text-xs text-stone-500 max-w-sm mt-1 leading-relaxed">
-                          Captura del módulo disponible en la plataforma de gestión Probookia.
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Indicador de acción en hover para tarjetas laterales */}
-                  {!isCenter && isVisible && (
-                    <div className="absolute inset-0 bg-stone-900/0 hover:bg-stone-900/5 transition-colors flex items-center justify-center pointer-events-none">
-                      <span className="bg-white/95 text-stone-800 text-xs font-bold px-3.5 py-1.5 rounded-full shadow-md flex items-center gap-1.5 border border-stone-200">
-                        {isLeft && <ChevronLeft className="w-3.5 h-3.5" />}
-                        <span>{tab.label}</span>
-                        {isRight && <ChevronRight className="w-3.5 h-3.5" />}
-                      </span>
-                    </div>
-                  )}
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Micro badges de confianza en el pie del hero */}
-        <div className="max-w-5xl mx-auto px-6 flex flex-wrap items-center justify-center gap-6 mt-10 text-[11px] font-semibold text-stone-500 relative z-20">
-          <span className="flex items-center gap-1.5">
-            <CheckCircle2 size={13} className="text-[#D4AF37]" /> Sin permanencia ni comisiones
-          </span>
-          <span className="flex items-center gap-1.5">
-            <CheckCircle2 size={13} className="text-[#D4AF37]" /> Fianza anti-plantones Stripe
-          </span>
-          <span className="flex items-center gap-1.5">
-            <CheckCircle2 size={13} className="text-[#D4AF37]" /> Fichas médicas con firma LOPD
-          </span>
-        </div>
-      </section>
-
-      {/* ── 3. SECCIÓN: EL DOLOR DE LA FRAGMENTACIÓN VS PROBOOKIA TODO-EN-UNO ── */}
-      <section className="py-24 bg-white border-y border-stone-200/60 relative">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="text-[#997715] text-[10px] font-black uppercase tracking-[0.25em] block mb-2">El Dolor del Mercado</span>
-            <h2 className="text-3xl md:text-5xl font-serif font-bold tracking-tight text-stone-950">
-              ¿Por qué pagar 5 programas si puedes tenerlo todo en uno?
-            </h2>
-            <p className="text-stone-500 text-sm md:text-base mt-3 font-medium">
-              La mayoría de clínicas sufren un caos de contraseñas, datos desincronizados y sobrecostes mensuales. ProBookia unifica todo el ecosistema.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
-            
-            {/* Tarjeta Izquierda: El Caos Actual */}
-            <div className="bg-stone-50/70 rounded-3xl border border-stone-200/80 p-8 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-2.5 text-stone-400 mb-6">
-                  <XCircle size={20} className="text-red-400 shrink-0" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-stone-500">El Modelo Antiguo y Fragmentado</span>
-                </div>
-                <h3 className="text-2xl font-serif font-bold text-stone-900 mb-6">Herramientas Dispersas</h3>
-                
-                <ul className="space-y-4 text-xs font-medium text-stone-600">
-                  <li className="flex items-center justify-between pb-3 border-b border-stone-200/60">
-                    <span>Web + Hosting + Mantenimiento (WordPress)</span>
-                    <span className="font-mono font-bold text-stone-800">~40€/mes</span>
-                  </li>
-                  <li className="flex items-center justify-between pb-3 border-b border-stone-200/60">
-                    <span>Motor de reservas online (Fresha / Treatwell)</span>
-                    <span className="font-mono font-bold text-stone-800">~50€/mes + comisiones</span>
-                  </li>
-                  <li className="flex items-center justify-between pb-3 border-b border-stone-200/60">
-                    <span>Software médico LOPD & Consentimientos en papel</span>
-                    <span className="font-mono font-bold text-stone-800">~70€/mes</span>
-                  </li>
-                  <li className="flex items-center justify-between pb-3 border-b border-stone-200/60">
-                    <span>TPV de mostrador y facturación separada</span>
-                    <span className="font-mono font-bold text-stone-800">~30€/mes</span>
-                  </li>
-                  <li className="flex items-center justify-between pb-3 border-b border-stone-200/60">
-                    <span>Copiloto de IA o redacción externa</span>
-                    <span className="font-mono font-bold text-stone-800">~30€/mes</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="mt-8 pt-6 border-t border-stone-200 flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-stone-400 tracking-wider block">Gasto Medio Mensual</span>
-                  <span className="text-2xl font-serif font-bold text-red-500">220€/mes</span>
-                </div>
-                <span className="text-xs text-stone-500 font-medium max-w-[200px] text-right">
-                  + Pérdida de tiempo en 5 inicios de sesión distintos.
-                </span>
-              </div>
-            </div>
-
-            {/* Tarjeta Derecha: La Solución ProBookia */}
-            <div className="bg-stone-950 text-white rounded-3xl border-2 border-[#D4AF37] p-8 flex flex-col justify-between shadow-xl relative overflow-hidden ring-4 ring-[#D4AF37]/10">
-              <div className="absolute top-0 right-0 bg-gradient-to-r from-[#D4AF37] to-[#bf9b30] text-stone-950 px-3.5 py-1 rounded-bl-2xl text-[9px] font-black uppercase tracking-widest">
-                Suite Todo-en-Uno
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2.5 text-[#D4AF37] mb-6">
-                  <CheckCircle2 size={20} className="text-[#D4AF37] shrink-0" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#D4AF37]">La Solución Unificada</span>
-                </div>
-                <h3 className="text-2xl font-serif font-bold text-white mb-6">ProBookia Suite</h3>
-
-                <ul className="space-y-4 text-xs font-medium text-stone-300">
-                  <li className="flex items-center gap-3 pb-3 border-b border-stone-800">
-                    <Check size={16} className="text-[#D4AF37] shrink-0" />
-                    <span><strong>Web de Lujo con CMS:</strong> Edita fotos, vídeos y catálogo en minutos.</span>
-                  </li>
-                  <li className="flex items-center gap-3 pb-3 border-b border-stone-800">
-                    <Check size={16} className="text-[#D4AF37] shrink-0" />
-                    <span><strong>Reservas 24/7 sin comisiones:</strong> Fianza anti-plantones Stripe Connect.</span>
-                  </li>
-                  <li className="flex items-center gap-3 pb-3 border-b border-stone-800">
-                    <Check size={16} className="text-[#D4AF37] shrink-0" />
-                    <span><strong>Fichas LOPD & Consentimientos:</strong> Firma manuscrita en tablet/móvil.</span>
-                  </li>
-                  <li className="flex items-center gap-3 pb-3 border-b border-stone-800">
-                    <Check size={16} className="text-[#D4AF37] shrink-0" />
-                    <span><strong>Caja TPV & Facturas PDF:</strong> Cobro express por Bizum, tarjeta y bonos.</span>
-                  </li>
-                  <li className="flex items-center gap-3 pb-3 border-b border-stone-800">
-                    <Check size={16} className="text-[#D4AF37] shrink-0" />
-                    <span><strong>Copiloto IA Integrado:</strong> Asistente en tu base de datos para redactar y gestionar.</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="mt-8 pt-6 border-t border-stone-800 flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-[#D4AF37] tracking-wider block">Todo Incluido Desde</span>
-                  <span className="text-3xl font-serif font-bold text-white">39€/mes</span>
-                </div>
-                <button
-                  onClick={() => handleOpenOnboarding('pro')}
-                  className="bg-[#D4AF37] hover:bg-[#c29e2f] text-stone-950 font-bold px-5 py-2.5 rounded-xl text-xs shadow-md transition-all active:scale-95 flex items-center gap-1"
-                >
-                  <span>Probar Gratis</span>
-                  <ChevronRight size={13} />
-                </button>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* ── 4. LOS 4 PILARES DEL ECOSISTEMA PROBOOKIA (BENTO GRID DE LUJO) ── */}
-      <section id="pilares" className="py-28 bg-[#FAF9F6]">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center max-w-2xl mx-auto mb-20">
-            <span className="text-[#997715] text-[10px] font-black uppercase tracking-[0.25em] block mb-2">Arquitectura de Producto</span>
-            <h2 className="text-3xl md:text-5xl font-serif font-bold tracking-tight text-stone-950">
-              Los 4 Pilares del Ecosistema
-            </h2>
-            <p className="text-stone-500 text-sm md:text-base mt-3 font-medium">
-              Todo lo que una clínica de alta gama necesita para operar con la máxima sofisticación y cero fricción técnica.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-7">
-            
-            {/* Pilar 1 */}
-            <div className="bg-white rounded-3xl p-7 border border-stone-200/80 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300">
-              <div>
-                <div className="w-12 h-12 rounded-2xl bg-[#D4AF37]/10 border border-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] mb-6">
-                  <Globe size={22} strokeWidth={1.75} />
-                </div>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[#997715] block mb-1">Pilar 01</span>
-                <h3 className="text-xl font-serif font-bold text-stone-950 mb-3">Presencia Web de Lujo</h3>
-                <p className="text-xs text-stone-500 leading-relaxed font-medium">
-                  CMS visual modular sin tocar código. Catálogo de tratamientos con fotos y tiempos de cabina, vídeos de alta definición, páginas personalizadas y SEO automático.
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-stone-100 text-[11px] font-bold text-stone-700">
-                Tu marca propia en el centro
-              </div>
-            </div>
-
-            {/* Pilar 2 */}
-            <div className="bg-white rounded-3xl p-7 border border-stone-200/80 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300">
-              <div>
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200/60 flex items-center justify-center text-emerald-600 mb-6">
-                  <Calendar size={22} strokeWidth={1.75} />
-                </div>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 block mb-1">Pilar 02</span>
-                <h3 className="text-xl font-serif font-bold text-stone-950 mb-3">Motor de Reservas 24/7</h3>
-                <p className="text-xs text-stone-500 leading-relaxed font-medium">
-                  El paciente reserva desde su smartphone a cualquier hora en 3 pasos. Depósito o fianza anti-plantones obligatoria con Stripe Connect para erradicar las incomparecencias.
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-stone-100 text-[11px] font-bold text-stone-700">
-                Cero ausencias no avisadas
-              </div>
-            </div>
-
-            {/* Pilar 3 */}
-            <div className="bg-white rounded-3xl p-7 border border-stone-200/80 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300">
-              <div>
-                <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-700 mb-6">
-                  <Receipt size={22} strokeWidth={1.75} />
-                </div>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-amber-700 block mb-1">Pilar 03</span>
-                <h3 className="text-xl font-serif font-bold text-stone-950 mb-3">ERP, Legalidad & Caja</h3>
-                <p className="text-xs text-stone-500 leading-relaxed font-medium">
-                  Fichas médicas con firma manuscrita LOPD sin papel, TPV express de mostrador para cobros por Bizum/tarjeta, facturación correlativa y emisión de bonos multisesión.
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-stone-100 text-[11px] font-bold text-stone-700">
-                100% Blindaje legal y fiscal
-              </div>
-            </div>
-
-            {/* Pilar 4 */}
-            <div className="bg-white rounded-3xl p-7 border border-stone-200/80 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300">
-              <div>
-                <div className="w-12 h-12 rounded-2xl bg-[#1C1917] border border-stone-800 flex items-center justify-center text-[#D4AF37] mb-6">
-                  <Bot size={22} strokeWidth={1.75} />
-                </div>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-stone-900 block mb-1">Pilar 04</span>
-                <h3 className="text-xl font-serif font-bold text-stone-950 mb-3">AI Webmaster Copilot</h3>
-                <p className="text-xs text-stone-500 leading-relaxed font-medium">
-                  Tu asistente con inteligencia artificial integrado en tu base de datos. Redacta descripciones de tratamientos, traduce contenidos y ayuda a tu equipo en la operativa diaria.
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-stone-100 text-[11px] font-bold text-stone-700">
-                Inteligencia sin esfuerzo
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
+      {/* ── 4. LOS 4 PILARES DEL ECOSISTEMA PROBOOKIA (BENTO GRID) ── */}
+      <PillarsSection />
 
       {/* ── 5. SECCIÓN DE SECTORES EN ANILLO 3D REAL ── */}
       <Showcase3DRing
@@ -754,28 +238,11 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
         tertiaryColor={tertiaryColor}
       />
 
-      {/* ── 6. SECCIÓN DE PRECIOS EDITORIALES (REDISEÑADA) ── */}
+      {/* ── 6. SECCIÓN DE PRECIOS EDITORIALES ── */}
       <PricingSection onSelectPlan={handleOpenOnboarding} />
 
       {/* ── 7. FOOTER QUIET LUXURY ── */}
-      <footer className="bg-stone-950 text-white py-16 border-t border-stone-900">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8 border-b border-stone-900 pb-12 mb-12">
-          <div>
-            <span className="text-xl font-serif tracking-widest text-white block mb-2 font-bold">PROBOOKIA SUITE</span>
-            <p className="text-stone-400 text-xs md:text-sm max-w-sm leading-relaxed font-medium">
-              La plataforma invisible de alta gama para presencia web, reservas online, expedientes médicos, facturación y TPV en centros selectos.
-            </p>
-          </div>
-          <div className="flex gap-8 text-xs font-bold text-stone-400">
-            <Link href="/privacidad" className="hover:text-white transition-colors">Privacidad</Link>
-            <Link href="/aviso-legal" className="hover:text-white transition-colors">Aviso Legal</Link>
-            <Link href="/docs" className="hover:text-white transition-colors">VIP Blueprint Docs</Link>
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto px-6 text-center text-xs text-stone-600 font-semibold">
-          &copy; {new Date().getFullYear()} ProBookia. Todos los derechos reservados. SaaS Quiet Luxury B2B.
-        </div>
-      </footer>
+      <MarketingFooter />
 
       {/* ── 8. ONBOARDING REGISTRATION MODAL ── */}
       <OnboardingModal
@@ -784,7 +251,6 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
         selectedPlan={selectedPlan}
         apiUrl={API_URL}
       />
-
     </div>
   );
 }

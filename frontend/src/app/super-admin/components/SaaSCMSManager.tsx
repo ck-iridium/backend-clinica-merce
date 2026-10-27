@@ -57,6 +57,7 @@ interface MarketingSettings {
   secondary_color?: string | null;
   tertiary_color?: string | null;
   font_family?: string | null;
+  font_family_body?: string | null;
   font_weight_headings?: string | null;
   favicon_url?: string | null;
   seo_title?: string | null;
@@ -80,7 +81,8 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
     primary_color: '#3b82f6',
     secondary_color: '#1c1917',
     tertiary_color: '#d4af37',
-    font_family: 'playfair_inter',
+    font_family: 'playfair',
+    font_family_body: 'inter',
     font_weight_headings: 'semibold',
     favicon_url: null,
     seo_title: '',
@@ -610,25 +612,67 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                 </div>
               ) : (
                 <form onSubmit={handleSaveSettings} className="space-y-5 select-text">
-                  {/* Curated Typography Dropdown */}
+                  {/* 1. Tipografía para Títulos / Encabezados */}
                   <div className="space-y-1.5">
-                    <label className="text-[9px] font-black text-stone-400 uppercase tracking-widest block">
-                      Tipografía Corporativa
-                    </label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-[9px] font-black text-stone-400 uppercase tracking-widest block">
+                        Tipografía de Títulos / Encabezados
+                      </label>
+                      <span className="text-[9px] text-[#D4AF37] font-semibold">H1 - H6 & Hero</span>
+                    </div>
                     <Select
-                      value={settings.font_family || 'playfair_inter'}
+                      value={
+                        settings.font_family === 'playfair_inter' ? 'playfair' :
+                        settings.font_family === 'cormorant_montserrat' ? 'cormorant' :
+                        settings.font_family === 'cinzel_roboto' ? 'cinzel' :
+                        (settings.font_family || 'playfair')
+                      }
                       onValueChange={(val) => setSettings(prev => ({ ...prev, font_family: val }))}
                     >
                       <SelectTrigger className="h-10 text-xs bg-white border-stone-200">
-                        <SelectValue placeholder="Seleccionar tipografía" />
+                        <SelectValue placeholder="Seleccionar tipografía de títulos" />
                       </SelectTrigger>
                       <SelectContent className="bg-white border-stone-200 shadow-xl rounded-xl">
-                        <SelectItem value="playfair_inter" className="text-xs">Playfair Display & Inter (Serif de Lujo + Sans Limpia)</SelectItem>
-                        <SelectItem value="outfit" className="text-xs">Outfit (Geométrica Moderna)</SelectItem>
-                        <SelectItem value="fredoka" className="text-xs">Fredoka (Amigable & Redondeada)</SelectItem>
-                        <SelectItem value="cormorant_montserrat" className="text-xs">Cormorant Garamond & Montserrat (Boutique de Lujo)</SelectItem>
-                        <SelectItem value="cinzel_roboto" className="text-xs">Cinzel & Roboto (Serif Imperial + Tech Sans)</SelectItem>
-                        <SelectItem value="inter" className="text-xs">Inter (Estética Pura SaaS/Minimalista)</SelectItem>
+                        <SelectItem value="playfair" className="text-xs font-medium">Playfair Display (Serif de Lujo Atemporal)</SelectItem>
+                        <SelectItem value="cormorant" className="text-xs font-medium">Cormorant Garamond (Boutique de Lujo & Alta Gama)</SelectItem>
+                        <SelectItem value="cinzel" className="text-xs font-medium">Cinzel (Serif Imperial / Clásica)</SelectItem>
+                        <SelectItem value="outfit" className="text-xs font-medium">Outfit (Geométrica Moderna)</SelectItem>
+                        <SelectItem value="plus_jakarta_sans" className="text-xs font-medium">Plus Jakarta Sans (SaaS Contemporáneo)</SelectItem>
+                        <SelectItem value="montserrat" className="text-xs font-medium">Montserrat (Moderna & Equilibrada)</SelectItem>
+                        <SelectItem value="fredoka" className="text-xs font-medium">Fredoka (Amigable & Redondeada)</SelectItem>
+                        <SelectItem value="inter" className="text-xs font-medium">Inter (Minimalista & Funcional)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* 2. Tipografía para Texto y Cuerpo */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[9px] font-black text-stone-400 uppercase tracking-widest block">
+                        Tipografía de Texto y Cuerpo (Body)
+                      </label>
+                      <span className="text-[9px] text-stone-400 font-semibold">Subtítulos & Párrafos</span>
+                    </div>
+                    <Select
+                      value={
+                        settings.font_family_body || (
+                          settings.font_family === 'cormorant_montserrat' ? 'montserrat' :
+                          settings.font_family === 'cinzel_roboto' ? 'roboto' :
+                          'inter'
+                        )
+                      }
+                      onValueChange={(val) => setSettings(prev => ({ ...prev, font_family_body: val }))}
+                    >
+                      <SelectTrigger className="h-10 text-xs bg-white border-stone-200">
+                        <SelectValue placeholder="Seleccionar tipografía del cuerpo" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border-stone-200 shadow-xl rounded-xl">
+                        <SelectItem value="inter" className="text-xs font-medium">Inter (Limpia & Ultra Legible)</SelectItem>
+                        <SelectItem value="plus_jakarta_sans" className="text-xs font-medium">Plus Jakarta Sans (Moderna & Clara)</SelectItem>
+                        <SelectItem value="montserrat" className="text-xs font-medium">Montserrat (Elegante & Nítida)</SelectItem>
+                        <SelectItem value="outfit" className="text-xs font-medium">Outfit (Geométrica & Espaciosa)</SelectItem>
+                        <SelectItem value="dm_sans" className="text-xs font-medium">DM Sans (Suave & Minimalista)</SelectItem>
+                        <SelectItem value="roboto" className="text-xs font-medium">Roboto (Neutral & Técnica)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -957,6 +1001,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
         secondaryColor={settings.secondary_color}
         tertiaryColor={settings.tertiary_color}
         fontFamily={settings.font_family}
+        fontFamilyBody={settings.font_family_body}
         fontWeightHeadings={settings.font_weight_headings}
         logoSvg={settings.logo_svg}
       />
