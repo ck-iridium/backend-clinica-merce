@@ -364,157 +364,115 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
               })}
             </div>
           )}
+        </div>
 
-          {/* ── 16:9 SHOWCASE TRÍPTICO SLIDER (ESTILO MANGOMINT: 3 CAPTURAS) ── */}
-          <div className="w-screen relative left-1/2 -translate-x-1/2 overflow-hidden py-4 sm:py-8 mt-2 z-20">
-            {/* Máscara de desvanecimiento lateral izquierda (Quiet Luxury edge blend) */}
-            <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-20 sm:w-36 md:w-56 lg:w-72 bg-gradient-to-r from-[#FAF9F6] via-[#FAF9F6]/85 to-transparent z-30" />
+        {/* ── 16:9 SHOWCASE TRÍPTICO SLIDER (ESTILO MANGOMINT: 3 CAPTURAS CENTRADAS) ── */}
+        <div className="w-full relative overflow-hidden py-4 sm:py-8 mt-4 z-20">
+          {/* Máscara de desvanecimiento lateral izquierda (Quiet Luxury edge blend) */}
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-20 sm:w-36 md:w-56 lg:w-72 bg-gradient-to-r from-[#FAF9F6] via-[#FAF9F6]/85 to-transparent z-30" />
+          
+          {/* Máscara de desvanecimiento lateral derecha */}
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-20 sm:w-36 md:w-56 lg:w-72 bg-gradient-to-l from-[#FAF9F6] via-[#FAF9F6]/85 to-transparent z-30" />
+
+          {/* Contenedor de las 3 capturas alineadas y perfectamente centradas */}
+          <div className="flex items-center justify-center w-full select-none px-4 sm:px-0">
             
-            {/* Máscara de desvanecimiento lateral derecha */}
-            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-20 sm:w-36 md:w-56 lg:w-72 bg-gradient-to-l from-[#FAF9F6] via-[#FAF9F6]/85 to-transparent z-30" />
-
-            {/* Contenedor de las 3 capturas alineadas */}
-            <div className="flex items-center justify-center w-full select-none px-4 sm:px-0">
-              
-              {/* 1. TARJETA IZQUIERDA (Pestaña Anterior - Parcialmente Visible) */}
-              {hasMultipleTabs && prevTab && (
-                <div 
-                  onClick={() => setActiveHeroTabId(prevTab.id)}
-                  className="w-[58vw] max-w-[620px] aspect-video shrink-0 -mr-20 sm:-mr-36 md:-mr-48 lg:-mr-60 scale-[0.88] opacity-50 hover:opacity-85 transition-all duration-500 ease-out cursor-pointer z-10 rounded-2xl md:rounded-3xl border border-stone-200/70 bg-white shadow-lg overflow-hidden flex flex-col group"
-                  title={`Ver ${prevTab.label}`}
-                >
-                  <div className="h-7 sm:h-8 bg-stone-100/90 border-b border-stone-200/60 px-4 flex items-center justify-between shrink-0">
-                    <div className="flex items-center gap-1">
-                      <div className="w-2.5 h-2.5 rounded-full bg-stone-300"></div>
-                      <div className="w-2.5 h-2.5 rounded-full bg-stone-300"></div>
-                      <div className="w-2.5 h-2.5 rounded-full bg-stone-300"></div>
-                    </div>
-                    <span className="text-[10px] font-mono text-stone-400 truncate max-w-[150px]">
-                      {prevTab.label}
-                    </span>
-                    <div className="w-4"></div>
+            {/* 1. TARJETA IZQUIERDA (Pestaña Anterior - Solo diapositiva) */}
+            {hasMultipleTabs && prevTab && (
+              <div 
+                onClick={() => setActiveHeroTabId(prevTab.id)}
+                className="w-[58vw] max-w-[620px] aspect-video shrink-0 -mr-20 sm:-mr-36 md:-mr-48 lg:-mr-60 scale-[0.88] opacity-50 hover:opacity-85 transition-all duration-500 ease-out cursor-pointer z-10 rounded-2xl md:rounded-3xl border border-stone-200/80 bg-white shadow-lg overflow-hidden relative group"
+                title={`Ver ${prevTab.label}`}
+              >
+                {prevTab.image_url ? (
+                  <img 
+                    src={prevTab.image_url} 
+                    alt={prevTab.label}
+                    className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full p-4 text-center bg-stone-50">
+                    <Sparkles className="w-6 h-6 text-[#D4AF37] mb-2" />
+                    <span className="text-xs font-bold text-stone-700">{prevTab.label}</span>
                   </div>
-                  <div className="relative flex-1 w-full bg-stone-50 flex items-center justify-center overflow-hidden">
-                    {prevTab.image_url ? (
-                      <img 
-                        src={prevTab.image_url} 
-                        alt={prevTab.label}
-                        className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center justify-center p-4 text-center">
-                        <Sparkles className="w-6 h-6 text-[#D4AF37] mb-2" />
-                        <span className="text-xs font-bold text-stone-700">{prevTab.label}</span>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/5 transition-colors flex items-center justify-start pl-6">
-                      <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/95 text-stone-800 text-xs font-bold px-3 py-1.5 rounded-full shadow-md flex items-center gap-1 border border-stone-200">
-                        <ChevronLeft className="w-3.5 h-3.5" />
-                        <span>{prevTab.label}</span>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* 2. TARJETA CENTRAL (Pestaña Activa - 100% Completa & Protagonista) */}
-              <div className="w-[84vw] max-w-[860px] aspect-video shrink-0 z-20 scale-100 rounded-2xl md:rounded-3xl border border-stone-200/90 bg-white shadow-[0_25px_65px_-15px_rgba(0,0,0,0.14)] overflow-hidden flex flex-col transition-all duration-500 ease-out ring-1 ring-stone-900/5">
-                <div className="h-9 sm:h-10 bg-stone-100/95 border-b border-stone-200/70 px-5 flex items-center justify-between shrink-0">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2.5 h-2.5 rounded-full bg-rose-400/80"></div>
-                    <div className="w-2.5 h-2.5 rounded-full bg-amber-400/80"></div>
-                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-400/80"></div>
-                  </div>
-                  <div className="text-[11px] sm:text-xs font-mono text-stone-500 font-semibold truncate max-w-sm flex items-center gap-1.5">
-                    <span className="text-stone-400">Probookia Suite ·</span>
-                    <span className="text-stone-800">{activeTab?.label || 'Vista General'}</span>
-                  </div>
-                  <div className="w-8"></div>
-                </div>
-
-                <div className="relative flex-1 w-full bg-stone-50 flex items-center justify-center overflow-hidden">
-                  {activeTab?.image_url ? (
-                    <img
-                      key={activeTab.id}
-                      src={activeTab.image_url}
-                      alt={activeTab.label}
-                      className="w-full h-full object-cover transition-opacity duration-300 ease-out animate-in fade-in"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center p-8 text-center space-y-3">
-                      <div className="w-16 h-16 rounded-2xl bg-white border border-stone-200/80 shadow-xs flex items-center justify-center text-stone-400">
-                        <Sparkles className="w-8 h-8 text-[#D4AF37]" />
-                      </div>
-                      <div>
-                        <h4 className="text-sm sm:text-base font-bold text-stone-800">
-                          {activeTab ? `Módulo ${activeTab.label}` : 'Módulo'}
-                        </h4>
-                        <p className="text-xs text-stone-500 max-w-sm mt-1 leading-relaxed">
-                          Captura del módulo disponible en la plataforma de gestión Probookia.
-                        </p>
-                      </div>
-                    </div>
-                  )}
+                )}
+                <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/5 transition-colors flex items-center justify-start pl-6">
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/95 text-stone-800 text-xs font-bold px-3 py-1.5 rounded-full shadow-md flex items-center gap-1 border border-stone-200">
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <span>{prevTab.label}</span>
+                  </span>
                 </div>
               </div>
+            )}
 
-              {/* 3. TARJETA DERECHA (Pestaña Siguiente - Parcialmente Visible) */}
-              {hasMultipleTabs && nextTab && (
-                <div 
-                  onClick={() => setActiveHeroTabId(nextTab.id)}
-                  className="w-[58vw] max-w-[620px] aspect-video shrink-0 -ml-20 sm:-ml-36 md:-ml-48 lg:-ml-60 scale-[0.88] opacity-50 hover:opacity-85 transition-all duration-500 ease-out cursor-pointer z-10 rounded-2xl md:rounded-3xl border border-stone-200/70 bg-white shadow-lg overflow-hidden flex flex-col group"
-                  title={`Ver ${nextTab.label}`}
-                >
-                  <div className="h-7 sm:h-8 bg-stone-100/90 border-b border-stone-200/60 px-4 flex items-center justify-between shrink-0">
-                    <div className="w-4"></div>
-                    <span className="text-[10px] font-mono text-stone-400 truncate max-w-[150px]">
-                      {nextTab.label}
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <div className="w-2.5 h-2.5 rounded-full bg-stone-300"></div>
-                      <div className="w-2.5 h-2.5 rounded-full bg-stone-300"></div>
-                      <div className="w-2.5 h-2.5 rounded-full bg-stone-300"></div>
-                    </div>
+            {/* 2. TARJETA CENTRAL (Pestaña Activa - 100% Completa & Protagonista - Solo diapositiva) */}
+            <div className="w-[84vw] max-w-[860px] aspect-video shrink-0 z-20 scale-100 rounded-2xl md:rounded-3xl border border-stone-200/90 bg-white shadow-[0_25px_65px_-15px_rgba(0,0,0,0.14)] overflow-hidden transition-all duration-500 ease-out ring-1 ring-stone-900/5 relative">
+              {activeTab?.image_url ? (
+                <img
+                  key={activeTab.id}
+                  src={activeTab.image_url}
+                  alt={activeTab.label}
+                  className="w-full h-full object-cover transition-opacity duration-300 ease-out animate-in fade-in"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full p-8 text-center space-y-3 bg-stone-50">
+                  <div className="w-16 h-16 rounded-2xl bg-white border border-stone-200/80 shadow-xs flex items-center justify-center text-stone-400">
+                    <Sparkles className="w-8 h-8 text-[#D4AF37]" />
                   </div>
-                  <div className="relative flex-1 w-full bg-stone-50 flex items-center justify-center overflow-hidden">
-                    {nextTab.image_url ? (
-                      <img 
-                        src={nextTab.image_url} 
-                        alt={nextTab.label}
-                        className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center justify-center p-4 text-center">
-                        <Sparkles className="w-6 h-6 text-[#D4AF37] mb-2" />
-                        <span className="text-xs font-bold text-stone-700">{nextTab.label}</span>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/5 transition-colors flex items-center justify-end pr-6">
-                      <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/95 text-stone-800 text-xs font-bold px-3 py-1.5 rounded-full shadow-md flex items-center gap-1 border border-stone-200">
-                        <span>{nextTab.label}</span>
-                        <ChevronRight className="w-3.5 h-3.5" />
-                      </span>
-                    </div>
+                  <div>
+                    <h4 className="text-sm sm:text-base font-bold text-stone-800">
+                      {activeTab ? `Módulo ${activeTab.label}` : 'Módulo'}
+                    </h4>
+                    <p className="text-xs text-stone-500 max-w-sm mt-1 leading-relaxed">
+                      Captura del módulo disponible en la plataforma de gestión Probookia.
+                    </p>
                   </div>
                 </div>
               )}
-
             </div>
-          </div>
 
-          {/* Micro badges de confianza en el pie del hero */}
-          <div className="flex flex-wrap items-center justify-center gap-6 mt-12 text-[11px] font-semibold text-stone-500">
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 size={13} className="text-[#D4AF37]" /> Sin permanencia ni comisiones
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 size={13} className="text-[#D4AF37]" /> Fianza anti-plantones Stripe
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 size={13} className="text-[#D4AF37]" /> Fichas médicas con firma LOPD
-            </span>
-          </div>
+            {/* 3. TARJETA DERECHA (Pestaña Siguiente - Solo diapositiva) */}
+            {hasMultipleTabs && nextTab && (
+              <div 
+                onClick={() => setActiveHeroTabId(nextTab.id)}
+                className="w-[58vw] max-w-[620px] aspect-video shrink-0 -ml-20 sm:-ml-36 md:-ml-48 lg:-ml-60 scale-[0.88] opacity-50 hover:opacity-85 transition-all duration-500 ease-out cursor-pointer z-10 rounded-2xl md:rounded-3xl border border-stone-200/80 bg-white shadow-lg overflow-hidden relative group"
+                title={`Ver ${nextTab.label}`}
+              >
+                {nextTab.image_url ? (
+                  <img 
+                    src={nextTab.image_url} 
+                    alt={nextTab.label}
+                    className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full p-4 text-center bg-stone-50">
+                    <Sparkles className="w-6 h-6 text-[#D4AF37] mb-2" />
+                    <span className="text-xs font-bold text-stone-700">{nextTab.label}</span>
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/5 transition-colors flex items-center justify-end pr-6">
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/95 text-stone-800 text-xs font-bold px-3 py-1.5 rounded-full shadow-md flex items-center gap-1 border border-stone-200">
+                    <span>{nextTab.label}</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </span>
+                </div>
+              </div>
+            )}
 
+          </div>
+        </div>
+
+        {/* Micro badges de confianza en el pie del hero */}
+        <div className="max-w-5xl mx-auto px-6 flex flex-wrap items-center justify-center gap-6 mt-10 text-[11px] font-semibold text-stone-500 relative z-20">
+          <span className="flex items-center gap-1.5">
+            <CheckCircle2 size={13} className="text-[#D4AF37]" /> Sin permanencia ni comisiones
+          </span>
+          <span className="flex items-center gap-1.5">
+            <CheckCircle2 size={13} className="text-[#D4AF37]" /> Fianza anti-plantones Stripe
+          </span>
+          <span className="flex items-center gap-1.5">
+            <CheckCircle2 size={13} className="text-[#D4AF37]" /> Fichas médicas con firma LOPD
+          </span>
         </div>
       </section>
 

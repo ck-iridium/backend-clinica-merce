@@ -249,125 +249,84 @@ export default function Showcase3DPreview({
 
             <div className="flex items-center justify-center w-full px-2">
               
-              {/* 1. Tarjeta Izquierda (Pestaña Anterior) */}
+              {/* 1. Tarjeta Izquierda (Pestaña Anterior - Solo diapositiva) */}
               {hasMultipleTabs && prevTab && (
                 <div 
                   onClick={() => handleTabClick(prevTab.id)}
-                  className="w-[46%] aspect-video shrink-0 -mr-14 sm:-mr-20 scale-[0.88] opacity-50 hover:opacity-85 transition-all duration-300 ease-out cursor-pointer z-10 rounded-xl md:rounded-2xl border border-stone-200/70 bg-white shadow-md overflow-hidden flex flex-col group"
+                  className="w-[46%] aspect-video shrink-0 -mr-14 sm:-mr-20 scale-[0.88] opacity-50 hover:opacity-85 transition-all duration-300 ease-out cursor-pointer z-10 rounded-xl md:rounded-2xl border border-stone-200/80 bg-white shadow-md overflow-hidden relative group"
                   title={`Ver ${prevTab.label}`}
                 >
-                  <div className="h-6 bg-stone-100/90 border-b border-stone-200/60 px-3 flex items-center justify-between shrink-0">
-                    <div className="flex items-center gap-1">
-                      <div className="w-1.5 h-1.5 rounded-full bg-stone-300"></div>
-                      <div className="w-1.5 h-1.5 rounded-full bg-stone-300"></div>
-                      <div className="w-1.5 h-1.5 rounded-full bg-stone-300"></div>
+                  {prevTab.image_url ? (
+                    <img 
+                      src={prevTab.image_url} 
+                      alt={prevTab.label}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full p-2 text-center bg-stone-50">
+                      <Sparkles className="w-4 h-4 text-[#D4AF37] mb-1" />
+                      <span className="text-[10px] font-bold text-stone-600">{prevTab.label}</span>
                     </div>
-                    <span className="text-[9px] font-mono text-stone-400 truncate max-w-[90px]">
-                      {prevTab.label}
+                  )}
+                  <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/5 transition-colors flex items-center justify-start pl-2">
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/95 text-stone-800 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1 border border-stone-200">
+                      <ChevronLeft className="w-3 h-3" />
+                      <span>{prevTab.label}</span>
                     </span>
-                    <div className="w-3"></div>
-                  </div>
-                  <div className="relative flex-1 w-full bg-stone-50 flex items-center justify-center overflow-hidden">
-                    {prevTab.image_url ? (
-                      <img 
-                        src={prevTab.image_url} 
-                        alt={prevTab.label}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center justify-center p-2 text-center">
-                        <Sparkles className="w-4 h-4 text-[#D4AF37] mb-1" />
-                        <span className="text-[10px] font-bold text-stone-600">{prevTab.label}</span>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/5 transition-colors flex items-center justify-start pl-2">
-                      <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/95 text-stone-800 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1 border border-stone-200">
-                        <ChevronLeft className="w-3 h-3" />
-                        <span>{prevTab.label}</span>
-                      </span>
-                    </div>
                   </div>
                 </div>
               )}
 
-              {/* 2. Tarjeta Central (Pestaña Activa) */}
-              <div className="w-[74%] aspect-video shrink-0 z-20 scale-100 rounded-xl md:rounded-2xl border border-stone-200/90 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.10)] overflow-hidden flex flex-col transition-all duration-300 ring-1 ring-stone-900/5">
-                <div className="h-8 bg-stone-100/95 border-b border-stone-200/70 px-4 flex items-center justify-between shrink-0">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-rose-400/80"></div>
-                    <div className="w-2 h-2 rounded-full bg-amber-400/80"></div>
-                    <div className="w-2 h-2 rounded-full bg-emerald-400/80"></div>
-                  </div>
-                  <div className="text-[10px] font-mono text-stone-500 font-semibold truncate max-w-xs flex items-center gap-1.5">
-                    <span className="text-stone-400">Probookia Suite ·</span>
-                    <span className="text-stone-800">{activeTab?.label || 'Vista Previa'}</span>
-                  </div>
-                  <div className="w-6"></div>
-                </div>
-
-                <div className="relative flex-1 w-full bg-stone-50 flex items-center justify-center overflow-hidden">
-                  {activeTab?.image_url ? (
-                    <img
-                      key={activeTab.id}
-                      src={activeTab.image_url}
-                      alt={activeTab.label}
-                      className="w-full h-full object-cover transition-opacity duration-300 ease-out animate-in fade-in"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center p-6 text-center space-y-2">
-                      <div className="w-12 h-12 rounded-xl bg-white border border-stone-200/80 shadow-2xs flex items-center justify-center text-stone-400">
-                        <Laptop className="w-6 h-6 text-[#D4AF37]" />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-bold text-stone-800">
-                          {activeTab ? `Captura de "${activeTab.label}"` : 'Sin pestañas creadas'}
-                        </h4>
-                        <p className="text-[10px] text-stone-400 max-w-xs mt-0.5 leading-relaxed">
-                          Sube una captura de pantalla 16:9 en el panel izquierdo para verla reflejada aquí.
-                        </p>
-                      </div>
+              {/* 2. Tarjeta Central (Pestaña Activa - Solo diapositiva) */}
+              <div className="w-[74%] aspect-video shrink-0 z-20 scale-100 rounded-xl md:rounded-2xl border border-stone-200/90 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.10)] overflow-hidden transition-all duration-300 ring-1 ring-stone-900/5 relative">
+                {activeTab?.image_url ? (
+                  <img
+                    key={activeTab.id}
+                    src={activeTab.image_url}
+                    alt={activeTab.label}
+                    className="w-full h-full object-cover transition-opacity duration-300 ease-out animate-in fade-in"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full p-6 text-center space-y-2 bg-stone-50">
+                    <div className="w-12 h-12 rounded-xl bg-white border border-stone-200/80 shadow-2xs flex items-center justify-center text-stone-400">
+                      <Laptop className="w-6 h-6 text-[#D4AF37]" />
                     </div>
-                  )}
-                </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-stone-800">
+                        {activeTab ? `Captura de "${activeTab.label}"` : 'Sin pestañas creadas'}
+                      </h4>
+                      <p className="text-[10px] text-stone-400 max-w-xs mt-0.5 leading-relaxed">
+                        Sube una captura de pantalla 16:9 en el panel izquierdo para verla reflejada aquí.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* 3. Tarjeta Derecha (Pestaña Siguiente) */}
+              {/* 3. Tarjeta Derecha (Pestaña Siguiente - Solo diapositiva) */}
               {hasMultipleTabs && nextTab && (
                 <div 
                   onClick={() => handleTabClick(nextTab.id)}
-                  className="w-[46%] aspect-video shrink-0 -ml-14 sm:-ml-20 scale-[0.88] opacity-50 hover:opacity-85 transition-all duration-300 ease-out cursor-pointer z-10 rounded-xl md:rounded-2xl border border-stone-200/70 bg-white shadow-md overflow-hidden flex flex-col group"
+                  className="w-[46%] aspect-video shrink-0 -ml-14 sm:-ml-20 scale-[0.88] opacity-50 hover:opacity-85 transition-all duration-300 ease-out cursor-pointer z-10 rounded-xl md:rounded-2xl border border-stone-200/80 bg-white shadow-md overflow-hidden relative group"
                   title={`Ver ${nextTab.label}`}
                 >
-                  <div className="h-6 bg-stone-100/90 border-b border-stone-200/60 px-3 flex items-center justify-between shrink-0">
-                    <div className="w-3"></div>
-                    <span className="text-[9px] font-mono text-stone-400 truncate max-w-[90px]">
-                      {nextTab.label}
+                  {nextTab.image_url ? (
+                    <img 
+                      src={nextTab.image_url} 
+                      alt={nextTab.label}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full p-2 text-center bg-stone-50">
+                      <Sparkles className="w-4 h-4 text-[#D4AF37] mb-1" />
+                      <span className="text-[10px] font-bold text-stone-600">{nextTab.label}</span>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/5 transition-colors flex items-center justify-end pr-2">
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/95 text-stone-800 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1 border border-stone-200">
+                      <span>{nextTab.label}</span>
+                      <ChevronRight className="w-3 h-3" />
                     </span>
-                    <div className="flex items-center gap-1">
-                      <div className="w-1.5 h-1.5 rounded-full bg-stone-300"></div>
-                      <div className="w-1.5 h-1.5 rounded-full bg-stone-300"></div>
-                      <div className="w-1.5 h-1.5 rounded-full bg-stone-300"></div>
-                    </div>
-                  </div>
-                  <div className="relative flex-1 w-full bg-stone-50 flex items-center justify-center overflow-hidden">
-                    {nextTab.image_url ? (
-                      <img 
-                        src={nextTab.image_url} 
-                        alt={nextTab.label}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center justify-center p-2 text-center">
-                        <Sparkles className="w-4 h-4 text-[#D4AF37] mb-1" />
-                        <span className="text-[10px] font-bold text-stone-600">{nextTab.label}</span>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/5 transition-colors flex items-center justify-end pr-2">
-                      <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/95 text-stone-800 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1 border border-stone-200">
-                        <span>{nextTab.label}</span>
-                        <ChevronRight className="w-3 h-3" />
-                      </span>
-                    </div>
                   </div>
                 </div>
               )}
