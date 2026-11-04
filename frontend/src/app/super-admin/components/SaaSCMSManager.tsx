@@ -2,16 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Sparkles, Settings2, Palette, Globe } from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { ColorPicker } from '@/components/ui/color-picker';
-import { Button } from '@/components/ui/button';
+import { Sparkles } from 'lucide-react';
 import MediaPickerModal from '@/components/MediaPickerModal';
 import Showcase3DPreview, { MappedPreviewSector } from './Showcase3DPreview';
 import SaaSCMSHeroForm, { HeroTabItem } from './SaaSCMSHeroForm';
@@ -19,134 +10,28 @@ import SaaSCMSSectorList, { ShowcaseSector } from './SaaSCMSSectorList';
 import SaaSCMSSectorForm from './SaaSCMSSectorForm';
 import SaaSCMSPainForm, { PainComparisonData } from './SaaSCMSPainForm';
 import SaaSCMSPillarsForm, { PillarsSectionData } from './SaaSCMSPillarsForm';
-import { XCircle, Layers } from 'lucide-react';
+import SaaSCMSTabsNav from './cms/SaaSCMSTabsNav';
+import SaaSCMSBrandingForm from './cms/SaaSCMSBrandingForm';
+import SaaSCMSSeoForm from './cms/SaaSCMSSeoForm';
+import SectorDeleteModal from './cms/modals/SectorDeleteModal';
+import {
+  DEFAULT_PAIN_COMPARISON,
+  DEFAULT_PILLARS,
+  DEFAULT_HERO_TABS,
+  FALLBACK_SECTORS,
+  DEFAULT_SECTOR_IMAGES,
+  DEFAULT_SECTOR_VIDEOS
+} from './cms/constants';
+import { SubTabType, MarketingSettings, SectorFormData, MediaPickerTarget } from './cms/types';
 
-export const DEFAULT_PAIN_COMPARISON: PainComparisonData = {
-  badge: "El Dolor del Mercado",
-  title: "¿Por qué pagar 5 programas si puedes tenerlo todo en uno?",
-  subtitle: "La mayoría de clínicas sufren un caos de contraseñas, datos desincronizados y sobrecostes mensuales. ProBookia unifica todo el ecosistema.",
-  old_model: {
-    badge: "El Modelo Antiguo y Fragmentado",
-    title: "Herramientas Dispersas",
-    items: [
-      { id: "old-1", concept: "Web + Hosting + Mantenimiento (WordPress)", cost: "~40€/mes" },
-      { id: "old-2", concept: "Motor de reservas online (Fresha / Treatwell)", cost: "~50€/mes + comisiones" },
-      { id: "old-3", concept: "Software médico LOPD & Consentimientos en papel", cost: "~70€/mes" },
-      { id: "old-4", concept: "TPV de mostrador y facturación separada", cost: "~30€/mes" },
-      { id: "old-5", concept: "Copiloto de IA o redacción externa", cost: "~30€/mes" }
-    ],
-    total_label: "Gasto Medio Mensual",
-    total_amount: "220€/mes",
-    footnote: "+ Pérdida de tiempo en 5 inicios de sesión distintos."
-  },
-  suite_model: {
-    corner_badge: "Suite Todo-en-Uno",
-    badge: "La Solución Unificada",
-    title: "ProBookia Suite",
-    features: [
-      { id: "pro-1", title: "Web de Lujo con CMS:", description: "Edita fotos, vídeos y catálogo en minutos." },
-      { id: "pro-2", title: "Reservas 24/7 sin comisiones:", description: "Fianza anti-plantones Stripe Connect." },
-      { id: "pro-3", title: "Fichas LOPD & Consentimientos:", description: "Firma manuscrita en tablet/móvil." },
-      { id: "pro-4", title: "Caja TPV & Facturas PDF:", description: "Cobro express por Bizum, tarjeta y bonos." },
-      { id: "pro-5", title: "Copiloto IA Integrado:", description: "Asistente en tu base de datos para redactar y gestionar." }
-    ],
-    pricing_label: "Todo Incluido Desde",
-    pricing_amount: "39€/mes",
-    cta_text: "Probar Gratis"
-  }
-};
-
-export const DEFAULT_PILLARS: PillarsSectionData = {
-  badge: "Arquitectura de Producto",
-  title: "Los 4 Pilares del Ecosistema",
-  subtitle: "Todo lo que una clínicas de alta gama necesita para operar con la máxima sofisticación y cero fricción técnica.",
-  items: [
-    {
-      id: "pillar-1",
-      number_badge: "Pilar 01",
-      title: "Presencia Web de Lujo",
-      description: "CMS visual modular sin tocar código. Catálogo de tratamientos con fotos y tiempos de cabina, vídeos de alta definición, páginas personalizadas y SEO automático.",
-      footer_highlight: "Tu marca propia en el centro",
-      icon: "globe"
-    },
-    {
-      id: "pillar-2",
-      number_badge: "Pilar 02",
-      title: "Motor de Reservas 24/7",
-      description: "El paciente reserva desde su smartphone a cualquier hora en 3 pasos. Depósito o fianza anti-plantones obligatoria con Stripe Connect para erradicar las incomparecencias.",
-      footer_highlight: "Cero ausencias no avisadas",
-      icon: "calendar"
-    },
-    {
-      id: "pillar-3",
-      number_badge: "Pilar 03",
-      title: "ERP, Legalidad & Caja",
-      description: "Fichas médicas con firma manuscrita LOPD sin papel, TPV express de mostrador para cobros por Bizum/tarjeta, facturación correlativa y emisión de bonos multisesión.",
-      footer_highlight: "100% Blindaje legal y fiscal",
-      icon: "receipt"
-    },
-    {
-      id: "pillar-4",
-      number_badge: "Pilar 04",
-      title: "AI Webmaster Copilot",
-      description: "Tu asistente con inteligencia artificial integrado en tu base de datos. Redacta descripciones de tratamientos, traduce contenidos y ayuda a tu equipo en la operativa diaria.",
-      footer_highlight: "Inteligencia sin esfuerzo",
-      icon: "bot"
-    }
-  ]
-};
-
-export const DEFAULT_HERO_TABS: HeroTabItem[] = [
-  {
-    id: 'tab-agenda',
-    label: 'Agenda & Reservas',
-    image_url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1600&q=80'
-  },
-  {
-    id: 'tab-emr',
-    label: 'Fichas Clínicas LOPD',
-    image_url: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1600&q=80'
-  },
-  {
-    id: 'tab-caja',
-    label: 'Caja y Pagos',
-    image_url: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1600&q=80'
-  },
-  {
-    id: 'tab-marketing',
-    label: 'Marketing & Fidelización',
-    image_url: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1600&q=80'
-  }
-];
+// Re-exports for backwards compatibility
+export { DEFAULT_PAIN_COMPARISON, DEFAULT_PILLARS, DEFAULT_HERO_TABS };
 
 interface SaaSCMSManagerProps {
   token: string;
 }
 
-interface MarketingSettings {
-  hero_title: string;
-  hero_subtitle: string;
-  hero_tabs?: HeroTabItem[];
-  hero_image_1?: string | null;
-  hero_image_2?: string | null;
-  hero_image_3?: string | null;
-  logo_svg?: string | null;
-  primary_color?: string | null;
-  secondary_color?: string | null;
-  tertiary_color?: string | null;
-  font_family?: string | null;
-  font_family_body?: string | null;
-  font_weight_headings?: string | null;
-  favicon_url?: string | null;
-  seo_title?: string | null;
-  seo_description?: string | null;
-  seo_keywords?: string | null;
-  pain_comparison?: PainComparisonData;
-  pillars?: PillarsSectionData;
-}
-
 export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
-  type SubTabType = 'hero' | 'sectors' | 'pain' | 'pillars' | 'branding' | 'seo';
   const [subTab, setSubTab] = useState<SubTabType>('hero');
   const [loading, setLoading] = useState(false);
   
@@ -179,12 +64,12 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
   const [sectors, setSectors] = useState<ShowcaseSector[]>([]);
   const [loadingSectors, setLoadingSectors] = useState(false);
   
-  // CRUD state variables
+  // CRUD state variables for sectors
   const [isAddingSector, setIsAddingSector] = useState(false);
   const [editingSector, setEditingSector] = useState<ShowcaseSector | null>(null);
   const [sectorToDelete, setSectorToDelete] = useState<ShowcaseSector | null>(null);
   
-  const [sectorFormData, setSectorFormData] = useState({
+  const [sectorFormData, setSectorFormData] = useState<SectorFormData>({
     title: '',
     slug: '',
     badge_text: '',
@@ -195,61 +80,13 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
   const [submittingSector, setSubmittingSector] = useState(false);
 
   // Media Picker Dialog target
-  const [pickerTarget, setPickerTarget] = useState<{ field: string; tabId?: string } | null>(null);
+  const [pickerTarget, setPickerTarget] = useState<MediaPickerTarget>(null);
 
   // Preview Navigation States
   const [previewIndex, setPreviewIndex] = useState(0);
   const [previewAnimating, setPreviewAnimating] = useState(false);
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
-  const fallbackSectors: MappedPreviewSector[] = [
-    {
-      id: 'clinicas',
-      badge: 'Clínicas Estéticas',
-      title: 'Clínicas & Wellness',
-      copy: 'Aislamiento total de expedientes clínicos en base de datos, firmas manuscritas Base64 y branding de lujo.',
-      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-dermatologist-examining-a-patients-face-with-magnifier-40545-large.mp4',
-      imageUrl: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80',
-      placeholderGradient: 'from-blue-50 to-blue-100/30'
-    },
-    {
-      id: 'barberias',
-      badge: 'Barberías Selectas',
-      title: 'Barberías Premium',
-      copy: 'Gestión ágil de especialistas en tiempo real, venta de bonos express y protección total contra incomparecencias.',
-      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-barber-shaving-a-man-with-a-razor-41223-large.mp4',
-      imageUrl: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80',
-      placeholderGradient: 'from-amber-50 to-amber-100/30'
-    },
-    {
-      id: 'dentistas',
-      badge: 'Odontología Avanzada',
-      title: 'Consultorios Dentales',
-      copy: 'Calendarios dinámicos asimétricos, cobros rápidos en POS y recordatorios automáticos por SMTP privado.',
-      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-dentist-adjusting-a-surgical-light-in-clinic-40549-large.mp4',
-      imageUrl: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80',
-      placeholderGradient: 'from-emerald-50 to-emerald-100/30'
-    },
-    {
-      id: 'peluquerias',
-      badge: 'Salones de Alta Costura',
-      title: 'Salones de Belleza',
-      copy: 'Portal de reserva en 3 pasos con colores y logotipos propios, adaptable a dominio exclusivo corporativo.',
-      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-hairdresser-cutting-hair-of-a-woman-in-salon-40552-large.mp4',
-      imageUrl: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80',
-      placeholderGradient: 'from-purple-50 to-purple-100/30'
-    },
-    {
-      id: 'tattoos',
-      badge: 'Tattoo & Piercing',
-      title: 'Tattoo Studios',
-      copy: 'Gestión de citas por artista, anticipos online y fichas de consentimiento informado sin papel.',
-      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-tattoo-artist-working-on-a-design-41224-large.mp4',
-      imageUrl: 'https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&w=800&q=80',
-      placeholderGradient: 'from-stone-700 to-stone-900/40'
-    }
-  ];
 
   useEffect(() => {
     if (token) {
@@ -326,12 +163,12 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
           'Authorization': `Bearer ${token}`
         }
       });
-      if (!response.ok) throw new Error('Error al obtener la lista de sectores');
+      if (!response.ok) throw new Error('Error al obtener sectores');
       const data = await response.json();
-      setSectors(data);
+      setSectors(data || []);
     } catch (err: any) {
       console.error(err);
-      toast.error('No se pudieron cargar los sectores del Showcase.');
+      toast.error('No se pudieron obtener los sectores del servidor.');
     } finally {
       setLoadingSectors(false);
     }
@@ -353,27 +190,12 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
   const openEditSector = (sector: ShowcaseSector) => {
     setIsAddingSector(false);
     setEditingSector(sector);
-    const defaultImages: Record<string, string> = {
-      clinicas: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80',
-      barberias: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80',
-      dentistas: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80',
-      peluquerias: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80',
-      tattoos: 'https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&w=800&q=80',
-    };
-    const defaultVideos: Record<string, string> = {
-      clinicas: 'https://assets.mixkit.co/videos/preview/mixkit-dermatologist-examining-a-patients-face-with-magnifier-40545-large.mp4',
-      barberias: 'https://assets.mixkit.co/videos/preview/mixkit-barber-shaving-a-man-with-a-razor-41223-large.mp4',
-      dentistas: 'https://assets.mixkit.co/videos/preview/mixkit-dentist-adjusting-a-surgical-light-in-clinic-40549-large.mp4',
-      peluquerias: 'https://assets.mixkit.co/videos/preview/mixkit-hairdresser-cutting-hair-of-a-woman-in-salon-40552-large.mp4',
-      tattoos: 'https://assets.mixkit.co/videos/preview/mixkit-tattoo-artist-working-on-a-design-41224-large.mp4',
-    };
-
     setSectorFormData({
       title: sector.title,
       slug: sector.slug,
       badge_text: sector.badge_text || '',
-      video_url: sector.video_url || defaultVideos[sector.slug] || '',
-      image_url: sector.image_url || defaultImages[sector.slug] || '',
+      video_url: sector.video_url || DEFAULT_SECTOR_VIDEOS[sector.slug] || '',
+      image_url: sector.image_url || DEFAULT_SECTOR_IMAGES[sector.slug] || '',
       order_index: sector.order_index
     });
   };
@@ -524,58 +346,48 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
         return s;
       });
 
-  const mappedSectors = sectorsForPreview.map((s, index) => {
-    let gradient = 'from-blue-50 to-blue-100/30';
-    let defaultImg = 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80';
-    if (s.order_index === 1 || index === 1 || s.slug === 'barberias') {
-      gradient = 'from-amber-50 to-amber-100/30';
-      defaultImg = 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80';
-    } else if (s.order_index === 2 || index === 2 || s.slug === 'dentistas') {
-      gradient = 'from-emerald-50 to-emerald-100/30';
-      defaultImg = 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80';
-    } else if (s.order_index === 3 || index === 3 || s.slug === 'peluquerias') {
-      gradient = 'from-purple-50 to-purple-100/30';
-      defaultImg = 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80';
-    } else if (s.slug?.includes('tattoo') || s.order_index === 4) {
-      gradient = 'from-stone-700 to-stone-900/40';
-      defaultImg = 'https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&w=800&q=80';
-    }
+  const previewSectors: MappedPreviewSector[] = sectorsForPreview.length > 0 
+    ? sectorsForPreview.map((s, index) => {
+        let gradient = 'from-blue-50 to-blue-100/30';
+        if (s.slug === 'barberias' || index === 1) gradient = 'from-amber-50 to-amber-100/30';
+        else if (s.slug === 'dentistas' || index === 2) gradient = 'from-emerald-50 to-emerald-100/30';
+        else if (s.slug === 'peluquerias' || index === 3) gradient = 'from-purple-50 to-purple-100/30';
+        else if (s.slug === 'tattoos' || index === 4) gradient = 'from-stone-700 to-stone-900/40';
 
-    let copy = 'Configura tu plataforma en marca blanca de alta gama con subdominio exclusivo y RLS a nivel de base de datos.';
-    if (s.slug === 'clinicas') copy = 'Aislamiento total de expedientes clínicos en base de datos, firmas manuscritas Base64 y branding de lujo.';
-    else if (s.slug === 'barberias') copy = 'Gestión ágil de especialistas en tiempo real, venta de bonos express y protección total contra incomparecencias.';
-    else if (s.slug === 'dentistas') copy = 'Calendarios dinámicos asimétricos, cobros rápidos en POS y recordatorios automáticos por SMTP privado.';
-    else if (s.slug === 'peluquerias') copy = 'Portal de reserva en 3 pasos con colores y logotipos propios, adaptable a dominio exclusivo corporativo.';
-    else if (s.slug?.includes('tattoo')) copy = 'Gestión de citas por artista, anticipos online y fichas de consentimiento informado sin papel.';
+        let copy = 'Configura tu plataforma en marca blanca de alta gama con subdominio exclusivo y RLS a nivel de base de datos.';
+        if (s.slug === 'clinicas') copy = 'Aislamiento total de expedientes clínicos en base de datos, firmas manuscritas Base64 y branding de lujo.';
+        else if (s.slug === 'barberias') copy = 'Gestión ágil de especialistas en tiempo real, venta de bonos express y protección total contra incomparecencias.';
+        else if (s.slug === 'dentistas') copy = 'Calendarios dinámicos asimétricos, cobros rápidos en POS y recordatorios automáticos por SMTP privado.';
+        else if (s.slug === 'peluquerias') copy = 'Portal de reserva en 3 pasos con colores y logotipos propios, adaptable a dominio exclusivo corporativo.';
+        else if (s.slug === 'tattoos') copy = 'Gestión de citas por artista, anticipos online y fichas de consentimiento informado sin papel.';
 
-    return {
-      id: s.id,
-      badge: s.badge_text || 'Especialidad',
-      title: s.title,
-      copy: copy,
-      videoUrl: s.video_url || 'https://assets.mixkit.co/videos/preview/mixkit-hairdresser-cutting-hair-of-a-woman-in-salon-40552-large.mp4',
-      imageUrl: s.image_url || defaultImg,
-      placeholderGradient: gradient
-    };
-  });
-
-  const previewSectors = mappedSectors.length > 0 ? mappedSectors : fallbackSectors;
+        return {
+          id: s.id,
+          badge: s.badge_text || 'Especialidad',
+          title: s.title,
+          copy: copy,
+          videoUrl: s.video_url || DEFAULT_SECTOR_VIDEOS[s.slug] || '',
+          imageUrl: s.image_url || DEFAULT_SECTOR_IMAGES[s.slug] || '',
+          placeholderGradient: gradient
+        };
+      })
+    : FALLBACK_SECTORS;
 
   return (
-    <div className="flex-1 flex h-[calc(100vh-80px)] w-full overflow-hidden bg-stone-50 select-none">
+    <div className="flex h-full w-full bg-stone-50 overflow-hidden font-sans border-t border-stone-200">
       
-      {/* 1. LEFT SIDEBAR CONTROL PANEL */}
-      <div className="w-[420px] h-full bg-white border-r border-stone-200/60 flex flex-col shrink-0">
+      {/* 1. LEFT SIDEBAR: FORMS & CONFIGURATION */}
+      <div className="w-full lg:w-[480px] xl:w-[520px] bg-white border-r border-stone-200 flex flex-col shrink-0 h-full relative z-10 shadow-[10px_0_30px_rgba(0,0,0,0.02)]">
         
         {/* Sidebar Header */}
-        <div className="p-6 border-b border-stone-100 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center font-serif text-sm font-semibold">
+        <div className="p-6 pb-4 border-b border-stone-100 flex items-center justify-between shrink-0 font-sans">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-stone-950 text-white flex items-center justify-center font-bold text-xs tracking-wider">
               P
             </div>
             <div>
-              <h3 className="font-serif text-sm font-bold text-stone-955">Editor de Portada</h3>
-              <p className="text-[9px] text-stone-450 font-semibold tracking-wider uppercase">SaaS Marketing CMS</p>
+              <h2 className="text-sm font-bold text-stone-900 tracking-tight">Editor de Portada</h2>
+              <p className="text-[10px] text-stone-400 font-medium">SaaS Marketing CMS</p>
             </div>
           </div>
           <span className="bg-[#fcf8e5] text-[#d4af37] text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border border-[#d4af37]/20">
@@ -583,94 +395,8 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
           </span>
         </div>
 
-        {/* Tab Selectors inside Sidebar - Horizontal scrollable luxury pills */}
-        <div className="border-b border-stone-200/80 bg-stone-50/70 p-2 shrink-0">
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth py-0.5 px-0.5">
-            <button 
-              type="button"
-              onClick={() => handleTabChange('hero')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
-                subTab === 'hero' 
-                  ? 'bg-white text-stone-900 shadow-sm border border-stone-200/90 font-bold' 
-                  : 'text-stone-500 hover:text-stone-800 hover:bg-stone-100/80'
-              }`}
-              title="Editar Hero y Slider 16:9"
-            >
-              <Settings2 className={`w-3.5 h-3.5 shrink-0 ${subTab === 'hero' ? 'text-[#D4AF37]' : 'text-stone-400'}`} />
-              <span>Hero</span>
-            </button>
-
-            <button 
-              type="button"
-              onClick={() => handleTabChange('sectors')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
-                subTab === 'sectors' 
-                  ? 'bg-white text-stone-900 shadow-sm border border-stone-200/90 font-bold' 
-                  : 'text-stone-500 hover:text-stone-800 hover:bg-stone-100/80'
-              }`}
-              title="Editar Carrusel 3D de Sectores"
-            >
-              <Sparkles className={`w-3.5 h-3.5 shrink-0 ${subTab === 'sectors' ? 'text-[#D4AF37]' : 'text-stone-400'}`} />
-              <span>Sectores</span>
-            </button>
-
-            <button 
-              type="button"
-              onClick={() => handleTabChange('pain')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
-                subTab === 'pain' 
-                  ? 'bg-white text-stone-900 shadow-sm border border-stone-200/90 font-bold' 
-                  : 'text-stone-500 hover:text-stone-800 hover:bg-stone-100/80'
-              }`}
-              title="Editar Comparativa de Contras y Pros"
-            >
-              <XCircle className={`w-3.5 h-3.5 shrink-0 ${subTab === 'pain' ? 'text-rose-500' : 'text-stone-400'}`} />
-              <span>Contras & Pros</span>
-            </button>
-
-            <button 
-              type="button"
-              onClick={() => handleTabChange('pillars')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
-                subTab === 'pillars' 
-                  ? 'bg-white text-stone-900 shadow-sm border border-stone-200/90 font-bold' 
-                  : 'text-stone-500 hover:text-stone-800 hover:bg-stone-100/80'
-              }`}
-              title="Editar los 4 Pilares del Ecosistema"
-            >
-              <Layers className={`w-3.5 h-3.5 shrink-0 ${subTab === 'pillars' ? 'text-[#D4AF37]' : 'text-stone-400'}`} />
-              <span>Pilares</span>
-            </button>
-
-            <button 
-              type="button"
-              onClick={() => handleTabChange('branding')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
-                subTab === 'branding' 
-                  ? 'bg-white text-stone-900 shadow-sm border border-stone-200/90 font-bold' 
-                  : 'text-stone-500 hover:text-stone-800 hover:bg-stone-100/80'
-              }`}
-              title="Editar Colores, Tipografías y Logotipo"
-            >
-              <Palette className={`w-3.5 h-3.5 shrink-0 ${subTab === 'branding' ? 'text-[#D4AF37]' : 'text-stone-400'}`} />
-              <span>Branding</span>
-            </button>
-
-            <button 
-              type="button"
-              onClick={() => handleTabChange('seo')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
-                subTab === 'seo' 
-                  ? 'bg-white text-stone-900 shadow-sm border border-stone-200/90 font-bold' 
-                  : 'text-stone-500 hover:text-stone-800 hover:bg-stone-100/80'
-              }`}
-              title="Editar Metadatos SEO"
-            >
-              <Globe className={`w-3.5 h-3.5 shrink-0 ${subTab === 'seo' ? 'text-[#D4AF37]' : 'text-stone-400'}`} />
-              <span>SEO</span>
-            </button>
-          </div>
-        </div>
+        {/* Tab Selectors inside Sidebar */}
+        <SaaSCMSTabsNav activeTab={subTab} onChangeTab={handleTabChange} />
 
         {/* Sidebar Scrollable Section */}
         <div className="flex-1 overflow-y-auto min-h-0 select-text font-sans">
@@ -728,18 +454,17 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                     }));
                   }}
                   onDeleteTab={(id) => {
-                    setSettings(prev => {
-                      const updated = (prev.hero_tabs || []).filter(t => t.id !== id);
-                      if (activeHeroTabId === id && updated.length > 0) {
-                        setActiveHeroTabId(updated[0].id);
-                      }
-                      return { ...prev, hero_tabs: updated };
-                    });
+                    const remaining = (settings.hero_tabs || []).filter(t => t.id !== id);
+                    setSettings(prev => ({
+                      ...prev,
+                      hero_tabs: remaining
+                    }));
+                    if (activeHeroTabId === id && remaining.length > 0) {
+                      setActiveHeroTabId(remaining[0].id);
+                    }
                   }}
-                  onSelectImageFromGallery={(tabId) => {
-                    setPickerTarget({ field: 'hero_tab', tabId });
-                  }}
-                  onSetActiveTab={setActiveHeroTabId}
+                  onSetActiveTab={(id) => setActiveHeroTabId(id)}
+                  onSelectImageFromGallery={(tabId) => setPickerTarget({ field: 'hero_tab', tabId })}
                   onSubmit={handleSaveSettings}
                   saving={savingSettings}
                   token={token}
@@ -748,9 +473,9 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
             </div>
           )}
 
-          {/* C. CONTRAS Y PROS FORM */}
+          {/* B. PAIN & PROS COMPARISON FORM */}
           {subTab === 'pain' && (
-            <div className="p-6">
+            <div className="p-6 space-y-6">
               {loading ? (
                 <div className="space-y-4 animate-pulse">
                   <div className="h-4 w-32 bg-stone-100 rounded"></div>
@@ -759,7 +484,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
               ) : (
                 <SaaSCMSPainForm
                   data={settings.pain_comparison || DEFAULT_PAIN_COMPARISON}
-                  onChange={(updated) => setSettings(prev => ({ ...prev, pain_comparison: updated }))}
+                  onChange={(newData) => setSettings(prev => ({ ...prev, pain_comparison: newData }))}
                   onSubmit={handleSaveSettings}
                   saving={savingSettings}
                 />
@@ -767,9 +492,9 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
             </div>
           )}
 
-          {/* D. PILARES FORM */}
+          {/* C. 4 PILLARS FORM */}
           {subTab === 'pillars' && (
-            <div className="p-6">
+            <div className="p-6 space-y-6">
               {loading ? (
                 <div className="space-y-4 animate-pulse">
                   <div className="h-4 w-32 bg-stone-100 rounded"></div>
@@ -778,7 +503,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
               ) : (
                 <SaaSCMSPillarsForm
                   data={settings.pillars || DEFAULT_PILLARS}
-                  onChange={(updated) => setSettings(prev => ({ ...prev, pillars: updated }))}
+                  onChange={(newData) => setSettings(prev => ({ ...prev, pillars: newData }))}
                   onSubmit={handleSaveSettings}
                   saving={savingSettings}
                 />
@@ -786,333 +511,29 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
             </div>
           )}
 
-          {/* E. BRANDING FORM */}
+          {/* D. BRANDING FORM */}
           {subTab === 'branding' && (
-            <div className="p-6 space-y-5">
-              {loading ? (
-                <div className="space-y-4 animate-pulse">
-                  <div className="h-4 w-32 bg-stone-100 rounded"></div>
-                  <div className="h-10 w-full bg-stone-100 rounded-xl"></div>
-                </div>
-              ) : (
-                <form onSubmit={handleSaveSettings} className="space-y-5 select-text">
-                  {/* 1. Tipografía para Títulos / Encabezados */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <label className="text-[9px] font-black text-stone-400 uppercase tracking-widest block">
-                        Tipografía de Títulos / Encabezados
-                      </label>
-                      <span className="text-[9px] text-[#D4AF37] font-semibold">H1 - H6 & Hero</span>
-                    </div>
-                    <Select
-                      value={
-                        settings.font_family === 'playfair_inter' ? 'playfair' :
-                        settings.font_family === 'cormorant_montserrat' ? 'cormorant' :
-                        settings.font_family === 'cinzel_roboto' ? 'cinzel' :
-                        (settings.font_family || 'playfair')
-                      }
-                      onValueChange={(val) => setSettings(prev => ({ ...prev, font_family: val }))}
-                    >
-                      <SelectTrigger className="h-10 text-xs bg-white border-stone-200">
-                        <SelectValue placeholder="Seleccionar tipografía de títulos" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-stone-200 shadow-xl rounded-xl">
-                        <SelectItem value="playfair" className="text-xs font-medium">Playfair Display (Serif de Lujo Atemporal)</SelectItem>
-                        <SelectItem value="cormorant" className="text-xs font-medium">Cormorant Garamond (Boutique de Lujo & Alta Gama)</SelectItem>
-                        <SelectItem value="cinzel" className="text-xs font-medium">Cinzel (Serif Imperial / Clásica)</SelectItem>
-                        <SelectItem value="outfit" className="text-xs font-medium">Outfit (Geométrica Moderna)</SelectItem>
-                        <SelectItem value="plus_jakarta_sans" className="text-xs font-medium">Plus Jakarta Sans (SaaS Contemporáneo)</SelectItem>
-                        <SelectItem value="montserrat" className="text-xs font-medium">Montserrat (Moderna & Equilibrada)</SelectItem>
-                        <SelectItem value="fredoka" className="text-xs font-medium">Fredoka (Amigable & Redondeada)</SelectItem>
-                        <SelectItem value="inter" className="text-xs font-medium">Inter (Minimalista & Funcional)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* 2. Tipografía para Texto y Cuerpo */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <label className="text-[9px] font-black text-stone-400 uppercase tracking-widest block">
-                        Tipografía de Texto y Cuerpo (Body)
-                      </label>
-                      <span className="text-[9px] text-stone-400 font-semibold">Subtítulos & Párrafos</span>
-                    </div>
-                    <Select
-                      value={
-                        settings.font_family_body || (
-                          settings.font_family === 'cormorant_montserrat' ? 'montserrat' :
-                          settings.font_family === 'cinzel_roboto' ? 'roboto' :
-                          'inter'
-                        )
-                      }
-                      onValueChange={(val) => setSettings(prev => ({ ...prev, font_family_body: val }))}
-                    >
-                      <SelectTrigger className="h-10 text-xs bg-white border-stone-200">
-                        <SelectValue placeholder="Seleccionar tipografía del cuerpo" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-stone-200 shadow-xl rounded-xl">
-                        <SelectItem value="inter" className="text-xs font-medium">Inter (Limpia & Ultra Legible)</SelectItem>
-                        <SelectItem value="plus_jakarta_sans" className="text-xs font-medium">Plus Jakarta Sans (Moderna & Clara)</SelectItem>
-                        <SelectItem value="montserrat" className="text-xs font-medium">Montserrat (Elegante & Nítida)</SelectItem>
-                        <SelectItem value="outfit" className="text-xs font-medium">Outfit (Geométrica & Espaciosa)</SelectItem>
-                        <SelectItem value="dm_sans" className="text-xs font-medium">DM Sans (Suave & Minimalista)</SelectItem>
-                        <SelectItem value="roboto" className="text-xs font-medium">Roboto (Neutral & Técnica)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Title Font Weight Dropdown */}
-                  <div className="space-y-1.5">
-                    <label className="text-[9px] font-black text-stone-400 uppercase tracking-widest block">
-                      Grosor de Títulos
-                    </label>
-                    <Select
-                      value={settings.font_weight_headings || 'semibold'}
-                      onValueChange={(val) => setSettings(prev => ({ ...prev, font_weight_headings: val }))}
-                    >
-                      <SelectTrigger className="h-10 text-xs bg-white border-stone-200">
-                        <SelectValue placeholder="Seleccionar grosor" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-stone-200 shadow-xl rounded-xl">
-                        <SelectItem value="light" className="text-xs">Fino (Light - 300)</SelectItem>
-                        <SelectItem value="normal" className="text-xs">Elegante (Normal - 400)</SelectItem>
-                        <SelectItem value="medium" className="text-xs">Suave (Medium - 500)</SelectItem>
-                        <SelectItem value="semibold" className="text-xs">Imprenta (Semibold - 600)</SelectItem>
-                        <SelectItem value="bold" className="text-xs">Sólido (Bold - 700)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* 3 Colors in 1 Row */}
-                  <div className="space-y-1.5">
-                    <label className="text-[9px] font-black text-stone-400 uppercase tracking-widest block border-b border-stone-100 pb-1">
-                      Paleta de Colores de la Landing
-                    </label>
-                    
-                    <div className="grid grid-cols-3 gap-3">
-                      {/* Primary Color */}
-                      <div className="space-y-1">
-                        <label className="text-[8px] font-black text-stone-500 uppercase tracking-wider block truncate">
-                          Primario
-                        </label>
-                        <ColorPicker 
-                          value={settings.primary_color || '#3b82f6'} 
-                          onChange={(val) => setSettings(prev => ({ ...prev, primary_color: val }))}
-                          label="Primario"
-                        />
-                      </div>
-                      
-                      {/* Secondary Color */}
-                      <div className="space-y-1">
-                        <label className="text-[8px] font-black text-stone-500 uppercase tracking-wider block truncate">
-                          Secundario
-                        </label>
-                        <ColorPicker 
-                          value={settings.secondary_color || '#1c1917'} 
-                          onChange={(val) => setSettings(prev => ({ ...prev, secondary_color: val }))}
-                          label="Secundario"
-                        />
-                      </div>
-
-                      {/* Tertiary Color */}
-                      <div className="space-y-1">
-                        <label className="text-[8px] font-black text-stone-500 uppercase tracking-wider block truncate">
-                          Terciario
-                        </label>
-                        <ColorPicker 
-                          value={settings.tertiary_color || '#d4af37'} 
-                          onChange={(val) => setSettings(prev => ({ ...prev, tertiary_color: val }))}
-                          label="Terciario"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Logo SVG */}
-                  <div className="space-y-1.5">
-                    <label className="text-[9px] font-black text-stone-400 uppercase tracking-widest block flex justify-between items-center">
-                      <span>Logotipo (SVG)</span>
-                      {settings.logo_svg && (
-                        <span className="text-[8px] text-[#d4af37] font-bold">Cargado</span>
-                      )}
-                    </label>
-
-                    {/* SVG Dropzone / File Uploader */}
-                    <div className="border border-dashed border-stone-200 rounded-xl p-3 hover:bg-stone-50/50 transition-colors flex flex-col items-center justify-center gap-1.5 cursor-pointer relative">
-                      <input 
-                        type="file" 
-                        accept=".svg"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onload = (event) => {
-                              const text = event.target?.result as string;
-                              if (text.includes('<svg')) {
-                                setSettings(prev => ({ ...prev, logo_svg: text }));
-                                toast.success('¡Logotipo SVG cargado con éxito!');
-                              } else {
-                                toast.error('El archivo no parece ser un SVG válido.');
-                              }
-                            };
-                            reader.readAsText(file);
-                          }
-                        }}
-                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                      />
-                      <div className="w-7 h-7 rounded-lg bg-stone-100 text-stone-600 flex items-center justify-center">
-                        <Palette className="w-3.5 h-3.5" />
-                      </div>
-                      <p className="text-[9px] text-stone-500 font-medium">Arrastra o sube tu archivo .svg aquí</p>
-                    </div>
-
-                    {settings.logo_svg && (
-                      <div className="p-3 bg-stone-50 border border-stone-150 rounded-xl flex items-center justify-center max-h-[60px] overflow-hidden relative group">
-                        <div 
-                          className="h-8 w-full flex items-center justify-center [&>svg]:h-full [&>svg]:w-auto [&>svg]:max-w-full"
-                          dangerouslySetInnerHTML={{ __html: settings.logo_svg }}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setSettings(prev => ({ ...prev, logo_svg: null }))}
-                          className="absolute right-2 top-2 text-[8px] bg-red-50 text-red-600 px-2 py-0.5 rounded-md hover:bg-red-100 transition-colors font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 duration-300"
-                        >
-                          Eliminar
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Favicon Uploader */}
-                  <div className="space-y-1.5">
-                    <label className="text-[9px] font-black text-stone-400 uppercase tracking-widest block flex justify-between items-center">
-                      <span>Favicon (.ico, .png, .svg)</span>
-                      {settings.favicon_url && (
-                        <span className="text-[8px] text-[#d4af37] font-bold">Cargado</span>
-                      )}
-                    </label>
-
-                    <div className="flex items-center gap-3">
-                      {/* Preview */}
-                      <div className="w-10 h-10 rounded-xl border border-stone-200 bg-stone-50 flex items-center justify-center overflow-hidden shrink-0">
-                        {settings.favicon_url ? (
-                          <img src={settings.favicon_url} alt="Favicon" className="w-5 h-5 object-contain" />
-                        ) : (
-                          <Globe className="w-4 h-4 text-stone-400" />
-                        )}
-                      </div>
-
-                      {/* File Input */}
-                      <div className="flex-1 relative border border-dashed border-stone-200 rounded-xl px-4 py-2 hover:bg-stone-50/50 transition-colors flex items-center justify-center gap-2 cursor-pointer h-10">
-                        <input 
-                          type="file" 
-                          accept=".ico,.png,.svg"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              const reader = new FileReader();
-                              reader.onload = (event) => {
-                                const base64 = event.target?.result as string;
-                                setSettings(prev => ({ ...prev, favicon_url: base64 }));
-                                toast.success('¡Favicon cargado con éxito!');
-                              };
-                              reader.readAsDataURL(file);
-                            }
-                          }}
-                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                        />
-                        <span className="text-[9px] text-stone-500 font-bold uppercase tracking-wider">Subir Favicon</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Button 
-                    type="submit"
-                    variant="luxury"
-                    disabled={savingSettings}
-                    className="w-full py-3 h-11"
-                  >
-                    {savingSettings ? 'Guardando Ajustes...' : 'Guardar Branding'}
-                  </Button>
-                </form>
-              )}
-            </div>
+            <SaaSCMSBrandingForm
+              settings={settings}
+              onChange={(updates) => setSettings(prev => ({ ...prev, ...updates }))}
+              onSave={handleSaveSettings}
+              saving={savingSettings}
+              loading={loading}
+            />
           )}
 
-          {/* D. SEO METADATA FORM */}
+          {/* E. SEO METADATA FORM */}
           {subTab === 'seo' && (
-            <div className="p-6 space-y-6">
-              <div className="bg-stone-50 border border-stone-200 p-4 rounded-xl space-y-1">
-                <h4 className="text-xs font-bold text-stone-700 flex items-center gap-1.5">
-                  <Globe className="w-3.5 h-3.5 text-stone-600" /> Posicionamiento en Buscadores (SEO)
-                </h4>
-                <p className="text-[10px] text-stone-500 leading-relaxed font-medium">
-                  Optimiza la indexación del SaaS corporativo de ProBookia en buscadores de Google, Bing y redes sociales.
-                </p>
-              </div>
-
-              {loading ? (
-                <div className="space-y-4 animate-pulse">
-                  <div className="h-4 w-32 bg-stone-100 rounded"></div>
-                  <div className="h-10 w-full bg-stone-100 rounded-xl"></div>
-                </div>
-              ) : (
-                <form onSubmit={handleSaveSettings} className="space-y-6 select-text">
-                  {/* SEO Title */}
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest block">
-                      Meta Título (SEO Title)
-                    </label>
-                    <input 
-                      type="text" 
-                      value={settings.seo_title || ''}
-                      onChange={(e) => setSettings(prev => ({ ...prev, seo_title: e.target.value }))}
-                      placeholder="Probookia | El SaaS de Gestión Premium..."
-                      className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-900 transition-colors text-xs font-sans"
-                    />
-                  </div>
-
-                  {/* SEO Description */}
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest block">
-                      Meta Descripción (SEO Description)
-                    </label>
-                    <textarea 
-                      rows={4}
-                      value={settings.seo_description || ''}
-                      onChange={(e) => setSettings(prev => ({ ...prev, seo_description: e.target.value }))}
-                      placeholder="Describe tu plataforma para los buscadores de Google..."
-                      className="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-900 transition-colors text-xs font-sans leading-relaxed"
-                    />
-                  </div>
-
-                  {/* SEO Keywords */}
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest block">
-                      Palabras Clave (SEO Keywords)
-                    </label>
-                    <input 
-                      type="text" 
-                      value={settings.seo_keywords || ''}
-                      onChange={(e) => setSettings(prev => ({ ...prev, seo_keywords: e.target.value }))}
-                      placeholder="saas, agenda online, estetica"
-                      className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-900 transition-colors text-xs font-sans"
-                    />
-                  </div>
-
-                  <button 
-                    type="submit"
-                    disabled={savingSettings}
-                    className="w-full bg-stone-950 hover:bg-[#d4af37] text-white py-3 rounded-xl text-xxs font-black uppercase tracking-widest transition-all duration-300 shadow-sm active:scale-98"
-                  >
-                    {savingSettings ? 'Guardando Ajustes...' : 'Guardar SEO'}
-                  </button>
-                </form>
-              )}
-            </div>
+            <SaaSCMSSeoForm
+              settings={settings}
+              onChange={(updates) => setSettings(prev => ({ ...prev, ...updates }))}
+              onSave={handleSaveSettings}
+              saving={savingSettings}
+              loading={loading}
+            />
           )}
 
-          {/* B. SECTORS LIST / CRUD */}
+          {/* F. SECTORS LIST / CRUD */}
           {subTab === 'sectors' && (
             <>
               {editingSector || isAddingSector ? (
@@ -1146,30 +567,13 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
 
         </div>
 
-        {/* C. INLINE DELETION DIALOG overlay */}
+        {/* INLINE DELETION DIALOG */}
         {sectorToDelete && (
-          <div className="p-6 border-t border-stone-100 bg-red-50/30 animate-in slide-in-from-bottom duration-300 shrink-0 font-sans">
-            <span className="text-[9px] font-black text-red-600 uppercase tracking-widest block mb-1">
-              Confirmar Eliminación
-            </span>
-            <p className="text-xs font-medium text-stone-600 leading-relaxed mb-4">
-              ¿Deseas eliminar permanentemente el sector <strong className="text-stone-950 font-bold">"{sectorToDelete.title}"</strong> del Showcase 3D?
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => setSectorToDelete(null)}
-                className="py-2 bg-white border border-stone-200 hover:bg-stone-50 text-stone-700 text-xs font-bold rounded-lg transition-colors active:scale-95"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleConfirmDelete}
-                className="py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg transition-colors active:scale-95 shadow-sm"
-              >
-                Eliminar
-              </button>
-            </div>
-          </div>
+          <SectorDeleteModal
+            sector={sectorToDelete}
+            onCancel={() => setSectorToDelete(null)}
+            onConfirm={handleConfirmDelete}
+          />
         )}
 
       </div>
