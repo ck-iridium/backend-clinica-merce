@@ -2,7 +2,7 @@ import base64
 import json
 import re
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, Header
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -676,7 +676,7 @@ def update_marketing_settings(
     settings.hero_title = payload.hero_title
     settings.hero_subtitle = payload.hero_subtitle
     if payload.hero_tabs is not None:
-        settings.hero_tabs = [item.dict() for item in payload.hero_tabs]
+        settings.hero_tabs = [item.model_dump() if hasattr(item, 'model_dump') else item.dict() if hasattr(item, 'dict') else item for item in payload.hero_tabs]
     settings.hero_image_1 = payload.hero_image_1
     settings.hero_image_2 = payload.hero_image_2
     settings.hero_image_3 = payload.hero_image_3

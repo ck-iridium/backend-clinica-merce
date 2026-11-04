@@ -583,74 +583,93 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
           </span>
         </div>
 
-        {/* Tab Selectors inside Sidebar */}
-        <div className="grid grid-cols-6 border-b border-stone-100 text-center text-[9px] md:text-[11px] font-bold text-stone-400 bg-stone-50/50 font-sans shrink-0">
-          <button 
-            type="button"
-            onClick={() => handleTabChange('hero')}
-            className={`py-3 border-r border-stone-100 transition-colors flex flex-col sm:flex-row items-center justify-center gap-1 ${
-              subTab === 'hero' ? 'bg-white text-stone-900 border-b-2 border-[#d4af37]' : 'hover:bg-white/50'
-            }`}
-            title="Editar Hero y Slider 16:9"
-          >
-            <Settings2 className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">Hero</span>
-          </button>
-          <button 
-            type="button"
-            onClick={() => handleTabChange('sectors')}
-            className={`py-3 border-r border-stone-100 transition-colors flex flex-col sm:flex-row items-center justify-center gap-1 ${
-              subTab === 'sectors' ? 'bg-white text-stone-900 border-b-2 border-[#d4af37]' : 'hover:bg-white/50'
-            }`}
-            title="Editar Carrusel 3D de Sectores"
-          >
-            <Sparkles className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">Sectores</span>
-          </button>
-          <button 
-            type="button"
-            onClick={() => handleTabChange('pain')}
-            className={`py-3 border-r border-stone-100 transition-colors flex flex-col sm:flex-row items-center justify-center gap-1 ${
-              subTab === 'pain' ? 'bg-white text-stone-900 border-b-2 border-[#d4af37]' : 'hover:bg-white/50'
-            }`}
-            title="Editar Comparativa de Contras y Pros"
-          >
-            <XCircle className="w-3.5 h-3.5 shrink-0 text-rose-500" />
-            <span className="truncate">Contras/Pros</span>
-          </button>
-          <button 
-            type="button"
-            onClick={() => handleTabChange('pillars')}
-            className={`py-3 border-r border-stone-100 transition-colors flex flex-col sm:flex-row items-center justify-center gap-1 ${
-              subTab === 'pillars' ? 'bg-white text-stone-900 border-b-2 border-[#d4af37]' : 'hover:bg-white/50'
-            }`}
-            title="Editar los 4 Pilares del Ecosistema"
-          >
-            <Layers className="w-3.5 h-3.5 shrink-0 text-[#D4AF37]" />
-            <span className="truncate">Pilares</span>
-          </button>
-          <button 
-            type="button"
-            onClick={() => handleTabChange('branding')}
-            className={`py-3 border-r border-stone-100 transition-colors flex flex-col sm:flex-row items-center justify-center gap-1 ${
-              subTab === 'branding' ? 'bg-white text-stone-900 border-b-2 border-[#d4af37]' : 'hover:bg-white/50'
-            }`}
-            title="Editar Colores, Tipografías y Logotipo"
-          >
-            <Palette className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">Branding</span>
-          </button>
-          <button 
-            type="button"
-            onClick={() => handleTabChange('seo')}
-            className={`py-3 transition-colors flex flex-col sm:flex-row items-center justify-center gap-1 ${
-              subTab === 'seo' ? 'bg-white text-stone-900 border-b-2 border-[#d4af37]' : 'hover:bg-white/50'
-            }`}
-            title="Editar Metadatos SEO"
-          >
-            <Globe className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">SEO</span>
-          </button>
+        {/* Tab Selectors inside Sidebar - Horizontal scrollable luxury pills */}
+        <div className="border-b border-stone-200/80 bg-stone-50/70 p-2 shrink-0">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth py-0.5 px-0.5">
+            <button 
+              type="button"
+              onClick={() => handleTabChange('hero')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
+                subTab === 'hero' 
+                  ? 'bg-white text-stone-900 shadow-sm border border-stone-200/90 font-bold' 
+                  : 'text-stone-500 hover:text-stone-800 hover:bg-stone-100/80'
+              }`}
+              title="Editar Hero y Slider 16:9"
+            >
+              <Settings2 className={`w-3.5 h-3.5 shrink-0 ${subTab === 'hero' ? 'text-[#D4AF37]' : 'text-stone-400'}`} />
+              <span>Hero</span>
+            </button>
+
+            <button 
+              type="button"
+              onClick={() => handleTabChange('sectors')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
+                subTab === 'sectors' 
+                  ? 'bg-white text-stone-900 shadow-sm border border-stone-200/90 font-bold' 
+                  : 'text-stone-500 hover:text-stone-800 hover:bg-stone-100/80'
+              }`}
+              title="Editar Carrusel 3D de Sectores"
+            >
+              <Sparkles className={`w-3.5 h-3.5 shrink-0 ${subTab === 'sectors' ? 'text-[#D4AF37]' : 'text-stone-400'}`} />
+              <span>Sectores</span>
+            </button>
+
+            <button 
+              type="button"
+              onClick={() => handleTabChange('pain')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
+                subTab === 'pain' 
+                  ? 'bg-white text-stone-900 shadow-sm border border-stone-200/90 font-bold' 
+                  : 'text-stone-500 hover:text-stone-800 hover:bg-stone-100/80'
+              }`}
+              title="Editar Comparativa de Contras y Pros"
+            >
+              <XCircle className={`w-3.5 h-3.5 shrink-0 ${subTab === 'pain' ? 'text-rose-500' : 'text-stone-400'}`} />
+              <span>Contras & Pros</span>
+            </button>
+
+            <button 
+              type="button"
+              onClick={() => handleTabChange('pillars')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
+                subTab === 'pillars' 
+                  ? 'bg-white text-stone-900 shadow-sm border border-stone-200/90 font-bold' 
+                  : 'text-stone-500 hover:text-stone-800 hover:bg-stone-100/80'
+              }`}
+              title="Editar los 4 Pilares del Ecosistema"
+            >
+              <Layers className={`w-3.5 h-3.5 shrink-0 ${subTab === 'pillars' ? 'text-[#D4AF37]' : 'text-stone-400'}`} />
+              <span>Pilares</span>
+            </button>
+
+            <button 
+              type="button"
+              onClick={() => handleTabChange('branding')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
+                subTab === 'branding' 
+                  ? 'bg-white text-stone-900 shadow-sm border border-stone-200/90 font-bold' 
+                  : 'text-stone-500 hover:text-stone-800 hover:bg-stone-100/80'
+              }`}
+              title="Editar Colores, Tipografías y Logotipo"
+            >
+              <Palette className={`w-3.5 h-3.5 shrink-0 ${subTab === 'branding' ? 'text-[#D4AF37]' : 'text-stone-400'}`} />
+              <span>Branding</span>
+            </button>
+
+            <button 
+              type="button"
+              onClick={() => handleTabChange('seo')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
+                subTab === 'seo' 
+                  ? 'bg-white text-stone-900 shadow-sm border border-stone-200/90 font-bold' 
+                  : 'text-stone-500 hover:text-stone-800 hover:bg-stone-100/80'
+              }`}
+              title="Editar Metadatos SEO"
+            >
+              <Globe className={`w-3.5 h-3.5 shrink-0 ${subTab === 'seo' ? 'text-[#D4AF37]' : 'text-stone-400'}`} />
+              <span>SEO</span>
+            </button>
+          </div>
         </div>
 
         {/* Sidebar Scrollable Section */}
