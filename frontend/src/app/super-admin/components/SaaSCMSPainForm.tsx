@@ -53,7 +53,8 @@ export interface PainComparisonData {
 interface SaaSCMSPainFormProps {
   data: PainComparisonData;
   onChange: (updated: PainComparisonData) => void;
-  onSubmit: (e: React.FormEvent) => void;
+  onSubmit?: (e: React.FormEvent) => void;
+  onSave?: (e: React.FormEvent) => void;
   saving: boolean;
 }
 
@@ -61,8 +62,10 @@ export default function SaaSCMSPainForm({
   data,
   onChange,
   onSubmit,
+  onSave,
   saving
 }: SaaSCMSPainFormProps) {
+  const handleSubmit = onSubmit || onSave || ((e: React.FormEvent) => e.preventDefault());
   // Helpers para modificar el estado profundo
   const updateGeneral = (field: keyof Pick<PainComparisonData, 'badge' | 'title' | 'subtitle'>, val: string) => {
     onChange({ ...data, [field]: val });
@@ -133,7 +136,7 @@ export default function SaaSCMSPainForm({
   };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       
       {/* 1. CABECERA DE LA SECCIÓN */}
       <div className="bg-white/95 border border-stone-200/80 rounded-2xl p-5 space-y-4 shadow-2xs">

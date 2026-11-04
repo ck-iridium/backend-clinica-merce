@@ -34,7 +34,7 @@ interface SaaSCMSManagerProps {
 export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
   const [subTab, setSubTab] = useState<SubTabType>('hero');
   const [loading, setLoading] = useState(false);
-  
+
   // Settings state
   const [settings, setSettings] = useState<MarketingSettings>({
     hero_title: 'El único software que tu clínica volverá a necesitar.',
@@ -63,12 +63,12 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
   // Sectors state
   const [sectors, setSectors] = useState<ShowcaseSector[]>([]);
   const [loadingSectors, setLoadingSectors] = useState(false);
-  
+
   // CRUD state variables for sectors
   const [isAddingSector, setIsAddingSector] = useState(false);
   const [editingSector, setEditingSector] = useState<ShowcaseSector | null>(null);
   const [sectorToDelete, setSectorToDelete] = useState<ShowcaseSector | null>(null);
-  
+
   const [sectorFormData, setSectorFormData] = useState<SectorFormData>({
     title: '',
     slug: '',
@@ -222,12 +222,12 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
 
     setSubmittingSector(true);
     const toastId = toast.loading(editingSector ? 'Actualizando sector...' : 'Creando nuevo sector...');
-    
+
     try {
-      const url = editingSector 
+      const url = editingSector
         ? `${API_URL}/super-admin/marketing/sectors/${editingSector.id}`
         : `${API_URL}/super-admin/marketing/sectors`;
-      
+
       const method = editingSector ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
@@ -308,7 +308,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
   const handlePreviewNavigate = (newIndex: number) => {
     if (previewAnimating) return;
     setPreviewAnimating(true);
-    
+
     // 200ms slide down index change
     setTimeout(() => {
       setPreviewIndex(newIndex);
@@ -321,64 +321,64 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
   };
 
   // --- MATHEMATICAL 3D RENDER INTERPOLATION ---
-  const sectorsForPreview = isAddingSector 
+  const sectorsForPreview = isAddingSector
     ? [...sectors, {
-        id: 'temp-adding',
-        title: sectorFormData.title || 'Nuevo Sector',
-        slug: sectorFormData.slug || 'nuevo-sector',
-        badge_text: sectorFormData.badge_text || 'Borrador',
-        video_url: sectorFormData.video_url || '',
-        image_url: sectorFormData.image_url || '',
-        order_index: sectors.length
-      }]
+      id: 'temp-adding',
+      title: sectorFormData.title || 'Nuevo Sector',
+      slug: sectorFormData.slug || 'nuevo-sector',
+      badge_text: sectorFormData.badge_text || 'Borrador',
+      video_url: sectorFormData.video_url || '',
+      image_url: sectorFormData.image_url || '',
+      order_index: sectors.length
+    }]
     : sectors.map(s => {
-        if (editingSector && s.id === editingSector.id) {
-          return {
-            ...s,
-            title: sectorFormData.title,
-            slug: sectorFormData.slug,
-            badge_text: sectorFormData.badge_text || null,
-            video_url: sectorFormData.video_url || null,
-            image_url: sectorFormData.image_url || null,
-            order_index: Number(sectorFormData.order_index)
-          };
-        }
-        return s;
-      });
-
-  const previewSectors: MappedPreviewSector[] = sectorsForPreview.length > 0 
-    ? sectorsForPreview.map((s, index) => {
-        let gradient = 'from-blue-50 to-blue-100/30';
-        if (s.slug === 'barberias' || index === 1) gradient = 'from-amber-50 to-amber-100/30';
-        else if (s.slug === 'dentistas' || index === 2) gradient = 'from-emerald-50 to-emerald-100/30';
-        else if (s.slug === 'peluquerias' || index === 3) gradient = 'from-purple-50 to-purple-100/30';
-        else if (s.slug === 'tattoos' || index === 4) gradient = 'from-stone-700 to-stone-900/40';
-
-        let copy = 'Configura tu plataforma en marca blanca de alta gama con subdominio exclusivo y RLS a nivel de base de datos.';
-        if (s.slug === 'clinicas') copy = 'Aislamiento total de expedientes clínicos en base de datos, firmas manuscritas Base64 y branding de lujo.';
-        else if (s.slug === 'barberias') copy = 'Gestión ágil de especialistas en tiempo real, venta de bonos express y protección total contra incomparecencias.';
-        else if (s.slug === 'dentistas') copy = 'Calendarios dinámicos asimétricos, cobros rápidos en POS y recordatorios automáticos por SMTP privado.';
-        else if (s.slug === 'peluquerias') copy = 'Portal de reserva en 3 pasos con colores y logotipos propios, adaptable a dominio exclusivo corporativo.';
-        else if (s.slug === 'tattoos') copy = 'Gestión de citas por artista, anticipos online y fichas de consentimiento informado sin papel.';
-
+      if (editingSector && s.id === editingSector.id) {
         return {
-          id: s.id,
-          badge: s.badge_text || 'Especialidad',
-          title: s.title,
-          copy: copy,
-          videoUrl: s.video_url || DEFAULT_SECTOR_VIDEOS[s.slug] || '',
-          imageUrl: s.image_url || DEFAULT_SECTOR_IMAGES[s.slug] || '',
-          placeholderGradient: gradient
+          ...s,
+          title: sectorFormData.title,
+          slug: sectorFormData.slug,
+          badge_text: sectorFormData.badge_text || null,
+          video_url: sectorFormData.video_url || null,
+          image_url: sectorFormData.image_url || null,
+          order_index: Number(sectorFormData.order_index)
         };
-      })
+      }
+      return s;
+    });
+
+  const previewSectors: MappedPreviewSector[] = sectorsForPreview.length > 0
+    ? sectorsForPreview.map((s, index) => {
+      let gradient = 'from-blue-50 to-blue-100/30';
+      if (s.slug === 'barberias' || index === 1) gradient = 'from-amber-50 to-amber-100/30';
+      else if (s.slug === 'dentistas' || index === 2) gradient = 'from-emerald-50 to-emerald-100/30';
+      else if (s.slug === 'peluquerias' || index === 3) gradient = 'from-purple-50 to-purple-100/30';
+      else if (s.slug === 'tattoos' || index === 4) gradient = 'from-stone-700 to-stone-900/40';
+
+      let copy = 'Configura tu plataforma en marca blanca de alta gama con subdominio exclusivo y RLS a nivel de base de datos.';
+      if (s.slug === 'clinicas') copy = 'Aislamiento total de expedientes clínicos en base de datos, firmas manuscritas Base64 y branding de lujo.';
+      else if (s.slug === 'barberias') copy = 'Gestión ágil de especialistas en tiempo real, venta de bonos express y protección total contra incomparecencias.';
+      else if (s.slug === 'dentistas') copy = 'Calendarios dinámicos asimétricos, cobros rápidos en POS y recordatorios automáticos por SMTP privado.';
+      else if (s.slug === 'peluquerias') copy = 'Portal de reserva en 3 pasos con colores y logotipos propios, adaptable a dominio exclusivo corporativo.';
+      else if (s.slug === 'tattoos') copy = 'Gestión de citas por artista, anticipos online y fichas de consentimiento informado sin papel.';
+
+      return {
+        id: s.id,
+        badge: s.badge_text || 'Especialidad',
+        title: s.title,
+        copy: copy,
+        videoUrl: s.video_url || DEFAULT_SECTOR_VIDEOS[s.slug] || '',
+        imageUrl: s.image_url || DEFAULT_SECTOR_IMAGES[s.slug] || '',
+        placeholderGradient: gradient
+      };
+    })
     : FALLBACK_SECTORS;
 
   return (
     <div className="flex h-full w-full bg-stone-50 overflow-hidden font-sans border-t border-stone-200">
-      
+
       {/* 1. LEFT SIDEBAR: FORMS & CONFIGURATION */}
       <div className="w-full lg:w-[480px] xl:w-[520px] bg-white border-r border-stone-200 flex flex-col shrink-0 h-full relative z-10 shadow-[10px_0_30px_rgba(0,0,0,0.02)]">
-        
+
         {/* Sidebar Header */}
         <div className="p-6 pb-4 border-b border-stone-100 flex items-center justify-between shrink-0 font-sans">
           <div className="flex items-center gap-3">
@@ -400,7 +400,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
 
         {/* Sidebar Scrollable Section */}
         <div className="flex-1 overflow-y-auto min-h-0 select-text font-sans">
-          
+
           {/* A. HERO TEXT FORM */}
           {subTab === 'hero' && (
             <div className="p-6 space-y-6">
@@ -421,7 +421,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                   <div className="h-24 w-full bg-stone-100 rounded-xl"></div>
                 </div>
               ) : (
-                <SaaSCMSHeroForm 
+                <SaaSCMSHeroForm
                   heroTitle={settings.hero_title}
                   heroSubtitle={settings.hero_subtitle}
                   heroTabs={settings.hero_tabs || DEFAULT_HERO_TABS}
@@ -485,7 +485,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                 <SaaSCMSPainForm
                   data={settings.pain_comparison || DEFAULT_PAIN_COMPARISON}
                   onChange={(newData) => setSettings(prev => ({ ...prev, pain_comparison: newData }))}
-                  onSubmit={handleSaveSettings}
+                  onSave={handleSaveSettings}
                   saving={savingSettings}
                 />
               )}
@@ -504,7 +504,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                 <SaaSCMSPillarsForm
                   data={settings.pillars || DEFAULT_PILLARS}
                   onChange={(newData) => setSettings(prev => ({ ...prev, pillars: newData }))}
-                  onSubmit={handleSaveSettings}
+                  onSave={handleSaveSettings}
                   saving={savingSettings}
                 />
               )}
@@ -537,7 +537,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
           {subTab === 'sectors' && (
             <>
               {editingSector || isAddingSector ? (
-                <SaaSCMSSectorForm 
+                <SaaSCMSSectorForm
                   editingSector={editingSector}
                   sectorFormData={sectorFormData}
                   onBack={() => {
@@ -554,7 +554,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                   token={token}
                 />
               ) : (
-                <SaaSCMSSectorList 
+                <SaaSCMSSectorList
                   sectors={sectors}
                   loading={loadingSectors}
                   onAdd={openAddSector}
