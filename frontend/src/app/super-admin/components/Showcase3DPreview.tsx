@@ -9,6 +9,8 @@ import PillarsSection from '@/app/marketing/components/PillarsSection';
 import Showcase3DRing, { Sector } from '@/app/marketing/components/Showcase3DRing';
 import PricingSection from '@/app/marketing/components/PricingSection';
 import MarketingFooter from '@/app/marketing/components/MarketingFooter';
+import type { PainComparisonData } from './SaaSCMSPainForm';
+import type { PillarsSectionData } from './SaaSCMSPillarsForm';
 
 export interface MappedPreviewSector extends Sector {
   badge: string;
@@ -42,6 +44,8 @@ interface Showcase3DPreviewProps {
   previewIndex?: number;
   previewAnimating?: boolean;
   onNavigateSector?: (index: number) => void;
+  painComparisonData?: PainComparisonData;
+  pillarsData?: PillarsSectionData;
 }
 
 export default function Showcase3DPreview({
@@ -60,7 +64,9 @@ export default function Showcase3DPreview({
   previewSectors = [],
   previewIndex = 0,
   previewAnimating = false,
-  onNavigateSector
+  onNavigateSector,
+  painComparisonData,
+  pillarsData
 }: Showcase3DPreviewProps) {
   const activeWeight = FONT_WEIGHT_MAP[fontWeightHeadings || 'semibold'] || '600';
   const resolvedHeadingFont = resolveHeadingFont(fontFamily);
@@ -455,6 +461,7 @@ export default function Showcase3DPreview({
             primaryColor={darkColor}
             secondaryColor={surfaceColor}
             tertiaryColor={accentColor}
+            data={painComparisonData}
           />
         </section>
 
@@ -464,6 +471,7 @@ export default function Showcase3DPreview({
             primaryColor={darkColor}
             secondaryColor={surfaceColor}
             tertiaryColor={accentColor}
+            data={pillarsData}
           />
         </section>
 

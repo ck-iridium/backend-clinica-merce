@@ -43,6 +43,8 @@ export default async function Page() {
     font_family_body: 'inter',
     font_weight_headings: 'semibold',
     favicon_url: null as string | null,
+    pain_comparison: null as any,
+    pillars: null as any,
   };
 
   const fallbackSectors: Sector[] = [
@@ -119,6 +121,8 @@ export default async function Page() {
           font_family_body: data.settings.font_family_body || defaultSettings.font_family_body,
           font_weight_headings: data.settings.font_weight_headings || defaultSettings.font_weight_headings,
           favicon_url: data.settings.favicon_url || null,
+          pain_comparison: data.settings.pain_comparison || null,
+          pillars: data.settings.pillars || null,
         };
       }
 

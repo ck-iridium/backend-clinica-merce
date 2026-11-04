@@ -342,6 +342,8 @@ class LandingMarketingSettingsOut(BaseModel):
     seo_title: Optional[str] = None
     seo_description: Optional[str] = None
     seo_keywords: Optional[str] = None
+    pain_comparison: Optional[Dict[str, Any]] = None
+    pillars: Optional[Dict[str, Any]] = None
 
     class Config:
         from_attributes = True
@@ -365,6 +367,8 @@ class LandingMarketingSettingsUpdate(BaseModel):
     seo_title: Optional[str] = None
     seo_description: Optional[str] = None
     seo_keywords: Optional[str] = None
+    pain_comparison: Optional[Dict[str, Any]] = None
+    pillars: Optional[Dict[str, Any]] = None
 
 
 class LandingShowcaseSectorOut(BaseModel):
@@ -470,6 +474,81 @@ def ensure_showcase_sectors_defaults(db: Session):
         print(f"Error sincronizando sectores por defecto: {e}")
 
 
+DEFAULT_PAIN_COMPARISON = {
+    "badge": "El Dolor del Mercado",
+    "title": "¿Por qué pagar 5 programas si puedes tenerlo todo en uno?",
+    "subtitle": "La mayoría de clínicas sufren un caos de contraseñas, datos desincronizados y sobrecostes mensuales. ProBookia unifica todo el ecosistema.",
+    "old_model": {
+        "badge": "El Modelo Antiguo y Fragmentado",
+        "title": "Herramientas Dispersas",
+        "items": [
+            {"id": "old-1", "concept": "Web + Hosting + Mantenimiento (WordPress)", "cost": "~40€/mes"},
+            {"id": "old-2", "concept": "Motor de reservas online (Fresha / Treatwell)", "cost": "~50€/mes + comisiones"},
+            {"id": "old-3", "concept": "Software médico LOPD & Consentimientos en papel", "cost": "~70€/mes"},
+            {"id": "old-4", "concept": "TPV de mostrador y facturación separada", "cost": "~30€/mes"},
+            {"id": "old-5", "concept": "Copiloto de IA o redacción externa", "cost": "~30€/mes"}
+        ],
+        "total_label": "Gasto Medio Mensual",
+        "total_amount": "220€/mes",
+        "footnote": "+ Pérdida de tiempo en 5 inicios de sesión distintos."
+    },
+    "suite_model": {
+        "corner_badge": "Suite Todo-en-Uno",
+        "badge": "La Solución Unificada",
+        "title": "ProBookia Suite",
+        "features": [
+            {"id": "pro-1", "title": "Web de Lujo con CMS:", "description": "Edita fotos, vídeos y catálogo en minutos."},
+            {"id": "pro-2", "title": "Reservas 24/7 sin comisiones:", "description": "Fianza anti-plantones Stripe Connect."},
+            {"id": "pro-3", "title": "Fichas LOPD & Consentimientos:", "description": "Firma manuscrita en tablet/móvil."},
+            {"id": "pro-4", "title": "Caja TPV & Facturas PDF:", "description": "Cobro express por Bizum, tarjeta y bonos."},
+            {"id": "pro-5", "title": "Copiloto IA Integrado:", "description": "Asistente en tu base de datos para redactar y gestionar."}
+        ],
+        "pricing_label": "Todo Incluido Desde",
+        "pricing_amount": "39€/mes",
+        "cta_text": "Probar Gratis"
+    }
+}
+
+DEFAULT_PILLARS = {
+    "badge": "Arquitectura de Producto",
+    "title": "Los 4 Pilares del Ecosistema",
+    "subtitle": "Todo lo que una clínicas de alta gama necesita para operar con la máxima sofisticación y cero fricción técnica.",
+    "items": [
+        {
+            "id": "pillar-1",
+            "number_badge": "Pilar 01",
+            "title": "Presencia Web de Lujo",
+            "description": "CMS visual modular sin tocar código. Catálogo de tratamientos con fotos y tiempos de cabina, vídeos de alta definición, páginas personalizadas y SEO automático.",
+            "footer_highlight": "Tu marca propia en el centro",
+            "icon": "globe"
+        },
+        {
+            "id": "pillar-2",
+            "number_badge": "Pilar 02",
+            "title": "Motor de Reservas 24/7",
+            "description": "El paciente reserva desde su smartphone a cualquier hora en 3 pasos. Depósito o fianza anti-plantones obligatoria con Stripe Connect para erradicar las incomparecencias.",
+            "footer_highlight": "Cero ausencias no avisadas",
+            "icon": "calendar"
+        },
+        {
+            "id": "pillar-3",
+            "number_badge": "Pilar 03",
+            "title": "ERP, Legalidad & Caja",
+            "description": "Fichas médicas con firma manuscrita LOPD sin papel, TPV express de mostrador para cobros por Bizum/tarjeta, facturación correlativa y emisión de bonos multisesión.",
+            "footer_highlight": "100% Blindaje legal y fiscal",
+            "icon": "receipt"
+        },
+        {
+            "id": "pillar-4",
+            "number_badge": "Pilar 04",
+            "title": "AI Webmaster Copilot",
+            "description": "Tu asistente con inteligencia artificial integrado en tu base de datos. Redacta descripciones de tratamientos, traduce contenidos y ayuda a tu equipo en la operativa diaria.",
+            "footer_highlight": "Inteligencia sin esfuerzo",
+            "icon": "bot"
+        }
+    ]
+}
+
 DEFAULT_HERO_TABS = [
     {
         "id": "tab-agenda",
@@ -532,7 +611,9 @@ def get_public_marketing_content(db: Session = Depends(database.get_db)):
             "favicon_url": settings.favicon_url,
             "seo_title": settings.seo_title,
             "seo_description": settings.seo_description,
-            "seo_keywords": settings.seo_keywords
+            "seo_keywords": settings.seo_keywords,
+            "pain_comparison": settings.pain_comparison or DEFAULT_PAIN_COMPARISON,
+            "pillars": settings.pillars or DEFAULT_PILLARS
         },
         "sectors": [
             {
@@ -565,10 +646,20 @@ def get_marketing_settings(
         db.add(settings)
         db.commit()
         db.refresh(settings)
-    elif not settings.hero_tabs:
-        settings.hero_tabs = DEFAULT_HERO_TABS
-        db.commit()
-        db.refresh(settings)
+    else:
+        needs_commit = False
+        if not settings.hero_tabs:
+            settings.hero_tabs = DEFAULT_HERO_TABS
+            needs_commit = True
+        if not settings.pain_comparison:
+            settings.pain_comparison = DEFAULT_PAIN_COMPARISON
+            needs_commit = True
+        if not settings.pillars:
+            settings.pillars = DEFAULT_PILLARS
+            needs_commit = True
+        if needs_commit:
+            db.commit()
+            db.refresh(settings)
     return settings
 
 
@@ -600,6 +691,10 @@ def update_marketing_settings(
     settings.seo_title = payload.seo_title
     settings.seo_description = payload.seo_description
     settings.seo_keywords = payload.seo_keywords
+    if payload.pain_comparison is not None:
+        settings.pain_comparison = payload.pain_comparison
+    if payload.pillars is not None:
+        settings.pillars = payload.pillars
     db.commit()
     db.refresh(settings)
     return settings

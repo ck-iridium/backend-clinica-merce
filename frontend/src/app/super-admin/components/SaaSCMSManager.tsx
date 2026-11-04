@@ -17,6 +17,84 @@ import Showcase3DPreview, { MappedPreviewSector } from './Showcase3DPreview';
 import SaaSCMSHeroForm, { HeroTabItem } from './SaaSCMSHeroForm';
 import SaaSCMSSectorList, { ShowcaseSector } from './SaaSCMSSectorList';
 import SaaSCMSSectorForm from './SaaSCMSSectorForm';
+import SaaSCMSPainForm, { PainComparisonData } from './SaaSCMSPainForm';
+import SaaSCMSPillarsForm, { PillarsSectionData } from './SaaSCMSPillarsForm';
+import { XCircle, Layers } from 'lucide-react';
+
+export const DEFAULT_PAIN_COMPARISON: PainComparisonData = {
+  badge: "El Dolor del Mercado",
+  title: "¿Por qué pagar 5 programas si puedes tenerlo todo en uno?",
+  subtitle: "La mayoría de clínicas sufren un caos de contraseñas, datos desincronizados y sobrecostes mensuales. ProBookia unifica todo el ecosistema.",
+  old_model: {
+    badge: "El Modelo Antiguo y Fragmentado",
+    title: "Herramientas Dispersas",
+    items: [
+      { id: "old-1", concept: "Web + Hosting + Mantenimiento (WordPress)", cost: "~40€/mes" },
+      { id: "old-2", concept: "Motor de reservas online (Fresha / Treatwell)", cost: "~50€/mes + comisiones" },
+      { id: "old-3", concept: "Software médico LOPD & Consentimientos en papel", cost: "~70€/mes" },
+      { id: "old-4", concept: "TPV de mostrador y facturación separada", cost: "~30€/mes" },
+      { id: "old-5", concept: "Copiloto de IA o redacción externa", cost: "~30€/mes" }
+    ],
+    total_label: "Gasto Medio Mensual",
+    total_amount: "220€/mes",
+    footnote: "+ Pérdida de tiempo en 5 inicios de sesión distintos."
+  },
+  suite_model: {
+    corner_badge: "Suite Todo-en-Uno",
+    badge: "La Solución Unificada",
+    title: "ProBookia Suite",
+    features: [
+      { id: "pro-1", title: "Web de Lujo con CMS:", description: "Edita fotos, vídeos y catálogo en minutos." },
+      { id: "pro-2", title: "Reservas 24/7 sin comisiones:", description: "Fianza anti-plantones Stripe Connect." },
+      { id: "pro-3", title: "Fichas LOPD & Consentimientos:", description: "Firma manuscrita en tablet/móvil." },
+      { id: "pro-4", title: "Caja TPV & Facturas PDF:", description: "Cobro express por Bizum, tarjeta y bonos." },
+      { id: "pro-5", title: "Copiloto IA Integrado:", description: "Asistente en tu base de datos para redactar y gestionar." }
+    ],
+    pricing_label: "Todo Incluido Desde",
+    pricing_amount: "39€/mes",
+    cta_text: "Probar Gratis"
+  }
+};
+
+export const DEFAULT_PILLARS: PillarsSectionData = {
+  badge: "Arquitectura de Producto",
+  title: "Los 4 Pilares del Ecosistema",
+  subtitle: "Todo lo que una clínicas de alta gama necesita para operar con la máxima sofisticación y cero fricción técnica.",
+  items: [
+    {
+      id: "pillar-1",
+      number_badge: "Pilar 01",
+      title: "Presencia Web de Lujo",
+      description: "CMS visual modular sin tocar código. Catálogo de tratamientos con fotos y tiempos de cabina, vídeos de alta definición, páginas personalizadas y SEO automático.",
+      footer_highlight: "Tu marca propia en el centro",
+      icon: "globe"
+    },
+    {
+      id: "pillar-2",
+      number_badge: "Pilar 02",
+      title: "Motor de Reservas 24/7",
+      description: "El paciente reserva desde su smartphone a cualquier hora en 3 pasos. Depósito o fianza anti-plantones obligatoria con Stripe Connect para erradicar las incomparecencias.",
+      footer_highlight: "Cero ausencias no avisadas",
+      icon: "calendar"
+    },
+    {
+      id: "pillar-3",
+      number_badge: "Pilar 03",
+      title: "ERP, Legalidad & Caja",
+      description: "Fichas médicas con firma manuscrita LOPD sin papel, TPV express de mostrador para cobros por Bizum/tarjeta, facturación correlativa y emisión de bonos multisesión.",
+      footer_highlight: "100% Blindaje legal y fiscal",
+      icon: "receipt"
+    },
+    {
+      id: "pillar-4",
+      number_badge: "Pilar 04",
+      title: "AI Webmaster Copilot",
+      description: "Tu asistente con inteligencia artificial integrado en tu base de datos. Redacta descripciones de tratamientos, traduce contenidos y ayuda a tu equipo en la operativa diaria.",
+      footer_highlight: "Inteligencia sin esfuerzo",
+      icon: "bot"
+    }
+  ]
+};
 
 export const DEFAULT_HERO_TABS: HeroTabItem[] = [
   {
@@ -63,10 +141,13 @@ interface MarketingSettings {
   seo_title?: string | null;
   seo_description?: string | null;
   seo_keywords?: string | null;
+  pain_comparison?: PainComparisonData;
+  pillars?: PillarsSectionData;
 }
 
 export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
-  const [subTab, setSubTab] = useState<'hero' | 'sectors' | 'branding' | 'seo'>('hero');
+  type SubTabType = 'hero' | 'sectors' | 'pain' | 'pillars' | 'branding' | 'seo';
+  const [subTab, setSubTab] = useState<SubTabType>('hero');
   const [loading, setLoading] = useState(false);
   
   // Settings state
@@ -87,7 +168,9 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
     favicon_url: null,
     seo_title: '',
     seo_description: '',
-    seo_keywords: ''
+    seo_keywords: '',
+    pain_comparison: DEFAULT_PAIN_COMPARISON,
+    pillars: DEFAULT_PILLARS
   });
   const [activeHeroTabId, setActiveHeroTabId] = useState<string>('tab-agenda');
   const [savingSettings, setSavingSettings] = useState(false);
@@ -189,6 +272,12 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
       if (data && data.hero_title) {
         if (!data.hero_tabs || data.hero_tabs.length === 0) {
           data.hero_tabs = DEFAULT_HERO_TABS;
+        }
+        if (!data.pain_comparison || Object.keys(data.pain_comparison).length === 0) {
+          data.pain_comparison = DEFAULT_PAIN_COMPARISON;
+        }
+        if (!data.pillars || Object.keys(data.pillars).length === 0) {
+          data.pillars = DEFAULT_PILLARS;
         }
         setSettings(data);
         if (data.hero_tabs?.[0]?.id) {
@@ -372,6 +461,28 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
     }
   };
 
+  const handleTabChange = (tab: SubTabType) => {
+    setSubTab(tab);
+    setEditingSector(null);
+    setIsAddingSector(false);
+
+    const targetMap: Record<string, string> = {
+      hero: 'preview-hero',
+      sectors: 'preview-sectors',
+      pain: 'preview-pain',
+      pillars: 'preview-pillars'
+    };
+    const targetId = targetMap[tab];
+    if (targetId) {
+      setTimeout(() => {
+        const el = document.getElementById(targetId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 50);
+    }
+  };
+
   const handlePreviewNavigate = (newIndex: number) => {
     if (previewAnimating) return;
     setPreviewAnimating(true);
@@ -473,56 +584,72 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
         </div>
 
         {/* Tab Selectors inside Sidebar */}
-        <div className="grid grid-cols-4 border-b border-stone-100 text-center text-[10px] md:text-xs font-bold text-stone-400 bg-stone-50/50 font-sans shrink-0">
+        <div className="grid grid-cols-6 border-b border-stone-100 text-center text-[9px] md:text-[11px] font-bold text-stone-400 bg-stone-50/50 font-sans shrink-0">
           <button 
-            onClick={() => {
-              setSubTab('hero');
-              setEditingSector(null);
-              setIsAddingSector(false);
-            }}
-            className={`py-3.5 border-r border-stone-100 transition-colors flex items-center justify-center gap-1 ${
+            type="button"
+            onClick={() => handleTabChange('hero')}
+            className={`py-3 border-r border-stone-100 transition-colors flex flex-col sm:flex-row items-center justify-center gap-1 ${
               subTab === 'hero' ? 'bg-white text-stone-900 border-b-2 border-[#d4af37]' : 'hover:bg-white/50'
             }`}
+            title="Editar Hero y Slider 16:9"
           >
-            <Settings2 className="w-3.5 h-3.5" />
-            <span>Hero</span>
+            <Settings2 className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Hero</span>
           </button>
           <button 
-            onClick={() => {
-              setSubTab('sectors');
-            }}
-            className={`py-3.5 border-r border-stone-100 transition-colors flex items-center justify-center gap-1 ${
+            type="button"
+            onClick={() => handleTabChange('sectors')}
+            className={`py-3 border-r border-stone-100 transition-colors flex flex-col sm:flex-row items-center justify-center gap-1 ${
               subTab === 'sectors' ? 'bg-white text-stone-900 border-b-2 border-[#d4af37]' : 'hover:bg-white/50'
             }`}
+            title="Editar Carrusel 3D de Sectores"
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Sectores</span>
+            <Sparkles className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Sectores</span>
           </button>
           <button 
-            onClick={() => {
-              setSubTab('branding');
-              setEditingSector(null);
-              setIsAddingSector(false);
-            }}
-            className={`py-3.5 border-r border-stone-100 transition-colors flex items-center justify-center gap-1 ${
+            type="button"
+            onClick={() => handleTabChange('pain')}
+            className={`py-3 border-r border-stone-100 transition-colors flex flex-col sm:flex-row items-center justify-center gap-1 ${
+              subTab === 'pain' ? 'bg-white text-stone-900 border-b-2 border-[#d4af37]' : 'hover:bg-white/50'
+            }`}
+            title="Editar Comparativa de Contras y Pros"
+          >
+            <XCircle className="w-3.5 h-3.5 shrink-0 text-rose-500" />
+            <span className="truncate">Contras/Pros</span>
+          </button>
+          <button 
+            type="button"
+            onClick={() => handleTabChange('pillars')}
+            className={`py-3 border-r border-stone-100 transition-colors flex flex-col sm:flex-row items-center justify-center gap-1 ${
+              subTab === 'pillars' ? 'bg-white text-stone-900 border-b-2 border-[#d4af37]' : 'hover:bg-white/50'
+            }`}
+            title="Editar los 4 Pilares del Ecosistema"
+          >
+            <Layers className="w-3.5 h-3.5 shrink-0 text-[#D4AF37]" />
+            <span className="truncate">Pilares</span>
+          </button>
+          <button 
+            type="button"
+            onClick={() => handleTabChange('branding')}
+            className={`py-3 border-r border-stone-100 transition-colors flex flex-col sm:flex-row items-center justify-center gap-1 ${
               subTab === 'branding' ? 'bg-white text-stone-900 border-b-2 border-[#d4af37]' : 'hover:bg-white/50'
             }`}
+            title="Editar Colores, Tipografías y Logotipo"
           >
-            <Palette className="w-3.5 h-3.5" />
-            <span>Branding</span>
+            <Palette className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Branding</span>
           </button>
           <button 
-            onClick={() => {
-              setSubTab('seo');
-              setEditingSector(null);
-              setIsAddingSector(false);
-            }}
-            className={`py-3.5 transition-colors flex items-center justify-center gap-1 ${
+            type="button"
+            onClick={() => handleTabChange('seo')}
+            className={`py-3 transition-colors flex flex-col sm:flex-row items-center justify-center gap-1 ${
               subTab === 'seo' ? 'bg-white text-stone-900 border-b-2 border-[#d4af37]' : 'hover:bg-white/50'
             }`}
+            title="Editar Metadatos SEO"
           >
-            <Globe className="w-3.5 h-3.5" />
-            <span>SEO</span>
+            <Globe className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">SEO</span>
           </button>
         </div>
 
@@ -602,7 +729,45 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
             </div>
           )}
 
-          {/* C. BRANDING FORM */}
+          {/* C. CONTRAS Y PROS FORM */}
+          {subTab === 'pain' && (
+            <div className="p-6">
+              {loading ? (
+                <div className="space-y-4 animate-pulse">
+                  <div className="h-4 w-32 bg-stone-100 rounded"></div>
+                  <div className="h-10 w-full bg-stone-100 rounded-xl"></div>
+                </div>
+              ) : (
+                <SaaSCMSPainForm
+                  data={settings.pain_comparison || DEFAULT_PAIN_COMPARISON}
+                  onChange={(updated) => setSettings(prev => ({ ...prev, pain_comparison: updated }))}
+                  onSubmit={handleSaveSettings}
+                  saving={savingSettings}
+                />
+              )}
+            </div>
+          )}
+
+          {/* D. PILARES FORM */}
+          {subTab === 'pillars' && (
+            <div className="p-6">
+              {loading ? (
+                <div className="space-y-4 animate-pulse">
+                  <div className="h-4 w-32 bg-stone-100 rounded"></div>
+                  <div className="h-10 w-full bg-stone-100 rounded-xl"></div>
+                </div>
+              ) : (
+                <SaaSCMSPillarsForm
+                  data={settings.pillars || DEFAULT_PILLARS}
+                  onChange={(updated) => setSettings(prev => ({ ...prev, pillars: updated }))}
+                  onSubmit={handleSaveSettings}
+                  saving={savingSettings}
+                />
+              )}
+            </div>
+          )}
+
+          {/* E. BRANDING FORM */}
           {subTab === 'branding' && (
             <div className="p-6 space-y-5">
               {loading ? (
@@ -1008,6 +1173,8 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
         previewIndex={previewIndex}
         previewAnimating={previewAnimating}
         onNavigateSector={handlePreviewNavigate}
+        painComparisonData={settings.pain_comparison || DEFAULT_PAIN_COMPARISON}
+        pillarsData={settings.pillars || DEFAULT_PILLARS}
       />
 
       {/* Media Picker Dialog Modal */}

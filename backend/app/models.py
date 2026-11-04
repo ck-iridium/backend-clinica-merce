@@ -572,6 +572,8 @@ class LandingMarketingSettings(Base):
     seo_title = Column(String, default="Probookia | El SaaS de Gestión para Centros de Estética y Salones Premium")
     seo_description = Column(String, default="La elegancia de tu negocio traducida en un SaaS de lujo. Agendas fluidas, expedientes médicos y cobros en una experiencia sublime.")
     seo_keywords = Column(String, default="saas, agenda online, centros de estetica, probookia")
+    pain_comparison = Column(JSON, default=dict, nullable=True)
+    pillars = Column(JSON, default=dict, nullable=True)
 
 
 class LandingShowcaseSector(Base):

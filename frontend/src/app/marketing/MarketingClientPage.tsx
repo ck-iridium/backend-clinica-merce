@@ -37,6 +37,8 @@ interface MarketingClientPageProps {
     font_family_body?: string;
     font_weight_headings: string;
     favicon_url: string | null;
+    pain_comparison?: any;
+    pillars?: any;
   };
   initialSectors: Sector[];
 }
@@ -81,6 +83,8 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
   const [fontFamily, setFontFamily] = useState(initialSettings.font_family || 'playfair');
   const [fontFamilyBody, setFontFamilyBody] = useState(initialSettings.font_family_body || 'inter');
   const [fontWeightHeadings, setFontWeightHeadings] = useState(initialSettings.font_weight_headings || 'semibold');
+  const [painComparison, setPainComparison] = useState<any>(initialSettings.pain_comparison);
+  const [pillars, setPillars] = useState<any>(initialSettings.pillars);
 
   const [heroTabs, setHeroTabs] = useState<HeroTab[]>(
     initialSettings.hero_tabs && initialSettings.hero_tabs.length > 0
@@ -109,6 +113,8 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
           if (data.settings.font_family) setFontFamily(data.settings.font_family);
           if (data.settings.font_family_body) setFontFamilyBody(data.settings.font_family_body);
           if (data.settings.font_weight_headings) setFontWeightHeadings(data.settings.font_weight_headings);
+          if (data.settings.pain_comparison) setPainComparison(data.settings.pain_comparison);
+          if (data.settings.pillars) setPillars(data.settings.pillars);
         }
         if (data?.sectors && data.sectors.length > 0) {
           setSectors(data.sectors.map((s: any, idx: number) => {
@@ -227,6 +233,7 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
         primaryColor={primaryColor}
         secondaryColor={secondaryColor}
         tertiaryColor={tertiaryColor}
+        data={painComparison}
       />
 
       {/* ── 4. LOS 4 PILARES DEL ECOSISTEMA PROBOOKIA (BENTO GRID) ── */}
@@ -234,6 +241,7 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
         primaryColor={primaryColor}
         secondaryColor={secondaryColor}
         tertiaryColor={tertiaryColor}
+        data={pillars}
       />
 
       {/* ── 5. SECCIÓN DE SECTORES EN ANILLO 3D REAL ── */}

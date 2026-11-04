@@ -274,7 +274,9 @@ $function$;
             "ALTER TABLE site_content ADD COLUMN hero_slider_show_arrows BOOLEAN DEFAULT TRUE",
             "ALTER TABLE site_content ADD COLUMN hero_slider_show_dots BOOLEAN DEFAULT TRUE",
             f"ALTER TABLE landing_marketing_settings ADD COLUMN hero_tabs {json_type} DEFAULT '[]'",
-            "ALTER TABLE landing_marketing_settings ADD COLUMN font_family_body VARCHAR(50) DEFAULT 'inter'"
+            "ALTER TABLE landing_marketing_settings ADD COLUMN font_family_body VARCHAR(50) DEFAULT 'inter'",
+            f"ALTER TABLE landing_marketing_settings ADD COLUMN pain_comparison {json_type} DEFAULT '{{}}'",
+            f"ALTER TABLE landing_marketing_settings ADD COLUMN pillars {json_type} DEFAULT '{{}}'"
         ]
         
         for m in migrations:
