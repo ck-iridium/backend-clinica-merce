@@ -211,6 +211,7 @@ async def resolve_tenant_middleware(request, call_next):
         "/stripe",
         "/subscription",
         "/super-admin",
+        "/upload",
         "/users/send-team-invitation",
         "/docs",
         "/openapi.json",

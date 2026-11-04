@@ -86,7 +86,10 @@ export default function SaaSCMSHeroForm({
         body: formData
       });
 
-      if (!res.ok) throw new Error('Error al subir el archivo');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.detail || 'Error al subir el archivo');
+      }
 
       const data = await res.json();
       onUpdateTabImage(tabId, data.url);
@@ -94,7 +97,7 @@ export default function SaaSCMSHeroForm({
       toast.success('Captura 16:9 subida y actualizada con éxito', { id: toastId });
     } catch (err: any) {
       console.error(err);
-      toast.error('Error al subir la imagen. Inténtalo de nuevo.', { id: toastId });
+      toast.error(err.message || 'Error al subir la imagen. Inténtalo de nuevo.', { id: toastId });
     } finally {
       setUploadingTabId(null);
     }
@@ -174,7 +177,7 @@ export default function SaaSCMSHeroForm({
             {heroTabs.map((tab, idx) => {
               const isActive = activeTabId === tab.id;
               const isUploading = uploadingTabId === tab.id;
-              const fileInputRef = React.createRef<HTMLInputElement>();
+              const inputId = `hero-tab-file-${tab.id || idx}`;
 
               return (
                 <div
@@ -259,8 +262,8 @@ export default function SaaSCMSHeroForm({
                             type="button"
                             variant="default"
                             size="sm"
-                            onClick={() => fileInputRef.current?.click()}
-                            className="h-8 text-xs bg-white text-stone-900 hover:bg-stone-100 gap-1"
+                            onClick={() => document.getElementById(inputId)?.click()}
+                            className="h-8 text-xs bg-white text-stone-900 hover:bg-stone-100 gap-1 cursor-pointer"
                           >
                             <UploadCloud className="w-3.5 h-3.5" />
                             <span>Subir Otra</span>
@@ -321,8 +324,8 @@ export default function SaaSCMSHeroForm({
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                onClick={() => fileInputRef.current?.click()}
-                                className="h-7 text-[10px] font-bold px-2.5"
+                                onClick={() => document.getElementById(inputId)?.click()}
+                                className="h-7 text-[10px] font-bold px-2.5 cursor-pointer"
                               >
                                 Seleccionar Archivo
                               </Button>
@@ -331,7 +334,7 @@ export default function SaaSCMSHeroForm({
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => onSelectImageFromGallery(tab.id)}
-                                className="h-7 text-[10px] font-bold px-2 text-[#b89528] hover:bg-[#fcf8e5]"
+                                className="h-7 text-[10px] font-bold px-2 text-[#b89528] hover:bg-[#fcf8e5] cursor-pointer"
                               >
                                 Abrir Galería
                               </Button>
@@ -343,7 +346,7 @@ export default function SaaSCMSHeroForm({
 
                     {/* Hidden input for file selection */}
                     <input
-                      ref={fileInputRef}
+                      id={inputId}
                       type="file"
                       accept="image/*"
                       className="hidden"

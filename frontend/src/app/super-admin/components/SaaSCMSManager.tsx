@@ -1004,6 +1004,10 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
         fontFamilyBody={settings.font_family_body}
         fontWeightHeadings={settings.font_weight_headings}
         logoSvg={settings.logo_svg}
+        previewSectors={previewSectors}
+        previewIndex={previewIndex}
+        previewAnimating={previewAnimating}
+        onNavigateSector={handlePreviewNavigate}
       />
 
       {/* Media Picker Dialog Modal */}
