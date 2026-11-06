@@ -68,11 +68,37 @@ export default function MarketingHeader({
 
   return (
     <>
+      {/* Estilo dinámico para aplicar el color primario como fondo en HOVER con texto blanco */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        .luxury-nav-item {
+          transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.15s ease;
+        }
+        .luxury-nav-item:hover {
+          background-color: ${brandDark} !important;
+          color: #ffffff !important;
+        }
+        .luxury-nav-item:hover * {
+          color: #ffffff !important;
+        }
+        .luxury-mobile-item {
+          transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.15s ease;
+        }
+        .luxury-mobile-item:hover,
+        .luxury-mobile-item:active {
+          background-color: ${brandDark} !important;
+          color: #ffffff !important;
+        }
+        .luxury-mobile-item:hover *,
+        .luxury-mobile-item:active * {
+          color: #ffffff !important;
+        }
+      `}} />
+
       <header
         className={`sticky top-0 z-40 w-full transition-all duration-300 ${
           isScrolled
-            ? 'bg-white/85 backdrop-blur-md border-b border-stone-200/40 shadow-xs py-0.5'
-            : 'bg-transparent border-b border-transparent py-1.5'
+            ? 'bg-white/90 backdrop-blur-md border-b border-stone-200/40 shadow-xs py-0.5'
+            : 'bg-[#FAF9F6]/90 backdrop-blur-md border-b border-transparent py-1.5'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
@@ -105,21 +131,21 @@ export default function MarketingHeader({
             )}
           </div>
 
-          {/* Desktop Navigation (Centrado y con scroll suave a cada sección) */}
-          <nav className="hidden md:flex items-center gap-1 lg:gap-2">
+          {/* Desktop Navigation (Hover con fondo primario dinámico y texto blanco) */}
+          <nav className="hidden md:flex items-center gap-1 lg:gap-1.5">
             {NAV_ITEMS.map((item) => (
               <button
                 key={item.id}
                 type="button"
                 onClick={() => handleScrollTo(item.id)}
-                className="px-3.5 py-2 text-stone-700 hover:text-stone-950 text-xs font-semibold rounded-xl hover:bg-stone-200/40 transition-all duration-200 cursor-pointer"
+                className="luxury-nav-item px-3.5 py-2 text-stone-700 text-xs font-semibold rounded-xl cursor-pointer"
               >
                 {item.label}
               </button>
             ))}
             <Link
               href="/docs"
-              className="flex items-center gap-1.5 px-3.5 py-2 text-stone-600 hover:text-stone-950 text-xs font-semibold rounded-xl hover:bg-stone-200/40 transition-all duration-200"
+              className="luxury-nav-item flex items-center gap-1.5 px-3.5 py-2 text-stone-700 text-xs font-semibold rounded-xl cursor-pointer"
             >
               <BookOpen size={13} className="text-stone-400" />
               <span>Blueprint</span>
@@ -132,7 +158,7 @@ export default function MarketingHeader({
             <div className="hidden md:flex items-center gap-3">
               <Link
                 href="/login"
-                className="px-4 py-2 rounded-xl text-xs font-bold bg-white/90 backdrop-blur-sm text-stone-700 border border-stone-200/80 hover:text-stone-950 hover:bg-white transition-all duration-200 active:scale-95 shadow-2xs whitespace-nowrap"
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-white text-stone-700 border border-stone-200/80 hover:text-stone-950 hover:bg-stone-50 transition-all duration-200 active:scale-95 shadow-2xs whitespace-nowrap"
               >
                 Acceso Clínicas
               </Link>
@@ -208,8 +234,8 @@ export default function MarketingHeader({
           </div>
 
           {/* Listado de Enlaces de Navegación Fullscreen con Efecto Quiet Luxury */}
-          <div className="my-auto py-6 space-y-2 relative z-10">
-            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-stone-400 block mb-3">
+          <div className="my-auto py-6 space-y-1 relative z-10">
+            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-stone-400 block mb-3 px-3">
               Navegación
             </span>
 
@@ -217,91 +243,91 @@ export default function MarketingHeader({
             <button
               type="button"
               onClick={handleScrollToTop}
-              className="w-full flex items-center justify-between py-3.5 border-b border-stone-200/40 text-left group transition-all cursor-pointer"
+              className="luxury-mobile-item w-full flex items-center justify-between py-3.5 px-3 rounded-xl border-b border-stone-200/40 text-left group transition-all cursor-pointer"
             >
               <div className="flex items-baseline gap-3">
-                <span className="text-[11px] font-mono text-stone-400 group-hover:text-stone-700 transition-colors">01</span>
+                <span className="text-[11px] font-mono text-stone-400">01</span>
                 <span className="text-2xl font-serif font-bold text-stone-900 group-hover:translate-x-1 transition-transform">
                   Inicio
                 </span>
               </div>
-              <ChevronRight size={18} className="text-stone-400 group-hover:text-stone-900 transition-colors" />
+              <ChevronRight size={18} className="text-stone-400" />
             </button>
 
             {/* 02. Características */}
             <button
               type="button"
               onClick={() => handleScrollTo('comparativa')}
-              className="w-full flex items-center justify-between py-3.5 border-b border-stone-200/40 text-left group transition-all cursor-pointer"
+              className="luxury-mobile-item w-full flex items-center justify-between py-3.5 px-3 rounded-xl border-b border-stone-200/40 text-left group transition-all cursor-pointer"
             >
               <div className="flex items-baseline gap-3">
-                <span className="text-[11px] font-mono text-stone-400 group-hover:text-stone-700 transition-colors">02</span>
+                <span className="text-[11px] font-mono text-stone-400">02</span>
                 <span className="text-2xl font-serif font-bold text-stone-900 group-hover:translate-x-1 transition-transform">
                   Características
                 </span>
               </div>
-              <ChevronRight size={18} className="text-stone-400 group-hover:text-stone-900 transition-colors" />
+              <ChevronRight size={18} className="text-stone-400" />
             </button>
 
             {/* 03. Pilares */}
             <button
               type="button"
               onClick={() => handleScrollTo('pilares')}
-              className="w-full flex items-center justify-between py-3.5 border-b border-stone-200/40 text-left group transition-all cursor-pointer"
+              className="luxury-mobile-item w-full flex items-center justify-between py-3.5 px-3 rounded-xl border-b border-stone-200/40 text-left group transition-all cursor-pointer"
             >
               <div className="flex items-baseline gap-3">
-                <span className="text-[11px] font-mono text-stone-400 group-hover:text-stone-700 transition-colors">03</span>
+                <span className="text-[11px] font-mono text-stone-400">03</span>
                 <span className="text-2xl font-serif font-bold text-stone-900 group-hover:translate-x-1 transition-transform">
                   Pilares
                 </span>
               </div>
-              <ChevronRight size={18} className="text-stone-400 group-hover:text-stone-900 transition-colors" />
+              <ChevronRight size={18} className="text-stone-400" />
             </button>
 
             {/* 04. Sectores */}
             <button
               type="button"
               onClick={() => handleScrollTo('sectores')}
-              className="w-full flex items-center justify-between py-3.5 border-b border-stone-200/40 text-left group transition-all cursor-pointer"
+              className="luxury-mobile-item w-full flex items-center justify-between py-3.5 px-3 rounded-xl border-b border-stone-200/40 text-left group transition-all cursor-pointer"
             >
               <div className="flex items-baseline gap-3">
-                <span className="text-[11px] font-mono text-stone-400 group-hover:text-stone-700 transition-colors">04</span>
+                <span className="text-[11px] font-mono text-stone-400">04</span>
                 <span className="text-2xl font-serif font-bold text-stone-900 group-hover:translate-x-1 transition-transform">
                   Sectores
                 </span>
               </div>
-              <ChevronRight size={18} className="text-stone-400 group-hover:text-stone-900 transition-colors" />
+              <ChevronRight size={18} className="text-stone-400" />
             </button>
 
             {/* 05. Precios */}
             <button
               type="button"
               onClick={() => handleScrollTo('precios')}
-              className="w-full flex items-center justify-between py-3.5 border-b border-stone-200/40 text-left group transition-all cursor-pointer"
+              className="luxury-mobile-item w-full flex items-center justify-between py-3.5 px-3 rounded-xl border-b border-stone-200/40 text-left group transition-all cursor-pointer"
             >
               <div className="flex items-baseline gap-3">
-                <span className="text-[11px] font-mono text-stone-400 group-hover:text-stone-700 transition-colors">05</span>
+                <span className="text-[11px] font-mono text-stone-400">05</span>
                 <span className="text-2xl font-serif font-bold text-stone-900 group-hover:translate-x-1 transition-transform">
                   Planes & Precios
                 </span>
               </div>
-              <ChevronRight size={18} className="text-stone-400 group-hover:text-stone-900 transition-colors" />
+              <ChevronRight size={18} className="text-stone-400" />
             </button>
 
             {/* 06. Blueprint Docs */}
             <Link
               href="/docs"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="w-full flex items-center justify-between py-3.5 text-left group transition-all"
+              className="luxury-mobile-item w-full flex items-center justify-between py-3.5 px-3 rounded-xl text-left group transition-all"
             >
               <div className="flex items-baseline gap-3">
-                <span className="text-[11px] font-mono text-stone-400 group-hover:text-stone-700 transition-colors">06</span>
+                <span className="text-[11px] font-mono text-stone-400">06</span>
                 <span className="text-2xl font-serif font-bold text-stone-900 group-hover:translate-x-1 transition-transform flex items-center gap-2">
                   <span>Blueprint Docs</span>
-                  <ArrowUpRight size={16} className="text-stone-400 group-hover:text-stone-900" />
+                  <ArrowUpRight size={16} className="text-stone-400" />
                 </span>
               </div>
-              <ChevronRight size={18} className="text-stone-400 group-hover:text-stone-900 transition-colors" />
+              <ChevronRight size={18} className="text-stone-400" />
             </Link>
           </div>
 

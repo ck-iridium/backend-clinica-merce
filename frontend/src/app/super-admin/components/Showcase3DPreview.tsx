@@ -191,6 +191,14 @@ export default function Showcase3DPreview({
         .preview-landing-root input {
           font-family: ${resolvedBodyFont} !important;
         }
+
+        .luxury-preview-nav-item {
+          transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        .luxury-preview-nav-item:hover {
+          background-color: ${darkColor} !important;
+          color: #ffffff !important;
+        }
       ` }} />
 
       {/* ── 1. Top bar mockup de navegador con Accesos Rápidos de Sección ── */}
@@ -292,11 +300,11 @@ export default function Showcase3DPreview({
             )}
           </div>
 
-          <nav className="hidden md:flex items-center gap-5 text-xs text-stone-600 font-semibold font-sans">
-            <button type="button" onClick={() => scrollToSection('preview-pain')} className="hover:text-stone-950 transition-colors cursor-pointer">Características</button>
-            <button type="button" onClick={() => scrollToSection('preview-pillars')} className="hover:text-stone-950 transition-colors cursor-pointer">Pilares</button>
-            <button type="button" onClick={() => scrollToSection('preview-sectors')} className="hover:text-stone-950 transition-colors cursor-pointer">Sectores</button>
-            <button type="button" onClick={() => scrollToSection('preview-pricing')} className="hover:text-stone-950 transition-colors cursor-pointer">Precios</button>
+          <nav className="hidden md:flex items-center gap-1.5 text-xs font-semibold font-sans">
+            <button type="button" onClick={() => scrollToSection('preview-pain')} className="luxury-preview-nav-item px-3 py-1.5 rounded-lg text-stone-700 hover:text-white transition-all cursor-pointer">Características</button>
+            <button type="button" onClick={() => scrollToSection('preview-pillars')} className="luxury-preview-nav-item px-3 py-1.5 rounded-lg text-stone-700 hover:text-white transition-all cursor-pointer">Pilares</button>
+            <button type="button" onClick={() => scrollToSection('preview-sectors')} className="luxury-preview-nav-item px-3 py-1.5 rounded-lg text-stone-700 hover:text-white transition-all cursor-pointer">Sectores</button>
+            <button type="button" onClick={() => scrollToSection('preview-pricing')} className="luxury-preview-nav-item px-3 py-1.5 rounded-lg text-stone-700 hover:text-white transition-all cursor-pointer">Precios</button>
           </nav>
 
           <div className="flex items-center gap-3">

@@ -182,7 +182,7 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
         '--primary-accent': primaryColor,
         '--secondary-accent': secondaryColor,
         '--tertiary-accent': tertiaryColor,
-        backgroundColor: secondaryColor || '#FAF9F6'
+        backgroundColor: '#FAF9F6'
       } as React.CSSProperties}
       className="min-h-screen text-stone-900 font-sans selection:bg-[#d4af37]/20 overflow-x-clip relative transition-colors duration-300"
     >
