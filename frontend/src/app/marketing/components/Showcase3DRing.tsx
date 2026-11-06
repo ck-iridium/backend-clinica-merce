@@ -236,7 +236,7 @@ export default function Showcase3DRing({
         if (videoRef.current) {
           videoRef.current.muted = true;
           setIsMuted(true);
-          videoRef.current.play().catch(() => {});
+          videoRef.current.play().catch(() => { });
         }
       });
     }
@@ -442,19 +442,18 @@ export default function Showcase3DRing({
   const visibleSlots = [-3, -2, -1, 0, 1, 2, 3];
 
   return (
-    <section 
-      className={`w-full bg-white relative overflow-hidden select-none flex flex-col justify-between ${
-        isPreview ? 'py-4' : 'py-28'
-      }`}
+    <section
+      className={`w-full bg-white relative overflow-hidden select-none flex flex-col justify-between ${isPreview ? 'py-4' : 'py-28'
+        }`}
     >
       {/* ── 1. CABECERA, TÍTULO Y PÍLDORAS (RITMO VERTICAL QUIET LUXURY UNIFICADO A PY-28) ── */}
       <div className="w-full max-w-4xl mx-auto px-6 text-center shrink-0 relative z-20 mb-8 md:mb-12">
         {!isPreview && (
-          <div 
-            style={{ 
-              backgroundColor: `${accentColor}18`, 
+          <div
+            style={{
+              backgroundColor: `${accentColor}18`,
               borderColor: `${accentColor}40`,
-              color: accentColor 
+              color: accentColor
             }}
             className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full border text-[10px] font-black uppercase tracking-[0.25em] mb-4 shadow-sm"
           >
@@ -483,11 +482,10 @@ export default function Showcase3DRing({
                 type="button"
                 onClick={() => handlePillClick(idx)}
                 style={isPillActive ? { backgroundColor: brandPrimary, borderColor: brandPrimary, color: '#ffffff' } : undefined}
-                className={`px-3.5 py-1.5 rounded-full text-[11px] md:text-xs font-bold transition-all duration-300 border shadow-sm cursor-pointer ${
-                  isPillActive
+                className={`px-3.5 py-1.5 rounded-full text-[11px] md:text-xs font-bold transition-all duration-300 border shadow-sm cursor-pointer ${isPillActive
                     ? 'scale-105 shadow-md ring-2 ring-[#D4AF37]/50 font-black'
                     : 'bg-white/95 hover:bg-white text-stone-700 border-stone-200/80 hover:scale-105 active:scale-95'
-                }`}
+                  }`}
               >
                 {sec.badge || sec.title}
               </button>
@@ -498,6 +496,7 @@ export default function Showcase3DRing({
 
       {/* ── 2. ESCENARIO 3D EN ARCO CONVEXO CON ARRASTRE Y CLIC 100% FUNCIONALES ── */}
       <div
+        suppressHydrationWarning={true}
         className="w-full relative flex items-center justify-center select-none cursor-grab active:cursor-grabbing touch-none"
         style={{
           height: `${stageHeight}px`,
@@ -510,7 +509,8 @@ export default function Showcase3DRing({
         onPointerCancel={handlePointerUp}
       >
         {/* Contenedor de proyección 3D (con pointer-events-none para que el plano Z=0 no bloquee los clics en tarjetas laterales con Z negativo) */}
-        <div 
+        <div
+          suppressHydrationWarning={true}
           className="relative w-full h-full flex items-center justify-center pointer-events-none"
           style={{ transformStyle: 'preserve-3d' }}
         >
@@ -530,17 +530,19 @@ export default function Showcase3DRing({
             const angleRad = (angleDeg * Math.PI) / 180;
 
             // Posición horizontal en arco (X)
-            const x = Math.sin(angleRad) * radius;
+            const rawX = Math.sin(angleRad) * radius;
+            const x = Math.round(rawX * 100) / 100;
 
             // Profundidad (Z): 0 en el centro, negativo hacia el fondo a los lados
-            const z = (Math.cos(angleRad) - 1) * radius;
+            const rawZ = (Math.cos(angleRad) - 1) * radius;
+            const z = Math.round(rawZ * 100) / 100;
 
             // Rotación Y
-            const rotY = -angleDeg;
+            const rotY = Math.round(-angleDeg * 100) / 100;
 
-            // Escala y opacidad suaves
-            const scale = Math.max(0.75, 1 - absOffset * 0.045);
-            const opacity = Math.max(0, 1 - Math.pow(absOffset / 3.4, 2.2));
+            // Escala y opacidad suaves (redondeadas para evitar diferencias de coma flotante SSR vs Cliente)
+            const scale = Math.round(Math.max(0.75, 1 - absOffset * 0.045) * 1000) / 1000;
+            const opacity = Math.round(Math.max(0, 1 - Math.pow(absOffset / 3.4, 2.2)) * 1000) / 1000;
             const zIndex = Math.round(100 - absOffset * 10);
 
             if (absOffset > 3.5 || opacity <= 0.01) return null;
@@ -551,13 +553,13 @@ export default function Showcase3DRing({
             return (
               <div
                 key={`bambu-slot-${k}`}
+                suppressHydrationWarning={true}
                 onPointerDown={(e) => handleCardPointerDown(e, k, sector, actualItemIndex)}
                 onClick={(e) => handleCardClick(e, k, sector, actualItemIndex)}
-                className={`absolute rounded-[2.4rem] md:rounded-[2.8rem] overflow-hidden cursor-pointer select-none transition-shadow duration-300 group pointer-events-auto ${
-                  isCenterCard 
-                    ? 'border-[3.5px] border-[#D4AF37] ring-4 ring-[#D4AF37]/25 shadow-[0_30px_90px_-15px_rgba(212,175,55,0.45),0_15px_40px_rgba(0,0,0,0.35)]' 
+                className={`absolute rounded-[2.4rem] md:rounded-[2.8rem] overflow-hidden cursor-pointer select-none transition-shadow duration-300 group pointer-events-auto ${isCenterCard
+                    ? 'border-[3.5px] border-[#D4AF37] ring-4 ring-[#D4AF37]/25 shadow-[0_30px_90px_-15px_rgba(212,175,55,0.45),0_15px_40px_rgba(0,0,0,0.35)]'
                     : 'border-[3px] border-stone-800/80 shadow-2xl hover:border-stone-700'
-                }`}
+                  }`}
                 style={{
                   width: `${cardWidth}px`,
                   height: `${cardHeight}px`,
@@ -590,11 +592,10 @@ export default function Showcase3DRing({
 
                 {/* ── BADGE SUPERIOR DE SECTOR ── */}
                 <div className="absolute top-9 left-4 right-4 z-20 flex items-center justify-between pointer-events-none">
-                  <span className={`px-2.5 py-1 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-wider backdrop-blur-md border shadow-md ${
-                    isCenterCard 
-                      ? 'bg-[#D4AF37] text-stone-950 border-[#D4AF37]' 
+                  <span className={`px-2.5 py-1 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-wider backdrop-blur-md border shadow-md ${isCenterCard
+                      ? 'bg-[#D4AF37] text-stone-950 border-[#D4AF37]'
                       : 'bg-black/60 text-white border-white/20'
-                  }`}>
+                    }`}>
                     {sector.badge || sector.title}
                   </span>
 
@@ -620,7 +621,7 @@ export default function Showcase3DRing({
                   <h3 className="font-serif text-base md:text-xl font-bold leading-tight drop-shadow-md text-white group-hover:text-[#D4AF37] transition-colors">
                     {sector.title}
                   </h3>
-                  
+
                   <p className="text-[11px] md:text-xs text-stone-200 mt-1.5 font-medium line-clamp-2 opacity-90 leading-relaxed">
                     {sector.copy || 'Entorno SaaS exclusivo con expedientes LOPD y motor de reservas sin comisiones.'}
                   </p>
@@ -643,7 +644,7 @@ export default function Showcase3DRing({
 
       {/* ── 3. MODAL SPOTLIGHT CON VÍDEO (OCUPA EL 82% DEL ALTO DE PANTALLA) ── */}
       {modalSector && (
-        <div 
+        <div
           className={`${isPreview ? 'absolute' : 'fixed'} inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-stone-950/85 backdrop-blur-md animate-in fade-in duration-200`}
           onPointerDown={(e) => {
             if (e.target === e.currentTarget) {
