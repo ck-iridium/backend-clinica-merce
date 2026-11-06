@@ -469,7 +469,7 @@ export default function Showcase3DRing({
 
         {!isPreview && (
           <p className="text-stone-500 text-sm md:text-base mt-4 font-medium leading-relaxed max-w-2xl mx-auto">
-            Explora las soluciones por sector en formato 9:16. Pulsa o arrastra para navegar entre los entornos.
+            Entornos preconfigurados y optimizados para la identidad y operativa real de cada sector.
           </p>
         )}
 
@@ -627,7 +627,7 @@ export default function Showcase3DRing({
 
                   <div className="mt-3 flex items-center justify-between">
                     <span className="text-[10px] font-bold text-stone-300 flex items-center gap-1 group-hover:text-[#D4AF37] transition-colors">
-                      <span>Pulsa para reproducir vídeo 9:16</span>
+                      <span>Ver demostración</span>
                       <ArrowRight className="w-3 h-3 text-[#D4AF37]" />
                     </span>
                   </div>
