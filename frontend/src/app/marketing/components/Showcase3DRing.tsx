@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
-import { Sparkles, ArrowRight, Play, Pause, X, ChevronRight, Volume2, VolumeX } from 'lucide-react';
+import { Sparkles, ArrowRight, Play, X, Volume2, VolumeX } from 'lucide-react';
 
 export interface Sector {
   id: string;
@@ -128,42 +128,267 @@ export default function Showcase3DRing({
 
   const numItems = items.length;
 
-  // Offset continuo (número real que avanza con auto-play o drag)
+  // Offset continuo para animación suave
   const [offset, setOffset] = useState<number>(activeIndex ?? 0);
   const targetOffsetRef = useRef<number>(activeIndex ?? 0);
   const currentOffsetRef = useRef<number>(activeIndex ?? 0);
-  
-  const [isPaused, setIsPaused] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
+
   const [modalSector, setModalSector] = useState<{ sector: Sector; index: number } | null>(null);
   const [isMuted, setIsMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Dimensiones según viewport y modo
-  const cardWidth = isPreview ? 175 : 255;
-  const cardHeight = isPreview ? 245 : 355;
-  const radius = isPreview ? 620 : 960;
-  const angleStep = isPreview ? 17 : 16.5;
+  // ── DIMENSIONES ADAPTABLES 9:16 (Ocupan todo el espacio libre de la pantalla) ──
+  const [dimensions, setDimensions] = useState({
+    width: isPreview ? 190 : 395,
+    height: isPreview ? 338 : 702,
+    radius: isPreview ? 720 : 1420,
+    angleStep: isPreview ? 18 : 17,
+    stageHeight: isPreview ? 380 : 760,
+  });
 
-  // Sincronizar activeIndex externo si cambia desde el padre
   useEffect(() => {
-    if (typeof activeIndex === 'number' && Math.abs(activeIndex - targetOffsetRef.current) > 0.01) {
-      targetOffsetRef.current = activeIndex;
-    }
-  }, [activeIndex]);
+    if (isPreview) return;
 
-  // Listener para cerrar modal con Escape
+    const updateDimensions = () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+
+      if (w < 640) {
+        // Móviles
+        const cardW = Math.min(w * 0.78, 290);
+        setDimensions({
+          width: Math.round(cardW),
+          height: Math.round(cardW * (16 / 9)),
+          radius: 960,
+          angleStep: 18.5,
+          stageHeight: Math.round(cardW * (16 / 9) + 40),
+        });
+      } else if (w < 1024) {
+        // Tablets y laptops compactas
+        setDimensions({
+          width: 340,
+          height: 604,
+          radius: 1200,
+          angleStep: 17.5,
+          stageHeight: 670,
+        });
+      } else if (w < 1536) {
+        // Desktop estándar (1080p) - Fichas grandes e imponentes que llenan el alto
+        const cardH = Math.min(Math.round(h * 0.68), 710);
+        const cardW = Math.round(cardH * (9 / 16));
+        setDimensions({
+          width: cardW,
+          height: cardH,
+          radius: 1400,
+          angleStep: 17,
+          stageHeight: cardH + 60,
+        });
+      } else {
+        // Pantallas 2K y 4K
+        const cardH = Math.min(Math.round(h * 0.70), 780);
+        const cardW = Math.round(cardH * (9 / 16));
+        setDimensions({
+          width: cardW,
+          height: cardH,
+          radius: 1550,
+          angleStep: 16.5,
+          stageHeight: cardH + 70,
+        });
+      }
+    };
+
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, [isPreview]);
+
+  const { width: cardWidth, height: cardHeight, radius, angleStep, stageHeight } = dimensions;
+
+  // Sincronizar activeIndex externo sin saltos
+  useEffect(() => {
+    if (typeof activeIndex === 'number') {
+      const currentNorm = ((Math.round(targetOffsetRef.current) % numItems) + numItems) % numItems;
+      if (currentNorm !== activeIndex) {
+        let diff = activeIndex - currentNorm;
+        if (diff > numItems / 2) diff -= numItems;
+        if (diff < -numItems / 2) diff += numItems;
+        targetOffsetRef.current = Math.round(targetOffsetRef.current) + diff;
+      }
+    }
+  }, [activeIndex, numItems]);
+
+  // Listener Escape para cerrar modal
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && modalSector) {
         setModalSector(null);
-        setIsPaused(false);
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [modalSector]);
 
-  // Bucle de animación fluida (lerp + auto-play)
+  // Autoplay de vídeo al abrir modal
+  useEffect(() => {
+    if (modalSector && videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play().catch(() => {
+        if (videoRef.current) {
+          videoRef.current.muted = true;
+          setIsMuted(true);
+          videoRef.current.play().catch(() => {});
+        }
+      });
+    }
+  }, [modalSector]);
+
+  // ── CONTROLADOR DE ARRASTRE Y CLIC SIN CONFLICTOS ──
+  const isPointerDownRef = useRef(false);
+  const hasDraggedRef = useRef(false);
+  const clickBlockedUntilRef = useRef(0);
+  const backdropPointerDownRef = useRef(false);
+
+  const dragStartRef = useRef<{
+    x: number;
+    y: number;
+    startOffset: number;
+  } | null>(null);
+
+  const cardPointerDownRef = useRef<{
+    k: number;
+    sector: Sector;
+    actualItemIndex: number;
+    x: number;
+    y: number;
+    time: number;
+  } | null>(null);
+
+  // Iniciar interacción en el escenario vacío
+  const handleStagePointerDown = (e: React.PointerEvent) => {
+    if (modalSector) return;
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+
+    isPointerDownRef.current = true;
+    hasDraggedRef.current = false;
+    cardPointerDownRef.current = null;
+
+    // Frenar cualquier inercia de auto-giro residual
+    targetOffsetRef.current = currentOffsetRef.current;
+
+    dragStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      startOffset: targetOffsetRef.current,
+    };
+  };
+
+  // Iniciar interacción sobre una tarjeta específica (central o lateral)
+  const handleCardPointerDown = (e: React.PointerEvent, k: number, sector: Sector, actualItemIndex: number) => {
+    if (modalSector) return;
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+
+    isPointerDownRef.current = true;
+    hasDraggedRef.current = false;
+
+    // Congelar inercia para que la tarjeta permanezca 100% estática bajo el cursor
+    targetOffsetRef.current = currentOffsetRef.current;
+
+    cardPointerDownRef.current = {
+      k,
+      sector,
+      actualItemIndex,
+      x: e.clientX,
+      y: e.clientY,
+      time: Date.now(),
+    };
+
+    dragStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      startOffset: targetOffsetRef.current,
+    };
+  };
+
+  // Movimiento del cursor: si el desplazamiento supera 10px, es un arrastre intencional
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isPointerDownRef.current || !dragStartRef.current) return;
+
+    const dx = e.clientX - dragStartRef.current.x;
+    const dy = e.clientY - dragStartRef.current.y;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist > 10) {
+      hasDraggedRef.current = true;
+      const sensitivity = isPreview ? 0.0035 : 0.0022;
+      targetOffsetRef.current = dragStartRef.current.startOffset - dx * sensitivity;
+    }
+  };
+
+  // Fin de la interacción: evalúa si fue clic limpio en cualquier ficha o fin de arrastre
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (!isPointerDownRef.current) return;
+    isPointerDownRef.current = false;
+
+    const card = cardPointerDownRef.current;
+    cardPointerDownRef.current = null;
+    dragStartRef.current = null;
+
+    // Clic limpio en ficha detectado por coordenadas físicas del ratón
+    if (!hasDraggedRef.current && card) {
+      const dx = e.clientX - card.x;
+      const dy = e.clientY - card.y;
+      const dist = Math.hypot(dx, dy);
+      const duration = Date.now() - card.time;
+
+      if (dist < 14 && duration < 650) {
+        // 1. Centrar la ficha en el anfiteatro 3D
+        targetOffsetRef.current = Math.round(targetOffsetRef.current) + card.k;
+        handleNavigate?.(card.actualItemIndex);
+
+        // 2. Abrir inmediatamente el modal spotlight en formato 9:16 grande
+        setModalSector({ sector: card.sector, index: card.actualItemIndex });
+        return;
+      }
+    }
+
+    // Si fue arrastre, bloquear eventos click sintéticos durante 180ms
+    if (hasDraggedRef.current) {
+      clickBlockedUntilRef.current = Date.now() + 180;
+      setTimeout(() => {
+        hasDraggedRef.current = false;
+      }, 180);
+    }
+  };
+
+  // Seguridad global: capturar pointerup si el usuario suelta fuera de la ventana
+  useEffect(() => {
+    const handleGlobalUp = (e: PointerEvent) => {
+      if (isPointerDownRef.current) {
+        handlePointerUp(e as unknown as React.PointerEvent);
+      }
+    };
+    window.addEventListener('pointerup', handleGlobalUp);
+    window.addEventListener('pointercancel', handleGlobalUp);
+    return () => {
+      window.removeEventListener('pointerup', handleGlobalUp);
+      window.removeEventListener('pointercancel', handleGlobalUp);
+    };
+  }, []);
+
+  // Clic directo como fallback de eventos
+  const handleCardClick = (e: React.MouseEvent, k: number, sector: Sector, actualItemIndex: number) => {
+    e.stopPropagation();
+
+    if (hasDraggedRef.current || Date.now() < clickBlockedUntilRef.current) {
+      return;
+    }
+
+    targetOffsetRef.current = Math.round(targetOffsetRef.current) + k;
+    handleNavigate?.(actualItemIndex);
+    setModalSector({ sector, index: actualItemIndex });
+  };
+
+  // ── BUCLE DE ANIMACIÓN CONTINUO ──
   useEffect(() => {
     let animId: number;
     let lastTime = performance.now();
@@ -172,13 +397,14 @@ export default function Showcase3DRing({
       const delta = time - lastTime;
       lastTime = time;
 
-      // Auto-play suave si no está pausado, ni en hover, ni arrastrando, ni con modal abierto
-      if (!isPaused && !isHovered && !isDraggingRef.current && !modalSector) {
-        const speed = 0.00035; // Desplazamiento lento, elegante
+      // El giro continuo se pausa si el modal está abierto o si el usuario mantiene el puntero presionado
+      const isUserInteracting = isPointerDownRef.current;
+      if (!isUserInteracting && !modalSector) {
+        const speed = 0.00028;
         targetOffsetRef.current += speed * delta;
       }
 
-      // Interpolación exponencial suave (lerp)
+      // Lerp suave hacia targetOffsetRef
       const diff = targetOffsetRef.current - currentOffsetRef.current;
       if (Math.abs(diff) > 0.0001) {
         currentOffsetRef.current += diff * 0.12;
@@ -190,108 +416,65 @@ export default function Showcase3DRing({
 
     animId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animId);
-  }, [isPaused, isHovered, modalSector]);
+  }, [modalSector]);
 
-  // ── GESTIÓN DE ARRASTRE Y CLIC 100% FIABLE ──
-  const isDraggingRef = useRef(false);
-  const dragStartPosRef = useRef({ x: 0, y: 0, time: 0 });
-  const dragStartOffsetRef = useRef(0);
-
-  const onPointerDown = (e: React.PointerEvent) => {
-    if (modalSector) return;
-    dragStartPosRef.current = { x: e.clientX, y: e.clientY, time: Date.now() };
-    dragStartOffsetRef.current = targetOffsetRef.current;
-    isDraggingRef.current = false;
-  };
-
-  const onPointerMove = (e: React.PointerEvent) => {
-    if (!dragStartPosRef.current.time) return;
-    const dx = e.clientX - dragStartPosRef.current.x;
-    const dy = e.clientY - dragStartPosRef.current.y;
-    const dist = Math.hypot(dx, dy);
-
-    // Solo si se mueve más de 6px se activa el modo arrastre
-    if (dist > 6) {
-      isDraggingRef.current = true;
-      const sensitivity = isPreview ? 0.0035 : 0.0024;
-      targetOffsetRef.current = dragStartOffsetRef.current - dx * sensitivity;
-    }
-  };
-
-  const onPointerUp = () => {
-    dragStartPosRef.current.time = 0;
-    if (isDraggingRef.current) {
-      // Al soltar tras arrastrar, no hacemos nada extra, dejamos que siga flotando
-      isDraggingRef.current = false;
-    }
-  };
-
-  // Al hacer clic en una tarjeta específica
-  const handleCardClick = (relativeSlot: number, actualIndex: number) => {
-    // Si fue un arrastre real, ignorar el clic
-    if (isDraggingRef.current) return;
-
-    if (relativeSlot === 0) {
-      // Si la tarjeta ya está en el centro frontal, abrir el modal de vídeo y detalles
-      setIsPaused(true);
-      setModalSector({ sector: items[actualIndex], index: actualIndex });
-    } else {
-      // Si está a los lados, desplazarla suavemente al centro
-      targetOffsetRef.current = Math.round(targetOffsetRef.current) + relativeSlot;
-      handleNavigate?.(actualIndex);
-    }
-  };
-
-  // Al pulsar en las píldoras de navegación superior
+  // ── ACCIÓN AL PULSAR PÍLDORAS SUPERIORES ──
   const handlePillClick = (targetIndex: number) => {
     const currentNorm = ((Math.round(targetOffsetRef.current) % numItems) + numItems) % numItems;
     let diff = targetIndex - currentNorm;
-    // Tomar el camino más corto en el círculo
     if (diff > numItems / 2) diff -= numItems;
     if (diff < -numItems / 2) diff += numItems;
 
     targetOffsetRef.current = Math.round(targetOffsetRef.current) + diff;
     handleNavigate?.(targetIndex);
+
+    const targetSector = items[targetIndex];
+    if (targetSector) {
+      setModalSector({ sector: targetSector, index: targetIndex });
+    }
   };
 
   const currentCenterNormIndex = ((Math.round(offset) % numItems) + numItems) % numItems;
-
   const accentColor = tertiaryColor || '#D4AF37';
   const brandPrimary = primaryColor || '#1c1917';
 
-  // Generamos los 7 slots activos para el arco convexo estilo Bambu Lab (-3 a +3)
+  // 7 slots activos para el arco convexo estilo Bambu Lab (-3 a +3)
   const visibleSlots = [-3, -2, -1, 0, 1, 2, 3];
 
   return (
     <section 
       className={`w-full bg-white relative overflow-hidden select-none flex flex-col justify-between ${
-        isPreview ? 'py-4' : 'py-16 md:py-24'
+        isPreview ? 'py-4' : 'py-28'
       }`}
     >
-      {/* ── 1. CABECERA, TÍTULO Y PÍLDORAS ── */}
-      <div className="w-full max-w-4xl mx-auto px-6 text-center shrink-0 relative z-20">
+      {/* ── 1. CABECERA, TÍTULO Y PÍLDORAS (RITMO VERTICAL QUIET LUXURY UNIFICADO A PY-28) ── */}
+      <div className="w-full max-w-4xl mx-auto px-6 text-center shrink-0 relative z-20 mb-8 md:mb-12">
         {!isPreview && (
           <div 
-            style={{ borderColor: `${accentColor}50`, color: accentColor }}
-            className="inline-flex items-center gap-2 bg-white/95 border px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase mb-4 shadow-sm backdrop-blur-md"
+            style={{ 
+              backgroundColor: `${accentColor}18`, 
+              borderColor: `${accentColor}40`,
+              color: accentColor 
+            }}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full border text-[10px] font-black uppercase tracking-[0.25em] mb-4 shadow-sm"
           >
             <Sparkles className="w-3.5 h-3.5" style={{ color: accentColor }} />
             <span>PLANTILLAS Y ENTORNOS VERIFICADOS</span>
           </div>
         )}
 
-        <h2 className={`${isPreview ? 'text-lg md:text-xl' : 'text-2xl md:text-5xl'} font-serif font-bold tracking-tight text-stone-950 leading-tight`}>
+        <h2 className={`${isPreview ? 'text-lg md:text-xl' : 'text-3xl md:text-5xl'} font-serif font-bold tracking-tight text-stone-950 leading-tight`}>
           Especializado en la excelencia de tu centro
         </h2>
 
         {!isPreview && (
-          <p className="text-stone-500 text-xs md:text-sm mt-3 font-medium leading-relaxed max-w-2xl mx-auto">
-            Gira el carrusel de especialidades. Pulsa cualquier sector para centrarlo y ver su vídeo demostrativo.
+          <p className="text-stone-500 text-sm md:text-base mt-4 font-medium leading-relaxed max-w-2xl mx-auto">
+            Explora las soluciones por sector en formato 9:16. Pulsa o arrastra para navegar entre los entornos.
           </p>
         )}
 
-        {/* Píldoras de Acceso Rápido con estado activo exacto */}
-        <div className={`flex flex-wrap items-center justify-center gap-2 ${isPreview ? 'mt-2 mb-1' : 'mt-6 mb-4'}`}>
+        {/* Píldoras de Acceso Rápido */}
+        <div className={`flex flex-wrap items-center justify-center gap-2 ${isPreview ? 'mt-2 mb-1' : 'mt-6 mb-2'}`}>
           {items.map((sec, idx) => {
             const isPillActive = currentCenterNormIndex === idx;
             return (
@@ -302,7 +485,7 @@ export default function Showcase3DRing({
                 style={isPillActive ? { backgroundColor: brandPrimary, borderColor: brandPrimary, color: '#ffffff' } : undefined}
                 className={`px-3.5 py-1.5 rounded-full text-[11px] md:text-xs font-bold transition-all duration-300 border shadow-sm cursor-pointer ${
                   isPillActive
-                    ? 'scale-105 shadow-md ring-2 ring-[#D4AF37]/40 font-black'
+                    ? 'scale-105 shadow-md ring-2 ring-[#D4AF37]/50 font-black'
                     : 'bg-white/95 hover:bg-white text-stone-700 border-stone-200/80 hover:scale-105 active:scale-95'
                 }`}
               >
@@ -313,29 +496,22 @@ export default function Showcase3DRing({
         </div>
       </div>
 
-      {/* ── 2. ESCENARIO 3D EN ARCO CONVEXO ESTILO BAMBU LAB ── */}
+      {/* ── 2. ESCENARIO 3D EN ARCO CONVEXO CON ARRASTRE Y CLIC 100% FUNCIONALES ── */}
       <div
-        className={`w-full relative flex items-center justify-center select-none cursor-grab active:cursor-grabbing touch-none ${
-          isPreview ? 'h-[300px]' : 'h-[440px] md:h-[490px]'
-        }`}
+        className="w-full relative flex items-center justify-center select-none cursor-grab active:cursor-grabbing touch-none"
         style={{
-          perspective: isPreview ? '1000px' : '1300px',
+          height: `${stageHeight}px`,
+          perspective: isPreview ? '1100px' : '1500px',
           perspectiveOrigin: '50% 50%',
         }}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => {
-          setIsHovered(false);
-          isDraggingRef.current = false;
-          dragStartPosRef.current.time = 0;
-        }}
+        onPointerDown={handleStagePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
       >
-        {/* Contenedor central de proyección 3D */}
+        {/* Contenedor de proyección 3D (con pointer-events-none para que el plano Z=0 no bloquee los clics en tarjetas laterales con Z negativo) */}
         <div 
-          className="relative w-full h-full flex items-center justify-center"
+          className="relative w-full h-full flex items-center justify-center pointer-events-none"
           style={{ transformStyle: 'preserve-3d' }}
         >
           {visibleSlots.map((k) => {
@@ -349,26 +525,24 @@ export default function Showcase3DRing({
             const sector = items[actualItemIndex];
             if (!sector) return null;
 
-            // Fórmulas matemáticas de arco convexo:
-            // 1. Ángulo angular en grados y radianes
+            // Fórmulas matemáticas de arco convexo (Bambu Lab geometry):
             const angleDeg = slotOffset * angleStep;
             const angleRad = (angleDeg * Math.PI) / 180;
 
-            // 2. Posición horizontal en arco (X)
+            // Posición horizontal en arco (X)
             const x = Math.sin(angleRad) * radius;
 
-            // 3. Profundidad (Z): 0 en el centro, negativo hacia el fondo a los lados (curvatura hacia atrás)
+            // Profundidad (Z): 0 en el centro, negativo hacia el fondo a los lados
             const z = (Math.cos(angleRad) - 1) * radius;
 
-            // 4. Rotación Y: Los de la derecha giran hacia la izquierda, los de la izquierda hacia la derecha
+            // Rotación Y
             const rotY = -angleDeg;
 
-            // 5. Escala y opacidad suaves para disolverse en el horizonte
-            const scale = Math.max(0.72, 1 - absOffset * 0.045);
+            // Escala y opacidad suaves
+            const scale = Math.max(0.75, 1 - absOffset * 0.045);
             const opacity = Math.max(0, 1 - Math.pow(absOffset / 3.4, 2.2));
             const zIndex = Math.round(100 - absOffset * 10);
 
-            // Si está muy lejos en el borde, no renderizar
             if (absOffset > 3.5 || opacity <= 0.01) return null;
 
             const isCenterCard = Math.abs(slotOffset) < 0.45;
@@ -376,15 +550,13 @@ export default function Showcase3DRing({
 
             return (
               <div
-                key={`bambu-card-${k}-${actualItemIndex}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleCardClick(k, actualItemIndex);
-                }}
-                className={`absolute rounded-[1.5rem] md:rounded-[1.75rem] overflow-hidden cursor-pointer select-none transition-shadow duration-300 group ${
+                key={`bambu-slot-${k}`}
+                onPointerDown={(e) => handleCardPointerDown(e, k, sector, actualItemIndex)}
+                onClick={(e) => handleCardClick(e, k, sector, actualItemIndex)}
+                className={`absolute rounded-[2.4rem] md:rounded-[2.8rem] overflow-hidden cursor-pointer select-none transition-shadow duration-300 group pointer-events-auto ${
                   isCenterCard 
-                    ? 'ring-2 ring-[#D4AF37] shadow-[0_20px_60px_-15px_rgba(212,175,55,0.35),0_10px_30px_rgba(0,0,0,0.2)]' 
-                    : 'shadow-xl hover:shadow-2xl'
+                    ? 'border-[3.5px] border-[#D4AF37] ring-4 ring-[#D4AF37]/25 shadow-[0_30px_90px_-15px_rgba(212,175,55,0.45),0_15px_40px_rgba(0,0,0,0.35)]' 
+                    : 'border-[3px] border-stone-800/80 shadow-2xl hover:border-stone-700'
                 }`}
                 style={{
                   width: `${cardWidth}px`,
@@ -397,7 +569,15 @@ export default function Showcase3DRing({
                   pointerEvents: opacity > 0.1 ? 'auto' : 'none',
                 }}
               >
-                {/* Imagen de Fondo */}
+                {/* ── ISLA DINÁMICA / SPEAKER SUPERIOR DE SMARTPHONE ── */}
+                <div className="absolute top-3 inset-x-0 z-30 flex justify-center pointer-events-none">
+                  <div className="w-20 md:w-24 h-4 bg-black/90 rounded-full border border-white/10 flex items-center justify-center gap-1.5 shadow-md backdrop-blur-md">
+                    <span className="w-2 h-2 rounded-full bg-stone-900 border border-white/20" />
+                    <span className="w-6 h-0.5 rounded-full bg-stone-700" />
+                  </div>
+                </div>
+
+                {/* ── IMAGEN DE FONDO VERTICAL 9:16 ── */}
                 <img
                   src={imgSrc}
                   alt={sector.title}
@@ -405,12 +585,12 @@ export default function Showcase3DRing({
                   className="absolute inset-0 w-full h-full object-cover pointer-events-none transition-transform duration-700 group-hover:scale-105"
                 />
 
-                {/* Velo Degradado cinematográfico */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10 pointer-events-none z-10" />
+                {/* ── VELO DEGRADADO CINEMATOGRÁFICO DE LECTURA ── */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-black/30 pointer-events-none z-10" />
 
-                {/* Badge Superior */}
-                <div className="absolute top-3.5 left-3.5 right-3.5 z-20 flex items-center justify-between pointer-events-none">
-                  <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider backdrop-blur-md border shadow-sm ${
+                {/* ── BADGE SUPERIOR DE SECTOR ── */}
+                <div className="absolute top-9 left-4 right-4 z-20 flex items-center justify-between pointer-events-none">
+                  <span className={`px-2.5 py-1 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-wider backdrop-blur-md border shadow-md ${
                     isCenterCard 
                       ? 'bg-[#D4AF37] text-stone-950 border-[#D4AF37]' 
                       : 'bg-black/60 text-white border-white/20'
@@ -419,23 +599,41 @@ export default function Showcase3DRing({
                   </span>
 
                   {isCenterCard && (
-                    <span className="w-6 h-6 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
-                      <Play className="w-2.5 h-2.5 fill-current ml-0.5" />
+                    <span className="px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[9px] font-bold text-white flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Activo
                     </span>
                   )}
                 </div>
 
-                {/* Pie de Tarjeta */}
-                <div className="absolute bottom-0 inset-x-0 p-4 md:p-5 z-20 text-white flex flex-col justify-end pointer-events-none">
-                  <h3 className="font-serif text-sm md:text-base font-bold leading-tight drop-shadow-md text-white group-hover:text-[#D4AF37] transition-colors">
+                {/* ── BOTÓN PLAY CENTRAL EN LA FICHA ACTIVA ── */}
+                {isCenterCard && (
+                  <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+                    <div className="w-16 h-16 rounded-full bg-[#D4AF37] text-stone-950 flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-300 ring-4 ring-black/40">
+                      <Play className="w-7 h-7 fill-current ml-0.5" />
+                    </div>
+                  </div>
+                )}
+
+                {/* ── PIE DE LA FICHA MÓVIL ── */}
+                <div className="absolute bottom-0 inset-x-0 p-5 md:p-6 z-20 text-white flex flex-col justify-end pointer-events-none">
+                  <h3 className="font-serif text-base md:text-xl font-bold leading-tight drop-shadow-md text-white group-hover:text-[#D4AF37] transition-colors">
                     {sector.title}
                   </h3>
-                  {isCenterCard && (
-                    <p className="text-[10px] text-stone-300 mt-1 font-medium flex items-center gap-1 opacity-90">
-                      <span>Ver vídeo demostrativo</span>
-                      <ArrowRight className="w-2.5 h-2.5 text-[#D4AF37]" />
-                    </p>
-                  )}
+                  
+                  <p className="text-[11px] md:text-xs text-stone-200 mt-1.5 font-medium line-clamp-2 opacity-90 leading-relaxed">
+                    {sector.copy || 'Entorno SaaS exclusivo con expedientes LOPD y motor de reservas sin comisiones.'}
+                  </p>
+
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-stone-300 flex items-center gap-1 group-hover:text-[#D4AF37] transition-colors">
+                      <span>Pulsa para reproducir vídeo 9:16</span>
+                      <ArrowRight className="w-3 h-3 text-[#D4AF37]" />
+                    </span>
+                  </div>
+
+                  {/* Barra Home Indicator de Smartphone */}
+                  <div className="w-24 h-1 bg-white/40 rounded-full mx-auto mt-4" />
                 </div>
               </div>
             );
@@ -443,55 +641,41 @@ export default function Showcase3DRing({
         </div>
       </div>
 
-      {/* ── 3. CONTROLES DE REPRODUCCIÓN INFERIORES ── */}
-      <div className={`flex flex-col sm:flex-row items-center justify-center gap-3 shrink-0 text-center relative z-20 ${
-        isPreview ? 'mt-1' : 'mt-4'
-      }`}>
-        <span className="text-[11px] font-semibold text-stone-500 bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full border border-stone-200/70 shadow-sm flex items-center justify-center gap-2">
-          {!isPaused ? (
-            <>🔄 Desplazamiento continuo activo • Pulsa o arrastra para explorar sectores</>
-          ) : (
-            <>⏸️ Carrusel pausado • Pulsa reanudar para continuar</>
-          )}
-        </span>
-
-        {isPaused ? (
-          <button
-            type="button"
-            onClick={() => setIsPaused(false)}
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold bg-stone-950 text-white hover:bg-stone-800 transition-colors shadow-sm active:scale-95 cursor-pointer"
-          >
-            <Play className="w-3.5 h-3.5 fill-current" /> Reanudar
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setIsPaused(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-white border border-stone-200 text-stone-700 hover:text-stone-950 transition-colors shadow-sm active:scale-95 cursor-pointer"
-          >
-            <Pause className="w-3.5 h-3.5 text-stone-500" /> Pausar
-          </button>
-        )}
-      </div>
-
-      {/* ── 4. MODAL SPOTLIGHT CON VÍDEO (Limpio, sin cortes de máscara ni overflow) ── */}
+      {/* ── 3. MODAL SPOTLIGHT CON VÍDEO (OCUPA EL 82% DEL ALTO DE PANTALLA) ── */}
       {modalSector && (
         <div 
-          className={`${isPreview ? 'absolute' : 'fixed'} inset-0 z-[100] flex items-center justify-center p-4 bg-stone-950/80 backdrop-blur-md animate-in fade-in duration-200`}
-          onClick={() => {
-            setModalSector(null);
-            setIsPaused(false);
+          className={`${isPreview ? 'absolute' : 'fixed'} inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-stone-950/85 backdrop-blur-md animate-in fade-in duration-200`}
+          onPointerDown={(e) => {
+            if (e.target === e.currentTarget) {
+              backdropPointerDownRef.current = true;
+            }
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget && backdropPointerDownRef.current) {
+              backdropPointerDownRef.current = false;
+              setModalSector(null);
+            }
           }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-[340px] md:max-w-[440px] rounded-3xl overflow-hidden shadow-[0_25px_80px_rgba(0,0,0,0.85)] border border-white/20 bg-stone-950 aspect-[7/10] flex flex-col justify-between animate-in zoom-in-95 duration-300"
+            className="relative h-[82vh] max-h-[900px] aspect-[9/16] w-auto max-w-[94vw] rounded-[2.8rem] md:rounded-[3.4rem] overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.95)] border-[4px] border-stone-800 bg-stone-950 flex flex-col justify-between animate-in zoom-in-95 duration-300"
             style={{
-              boxShadow: `0 30px 90px -10px ${accentColor}50, 0 10px 40px rgba(0,0,0,0.95)`
+              boxShadow: `0 30px 100px -10px ${accentColor}60, 0 15px 50px rgba(0,0,0,0.95)`
             }}
           >
-            {/* Vídeo / Poster de Fondo */}
+            {/* Isla dinámica superior en el modal */}
+            <div className="absolute top-3 inset-x-0 z-30 flex justify-center pointer-events-none">
+              <div className="w-28 h-5 bg-black/90 rounded-full border border-white/10 flex items-center justify-center gap-2 shadow-md backdrop-blur-md">
+                <span className="w-2.5 h-2.5 rounded-full bg-stone-900 border border-white/20" />
+                <span className="w-7 h-0.5 rounded-full bg-stone-700" />
+              </div>
+            </div>
+
+            {/* Vídeo / Poster de Fondo en 9:16 a gran escala */}
             <video
+              ref={videoRef}
+              key={modalSector.sector.id}
               src={resolveSectorVideo(modalSector.sector, modalSector.index)}
               poster={resolveSectorImage(modalSector.sector, modalSector.index)}
               autoPlay
@@ -502,33 +686,30 @@ export default function Showcase3DRing({
             />
 
             {/* Velo degrade para legibilidad */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-black/30 pointer-events-none z-10" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-black/30 pointer-events-none z-10" />
 
             {/* Cabecera del modal */}
-            <div className="relative z-20 p-5 flex items-center justify-between">
+            <div className="relative z-20 pt-10 px-6 flex items-center justify-between">
               <span
                 style={{ backgroundColor: accentColor, color: '#1c1917' }}
-                className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md backdrop-blur-md"
+                className="px-3.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider shadow-md backdrop-blur-md"
               >
                 {modalSector.sector.badge || modalSector.sector.title}
               </span>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <button
                   type="button"
                   onClick={() => setIsMuted(prev => !prev)}
-                  className="w-9 h-9 rounded-full bg-black/70 hover:bg-black text-white flex items-center justify-center border border-white/20 shadow-md transition-transform active:scale-90 cursor-pointer"
+                  className="w-10 h-10 rounded-full bg-black/70 hover:bg-black text-white flex items-center justify-center border border-white/20 shadow-md transition-transform active:scale-90 cursor-pointer"
                   title={isMuted ? "Activar sonido" : "Silenciar"}
                 >
                   {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    setModalSector(null);
-                    setIsPaused(false);
-                  }}
-                  className="w-9 h-9 rounded-full bg-black/70 hover:bg-black text-white flex items-center justify-center border border-white/20 shadow-md transition-transform active:scale-90 cursor-pointer"
+                  onClick={() => setModalSector(null)}
+                  className="w-10 h-10 rounded-full bg-black/70 hover:bg-black text-white flex items-center justify-center border border-white/20 shadow-md transition-transform active:scale-90 cursor-pointer"
                   title="Cerrar ventana"
                 >
                   <X className="w-5 h-5" />
@@ -537,12 +718,12 @@ export default function Showcase3DRing({
             </div>
 
             {/* Pie de detalles y botón de acción */}
-            <div className="relative z-20 p-6 text-white space-y-3">
+            <div className="relative z-20 p-6 md:p-8 text-white space-y-3.5 pb-8">
               <div>
-                <h3 className="font-serif text-xl md:text-2xl font-bold leading-tight drop-shadow-md">
+                <h3 className="font-serif text-xl md:text-3xl font-bold leading-tight drop-shadow-md">
                   {modalSector.sector.title}
                 </h3>
-                <p className="text-xs text-stone-200 mt-2 leading-relaxed font-medium line-clamp-3">
+                <p className="text-xs md:text-sm text-stone-200 mt-2 leading-relaxed font-medium line-clamp-3">
                   {modalSector.sector.copy || 'Entorno SaaS exclusivo para centros selectos con expedientes LOPD y motor de reservas sin comisiones.'}
                 </p>
               </div>
@@ -551,11 +732,14 @@ export default function Showcase3DRing({
                 type="button"
                 onClick={() => onConfigureEntorno('pro')}
                 style={{ backgroundColor: brandPrimary }}
-                className="w-full text-white py-3.5 px-4 rounded-2xl text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg active:scale-95 hover:opacity-95 border border-white/20 cursor-pointer"
+                className="w-full text-white py-4 px-5 rounded-2xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg active:scale-95 hover:opacity-95 border border-white/20 cursor-pointer"
               >
                 <span>Configurar este Entorno</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
+
+              {/* Home indicator en el modal */}
+              <div className="w-28 h-1 bg-white/40 rounded-full mx-auto pt-1" />
             </div>
           </div>
         </div>
