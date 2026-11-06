@@ -88,7 +88,8 @@ export default function MarketingHero({
       <div className="max-w-7xl mx-auto px-6 relative z-20 text-center animate-in fade-in slide-in-from-bottom-6 duration-1000 flex flex-col justify-center items-center w-full">
         {/* Main Title */}
         <h1
-          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-stone-950 tracking-tight leading-[1.12] max-w-5xl mx-auto mb-6 filter drop-shadow-xs"
+          style={{ fontWeight: 'var(--heading-weight, 700)' }}
+          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif text-stone-950 tracking-tight leading-[1.12] max-w-5xl mx-auto mb-6 filter drop-shadow-xs"
           dangerouslySetInnerHTML={{ __html: heroTitle.replace(/\n/g, '<br/>') }}
         />
 

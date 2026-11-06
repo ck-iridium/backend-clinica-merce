@@ -198,12 +198,18 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
           --font-cormorant: ${resolvedHeadingFont} !important;
           --font-sans: ${resolvedBodyFont} !important;
           --font-body: ${resolvedBodyFont} !important;
+          --heading-weight: ${activeWeight} !important;
           --primary-accent: ${primaryColor || '#1C1917'} !important;
           --secondary-accent: ${secondaryColor || '#FAF9F6'} !important;
           --tertiary-accent: ${tertiaryColor || '#D4AF37'} !important;
         }
         
-        .font-serif, h1, h2, h3, h4, h5, h6 {
+        .font-serif,
+        .font-serif.font-bold,
+        .font-serif.font-semibold,
+        .font-serif.font-medium,
+        h1, h2, h3, h4, h5, h6,
+        [class*="font-serif"] {
           font-family: ${resolvedHeadingFont} !important;
           font-weight: ${activeWeight} !important;
         }

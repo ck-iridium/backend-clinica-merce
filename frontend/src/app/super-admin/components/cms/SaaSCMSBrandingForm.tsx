@@ -41,41 +41,79 @@ export default function SaaSCMSBrandingForm({
   return (
     <div className="p-6 space-y-5">
       <form onSubmit={onSave} className="space-y-5 select-text">
-        {/* 1. Tipografía para Títulos / Encabezados */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <label className="text-[9px] font-black text-stone-400 uppercase tracking-widest block">
-              Tipografía de Títulos / Encabezados
-            </label>
-            <span className="text-[9px] text-[#D4AF37] font-semibold">H1 - H6 & Hero</span>
+        {/* 1. TIPOGRAFÍA Y GROSOR DE TÍTULOS / ENCABEZADOS */}
+        <div className="space-y-3 p-4 bg-stone-50/80 rounded-2xl border border-stone-200/90 shadow-2xs">
+          <div className="flex items-center justify-between border-b border-stone-200/70 pb-2">
+            <div>
+              <label className="text-[10px] font-black text-stone-800 uppercase tracking-widest block">
+                Tipografía de Títulos / Encabezados
+              </label>
+              <span className="text-[9px] text-stone-400 font-medium">Afecta a H1, H2, H3 y Hero</span>
+            </div>
+            <span className="text-[9px] text-[#997715] font-bold bg-[#fcf8e5] px-2 py-0.5 rounded-full border border-[#D4AF37]/30">
+              Hero & Títulos
+            </span>
           </div>
-          <Select
-            value={
-              settings.font_family === 'playfair_inter' ? 'playfair' :
-              settings.font_family === 'cormorant_montserrat' ? 'cormorant' :
-              settings.font_family === 'cinzel_roboto' ? 'cinzel' :
-              (settings.font_family || 'playfair')
-            }
-            onValueChange={(val) => onChange({ font_family: val })}
-          >
-            <SelectTrigger className="h-10 text-xs bg-white border-stone-200">
-              <SelectValue placeholder="Seleccionar tipografía de títulos" />
-            </SelectTrigger>
-            <SelectContent className="bg-white border-stone-200 shadow-xl rounded-xl">
-              <SelectItem value="playfair" className="text-xs font-medium">Playfair Display (Serif de Lujo Atemporal)</SelectItem>
-              <SelectItem value="cormorant" className="text-xs font-medium">Cormorant Garamond (Boutique de Lujo & Alta Gama)</SelectItem>
-              <SelectItem value="cinzel" className="text-xs font-medium">Cinzel (Serif Imperial / Clásica)</SelectItem>
-              <SelectItem value="outfit" className="text-xs font-medium">Outfit (Geométrica Moderna)</SelectItem>
-              <SelectItem value="plus_jakarta_sans" className="text-xs font-medium">Plus Jakarta Sans (SaaS Contemporáneo)</SelectItem>
-              <SelectItem value="montserrat" className="text-xs font-medium">Montserrat (Moderna & Equilibrada)</SelectItem>
-              <SelectItem value="fredoka" className="text-xs font-medium">Fredoka (Amigable & Redondeada)</SelectItem>
-              <SelectItem value="inter" className="text-xs font-medium">Inter (Minimalista & Funcional)</SelectItem>
-            </SelectContent>
-          </Select>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            {/* Selector de Fuente */}
+            <div className="space-y-1">
+              <label className="text-[8.5px] font-bold text-stone-500 uppercase tracking-wider block">
+                Familia Tipográfica
+              </label>
+              <Select
+                value={
+                  settings.font_family === 'playfair_inter' ? 'playfair' :
+                  settings.font_family === 'cormorant_montserrat' ? 'cormorant' :
+                  settings.font_family === 'cinzel_roboto' ? 'cinzel' :
+                  (settings.font_family || 'playfair')
+                }
+                onValueChange={(val) => onChange({ font_family: val })}
+              >
+                <SelectTrigger className="h-10 text-xs bg-white border-stone-200">
+                  <SelectValue placeholder="Seleccionar tipografía" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-stone-200 shadow-xl rounded-xl">
+                  <SelectItem value="playfair" className="text-xs font-medium">Playfair Display (Serif Lujo)</SelectItem>
+                  <SelectItem value="cormorant" className="text-xs font-medium">Cormorant Garamond (Boutique)</SelectItem>
+                  <SelectItem value="cinzel" className="text-xs font-medium">Cinzel (Imperial / Clásica)</SelectItem>
+                  <SelectItem value="outfit" className="text-xs font-medium">Outfit (Geométrica)</SelectItem>
+                  <SelectItem value="plus_jakarta_sans" className="text-xs font-medium">Plus Jakarta Sans (SaaS)</SelectItem>
+                  <SelectItem value="montserrat" className="text-xs font-medium">Montserrat (Equilibrada)</SelectItem>
+                  <SelectItem value="fredoka" className="text-xs font-medium">Fredoka (Redondeada)</SelectItem>
+                  <SelectItem value="inter" className="text-xs font-medium">Inter (Minimalista)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Selector de Grosor / Peso */}
+            <div className="space-y-1">
+              <label className="text-[8.5px] font-bold text-stone-500 uppercase tracking-wider block">
+                Grosor / Peso (Font Weight)
+              </label>
+              <Select
+                value={settings.font_weight_headings || 'semibold'}
+                onValueChange={(val) => onChange({ font_weight_headings: val })}
+              >
+                <SelectTrigger className="h-10 text-xs bg-white border-stone-200">
+                  <SelectValue placeholder="Seleccionar grosor" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-stone-200 shadow-xl rounded-xl">
+                  <SelectItem value="light" className="text-xs font-light">Fino (Light - 300)</SelectItem>
+                  <SelectItem value="normal" className="text-xs font-normal">Regular (Normal - 400)</SelectItem>
+                  <SelectItem value="medium" className="text-xs font-medium">Medio (Medium - 500)</SelectItem>
+                  <SelectItem value="semibold" className="text-xs font-semibold">Semibold (Imprenta - 600)</SelectItem>
+                  <SelectItem value="bold" className="text-xs font-bold">Bold (Sólido - 700)</SelectItem>
+                  <SelectItem value="extrabold" className="text-xs font-extrabold">Extra Bold (800)</SelectItem>
+                  <SelectItem value="black" className="text-xs font-black">Black (Máximo - 900)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
 
-        {/* 2. Tipografía para Texto y Cuerpo */}
-        <div className="space-y-1.5">
+        {/* 2. TIPOGRAFÍA DE TEXTO Y CUERPO (BODY) */}
+        <div className="space-y-1.5 pt-1">
           <div className="flex items-center justify-between">
             <label className="text-[9px] font-black text-stone-400 uppercase tracking-widest block">
               Tipografía de Texto y Cuerpo (Body)
@@ -102,28 +140,6 @@ export default function SaaSCMSBrandingForm({
               <SelectItem value="outfit" className="text-xs font-medium">Outfit (Geométrica & Espaciosa)</SelectItem>
               <SelectItem value="dm_sans" className="text-xs font-medium">DM Sans (Suave & Minimalista)</SelectItem>
               <SelectItem value="roboto" className="text-xs font-medium">Roboto (Neutral & Técnica)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Title Font Weight Dropdown */}
-        <div className="space-y-1.5">
-          <label className="text-[9px] font-black text-stone-400 uppercase tracking-widest block">
-            Grosor de Títulos
-          </label>
-          <Select
-            value={settings.font_weight_headings || 'semibold'}
-            onValueChange={(val) => onChange({ font_weight_headings: val })}
-          >
-            <SelectTrigger className="h-10 text-xs bg-white border-stone-200">
-              <SelectValue placeholder="Seleccionar grosor" />
-            </SelectTrigger>
-            <SelectContent className="bg-white border-stone-200 shadow-xl rounded-xl">
-              <SelectItem value="light" className="text-xs">Fino (Light - 300)</SelectItem>
-              <SelectItem value="normal" className="text-xs">Elegante (Normal - 400)</SelectItem>
-              <SelectItem value="medium" className="text-xs">Suave (Medium - 500)</SelectItem>
-              <SelectItem value="semibold" className="text-xs">Imprenta (Semibold - 600)</SelectItem>
-              <SelectItem value="bold" className="text-xs">Sólido (Bold - 700)</SelectItem>
             </SelectContent>
           </Select>
         </div>

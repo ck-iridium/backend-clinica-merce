@@ -172,10 +172,14 @@ export default function Showcase3DPreview({
         }
 
         .preview-landing-root .font-serif,
+        .preview-landing-root .font-serif.font-bold,
+        .preview-landing-root .font-serif.font-semibold,
+        .preview-landing-root .font-serif.font-medium,
         .preview-landing-root h1,
         .preview-landing-root h2,
         .preview-landing-root h3,
-        .preview-landing-root h4 {
+        .preview-landing-root h4,
+        .preview-landing-root [class*="font-serif"] {
           font-family: ${resolvedHeadingFont} !important;
           font-weight: ${activeWeight} !important;
         }
@@ -318,7 +322,10 @@ export default function Showcase3DPreview({
 
           {/* Editorial y Titulares */}
           <div className="relative z-10 max-w-3xl mx-auto flex flex-col items-center">
-            <h1 className="text-2xl sm:text-4xl md:text-5xl font-serif font-bold text-stone-950 tracking-tight leading-[1.18] drop-shadow-xs mb-4 text-center">
+            <h1 
+              style={{ fontWeight: activeWeight }}
+              className="text-2xl sm:text-4xl md:text-5xl font-serif text-stone-950 tracking-tight leading-[1.18] drop-shadow-xs mb-4 text-center"
+            >
               {heroTitle || 'El único software que tu clínica volverá a necesitar.'}
             </h1>
 
