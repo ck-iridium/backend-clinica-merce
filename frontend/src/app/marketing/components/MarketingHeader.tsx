@@ -14,7 +14,7 @@ interface MarketingHeaderProps {
 const NAV_ITEMS = [
   { label: 'Características', id: 'comparativa' },
   { label: 'Pilares', id: 'pilares' },
-  { label: 'Sectores 3D', id: 'sectores' },
+  { label: 'Sectores', id: 'sectores' },
   { label: 'Precios', id: 'precios' },
 ];
 
@@ -27,11 +27,13 @@ export default function MarketingHeader({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // Escucha del scroll para aumentar el blur y sombra con elegancia
+  // Escucha del scroll: Al inicio es 100% transparente para fundirse con el fondo crema del hero.
+  // Al hacer scroll adquiere un fondo blanco translúcido con glassmorphism suave.
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      setIsScrolled(window.scrollY > 15);
     };
+    handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -69,12 +71,12 @@ export default function MarketingHeader({
       <header
         className={`sticky top-0 z-40 w-full transition-all duration-300 ${
           isScrolled
-            ? 'bg-white/90 backdrop-blur-xl border-b border-stone-200/80 shadow-xs py-0.5'
-            : 'bg-white/70 backdrop-blur-md border-b border-stone-200/50 py-1'
+            ? 'bg-white/85 backdrop-blur-md border-b border-stone-200/40 shadow-xs py-0.5'
+            : 'bg-transparent border-b border-transparent py-1.5'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
-          {/* Logo (Reducido suavemente en móvil para encajar a la perfección) */}
+          {/* Logo (Compacto y nítido) */}
           <div
             onClick={handleScrollToTop}
             className="flex items-center gap-2 cursor-pointer select-none group shrink-0"
@@ -110,14 +112,14 @@ export default function MarketingHeader({
                 key={item.id}
                 type="button"
                 onClick={() => handleScrollTo(item.id)}
-                className="px-3 py-2 text-stone-600 hover:text-stone-950 text-xs font-semibold rounded-xl hover:bg-stone-100/70 transition-all duration-200 cursor-pointer"
+                className="px-3.5 py-2 text-stone-700 hover:text-stone-950 text-xs font-semibold rounded-xl hover:bg-stone-200/40 transition-all duration-200 cursor-pointer"
               >
                 {item.label}
               </button>
             ))}
             <Link
               href="/docs"
-              className="flex items-center gap-1 px-3 py-2 text-stone-500 hover:text-stone-950 text-xs font-semibold rounded-xl hover:bg-stone-100/70 transition-all duration-200"
+              className="flex items-center gap-1.5 px-3.5 py-2 text-stone-600 hover:text-stone-950 text-xs font-semibold rounded-xl hover:bg-stone-200/40 transition-all duration-200"
             >
               <BookOpen size={13} className="text-stone-400" />
               <span>Blueprint</span>
@@ -130,7 +132,7 @@ export default function MarketingHeader({
             <div className="hidden md:flex items-center gap-3">
               <Link
                 href="/login"
-                className="px-4 py-2 rounded-xl text-xs font-bold bg-white text-stone-700 border border-stone-200/80 hover:text-stone-950 hover:bg-stone-50 transition-all duration-200 active:scale-95 shadow-2xs whitespace-nowrap"
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-white/90 backdrop-blur-sm text-stone-700 border border-stone-200/80 hover:text-stone-950 hover:bg-white transition-all duration-200 active:scale-95 shadow-2xs whitespace-nowrap"
               >
                 Acceso Clínicas
               </Link>
@@ -159,7 +161,7 @@ export default function MarketingHeader({
                 type="button"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 aria-label={isMobileMenuOpen ? "Cerrar menú" : "Abrir menú de navegación"}
-                className="p-2 rounded-xl text-stone-700 hover:text-stone-950 hover:bg-stone-100 transition-colors focus:outline-none cursor-pointer"
+                className="p-2 rounded-xl text-stone-800 hover:bg-white/60 transition-colors focus:outline-none cursor-pointer"
               >
                 {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
               </button>
@@ -178,7 +180,7 @@ export default function MarketingHeader({
           />
 
           {/* Top Bar del Menú Fullscreen */}
-          <div className="flex items-center justify-between border-b border-stone-200/70 pb-4 relative z-10 shrink-0">
+          <div className="flex items-center justify-between border-b border-stone-200/50 pb-4 relative z-10 shrink-0">
             <div
               onClick={handleScrollToTop}
               className="flex items-center gap-2 cursor-pointer"
@@ -199,7 +201,7 @@ export default function MarketingHeader({
               type="button"
               onClick={() => setIsMobileMenuOpen(false)}
               aria-label="Cerrar menú"
-              className="w-10 h-10 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 flex items-center justify-center transition-all active:scale-95 cursor-pointer shadow-2xs border border-stone-200/60"
+              className="w-10 h-10 rounded-full bg-white hover:bg-stone-100 text-stone-700 flex items-center justify-center transition-all active:scale-95 cursor-pointer shadow-2xs border border-stone-200/60"
             >
               <X size={20} />
             </button>
@@ -215,7 +217,7 @@ export default function MarketingHeader({
             <button
               type="button"
               onClick={handleScrollToTop}
-              className="w-full flex items-center justify-between py-3 border-b border-stone-200/50 text-left group transition-all cursor-pointer"
+              className="w-full flex items-center justify-between py-3.5 border-b border-stone-200/40 text-left group transition-all cursor-pointer"
             >
               <div className="flex items-baseline gap-3">
                 <span className="text-[11px] font-mono text-stone-400 group-hover:text-stone-700 transition-colors">01</span>
@@ -230,7 +232,7 @@ export default function MarketingHeader({
             <button
               type="button"
               onClick={() => handleScrollTo('comparativa')}
-              className="w-full flex items-center justify-between py-3 border-b border-stone-200/50 text-left group transition-all cursor-pointer"
+              className="w-full flex items-center justify-between py-3.5 border-b border-stone-200/40 text-left group transition-all cursor-pointer"
             >
               <div className="flex items-baseline gap-3">
                 <span className="text-[11px] font-mono text-stone-400 group-hover:text-stone-700 transition-colors">02</span>
@@ -245,33 +247,27 @@ export default function MarketingHeader({
             <button
               type="button"
               onClick={() => handleScrollTo('pilares')}
-              className="w-full flex items-center justify-between py-3 border-b border-stone-200/50 text-left group transition-all cursor-pointer"
+              className="w-full flex items-center justify-between py-3.5 border-b border-stone-200/40 text-left group transition-all cursor-pointer"
             >
               <div className="flex items-baseline gap-3">
                 <span className="text-[11px] font-mono text-stone-400 group-hover:text-stone-700 transition-colors">03</span>
                 <span className="text-2xl font-serif font-bold text-stone-900 group-hover:translate-x-1 transition-transform">
-                  Ecosistema (4 Pilares)
+                  Pilares
                 </span>
               </div>
               <ChevronRight size={18} className="text-stone-400 group-hover:text-stone-900 transition-colors" />
             </button>
 
-            {/* 04. Sectores 3D */}
+            {/* 04. Sectores */}
             <button
               type="button"
               onClick={() => handleScrollTo('sectores')}
-              className="w-full flex items-center justify-between py-3 border-b border-stone-200/50 text-left group transition-all cursor-pointer"
+              className="w-full flex items-center justify-between py-3.5 border-b border-stone-200/40 text-left group transition-all cursor-pointer"
             >
               <div className="flex items-baseline gap-3">
                 <span className="text-[11px] font-mono text-stone-400 group-hover:text-stone-700 transition-colors">04</span>
-                <span className="text-2xl font-serif font-bold text-stone-900 group-hover:translate-x-1 transition-transform flex items-center gap-2">
-                  <span>Sectores 3D</span>
-                  <span
-                    style={{ backgroundColor: `${accentGold}25`, color: accentGold }}
-                    className="text-[9px] font-sans font-black tracking-widest uppercase px-2 py-0.5 rounded-full"
-                  >
-                    Nuevo
-                  </span>
+                <span className="text-2xl font-serif font-bold text-stone-900 group-hover:translate-x-1 transition-transform">
+                  Sectores
                 </span>
               </div>
               <ChevronRight size={18} className="text-stone-400 group-hover:text-stone-900 transition-colors" />
@@ -281,7 +277,7 @@ export default function MarketingHeader({
             <button
               type="button"
               onClick={() => handleScrollTo('precios')}
-              className="w-full flex items-center justify-between py-3 border-b border-stone-200/50 text-left group transition-all cursor-pointer"
+              className="w-full flex items-center justify-between py-3.5 border-b border-stone-200/40 text-left group transition-all cursor-pointer"
             >
               <div className="flex items-baseline gap-3">
                 <span className="text-[11px] font-mono text-stone-400 group-hover:text-stone-700 transition-colors">05</span>
@@ -296,7 +292,7 @@ export default function MarketingHeader({
             <Link
               href="/docs"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="w-full flex items-center justify-between py-3 text-left group transition-all"
+              className="w-full flex items-center justify-between py-3.5 text-left group transition-all"
             >
               <div className="flex items-baseline gap-3">
                 <span className="text-[11px] font-mono text-stone-400 group-hover:text-stone-700 transition-colors">06</span>
@@ -310,7 +306,7 @@ export default function MarketingHeader({
           </div>
 
           {/* Bottom Actions del Menú Fullscreen */}
-          <div className="pt-4 border-t border-stone-200/70 space-y-3 relative z-10 shrink-0">
+          <div className="pt-4 border-t border-stone-200/50 space-y-3 relative z-10 shrink-0">
             <Link
               href="/login"
               onClick={() => setIsMobileMenuOpen(false)}

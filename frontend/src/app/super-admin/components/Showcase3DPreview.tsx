@@ -234,7 +234,7 @@ export default function Showcase3DPreview({
             onClick={() => scrollToSection('preview-sectors')}
             className="px-2.5 py-1 rounded-md text-[9px] font-bold text-stone-600 hover:text-stone-950 hover:bg-white transition-colors flex items-center gap-1"
           >
-            <span>Sectores 3D</span>
+            <span>Sectores</span>
             <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
           </button>
           <button
@@ -295,7 +295,7 @@ export default function Showcase3DPreview({
           <nav className="hidden md:flex items-center gap-5 text-xs text-stone-600 font-semibold font-sans">
             <button type="button" onClick={() => scrollToSection('preview-pain')} className="hover:text-stone-950 transition-colors cursor-pointer">Características</button>
             <button type="button" onClick={() => scrollToSection('preview-pillars')} className="hover:text-stone-950 transition-colors cursor-pointer">Pilares</button>
-            <button type="button" onClick={() => scrollToSection('preview-sectors')} className="hover:text-stone-950 transition-colors cursor-pointer">Sectores 3D</button>
+            <button type="button" onClick={() => scrollToSection('preview-sectors')} className="hover:text-stone-950 transition-colors cursor-pointer">Sectores</button>
             <button type="button" onClick={() => scrollToSection('preview-pricing')} className="hover:text-stone-950 transition-colors cursor-pointer">Precios</button>
           </nav>
 
