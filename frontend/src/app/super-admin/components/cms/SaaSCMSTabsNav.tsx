@@ -19,13 +19,6 @@ export default function SaaSCMSTabsNav({ activeTab, onChangeTab }: SaaSCMSTabsNa
       title: 'Editar Hero y Slider 16:9'
     },
     {
-      id: 'sectors' as SubTabType,
-      label: 'Sectores',
-      icon: Sparkles,
-      activeColor: 'text-[#D4AF37]',
-      title: 'Editar Carrusel 3D de Sectores'
-    },
-    {
       id: 'pain' as SubTabType,
       label: 'Contras & Pros',
       icon: XCircle,
@@ -38,6 +31,13 @@ export default function SaaSCMSTabsNav({ activeTab, onChangeTab }: SaaSCMSTabsNa
       icon: Layers,
       activeColor: 'text-[#D4AF37]',
       title: 'Editar los 4 Pilares del Ecosistema'
+    },
+    {
+      id: 'sectors' as SubTabType,
+      label: 'Sectores',
+      icon: Sparkles,
+      activeColor: 'text-[#D4AF37]',
+      title: 'Editar Carrusel 3D de Sectores'
     },
     {
       id: 'branding' as SubTabType,
