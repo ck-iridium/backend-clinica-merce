@@ -333,6 +333,7 @@ class LandingMarketingSettingsOut(BaseModel):
     hero_image_2: Optional[str] = None
     hero_image_3: Optional[str] = None
     logo_svg: Optional[str] = None
+    logo_footer_svg: Optional[str] = None
     primary_color: Optional[str] = None
     secondary_color: Optional[str] = None
     tertiary_color: Optional[str] = None
@@ -358,6 +359,7 @@ class LandingMarketingSettingsUpdate(BaseModel):
     hero_image_2: Optional[str] = None
     hero_image_3: Optional[str] = None
     logo_svg: Optional[str] = None
+    logo_footer_svg: Optional[str] = None
     primary_color: Optional[str] = None
     secondary_color: Optional[str] = None
     tertiary_color: Optional[str] = None
@@ -603,6 +605,7 @@ def get_public_marketing_content(db: Session = Depends(database.get_db)):
             "hero_image_2": settings.hero_image_2,
             "hero_image_3": settings.hero_image_3,
             "logo_svg": settings.logo_svg,
+            "logo_footer_svg": settings.logo_footer_svg,
             "primary_color": settings.primary_color,
             "secondary_color": settings.secondary_color,
             "tertiary_color": settings.tertiary_color,
@@ -682,6 +685,7 @@ def update_marketing_settings(
     settings.hero_image_2 = payload.hero_image_2
     settings.hero_image_3 = payload.hero_image_3
     settings.logo_svg = payload.logo_svg
+    settings.logo_footer_svg = payload.logo_footer_svg
     settings.primary_color = payload.primary_color
     settings.secondary_color = payload.secondary_color
     settings.tertiary_color = payload.tertiary_color

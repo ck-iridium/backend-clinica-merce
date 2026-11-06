@@ -244,6 +244,61 @@ export default function SaaSCMSBrandingForm({
           )}
         </div>
 
+        {/* Logo Footer SVG */}
+        <div className="space-y-1.5">
+          <label className="text-[9px] font-black text-stone-400 uppercase tracking-widest block flex justify-between items-center">
+            <span>Logotipo del Footer (SVG / Versión Blanca)</span>
+            {settings.logo_footer_svg && (
+              <span className="text-[8px] text-[#d4af37] font-bold">Cargado</span>
+            )}
+          </label>
+
+          {/* SVG Dropzone / File Uploader */}
+          <div className="border border-dashed border-stone-200 rounded-xl p-3 hover:bg-stone-50/50 transition-colors flex flex-col items-center justify-center gap-1.5 cursor-pointer relative">
+            <input 
+              type="file" 
+              accept=".svg"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    const text = event.target?.result as string;
+                    if (text.includes('<svg')) {
+                      onChange({ logo_footer_svg: text });
+                      toast.success('¡Logotipo del footer SVG cargado con éxito!');
+                    } else {
+                      toast.error('El archivo no parece ser un SVG válido.');
+                    }
+                  };
+                  reader.readAsText(file);
+                }
+              }}
+              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+            />
+            <div className="w-7 h-7 rounded-lg bg-stone-100 text-stone-600 flex items-center justify-center">
+              <Palette className="w-3.5 h-3.5" />
+            </div>
+            <p className="text-[9px] text-stone-500 font-medium">Sube el SVG en blanco o especial para el fondo del footer</p>
+          </div>
+
+          {settings.logo_footer_svg && (
+            <div className="p-3 bg-stone-900 border border-stone-800 rounded-xl flex items-center justify-center max-h-[60px] overflow-hidden relative group">
+              <div 
+                className="h-8 w-full flex items-center justify-center [&>svg]:h-full [&>svg]:w-auto [&>svg]:max-w-full"
+                dangerouslySetInnerHTML={{ __html: settings.logo_footer_svg }}
+              />
+              <button
+                type="button"
+                onClick={() => onChange({ logo_footer_svg: null })}
+                className="absolute right-2 top-2 text-[8px] bg-red-900/60 text-red-200 px-2 py-0.5 rounded-md hover:bg-red-800 transition-colors font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 duration-300"
+              >
+                Eliminar
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* Favicon Uploader */}
         <div className="space-y-1.5">
           <label className="text-[9px] font-black text-stone-400 uppercase tracking-widest block flex justify-between items-center">

@@ -562,6 +562,7 @@ class LandingMarketingSettings(Base):
     hero_image_2 = Column(Text, nullable=True)
     hero_image_3 = Column(Text, nullable=True)
     logo_svg = Column(Text, nullable=True)
+    logo_footer_svg = Column(Text, nullable=True)
     primary_color = Column(String(7), default="#3b82f6")
     secondary_color = Column(String(7), default="#1c1917")
     tertiary_color = Column(String(7), default="#d4af37")

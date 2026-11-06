@@ -13,6 +13,7 @@ export interface MarketingSettings {
   hero_image_2?: string | null;
   hero_image_3?: string | null;
   logo_svg?: string | null;
+  logo_footer_svg?: string | null;
   primary_color?: string | null;
   secondary_color?: string | null;
   tertiary_color?: string | null;

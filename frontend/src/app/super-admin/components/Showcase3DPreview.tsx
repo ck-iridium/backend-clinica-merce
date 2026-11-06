@@ -41,6 +41,7 @@ interface Showcase3DPreviewProps {
   fontFamilyBody?: string | null;
   fontWeightHeadings?: string | null;
   logoSvg?: string | null;
+  logoFooterSvg?: string | null;
   previewSectors?: MappedPreviewSector[];
   previewIndex?: number;
   previewAnimating?: boolean;
@@ -62,6 +63,7 @@ export default function Showcase3DPreview({
   fontFamilyBody,
   fontWeightHeadings,
   logoSvg,
+  logoFooterSvg,
   previewSectors = [],
   previewIndex = 0,
   previewAnimating = false,
@@ -641,6 +643,8 @@ export default function Showcase3DPreview({
           <MarketingFooter
             primaryColor={darkColor}
             tertiaryColor={accentColor}
+            logoSvg={logoSvg}
+            logoFooterSvg={logoFooterSvg}
           />
         </footer>
 

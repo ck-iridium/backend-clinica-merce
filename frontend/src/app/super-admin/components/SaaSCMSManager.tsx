@@ -44,6 +44,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
     hero_image_2: null,
     hero_image_3: null,
     logo_svg: null,
+    logo_footer_svg: null,
     primary_color: '#3b82f6',
     secondary_color: '#1c1917',
     tertiary_color: '#d4af37',
@@ -598,6 +599,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
         fontFamilyBody={settings.font_family_body}
         fontWeightHeadings={settings.font_weight_headings}
         logoSvg={settings.logo_svg}
+        logoFooterSvg={settings.logo_footer_svg}
         previewSectors={previewSectors}
         previewIndex={previewIndex}
         previewAnimating={previewAnimating}

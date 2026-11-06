@@ -13,6 +13,7 @@ def run_alter_table():
         with engine.connect() as conn:
             # PostgreSQL soporta ALTER TABLE ADD COLUMN IF NOT EXISTS
             conn.execute(text("ALTER TABLE landing_marketing_settings ADD COLUMN IF NOT EXISTS logo_svg TEXT;"))
+            conn.execute(text("ALTER TABLE landing_marketing_settings ADD COLUMN IF NOT EXISTS logo_footer_svg TEXT;"))
             conn.execute(text("ALTER TABLE landing_marketing_settings ADD COLUMN IF NOT EXISTS primary_color VARCHAR(7) DEFAULT '#3b82f6';"))
             conn.execute(text("ALTER TABLE landing_marketing_settings ADD COLUMN IF NOT EXISTS seo_title VARCHAR;"))
             conn.execute(text("ALTER TABLE landing_marketing_settings ADD COLUMN IF NOT EXISTS seo_description VARCHAR;"))

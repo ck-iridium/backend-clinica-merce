@@ -30,6 +30,7 @@ interface MarketingClientPageProps {
     hero_image_2?: string | null;
     hero_image_3?: string | null;
     logo_svg: string | null;
+    logo_footer_svg?: string | null;
     primary_color: string;
     secondary_color: string;
     tertiary_color: string;
@@ -81,6 +82,7 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
   const [heroTitle, setHeroTitle] = useState(initialSettings.hero_title);
   const [heroSubtitle, setHeroSubtitle] = useState(initialSettings.hero_subtitle);
   const [logoSvg, setLogoSvg] = useState<string | null>(initialSettings.logo_svg);
+  const [logoFooterSvg, setLogoFooterSvg] = useState<string | null>(initialSettings.logo_footer_svg || null);
   const [primaryColor, setPrimaryColor] = useState(initialSettings.primary_color || '#1C1917');
   const [secondaryColor, setSecondaryColor] = useState(initialSettings.secondary_color || '#FAF9F6');
   const [tertiaryColor, setTertiaryColor] = useState(initialSettings.tertiary_color || '#D4AF37');
@@ -111,6 +113,7 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
             setHeroTabs(data.settings.hero_tabs);
           }
           if (data.settings.logo_svg !== undefined) setLogoSvg(data.settings.logo_svg);
+          if (data.settings.logo_footer_svg !== undefined) setLogoFooterSvg(data.settings.logo_footer_svg);
           if (data.settings.primary_color) setPrimaryColor(data.settings.primary_color);
           if (data.settings.secondary_color) setSecondaryColor(data.settings.secondary_color);
           if (data.settings.tertiary_color) setTertiaryColor(data.settings.tertiary_color);
@@ -278,6 +281,8 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
       <MarketingFooter 
         primaryColor={primaryColor}
         tertiaryColor={tertiaryColor}
+        logoSvg={logoSvg}
+        logoFooterSvg={logoFooterSvg}
       />
 
       {/* ── 8. ONBOARDING REGISTRATION MODAL ── */}
