@@ -12,7 +12,9 @@ import {
   Eye, 
   CheckCircle2,
   Layers,
-  FolderOpen
+  FolderOpen,
+  Monitor,
+  Smartphone
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -22,6 +24,7 @@ export interface HeroTabItem {
   id: string;
   label: string;
   image_url: string;
+  mobile_image_url?: string;
 }
 
 interface SaaSCMSHeroFormProps {
@@ -34,8 +37,9 @@ interface SaaSCMSHeroFormProps {
   onAddTab: () => void;
   onUpdateTabLabel: (id: string, label: string) => void;
   onUpdateTabImage: (id: string, imageUrl: string) => void;
+  onUpdateTabMobileImage: (id: string, mobileImageUrl: string) => void;
   onDeleteTab: (id: string) => void;
-  onSelectImageFromGallery: (tabId: string) => void;
+  onSelectImageFromGallery: (tabId: string, isMobile?: boolean) => void;
   onSetActiveTab: (id: string) => void;
   onSubmit: (e: React.FormEvent) => void;
   saving: boolean;
@@ -52,6 +56,7 @@ export default function SaaSCMSHeroForm({
   onAddTab,
   onUpdateTabLabel,
   onUpdateTabImage,
+  onUpdateTabMobileImage,
   onDeleteTab,
   onSelectImageFromGallery,
   onSetActiveTab,
@@ -59,17 +64,17 @@ export default function SaaSCMSHeroForm({
   saving,
   token
 }: SaaSCMSHeroFormProps) {
-  const [uploadingTabId, setUploadingTabId] = useState<string | null>(null);
+  const [uploadingState, setUploadingState] = useState<{ id: string; isMobile: boolean } | null>(null);
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-  const handleFileUpload = async (tabId: string, file: File) => {
+  const handleFileUpload = async (tabId: string, file: File, isMobile: boolean = false) => {
     if (!file.type.startsWith('image/')) {
       toast.error('El archivo debe ser una imagen (PNG, JPG, WebP o SVG)');
       return;
     }
 
-    setUploadingTabId(tabId);
-    const toastId = toast.loading('Subiendo captura 16:9...');
+    setUploadingState({ id: tabId, isMobile });
+    const toastId = toast.loading(isMobile ? 'Subiendo captura móvil...' : 'Subiendo captura escritorio 16:9...');
 
     try {
       const formData = new FormData();
@@ -92,14 +97,19 @@ export default function SaaSCMSHeroForm({
       }
 
       const data = await res.json();
-      onUpdateTabImage(tabId, data.url);
+      if (isMobile) {
+        onUpdateTabMobileImage(tabId, data.url);
+        toast.success('Captura móvil actualizada con éxito', { id: toastId });
+      } else {
+        onUpdateTabImage(tabId, data.url);
+        toast.success('Captura 16:9 actualizada con éxito', { id: toastId });
+      }
       onSetActiveTab(tabId);
-      toast.success('Captura 16:9 subida y actualizada con éxito', { id: toastId });
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || 'Error al subir la imagen. Inténtalo de nuevo.', { id: toastId });
     } finally {
-      setUploadingTabId(null);
+      setUploadingState(null);
     }
   };
 
@@ -176,8 +186,10 @@ export default function SaaSCMSHeroForm({
           <div className="space-y-3">
             {heroTabs.map((tab, idx) => {
               const isActive = activeTabId === tab.id;
-              const isUploading = uploadingTabId === tab.id;
-              const inputId = `hero-tab-file-${tab.id || idx}`;
+              const isUploadingDesktop = uploadingState?.id === tab.id && !uploadingState.isMobile;
+              const isUploadingMobile = uploadingState?.id === tab.id && uploadingState.isMobile;
+              const inputIdDesktop = `hero-tab-file-${tab.id || idx}-desktop`;
+              const inputIdMobile = `hero-tab-file-${tab.id || idx}-mobile`;
 
               return (
                 <div
@@ -240,122 +252,231 @@ export default function SaaSCMSHeroForm({
                     />
                   </div>
 
-                  {/* Campo 2: Uploader de Imagen 16:9 */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label className="block text-[9px] font-bold text-stone-400 uppercase tracking-wider">
-                        Captura de Pantalla (Formato 16:9)
-                      </label>
-                      <span className="text-[9px] font-mono text-stone-400">16:9 Aspect Ratio</span>
+                  {/* Grid de 2 Columnas para Captura Escritorio y Captura Móvil */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                    
+                    {/* A. CAPTURA ESCRITORIO (16:9) */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[9px] font-bold text-stone-700 uppercase tracking-wider flex items-center gap-1">
+                          <Monitor className="w-3 h-3 text-stone-500" />
+                          <span>Escritorio (16:9)</span>
+                        </label>
+                        <span className="text-[8.5px] font-mono text-stone-400">16:9</span>
+                      </div>
+
+                      {tab.image_url ? (
+                        <div className="relative group/img w-full aspect-video rounded-xl overflow-hidden border border-stone-200/80 bg-stone-50 shadow-2xs">
+                          <img
+                            src={tab.image_url}
+                            alt={`${tab.label} escritorio`}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-stone-900/60 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-2">
+                            <Button
+                              type="button"
+                              variant="default"
+                              size="sm"
+                              onClick={() => document.getElementById(inputIdDesktop)?.click()}
+                              className="h-7 text-[10px] bg-white text-stone-900 hover:bg-stone-100 gap-1 cursor-pointer"
+                            >
+                              <UploadCloud className="w-3 h-3" />
+                              <span>Cambiar</span>
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => onSelectImageFromGallery(tab.id, false)}
+                              className="h-7 text-[10px] bg-white/90 border-white text-stone-900 hover:bg-white gap-1 cursor-pointer"
+                            >
+                              <FolderOpen className="w-3 h-3" />
+                              <span>Galería</span>
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => onUpdateTabImage(tab.id, '')}
+                              className="h-7 w-7 p-0 bg-rose-600/90 text-white hover:bg-rose-700"
+                              title="Quitar imagen escritorio"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          onDragOver={(e) => e.preventDefault()}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            const file = e.dataTransfer.files?.[0];
+                            if (file) handleFileUpload(tab.id, file, false);
+                          }}
+                          className={`relative w-full aspect-video rounded-xl border border-dashed border-stone-300 bg-stone-50/70 hover:bg-[#FAF9F6] hover:border-[#D4AF37]/60 flex flex-col items-center justify-center p-3 text-center transition-all ${
+                            isUploadingDesktop ? 'opacity-70 pointer-events-none' : ''
+                          }`}
+                        >
+                          {isUploadingDesktop ? (
+                            <div className="flex flex-col items-center gap-1.5">
+                              <Loader2 className="w-5 h-5 text-[#D4AF37] animate-spin" />
+                              <span className="text-[10px] font-semibold text-stone-600">Subiendo 16:9...</span>
+                            </div>
+                          ) : (
+                            <>
+                              <Monitor className="w-4 h-4 text-stone-400 mb-1" />
+                              <p className="text-[10px] font-bold text-stone-700 mb-0.5">
+                                Captura 16:9
+                              </p>
+                              <div className="flex items-center gap-1.5 mt-1">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => document.getElementById(inputIdDesktop)?.click()}
+                                  className="h-6 text-[9.5px] font-bold px-2 cursor-pointer"
+                                >
+                                  Subir
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => onSelectImageFromGallery(tab.id, false)}
+                                  className="h-6 text-[9.5px] font-bold px-1.5 text-[#b89528] hover:bg-[#fcf8e5] cursor-pointer"
+                                >
+                                  Galería
+                                </Button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      )}
+
+                      <input
+                        id={inputIdDesktop}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileUpload(tab.id, file, false);
+                          e.target.value = '';
+                        }}
+                      />
                     </div>
 
-                    {tab.image_url ? (
-                      /* Preview con acciones de cambio */
-                      <div className="relative group/img w-full aspect-video rounded-xl overflow-hidden border border-stone-200/80 bg-stone-50 shadow-2xs">
-                        <img
-                          src={tab.image_url}
-                          alt={tab.label}
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-stone-900/60 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2">
-                          <Button
-                            type="button"
-                            variant="default"
-                            size="sm"
-                            onClick={() => document.getElementById(inputId)?.click()}
-                            className="h-8 text-xs bg-white text-stone-900 hover:bg-stone-100 gap-1 cursor-pointer"
-                          >
-                            <UploadCloud className="w-3.5 h-3.5" />
-                            <span>Subir Otra</span>
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => onSelectImageFromGallery(tab.id)}
-                            className="h-8 text-xs bg-white/90 border-white text-stone-900 hover:bg-white gap-1"
-                          >
-                            <FolderOpen className="w-3.5 h-3.5" />
-                            <span>Galería</span>
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => onUpdateTabImage(tab.id, '')}
-                            className="h-8 w-8 p-0 bg-rose-600/90 text-white hover:bg-rose-700"
-                            title="Quitar imagen"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
+                    {/* B. CAPTURA MÓVIL (SMARTPHONE VERTICAL) */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[9px] font-bold text-stone-700 uppercase tracking-wider flex items-center gap-1">
+                          <Smartphone className="w-3 h-3 text-[#D4AF37]" />
+                          <span>Móvil (Vertical)</span>
+                        </label>
+                        <span className="text-[8.5px] font-mono text-[#D4AF37]">Vertical</span>
                       </div>
-                    ) : (
-                      /* Dropzone para subir imagen */
-                      <div
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={(e) => {
-                          e.preventDefault();
-                          const file = e.dataTransfer.files?.[0];
-                          if (file) handleFileUpload(tab.id, file);
-                        }}
-                        className={`relative w-full aspect-video rounded-xl border border-dashed border-stone-300 bg-stone-50/70 hover:bg-[#FAF9F6] hover:border-[#D4AF37]/60 flex flex-col items-center justify-center p-4 text-center transition-all ${
-                          isUploading ? 'opacity-70 pointer-events-none' : ''
-                        }`}
-                      >
-                        {isUploading ? (
-                          <div className="flex flex-col items-center gap-2">
-                            <Loader2 className="w-6 h-6 text-[#D4AF37] animate-spin" />
-                            <span className="text-[11px] font-semibold text-stone-600">Subiendo captura...</span>
-                          </div>
-                        ) : (
-                          <>
-                            <div className="w-10 h-10 rounded-xl bg-white border border-stone-200 shadow-2xs flex items-center justify-center text-stone-400 mb-2">
-                              <ImageIcon className="w-5 h-5 text-stone-300" />
-                            </div>
-                            <p className="text-[11px] font-bold text-stone-700 mb-0.5">
-                              Arrastra aquí tu captura 16:9
-                            </p>
-                            <p className="text-[9px] text-stone-400 mb-2.5">
-                              PNG, JPG, WebP (Recomendado 1920x1080 o similar)
-                            </p>
-                            <div className="flex items-center gap-2">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => document.getElementById(inputId)?.click()}
-                                className="h-7 text-[10px] font-bold px-2.5 cursor-pointer"
-                              >
-                                Seleccionar Archivo
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => onSelectImageFromGallery(tab.id)}
-                                className="h-7 text-[10px] font-bold px-2 text-[#b89528] hover:bg-[#fcf8e5] cursor-pointer"
-                              >
-                                Abrir Galería
-                              </Button>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    )}
 
-                    {/* Hidden input for file selection */}
-                    <input
-                      id={inputId}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleFileUpload(tab.id, file);
-                        e.target.value = '';
-                      }}
-                    />
+                      {tab.mobile_image_url ? (
+                        <div className="relative group/img w-full aspect-video rounded-xl overflow-hidden border border-amber-200/80 bg-stone-900 shadow-2xs">
+                          <img
+                            src={tab.mobile_image_url}
+                            alt={`${tab.label} móvil`}
+                            className="w-full h-full object-cover object-top"
+                          />
+                          <div className="absolute inset-0 bg-stone-900/60 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-2">
+                            <Button
+                              type="button"
+                              variant="default"
+                              size="sm"
+                              onClick={() => document.getElementById(inputIdMobile)?.click()}
+                              className="h-7 text-[10px] bg-white text-stone-900 hover:bg-stone-100 gap-1 cursor-pointer"
+                            >
+                              <UploadCloud className="w-3 h-3" />
+                              <span>Cambiar</span>
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => onSelectImageFromGallery(tab.id, true)}
+                              className="h-7 text-[10px] bg-white/90 border-white text-stone-900 hover:bg-white gap-1 cursor-pointer"
+                            >
+                              <FolderOpen className="w-3 h-3" />
+                              <span>Galería</span>
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => onUpdateTabMobileImage(tab.id, '')}
+                              className="h-7 w-7 p-0 bg-rose-600/90 text-white hover:bg-rose-700"
+                              title="Quitar captura móvil"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          onDragOver={(e) => e.preventDefault()}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            const file = e.dataTransfer.files?.[0];
+                            if (file) handleFileUpload(tab.id, file, true);
+                          }}
+                          className={`relative w-full aspect-video rounded-xl border border-dashed border-amber-200/90 bg-[#FAF9F6] hover:bg-[#fcf8e5]/40 hover:border-[#D4AF37] flex flex-col items-center justify-center p-3 text-center transition-all ${
+                            isUploadingMobile ? 'opacity-70 pointer-events-none' : ''
+                          }`}
+                        >
+                          {isUploadingMobile ? (
+                            <div className="flex flex-col items-center gap-1.5">
+                              <Loader2 className="w-5 h-5 text-[#D4AF37] animate-spin" />
+                              <span className="text-[10px] font-semibold text-stone-600">Subiendo móvil...</span>
+                            </div>
+                          ) : (
+                            <>
+                              <Smartphone className="w-4 h-4 text-[#D4AF37] mb-1" />
+                              <p className="text-[10px] font-bold text-stone-700 mb-0.5">
+                                Captura Móvil
+                              </p>
+                              <div className="flex items-center gap-1.5 mt-1">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => document.getElementById(inputIdMobile)?.click()}
+                                  className="h-6 text-[9.5px] font-bold px-2 border-[#D4AF37]/50 text-[#997715] hover:bg-[#fcf8e5] cursor-pointer"
+                                >
+                                  Subir
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => onSelectImageFromGallery(tab.id, true)}
+                                  className="h-6 text-[9.5px] font-bold px-1.5 text-[#b89528] hover:bg-[#fcf8e5] cursor-pointer"
+                                >
+                                  Galería
+                                </Button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      )}
+
+                      <input
+                        id={inputIdMobile}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileUpload(tab.id, file, true);
+                          e.target.value = '';
+                        }}
+                      />
+                    </div>
+
                   </div>
                 </div>
               );

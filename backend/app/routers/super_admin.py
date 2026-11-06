@@ -321,6 +321,7 @@ class HeroTabItem(BaseModel):
     id: str
     label: str
     image_url: Optional[str] = ""
+    mobile_image_url: Optional[str] = ""
 
 
 class LandingMarketingSettingsOut(BaseModel):

@@ -44,7 +44,7 @@ export default function MarketingHeader({
           )}
         </div>
 
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <Link
             href="/docs"
             className="hidden md:flex items-center gap-1.5 px-3 py-2 text-stone-500 hover:text-stone-950 text-xs font-bold transition-colors"
@@ -54,16 +54,17 @@ export default function MarketingHeader({
           </Link>
           <Link
             href="/login"
-            className="px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold bg-white text-stone-700 border border-stone-200/80 hover:text-stone-950 hover:bg-stone-50 transition-all duration-200 active:scale-95 shadow-2xs"
+            className="px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs font-bold bg-white text-stone-700 border border-stone-200/80 hover:text-stone-950 hover:bg-stone-50 transition-all duration-200 active:scale-95 shadow-2xs whitespace-nowrap"
           >
-            Acceso Clínicas
+            <span className="hidden xs:inline">Acceso </span>Clínicas
           </Link>
           <button
             onClick={() => onOpenOnboarding('pro')}
             style={{ backgroundColor: primaryColor || '#1c1917' }}
-            className="hover:opacity-95 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all duration-200 hover:scale-[1.02] active:scale-95 border border-white/20 flex items-center gap-1.5"
+            className="hover:opacity-95 text-white px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs font-bold shadow-md transition-all duration-200 hover:scale-[1.02] active:scale-95 border border-white/20 flex items-center gap-1 sm:gap-1.5 whitespace-nowrap cursor-pointer"
           >
-            <span>Comenzar Ahora</span>
+            <span>Comenzar</span>
+            <span className="hidden sm:inline"> Ahora</span>
             <ChevronRight size={13} style={{ color: tertiaryColor || '#D4AF37' }} />
           </button>
         </div>

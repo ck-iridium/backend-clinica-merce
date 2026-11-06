@@ -453,6 +453,12 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                       hero_tabs: (prev.hero_tabs || []).map(t => t.id === id ? { ...t, image_url } : t)
                     }));
                   }}
+                  onUpdateTabMobileImage={(id, mobile_image_url) => {
+                    setSettings(prev => ({
+                      ...prev,
+                      hero_tabs: (prev.hero_tabs || []).map(t => t.id === id ? { ...t, mobile_image_url } : t)
+                    }));
+                  }}
                   onDeleteTab={(id) => {
                     const remaining = (settings.hero_tabs || []).filter(t => t.id !== id);
                     setSettings(prev => ({
@@ -464,7 +470,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                     }
                   }}
                   onSetActiveTab={(id) => setActiveHeroTabId(id)}
-                  onSelectImageFromGallery={(tabId) => setPickerTarget({ field: 'hero_tab', tabId })}
+                  onSelectImageFromGallery={(tabId, isMobile) => setPickerTarget({ field: isMobile ? 'hero_tab_mobile' : 'hero_tab', tabId })}
                   onSubmit={handleSaveSettings}
                   saving={savingSettings}
                   token={token}
@@ -612,6 +618,13 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
                   tab.id === pickerTarget.tabId ? { ...tab, image_url: url } : tab
                 )
               }));
+            } else if (pickerTarget.field === 'hero_tab_mobile' && pickerTarget.tabId) {
+              setSettings(prev => ({
+                ...prev,
+                hero_tabs: (prev.hero_tabs || []).map(tab =>
+                  tab.id === pickerTarget.tabId ? { ...tab, mobile_image_url: url } : tab
+                )
+              }));
             } else if (pickerTarget.field.startsWith('hero_image_')) {
               setSettings(prev => ({ ...prev, [pickerTarget.field]: url }));
             } else {
@@ -620,7 +633,7 @@ export default function SaaSCMSManager({ token }: SaaSCMSManagerProps) {
             setPickerTarget(null);
           }}
           mediaType={pickerTarget.field === 'video_url' ? 'video' : 'image'}
-          forceAspect={pickerTarget.field === 'hero_tab' ? 16 / 9 : undefined}
+          forceAspect={pickerTarget.field === 'hero_tab' ? 16 / 9 : pickerTarget.field === 'hero_tab_mobile' ? 9 / 16 : undefined}
           tenantId="00000000-0000-0000-0000-000000000000"
           token={token}
         />

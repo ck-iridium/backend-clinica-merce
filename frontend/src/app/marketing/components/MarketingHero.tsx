@@ -8,6 +8,7 @@ export interface HeroTab {
   id: string;
   label: string;
   image_url?: string;
+  mobile_image_url?: string;
 }
 
 interface MarketingHeroProps {
@@ -116,7 +117,7 @@ export default function MarketingHero({
 
         {/* ── INTERACTIVE TABS ROW (Estilo Pabau) ── */}
         {currentTabs.length > 0 && (
-          <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 my-4 z-20">
+          <div className="flex flex-nowrap md:flex-wrap items-center justify-start md:justify-center gap-2 sm:gap-3 my-4 z-20 overflow-x-auto no-scrollbar w-full max-w-full px-4 py-1.5">
             {currentTabs.map((tab) => {
               const isSelected = ((currentTabs.find((t) => t.id === activeHeroTabId) || currentTabs[0])?.id === tab.id);
               return (
@@ -130,7 +131,7 @@ export default function MarketingHero({
                     borderColor: primaryColor || '#1c1917',
                     boxShadow: `0 0 0 2px ${tertiaryColor || '#D4AF37'}40`
                   } : undefined}
-                  className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 shadow-xs border ${isSelected
+                  className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 shadow-xs border shrink-0 whitespace-nowrap cursor-pointer ${isSelected
                       ? 'shadow-lg scale-105'
                       : 'bg-white/95 text-stone-600 border-stone-200/90 hover:border-stone-300 hover:text-stone-950 hover:bg-stone-50'
                     }`}
@@ -143,11 +144,124 @@ export default function MarketingHero({
         )}
       </div>
 
-      {/* ── 16:9 SHOWCASE TRÍPTICO SLIDER PROFESIONAL CON FRAMER MOTION ── */}
+      {/* ── VISTA MÓVIL (PANTALLAS < 768px): SIMULADOR SMARTPHONE VERTICAL ── */}
+      <div 
+        className="w-full flex md:hidden flex-col items-center justify-center py-2 px-4 relative z-20 select-none"
+        onMouseEnter={() => setIsSliderPaused(true)}
+        onMouseLeave={() => setIsSliderPaused(false)}
+      >
+        <div className="relative w-full max-w-[310px] flex items-center justify-center">
+          {/* Flecha Izquierda Flotante en Móvil */}
+          {currentTabs.length > 1 && (
+            <button
+              type="button"
+              onClick={handlePrevSlide}
+              className="absolute -left-3 xs:-left-4 z-40 w-9 h-9 rounded-full bg-white/95 backdrop-blur-md border border-stone-200/90 shadow-md text-stone-700 hover:text-stone-950 active:scale-90 transition-all flex items-center justify-center cursor-pointer"
+              aria-label="Anterior pestaña"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+          )}
+
+          {/* Flecha Derecha Flotante en Móvil */}
+          {currentTabs.length > 1 && (
+            <button
+              type="button"
+              onClick={handleNextSlide}
+              className="absolute -right-3 xs:-right-4 z-40 w-9 h-9 rounded-full bg-white/95 backdrop-blur-md border border-stone-200/90 shadow-md text-stone-700 hover:text-stone-950 active:scale-90 transition-all flex items-center justify-center cursor-pointer"
+              aria-label="Siguiente pestaña"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          )}
+
+          {/* Marco de Smartphone */}
+          <motion.div
+            key={currentTabs[heroActiveIndex]?.id || 'mobile-phone'}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.2}
+            onDragEnd={(_, { offset: dragOffset, velocity }) => {
+              if (dragOffset.x < -40 || velocity.x < -200) handleNextSlide();
+              else if (dragOffset.x > 40 || velocity.x > 200) handlePrevSlide();
+            }}
+            className="w-[280px] xs:w-[305px] h-[520px] xs:h-[570px] rounded-[2.8rem] bg-stone-950 p-2.5 shadow-[0_25px_65px_-12px_rgba(0,0,0,0.35)] relative border-4 border-stone-800 ring-1 ring-white/10 flex flex-col cursor-grab active:cursor-grabbing"
+          >
+            {/* Dynamic Island / Notch */}
+            <div className="w-24 h-4 bg-black rounded-full absolute top-3.5 left-1/2 -translate-x-1/2 z-40 flex items-center justify-end px-2.5">
+              <span className="w-2 h-2 rounded-full bg-stone-800/80 border border-stone-700/50" />
+            </div>
+
+            {/* Pantalla Interna */}
+            <div className="w-full h-full rounded-[2.2rem] overflow-hidden bg-stone-100 relative">
+              {currentTabs[heroActiveIndex]?.mobile_image_url || currentTabs[heroActiveIndex]?.image_url ? (
+                <img
+                  src={currentTabs[heroActiveIndex]?.mobile_image_url || currentTabs[heroActiveIndex]?.image_url}
+                  alt={currentTabs[heroActiveIndex]?.label}
+                  className="w-full h-full object-cover pointer-events-none select-none"
+                  draggable={false}
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full p-6 text-center space-y-3 bg-stone-50 select-none">
+                  <div className="w-14 h-14 rounded-2xl bg-white border border-stone-200/80 shadow-xs flex items-center justify-center text-stone-400">
+                    <Sparkles className="w-7 h-7" style={{ color: tertiaryColor || '#D4AF37' }} />
+                  </div>
+                  <h4 className="text-sm font-bold text-stone-800">
+                    {currentTabs[heroActiveIndex]?.label}
+                  </h4>
+                  <p className="text-xs text-stone-500 leading-relaxed">
+                    Experiencia adaptada a smartphone.
+                  </p>
+                </div>
+              )}
+
+              {/* Tag de cabecera de la app */}
+              <div className="absolute top-8 left-3 right-3 flex items-center justify-between pointer-events-none z-30">
+                <span className="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-black/60 backdrop-blur-md text-white border border-white/15">
+                  {currentTabs[heroActiveIndex]?.label}
+                </span>
+                <span 
+                  style={{ backgroundColor: tertiaryColor || '#D4AF37' }}
+                  className="px-2 py-0.5 rounded-full text-[8.5px] font-bold text-stone-950 shadow-xs"
+                >
+                  Móvil
+                </span>
+              </div>
+
+              {/* Barra Home Indicator de Smartphone */}
+              <div className="w-28 h-1 bg-white/60 rounded-full absolute bottom-2.5 left-1/2 -translate-x-1/2 z-40 pointer-events-none" />
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Puntos de paginación para smartphone */}
+        {currentTabs.length > 1 && (
+          <div className="flex items-center justify-center gap-1.5 mt-5">
+            {currentTabs.map((t, idx) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => handleSelectTab(t.id)}
+                className={`transition-all duration-300 rounded-full ${
+                  idx === heroActiveIndex
+                    ? 'w-6 h-1.5 bg-[#D4AF37]'
+                    : 'w-1.5 h-1.5 bg-stone-300 hover:bg-stone-400'
+                }`}
+                aria-label={`Ir a pestaña ${t.label}`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ── 16:9 SHOWCASE TRÍPTICO SLIDER PROFESIONAL CON FRAMER MOTION (SOLO ESCRITORIO) ── */}
       <div
         onMouseEnter={() => setIsSliderPaused(true)}
         onMouseLeave={() => setIsSliderPaused(false)}
-        className="w-full relative overflow-hidden py-4 sm:py-8 mt-4 z-20 flex items-center justify-center select-none"
+        className="w-full relative overflow-hidden py-4 sm:py-8 mt-4 z-20 hidden md:flex items-center justify-center select-none"
       >
         {/* Máscara de desvanecimiento lateral izquierda (Quiet Luxury edge blend) */}
         <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-20 sm:w-36 md:w-56 lg:w-72 bg-gradient-to-r from-[#FAF9F6] via-[#FAF9F6]/85 to-transparent z-30" />

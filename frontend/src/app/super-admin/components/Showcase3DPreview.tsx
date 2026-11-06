@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Monitor, ChevronRight, ChevronLeft, Laptop, Eye } from 'lucide-react';
+import { Monitor, ChevronRight, ChevronLeft, Laptop, Eye, Smartphone } from 'lucide-react';
 import { resolveHeadingFont, resolveBodyFont, FONT_WEIGHT_MAP, GOOGLE_FONTS_URL } from '@/app/marketing/utils/fonts';
 import PainComparisonSection from '@/app/marketing/components/PainComparisonSection';
 import PillarsSection from '@/app/marketing/components/PillarsSection';
@@ -25,6 +25,7 @@ export interface HeroTabItem {
   id: string;
   label: string;
   image_url: string;
+  mobile_image_url?: string;
 }
 
 interface Showcase3DPreviewProps {
@@ -71,6 +72,9 @@ export default function Showcase3DPreview({
   const activeWeight = FONT_WEIGHT_MAP[fontWeightHeadings || 'semibold'] || '600';
   const resolvedHeadingFont = resolveHeadingFont(fontFamily);
   const resolvedBodyFont = resolveBodyFont(fontFamilyBody, fontFamily);
+
+  // Dispositivo de previsualización (Escritorio / Móvil)
+  const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
 
   // Manejo de pestaña activa en el visor del Hero
   const [internalActiveId, setInternalActiveId] = useState<string>(
@@ -238,11 +242,31 @@ export default function Showcase3DPreview({
           </button>
         </div>
 
-        <div className="hidden lg:flex items-center gap-2">
-          <div className="flex items-center gap-1.5 text-[9px] text-stone-600 font-bold bg-white px-2.5 py-1 rounded-lg border border-stone-200/80 shadow-2xs">
-            <Monitor className="w-3 h-3 text-[#D4AF37]" />
-            <span>Landing Completa en Vivo</span>
-          </div>
+        <div className="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-stone-200/80 shadow-2xs">
+          <button
+            type="button"
+            onClick={() => setPreviewDevice('desktop')}
+            className={`flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+              previewDevice === 'desktop'
+                ? 'bg-stone-900 text-white shadow-xs'
+                : 'text-stone-500 hover:text-stone-900'
+            }`}
+          >
+            <Monitor className="w-3 h-3" />
+            <span>Escritorio</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setPreviewDevice('mobile')}
+            className={`flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+              previewDevice === 'mobile'
+                ? 'bg-[#D4AF37] text-stone-950 shadow-xs'
+                : 'text-stone-500 hover:text-stone-900'
+            }`}
+          >
+            <Smartphone className="w-3 h-3" />
+            <span>Móvil</span>
+          </button>
         </div>
       </div>
 
@@ -348,110 +372,207 @@ export default function Showcase3DPreview({
             </div>
           )}
 
-          {/* Tríptico Slider 16:9 con Framer Motion */}
-          <div className="relative z-10 w-full max-w-5xl mx-auto overflow-hidden py-4 select-none flex items-center justify-center">
-            {/* Máscaras de desvanecimiento lateral */}
-            <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-16 sm:w-28 bg-gradient-to-r from-[#FAF9F6] via-[#FAF9F6]/85 to-transparent z-30" />
-            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-16 sm:w-28 bg-gradient-to-l from-[#FAF9F6] via-[#FAF9F6]/85 to-transparent z-30" />
-
-            {/* Flechas Flotantes */}
-            {heroTabs.length > 1 && (
-              <>
-                <button
-                  type="button"
-                  onClick={handlePrev}
-                  className="absolute left-2 sm:left-4 z-40 w-9 h-9 rounded-full bg-white/90 backdrop-blur-md border border-stone-200/80 shadow-md text-stone-700 hover:text-stone-950 hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
-                  aria-label="Diapositiva anterior"
-                >
-                  <ChevronLeft className="w-4 h-4 text-stone-700" />
-                </button>
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  className="absolute right-2 sm:right-4 z-40 w-9 h-9 rounded-full bg-white/90 backdrop-blur-md border border-stone-200/80 shadow-md text-stone-700 hover:text-stone-950 hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
-                  aria-label="Siguiente diapositiva"
-                >
-                  <ChevronRight className="w-4 h-4 text-stone-700" />
-                </button>
-              </>
-            )}
-
-            {/* Placeholder de dimensionamiento 16:9 */}
-            <div className="w-[82%] md:w-[75%] aspect-video opacity-0 pointer-events-none" />
-
-            {/* Pista de diapositivas */}
-            <div className="absolute inset-0 flex items-center justify-center overflow-visible">
-              {heroTabs.map((tab, idx) => {
-                const offset = getSlideOffset(idx);
-                const isCenter = offset === 0;
-                const isLeft = offset === -1;
-                const isRight = offset === 1;
-                const isVisible = Math.abs(offset) <= 1;
-
-                const xPos = isCenter ? "0%" : isRight ? "54%" : isLeft ? "-54%" : offset > 1 ? "120%" : "-120%";
-
-                return (
-                  <motion.div
-                    key={tab.id}
-                    animate={{
-                      x: xPos,
-                      scale: isCenter ? 1 : isVisible ? 0.88 : 0.75,
-                      opacity: isCenter ? 1 : isVisible ? 0.55 : 0,
-                      zIndex: isCenter ? 25 : isVisible ? 15 : 0,
-                    }}
-                    whileHover={!isCenter && isVisible ? { opacity: 0.85, scale: 0.90 } : undefined}
-                    transition={{
-                      x: { type: "spring", stiffness: 220, damping: 28, mass: 0.9 },
-                      scale: { type: "spring", stiffness: 240, damping: 28 },
-                      opacity: { duration: 0.35 }
-                    }}
-                    onClick={() => {
-                      if (isLeft) handlePrev();
-                      if (isRight) handleNext();
-                    }}
-                    className={`absolute w-[82%] md:w-[75%] aspect-video rounded-xl md:rounded-2xl overflow-hidden border bg-white ${
-                      isCenter
-                        ? 'border-stone-200/90 shadow-[0_20px_50px_rgba(0,0,0,0.10)] ring-1 ring-stone-900/5 cursor-default'
-                        : isVisible
-                        ? 'border-stone-200/80 shadow-md cursor-pointer'
-                        : 'pointer-events-none'
-                    }`}
-                    style={{ willChange: 'transform, opacity' }}
+          {/* VISTA SEGÚN DISPOSITIVO: ESCRITORIO O MÓVIL */}
+          {previewDevice === 'mobile' ? (
+            /* Simulador Smartphone Vertical en Vista Previa */
+            <div className="relative z-10 w-full flex flex-col items-center justify-center py-6 select-none">
+              <div className="relative w-full max-w-[280px] flex items-center justify-center">
+                {/* Flecha Izquierda Flotante */}
+                {heroTabs.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={handlePrev}
+                    className="absolute -left-4 z-40 w-8 h-8 rounded-full bg-white/95 backdrop-blur-md border border-stone-200/90 shadow-md text-stone-700 hover:text-stone-950 active:scale-90 transition-all flex items-center justify-center cursor-pointer"
+                    aria-label="Anterior pestaña"
                   >
-                    {tab.image_url ? (
-                      <img 
-                        src={tab.image_url} 
-                        alt={tab.label}
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </button>
+                )}
+
+                {/* Flecha Derecha Flotante */}
+                {heroTabs.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    className="absolute -right-4 z-40 w-8 h-8 rounded-full bg-white/95 backdrop-blur-md border border-stone-200/90 shadow-md text-stone-700 hover:text-stone-950 active:scale-90 transition-all flex items-center justify-center cursor-pointer"
+                    aria-label="Siguiente pestaña"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                )}
+
+                {/* Smartphone Mockup */}
+                <motion.div
+                  key={activeTab?.id || 'mobile-preview'}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.25 }}
+                  className="w-[260px] h-[480px] rounded-[2.5rem] bg-stone-950 p-2 shadow-[0_20px_60px_-10px_rgba(0,0,0,0.35)] relative border-4 border-stone-800 ring-1 ring-white/10 flex flex-col"
+                >
+                  {/* Dynamic Island */}
+                  <div className="w-20 h-3.5 bg-black rounded-full absolute top-3 left-1/2 -translate-x-1/2 z-40 flex items-center justify-end px-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-stone-800 border border-stone-700" />
+                  </div>
+
+                  {/* Pantalla */}
+                  <div className="w-full h-full rounded-[2rem] overflow-hidden bg-stone-100 relative">
+                    {activeTab?.mobile_image_url || activeTab?.image_url ? (
+                      <img
+                        src={activeTab?.mobile_image_url || activeTab?.image_url}
+                        alt={activeTab?.label}
                         className="w-full h-full object-cover pointer-events-none select-none"
                       />
                     ) : (
-                      <div className="flex flex-col items-center justify-center h-full p-4 text-center space-y-2 bg-stone-50 select-none">
-                        <div className="w-12 h-12 rounded-2xl bg-white border border-stone-200/80 shadow-2xs flex items-center justify-center text-stone-400">
-                          <Laptop className="w-6 h-6 text-[#D4AF37]" />
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-bold text-stone-800">
-                            {tab.label ? `Captura de "${tab.label}"` : 'Sin etiqueta'}
-                          </h4>
-                          <span className="text-[10px] text-stone-400">Sube una imagen 16:9 en el panel izquierdo</span>
-                        </div>
+                      <div className="flex flex-col items-center justify-center h-full p-6 text-center space-y-2 bg-stone-50 select-none">
+                        <Smartphone className="w-8 h-8 text-[#D4AF37]" />
+                        <h4 className="text-xs font-bold text-stone-800">{activeTab?.label}</h4>
+                        <span className="text-[9.5px] text-stone-400">Sube una captura vertical en el panel</span>
                       </div>
                     )}
 
-                    {!isCenter && isVisible && (
-                      <div className="absolute inset-0 bg-stone-900/0 hover:bg-stone-900/5 transition-colors flex items-center justify-center pointer-events-none">
-                        <span className="bg-white/95 text-stone-800 text-[10px] font-bold px-3 py-1 rounded-full shadow-xs flex items-center gap-1 border border-stone-200">
-                          {isLeft && <ChevronLeft className="w-3 h-3" />}
-                          <span>{tab.label}</span>
-                          {isRight && <ChevronRight className="w-3 h-3" />}
-                        </span>
-                      </div>
-                    )}
-                  </motion.div>
-                );
-              })}
+                    {/* Tag de cabecera */}
+                    <div className="absolute top-7 left-3 right-3 flex items-center justify-between pointer-events-none z-30">
+                      <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider bg-black/60 backdrop-blur-md text-white border border-white/15">
+                        {activeTab?.label}
+                      </span>
+                      <span 
+                        style={{ backgroundColor: accentColor }}
+                        className="px-1.5 py-0.5 rounded-full text-[7.5px] font-bold text-stone-950 shadow-xs"
+                      >
+                        {activeTab?.mobile_image_url ? 'Móvil Dedicado' : 'Escritorio'}
+                      </span>
+                    </div>
+
+                    {/* Home indicator */}
+                    <div className="w-24 h-1 bg-white/60 rounded-full absolute bottom-2 left-1/2 -translate-x-1/2 z-40 pointer-events-none" />
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Dots */}
+              {heroTabs.length > 1 && (
+                <div className="flex items-center justify-center gap-1 mt-4">
+                  {heroTabs.map((t, idx) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => handleTabClick(t.id)}
+                      className={`transition-all duration-300 rounded-full cursor-pointer ${
+                        idx === validIndex
+                          ? 'w-5 h-1.5 bg-[#D4AF37]'
+                          : 'w-1.5 h-1.5 bg-stone-300 hover:bg-stone-400'
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
+          ) : (
+            /* Tríptico Slider 16:9 con Framer Motion (Escritorio) */
+            <div className="relative z-10 w-full max-w-5xl mx-auto overflow-hidden py-4 select-none flex items-center justify-center">
+              {/* Máscaras de desvanecimiento lateral */}
+              <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-16 sm:w-28 bg-gradient-to-r from-[#FAF9F6] via-[#FAF9F6]/85 to-transparent z-30" />
+              <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-16 sm:w-28 bg-gradient-to-l from-[#FAF9F6] via-[#FAF9F6]/85 to-transparent z-30" />
+
+              {/* Flechas Flotantes */}
+              {heroTabs.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={handlePrev}
+                    className="absolute left-2 sm:left-4 z-40 w-9 h-9 rounded-full bg-white/90 backdrop-blur-md border border-stone-200/80 shadow-md text-stone-700 hover:text-stone-950 hover:scale-105 active:scale-95 transition-all flex items-center justify-center cursor-pointer"
+                    aria-label="Diapositiva anterior"
+                  >
+                    <ChevronLeft className="w-4 h-4 text-stone-700" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    className="absolute right-2 sm:right-4 z-40 w-9 h-9 rounded-full bg-white/90 backdrop-blur-md border border-stone-200/80 shadow-md text-stone-700 hover:text-stone-950 hover:scale-105 active:scale-95 transition-all flex items-center justify-center cursor-pointer"
+                    aria-label="Siguiente diapositiva"
+                  >
+                    <ChevronRight className="w-4 h-4 text-stone-700" />
+                  </button>
+                </>
+              )}
+
+              {/* Placeholder de dimensionamiento 16:9 */}
+              <div className="w-[82%] md:w-[75%] aspect-video opacity-0 pointer-events-none" />
+
+              {/* Pista de diapositivas */}
+              <div className="absolute inset-0 flex items-center justify-center overflow-visible">
+                {heroTabs.map((tab, idx) => {
+                  const offset = getSlideOffset(idx);
+                  const isCenter = offset === 0;
+                  const isLeft = offset === -1;
+                  const isRight = offset === 1;
+                  const isVisible = Math.abs(offset) <= 1;
+
+                  const xPos = isCenter ? "0%" : isRight ? "54%" : isLeft ? "-54%" : offset > 1 ? "120%" : "-120%";
+
+                  return (
+                    <motion.div
+                      key={tab.id}
+                      animate={{
+                        x: xPos,
+                        scale: isCenter ? 1 : isVisible ? 0.88 : 0.75,
+                        opacity: isCenter ? 1 : isVisible ? 0.55 : 0,
+                        zIndex: isCenter ? 25 : isVisible ? 15 : 0,
+                      }}
+                      whileHover={!isCenter && isVisible ? { opacity: 0.85, scale: 0.90 } : undefined}
+                      transition={{
+                        x: { type: "spring", stiffness: 220, damping: 28, mass: 0.9 },
+                        scale: { type: "spring", stiffness: 240, damping: 28 },
+                        opacity: { duration: 0.35 }
+                      }}
+                      onClick={() => {
+                        if (isLeft) handlePrev();
+                        if (isRight) handleNext();
+                      }}
+                      className={`absolute w-[82%] md:w-[75%] aspect-video rounded-xl md:rounded-2xl overflow-hidden border bg-white ${
+                        isCenter
+                          ? 'border-stone-200/90 shadow-[0_20px_50px_rgba(0,0,0,0.10)] ring-1 ring-stone-900/5 cursor-default'
+                          : isVisible
+                          ? 'border-stone-200/80 shadow-md cursor-pointer'
+                          : 'pointer-events-none'
+                      }`}
+                      style={{ willChange: 'transform, opacity' }}
+                    >
+                      {tab.image_url ? (
+                        <img 
+                          src={tab.image_url} 
+                          alt={tab.label}
+                          className="w-full h-full object-cover pointer-events-none select-none"
+                        />
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-full p-4 text-center space-y-2 bg-stone-50 select-none">
+                          <div className="w-12 h-12 rounded-2xl bg-white border border-stone-200/80 shadow-2xs flex items-center justify-center text-stone-400">
+                            <Laptop className="w-6 h-6 text-[#D4AF37]" />
+                          </div>
+                          <div>
+                            <h4 className="text-xs font-bold text-stone-800">
+                              {tab.label ? `Captura de "${tab.label}"` : 'Sin etiqueta'}
+                            </h4>
+                            <span className="text-[10px] text-stone-400">Sube una imagen 16:9 en el panel izquierdo</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {!isCenter && isVisible && (
+                        <div className="absolute inset-0 bg-stone-900/0 hover:bg-stone-900/5 transition-colors flex items-center justify-center pointer-events-none">
+                          <span className="bg-white/95 text-stone-800 text-[10px] font-bold px-3 py-1 rounded-full shadow-xs flex items-center gap-1 border border-stone-200">
+                            {isLeft && <ChevronLeft className="w-3 h-3" />}
+                            <span>{tab.label}</span>
+                            {isRight && <ChevronRight className="w-3 h-3" />}
+                          </span>
+                        </div>
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </section>
 
         {/* ── SECCIÓN 2: COMPARATIVA DE MERCADO (PAIN COMPARISON) ── */}
