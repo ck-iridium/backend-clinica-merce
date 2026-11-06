@@ -160,7 +160,7 @@ export default function MarketingHeader({
                 href="/login"
                 className="px-4 py-2 rounded-xl text-xs font-bold bg-white text-stone-700 border border-stone-200/80 hover:text-stone-950 hover:bg-stone-50 transition-all duration-200 active:scale-95 shadow-2xs whitespace-nowrap"
               >
-                Acceso Clínicas
+                Iniciar Sesión
               </Link>
               <button
                 onClick={() => onOpenOnboarding('pro')}
@@ -338,7 +338,7 @@ export default function MarketingHeader({
               onClick={() => setIsMobileMenuOpen(false)}
               className="w-full py-3.5 bg-white border border-stone-200/90 rounded-2xl text-xs font-bold text-stone-800 flex items-center justify-center hover:bg-stone-50 transition-all shadow-2xs active:scale-98"
             >
-              Acceso Clínicas
+              Iniciar Sesión
             </Link>
 
             <button

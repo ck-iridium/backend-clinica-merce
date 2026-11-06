@@ -311,7 +311,7 @@ export default function Showcase3DPreview({
 
           <div className="flex items-center gap-3">
             <span className="hidden sm:inline-block text-xs font-bold text-stone-700 px-3 py-1.5">
-              Acceso Clínicas
+              Iniciar Sesión
             </span>
             <span 
               style={{ backgroundColor: darkColor }}
