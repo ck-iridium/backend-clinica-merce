@@ -64,7 +64,7 @@ export default function PainComparisonSection({
   const suiteCtaText = data?.suite_model?.cta_text || 'Probar Gratis';
 
   return (
-    <section className="py-24 bg-white border-y border-stone-200/60 relative">
+    <section id="comparativa" className="scroll-mt-20 py-24 bg-white border-y border-stone-200/60 relative">
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center max-w-2xl mx-auto mb-16">
           <span 

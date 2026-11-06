@@ -443,7 +443,8 @@ export default function Showcase3DRing({
 
   return (
     <section
-      className={`w-full bg-white relative overflow-hidden select-none flex flex-col justify-between ${isPreview ? 'py-4' : 'py-28'
+      id="sectores"
+      className={`scroll-mt-20 w-full bg-white relative overflow-hidden select-none flex flex-col justify-between ${isPreview ? 'py-4' : 'py-28'
         }`}
     >
       {/* ── 1. CABECERA, TÍTULO Y PÍLDORAS (RITMO VERTICAL QUIET LUXURY UNIFICADO A PY-28) ── */}

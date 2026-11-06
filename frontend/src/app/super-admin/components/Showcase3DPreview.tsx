@@ -292,11 +292,11 @@ export default function Showcase3DPreview({
             )}
           </div>
 
-          <nav className="hidden md:flex items-center gap-6 text-xs text-stone-600 font-semibold font-sans">
-            <button type="button" onClick={() => scrollToSection('preview-hero')} className="hover:text-stone-950 transition-colors">Características</button>
-            <button type="button" onClick={() => scrollToSection('preview-sectors')} className="hover:text-stone-950 transition-colors">Sectores</button>
-            <button type="button" onClick={() => scrollToSection('preview-pricing')} className="hover:text-stone-950 transition-colors">Precios</button>
-            <button type="button" onClick={() => scrollToSection('preview-pillars')} className="hover:text-stone-950 transition-colors">Ecosistema</button>
+          <nav className="hidden md:flex items-center gap-5 text-xs text-stone-600 font-semibold font-sans">
+            <button type="button" onClick={() => scrollToSection('preview-pain')} className="hover:text-stone-950 transition-colors cursor-pointer">Características</button>
+            <button type="button" onClick={() => scrollToSection('preview-pillars')} className="hover:text-stone-950 transition-colors cursor-pointer">Pilares</button>
+            <button type="button" onClick={() => scrollToSection('preview-sectors')} className="hover:text-stone-950 transition-colors cursor-pointer">Sectores 3D</button>
+            <button type="button" onClick={() => scrollToSection('preview-pricing')} className="hover:text-stone-950 transition-colors cursor-pointer">Precios</button>
           </nav>
 
           <div className="flex items-center gap-3">

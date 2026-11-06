@@ -79,7 +79,7 @@ export default function PillarsSection({
   const pillarsList = data?.items && data.items.length > 0 ? data.items : DEFAULT_PILLARS_ITEMS;
 
   return (
-    <section id="pilares" className="py-28 bg-[#FAF9F6]">
+    <section id="pilares" className="scroll-mt-20 py-28 bg-[#FAF9F6]">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center max-w-2xl mx-auto mb-20">
           <span 

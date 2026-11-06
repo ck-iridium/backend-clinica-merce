@@ -77,7 +77,7 @@ export default function MarketingHero({
   };
 
   return (
-    <section className="relative min-h-[calc(100vh-80px)] flex flex-col items-center justify-start overflow-hidden bg-[#FAF9F6] pt-12 pb-24">
+    <section id="hero" className="scroll-mt-20 relative min-h-[calc(100vh-80px)] flex flex-col items-center justify-start overflow-hidden bg-[#FAF9F6] pt-12 pb-24">
       {/* Halo ambiental dorado */}
       <div
         style={{ backgroundColor: tertiaryColor || '#D4AF37' }}

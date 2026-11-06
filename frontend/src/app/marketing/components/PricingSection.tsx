@@ -23,7 +23,8 @@ export default function PricingSection({
   const darkColor = primaryColor || '#1c1917';
 
   return (
-    <section id="pricing" className="py-28 bg-[#FAF9F6] border-t border-stone-200/60 relative overflow-hidden">
+    <section id="precios" className="scroll-mt-20 py-28 bg-[#FAF9F6] border-t border-stone-200/60 relative overflow-hidden">
+      <span id="pricing" className="scroll-mt-20 sr-only" />
       {/* Halo ambiental dinámico de fondo */}
       <div 
         style={{ backgroundColor: `${accentColor}12` }}
