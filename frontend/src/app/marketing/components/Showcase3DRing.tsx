@@ -730,7 +730,10 @@ export default function Showcase3DRing({
 
               <button
                 type="button"
-                onClick={() => onConfigureEntorno('pro')}
+                onClick={() => {
+                  setModalSector(null);
+                  onConfigureEntorno('pro');
+                }}
                 style={{ backgroundColor: brandPrimary }}
                 className="w-full text-white py-4 px-5 rounded-2xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg active:scale-95 hover:opacity-95 border border-white/20 cursor-pointer"
               >
