@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useRef, useState, useEffect, useMemo } from 'react';
-import { Sparkles, ArrowRight, Play, Pause, X, ChevronRight } from 'lucide-react';
+import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
+import { Sparkles, ArrowRight, Play, Pause, X, ChevronRight, Volume2, VolumeX } from 'lucide-react';
 
 export interface Sector {
   id: string;
@@ -69,181 +69,206 @@ function resolveSectorVideo(s: Sector, idx: number): string {
   return DEFAULT_SECTOR_VIDEOS.clinicas;
 }
 
-function VideoPlayer({
-  src,
-  poster,
-  isActive
-}: {
-  src: string;
-  poster?: string;
-  isActive: boolean;
-}) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    if (isActive) {
-      video.currentTime = 0;
-      const playPromise = video.play();
-      if (playPromise !== undefined) {
-        playPromise.catch((err) => {
-          console.log("Auto-play prevenido o esperando interacción:", err);
-        });
-      }
-    } else {
-      video.pause();
-    }
-  }, [isActive]);
-
-  return (
-    <video
-      ref={videoRef}
-      src={src}
-      poster={poster}
-      preload={isActive ? "auto" : "none"}
-      className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-out ${
-        isActive ? 'opacity-100 z-10' : 'opacity-0 pointer-events-none'
-      }`}
-      loop
-      muted
-      playsInline
-    />
-  );
-}
+const FALLBACK_SECTORS: Sector[] = [
+  {
+    id: 'clinicas',
+    badge: 'Clínicas Estéticas',
+    title: 'Clínicas & Wellness',
+    copy: 'Aislamiento total de expedientes clínicos en base de datos, firmas manuscritas Base64 y branding de lujo.',
+    videoUrl: DEFAULT_SECTOR_VIDEOS.clinicas,
+    imageUrl: DEFAULT_SECTOR_IMAGES.clinicas,
+  },
+  {
+    id: 'barberias',
+    badge: 'Barberías Selectas',
+    title: 'Barberías Premium',
+    copy: 'Gestión ágil de especialistas en tiempo real, venta de bonos express y protección total contra incomparecencias.',
+    videoUrl: DEFAULT_SECTOR_VIDEOS.barberias,
+    imageUrl: DEFAULT_SECTOR_IMAGES.barberias,
+  },
+  {
+    id: 'dentistas',
+    badge: 'Odontología Avanzada',
+    title: 'Consultorios Dentales',
+    copy: 'Calendarios dinámicos asimétricos, cobros rápidos en POS y recordatorios automáticos por SMTP privado.',
+    videoUrl: DEFAULT_SECTOR_VIDEOS.dentistas,
+    imageUrl: DEFAULT_SECTOR_IMAGES.dentistas,
+  },
+  {
+    id: 'peluquerias',
+    badge: 'Salones de Alta Costura',
+    title: 'Salones de Belleza',
+    copy: 'Portal de reserva en 3 pasos con colores y logotipos propios, adaptable a dominio exclusivo corporativo.',
+    videoUrl: DEFAULT_SECTOR_VIDEOS.peluquerias,
+    imageUrl: DEFAULT_SECTOR_IMAGES.peluquerias,
+  },
+  {
+    id: 'tattoos',
+    badge: 'Tattoo & Piercing',
+    title: 'Tattoo Studios',
+    copy: 'Gestión de citas por artista, anticipos online y fichas de consentimiento informado sin papel.',
+    videoUrl: DEFAULT_SECTOR_VIDEOS.tattoos,
+    imageUrl: DEFAULT_SECTOR_IMAGES.tattoos,
+  }
+];
 
 export default function Showcase3DRing({
   sectorsToRender,
+  activeIndex,
+  handleNavigate,
   onConfigureEntorno,
   primaryColor,
   secondaryColor,
   tertiaryColor,
   isPreview = false
 }: Showcase3DRingProps) {
-  const rawItems = sectorsToRender.length > 0 ? sectorsToRender : [];
+  const items = useMemo(() => {
+    return sectorsToRender && sectorsToRender.length > 0 ? sectorsToRender : FALLBACK_SECTORS;
+  }, [sectorsToRender]);
 
-  // Mapeamos a 12 items para formar el cilindro exacto de Lightswind UI
-  const displayItems = useMemo(() => {
-    if (rawItems.length === 0) return [];
-    const items: Sector[] = [];
-    while (items.length < 12) {
-      items.push(...rawItems);
-    }
-    return items.slice(0, 12);
-  }, [rawItems]);
+  const numItems = items.length;
 
-  const n = 12;
-
-  // Ángulo de rotación del cilindro 3D
-  const [rotationY, setRotationY] = useState(0);
+  // Offset continuo (número real que avanza con auto-play o drag)
+  const [offset, setOffset] = useState<number>(activeIndex ?? 0);
+  const targetOffsetRef = useRef<number>(activeIndex ?? 0);
+  const currentOffsetRef = useRef<number>(activeIndex ?? 0);
+  
   const [isPaused, setIsPaused] = useState(false);
-  const [selectedCardIndex, setSelectedCardIndex] = useState<number | null>(null);
-  const [isCentering, setIsCentering] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [modalSector, setModalSector] = useState<{ sector: Sector; index: number } | null>(null);
+  const [isMuted, setIsMuted] = useState(true);
 
-  // Proporciones idénticas a Lightswind UI oficial y Bambu Lab
-  const cardWidth = isPreview ? "12em" : "19.5em";
-  const cardAspectRatio = "7/10";
-  // Perspective oficial de Lightswind (35em) para la curvatura y profundidad cóncava exacta del anfiteatro
-  const perspective = isPreview ? "28em" : "35em";
+  // Dimensiones según viewport y modo
+  const cardWidth = isPreview ? 175 : 255;
+  const cardHeight = isPreview ? 245 : 355;
+  const radius = isPreview ? 620 : 960;
+  const angleStep = isPreview ? 17 : 16.5;
 
-  // Rotación continua mediante requestAnimationFrame
+  // Sincronizar activeIndex externo si cambia desde el padre
   useEffect(() => {
-    if (isPaused || selectedCardIndex !== null || isCentering) return;
+    if (typeof activeIndex === 'number' && Math.abs(activeIndex - targetOffsetRef.current) > 0.01) {
+      targetOffsetRef.current = activeIndex;
+    }
+  }, [activeIndex]);
 
+  // Listener para cerrar modal con Escape
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && modalSector) {
+        setModalSector(null);
+        setIsPaused(false);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [modalSector]);
+
+  // Bucle de animación fluida (lerp + auto-play)
+  useEffect(() => {
     let animId: number;
     let lastTime = performance.now();
-    const speedDegPerMs = 0.011; // Rotación lenta y cinematográfica
 
-    const loop = (time: number) => {
-      if (isDraggingRef.current) return;
+    const tick = (time: number) => {
       const delta = time - lastTime;
       lastTime = time;
 
-      setRotationY(prev => (prev - speedDegPerMs * delta) % 360);
-      animId = requestAnimationFrame(loop);
+      // Auto-play suave si no está pausado, ni en hover, ni arrastrando, ni con modal abierto
+      if (!isPaused && !isHovered && !isDraggingRef.current && !modalSector) {
+        const speed = 0.00035; // Desplazamiento lento, elegante
+        targetOffsetRef.current += speed * delta;
+      }
+
+      // Interpolación exponencial suave (lerp)
+      const diff = targetOffsetRef.current - currentOffsetRef.current;
+      if (Math.abs(diff) > 0.0001) {
+        currentOffsetRef.current += diff * 0.12;
+        setOffset(currentOffsetRef.current);
+      }
+
+      animId = requestAnimationFrame(tick);
     };
 
-    animId = requestAnimationFrame(loop);
+    animId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animId);
-  }, [isPaused, selectedCardIndex, isCentering]);
+  }, [isPaused, isHovered, modalSector]);
 
-  // Arrastre con ratón o táctil
+  // ── GESTIÓN DE ARRASTRE Y CLIC 100% FIABLE ──
   const isDraggingRef = useRef(false);
-  const startXRef = useRef(0);
-  const startRotationRef = useRef(0);
+  const dragStartPosRef = useRef({ x: 0, y: 0, time: 0 });
+  const dragStartOffsetRef = useRef(0);
 
   const onPointerDown = (e: React.PointerEvent) => {
-    if (selectedCardIndex !== null) return;
-    isDraggingRef.current = true;
-    startXRef.current = e.clientX;
-    startRotationRef.current = rotationY;
-  };
-
-  const onPointerMove = (e: React.PointerEvent) => {
-    if (!isDraggingRef.current) return;
-    const deltaX = e.clientX - startXRef.current;
-    // Giro suave al arrastrar en la dirección física correspondiente
-    setRotationY(startRotationRef.current - deltaX * 0.28);
-  };
-
-  const onPointerUp = () => {
+    if (modalSector) return;
+    dragStartPosRef.current = { x: e.clientX, y: e.clientY, time: Date.now() };
+    dragStartOffsetRef.current = targetOffsetRef.current;
     isDraggingRef.current = false;
   };
 
-  // 🎯 DETECCIÓN DE CLIC ROBUSTA Y DIRECTA EN TARJETA (INMUNE AL ARRASTRE Y ANIMACIÓN)
-  const cardPointerDownRef = useRef<{ x: number; y: number; time: number; idx: number } | null>(null);
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!dragStartPosRef.current.time) return;
+    const dx = e.clientX - dragStartPosRef.current.x;
+    const dy = e.clientY - dragStartPosRef.current.y;
+    const dist = Math.hypot(dx, dy);
 
-  const onCardPointerDown = (e: React.PointerEvent, idx: number) => {
-    cardPointerDownRef.current = {
-      x: e.clientX,
-      y: e.clientY,
-      time: Date.now(),
-      idx
-    };
-  };
-
-  const onCardPointerUp = (e: React.PointerEvent, idx: number) => {
-    if (!cardPointerDownRef.current || cardPointerDownRef.current.idx !== idx) return;
-    const dx = Math.abs(e.clientX - cardPointerDownRef.current.x);
-    const dy = Math.abs(e.clientY - cardPointerDownRef.current.y);
-    const dt = Date.now() - cardPointerDownRef.current.time;
-    cardPointerDownRef.current = null;
-
-    // Si fue un clic o tap real (< 15px de desplazamiento y < 500ms)
-    if (dx < 15 && dy < 15 && dt < 500) {
-      openCardZoom(idx);
+    // Solo si se mueve más de 6px se activa el modo arrastre
+    if (dist > 6) {
+      isDraggingRef.current = true;
+      const sensitivity = isPreview ? 0.0035 : 0.0024;
+      targetOffsetRef.current = dragStartOffsetRef.current - dx * sensitivity;
     }
   };
 
-  // Abre la tarjeta centrada con zoom y reproduce el vídeo
-  const openCardZoom = (index: number) => {
-    setIsPaused(true);
-    setSelectedCardIndex(index);
+  const onPointerUp = () => {
+    dragStartPosRef.current.time = 0;
+    if (isDraggingRef.current) {
+      // Al soltar tras arrastrar, no hacemos nada extra, dejamos que siga flotando
+      isDraggingRef.current = false;
+    }
   };
 
-  // Reanudar el giro y cerrar la tarjeta ampliada
-  const handleCloseZoom = (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    setSelectedCardIndex(null);
-    setIsCentering(false);
-    setIsPaused(false);
+  // Al hacer clic en una tarjeta específica
+  const handleCardClick = (relativeSlot: number, actualIndex: number) => {
+    // Si fue un arrastre real, ignorar el clic
+    if (isDraggingRef.current) return;
+
+    if (relativeSlot === 0) {
+      // Si la tarjeta ya está en el centro frontal, abrir el modal de vídeo y detalles
+      setIsPaused(true);
+      setModalSector({ sector: items[actualIndex], index: actualIndex });
+    } else {
+      // Si está a los lados, desplazarla suavemente al centro
+      targetOffsetRef.current = Math.round(targetOffsetRef.current) + relativeSlot;
+      handleNavigate?.(actualIndex);
+    }
   };
+
+  // Al pulsar en las píldoras de navegación superior
+  const handlePillClick = (targetIndex: number) => {
+    const currentNorm = ((Math.round(targetOffsetRef.current) % numItems) + numItems) % numItems;
+    let diff = targetIndex - currentNorm;
+    // Tomar el camino más corto en el círculo
+    if (diff > numItems / 2) diff -= numItems;
+    if (diff < -numItems / 2) diff += numItems;
+
+    targetOffsetRef.current = Math.round(targetOffsetRef.current) + diff;
+    handleNavigate?.(targetIndex);
+  };
+
+  const currentCenterNormIndex = ((Math.round(offset) % numItems) + numItems) % numItems;
 
   const accentColor = tertiaryColor || '#D4AF37';
   const brandPrimary = primaryColor || '#1c1917';
 
-  // Sector activo para el visor centrado
-  const activeSector = selectedCardIndex !== null && displayItems[selectedCardIndex]
-    ? displayItems[selectedCardIndex]
-    : null;
+  // Generamos los 7 slots activos para el arco convexo estilo Bambu Lab (-3 a +3)
+  const visibleSlots = [-3, -2, -1, 0, 1, 2, 3];
 
   return (
-    <section className={`w-full bg-white relative overflow-hidden select-none flex flex-col justify-between ${
-      isPreview ? 'py-3' : 'py-16 md:py-24'
-    }`}>
-      
-      {/* ── 1. TROZO SUPERIOR: CABECERA, TÍTULO Y PÍLDORAS ── */}
+    <section 
+      className={`w-full bg-white relative overflow-hidden select-none flex flex-col justify-between ${
+        isPreview ? 'py-4' : 'py-16 md:py-24'
+      }`}
+    >
+      {/* ── 1. CABECERA, TÍTULO Y PÍLDORAS ── */}
       <div className="w-full max-w-4xl mx-auto px-6 text-center shrink-0 relative z-20">
         {!isPreview && (
           <div 
@@ -261,22 +286,23 @@ export default function Showcase3DRing({
 
         {!isPreview && (
           <p className="text-stone-500 text-xs md:text-sm mt-3 font-medium leading-relaxed max-w-2xl mx-auto">
-            Arrastra para girar el anfiteatro 3D. Pulsa cualquier sector para centrarlo y ver su vídeo demostrativo.
+            Gira el carrusel de especialidades. Pulsa cualquier sector para centrarlo y ver su vídeo demostrativo.
           </p>
         )}
 
-        {/* Píldoras de Acceso Rápido */}
-        <div className={`flex flex-wrap items-center justify-center gap-2 ${isPreview ? 'mt-2 mb-1' : 'mt-6 mb-2'}`}>
-          {rawItems.map((sec, idx) => {
-            const isPillActive = selectedCardIndex !== null && (selectedCardIndex % rawItems.length) === idx;
+        {/* Píldoras de Acceso Rápido con estado activo exacto */}
+        <div className={`flex flex-wrap items-center justify-center gap-2 ${isPreview ? 'mt-2 mb-1' : 'mt-6 mb-4'}`}>
+          {items.map((sec, idx) => {
+            const isPillActive = currentCenterNormIndex === idx;
             return (
               <button
                 key={`pill-${sec.id}-${idx}`}
-                onClick={() => openCardZoom(idx)}
+                type="button"
+                onClick={() => handlePillClick(idx)}
                 style={isPillActive ? { backgroundColor: brandPrimary, borderColor: brandPrimary, color: '#ffffff' } : undefined}
-                className={`px-3 py-1 rounded-full text-[10px] md:text-xs font-bold transition-all duration-300 border shadow-sm ${
+                className={`px-3.5 py-1.5 rounded-full text-[11px] md:text-xs font-bold transition-all duration-300 border shadow-sm cursor-pointer ${
                   isPillActive
-                    ? 'scale-105 shadow-md ring-2 ring-white/50'
+                    ? 'scale-105 shadow-md ring-2 ring-[#D4AF37]/40 font-black'
                     : 'bg-white/95 hover:bg-white text-stone-700 border-stone-200/80 hover:scale-105 active:scale-95'
                 }`}
               >
@@ -287,160 +313,134 @@ export default function Showcase3DRing({
         </div>
       </div>
 
-      {/* ── 2. TROZO INFERIOR: ESCENARIO 3D CON ARCO ENVOLVENTE Y SPOTLIGHT EN EL CENTRO ── */}
+      {/* ── 2. ESCENARIO 3D EN ARCO CONVEXO ESTILO BAMBU LAB ── */}
       <div
-        className={`grid w-full overflow-hidden place-items-center select-none cursor-grab active:cursor-grabbing relative touch-none py-6 ${
-          isPreview ? 'h-[360px]' : 'h-[75vh] md:h-[680px] lg:h-[720px] min-h-[560px]'
+        className={`w-full relative flex items-center justify-center select-none cursor-grab active:cursor-grabbing touch-none ${
+          isPreview ? 'h-[300px]' : 'h-[440px] md:h-[490px]'
         }`}
         style={{
-          perspective: perspective,
-          WebkitMask: "linear-gradient(90deg, transparent 0%, #000 18% 82%, transparent 100%)",
-          mask: "linear-gradient(90deg, transparent 0%, #000 18% 82%, transparent 100%)",
+          perspective: isPreview ? '1000px' : '1300px',
+          perspectiveOrigin: '50% 50%',
         }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => {
+          setIsHovered(false);
+          isDraggingRef.current = false;
+          dragStartPosRef.current.time = 0;
+        }}
       >
-        {/* NÚCLEO CILÍNDRICO 3D LIGHTSWIND */}
-        <div
-          className="grid place-self-center pointer-events-auto will-change-transform"
-          style={{
-            transformStyle: "preserve-3d",
-            transform: `rotateY(${rotationY}deg)`,
-            transition: isDraggingRef.current 
-              ? "none" 
-              : isCentering 
-                ? "transform 0.75s cubic-bezier(0.16, 1, 0.3, 1)" 
-                : "none",
-          }}
+        {/* Contenedor central de proyección 3D */}
+        <div 
+          className="relative w-full h-full flex items-center justify-center"
+          style={{ transformStyle: 'preserve-3d' }}
         >
-          {displayItems.map((sector, i) => {
-            const imgSrc = resolveSectorImage(sector, i);
+          {visibleSlots.map((k) => {
+            // Desplazamiento continuo del slot relativo al centro actual
+            const baseCenter = Math.round(offset);
+            const slotOffset = k - (offset - baseCenter);
+            const absOffset = Math.abs(slotOffset);
+
+            // Mapeo cíclico al array de items reales
+            const actualItemIndex = ((baseCenter + k) % numItems + numItems) % numItems;
+            const sector = items[actualItemIndex];
+            if (!sector) return null;
+
+            // Fórmulas matemáticas de arco convexo:
+            // 1. Ángulo angular en grados y radianes
+            const angleDeg = slotOffset * angleStep;
+            const angleRad = (angleDeg * Math.PI) / 180;
+
+            // 2. Posición horizontal en arco (X)
+            const x = Math.sin(angleRad) * radius;
+
+            // 3. Profundidad (Z): 0 en el centro, negativo hacia el fondo a los lados (curvatura hacia atrás)
+            const z = (Math.cos(angleRad) - 1) * radius;
+
+            // 4. Rotación Y: Los de la derecha giran hacia la izquierda, los de la izquierda hacia la derecha
+            const rotY = -angleDeg;
+
+            // 5. Escala y opacidad suaves para disolverse en el horizonte
+            const scale = Math.max(0.72, 1 - absOffset * 0.045);
+            const opacity = Math.max(0, 1 - Math.pow(absOffset / 3.4, 2.2));
+            const zIndex = Math.round(100 - absOffset * 10);
+
+            // Si está muy lejos en el borde, no renderizar
+            if (absOffset > 3.5 || opacity <= 0.01) return null;
+
+            const isCenterCard = Math.abs(slotOffset) < 0.45;
+            const imgSrc = resolveSectorImage(sector, actualItemIndex);
 
             return (
               <div
-                key={`slide-${sector.id}-${i}`}
-                onPointerDown={(e) => onCardPointerDown(e, i)}
-                onPointerUp={(e) => onCardPointerUp(e, i)}
+                key={`bambu-card-${k}-${actualItemIndex}`}
                 onClick={(e) => {
                   e.stopPropagation();
-                  openCardZoom(i);
+                  handleCardClick(k, actualItemIndex);
                 }}
-                className="col-start-1 row-start-1 object-cover rounded-[1.75em] overflow-hidden cursor-pointer relative bg-stone-900 border border-white/20 hover:border-white/60 select-none shadow-2xl transition-all duration-300 hover:scale-[1.03]"
+                className={`absolute rounded-[1.5rem] md:rounded-[1.75rem] overflow-hidden cursor-pointer select-none transition-shadow duration-300 group ${
+                  isCenterCard 
+                    ? 'ring-2 ring-[#D4AF37] shadow-[0_20px_60px_-15px_rgba(212,175,55,0.35),0_10px_30px_rgba(0,0,0,0.2)]' 
+                    : 'shadow-xl hover:shadow-2xl'
+                }`}
                 style={{
-                  width: cardWidth,
-                  aspectRatio: cardAspectRatio,
-                  backfaceVisibility: "hidden",
-                  WebkitBackfaceVisibility: "hidden",
-                  transformStyle: "preserve-3d",
-                  transform: `rotateY(calc(${i} * (1turn / ${n}))) translateZ(calc(-1 * (0.5 * ${cardWidth} + 0.5em) / tan(0.5 * (1turn / ${n}))))`,
+                  width: `${cardWidth}px`,
+                  height: `${cardHeight}px`,
+                  transform: `translate3d(${x}px, 0px, ${z}px) rotateY(${rotY}deg) scale(${scale})`,
+                  opacity: opacity,
+                  zIndex: zIndex,
+                  transformStyle: 'preserve-3d',
+                  willChange: 'transform, opacity',
+                  pointerEvents: opacity > 0.1 ? 'auto' : 'none',
                 }}
               >
-                {/* Imagen de portada */}
+                {/* Imagen de Fondo */}
                 <img
                   src={imgSrc}
                   alt={sector.title}
-                  loading="lazy"
-                  decoding="async"
-                  className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none transition-transform duration-700 hover:scale-105"
+                  draggable={false}
+                  className="absolute inset-0 w-full h-full object-cover pointer-events-none transition-transform duration-700 group-hover:scale-105"
                 />
 
-                {/* Velo Degradado */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent pointer-events-none z-10" />
+                {/* Velo Degradado cinematográfico */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10 pointer-events-none z-10" />
 
                 {/* Badge Superior */}
-                <div className="absolute top-3 left-3 right-3 z-20 flex items-center justify-between pointer-events-none">
-                  <span
-                    className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider backdrop-blur-md bg-black/60 text-white border border-white/20 shadow-sm"
-                  >
+                <div className="absolute top-3.5 left-3.5 right-3.5 z-20 flex items-center justify-between pointer-events-none">
+                  <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider backdrop-blur-md border shadow-sm ${
+                    isCenterCard 
+                      ? 'bg-[#D4AF37] text-stone-950 border-[#D4AF37]' 
+                      : 'bg-black/60 text-white border-white/20'
+                  }`}>
                     {sector.badge || sector.title}
                   </span>
+
+                  {isCenterCard && (
+                    <span className="w-6 h-6 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
+                      <Play className="w-2.5 h-2.5 fill-current ml-0.5" />
+                    </span>
+                  )}
                 </div>
 
-                {/* Título en la base */}
-                <div className="absolute bottom-0 inset-x-0 p-4 z-20 text-white flex flex-col justify-end pointer-events-none">
-                  <h3 className="font-serif text-sm md:text-base font-bold leading-tight drop-shadow-md text-white">
+                {/* Pie de Tarjeta */}
+                <div className="absolute bottom-0 inset-x-0 p-4 md:p-5 z-20 text-white flex flex-col justify-end pointer-events-none">
+                  <h3 className="font-serif text-sm md:text-base font-bold leading-tight drop-shadow-md text-white group-hover:text-[#D4AF37] transition-colors">
                     {sector.title}
                   </h3>
+                  {isCenterCard && (
+                    <p className="text-[10px] text-stone-300 mt-1 font-medium flex items-center gap-1 opacity-90">
+                      <span>Ver vídeo demostrativo</span>
+                      <ArrowRight className="w-2.5 h-2.5 text-[#D4AF37]" />
+                    </p>
+                  )}
                 </div>
               </div>
             );
           })}
         </div>
-
-        {/* ── 🎯 VISOR SPOTLIGHT CENTRADO: Muestra en el medio con zoom y reproduce el vídeo ── */}
-        {selectedCardIndex !== null && activeSector && (
-          <div 
-            className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300"
-            onClick={handleCloseZoom}
-          >
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-[340px] md:max-w-[460px] rounded-3xl overflow-hidden shadow-[0_25px_80px_rgba(0,0,0,0.85)] border-2 border-white/40 bg-stone-950 aspect-[7/10] flex flex-col justify-between animate-in zoom-in-95 duration-300 select-text"
-              style={{
-                boxShadow: `0 35px 100px -15px ${accentColor}60, 0 10px 40px rgba(0,0,0,0.9)`
-              }}
-            >
-              {/* Imagen de fondo */}
-              <img
-                src={resolveSectorImage(activeSector, selectedCardIndex)}
-                alt={activeSector.title}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-
-              {/* Reproductor de vídeo HD con autoplay */}
-              <VideoPlayer
-                src={resolveSectorVideo(activeSector, selectedCardIndex)}
-                poster={resolveSectorImage(activeSector, selectedCardIndex)}
-                isActive={true}
-              />
-
-              {/* Velo degrade */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-black/40 z-10 pointer-events-none" />
-
-              {/* Cabecera con Badge y Botón de Cerrar */}
-              <div className="relative z-20 p-5 flex items-center justify-between">
-                <span
-                  style={{ backgroundColor: accentColor, color: '#1c1917' }}
-                  className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md backdrop-blur-md"
-                >
-                  {activeSector.badge || activeSector.title}
-                </span>
-
-                <button
-                  onClick={handleCloseZoom}
-                  className="w-9 h-9 rounded-full bg-black/75 hover:bg-black text-white flex items-center justify-center border border-white/30 shadow-lg transition-transform active:scale-90 hover:scale-105"
-                  title="Cerrar y volver al carrusel"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Información y CTA al final */}
-              <div className="relative z-20 p-6 text-white space-y-3">
-                <div>
-                  <h3 className="font-serif text-xl md:text-2xl font-bold leading-tight drop-shadow-md">
-                    {activeSector.title}
-                  </h3>
-                  <p className="text-xs text-stone-200 mt-1.5 leading-relaxed font-medium line-clamp-3">
-                    {activeSector.copy || 'Entorno SaaS exclusivo para centros selectos con expedientes LOPD y motor de reservas sin comisiones.'}
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => onConfigureEntorno('pro')}
-                  style={{ backgroundColor: brandPrimary }}
-                  className="w-full text-white py-3 px-4 rounded-2xl text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg active:scale-95 hover:opacity-95 border border-white/20 cursor-pointer"
-                >
-                  <span>Configurar este Entorno</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
       </div>
 
       {/* ── 3. CONTROLES DE REPRODUCCIÓN INFERIORES ── */}
@@ -448,31 +448,24 @@ export default function Showcase3DRing({
         isPreview ? 'mt-1' : 'mt-4'
       }`}>
         <span className="text-[11px] font-semibold text-stone-500 bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full border border-stone-200/70 shadow-sm flex items-center justify-center gap-2">
-          {selectedCardIndex !== null ? (
-            <>🎯 Vídeo en reproducción activa • Pulsa en la ✕ o fuera para volver al carrusel</>
-          ) : !isPaused ? (
-            <>🔄 Giro 3D continuo activo • Arrastra con el ratón o pulsa una tarjeta para ver su vídeo</>
+          {!isPaused ? (
+            <>🔄 Desplazamiento continuo activo • Pulsa o arrastra para explorar sectores</>
           ) : (
-            <>⏸️ Giro pausado • Pulsa reanudar para continuar</>
+            <>⏸️ Carrusel pausado • Pulsa reanudar para continuar</>
           )}
         </span>
 
-        {selectedCardIndex !== null ? (
+        {isPaused ? (
           <button
-            onClick={handleCloseZoom}
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold bg-stone-950 text-white hover:bg-stone-800 transition-colors shadow-sm active:scale-95 cursor-pointer"
-          >
-            <ChevronRight className="w-3.5 h-3.5 rotate-180" /> Continuar Explorando
-          </button>
-        ) : isPaused ? (
-          <button
+            type="button"
             onClick={() => setIsPaused(false)}
             className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold bg-stone-950 text-white hover:bg-stone-800 transition-colors shadow-sm active:scale-95 cursor-pointer"
           >
-            <Play className="w-3.5 h-3.5 fill-current" /> Reanudar Giro
+            <Play className="w-3.5 h-3.5 fill-current" /> Reanudar
           </button>
         ) : (
           <button
+            type="button"
             onClick={() => setIsPaused(true)}
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-white border border-stone-200 text-stone-700 hover:text-stone-950 transition-colors shadow-sm active:scale-95 cursor-pointer"
           >
@@ -481,6 +474,92 @@ export default function Showcase3DRing({
         )}
       </div>
 
+      {/* ── 4. MODAL SPOTLIGHT CON VÍDEO (Limpio, sin cortes de máscara ni overflow) ── */}
+      {modalSector && (
+        <div 
+          className={`${isPreview ? 'absolute' : 'fixed'} inset-0 z-[100] flex items-center justify-center p-4 bg-stone-950/80 backdrop-blur-md animate-in fade-in duration-200`}
+          onClick={() => {
+            setModalSector(null);
+            setIsPaused(false);
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-[340px] md:max-w-[440px] rounded-3xl overflow-hidden shadow-[0_25px_80px_rgba(0,0,0,0.85)] border border-white/20 bg-stone-950 aspect-[7/10] flex flex-col justify-between animate-in zoom-in-95 duration-300"
+            style={{
+              boxShadow: `0 30px 90px -10px ${accentColor}50, 0 10px 40px rgba(0,0,0,0.95)`
+            }}
+          >
+            {/* Vídeo / Poster de Fondo */}
+            <video
+              src={resolveSectorVideo(modalSector.sector, modalSector.index)}
+              poster={resolveSectorImage(modalSector.sector, modalSector.index)}
+              autoPlay
+              loop
+              muted={isMuted}
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+
+            {/* Velo degrade para legibilidad */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-black/30 pointer-events-none z-10" />
+
+            {/* Cabecera del modal */}
+            <div className="relative z-20 p-5 flex items-center justify-between">
+              <span
+                style={{ backgroundColor: accentColor, color: '#1c1917' }}
+                className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md backdrop-blur-md"
+              >
+                {modalSector.sector.badge || modalSector.sector.title}
+              </span>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsMuted(prev => !prev)}
+                  className="w-9 h-9 rounded-full bg-black/70 hover:bg-black text-white flex items-center justify-center border border-white/20 shadow-md transition-transform active:scale-90 cursor-pointer"
+                  title={isMuted ? "Activar sonido" : "Silenciar"}
+                >
+                  {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setModalSector(null);
+                    setIsPaused(false);
+                  }}
+                  className="w-9 h-9 rounded-full bg-black/70 hover:bg-black text-white flex items-center justify-center border border-white/20 shadow-md transition-transform active:scale-90 cursor-pointer"
+                  title="Cerrar ventana"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Pie de detalles y botón de acción */}
+            <div className="relative z-20 p-6 text-white space-y-3">
+              <div>
+                <h3 className="font-serif text-xl md:text-2xl font-bold leading-tight drop-shadow-md">
+                  {modalSector.sector.title}
+                </h3>
+                <p className="text-xs text-stone-200 mt-2 leading-relaxed font-medium line-clamp-3">
+                  {modalSector.sector.copy || 'Entorno SaaS exclusivo para centros selectos con expedientes LOPD y motor de reservas sin comisiones.'}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => onConfigureEntorno('pro')}
+                style={{ backgroundColor: brandPrimary }}
+                className="w-full text-white py-3.5 px-4 rounded-2xl text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg active:scale-95 hover:opacity-95 border border-white/20 cursor-pointer"
+              >
+                <span>Configurar este Entorno</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
