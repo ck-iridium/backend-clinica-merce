@@ -266,23 +266,70 @@ async def get_media_quota(db: Session = Depends(get_db)):
 
 @router.delete("/{filename}")
 async def delete_media_file(filename: str, db: Session = Depends(get_db)):
-    """Safely deletes a media file ONLY if it is orphaned and belongs to the current tenant."""
-    # 1. Check global usage to prevent deleting other tenants' active files
-    if check_global_file_usage(filename, db):
-        raise HTTPException(
-            status_code=409,
-            detail="No se puede eliminar. Esta imagen está en uso."
-        )
+    """Safely deletes a media file: checks usage across tables and removes from storage and DB."""
+    tenant_id = current_tenant_var.get()
+    is_super_admin = tenant_id == "00000000-0000-0000-0000-000000000000"
+    search_pattern = f"%/{filename}"
 
-    # 2. Check ownership (must be registered in models.Media or once referenced by current tenant)
-    media_records = db.query(models.Media).filter(
+    # 1. Check clinic usage to prevent deleting other clinics' active files
+    if db.query(models.Service).filter(
+        or_(models.Service.image_url.like(search_pattern), models.Service.video_url.like(search_pattern))
+    ).first():
+        raise HTTPException(status_code=409, detail="No se puede eliminar. Este archivo está en uso por un servicio.")
+
+    if db.query(models.ServiceCategory).filter(models.ServiceCategory.image_url.like(search_pattern)).first():
+        raise HTTPException(status_code=409, detail="No se puede eliminar. Este archivo está en uso por una categoría.")
+
+    if db.query(models.SiteContent).filter(
         or_(
-            models.Media.url.like(f"%/{filename}"),
-            models.Media.filename == filename
-        ),
-        models.Media.tenant_id == current_tenant_var.get()
+            models.SiteContent.hero_image_url.like(search_pattern),
+            models.SiteContent.hero_video_url.like(search_pattern),
+            models.SiteContent.about_image_url.like(search_pattern)
+        )
+    ).first():
+        raise HTTPException(status_code=409, detail="No se puede eliminar. Este archivo está en uso en la web de una clínica.")
+
+    if db.query(models.Profile).filter(models.Profile.avatar_url.like(search_pattern)).first():
+        raise HTTPException(status_code=409, detail="No se puede eliminar. Este archivo está en uso en el perfil de un usuario.")
+
+    # Media table cross-tenant safety for regular tenants
+    if not is_super_admin and tenant_id:
+        if db.query(models.Media).filter(
+            or_(models.Media.url.like(search_pattern), models.Media.filename == filename),
+            models.Media.tenant_id != tenant_id
+        ).first():
+            raise HTTPException(status_code=403, detail="No tienes permisos para eliminar este archivo de otra clínica.")
+
+    # Showcase sectors usage
+    showcase_used = db.query(models.LandingShowcaseSector).filter(
+        or_(
+            models.LandingShowcaseSector.image_url.like(search_pattern),
+            models.LandingShowcaseSector.video_url.like(search_pattern)
+        )
     ).all()
-    
+
+    if showcase_used:
+        if is_super_admin:
+            for sector in showcase_used:
+                if sector.image_url and filename in sector.image_url:
+                    sector.image_url = None
+                if sector.video_url and filename in sector.video_url:
+                    sector.video_url = None
+        else:
+            raise HTTPException(status_code=409, detail="No se puede eliminar. Este archivo está en uso en la portada.")
+
+    # 2. Check ownership and find records in models.Media
+    if is_super_admin:
+        media_records = db.query(models.Media).filter(
+            or_(models.Media.url.like(search_pattern), models.Media.filename == filename),
+            or_(models.Media.tenant_id == "00000000-0000-0000-0000-000000000000", models.Media.tenant_id.is_(None))
+        ).all()
+    else:
+        media_records = db.query(models.Media).filter(
+            or_(models.Media.url.like(search_pattern), models.Media.filename == filename),
+            models.Media.tenant_id == tenant_id
+        ).all()
+
     supabase = get_supabase()
     try:
         supabase.storage.from_("media").remove([filename])

@@ -7,7 +7,8 @@ import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { processVideo } from '@/lib/videoProcessor';
 import { type MediaFile, formatBytes, isDocumentFile } from '@/lib/mediaTypes';
-import { Loader2, Sparkles, FileText, FileSpreadsheet, ImagePlus, Video, Folder, UploadCloud, X, Play } from 'lucide-react';
+import { Loader2, Sparkles, FileText, FileSpreadsheet, ImagePlus, Video, Folder, UploadCloud, X, Play, Trash2, Eye } from 'lucide-react';
+import MediaLuxuryViewer from '@/components/media/MediaLuxuryViewer';
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { 
   Dialog, 
@@ -46,6 +47,8 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
     const [isProcessing, setIsProcessing] = useState(false);
     const [processingProgress, setProcessingProgress] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
+    const [deletingFileName, setDeletingFileName] = useState<string | null>(null);
+    const [previewingFile, setPreviewingFile] = useState<MediaFile | null>(null);
 
     const dragCounter = useRef(0);
 
@@ -121,6 +124,63 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
       } finally {
         setGalleryLoading(false);
       }
+    };
+
+    const handleDeleteFile = (e: React.MouseEvent, file: MediaFile) => {
+      e.stopPropagation();
+
+      showFeedback({
+        type: 'confirm',
+        title: language === 'fr' ? 'Supprimer le média' : language === 'en' ? 'Delete Media' : 'Eliminar multimedia',
+        message: language === 'fr'
+          ? `Êtes-vous sûr de vouloir supprimer définitivement "${file.name}" ? Cette action est irréversible.`
+          : language === 'en'
+          ? `Are you sure you want to permanently delete "${file.name}"? This action cannot be undone.`
+          : `¿Estás seguro de que deseas eliminar permanentemente "${file.name}"? Esta acción liberará espacio y no se puede deshacer.`,
+        confirmText: language === 'fr' ? 'Oui, supprimer' : language === 'en' ? 'Yes, delete' : 'Sí, eliminar',
+        cancelText: language === 'fr' ? 'Annuler' : language === 'en' ? 'Cancel' : 'Cancelar',
+        onConfirm: async () => {
+          setDeletingFileName(file.name);
+          try {
+            const headers: Record<string, string> = {};
+            if (tenantId) headers['X-Tenant-ID'] = tenantId;
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/${encodeURIComponent(file.name)}`, {
+              method: 'DELETE',
+              headers,
+            });
+
+            if (res.ok) {
+              showFeedback({
+                type: 'success',
+                title: language === 'fr' ? 'Média supprimé' : language === 'en' ? 'Media deleted' : 'Elemento eliminado',
+                message: language === 'fr' ? 'Le fichier a été supprimé avec succès.' : language === 'en' ? 'The file has been successfully deleted.' : 'El archivo ha sido eliminado correctamente.'
+              });
+              setGalleryFiles(prev => prev.filter(f => f.name !== file.name && f.url !== file.url));
+              if (previewingFile?.name === file.name) {
+                setPreviewingFile(null);
+              }
+            } else {
+              const err = await res.json().catch(() => ({ detail: 'Error en el servidor' }));
+              showFeedback({
+                type: 'error',
+                title: language === 'fr' ? 'Erreur de suppression' : language === 'en' ? 'Delete Error' : 'No se pudo eliminar',
+                message: err.detail || 'No se pudo eliminar el archivo.'
+              });
+            }
+          } catch (err) {
+            console.error(err);
+            showFeedback({
+              type: 'error',
+              title: 'Error de red',
+              message: 'Error de conexión al servidor al eliminar el archivo.'
+            });
+          } finally {
+            setDeletingFileName(null);
+          }
+        }
+      });
     };
 
     const handleFileInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -417,16 +477,15 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                                         ) : (
                                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 pb-24">
                                                 {displayedFiles.map(file => (
-                                                    <button
-                                                        type="button"
+                                                    <div
                                                         key={file.url}
                                                         onClick={(e) => safeSelectImage(e, file.url)}
-                                                        className="group relative rounded-2xl overflow-hidden aspect-square bg-stone-100 border border-stone-200 hover:border-primary hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-left"
+                                                        className="group relative rounded-2xl overflow-hidden aspect-square bg-stone-100 border border-stone-200 hover:border-primary hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-left cursor-pointer"
                                                     >
                                                         {isVideo(file.content_type) ? (
                                                           <div className="w-full h-full relative flex items-center justify-center bg-stone-900">
                                                             <video src={file.url} className="w-full h-full object-cover opacity-60" crossOrigin="anonymous" />
-                                                            <div className="absolute inset-0 flex items-center justify-center">
+                                                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                                               <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-lg">
                                                                 <Play fill="white" size={16} className="text-white ml-1" />
                                                               </div>
@@ -455,24 +514,62 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                                                           />
                                                         )}
                                                         
-                                                        <div className="absolute top-2 left-2 z-10 px-2 py-1 bg-black/50 backdrop-blur-md rounded-lg text-[8px] font-black text-white uppercase tracking-widest">
+                                                        {/* Tamaño de archivo */}
+                                                        <div className="absolute top-2 left-2 z-10 px-2 py-1 bg-black/50 backdrop-blur-md rounded-lg text-[8px] font-black text-white uppercase tracking-widest pointer-events-none">
                                                           {formatBytes(file.size)}
                                                         </div>
 
-                                                        {file.status === 'in_use' && (
-                                                            <div className="absolute top-2 right-2 z-10">
-                                                                <span className="flex h-3 w-3 relative">
-                                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 shadow-sm border border-white"></span>
-                                                                </span>
-                                                            </div>
-                                                        )}
-                                                        <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/30 transition-all flex items-center justify-center">
-                                                            <div className="opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all bg-primary text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg">
-                                                                {language === 'fr' ? 'Choisir' : language === 'en' ? 'Choose' : 'Elegir'}
-                                                            </div>
+                                                        {/* Acciones e Indicadores superiores */}
+                                                        <div className="absolute top-2 right-2 z-20 flex items-center gap-1.5">
+                                                          {file.status === 'in_use' && (
+                                                            <span 
+                                                              title={file.usages?.length ? `En uso: ${file.usages.join(', ')}` : 'En uso'}
+                                                              className="flex h-3 w-3 relative mr-1"
+                                                            >
+                                                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 shadow-sm border border-white"></span>
+                                                            </span>
+                                                          )}
+
+                                                          {/* Botón Eliminar Elemento Multimedia */}
+                                                          <button
+                                                            type="button"
+                                                            onClick={(e) => handleDeleteFile(e, file)}
+                                                            disabled={deletingFileName === file.name}
+                                                            className="w-7 h-7 rounded-xl bg-black/60 hover:bg-rose-600 text-white flex items-center justify-center backdrop-blur-md border border-white/20 shadow-md transition-all duration-200 opacity-90 sm:opacity-0 group-hover:opacity-100 active:scale-90 hover:scale-110 cursor-pointer"
+                                                            title={file.status === 'in_use' ? `En uso: ${file.usages.join(', ')}` : 'Eliminar elemento multimedia'}
+                                                          >
+                                                            {deletingFileName === file.name ? (
+                                                              <Loader2 size={12} className="animate-spin text-white" />
+                                                            ) : (
+                                                              <Trash2 size={12} />
+                                                            )}
+                                                          </button>
                                                         </div>
-                                                    </button>
+
+                                                        {/* Overlay de selección y vista previa */}
+                                                        <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/35 transition-all flex items-center justify-center gap-2">
+                                                          <button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                              e.stopPropagation();
+                                                              setPreviewingFile(file);
+                                                            }}
+                                                            className="opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all p-2 rounded-full bg-white/90 hover:bg-white text-stone-800 shadow-lg hover:scale-110 active:scale-95 cursor-pointer"
+                                                            title="Vista previa completa y detalles"
+                                                          >
+                                                            <Eye size={14} />
+                                                          </button>
+
+                                                          <button
+                                                            type="button"
+                                                            onClick={(e) => safeSelectImage(e, file.url)}
+                                                            className="opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all bg-primary text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
+                                                          >
+                                                            {language === 'fr' ? 'Choisir' : language === 'en' ? 'Choose' : 'Elegir'}
+                                                          </button>
+                                                        </div>
+                                                    </div>
                                                 ))}
                                             </div>
                                         )}
@@ -582,6 +679,20 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
               setShowVideoAudioPrompt(false);
               setPendingVideoFile(null);
             }}
+          />
+        )}
+
+        {/* Modal Luxury Viewer para inspección y borrado seguro */}
+        {previewingFile && (
+          <MediaLuxuryViewer
+            file={previewingFile}
+            onClose={() => setPreviewingFile(null)}
+            onDelete={() => {
+              const f = previewingFile;
+              setPreviewingFile(null);
+              handleDeleteFile({ stopPropagation: () => {} } as any, f);
+            }}
+            deleting={deletingFileName === previewingFile.name}
           />
         )}
 
