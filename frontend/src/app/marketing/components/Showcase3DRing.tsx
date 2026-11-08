@@ -134,8 +134,32 @@ export default function Showcase3DRing({
   const currentOffsetRef = useRef<number>(activeIndex ?? 0);
 
   const [modalSector, setModalSector] = useState<{ sector: Sector; index: number } | null>(null);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Al abrir la ficha con el vídeo, el sonido está activado por defecto
+  useEffect(() => {
+    if (modalSector) {
+      setIsMuted(false);
+    }
+  }, [modalSector]);
+
+  // Sincronizar el estado de sonido con la etiqueta de vídeo y gestionar autoplay
+  useEffect(() => {
+    if (!videoRef.current || !modalSector) return;
+    videoRef.current.muted = isMuted;
+
+    if (!isMuted) {
+      videoRef.current.play().catch(() => {
+        // Fallback de seguridad si una política estricta de navegador bloquea el audio
+        if (videoRef.current) {
+          videoRef.current.muted = true;
+          setIsMuted(true);
+          videoRef.current.play().catch(() => {});
+        }
+      });
+    }
+  }, [isMuted, modalSector]);
 
   // ── DIMENSIONES ADAPTABLES 9:16 (Ocupan todo el espacio libre de la pantalla) ──
   const [dimensions, setDimensions] = useState({
