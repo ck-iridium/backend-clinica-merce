@@ -1,5 +1,7 @@
 'use client';
 
+import { createPortal } from 'react-dom';
+
 import { type MediaFile, formatBytes, isVideoFile, isDocumentFile } from '@/lib/mediaTypes';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { Download, Link2, Trash2, X, CheckCircle2, FileText, FileSpreadsheet } from 'lucide-react';
@@ -74,8 +76,8 @@ export default function MediaLuxuryViewer({ file, onClose, onDelete, deleting }:
     || file.name.split('.').pop()?.toUpperCase()
     || 'MED';
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-12 animate-in fade-in duration-300">
+  const content = (
+    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 md:p-12 animate-in fade-in duration-300">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-stone-950/60 backdrop-blur-xl" onClick={onClose} />
 
@@ -220,4 +222,6 @@ export default function MediaLuxuryViewer({ file, onClose, onDelete, deleting }:
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(content, document.body) : null;
 }

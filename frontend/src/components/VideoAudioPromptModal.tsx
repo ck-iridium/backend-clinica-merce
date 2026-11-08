@@ -38,7 +38,7 @@ export default function VideoAudioPromptModal({
     : null;
 
   const content = (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
       <div 
         onClick={(e) => e.stopPropagation()}
         className="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl border border-stone-200/90 relative text-left animate-in zoom-in-95 duration-200 space-y-5"
