@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, forwardRef, useRef } from 'react';
 import CropImageModal from '@/components/CropImageModal';
+import VideoAudioPromptModal from '@/components/VideoAudioPromptModal';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { processVideo } from '@/lib/videoProcessor';
@@ -39,6 +40,8 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
 
     const [showCropModal, setShowCropModal] = useState(false);
     const [selectedImageForCrop, setSelectedImageForCrop] = useState('');
+    const [pendingVideoFile, setPendingVideoFile] = useState<File | null>(null);
+    const [showVideoAudioPrompt, setShowVideoAudioPrompt] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [processingProgress, setProcessingProgress] = useState(0);
@@ -138,19 +141,12 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
       
       // Si es video, optimizar antes de subir
       if (isVideo) {
-        setIsProcessing(true);
-        setProcessingProgress(0);
-        try {
-          const optimizedBlob = await processVideo(file, (p) => setProcessingProgress(p));
-          await uploadDirectly(optimizedBlob, `video_${Date.now()}.mp4`);
-        } catch (err) {
-          console.error(err);
-          showFeedback({ type: 'error', title: 'Error', message: 'No se pudo optimizar el vídeo.' });
-        } finally {
-          setIsProcessing(false);
-          setProcessingProgress(0);
-        }
-      } else if (isDoc) {
+        setPendingVideoFile(file);
+        setShowVideoAudioPrompt(true);
+        e.target.value = '';
+        return;
+      }
+      if (isDoc) {
         // Si es documento, subir directo sin crop ni optimización de vídeo
         await uploadDirectly(file, file.name);
       } else {
@@ -163,6 +159,30 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
         reader.readAsDataURL(file);
       }
       e.target.value = '';
+    };
+
+        const handleConfirmVideoAudio = async (keepAudio: boolean) => {
+      if (!pendingVideoFile) return;
+      const fileToProcess = pendingVideoFile;
+      setShowVideoAudioPrompt(false);
+      setPendingVideoFile(null);
+
+      setIsProcessing(true);
+      setProcessingProgress(0);
+      try {
+        const optimizedBlob = await processVideo(fileToProcess, (p) => setProcessingProgress(p), {
+          keepAudio,
+          maxDimension: 540
+        });
+        const safeName = fileToProcess.name.replace(/\.[^/.]+$/, "") + ".mp4";
+        await uploadDirectly(optimizedBlob, safeName);
+      } catch (err) {
+        console.error(err);
+        showFeedback({ type: 'error', title: 'Error', message: 'No se pudo optimizar el vídeo.' });
+      } finally {
+        setIsProcessing(false);
+        setProcessingProgress(0);
+      }
     };
 
     const uploadDirectly = async (fileOrBlob: File | Blob, customName?: string) => {
@@ -550,6 +570,20 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
                 </div>
             </DialogPrimitive.Content>
         </DialogPrimitive.Portal>
+
+        {/* Modal de confirmación de audio para vídeos */}
+        {showVideoAudioPrompt && pendingVideoFile && (
+          <VideoAudioPromptModal
+            isOpen={showVideoAudioPrompt}
+            fileName={pendingVideoFile.name}
+            fileSize={pendingVideoFile.size}
+            onSelectOption={handleConfirmVideoAudio}
+            onCancel={() => {
+              setShowVideoAudioPrompt(false);
+              setPendingVideoFile(null);
+            }}
+          />
+        )}
 
         {/* Modal de Crop anidado (Radix Dialog) */}
         {showCropModal && (

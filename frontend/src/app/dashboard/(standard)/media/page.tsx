@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import CropImageModal from '@/components/CropImageModal';
+import VideoAudioPromptModal from '@/components/VideoAudioPromptModal';
 import { processVideo } from '@/lib/videoProcessor';
 import { type MediaFile, type Quota, MAX_BYTES } from '@/lib/mediaTypes';
 import MediaQuotaBar from '@/components/media/MediaQuotaBar';
@@ -36,6 +37,8 @@ export default function MediaGalleryPage() {
   const [processingProgress, setProcessingProgress] = useState(0);
   const [processingStatus, setProcessingStatus] = useState('');
   const [isDragging, setIsDragging] = useState(false);
+  const [pendingVideoFile, setPendingVideoFile] = useState<File | null>(null);
+  const [showVideoAudioPrompt, setShowVideoAudioPrompt] = useState(false);
 
   // ── Data fetching ──
   const fetchData = useCallback(async () => {
@@ -190,29 +193,43 @@ export default function MediaGalleryPage() {
     }
   };
 
+  const handleConfirmVideoAudio = async (keepAudio: boolean) => {
+    if (!pendingVideoFile) return;
+    const file = pendingVideoFile;
+    setShowVideoAudioPrompt(false);
+    setPendingVideoFile(null);
+
+    setIsProcessing(true);
+    setProcessingStatus(`Preparando vídeo: ${file.name}`);
+    try {
+      const optimizedBlob = await processVideo(file, (progress) => {
+        setProcessingStatus(`Optimizando vídeo: ${file.name} (${progress}%)`);
+        setProcessingProgress(progress);
+      }, {
+        keepAudio,
+        maxDimension: 540
+      });
+      setProcessingStatus(`Finalizando subida: ${file.name}`);
+      const safeName = file.name.replace(/\.[^/.]+$/, '') + '.mp4';
+      await handleUpload(optimizedBlob, safeName);
+    } catch (err) {
+      console.error(err);
+      showFeedback({ type: 'error', title: 'Error', message: `No se pudo procesar ${file.name}. Asegúrate de usar un navegador compatible.` });
+    } finally {
+      setIsProcessing(false);
+      setProcessingStatus('');
+      setProcessingProgress(0);
+    }
+  };
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     const selectedFiles = Array.from(e.target.files);
 
     for (const file of selectedFiles) {
       if (file.type.startsWith('video/')) {
-        setIsProcessing(true);
-        setProcessingStatus(`Preparando vídeo: ${file.name}`);
-        try {
-          const optimizedBlob = await processVideo(file, (progress) => {
-            setProcessingStatus(`Optimizando vídeo: ${file.name} (${progress}%)`);
-            setProcessingProgress(progress);
-          });
-          setProcessingStatus(`Finalizando subida: ${file.name}`);
-          await handleUpload(optimizedBlob, `video_${Date.now()}.mp4`);
-        } catch (err) {
-          console.error(err);
-          showFeedback({ type: 'error', title: 'Error', message: `No se pudo procesar ${file.name}. Asegúrate de usar un navegador compatible.` });
-        } finally {
-          setIsProcessing(false);
-          setProcessingStatus('');
-          setProcessingProgress(0);
-        }
+        setPendingVideoFile(file);
+        setShowVideoAudioPrompt(true);
       } else if (file.type.startsWith('image/')) {
         // Si es solo una imagen, permitimos recorte
         if (selectedFiles.length === 1) {
@@ -415,6 +432,20 @@ export default function MediaGalleryPage() {
           imageSrc={selectedImageForCrop}
           onClose={() => { setShowCropModal(false); setSelectedImageForCrop(''); }}
           onCropComplete={handleCropComplete}
+        />
+      )}
+
+      {/* Video Audio Prompt Modal */}
+      {showVideoAudioPrompt && pendingVideoFile && (
+        <VideoAudioPromptModal
+          isOpen={showVideoAudioPrompt}
+          fileName={pendingVideoFile.name}
+          fileSize={pendingVideoFile.size}
+          onSelectOption={handleConfirmVideoAudio}
+          onCancel={() => {
+            setShowVideoAudioPrompt(false);
+            setPendingVideoFile(null);
+          }}
         />
       )}
     </div>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Image as ImageIcon, Pipette, Sparkles, Video, Trash2, Loader2, RotateCcw, Lock } from 'lucide-react';
 import { UseFormRegister, Control, UseFormSetValue } from 'react-hook-form';
 import { processVideo } from '@/lib/videoProcessor';
+import VideoAudioPromptModal from '@/components/VideoAudioPromptModal';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import {
@@ -31,6 +32,8 @@ export default function DesignTab({ formValues, register, control, setValue, set
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [isProcessingVideo, setIsProcessingVideo] = useState(false);
   const [processingProgress, setProcessingProgress] = useState(0);
+  const [pendingVideoFile, setPendingVideoFile] = useState<File | null>(null);
+  const [showVideoAudioPrompt, setShowVideoAudioPrompt] = useState(false);
   const [isDraggingImage, setIsDraggingImage] = useState(false);
   const [isDraggingVideo, setIsDraggingVideo] = useState(false);
 
@@ -95,37 +98,51 @@ export default function DesignTab({ formValues, register, control, setValue, set
     return url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${url}` : url;
   };
 
+  const handleConfirmVideoAudio = async (keepAudio: boolean) => {
+    if (!pendingVideoFile) return;
+    const file = pendingVideoFile;
+    setShowVideoAudioPrompt(false);
+    setPendingVideoFile(null);
+
+    setIsProcessingVideo(true);
+    setProcessingProgress(0);
+    try {
+      const optimizedBlob = await processVideo(file, (progress) => {
+        setProcessingProgress(progress);
+      }, {
+        keepAudio,
+        maxDimension: 540
+      });
+
+      const uploadData = new FormData();
+      const safeName = file.name.replace(/\.[^/.]+$/, "") + ".mp4";
+      uploadData.append('file', optimizedBlob, safeName);
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/`, {
+        method: 'POST',
+        body: uploadData
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setValue('video_url', data.url, { shouldDirty: true });
+        toast.success(t('dashboard.services.video_uploaded'));
+      } else {
+        toast.error(t('dashboard.services.error_uploading_video'));
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(t('dashboard.services.error_processing_video'));
+    } finally {
+      setIsProcessingVideo(false);
+      setProcessingProgress(0);
+    }
+  };
+
   const handleMediaUpload = async (file: File, type: 'image' | 'video') => {
     if (type === 'video' && file.type.startsWith('video/')) {
-      setIsProcessingVideo(true);
-      setProcessingProgress(0);
-      try {
-        const optimizedBlob = await processVideo(file, (progress) => {
-          setProcessingProgress(progress);
-        });
-
-        const uploadData = new FormData();
-        uploadData.append('file', optimizedBlob, `video_${Date.now()}.mp4`);
-
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/`, {
-          method: 'POST',
-          body: uploadData
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          setValue('video_url', data.url, { shouldDirty: true });
-          toast.success(t('dashboard.services.video_uploaded'));
-        } else {
-          toast.error(t('dashboard.services.error_uploading_video'));
-        }
-      } catch (err) {
-        console.error(err);
-        toast.error(t('dashboard.services.error_processing_video'));
-      } finally {
-        setIsProcessingVideo(false);
-        setProcessingProgress(0);
-      }
+      setPendingVideoFile(file);
+      setShowVideoAudioPrompt(true);
     } else if (type === 'image' && file.type.startsWith('image/')) {
       setIsProcessingImage(true);
       try {
@@ -437,6 +454,18 @@ export default function DesignTab({ formValues, register, control, setValue, set
           setValue('image_url', url, { shouldDirty: true });
         }}
       />
+      {showVideoAudioPrompt && pendingVideoFile && (
+        <VideoAudioPromptModal
+          isOpen={showVideoAudioPrompt}
+          fileName={pendingVideoFile.name}
+          fileSize={pendingVideoFile.size}
+          onSelectOption={handleConfirmVideoAudio}
+          onCancel={() => {
+            setShowVideoAudioPrompt(false);
+            setPendingVideoFile(null);
+          }}
+        />
+      )}
     </div>
   );
 }

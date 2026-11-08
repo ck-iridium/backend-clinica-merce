@@ -22,17 +22,31 @@ export const loadFFmpeg = async () => {
   return ffmpeg;
 };
 
+export interface ProcessVideoOptions {
+  keepAudio?: boolean;
+  maxDimension?: number; // Por defecto 540p: resolución optimizada para pantallas móviles
+  crf?: number; // Por defecto 30: balance óptimo compresión/calidad
+}
+
 /**
- * Procesa un archivo de vídeo: quita audio, escala a 720p y comprime.
+ * Procesa un archivo de vídeo:
+ * - Permite elegir si conservar el audio (AAC 96k) o silenciarlo (-an).
+ * - Escala la resolución hacia abajo para pantallas móviles (máx 540p), reduciendo drásticamente el peso de 720p/1080p.
+ * - Aplica flags de streaming instantáneo (+faststart) y compresión H.264.
  */
 export const processVideo = async (
   file: File, 
-  onProgress?: (progress: number) => void
+  onProgress?: (progress: number) => void,
+  options?: ProcessVideoOptions
 ): Promise<Blob> => {
   const ffmpegInstance = await loadFFmpeg();
   
   const inputName = 'input.mp4';
   const outputName = 'output.mp4';
+
+  const keepAudio = options?.keepAudio ?? false;
+  const maxDim = options?.maxDimension ?? 540;
+  const crf = (options?.crf ?? 30).toString();
 
   // Escribir el archivo original en el sistema de archivos virtual de FFmpeg
   await ffmpegInstance.writeFile(inputName, await fetchFile(file));
@@ -42,23 +56,35 @@ export const processVideo = async (
     if (onProgress) onProgress(Math.round(progress * 100));
   });
 
-  // Comando de optimización: 
-  // -an (sin audio)
-  // -vcodec libx264 (codec estándar)
-  // -crf 30 (balance óptimo peso/calidad para loops web)
-  // -preset fast (equilibrio entre velocidad y compresión)
-  // -vf scale (escala a 720p solo si es mayor, manteniendo proporción)
-  // -pix_fmt yuv420p (formato de píxeles compatible con todos los navegadores/móviles)
-  await ffmpegInstance.exec([
-    '-i', inputName,
-    '-an',
+  // Filtro de escala: reduce proporcionalmente a resolución móvil (ej: 540p)
+  // asegurando dimensiones pares (-2) requeridas por H.264
+  const scaleFilter = `scale='if(gt(iw,ih),-2,min(${maxDim},iw))':'if(gt(iw,ih),min(${maxDim},ih),-2)'`;
+
+  const ffmpegArgs: string[] = [
+    '-i', inputName
+  ];
+
+  // Configuración de audio
+  if (keepAudio) {
+    // Si el usuario decide conservar sonido: audio AAC comprimido en estéreo a 96 kbps
+    ffmpegArgs.push('-c:a', 'aac', '-b:a', '96k', '-ar', '44100');
+  } else {
+    // Silenciado para loops web ultraligeros
+    ffmpegArgs.push('-an');
+  }
+
+  // Parámetros de vídeo y optimización web
+  ffmpegArgs.push(
     '-vcodec', 'libx264',
-    '-crf', '30',
+    '-crf', crf,
     '-preset', 'fast',
-    '-vf', "scale='if(gt(iw,ih),-2,min(720,iw))':'if(gt(iw,ih),min(720,ih),-2)'",
+    '-vf', scaleFilter,
     '-pix_fmt', 'yuv420p',
+    '-movflags', '+faststart',
     outputName
-  ]);
+  );
+
+  await ffmpegInstance.exec(ffmpegArgs);
 
   // Leer el archivo resultante desde la memoria de WASM
   const data = await ffmpegInstance.readFile(outputName);

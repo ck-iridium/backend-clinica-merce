@@ -3,6 +3,7 @@ import React, { useState, useRef } from 'react';
 import { Camera, Trash2, Image as ImageIcon, Sparkles, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { processVideo } from '@/lib/videoProcessor';
+import VideoAudioPromptModal from '@/components/VideoAudioPromptModal';
 
 export default function ImageUploadBlock({ 
   label, 
@@ -26,6 +27,8 @@ export default function ImageUploadBlock({
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [processingProgress, setProcessingProgress] = useState(0);
+  const [pendingVideoFile, setPendingVideoFile] = useState<File | null>(null);
+  const [showVideoAudioPrompt, setShowVideoAudioPrompt] = useState(false);
   const dragCounter = useRef(0);
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -48,6 +51,63 @@ export default function ImageUploadBlock({
     dragCounter.current--;
     if (dragCounter.current === 0) {
       setIsDragging(false);
+    }
+  };
+
+  const uploadFileToServer = async (fileToUpload: File | Blob, originalFileName: string, isVideo: boolean) => {
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      const safeName = isVideo 
+        ? originalFileName.replace(/\.[^/.]+$/, "") + ".mp4" 
+        : originalFileName;
+      formData.append('file', fileToUpload, safeName);
+
+      const headers: Record<string, string> = {};
+      if (tenantId) headers['X-Tenant-ID'] = tenantId;
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/`, {
+        method: 'POST',
+        headers,
+        body: formData
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        onUpload(data.url);
+        toast.success("Archivo subido correctamente");
+      } else {
+        toast.error("Error al subir el archivo");
+      }
+    } catch {
+      toast.error("Error de conexión");
+    } finally {
+      setIsUploading(false);
+      setProcessingProgress(0);
+    }
+  };
+
+  const handleConfirmVideoAudio = async (keepAudio: boolean) => {
+    if (!pendingVideoFile) return;
+    const file = pendingVideoFile;
+    setShowVideoAudioPrompt(false);
+    setPendingVideoFile(null);
+
+    setIsUploading(true);
+    setProcessingProgress(0);
+    toast.info("Optimizando vídeo para pantalla móvil...");
+
+    try {
+      const optimized = await processVideo(file, (p) => setProcessingProgress(p), {
+        keepAudio,
+        maxDimension: 540
+      });
+      await uploadFileToServer(optimized, file.name, true);
+    } catch (err) {
+      console.error("Error procesando video", err);
+      toast.error("Error al procesar el vídeo, se subirá el original.");
+      await uploadFileToServer(file, file.name, true);
     }
   };
 
@@ -79,54 +139,13 @@ export default function ImageUploadBlock({
       return;
     }
 
-    setIsUploading(true);
-    setProcessingProgress(0);
-
-    try {
-      let fileToUpload: File | Blob = file;
-
-      if (isVideo) {
-        toast.info("Optimizando vídeo para la web...");
-        try {
-          fileToUpload = await processVideo(file, (progress) => {
-            setProcessingProgress(progress);
-          });
-        } catch (err) {
-          console.error("Error procesando video", err);
-          toast.error("Error al procesar el vídeo, se subirá el original.");
-        }
-      }
-
-      const formData = new FormData();
-      formData.append('file', fileToUpload, isVideo ? `video_${Date.now()}.mp4` : file.name);
-
-      const headers: Record<string, string> = {};
-      if (tenantId) {
-        headers['X-Tenant-ID'] = tenantId;
-      }
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/`, {
-        method: 'POST',
-        headers,
-        body: formData
-      });
-      
-      if (res.ok) {
-        const data = await res.json();
-        onUpload(data.url);
-        toast.success("Archivo subido correctamente");
-      } else {
-        toast.error("Error al subir el archivo");
-      }
-    } catch (err) {
-      toast.error("Error de conexión");
-    } finally {
-      setIsUploading(false);
-      setProcessingProgress(0);
+    if (isVideo) {
+      setPendingVideoFile(file);
+      setShowVideoAudioPrompt(true);
+      return;
     }
+
+    await uploadFileToServer(file, file.name, false);
   };
 
   return (
@@ -205,6 +224,19 @@ export default function ImageUploadBlock({
           )}
         </div>
       </div>
+
+      {showVideoAudioPrompt && pendingVideoFile && (
+        <VideoAudioPromptModal
+          isOpen={showVideoAudioPrompt}
+          fileName={pendingVideoFile.name}
+          fileSize={pendingVideoFile.size}
+          onSelectOption={handleConfirmVideoAudio}
+          onCancel={() => {
+            setShowVideoAudioPrompt(false);
+            setPendingVideoFile(null);
+          }}
+        />
+      )}
     </div>
   );
 }
