@@ -43,6 +43,14 @@ interface PageProps {
 // Metadata dinámica por página
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = params;
+
+  if (slug.startsWith('google') && slug.endsWith('.html')) {
+    return {
+      title: `Google Verification - ${slug}`,
+      robots: 'noindex, nofollow',
+    };
+  }
+
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
   const requestHeaders = headers();
   const tenantId = requestHeaders.get('x-tenant-id');
@@ -75,6 +83,16 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function CustomPage({ params }: PageProps) {
   const { slug } = params;
+
+  // Verificación dinámica de Google Search Console si se solicita un archivo google*.html
+  if (slug.startsWith('google') && slug.endsWith('.html')) {
+    return (
+      <div style={{ fontFamily: 'monospace', padding: 24, background: '#ffffff', color: '#111827' }}>
+        google-site-verification: {slug}
+      </div>
+    );
+  }
+
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
   const requestHeaders = headers();
   const tenantId = requestHeaders.get('x-tenant-id');

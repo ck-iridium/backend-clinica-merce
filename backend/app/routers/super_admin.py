@@ -239,6 +239,8 @@ class SaasSettingsUpdate(BaseModel):
     google_ads_id: Optional[str] = None
     google_ads_conversion_label: Optional[str] = None
     google_analytics_id: Optional[str] = None
+    google_verification_filename: Optional[str] = None
+    google_verification_content: Optional[str] = None
 
 @router.get("/settings")
 def get_saas_settings(
@@ -256,13 +258,16 @@ def get_saas_settings(
         db.refresh(settings)
 
     integrations = settings.integrations_config or {}
+    verification_file = integrations.get("google_verification_file") or {}
     return {
         "allow_search_engine_indexing": settings.allow_search_engine_indexing if settings.allow_search_engine_indexing is not None else True,
         "google_site_verification": settings.google_site_verification or "",
         "gtm_container_id": settings.gtm_container_id or "",
         "google_ads_id": settings.google_ads_id or "",
         "google_ads_conversion_label": settings.google_ads_conversion_label or "",
-        "google_analytics_id": integrations.get("google_analytics_id", "") or ""
+        "google_analytics_id": integrations.get("google_analytics_id", "") or "",
+        "google_verification_filename": verification_file.get("filename", "") or "",
+        "google_verification_content": verification_file.get("content", "") or ""
     }
 
 @router.patch("/settings")
@@ -274,6 +279,7 @@ def update_saas_settings(
     """
     Actualiza los ajustes globales del SaaS (Tenant por defecto de Probookia).
     """
+    import os
     from sqlalchemy.orm.attributes import flag_modified
 
     settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == "00000000-0000-0000-0000-000000000000").first()
@@ -305,9 +311,39 @@ def update_saas_settings(
     if payload.google_ads_conversion_label is not None:
         settings.google_ads_conversion_label = payload.google_ads_conversion_label.strip()
 
+    current_integrations = dict(settings.integrations_config or {})
+    modified_integrations = False
+
     if payload.google_analytics_id is not None:
-        current_integrations = dict(settings.integrations_config or {})
         current_integrations["google_analytics_id"] = payload.google_analytics_id.strip()
+        modified_integrations = True
+
+    if payload.google_verification_filename is not None:
+        fname = payload.google_verification_filename.strip()
+        fcontent = (payload.google_verification_content or "").strip()
+        if fname:
+            current_integrations["google_verification_file"] = {
+                "filename": fname,
+                "content": fcontent,
+                "uploaded_at": datetime.utcnow().isoformat()
+            }
+            # Si el token no estaba configurado, extraerlo del nombre o contenido
+            token_match = re.search(r'google([a-zA-Z0-9_-]+)\.html', fname)
+            if token_match and not settings.google_site_verification:
+                settings.google_site_verification = token_match.group(1)
+            # Guardar archivo estático físicamente si es posible
+            try:
+                base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+                public_path = os.path.join(base_dir, "frontend", "public", fname)
+                with open(public_path, "w", encoding="utf-8") as f:
+                    f.write(fcontent or f"google-site-verification: {fname}")
+            except Exception as e:
+                print(f"[SuperAdmin] No se pudo escribir archivo estático: {e}")
+        else:
+            current_integrations.pop("google_verification_file", None)
+        modified_integrations = True
+
+    if modified_integrations:
         settings.integrations_config = current_integrations
         flag_modified(settings, "integrations_config")
 
@@ -315,13 +351,16 @@ def update_saas_settings(
     db.refresh(settings)
 
     integrations = settings.integrations_config or {}
+    verification_file = integrations.get("google_verification_file") or {}
     return {
         "allow_search_engine_indexing": settings.allow_search_engine_indexing if settings.allow_search_engine_indexing is not None else True,
         "google_site_verification": settings.google_site_verification or "",
         "gtm_container_id": settings.gtm_container_id or "",
         "google_ads_id": settings.google_ads_id or "",
         "google_ads_conversion_label": settings.google_ads_conversion_label or "",
-        "google_analytics_id": integrations.get("google_analytics_id", "") or ""
+        "google_analytics_id": integrations.get("google_analytics_id", "") or "",
+        "google_verification_filename": verification_file.get("filename", "") or "",
+        "google_verification_content": verification_file.get("content", "") or ""
     }
 
 class TenantDomainUpdate(BaseModel):

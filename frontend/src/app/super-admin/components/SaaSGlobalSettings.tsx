@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   Globe, 
   Loader2, 
@@ -14,10 +14,12 @@ import {
   HelpCircle, 
   Save, 
   FileCode, 
-  BarChart3,
+  UploadCloud,
+  Trash2,
   Lock,
   Sparkles
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface SaaSGlobalSettingsProps {
   saasSettings: {
@@ -27,6 +29,8 @@ interface SaaSGlobalSettingsProps {
     google_ads_id?: string;
     google_ads_conversion_label?: string;
     google_analytics_id?: string;
+    google_verification_filename?: string;
+    google_verification_content?: string;
   } | null;
   loadingSettings: boolean;
   savingSettings: boolean;
@@ -41,6 +45,9 @@ export default function SaaSGlobalSettings({
   onToggleIndexing,
   onSaveSettings,
 }: SaaSGlobalSettingsProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
   // Estado local para edición de formulario
   const [formData, setFormData] = useState({
     allow_search_engine_indexing: true,
@@ -49,6 +56,8 @@ export default function SaaSGlobalSettings({
     google_ads_id: '',
     google_ads_conversion_label: '',
     google_analytics_id: '',
+    google_verification_filename: '',
+    google_verification_content: '',
   });
 
   // Sincronizar estado cuando lleguen los datos del backend
@@ -61,9 +70,72 @@ export default function SaaSGlobalSettings({
         google_ads_id: saasSettings.google_ads_id || '',
         google_ads_conversion_label: saasSettings.google_ads_conversion_label || '',
         google_analytics_id: saasSettings.google_analytics_id || '',
+        google_verification_filename: saasSettings.google_verification_filename || 'google2cf0962089e4bfed.html',
+        google_verification_content: saasSettings.google_verification_content || 'google-site-verification: google2cf0962089e4bfed.html',
       });
     }
   }, [saasSettings]);
+
+  // Manejador del archivo HTML de verificación de Google
+  const handleFileProcess = (file: File) => {
+    if (!file.name.endsWith('.html')) {
+      toast.error('Por favor, selecciona un archivo HTML de Google válido (.html)');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = (e.target?.result as string) || '';
+      const fname = file.name.trim();
+      const tokenMatch = fname.match(/google([a-zA-Z0-9_-]+)\.html/i);
+      
+      setFormData(prev => ({
+        ...prev,
+        google_verification_filename: fname,
+        google_verification_content: content.trim() || `google-site-verification: ${fname}`,
+        google_site_verification: tokenMatch ? tokenMatch[1] : prev.google_site_verification,
+      }));
+      toast.success(`Archivo "${fname}" cargado. Haz clic en "Guardar Configuración Global".`);
+    };
+    reader.readAsText(file);
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleFileProcess(file);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      handleFileProcess(file);
+    }
+  };
+
+  const handleRemoveFile = () => {
+    setFormData(prev => ({
+      ...prev,
+      google_verification_filename: '',
+      google_verification_content: '',
+    }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    toast.info('Archivo de verificación desvinculado. Guarda los cambios para aplicar.');
+  };
 
   // Manejador del código de Google Search Console con auto-limpieza
   const handleSearchConsoleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -170,7 +242,7 @@ export default function SaaSGlobalSettings({
             </h2>
             <p className="text-stone-300 text-xs md:text-sm max-w-2xl leading-relaxed">
               Configura el ecosistema oficial de Google para la plataforma central <strong>(www.probookia.com)</strong>: 
-              verificación de propiedad en Search Console, Google Tag Manager, Google Analytics 4, campañas de Google Ads e indexación global.
+              subida y verificación de archivo en Search Console, Google Tag Manager, Google Analytics 4, campañas de Google Ads e indexación global.
             </p>
           </div>
           <div className="bg-white/10 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/10 flex items-center gap-3 shrink-0">
@@ -194,7 +266,7 @@ export default function SaaSGlobalSettings({
           {/* BENTO GRID: Herramientas de Google */}
           <div className="grid grid-cols-1 gap-8">
             
-            {/* Bento Card 1: Google Search Console */}
+            {/* Bento Card 1: Google Search Console con Cargador de Archivos */}
             <div className="bg-white rounded-3xl md:rounded-[2.5rem] border border-stone-100 p-6 md:p-8 shadow-sm relative overflow-hidden">
               <div className="flex items-center justify-between pb-5 border-b border-stone-100 mb-6">
                 <div className="flex items-center gap-4">
@@ -218,37 +290,112 @@ export default function SaaSGlobalSettings({
               </div>
 
               <div className="space-y-6">
-                {/* Status Callout: Verificación Automática por Archivo HTML */}
-                <div className="p-5 bg-emerald-50/70 rounded-2xl border border-emerald-100 flex items-start gap-3.5">
-                  <FileCode className="text-emerald-600 shrink-0 mt-0.5" size={20} />
-                  <div className="text-xs space-y-1.5 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-emerald-900">Método 1 (Recomendado): Archivo HTML Activo</span>
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-full">
-                        <CheckCircle2 size={11} />
-                        Listo para verificar
+                
+                {/* 1. SECCIÓN PRINCIPAL: CARGADOR DE ARCHIVO HTML DE GOOGLE */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-bold text-stone-800 flex items-center gap-2">
+                      <FileCode size={16} className="text-emerald-600" />
+                      Método Recomendado: Subir Archivo HTML de Google
+                    </span>
+                    {formData.google_verification_filename && (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/50">
+                        <CheckCircle2 size={12} />
+                        Archivo Vinculado
                       </span>
-                    </div>
-                    <p className="text-emerald-800 leading-relaxed">
-                      El archivo de verificación <code className="bg-white/80 px-1.5 py-0.5 rounded border border-emerald-200 font-mono font-bold text-emerald-900">google2cf0962089e4bfed.html</code> ya está configurado y respondiendo en el servidor. 
-                      Solo pulsa en <strong>&quot;VERIFICAR&quot;</strong> en la ventana de Search Console para completar la propiedad al instante.
-                    </p>
+                    )}
                   </div>
+
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    accept=".html"
+                    onChange={handleFileInputChange}
+                    className="hidden"
+                  />
+
+                  {formData.google_verification_filename ? (
+                    /* Tarjeta de Archivo Cargado */
+                    <div className="p-5 bg-stone-50/80 rounded-2xl border border-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="flex items-start gap-3.5">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-100/80 text-emerald-800 flex items-center justify-center shrink-0">
+                          <FileCode size={20} />
+                        </div>
+                        <div>
+                          <span className="font-mono font-bold text-sm text-stone-900 block">
+                            {formData.google_verification_filename}
+                          </span>
+                          <span className="text-[11px] text-stone-500 block mt-0.5">
+                            {formData.google_verification_content || `google-site-verification: ${formData.google_verification_filename}`}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+                        <a
+                          href={`https://www.probookia.com/${formData.google_verification_filename}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-stone-700 hover:text-emerald-700 font-semibold bg-white px-3 py-2 rounded-xl border border-stone-200 shadow-sm transition-all hover:bg-stone-50"
+                        >
+                          <span>Probar URL</span>
+                          <ExternalLink size={12} />
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="text-xs text-stone-700 hover:text-stone-900 font-medium bg-white px-3 py-2 rounded-xl border border-stone-200 shadow-sm transition-all hover:bg-stone-50 cursor-pointer"
+                        >
+                          Cambiar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleRemoveFile}
+                          className="p-2 text-stone-400 hover:text-rose-600 transition-colors rounded-xl hover:bg-rose-50 cursor-pointer"
+                          title="Eliminar archivo"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Dropzone de Carga de Archivo */
+                    <div
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                      onClick={() => fileInputRef.current?.click()}
+                      className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all ${
+                        isDragging 
+                          ? 'border-[#d4af37] bg-amber-50/40' 
+                          : 'border-stone-200 hover:border-[#d4af37] bg-stone-50/50 hover:bg-[#FAF9F6]'
+                      }`}
+                    >
+                      <div className="w-12 h-12 rounded-2xl bg-white shadow-sm border border-stone-100 text-[#d4af37] flex items-center justify-center mx-auto mb-3">
+                        <UploadCloud size={24} />
+                      </div>
+                      <span className="text-sm font-bold text-stone-800 block">
+                        Haz clic para seleccionar o arrastra el archivo HTML de Google aquí
+                      </span>
+                      <p className="text-xs text-stone-400 mt-1 max-w-md mx-auto">
+                        Sube el archivo descargado de Search Console (ej. <code className="text-stone-600 font-mono">google2cf0962089e4bfed.html</code>). 
+                        El sistema lo publicará de inmediato en <code className="text-stone-600">https://www.probookia.com/</code>.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
-                {/* Método 2: Etiqueta Meta HTML */}
-                <div>
+                {/* 2. MÉTODO SECUNDARIO: ETIQUETA META HTML */}
+                <div className="pt-4 border-t border-stone-100">
                   <div className="flex items-center justify-between mb-2">
                     <label htmlFor="saas-google-verification" className="text-sm font-bold text-stone-700">
-                      Método 2: Código o Metaetiqueta HTML
+                      Método Alternativo: Código o Metaetiqueta HTML
                     </label>
-                    {formData.google_site_verification ? (
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
-                        <CheckCircle2 size={13} />
-                        Etiqueta meta configurada
+                    {formData.google_site_verification && (
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full">
+                        <CheckCircle2 size={12} />
+                        Token configurado
                       </span>
-                    ) : (
-                      <span className="text-xs text-stone-400">Opcional si usas archivo HTML</span>
                     )}
                   </div>
                   <input
@@ -256,13 +403,14 @@ export default function SaaSGlobalSettings({
                     id="saas-google-verification"
                     value={formData.google_site_verification}
                     onChange={handleSearchConsoleChange}
-                    placeholder='ej. dX8bQ7y1Z_... o etiqueta <meta name="google-site-verification" content="..." />'
+                    placeholder='ej. 2cf0962089e4bfed o etiqueta <meta name="google-site-verification" content="..." />'
                     className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-stone-50 text-stone-900 font-mono text-xs md:text-sm placeholder:text-stone-400 transition-all focus:outline-none focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
                   />
                   <p className="text-[11px] text-stone-400 mt-1.5">
-                    Si pegas la etiqueta HTML completa, el sistema extraerá automáticamente el token y lo inyectará en el <code>&lt;head&gt;</code> de <em>probookia.com</em>.
+                    Al subir el archivo HTML, este token se autocompleta. También puedes pegar la etiqueta <code>&lt;meta&gt;</code> manualmente si lo prefieres.
                   </p>
                 </div>
+
               </div>
             </div>
 
