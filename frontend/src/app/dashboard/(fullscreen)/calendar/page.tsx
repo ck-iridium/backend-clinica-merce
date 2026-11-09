@@ -240,7 +240,7 @@ function CalendarContent() {
           id="calendar-toggle-panel"
           onClick={() => setIsPanelOpen(!isPanelOpen)}
           className={`
-            hidden md:flex absolute top-5 left-[50px] -translate-x-1/2 z-50 p-2.5 rounded-2xl border border-stone-200/80 shadow-md transition-all duration-300 group items-center justify-center
+            hidden md:flex absolute top-2.5 left-[50px] -translate-x-1/2 z-50 p-2.5 rounded-2xl border border-stone-200/80 shadow-md transition-all duration-300 group items-center justify-center
             ${isPanelOpen ? 'bg-white/90 backdrop-blur-md text-stone-500 hover:text-stone-900' : 'bg-stone-900 text-white hover:bg-stone-800'}
           `}
           title={isPanelOpen ? t('dashboard.calendar.close_panel') : t('dashboard.calendar.open_panel')}
@@ -287,11 +287,10 @@ function CalendarContent() {
                     <p className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-0.5 group-hover:text-[#B38F26] transition-colors ${isToday ? 'text-[#B38F26]' : 'text-stone-400'}`}>
                       {date.toLocaleDateString(getLocaleString(), { weekday: 'short' })}
                     </p>
-                    <span className={`inline-flex items-center justify-center font-serif text-lg font-bold transition-all group-hover:scale-105 ${
-                      isToday
+                    <span className={`inline-flex items-center justify-center font-serif text-lg font-bold transition-all group-hover:scale-105 ${isToday
                         ? 'w-8 h-8 rounded-xl bg-[#D4AF37] text-stone-950 shadow-sm font-black'
                         : 'text-stone-900 group-hover:text-[#B38F26]'
-                    }`}>
+                      }`}>
                       {date.getDate()}
                     </span>
                     <span className="text-[9px] text-[#B38F26] font-semibold opacity-0 group-hover:opacity-100 transition-opacity leading-none mt-0.5">
@@ -370,26 +369,27 @@ function CalendarContent() {
           <div className="flex-1 flex flex-col relative overflow-visible h-full">
             <div
               className="grid relative h-full flex-1"
-              style={{ gridTemplateColumns: c.viewMode === 'day' 
-                ? `100px repeat(${Math.max(1, dayColumnsCount)}, minmax(0, 1fr))`
-                : `100px repeat(${c.days.length}, minmax(0, 1fr))` 
+              style={{
+                gridTemplateColumns: c.viewMode === 'day'
+                  ? `100px repeat(${Math.max(1, dayColumnsCount)}, minmax(0, 1fr))`
+                  : `100px repeat(${c.days.length}, minmax(0, 1fr))`
               }}
             >
               {/* Indicador de Tiempo Real (Desktop) */}
               {((c.viewMode === 'week' && c.days.some(d => d.toDateString() === new Date().toDateString())) ||
                 (c.viewMode === 'day' && c.mobileSelectedDate.toDateString() === new Date().toDateString())) && (
-                <div
-                  className="absolute inset-0 pointer-events-none z-40"
-                  style={{ gridColumn: '2 / -1' }}
-                >
-                  <TimeIndicator
-                    startHour={c.startHour}
-                    totalHours={c.hours.length}
-                    heightPerHour={80}
-                    viewType="desktop"
-                  />
-                </div>
-              )}
+                  <div
+                    className="absolute inset-0 pointer-events-none z-40"
+                    style={{ gridColumn: '2 / -1' }}
+                  >
+                    <TimeIndicator
+                      startHour={c.startHour}
+                      totalHours={c.hours.length}
+                      heightPerHour={80}
+                      viewType="desktop"
+                    />
+                  </div>
+                )}
 
               <TimeScale hours={c.hours} heightPerHour={0} part="guides" />
               <TimeScale hours={c.hours} heightPerHour={0} part="axis" viewType="desktop" />
@@ -614,7 +614,8 @@ function CalendarContent() {
           getBlocksForDay={c.getBlocksForDay}
           clientMap={c.clientMap}
           serviceMap={c.serviceMap}
-          staffList={c.staffList}
+          staffMap={c.staffMap}
+            staffList={c.staffList}
           locations={c.locations}
           fetchData={c.fetchData}
           openWhatsApp={c.openWhatsApp}

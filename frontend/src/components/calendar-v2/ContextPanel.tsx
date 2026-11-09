@@ -297,7 +297,7 @@ export function ContextPanel({
                                     onClick={() => onSelectStaffFilter?.('ALL')}
                                     className="text-[10px] font-semibold text-[#B38F26] hover:underline"
                                 >
-                                    Ver todos
+                                    {t('dashboard.calendar.all_team') || 'Ver todos'}
                                 </button>
                             )}
                         </div>
@@ -322,7 +322,7 @@ export function ContextPanel({
                                     }`}>
                                         <Users size={13} />
                                     </div>
-                                    <span className="text-xs truncate">Todo el equipo</span>
+                                    <span className="text-xs truncate">{t('dashboard.calendar.all_team') || 'Todo el equipo'}</span>
                                 </div>
                                 <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-stone-100 text-stone-700 shrink-0">
                                     {Object.values(staffAppointmentCounts || {}).reduce((acc, curr) => acc + curr, 0)}

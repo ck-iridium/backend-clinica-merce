@@ -92,6 +92,19 @@
     "notes": "Practitioner Notes",
     "no_notes": "No notes recorded...",
     "loading_orchestrator": "Loading orchestrator...",
+    "team_filter": "Staff & Team",
+    "all_team": "All Team",
+    "specialist": "Assigned Specialist",
+    "unassigned": "No specialist assigned",
+    "view_day": "View day",
+    "day_specialists": "Day (Specialists)",
+    "view_week": "Week",
+    "prev_week": "Previous week",
+    "next_week": "Next week",
+    "columns_by_specialist": "Columns by Specialist",
+    "assigned_to": "Assigned to",
+    "reassign_specialist": "Change specialist",
+    "conflict_detected": "Schedule conflict detected",
     "toast": {
       "status_updated": "Status updated",
       "update_error": "Error updating status",
@@ -105,7 +118,9 @@
       "appt_scheduled": "Appointment scheduled successfully",
       "block_error": "Error blocking time slot",
       "slot_blocked": "Time slot blocked",
-      "duration_updated": "Appointment duration updated"
+      "duration_updated": "Appointment duration updated",
+      "staff_updated": "Specialist updated successfully",
+      "staff_conflict": "Selected specialist already has an appointment at this time"
     },
     "modal": {
       "delete_title": "Delete Appointment",

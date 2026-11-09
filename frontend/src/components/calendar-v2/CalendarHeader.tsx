@@ -49,7 +49,7 @@ export function CalendarHeader({
   return (
     <>
       {/* VISTA DESKTOP: Cabecera con fecha, navegación y selector de vista */}
-      <div className="hidden md:flex items-center justify-between px-6 py-3 border-b border-stone-200/70 bg-white/95 backdrop-blur-md">
+      <div className="hidden md:flex items-center justify-between pl-20 pr-6 py-3 border-b border-stone-200/70 bg-white/95 backdrop-blur-md">
         {/* Título y Navegación rápida */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2.5">
@@ -60,11 +60,11 @@ export function CalendarHeader({
             </h2>
             {viewMode === 'day' ? (
               <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-50 text-[#99771A] border border-amber-200/70 shadow-2xs">
-                Columnas por Especialista
+                {t('dashboard.calendar.day_specialists') || 'Columnas por Especialista'}
               </span>
             ) : (
               <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 border border-stone-200/60 shadow-2xs">
-                Vista Semanal
+                {t('dashboard.calendar.view_week') || 'Vista Semanal'}
               </span>
             )}
           </div>
@@ -74,7 +74,7 @@ export function CalendarHeader({
               id="calendar-header-prev-btn"
               onClick={onPrev}
               className="p-1.5 rounded-lg hover:bg-white text-stone-500 hover:text-stone-900 transition-colors"
-              title={viewMode === 'day' ? 'Día anterior' : 'Semana anterior'}
+              title={viewMode === 'day' ? (t('dashboard.calendar.prev_day') || 'Día anterior') : (t('dashboard.calendar.prev_week') || 'Semana anterior')}
             >
               <ChevronLeft size={16} />
             </button>
@@ -89,7 +89,7 @@ export function CalendarHeader({
               id="calendar-header-next-btn"
               onClick={onNext}
               className="p-1.5 rounded-lg hover:bg-white text-stone-500 hover:text-stone-900 transition-colors"
-              title={viewMode === 'day' ? 'Día siguiente' : 'Semana siguiente'}
+              title={viewMode === 'day' ? (t('dashboard.calendar.next_day') || 'Día siguiente') : (t('dashboard.calendar.next_week') || 'Semana siguiente')}
             >
               <ChevronRight size={16} />
             </button>
@@ -110,7 +110,7 @@ export function CalendarHeader({
               }`}
             >
               <CalendarDays size={14} className={viewMode === 'week' ? 'text-[#D4AF37]' : ''} />
-              <span>Semana</span>
+              <span>{t('dashboard.calendar.view_week') || 'Semana'}</span>
             </button>
             <button
               id="calendar-viewmode-day-btn"
@@ -123,7 +123,7 @@ export function CalendarHeader({
               }`}
             >
               <Columns3 size={14} className={viewMode === 'day' ? 'text-[#D4AF37]' : ''} />
-              <span>Día (Especialistas)</span>
+              <span>{t('dashboard.calendar.day_specialists') || 'Día (Especialistas)'}</span>
             </button>
           </div>
         </div>

@@ -4,7 +4,11 @@ Este manual sirve como la única fuente de verdad (RAG) para guiar al usuario en
 
 ## 1. Reglas de Negocio
 El módulo de Agenda (`/dashboard/calendar`) permite la gestión de citas de pacientes y bloqueos de tiempo para los profesionales de la clínica. Los usuarios pueden:
-- Visualizar la planificación diaria, semanal o mensual de citas.
+- Visualizar la planificación en **Vista Semanal** o en **Vista Diaria con Columnas por Especialista** (1 columna por profesional).
+- Filtrar la agenda por profesional específico o ver a todo el equipo desde el panel lateral, con contador de citas en vivo.
+- Consultar de un vistazo el especialista asignado en cada tarjeta mediante micro-avatares y tarjetas flotantes de detalle.
+- Reasignar o cambiar directamente el especialista de cualquier cita desde el modal de edición (`id="edit-appt-staff-select-trigger"`).
+- Detección automática de conflictos de horario: si el especialista seleccionado ya tiene otra cita en esa franja, el sistema bloquea el solapamiento y previene citas duplicadas.
 - Crear nuevas citas asignando un cliente y un tratamiento específico.
 - Crear bloqueos de tiempo (por descanso, formación u otros motivos) para evitar reservas.
 - Editar o cancelar citas y bloqueos de tiempo existentes.
@@ -37,11 +41,19 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL `/dashboa
     - Confirmadas: `id="calendar-filter-confirmed-btn"`
     - Pendientes Web: `id="calendar-filter-pending-btn"`
     - Pagadas: `id="calendar-filter-paid-btn"`
+- **Filtro de Personal y Equipo:** Permite filtrar las citas por profesional específico o ver las de todo el equipo, con recuento en vivo.
+  - Ruta: `/dashboard/calendar`
+  - Selectores:
+    - Todo el equipo: `id="calendar-filter-staff-all-btn"`
+    - Especialista individual: `id="calendar-filter-staff-[id]-btn"`
 - **Cerrar Panel Lateral:** Oculta el panel lateral de navegación en desktop.
   - Ruta: `/dashboard/calendar`
   - Selector: `id="calendar-close-panel-btn"`
 
 ### Cabecera e Interacción del Grid Principal
+- **Alternar Modo de Vista (Semanal vs Columnas por Especialista):**
+  - Vista Semanal: `id="calendar-viewmode-week-btn"`
+  - Vista Diaria (Columnas por Especialista): `id="calendar-viewmode-day-btn"`
 - **Selector de Fecha Principal:** Cabecera con selector de fecha para ir a un día específico.
   - Ruta: `/dashboard/calendar`
   - Selector: `id="calendar-header-datepicker"`
@@ -88,6 +100,9 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL `/dashboa
   - Selector: `id="create-appt-submit-btn"`
 
 ### Modal de Edición de Citas y Bloqueos
+- **Reasignar / Cambiar Especialista:** Permite ver el profesional asignado a la cita y reasignarlo directamente a cualquier miembro del equipo o desasignarlo ("Sin especialista asignado"), con detección automática de solapamiento de horario.
+  - Ruta: `/dashboard/calendar` (Modal abierto)
+  - Selector: `id="edit-appt-staff-select-trigger"`
 - **Modificar Duración Manual de Cita Existente:**
   - Píldoras rápidas (15, 30, 45, 60, 90, 120 min): `id="edit-appt-duration-[mins]-btn"`
   - Campo numérico personalizado: `id="edit-appt-custom-duration-input"`

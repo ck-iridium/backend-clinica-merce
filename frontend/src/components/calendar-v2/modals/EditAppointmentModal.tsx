@@ -85,6 +85,10 @@ export function EditAppointmentModal({
   openWhatsApp,
 }: EditAppointmentModalProps) {
   const { t, language } = useLanguage();
+  const resolvedStaffMap = useMemo(() => {
+    if (staffMap && staffMap.size > 0) return staffMap;
+    return new Map((staffList || []).map((s: any) => [s.id, s]));
+  }, [staffMap, staffList]);
 
   const parseIsoDate = (str?: string) => {
     if (!str) return new Date();
@@ -285,7 +289,7 @@ export function EditAppointmentModal({
             </div>
             {staffList && staffList.length > 0 ? (
               <Select
-                value={selectedAppt?.staff_id || ''}
+                value={selectedAppt?.staff_id || 'unassigned'}
                 onValueChange={(val) => handleUpdateStaff?.(val)}
                 disabled={updatingStatus}
               >
@@ -293,8 +297,8 @@ export function EditAppointmentModal({
                   id="edit-appt-staff-select-trigger"
                   className="w-full h-12 rounded-xl border border-stone-200/80 bg-stone-50/60 hover:bg-stone-50 focus:bg-white text-xs font-semibold shadow-2xs transition-all"
                 >
-                  {selectedAppt?.staff_id && staffMap?.get(selectedAppt.staff_id) ? (() => {
-                    const staff = staffMap.get(selectedAppt.staff_id);
+                  {selectedAppt?.staff_id && resolvedStaffMap?.get(selectedAppt.staff_id) ? (() => {
+                    const staff = resolvedStaffMap.get(selectedAppt.staff_id);
                     return (
                       <div className="flex items-center gap-2.5 truncate">
                         {staff.avatar_url ? (
@@ -309,10 +313,23 @@ export function EditAppointmentModal({
                       </div>
                     );
                   })() : (
-                    <span className="text-stone-400 italic">Sin especialista asignado</span>
+                    <div className="flex items-center gap-2 text-stone-400 italic">
+                      <div className="w-6 h-6 rounded-full border border-dashed border-stone-300 flex items-center justify-center text-[10px] font-medium text-stone-400">
+                        Ø
+                      </div>
+                      <span>{t('dashboard.calendar.unassigned') || 'Sin especialista asignado'}</span>
+                    </div>
                   )}
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl border border-stone-200/80 shadow-2xl p-1.5 bg-white">
+                  <SelectItem value="unassigned" className="py-2.5 rounded-xl text-xs font-medium text-stone-500">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-5 h-5 rounded-full border border-dashed border-stone-300 flex items-center justify-center text-[9px] font-medium text-stone-400">
+                        Ø
+                      </div>
+                      <span className="italic">{t('dashboard.calendar.unassigned') || 'Sin especialista asignado'}</span>
+                    </div>
+                  </SelectItem>
                   {staffList.map((s) => (
                     <SelectItem key={s.id} value={s.id} className="py-2.5 rounded-xl text-xs font-medium">
                       <div className="flex items-center gap-2.5">

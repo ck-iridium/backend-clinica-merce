@@ -39,3 +39,7 @@ Este documento es la fuente de verdad para el Control de Acceso Basado en Roles 
 ### ³ Mobile UI (Recepción)
 - **Acceso Directo**: "Facturas" debe estar en el menú principal del MobileBottomBar.
 - **Submenús**: Ocultar completamente los submenús de "Configuración" y "Gestión Avanzada".
+
+### ⁴ Agenda (/calendar) - Vista Multi-Especialista y Reasignación
+- **Administrador y Recepción:** Gestión total. Visualización en Vista Semanal y Vista Diaria (1 columna por especialista), filtros de personal con contador en vivo, y reasignación directa de especialista desde la cita con control automático de colisiones.
+- **Especialista:** Visualización completa de agenda y columnas de profesionales. Acceso de solo lectura a tarifas y cobros.

@@ -157,20 +157,21 @@ export function CalendarModals({
 
   const handleUpdateStaff = async (newStaffId: string) => {
     if (!selectedAppt) return;
+    const staffIdToSend = newStaffId === 'unassigned' ? null : newStaffId;
     setUpdatingStatus(true);
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/${selectedAppt.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ staff_id: newStaffId })
+        body: JSON.stringify({ staff_id: staffIdToSend })
       });
       if (res.ok) {
         await fetchData();
-        setSelectedAppt({ ...selectedAppt, staff_id: newStaffId });
+        setSelectedAppt({ ...selectedAppt, staff_id: staffIdToSend });
         toast.success(t('dashboard.calendar.toast.staff_updated') || 'Especialista actualizado');
       } else {
         const err = await res.json().catch(() => ({}));
-        toast.error(err.detail || t('dashboard.calendar.toast.update_error') || 'Error al reasignar especialista');
+        toast.error(err.detail || t('dashboard.calendar.toast.staff_conflict') || 'Error al reasignar especialista');
       }
     } catch (e) {
       toast.error(t('dashboard.calendar.toast.connection_error') || 'Error de conexión');
