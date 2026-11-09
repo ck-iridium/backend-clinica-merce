@@ -612,8 +612,8 @@ export default function Showcase3DRing({
                   className="absolute inset-0 w-full h-full object-cover pointer-events-none transition-transform duration-700 group-hover:scale-105"
                 />
 
-                {/* ── VELO DEGRADADO CINEMATOGRÁFICO DE LECTURA ── */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-black/30 pointer-events-none z-10" />
+                {/* ── VELO DEGRADADO SUTIL SOLO EN LA BASE PARA LECTURA (PARTE MEDIA Y SUPERIOR LIMPIAS) ── */}
+                <div className="absolute bottom-0 inset-x-0 h-[48%] bg-gradient-to-t from-black/95 via-black/50 to-transparent pointer-events-none z-10" />
 
                 {/* ── BADGE SUPERIOR DE SECTOR ── */}
                 <div className="absolute top-9 left-4 right-4 z-20 flex items-center justify-between pointer-events-none">
@@ -711,8 +711,8 @@ export default function Showcase3DRing({
               className="absolute inset-0 w-full h-full object-cover"
             />
 
-            {/* Velo degrade para legibilidad */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-black/30 pointer-events-none z-10" />
+            {/* Velo degradado sutil ÚNICAMENTE en la parte inferior para legibilidad; zona media y superior al 100% color original */}
+            <div className="absolute bottom-0 inset-x-0 h-[48%] bg-gradient-to-t from-black/95 via-black/60 to-transparent pointer-events-none z-10" />
 
             {/* Cabecera del modal */}
             <div className="relative z-20 pt-10 px-6 flex items-center justify-between">
