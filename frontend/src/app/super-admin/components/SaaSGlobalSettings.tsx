@@ -70,8 +70,8 @@ export default function SaaSGlobalSettings({
         google_ads_id: saasSettings.google_ads_id || '',
         google_ads_conversion_label: saasSettings.google_ads_conversion_label || '',
         google_analytics_id: saasSettings.google_analytics_id || '',
-        google_verification_filename: saasSettings.google_verification_filename || 'google2cf0962089e4bfed.html',
-        google_verification_content: saasSettings.google_verification_content || 'google-site-verification: google2cf0962089e4bfed.html',
+        google_verification_filename: saasSettings.google_verification_filename || 'google2cf0952089a4bfcd.html',
+        google_verification_content: saasSettings.google_verification_content || 'google-site-verification: google2cf0952089a4bfcd.html',
       });
     }
   }, [saasSettings]);
@@ -378,7 +378,7 @@ export default function SaaSGlobalSettings({
                         Haz clic para seleccionar o arrastra el archivo HTML de Google aquí
                       </span>
                       <p className="text-xs text-stone-400 mt-1 max-w-md mx-auto">
-                        Sube el archivo descargado de Search Console (ej. <code className="text-stone-600 font-mono">google2cf0962089e4bfed.html</code>). 
+                        Sube el archivo descargado de Search Console (ej. <code className="text-stone-600 font-mono">google2cf0952089a4bfcd.html</code>). 
                         El sistema lo publicará de inmediato en <code className="text-stone-600">https://www.probookia.com/</code>.
                       </p>
                     </div>
