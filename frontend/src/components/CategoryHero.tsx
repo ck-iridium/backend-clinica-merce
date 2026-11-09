@@ -49,7 +49,7 @@ export default function CategoryHero({ category, lang: propLang }: CategoryHeroP
     ? 'COLLECTION DE SOINS'
     : activeLang === 'en'
       ? 'TREATMENT COLLECTION'
-      : t('common.treatment_collection', 'COLECCIÓN DE TRATAMIENTOS');
+      : (t('common.treatment_collection') || 'COLECCIÓN DE TRATAMIENTOS');
 
   return (
     <section className="relative w-full h-full overflow-hidden flex flex-col justify-end bg-stone-900">

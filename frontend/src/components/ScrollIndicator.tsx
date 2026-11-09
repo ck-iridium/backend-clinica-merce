@@ -2,9 +2,9 @@
 
 import { ChevronDown } from 'lucide-react';
 
-export default function ScrollIndicator() {
+export default function ScrollIndicator({ targetId = 'treatment-content' }: { targetId?: string } = {}) {
   const scrollToContent = () => {
-    const contentElement = document.getElementById('treatment-content');
+    const contentElement = document.getElementById(targetId);
     if (contentElement) {
       contentElement.scrollIntoView({ behavior: 'smooth' });
     }
