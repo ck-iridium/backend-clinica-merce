@@ -83,14 +83,21 @@ export async function generateMetadata(): Promise<Metadata> {
   if (isMarketing) {
     let allowSaasIndexing = false;
     let saasGoogleVerification: string | undefined = undefined;
+    let marketingFavicon = "/favicon_probookia.ico";
     const systemTenantId = process.env.NEXT_PUBLIC_SYSTEM_TENANT_ID || "00000000-0000-0000-0000-000000000000";
-    if (systemTenantId && baseUrl) {
+    if (baseUrl) {
       try {
-        const resSettings = await fetch(`${baseUrl}/settings/`, {
-          next: { revalidate: 60 },
-          headers: { "X-Tenant-ID": systemTenantId }
-        });
-        if (resSettings.ok) {
+        const [resSettings, resMarketing] = await Promise.all([
+          systemTenantId ? fetch(`${baseUrl}/settings/`, {
+            next: { revalidate: 60 },
+            headers: { "X-Tenant-ID": systemTenantId }
+          }) : null,
+          fetch(`${baseUrl}/super-admin/marketing/public`, {
+            next: { revalidate: 60, tags: ['marketing-public'] }
+          })
+        ]);
+
+        if (resSettings && resSettings.ok) {
           const data = await resSettings.json();
           allowSaasIndexing = data.allow_search_engine_indexing;
           if (data.google_site_verification) {
@@ -102,6 +109,13 @@ export async function generateMetadata(): Promise<Metadata> {
               cleanCode = cleanCode.split('=').pop()?.replace(/["']/g, '').trim() || cleanCode;
             }
             saasGoogleVerification = cleanCode;
+          }
+        }
+
+        if (resMarketing && resMarketing.ok) {
+          const mData = await resMarketing.json();
+          if (mData.settings?.favicon_url) {
+            marketingFavicon = mData.settings.favicon_url;
           }
         }
       } catch (e) { }
@@ -117,6 +131,13 @@ export async function generateMetadata(): Promise<Metadata> {
       verification: saasGoogleVerification ? { google: saasGoogleVerification } : undefined,
       alternates: {
         canonical: saasCanonical,
+      },
+      icons: {
+        icon: [
+          { url: marketingFavicon },
+        ],
+        shortcut: marketingFavicon,
+        apple: marketingFavicon,
       },
     };
   }
@@ -331,7 +352,9 @@ export default async function RootLayout({
   const borderRadiusStyle = settings?.border_radius || 'suave';
   const headingsFont = settings?.branding_font_headings || 'Playfair';
   const bodyFont = settings?.branding_font_body || 'Inter';
-  const favicon = settings?.favicon_b64 || settings?.logo_app_b64 || settings?.logo_pdf_b64 || '/favicon_probookia.ico';
+  const favicon = isMarketing 
+    ? (marketingFavicon || '/favicon_probookia.ico')
+    : (settings?.favicon_b64 || settings?.logo_app_b64 || settings?.logo_pdf_b64 || '/favicon_tenant.ico');
 
   let radiusBase = "1rem";
   let radiusCard = "1.5rem";
