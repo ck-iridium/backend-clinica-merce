@@ -6,7 +6,8 @@ export type NotificationType = 'success' | 'info' | 'warning' | 'error';
 // ─── Interface de Notificación (espeja la tabla public.notifications en Supabase) ──
 export interface Notification {
   id: string;                        // UUID en Supabase (era number en mocks)
-  user_id?: string;                  // FK a profiles.id
+  tenant_id?: string;                // FK a tenants.id (Aislamiento Multi-Tenant)
+  user_id?: string;                  // FK a auth.users.id / profiles.id
   title: string;
   description: string;
   type: NotificationType;
@@ -21,6 +22,7 @@ export interface Notification {
 // ─── Props del Componente NotificationCenter ────────────────────────────────
 export interface NotificationCenterProps {
   isMobile: boolean;
+  tenantId?: string;
 }
 
 // ─── Mapa de Colores por Tipo (Dark Mode Coherente con el Sidebar) ───────────

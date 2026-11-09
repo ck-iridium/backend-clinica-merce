@@ -35,6 +35,45 @@ export function getTenantSlug(): string {
   return 'merce';
 }
 
+/**
+ * Obtiene el ID del inquilino (tenant_id) activo en el navegador del cliente.
+ * Respeta prioritariamente:
+ * 1. Modo Soporte / Impersonación
+ * 2. Cookie de sesión `tenant_id` o `cached_tenant_id`
+ * 3. LocalStorage del usuario
+ * 4. Mapeo de slugs conocidos
+ */
+export function getActiveTenantId(): string {
+  if (typeof window === 'undefined') return '00000000-0000-0000-0000-000000000001';
+
+  // 1. Modo Soporte / Impersonación
+  const isImpersonating = readCookie('is_impersonating') === 'true';
+  const impersonateId = readCookie('impersonate_tenant_id');
+  if (isImpersonating && impersonateId) return impersonateId;
+
+  // 2. Cookie directa tenant_id o cached_tenant_id establecida por middleware
+  const cookieId = readCookie('tenant_id') || readCookie('cached_tenant_id');
+  if (cookieId && cookieId !== 'null' && cookieId !== 'undefined') return cookieId;
+
+  // 3. Fallback desde localStorage
+  try {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      const parsed = JSON.parse(userStr);
+      if (parsed.tenant_id) return parsed.tenant_id;
+    }
+    const lastTenant = localStorage.getItem('last_tenant_id');
+    if (lastTenant) return lastTenant;
+  } catch {}
+
+  // 4. Mapeo según el slug detectado en host
+  const slug = getTenantSlug();
+  if (slug === 'merce') return '00000000-0000-0000-0000-000000000001';
+  if (slug === 'ninabeautycoiff') return 'a8369e08-2844-42db-82d0-cf9f63f0b1d8';
+
+  return '00000000-0000-0000-0000-000000000001';
+}
+
 export function getTenantPublicHost(): string {
   if (typeof window === 'undefined') return 'merce.localhost:3000';
 

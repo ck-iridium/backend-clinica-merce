@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import type { Notification } from '@/types/notification.types';
 import { formatRelativeTime } from '@/types/notification.types';
+import { getActiveTenantId } from '@/utils/tenantUrl';
 
 // ─── Helper: Obtener userId desde localStorage (patrón del proyecto) ─────────
 function getUserIdFromStorage(): string | null {
@@ -23,6 +24,7 @@ function getUserIdFromStorage(): string | null {
 function enrichNotification(raw: Record<string, unknown>): Notification {
   return {
     id: raw.id as string,
+    tenant_id: raw.tenant_id as string | undefined,
     user_id: raw.user_id as string,
     title: raw.title as string,
     description: raw.description as string,
@@ -38,10 +40,11 @@ function enrichNotification(raw: Record<string, unknown>): Notification {
 const recentlyToasted = new Set<string>();
 
 // ─── Hook Principal ──────────────────────────────────────────────────────────
-export function useNotifications() {
+export function useNotifications(explicitTenantId?: string) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  const [activeTenantId, setActiveTenantId] = useState<string | null>(null);
 
   // Ref para el pool de sonidos categorizados (positive, alert, neutral)
   const soundsRef = useRef<Record<string, HTMLAudioElement>>({});
@@ -84,17 +87,24 @@ export function useNotifications() {
     }
   }, []);
 
-  // Obtener el userId del localStorage al montar
+  // Obtener el userId y activeTenantId al montar o si explicitTenantId cambia
   useEffect(() => {
     setUserId(getUserIdFromStorage());
-  }, []);
+    setActiveTenantId(explicitTenantId || getActiveTenantId());
+  }, [explicitTenantId]);
 
-  // Fetch inicial de notificaciones
-  const fetchNotifications = useCallback(async (uid: string) => {
+  // Fetch inicial de notificaciones estrictamente acotado por tenant_id
+  const fetchNotifications = useCallback(async (uid: string, tenantId: string | null) => {
+    if (!tenantId) {
+      setNotifications([]);
+      return;
+    }
+
     const { data, error } = await supabase
       .from('notifications')
       .select('*')
       .eq('user_id', uid)
+      .eq('tenant_id', tenantId)
       .order('created_at', { ascending: false })
       .limit(50);
 
@@ -103,20 +113,23 @@ export function useNotifications() {
       return;
     }
 
-    setNotifications((data ?? []).map(enrichNotification));
+    // Doble barrera de seguridad: filtrado estricto en memoria por el tenant activo
+    const filtered = (data ?? []).filter((raw) => (raw as any).tenant_id === tenantId);
+    setNotifications(filtered.map(enrichNotification));
   }, []);
 
   // Fetch inicial + suscripción Realtime
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || !activeTenantId) {
+      if (!userId) setLoading(false);
+      return;
+    }
 
     setLoading(true);
-    fetchNotifications(userId).finally(() => setLoading(false));
+    fetchNotifications(userId, activeTenantId).finally(() => setLoading(false));
 
     // ─── Canal Realtime ────────────────────────────────────────────────────
-    // Generamos un nombre de canal único por cada ejecución del useEffect
-    // para evitar colisiones si React Strict Mode monta/desmonta rápidamente.
-    const channelName = `notifications-${userId}-${Math.random().toString(36).slice(2, 9)}`;
+    const channelName = `notifications-${userId}-${activeTenantId}-${Math.random().toString(36).slice(2, 9)}`;
     const channel = supabase
       .channel(channelName)
       .on(
@@ -128,20 +141,28 @@ export function useNotifications() {
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
+          const raw = (payload.new || {}) as Record<string, unknown>;
+          const notifTenantId = raw.tenant_id as string | undefined;
+
+          // 🛡️ AISLAMIENTO MULTI-INQUILINO ESTRICTO:
+          // Si la notificación pertenece a otra clínica/tenant diferente a la activa, ignorar por completo.
+          if (notifTenantId && notifTenantId !== activeTenantId) {
+            return;
+          }
+
           if (payload.eventType === 'INSERT') {
-            const newNotif = enrichNotification(payload.new as Record<string, unknown>);
+            const newNotif = enrichNotification(raw);
             setNotifications((prev) => [newNotif, ...prev]);
 
-            // ─── Deduplicación global para evitar doble Toast (Desktop + Mobile) ──
+            // Deduplicación global para evitar doble Toast (Desktop + Mobile)
             if (!recentlyToasted.has(newNotif.id)) {
               recentlyToasted.add(newNotif.id);
               setTimeout(() => recentlyToasted.delete(newNotif.id), 5000);
 
-              // ─── Toast de notificación en tiempo real ──────────────────────
+              // Toast de notificación en tiempo real
               const toastOptions = {
                 description: newNotif.description,
                 duration: 5000,
-                // Forzamos un texto más grande y legible en el Toast
                 className: 'text-base font-semibold',
                 descriptionClassName: 'text-sm font-medium mt-1 opacity-90',
               };
@@ -152,12 +173,12 @@ export function useNotifications() {
                 default:        toast.info(newNotif.title, toastOptions);    break;
               }
 
-              // ─── Sonido de notificación categorizado ─────────────────────────
+              // Sonido de notificación categorizado
               playNotificationSound(newNotif.type);
             }
 
           } else if (payload.eventType === 'UPDATE') {
-            const updated = enrichNotification(payload.new as Record<string, unknown>);
+            const updated = enrichNotification(raw);
             setNotifications((prev) =>
               prev.map((n) => (n.id === updated.id ? updated : n))
             );
@@ -169,11 +190,11 @@ export function useNotifications() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId, fetchNotifications, playNotificationSound]);
+  }, [userId, activeTenantId, fetchNotifications, playNotificationSound]);
 
-  // ─── Acción: Marcar todas como leídas ────────────────────────────────────
+  // ─── Acción: Marcar todas como leídas (restringido al tenant activo) ─────────
   const markAllAsRead = useCallback(async () => {
-    if (!userId) return;
+    if (!userId || !activeTenantId) return;
 
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
 
@@ -181,17 +202,18 @@ export function useNotifications() {
       .from('notifications')
       .update({ read: true })
       .eq('user_id', userId)
+      .eq('tenant_id', activeTenantId)
       .eq('read', false);
 
     if (error) {
       console.error('useNotifications: Error al marcar como leídas:', error.message);
-      fetchNotifications(userId);
+      fetchNotifications(userId, activeTenantId);
     }
-  }, [userId, fetchNotifications]);
+  }, [userId, activeTenantId, fetchNotifications]);
 
-  // ─── Acción: Marcar una como leída ───────────────────────────────────────
+  // ─── Acción: Marcar una como leída (restringido al tenant activo) ──────────
   const markAsRead = useCallback(async (id: string) => {
-    if (!userId) return;
+    if (!userId || !activeTenantId) return;
 
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
 
@@ -199,15 +221,16 @@ export function useNotifications() {
       .from('notifications')
       .update({ read: true })
       .eq('id', id)
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .eq('tenant_id', activeTenantId);
 
     if (error) {
       console.error('useNotifications: Error al marcar notificación como leída:', error.message);
-      fetchNotifications(userId);
+      fetchNotifications(userId, activeTenantId);
     }
-  }, [userId, fetchNotifications]);
+  }, [userId, activeTenantId, fetchNotifications]);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  return { notifications, loading, unreadCount, markAllAsRead, markAsRead };
+  return { notifications, loading, unreadCount, markAllAsRead, markAsRead, activeTenantId };
 }

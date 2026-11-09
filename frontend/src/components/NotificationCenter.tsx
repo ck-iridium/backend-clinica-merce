@@ -153,10 +153,10 @@ function NotificationList({
 }
 
 // ─── Componente Principal: NotificationCenter ────────────────────────────────
-export function NotificationCenter({ isMobile }: NotificationCenterProps) {
+export function NotificationCenter({ isMobile, tenantId }: NotificationCenterProps) {
   const router = useRouter();
-  // Fuente de datos real: Supabase + Realtime
-  const { notifications, loading, unreadCount, markAllAsRead, markAsRead } = useNotifications();
+  // Fuente de datos real: Supabase + Realtime (estrictamente acotado al tenant activo)
+  const { notifications, loading, unreadCount, markAllAsRead, markAsRead } = useNotifications(tenantId);
 
   // Estados de apertura controlados manualmente para que el panel se cierre al hacer clic
   const [sheetOpen, setSheetOpen] = useState(false);
