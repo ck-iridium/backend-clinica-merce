@@ -135,12 +135,11 @@ export default function SuperAdminPage() {
     }
   }
 
-  // 2.3. Guardar indexación global del SaaS
-  async function handleToggleSaasIndexing() {
-    if (!user?.access_token || !saasSettings) return;
+  // 2.3. Guardar ajustes globales del SaaS (Google integrations, indexación, etc.)
+  async function handleSaveSaasSettings(updatedData: any) {
+    if (!user?.access_token) return;
     setSavingSettings(true);
-    const newIndexValue = !saasSettings.allow_search_engine_indexing;
-    const loadingToast = toast.loading('Actualizando indexación de motores de búsqueda...');
+    const loadingToast = toast.loading('Guardando configuración global del SaaS...');
     try {
       const response = await fetch(`${API_URL}/super-admin/settings`, {
         method: 'PATCH',
@@ -148,22 +147,29 @@ export default function SuperAdminPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${user.access_token}`
         },
-        body: JSON.stringify({ allow_search_engine_indexing: newIndexValue })
+        body: JSON.stringify(updatedData)
       });
       if (!response.ok) {
-        throw new Error('Error al actualizar los ajustes del SaaS');
+        throw new Error('Error al actualizar los ajustes globales del SaaS');
       }
-      setSaasSettings({ allow_search_engine_indexing: newIndexValue });
-      toast.success(newIndexValue
-        ? 'Indexación global de motores de búsqueda ACTIVADA para el SaaS'
-        : 'Indexación global de motores de búsqueda DESACTIVADA para el SaaS',
-        { id: loadingToast }
-      );
+      const data = await response.json();
+      setSaasSettings(data);
+      toast.success('Ajustes globales del SaaS guardados correctamente', { id: loadingToast });
     } catch (err: any) {
       toast.error(err.message || 'Error al guardar los ajustes del SaaS', { id: loadingToast });
     } finally {
       setSavingSettings(false);
     }
+  }
+
+  // 2.4. Guardar indexación global del SaaS
+  async function handleToggleSaasIndexing() {
+    if (!saasSettings) return;
+    const newIndexValue = !saasSettings.allow_search_engine_indexing;
+    await handleSaveSaasSettings({
+      ...saasSettings,
+      allow_search_engine_indexing: newIndexValue
+    });
   }
 
   // 3. Modificar estado de suscripción (Suspender / Activar)
@@ -366,6 +372,7 @@ export default function SuperAdminPage() {
             loadingSettings={loadingSettings}
             savingSettings={savingSettings}
             onToggleIndexing={handleToggleSaasIndexing}
+            onSaveSettings={handleSaveSaasSettings}
           />
         ) : activeTab === 'cms' ? (
           <SaaSCMSManager token={user?.access_token} />

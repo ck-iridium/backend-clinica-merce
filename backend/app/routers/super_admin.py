@@ -233,7 +233,12 @@ def impersonate_tenant(
     }
 
 class SaasSettingsUpdate(BaseModel):
-    allow_search_engine_indexing: bool
+    allow_search_engine_indexing: Optional[bool] = None
+    google_site_verification: Optional[str] = None
+    gtm_container_id: Optional[str] = None
+    google_ads_id: Optional[str] = None
+    google_ads_conversion_label: Optional[str] = None
+    google_analytics_id: Optional[str] = None
 
 @router.get("/settings")
 def get_saas_settings(
@@ -241,7 +246,7 @@ def get_saas_settings(
     admin_payload: dict = Depends(verify_super_admin)
 ):
     """
-    Obtiene los ajustes globales del SaaS (Tenant por defecto).
+    Obtiene los ajustes globales del SaaS (Tenant por defecto de Probookia).
     """
     settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == "00000000-0000-0000-0000-000000000000").first()
     if not settings:
@@ -249,8 +254,15 @@ def get_saas_settings(
         db.add(settings)
         db.commit()
         db.refresh(settings)
+
+    integrations = settings.integrations_config or {}
     return {
-        "allow_search_engine_indexing": settings.allow_search_engine_indexing
+        "allow_search_engine_indexing": settings.allow_search_engine_indexing if settings.allow_search_engine_indexing is not None else True,
+        "google_site_verification": settings.google_site_verification or "",
+        "gtm_container_id": settings.gtm_container_id or "",
+        "google_ads_id": settings.google_ads_id or "",
+        "google_ads_conversion_label": settings.google_ads_conversion_label or "",
+        "google_analytics_id": integrations.get("google_analytics_id", "") or ""
     }
 
 @router.patch("/settings")
@@ -260,17 +272,56 @@ def update_saas_settings(
     admin_payload: dict = Depends(verify_super_admin)
 ):
     """
-    Actualiza los ajustes globales del SaaS.
+    Actualiza los ajustes globales del SaaS (Tenant por defecto de Probookia).
     """
+    from sqlalchemy.orm.attributes import flag_modified
+
     settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == "00000000-0000-0000-0000-000000000000").first()
     if not settings:
         settings = models.ClinicSettings(tenant_id="00000000-0000-0000-0000-000000000000")
         db.add(settings)
-    settings.allow_search_engine_indexing = payload.allow_search_engine_indexing
+
+    if payload.allow_search_engine_indexing is not None:
+        settings.allow_search_engine_indexing = payload.allow_search_engine_indexing
+
+    if payload.google_site_verification is not None:
+        val = payload.google_site_verification.strip()
+        if 'content=' in val:
+            m = re.search(r'content=["\']([^"\']+)["\']', val, re.IGNORECASE)
+            if m:
+                val = m.group(1).strip()
+        settings.google_site_verification = val
+
+    if payload.gtm_container_id is not None:
+        settings.gtm_container_id = payload.gtm_container_id.strip()
+
+    if payload.google_ads_id is not None:
+        val = payload.google_ads_id.strip()
+        if val and not val.upper().startswith('AW-'):
+            if re.match(r'^[0-9]+$', val):
+                val = f"AW-{val}"
+        settings.google_ads_id = val
+
+    if payload.google_ads_conversion_label is not None:
+        settings.google_ads_conversion_label = payload.google_ads_conversion_label.strip()
+
+    if payload.google_analytics_id is not None:
+        current_integrations = dict(settings.integrations_config or {})
+        current_integrations["google_analytics_id"] = payload.google_analytics_id.strip()
+        settings.integrations_config = current_integrations
+        flag_modified(settings, "integrations_config")
+
     db.commit()
     db.refresh(settings)
+
+    integrations = settings.integrations_config or {}
     return {
-        "allow_search_engine_indexing": settings.allow_search_engine_indexing
+        "allow_search_engine_indexing": settings.allow_search_engine_indexing if settings.allow_search_engine_indexing is not None else True,
+        "google_site_verification": settings.google_site_verification or "",
+        "gtm_container_id": settings.gtm_container_id or "",
+        "google_ads_id": settings.google_ads_id or "",
+        "google_ads_conversion_label": settings.google_ads_conversion_label or "",
+        "google_analytics_id": integrations.get("google_analytics_id", "") or ""
     }
 
 class TenantDomainUpdate(BaseModel):

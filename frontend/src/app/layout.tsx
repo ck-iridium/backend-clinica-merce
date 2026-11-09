@@ -82,7 +82,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
   if (isMarketing) {
     let allowSaasIndexing = false;
-    const systemTenantId = process.env.NEXT_PUBLIC_SYSTEM_TENANT_ID;
+    let saasGoogleVerification: string | undefined = undefined;
+    const systemTenantId = process.env.NEXT_PUBLIC_SYSTEM_TENANT_ID || "00000000-0000-0000-0000-000000000000";
     if (systemTenantId && baseUrl) {
       try {
         const resSettings = await fetch(`${baseUrl}/settings/`, {
@@ -92,6 +93,16 @@ export async function generateMetadata(): Promise<Metadata> {
         if (resSettings.ok) {
           const data = await resSettings.json();
           allowSaasIndexing = data.allow_search_engine_indexing;
+          if (data.google_site_verification) {
+            let cleanCode = data.google_site_verification.trim();
+            const match = cleanCode.match(/content=["']([^"']+)["']/i);
+            if (match) {
+              cleanCode = match[1];
+            } else if (cleanCode.includes('=')) {
+              cleanCode = cleanCode.split('=').pop()?.replace(/["']/g, '').trim() || cleanCode;
+            }
+            saasGoogleVerification = cleanCode;
+          }
         }
       } catch (e) { }
     }
@@ -103,6 +114,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title: "Probookia | Software de Gestión Premium para Negocios y Centros de Estética, Wellness y Belleza",
       description: "Eleva la experiencia de tu negocio premium. Gestión inteligente de citas, expedientes, consentimientos digitales y facturación integrada con diseño Quiet Luxury.",
       robots: allowSaasIndexing ? "index, follow" : "noindex, nofollow",
+      verification: saasGoogleVerification ? { google: saasGoogleVerification } : undefined,
       alternates: {
         canonical: saasCanonical,
       },
@@ -147,18 +159,24 @@ export default async function RootLayout({
   const tenantId = requestHeaders.get("x-tenant-id");
 
   let isSuspended = false;
-  if (baseUrl && tenantId && !isMarketing && !isBypassRoute) {
-    try {
-      const resSettings = await fetch(`${baseUrl}/settings/`, {
-        cache: 'no-store',
-        headers: { "X-Tenant-ID": tenantId }
-      });
-      if (resSettings.status === 402) {
-        isSuspended = true;
-      } else if (resSettings.ok) {
-        settings = await resSettings.json();
-      }
-    } catch (e) { }
+  if (baseUrl && !isBypassRoute) {
+    const effectiveTenantId = isMarketing 
+      ? (process.env.NEXT_PUBLIC_SYSTEM_TENANT_ID || "00000000-0000-0000-0000-000000000000")
+      : tenantId;
+
+    if (effectiveTenantId) {
+      try {
+        const resSettings = await fetch(`${baseUrl}/settings/`, {
+          cache: isMarketing ? 'no-cache' : 'no-store',
+          headers: { "X-Tenant-ID": effectiveTenantId }
+        });
+        if (!isMarketing && resSettings.status === 402) {
+          isSuspended = true;
+        } else if (resSettings.ok) {
+          settings = await resSettings.json();
+        }
+      } catch (e) { }
+    }
   }
 
   let marketingFavicon = "/favicon_probookia.ico";

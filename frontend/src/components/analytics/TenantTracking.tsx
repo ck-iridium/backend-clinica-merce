@@ -9,6 +9,8 @@ interface TenantTrackingProps {
     gtm_container_id?: string | null;
     google_ads_id?: string | null;
     google_ads_conversion_label?: string | null;
+    google_analytics_id?: string | null;
+    integrations_config?: Record<string, any> | null;
   } | null;
 }
 
@@ -55,19 +57,21 @@ export default function TenantTracking({ settings }: TenantTrackingProps) {
 
   const gtmId = settings.gtm_container_id?.trim();
   const googleAdsId = settings.google_ads_id?.trim();
+  const gaId = settings.google_analytics_id?.trim() || settings.integrations_config?.google_analytics_id?.trim() || "";
+  const primaryGtagId = googleAdsId || gaId;
 
   return (
     <>
-      {/* Google Ads Global Site Tag (gtag) si se usa como complemento directo */}
-      {googleAdsId && (
+      {/* Google Analytics & Google Ads Global Site Tag (gtag) */}
+      {primaryGtagId && (
         <>
           <Script
-            id="google-ads-gtag"
+            id="google-gtag-loader"
             strategy="afterInteractive"
-            src={`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(googleAdsId)}`}
+            src={`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(primaryGtagId)}`}
           />
           <Script
-            id="google-ads-init"
+            id="google-gtag-init"
             strategy="afterInteractive"
             dangerouslySetInnerHTML={{
               __html: `
@@ -75,7 +79,8 @@ export default function TenantTracking({ settings }: TenantTrackingProps) {
                 function gtag(){dataLayer.push(arguments);}
                 window.gtag = gtag;
                 gtag('js', new Date());
-                gtag('config', '${encodeURIComponent(googleAdsId)}');
+                ${googleAdsId ? `gtag('config', '${encodeURIComponent(googleAdsId)}');` : ''}
+                ${gaId ? `gtag('config', '${encodeURIComponent(gaId)}');` : ''}
               `,
             }}
           />
