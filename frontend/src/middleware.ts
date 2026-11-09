@@ -5,19 +5,6 @@ export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const hostname = request.headers.get("host") || "";
 
-  // 0. Interceptar verificación de Google Search Console por archivo HTML (ej. /google2cf0962089e4bfed.html)
-  const googleHtmlMatch = url.pathname.match(/^\/(google[a-zA-Z0-9_-]+\.html)$/i);
-  if (googleHtmlMatch) {
-    const fileName = googleHtmlMatch[1];
-    return new NextResponse(`google-site-verification: ${fileName}`, {
-      status: 200,
-      headers: {
-        'Content-Type': 'text/html; charset=utf-8',
-        'Cache-Control': 'public, max-age=86400',
-      },
-    });
-  }
-
   console.log(`[MIDDLEWARE] Path: ${url.pathname} | Host: ${hostname}`);
 
   // 1. Excluir recursos estáticos, api routes, _next y archivos de sistema
@@ -263,6 +250,5 @@ export const config = {
     '/((?!api|_next|static|[\\w-]+\\.\\w+).*)',
     '/sitemap.xml',
     '/robots.txt',
-    '/(google[a-zA-Z0-9_-]+\\.html)',
   ],
 };
