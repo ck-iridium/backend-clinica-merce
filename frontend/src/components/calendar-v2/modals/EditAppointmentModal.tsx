@@ -11,6 +11,7 @@ import {
   CreditCard, 
   CheckCircle2, 
   Check, 
+  User,
   UserX, 
   XCircle 
 } from 'lucide-react';
@@ -39,6 +40,9 @@ interface EditAppointmentModalProps {
   setSelectedAppt: (appt: any) => void;
   clientMap: Map<string, any>;
   serviceMap: Map<string, any>;
+  staffList?: any[];
+  staffMap?: Map<string, any>;
+  handleUpdateStaff?: (newStaffId: string) => Promise<void>;
   settings?: any;
   endHour?: number;
   getAppointmentsForDay?: (d: Date) => any[];
@@ -64,6 +68,9 @@ export function EditAppointmentModal({
   setSelectedAppt,
   clientMap,
   serviceMap,
+  staffList = [],
+  staffMap,
+  handleUpdateStaff,
   settings,
   endHour = 20,
   getAppointmentsForDay,
@@ -266,6 +273,66 @@ export function EditAppointmentModal({
                 {selectedAppt ? serviceMap.get(selectedAppt.service_id)?.name : '...'}
               </p>
             </div>
+          </div>
+
+          {/* Especialista Asignado con selector para reasignar */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest flex items-center gap-1.5">
+                <User size={13} className="text-[#D4AF37]" />
+                {t('dashboard.calendar.specialist') || 'Especialista Asignado'}
+              </p>
+            </div>
+            {staffList && staffList.length > 0 ? (
+              <Select
+                value={selectedAppt?.staff_id || ''}
+                onValueChange={(val) => handleUpdateStaff?.(val)}
+                disabled={updatingStatus}
+              >
+                <SelectTrigger
+                  id="edit-appt-staff-select-trigger"
+                  className="w-full h-12 rounded-xl border border-stone-200/80 bg-stone-50/60 hover:bg-stone-50 focus:bg-white text-xs font-semibold shadow-2xs transition-all"
+                >
+                  {selectedAppt?.staff_id && staffMap?.get(selectedAppt.staff_id) ? (() => {
+                    const staff = staffMap.get(selectedAppt.staff_id);
+                    return (
+                      <div className="flex items-center gap-2.5 truncate">
+                        {staff.avatar_url ? (
+                          <img src={staff.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover shrink-0 border border-[#D4AF37]/30" />
+                        ) : (
+                          <div className="w-6 h-6 rounded-full bg-stone-900 text-[#D4AF37] text-[10px] font-bold flex items-center justify-center shrink-0">
+                            {staff.full_name?.charAt(0) || 'E'}
+                          </div>
+                        )}
+                        <span className="font-bold text-stone-900 truncate">{staff.full_name}</span>
+                        <span className="text-[10px] text-stone-400 capitalize">({staff.role || 'Especialista'})</span>
+                      </div>
+                    );
+                  })() : (
+                    <span className="text-stone-400 italic">Sin especialista asignado</span>
+                  )}
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl border border-stone-200/80 shadow-2xl p-1.5 bg-white">
+                  {staffList.map((s) => (
+                    <SelectItem key={s.id} value={s.id} className="py-2.5 rounded-xl text-xs font-medium">
+                      <div className="flex items-center gap-2.5">
+                        {s.avatar_url ? (
+                          <img src={s.avatar_url} alt="" className="w-5 h-5 rounded-full object-cover shrink-0 border border-[#D4AF37]/30" />
+                        ) : (
+                          <div className="w-5 h-5 rounded-full bg-stone-900 text-[#D4AF37] text-[9px] font-bold flex items-center justify-center shrink-0">
+                            {s.full_name?.charAt(0) || 'E'}
+                          </div>
+                        )}
+                        <span className="font-semibold text-stone-800">{s.full_name}</span>
+                        <span className="text-[10px] text-stone-400 capitalize">({s.role || 'Especialista'})</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <p className="text-xs text-stone-500 italic py-1">No hay especialistas configurados</p>
+            )}
           </div>
 
           {/* Duración de la Sesión */}

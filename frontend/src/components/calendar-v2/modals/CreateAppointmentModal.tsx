@@ -22,7 +22,7 @@ import {
 interface CreateAppointmentModalProps {
   showModal: boolean;
   setShowModal: (v: boolean) => void;
-  selectedSlot: { date: Date, hour: number } | null;
+  selectedSlot: { date: Date, hour: number, staffId?: string } | null;
   selectedMinutes: number;
   setSelectedMinutes: (m: number) => void;
   clients: any[];
@@ -73,8 +73,16 @@ export function CreateAppointmentModal({
 
   // Inicializar especialista predeterminado si hay disponibles
   React.useEffect(() => {
+    if (selectedSlot?.staffId) {
+      setSelectedStaffId(selectedSlot.staffId);
+      return;
+    }
     if (!selectedStaffId && staffList && staffList.length > 0) {
-      setSelectedStaffId(staffList[0].id);
+      if (selectedSlot?.staffId) {
+        setSelectedStaffId(selectedSlot.staffId);
+      } else {
+        setSelectedStaffId(staffList[0].id);
+      }
     }
   }, [staffList, selectedStaffId]);
 

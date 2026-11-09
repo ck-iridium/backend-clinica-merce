@@ -32,6 +32,7 @@ interface DayColumnProps {
   // Maps para resolución de nombres
   clientMap: Map<string, any>;
   serviceMap: Map<string, any>;
+  staffMap?: Map<string, any>;
 
   // Búsqueda y Filtros
   searchTerm?: string;
@@ -65,6 +66,7 @@ export function DayColumn({
   checkIsDisabled,
   clientMap,
   serviceMap,
+  staffMap,
   searchTerm = '',
   activeFilter = 'ALL'
 }: DayColumnProps) {
@@ -223,6 +225,7 @@ export function DayColumn({
             appointment={appt}
             client={client}
             service={service}
+            staff={staffMap?.get(appt.staff_id)}
             isHighlighted={isHighlighted}
             onClick={(e, appt) => onApptClick(appt)}
             onMouseEnter={onApptMouseEnter}

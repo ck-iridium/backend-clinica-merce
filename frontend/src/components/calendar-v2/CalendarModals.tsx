@@ -16,7 +16,7 @@ interface CalendarModalsProps {
   setShowBlockDeleteModal: (v: boolean) => void;
 
   // Datos de selección
-  selectedSlot: { date: Date, hour: number } | null;
+  selectedSlot: { date: Date, hour: number, staffId?: string } | null;
   selectedMinutes: number;
   setSelectedMinutes: (m: number) => void;
   selectedAppt: any;
@@ -34,6 +34,7 @@ interface CalendarModalsProps {
   getBlocksForDay: (d: Date) => any[];
   clientMap: Map<string, any>;
   serviceMap: Map<string, any>;
+  staffMap?: Map<string, any>;
   staffList?: any[];
   locations?: any[];
   fetchData: () => Promise<void>;
@@ -59,6 +60,7 @@ export function CalendarModals({
   startHour, endHour,
   getAppointmentsForDay, getBlocksForDay,
   clientMap, serviceMap,
+  staffMap,
   staffList = [],
   locations = [],
   fetchData,
@@ -153,6 +155,30 @@ export function CalendarModals({
     }
   };
 
+  const handleUpdateStaff = async (newStaffId: string) => {
+    if (!selectedAppt) return;
+    setUpdatingStatus(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/${selectedAppt.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ staff_id: newStaffId })
+      });
+      if (res.ok) {
+        await fetchData();
+        setSelectedAppt({ ...selectedAppt, staff_id: newStaffId });
+        toast.success(t('dashboard.calendar.toast.staff_updated') || 'Especialista actualizado');
+      } else {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.detail || t('dashboard.calendar.toast.update_error') || 'Error al reasignar especialista');
+      }
+    } catch (e) {
+      toast.error(t('dashboard.calendar.toast.connection_error') || 'Error de conexión');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
   const handleDeleteAppointment = async () => {
     if (!selectedAppt) return;
     showFeedback({
@@ -219,6 +245,9 @@ export function CalendarModals({
         setSelectedAppt={setSelectedAppt}
         clientMap={clientMap}
         serviceMap={serviceMap}
+        staffList={staffList}
+        staffMap={staffMap}
+        handleUpdateStaff={handleUpdateStaff}
         settings={settings}
         endHour={endHour}
         getAppointmentsForDay={getAppointmentsForDay}

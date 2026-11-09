@@ -9,6 +9,7 @@ interface AppointmentCardProps {
   appointment: any;
   client: any;
   service: any;
+  staff?: any;
   onClick: (e: React.MouseEvent, appt: any) => void;
   onMouseEnter?: (e: React.MouseEvent, appt: any) => void;
   onMouseMove?: (e: React.MouseEvent, appt: any) => void;
@@ -48,6 +49,7 @@ export function AppointmentCard({
   appointment,
   client,
   service,
+  staff,
   onClick,
   onMouseEnter,
   onMouseMove,
@@ -68,6 +70,9 @@ export function AppointmentCard({
   const showStatus = isPercentage ? heightNum >= 5.5 : heightNum >= 45;
   const useSmallText = isPercentage ? heightNum < 3 : heightNum < 25;
 
+  const staffFirstName = staff?.full_name ? staff.full_name.split(' ')[0] : (staff?.name?.split(' ')[0] || '');
+  const staffInitial = staffFirstName.charAt(0) || 'E';
+
   // RENDER MÓVIL
   if (isMobile) {
     return (
@@ -77,13 +82,29 @@ export function AppointmentCard({
         className={`absolute w-[94%] left-[3%] rounded-xl border border-l-[3.5px] shadow-2xs px-3 py-2 z-20 overflow-hidden active:scale-[0.98] transition-all flex flex-col justify-start backdrop-blur-xs ${colors} ${!isHighlighted ? 'opacity-20 grayscale pointer-events-none' : ''}`}
         style={style}
       >
-        <div className={`font-semibold text-xs tracking-tight leading-none mb-1 flex items-center gap-1 ${appointment.status === 'cancelled' || appointment.status === 'no_show' ? 'line-through opacity-70' : 'text-stone-900'}`}>
-          {appointment.status === 'web_pending' && (
-            <span className="text-[9px] font-black bg-amber-500/20 text-[#B38F26] px-1.5 py-0.2 rounded uppercase">
-              Web
-            </span>
+        <div className="flex items-center justify-between gap-1 w-full min-w-0 mb-1">
+          <div className={`font-semibold text-xs tracking-tight leading-none flex items-center gap-1 min-w-0 flex-1 ${appointment.status === 'cancelled' || appointment.status === 'no_show' ? 'line-through opacity-70' : 'text-stone-900'}`}>
+            {appointment.status === 'web_pending' && (
+              <span className="text-[9px] font-black bg-amber-500/20 text-[#B38F26] px-1.5 py-0.2 rounded uppercase shrink-0">
+                Web
+              </span>
+            )}
+            <span className="truncate">{client?.name || (t('dashboard.calendar.unknown_client') || 'Cliente Desconocido')}</span>
+          </div>
+          {staff && (
+            <div className="flex items-center gap-1 shrink-0 bg-white/80 px-1.5 py-0.5 rounded-md border border-stone-200/60 shadow-2xs" title={`Especialista: ${staff.full_name}`}>
+              {staff.avatar_url ? (
+                <img src={staff.avatar_url} alt="" className="w-3.5 h-3.5 rounded-full object-cover shrink-0" />
+              ) : (
+                <span className="w-3.5 h-3.5 rounded-full bg-stone-900 text-[8px] font-black text-[#D4AF37] flex items-center justify-center shrink-0">
+                  {staffInitial}
+                </span>
+              )}
+              <span className="text-[9px] font-semibold text-stone-700 truncate max-w-[45px] leading-none">
+                {staffFirstName}
+              </span>
+            </div>
           )}
-          <span className="truncate">{client?.name || (t('dashboard.calendar.unknown_client') || 'Cliente Desconocido')}</span>
         </div>
         {showService && (
           <div className="text-[10px] font-medium text-stone-500 truncate leading-tight">
@@ -105,13 +126,30 @@ export function AppointmentCard({
       className={`absolute w-[calc(100%-8px)] left-[4px] border border-l-[3.5px] shadow-2xs px-2.5 py-1.5 z-20 overflow-hidden rounded-xl hover:shadow-luxury hover:-translate-y-0.5 hover:z-30 transition-all cursor-pointer flex flex-col justify-start backdrop-blur-xs ${colors} ${!isHighlighted ? 'opacity-20 grayscale pointer-events-none' : ''}`}
       style={style}
     >
-      <div className={`font-semibold truncate leading-tight mb-0.5 flex items-center gap-1 ${useSmallText ? 'text-[11px]' : 'text-xs'} ${appointment.status === 'cancelled' || appointment.status === 'no_show' ? 'line-through text-stone-400' : 'text-stone-900'}`}>
-        {appointment.status === 'web_pending' && (
-          <span className="text-[9px] font-bold bg-[#D4AF37]/20 text-[#99771A] px-1 py-0.2 rounded uppercase">
-            Web
-          </span>
+      {/* Cabecera de la tarjeta: Cliente + Micro-avatar si es tarjeta pequeña */}
+      <div className="flex items-center justify-between gap-1 w-full min-w-0 mb-0.5">
+        <div className={`font-semibold truncate leading-tight flex items-center gap-1 min-w-0 flex-1 ${useSmallText ? 'text-[11px]' : 'text-xs'} ${appointment.status === 'cancelled' || appointment.status === 'no_show' ? 'line-through text-stone-400' : 'text-stone-900'}`}>
+          {appointment.status === 'web_pending' && (
+            <span className="text-[9px] font-bold bg-[#D4AF37]/20 text-[#99771A] px-1 py-0.2 rounded uppercase shrink-0">
+              Web
+            </span>
+          )}
+          <span className="truncate">{client?.name || (t('dashboard.calendar.client') || 'Cliente')}</span>
+        </div>
+        {staff && !showStatus && (
+          <div className="flex items-center gap-1 shrink-0 bg-white/80 backdrop-blur-xs px-1 py-0.5 rounded-md border border-stone-200/60 shadow-2xs" title={`Especialista: ${staff.full_name}`}>
+            {staff.avatar_url ? (
+              <img src={staff.avatar_url} alt="" className="w-3.5 h-3.5 rounded-full object-cover shrink-0" />
+            ) : (
+              <span className="w-3.5 h-3.5 rounded-full bg-stone-900 text-[8px] font-black text-[#D4AF37] flex items-center justify-center shrink-0">
+                {staffInitial}
+              </span>
+            )}
+            <span className="text-[9px] font-semibold text-stone-700 truncate max-w-[45px] leading-none">
+              {staffFirstName}
+            </span>
+          </div>
         )}
-        <span className="truncate">{client?.name || (t('dashboard.calendar.client') || 'Cliente')}</span>
       </div>
       
       {showService && (
@@ -127,22 +165,38 @@ export function AppointmentCard({
       )}
 
       {showStatus && (
-        <div className="flex items-center gap-1.5 mt-auto pb-0.5">
-          <div className={`w-1.5 h-1.5 rounded-full ${
-            appointment.status === 'confirmed' ? 'bg-sky-500' : 
-            appointment.status === 'completed' ? 'bg-emerald-500' :
-            appointment.status === 'web_pending' ? 'bg-[#D4AF37]' :
-            'bg-orange-400'
-          }`} />
-          <span className="text-[9px] font-bold uppercase tracking-wider text-stone-500">
-            {appointment.status === 'confirmed' 
-              ? (t('dashboard.calendar.confirmed') || 'Confirmada') 
-              : appointment.status === 'completed'
-              ? (t('dashboard.calendar.completed') || 'Completada')
-              : (appointment.status === 'pending_verification' || appointment.status === 'web_pending' 
-                ? (t('dashboard.calendar.web_pending') || 'Pendiente Web') 
-                : (t('dashboard.calendar.pending') || 'Pendiente'))}
-          </span>
+        <div className="flex items-center justify-between gap-1 mt-auto pb-0.5 w-full">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+              appointment.status === 'confirmed' ? 'bg-sky-500' : 
+              appointment.status === 'completed' ? 'bg-emerald-500' :
+              appointment.status === 'web_pending' ? 'bg-[#D4AF37]' :
+              'bg-orange-400'
+            }`} />
+            <span className="text-[9px] font-bold uppercase tracking-wider text-stone-500 truncate">
+              {appointment.status === 'confirmed' 
+                ? (t('dashboard.calendar.confirmed') || 'Confirmada') 
+                : appointment.status === 'completed'
+                ? (t('dashboard.calendar.completed') || 'Completada')
+                : (appointment.status === 'pending_verification' || appointment.status === 'web_pending' 
+                  ? (t('dashboard.calendar.web_pending') || 'Pendiente Web') 
+                  : (t('dashboard.calendar.pending') || 'Pendiente'))}
+            </span>
+          </div>
+          {staff && (
+            <div className="flex items-center gap-1 shrink-0 bg-white/80 backdrop-blur-xs px-1.5 py-0.5 rounded-md border border-stone-200/60 shadow-2xs" title={`Especialista: ${staff.full_name}`}>
+              {staff.avatar_url ? (
+                <img src={staff.avatar_url} alt="" className="w-3.5 h-3.5 rounded-full object-cover shrink-0" />
+              ) : (
+                <span className="w-3.5 h-3.5 rounded-full bg-stone-900 text-[8px] font-black text-[#D4AF37] flex items-center justify-center shrink-0">
+                  {staffInitial}
+                </span>
+              )}
+              <span className="text-[9px] font-medium text-stone-700 truncate max-w-[55px] leading-none">
+                {staffFirstName}
+              </span>
+            </div>
+          )}
         </div>
       )}
     </div>

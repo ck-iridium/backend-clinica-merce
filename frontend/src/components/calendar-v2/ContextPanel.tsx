@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, ChevronLeft, ChevronRight, CheckCircle2, Clock, PanelLeftClose, Calendar } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, CheckCircle2, Clock, PanelLeftClose, Calendar, Users } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Badge } from '@/components/ui/badge';
 
@@ -18,6 +18,10 @@ interface ContextPanelProps {
     setSearchTerm: (val: string) => void;
     activeFilter: 'ALL' | 'CONFIRMADA' | 'PENDIENTE' | 'PAGADA';
     setActiveFilter: (filter: 'ALL' | 'CONFIRMADA' | 'PENDIENTE' | 'PAGADA') => void;
+    staffList?: any[];
+    selectedStaffFilter?: string | 'ALL';
+    onSelectStaffFilter?: (staffId: string | 'ALL') => void;
+    staffAppointmentCounts?: Record<string, number>;
     onClose?: () => void;
 }
 
@@ -38,6 +42,10 @@ export function ContextPanel({
     setSearchTerm,
     activeFilter,
     setActiveFilter,
+    staffList = [],
+    selectedStaffFilter = 'ALL',
+    onSelectStaffFilter,
+    staffAppointmentCounts = {},
     onClose
 }: ContextPanelProps) {
     const { t, language } = useLanguage();
@@ -274,6 +282,97 @@ export function ContextPanel({
                         </button>
                     </div>
                 </div>
+
+                {/* 4. EQUIPO / ESPECIALISTAS */}
+                {staffList && staffList.length > 0 && (
+                    <div className="space-y-2.5 pt-2 border-t border-stone-100">
+                        <div className="flex items-center justify-between ml-1">
+                            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.2em] flex items-center gap-1.5">
+                                <Users size={12} className="text-[#D4AF37]" />
+                                {t('dashboard.calendar.team_filter') || 'Personal / Equipo'}
+                            </p>
+                            {selectedStaffFilter !== 'ALL' && (
+                                <button
+                                    type="button"
+                                    onClick={() => onSelectStaffFilter?.('ALL')}
+                                    className="text-[10px] font-semibold text-[#B38F26] hover:underline"
+                                >
+                                    Ver todos
+                                </button>
+                            )}
+                        </div>
+
+                        <div className="space-y-1.5">
+                            {/* Opción: Todo el equipo */}
+                            <button
+                                id="calendar-filter-staff-all-btn"
+                                type="button"
+                                onClick={() => onSelectStaffFilter?.('ALL')}
+                                className={`w-full flex items-center justify-between p-2.5 rounded-2xl transition-all border shadow-2xs ${
+                                    selectedStaffFilter === 'ALL'
+                                        ? 'bg-amber-50/70 border-[#D4AF37]/50 text-stone-900 font-bold'
+                                        : 'bg-white border-stone-200/70 text-stone-600 hover:border-stone-300'
+                                }`}
+                            >
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                    <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border ${
+                                        selectedStaffFilter === 'ALL'
+                                            ? 'bg-stone-900 text-[#D4AF37] border-[#D4AF37]/40'
+                                            : 'bg-stone-100 text-stone-500 border-stone-200'
+                                    }`}>
+                                        <Users size={13} />
+                                    </div>
+                                    <span className="text-xs truncate">Todo el equipo</span>
+                                </div>
+                                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-stone-100 text-stone-700 shrink-0">
+                                    {Object.values(staffAppointmentCounts || {}).reduce((acc, curr) => acc + curr, 0)}
+                                </span>
+                            </button>
+
+                            {/* Especialistas individuales */}
+                            {staffList.map((staff) => {
+                                const isSelected = selectedStaffFilter === staff.id;
+                                const count = staffAppointmentCounts?.[staff.id] || 0;
+                                return (
+                                    <button
+                                        key={staff.id}
+                                        id={`calendar-filter-staff-${staff.id}-btn`}
+                                        type="button"
+                                        onClick={() => onSelectStaffFilter?.(isSelected ? 'ALL' : staff.id)}
+                                        className={`w-full flex items-center justify-between p-2.5 rounded-2xl transition-all border shadow-2xs ${
+                                            isSelected
+                                                ? 'bg-[#FAF6EC] border-[#D4AF37] text-stone-950 font-bold ring-1 ring-[#D4AF37]/30'
+                                                : 'bg-white border-stone-200/70 text-stone-700 hover:border-stone-300'
+                                        }`}
+                                    >
+                                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                            {staff.avatar_url ? (
+                                                <img
+                                                    src={staff.avatar_url}
+                                                    alt={staff.full_name}
+                                                    className="w-7 h-7 rounded-full object-cover shrink-0 border border-[#D4AF37]/30"
+                                                />
+                                            ) : (
+                                                <div className="w-7 h-7 rounded-full bg-stone-900 text-[#D4AF37] font-serif font-bold text-xs flex items-center justify-center shrink-0">
+                                                    {staff.full_name?.charAt(0) || 'E'}
+                                                </div>
+                                            )}
+                                            <div className="text-left min-w-0 flex-1">
+                                                <p className="text-xs truncate leading-tight">{staff.full_name}</p>
+                                                <p className="text-[10px] text-stone-400 capitalize leading-none mt-0.5 truncate">{staff.role || 'Especialista'}</p>
+                                            </div>
+                                        </div>
+                                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                                            isSelected ? 'bg-[#D4AF37]/20 text-[#8c6d17]' : 'bg-stone-100 text-stone-600'
+                                        }`}>
+                                            {count}
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
 
             </div>
         </aside>

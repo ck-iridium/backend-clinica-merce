@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { Calendar, ChevronDown } from 'lucide-react';
+import { Calendar, ChevronDown, ChevronLeft, ChevronRight, CalendarDays, Columns3 } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 
 interface CalendarHeaderProps {
@@ -8,9 +8,14 @@ interface CalendarHeaderProps {
   currentWeek: Date;
   // Estado para la vista Móvil (Día seleccionado)
   mobileSelectedDate: Date;
+  // Vista activa (Semana o Día por especialista)
+  viewMode?: 'week' | 'day';
+  onViewModeChange?: (mode: 'week' | 'day') => void;
   // Acciones
-  onPrevWeek: () => void;
-  onNextWeek: () => void;
+  onPrev: () => void;
+  onNext: () => void;
+  onPrevWeek?: () => void;
+  onNextWeek?: () => void;
   onToday: () => void;
   onDateSelect: (date: Date) => void;
   onMobileDateSelect: (date: Date) => void;
@@ -20,14 +25,16 @@ interface CalendarHeaderProps {
 
 /**
  * CalendarHeader Component (v2)
- * Encapsula la cabecera tanto para Desktop (Título + Nav)
+ * Encapsula la cabecera tanto para Desktop (Título + Nav + Switcher de Vista)
  * como para Móvil (Portal inyectado en la UI global).
  */
 export function CalendarHeader({
   currentWeek,
   mobileSelectedDate,
-  onPrevWeek,
-  onNextWeek,
+  viewMode = 'week',
+  onViewModeChange,
+  onPrev,
+  onNext,
   onToday,
   onDateSelect,
   onMobileDateSelect,
@@ -41,11 +48,86 @@ export function CalendarHeader({
 
   return (
     <>
-      {/* 
-          VISTA DESKTOP: Navegación eliminada de aquí (trasladada al ContextPanel lateral). 
-          Solo dejamos espacio para posibles títulos o overlays si fuera necesario.
-      */}
-      <div className="hidden md:block h-2" />
+      {/* VISTA DESKTOP: Cabecera con fecha, navegación y selector de vista */}
+      <div className="hidden md:flex items-center justify-between px-6 py-3 border-b border-stone-200/70 bg-white/95 backdrop-blur-md">
+        {/* Título y Navegación rápida */}
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2.5">
+            <h2 className="font-serif font-bold text-stone-900 capitalize text-lg tracking-tight">
+              {viewMode === 'day'
+                ? mobileSelectedDate.toLocaleDateString(getLocaleString(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+                : currentWeek.toLocaleDateString(getLocaleString(), { month: 'long', year: 'numeric' })}
+            </h2>
+            {viewMode === 'day' ? (
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-50 text-[#99771A] border border-amber-200/70 shadow-2xs">
+                Columnas por Especialista
+              </span>
+            ) : (
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 border border-stone-200/60 shadow-2xs">
+                Vista Semanal
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1 bg-stone-50 border border-stone-200/70 rounded-xl p-0.5 shadow-2xs">
+            <button
+              id="calendar-header-prev-btn"
+              onClick={onPrev}
+              className="p-1.5 rounded-lg hover:bg-white text-stone-500 hover:text-stone-900 transition-colors"
+              title={viewMode === 'day' ? 'Día anterior' : 'Semana anterior'}
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button
+              id="calendar-header-today-desktop-btn"
+              onClick={onToday}
+              className="px-2.5 py-1 rounded-lg text-xs font-bold text-stone-700 hover:bg-white hover:text-stone-900 transition-colors uppercase tracking-wider text-[10px]"
+            >
+              {t('dashboard.calendar.today') || 'Hoy'}
+            </button>
+            <button
+              id="calendar-header-next-btn"
+              onClick={onNext}
+              className="p-1.5 rounded-lg hover:bg-white text-stone-500 hover:text-stone-900 transition-colors"
+              title={viewMode === 'day' ? 'Día siguiente' : 'Semana siguiente'}
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+
+        {/* Selector de Modo: Semana vs Día */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center bg-stone-100/80 p-1 rounded-2xl border border-stone-200/60 shadow-2xs">
+            <button
+              id="calendar-viewmode-week-btn"
+              type="button"
+              onClick={() => onViewModeChange?.('week')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                viewMode === 'week'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              }`}
+            >
+              <CalendarDays size={14} className={viewMode === 'week' ? 'text-[#D4AF37]' : ''} />
+              <span>Semana</span>
+            </button>
+            <button
+              id="calendar-viewmode-day-btn"
+              type="button"
+              onClick={() => onViewModeChange?.('day')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                viewMode === 'day'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              }`}
+            >
+              <Columns3 size={14} className={viewMode === 'day' ? 'text-[#D4AF37]' : ''} />
+              <span>Día (Especialistas)</span>
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* MOBILE HEADER PORTAL (DatePicker inyectado) */}
       {mobileTopbarPortal && createPortal(

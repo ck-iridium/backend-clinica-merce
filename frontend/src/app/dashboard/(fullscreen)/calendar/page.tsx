@@ -64,6 +64,21 @@ function CalendarContent() {
     };
   }, [c]);
 
+  // Columnas para la vista diaria por especialista
+  const activeStaffColumns = React.useMemo(() => {
+    if (c.selectedStaffFilter !== 'ALL') {
+      const match = c.staffList.filter(s => s.id === c.selectedStaffFilter);
+      return match.length > 0 ? match : c.staffList;
+    }
+    return c.staffList;
+  }, [c.staffList, c.selectedStaffFilter]);
+
+  const unassignedDayAppts = React.useMemo(() => {
+    return c.getAppointmentsForStaffAndDay(c.mobileSelectedDate, 'unassigned');
+  }, [c.mobileSelectedDate, c.getAppointmentsForStaffAndDay]);
+
+  const dayColumnsCount = activeStaffColumns.length + (unassignedDayAppts.length > 0 ? 1 : 0);
+
   if (c.loading) {
     return (
       <div className="flex h-full w-full overflow-hidden bg-stone-50/50 p-4 gap-4 animate-in fade-in duration-500">
@@ -147,6 +162,7 @@ function CalendarContent() {
   const confirmedCount = c.appointments.filter(a => a.status === 'confirmed').length;
   const pendingCount = c.appointments.filter(a => a.status === 'web_pending').length;
 
+
   const getLocaleString = () => {
     return language === 'es' ? 'es-ES' : language === 'en' ? 'en-US' : 'fr-FR';
   };
@@ -165,16 +181,20 @@ function CalendarContent() {
           <ContextPanel
             clinicName={c.settings?.clinic_name}
             selectedDate={c.mobileSelectedDate}
-            onDateChange={c.handleMobileDateSelect}
+            onDateChange={c.handleDateSelect}
             confirmedCount={confirmedCount}
             pendingCount={pendingCount}
-            onPrev={c.handlePrevWeek}
-            onNext={c.handleNextWeek}
+            onPrev={c.handlePrev}
+            onNext={c.handleNext}
             onToday={c.handleToday}
             searchTerm={c.searchTerm}
             setSearchTerm={c.setSearchTerm}
             activeFilter={c.activeFilter}
             setActiveFilter={c.setActiveFilter}
+            staffList={c.staffList}
+            selectedStaffFilter={c.selectedStaffFilter}
+            onSelectStaffFilter={c.setSelectedStaffFilter}
+            staffAppointmentCounts={c.staffAppointmentCounts}
           />
         </div>
       </div>
@@ -192,16 +212,20 @@ function CalendarContent() {
             <ContextPanel
               clinicName={c.settings?.clinic_name}
               selectedDate={c.mobileSelectedDate}
-              onDateChange={(date) => { c.handleMobileDateSelect(date); setIsMobilePanelOpen(false); }}
+              onDateChange={(date) => { c.handleDateSelect(date); setIsMobilePanelOpen(false); }}
               confirmedCount={confirmedCount}
               pendingCount={pendingCount}
-              onPrev={() => { c.handlePrevDay(); setIsMobilePanelOpen(false); }}
-              onNext={() => { c.handleNextDay(); setIsMobilePanelOpen(false); }}
+              onPrev={() => { c.handlePrev(); setIsMobilePanelOpen(false); }}
+              onNext={() => { c.handleNext(); setIsMobilePanelOpen(false); }}
               onToday={() => { c.handleToday(); setIsMobilePanelOpen(false); }}
               searchTerm={c.searchTerm}
               setSearchTerm={c.setSearchTerm}
               activeFilter={c.activeFilter}
               setActiveFilter={(f) => { c.setActiveFilter(f); setIsMobilePanelOpen(false); }}
+              staffList={c.staffList}
+              selectedStaffFilter={c.selectedStaffFilter}
+              onSelectStaffFilter={(sId) => { c.setSelectedStaffFilter(sId); setIsMobilePanelOpen(false); }}
+              staffAppointmentCounts={c.staffAppointmentCounts}
               onClose={() => setIsMobilePanelOpen(false)}
             />
           </motion.div>
@@ -233,44 +257,127 @@ function CalendarContent() {
           <CalendarHeader
             currentWeek={c.currentWeek}
             mobileSelectedDate={c.mobileSelectedDate}
+            viewMode={c.viewMode}
+            onViewModeChange={c.setViewMode}
+            onPrev={c.handlePrev}
+            onNext={c.handleNext}
             onPrevWeek={c.handlePrevWeek}
             onNextWeek={c.handleNextWeek}
             onToday={c.handleToday}
             onDateSelect={c.handleDateSelect}
             onMobileDateSelect={c.handleMobileDateSelect}
           />
-          {/* Header de días */}
-          <div
-            className="grid border-b border-stone-200/70 bg-stone-50/50 backdrop-blur-md"
-            style={{ gridTemplateColumns: `100px repeat(${c.days.length}, minmax(0, 1fr))` }}
-          >
-            <div className="border-r border-stone-200/70" />
-            {c.days.map((date, i) => {
-              const isToday = date.toDateString() === new Date().toDateString();
-              return (
-                <div key={i} className={`py-3.5 px-3 text-center border-r border-stone-200/70 last:border-r-0 transition-colors ${isToday ? 'bg-amber-50/20' : ''}`}>
-                  <p className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-1 ${isToday ? 'text-[#B38F26]' : 'text-stone-400'}`}>
-                    {date.toLocaleDateString(getLocaleString(), { weekday: 'short' })}
-                  </p>
-                  <span className={`inline-flex items-center justify-center font-serif text-xl font-bold transition-all ${
-                    isToday
-                      ? 'w-9 h-9 rounded-xl bg-[#D4AF37] text-stone-950 shadow-sm font-black'
-                      : 'text-stone-900'
-                  }`}>
-                    {date.getDate()}
+          {c.viewMode === 'week' ? (
+            /* Header de días (Semanal) */
+            <div
+              className="grid border-b border-stone-200/70 bg-stone-50/50 backdrop-blur-md"
+              style={{ gridTemplateColumns: `100px repeat(${c.days.length}, minmax(0, 1fr))` }}
+            >
+              <div className="border-r border-stone-200/70" />
+              {c.days.map((date, i) => {
+                const isToday = date.toDateString() === new Date().toDateString();
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => c.handleDayHeaderClick(date)}
+                    className={`py-3 px-2 text-center border-r border-stone-200/70 last:border-r-0 transition-all group hover:bg-amber-50/40 cursor-pointer flex flex-col items-center justify-center ${isToday ? 'bg-amber-50/20' : ''}`}
+                    title="Ver día completo por especialistas"
+                  >
+                    <p className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-0.5 group-hover:text-[#B38F26] transition-colors ${isToday ? 'text-[#B38F26]' : 'text-stone-400'}`}>
+                      {date.toLocaleDateString(getLocaleString(), { weekday: 'short' })}
+                    </p>
+                    <span className={`inline-flex items-center justify-center font-serif text-lg font-bold transition-all group-hover:scale-105 ${
+                      isToday
+                        ? 'w-8 h-8 rounded-xl bg-[#D4AF37] text-stone-950 shadow-sm font-black'
+                        : 'text-stone-900 group-hover:text-[#B38F26]'
+                    }`}>
+                      {date.getDate()}
+                    </span>
+                    <span className="text-[9px] text-[#B38F26] font-semibold opacity-0 group-hover:opacity-100 transition-opacity leading-none mt-0.5">
+                      Ver día →
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            /* Header de Especialistas (Diaria) */
+            <div
+              className="grid border-b border-stone-200/70 bg-stone-50/60 backdrop-blur-md"
+              style={{ gridTemplateColumns: `100px repeat(${Math.max(1, dayColumnsCount)}, minmax(0, 1fr))` }}
+            >
+              <div className="border-r border-stone-200/70 flex flex-col items-center justify-center p-2">
+                <button
+                  type="button"
+                  onClick={() => c.setViewMode('week')}
+                  className="text-[10px] font-bold text-stone-600 hover:text-stone-950 bg-white border border-stone-200/80 px-2.5 py-1.5 rounded-xl shadow-2xs hover:bg-stone-50 transition-all flex items-center gap-1"
+                  title="Volver a la vista semanal"
+                >
+                  <span>← Semana</span>
+                </button>
+              </div>
+              {activeStaffColumns.map((staff) => {
+                const staffAppts = c.getAppointmentsForStaffAndDay(c.mobileSelectedDate, staff.id);
+                return (
+                  <div key={staff.id} className="py-2.5 px-3 border-r border-stone-200/70 last:border-r-0 flex items-center justify-between gap-2.5 bg-white/70">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      {staff.avatar_url ? (
+                        <img
+                          src={staff.avatar_url}
+                          alt={staff.full_name}
+                          className="w-9 h-9 rounded-full object-cover border-2 border-[#D4AF37]/50 shadow-sm shrink-0"
+                        />
+                      ) : (
+                        <div className="w-9 h-9 rounded-full bg-stone-900 text-[#D4AF37] font-serif font-bold text-xs flex items-center justify-center border border-[#D4AF37]/40 shadow-sm shrink-0">
+                          {staff.full_name?.charAt(0) || 'E'}
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-serif font-bold text-stone-900 text-xs leading-tight truncate">
+                          {staff.full_name}
+                        </h4>
+                        <p className="text-[10px] text-stone-400 capitalize font-medium leading-none mt-0.5 truncate">
+                          {staff.role || 'Especialista'}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-50 text-[#8c6d17] border border-amber-200/60 shrink-0">
+                      {staffAppts.length} {staffAppts.length === 1 ? 'cita' : 'citas'}
+                    </span>
+                  </div>
+                );
+              })}
+              {unassignedDayAppts.length > 0 && (
+                <div className="py-2.5 px-3 border-r border-stone-200/70 last:border-r-0 flex items-center justify-between gap-2 bg-stone-100/60">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <div className="w-8 h-8 rounded-full bg-stone-200 text-stone-600 flex items-center justify-center text-xs font-bold shrink-0">
+                      ?
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="font-bold text-stone-800 text-xs leading-tight truncate">Sin Asignar</h4>
+                      <p className="text-[10px] text-stone-400">Por asignar</p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 shrink-0">
+                    {unassignedDayAppts.length}
                   </span>
                 </div>
-              );
-            })}
-          </div>
+              )}
+            </div>
+          )}
           {/* Cuerpo de la grilla (elástico, sin scroll) */}
           <div className="flex-1 flex flex-col relative overflow-visible h-full">
             <div
               className="grid relative h-full flex-1"
-              style={{ gridTemplateColumns: `100px repeat(${c.days.length}, minmax(0, 1fr))` }}
+              style={{ gridTemplateColumns: c.viewMode === 'day' 
+                ? `100px repeat(${Math.max(1, dayColumnsCount)}, minmax(0, 1fr))`
+                : `100px repeat(${c.days.length}, minmax(0, 1fr))` 
+              }}
             >
               {/* Indicador de Tiempo Real (Desktop) */}
-              {c.days.some(d => d.toDateString() === new Date().toDateString()) && (
+              {((c.viewMode === 'week' && c.days.some(d => d.toDateString() === new Date().toDateString())) ||
+                (c.viewMode === 'day' && c.mobileSelectedDate.toDateString() === new Date().toDateString())) && (
                 <div
                   className="absolute inset-0 pointer-events-none z-40"
                   style={{ gridColumn: '2 / -1' }}
@@ -286,34 +393,96 @@ function CalendarContent() {
 
               <TimeScale hours={c.hours} heightPerHour={0} part="guides" />
               <TimeScale hours={c.hours} heightPerHour={0} part="axis" viewType="desktop" />
-              {c.days.map((date, i) => (
-                <DayColumn
-                  key={i}
-                  date={date}
-                  isWorkingDay={c.workingDays.includes(date.getDay() === 0 ? 7 : date.getDay())}
-                  appointments={c.getAppointmentsForDay(date)}
-                  blocks={c.getBlocksForDay(date)}
-                  isClosed={c.isDayClosed(date)}
-                  closedReason={c.getDayClosedReason(date)}
-                  closedBlock={c.getClosedBlockForDay(date)}
-                  hours={c.hours}
-                  startHour={c.startHour}
-                  heightPerHour={80}
-                  viewType="desktop"
-                  onSlotClick={(h, m) => c.handleSlotClick(h, m, date)}
-                  onApptClick={c.handleApptClick}
-                  onBlockClick={c.handleBlockClick}
-                  onApptMouseEnter={c.handleApptMouseEnter}
-                  onApptMouseMove={c.handleApptMouseMove}
-                  onApptMouseLeave={c.handleApptMouseLeave}
-                  checkIsLunch={c.isLunchTime}
-                  checkIsDisabled={c.isTimeDisabled}
-                  clientMap={c.clientMap}
-                  serviceMap={c.serviceMap}
-                  searchTerm={c.searchTerm}
-                  activeFilter={c.activeFilter}
-                />
-              ))}
+              {c.viewMode === 'week' ? (
+                c.days.map((date, i) => (
+                  <DayColumn
+                    key={i}
+                    date={date}
+                    isWorkingDay={c.workingDays.includes(date.getDay() === 0 ? 7 : date.getDay())}
+                    appointments={c.getAppointmentsForDay(date)}
+                    blocks={c.getBlocksForDay(date)}
+                    isClosed={c.isDayClosed(date)}
+                    closedReason={c.getDayClosedReason(date)}
+                    closedBlock={c.getClosedBlockForDay(date)}
+                    hours={c.hours}
+                    startHour={c.startHour}
+                    heightPerHour={80}
+                    viewType="desktop"
+                    onSlotClick={(h, m) => c.handleSlotClick(h, m, date)}
+                    onApptClick={c.handleApptClick}
+                    onBlockClick={c.handleBlockClick}
+                    onApptMouseEnter={c.handleApptMouseEnter}
+                    onApptMouseMove={c.handleApptMouseMove}
+                    onApptMouseLeave={c.handleApptMouseLeave}
+                    checkIsLunch={c.isLunchTime}
+                    checkIsDisabled={c.isTimeDisabled}
+                    clientMap={c.clientMap}
+                    serviceMap={c.serviceMap}
+                    staffMap={c.staffMap}
+                    searchTerm={c.searchTerm}
+                    activeFilter={c.activeFilter}
+                  />
+                ))
+              ) : (
+                <>
+                  {activeStaffColumns.map((staff) => (
+                    <DayColumn
+                      key={staff.id}
+                      date={c.mobileSelectedDate}
+                      isWorkingDay={c.workingDays.includes(c.mobileSelectedDate.getDay() === 0 ? 7 : c.mobileSelectedDate.getDay())}
+                      appointments={c.getAppointmentsForStaffAndDay(c.mobileSelectedDate, staff.id)}
+                      blocks={c.getBlocksForDay(c.mobileSelectedDate)}
+                      isClosed={c.isDayClosed(c.mobileSelectedDate)}
+                      closedReason={c.getDayClosedReason(c.mobileSelectedDate)}
+                      closedBlock={c.getClosedBlockForDay(c.mobileSelectedDate)}
+                      hours={c.hours}
+                      startHour={c.startHour}
+                      heightPerHour={80}
+                      viewType="desktop"
+                      onSlotClick={(h, m) => c.handleSlotClick(h, m, c.mobileSelectedDate, staff.id)}
+                      onApptClick={c.handleApptClick}
+                      onBlockClick={c.handleBlockClick}
+                      onApptMouseEnter={c.handleApptMouseEnter}
+                      onApptMouseMove={c.handleApptMouseMove}
+                      onApptMouseLeave={c.handleApptMouseLeave}
+                      checkIsLunch={c.isLunchTime}
+                      checkIsDisabled={c.isTimeDisabled}
+                      clientMap={c.clientMap}
+                      serviceMap={c.serviceMap}
+                      staffMap={c.staffMap}
+                      searchTerm={c.searchTerm}
+                      activeFilter={c.activeFilter}
+                    />
+                  ))}
+                  {unassignedDayAppts.length > 0 && (
+                    <DayColumn
+                      key="unassigned"
+                      date={c.mobileSelectedDate}
+                      isWorkingDay={true}
+                      appointments={unassignedDayAppts}
+                      blocks={[]}
+                      isClosed={false}
+                      hours={c.hours}
+                      startHour={c.startHour}
+                      heightPerHour={80}
+                      viewType="desktop"
+                      onSlotClick={(h, m) => c.handleSlotClick(h, m, c.mobileSelectedDate)}
+                      onApptClick={c.handleApptClick}
+                      onBlockClick={c.handleBlockClick}
+                      onApptMouseEnter={c.handleApptMouseEnter}
+                      onApptMouseMove={c.handleApptMouseMove}
+                      onApptMouseLeave={c.handleApptMouseLeave}
+                      checkIsLunch={c.isLunchTime}
+                      checkIsDisabled={c.isTimeDisabled}
+                      clientMap={c.clientMap}
+                      serviceMap={c.serviceMap}
+                      staffMap={c.staffMap}
+                      searchTerm={c.searchTerm}
+                      activeFilter={c.activeFilter}
+                    />
+                  )}
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -411,6 +580,7 @@ function CalendarContent() {
                   checkIsDisabled={c.isTimeDisabled}
                   clientMap={c.clientMap}
                   serviceMap={c.serviceMap}
+                  staffMap={c.staffMap}
                   searchTerm={c.searchTerm}
                   activeFilter={c.activeFilter}
                 />
@@ -487,6 +657,45 @@ function CalendarContent() {
                       'text-orange-600'
                     }`}>{c.serviceMap.get(c.hoveredAppt.service_id)?.name || 'Sin especificar'}</p>
                 </div>
+
+                {/* Especialista Asignado */}
+                {(() => {
+                  const staff = c.staffMap.get(c.hoveredAppt.staff_id);
+                  return (
+                    <div className="bg-stone-50/70 p-3.5 rounded-2xl border border-stone-100">
+                      <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" /> {t('dashboard.calendar.specialist') || 'ESPECIALISTA ASIGNADO'}
+                      </p>
+                      {staff ? (
+                        <div className="flex items-center gap-3">
+                          {staff.avatar_url ? (
+                            <img
+                              src={staff.avatar_url}
+                              alt={staff.full_name}
+                              className="w-9 h-9 rounded-full object-cover border-2 border-[#D4AF37]/40 shadow-sm shrink-0"
+                            />
+                          ) : (
+                            <div className="w-9 h-9 rounded-full bg-stone-900 text-[#D4AF37] font-serif font-bold text-sm flex items-center justify-center border border-[#D4AF37]/30 shadow-sm shrink-0">
+                              {staff.full_name?.charAt(0) || 'E'}
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="font-extrabold text-stone-900 text-[15px] leading-tight truncate">
+                              {staff.full_name}
+                            </p>
+                            <p className="text-[11px] font-medium text-stone-500 capitalize leading-tight mt-0.5 truncate">
+                              {staff.role || 'Especialista'}
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-stone-400 font-medium italic">
+                          Sin especialista asignado
+                        </p>
+                      )}
+                    </div>
+                  );
+                })()}
                 <div className="flex justify-between items-center bg-stone-50/50 p-4 rounded-2xl border border-stone-100 mt-1">
                   <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em]">{t('dashboard.calendar.current_status')}</p>
                   <span className={`text-[11px] font-black px-3 py-1.5 rounded-xl uppercase tracking-wider

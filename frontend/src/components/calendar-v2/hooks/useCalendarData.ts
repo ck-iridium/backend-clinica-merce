@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { toast } from 'sonner';
@@ -46,13 +46,17 @@ export function useCalendarData() {
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showBlockDeleteModal, setShowBlockDeleteModal] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState<{ date: Date, hour: number } | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<{ date: Date, hour: number, staffId?: string } | null>(null);
   const [selectedMinutes, setSelectedMinutes] = useState(0);
   const [selectedAppt, setSelectedAppt] = useState<any>(null);
   const [selectedBlock, setSelectedBlock] = useState<any>(null);
   const [hoveredAppt, setHoveredAppt] = useState<any>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const [mobileTopbarPortal, setMobileTopbarPortal] = useState<Element | null>(null);
+
+  // --- VISTA Y FILTRO DE ESPECIALISTAS ---
+  const [viewMode, setViewMode] = useState<'week' | 'day'>('week');
+  const [selectedStaffFilter, setSelectedStaffFilter] = useState<string | 'ALL'>('ALL');
 
   // --- NUEVO: Búsqueda y Filtros (Spotlight) ---
   const [searchTerm, setSearchTerm] = useState('');
@@ -136,6 +140,9 @@ export function useCalendarData() {
 
   const getAppointmentsForDay = (date: Date) => {
     return appointments.filter(a => {
+      if (selectedStaffFilter !== 'ALL' && a.staff_id !== selectedStaffFilter) {
+        return false;
+      }
       let tString = a.start_time;
       if (tString.endsWith('Z')) tString = tString.slice(0, -1);
       const aDate = new Date(tString);
@@ -144,6 +151,24 @@ export function useCalendarData() {
         aDate.getMonth() === date.getMonth() && 
         aDate.getFullYear() === date.getFullYear()
       );
+    });
+  };
+
+  const getAppointmentsForStaffAndDay = (date: Date, staffId: string | 'unassigned') => {
+    return appointments.filter(a => {
+      let tString = a.start_time;
+      if (tString.endsWith('Z')) tString = tString.slice(0, -1);
+      const aDate = new Date(tString);
+      const isSameDay = (
+        aDate.getDate() === date.getDate() && 
+        aDate.getMonth() === date.getMonth() && 
+        aDate.getFullYear() === date.getFullYear()
+      );
+      if (!isSameDay) return false;
+      if (staffId === 'unassigned') {
+        return !a.staff_id;
+      }
+      return a.staff_id === staffId;
     });
   };
 
@@ -236,6 +261,8 @@ export function useCalendarData() {
 
   const handleDateSelect = (date: Date) => {
     setCurrentWeek(getMonday(date));
+    setMobileSelectedDate(date);
+    setCarouselAnchor(date);
   };
 
   const handleMobileDateSelect = (date: Date) => {
@@ -244,11 +271,34 @@ export function useCalendarData() {
     setCurrentWeek(getMonday(date));
   };
 
+  const handlePrev = () => {
+    if (viewMode === 'day') {
+      handlePrevDay();
+    } else {
+      handlePrevWeek();
+    }
+  };
+
+  const handleNext = () => {
+    if (viewMode === 'day') {
+      handleNextDay();
+    } else {
+      handleNextWeek();
+    }
+  };
+
+  const handleDayHeaderClick = (date: Date) => {
+    setMobileSelectedDate(date);
+    setCarouselAnchor(date);
+    setCurrentWeek(getMonday(date));
+    setViewMode('day');
+  };
+
   /**
    * MANEJADORES DE INTERACCIÓN
    */
-  const handleSlotClick = (hour: number, minute: number, date: Date) => {
-    setSelectedSlot({ date, hour });
+  const handleSlotClick = (hour: number, minute: number, date: Date, staffId?: string) => {
+    setSelectedSlot({ date, hour, staffId });
     setSelectedMinutes(minute);
     setShowModal(true);
   };
@@ -324,6 +374,43 @@ export function useCalendarData() {
 
   const clientMap = new Map(clients.map(c => [c.id, c]));
   const serviceMap = new Map(services.map(s => [s.id, s]));
+  const staffMap = useMemo(() => new Map(staffList.map(s => [s.id, s])), [staffList]);
+
+  // Conteo de citas por especialista para el selector de personal
+  const staffAppointmentCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    staffList.forEach(s => { counts[s.id] = 0; });
+    counts['unassigned'] = 0;
+
+    appointments.forEach(a => {
+      let tString = a.start_time;
+      if (tString.endsWith('Z')) tString = tString.slice(0, -1);
+      const aDate = new Date(tString);
+
+      let isInScope = false;
+      if (viewMode === 'day') {
+        isInScope = (
+          aDate.getDate() === mobileSelectedDate.getDate() &&
+          aDate.getMonth() === mobileSelectedDate.getMonth() &&
+          aDate.getFullYear() === mobileSelectedDate.getFullYear()
+        );
+      } else {
+        const dayStart = new Date(currentWeek);
+        dayStart.setHours(0, 0, 0, 0);
+        const dayEnd = new Date(currentWeek);
+        dayEnd.setDate(dayEnd.getDate() + maxDays);
+        dayEnd.setHours(23, 59, 59, 999);
+        isInScope = aDate >= dayStart && aDate <= dayEnd;
+      }
+
+      if (isInScope) {
+        const sId = a.staff_id || 'unassigned';
+        counts[sId] = (counts[sId] || 0) + 1;
+      }
+    });
+
+    return counts;
+  }, [appointments, staffList, viewMode, mobileSelectedDate, currentWeek, maxDays]);
 
   const startHour = settings && settings.open_time ? parseInt(settings.open_time.split(':')[0]) : 9;
   const endHour = settings && settings.close_time 
@@ -351,6 +438,13 @@ export function useCalendarData() {
     staffList,
     locations,
 
+    // Vistas y filtros de personal
+    viewMode,
+    setViewMode,
+    selectedStaffFilter,
+    setSelectedStaffFilter,
+    staffAppointmentCounts,
+
     // Refs
     mobileDaysContainerRef,
     activeDayRef,
@@ -364,6 +458,7 @@ export function useCalendarData() {
     endHour,
     clientMap,
     serviceMap,
+    staffMap,
     
     // Helpers
     isLunchTime,
@@ -372,6 +467,7 @@ export function useCalendarData() {
     getDayClosedReason,
     getClosedBlockForDay,
     getAppointmentsForDay,
+    getAppointmentsForStaffAndDay,
     getBlocksForDay,
     initialClientId,
 
@@ -388,6 +484,8 @@ export function useCalendarData() {
     mobileTopbarPortal,
 
     // Handlers
+    handlePrev,
+    handleNext,
     handlePrevWeek,
     handleNextWeek,
     handlePrevDay,
@@ -395,6 +493,7 @@ export function useCalendarData() {
     handleToday,
     handleDateSelect,
     handleMobileDateSelect,
+    handleDayHeaderClick,
     handleSlotClick,
     handleApptClick,
     handleBlockClick,
