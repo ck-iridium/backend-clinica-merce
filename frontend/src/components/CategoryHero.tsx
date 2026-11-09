@@ -4,15 +4,17 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import PublicNavbar from './PublicNavbar';
 import ScrollIndicator from './ScrollIndicator';
-import { useLanguage } from '@/app/contexts/LanguageContext';
+import { useLanguage, Language } from '@/app/contexts/LanguageContext';
 
 interface CategoryHeroProps {
   category: any;
+  lang?: Language;
 }
 
-export default function CategoryHero({ category }: CategoryHeroProps) {
+export default function CategoryHero({ category, lang: propLang }: CategoryHeroProps) {
   const [scrollY, setScrollY] = useState(0);
   const { language, t } = useLanguage();
+  const activeLang = propLang || language;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -29,12 +31,12 @@ export default function CategoryHero({ category }: CategoryHeroProps) {
   };
 
   const translateClient = (spanishText: string, translations: any, field: string) => {
-    if (!translations || language === 'es') return spanishText;
+    if (!translations || activeLang === 'es') return spanishText;
     let parsed = translations;
     if (typeof translations === 'string') {
       try { parsed = JSON.parse(translations); } catch { return spanishText; }
     }
-    return parsed?.[language]?.[field] || spanishText;
+    return parsed?.[activeLang]?.[field] || spanishText;
   };
 
   const parallaxOffset = scrollY * 0.4;
@@ -42,7 +44,12 @@ export default function CategoryHero({ category }: CategoryHeroProps) {
 
   const translatedName = translateClient(category.name, category.translations, 'name');
   const translatedDesc = translateClient(category.description, category.translations, 'description');
-  const subtitle = t('common.treatment_collection');
+  
+  const subtitle = activeLang === 'fr'
+    ? 'COLLECTION DE SOINS'
+    : activeLang === 'en'
+      ? 'TREATMENT COLLECTION'
+      : t('common.treatment_collection', 'COLECCIÓN DE TRATAMIENTOS');
 
   return (
     <section className="relative w-full h-full overflow-hidden flex flex-col justify-end bg-stone-900">
@@ -97,28 +104,11 @@ export default function CategoryHero({ category }: CategoryHeroProps) {
           </div>
         )}
       </div>
-      
-      <ScrollIndicator />
 
-      {/* Animaciones CSS personalizadas */}
-      <style jsx global>{`
-        @keyframes slow-zoom {
-          from { transform: scale(1.15); }
-          to { transform: scale(1); }
-        }
-        @keyframes reveal-up {
-          from { transform: translateY(100%); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-        .animate-slow-zoom {
-          animation: slow-zoom 5s cubic-bezier(0.2, 0, 0.2, 1) forwards;
-        }
-        .animate-reveal-up {
-          animation: reveal-up 1.2s cubic-bezier(0.2, 0, 0.2, 1) forwards;
-        }
-        .animation-delay-200 { animation-delay: 0.2s; }
-        .animation-delay-400 { animation-delay: 0.4s; }
-      `}</style>
+      {/* Scroll Indicator */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
+        <ScrollIndicator targetId="treatment-content" />
+      </div>
     </section>
   );
 }

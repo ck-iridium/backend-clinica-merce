@@ -71,6 +71,7 @@ export interface AlternateUrls {
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language, targetUrl?: string) => void;
+  syncLanguage: (lang: Language) => void;
   alternateUrls: AlternateUrls | null;
   setAlternateUrls: (urls: AlternateUrls | null) => void;
   t: (key: string, variables?: Record<string, string | number>) => string;
@@ -83,31 +84,54 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>('es');
   const [alternateUrls, setAlternateUrls] = useState<AlternateUrls | null>(null);
 
+  // Sincronizar idioma de forma reactiva en el cliente sin recargas ni navegaciones no deseadas
+  const syncLanguage = (lang: Language) => {
+    setLanguageState(lang);
+    try {
+      localStorage.setItem('preferred_language', lang);
+    } catch (_) {}
+    if (typeof document !== 'undefined') {
+      document.cookie = `preferred_language=${lang}; path=/; max-age=31536000; SameSite=Lax`;
+    }
+  };
+
   // Detectar idioma inicial al montar el componente y sincronizar cookies
   useEffect(() => {
     try {
-      let savedLang: Language | null = null;
-      try {
-        savedLang = localStorage.getItem('preferred_language') as Language;
-      } catch (_) {}
+      let detectedLang: Language | null = null;
 
-      if (!savedLang) {
-        // Solo si la URL actual es explícitamente internacional (/services, /contact) o tiene ?lang=
-        if (typeof window !== 'undefined') {
-          const path = window.location.pathname;
-          const search = window.location.search;
-          if (path.startsWith('/services') || path.startsWith('/contact') || search.includes('lang=en')) {
-            savedLang = 'en';
-          } else {
-            savedLang = 'es';
-          }
-        } else {
-          savedLang = 'es';
+      if (typeof window !== 'undefined') {
+        const path = window.location.pathname;
+        const search = window.location.search;
+
+        // 1. Prioridad: Parámetro explícito ?lang= en la URL
+        if (search.includes('lang=fr')) {
+          detectedLang = 'fr';
+        } else if (search.includes('lang=en')) {
+          detectedLang = 'en';
+        } else if (search.includes('lang=es')) {
+          detectedLang = 'es';
+        }
+        // 2. Prioridad: Rutas explícitas internacionales en inglés
+        else if (path.startsWith('/services') || path.startsWith('/contact')) {
+          detectedLang = 'en';
         }
       }
-      setLanguageState(savedLang);
+
+      // 3. Prioridad: LocalStorage o cookies si no viene en URL
+      if (!detectedLang) {
+        try {
+          const stored = localStorage.getItem('preferred_language') as Language;
+          if (stored === 'es' || stored === 'en' || stored === 'fr') {
+            detectedLang = stored;
+          }
+        } catch (_) {}
+      }
+
+      const finalLang: Language = detectedLang || 'es';
+      setLanguageState(finalLang);
       if (typeof document !== 'undefined') {
-        document.cookie = `preferred_language=${savedLang}; path=/; max-age=31536000; SameSite=Lax`;
+        document.cookie = `preferred_language=${finalLang}; path=/; max-age=31536000; SameSite=Lax`;
       }
     } catch (e) {
       console.warn("Error inicializando LanguageContext:", e);
@@ -199,7 +223,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, alternateUrls, setAlternateUrls, t, translate }}>
+    <LanguageContext.Provider value={{ language, setLanguage, syncLanguage, alternateUrls, setAlternateUrls, t, translate }}>
       {children}
     </LanguageContext.Provider>
   );

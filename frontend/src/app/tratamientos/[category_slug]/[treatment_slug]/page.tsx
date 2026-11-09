@@ -361,7 +361,7 @@ export default async function TreatmentDynamicPage({
 
   return (
     <TreatmentScrollHandler>
-      <AlternateUrlsSetter urls={{ es: esPath, en: enPath, fr: frPath }} />
+      <AlternateUrlsSetter urls={{ es: esPath, en: enPath, fr: frPath }} lang={lang} />
       <JsonLd id={`service-jsonld-${service.id}`} data={serviceSchema} />
       <style dangerouslySetInnerHTML={{
         __html: `

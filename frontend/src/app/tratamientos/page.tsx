@@ -128,7 +128,7 @@ export default async function CatalogPage() {
 
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 font-sans mt-16 md:mt-0">
-      <AlternateUrlsSetter urls={{ es: '/tratamientos', en: '/services', fr: '/tratamientos' }} />
+      <AlternateUrlsSetter urls={{ es: '/tratamientos', en: '/services', fr: '/tratamientos' }} lang={lang} />
       <main className="pt-32 pb-24">
         <div className="max-w-7xl mx-auto px-6 mb-16 animate-in slide-in-from-bottom-4 duration-700">
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-stone-900 dark:text-stone-100">{t.title}</h1>

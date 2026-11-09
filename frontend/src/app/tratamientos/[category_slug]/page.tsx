@@ -369,14 +369,14 @@ export default async function CategoryDynamicPage({
 
   return (
     <div className="min-h-screen bg-stone-50 font-sans text-stone-900 selection:bg-[#d4af37]/30">
-      <AlternateUrlsSetter urls={{ es: esPath, en: enPath, fr: frPath }} />
+      <AlternateUrlsSetter urls={{ es: esPath, en: enPath, fr: frPath }} lang={lang} />
 
       {/* CONTENEDOR MAESTRO DE SNAP (Móvil) */}
       <main className="w-full h-[100dvh] overflow-y-auto snap-y-mandatory md:h-auto md:overflow-visible md:snap-none scroll-smooth-premium relative">
 
         {/* 1. HERO DE CATEGORÍA CINEMATOGRÁFICO */}
         <section className="h-[100dvh] snap-start snap-stop-always md:h-[65vh] md:snap-none">
-          <CategoryHero category={category} />
+          <CategoryHero category={category} lang={lang} />
         </section>
 
         {/* 2. SLIDER DE TRATAMIENTOS */}
