@@ -40,6 +40,7 @@ export function useCalendarData() {
   const [services, setServices] = useState<any[]>([]);
   const [staffList, setStaffList] = useState<any[]>([]);
   const [locations, setLocations] = useState<any[]>([]);
+  const [resources, setResources] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // --- NUEVO: Estados de UI y Modales ---
@@ -102,14 +103,15 @@ export function useCalendarData() {
 
   const fetchData = async () => {
     try {
-      const [apptRes, clientRes, srvRes, blockRes, settingsRes, staffRes, locRes] = await Promise.all([
+      const [apptRes, clientRes, srvRes, blockRes, settingsRes, staffRes, locRes, resRes] = await Promise.all([
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/`),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/`),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/`),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/time-blocks/`),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/`),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/specialists`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/locations/`)
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/locations/`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/locations/resources/all`)
       ]);
       
       if (apptRes.ok) setAppointments(await apptRes.json());
@@ -122,6 +124,10 @@ export function useCalendarData() {
       if (settingsRes.ok) setSettings(await settingsRes.json());
       if (staffRes.ok) setStaffList(await staffRes.json());
       if (locRes.ok) setLocations(await locRes.json());
+      if (resRes.ok) {
+        const rList = await resRes.json();
+        setResources(Array.isArray(rList) ? rList : []);
+      }
     } catch (e) {
       console.error(e);
       toast.error('Error al cargar datos del calendario');
@@ -442,6 +448,7 @@ export function useCalendarData() {
   }, [appointments, staffList, viewMode, mobileSelectedDate, currentWeek, maxDays, selectedLocationFilter]);
 
   const locationMap = useMemo(() => new Map(locations.map(l => [l.id, l])), [locations]);
+  const resourceMap = useMemo(() => new Map(resources.map(r => [r.id, r])), [resources]);
 
   // Conteo de citas por sede en el rango visible
   const locationAppointmentCounts = useMemo(() => {
@@ -502,6 +509,7 @@ export function useCalendarData() {
     services,
     staffList,
     locations,
+    resources,
 
     // Vistas y filtros de personal y sedes
     viewMode,
@@ -528,6 +536,7 @@ export function useCalendarData() {
     serviceMap,
     staffMap,
     locationMap,
+    resourceMap,
     
     // Helpers
     isLunchTime,

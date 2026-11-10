@@ -218,7 +218,11 @@
       "saving": "Enregistrement...",
       "schedule": "Planifier",
       "block_btn": "Bloquer",
-      "specialist": "Spécialiste *"
+      "specialist": "Spécialiste *",
+      "resource_req": "Cabine / Ressource (Optionnel)",
+      "resource_free": "Aucune (Sans cabine exclusive)",
+      "no_resource": "Sans cabine assignée (Libre)",
+      "resource_title": "Cabine / Ressource Physique"
     }
   },
   "pos": {

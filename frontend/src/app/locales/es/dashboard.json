@@ -218,7 +218,11 @@
       "saving": "Guardando...",
       "schedule": "Agendar",
       "block_btn": "Bloquear",
-      "specialist": "Especialista *"
+      "specialist": "Especialista *",
+      "resource_req": "Cabina / Recurso (Opcional)",
+      "resource_free": "Ninguno (Sin cabina exclusiva)",
+      "no_resource": "Sin cabina asignada (Libre)",
+      "resource_title": "Cabina / Recurso Físico"
     }
   },
   "pos": {

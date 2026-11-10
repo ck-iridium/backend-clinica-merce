@@ -28,13 +28,6 @@ class LocationUpdate(BaseModel):
     longitude: Optional[float] = None
     max_concurrent_appointments: Optional[int] = None
 
-class LocationResponse(LocationBase):
-    id: str
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
 # --- Location Resources (Cabinas / Equipamiento Físico) ---
 class LocationResourceBase(BaseModel):
     name: str
@@ -54,6 +47,14 @@ class LocationResourceResponse(LocationResourceBase):
     tenant_id: str
     location_id: str
     created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class LocationResponse(LocationBase):
+    id: str
+    created_at: datetime
+    resources: List[LocationResourceResponse] = []
 
     class Config:
         from_attributes = True

@@ -49,6 +49,9 @@ interface EditAppointmentModalProps {
   locations?: any[];
   locationMap?: Map<string, any>;
   handleUpdateLocation?: (newLocationId: string) => Promise<void>;
+  resources?: any[];
+  resourceMap?: Map<string, any>;
+  handleUpdateResource?: (newResourceId: string) => Promise<void>;
   settings?: any;
   endHour?: number;
   getAppointmentsForDay?: (d: Date) => any[];
@@ -80,6 +83,9 @@ export function EditAppointmentModal({
   locations = [],
   locationMap,
   handleUpdateLocation,
+  resources = [],
+  resourceMap,
+  handleUpdateResource,
   settings,
   endHour = 20,
   getAppointmentsForDay,
@@ -103,6 +109,21 @@ export function EditAppointmentModal({
     if (locationMap && locationMap.size > 0) return locationMap;
     return new Map((locations || []).map((l: any) => [l.id, l]));
   }, [locationMap, locations]);
+
+  const availableLocationResources = useMemo(() => {
+    if (!resources || resources.length === 0) return [];
+    if (!selectedAppt?.location_id) return resources.filter((r: any) => r.is_active);
+    return resources.filter((r: any) => r.location_id === selectedAppt.location_id && r.is_active);
+  }, [resources, selectedAppt?.location_id]);
+
+  const resolvedResourceMap = useMemo(() => {
+    if (resourceMap && resourceMap.size > 0) return resourceMap;
+    const m = new Map<string, any>();
+    if (resources && resources.length > 0) {
+      resources.forEach((r: any) => m.set(r.id, r));
+    }
+    return m;
+  }, [resourceMap, resources]);
 
   const parseIsoDate = (str?: string) => {
     if (!str) return new Date();
@@ -433,6 +454,65 @@ export function EditAppointmentModal({
                   {locations[0].address && <span className="text-[10px] text-stone-400 truncate">({locations[0].address})</span>}
                 </div>
               ) : null}
+            </div>
+          )}
+
+          {/* Cabina / Recurso Asignado con selector para reasignar */}
+          {(availableLocationResources.length > 0 || selectedAppt?.resource_id) && (
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest flex items-center gap-1.5">
+                  <Layers size={13} className="text-[#D4AF37]" />
+                  {t('dashboard.calendar.modal.resource_title') || 'Cabina / Recurso Físico'}
+                </p>
+              </div>
+              <Select
+                value={selectedAppt?.resource_id || 'none'}
+                onValueChange={(val) => handleUpdateResource?.(val)}
+                disabled={updatingStatus}
+              >
+                <SelectTrigger
+                  id="edit-appt-resource-select-trigger"
+                  className="w-full h-12 rounded-xl border border-stone-200/80 bg-stone-50/60 hover:bg-stone-50 focus:bg-white text-xs font-semibold shadow-2xs transition-all"
+                >
+                  {selectedAppt?.resource_id && (resolvedResourceMap.get(selectedAppt.resource_id) || selectedAppt.resource) ? (() => {
+                    const res = resolvedResourceMap.get(selectedAppt.resource_id) || selectedAppt.resource;
+                    return (
+                      <div className="flex items-center gap-2 truncate">
+                        <Layers size={14} className="text-[#D4AF37] shrink-0" />
+                        <span className="font-bold text-stone-900 truncate">{res.name}</span>
+                        {res.quantity > 1 && <span className="text-[10px] text-stone-400">({res.quantity} unid.)</span>}
+                      </div>
+                    );
+                  })() : (
+                    <div className="flex items-center gap-2 text-stone-400 italic">
+                      <span className="w-2 h-2 rounded-full bg-stone-300" />
+                      <span>{t('dashboard.calendar.modal.no_resource') || 'Sin cabina asignada (Libre)'}</span>
+                    </div>
+                  )}
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl border border-stone-200/80 shadow-2xl p-1.5 bg-white">
+                  <SelectItem value="none" className="py-2.5 rounded-xl text-xs font-medium text-stone-500">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-stone-300" />
+                      <span className="italic">{t('dashboard.calendar.modal.no_resource') || 'Sin cabina asignada (Libre)'}</span>
+                    </div>
+                  </SelectItem>
+                  {availableLocationResources.map((res: any) => (
+                    <SelectItem key={res.id} value={res.id} className="py-2.5 rounded-xl text-xs font-medium">
+                      <div className="flex items-center justify-between w-full gap-2">
+                        <div className="flex items-center gap-2">
+                          <Layers size={13} className="text-[#D4AF37]" />
+                          <span className="font-semibold text-stone-800">{res.name}</span>
+                        </div>
+                        {res.quantity > 1 && (
+                          <span className="text-[10px] text-stone-400 font-normal">({res.quantity} unidades)</span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 

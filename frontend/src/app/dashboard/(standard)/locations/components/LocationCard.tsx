@@ -105,6 +105,56 @@ export default function LocationCard({
             </div>
           )}
         </div>
+
+        {/* Cabinas y Recursos Físicos configurados en la sede */}
+        <div className="pt-3 border-t border-stone-100/80">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest flex items-center gap-1.5">
+              <Layers size={13} className="text-[#d4af37]" />
+              Cabinas & Recursos ({location.resources?.length || 0})
+            </span>
+            {onManageResources && (
+              <button
+                type="button"
+                onClick={() => onManageResources(location)}
+                className="text-[10px] font-semibold text-[#b08e23] hover:text-stone-900 transition-colors"
+              >
+                + Gestionar
+              </button>
+            )}
+          </div>
+
+          {location.resources && location.resources.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {location.resources.map(res => (
+                <span
+                  key={res.id}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold ${
+                    res.is_active
+                      ? 'bg-stone-50 border border-stone-200/80 text-stone-700'
+                      : 'bg-stone-100/50 border border-dashed border-stone-200 text-stone-400 line-through'
+                  }`}
+                  title={`${res.name} (${res.quantity} ${res.quantity === 1 ? 'unidad' : 'unidades'})`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${res.is_active ? 'bg-[#d4af37]' : 'bg-stone-300'}`} />
+                  <span className="truncate max-w-[140px]">{res.name}</span>
+                  {res.quantity > 1 && (
+                    <span className="text-[10px] text-stone-400 font-normal">x{res.quantity}</span>
+                  )}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => onManageResources?.(location)}
+              className="w-full py-2 px-3 rounded-xl border border-dashed border-stone-200 hover:border-[#d4af37]/60 hover:bg-[#d4af37]/5 text-stone-400 hover:text-stone-700 text-xs font-medium transition-all text-left flex items-center justify-between"
+            >
+              <span>Sin cabinas configuradas</span>
+              <span className="text-[10px] text-[#b08e23] font-bold">+ Añadir</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Barra de Acciones Inferior */}

@@ -9,6 +9,7 @@ export interface Location {
   latitude?: number;
   longitude?: number;
   max_concurrent_appointments?: number | null;
+  resources?: LocationResource[];
   created_at: string;
 }
 

@@ -631,6 +631,8 @@ function CalendarContent() {
             staffList={c.staffList}
           locations={c.locations}
           locationMap={c.locationMap}
+          resources={c.resources}
+          resourceMap={c.resourceMap}
           activeLocationId={c.selectedLocationFilter !== 'ALL' ? c.selectedLocationFilter : undefined}
           fetchData={c.fetchData}
           openWhatsApp={c.openWhatsApp}

@@ -19,12 +19,14 @@ interface LocationResourcesModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   location: Location | null;
+  onSuccess?: () => void;
 }
 
 export default function LocationResourcesModal({
   isOpen,
   onOpenChange,
-  location
+  location,
+  onSuccess
 }: LocationResourcesModalProps) {
   const [resources, setResources] = useState<LocationResource[]>([]);
   const [loading, setLoading] = useState(false);
@@ -107,6 +109,7 @@ export default function LocationResourcesModal({
       setNewResourceName('');
       setNewResourceQuantity(1);
       fetchResources();
+      onSuccess?.();
     } catch (err: any) {
       toast.error(err.message || "Error al crear recurso");
     } finally {
@@ -127,6 +130,7 @@ export default function LocationResourcesModal({
       if (!res.ok) throw new Error("Error al actualizar estado");
       toast.success(resource.is_active ? "Recurso pausado" : "Recurso activado");
       fetchResources();
+      onSuccess?.();
     } catch (e: any) {
       toast.error(e.message || "Error al actualizar recurso");
     }
@@ -142,6 +146,7 @@ export default function LocationResourcesModal({
       if (!res.ok) throw new Error("Error al eliminar recurso");
       toast.success("Recurso eliminado");
       setResources(prev => prev.filter(r => r.id !== resourceId));
+      onSuccess?.();
     } catch (e: any) {
       toast.error(e.message || "Error al eliminar recurso");
     }

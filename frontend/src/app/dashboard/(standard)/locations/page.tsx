@@ -351,6 +351,7 @@ export default function LocationsPage() {
         isOpen={isResourcesModalOpen}
         onOpenChange={setIsResourcesModalOpen}
         location={resourceLocation}
+        onSuccess={fetchLocationsAndLimits}
       />
 
     </div>

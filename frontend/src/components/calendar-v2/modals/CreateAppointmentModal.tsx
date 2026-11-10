@@ -34,6 +34,7 @@ interface CreateAppointmentModalProps {
   getBlocksForDay: (d: Date) => any[];
   staffList?: any[];
   locations?: any[];
+  resources?: any[];
   activeLocationId?: string;
   fetchData: () => Promise<void>;
 }
@@ -57,6 +58,7 @@ export function CreateAppointmentModal({
   getBlocksForDay,
   staffList = [],
   locations = [],
+  resources = [],
   activeLocationId,
   fetchData
 }: CreateAppointmentModalProps) {
@@ -68,6 +70,7 @@ export function CreateAppointmentModal({
   const [selectedServiceId, setSelectedServiceId] = useState('');
   const [selectedStaffId, setSelectedStaffId] = useState('');
   const [selectedLocationId, setSelectedLocationId] = useState('');
+  const [selectedResourceId, setSelectedResourceId] = useState<string>('');
   const [customDuration, setCustomDuration] = useState<number>(30);
   const [appointmentNotes, setAppointmentNotes] = useState('');
   const [saving, setSaving] = useState(false);
@@ -89,6 +92,13 @@ export function CreateAppointmentModal({
     }
   }, [staffList, selectedStaffId]);
 
+  // Cabinas y Recursos Físicos disponibles en la sede seleccionada
+  const availableLocationResources = useMemo(() => {
+    if (!resources || resources.length === 0) return [];
+    if (!selectedLocationId) return resources.filter((r: any) => r.is_active);
+    return resources.filter((r: any) => r.location_id === selectedLocationId && r.is_active);
+  }, [resources, selectedLocationId]);
+
   // Inicializar sede predeterminada según filtro activo o primer centro
   React.useEffect(() => {
     if (activeLocationId && activeLocationId !== 'ALL') {
@@ -96,6 +106,7 @@ export function CreateAppointmentModal({
     } else if (locations.length > 0) {
       setSelectedLocationId(locations[0].id);
     }
+    setSelectedResourceId('');
   }, [showModal, activeLocationId, locations]);
 
   // Cálculo exacto del hueco disponible teniendo en cuenta cierres, pausa de mediodía y eventos futuros
@@ -175,6 +186,7 @@ export function CreateAppointmentModal({
           service_id: selectedServiceId,
           staff_id: selectedStaffId || (staffList.length > 0 ? staffList[0].id : null),
           location_id: selectedLocationId || (locations.length > 0 ? locations[0].id : null),
+          resource_id: (selectedResourceId && selectedResourceId !== 'none') ? selectedResourceId : (service?.required_resource_id || null),
           start_time: formatLocalISO(start_time),
           end_time: formatLocalISO(end_time),
           duration_minutes: duration,
@@ -188,6 +200,7 @@ export function CreateAppointmentModal({
         setShowModal(false);
         setSelectedClientId('');
         setSelectedServiceId('');
+        setSelectedResourceId('');
         setCustomDuration(30);
         setAppointmentNotes('');
         toast.success(t('dashboard.calendar.toast.appt_scheduled') || 'Cita agendada correctamente');
@@ -353,8 +366,13 @@ export function CreateAppointmentModal({
                     onValueChange={(val) => {
                       setSelectedServiceId(val);
                       const s = services.find(x => x.id === val);
-                      if (s && s.duration_minutes) {
-                        setCustomDuration(s.duration_minutes);
+                      if (s) {
+                        if (s.duration_minutes) {
+                          setCustomDuration(s.duration_minutes);
+                        }
+                        if (s.required_resource_id) {
+                          setSelectedResourceId(s.required_resource_id);
+                        }
                       }
                     }}
                   >
@@ -428,6 +446,47 @@ export function CreateAppointmentModal({
                               <MapPin size={13} className="text-[#D4AF37]" />
                               <span className="font-semibold text-stone-800">{loc.name}</span>
                               {loc.address && <span className="text-xs text-stone-400 font-normal truncate">({loc.address})</span>}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {/* Cabina / Recurso Físico de la sede */}
+                {availableLocationResources.length > 0 && (
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wider flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <Layers size={13} className="text-[#D4AF37]" />
+                        {t('dashboard.calendar.modal.resource_req') || 'Cabina / Recurso (Opcional)'}
+                      </span>
+                      <span className="text-[10px] text-stone-400 font-normal lowercase tracking-normal">
+                        evita dobles citas en esta cabina
+                      </span>
+                    </label>
+                    <Select 
+                      value={selectedResourceId || "none"} 
+                      onValueChange={(val) => setSelectedResourceId(val === "none" ? "" : val)}
+                    >
+                      <SelectTrigger id="create-appt-resource-select-trigger" className="w-full">
+                        <SelectValue placeholder="-- Sin cabina asignada --" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-60 rounded-2xl border border-stone-200/80 shadow-2xl p-1 bg-white">
+                        <SelectItem value="none" className="py-2.5 rounded-xl text-stone-500">
+                          {t('dashboard.calendar.modal.resource_free') || 'Ninguno (Sin cabina exclusiva)'}
+                        </SelectItem>
+                        {availableLocationResources.map((res: any) => (
+                          <SelectItem key={res.id} value={res.id} className="py-2.5 rounded-xl font-medium">
+                            <div className="flex items-center justify-between w-full gap-2">
+                              <div className="flex items-center gap-2">
+                                <Layers size={13} className="text-[#D4AF37]" />
+                                <span className="font-semibold text-stone-800">{res.name}</span>
+                              </div>
+                              {res.quantity > 1 && (
+                                <span className="text-xs text-stone-400 font-normal">({res.quantity} unidades)</span>
+                              )}
                             </div>
                           </SelectItem>
                         ))}

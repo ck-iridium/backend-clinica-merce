@@ -218,7 +218,11 @@
       "saving": "Saving...",
       "schedule": "Schedule",
       "block_btn": "Block",
-      "specialist": "Specialist *"
+      "specialist": "Specialist *",
+      "resource_req": "Cabin / Resource (Optional)",
+      "resource_free": "None (No exclusive cabin)",
+      "no_resource": "No cabin assigned (Free)",
+      "resource_title": "Cabin / Physical Resource"
     }
   },
   "pos": {

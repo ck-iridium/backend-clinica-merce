@@ -28,6 +28,7 @@ class AppointmentUpdate(BaseModel):
     service_id: Optional[str] = None
     staff_id: Optional[str] = None
     location_id: Optional[str] = None
+    resource_id: Optional[str] = None
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
     duration_minutes: Optional[int] = None

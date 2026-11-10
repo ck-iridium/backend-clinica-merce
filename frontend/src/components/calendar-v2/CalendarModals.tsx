@@ -38,6 +38,8 @@ interface CalendarModalsProps {
   staffList?: any[];
   locations?: any[];
   locationMap?: Map<string, any>;
+  resources?: any[];
+  resourceMap?: Map<string, any>;
   activeLocationId?: string;
   fetchData: () => Promise<void>;
   openWhatsApp: (name: string, phone: string, service: string, start: string) => void;
@@ -66,6 +68,8 @@ export function CalendarModals({
   staffList = [],
   locations = [],
   locationMap,
+  resources = [],
+  resourceMap,
   activeLocationId,
   fetchData,
   openWhatsApp
@@ -93,6 +97,31 @@ export function CalendarModals({
       } else {
         const err = await res.json().catch(() => ({}));
         toast.error(err.detail || t('dashboard.calendar.toast.update_error') || 'Error al actualizar sede');
+      }
+    } catch (e) {
+      toast.error(t('dashboard.calendar.toast.connection_error') || 'Error de conexión');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const handleUpdateResource = async (newResourceId: string) => {
+    if (!selectedAppt) return;
+    const resIdToSend = (!newResourceId || newResourceId === 'none') ? null : newResourceId;
+    setUpdatingStatus(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/${selectedAppt.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resource_id: resIdToSend })
+      });
+      if (res.ok) {
+        await fetchData();
+        setSelectedAppt({ ...selectedAppt, resource_id: resIdToSend });
+        toast.success(t('dashboard.calendar.toast.resource_updated') || 'Cabina/Recurso actualizado');
+      } else {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.detail || t('dashboard.calendar.toast.update_error') || 'Error al actualizar cabina/recurso');
       }
     } catch (e) {
       toast.error(t('dashboard.calendar.toast.connection_error') || 'Error de conexión');
@@ -255,6 +284,7 @@ export function CalendarModals({
         getBlocksForDay={getBlocksForDay}
         staffList={staffList}
         locations={locations}
+        resources={resources}
         activeLocationId={activeLocationId}
         fetchData={fetchData}
       />
@@ -281,6 +311,9 @@ export function CalendarModals({
         locations={locations}
         locationMap={locationMap}
         handleUpdateLocation={handleUpdateLocation}
+        resources={resources}
+        resourceMap={resourceMap}
+        handleUpdateResource={handleUpdateResource}
         settings={settings}
         endHour={endHour}
         getAppointmentsForDay={getAppointmentsForDay}
