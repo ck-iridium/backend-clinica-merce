@@ -426,8 +426,6 @@ function CalendarContent() {
                     staffMap={c.staffMap}
                     locationMap={c.locationMap}
                     resourceMap={c.resourceMap}
-                  resourceMap={c.resourceMap}
-                    resourceMap={c.resourceMap}
                     showLocationBadge={c.selectedLocationFilter === 'ALL' && c.locations.length > 1}
                     searchTerm={c.searchTerm}
                     activeFilter={c.activeFilter}
@@ -462,8 +460,6 @@ function CalendarContent() {
                       staffMap={c.staffMap}
                     locationMap={c.locationMap}
                     resourceMap={c.resourceMap}
-                  resourceMap={c.resourceMap}
-                    resourceMap={c.resourceMap}
                     showLocationBadge={c.selectedLocationFilter === 'ALL' && c.locations.length > 1}
                       searchTerm={c.searchTerm}
                       activeFilter={c.activeFilter}
@@ -493,8 +489,6 @@ function CalendarContent() {
                       serviceMap={c.serviceMap}
                       staffMap={c.staffMap}
                     locationMap={c.locationMap}
-                    resourceMap={c.resourceMap}
-                  resourceMap={c.resourceMap}
                     resourceMap={c.resourceMap}
                     showLocationBadge={c.selectedLocationFilter === 'ALL' && c.locations.length > 1}
                       searchTerm={c.searchTerm}
