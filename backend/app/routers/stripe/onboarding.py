@@ -32,41 +32,20 @@ def create_onboarding_session(request: OnboardingSessionRequest, req: Request):
             raise HTTPException(status_code=400, detail="El correo electrónico del administrador ya está registrado.")
             
         selected_plan = request.plan_type.lower()
-        
-        # 1. Plan gratuito: aprovisionamiento instantáneo
-        if selected_plan == "free":
-            print(f"[FREE REGISTRATION] Aprovisionando cuenta gratuita al instante para {request.tenant_slug}")
-            tenant = provision_tenant(
-                db=db,
-                tenant_name=request.tenant_name,
-                tenant_slug=request.tenant_slug,
-                admin_email=request.admin_email,
-                admin_name=request.admin_name,
-                admin_password=request.admin_password,
-                stripe_customer_id=None,
-                stripe_subscription_id=None,
-                plan_type="free"
-            )
-            redirect_url = f"{frontend_url}/onboarding/success?free_success=true&tenant_id={tenant.id}&tenant_slug={tenant.slug}&tenant_name={tenant.name}&admin_email={request.admin_email}&admin_name={request.admin_name}&admin_password={request.admin_password}"
-            return {"url": redirect_url}
+        if selected_plan not in ["basic", "pro", "gold"]:
+            selected_plan = "pro"
 
-        # 2. Plan premium: aprovisionamiento con Periodo de Prueba (Trial) de 14 días
-        print(f"[TRIAL ONBOARDING] Aprovisionando cuenta con Trial de 14 días para {request.tenant_slug}")
-        tenant = provision_tenant(
-            db=db,
+        print(f"[STRIPE TRIAL CHECKOUT] Creando sesión oficial de Stripe con 14 días de prueba para {request.tenant_slug} (Plan {selected_plan.upper()})")
+        checkout_url = StripeService.create_onboarding_session(
             tenant_name=request.tenant_name,
             tenant_slug=request.tenant_slug,
             admin_email=request.admin_email,
             admin_name=request.admin_name,
             admin_password=request.admin_password,
-            stripe_customer_id=None,
-            stripe_subscription_id=None,
-            plan_type=selected_plan,
-            subscription_status="trial",
-            subscription_expires_at=datetime.utcnow() + timedelta(days=14)
+            frontend_url=frontend_url,
+            plan_type=selected_plan
         )
-        redirect_url = f"{frontend_url}/onboarding/success?free_success=true&tenant_id={tenant.id}&tenant_slug={tenant.slug}&tenant_name={tenant.name}&admin_email={request.admin_email}&admin_name={request.admin_name}&admin_password={request.admin_password}"
-        return {"url": redirect_url}
+        return {"url": checkout_url}
             
     finally:
         db.close()
@@ -76,8 +55,8 @@ def create_onboarding_session(request: OnboardingSessionRequest, req: Request):
 def onboarding_session_status(session_id: str, db: Session = Depends(database.get_db)):
     try:
         session = StripeService.retrieve_checkout_session(session_id)
-        if session.payment_status != "paid" and session.status != "complete":
-            raise HTTPException(status_code=400, detail="El pago no ha sido completado todavía en Stripe")
+        if session.status != "complete" and session.payment_status not in ["paid", "no_payment_required"]:
+            raise HTTPException(status_code=400, detail="El registro y verificación de tarjeta en Stripe no han sido completados")
 
         metadata = session.metadata or {}
         metadata_type = None
@@ -103,6 +82,10 @@ def onboarding_session_status(session_id: str, db: Session = Depends(database.ge
 
         tenant = db.query(models.Tenant).filter(models.Tenant.slug == tenant_slug).first()
 
+        plan_type = metadata.get("plan_type", "pro")
+        if not plan_type or plan_type == "":
+            plan_type = "pro"
+
         if not tenant:
             stripe_cust_id = getattr(session, "customer", None)
             if not stripe_cust_id and isinstance(session, dict):
@@ -112,11 +95,7 @@ def onboarding_session_status(session_id: str, db: Session = Depends(database.ge
             if not stripe_sub_id and isinstance(session, dict):
                 stripe_sub_id = session.get("subscription")
 
-            plan_type = metadata.get("plan_type", "pro")
-            if not plan_type or plan_type == "":
-                plan_type = "pro"
-
-            print(f"[ONBOARDING STATUS fallback] Realizando aprovisionamiento síncrono para {tenant_slug}")
+            print(f"[ONBOARDING STATUS Stripe Checkout Verified] Aprovisionando Tenant {tenant_slug} con Trial 14 días (Plan {plan_type.upper()})")
             tenant = provision_tenant(
                 db=db,
                 tenant_name=tenant_name,
@@ -126,7 +105,9 @@ def onboarding_session_status(session_id: str, db: Session = Depends(database.ge
                 admin_password=admin_password,
                 stripe_customer_id=stripe_cust_id,
                 stripe_subscription_id=stripe_sub_id,
-                plan_type=plan_type
+                plan_type=plan_type,
+                subscription_status="trial",
+                subscription_expires_at=datetime.utcnow() + timedelta(days=14)
             )
         
         return {
@@ -136,7 +117,7 @@ def onboarding_session_status(session_id: str, db: Session = Depends(database.ge
             "tenant_name": tenant.name,
             "admin_email": admin_email,
             "admin_name": admin_name,
-            "admin_password": admin_password
+            "plan_type": tenant.plan_type or plan_type
         }
     except HTTPException:
         raise

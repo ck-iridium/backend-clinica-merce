@@ -2,6 +2,21 @@ from pydantic import BaseModel, Field
 from typing import Optional, List
 
 # --- Onboarding Wizard ---
+class ExtraLocationPayload(BaseModel):
+    name: str
+    address: str
+    phone: Optional[str] = None
+
+class InitialResourcePayload(BaseModel):
+    name: str
+    quantity: int = 1
+    location_index: int = 0
+
+class InitialTeamMemberPayload(BaseModel):
+    full_name: str
+    email: Optional[str] = None
+    role: str = "specialist"
+
 class OnboardingSetupRequest(BaseModel):
     clinic_name: str
     logo_app_b64: Optional[str] = None
@@ -16,6 +31,9 @@ class OnboardingSetupRequest(BaseModel):
     location_phone: Optional[str] = None
     operations_center_address: Optional[str] = None
     max_coverage_radius_km: Optional[float] = 10.0
+    extra_locations: Optional[List[ExtraLocationPayload]] = None
+    initial_resources: Optional[List[InitialResourcePayload]] = None
+    initial_team_members: Optional[List[InitialTeamMemberPayload]] = None
 
 # --- BULK ACTIONS ---
 class BulkActionPayload(BaseModel):

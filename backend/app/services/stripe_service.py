@@ -73,13 +73,15 @@ class StripeService:
                 }],
                 mode="subscription",
                 subscription_data={
+                    "trial_period_days": 14,
                     "metadata": {
                         "plan_type": selected_plan,
                         "is_platform_onboarding": "true"
                     }
                 },
+                payment_method_collection="always",
                 success_url=f"{frontend_url}/onboarding/success?session_id={{CHECKOUT_SESSION_ID}}",
-                cancel_url=f"{frontend_url}/marketing",
+                cancel_url=f"{frontend_url}/#precios",
                 metadata={
                     "type": "saas_onboarding",
                     "plan_type": selected_plan,

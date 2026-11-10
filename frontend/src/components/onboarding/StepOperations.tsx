@@ -1,7 +1,13 @@
 "use client"
 
 import React, { useState } from 'react';
-import { Building2 } from 'lucide-react';
+import { Building2, Plus, Trash2, MapPin } from 'lucide-react';
+
+export interface ExtraLocationItem {
+  name: string;
+  address: string;
+  phone?: string;
+}
 
 interface StepOperationsProps {
   workModality: string;
@@ -16,6 +22,9 @@ interface StepOperationsProps {
   setOperationsCenterAddress: (val: string) => void;
   maxCoverageRadiusKm: number;
   setMaxCoverageRadiusKm: (val: number) => void;
+  planType?: string;
+  extraLocations?: ExtraLocationItem[];
+  setExtraLocations?: React.Dispatch<React.SetStateAction<ExtraLocationItem[]>>;
 }
 
 export const StepOperations: React.FC<StepOperationsProps> = ({
@@ -30,13 +39,26 @@ export const StepOperations: React.FC<StepOperationsProps> = ({
   operationsCenterAddress,
   setOperationsCenterAddress,
   maxCoverageRadiusKm,
-  setMaxCoverageRadiusKm
+  setMaxCoverageRadiusKm,
+  planType = 'basic',
+  extraLocations = [],
+  setExtraLocations
 }) => {
   // Autocomplete states
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeInput, setActiveInput] = useState<'clinic' | 'home' | null>(null);
   const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  // Extra location form state
+  const [newLocName, setNewLocName] = useState('');
+  const [newLocAddress, setNewLocAddress] = useState('');
+  const [newLocPhone, setNewLocPhone] = useState('');
+  const [showAddLocation, setShowAddLocation] = useState(false);
+
+  const maxTotalLocations = planType === 'gold' ? 5 : planType === 'pro' ? 2 : 1;
+  const currentTotalLocations = 1 + extraLocations.length;
+  const canAddMoreLocations = currentTotalLocations < maxTotalLocations;
 
   const handleAddressChange = (val: string, field: 'clinic' | 'home') => {
     if (field === 'clinic') {
@@ -90,8 +112,29 @@ export const StepOperations: React.FC<StepOperationsProps> = ({
     setActiveInput(null);
   };
 
+  const handleAddExtraLocation = () => {
+    if (!newLocName.trim() || !newLocAddress.trim() || !setExtraLocations) return;
+    setExtraLocations(prev => [
+      ...prev,
+      {
+        name: newLocName.trim(),
+        address: newLocAddress.trim(),
+        phone: newLocPhone.trim() || undefined
+      }
+    ]);
+    setNewLocName('');
+    setNewLocAddress('');
+    setNewLocPhone('');
+    setShowAddLocation(false);
+  };
+
+  const handleRemoveExtraLocation = (index: number) => {
+    if (!setExtraLocations) return;
+    setExtraLocations(prev => prev.filter((_, i) => i !== index));
+  };
+
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-500 font-sans">
       <div className="space-y-2">
         <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 block">
           Modelo de Negocio / Modalidad de Trabajo
@@ -178,7 +221,16 @@ export const StepOperations: React.FC<StepOperationsProps> = ({
       <div className="space-y-4 pt-2 border-t border-stone-100 animate-in fade-in duration-500">
         {(workModality === 'clinic_only' || workModality === 'both') && (
           <div className="space-y-4">
-            <h3 className="font-serif italic text-stone-700 text-sm">Información de Sede Principal</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-serif italic text-stone-800 text-sm font-bold">
+                Información de Sede Principal
+              </h3>
+              {maxTotalLocations > 1 && (
+                <span className="text-[10px] font-bold text-[#d4af37] bg-amber-500/10 px-2 py-0.5 rounded-full">
+                  Plan {planType.toUpperCase()}: hasta {maxTotalLocations} sedes
+                </span>
+              )}
+            </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
@@ -236,6 +288,113 @@ export const StepOperations: React.FC<StepOperationsProps> = ({
                 </div>
               )}
             </div>
+
+            {/* Extra Locations Section for Pro / Gold */}
+            {maxTotalLocations > 1 && setExtraLocations && (
+              <div className="pt-4 border-t border-stone-100 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-serif italic text-stone-800 text-xs font-bold">
+                      Sedes Adicionales (Opcional)
+                    </h4>
+                    <p className="text-[10px] text-stone-400">
+                      Tienes {currentTotalLocations} de {maxTotalLocations} sedes configuradas.
+                    </p>
+                  </div>
+                  {canAddMoreLocations && !showAddLocation && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAddLocation(true)}
+                      className="text-xs font-bold text-[#d4af37] hover:text-[#b89528] flex items-center gap-1 transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Añadir Sede
+                    </button>
+                  )}
+                </div>
+
+                {/* Lista de sedes extra añadidas */}
+                {extraLocations.length > 0 && (
+                  <div className="space-y-2">
+                    {extraLocations.map((loc, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between p-3 bg-white border border-stone-200 rounded-xl shadow-sm text-xs"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <MapPin className="w-4 h-4 text-[#d4af37] shrink-0" />
+                          <div>
+                            <span className="font-bold text-stone-800">{loc.name}</span>
+                            <p className="text-[10px] text-stone-400 truncate max-w-[260px]">{loc.address}</p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveExtraLocation(idx)}
+                          className="p-1 text-stone-400 hover:text-rose-500 rounded-lg hover:bg-rose-50"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Subformulario para añadir sede extra */}
+                {showAddLocation && canAddMoreLocations && (
+                  <div className="p-4 bg-[#FAF9F5] border border-stone-200 rounded-2xl space-y-3 animate-in fade-in">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[9px] font-bold uppercase tracking-wider text-stone-400">Nombre de la Sede *</label>
+                        <input
+                          type="text"
+                          value={newLocName}
+                          onChange={(e) => setNewLocName(e.target.value)}
+                          placeholder="Ej. Sede Norte / Sucursal 2"
+                          className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs font-semibold text-stone-800 focus:outline-none focus:border-[#d4af37]"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[9px] font-bold uppercase tracking-wider text-stone-400">Teléfono (Opcional)</label>
+                        <input
+                          type="text"
+                          value={newLocPhone}
+                          onChange={(e) => setNewLocPhone(e.target.value)}
+                          placeholder="Ej. +34 931 999 888"
+                          className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs font-semibold text-stone-800 focus:outline-none focus:border-[#d4af37]"
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="text-[9px] font-bold uppercase tracking-wider text-stone-400">Dirección Física *</label>
+                        <input
+                          type="text"
+                          value={newLocAddress}
+                          onChange={(e) => setNewLocAddress(e.target.value)}
+                          placeholder="Calle, número y ciudad de la sucursal"
+                          className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs font-semibold text-stone-800 focus:outline-none focus:border-[#d4af37]"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setShowAddLocation(false)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-bold text-stone-400 hover:text-stone-700"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleAddExtraLocation}
+                        disabled={!newLocName.trim() || !newLocAddress.trim()}
+                        className="bg-stone-900 hover:bg-[#d4af37] text-white hover:text-stone-950 px-4 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-40"
+                      >
+                        Guardar Sede
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
