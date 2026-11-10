@@ -15,7 +15,8 @@ import {
   MapPin,
   Home,
   UserX, 
-  XCircle 
+  XCircle,
+  Layers
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '@/app/contexts/LanguageContext';
@@ -290,6 +291,14 @@ export function EditAppointmentModal({
                 {selectedAppt ? serviceMap.get(selectedAppt.service_id)?.name : '...'}
               </p>
             </div>
+            {selectedAppt?.resource?.name && (
+              <div className="mt-2 flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 text-amber-900 border border-amber-200/60 text-xs font-semibold">
+                  <Layers size={13} className="text-[#D4AF37]" />
+                  Recurso: {selectedAppt.resource.name}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Especialista Asignado con selector para reasignar */}

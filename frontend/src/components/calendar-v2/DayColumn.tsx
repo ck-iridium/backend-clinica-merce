@@ -80,7 +80,7 @@ export function DayColumn({
   // Cálculo optimizado del layout concurrente (Interval Graph Coloring & Column Packing)
   const positionedAppts = React.useMemo(() => {
     if (isClosed || !isWorkingDay || !appointments || appointments.length === 0) return [];
-    const rightGutterPx = viewType === 'mobile' ? 18 : 28;
+    const rightGutterPx = viewType === 'mobile' ? 14 : 22;
     return computeConcurrentAppointmentLayout(appointments, startHour, hours.length, rightGutterPx);
   }, [appointments, isClosed, isWorkingDay, startHour, hours.length]);
 

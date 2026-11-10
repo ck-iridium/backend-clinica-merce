@@ -10,7 +10,8 @@ import {
   Check, 
   X, 
   Globe, 
-  ExternalLink 
+  ExternalLink,
+  Layers
 } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { SpotlightCard } from '@/components/ui/spotlight-card';
@@ -22,6 +23,7 @@ interface LocationCardProps {
   onToggleStatus: (location: Location) => void;
   onEdit: (location: Location) => void;
   onDelete: (location: Location) => void;
+  onManageResources?: (location: Location) => void;
 }
 
 export default function LocationCard({
@@ -30,6 +32,7 @@ export default function LocationCard({
   onToggleStatus,
   onEdit,
   onDelete,
+  onManageResources,
 }: LocationCardProps) {
   const { t } = useLanguage();
 
@@ -129,6 +132,16 @@ export default function LocationCard({
         </button>
 
         <div className="flex items-center gap-1">
+          {onManageResources && (
+            <button
+              id={`locations-resources-btn-${location.id}`}
+              onClick={() => onManageResources(location)}
+              className="p-2 text-stone-400 hover:text-[#d4af37] hover:bg-[#d4af37]/10 rounded-xl transition-all"
+              title="Cabinas y Recursos de la sede"
+            >
+              <Layers size={16} />
+            </button>
+          )}
           <a
             href={publicUrl}
             target="_blank"

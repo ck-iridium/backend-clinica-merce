@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
-from .staff import LocationResourceResponse
 
 # --- Appointments ---
 class AppointmentBase(BaseModel):
@@ -42,7 +41,6 @@ class AppointmentUpdate(BaseModel):
 class AppointmentResponse(AppointmentBase):
     id: str
     created_at: Optional[datetime] = None
-    resource: Optional[LocationResourceResponse] = None
     
     class Config:
         from_attributes = True

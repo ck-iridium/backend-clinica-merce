@@ -42,6 +42,7 @@ export default function LocationFormModal({
     is_active: true,
     latitude: 39.151,
     longitude: -0.437,
+    max_concurrent_appointments: null,
   });
 
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
@@ -60,6 +61,7 @@ export default function LocationFormModal({
           is_active: initialData.is_active,
           latitude: initialData.latitude || 39.151,
           longitude: initialData.longitude || -0.437,
+          max_concurrent_appointments: initialData.max_concurrent_appointments ?? null,
         });
       } else {
         setFormData({
@@ -70,6 +72,7 @@ export default function LocationFormModal({
           is_active: true,
           latitude: 39.151,
           longitude: -0.437,
+          max_concurrent_appointments: null,
         });
       }
       setSuggestions([]);
@@ -264,6 +267,28 @@ export default function LocationFormModal({
                 className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all" 
               />
             </div>
+          </div>
+
+          {/* Límite de Citas Simultáneas (Opcional) */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black uppercase tracking-widest text-stone-400">
+              Capacidad Máxima de Citas Simultáneas (Opcional)
+            </label>
+            <input 
+              id="location-form-max-concurrent-input" 
+              type="number" 
+              min={1}
+              value={formData.max_concurrent_appointments ?? ''} 
+              onChange={(e) => setFormData({ 
+                ...formData, 
+                max_concurrent_appointments: e.target.value ? parseInt(e.target.value) : null 
+              })}
+              placeholder="Sin límite global (regido por especialistas y cabinas)"
+              className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all" 
+            />
+            <p className="text-[10px] text-stone-400 font-medium">
+              Si tu local tiene un aforo máximo físico, define el número. De lo contrario, déjalo vacío.
+            </p>
           </div>
 
           {/* Footer del Modal */}

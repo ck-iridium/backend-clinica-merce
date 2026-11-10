@@ -49,3 +49,4 @@ CREATE POLICY "Permitir lectura anon de recursos activos" ON location_resources
     AND current_setting('app.current_tenant_id', true) IS NOT NULL 
     AND tenant_id = current_setting('app.current_tenant_id', true)
   );
+

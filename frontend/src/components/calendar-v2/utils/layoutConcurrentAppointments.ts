@@ -129,13 +129,13 @@ export function computeConcurrentAppointmentLayout(
       let leftStyle: string;
 
       if (totalColumns === 1) {
-        // Deja libre el carril derecho (rightGutterPx) para que el slot subyacente y su botón '+' sean 100% clicables
+        // Deja libre el carril derecho (rightGutterPx) para que el slot subyacente y su botón '+' sean clicables
         widthStyle = `calc(100% - ${rightGutterPx + 6}px)`;
         leftStyle = '3px';
       } else {
-        // Garantiza que todo el cluster respete el gutter derecho completo de forma exacta
-        widthStyle = `calc((100% - ${rightGutterPx + 6}px) / ${totalColumns} - 3px)`;
-        leftStyle = `calc(3px + (${columnIndex} * (100% - ${rightGutterPx + 6}px) / ${totalColumns}))`;
+        const colWidthPercent = 100 / totalColumns;
+        widthStyle = `calc(${colWidthPercent}% - ${(rightGutterPx / totalColumns) + 3}px)`;
+        leftStyle = `calc(${columnIndex * colWidthPercent}% + 2px)`;
       }
 
       result.push({

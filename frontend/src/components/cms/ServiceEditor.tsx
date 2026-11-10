@@ -47,6 +47,7 @@ export interface ServiceFormData {
   requires_deposit: boolean;
   deposit_amount: number;
   allowed_modality: 'clinic' | 'home' | 'both';
+  required_resource_id?: string | null;
   translations?: Record<string, any>;
 }
 
@@ -73,6 +74,7 @@ const DEFAULT_FORM_DATA: ServiceFormData = {
   requires_deposit: false,
   deposit_amount: 0,
   allowed_modality: 'clinic',
+  required_resource_id: null,
   translations: {}
 };
 
@@ -81,6 +83,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
   const router = useRouter();
   const isNew = !serviceId;
   const [categories, setCategories] = useState<any[]>([]);
+  const [resources, setResources] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
   const [mediaPickerSlot, setMediaPickerSlot] = useState<'image' | 'video' | null>(null);
   const [activeTab, setActiveTab] = useState<'general' | 'content' | 'design' | 'seo'>('general');
@@ -170,6 +173,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
         requires_deposit: initialData.requires_deposit || false,
         deposit_amount: initialData.deposit_amount || 0,
         allowed_modality: initialData.allowed_modality || 'clinic',
+        required_resource_id: initialData.required_resource_id || null,
         layout_preferences: initialData.layout_preferences || DEFAULT_FORM_DATA.layout_preferences,
         translations: initialData.translations || {}
       };
@@ -213,6 +217,10 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
 
   useEffect(() => {
     fetchCategories();
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/locations/resources/all`)
+      .then(res => res.json())
+      .then(data => setResources(Array.isArray(data) ? data : []))
+      .catch(console.error);
   }, []);
 
   const editor = useEditor({
@@ -380,6 +388,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
                 setValue={setValue}
                 formValues={formValues}
                 categories={categories}
+                resources={resources}
                 refreshCategories={fetchCategories}
                 slugLocked={slugLocked}
                 setSlugLocked={setSlugLocked}

@@ -47,9 +47,9 @@ export function EmptySlot({
     >
       {/* Botón '+' en el carril derecho para creación rápida de citas simultáneas */}
       {!isDisabled && (
-        <div className="absolute right-0 top-0 bottom-0 w-7 flex items-center justify-center pointer-events-none z-10">
+        <div className="absolute right-0.5 top-0 bottom-0 w-5 flex items-center justify-center pointer-events-none z-10">
           <span 
-            className="w-4 h-4 rounded-full bg-[#D4AF37] text-white flex items-center justify-center text-[10px] font-black shadow-xs opacity-0 group-hover/slot:opacity-100 group-hover/slot:scale-110 transition-all duration-150"
+            className="w-4 h-4 rounded-full bg-[#D4AF37] text-white flex items-center justify-center text-[10px] font-black shadow-xs opacity-0 group-hover/slot:opacity-100 group-hover/slot:scale-110 transition-all duration-200"
             title={`Añadir cita a las ${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`}
           >
             +

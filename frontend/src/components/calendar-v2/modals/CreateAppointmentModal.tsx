@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Calendar, Clock, AlertTriangle, Lock, Sparkles, User, MapPin } from 'lucide-react';
+import { Calendar, Clock, AlertTriangle, Lock, Sparkles, User, MapPin, Layers } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
@@ -383,6 +383,12 @@ export function CreateAppointmentModal({
                       })}
                     </SelectContent>
                   </Select>
+                  {services.find(s => s.id === selectedServiceId)?.required_resource_id && (
+                    <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200/60 rounded-xl px-3 py-1.5 mt-2 flex items-center gap-1.5">
+                      <Layers size={13} className="text-[#D4AF37] shrink-0" />
+                      <span>Requiere cabina o equipamiento exclusivo reservado automáticamente.</span>
+                    </p>
+                  )}
                 </div>
 
                 {staffList.length > 1 && (

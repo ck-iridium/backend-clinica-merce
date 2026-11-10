@@ -15,6 +15,7 @@ import { Location, LocationFormData } from "./components/types";
 import { getCookie, getPublicLocationUrl } from "./components/locationUtils";
 import LocationCard from "./components/LocationCard";
 import LocationFormModal from "./components/LocationFormModal";
+import LocationResourcesModal from "./components/LocationResourcesModal";
 import HomeServiceBanner from "./components/HomeServiceBanner";
 
 export default function LocationsPage() {
@@ -35,6 +36,10 @@ export default function LocationsPage() {
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Estado del Modal de Cabinas y Recursos Físicos
+  const [isResourcesModalOpen, setIsResourcesModalOpen] = useState(false);
+  const [resourceLocation, setResourceLocation] = useState<Location | null>(null);
 
   const getAuthHeaders = () => {
     const userSession = localStorage.getItem('user');
@@ -322,6 +327,10 @@ export default function LocationsPage() {
               onToggleStatus={handleToggleStatus}
               onEdit={handleEditOpen}
               onDelete={handleDeleteLocation}
+              onManageResources={(targetLoc) => {
+                setResourceLocation(targetLoc);
+                setIsResourcesModalOpen(true);
+              }}
             />
           ))}
         </div>
@@ -335,6 +344,13 @@ export default function LocationsPage() {
         initialData={selectedLocation}
         onSubmit={handleFormSubmit}
         isSubmitting={isSubmitting}
+      />
+
+      {/* ── MODAL DE CABINAS Y RECURSOS FÍSICOS DE LA SEDE ── */}
+      <LocationResourcesModal
+        isOpen={isResourcesModalOpen}
+        onOpenChange={setIsResourcesModalOpen}
+        location={resourceLocation}
       />
 
     </div>

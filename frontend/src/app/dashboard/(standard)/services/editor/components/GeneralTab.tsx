@@ -19,6 +19,7 @@ interface GeneralTabProps {
   setValue: UseFormSetValue<ServiceFormData>;
   formValues: ServiceFormData;
   categories: any[];
+  resources?: any[];
   refreshCategories: () => void;
   slugLocked: boolean;
   setSlugLocked: (locked: boolean) => void;
@@ -31,6 +32,7 @@ export default function GeneralTab({
   setValue,
   formValues,
   categories,
+  resources = [],
   refreshCategories,
   slugLocked,
   setSlugLocked,
@@ -132,6 +134,37 @@ export default function GeneralTab({
         />
         <p className="text-[10px] text-stone-400 mt-1">
           Configura si este tratamiento puede reservarse solo en clínica, solo a domicilio, o bajo ambas opciones.
+        </p>
+      </div>
+
+      <div>
+        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">
+          Cabina o Equipamiento Físico Requerido (Opcional)
+        </label>
+        <Controller
+          name="required_resource_id"
+          control={control}
+          render={({ field }) => (
+            <Select 
+              onValueChange={(val) => field.onChange(val === 'none' ? null : val)} 
+              value={field.value || 'none'}
+            >
+              <SelectTrigger id="service-editor-general-resource-trigger" className="w-full h-[46px] rounded-xl border-stone-200 bg-white dark:bg-white text-stone-900 dark:text-stone-900 font-semibold shadow-none border dark:border-stone-200">
+                <SelectValue placeholder="Sin recurso exclusivo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Sin recurso exclusivo (Cualquier puesto libre)</SelectItem>
+                {resources && resources.map((r: any) => (
+                  <SelectItem key={r.id} value={r.id}>
+                    {r.name} ({r.quantity} {r.quantity === 1 ? 'unidad' : 'unidades'})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        />
+        <p className="text-[10px] text-stone-400 mt-1">
+          Asigna este tratamiento a una cabina o máquina exclusiva para evitar colisiones cuando el equipamiento esté en uso.
         </p>
       </div>
 
