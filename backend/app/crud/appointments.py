@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, and_, func
 import uuid
 from datetime import datetime, date, timedelta
 from typing import List
@@ -59,23 +59,40 @@ def auto_cancel_expired_pending_appointments(db: Session, tenant_id: str = None)
     return len(expired_appts)
 
 # Appointments
-def check_appointment_collision(db: Session, start_time: datetime, end_time: datetime, staff_id: str = None, location_id: str = None, ignore_id: str = None):
+def check_appointment_collision(
+    db: Session, 
+    start_time: datetime, 
+    end_time: datetime, 
+    staff_id: str = None, 
+    location_id: str = None, 
+    service_id: str = None,
+    resource_id: str = None,
+    ignore_id: str = None
+):
     """
-    Returns an error string if there's a collision with existing appointments or time blocks,
-    or if the appointment exceeds the clinic's configured closing time.
+    Verifica colisiones de citas y bloqueos considerando:
+    1. Horario de cierre y días laborables de la clínica.
+    2. Horario de almuerzo / descanso.
+    3. Bloqueos de tiempo globales (del centro) o personales del especialista.
+    4. Aforo máximo de sede (max_concurrent_appointments si está configurado).
+    5. Recursos físicos / cabinas / equipamiento (si el servicio lo requiere).
+    6. Citas simultáneas:
+       - Si staff_id está definido: valida que ese especialista no tenga otra cita solapada.
+       - Si staff_id es None: valida que no se supere el aforo de especialistas disponibles.
+       - Citas en otras sedes no bloquean sedes distintas.
     """
     tenant_id = current_tenant_var.get()
     auto_cancel_expired_pending_appointments(db, tenant_id)
     settings = get_clinic_settings(db)
 
-    # 1. Closing Time Check (Dynamic from ClinicSettings)
+    # 1. Horario de cierre configurado
     close_time_str = settings.close_time if settings and settings.close_time else "19:00"
     close_h, close_m = map(int, close_time_str.split(':'))
     close_limit = end_time.replace(hour=close_h, minute=close_m, second=0, microsecond=0)
     if end_time > close_limit:
         return f"La cita excede el horario de cierre configurado ({close_time_str})."
 
-    # 1b. Working Days Check (Dynamic from ClinicSettings)
+    # 1b. Días laborables configurados
     raw_wd = getattr(settings, 'working_days', None)
     if raw_wd and isinstance(raw_wd, str):
         import json
@@ -86,11 +103,11 @@ def check_appointment_collision(db: Session, start_time: datetime, end_time: dat
     if day_index not in list(working_days):
         return "La clínica está cerrada ese día según la configuración del panel."
 
-    # 1c. Past Time Restriction
+    # 1c. Restricción de tiempo pasado
     if start_time < get_spain_now():
         return "No puedes reservar una cita en el pasado."
 
-    # 1d. Lunch Break Check (Dynamic from ClinicSettings)
+    # 1d. Horario de descanso / almuerzo
     lunch_start_str = settings.lunch_start if settings and settings.lunch_start else None
     lunch_end_str = settings.lunch_end if settings and settings.lunch_end else None
     if lunch_start_str and lunch_end_str:
@@ -101,36 +118,165 @@ def check_appointment_collision(db: Session, start_time: datetime, end_time: dat
         if max(start_time, lunch_start) < min(end_time, lunch_end):
             return f"La cita invade el horario de descanso/almuerzo de la clínica ({lunch_start_str} - {lunch_end_str})."
 
-    # 2. Collision with other Appointments (scoped to tenant and specialist)
-    query = db.query(models.Appointment).filter(
-        models.Appointment.tenant_id == tenant_id,
-        models.Appointment.status != "cancelled",
-        models.Appointment.start_time < end_time,
-        models.Appointment.end_time > start_time
-    )
-    if staff_id:
-        query = query.filter(
-            or_(
-                models.Appointment.staff_id == staff_id,
-                models.Appointment.staff_id == None
-            )
-        )
-        
-    if ignore_id:
-        query = query.filter(models.Appointment.id != ignore_id)
-
-    if query.first():
-        return "El horario ya está ocupado por otra cita."
-
-    # 3. Collision with Time Blocks (scoped to tenant and specialist or global)
-    block_query = db.query(models.TimeBlock).filter(
+    # 2. Bloqueos Globales del Centro (staff_id == None bloquea toda la clínica)
+    global_block = db.query(models.TimeBlock).filter(
         models.TimeBlock.tenant_id == tenant_id,
         models.TimeBlock.start_time < end_time,
         models.TimeBlock.end_time > start_time,
-        or_(models.TimeBlock.staff_id == None, models.TimeBlock.staff_id == staff_id) if staff_id else models.TimeBlock.staff_id == None
-    )
-    if block_query.first():
-        return "El horario está bloqueado manualmente."
+        models.TimeBlock.staff_id == None
+    ).first()
+    if global_block:
+        return f"El horario está bloqueado en el centro{f' ({global_block.reason})' if global_block.reason else ''}."
+
+    # 2b. Control de Capacidad Máxima Global de la Sede (Aforo físico)
+    if location_id:
+        loc_obj = db.query(models.Location).filter(
+            models.Location.id == location_id,
+            models.Location.tenant_id == tenant_id
+        ).first()
+        if loc_obj and loc_obj.max_concurrent_appointments and loc_obj.max_concurrent_appointments > 0:
+            loc_appts_q = db.query(models.Appointment).filter(
+                models.Appointment.tenant_id == tenant_id,
+                models.Appointment.status != "cancelled",
+                models.Appointment.start_time < end_time,
+                models.Appointment.end_time > start_time,
+                models.Appointment.location_id == location_id
+            )
+            if ignore_id:
+                loc_appts_q = loc_appts_q.filter(models.Appointment.id != ignore_id)
+            if loc_appts_q.count() >= loc_obj.max_concurrent_appointments:
+                return f"Se ha alcanzado el aforo máximo de la sede {loc_obj.name} ({loc_obj.max_concurrent_appointments} citas simultáneas)."
+
+    # 2c. Control de Recursos Físicos / Cabinas / Máquinas
+    target_resource_id = resource_id
+    if not target_resource_id and service_id:
+        srv = get_service(db, service_id)
+        if srv and srv.required_resource_id:
+            target_resource_id = srv.required_resource_id
+
+    if target_resource_id:
+        res = db.query(models.LocationResource).filter(
+            models.LocationResource.id == target_resource_id,
+            models.LocationResource.tenant_id == tenant_id,
+            models.LocationResource.is_active == True
+        ).first()
+        if res:
+            if location_id and res.location_id != location_id:
+                return f"La cabina o equipamiento requerido ({res.name}) no pertenece a esta sede."
+
+            res_appts_q = db.query(models.Appointment).filter(
+                models.Appointment.tenant_id == tenant_id,
+                models.Appointment.status != "cancelled",
+                models.Appointment.start_time < end_time,
+                models.Appointment.end_time > start_time,
+                or_(
+                    models.Appointment.resource_id == res.id,
+                    models.Appointment.service_id.in_(
+                        db.query(models.Service.id).filter(models.Service.required_resource_id == res.id)
+                    )
+                )
+            )
+            if ignore_id:
+                res_appts_q = res_appts_q.filter(models.Appointment.id != ignore_id)
+
+            occupied_count = res_appts_q.count()
+            if occupied_count >= res.quantity:
+                return f"La cabina o equipamiento requerido ({res.name}) ya está ocupado en ese horario ({occupied_count}/{res.quantity} unidades en uso)."
+
+    # 3. Colisión de Citas y Bloqueos de Personal
+    if staff_id:
+        # A. Citas propias del especialista (un especialista no puede estar en dos citas a la vez)
+        own_query = db.query(models.Appointment).filter(
+            models.Appointment.tenant_id == tenant_id,
+            models.Appointment.status != "cancelled",
+            models.Appointment.start_time < end_time,
+            models.Appointment.end_time > start_time,
+            models.Appointment.staff_id == staff_id
+        )
+        if ignore_id:
+            own_query = own_query.filter(models.Appointment.id != ignore_id)
+
+        if own_query.first():
+            return "El especialista seleccionado ya tiene otra cita en este horario."
+
+        # B. Bloqueo personal del especialista
+        staff_block = db.query(models.TimeBlock).filter(
+            models.TimeBlock.tenant_id == tenant_id,
+            models.TimeBlock.start_time < end_time,
+            models.TimeBlock.end_time > start_time,
+            models.TimeBlock.staff_id == staff_id
+        ).first()
+        if staff_block:
+            return f"El especialista tiene su horario bloqueado{f' ({staff_block.reason})' if staff_block.reason else ''}."
+
+    else:
+        # Cuando NO se especifica especialista (staff_id is None):
+        # Permitir concurrencia hasta el aforo de especialistas disponibles para esa franja y sede
+        loc_filter = [
+            models.Appointment.tenant_id == tenant_id,
+            models.Appointment.status != "cancelled",
+            models.Appointment.start_time < end_time,
+            models.Appointment.end_time > start_time
+        ]
+        if location_id:
+            loc_filter.append(or_(models.Appointment.location_id == location_id, models.Appointment.location_id == None))
+        if ignore_id:
+            loc_filter.append(models.Appointment.id != ignore_id)
+
+        concurrent_count = db.query(models.Appointment).filter(*loc_filter).count()
+
+        # Determinar capacidad de especialistas en la sede para esa franja horaria
+        target_date = start_time.date()
+        target_day = start_time.isoweekday()
+
+        specific_scheds = db.query(models.StaffSchedule).filter(
+            models.StaffSchedule.tenant_id == tenant_id,
+            models.StaffSchedule.specific_date == target_date,
+            models.StaffSchedule.is_active == True
+        )
+        if location_id:
+            specific_scheds = specific_scheds.filter(models.StaffSchedule.location_id == location_id)
+        spec_list = specific_scheds.all()
+
+        overridden_staff_ids = {s.staff_id for s in spec_list}
+        recurring_scheds = db.query(models.StaffSchedule).filter(
+            models.StaffSchedule.tenant_id == tenant_id,
+            models.StaffSchedule.day_of_week == target_day,
+            models.StaffSchedule.specific_date == None,
+            models.StaffSchedule.is_active == True,
+            ~models.StaffSchedule.staff_id.in_(overridden_staff_ids) if overridden_staff_ids else True
+        )
+        if location_id:
+            recurring_scheds = recurring_scheds.filter(models.StaffSchedule.location_id == location_id)
+        rec_list = recurring_scheds.all()
+
+        all_scheds = spec_list + rec_list
+
+        if all_scheds:
+            working_staff_ids = set()
+            for s in all_scheds:
+                try:
+                    sh, sm = map(int, s.start_time.split(':'))
+                    eh, em = map(int, s.end_time.split(':'))
+                    shift_st = start_time.replace(hour=sh, minute=sm, second=0, microsecond=0)
+                    shift_en = start_time.replace(hour=eh, minute=em, second=0, microsecond=0)
+                    if start_time >= shift_st and end_time <= shift_en:
+                        working_staff_ids.add(s.staff_id)
+                except Exception:
+                    working_staff_ids.add(s.staff_id)
+
+            max_capacity = max(len(working_staff_ids), 1)
+            if concurrent_count >= max_capacity:
+                return "No hay ningún especialista libre en este horario para esta sede."
+        else:
+            # Si no hay turnos configurados, considerar aforo por especialistas activos en el tenant
+            active_staff_count = db.query(models.Profile).filter(
+                models.Profile.tenant_id == tenant_id,
+                func.lower(models.Profile.role).in_(["specialist", "especialista", "admin", "administrador"])
+            ).count()
+            max_capacity = max(active_staff_count, 1)
+            if concurrent_count >= max_capacity:
+                return "El aforo máximo de citas simultáneas está completo para este horario."
 
     return None
 
@@ -182,7 +328,9 @@ def create_appointment(db: Session, appointment: schemas.AppointmentCreate):
         appointment.start_time, 
         appointment.end_time, 
         staff_id=appointment.staff_id, 
-        location_id=appointment.location_id
+        location_id=appointment.location_id,
+        service_id=appointment.service_id,
+        resource_id=getattr(appointment, 'resource_id', None)
     )
     if collision_msg:
         raise ValueError(collision_msg)
@@ -191,6 +339,12 @@ def create_appointment(db: Session, appointment: schemas.AppointmentCreate):
     valid_cols = {c.name for c in models.Appointment.__table__.columns}
     filtered_data = {k: v for k, v in appt_data.items() if k in valid_cols}
     filtered_data["tenant_id"] = tenant_id
+
+    # Auto-asignación de resource_id si el servicio lo requiere
+    if not filtered_data.get("resource_id"):
+        service_obj = get_service(db, appointment.service_id)
+        if service_obj and service_obj.required_resource_id:
+            filtered_data["resource_id"] = service_obj.required_resource_id
 
     # Auto-asignación de staff_id y location_id si no vienen especificados
     if not filtered_data.get("staff_id"):
@@ -258,13 +412,18 @@ def update_appointment(db: Session, appointment_id: str, appointment: schemas.Ap
                 new_end = new_start + timedelta(minutes=prev_duration)
                 update_data["end_time"] = new_end
 
-        if "start_time" in update_data or "end_time" in update_data or "staff_id" in update_data or "location_id" in update_data or duration_mins:
+        new_service = update_data.get("service_id", db_appointment.service_id)
+        new_resource = update_data.get("resource_id", db_appointment.resource_id)
+
+        if "start_time" in update_data or "end_time" in update_data or "staff_id" in update_data or "location_id" in update_data or "service_id" in update_data or "resource_id" in update_data or duration_mins:
             collision_msg = check_appointment_collision(
                 db, 
                 new_start, 
                 new_end, 
                 staff_id=new_staff, 
-                location_id=new_location, 
+                location_id=new_location,
+                service_id=new_service,
+                resource_id=new_resource,
                 ignore_id=appointment_id
             )
             if collision_msg:
@@ -323,6 +482,15 @@ def get_availability_slots(db: Session, target_date: date, service_id: str, loca
         return []
     duration = timedelta(minutes=int(service.duration_minutes))
     day_index = target_date.isoweekday() # 1=Mon ... 7=Sun
+
+    # Validación de recurso / cabina física requerida
+    required_res = None
+    if service.required_resource_id:
+        required_res = db.query(models.LocationResource).filter(
+            models.LocationResource.id == service.required_resource_id,
+            models.LocationResource.tenant_id == tenant_id,
+            models.LocationResource.is_active == True
+        ).first()
 
     # 1. Resolver Sede (Location)
     if not location_id:
@@ -652,7 +820,9 @@ def create_public_appointment(db: Session, booking: schemas.PublicBookingRequest
                     booking.start_time,
                     end_time,
                     staff_id=sid,
-                    location_id=location_id
+                    location_id=location_id,
+                    service_id=booking.service_id,
+                    resource_id=getattr(booking, "resource_id", None)
                 )
                 if not collision_err:
                     free_staff_ids.append(sid)
@@ -667,7 +837,15 @@ def create_public_appointment(db: Session, booking: schemas.PublicBookingRequest
         assigned_staff_id = free_staff_ids[0]
 
     if not db.query(models.StaffSchedule).filter(models.StaffSchedule.tenant_id == tenant_id).first():
-        collision_msg = check_appointment_collision(db, booking.start_time, end_time)
+        collision_msg = check_appointment_collision(
+            db, 
+            booking.start_time, 
+            end_time, 
+            staff_id=None, 
+            location_id=location_id,
+            service_id=booking.service_id,
+            resource_id=getattr(booking, "resource_id", None)
+        )
         if collision_msg:
             raise ValueError(collision_msg)
 
@@ -691,6 +869,7 @@ def create_public_appointment(db: Session, booking: schemas.PublicBookingRequest
         service_id=booking.service_id,
         staff_id=assigned_staff_id,
         location_id=location_id,
+        resource_id=getattr(booking, "resource_id", None) or (service.required_resource_id if service else None),
         start_time=booking.start_time,
         end_time=end_time,
         status=initial_status,

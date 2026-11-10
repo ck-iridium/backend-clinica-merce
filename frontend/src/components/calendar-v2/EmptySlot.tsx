@@ -13,6 +13,8 @@ interface EmptySlotProps {
 /**
  * EmptySlot Component (v2)
  * Representa un tramo de 15 minutos en la agenda donde se puede crear una cita.
+ * Incluye carril de acción derecho con botón '+' en hover para agendar con facilidad
+ * incluso cuando hay citas existentes en la misma hora.
  */
 export function EmptySlot({
   hour,
@@ -24,7 +26,7 @@ export function EmptySlot({
 }: EmptySlotProps) {
   const { t } = useLanguage();
   const isLastSlotOfHour = minute === 45;
-  const borderClass = !isLastSlotOfHour ? 'border-b border-dashed border-stone-200' : '';
+  const borderClass = !isLastSlotOfHour ? 'border-b border-dashed border-stone-200/70' : '';
   
   const bgImage = isDisabled
     ? 'repeating-linear-gradient(45deg, #f5f5f4, #f5f5f4 8px, #eeeeee 8px, #eeeeee 16px)'
@@ -33,8 +35,8 @@ export function EmptySlot({
       : 'none';
 
   const baseClasses = viewType === 'desktop' 
-    ? `w-full h-1/4 transition-all relative ${borderClass} ${isDisabled ? 'bg-stone-100/30 cursor-not-allowed opacity-50' : 'hover:bg-[#D4AF37]/10 cursor-pointer'}`
-    : `w-full h-1/4 transition-all relative ${borderClass} ${isDisabled ? 'bg-stone-100/30 cursor-not-allowed opacity-50' : 'active:bg-[#D4AF37]/15 cursor-pointer'}`;
+    ? `w-full h-1/4 transition-all relative group/slot ${borderClass} ${isDisabled ? 'bg-stone-100/30 cursor-not-allowed opacity-50' : 'hover:bg-[#D4AF37]/10 cursor-pointer'}`
+    : `w-full h-1/4 transition-all relative group/slot ${borderClass} ${isDisabled ? 'bg-stone-100/30 cursor-not-allowed opacity-50' : 'active:bg-[#D4AF37]/15 cursor-pointer'}`;
 
   return (
     <div
@@ -43,8 +45,16 @@ export function EmptySlot({
       className={baseClasses}
       style={{ backgroundImage: bgImage }}
     >
-      {!isDisabled && viewType === 'desktop' && (
-        <span className="opacity-0 hover:opacity-100 text-[#B38F26] font-bold text-[10px] absolute top-0.5 left-1 transition-opacity">+</span>
+      {/* Botón '+' en el carril derecho para creación rápida de citas simultáneas */}
+      {!isDisabled && (
+        <div className="absolute right-0 top-0 bottom-0 w-7 flex items-center justify-center pointer-events-none z-10">
+          <span 
+            className="w-4 h-4 rounded-full bg-[#D4AF37] text-white flex items-center justify-center text-[10px] font-black shadow-xs opacity-0 group-hover/slot:opacity-100 group-hover/slot:scale-110 transition-all duration-150"
+            title={`Añadir cita a las ${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`}
+          >
+            +
+          </span>
+        </div>
       )}
       
       {isLunch && ((viewType === 'desktop' && minute === 0) || (viewType === 'mobile' && minute === 15)) && (

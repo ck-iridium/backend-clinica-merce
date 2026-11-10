@@ -23,8 +23,54 @@
     "language": "Langue"
   },
   "team": {
-    "resend_success": "Invitation renvoyée avec succès à {email}",
-    "resend_error": "Erreur lors du renvoi de l'invitation."
+    "access_denied_admin": "Accès refusé : Seul l'administrateur peut gérer l'équipe.",
+    "server_connection_error": "Erreur lors de la connexion au serveur de l'équipe.",
+    "invite_fields_required": "Veuillez remplir tous les champs",
+    "invite_success": "Invitation envoyée à {email}",
+    "invite_error": "Erreur lors de l'invitation de l'utilisateur",
+    "delete_member_title": "Confirmer la suppression",
+    "delete_member_desc": "Êtes-vous sûr de vouloir supprimer {name} de la clinique ? Cette action est irréversible.",
+    "delete_member_btn": "Supprimer le membre",
+    "delete_success": "{name} a été supprimé avec succès.",
+    "delete_error": "Erreur lors de la suppression de l'utilisateur.",
+    "role_update_success": "Rôle mis à jour avec succès.",
+    "role_update_error": "Erreur lors de la mise à jour du rôle.",
+    "team_title": "Gestion de l'Équipe",
+    "team_subtitle": "Gérez les profils des professionnels et du personnel d'accueil de la clinique.",
+    "add_member_btn": "Ajouter un Membre",
+    "invite_modal_title": "Inviter dans l'Équipe",
+    "invite_modal_desc": "Nous enverrons un e-mail d'invitation pour que l'utilisateur puisse configurer son mot de passe.",
+    "full_name_label": "Nom Complet",
+    "full_name_placeholder": "Ex. Dr. Laura Gil",
+    "email_label": "Adresse E-mail",
+    "email_placeholder": "laura@clinicamerce.com",
+    "role_label": "Rôle",
+    "select_role_placeholder": "Sélectionnez un rôle",
+    "cancel_btn": "Annuler",
+    "send_invite_btn": "Envoyer l'Invitation",
+    "sending_invite": "Envoi en cours...",
+    "only_admin_msg": "Seuls les administrateurs peuvent gérer l'équipe.",
+    "table_header_member": "Membre",
+    "table_header_role": "Rôle",
+    "table_header_status": "Statut",
+    "table_header_email": "E-mail",
+    "table_header_actions": "Actions",
+    "empty_team": "Aucun membre d'équipe enregistré pour le moment.",
+    "edit_role_title": "Modifier le Rôle",
+    "edit_role_desc": "Modifiez les autorisations d'accès pour ce membre.",
+    "save_changes_btn": "Enregistrer les modifications",
+    "saving_btn": "Enregistrement...",
+    "security_permissions_title": "Sécurité et Autorisations",
+    "security_permissions_desc": "Rappelez-vous que les membres ayant le rôle 'Spécialiste' ne peuvent voir que leur propre planning, tandis que les 'Administrateurs' ont un accès complet à la facturation et aux paramètres de la clinique.",
+    "roles": {
+      "admin": "Administrateur",
+      "specialist": "Spécialiste",
+      "reception": "Réceptionniste"
+    },
+    "statuses": {
+      "active": "Actif",
+      "invited": "Invité"
+    }
   },
   "general": {
     "save": "Enregistrer",
@@ -171,7 +217,8 @@
       "full_day": "Journée entière",
       "saving": "Enregistrement...",
       "schedule": "Planifier",
-      "block_btn": "Bloquer"
+      "block_btn": "Bloquer",
+      "specialist": "Spécialiste *"
     }
   },
   "pos": {
@@ -644,8 +691,13 @@
     "active_exceptions": "Exceptions Actives",
     "no_exceptions": "Aucune exception enregistrée.",
     "days": {
-      "mon": "Lundi", "tue": "Mardi", "wed": "Mercredi",
-      "thu": "Jeudi", "fri": "Vendredi", "sat": "Samedi", "sun": "Dimanche"
+      "mon": "Lundi",
+      "tue": "Mardi",
+      "wed": "Mercredi",
+      "thu": "Jeudi",
+      "fri": "Vendredi",
+      "sat": "Samedi",
+      "sun": "Dimanche"
     },
     "toast_weekly_added": "Plage hebdomadaire ajoutée.",
     "toast_exception_added": "Exception de date enregistrée.",
@@ -661,56 +713,6 @@
     "delete_shift_title": "Supprimer la Plage ?",
     "delete_shift_btn": "Supprimer",
     "unknown_location": "Cabinet Inconnu"
-  },
-  "team": {
-    "access_denied_admin": "Accès refusé : Seul l'administrateur peut gérer l'équipe.",
-    "server_connection_error": "Erreur lors de la connexion au serveur de l'équipe.",
-    "invite_fields_required": "Veuillez remplir tous les champs",
-    "invite_success": "Invitation envoyée à {email}",
-    "invite_error": "Erreur lors de l'invitation de l'utilisateur",
-    "delete_member_title": "Confirmer la suppression",
-    "delete_member_desc": "Êtes-vous sûr de vouloir supprimer {name} de la clinique ? Cette action est irréversible.",
-    "delete_member_btn": "Supprimer le membre",
-    "delete_success": "{name} a été supprimé avec succès.",
-    "delete_error": "Erreur lors de la suppression de l'utilisateur.",
-    "role_update_success": "Rôle mis à jour avec succès.",
-    "role_update_error": "Erreur lors de la mise à jour du rôle.",
-    "team_title": "Gestion de l'Équipe",
-    "team_subtitle": "Gérez les profils des professionnels et du personnel d'accueil de la clinique.",
-    "add_member_btn": "Ajouter un Membre",
-    "invite_modal_title": "Inviter dans l'Équipe",
-    "invite_modal_desc": "Nous enverrons un e-mail d'invitation pour que l'utilisateur puisse configurer son mot de passe.",
-    "full_name_label": "Nom Complet",
-    "full_name_placeholder": "Ex. Dr. Laura Gil",
-    "email_label": "Adresse E-mail",
-    "email_placeholder": "laura@clinicamerce.com",
-    "role_label": "Rôle",
-    "select_role_placeholder": "Sélectionnez un rôle",
-    "cancel_btn": "Annuler",
-    "send_invite_btn": "Envoyer l'Invitation",
-    "sending_invite": "Envoi en cours...",
-    "only_admin_msg": "Seuls les administrateurs peuvent gérer l'équipe.",
-    "table_header_member": "Membre",
-    "table_header_role": "Rôle",
-    "table_header_status": "Statut",
-    "table_header_email": "E-mail",
-    "table_header_actions": "Actions",
-    "empty_team": "Aucun membre d'équipe enregistré pour le moment.",
-    "edit_role_title": "Modifier le Rôle",
-    "edit_role_desc": "Modifiez les autorisations d'accès pour ce membre.",
-    "save_changes_btn": "Enregistrer les modifications",
-    "saving_btn": "Enregistrement...",
-    "security_permissions_title": "Sécurité et Autorisations",
-    "security_permissions_desc": "Rappelez-vous que les membres ayant le rôle 'Spécialiste' ne peuvent voir que leur propre planning, tandis que les 'Administrateurs' ont un accès complet à la facturation et aux paramètres de la clinique.",
-    "roles": {
-      "admin": "Administrateur",
-      "specialist": "Spécialiste",
-      "reception": "Réceptionniste"
-    },
-    "statuses": {
-      "active": "Actif",
-      "invited": "Invité"
-    }
   },
   "ai_chat": {
     "welcome_message": "Bonjour ! Je suis votre Assistant IA Webmaster. Je peux vous aider à gérer la clinique de manière conversationnelle : consultez les rendez-vous du jour, modifiez le prix de vos traitements ou mettez à jour le design visuel et les textes de votre site web public. Que souhaitez-vous faire aujourd'hui ?",

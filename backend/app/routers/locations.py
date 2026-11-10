@@ -47,3 +47,33 @@ def delete_location(location_id: str, db: Session = Depends(get_db)):
     if not db_loc:
         raise HTTPException(status_code=404, detail="Location not found")
     return {"status": "success"}
+
+# --- Recursos / Cabinas Físicas por Sede ---
+@router.get("/resources/all", response_model=List[schemas.LocationResourceResponse])
+def read_all_tenant_resources(db: Session = Depends(get_db)):
+    return crud_locations.get_all_tenant_resources(db)
+
+@router.get("/{location_id}/resources", response_model=List[schemas.LocationResourceResponse])
+def read_location_resources(location_id: str, db: Session = Depends(get_db)):
+    return crud_locations.get_location_resources(db, location_id=location_id)
+
+@router.post("/{location_id}/resources", response_model=schemas.LocationResourceResponse)
+def create_location_resource(location_id: str, resource: schemas.LocationResourceCreate, db: Session = Depends(get_db)):
+    db_loc = crud_locations.get_location(db, location_id=location_id)
+    if not db_loc:
+        raise HTTPException(status_code=404, detail="Location not found")
+    return crud_locations.create_location_resource(db, location_id=location_id, resource_in=resource)
+
+@router.put("/resources/{resource_id}", response_model=schemas.LocationResourceResponse)
+def update_location_resource(resource_id: str, resource: schemas.LocationResourceUpdate, db: Session = Depends(get_db)):
+    db_res = crud_locations.update_location_resource(db, resource_id=resource_id, resource_in=resource)
+    if not db_res:
+        raise HTTPException(status_code=404, detail="Resource not found")
+    return db_res
+
+@router.delete("/resources/{resource_id}")
+def delete_location_resource(resource_id: str, db: Session = Depends(get_db)):
+    success = crud_locations.delete_location_resource(db, resource_id=resource_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Resource not found")
+    return {"status": "success"}

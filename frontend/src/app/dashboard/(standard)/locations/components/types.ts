@@ -8,6 +8,7 @@ export interface Location {
   is_active: boolean;
   latitude?: number;
   longitude?: number;
+  max_concurrent_appointments?: number | null;
   created_at: string;
 }
 
@@ -19,6 +20,17 @@ export interface LocationFormData {
   is_active: boolean;
   latitude: number | null;
   longitude: number | null;
+  max_concurrent_appointments?: number | null;
+}
+
+export interface LocationResource {
+  id: string;
+  tenant_id?: string;
+  location_id: string;
+  name: string;
+  quantity: number;
+  is_active: boolean;
+  created_at?: string;
 }
 
 export interface LocationSuggestion {

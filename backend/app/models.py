@@ -179,6 +179,7 @@ class Service(Base):
     deposit_amount = Column(Numeric(10, 2), nullable=True)
     translations = Column(JSONB, default=dict, nullable=True)
     allowed_modality = Column(String, default="clinic") # "clinic", "home", "both"
+    required_resource_id = Column(String(36), ForeignKey("location_resources.id"), nullable=True, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     __table_args__ = (
@@ -188,6 +189,7 @@ class Service(Base):
     # Relationships
     category = relationship("ServiceCategory", back_populates="services")
     voucher_templates = relationship("VoucherTemplate", back_populates="service")
+    required_resource = relationship("LocationResource")
 
 class VoucherTemplate(Base):
     __tablename__ = "voucher_templates"
@@ -213,6 +215,7 @@ class Location(Base):
     is_active = Column(Boolean, default=True)
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
+    max_concurrent_appointments = Column(Integer, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     __table_args__ = (
@@ -220,6 +223,20 @@ class Location(Base):
     )
 
     tenant = relationship("Tenant")
+    resources = relationship("LocationResource", back_populates="location", cascade="all, delete-orphan")
+
+class LocationResource(Base):
+    __tablename__ = "location_resources"
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
+    location_id = Column(String(36), ForeignKey("locations.id"), nullable=False, index=True)
+    name = Column(String(100), nullable=False)
+    quantity = Column(Integer, default=1, nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    tenant = relationship("Tenant")
+    location = relationship("Location", back_populates="resources")
 
 class StaffSchedule(Base):
     __tablename__ = "staff_schedules"
@@ -255,6 +272,7 @@ class Appointment(Base):
     notes = Column(Text, nullable=True)
     reminder_sent = Column(Boolean, default=False)
     service_modality = Column(String, default="clinic") # "clinic", "home"
+    resource_id = Column(String(36), ForeignKey("location_resources.id"), nullable=True, index=True)
     client_address = Column(String, nullable=True)
     client_latitude = Column(Float, nullable=True)
     client_longitude = Column(Float, nullable=True)
@@ -266,6 +284,7 @@ class Appointment(Base):
     service = relationship("Service")
     staff = relationship("User", foreign_keys=[staff_id])
     location = relationship("Location")
+    resource = relationship("LocationResource", foreign_keys=[resource_id])
 
     @property
     def duration_minutes(self) -> Optional[int]:

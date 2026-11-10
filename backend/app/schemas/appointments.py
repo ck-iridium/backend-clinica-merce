@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
+from .staff import LocationResourceResponse
 
 # --- Appointments ---
 class AppointmentBase(BaseModel):
@@ -8,6 +9,7 @@ class AppointmentBase(BaseModel):
     service_id: str
     staff_id: Optional[str] = None
     location_id: Optional[str] = None
+    resource_id: Optional[str] = None
     start_time: datetime
     end_time: datetime
     status: str = "pending"
@@ -40,6 +42,7 @@ class AppointmentUpdate(BaseModel):
 class AppointmentResponse(AppointmentBase):
     id: str
     created_at: Optional[datetime] = None
+    resource: Optional[LocationResourceResponse] = None
     
     class Config:
         from_attributes = True
@@ -54,6 +57,7 @@ class PublicBookingRequest(BaseModel):
     service_id: str
     staff_id: Optional[str] = None
     location_id: Optional[str] = None
+    resource_id: Optional[str] = None
     start_time: datetime
     notes: Optional[str] = None
     # Mobile Services geocoding payload

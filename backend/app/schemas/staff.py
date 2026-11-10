@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime, date
 
 # --- Locations ---
@@ -12,6 +12,7 @@ class LocationBase(BaseModel):
     is_active: bool = True
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    max_concurrent_appointments: Optional[int] = None
 
 class LocationCreate(LocationBase):
     pass
@@ -25,9 +26,33 @@ class LocationUpdate(BaseModel):
     is_active: Optional[bool] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    max_concurrent_appointments: Optional[int] = None
 
 class LocationResponse(LocationBase):
     id: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+# --- Location Resources (Cabinas / Equipamiento Físico) ---
+class LocationResourceBase(BaseModel):
+    name: str
+    quantity: int = 1
+    is_active: bool = True
+
+class LocationResourceCreate(LocationResourceBase):
+    pass
+
+class LocationResourceUpdate(BaseModel):
+    name: Optional[str] = None
+    quantity: Optional[int] = None
+    is_active: Optional[bool] = None
+
+class LocationResourceResponse(LocationResourceBase):
+    id: str
+    tenant_id: str
+    location_id: str
     created_at: datetime
 
     class Config:

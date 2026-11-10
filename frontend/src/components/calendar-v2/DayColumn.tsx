@@ -3,6 +3,7 @@ import { Lock, CalendarOff } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { EmptySlot } from './EmptySlot';
 import { AppointmentCard } from './AppointmentCard';
+import { computeConcurrentAppointmentLayout } from './utils/layoutConcurrentAppointments';
 
 interface DayColumnProps {
   date: Date;
@@ -44,7 +45,7 @@ interface DayColumnProps {
 /**
  * DayColumn Component (v2)
  * Renderiza una columna completa de la agenda para un día específico.
- * Incluye slots vacíos, bloqueos de tiempo y citas.
+ * Soporta renderizado de citas concurrentes divididas en sub-columnas paralelas sin solapamientos.
  */
 export function DayColumn({
   date,
@@ -75,6 +76,13 @@ export function DayColumn({
   activeFilter = 'ALL'
 }: DayColumnProps) {
   const { t } = useLanguage();
+
+  // Cálculo optimizado del layout concurrente (Interval Graph Coloring & Column Packing)
+  const positionedAppts = React.useMemo(() => {
+    if (isClosed || !isWorkingDay || !appointments || appointments.length === 0) return [];
+    const rightGutterPx = viewType === 'mobile' ? 18 : 28;
+    return computeConcurrentAppointmentLayout(appointments, startHour, hours.length, rightGutterPx);
+  }, [appointments, isClosed, isWorkingDay, startHour, hours.length]);
 
   return (
     <div className={`relative flex-1 border-r border-stone-200 last:border-r-0 group h-full min-h-full ${!isWorkingDay ? 'bg-stone-50/30' : ''}`}>
@@ -143,8 +151,8 @@ export function DayColumn({
       {!isClosed && isWorkingDay && blocks.map(block => {
         let tS = block.start_time;
         let tE = block.end_time;
-        if (tS.endsWith('Z')) tS = tS.slice(0, -1);
-        if (tE.endsWith('Z')) tE = tE.slice(0, -1);
+        if (typeof tS === 'string' && tS.endsWith('Z')) tS = tS.slice(0, -1);
+        if (typeof tE === 'string' && tE.endsWith('Z')) tE = tE.slice(0, -1);
         
         const start = new Date(tS);
         const end = new Date(tE);
@@ -180,26 +188,9 @@ export function DayColumn({
         );
       })}
 
-      {/* Citas (Porcentual) con Efecto Spotlight */}
-      {!isClosed && isWorkingDay && appointments.filter(a => a.status !== 'cancelled').map(appt => {
-        let tS = appt.start_time;
-        let tE = appt.end_time;
-        if (tS.endsWith('Z')) tS = tS.slice(0, -1);
-        if (tE.endsWith('Z')) tE = tE.slice(0, -1);
-
-        const start = new Date(tS);
-        const end = new Date(tE);
-
-        const dayStartMins = startHour * 60;
-        const totalMins = hours.length * 60;
-        const currentStartMins = (start.getHours() * 60) + start.getMinutes();
-        const diffMins = Math.max(currentStartMins - dayStartMins, 0);
-
-        const topPercent = (diffMins / totalMins) * 100;
-        const duration = (end.getTime() - start.getTime()) / 60000;
-        const heightPercent = (duration / totalMins) * 100;
-
-        // Lógica de Spotlight
+      {/* Citas (Porcentual) con Empaquetado Paralelo Concurrente y Efecto Spotlight */}
+      {!isClosed && isWorkingDay && positionedAppts.map(pos => {
+        const appt = pos.appointment;
         const client = clientMap?.get(appt.client_id);
         const service = serviceMap?.get(appt.service_id);
         
@@ -232,6 +223,8 @@ export function DayColumn({
             staff={staffMap?.get(appt.staff_id)}
             locationName={locationMap?.get(appt.location_id)?.name}
             showLocationBadge={showLocationBadge}
+            totalColumns={pos.totalColumns}
+            columnIndex={pos.columnIndex}
             isHighlighted={isHighlighted}
             onClick={(e, appt) => onApptClick(appt)}
             onMouseEnter={onApptMouseEnter}
@@ -239,10 +232,11 @@ export function DayColumn({
             onMouseLeave={onApptMouseLeave}
             isMobile={viewType === 'mobile'}
             style={{ 
-                top: `${topPercent}%`, 
-                height: `${heightPercent}%`, 
-                width: '100%', 
-                left: 0 
+                top: `${pos.topPercent}%`, 
+                height: `${pos.heightPercent}%`, 
+                width: pos.widthStyle, 
+                left: pos.leftStyle,
+                zIndex: pos.zIndex
             }}
           />
         );

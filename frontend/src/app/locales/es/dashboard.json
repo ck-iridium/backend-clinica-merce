@@ -23,8 +23,54 @@
     "language": "Idioma"
   },
   "team": {
-    "resend_success": "Invitación reenviada correctamente a {email}",
-    "resend_error": "Error al reenviar la invitación."
+    "access_denied_admin": "Acceso denegado: Solo el Administrador puede gestionar el equipo.",
+    "server_connection_error": "Error al conectar con el servidor de equipo.",
+    "invite_fields_required": "Por favor completa todos los campos",
+    "invite_success": "Invitación enviada a {email}",
+    "invite_error": "Error al invitar al usuario",
+    "delete_member_title": "Confirmar Eliminación",
+    "delete_member_desc": "¿Estás seguro de que deseas eliminar a {name} de la clínica? Esta acción es irreversible.",
+    "delete_member_btn": "Eliminar Miembro",
+    "delete_success": "{name} ha sido eliminado correctamente.",
+    "delete_error": "Error al eliminar al usuario.",
+    "role_update_success": "Rol actualizado correctamente.",
+    "role_update_error": "Error al actualizar el rol.",
+    "team_title": "Gestión de Equipo",
+    "team_subtitle": "Administra los perfiles de los profesionales y personal de recepción de la clínica.",
+    "add_member_btn": "Añadir Miembro",
+    "invite_modal_title": "Invitar al Equipo",
+    "invite_modal_desc": "Enviaremos un correo de invitación para que el usuario configure su contraseña.",
+    "full_name_label": "Nombre Completo",
+    "full_name_placeholder": "Ej. Dra. Laura Gil",
+    "email_label": "Correo Electrónico",
+    "email_placeholder": "laura@clinicamerce.com",
+    "role_label": "Rol",
+    "select_role_placeholder": "Selecciona un rol",
+    "cancel_btn": "Cancelar",
+    "send_invite_btn": "Enviar Invitación",
+    "sending_invite": "Enviando...",
+    "only_admin_msg": "Solo los administradores pueden gestionar el equipo.",
+    "table_header_member": "Miembro",
+    "table_header_role": "Rol",
+    "table_header_status": "Estado",
+    "table_header_email": "Email",
+    "table_header_actions": "Acciones",
+    "empty_team": "No hay miembros en el equipo aún.",
+    "edit_role_title": "Editar Rol",
+    "edit_role_desc": "Modifica los permisos de acceso para este miembro.",
+    "save_changes_btn": "Guardar Cambios",
+    "saving_btn": "Guardando...",
+    "security_permissions_title": "Seguridad y Permisos",
+    "security_permissions_desc": "Recuerda que los Miembros con rol 'Especialista' solo pueden ver su propia agenda, mientras que los 'Administradores' tienen acceso total a la facturación y ajustes de la clínica.",
+    "roles": {
+      "admin": "Administrador",
+      "specialist": "Especialista",
+      "reception": "Recepción"
+    },
+    "statuses": {
+      "active": "Activo",
+      "invited": "Invitado"
+    }
   },
   "general": {
     "save": "Guardar",
@@ -171,7 +217,8 @@
       "full_day": "Día Completo",
       "saving": "Guardando...",
       "schedule": "Agendar",
-      "block_btn": "Bloquear"
+      "block_btn": "Bloquear",
+      "specialist": "Especialista *"
     }
   },
   "pos": {
@@ -644,8 +691,13 @@
     "active_exceptions": "Excepciones Activas",
     "no_exceptions": "No hay excepciones registradas.",
     "days": {
-      "mon": "Lunes", "tue": "Martes", "wed": "Miércoles",
-      "thu": "Jueves", "fri": "Viernes", "sat": "Sábado", "sun": "Domingo"
+      "mon": "Lunes",
+      "tue": "Martes",
+      "wed": "Miércoles",
+      "thu": "Jueves",
+      "fri": "Viernes",
+      "sat": "Sábado",
+      "sun": "Domingo"
     },
     "toast_weekly_added": "Turno semanal recurrente añadido.",
     "toast_exception_added": "Excepción de fecha registrada.",
@@ -661,56 +713,6 @@
     "delete_shift_title": "¿Eliminar Turno?",
     "delete_shift_btn": "Eliminar",
     "unknown_location": "Sede Desconocida"
-  },
-  "team": {
-    "access_denied_admin": "Acceso denegado: Solo el Administrador puede gestionar el equipo.",
-    "server_connection_error": "Error al conectar con el servidor de equipo.",
-    "invite_fields_required": "Por favor completa todos los campos",
-    "invite_success": "Invitación enviada a {email}",
-    "invite_error": "Error al invitar al usuario",
-    "delete_member_title": "Confirmar Eliminación",
-    "delete_member_desc": "¿Estás seguro de que deseas eliminar a {name} de la clínica? Esta acción es irreversible.",
-    "delete_member_btn": "Eliminar Miembro",
-    "delete_success": "{name} ha sido eliminado correctamente.",
-    "delete_error": "Error al eliminar al usuario.",
-    "role_update_success": "Rol actualizado correctamente.",
-    "role_update_error": "Error al actualizar el rol.",
-    "team_title": "Gestión de Equipo",
-    "team_subtitle": "Administra los perfiles de los profesionales y personal de recepción de la clínica.",
-    "add_member_btn": "Añadir Miembro",
-    "invite_modal_title": "Invitar al Equipo",
-    "invite_modal_desc": "Enviaremos un correo de invitación para que el usuario configure su contraseña.",
-    "full_name_label": "Nombre Completo",
-    "full_name_placeholder": "Ej. Dra. Laura Gil",
-    "email_label": "Correo Electrónico",
-    "email_placeholder": "laura@clinicamerce.com",
-    "role_label": "Rol",
-    "select_role_placeholder": "Selecciona un rol",
-    "cancel_btn": "Cancelar",
-    "send_invite_btn": "Enviar Invitación",
-    "sending_invite": "Enviando...",
-    "only_admin_msg": "Solo los administradores pueden gestionar el equipo.",
-    "table_header_member": "Miembro",
-    "table_header_role": "Rol",
-    "table_header_status": "Estado",
-    "table_header_email": "Email",
-    "table_header_actions": "Acciones",
-    "empty_team": "No hay miembros en el equipo aún.",
-    "edit_role_title": "Editar Rol",
-    "edit_role_desc": "Modifica los permisos de acceso para este miembro.",
-    "save_changes_btn": "Guardar Cambios",
-    "saving_btn": "Guardando...",
-    "security_permissions_title": "Seguridad y Permisos",
-    "security_permissions_desc": "Recuerda que los Miembros con rol 'Especialista' solo pueden ver su propia agenda, mientras que los 'Administradores' tienen acceso total a la facturación y ajustes de la clínica.",
-    "roles": {
-      "admin": "Administrador",
-      "specialist": "Especialista",
-      "reception": "Recepción"
-    },
-    "statuses": {
-      "active": "Activo",
-      "invited": "Invitado"
-    }
   },
   "ai_chat": {
     "welcome_message": "¡Hola! Soy tu Asistente IA Webmaster. Puedo ayudarte a gestionar la clínica de forma conversacional: consulta las citas del día, edita el precio de tus tratamientos o actualiza el diseño visual y textos de tu web pública. ¿Qué deseas hacer hoy?",

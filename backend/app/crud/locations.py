@@ -112,3 +112,58 @@ def delete_location(db: Session, location_id: str):
         db.delete(db_loc)
         db.commit()
     return db_loc
+
+# --- Recursos / Cabinas Físicas ---
+def get_location_resources(db: Session, location_id: str):
+    tenant_id = current_tenant_var.get()
+    return db.query(models.LocationResource).filter(
+        models.LocationResource.tenant_id == tenant_id,
+        models.LocationResource.location_id == location_id
+    ).order_by(models.LocationResource.name).all()
+
+def get_all_tenant_resources(db: Session):
+    tenant_id = current_tenant_var.get()
+    return db.query(models.LocationResource).filter(
+        models.LocationResource.tenant_id == tenant_id
+    ).order_by(models.LocationResource.name).all()
+
+def create_location_resource(db: Session, location_id: str, resource_in: schemas.LocationResourceCreate):
+    tenant_id = current_tenant_var.get()
+    db_res = models.LocationResource(
+        id=str(uuid.uuid4()),
+        tenant_id=tenant_id,
+        location_id=location_id,
+        name=resource_in.name,
+        quantity=resource_in.quantity if resource_in.quantity and resource_in.quantity > 0 else 1,
+        is_active=resource_in.is_active
+    )
+    db.add(db_res)
+    db.commit()
+    db.refresh(db_res)
+    return db_res
+
+def update_location_resource(db: Session, resource_id: str, resource_in: schemas.LocationResourceUpdate):
+    tenant_id = current_tenant_var.get()
+    db_res = db.query(models.LocationResource).filter(
+        models.LocationResource.id == resource_id,
+        models.LocationResource.tenant_id == tenant_id
+    ).first()
+    if db_res:
+        update_dict = resource_in.model_dump(exclude_unset=True)
+        for k, v in update_dict.items():
+            setattr(db_res, k, v)
+        db.commit()
+        db.refresh(db_res)
+    return db_res
+
+def delete_location_resource(db: Session, resource_id: str):
+    tenant_id = current_tenant_var.get()
+    db_res = db.query(models.LocationResource).filter(
+        models.LocationResource.id == resource_id,
+        models.LocationResource.tenant_id == tenant_id
+    ).first()
+    if db_res:
+        db.delete(db_res)
+        db.commit()
+        return True
+    return False

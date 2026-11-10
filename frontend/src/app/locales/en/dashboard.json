@@ -23,8 +23,54 @@
     "language": "Language"
   },
   "team": {
-    "resend_success": "Invitation resent successfully to {email}",
-    "resend_error": "Error resending invitation."
+    "access_denied_admin": "Access Denied: Only the Administrator can manage the team.",
+    "server_connection_error": "Error connecting to the team server.",
+    "invite_fields_required": "Please complete all fields",
+    "invite_success": "Invitation sent to {email}",
+    "invite_error": "Error inviting the user",
+    "delete_member_title": "Confirm Deletion",
+    "delete_member_desc": "Are you sure you want to delete {name} from the clinic? This action is irreversible.",
+    "delete_member_btn": "Delete Member",
+    "delete_success": "{name} has been deleted successfully.",
+    "delete_error": "Error deleting the user.",
+    "role_update_success": "Role updated successfully.",
+    "role_update_error": "Error updating the role.",
+    "team_title": "Team Management",
+    "team_subtitle": "Manage profiles of professionals and reception staff at the clinic.",
+    "add_member_btn": "Add Member",
+    "invite_modal_title": "Invite to Team",
+    "invite_modal_desc": "We will send an invitation email so the user can set their password.",
+    "full_name_label": "Full Name",
+    "full_name_placeholder": "e.g. Dr. Laura Gil",
+    "email_label": "Email Address",
+    "email_placeholder": "laura@clinicamerce.com",
+    "role_label": "Role",
+    "select_role_placeholder": "Select a role",
+    "cancel_btn": "Cancel",
+    "send_invite_btn": "Send Invitation",
+    "sending_invite": "Sending...",
+    "only_admin_msg": "Only administrators can manage the team.",
+    "table_header_member": "Member",
+    "table_header_role": "Role",
+    "table_header_status": "Status",
+    "table_header_email": "Email",
+    "table_header_actions": "Actions",
+    "empty_team": "No team members found yet.",
+    "edit_role_title": "Edit Role",
+    "edit_role_desc": "Modify access permissions for this member.",
+    "save_changes_btn": "Save Changes",
+    "saving_btn": "Saving...",
+    "security_permissions_title": "Security and Permissions",
+    "security_permissions_desc": "Remember that members with 'Specialist' role can only see their own schedule, while 'Administrators' have full access to billing and clinic settings.",
+    "roles": {
+      "admin": "Administrator",
+      "specialist": "Specialist",
+      "reception": "Receptionist"
+    },
+    "statuses": {
+      "active": "Active",
+      "invited": "Invited"
+    }
   },
   "general": {
     "save": "Save",
@@ -171,7 +217,8 @@
       "full_day": "Full Day",
       "saving": "Saving...",
       "schedule": "Schedule",
-      "block_btn": "Block"
+      "block_btn": "Block",
+      "specialist": "Specialist *"
     }
   },
   "pos": {
@@ -644,8 +691,13 @@
     "active_exceptions": "Active Exceptions",
     "no_exceptions": "No exceptions registered.",
     "days": {
-      "mon": "Monday", "tue": "Tuesday", "wed": "Wednesday",
-      "thu": "Thursday", "fri": "Friday", "sat": "Saturday", "sun": "Sunday"
+      "mon": "Monday",
+      "tue": "Tuesday",
+      "wed": "Wednesday",
+      "thu": "Thursday",
+      "fri": "Friday",
+      "sat": "Saturday",
+      "sun": "Sunday"
     },
     "toast_weekly_added": "Recurring weekly shift added.",
     "toast_exception_added": "Date exception registered.",
@@ -661,56 +713,6 @@
     "delete_shift_title": "Delete Shift?",
     "delete_shift_btn": "Delete",
     "unknown_location": "Unknown Location"
-  },
-  "team": {
-    "access_denied_admin": "Access Denied: Only the Administrator can manage the team.",
-    "server_connection_error": "Error connecting to the team server.",
-    "invite_fields_required": "Please complete all fields",
-    "invite_success": "Invitation sent to {email}",
-    "invite_error": "Error inviting the user",
-    "delete_member_title": "Confirm Deletion",
-    "delete_member_desc": "Are you sure you want to delete {name} from the clinic? This action is irreversible.",
-    "delete_member_btn": "Delete Member",
-    "delete_success": "{name} has been deleted successfully.",
-    "delete_error": "Error deleting the user.",
-    "role_update_success": "Role updated successfully.",
-    "role_update_error": "Error updating the role.",
-    "team_title": "Team Management",
-    "team_subtitle": "Manage profiles of professionals and reception staff at the clinic.",
-    "add_member_btn": "Add Member",
-    "invite_modal_title": "Invite to Team",
-    "invite_modal_desc": "We will send an invitation email so the user can set their password.",
-    "full_name_label": "Full Name",
-    "full_name_placeholder": "e.g. Dr. Laura Gil",
-    "email_label": "Email Address",
-    "email_placeholder": "laura@clinicamerce.com",
-    "role_label": "Role",
-    "select_role_placeholder": "Select a role",
-    "cancel_btn": "Cancel",
-    "send_invite_btn": "Send Invitation",
-    "sending_invite": "Sending...",
-    "only_admin_msg": "Only administrators can manage the team.",
-    "table_header_member": "Member",
-    "table_header_role": "Role",
-    "table_header_status": "Status",
-    "table_header_email": "Email",
-    "table_header_actions": "Actions",
-    "empty_team": "No team members found yet.",
-    "edit_role_title": "Edit Role",
-    "edit_role_desc": "Modify access permissions for this member.",
-    "save_changes_btn": "Save Changes",
-    "saving_btn": "Saving...",
-    "security_permissions_title": "Security and Permissions",
-    "security_permissions_desc": "Remember that members with 'Specialist' role can only see their own schedule, while 'Administrators' have full access to billing and clinic settings.",
-    "roles": {
-      "admin": "Administrator",
-      "specialist": "Specialist",
-      "reception": "Receptionist"
-    },
-    "statuses": {
-      "active": "Active",
-      "invited": "Invited"
-    }
   },
   "ai_chat": {
     "welcome_message": "Hello! I am your AI Webmaster Assistant. I can help you manage the clinic conversationally: consult today's appointments, edit the price of your treatments, or update the visual design and texts of your public website. What would you like to do today?",
