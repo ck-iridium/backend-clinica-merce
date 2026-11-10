@@ -424,8 +424,6 @@ function CalendarContent() {
                     clientMap={c.clientMap}
                     serviceMap={c.serviceMap}
                     staffMap={c.staffMap}
-                  locationMap={c.locationMap}
-                  showLocationBadge={c.selectedLocationFilter === 'ALL' && c.locations.length > 1}
                     locationMap={c.locationMap}
                     showLocationBadge={c.selectedLocationFilter === 'ALL' && c.locations.length > 1}
                     searchTerm={c.searchTerm}
@@ -459,8 +457,6 @@ function CalendarContent() {
                       clientMap={c.clientMap}
                       serviceMap={c.serviceMap}
                       staffMap={c.staffMap}
-                  locationMap={c.locationMap}
-                  showLocationBadge={c.selectedLocationFilter === 'ALL' && c.locations.length > 1}
                     locationMap={c.locationMap}
                     showLocationBadge={c.selectedLocationFilter === 'ALL' && c.locations.length > 1}
                       searchTerm={c.searchTerm}
@@ -490,8 +486,6 @@ function CalendarContent() {
                       clientMap={c.clientMap}
                       serviceMap={c.serviceMap}
                       staffMap={c.staffMap}
-                  locationMap={c.locationMap}
-                  showLocationBadge={c.selectedLocationFilter === 'ALL' && c.locations.length > 1}
                     locationMap={c.locationMap}
                     showLocationBadge={c.selectedLocationFilter === 'ALL' && c.locations.length > 1}
                       searchTerm={c.searchTerm}
