@@ -105,6 +105,10 @@
     "assigned_to": "Assigné à",
     "reassign_specialist": "Changer de spécialiste",
     "conflict_detected": "Conflit d'horaire détecté",
+    "locations": "Sites",
+    "all_locations": "Tous les sites",
+    "location": "Site",
+    "no_location": "Aucun site assigné",
     "toast": {
       "status_updated": "Statut mis à jour",
       "update_error": "Erreur lors de la mise à jour",
@@ -120,7 +124,8 @@
       "slot_blocked": "Créneau horaire bloqué",
       "duration_updated": "Durée du rendez-vous mise à jour",
       "staff_updated": "Spécialiste mis à jour avec succès",
-      "staff_conflict": "Le spécialiste sélectionné a déjà un rendez-vous à cet horaire"
+      "staff_conflict": "Le spécialiste sélectionné a déjà un rendez-vous à cet horaire",
+      "location_updated": "Site mis à jour avec succès"
     },
     "modal": {
       "delete_title": "Supprimer le Rendez-vous",
@@ -153,6 +158,7 @@
       "choose_client": "-- Choisir un client --",
       "no_clients": "Aucun client enregistré",
       "treatment_req": "Soin *",
+      "location_req": "Site du Soin *",
       "select_service": "-- Sélectionner un soin --",
       "exceeded": "DÉPASSÉ",
       "appt_obs": "Observations du rendez-vous...",

@@ -5,6 +5,9 @@ Este manual sirve como la única fuente de verdad (RAG) para guiar al usuario en
 ## 1. Reglas de Negocio
 El módulo de Agenda (`/dashboard/calendar`) permite la gestión de citas de pacientes y bloqueos de tiempo para los profesionales de la clínica. Los usuarios pueden:
 - Visualizar la planificación en **Vista Semanal** o en **Vista Diaria con Columnas por Especialista** (1 columna por profesional).
+- Gestionar negocios multisede: Conmutar entre sedes o ver "Todas las sedes" desde el selector de la cabecera (`id="calendar-location-selector-trigger"`). Al filtrar por una sede, tanto la vista semanal como las columnas de especialistas muestran exclusivamente las citas de ese centro.
+- Identificar en qué sede se realiza el servicio mediante micro-etiquetas en las tarjetas y en el detalle flotante (o "Servicio a Domicilio" con dirección si aplica).
+- Asignar la sede al crear una cita (`id="create-appt-location-select-trigger"`) o trasladar una cita entre sedes desde el modal de edición (`id="edit-appt-location-select-trigger"`).
 - Filtrar la agenda por profesional específico o ver a todo el equipo desde el panel lateral, con contador de citas en vivo.
 - Consultar de un vistazo el especialista asignado en cada tarjeta mediante micro-avatares y tarjetas flotantes de detalle.
 - Reasignar o cambiar directamente el especialista de cualquier cita desde el modal de edición (`id="edit-appt-staff-select-trigger"`).
@@ -51,6 +54,12 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL `/dashboa
   - Selector: `id="calendar-close-panel-btn"`
 
 ### Cabecera e Interacción del Grid Principal
+- **Selector de Sede (Multisede):** Desplegable en la cabecera superior para conmutar entre "Todas las sedes" o filtrar por una sede específica (mostrando el conteo de citas de cada sede en vivo).
+  - Ruta: `/dashboard/calendar`
+  - Selectores:
+    - Botón desplegable: `id="calendar-location-selector-trigger"`
+    - Opción todas las sedes: `id="calendar-location-all-item"`
+    - Opción sede individual: `id="calendar-location-[id]-item"`
 - **Alternar Modo de Vista (Semanal vs Columnas por Especialista):**
   - Vista Semanal: `id="calendar-viewmode-week-btn"`
   - Vista Diaria (Columnas por Especialista): `id="calendar-viewmode-day-btn"`
@@ -80,6 +89,9 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL `/dashboa
 - **Selector de Servicio:** Desplegable para seleccionar el tratamiento base.
   - Ruta: `/dashboard/calendar` (Modal abierto)
   - Selector: `id="create-appt-service-select-trigger"`
+- **Selector de Sede (Crear Cita):** Desplegable para asignar la sede donde se realizará el tratamiento (en negocios multisede).
+  - Ruta: `/dashboard/calendar` (Modal abierto)
+  - Selector: `id="create-appt-location-select-trigger"`
 - **Sobrescritura Manual de Duración (Crear Cita):** Permite extender o reducir la duración del tratamiento para casos particulares sin alterar el catálogo general:
   - Píldoras de ajuste rápido (15, 30, 45, 60, 90, 120 min): `id="create-appt-duration-[mins]-btn"` (ej: `create-appt-duration-90-btn`)
   - Campo numérico de minutos personalizados: `id="create-appt-duration-custom-input"`
@@ -103,6 +115,9 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL `/dashboa
 - **Reasignar / Cambiar Especialista:** Permite ver el profesional asignado a la cita y reasignarlo directamente a cualquier miembro del equipo o desasignarlo ("Sin especialista asignado"), con detección automática de solapamiento de horario.
   - Ruta: `/dashboard/calendar` (Modal abierto)
   - Selector: `id="edit-appt-staff-select-trigger"`
+- **Trasladar / Cambiar Sede:** Permite consultar la sede asignada a la cita (o los datos del servicio a domicilio) y trasladarla a otra sede del negocio.
+  - Ruta: `/dashboard/calendar` (Modal abierto)
+  - Selector: `id="edit-appt-location-select-trigger"`
 - **Modificar Duración Manual de Cita Existente:**
   - Píldoras rápidas (15, 30, 45, 60, 90, 120 min): `id="edit-appt-duration-[mins]-btn"`
   - Campo numérico personalizado: `id="edit-appt-custom-duration-input"`

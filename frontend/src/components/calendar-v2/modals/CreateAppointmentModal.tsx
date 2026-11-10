@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Calendar, Clock, AlertTriangle, Lock, Sparkles, User } from 'lucide-react';
+import { Calendar, Clock, AlertTriangle, Lock, Sparkles, User, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
@@ -34,6 +34,7 @@ interface CreateAppointmentModalProps {
   getBlocksForDay: (d: Date) => any[];
   staffList?: any[];
   locations?: any[];
+  activeLocationId?: string;
   fetchData: () => Promise<void>;
 }
 
@@ -56,6 +57,7 @@ export function CreateAppointmentModal({
   getBlocksForDay,
   staffList = [],
   locations = [],
+  activeLocationId,
   fetchData
 }: CreateAppointmentModalProps) {
   const { t, language } = useLanguage();
@@ -65,6 +67,7 @@ export function CreateAppointmentModal({
   const [selectedClientId, setSelectedClientId] = useState('');
   const [selectedServiceId, setSelectedServiceId] = useState('');
   const [selectedStaffId, setSelectedStaffId] = useState('');
+  const [selectedLocationId, setSelectedLocationId] = useState('');
   const [customDuration, setCustomDuration] = useState<number>(30);
   const [appointmentNotes, setAppointmentNotes] = useState('');
   const [saving, setSaving] = useState(false);
@@ -85,6 +88,15 @@ export function CreateAppointmentModal({
       }
     }
   }, [staffList, selectedStaffId]);
+
+  // Inicializar sede predeterminada según filtro activo o primer centro
+  React.useEffect(() => {
+    if (activeLocationId && activeLocationId !== 'ALL') {
+      setSelectedLocationId(activeLocationId);
+    } else if (locations.length > 0) {
+      setSelectedLocationId(locations[0].id);
+    }
+  }, [showModal, activeLocationId, locations]);
 
   // Cálculo exacto del hueco disponible teniendo en cuenta cierres, pausa de mediodía y eventos futuros
   const availableGapMinutes = useMemo(() => {
@@ -162,7 +174,7 @@ export function CreateAppointmentModal({
           client_id: selectedClientId,
           service_id: selectedServiceId,
           staff_id: selectedStaffId || (staffList.length > 0 ? staffList[0].id : null),
-          location_id: (locations.length > 0 ? locations[0].id : null),
+          location_id: selectedLocationId || (locations.length > 0 ? locations[0].id : null),
           start_time: formatLocalISO(start_time),
           end_time: formatLocalISO(end_time),
           duration_minutes: duration,
@@ -386,6 +398,31 @@ export function CreateAppointmentModal({
                         {staffList.map((s: any) => (
                           <SelectItem key={s.id} value={s.id} className="py-2.5 rounded-xl font-medium">
                             {s.full_name || s.name || s.email}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {locations.length > 1 && (
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wider flex items-center gap-1.5">
+                      <MapPin size={12} className="text-[#D4AF37]" />
+                      {t('dashboard.calendar.modal.location_req') || 'Sede del Tratamiento *'}
+                    </label>
+                    <Select value={selectedLocationId} onValueChange={setSelectedLocationId}>
+                      <SelectTrigger id="create-appt-location-select-trigger" className="w-full">
+                        <SelectValue placeholder="-- Selecciona sede --" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-60 rounded-2xl border border-stone-200/80 shadow-2xl p-1 bg-white">
+                        {locations.map((loc: any) => (
+                          <SelectItem key={loc.id} value={loc.id} className="py-2.5 rounded-xl font-medium">
+                            <div className="flex items-center gap-2">
+                              <MapPin size={13} className="text-[#D4AF37]" />
+                              <span className="font-semibold text-stone-800">{loc.name}</span>
+                              {loc.address && <span className="text-xs text-stone-400 font-normal truncate">({loc.address})</span>}
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>

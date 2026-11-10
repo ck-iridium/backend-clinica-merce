@@ -12,6 +12,8 @@ import {
   CheckCircle2, 
   Check, 
   User,
+  MapPin,
+  Home,
   UserX, 
   XCircle 
 } from 'lucide-react';
@@ -43,6 +45,9 @@ interface EditAppointmentModalProps {
   staffList?: any[];
   staffMap?: Map<string, any>;
   handleUpdateStaff?: (newStaffId: string) => Promise<void>;
+  locations?: any[];
+  locationMap?: Map<string, any>;
+  handleUpdateLocation?: (newLocationId: string) => Promise<void>;
   settings?: any;
   endHour?: number;
   getAppointmentsForDay?: (d: Date) => any[];
@@ -71,6 +76,9 @@ export function EditAppointmentModal({
   staffList = [],
   staffMap,
   handleUpdateStaff,
+  locations = [],
+  locationMap,
+  handleUpdateLocation,
   settings,
   endHour = 20,
   getAppointmentsForDay,
@@ -89,6 +97,11 @@ export function EditAppointmentModal({
     if (staffMap && staffMap.size > 0) return staffMap;
     return new Map((staffList || []).map((s: any) => [s.id, s]));
   }, [staffMap, staffList]);
+
+  const resolvedLocationMap = useMemo(() => {
+    if (locationMap && locationMap.size > 0) return locationMap;
+    return new Map((locations || []).map((l: any) => [l.id, l]));
+  }, [locationMap, locations]);
 
   const parseIsoDate = (str?: string) => {
     if (!str) return new Date();
@@ -351,6 +364,68 @@ export function EditAppointmentModal({
               <p className="text-xs text-stone-500 italic py-1">No hay especialistas configurados</p>
             )}
           </div>
+
+          {/* Sede / Ubicación del tratamiento */}
+          {(locations.length > 0 || selectedAppt?.service_modality === 'home') && (
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest flex items-center gap-1.5">
+                  <MapPin size={13} className="text-[#D4AF37]" />
+                  {t('dashboard.calendar.location') || 'Sede del Tratamiento'}
+                </p>
+              </div>
+              {selectedAppt?.service_modality === 'home' ? (
+                <div className="p-3 bg-amber-50/60 border border-amber-200/70 rounded-xl text-xs text-amber-900 flex items-center gap-2.5">
+                  <Home size={16} className="text-amber-600 shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold">Servicio a Domicilio</p>
+                    <p className="text-stone-600 truncate">{selectedAppt?.client_address || 'Dirección registrada del cliente'}</p>
+                  </div>
+                </div>
+              ) : locations.length > 1 ? (
+                <Select
+                  value={selectedAppt?.location_id || ''}
+                  onValueChange={(val) => handleUpdateLocation?.(val)}
+                  disabled={updatingStatus}
+                >
+                  <SelectTrigger
+                    id="edit-appt-location-select-trigger"
+                    className="w-full h-12 rounded-xl border border-stone-200/80 bg-stone-50/60 hover:bg-stone-50 focus:bg-white text-xs font-semibold shadow-2xs transition-all"
+                  >
+                    {selectedAppt?.location_id && resolvedLocationMap.get(selectedAppt.location_id) ? (() => {
+                      const loc = resolvedLocationMap.get(selectedAppt.location_id);
+                      return (
+                        <div className="flex items-center gap-2 truncate">
+                          <MapPin size={14} className="text-[#D4AF37] shrink-0" />
+                          <span className="font-bold text-stone-900 truncate">{loc.name}</span>
+                          {loc.address && <span className="text-[10px] text-stone-400 truncate">({loc.address})</span>}
+                        </div>
+                      );
+                    })() : (
+                      <span className="text-stone-400 italic">{t('dashboard.calendar.no_location') || 'Sin sede asignada'}</span>
+                    )}
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border border-stone-200/80 shadow-2xl p-1.5 bg-white">
+                    {locations.map((loc) => (
+                      <SelectItem key={loc.id} value={loc.id} className="py-2.5 rounded-xl text-xs font-medium">
+                        <div className="flex items-center gap-2">
+                          <MapPin size={13} className="text-[#D4AF37]" />
+                          <span className="font-semibold text-stone-800">{loc.name}</span>
+                          {loc.address && <span className="text-[10px] text-stone-400 truncate">({loc.address})</span>}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : locations.length === 1 ? (
+                <div className="flex items-center gap-2.5 p-3 rounded-xl border border-stone-200/70 bg-stone-50/60 text-xs text-stone-700">
+                  <MapPin size={14} className="text-[#D4AF37] shrink-0" />
+                  <span className="font-bold text-stone-900">{locations[0].name}</span>
+                  {locations[0].address && <span className="text-[10px] text-stone-400 truncate">({locations[0].address})</span>}
+                </div>
+              ) : null}
+            </div>
+          )}
 
           {/* Duración de la Sesión */}
           <div className="space-y-3 p-4 bg-stone-50/80 border border-stone-200/70 rounded-2xl">

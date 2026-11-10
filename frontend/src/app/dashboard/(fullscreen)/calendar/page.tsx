@@ -266,6 +266,11 @@ function CalendarContent() {
             onToday={c.handleToday}
             onDateSelect={c.handleDateSelect}
             onMobileDateSelect={c.handleMobileDateSelect}
+            locations={c.locations}
+            selectedLocationFilter={c.selectedLocationFilter}
+            onSelectLocationFilter={c.setSelectedLocationFilter}
+            locationMap={c.locationMap}
+            locationAppointmentCounts={c.locationAppointmentCounts}
           />
           {c.viewMode === 'week' ? (
             /* Header de días (Semanal) */
@@ -419,6 +424,10 @@ function CalendarContent() {
                     clientMap={c.clientMap}
                     serviceMap={c.serviceMap}
                     staffMap={c.staffMap}
+                  locationMap={c.locationMap}
+                  showLocationBadge={c.selectedLocationFilter === 'ALL' && c.locations.length > 1}
+                    locationMap={c.locationMap}
+                    showLocationBadge={c.selectedLocationFilter === 'ALL' && c.locations.length > 1}
                     searchTerm={c.searchTerm}
                     activeFilter={c.activeFilter}
                   />
@@ -450,6 +459,10 @@ function CalendarContent() {
                       clientMap={c.clientMap}
                       serviceMap={c.serviceMap}
                       staffMap={c.staffMap}
+                  locationMap={c.locationMap}
+                  showLocationBadge={c.selectedLocationFilter === 'ALL' && c.locations.length > 1}
+                    locationMap={c.locationMap}
+                    showLocationBadge={c.selectedLocationFilter === 'ALL' && c.locations.length > 1}
                       searchTerm={c.searchTerm}
                       activeFilter={c.activeFilter}
                     />
@@ -477,6 +490,10 @@ function CalendarContent() {
                       clientMap={c.clientMap}
                       serviceMap={c.serviceMap}
                       staffMap={c.staffMap}
+                  locationMap={c.locationMap}
+                  showLocationBadge={c.selectedLocationFilter === 'ALL' && c.locations.length > 1}
+                    locationMap={c.locationMap}
+                    showLocationBadge={c.selectedLocationFilter === 'ALL' && c.locations.length > 1}
                       searchTerm={c.searchTerm}
                       activeFilter={c.activeFilter}
                     />
@@ -581,6 +598,8 @@ function CalendarContent() {
                   clientMap={c.clientMap}
                   serviceMap={c.serviceMap}
                   staffMap={c.staffMap}
+                  locationMap={c.locationMap}
+                  showLocationBadge={c.selectedLocationFilter === 'ALL' && c.locations.length > 1}
                   searchTerm={c.searchTerm}
                   activeFilter={c.activeFilter}
                 />
@@ -617,6 +636,8 @@ function CalendarContent() {
           staffMap={c.staffMap}
             staffList={c.staffList}
           locations={c.locations}
+          locationMap={c.locationMap}
+          activeLocationId={c.selectedLocationFilter !== 'ALL' ? c.selectedLocationFilter : undefined}
           fetchData={c.fetchData}
           openWhatsApp={c.openWhatsApp}
         />
@@ -698,6 +719,38 @@ function CalendarContent() {
                   );
                 })()}
                 <div className="flex justify-between items-center bg-stone-50/50 p-4 rounded-2xl border border-stone-100 mt-1">
+                {/* Sede / Ubicación del tratamiento */}
+                {(() => {
+                  const loc = c.locationMap?.get(c.hoveredAppt.location_id);
+                  const isHome = c.hoveredAppt.service_modality === 'home';
+                  if (!loc && !isHome) return null;
+                  return (
+                    <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-amber-50/40 border border-amber-200/50 text-xs mb-1">
+                      {isHome ? (
+                        <>
+                          <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center shrink-0 text-amber-800 text-[11px]">
+                            🏠
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[9px] font-bold text-amber-700 uppercase tracking-wider">A Domicilio</p>
+                            <p className="font-semibold text-stone-800 truncate">{c.hoveredAppt.client_address || 'Dirección del cliente'}</p>
+                          </div>
+                        </>
+                      ) : loc ? (
+                        <>
+                          <div className="w-7 h-7 rounded-full bg-[#D4AF37]/20 flex items-center justify-center shrink-0 text-[#99771A] text-[11px]">
+                            📍
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[9px] font-bold text-[#99771A] uppercase tracking-wider">{t('dashboard.calendar.location') || 'Sede'}</p>
+                            <p className="font-semibold text-stone-800 truncate">{loc.name}</p>
+                            {loc.address && <p className="text-[10px] text-stone-400 truncate">{loc.address}</p>}
+                          </div>
+                        </>
+                      ) : null}
+                    </div>
+                  );
+                })()}
                   <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em]">{t('dashboard.calendar.current_status')}</p>
                   <span className={`text-[11px] font-black px-3 py-1.5 rounded-xl uppercase tracking-wider
                     ${c.hoveredAppt.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :

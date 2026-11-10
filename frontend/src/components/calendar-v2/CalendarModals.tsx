@@ -37,6 +37,8 @@ interface CalendarModalsProps {
   staffMap?: Map<string, any>;
   staffList?: any[];
   locations?: any[];
+  locationMap?: Map<string, any>;
+  activeLocationId?: string;
   fetchData: () => Promise<void>;
   openWhatsApp: (name: string, phone: string, service: string, start: string) => void;
 }
@@ -63,6 +65,8 @@ export function CalendarModals({
   staffMap,
   staffList = [],
   locations = [],
+  locationMap,
+  activeLocationId,
   fetchData,
   openWhatsApp
 }: CalendarModalsProps) {
@@ -72,6 +76,30 @@ export function CalendarModals({
   // Estados para Edición
   const [editNotes, setEditNotes] = useState('');
   const [updatingStatus, setUpdatingStatus] = useState(false);
+
+  const handleUpdateLocation = async (newLocationId: string) => {
+    if (!selectedAppt) return;
+    setUpdatingStatus(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/${selectedAppt.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ location_id: newLocationId })
+      });
+      if (res.ok) {
+        await fetchData();
+        setSelectedAppt({ ...selectedAppt, location_id: newLocationId });
+        toast.success(t('dashboard.calendar.toast.location_updated') || 'Sede actualizada correctamente');
+      } else {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.detail || t('dashboard.calendar.toast.update_error') || 'Error al actualizar sede');
+      }
+    } catch (e) {
+      toast.error(t('dashboard.calendar.toast.connection_error') || 'Error de conexión');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
 
   // Sincronización de notas al editar
   useEffect(() => {
@@ -227,6 +255,7 @@ export function CalendarModals({
         getBlocksForDay={getBlocksForDay}
         staffList={staffList}
         locations={locations}
+        activeLocationId={activeLocationId}
         fetchData={fetchData}
       />
 
@@ -249,6 +278,9 @@ export function CalendarModals({
         staffList={staffList}
         staffMap={staffMap}
         handleUpdateStaff={handleUpdateStaff}
+        locations={locations}
+        locationMap={locationMap}
+        handleUpdateLocation={handleUpdateLocation}
         settings={settings}
         endHour={endHour}
         getAppointmentsForDay={getAppointmentsForDay}

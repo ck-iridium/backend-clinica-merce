@@ -1,7 +1,14 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { Calendar, ChevronDown, ChevronLeft, ChevronRight, CalendarDays, Columns3 } from 'lucide-react';
+import { Calendar, ChevronDown, ChevronLeft, ChevronRight, CalendarDays, Columns3, MapPin, Building } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator
+} from '@/components/ui/dropdown-menu';
 
 interface CalendarHeaderProps {
   // Estado para la vista Desktop (Lunes de la semana)
@@ -21,6 +28,12 @@ interface CalendarHeaderProps {
   onMobileDateSelect: (date: Date) => void;
   // Elemento para el portal de la barra superior en móvil
   mobileTopbarPortal?: Element | null;
+  // Sedes / Locations
+  locations?: any[];
+  selectedLocationFilter?: string | 'ALL';
+  onSelectLocationFilter?: (locId: string | 'ALL') => void;
+  locationMap?: Map<string, any>;
+  locationAppointmentCounts?: Record<string, number>;
 }
 
 /**
@@ -38,13 +51,20 @@ export function CalendarHeader({
   onToday,
   onDateSelect,
   onMobileDateSelect,
-  mobileTopbarPortal
+  mobileTopbarPortal,
+  locations = [],
+  selectedLocationFilter = 'ALL',
+  onSelectLocationFilter,
+  locationMap,
+  locationAppointmentCounts = {}
 }: CalendarHeaderProps) {
   const { t, language } = useLanguage();
 
   const getLocaleString = () => {
     return language === 'es' ? 'es-ES' : language === 'en' ? 'en-US' : 'fr-FR';
   };
+
+  const totalAppointmentsCount = Object.values(locationAppointmentCounts || {}).reduce((acc, curr) => acc + curr, 0);
 
   return (
     <>
@@ -96,8 +116,81 @@ export function CalendarHeader({
           </div>
         </div>
 
-        {/* Selector de Modo: Semana vs Día */}
-        <div className="flex items-center gap-2">
+        {/* Selector de Sede + Modo de Vista */}
+        <div className="flex items-center gap-3">
+          {/* Selector de Sede (Solo si el centro tiene más de 1 sede configurada) */}
+          {locations && locations.length > 1 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                id="calendar-location-selector-trigger"
+                className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl border border-stone-200/80 bg-white hover:bg-stone-50/80 text-stone-800 text-xs font-semibold shadow-2xs transition-all outline-hidden cursor-pointer"
+              >
+                <MapPin size={13} className="text-[#D4AF37] shrink-0" />
+                <span className="truncate max-w-[150px]">
+                  {selectedLocationFilter === 'ALL'
+                    ? (t('dashboard.calendar.all_locations') || 'Todas las sedes')
+                    : (locationMap?.get(selectedLocationFilter)?.name || 'Sede')}
+                </span>
+                <ChevronDown size={12} className="text-stone-400 shrink-0 ml-0.5" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-60 p-1.5 rounded-2xl border border-stone-200/80 bg-white shadow-xl z-50">
+                <DropdownMenuItem
+                  id="calendar-location-all-item"
+                  onClick={() => onSelectLocationFilter?.('ALL')}
+                  className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
+                    selectedLocationFilter === 'ALL'
+                      ? 'bg-amber-50 text-[#99771A] font-bold'
+                      : 'hover:bg-stone-50 text-stone-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Building size={14} className="text-stone-500 shrink-0" />
+                    <span>{t('dashboard.calendar.all_locations') || 'Todas las sedes'}</span>
+                  </div>
+                  {totalAppointmentsCount !== undefined && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-stone-100 text-stone-600">
+                      {totalAppointmentsCount}
+                    </span>
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="my-1 border-t border-stone-100" />
+                {locations.map((loc) => {
+                  const isSelected = selectedLocationFilter === loc.id;
+                  const count = locationAppointmentCounts?.[loc.id] || 0;
+                  return (
+                    <DropdownMenuItem
+                      key={loc.id}
+                      id={`calendar-location-${loc.id}-item`}
+                      onClick={() => onSelectLocationFilter?.(loc.id)}
+                      className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
+                        isSelected
+                          ? 'bg-amber-50 text-[#99771A] font-bold'
+                          : 'hover:bg-stone-50 text-stone-700'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 truncate">
+                        <MapPin size={13} className={isSelected ? 'text-[#D4AF37]' : 'text-stone-400'} />
+                        <span className="truncate">{loc.name}</span>
+                      </div>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-stone-100 text-stone-600 shrink-0">
+                        {count}
+                      </span>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+
+          {/* Si solo hay 1 sede, mostramos una discreta insignia informativa */}
+          {locations && locations.length === 1 && (
+            <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200/60 bg-stone-50/60 text-stone-600 text-xs font-medium shadow-2xs" title={locations[0].address || locations[0].name}>
+              <MapPin size={12} className="text-[#D4AF37] shrink-0" />
+              <span className="truncate max-w-[140px]">{locations[0].name}</span>
+            </div>
+          )}
+
+          {/* Selector de Modo: Semana vs Día */}
           <div className="flex items-center bg-stone-100/80 p-1 rounded-2xl border border-stone-200/60 shadow-2xs">
             <button
               id="calendar-viewmode-week-btn"

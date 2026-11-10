@@ -54,9 +54,29 @@ export function useCalendarData() {
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const [mobileTopbarPortal, setMobileTopbarPortal] = useState<Element | null>(null);
 
-  // --- VISTA Y FILTRO DE ESPECIALISTAS ---
+  // --- VISTA Y FILTRO DE ESPECIALISTAS Y SEDES ---
   const [viewMode, setViewMode] = useState<'week' | 'day'>('week');
   const [selectedStaffFilter, setSelectedStaffFilter] = useState<string | 'ALL'>('ALL');
+  const [selectedLocationFilter, setSelectedLocationFilter] = useState<string | 'ALL'>('ALL');
+
+  // Cargar preferencia persistida de sede desde localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('probookia_calendar_selected_location');
+      if (saved) setSelectedLocationFilter(saved);
+    }
+  }, []);
+
+  const handleSelectLocationFilter = (locId: string | 'ALL') => {
+    setSelectedLocationFilter(locId);
+    if (typeof window !== 'undefined') {
+      if (locId === 'ALL') {
+        localStorage.removeItem('probookia_calendar_selected_location');
+      } else {
+        localStorage.setItem('probookia_calendar_selected_location', locId);
+      }
+    }
+  };
 
   // --- NUEVO: Búsqueda y Filtros (Spotlight) ---
   const [searchTerm, setSearchTerm] = useState('');
@@ -140,6 +160,9 @@ export function useCalendarData() {
 
   const getAppointmentsForDay = (date: Date) => {
     return appointments.filter(a => {
+      if (selectedLocationFilter !== 'ALL' && a.location_id && a.location_id !== selectedLocationFilter) {
+        return false;
+      }
       if (selectedStaffFilter !== 'ALL' && a.staff_id !== selectedStaffFilter) {
         return false;
       }
@@ -156,6 +179,9 @@ export function useCalendarData() {
 
   const getAppointmentsForStaffAndDay = (date: Date, staffId: string | 'unassigned') => {
     return appointments.filter(a => {
+      if (selectedLocationFilter !== 'ALL' && a.location_id && a.location_id !== selectedLocationFilter) {
+        return false;
+      }
       let tString = a.start_time;
       if (tString.endsWith('Z')) tString = tString.slice(0, -1);
       const aDate = new Date(tString);
@@ -404,13 +430,52 @@ export function useCalendarData() {
       }
 
       if (isInScope) {
+        if (selectedLocationFilter !== 'ALL' && a.location_id && a.location_id !== selectedLocationFilter) {
+          return;
+        }
         const sId = a.staff_id || 'unassigned';
         counts[sId] = (counts[sId] || 0) + 1;
       }
     });
 
     return counts;
-  }, [appointments, staffList, viewMode, mobileSelectedDate, currentWeek, maxDays]);
+  }, [appointments, staffList, viewMode, mobileSelectedDate, currentWeek, maxDays, selectedLocationFilter]);
+
+  const locationMap = useMemo(() => new Map(locations.map(l => [l.id, l])), [locations]);
+
+  // Conteo de citas por sede en el rango visible
+  const locationAppointmentCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    locations.forEach(l => { counts[l.id] = 0; });
+
+    appointments.forEach(a => {
+      let tString = a.start_time;
+      if (tString.endsWith('Z')) tString = tString.slice(0, -1);
+      const aDate = new Date(tString);
+
+      let isInScope = false;
+      if (viewMode === 'day') {
+        isInScope = (
+          aDate.getDate() === mobileSelectedDate.getDate() &&
+          aDate.getMonth() === mobileSelectedDate.getMonth() &&
+          aDate.getFullYear() === mobileSelectedDate.getFullYear()
+        );
+      } else {
+        const dayStart = new Date(currentWeek);
+        dayStart.setHours(0, 0, 0, 0);
+        const dayEnd = new Date(currentWeek);
+        dayEnd.setDate(dayEnd.getDate() + maxDays);
+        dayEnd.setHours(23, 59, 59, 999);
+        isInScope = aDate >= dayStart && aDate <= dayEnd;
+      }
+
+      if (isInScope && a.status !== 'cancelled' && a.location_id && counts[a.location_id] !== undefined) {
+        counts[a.location_id] = (counts[a.location_id] || 0) + 1;
+      }
+    });
+
+    return counts;
+  }, [locations, appointments, viewMode, mobileSelectedDate, currentWeek, maxDays]);
 
   const startHour = settings && settings.open_time ? parseInt(settings.open_time.split(':')[0]) : 9;
   const endHour = settings && settings.close_time 
@@ -438,12 +503,15 @@ export function useCalendarData() {
     staffList,
     locations,
 
-    // Vistas y filtros de personal
+    // Vistas y filtros de personal y sedes
     viewMode,
     setViewMode,
     selectedStaffFilter,
     setSelectedStaffFilter,
     staffAppointmentCounts,
+    selectedLocationFilter,
+    setSelectedLocationFilter: handleSelectLocationFilter,
+    locationAppointmentCounts,
 
     // Refs
     mobileDaysContainerRef,
@@ -459,6 +527,7 @@ export function useCalendarData() {
     clientMap,
     serviceMap,
     staffMap,
+    locationMap,
     
     // Helpers
     isLunchTime,

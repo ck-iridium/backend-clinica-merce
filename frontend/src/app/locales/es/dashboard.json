@@ -105,6 +105,10 @@
     "assigned_to": "Asignado a",
     "reassign_specialist": "Cambiar especialista",
     "conflict_detected": "Conflicto de horario detectado",
+    "locations": "Sedes",
+    "all_locations": "Todas las sedes",
+    "location": "Sede",
+    "no_location": "Sin sede asignada",
     "toast": {
       "status_updated": "Estado actualizado",
       "update_error": "Error al actualizar",
@@ -120,7 +124,8 @@
       "slot_blocked": "Horario bloqueado",
       "duration_updated": "Duración de la cita actualizada",
       "staff_updated": "Especialista actualizado correctamente",
-      "staff_conflict": "El especialista seleccionado ya tiene una cita en ese horario"
+      "staff_conflict": "El especialista seleccionado ya tiene una cita en ese horario",
+      "location_updated": "Sede actualizada correctamente"
     },
     "modal": {
       "delete_title": "Eliminar Cita",
@@ -153,6 +158,7 @@
       "choose_client": "-- Elige un cliente --",
       "no_clients": "No hay clientes registrados",
       "treatment_req": "Tratamiento *",
+      "location_req": "Sede del Tratamiento *",
       "select_service": "-- Selecciona el servicio --",
       "exceeded": "EXCEDIDO",
       "appt_obs": "Observaciones de la cita...",

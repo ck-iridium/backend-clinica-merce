@@ -16,6 +16,8 @@ interface AppointmentCardProps {
   onMouseLeave?: () => void;
   isMobile?: boolean;
   isHighlighted?: boolean;
+  locationName?: string;
+  showLocationBadge?: boolean;
   style: React.CSSProperties;
 }
 
@@ -50,6 +52,8 @@ export function AppointmentCard({
   client,
   service,
   staff,
+  locationName,
+  showLocationBadge = false,
   onClick,
   onMouseEnter,
   onMouseMove,
@@ -133,6 +137,17 @@ export function AppointmentCard({
             <span className="text-[9px] font-bold bg-[#D4AF37]/20 text-[#99771A] px-1 py-0.2 rounded uppercase shrink-0">
               Web
             </span>
+          )}
+          {showLocationBadge && (
+            appointment.service_modality === 'home' ? (
+              <span className="text-[8px] font-bold bg-amber-100/90 text-amber-900 px-1 py-0.2 rounded shrink-0 border border-amber-200/60" title="A Domicilio">
+                🏠
+              </span>
+            ) : locationName ? (
+              <span className="text-[8px] font-semibold bg-white/90 text-stone-600 px-1 py-0.2 rounded shrink-0 border border-stone-200/80 truncate max-w-[50px]" title={`Sede: ${locationName}`}>
+                📍 {locationName}
+              </span>
+            ) : null
           )}
           <span className="truncate">{client?.name || (t('dashboard.calendar.client') || 'Cliente')}</span>
         </div>

@@ -33,6 +33,8 @@ interface DayColumnProps {
   clientMap: Map<string, any>;
   serviceMap: Map<string, any>;
   staffMap?: Map<string, any>;
+  locationMap?: Map<string, any>;
+  showLocationBadge?: boolean;
 
   // Búsqueda y Filtros
   searchTerm?: string;
@@ -67,6 +69,8 @@ export function DayColumn({
   clientMap,
   serviceMap,
   staffMap,
+  locationMap,
+  showLocationBadge = false,
   searchTerm = '',
   activeFilter = 'ALL'
 }: DayColumnProps) {
@@ -226,6 +230,8 @@ export function DayColumn({
             client={client}
             service={service}
             staff={staffMap?.get(appt.staff_id)}
+            locationName={locationMap?.get(appt.location_id)?.name}
+            showLocationBadge={showLocationBadge}
             isHighlighted={isHighlighted}
             onClick={(e, appt) => onApptClick(appt)}
             onMouseEnter={onApptMouseEnter}
