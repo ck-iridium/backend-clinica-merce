@@ -54,22 +54,27 @@ def create_onboarding_session(request: OnboardingSessionRequest, req: Request):
 @router.get("/onboarding-session-status/{session_id}")
 def onboarding_session_status(session_id: str, db: Session = Depends(database.get_db)):
     try:
-        session = StripeService.retrieve_checkout_session(session_id)
-        if session.status != "complete" and session.payment_status not in ["paid", "no_payment_required"]:
+        session_raw = StripeService.retrieve_checkout_session(session_id, expand=["subscription", "customer"])
+        
+        # Convertir a dict nativo de Python para evitar incompatibilidades de StripeObject.__getattr__
+        if hasattr(session_raw, "to_dict"):
+            session = session_raw.to_dict()
+        elif isinstance(session_raw, dict):
+            session = session_raw
+        else:
+            session = dict(session_raw)
+
+        status = session.get("status")
+        payment_status = session.get("payment_status")
+
+        if status != "complete" and payment_status not in ["paid", "no_payment_required"]:
             raise HTTPException(status_code=400, detail="El registro y verificación de tarjeta en Stripe no han sido completados")
 
-        metadata = session.metadata or {}
-        metadata_type = None
-        if isinstance(metadata, dict):
-            metadata_type = metadata.get("type")
-        else:
-            metadata_type = getattr(metadata, "type", None)
-            if not metadata_type:
-                try:
-                    metadata_type = metadata["type"]
-                except Exception:
-                    pass
+        metadata = session.get("metadata") or {}
+        if not isinstance(metadata, dict):
+            metadata = dict(metadata) if metadata else {}
 
+        metadata_type = metadata.get("type")
         if metadata_type != "saas_onboarding":
             raise HTTPException(status_code=400, detail="Esta sesión de Stripe no corresponde a un onboarding de plataforma")
 
@@ -87,13 +92,11 @@ def onboarding_session_status(session_id: str, db: Session = Depends(database.ge
             plan_type = "pro"
 
         if not tenant:
-            stripe_cust_id = getattr(session, "customer", None)
-            if not stripe_cust_id and isinstance(session, dict):
-                stripe_cust_id = session.get("customer")
+            customer = session.get("customer")
+            stripe_cust_id = customer.get("id") if isinstance(customer, dict) else customer
 
-            stripe_sub_id = getattr(session, "subscription", None)
-            if not stripe_sub_id and isinstance(session, dict):
-                stripe_sub_id = session.get("subscription")
+            subscription = session.get("subscription")
+            stripe_sub_id = subscription.get("id") if isinstance(subscription, dict) else subscription
 
             print(f"[ONBOARDING STATUS Stripe Checkout Verified] Aprovisionando Tenant {tenant_slug} con Trial 14 días (Plan {plan_type.upper()})")
             tenant = provision_tenant(
@@ -122,6 +125,8 @@ def onboarding_session_status(session_id: str, db: Session = Depends(database.ge
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
+        print(f"[ONBOARDING STATUS ERROR] {traceback.format_exc()}")
         raise HTTPException(status_code=400, detail=str(e))
 
 

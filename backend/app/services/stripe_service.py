@@ -240,12 +240,19 @@ class StripeService:
                 raise HTTPException(status_code=400, detail="Invalid signature")
 
     @staticmethod
-    def retrieve_checkout_session(session_id: str):
+    def retrieve_checkout_session(session_id: str, expand: list = None):
         """
-        Recupera una sesión de checkout específica de Stripe por su ID.
+        Recupera una sesión de checkout específica de Stripe por su ID,
+        permitiendo expandir relaciones como ['subscription', 'customer'].
         """
         stripe.api_key = get_stripe_key()
         try:
+            if expand:
+                return stripe.checkout.Session.retrieve(session_id, expand=expand)
             return stripe.checkout.Session.retrieve(session_id)
         except Exception as e:
-            raise HTTPException(status_code=400, detail=str(e))
+            # Fallback seguro sin expand por si la sesión no admite alguna expansión
+            try:
+                return stripe.checkout.Session.retrieve(session_id)
+            except Exception as e2:
+                raise HTTPException(status_code=400, detail=str(e2))

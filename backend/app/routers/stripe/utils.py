@@ -2,8 +2,20 @@ import re
 import uuid
 
 def get_val(obj, key, default=None):
+    if obj is None:
+        return default
     if isinstance(obj, dict):
         return obj.get(key, default)
+    if hasattr(obj, "to_dict"):
+        try:
+            return obj.to_dict().get(key, default)
+        except Exception:
+            pass
+    if hasattr(obj, "get"):
+        try:
+            return obj.get(key, default)
+        except Exception:
+            pass
     return getattr(obj, key, default)
 
 def extract_and_fallback_onboarding_data(session, metadata):

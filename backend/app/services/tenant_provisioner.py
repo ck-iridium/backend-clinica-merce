@@ -104,32 +104,45 @@ def provision_tenant(
                 from supabase import create_client
                 supabase_client = create_client(supabase_url, supabase_key)
 
-                # Registrar administrador en Supabase con su tenant_id en app_metadata para RLS
-                auth_user = supabase_client.auth.admin.create_user({
-                    "email": admin_email,
-                    "password": admin_password,
-                    "email_confirm": True,
-                    "user_metadata": {"full_name": admin_name},
-                    "app_metadata": {"tenant_id": tenant_id, "role": "admin"}
-                })
+                try:
+                    # Registrar administrador en Supabase con su tenant_id en app_metadata para RLS
+                    auth_user = supabase_client.auth.admin.create_user({
+                        "email": admin_email,
+                        "password": admin_password,
+                        "email_confirm": True,
+                        "user_metadata": {"full_name": admin_name},
+                        "app_metadata": {"tenant_id": tenant_id, "role": "admin"}
+                    })
 
-                # Extraer el ID de usuario devuelto de forma segura
-                if hasattr(auth_user, 'user') and auth_user.user:
-                    supabase_user_id = auth_user.user.id
-                elif isinstance(auth_user, dict) and 'user' in auth_user:
-                    supabase_user_id = auth_user['user']['id']
-                elif hasattr(auth_user, 'id'):
-                    supabase_user_id = auth_user.id
+                    # Extraer el ID de usuario devuelto de forma segura
+                    if hasattr(auth_user, 'user') and auth_user.user:
+                        supabase_user_id = auth_user.user.id
+                    elif isinstance(auth_user, dict) and 'user' in auth_user:
+                        supabase_user_id = auth_user['user']['id']
+                    elif hasattr(auth_user, 'id'):
+                        supabase_user_id = auth_user.id
 
-                logger.info(f"[PROVISIONER] Usuario creado en Supabase Auth. ID: {supabase_user_id}")
-            except Exception as sb_err:
-                err_msg = str(sb_err).lower()
-                if "already exists" in err_msg or "already registered" in err_msg or "email_exists" in err_msg or "email already" in err_msg:
-                    raise HTTPException(
-                        status_code=400,
-                        detail="Este correo electrónico ya está en uso. Por favor, utiliza uno diferente."
-                    )
-                logger.warning(f"[PROVISIONER] [WARNING] Error al crear usuario en Supabase Auth: {sb_err}")
+                    logger.info(f"[PROVISIONER] Usuario creado en Supabase Auth. ID: {supabase_user_id}")
+                except Exception as sb_err:
+                    err_msg = str(sb_err).lower()
+                    if "already" in err_msg or "exists" in err_msg or "registered" in err_msg:
+                        logger.info(f"[PROVISIONER] El usuario ya existe en Supabase Auth ({admin_email}). Recuperando ID para asociarlo...")
+                        users_list = supabase_client.auth.admin.list_users()
+                        for u in users_list:
+                            if getattr(u, 'email', '').lower() == admin_email.lower():
+                                supabase_user_id = u.id
+                                try:
+                                    supabase_client.auth.admin.update_user_by_id(u.id, {
+                                        "password": admin_password,
+                                        "app_metadata": {"tenant_id": tenant_id, "role": "admin"}
+                                    })
+                                except Exception as upd_err:
+                                    logger.warning(f"[PROVISIONER] Aviso actualizando metadatos del usuario: {upd_err}")
+                                break
+                    if not supabase_user_id:
+                        logger.warning(f"[PROVISIONER] [WARNING] Error al crear usuario en Supabase Auth: {sb_err}")
+            except Exception as outer_err:
+                logger.warning(f"[PROVISIONER] Error conectando con Supabase: {outer_err}")
 
         # Fallback de ID local si Supabase falla o no está configurado
         if not supabase_user_id:
