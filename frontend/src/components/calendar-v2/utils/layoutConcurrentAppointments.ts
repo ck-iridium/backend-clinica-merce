@@ -133,9 +133,9 @@ export function computeConcurrentAppointmentLayout(
         widthStyle = `calc(100% - ${rightGutterPx + 6}px)`;
         leftStyle = '3px';
       } else {
-        const colWidthPercent = 100 / totalColumns;
-        widthStyle = `calc(${colWidthPercent}% - ${(rightGutterPx / totalColumns) + 3}px)`;
-        leftStyle = `calc(${columnIndex * colWidthPercent}% + 2px)`;
+        // Garantiza que todo el cluster respete el gutter derecho completo de forma matemática exacta
+        widthStyle = `calc((100% - ${rightGutterPx + 6}px) / ${totalColumns} - 2px)`;
+        leftStyle = `calc(3px + (${columnIndex} * (100% - ${rightGutterPx + 6}px) / ${totalColumns}))`;
       }
 
       result.push({

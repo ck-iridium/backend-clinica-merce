@@ -7,7 +7,7 @@ import { TimeScale } from '@/components/calendar-v2/TimeScale';
 import { DayColumn } from '@/components/calendar-v2/DayColumn';
 import { CalendarModals } from '@/components/calendar-v2/CalendarModals';
 import { ContextPanel } from '@/components/calendar-v2/ContextPanel';
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { PanelLeftClose, PanelLeftOpen, Layers } from 'lucide-react';
 import { TimeIndicator } from '@/components/calendar-v2/TimeIndicator';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useLanguage } from '@/app/contexts/LanguageContext';
@@ -712,17 +712,16 @@ function CalendarContent() {
                     </div>
                   );
                 })()}
-                <div className="flex justify-between items-center bg-stone-50/50 p-4 rounded-2xl border border-stone-100 mt-1">
                 {/* Sede / Ubicación del tratamiento */}
                 {(() => {
                   const loc = c.locationMap?.get(c.hoveredAppt.location_id);
                   const isHome = c.hoveredAppt.service_modality === 'home';
                   if (!loc && !isHome) return null;
                   return (
-                    <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-amber-50/40 border border-amber-200/50 text-xs mb-1">
+                    <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-amber-50/50 border border-amber-200/60 text-xs">
                       {isHome ? (
                         <>
-                          <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center shrink-0 text-amber-800 text-[11px]">
+                          <div className="w-7 h-7 rounded-xl bg-amber-100 flex items-center justify-center shrink-0 text-amber-800 text-xs">
                             🏠
                           </div>
                           <div className="min-w-0 flex-1">
@@ -732,20 +731,36 @@ function CalendarContent() {
                         </>
                       ) : loc ? (
                         <>
-                          <div className="w-7 h-7 rounded-full bg-[#D4AF37]/20 flex items-center justify-center shrink-0 text-[#99771A] text-[11px]">
+                          <div className="w-7 h-7 rounded-xl bg-[#D4AF37]/15 flex items-center justify-center shrink-0 text-[#99771A] text-xs border border-[#D4AF37]/30">
                             📍
                           </div>
                           <div className="min-w-0 flex-1">
                             <p className="text-[9px] font-bold text-[#99771A] uppercase tracking-wider">{t('dashboard.calendar.location') || 'Sede'}</p>
-                            <p className="font-semibold text-stone-800 truncate">{loc.name}</p>
-                            {loc.address && <p className="text-[10px] text-stone-400 truncate">{loc.address}</p>}
+                            <p className="font-bold text-stone-900 text-xs truncate">{loc.name}</p>
+                            {loc.address && <p className="text-[10px] text-stone-500 truncate mt-0.5">{loc.address}</p>}
                           </div>
                         </>
                       ) : null}
                     </div>
                   );
                 })()}
-                  <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em]">{t('dashboard.calendar.current_status')}</p>
+
+                {/* Recurso Físico / Cabina si aplica */}
+                {c.hoveredAppt.resource?.name && (
+                  <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-stone-50/80 border border-stone-100 text-xs">
+                    <div className="w-7 h-7 rounded-xl bg-[#D4AF37]/10 flex items-center justify-center shrink-0 text-[#D4AF37]">
+                      <Layers size={14} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[9px] font-bold text-stone-400 uppercase tracking-wider">Recurso / Cabina</p>
+                      <p className="font-bold text-stone-800 text-xs truncate">{c.hoveredAppt.resource.name}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Estado Actual de la Cita */}
+                <div className="flex justify-between items-center bg-stone-50/70 p-3.5 rounded-2xl border border-stone-100">
+                  <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em]">{t('dashboard.calendar.current_status') || 'ESTADO ACTUAL'}</p>
                   <span className={`text-[11px] font-black px-3 py-1.5 rounded-xl uppercase tracking-wider
                     ${c.hoveredAppt.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
                       c.hoveredAppt.status === 'cancelled' ? 'bg-red-100 text-red-700' :
