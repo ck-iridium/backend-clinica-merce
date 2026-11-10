@@ -80,12 +80,6 @@ export default function Step1Specialists({
           {/* Lista de especialistas */}
           {staffList.map((st, i) => {
             const isSelected = selectedStaff?.id === st.id;
-            // Formatear el rol de forma premium
-            const specialtyLabel = st.role 
-              ? (st.role.toLowerCase() === 'admin' || st.role.toLowerCase() === 'administrador')
-                ? (t('dashboard.team.roles.admin') || 'Director / Administrador')
-                : (t('dashboard.team.roles.specialist') || 'Especialista en Cabina')
-              : (t('dashboard.team.roles.specialist') || 'Especialista');
 
             return (
               <motion.button
@@ -121,10 +115,6 @@ export default function Step1Specialists({
                       ${isSelected ? 'text-primary' : 'group-hover:text-primary text-foreground'}`}>
                       {st.full_name}
                     </h3>
-                    <p className={`text-xs mt-1 leading-normal truncate
-                      ${isSelected ? 'text-stone-300' : 'text-muted-foreground'}`}>
-                      {specialtyLabel}
-                    </p>
                   </div>
                 </div>
 
