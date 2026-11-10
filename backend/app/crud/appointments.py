@@ -568,6 +568,43 @@ def get_availability_slots(db: Session, target_date: date, service_id: str, loca
                         if max(slot, b_start) < min(slot_end, b_end):
                             overlaps = True
                             break
+                # Control de aforo máximo de la sede si está configurado
+                if not overlaps and location_id:
+                    loc_obj = db.query(models.Location).filter(
+                        models.Location.id == location_id,
+                        models.Location.tenant_id == tenant_id
+                    ).first()
+                    if loc_obj and loc_obj.max_concurrent_appointments:
+                        loc_occ = db.query(models.Appointment).filter(
+                            models.Appointment.tenant_id == tenant_id,
+                            models.Appointment.status != "cancelled",
+                            models.Appointment.location_id == location_id,
+                            models.Appointment.start_time < slot_end,
+                            models.Appointment.end_time > slot
+                        ).count()
+                        if loc_occ >= loc_obj.max_concurrent_appointments:
+                            overlaps = True
+
+                # Control de disponibilidad del recurso físico (cabina / máquina requerida)
+                if not overlaps and required_res:
+                    if location_id and required_res.location_id != location_id:
+                        overlaps = True
+                    else:
+                        res_occ = db.query(models.Appointment).filter(
+                            models.Appointment.tenant_id == tenant_id,
+                            models.Appointment.status != "cancelled",
+                            models.Appointment.start_time < slot_end,
+                            models.Appointment.end_time > slot,
+                            or_(
+                                models.Appointment.resource_id == required_res.id,
+                                models.Appointment.service_id.in_(
+                                    db.query(models.Service.id).filter(models.Service.required_resource_id == required_res.id)
+                                )
+                            )
+                        ).count()
+                        if res_occ >= required_res.quantity:
+                            overlaps = True
+
                 if not overlaps and slot.date() == now_spain.date():
                     if slot < now_spain + timedelta(hours=margin_hours):
                         overlaps = True
@@ -600,7 +637,50 @@ def get_availability_slots(db: Session, target_date: date, service_id: str, loca
         all_schedules = [s for s in all_schedules if s.staff_id == preferred_staff_id]
         
     if not all_schedules:
-        return []
+        # Fallback si el negocio no tiene horarios individuales en StaffSchedule
+        has_custom_schedules = db.query(models.StaffSchedule).filter(
+            models.StaffSchedule.tenant_id == tenant_id,
+            models.StaffSchedule.is_active == True
+        ).first() is not None
+
+        if not has_custom_schedules:
+            raw_wd = getattr(settings, 'working_days', None)
+            if raw_wd and isinstance(raw_wd, str):
+                import json
+                try:
+                    working_days = json.loads(raw_wd)
+                except Exception:
+                    working_days = [1, 2, 3, 4, 5]
+            else:
+                working_days = raw_wd or [1, 2, 3, 4, 5]
+
+            if day_index not in list(working_days):
+                return []
+
+            open_str = settings.open_time or "09:00"
+            close_str = settings.close_time or "19:30"
+
+            profiles = db.query(models.Profile).filter(
+                models.Profile.tenant_id == tenant_id,
+                models.Profile.role.in_(["specialist", "especialista", "admin", "administrador", "Administrador", "Especialista"])
+            ).all()
+
+            if preferred_staff_id and preferred_staff_id != "any" and preferred_staff_id != "Cualquiera":
+                profiles = [p for p in profiles if str(p.id) == str(preferred_staff_id)]
+
+            class SimpleSchedule:
+                def __init__(self, sid, st, et, loc_id):
+                    self.staff_id = sid
+                    self.start_time = st
+                    self.end_time = et
+                    self.location_id = loc_id
+
+            if profiles:
+                all_schedules = [SimpleSchedule(str(p.id), open_str, close_str, location_id) for p in profiles]
+            else:
+                all_schedules = [SimpleSchedule("default", open_str, close_str, location_id)]
+        else:
+            return []
 
     day_start = datetime(target_date.year, target_date.month, target_date.day, 0, 0, 0)
     day_end   = datetime(target_date.year, target_date.month, target_date.day, 23, 59, 59)
@@ -832,7 +912,24 @@ def create_public_appointment(db: Session, booking: schemas.PublicBookingRequest
         if has_any_schedules:
             raise ValueError("No hay ningún especialista disponible para este horario.")
         else:
-            assigned_staff_id = None
+            # Asignar automáticamente un especialista de Profile disponible en este horario
+            profiles = db.query(models.Profile).filter(
+                models.Profile.tenant_id == tenant_id,
+                models.Profile.role.in_(["specialist", "especialista", "admin", "administrador", "Administrador", "Especialista"])
+            ).all()
+            for p in profiles:
+                coll = check_appointment_collision(
+                    db,
+                    booking.start_time,
+                    end_time,
+                    staff_id=str(p.id),
+                    location_id=location_id,
+                    service_id=booking.service_id,
+                    resource_id=getattr(booking, "resource_id", None) or (service.required_resource_id if service else None)
+                )
+                if not coll:
+                    assigned_staff_id = str(p.id)
+                    break
     else:
         assigned_staff_id = free_staff_ids[0]
 
