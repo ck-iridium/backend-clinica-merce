@@ -364,7 +364,7 @@ export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant, o
               {impersonating ? 'Iniciando sesión...' : 'Entrar como Soporte'}
             </Button>
 
-            {tenant.subscription_status === 'active' ? (
+            {tenant.subscription_status === 'active' || tenant.subscription_status === 'trial' || tenant.subscription_status === 'grace' ? (
               <Button
                 variant="destructive"
                 onClick={() => onUpdateStatus(tenant.id, 'suspended')}
@@ -398,7 +398,9 @@ export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant, o
               <div className={cn(
                 "w-2.5 h-2.5 rounded-full",
                 tenant.subscription_status === 'active' 
-                  ? "bg-[#D4AF37] animate-pulse" 
+                  ? "bg-emerald-500 animate-pulse" 
+                  : tenant.subscription_status === 'trial'
+                  ? "bg-[#D4AF37] animate-pulse"
                   : tenant.subscription_status === 'grace'
                   ? "bg-blue-500 animate-pulse"
                   : "bg-rose-500"
@@ -406,6 +408,8 @@ export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant, o
               <span className="text-lg font-serif font-bold text-stone-900 capitalize">
                 {tenant.subscription_status === 'active' 
                   ? 'Activo' 
+                  : tenant.subscription_status === 'trial'
+                  ? 'Prueba (14 días)'
                   : tenant.subscription_status === 'grace'
                   ? 'Periodo de Gracia'
                   : 'Suspendido'}
@@ -443,14 +447,27 @@ export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant, o
           </Card>
         </div>
 
-        {/* 3. ALERTA DE SUSPENSIÓN */}
-        {tenant.subscription_status !== 'active' && tenant.subscription_status !== 'grace' && (
+        {/* 3. ALERTA DE SUSPENSIÓN (Solo si está suspendido de verdad) */}
+        {['suspended', 'inactive', 'cancelled'].includes(tenant.subscription_status) && (
           <div className="bg-rose-50/90 border border-rose-200/80 rounded-2xl p-4 flex items-start gap-3.5 shadow-sm">
             <AlertTriangle className="w-5 h-5 text-rose-600 mt-0.5 shrink-0" />
             <div>
               <h4 className="text-xs font-bold text-rose-900 uppercase tracking-wider">Clínica Suspendida</h4>
               <p className="text-xs text-rose-700 mt-0.5 leading-relaxed">
                 El acceso a esta clínica y a su panel de gestión está restringido. Los clientes verán la pantalla de pausa de ProBookia.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* 3.B ALERTA DE PERIODO DE PRUEBA (TRIAL) */}
+        {tenant.subscription_status === 'trial' && (
+          <div className="bg-amber-50/90 border border-[#D4AF37]/40 rounded-2xl p-4 flex items-start gap-3.5 shadow-sm">
+            <Sparkles className="w-5 h-5 text-[#D4AF37] mt-0.5 shrink-0" />
+            <div>
+              <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider">Período de Prueba Activo (14 Días)</h4>
+              <p className="text-xs text-stone-600 mt-0.5 leading-relaxed">
+                Esta clínica está disfrutando de sus 14 días de prueba con tarjeta registrada en Stripe. Vence el {tenant.subscription_expires_at ? new Date(tenant.subscription_expires_at).toLocaleDateString('es-ES') : '14 días tras el alta'}.
               </p>
             </div>
           </div>

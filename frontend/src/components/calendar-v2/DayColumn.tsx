@@ -35,6 +35,7 @@ interface DayColumnProps {
   serviceMap: Map<string, any>;
   staffMap?: Map<string, any>;
   locationMap?: Map<string, any>;
+  resourceMap?: Map<string, any>;
   showLocationBadge?: boolean;
 
   // Búsqueda y Filtros
@@ -71,6 +72,7 @@ export function DayColumn({
   serviceMap,
   staffMap,
   locationMap,
+  resourceMap,
   showLocationBadge = false,
   searchTerm = '',
   activeFilter = 'ALL'
@@ -222,6 +224,7 @@ export function DayColumn({
             service={service}
             staff={staffMap?.get(appt.staff_id)}
             locationName={locationMap?.get(appt.location_id)?.name}
+            resourceName={resourceMap?.get(appt.resource_id)?.name}
             showLocationBadge={showLocationBadge}
             totalColumns={pos.totalColumns}
             columnIndex={pos.columnIndex}

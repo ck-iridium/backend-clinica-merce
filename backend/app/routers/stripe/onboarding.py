@@ -112,6 +112,20 @@ def onboarding_session_status(session_id: str, db: Session = Depends(database.ge
                 subscription_status="trial",
                 subscription_expires_at=datetime.utcnow() + timedelta(days=14)
             )
+
+            # Enviar correo de bienvenida con instrucciones y enlaces de acceso
+            try:
+                from ...utils.mailer import send_onboarding_welcome_email
+                send_onboarding_welcome_email(
+                    to_email=admin_email,
+                    admin_name=admin_name,
+                    clinic_name=tenant_name,
+                    tenant_slug=tenant_slug,
+                    plan_type=plan_type,
+                    trial_days=14
+                )
+            except Exception as mail_err:
+                print(f"[ONBOARDING WELCOME EMAIL ERROR] {mail_err}")
         
         return {
             "status": "complete",

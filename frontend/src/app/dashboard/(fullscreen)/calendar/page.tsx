@@ -425,6 +425,9 @@ function CalendarContent() {
                     serviceMap={c.serviceMap}
                     staffMap={c.staffMap}
                     locationMap={c.locationMap}
+                    resourceMap={c.resourceMap}
+                  resourceMap={c.resourceMap}
+                    resourceMap={c.resourceMap}
                     showLocationBadge={c.selectedLocationFilter === 'ALL' && c.locations.length > 1}
                     searchTerm={c.searchTerm}
                     activeFilter={c.activeFilter}
@@ -458,6 +461,9 @@ function CalendarContent() {
                       serviceMap={c.serviceMap}
                       staffMap={c.staffMap}
                     locationMap={c.locationMap}
+                    resourceMap={c.resourceMap}
+                  resourceMap={c.resourceMap}
+                    resourceMap={c.resourceMap}
                     showLocationBadge={c.selectedLocationFilter === 'ALL' && c.locations.length > 1}
                       searchTerm={c.searchTerm}
                       activeFilter={c.activeFilter}
@@ -487,6 +493,9 @@ function CalendarContent() {
                       serviceMap={c.serviceMap}
                       staffMap={c.staffMap}
                     locationMap={c.locationMap}
+                    resourceMap={c.resourceMap}
+                  resourceMap={c.resourceMap}
+                    resourceMap={c.resourceMap}
                     showLocationBadge={c.selectedLocationFilter === 'ALL' && c.locations.length > 1}
                       searchTerm={c.searchTerm}
                       activeFilter={c.activeFilter}
@@ -593,6 +602,7 @@ function CalendarContent() {
                   serviceMap={c.serviceMap}
                   staffMap={c.staffMap}
                   locationMap={c.locationMap}
+                  resourceMap={c.resourceMap}
                   showLocationBadge={c.selectedLocationFilter === 'ALL' && c.locations.length > 1}
                   searchTerm={c.searchTerm}
                   activeFilter={c.activeFilter}
@@ -748,17 +758,21 @@ function CalendarContent() {
                 })()}
 
                 {/* Recurso Físico / Cabina si aplica */}
-                {c.hoveredAppt.resource?.name && (
+                {(() => {
+                  const resource = c.hoveredAppt.resource || (c.hoveredAppt.resource_id ? c.resourceMap?.get(c.hoveredAppt.resource_id) : null);
+                  if (!resource?.name) return null;
+                  return (
                   <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-stone-50/80 border border-stone-100 text-xs">
                     <div className="w-7 h-7 rounded-xl bg-[#D4AF37]/10 flex items-center justify-center shrink-0 text-[#D4AF37]">
                       <Layers size={14} />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-[9px] font-bold text-stone-400 uppercase tracking-wider">Recurso / Cabina</p>
-                      <p className="font-bold text-stone-800 text-xs truncate">{c.hoveredAppt.resource.name}</p>
+                      <p className="font-bold text-stone-800 text-xs truncate">{resource.name}</p>
                     </div>
                   </div>
-                )}
+                  );
+                })()}
 
                 {/* Estado Actual de la Cita */}
                 <div className="flex justify-between items-center bg-stone-50/70 p-3.5 rounded-2xl border border-stone-100">

@@ -143,17 +143,22 @@ export default function TenantList({
                       "text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full inline-flex items-center gap-1 border",
                       tenant.subscription_status === 'active'
                         ? "bg-emerald-50 text-emerald-700 border-emerald-200/60"
+                        : tenant.subscription_status === 'trial'
+                        ? "bg-amber-50 text-amber-800 border-[#D4AF37]/50"
                         : tenant.subscription_status === 'grace'
                         ? "bg-blue-50 text-blue-700 border-blue-200/60"
-                        : "bg-stone-100 text-stone-500 border-stone-200"
+                        : "bg-rose-50 text-rose-700 border-rose-200"
                     )}>
                       <span className={cn(
                         "w-1.5 h-1.5 rounded-full",
                         tenant.subscription_status === 'active' ? "bg-emerald-500" :
-                        tenant.subscription_status === 'grace' ? "bg-blue-500" : "bg-stone-400"
+                        tenant.subscription_status === 'trial' ? "bg-[#D4AF37] animate-pulse" :
+                        tenant.subscription_status === 'grace' ? "bg-blue-500" : "bg-rose-500"
                       )} />
                       {tenant.subscription_status === 'active' 
                         ? 'Activo' 
+                        : tenant.subscription_status === 'trial'
+                        ? 'Prueba'
                         : tenant.subscription_status === 'grace'
                         ? 'Gracia'
                         : 'Pausa'}

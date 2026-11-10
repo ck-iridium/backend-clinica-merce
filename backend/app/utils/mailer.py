@@ -439,3 +439,95 @@ def send_team_invitation_email(
     return send_email(to_email, t["subject"], full_body, settings=settings)
 
 
+def send_onboarding_welcome_email(
+    to_email: str,
+    admin_name: str,
+    clinic_name: str,
+    tenant_slug: str,
+    plan_type: str = "pro",
+    trial_days: int = 14,
+    settings=None
+):
+    """
+    Envía el correo de bienvenida oficial de ProBookia al titular del negocio,
+    con su enlace exclusivo de panel, enlace de reservas públicas y recordatorio de prueba activa.
+    """
+    subject = f"¡Bienvenido a ProBookia! Tu período de prueba de 14 días para {clinic_name} está activo"
+    
+    frontend_base = os.environ.get("FRONTEND_URL", "https://probookia.com").rstrip('/')
+    if "localhost" in frontend_base or "127.0.0.1" in frontend_base:
+        portal_url = f"http://{tenant_slug}.localhost:3000/login"
+        booking_url = f"http://{tenant_slug}.localhost:3000/reservar"
+        web_url = f"http://{tenant_slug}.localhost:3000/"
+    else:
+        portal_url = f"https://{tenant_slug}.probookia.com/login"
+        booking_url = f"https://{tenant_slug}.probookia.com/reservar"
+        web_url = f"https://{tenant_slug}.probookia.com/"
+
+    plan_display = f"Plan {plan_type.upper()}" if plan_type else "Plan PRO"
+
+    content_html = f"""
+    <div style="text-align: left; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1c1917;">
+        <h2 style="margin: 0 0 14px 0; color: #1c1917; font-size: 22px; font-weight: 700; letter-spacing: -0.5px;">
+            ¡Hola, {admin_name}!
+        </h2>
+        <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #57534e;">
+            Tu nuevo entorno de trabajo para <strong>{clinic_name}</strong> ha sido creado con éxito. A partir de este momento, dispones de <strong>{trial_days} días de prueba gratuita</strong> con acceso ilimitado a todas las funciones de tu <strong>{plan_display}</strong>.
+        </p>
+
+        <!-- Tarjeta Resumen -->
+        <div style="background-color: #faf9f7; border: 1px solid #e7e5e4; border-radius: 18px; padding: 22px 24px; margin-bottom: 26px;">
+            <div style="margin-bottom: 12px;">
+                <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #b89528; display: block;">Datos de Acceso Oficiales</span>
+            </div>
+            <table width="100%" border="0" cellspacing="0" cellpadding="4" style="font-size: 13px; color: #44403c;">
+                <tr>
+                    <td style="font-weight: 700; width: 35%;">Negocio:</td>
+                    <td>{clinic_name}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 700;">Plan Activo:</td>
+                    <td>{plan_display} <span style="background-color: #fef3c7; color: #92400e; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 6px; margin-left: 4px;">14 Días Gratis</span></td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 700;">Usuario de acceso:</td>
+                    <td><a href="mailto:{to_email}" style="color: #1c1917; text-decoration: none;">{to_email}</a></td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 700;">Web y Reservas:</td>
+                    <td><a href="{web_url}" style="color: #b89528; text-decoration: underline;">{web_url}</a></td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Botón CTA Principal -->
+        <div style="text-align: center; margin-bottom: 30px;">
+            <a href="{portal_url}" style="display: inline-block; background-color: #1c1917; color: #ffffff; text-decoration: none; padding: 16px 38px; border-radius: 14px; font-size: 15px; font-weight: 700; letter-spacing: 0.5px; box-shadow: 0 6px 20px rgba(0,0,0,0.15);">
+                Acceder a mi Panel de Control &rarr;
+            </a>
+        </div>
+
+        <!-- Próximos pasos -->
+        <div style="border-top: 1px solid #f0eeeb; padding-top: 22px; margin-bottom: 20px;">
+            <h4 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #78716c;">
+                3 pasos para empezar con ventaja:
+            </h4>
+            <ol style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #57534e;">
+                <li><strong>Revisa tus tratamientos y tarifas:</strong> Entra en <em>Servicios</em> para ajustar o añadir tus especialidades.</li>
+                <li><strong>Organiza tus cabinas y equipo:</strong> Si usas aparatología exclusiva o tienes personal, asígnales sus puestos de trabajo en <em>Ajustes</em>.</li>
+                <li><strong>Comparte tu enlace de reservas:</strong> Añade <a href="{booking_url}" style="color: #b89528;">{booking_url}</a> a tu perfil de Instagram, Google Business o envíalo por WhatsApp.</li>
+            </ol>
+        </div>
+
+        <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #a8a29e; text-align: center;">
+            No se te cobrará nada durante los primeros 14 días. Puedes pausar o cancelar tu suscripción en cualquier momento desde <em>Ajustes &gt; Facturación</em>.
+        </p>
+    </div>
+    """
+
+    clinic_phone = settings.clinic_phone if settings and settings.clinic_phone else "Soporte ProBookia"
+    footer_text = f"ProBookia SaaS · Plataforma de Crecimiento para Clínicas y Centros de Élite.<br>¿Necesitas ayuda? Responde directamente a este correo o contacta a soporte."
+    full_body = get_html_template(content_html, clinic_name, clinic_phone, subtitle="Alta y Bienvenida", footer_text=footer_text)
+    return send_email(to_email, subject, full_body, settings=settings)
+
+

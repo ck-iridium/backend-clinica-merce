@@ -18,6 +18,7 @@ interface AppointmentCardProps {
   isHighlighted?: boolean;
   locationName?: string;
   showLocationBadge?: boolean;
+  resourceName?: string;
   totalColumns?: number;
   columnIndex?: number;
   style: React.CSSProperties;
@@ -57,6 +58,7 @@ export function AppointmentCard({
   staff,
   locationName,
   showLocationBadge = false,
+  resourceName,
   totalColumns = 1,
   columnIndex = 0,
   onClick,
@@ -99,6 +101,11 @@ export function AppointmentCard({
             {appointment.status === 'web_pending' && (
               <span className="text-[9px] font-black bg-amber-500/20 text-[#B38F26] px-1 py-0.2 rounded uppercase shrink-0">
                 Web
+              </span>
+            )}
+            {resourceName && (
+              <span className="text-[8px] font-semibold bg-white/90 text-stone-600 px-1 py-0.2 rounded shrink-0 border border-stone-200/80" title={`Cabina: ${resourceName}`}>
+                🏛️
               </span>
             )}
             <span className="truncate">{client?.name || (t('dashboard.calendar.unknown_client') || 'Cliente Desconocido')}</span>
@@ -162,6 +169,11 @@ export function AppointmentCard({
                 📍 {!isMultiCol && locationName}
               </span>
             ) : null
+          )}
+          {resourceName && (
+            <span className={`text-[8px] font-semibold bg-stone-100/95 text-stone-700 px-1 py-0.2 rounded shrink-0 border border-stone-200/80 truncate ${isMultiCol ? 'max-w-[32px]' : 'max-w-[65px]'}`} title={`Cabina / Recurso: ${resourceName}`}>
+              🏛️ {!isMultiCol && resourceName}
+            </span>
           )}
           <span className="truncate">{client?.name || (t('dashboard.calendar.client') || 'Cliente')}</span>
         </div>

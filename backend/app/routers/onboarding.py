@@ -361,6 +361,26 @@ def setup_onboarding(payload: schemas.OnboardingSetupRequest, db: Session = Depe
     db.commit()
     db.refresh(settings)
 
+    # Enviar email de confirmación de alta e instrucciones de acceso
+    try:
+        from ..utils.mailer import send_onboarding_welcome_email
+        tenant_obj = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
+        admin_profile = db.query(models.Profile).filter(models.Profile.tenant_id == tenant_id, models.Profile.role == "admin").first()
+        admin_email = (admin_profile.email if admin_profile else None) or settings.clinic_email
+        admin_name = (admin_profile.full_name if admin_profile else None) or settings.clinic_name
+        if admin_email:
+            send_onboarding_welcome_email(
+                to_email=admin_email,
+                admin_name=admin_name,
+                clinic_name=settings.clinic_name,
+                tenant_slug=tenant_obj.slug if tenant_obj else "app",
+                plan_type=tenant_obj.plan_type if tenant_obj else "pro",
+                trial_days=14,
+                settings=settings
+            )
+    except Exception as mail_err:
+        print(f"[ONBOARDING SETUP EMAIL NOTICE] {mail_err}")
+
     return {
         "status": "success",
         "message": "Onboarding del Tenant configurado correctamente",
