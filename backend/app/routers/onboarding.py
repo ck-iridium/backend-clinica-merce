@@ -1,3 +1,4 @@
+import os
 import uuid
 import json
 from typing import List
@@ -5,6 +6,13 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .. import database, models, schemas
 from ..database import current_tenant_var
+from ..limits import get_tenant_limits
+from .users import pwd_context
+
+try:
+    from supabase import create_client
+except ImportError:
+    create_client = None
 
 router = APIRouter(
     prefix="/onboarding",
@@ -228,8 +236,6 @@ def setup_onboarding(payload: schemas.OnboardingSetupRequest, db: Session = Depe
 
     # Miembros de equipo / Especialistas iniciales
     if payload.initial_team_members:
-        import os
-        from ..limits import get_tenant_limits
         tenant_obj = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
         p_type = tenant_obj.plan_type if tenant_obj else "pro"
         limits = get_tenant_limits(p_type)

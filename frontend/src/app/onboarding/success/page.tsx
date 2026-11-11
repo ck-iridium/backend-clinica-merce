@@ -297,7 +297,7 @@ function OnboardingContent() {
     let redirectUrl = '/login';
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
       redirectUrl = `${protocol}//${tenantData.tenant_slug}.localhost:3000/login?email=${encodeURIComponent(tenantData.admin_email)}&welcome=true`;
-    } else if (hostname.endsWith('.probookia.com')) {
+    } else if (hostname.endsWith('.probookia.com') || hostname === 'probookia.com') {
       redirectUrl = `${protocol}//${tenantData.tenant_slug}.probookia.com/login?email=${encodeURIComponent(tenantData.admin_email)}&welcome=true`;
     } else {
       redirectUrl = `/login?email=${encodeURIComponent(tenantData.admin_email)}&welcome=true`;
