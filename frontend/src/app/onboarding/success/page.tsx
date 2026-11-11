@@ -12,6 +12,7 @@ import { StepResources, ResourceItem } from '@/components/onboarding/StepResourc
 import { StepTeam, TeamMemberItem } from '@/components/onboarding/StepTeam';
 import { StepScheduling } from '@/components/onboarding/StepScheduling';
 import { StepProvisioning } from '@/components/onboarding/StepProvisioning';
+import { CinematicProvisioning } from '@/components/onboarding/CinematicProvisioning';
 import { OnboardingFooter } from '@/components/onboarding/OnboardingFooter';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -53,10 +54,13 @@ function OnboardingContent() {
   const [teamMembers, setTeamMembers] = useState<TeamMemberItem[]>([]);
 
   // Form states - Step 5 (Schedules)
-  const [openTime, setOpenTime] = useState('09:00');
-  const [closeTime, setCloseTime] = useState('19:00');
+  const [openTime, setOpenTime] = useState('09:30');
+  const [closeTime, setCloseTime] = useState('20:30');
+  const [lunchStart, setLunchStart] = useState('13:30');
+  const [lunchEnd, setLunchEnd] = useState('16:30');
   const [workingDays, setWorkingDays] = useState<number[]>([1, 2, 3, 4, 5]); // Mon-Fri
   const [loadDemoData, setLoadDemoData] = useState(true);
+  const [isCinematicRunning, setIsCinematicRunning] = useState(false);
 
   // Plan awareness: Basic has 4 steps, Pro and Gold have 6 steps
   const planType = (tenantData?.plan_type || 'pro').toLowerCase();
@@ -221,6 +225,8 @@ function OnboardingContent() {
         industry: selectedSector,
         open_time: openTime,
         close_time: closeTime,
+        lunch_start: lunchStart || null,
+        lunch_end: lunchEnd || null,
         working_days: workingDays,
         load_demo_data: loadDemoData,
         work_modality: workModality,
@@ -246,6 +252,24 @@ function OnboardingContent() {
         }))
       };
 
+      // Prime localStorage con datos de administrador para acceso instantáneo
+      if (tenantData?.admin_email) {
+        try {
+          const primePayload = {
+            email: tenantData.admin_email,
+            id: tenantData.tenant_id,
+            full_name: tenantData.admin_name || clinicName || 'Administrador',
+            role: 'admin'
+          };
+          localStorage.setItem('user', JSON.stringify(primePayload));
+        } catch (e) {
+          console.warn("No se pudo pre-guardar sesión en localStorage:", e);
+        }
+      }
+
+      // Activar la pantalla cinemática de aprovisionamiento
+      setIsCinematicRunning(true);
+
       const response = await fetch(`${API_URL}/onboarding/setup?tenant_id=${tenantData.tenant_id}`, {
         method: 'POST',
         headers: {
@@ -260,27 +284,25 @@ function OnboardingContent() {
         throw new Error(errData.detail || 'Error al guardar los datos de configuración inicial.');
       }
 
-      toast.success('¡Configuración completada con éxito! Accediendo a tu panel...', { id: setupToast });
-
-      const hostname = window.location.hostname;
-      const protocol = window.location.protocol;
-
-      setTimeout(() => {
-        let redirectUrl = '/login';
-        if (hostname === 'localhost' || hostname === '127.0.0.1') {
-          redirectUrl = `${protocol}//${tenantData.tenant_slug}.localhost:3000/login?email=${encodeURIComponent(tenantData.admin_email)}&welcome=true`;
-        } else if (hostname.endsWith('.probookia.com')) {
-          redirectUrl = `${protocol}//${tenantData.tenant_slug}.probookia.com/login?email=${encodeURIComponent(tenantData.admin_email)}&welcome=true`;
-        } else {
-          redirectUrl = `/login?email=${encodeURIComponent(tenantData.admin_email)}&welcome=true`;
-        }
-        window.location.href = redirectUrl;
-      }, 1200);
-
     } catch (err: any) {
-      toast.error(err.message || 'Ocurrió un error inesperado al completar el alta.', { id: setupToast });
+      toast.error(err.message || 'Ocurrió un error inesperado al completar el alta.');
       setSubmitting(false);
+      setIsCinematicRunning(false);
     }
+  };
+
+  const handleCinematicRedirect = () => {
+    const hostname = window.location.hostname;
+    const protocol = window.location.protocol;
+    let redirectUrl = '/login';
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      redirectUrl = `${protocol}//${tenantData.tenant_slug}.localhost:3000/login?email=${encodeURIComponent(tenantData.admin_email)}&welcome=true`;
+    } else if (hostname.endsWith('.probookia.com')) {
+      redirectUrl = `${protocol}//${tenantData.tenant_slug}.probookia.com/login?email=${encodeURIComponent(tenantData.admin_email)}&welcome=true`;
+    } else {
+      redirectUrl = `/login?email=${encodeURIComponent(tenantData.admin_email)}&welcome=true`;
+    }
+    window.location.href = redirectUrl;
   };
 
   // Loading state
@@ -335,6 +357,16 @@ function OnboardingContent() {
     locationName || 'Sede Principal',
     ...extraLocations.map(l => l.name)
   ];
+
+  if (isCinematicRunning) {
+    return (
+      <CinematicProvisioning 
+        clinicName={clinicName || tenantData?.tenant_name || 'Tu Clínica'}
+        selectedSector={selectedSector}
+        onComplete={handleCinematicRedirect}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FAF9F5] py-8 md:py-14 px-4 md:px-8 font-sans relative overflow-hidden select-none selection:bg-[#d4af37]/20 flex items-center justify-center">
@@ -420,6 +452,10 @@ function OnboardingContent() {
               setOpenTime={setOpenTime}
               closeTime={closeTime}
               setCloseTime={setCloseTime}
+              lunchStart={lunchStart}
+              setLunchStart={setLunchStart}
+              lunchEnd={lunchEnd}
+              setLunchEnd={setLunchEnd}
             />
           )}
 

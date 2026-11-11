@@ -1,6 +1,7 @@
 "use client"
 
 import React from 'react';
+import { Sparkles, CheckCircle2 } from 'lucide-react';
 
 interface ServicePreview {
   name: string;
@@ -103,8 +104,8 @@ export const StepProvisioning: React.FC<StepProvisioningProps> = ({
           </div>
         )}
 
-        <div className="bg-[#FAF9F5]/40 border border-stone-200/50 rounded-2xl p-5 space-y-2 flex gap-3 text-stone-600">
-          <span className="text-lg shrink-0">✨</span>
+        <div className="bg-[#FAF9F5]/60 border border-stone-200/60 rounded-2xl p-5 space-y-2 flex gap-3.5 text-stone-600">
+          <Sparkles className="w-5 h-5 text-[#d4af37] shrink-0 mt-0.5" />
           <div>
             <h4 className="text-xs font-extrabold uppercase tracking-wide text-stone-700">Diseño "Quiet Luxury" Aplicado</h4>
             <p className="text-[10px] leading-relaxed text-stone-400 font-medium">

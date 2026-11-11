@@ -143,6 +143,8 @@ def setup_onboarding(payload: schemas.OnboardingSetupRequest, db: Session = Depe
         settings.logo_app_b64 = payload.logo_app_b64
     settings.open_time = payload.open_time
     settings.close_time = payload.close_time
+    settings.lunch_start = payload.lunch_start
+    settings.lunch_end = payload.lunch_end
     settings.working_days = json.dumps(payload.working_days)
     
     # Configurar modalidad de trabajo y domicilio
@@ -285,6 +287,97 @@ def setup_onboarding(payload: schemas.OnboardingSetupRequest, db: Session = Depe
                     )
                     db.add(new_profile)
                     existing_staff_count += 1
+
+    # ── GARANTIZAR PERFIL DE TITULAR ADMINISTRADOR Y 1ER ESPECIALISTA EN LA AGENDA ──
+    # El usuario titular DEBE existir en models.Profile para que el dashboard no dé "Acceso denegado"
+    # y para que la agenda cuente con al menos 1 especialista operativo por defecto.
+    supabase_url = os.environ.get("SUPABASE_URL")
+    supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+    supabase_client = None
+    if supabase_url and supabase_key:
+        try:
+            from supabase import create_client
+            supabase_client = create_client(supabase_url, supabase_key)
+        except Exception as e:
+            print(f"[ONBOARDING SETUP] Error al inicializar cliente Supabase: {e}")
+
+    admin_profile = db.query(models.Profile).filter(
+        models.Profile.tenant_id == tenant_id,
+        models.Profile.role.in_(["admin", "administrador", "Administrador"])
+    ).first()
+
+    admin_user = db.query(models.User).filter(
+        models.User.tenant_id == tenant_id,
+        models.User.role == "admin"
+    ).first()
+
+    if not admin_user and settings.clinic_email:
+        admin_user = db.query(models.User).filter(models.User.email == settings.clinic_email).first()
+
+    supabase_admin_id = admin_user.id if admin_user else None
+
+    # Si tenemos cliente de Supabase, recuperar el ID real de Supabase Auth
+    if settings.clinic_email and supabase_client:
+        try:
+            users_list = supabase_client.auth.admin.list_users()
+            for u in users_list:
+                if getattr(u, 'email', '').lower() == settings.clinic_email.lower():
+                    supabase_admin_id = u.id
+                    break
+        except Exception as e:
+            print(f"[ONBOARDING SETUP] Error recuperando usuario admin de Supabase: {e}")
+
+    if not supabase_admin_id:
+        supabase_admin_id = str(uuid.uuid4())
+
+    titular_name = payload.clinic_name or settings.clinic_name or "Administrador"
+
+    # Sincronizar o crear usuario en tabla users
+    if admin_user:
+        admin_user.tenant_id = tenant_id
+        admin_user.role = "admin"
+        if not admin_user.id:
+            admin_user.id = supabase_admin_id
+    else:
+        new_adm = models.User(
+            id=supabase_admin_id,
+            email=settings.clinic_email or f"admin@{tenant_id[:8]}.com",
+            hashed_password=pwd_context.hash("AdminInitPass123!"),
+            role="admin",
+            tenant_id=tenant_id,
+            email_verified=True
+        )
+        db.add(new_adm)
+
+    # Sincronizar o crear perfil de Titular en tabla profiles
+    if admin_profile:
+        admin_profile.full_name = titular_name
+        admin_profile.role = "admin"
+        admin_profile.status = "Activo"
+        if settings.clinic_email:
+            admin_profile.email = settings.clinic_email
+    else:
+        new_prof = models.Profile(
+            id=supabase_admin_id,
+            tenant_id=tenant_id,
+            full_name=titular_name,
+            email=settings.clinic_email or f"admin@{tenant_id[:8]}.com",
+            role="admin",
+            status="Activo"
+        )
+        db.add(new_prof)
+
+    # Actualizar metadatos en Supabase Auth si está conectado
+    if supabase_client and supabase_admin_id:
+        try:
+            supabase_client.auth.admin.update_user_by_id(supabase_admin_id, {
+                "user_metadata": {"full_name": titular_name, "role": "admin"},
+                "app_metadata": {"tenant_id": tenant_id, "role": "admin"}
+            })
+        except Exception as sb_meta_err:
+            print(f"[ONBOARDING SETUP] Aviso sincronizando metadatos Supabase: {sb_meta_err}")
+
+    db.flush()
 
     # Mapear el sector del payload al sector permitido en ClinicSettings
     sector_mapping = {

@@ -23,6 +23,8 @@ class OnboardingSetupRequest(BaseModel):
     industry: str = Field(..., description="Estética y Bienestar, Medicina Estética, Clínicas de Salud, Salones y Barberías")
     open_time: str = "09:00"
     close_time: str = "19:00"
+    lunch_start: Optional[str] = None
+    lunch_end: Optional[str] = None
     working_days: List[int] = [1, 2, 3, 4, 5]
     load_demo_data: bool = True
     work_modality: Optional[str] = "clinic_only"  # "clinic_only", "home_only", "both"

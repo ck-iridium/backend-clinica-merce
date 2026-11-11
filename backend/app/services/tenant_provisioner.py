@@ -30,14 +30,10 @@ def provision_tenant(
     
     Establece de forma estricta las variables de contexto RLS para evitar fugas de información.
     """
-    # 1. Cortafuegos de identidad: Validar que el usuario no exista
+    # 1. Cortafuegos de identidad: Comprobar existencia previa de usuario
     existing_user = db.query(models.User).filter(models.User.email == admin_email).first()
     if existing_user:
-        logger.error(f"[PROVISIONER ERROR] El correo {admin_email} ya está en uso. Abortando.")
-        raise HTTPException(
-            status_code=400,
-            detail="Este correo ya está en uso. Por favor, utiliza un correo diferente para registrar un nuevo negocio."
-        )
+        logger.info(f"[PROVISIONER] El correo {admin_email} ya existía en la base de datos. Se vinculará al nuevo tenant {tenant_slug}.")
 
     # 2. Generar UUID atómico para el Tenant
     tenant_id = str(uuid.uuid4())
@@ -149,29 +145,56 @@ def provision_tenant(
             supabase_user_id = str(uuid.uuid4())
             logger.warning(f"[PROVISIONER] Usando UUID generado localmente para el usuario: {supabase_user_id}")
 
-        # 8. Guardar Usuario Relacional
+        # 8. Guardar o Actualizar Usuario Relacional
         hashed_pw = pwd_context.hash(admin_password)
-        new_user = models.User(
-            id=supabase_user_id,
-            email=admin_email,
-            hashed_password=hashed_pw,
-            role="admin",
-            tenant_id=tenant_id,
-            email_verified=False
-        )
-        db.add(new_user)
-        db.flush()
+        existing_rel_user = db.query(models.User).filter(
+            (models.User.id == supabase_user_id) | (models.User.email == admin_email)
+        ).first()
 
-        # 9. Crear el Perfil
-        new_profile = models.Profile(
-            id=supabase_user_id,
-            tenant_id=tenant_id,
-            full_name=admin_name,
-            role="admin",
-            email=admin_email,
-            status="Activo"
-        )
-        db.add(new_profile)
+        if existing_rel_user:
+            existing_rel_user.tenant_id = tenant_id
+            existing_rel_user.role = "admin"
+            existing_rel_user.hashed_password = hashed_pw
+            db.flush()
+        else:
+            new_user = models.User(
+                id=supabase_user_id,
+                email=admin_email,
+                hashed_password=hashed_pw,
+                role="admin",
+                tenant_id=tenant_id,
+                email_verified=True
+            )
+            db.add(new_user)
+            db.flush()
+
+        # 9. Crear o Actualizar el Perfil del Titular como Administrador y 1er Especialista
+        existing_profile = db.query(models.Profile).filter(
+            models.Profile.id == supabase_user_id,
+            models.Profile.tenant_id == tenant_id
+        ).first()
+
+        if not existing_profile:
+            existing_profile = db.query(models.Profile).filter(
+                models.Profile.email == admin_email,
+                models.Profile.tenant_id == tenant_id
+            ).first()
+
+        if existing_profile:
+            existing_profile.full_name = admin_name
+            existing_profile.role = "admin"
+            existing_profile.status = "Activo"
+            existing_profile.email = admin_email
+        else:
+            new_profile = models.Profile(
+                id=supabase_user_id,
+                tenant_id=tenant_id,
+                full_name=admin_name,
+                role="admin",
+                email=admin_email,
+                status="Activo"
+            )
+            db.add(new_profile)
 
         # Confirmar transacción atómica
         db.commit()

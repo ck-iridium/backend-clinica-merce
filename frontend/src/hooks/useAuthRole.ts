@@ -31,9 +31,12 @@ export function useAuthRole() {
         if (userStr) {
           const user = JSON.parse(userStr);
           
-          // 1. Intentar obtener el nombre del localStorage primero (caché rápida)
+          // 1. Intentar obtener el nombre y rol del localStorage primero (caché instantánea)
           if (user.full_name || user.name) {
              setUserName(user.full_name || user.name);
+          }
+          if (user.role) {
+             setRole(user.role.toLowerCase());
           }
 
           // 2. Obtener perfil completo de la DB para asegurar datos frescos (rol y nombre) según el tenant activo
@@ -49,16 +52,23 @@ export function useAuthRole() {
               return;
             }
 
-            const name = p.full_name || p.name || 'Usuario';
-            const r = p.role?.toLowerCase() || null;
+            const name = p.full_name || p.name || user.full_name || 'Usuario';
+            const r = p.role?.toLowerCase() || user.role?.toLowerCase() || 'admin';
             
             setUserName(name);
             setRole(r);
 
-            // 3. Sincronizar localStorage si el nombre ha cambiado o no existía
-            if (user.full_name !== name) {
-              localStorage.setItem('user', JSON.stringify({ ...user, full_name: name }));
+            // 3. Sincronizar localStorage si el nombre o rol ha cambiado
+            if (user.full_name !== name || user.role !== r) {
+              localStorage.setItem('user', JSON.stringify({ ...user, full_name: name, role: r }));
             }
+            return;
+          }
+
+          // Fallback de resiliencia: Si profileRes falló por cold-start pero localStorage tenía rol válido
+          if (user.role) {
+            setRole(user.role.toLowerCase());
+            setUserName(user.full_name || user.name || 'Administrador');
             return;
           }
         }

@@ -77,13 +77,17 @@ export default function LoginPage() {
         throw new Error(authError.message === 'Invalid login credentials' ? 'Credenciales incorrectas' : authError.message)
       }
 
+      const role = data.user.app_metadata?.role || data.user.user_metadata?.role || 'admin'
+      const fullName = data.user.user_metadata?.full_name || data.user.user_metadata?.name || 'Administrador'
+
       const userPayload = {
         email: data.user.email,
         id: data.user.id,
+        full_name: fullName,
+        role: role,
         access_token: data.session.access_token
       }
 
-      const role = data.user.app_metadata?.role || data.user.user_metadata?.role
       localStorage.setItem('user', JSON.stringify(userPayload))
 
       // 1. Si venía con un parámetro redirect explícito (ej. aceptar invitación)

@@ -155,8 +155,57 @@ export async function getUserProfile(userId: string, targetTenantId?: string) {
       return { success: false, error: error.message };
     }
 
-    // Aislamiento Multi-Tenant Estricto: Si no existe perfil en este tenant, NO devolver perfiles de otros tenants
+    // Aislamiento Multi-Tenant con Auto-Recuperación de Resiliencia:
     if (!data) {
+      try {
+        const { data: authUserData } = await adminSupabase.auth.admin.getUserById(userId);
+        if (authUserData?.user) {
+          const authEmail = authUserData.user.email;
+          
+          // 1. Intentar encontrar perfil previo por email en este tenant para reconciliar ID
+          if (authEmail) {
+            const { data: fallbackProfile } = await adminSupabase
+              .from('profiles')
+              .select('*')
+              .eq('email', authEmail)
+              .eq('tenant_id', tenantId)
+              .maybeSingle();
+
+            if (fallbackProfile) {
+              await adminSupabase
+                .from('profiles')
+                .update({ id: userId, status: 'Activo' })
+                .eq('tenant_id', tenantId)
+                .eq('email', authEmail);
+              return { success: true, profile: { ...fallbackProfile, id: userId, status: 'Activo' } };
+            }
+          }
+
+          // 2. Si el usuario es el administrador/titular de este tenant según Auth Metadata, aprovisionar perfil garantizado
+          const isTenantAdmin = authUserData.user.app_metadata?.tenant_id === tenantId || 
+                                authUserData.user.app_metadata?.role === 'admin' ||
+                                authUserData.user.user_metadata?.role === 'admin';
+
+          if (isTenantAdmin) {
+            const fullName = authUserData.user.user_metadata?.full_name || 
+                             authUserData.user.user_metadata?.name || 
+                             'Administrador';
+            const autoProfile = {
+              id: userId,
+              tenant_id: tenantId,
+              full_name: fullName,
+              email: authEmail,
+              role: 'admin',
+              status: 'Activo'
+            };
+            await adminSupabase.from('profiles').upsert(autoProfile);
+            return { success: true, profile: autoProfile };
+          }
+        }
+      } catch (recoveryErr) {
+        console.warn("[getUserProfile] Aviso en recuperación resiliente de perfil:", recoveryErr);
+      }
+
       return { success: false, error: "Perfil no encontrado en este negocio" };
     }
 
