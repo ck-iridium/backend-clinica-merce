@@ -114,30 +114,30 @@ export const StepTeam: React.FC<StepTeamProps> = ({
       {/* Formulario de Alta con Selector de Acceso */}
       <div className="bg-[#FAF9F5]/90 border border-stone-200/80 rounded-2xl p-5 space-y-4 shadow-2xs">
         
-        {/* Toggle Modo de Acceso: Con Invitación vs Solo Agenda */}
-        <div className="flex items-center gap-2 p-1 bg-stone-200/50 rounded-xl max-w-md">
+        {/* Toggle Modo de Acceso: Con Invitación vs Solo Agenda (Ancho Completo) */}
+        <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-2 p-1.5 bg-stone-200/60 rounded-xl border border-stone-200/50">
           <button
             type="button"
             onClick={() => setAccessMode('invite')}
-            className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 select-none ${
+            className={`w-full py-2.5 px-4 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 select-none ${
               accessMode === 'invite'
-                ? 'bg-stone-900 text-white shadow-sm'
-                : 'text-stone-600 hover:text-stone-900'
+                ? 'bg-stone-900 text-white shadow-sm ring-1 ring-[#d4af37]/30'
+                : 'text-stone-600 hover:text-stone-900 hover:bg-white/50'
             }`}
           >
-            <Mail size={13} className={accessMode === 'invite' ? 'text-[#d4af37]' : ''} />
+            <Mail size={14} className={accessMode === 'invite' ? 'text-[#d4af37]' : ''} />
             Acceso con Invitación por Email
           </button>
           <button
             type="button"
             onClick={() => setAccessMode('calendar_only')}
-            className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 select-none ${
+            className={`w-full py-2.5 px-4 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 select-none ${
               accessMode === 'calendar_only'
-                ? 'bg-stone-900 text-white shadow-sm'
-                : 'text-stone-600 hover:text-stone-900'
+                ? 'bg-stone-900 text-white shadow-sm ring-1 ring-[#d4af37]/30'
+                : 'text-stone-600 hover:text-stone-900 hover:bg-white/50'
             }`}
           >
-            <Calendar size={13} className={accessMode === 'calendar_only' ? 'text-[#d4af37]' : ''} />
+            <Calendar size={14} className={accessMode === 'calendar_only' ? 'text-[#d4af37]' : ''} />
             Solo Columna en Agenda
           </button>
         </div>
