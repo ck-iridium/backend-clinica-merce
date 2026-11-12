@@ -18,6 +18,14 @@ import {
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+}
+
 interface MediaPickerModalProps {
   onClose: () => void;
   onImageSelected: (url: string) => void;
@@ -34,6 +42,25 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
     const { language } = useLanguage();
     const [activeTab, setActiveTab] = useState<'upload' | 'gallery'>('gallery');
     const [mediaFilter, setMediaFilter] = useState<'all' | 'image' | 'video'>('all');
+
+    const getResolvedHeaders = (): Record<string, string> => {
+      const headers: Record<string, string> = {};
+      const activeTenantId = tenantId || getCookie('impersonate_tenant_id') || getCookie('tenant_id') || '';
+      let activeToken = token || '';
+      if (!activeToken && typeof window !== 'undefined') {
+        try {
+          const userSession = localStorage.getItem('user');
+          if (userSession) {
+            const parsed = JSON.parse(userSession);
+            activeToken = parsed.access_token || parsed.token || '';
+          }
+        } catch {}
+      }
+
+      if (activeTenantId) headers['X-Tenant-ID'] = activeTenantId;
+      if (activeToken) headers['Authorization'] = `Bearer ${activeToken}`;
+      return headers;
+    };
 
     const [galleryFiles, setGalleryFiles] = useState<MediaFile[]>([]);
     const [galleryLoading, setGalleryLoading] = useState(false);
@@ -95,13 +122,7 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
     const loadGallery = async () => {
       setGalleryLoading(true);
       try {
-        const headers: Record<string, string> = {};
-        if (tenantId) {
-          headers['X-Tenant-ID'] = tenantId;
-        }
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
-        }
+        const headers = getResolvedHeaders();
 
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/all`, {
           headers
@@ -142,9 +163,7 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
         onConfirm: async () => {
           setDeletingFileName(file.name);
           try {
-            const headers: Record<string, string> = {};
-            if (tenantId) headers['X-Tenant-ID'] = tenantId;
-            if (token) headers['Authorization'] = `Bearer ${token}`;
+            const headers = getResolvedHeaders();
 
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/${encodeURIComponent(file.name)}`, {
               method: 'DELETE',
@@ -250,13 +269,7 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
       const formData = new FormData();
       formData.append('file', fileOrBlob, customName || (fileOrBlob instanceof File ? fileOrBlob.name : 'upload.mp4'));
       try {
-        const headers: Record<string, string> = {};
-        if (tenantId) {
-          headers['X-Tenant-ID'] = tenantId;
-        }
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
-        }
+        const headers = getResolvedHeaders();
 
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/`, {
           method: 'POST',
@@ -283,13 +296,7 @@ const MediaPickerModal = forwardRef<HTMLDivElement, MediaPickerModalProps>(
       const formData = new FormData();
       formData.append('file', croppedBlob, 'picked_image.webp');
       try {
-        const headers: Record<string, string> = {};
-        if (tenantId) {
-          headers['X-Tenant-ID'] = tenantId;
-        }
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
-        }
+        const headers = getResolvedHeaders();
 
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/`, {
           method: 'POST',

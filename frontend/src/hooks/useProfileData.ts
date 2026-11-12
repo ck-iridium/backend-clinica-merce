@@ -66,10 +66,17 @@ export function useProfileData() {
         }
         setUser(session.user);
 
-        // Impersonación (Modo Soporte)
+        // Cargar perfil del usuario desde Supabase
         const isImpersonating = getCookie('is_impersonating') === 'true';
-        if (isImpersonating) {
-          const tenantName = getCookie('impersonate_tenant_name') || 'Clínica';
+        const { success, profile: profileData } = await getUserProfile(session.user.id);
+
+        if (success && profileData) {
+          setProfile(profileData);
+          setFullName(profileData.full_name || (isImpersonating ? 'Soporte Técnico' : ''));
+          setPendingAvatarUrl(profileData.avatar_url || null);
+          setReceiveEmailAppointments(profileData.receive_email_appointments ?? true);
+          setReceiveAgendaReminders(profileData.receive_agenda_reminders ?? true);
+        } else if (isImpersonating) {
           const mockProfile = {
             id: session.user.id,
             full_name: `Soporte Técnico`,
@@ -82,17 +89,6 @@ export function useProfileData() {
           setPendingAvatarUrl(null);
           setReceiveEmailAppointments(true);
           setReceiveAgendaReminders(true);
-          setLoading(false);
-          return;
-        }
-
-        const { success, profile: profileData } = await getUserProfile(session.user.id);
-        if (success && profileData) {
-          setProfile(profileData);
-          setFullName(profileData.full_name || '');
-          setPendingAvatarUrl(profileData.avatar_url || null);
-          setReceiveEmailAppointments(profileData.receive_email_appointments ?? true);
-          setReceiveAgendaReminders(profileData.receive_agenda_reminders ?? true);
         }
       } catch (err) {
         toast.error("Error al cargar el perfil");
@@ -344,6 +340,7 @@ export function useProfileData() {
     isDirty: fullName !== (profile?.full_name || '') || 
              pendingAvatarUrl !== (profile?.avatar_url || null) ||
              receiveEmailAppointments !== (profile?.receive_email_appointments ?? true) || 
-             receiveAgendaReminders !== (profile?.receive_agenda_reminders ?? true)
+             receiveAgendaReminders !== (profile?.receive_agenda_reminders ?? true),
+    resolvedTenantId: getCookie('impersonate_tenant_id') || getCookie('tenant_id') || ''
   };
 }

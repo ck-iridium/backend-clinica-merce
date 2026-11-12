@@ -102,6 +102,7 @@ export default function ProfilePage() {
           onImageSelected={data.handleMediaSelected}
           forceAspect={1}
           maxResolution={1024}
+          tenantId={data.resolvedTenantId}
         />
       )}
     </div>

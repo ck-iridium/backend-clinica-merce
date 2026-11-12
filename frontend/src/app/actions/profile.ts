@@ -201,6 +201,19 @@ export async function getUserProfile(userId: string, targetTenantId?: string) {
             await adminSupabase.from('profiles').upsert(autoProfile);
             return { success: true, profile: autoProfile };
           }
+
+          // 3. Si es Modo Soporte o Superadmin transversal, recuperar su perfil por userId
+          const { data: globalProfile } = await adminSupabase
+            .from('profiles')
+            .select('*')
+            .eq('id', userId)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (globalProfile) {
+            return { success: true, profile: globalProfile };
+          }
         }
       } catch (recoveryErr) {
         console.warn("[getUserProfile] Aviso en recuperación resiliente de perfil:", recoveryErr);
@@ -227,16 +240,33 @@ export async function updateUserProfile(userId: string, updates: any, targetTena
       tenantId = impersonateTenantId;
     }
 
-    let query = adminSupabase
-      .from('profiles')
-      .update(updates)
-      .eq('id', userId);
+    let error = null;
 
     if (tenantId && tenantId !== 'undefined') {
-      query = query.eq('tenant_id', tenantId);
-    }
+      const { data: updatedRows, error: updateErr } = await adminSupabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', userId)
+        .eq('tenant_id', tenantId)
+        .select('id');
 
-    const { error } = await query;
+      error = updateErr;
+
+      // Si no actualizó filas con ese tenant_id (típico del Superadmin en modo soporte), actualizar por id
+      if (!error && (!updatedRows || updatedRows.length === 0)) {
+        const fallbackRes = await adminSupabase
+          .from('profiles')
+          .update(updates)
+          .eq('id', userId);
+        error = fallbackRes.error;
+      }
+    } else {
+      const res = await adminSupabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', userId);
+      error = res.error;
+    }
 
     if (error) {
       console.error("Error actualizando perfil:", error);
