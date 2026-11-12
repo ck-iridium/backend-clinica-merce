@@ -12,6 +12,7 @@ import CopilotHeader from './CopilotHeader';
 import CopilotMessages from './CopilotMessages';
 import CopilotInputBar from './CopilotInputBar';
 import VoiceWaveVisualizer from './VoiceWaveVisualizer';
+import ChromaticOrb from './ChromaticOrb';
 import { useCopilotSpeech } from './useCopilotSpeech';
 import { useCopilotFiles } from './useCopilotFiles';
 import MediaPickerModal from '@/components/MediaPickerModal';
@@ -657,33 +658,23 @@ export default function AICopilotWidget() {
         </div>
       )}
 
-      {/* ── BURBUJA FLOTANTE (LANZADOR CIRCULAR WOW) ── */}
+      {/* ── BURBUJA FLOTANTE (ESFERA CROMÁTICA WOW) ── */}
       {!isOpen && (
         <button
           onClick={() => { setIsOpen(true); unlockAudioContext(); }}
-          className="h-16 w-16 max-sm:h-14 max-sm:w-14 rounded-full bg-gradient-to-br from-stone-900 via-stone-950 to-black text-white shadow-[0_10px_35px_rgba(0,0,0,0.35)] hover:shadow-[0_0_35px_rgba(212,175,55,0.45)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center relative border border-[#d4af37]/60 ring-2 ring-[#d4af37]/25 group select-none"
+          className="h-16 w-16 max-sm:h-14 max-sm:w-14 rounded-full bg-black/90 p-1 text-white shadow-[0_10px_35px_rgba(0,0,0,0.5)] hover:shadow-[0_0_35px_rgba(217,70,239,0.55)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center relative border border-white/20 ring-2 ring-purple-500/30 hover:ring-pink-500/50 group select-none"
           title="Co-Piloto AI"
           aria-label="Abrir Co-Piloto AI"
         >
-          {/* Halo ambiental externo pulsante */}
-          <span className="absolute -inset-1 rounded-full bg-gradient-to-tr from-[#d4af37]/40 via-amber-200/25 to-[#d4af37]/40 blur-sm opacity-70 group-hover:opacity-100 transition-opacity duration-500 animate-pulse pointer-events-none" />
+          {/* Halo ambiental externo pulsante en degradado aurora */}
+          <span className="absolute -inset-1 rounded-full bg-gradient-to-tr from-pink-500/40 via-purple-500/30 to-cyan-400/40 blur-md opacity-70 group-hover:opacity-100 transition-opacity duration-500 animate-pulse pointer-events-none" />
 
-          {/* Resplandor radial interno */}
-          <span className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.25)_0%,transparent_70%)] pointer-events-none" />
-
-          {/* Destello reflectante en hover */}
-          <span className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#d4af37]/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-
-          {/* Icono de IA de Lujo con micro-interacción */}
-          <Sparkles
-            size={26}
-            className="text-[#d4af37] relative z-10 drop-shadow-[0_0_10px_rgba(212,175,55,0.7)] group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 max-sm:w-5 max-sm:h-5"
-            strokeWidth={1.9}
-          />
+          {/* Esfera Cromática 3D en Movimiento Animado */}
+          <ChromaticOrb size="lg" className="w-full h-full" isSpeaking={isSpeaking} />
 
           {/* Tooltip flotante Quiet Luxury (Desktop) */}
-          <div className="absolute right-full mr-3.5 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-stone-950/95 backdrop-blur-md border border-[#d4af37]/40 text-stone-200 text-xs font-medium whitespace-nowrap shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 translate-x-2 group-hover:translate-x-0 hidden md:flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37] animate-ping" />
+          <div className="absolute right-full mr-3.5 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-stone-950/95 backdrop-blur-md border border-purple-500/40 text-stone-200 text-xs font-medium whitespace-nowrap shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 translate-x-2 group-hover:translate-x-0 hidden md:flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-ping" />
             <span>Co-Piloto AI</span>
           </div>
         </button>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 import { getUserRoleByEmail, getUserProfile } from '@/app/actions/profile';
 
 function getCookie(name: string): string | null {
@@ -16,82 +17,90 @@ export function useAuthRole() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Escuchar eventos en caliente de actualización de avatar o perfil
+    const onProfileUpdate = (e: any) => {
+      if (e.detail?.avatar_url !== undefined) {
+        setUserAvatar(e.detail.avatar_url || null);
+      }
+      if (e.detail?.full_name && getCookie('is_impersonating') !== 'true') {
+        setUserName(e.detail.full_name);
+      }
+    };
+    window.addEventListener('profile-updated', onProfileUpdate);
+
     const fetchAuthData = async () => {
       try {
-        // Impersonación (Modo Soporte)
         const isImpersonating = getCookie('is_impersonating') === 'true';
-        if (isImpersonating) {
-          const impersonateName = getCookie('impersonate_tenant_name') || 'Soporte';
-          setRole('administrador');
-          setUserName(`Modo Soporte: ${decodeURIComponent(impersonateName)}`);
+        const impersonateName = getCookie('impersonate_tenant_name') || 'Soporte';
 
-          // Obtener avatar en caché o del usuario
-          const userStr = localStorage.getItem('user');
-          if (userStr) {
-            try {
-              const u = JSON.parse(userStr);
-              if (u.avatar_url) setUserAvatar(u.avatar_url);
-            } catch {}
-          }
-          setLoading(false);
-          return;
-        }
-
+        let localUser: any = null;
+        let userId = '';
         const userStr = localStorage.getItem('user');
         if (userStr) {
-          const user = JSON.parse(userStr);
-          
-          // 1. Intentar obtener el nombre, rol y avatar del localStorage primero (caché instantánea)
-          if (user.full_name || user.name) {
-             setUserName(user.full_name || user.name);
-          }
-          if (user.role) {
-             setRole(user.role.toLowerCase());
-          }
-          if (user.avatar_url) {
-             setUserAvatar(user.avatar_url);
-          }
+          try {
+            localUser = JSON.parse(userStr);
+            userId = localUser.id || '';
+            if (localUser.avatar_url) setUserAvatar(localUser.avatar_url);
+            if (!isImpersonating) {
+              if (localUser.full_name || localUser.name) setUserName(localUser.full_name || localUser.name);
+              if (localUser.role) setRole(localUser.role.toLowerCase());
+            }
+          } catch {}
+        }
 
-          // 2. Obtener perfil completo de la DB para asegurar datos frescos (rol, nombre y avatar) según el tenant activo
-          const activeTenantId = getCookie('tenant_id') || undefined;
-          const profileRes = await getUserProfile(user.id, activeTenantId);
+        if (isImpersonating) {
+          setRole('administrador');
+          setUserName(`Modo Soporte: ${decodeURIComponent(impersonateName)}`);
+        }
+
+        // Si no teníamos ID en localStorage, obtenerlo de la sesión activa de Supabase
+        if (!userId) {
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user?.id) userId = session.user.id;
+          } catch {}
+        }
+
+        // Consultar perfil fresco desde la DB para obtener el avatar real
+        if (userId) {
+          const activeTenantId = getCookie('impersonate_tenant_id') || getCookie('tenant_id') || undefined;
+          const profileRes = await getUserProfile(userId, activeTenantId);
           
           if (profileRes.success && profileRes.profile) {
             const p = profileRes.profile;
-            // Si el estado no es 'Activo' (por ejemplo, sigue 'Pendiente'), no se conceden permisos en este negocio
-            if (p.status !== 'Activo' && p.status !== 'active') {
-              setRole(null);
-              setUserName(p.full_name || p.name || 'Usuario (Invitación Pendiente)');
-              setUserAvatar(null);
-              return;
+            const avatar = p.avatar_url || null;
+            if (avatar) {
+              setUserAvatar(avatar);
+              if (localUser) {
+                localStorage.setItem('user', JSON.stringify({ ...localUser, avatar_url: avatar }));
+              }
             }
 
-            const name = p.full_name || p.name || user.full_name || 'Usuario';
-            const r = p.role?.toLowerCase() || user.role?.toLowerCase() || 'admin';
-            const avatar = p.avatar_url || user.avatar_url || null;
-            
-            setUserName(name);
-            setRole(r);
-            setUserAvatar(avatar);
+            if (!isImpersonating) {
+              if (p.status !== 'Activo' && p.status !== 'active') {
+                setRole(null);
+                setUserName(p.full_name || p.name || 'Usuario (Invitación Pendiente)');
+                return;
+              }
 
-            // 3. Sincronizar localStorage si el nombre, rol o avatar ha cambiado
-            if (user.full_name !== name || user.role !== r || user.avatar_url !== avatar) {
-              localStorage.setItem('user', JSON.stringify({ ...user, full_name: name, role: r, avatar_url: avatar }));
+              const name = p.full_name || p.name || localUser?.full_name || 'Usuario';
+              const r = p.role?.toLowerCase() || localUser?.role?.toLowerCase() || 'admin';
+              setUserName(name);
+              setRole(r);
+
+              if (localUser) {
+                localStorage.setItem('user', JSON.stringify({ ...localUser, full_name: name, role: r, avatar_url: avatar }));
+              }
             }
-            return;
-          }
-
-          // Fallback de resiliencia: Si profileRes falló por cold-start pero localStorage tenía rol válido
-          if (user.role) {
-            setRole(user.role.toLowerCase());
-            setUserName(user.full_name || user.name || 'Administrador');
-            if (user.avatar_url) setUserAvatar(user.avatar_url);
             return;
           }
         }
-        setRole(null);
-        setUserName(null);
-        setUserAvatar(null);
+
+        // Fallbacks si no se pudo consultar el perfil
+        if (!isImpersonating && localUser?.role) {
+          setRole(localUser.role.toLowerCase());
+          setUserName(localUser.full_name || localUser.name || 'Administrador');
+        }
       } catch (err) {
         console.error("Error en useAuthRole:", err);
       } finally {
@@ -100,6 +109,10 @@ export function useAuthRole() {
     };
 
     fetchAuthData();
+
+    return () => {
+      window.removeEventListener('profile-updated', onProfileUpdate);
+    };
   }, []);
 
   return { role, userName, userAvatar, loading };

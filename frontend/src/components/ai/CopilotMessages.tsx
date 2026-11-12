@@ -2,6 +2,7 @@
 
 import React, { useState, RefObject } from 'react';
 import { Bot, User, ZoomIn, ExternalLink, X, Sparkles } from 'lucide-react';
+import ChromaticOrb from './ChromaticOrb';
 
 interface Message {
   role: 'user' | 'model';
@@ -93,43 +94,42 @@ export default function CopilotMessages({
           const isAI = msg.role === 'model';
           const { text, options, attachedImage } = parseMessage(msg.content);
 
+          const cleanDisplayName =
+            userName?.replace(/^Modo Soporte:\s*/i, '').trim() || 'Tú';
+          const initials =
+            cleanDisplayName
+              .split(/\s+/)
+              .filter(Boolean)
+              .slice(0, 2)
+              .map((part) => part[0]?.toUpperCase())
+              .join('') || 'TÚ';
+
           return (
             <div
               key={index}
               className={`flex gap-2.5 max-w-[88%] ${isAI ? 'self-start' : 'self-end ml-auto flex-row-reverse'} animate-in fade-in duration-200`}
             >
               {isAI ? (
-                /* Bot Avatar: Orbe de Inteligencia de Lujo */
-                <div
-                  className="w-10 h-10 rounded-full bg-gradient-to-tr from-stone-950 via-stone-900 to-[#1c1917] border border-[#d4af37]/60 flex items-center justify-center shrink-0 shadow-[0_2px_12px_rgba(212,175,55,0.25)] relative overflow-hidden mt-0.5 group"
-                  title="Co-Piloto AI"
-                >
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.3)_0%,transparent_70%)] opacity-80" />
-                  <Sparkles size={17} className="text-[#d4af37] relative z-10 drop-shadow-[0_0_6px_rgba(212,175,55,0.7)] group-hover:scale-110 transition-transform duration-300" strokeWidth={1.9} />
+                /* Bot Avatar: Esfera Cromática IA en Movimiento Animado (Agentic Orb) */
+                <div className="shrink-0 mt-0.5" title="Co-Piloto AI">
+                  <ChromaticOrb size="sm" />
                 </div>
               ) : (
-                /* User Avatar: Círculo de 40px con foto real del perfil o iniciales de lujo */
+                /* User Avatar: Círculo de 40px con foto real del perfil o iniciales */
                 <div
                   className="w-10 h-10 rounded-full border border-stone-200/90 shadow-sm shrink-0 mt-0.5 overflow-hidden ring-2 ring-stone-900/5 bg-stone-900 flex items-center justify-center relative select-none"
-                  title={userName || 'Tú'}
+                  title={cleanDisplayName}
                 >
                   {userAvatarUrl ? (
                     <img
                       src={userAvatarUrl}
-                      alt={userName || 'Avatar'}
+                      alt={cleanDisplayName}
                       className="w-full h-full object-cover rounded-full"
                     />
-                  ) : userName ? (
-                    <span className="text-[12px] font-serif font-medium text-amber-200/90 tracking-wider">
-                      {userName
-                        .trim()
-                        .split(/\s+/)
-                        .slice(0, 2)
-                        .map((part) => part[0]?.toUpperCase())
-                        .join('')}
-                    </span>
                   ) : (
-                    <User size={17} className="text-stone-300" />
+                    <span className="text-[12px] font-serif font-medium text-amber-200/90 tracking-wider">
+                      {initials}
+                    </span>
                   )}
                 </div>
               )}

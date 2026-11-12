@@ -11,8 +11,26 @@ interface UseCopilotSpeechOptions {
 // Persistent singletons to reuse across voice playbacks and bypass iOS Safari autoplay restrictions
 let persistentAudio: HTMLAudioElement | null = null;
 let persistentAudioContext: AudioContext | null = null;
+let persistentAnalyser: AnalyserNode | null = null;
 let activeSource: AudioBufferSourceNode | null = null;
 let activeUtterance: SpeechSynthesisUtterance | null = null;
+
+export const getPersistentAnalyser = (ctx?: AudioContext | null): AnalyserNode | null => {
+  if (typeof window === 'undefined') return null;
+  const audioCtx = ctx || persistentAudioContext;
+  if (!audioCtx) return null;
+  if (!persistentAnalyser) {
+    try {
+      persistentAnalyser = audioCtx.createAnalyser();
+      persistentAnalyser.fftSize = 64;
+      persistentAnalyser.smoothingTimeConstant = 0.8;
+    } catch (e) {
+      console.warn("No se pudo crear AnalyserNode:", e);
+      persistentAnalyser = null;
+    }
+  }
+  return persistentAnalyser;
+};
 
 const getPersistentAudio = () => {
   if (typeof window === 'undefined') return null;
@@ -179,6 +197,15 @@ export function useCopilotSpeech({ isMuted, voiceGender, audioLanguage }: UseCop
 
       utterance.onend = triggerCallback;
       utterance.onerror = triggerCallback;
+      utterance.onboundary = (e) => {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('copilot-voice-vibration', {
+              detail: { charIndex: e.charIndex, name: e.name },
+            })
+          );
+        }
+      };
 
       // Safety fallback in case onend doesn't fire
       const wordCount = text.split(/\s+/).length;
@@ -262,7 +289,17 @@ export function useCopilotSpeech({ isMuted, voiceGender, audioLanguage }: UseCop
           const playBuffer = (buffer: AudioBuffer) => {
             const source = ctx.createBufferSource();
             source.buffer = buffer;
-            source.connect(ctx.destination);
+            const analyser = getPersistentAnalyser(ctx);
+            if (analyser) {
+              try {
+                source.connect(analyser);
+                analyser.connect(ctx.destination);
+              } catch (e) {
+                source.connect(ctx.destination);
+              }
+            } else {
+              source.connect(ctx.destination);
+            }
             
             source.onended = () => {
               if (activeSource === source) {

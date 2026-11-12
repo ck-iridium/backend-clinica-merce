@@ -3,6 +3,7 @@
 import React from 'react';
 import { Sparkles, X, Volume2, VolumeX, RotateCcw, AudioLines, Infinity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import ChromaticOrb from './ChromaticOrb';
 
 interface CopilotHeaderProps {
   language: string;
@@ -42,9 +43,7 @@ export default function CopilotHeader({
       {/* Fila 1: Título y Cerrar */}
       <div className="px-5 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-300/40 flex items-center justify-center text-[#d4af37] shadow-xs">
-            <Sparkles size={17} className="animate-pulse" />
-          </div>
+          <ChromaticOrb size="md" />
           <div>
             <h3 className="font-serif text-[15px] font-semibold text-stone-900 tracking-wide leading-tight">
               Co-Piloto AI

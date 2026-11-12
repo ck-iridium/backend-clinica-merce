@@ -76,6 +76,17 @@ export function useProfileData() {
           setPendingAvatarUrl(profileData.avatar_url || null);
           setReceiveEmailAppointments(profileData.receive_email_appointments ?? true);
           setReceiveAgendaReminders(profileData.receive_agenda_reminders ?? true);
+
+          if (profileData.avatar_url) {
+            try {
+              const userStr = localStorage.getItem('user');
+              if (userStr) {
+                const u = JSON.parse(userStr);
+                localStorage.setItem('user', JSON.stringify({ ...u, avatar_url: profileData.avatar_url }));
+              }
+            } catch {}
+            window.dispatchEvent(new CustomEvent('profile-updated', { detail: { avatar_url: profileData.avatar_url } }));
+          }
         } else if (isImpersonating) {
           const mockProfile = {
             id: session.user.id,
@@ -328,6 +339,14 @@ export function useProfileData() {
             receive_email_appointments: receiveEmailAppointments,
             receive_agenda_reminders: receiveAgendaReminders
           });
+          try {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+              const u = JSON.parse(userStr);
+              localStorage.setItem('user', JSON.stringify({ ...u, avatar_url: pendingAvatarUrl, full_name: fullName }));
+            }
+          } catch {}
+          window.dispatchEvent(new CustomEvent('profile-updated', { detail: { avatar_url: pendingAvatarUrl, full_name: fullName } }));
         } else {
           toast.error(error || "No se pudieron guardar los cambios");
         }
