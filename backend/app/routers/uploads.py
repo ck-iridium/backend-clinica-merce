@@ -114,6 +114,16 @@ async def upload_image(file: UploadFile = File(...), db: Session = Depends(get_d
             file_options={"content-type": content_type, "upsert": "true"}
         )
         
+        # Guardar copia local para acceso inmediato del motor de IA multimodal
+        try:
+            uploads_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "uploads"))
+            os.makedirs(uploads_dir, exist_ok=True)
+            local_file_path = os.path.join(uploads_dir, filename)
+            with open(local_file_path, "wb") as f_local:
+                f_local.write(final_bytes)
+        except Exception as e_local:
+            pass
+
         # Obtener url pública
         public_url = supabase.storage.from_("media").get_public_url(filename)
 

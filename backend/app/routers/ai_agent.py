@@ -125,20 +125,59 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
 
         # Enviar mensaje del inquilino al cerebro (con soporte multimodal para imágenes/capturas adjuntas)
         message_payload = request.message
+        img_url = None
+        is_from_history = False
+
+        # 1. Buscar URL de imagen en el mensaje actual
         img_match = re.search(r"URL de la imagen:\s*(https?://[^\s\)]+)", request.message)
         if img_match:
             img_url = img_match.group(1).strip()
+        elif request.history:
+            # 2. Soporte multiturno: buscar imagen adjunta en los últimos mensajes de la conversación
+            for past_msg in reversed(request.history[-6:]):
+                past_match = re.search(r"URL de la imagen:\s*(https?://[^\s\)]+)", past_msg.content)
+                if past_match:
+                    img_url = past_match.group(1).strip()
+                    is_from_history = True
+                    break
+
+        if img_url:
+            pil_img = None
             try:
-                import urllib.request
                 import io
+                import os
+                import requests
                 from PIL import Image
-                req = urllib.request.Request(img_url, headers={"User-Agent": "ProBookia-AI/1.0"})
-                with urllib.request.urlopen(req, timeout=8) as resp:
-                    img_data = resp.read()
-                    pil_img = Image.open(io.BytesIO(img_data))
-                    message_payload = [request.message, pil_img]
+
+                # Intento 1: Cargar directamente desde el almacenamiento local si existe
+                filename = img_url.split('/')[-1].split('?')[0]
+                candidate_dirs = [
+                    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "uploads")),
+                    os.path.abspath("uploads"),
+                    os.path.abspath("backend/uploads"),
+                ]
+                for c_dir in candidate_dirs:
+                    c_path = os.path.join(c_dir, filename)
+                    if os.path.exists(c_path):
+                        try:
+                            pil_img = Image.open(c_path)
+                            break
+                        except Exception:
+                            pass
+
+                # Intento 2: Descargar de la URL pública de Supabase Storage
+                if not pil_img:
+                    resp = requests.get(img_url, timeout=10, headers={"User-Agent": "ProBookia-AI/1.0"})
+                    if resp.status_code == 200:
+                        pil_img = Image.open(io.BytesIO(resp.content))
+
+                if pil_img:
+                    prompt_text = request.message
+                    if is_from_history:
+                        prompt_text = f"{request.message}\n(Contexto visual: Se proporciona la captura/imagen compartida por el usuario en la conversación para tu análisis directo)"
+                    message_payload = [prompt_text, pil_img]
             except Exception as e_img:
-                logger.warning(f"No se pudo descargar la imagen para procesamiento multimodal en Gemini: {e_img}")
+                logger.warning(f"No se pudo cargar la imagen para procesamiento multimodal en Gemini: {e_img}")
                 message_payload = request.message
 
         response_brain = chat.send_message(message_payload)
