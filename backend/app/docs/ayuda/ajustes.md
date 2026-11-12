@@ -6,6 +6,7 @@ Este manual sirve como la única fuente de verdad (RAG) para guiar al usuario en
 El panel de Ajustes (`/dashboard/settings`) centraliza toda la configuración administrativa, identidad corporativa y pasarelas de pago de la clínica:
 - **General:** Nombre de la clínica, NIF, datos de contacto (teléfono, email), descripción legal y URLs de redes sociales y mapas.
 - **Identidad (Branding):** Carga del logo de la aplicación, favicon, selector de tipografías, selector de paletas de colores corporativos y redondeado de bordes.
+- **Contenido & Redacción (Traducciones Multi-idioma):** Gestión de traducciones en Español, Inglés y Francés de todos los servicios y categorías, Copywriter IA multi-idioma simultáneo y salud del catálogo (`tab=content`). *IMPORTANTE: Las traducciones del catálogo NO están en Información General, sino exclusivamente aquí.*
 - **Plantillas de Consentimiento:** Creación y modificación del redactado legal de los consentimientos informados que firmarán digitalmente los clientes.
 - **Contabilidad y Facturación:** Configuración del prefijo de facturación, el siguiente número consecutivo a emitir, el tipo de IVA por defecto, y la subida de la firma y el logotipo específicos para los folios de factura A4.
 - **Pasarela de Pagos (Stripe):** Conexión con Stripe para habilitar cobros en línea de fianzas en reservas web y establecer el margen de cancelación permitida.
@@ -124,6 +125,17 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL `/dashboa
 - **Añadir Ausencia (Vacaciones y Festivos de Larga Duración):** `id="agenda-add-absence-btn"` (Abre el modal para bloquear días completos por vacaciones, Navidad, verano, etc.)
 - Eliminar Ausencia: `id="agenda-delete-absence-btn-[id]"` (donde `[id]` es el id del bloqueo)
 - Margen de Reserva Online (en horas): `id="agenda-booking-margin-hours"`
+
+### Pestaña: Contenido & Redacción Comercial (Traducciones y Copywriter IA)
+*Esta pestaña (`tab=content`) es donde se gestionan las traducciones y redacción del catálogo completo. La IA redacta y sincroniza automáticamente las fichas en Español, Inglés y Francés. (IMPORTANTE: Las traducciones del catálogo NO están en Información General, sino aquí).*
+- Acceso desde Ajustes: `id="settings-tab-btn-content"`
+- Selector de Idioma de visualización: `id="content-tab-language-selector"`
+  - Botón Español: `id="content-tab-lang-btn-es"`
+  - Botón Inglés: `id="content-tab-lang-btn-en"`
+  - Botón Francés: `id="content-tab-lang-btn-fr"`
+- Re-escanear catálogo: `id="content-tab-rescan-btn"`
+- Redactar pendientes con IA: `id="content-tab-generate-btn"`
+- Buscar servicios o categorías: `id="content-filter-search-input"`
 
 ### Pestaña: Diseño de Reservas (Booking UI / Layout)
 *Esta pestaña (`tab=booking_ui`) permite configurar de manera visual cómo se listarán los tratamientos en el flujo público de reserva de citas para los clientes (Grid o Lista).*

@@ -114,12 +114,27 @@ def consultar_manual_ayuda(tema: str) -> str:
         "duracion-manual": "agenda",
         "alargar-cita": "agenda",
         "tiempo-cita": "agenda",
+        # Contenido, Redacción y Traducciones Multi-idioma
+        "traducciones": "contenido",
+        "traduccion": "contenido",
+        "traducción": "contenido",
+        "traducir": "contenido",
+        "traducciones-catalogo": "contenido",
+        "idiomas": "contenido",
+        "idioma": "contenido",
+        "contenido": "contenido",
+        "redaccion": "contenido",
+        "redacción": "contenido",
+        "copywriter": "contenido",
+        "textos": "contenido",
+        "descripciones": "contenido",
+        "catalogo-idiomas": "contenido",
     }
     
     if tema_clean in sinonimos:
         tema_clean = sinonimos[tema_clean]
  
-    temas_validos = ["agenda", "pos", "clientes", "facturas", "bonos", "ajustes", "cms", "gestion"]
+    temas_validos = ["agenda", "pos", "clientes", "facturas", "bonos", "ajustes", "cms", "gestion", "contenido"]
     if tema_clean not in temas_validos:
         return (
             f"El tema '{tema}' no es válido. Los temas disponibles en los manuales de ayuda son: "

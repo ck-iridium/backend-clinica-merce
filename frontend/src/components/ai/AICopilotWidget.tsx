@@ -72,7 +72,7 @@ export default function AICopilotWidget() {
   const {
     attachedFile, setAttachedFile,
     isUploading, fileInputRef,
-    handleFileChange, canAttachFiles,
+    handleFileChange, handlePaste, canAttachFiles,
   } = useCopilotFiles({ language, planType, hasOwnKey });
 
   const handleMediaSelected = async (url: string) => {
@@ -539,6 +539,7 @@ export default function AICopilotWidget() {
         {isOpen && (
           <div
             style={{ width: `${chatWidth}px`, height: `${chatHeight}px` }}
+            onPaste={handlePaste}
             className={`bg-white/95 backdrop-blur-xl border border-stone-200/80 rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden relative select-none mr-4 md:mr-0 max-sm:!w-full max-sm:!h-full max-sm:!max-w-none max-sm:!max-h-none max-sm:!mr-0 max-sm:!rounded-none max-sm:!border-none max-sm:!h-[100dvh] ${
               isResizingActive ? 'transition-none pointer-events-auto' : 'transition-all duration-300 ease-out animate-in fade-in slide-in-from-bottom-6'
             }`}
@@ -594,6 +595,7 @@ export default function AICopilotWidget() {
             onInputChange={setInput}
             onSend={handleSend}
             onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
             isLoading={isLoading}
             isUploading={isUploading}
             attachedFile={attachedFile}

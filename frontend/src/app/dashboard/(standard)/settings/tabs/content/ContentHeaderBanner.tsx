@@ -80,12 +80,13 @@ export default function ContentHeaderBanner({
               <Globe2 size={14} className="text-stone-400" />
               <span>Ver en:</span>
             </div>
-            <div className="flex items-center gap-1 p-1 bg-stone-100/90 rounded-2xl border border-stone-200/80 shadow-inner w-full sm:w-auto justify-center">
+            <div id="content-tab-language-selector" className="flex items-center gap-1 p-1 bg-stone-100/90 rounded-2xl border border-stone-200/80 shadow-inner w-full sm:w-auto justify-center">
               {LANGUAGES.map((lang) => {
                 const isSelected = selectedLanguage === lang.code;
                 return (
                   <button
                     key={lang.code}
+                    id={`content-tab-lang-btn-${lang.code}`}
                     type="button"
                     onClick={() => onSelectLanguage(lang.code)}
                     disabled={loading || isGenerating}
@@ -125,6 +126,7 @@ export default function ContentHeaderBanner({
           {/* Grupo de Acciones: Re-escanear + Botón Dual */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto shrink-0">
             <Button
+              id="content-tab-rescan-btn"
               variant="outline"
               size="default"
               onClick={onRescan}
@@ -138,6 +140,7 @@ export default function ContentHeaderBanner({
             {/* Botón Dual (Split Button / Dropdown) */}
             <div className="inline-flex rounded-xl shadow-[0_4px_16px_-4px_rgba(212,175,55,0.35)] shrink-0">
               <Button
+                id="content-tab-generate-btn"
                 variant="luxury"
                 size="default"
                 onClick={() => onGenerate('pending')}

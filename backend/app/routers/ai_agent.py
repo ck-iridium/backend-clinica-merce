@@ -123,8 +123,25 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
         # Iniciar sesión de chat con resolución automática de llamadas a funciones
         chat = model_brain.start_chat(history=history_parts, enable_automatic_function_calling=True)
 
-        # Enviar mensaje del inquilino al cerebro
-        response_brain = chat.send_message(request.message)
+        # Enviar mensaje del inquilino al cerebro (con soporte multimodal para imágenes/capturas adjuntas)
+        message_payload = request.message
+        img_match = re.search(r"URL de la imagen:\s*(https?://[^\s\)]+)", request.message)
+        if img_match:
+            img_url = img_match.group(1).strip()
+            try:
+                import urllib.request
+                import io
+                from PIL import Image
+                req = urllib.request.Request(img_url, headers={"User-Agent": "ProBookia-AI/1.0"})
+                with urllib.request.urlopen(req, timeout=8) as resp:
+                    img_data = resp.read()
+                    pil_img = Image.open(io.BytesIO(img_data))
+                    message_payload = [request.message, pil_img]
+            except Exception as e_img:
+                logger.warning(f"No se pudo descargar la imagen para procesamiento multimodal en Gemini: {e_img}")
+                message_payload = request.message
+
+        response_brain = chat.send_message(message_payload)
         brain_text = response_brain.text.strip()
 
         # Escribir log local de auditoria de chat

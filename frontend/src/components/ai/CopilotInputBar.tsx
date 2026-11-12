@@ -12,6 +12,7 @@ interface CopilotInputBarProps {
   onInputChange: (value: string) => void;
   onSend: () => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+  onPaste?: (e: React.ClipboardEvent) => void;
   isLoading: boolean;
   isUploading: boolean;
   // Adjuntos
@@ -35,6 +36,7 @@ export default function CopilotInputBar({
   onInputChange,
   onSend,
   onKeyDown,
+  onPaste,
   isLoading,
   isUploading,
   attachedFile,
@@ -119,14 +121,24 @@ export default function CopilotInputBar({
       />
 
       {/* Cápsula Unificada de Entrada */}
-      <div className="bg-stone-50 hover:bg-stone-50/80 border border-stone-200/80 focus-within:bg-white focus-within:border-[#d4af37] focus-within:ring-2 focus-within:ring-[#d4af37]/15 rounded-2xl p-2.5 transition-all flex flex-col gap-2 shadow-xs">
+      <div
+        onPaste={onPaste}
+        className="bg-stone-50 hover:bg-stone-50/80 border border-stone-200/80 focus-within:bg-white focus-within:border-[#d4af37] focus-within:ring-2 focus-within:ring-[#d4af37]/15 rounded-2xl p-2.5 transition-all flex flex-col gap-2 shadow-xs"
+      >
         <textarea
           value={input}
           onChange={(e) => onInputChange(e.target.value)}
           onKeyDown={onKeyDown}
+          onPaste={onPaste}
           disabled={isLoading || isUploading}
           rows={2}
-          placeholder={language === 'fr' ? 'Écrire un message...' : language === 'en' ? 'Type a message...' : 'Escribe tu mensaje...'}
+          placeholder={
+            language === 'fr'
+              ? 'Écrire un message ou coller une capture (Ctrl+V)...'
+              : language === 'en'
+                ? 'Type a message or paste a screenshot (Ctrl+V)...'
+                : 'Escribe tu mensaje o pega una captura (Ctrl+V)...'
+          }
           className="w-full bg-transparent border-none text-[12.5px] text-stone-800 placeholder-stone-400 focus:outline-none resize-none leading-relaxed min-h-[38px] max-h-28 overflow-y-auto px-1 py-0.5"
         />
 

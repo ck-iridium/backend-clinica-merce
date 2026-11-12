@@ -102,11 +102,12 @@ export default function ContentFilterBar({
         <div className="relative w-full sm:w-72">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
           <input
+            id="content-filter-search-input"
             type="text"
             placeholder="Buscar por nombre o categoría..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-8.5 pr-8 py-2 rounded-xl bg-stone-50/70 border border-stone-200/80 text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] transition-all"
+            className="w-full pl-9 pr-8 py-2 rounded-xl bg-stone-50/70 border border-stone-200/80 text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] transition-all"
           />
           {searchQuery && (
             <button
