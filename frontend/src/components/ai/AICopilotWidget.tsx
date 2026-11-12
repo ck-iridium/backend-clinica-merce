@@ -207,6 +207,23 @@ export default function AICopilotWidget() {
     fetchPlanAndTrial();
   }, []);
 
+  // ── Sincronizar estado abierto con la UI global (ocultar banners obstructivos en móvil) ──
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('copilot-open-change', { detail: { isOpen } }));
+      if (isOpen) {
+        document.body.setAttribute('data-copilot-open', 'true');
+      } else {
+        document.body.removeAttribute('data-copilot-open');
+      }
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        document.body.removeAttribute('data-copilot-open');
+      }
+    };
+  }, [isOpen]);
+
   // ── Listener de cuota (CustomEvent desde CopilotHeader) ───────────────────
   useEffect(() => {
     const handler = (e: Event) => {
@@ -531,7 +548,7 @@ export default function AICopilotWidget() {
 
       <div className={
         isOpen
-          ? 'fixed bottom-6 right-6 z-30 flex flex-col items-end gap-3 font-sans transition-all duration-300 max-sm:!fixed max-sm:!inset-0 max-sm:!w-full max-sm:!h-full max-sm:!p-0 max-sm:!m-0 max-sm:!z-[80]'
+          ? 'fixed bottom-6 right-6 z-30 flex flex-col items-end gap-3 font-sans transition-all duration-300 max-sm:!fixed max-sm:!inset-0 max-sm:!w-full max-sm:!h-full max-sm:!p-0 max-sm:!m-0 max-sm:!z-[100000]'
           : 'fixed bottom-[110px] md:bottom-6 right-0 md:right-6 z-30 flex flex-col items-end gap-3 font-sans transition-all duration-300'
       }>
 

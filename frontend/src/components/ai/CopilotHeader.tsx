@@ -38,7 +38,7 @@ export default function CopilotHeader({
   onUpgrade,
 }: CopilotHeaderProps) {
   return (
-    <div className="bg-white/95 backdrop-blur-md border-b border-stone-200/70 shrink-0 flex flex-col">
+    <div className="bg-white/95 backdrop-blur-md border-b border-stone-200/70 shrink-0 flex flex-col max-sm:pt-safe">
       {/* Fila 1: Título y Cerrar */}
       <div className="px-5 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-3">

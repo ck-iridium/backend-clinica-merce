@@ -207,3 +207,11 @@
     padding: 0.5rem !important;
   }
 }
+
+/* ─── Ocultar ImpersonationBanner en móvil cuando el Co-Piloto AI está abierto ─── */
+@media (max-width: 640px) {
+  body[data-copilot-open="true"] #impersonation-banner {
+    display: none !important;
+  }
+}
+

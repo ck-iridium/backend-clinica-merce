@@ -14,6 +14,7 @@ function getCookie(name: string): string | null {
 export default function ImpersonationBanner() {
   const [active, setActive] = useState(false);
   const [name, setName] = useState('');
+  const [isCopilotOpen, setIsCopilotOpen] = useState(false);
 
   useEffect(() => {
     const isImpersonating = getCookie('is_impersonating') === 'true';
@@ -22,6 +23,16 @@ export default function ImpersonationBanner() {
       const tenantName = getCookie('impersonate_tenant_name') || 'Clínica';
       setName(decodeURIComponent(tenantName));
     }
+
+    const handleCopilotChange = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      setIsCopilotOpen(Boolean(customEvent.detail?.isOpen));
+    };
+
+    window.addEventListener('copilot-open-change', handleCopilotChange);
+    return () => {
+      window.removeEventListener('copilot-open-change', handleCopilotChange);
+    };
   }, []);
 
   const handleExit = () => {
@@ -40,7 +51,12 @@ export default function ImpersonationBanner() {
   if (!active) return null;
 
   return (
-    <div className="w-full bg-[#1c1917] text-white border-b border-stone-850 py-3.5 px-6 flex justify-between items-center transition-all duration-300 animate-in slide-in-from-top z-[9999] sticky top-0">
+    <div
+      id="impersonation-banner"
+      className={`w-full bg-[#1c1917] text-white border-b border-stone-850 py-3.5 px-6 flex justify-between items-center transition-all duration-300 animate-in slide-in-from-top z-[9999] sticky top-0 ${
+        isCopilotOpen ? 'max-sm:hidden' : ''
+      }`}
+    >
       <div className="flex items-center gap-2.5">
         <div className="w-2 h-2 bg-[#d4af37] rounded-full animate-ping shrink-0" />
         <div className="flex flex-wrap items-center gap-2 text-xs font-sans text-stone-200">
