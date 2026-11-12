@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 interface UseCopilotSpeechOptions {
   isMuted: boolean;
@@ -58,7 +58,41 @@ function base64ToArrayBuffer(base64: string): ArrayBuffer {
 }
 
 export function useCopilotSpeech({ isMuted, voiceGender, audioLanguage }: UseCopilotSpeechOptions) {
-  
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  // Detiene inmediatamente cualquier locución activa (Web Audio, SpeechSynthesis o HTMLAudio)
+  const stopSpeaking = useCallback(() => {
+    setIsSpeaking(false);
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch (e) {}
+    }
+    if (activeUtterance) {
+      activeUtterance = null;
+    }
+    if (activeSource) {
+      try {
+        activeSource.stop();
+      } catch (e) {}
+      activeSource = null;
+    }
+    const audio = getPersistentAudio();
+    if (audio) {
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+      } catch (e) {}
+    }
+  }, []);
+
+  // Si se silencia mientras habla, cancelar inmediatamente
+  useEffect(() => {
+    if (isMuted && isSpeaking) {
+      stopSpeaking();
+    }
+  }, [isMuted, isSpeaking, stopSpeaking]);
+
   // Unlocks Web Audio context, SpeechSynthesis, and HTML5 Audio on user interaction gestures
   const unlockAudioContext = useCallback(() => {
     if (isMuted || typeof window === 'undefined') return;
@@ -90,6 +124,7 @@ export function useCopilotSpeech({ isMuted, voiceGender, audioLanguage }: UseCop
 
   const fallbackSpeak = useCallback((text: string, onEndCallback?: () => void) => {
     if (isMuted || typeof window === 'undefined' || !window.speechSynthesis) {
+      setIsSpeaking(false);
       if (onEndCallback) onEndCallback();
       return;
     }
@@ -134,6 +169,7 @@ export function useCopilotSpeech({ isMuted, voiceGender, audioLanguage }: UseCop
       const triggerCallback = () => {
         if (!called) {
           called = true;
+          setIsSpeaking(false);
           if (activeUtterance === utterance) {
             activeUtterance = null;
           }
@@ -149,9 +185,11 @@ export function useCopilotSpeech({ isMuted, voiceGender, audioLanguage }: UseCop
       const backupDelay = Math.max(2000, wordCount * 180 + 1000);
       setTimeout(triggerCallback, backupDelay);
 
+      setIsSpeaking(true);
       window.speechSynthesis.speak(utterance);
     } catch (e) {
       console.warn('Speech synthesis fail:', e);
+      setIsSpeaking(false);
       if (onEndCallback) onEndCallback();
     }
   }, [isMuted, voiceGender, audioLanguage]);
@@ -159,6 +197,7 @@ export function useCopilotSpeech({ isMuted, voiceGender, audioLanguage }: UseCop
   // Plays Gemini's native base64 audio response using the best available unlocked channel
   const speakText = useCallback((text: string, audioBase64?: string | null, onEndCallback?: () => void) => {
     if (isMuted || typeof window === 'undefined') {
+      setIsSpeaking(false);
       if (onEndCallback) onEndCallback();
       return;
     }
@@ -184,6 +223,8 @@ export function useCopilotSpeech({ isMuted, voiceGender, audioLanguage }: UseCop
       } catch (e) {}
     }
 
+    setIsSpeaking(true);
+
     if (audioBase64) {
       // Helper function to fallback to HTML5 Audio if Web Audio API fails
       const playViaHTMLAudio = () => {
@@ -191,6 +232,7 @@ export function useCopilotSpeech({ isMuted, voiceGender, audioLanguage }: UseCop
           if (audio) {
             audio.src = "data:audio/mp3;base64," + audioBase64;
             audio.onended = () => {
+              setIsSpeaking(false);
               if (onEndCallback) onEndCallback();
             };
             audio.onerror = (e) => {
@@ -226,6 +268,7 @@ export function useCopilotSpeech({ isMuted, voiceGender, audioLanguage }: UseCop
               if (activeSource === source) {
                 activeSource = null;
               }
+              setIsSpeaking(false);
               if (onEndCallback) onEndCallback();
             };
             
@@ -276,5 +319,5 @@ export function useCopilotSpeech({ isMuted, voiceGender, audioLanguage }: UseCop
     fallbackSpeak(text, onEndCallback);
   }, [isMuted, fallbackSpeak]);
 
-  return { speakText, unlockAudioContext };
+  return { speakText, stopSpeaking, unlockAudioContext, isSpeaking };
 }

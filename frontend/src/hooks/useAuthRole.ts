@@ -12,6 +12,7 @@ function getCookie(name: string): string | null {
 export function useAuthRole() {
   const [role, setRole] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,6 +24,15 @@ export function useAuthRole() {
           const impersonateName = getCookie('impersonate_tenant_name') || 'Soporte';
           setRole('administrador');
           setUserName(`Modo Soporte: ${decodeURIComponent(impersonateName)}`);
+
+          // Obtener avatar en caché o del usuario
+          const userStr = localStorage.getItem('user');
+          if (userStr) {
+            try {
+              const u = JSON.parse(userStr);
+              if (u.avatar_url) setUserAvatar(u.avatar_url);
+            } catch {}
+          }
           setLoading(false);
           return;
         }
@@ -31,15 +41,18 @@ export function useAuthRole() {
         if (userStr) {
           const user = JSON.parse(userStr);
           
-          // 1. Intentar obtener el nombre y rol del localStorage primero (caché instantánea)
+          // 1. Intentar obtener el nombre, rol y avatar del localStorage primero (caché instantánea)
           if (user.full_name || user.name) {
              setUserName(user.full_name || user.name);
           }
           if (user.role) {
              setRole(user.role.toLowerCase());
           }
+          if (user.avatar_url) {
+             setUserAvatar(user.avatar_url);
+          }
 
-          // 2. Obtener perfil completo de la DB para asegurar datos frescos (rol y nombre) según el tenant activo
+          // 2. Obtener perfil completo de la DB para asegurar datos frescos (rol, nombre y avatar) según el tenant activo
           const activeTenantId = getCookie('tenant_id') || undefined;
           const profileRes = await getUserProfile(user.id, activeTenantId);
           
@@ -49,18 +62,21 @@ export function useAuthRole() {
             if (p.status !== 'Activo' && p.status !== 'active') {
               setRole(null);
               setUserName(p.full_name || p.name || 'Usuario (Invitación Pendiente)');
+              setUserAvatar(null);
               return;
             }
 
             const name = p.full_name || p.name || user.full_name || 'Usuario';
             const r = p.role?.toLowerCase() || user.role?.toLowerCase() || 'admin';
+            const avatar = p.avatar_url || user.avatar_url || null;
             
             setUserName(name);
             setRole(r);
+            setUserAvatar(avatar);
 
-            // 3. Sincronizar localStorage si el nombre o rol ha cambiado
-            if (user.full_name !== name || user.role !== r) {
-              localStorage.setItem('user', JSON.stringify({ ...user, full_name: name, role: r }));
+            // 3. Sincronizar localStorage si el nombre, rol o avatar ha cambiado
+            if (user.full_name !== name || user.role !== r || user.avatar_url !== avatar) {
+              localStorage.setItem('user', JSON.stringify({ ...user, full_name: name, role: r, avatar_url: avatar }));
             }
             return;
           }
@@ -69,11 +85,13 @@ export function useAuthRole() {
           if (user.role) {
             setRole(user.role.toLowerCase());
             setUserName(user.full_name || user.name || 'Administrador');
+            if (user.avatar_url) setUserAvatar(user.avatar_url);
             return;
           }
         }
         setRole(null);
         setUserName(null);
+        setUserAvatar(null);
       } catch (err) {
         console.error("Error en useAuthRole:", err);
       } finally {
@@ -84,5 +102,5 @@ export function useAuthRole() {
     fetchAuthData();
   }, []);
 
-  return { role, userName, loading };
+  return { role, userName, userAvatar, loading };
 }

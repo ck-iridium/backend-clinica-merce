@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, RefObject } from 'react';
-import { Bot, User, ZoomIn, ExternalLink, X } from 'lucide-react';
+import { Bot, User, ZoomIn, ExternalLink, X, Sparkles } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'model';
@@ -13,6 +13,8 @@ interface CopilotMessagesProps {
   isLoading: boolean;
   messagesEndRef: RefObject<HTMLDivElement>;
   onSendMessage?: (text: string) => void;
+  userAvatarUrl?: string | null;
+  userName?: string | null;
 }
 
 interface ParsedMessageResult {
@@ -24,7 +26,14 @@ interface ParsedMessageResult {
   } | null;
 }
 
-export default function CopilotMessages({ messages, isLoading, messagesEndRef, onSendMessage }: CopilotMessagesProps) {
+export default function CopilotMessages({
+  messages,
+  isLoading,
+  messagesEndRef,
+  onSendMessage,
+  userAvatarUrl,
+  userName,
+}: CopilotMessagesProps) {
   const [zoomImageUrl, setZoomImageUrl] = useState<string | null>(null);
   const [zoomImageName, setZoomImageName] = useState<string>('');
 
@@ -90,12 +99,38 @@ export default function CopilotMessages({ messages, isLoading, messagesEndRef, o
               className={`flex gap-2.5 max-w-[88%] ${isAI ? 'self-start' : 'self-end ml-auto flex-row-reverse'} animate-in fade-in duration-200`}
             >
               {isAI ? (
-                <div className="w-8 h-8 rounded-xl bg-white border border-amber-300/40 flex items-center justify-center text-[#d4af37] shrink-0 shadow-xs mt-0.5">
-                  <Bot size={16} />
+                /* Bot Avatar: Orbe de Inteligencia de Lujo */
+                <div
+                  className="w-10 h-10 rounded-full bg-gradient-to-tr from-stone-950 via-stone-900 to-[#1c1917] border border-[#d4af37]/60 flex items-center justify-center shrink-0 shadow-[0_2px_12px_rgba(212,175,55,0.25)] relative overflow-hidden mt-0.5 group"
+                  title="Co-Piloto AI"
+                >
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.3)_0%,transparent_70%)] opacity-80" />
+                  <Sparkles size={17} className="text-[#d4af37] relative z-10 drop-shadow-[0_0_6px_rgba(212,175,55,0.7)] group-hover:scale-110 transition-transform duration-300" strokeWidth={1.9} />
                 </div>
               ) : (
-                <div className="w-8 h-8 rounded-xl bg-stone-900 border border-stone-800 flex items-center justify-center text-white shrink-0 shadow-xs mt-0.5">
-                  <User size={15} />
+                /* User Avatar: Círculo de 40px con foto real del perfil o iniciales de lujo */
+                <div
+                  className="w-10 h-10 rounded-full border border-stone-200/90 shadow-sm shrink-0 mt-0.5 overflow-hidden ring-2 ring-stone-900/5 bg-stone-900 flex items-center justify-center relative select-none"
+                  title={userName || 'Tú'}
+                >
+                  {userAvatarUrl ? (
+                    <img
+                      src={userAvatarUrl}
+                      alt={userName || 'Avatar'}
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  ) : userName ? (
+                    <span className="text-[12px] font-serif font-medium text-amber-200/90 tracking-wider">
+                      {userName
+                        .trim()
+                        .split(/\s+/)
+                        .slice(0, 2)
+                        .map((part) => part[0]?.toUpperCase())
+                        .join('')}
+                    </span>
+                  ) : (
+                    <User size={17} className="text-stone-300" />
+                  )}
                 </div>
               )}
 

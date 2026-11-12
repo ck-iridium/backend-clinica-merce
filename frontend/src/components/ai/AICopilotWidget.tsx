@@ -11,6 +11,7 @@ import { useAuthRole } from '@/hooks/useAuthRole';
 import CopilotHeader from './CopilotHeader';
 import CopilotMessages from './CopilotMessages';
 import CopilotInputBar from './CopilotInputBar';
+import VoiceWaveVisualizer from './VoiceWaveVisualizer';
 import { useCopilotSpeech } from './useCopilotSpeech';
 import { useCopilotFiles } from './useCopilotFiles';
 import MediaPickerModal from '@/components/MediaPickerModal';
@@ -33,7 +34,7 @@ export default function AICopilotWidget() {
   const router = useRouter();
   const pathname = usePathname();
   const { language, t } = useLanguage();
-  const { role, userName: authUserName, loading: loadingRole } = useAuthRole();
+  const { role, userName: authUserName, userAvatar, loading: loadingRole } = useAuthRole();
   const firstName = authUserName ? authUserName.trim().split(' ')[0] : '';
 
   // ── Estado de UI ──────────────────────────────────────────────────────────
@@ -68,7 +69,7 @@ export default function AICopilotWidget() {
   const audioLanguage = language === 'fr' ? 'fr-FR' : language === 'en' ? 'en-US' : 'es-ES';
 
   // ── Custom Hooks ──────────────────────────────────────────────────────────
-  const { speakText, unlockAudioContext } = useCopilotSpeech({ isMuted, voiceGender, audioLanguage });
+  const { speakText, stopSpeaking, unlockAudioContext, isSpeaking } = useCopilotSpeech({ isMuted, voiceGender, audioLanguage });
   const {
     attachedFile, setAttachedFile,
     isUploading, fileInputRef,
@@ -354,6 +355,7 @@ export default function AICopilotWidget() {
   // ── Limpiar historial ─────────────────────────────────────────────────────
   const handleClearHistory = () => {
     try {
+      stopSpeaking();
       sessionStorage.removeItem('probookia_copilot_history');
       setMessages([{ role: 'model', content: getWelcomeMessage() }]);
       toast.success(
@@ -377,6 +379,7 @@ export default function AICopilotWidget() {
 
   // ── Enviar Mensaje ────────────────────────────────────────────────────────
   const handleSend = async (textToSend?: string) => {
+    stopSpeaking();
     unlockAudioContext();
     let queryText = textToSend || input.trim();
     if (!queryText && !attachedFile && !textToSend) return;
@@ -549,7 +552,7 @@ export default function AICopilotWidget() {
       <div className={
         isOpen
           ? 'fixed bottom-6 right-6 z-30 flex flex-col items-end gap-3 font-sans transition-all duration-300 max-sm:!fixed max-sm:!inset-0 max-sm:!w-full max-sm:!h-full max-sm:!p-0 max-sm:!m-0 max-sm:!z-[100000]'
-          : 'fixed bottom-[110px] md:bottom-6 right-0 md:right-6 z-30 flex flex-col items-end gap-3 font-sans transition-all duration-300'
+          : 'fixed bottom-[96px] md:bottom-6 right-4 md:right-6 z-30 flex flex-col items-end gap-3 font-sans transition-all duration-300 pointer-events-auto'
       }>
 
         {/* ── PANEL ABIERTO ── */}
@@ -593,9 +596,16 @@ export default function AICopilotWidget() {
             isMuted={isMuted}
             onToggleMute={() => setIsMuted(!isMuted)}
             onClearHistory={handleClearHistory}
-            onClose={() => setIsOpen(false)}
+            onClose={() => { setIsOpen(false); stopSpeaking(); }}
             isTrialExhausted={isTrialExhausted}
-            onUpgrade={() => { setIsOpen(false); router.push('/dashboard/settings?tab=billing'); }}
+            onUpgrade={() => { setIsOpen(false); stopSpeaking(); router.push('/dashboard/settings?tab=billing'); }}
+          />
+
+          {/* Visualizador de Ondas de Voz ("Voice Waves" al hablar el agente) */}
+          <VoiceWaveVisualizer
+            isSpeaking={isSpeaking}
+            onStop={stopSpeaking}
+            language={language}
           />
 
           {/* Historial de Mensajes */}
@@ -604,6 +614,8 @@ export default function AICopilotWidget() {
             isLoading={isLoading}
             messagesEndRef={messagesEndRef}
             onSendMessage={handleSend}
+            userAvatarUrl={userAvatar}
+            userName={authUserName}
           />
 
           {/* Barra de Entrada */}
@@ -645,15 +657,35 @@ export default function AICopilotWidget() {
         </div>
       )}
 
-      {/* ── BURBUJA FLOTANTE ── */}
+      {/* ── BURBUJA FLOTANTE (LANZADOR CIRCULAR WOW) ── */}
       {!isOpen && (
         <button
           onClick={() => { setIsOpen(true); unlockAudioContext(); }}
-          className="h-14 w-14 rounded-2xl bg-stone-900 text-white shadow-[0_10px_30px_rgba(0,0,0,0.15)] hover:shadow-[0_15px_35px_rgba(212,175,55,0.25)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center relative border border-[#d4af37]/40 z-10 group overflow-hidden hover:bg-stone-800 max-md:translate-x-[35%] max-md:hover:translate-x-0 max-md:rounded-l-2xl max-md:rounded-r-none"
+          className="h-16 w-16 max-sm:h-14 max-sm:w-14 rounded-full bg-gradient-to-br from-stone-900 via-stone-950 to-black text-white shadow-[0_10px_35px_rgba(0,0,0,0.35)] hover:shadow-[0_0_35px_rgba(212,175,55,0.45)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center relative border border-[#d4af37]/60 ring-2 ring-[#d4af37]/25 group select-none"
           title="Co-Piloto AI"
+          aria-label="Abrir Co-Piloto AI"
         >
-          <span className="absolute inset-0 bg-gradient-to-tr from-[#d4af37]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <Sparkles size={22} className="text-[#d4af37] animate-pulse" strokeWidth={1.8} />
+          {/* Halo ambiental externo pulsante */}
+          <span className="absolute -inset-1 rounded-full bg-gradient-to-tr from-[#d4af37]/40 via-amber-200/25 to-[#d4af37]/40 blur-sm opacity-70 group-hover:opacity-100 transition-opacity duration-500 animate-pulse pointer-events-none" />
+
+          {/* Resplandor radial interno */}
+          <span className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.25)_0%,transparent_70%)] pointer-events-none" />
+
+          {/* Destello reflectante en hover */}
+          <span className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#d4af37]/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
+          {/* Icono de IA de Lujo con micro-interacción */}
+          <Sparkles
+            size={26}
+            className="text-[#d4af37] relative z-10 drop-shadow-[0_0_10px_rgba(212,175,55,0.7)] group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 max-sm:w-5 max-sm:h-5"
+            strokeWidth={1.9}
+          />
+
+          {/* Tooltip flotante Quiet Luxury (Desktop) */}
+          <div className="absolute right-full mr-3.5 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-stone-950/95 backdrop-blur-md border border-[#d4af37]/40 text-stone-200 text-xs font-medium whitespace-nowrap shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 translate-x-2 group-hover:translate-x-0 hidden md:flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37] animate-ping" />
+            <span>Co-Piloto AI</span>
+          </div>
         </button>
       )}
 
