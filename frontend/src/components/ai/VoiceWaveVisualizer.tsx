@@ -10,15 +10,6 @@ interface VoiceWaveVisualizerProps {
   language?: string;
 }
 
-interface WaveParticle {
-  x: number;
-  yOffset: number;
-  size: number;
-  color: string;
-  speed: number;
-  opacity: number;
-}
-
 export default function VoiceWaveVisualizer({
   isSpeaking,
   onStop,
@@ -26,10 +17,11 @@ export default function VoiceWaveVisualizer({
 }: VoiceWaveVisualizerProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animFrameIdRef = useRef<number | null>(null);
+  const currentAmpRef = useRef<number>(14);
   const surgeRef = useRef<number>(1.0);
 
   useEffect(() => {
-    // Al recibir un fonema o palabra, provocar un pico de energía instantáneo
+    // Al recibir un fonema o palabra de voz, provocar un pico de energía instantáneo
     const handleVoiceVibration = () => {
       surgeRef.current = 1.35;
     };
@@ -56,32 +48,23 @@ export default function VoiceWaveVisualizer({
     if (!ctx) return;
 
     let time = 0;
+    const numLines = 11; // 11 líneas topográficas que forman la cinta holográfica 3D
     const freqData = new Uint8Array(32);
-
-    // Partículas luminosas que flotan y cabalgan sobre la onda (como en la referencia)
-    const particles: WaveParticle[] = Array.from({ length: 30 }, () => ({
-      x: Math.random() * 320,
-      yOffset: (Math.random() - 0.5) * 12,
-      size: Math.random() * 2.2 + 0.8,
-      color: Math.random() > 0.4 ? '#ff2a8d' : '#c084fc',
-      speed: Math.random() * 1.5 + 0.8,
-      opacity: Math.random() * 0.7 + 0.3,
-    }));
 
     const render = () => {
       const containerWidth = canvas.parentElement?.clientWidth || 280;
       const width = (canvas.width = Math.min(containerWidth, 340));
-      const height = (canvas.height = 52); // Altura generosa de 52px para onda muy pronunciada
+      const height = (canvas.height = 54); // Altura cómoda para crestas 3D pronunciadas
       ctx.clearRect(0, 0, width, height);
 
-      time += 0.085; // Velocidad fluida de avance de fase
+      time += 0.065; // Velocidad de avance equilibrada: más suave y armónica
       const centerY = height / 2;
-      const maxAmp = 22; // Hasta 44px de oscilación total (cresta a valle)
+      const baseMaxAmp = 20; // Amplitud máxima generosa (hasta 40px de cresta a valle)
 
-      // Decaimiento natural del pico de voz
-      surgeRef.current = Math.max(0.65, surgeRef.current * 0.965);
+      // Decaimiento progresivo del pico de voz
+      surgeRef.current = Math.max(0.72, surgeRef.current * 0.975);
 
-      // Comprobar FFT real si existe
+      // Comprobar si hay FFT de Web Audio activo
       const analyser = getPersistentAnalyser();
       let realVolume = 0;
       if (analyser) {
@@ -92,130 +75,89 @@ export default function VoiceWaveVisualizer({
         } catch {}
       }
 
-      // Modulación de cadencia vocal humana pronunciada
+      // Modulación vocal fluida con ondulación suave y controlada
       const speechCadence =
-        (Math.sin(time * 3.8) * 0.35 + 0.65) *
-        (1 + 0.28 * Math.cos(time * 8.2));
-      const jitter = (Math.random() - 0.5) * 0.15;
-      const activeFactor = realVolume > 0.05
-        ? Math.min(1.4, realVolume * 2.8)
-        : Math.min(1.4, (speechCadence + jitter) * surgeRef.current);
+        (Math.sin(time * 3.0) * 0.28 + 0.72) *
+        (1 + 0.20 * Math.cos(time * 5.2));
+      
+      const targetAmp = realVolume > 0.04
+        ? Math.min(baseMaxAmp * 1.25, realVolume * 3.2 * baseMaxAmp)
+        : baseMaxAmp * speechCadence * surgeRef.current;
 
-      // ── CAPA 1: ONDA DE AURORA VIOLETA CON RELLENO SUAVE (Fondo) ──
+      // Interpolación suave LERP de la amplitud
+      currentAmpRef.current += (targetAmp - currentAmpRef.current) * 0.08;
+      const activeAmp = Math.max(4.5, currentAmpRef.current);
+
+      // ── 1. RESPLANDOR VOLUMÉTRICO AMBIENTAL DE FONDO ──
       ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(0, centerY);
-      for (let x = 0; x <= width; x += 3) {
-        const u = x / width;
-        // Envolvente acampanada con centro amplio
-        const envelope = Math.pow(Math.sin(u * Math.PI), 1.15);
-        const y =
-          centerY +
-          Math.sin(u * 8 + time * 4.5) * maxAmp * 0.85 * envelope * activeFactor +
-          Math.cos(u * 14 - time * 3.2) * 4 * envelope;
-        ctx.lineTo(x, y);
-      }
-      ctx.lineTo(width, centerY);
-      ctx.closePath();
-      const fillGrad = ctx.createLinearGradient(0, centerY - maxAmp, 0, centerY + maxAmp);
-      fillGrad.addColorStop(0, 'rgba(192, 132, 252, 0.25)');
-      fillGrad.addColorStop(0.5, 'rgba(217, 70, 239, 0.12)');
-      fillGrad.addColorStop(1, 'rgba(168, 85, 247, 0.22)');
-      ctx.fillStyle = fillGrad;
-      ctx.fill();
+      const glowGrad = ctx.createRadialGradient(width / 2, centerY, 5, width / 2, centerY, width / 2);
+      glowGrad.addColorStop(0, 'rgba(99, 102, 241, 0.26)');
+      glowGrad.addColorStop(0.5, 'rgba(236, 72, 153, 0.16)');
+      glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = glowGrad;
+      ctx.fillRect(0, 0, width, height);
       ctx.restore();
 
-      // ── CAPA 2: ONDA SECUNDARIA VIOLETA / CIAN ELÉCTRICO ──
-      ctx.save();
-      ctx.shadowColor = '#a855f7';
-      ctx.shadowBlur = 12;
-      ctx.lineWidth = 2.2;
-      ctx.strokeStyle = '#c084fc';
-      ctx.beginPath();
-      for (let x = 0; x <= width; x += 2) {
-        const u = x / width;
-        const envelope = Math.pow(Math.sin(u * Math.PI), 1.2);
-        const y =
-          centerY +
-          Math.sin(u * 10 - time * 5.2) * maxAmp * 0.75 * envelope * activeFactor +
-          Math.sin(u * 16 + time * 6.5) * 3 * envelope;
-        if (x === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-      ctx.restore();
+      // ── 2. CINTA HOLOGRÁFICA 3D CON MÚLTIPLES PICOS SUAVES ──
+      // Dibujamos las 11 líneas distribuidas verticalmente
+      for (let k = 0; k < numLines; k++) {
+        // s va de -1 (arriba) a +1 (abajo)
+        const s = (k - (numLines - 1) / 2) / ((numLines - 1) / 2);
+        const absS = Math.abs(s);
 
-      // ── CAPA 3: ONDA PRINCIPAL DE NEÓN ROSA / MAGENTA VIBRANTE (Crestas Pronunciadas) ──
-      ctx.save();
-      ctx.shadowColor = '#ff1f85';
-      ctx.shadowBlur = 16;
-      ctx.lineWidth = 3.2;
+        // Paleta idéntica a la imagen de referencia:
+        // Arriba: Azul eléctrico / Cian
+        // Centro: Rosa/Magenta Neón vivo con núcleo blanco
+        // Abajo: Violeta / Púrpura eléctrico
+        let strokeColor = '#ff2a8d';
+        let glowColor = '#ff2a8d';
 
-      // Gradiente lineal a lo largo de la onda: Cian -> Hot Magenta -> Púrpura
-      const strokeGrad = ctx.createLinearGradient(0, 0, width, 0);
-      strokeGrad.addColorStop(0, '#38bdf8');
-      strokeGrad.addColorStop(0.2, '#ec4899');
-      strokeGrad.addColorStop(0.5, '#ff1f85');
-      strokeGrad.addColorStop(0.8, '#ec4899');
-      strokeGrad.addColorStop(1, '#a855f7');
-      ctx.strokeStyle = strokeGrad;
+        if (s < -0.2) {
+          // Superior: Cian a azul cielo eléctrico
+          strokeColor = `rgba(56, 189, 248, ${0.9 - absS * 0.3})`;
+          glowColor = '#38bdf8';
+        } else if (s > 0.2) {
+          // Inferior: Púrpura violeta eléctrico
+          strokeColor = `rgba(168, 85, 247, ${0.9 - absS * 0.3})`;
+          glowColor = '#a855f7';
+        } else {
+          // Núcleo central: Magenta intenso / blanco rosado
+          strokeColor = k === 5 ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 42, 141, 0.9)';
+          glowColor = '#ff2a8d';
+        }
 
-      ctx.beginPath();
-      for (let x = 0; x <= width; x += 2) {
-        const u = x / width;
-        const envelope = Math.pow(Math.sin(u * Math.PI), 1.1);
-        // Resonancia de onda pronunciada: picos altos y dinámicos
-        const primarySine = Math.sin(u * 7.5 + time * 6.8);
-        const harmonicSine = Math.cos(u * 13 - time * 4.2) * 0.35;
-        const phonemeJitter = Math.sin(time * 22 + u * 15) * 0.15;
-        const y =
-          centerY +
-          (primarySine + harmonicSine + phonemeJitter) * maxAmp * envelope * activeFactor;
-
-        if (x === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-      ctx.restore();
-
-      // ── CAPA 4: NÚCLEO BLANCO CENTRAL DE ALTA LUMINISCENCIA ──
-      ctx.save();
-      ctx.shadowColor = '#ffffff';
-      ctx.shadowBlur = 6;
-      ctx.lineWidth = 1.2;
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
-      ctx.beginPath();
-      for (let x = 0; x <= width; x += 3) {
-        const u = x / width;
-        const envelope = Math.pow(Math.sin(u * Math.PI), 1.25);
-        const primarySine = Math.sin(u * 7.5 + time * 6.8);
-        const y = centerY + primarySine * maxAmp * envelope * activeFactor;
-        if (x === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-      ctx.restore();
-
-      // ── CAPA 5: PARTÍCULAS LUMINOSAS CABALGANDO LA ONDA (Como en la foto de referencia) ──
-      ctx.save();
-      particles.forEach((p) => {
-        p.x = (p.x + p.speed) % width;
-        const u = p.x / width;
-        const envelope = Math.pow(Math.sin(u * Math.PI), 1.1);
-        const waveY =
-          centerY +
-          Math.sin(u * 7.5 + time * 6.8) * maxAmp * envelope * activeFactor;
-        const py = waveY + p.yOffset * envelope;
-
+        ctx.save();
         ctx.beginPath();
-        ctx.arc(p.x, py, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.shadowColor = p.color;
-        ctx.shadowBlur = 8;
-        ctx.globalAlpha = p.opacity * (0.4 + 0.6 * envelope);
-        ctx.fill();
-      });
-      ctx.restore();
+        ctx.shadowColor = glowColor;
+        ctx.shadowBlur = k === 5 ? 14 : 7;
+        ctx.lineWidth = k === 5 ? 2.2 : 1.35;
+        ctx.strokeStyle = strokeColor;
+
+        for (let x = 0; x <= width; x += 2) {
+          const u = x / width; // de 0 a 1
+          // Envolvente suave que amarra los extremos a la línea central
+          const envelope = Math.pow(Math.sin(u * Math.PI), 1.15);
+
+          // Armónicos de la onda: 4 a 6 picos definidos pero con avance suave y cadencioso
+          const primaryWave = Math.sin(u * 13.5 - time * 3.8);
+          const secondaryWave = Math.cos(u * 21.0 + time * 3.2) * 0.42;
+          const detailWave = Math.sin(u * 29.0 - time * 4.4) * 0.18;
+
+          const baseWaveY = (primaryWave + secondaryWave + detailWave) * activeAmp;
+
+          // DISPERSIÓN TOPOGRÁFICA 3D:
+          // En las crestas altas, las líneas se separan ampliamente creando la cinta tridimensional;
+          // en las partes llanas, se comprimen formando un haz láser compacto.
+          const dispersion = (Math.abs(baseWaveY) * 0.50 + 1.2) * s;
+          const y = centerY + (baseWaveY + dispersion) * envelope;
+
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+
+        ctx.stroke();
+        ctx.restore();
+      }
 
       animFrameIdRef.current = requestAnimationFrame(render);
     };
@@ -262,8 +204,8 @@ export default function VoiceWaveVisualizer({
         </div>
       </div>
 
-      {/* Visualizador de Onda Neón Fluida con Movimiento Muy Pronunciado y Partículas */}
-      <div className="flex-1 h-13 flex items-center justify-center overflow-hidden mx-1 max-w-[340px]">
+      {/* Visualizador de Cinta Holográfica 3D (Efecto WOW idéntico a la referencia) */}
+      <div className="flex-1 h-14 flex items-center justify-center overflow-hidden mx-1 max-w-[340px]">
         <canvas ref={canvasRef} className="w-full h-full block" />
       </div>
 
