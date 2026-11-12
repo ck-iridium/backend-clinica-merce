@@ -257,4 +257,50 @@
   animation: orb-pulse-gentle 4s ease-in-out infinite;
 }
 
+/* ─── Animaciones de Infinito ProBookia (Luz Circulante & Levitación) ─── */
+@keyframes infinity-beam {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes infinity-float {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-2px) scale(1.05);
+  }
+}
+
+@keyframes infinity-aura {
+  0%, 100% {
+    opacity: 0.55;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.1);
+  }
+}
+
+.animate-infinity-beam {
+  animation: infinity-beam 3s linear infinite;
+}
+
+.animate-infinity-beam-fast {
+  animation: infinity-beam 1.4s linear infinite;
+}
+
+.animate-infinity-float {
+  animation: infinity-float 3s ease-in-out infinite;
+}
+
+.animate-infinity-aura {
+  animation: infinity-aura 2.6s ease-in-out infinite;
+}
+
 

@@ -20,67 +20,100 @@ export default function ChromaticOrb({
     lg: 'w-14 h-14',      // Lanzador flotante WOW (56px)
   }[size];
 
+  const iconSizes = {
+    sm: 22,
+    md: 20,
+    lg: 32,
+  }[size];
+
+  // Trazo fino y detallado según tamaño
+  const baseStroke = size === 'lg' ? 1.4 : 1.3;
+  const beamStroke = size === 'lg' ? 1.7 : 1.5;
+
   return (
     <div
-      className={`relative rounded-full overflow-hidden shrink-0 select-none shadow-[0_0_20px_rgba(168,85,247,0.35)] ${dimensions} ${className}`}
+      className={`relative rounded-full overflow-hidden shrink-0 select-none flex items-center justify-center border border-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.3),inset_0_-2px_6px_rgba(0,0,0,0.9),0_4px_20px_rgba(0,0,0,0.6)] ${dimensions} ${className}`}
       style={{
-        background: '#07060d',
+        background: 'radial-gradient(circle at 35% 30%, #1e1e24 0%, #0c0c0f 55%, #030304 100%)',
       }}
     >
-      {/* ── CAPA 1: Torbellino Cromático Conic (Rotación Continua) ── */}
+      {/* ── Reflejo Especular Superior de Vidrio Pulido ── */}
       <div
-        className="absolute -inset-[35%] rounded-full animate-spin-slow opacity-95 blur-[6px]"
+        className="absolute inset-0 rounded-full pointer-events-none z-20"
         style={{
           background:
-            'conic-gradient(from 0deg at 50% 50%, #00f0ff 0deg, #3b82f6 60deg, #a855f7 120deg, #ec4899 180deg, #f59e0b 240deg, #10b981 300deg, #00f0ff 360deg)',
-          animationDuration: isSpeaking ? '4s' : '10s',
+            'radial-gradient(ellipse at 32% 22%, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.08) 32%, transparent 60%)',
         }}
       />
 
-      {/* ── CAPA 2: Lóbulo Magenta / Púrpura Fluido (Rotación Inversa) ── */}
+      {/* ── Símbolo de Infinito Fino, Detallado y Animado (ProBookia Orange) ── */}
       <div
-        className="absolute -inset-[30%] rounded-full animate-spin-reverse opacity-80 mix-blend-screen blur-[8px]"
+        className="relative z-10 flex items-center justify-center animate-infinity-float"
         style={{
-          background:
-            'radial-gradient(circle at 70% 30%, #f43f5e 0%, #d946ef 35%, #8b5cf6 65%, transparent 80%)',
-          animationDuration: isSpeaking ? '3s' : '8s',
+          filter: isSpeaking
+            ? 'drop-shadow(0 0 6px rgba(255, 107, 0, 0.95)) drop-shadow(0 0 14px rgba(255, 138, 43, 0.7))'
+            : 'drop-shadow(0 0 4px rgba(255, 107, 0, 0.85)) drop-shadow(0 0 9px rgba(255, 138, 43, 0.45))',
         }}
-      />
+      >
+        <svg
+          width={iconSizes}
+          height={iconSizes}
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="overflow-visible"
+        >
+          <defs>
+            {/* Gradiente fino de luz naranja ProBookia */}
+            <linearGradient id="probookia-laser-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#fff2d6" />
+              <stop offset="35%" stopColor="#ff7a18" />
+              <stop offset="70%" stopColor="#ff5500" />
+              <stop offset="100%" stopColor="#ffaa44" />
+            </linearGradient>
+            <radialGradient id="center-glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#ff8c2b" stopOpacity="0.9" />
+              <stop offset="100%" stopColor="#ff5500" stopOpacity="0" />
+            </radialGradient>
+          </defs>
 
-      {/* ── CAPA 3: Lóbulo Ámbar / Cian de Alta Frecuencia ── */}
-      <div
-        className="absolute -inset-[25%] rounded-full animate-pulse-gentle opacity-75 mix-blend-screen blur-[5px]"
-        style={{
-          background:
-            'radial-gradient(circle at 30% 70%, #06b6d4 0%, #fbbf24 40%, transparent 75%)',
-        }}
-      />
+          {/* 1. Trazo base fino y nítido (Semi-translúcido) */}
+          <path
+            d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z"
+            stroke="#ff5e00"
+            strokeWidth={baseStroke}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            opacity={0.35}
+          />
 
-      {/* ── CAPA 4: Vacío Central Toroidal (Efecto Agujero / 3D Dribbble) ── */}
-      <div
-        className="absolute inset-0 rounded-full"
-        style={{
-          background:
-            'radial-gradient(circle at 50% 50%, rgba(7, 6, 13, 0.94) 28%, rgba(7, 6, 13, 0.45) 54%, transparent 72%)',
-        }}
-      />
+          {/* 2. Haz de luz láser circulante continuo (Efecto de corriente infinita) */}
+          <path
+            d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z"
+            stroke="url(#probookia-laser-grad)"
+            strokeWidth={beamStroke}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            pathLength="100"
+            strokeDasharray="22 78"
+            className={isSpeaking ? 'animate-infinity-beam-fast' : 'animate-infinity-beam'}
+          />
 
-      {/* ── CAPA 5: Resplandor de Cristal y Reflejo Especular 3D ── */}
-      <div
-        className="absolute inset-0 rounded-full pointer-events-none"
-        style={{
-          background:
-            'radial-gradient(ellipse at 32% 26%, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.2) 28%, transparent 55%)',
-          boxShadow:
-            'inset 0 0 8px rgba(255, 255, 255, 0.4), inset 0 0 16px rgba(217, 70, 239, 0.35), inset 0 -4px 10px rgba(56, 189, 248, 0.3)',
-        }}
-      />
+          {/* 3. Micro-nodo central brillante en el cruce */}
+          <circle
+            cx="12"
+            cy="12"
+            r={size === 'lg' ? 0.9 : 0.7}
+            fill="#ffffff"
+            opacity={0.8}
+          />
+        </svg>
+      </div>
 
-      {/* ── Micro-pulso vivo al hablar ── */}
+      {/* ── Micro-anillo sutil al hablar ── */}
       {isSpeaking && (
-        <div className="absolute inset-0 rounded-full border border-white/40 animate-ping opacity-40 pointer-events-none" />
+        <div className="absolute inset-0 rounded-full border border-orange-500/40 animate-ping opacity-30 pointer-events-none" />
       )}
     </div>
   );
 }
-

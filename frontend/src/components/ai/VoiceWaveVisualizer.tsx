@@ -10,6 +10,15 @@ interface VoiceWaveVisualizerProps {
   language?: string;
 }
 
+interface WaveParticle {
+  x: number;
+  yOffset: number;
+  size: number;
+  color: string;
+  speed: number;
+  opacity: number;
+}
+
 export default function VoiceWaveVisualizer({
   isSpeaking,
   onStop,
@@ -17,14 +26,12 @@ export default function VoiceWaveVisualizer({
 }: VoiceWaveVisualizerProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animFrameIdRef = useRef<number | null>(null);
-  const voiceEnergyRef = useRef<number>(0.8);
-  const lastBoundaryTimeRef = useRef<number>(0);
+  const surgeRef = useRef<number>(1.0);
 
   useEffect(() => {
-    // Escuchar pulsos y límites de palabras de la síntesis de voz
+    // Al recibir un fonema o palabra, provocar un pico de energía instantáneo
     const handleVoiceVibration = () => {
-      voiceEnergyRef.current = 1.0;
-      lastBoundaryTimeRef.current = performance.now();
+      surgeRef.current = 1.35;
     };
 
     window.addEventListener('copilot-voice-vibration', handleVoiceVibration);
@@ -49,104 +56,166 @@ export default function VoiceWaveVisualizer({
     if (!ctx) return;
 
     let time = 0;
-    const numBars = 32; // Cantidad de barras verticales del ecualizador
     const freqData = new Uint8Array(32);
+
+    // Partículas luminosas que flotan y cabalgan sobre la onda (como en la referencia)
+    const particles: WaveParticle[] = Array.from({ length: 30 }, () => ({
+      x: Math.random() * 320,
+      yOffset: (Math.random() - 0.5) * 12,
+      size: Math.random() * 2.2 + 0.8,
+      color: Math.random() > 0.4 ? '#ff2a8d' : '#c084fc',
+      speed: Math.random() * 1.5 + 0.8,
+      opacity: Math.random() * 0.7 + 0.3,
+    }));
 
     const render = () => {
       const containerWidth = canvas.parentElement?.clientWidth || 280;
-      const width = (canvas.width = Math.min(containerWidth, 320));
-      const height = (canvas.height = 36);
+      const width = (canvas.width = Math.min(containerWidth, 340));
+      const height = (canvas.height = 52); // Altura generosa de 52px para onda muy pronunciada
       ctx.clearRect(0, 0, width, height);
 
-      time += 0.08;
+      time += 0.085; // Velocidad fluida de avance de fase
       const centerY = height / 2;
-      const maxHalfHeight = 15; // Altura máxima hacia arriba y hacia abajo
+      const maxAmp = 22; // Hasta 44px de oscilación total (cresta a valle)
 
-      // 1. Verificar si hay un AnalyserNode de Web Audio activo con datos reales
+      // Decaimiento natural del pico de voz
+      surgeRef.current = Math.max(0.65, surgeRef.current * 0.965);
+
+      // Comprobar FFT real si existe
       const analyser = getPersistentAnalyser();
-      let hasRealFFT = false;
+      let realVolume = 0;
       if (analyser) {
         try {
           analyser.getByteFrequencyData(freqData);
-          hasRealFFT = freqData.some((val) => val > 5);
+          const sum = freqData.reduce((acc, v) => acc + v, 0);
+          realVolume = sum / (freqData.length * 255);
         } catch {}
       }
 
-      // 2. Si es SpeechSynthesis, decaimiento orgánico y reactivación por fonemas
-      const now = performance.now();
-      const elapsedSinceBoundary = now - lastBoundaryTimeRef.current;
-      
-      // Decaimiento suave de la energía vocal si no llega nuevo pulso
-      voiceEnergyRef.current = Math.max(
-        0.2,
-        voiceEnergyRef.current * 0.94 - (elapsedSinceBoundary > 450 ? 0.03 : 0)
-      );
+      // Modulación de cadencia vocal humana pronunciada
+      const speechCadence =
+        (Math.sin(time * 3.8) * 0.35 + 0.65) *
+        (1 + 0.28 * Math.cos(time * 8.2));
+      const jitter = (Math.random() - 0.5) * 0.15;
+      const activeFactor = realVolume > 0.05
+        ? Math.min(1.4, realVolume * 2.8)
+        : Math.min(1.4, (speechCadence + jitter) * surgeRef.current);
 
-      // Si ha pasado poco tiempo desde que empezó una palabra, inyectar micro-oscilación de voz
-      if (elapsedSinceBoundary < 800) {
-        const syllableRhythm = Math.sin(time * 18) * 0.25;
-        voiceEnergyRef.current = Math.min(1.0, voiceEnergyRef.current + Math.max(0, syllableRhythm));
+      // ── CAPA 1: ONDA DE AURORA VIOLETA CON RELLENO SUAVE (Fondo) ──
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(0, centerY);
+      for (let x = 0; x <= width; x += 3) {
+        const u = x / width;
+        // Envolvente acampanada con centro amplio
+        const envelope = Math.pow(Math.sin(u * Math.PI), 1.15);
+        const y =
+          centerY +
+          Math.sin(u * 8 + time * 4.5) * maxAmp * 0.85 * envelope * activeFactor +
+          Math.cos(u * 14 - time * 3.2) * 4 * envelope;
+        ctx.lineTo(x, y);
       }
+      ctx.lineTo(width, centerY);
+      ctx.closePath();
+      const fillGrad = ctx.createLinearGradient(0, centerY - maxAmp, 0, centerY + maxAmp);
+      fillGrad.addColorStop(0, 'rgba(192, 132, 252, 0.25)');
+      fillGrad.addColorStop(0.5, 'rgba(217, 70, 239, 0.12)');
+      fillGrad.addColorStop(1, 'rgba(168, 85, 247, 0.22)');
+      ctx.fillStyle = fillGrad;
+      ctx.fill();
+      ctx.restore();
 
-      // Espaciado del ecualizador
-      const barSpacing = width / (numBars + 1);
-      const barWidth = Math.max(2.5, Math.min(4, barSpacing - 2.5));
+      // ── CAPA 2: ONDA SECUNDARIA VIOLETA / CIAN ELÉCTRICO ──
+      ctx.save();
+      ctx.shadowColor = '#a855f7';
+      ctx.shadowBlur = 12;
+      ctx.lineWidth = 2.2;
+      ctx.strokeStyle = '#c084fc';
+      ctx.beginPath();
+      for (let x = 0; x <= width; x += 2) {
+        const u = x / width;
+        const envelope = Math.pow(Math.sin(u * Math.PI), 1.2);
+        const y =
+          centerY +
+          Math.sin(u * 10 - time * 5.2) * maxAmp * 0.75 * envelope * activeFactor +
+          Math.sin(u * 16 + time * 6.5) * 3 * envelope;
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.restore();
 
-      // Configuración de sombra de neón / bloom
-      ctx.shadowColor = '#ec4899';
-      ctx.shadowBlur = 8;
-      ctx.lineCap = 'round';
+      // ── CAPA 3: ONDA PRINCIPAL DE NEÓN ROSA / MAGENTA VIBRANTE (Crestas Pronunciadas) ──
+      ctx.save();
+      ctx.shadowColor = '#ff1f85';
+      ctx.shadowBlur = 16;
+      ctx.lineWidth = 3.2;
 
-      for (let i = 0; i < numBars; i++) {
-        // Envolvente de campana (más alto en el centro, como en la imagen de referencia rosa)
-        const normalizedIndex = i / (numBars - 1); // de 0 a 1
-        const centerProximity = 1 - Math.abs(normalizedIndex - 0.5) * 2; // 1 en el centro, 0 en bordes
-        const bellEnvelope = Math.pow(Math.sin(normalizedIndex * Math.PI), 1.6);
+      // Gradiente lineal a lo largo de la onda: Cian -> Hot Magenta -> Púrpura
+      const strokeGrad = ctx.createLinearGradient(0, 0, width, 0);
+      strokeGrad.addColorStop(0, '#38bdf8');
+      strokeGrad.addColorStop(0.2, '#ec4899');
+      strokeGrad.addColorStop(0.5, '#ff1f85');
+      strokeGrad.addColorStop(0.8, '#ec4899');
+      strokeGrad.addColorStop(1, '#a855f7');
+      ctx.strokeStyle = strokeGrad;
 
-        let barMagnitude = 0;
+      ctx.beginPath();
+      for (let x = 0; x <= width; x += 2) {
+        const u = x / width;
+        const envelope = Math.pow(Math.sin(u * Math.PI), 1.1);
+        // Resonancia de onda pronunciada: picos altos y dinámicos
+        const primarySine = Math.sin(u * 7.5 + time * 6.8);
+        const harmonicSine = Math.cos(u * 13 - time * 4.2) * 0.35;
+        const phonemeJitter = Math.sin(time * 22 + u * 15) * 0.15;
+        const y =
+          centerY +
+          (primarySine + harmonicSine + phonemeJitter) * maxAmp * envelope * activeFactor;
 
-        if (hasRealFFT) {
-          // Lectura directa de FFT
-          const binIndex = Math.floor(centerProximity * (freqData.length - 1));
-          const rawVal = (freqData[binIndex] || 0) / 255;
-          barMagnitude = rawVal * bellEnvelope;
-        } else {
-          // Simulación acústica reactiva a fonemas y sincronizada con la locución
-          // Vibración rápida (flutter) de 35Hz para emular formantes vocales
-          const voiceFlutter =
-            Math.sin(time * 26 + i * 0.9) * 0.35 +
-            Math.cos(time * 38 - i * 0.6) * 0.25;
-          const organicNoise = (Math.sin(i * 13 + time * 15) * 0.5 + 0.5) * 0.3;
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.restore();
 
-          const baseEnergy = voiceEnergyRef.current;
-          const liveSignal = Math.max(0.1, baseEnergy * 0.8 + voiceFlutter * baseEnergy + organicNoise);
-          barMagnitude = liveSignal * bellEnvelope;
-        }
+      // ── CAPA 4: NÚCLEO BLANCO CENTRAL DE ALTA LUMINISCENCIA ──
+      ctx.save();
+      ctx.shadowColor = '#ffffff';
+      ctx.shadowBlur = 6;
+      ctx.lineWidth = 1.2;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.beginPath();
+      for (let x = 0; x <= width; x += 3) {
+        const u = x / width;
+        const envelope = Math.pow(Math.sin(u * Math.PI), 1.25);
+        const primarySine = Math.sin(u * 7.5 + time * 6.8);
+        const y = centerY + primarySine * maxAmp * envelope * activeFactor;
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.restore();
 
-        const halfHeight = Math.max(2, barMagnitude * maxHalfHeight);
-        const x = barSpacing * (i + 1);
+      // ── CAPA 5: PARTÍCULAS LUMINOSAS CABALGANDO LA ONDA (Como en la foto de referencia) ──
+      ctx.save();
+      particles.forEach((p) => {
+        p.x = (p.x + p.speed) % width;
+        const u = p.x / width;
+        const envelope = Math.pow(Math.sin(u * Math.PI), 1.1);
+        const waveY =
+          centerY +
+          Math.sin(u * 7.5 + time * 6.8) * maxAmp * envelope * activeFactor;
+        const py = waveY + p.yOffset * envelope;
 
-        // Paleta de degradado Neón exactamente como la captura de referencia:
-        // Centro: Rosa/Magenta Neón vivo (#f43f5e, #ec4899, #d946ef)
-        // Laterales: Púrpura eléctrico (#a855f7) hacia azul cian (#06b6d4, #38bdf8)
-        let barColor = '#ec4899';
-        if (centerProximity > 0.6) {
-          barColor = '#f43f5e'; // Magenta fuerte central
-        } else if (centerProximity > 0.3) {
-          barColor = '#c084fc'; // Violeta eléctrico
-        } else {
-          barColor = '#38bdf8'; // Cian luminoso en los extremos
-        }
-
-        ctx.strokeStyle = barColor;
-        ctx.lineWidth = barWidth;
-
-        // Dibujo de barra vertical simétrica (arriba y abajo desde el centro horizontal)
         ctx.beginPath();
-        ctx.moveTo(x, centerY - halfHeight);
-        ctx.lineTo(x, centerY + halfHeight);
-        ctx.stroke();
-      }
+        ctx.arc(p.x, py, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = 8;
+        ctx.globalAlpha = p.opacity * (0.4 + 0.6 * envelope);
+        ctx.fill();
+      });
+      ctx.restore();
 
       animFrameIdRef.current = requestAnimationFrame(render);
     };
@@ -178,7 +247,7 @@ export default function VoiceWaveVisualizer({
         : 'Detener';
 
   return (
-    <div className="relative z-10 w-full bg-black/95 backdrop-blur-xl border-b border-stone-800/80 px-4 py-2 flex items-center justify-between gap-3 shadow-[0_4px_25px_rgba(0,0,0,0.5)] animate-in fade-in slide-in-from-top-2 duration-300 select-none">
+    <div className="relative z-10 w-full bg-stone-950/95 backdrop-blur-xl border-b border-stone-800/80 px-4 py-2 flex items-center justify-between gap-3 shadow-[0_4px_30px_rgba(0,0,0,0.65)] animate-in fade-in slide-in-from-top-2 duration-300 select-none">
       {/* Indicador de estado */}
       <div className="flex items-center gap-2 shrink-0">
         <div className="relative flex items-center justify-center">
@@ -186,15 +255,15 @@ export default function VoiceWaveVisualizer({
           <span className="w-2 h-2 rounded-full bg-pink-500 relative" />
         </div>
         <div className="flex items-center gap-1.5">
-          <Volume2 size={13} className="text-pink-400 animate-pulse" />
-          <span className="text-[11px] font-medium tracking-wide text-stone-200">
+          <Volume2 size={14} className="text-pink-400 animate-pulse" />
+          <span className="text-[11px] font-semibold tracking-wide text-stone-200">
             {statusLabel}
           </span>
         </div>
       </div>
 
-      {/* Ecualizador de Barras Verticales de Neón Sincronizado */}
-      <div className="flex-1 h-7 flex items-center justify-center overflow-hidden mx-1 max-w-[280px]">
+      {/* Visualizador de Onda Neón Fluida con Movimiento Muy Pronunciado y Partículas */}
+      <div className="flex-1 h-13 flex items-center justify-center overflow-hidden mx-1 max-w-[340px]">
         <canvas ref={canvasRef} className="w-full h-full block" />
       </div>
 
@@ -202,7 +271,7 @@ export default function VoiceWaveVisualizer({
       <button
         onClick={onStop}
         type="button"
-        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-white border border-stone-700/80 text-[11px] font-medium transition-all duration-200 shrink-0 shadow-xs hover:border-pink-500/50 active:scale-95"
+        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-white border border-stone-700/80 text-[11px] font-medium transition-all duration-200 shrink-0 shadow-xs hover:border-pink-500/50 active:scale-95"
         title={stopLabel}
       >
         <Square size={10} fill="currentColor" className="text-pink-400" />
