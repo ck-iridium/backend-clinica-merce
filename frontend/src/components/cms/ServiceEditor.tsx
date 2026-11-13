@@ -188,6 +188,34 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
     }
   }, [initialData, reset]);
 
+  // Sincronizaci?n reactiva en vivo cuando el Co-Piloto AI asocia o genera una imagen para este servicio
+  useEffect(() => {
+    const handleServicesUpdated = async (e?: any) => {
+      if (!serviceId) return;
+      try {
+        if (e?.detail?.image_url && (e?.detail?.serviceId === serviceId || e?.detail?.slug === formValues.slug)) {
+          setValue('image_url', e.detail.image_url, { shouldDirty: false });
+          toast.success(t('dashboard.services.image_updated_by_ai') || 'Imagen del servicio actualizada en tiempo real.');
+          return;
+        }
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/${serviceId}`);
+        if (res.ok) {
+          const fresh = await res.json();
+          if (fresh.image_url && fresh.image_url !== formValues.image_url) {
+            setValue('image_url', fresh.image_url, { shouldDirty: false });
+            toast.success(t('dashboard.services.image_updated_by_ai') || 'Nueva imagen generada por IA aplicada.');
+          }
+        }
+      } catch (err) {
+        console.warn('Error sincronizando ServiceEditor tras actualizaci?n IA:', err);
+      }
+    };
+
+    window.addEventListener('services-updated', handleServicesUpdated);
+    return () => window.removeEventListener('services-updated', handleServicesUpdated);
+  }, [serviceId, formValues.slug, formValues.image_url, setValue, t]);
+
   const onInvalid = (formErrors: any) => {
     console.error("Form Validation Errors:", formErrors);
     

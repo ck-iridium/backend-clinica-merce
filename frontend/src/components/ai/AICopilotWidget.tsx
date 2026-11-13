@@ -514,11 +514,16 @@ export default function AICopilotWidget() {
         );
       }
 
-      if (shouldRefresh) {
-        // Disparar eventos reactivos para refrescar catálogos y medios sin recargar la página entera (evitando cortar el audio)
+      // Si la respuesta del agente incluye actualizacion o nueva imagen generada
+      const hasImageAttached = /\[(?:Imagen adjunta|Image jointe|Attached image):/i.test(responseText) || /URL de la imagen:\s*https?:\/\//i.test(responseText);
+      const shouldRefreshServicesOrMedia = shouldRefresh || hasImageAttached;
+
+      if (shouldRefreshServicesOrMedia) {
         if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('services-updated'));
-          window.dispatchEvent(new CustomEvent('media-updated'));
+          const imgMatch = responseText.match(/URL de la imagen:\s*(https?:\/\/[^\s\n\)]+)/i);
+          const attachedUrl = imgMatch ? imgMatch[1].trim() : null;
+          window.dispatchEvent(new CustomEvent('services-updated', { detail: { image_url: attachedUrl } }));
+          window.dispatchEvent(new CustomEvent('media-updated', { detail: { image_url: attachedUrl } }));
         }
         router.refresh();
       }
