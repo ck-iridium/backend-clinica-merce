@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Header
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from .. import database, models, schemas
+from ..services.sector_blueprints import get_sector_blueprint
 
 router = APIRouter(
     prefix="/super-admin",
@@ -166,6 +167,7 @@ def update_tenant_sector(
     if not tenant:
         raise HTTPException(status_code=404, detail="Inquilino no encontrado")
 
+    blueprint = get_sector_blueprint(sector)
     settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).first()
     if not settings:
         settings = models.ClinicSettings(
@@ -176,6 +178,24 @@ def update_tenant_sector(
         db.add(settings)
     else:
         settings.business_sector = sector
+
+    # Actualizar tokens de branding si aplica
+    branding = blueprint.get("branding", {})
+    if branding.get("branding_font_headings"):
+        settings.branding_font_headings = branding["branding_font_headings"]
+    if branding.get("branding_font_body"):
+        settings.branding_font_body = branding["branding_font_body"]
+    if branding.get("theme_palette"):
+        settings.theme_palette = branding["theme_palette"]
+
+    # Sincronizar imágenes de SiteContent para que no queden desiertas
+    site_content = db.query(models.SiteContent).filter(models.SiteContent.tenant_id == tenant_id).first()
+    if site_content:
+        sc_blueprint = blueprint.get("site_content", {})
+        if not site_content.hero_image_url or "beauty/hero.jpg" in site_content.hero_image_url:
+            site_content.hero_image_url = sc_blueprint.get("hero_image_url")
+        if not site_content.about_image_url or "beauty/about.jpg" in site_content.about_image_url:
+            site_content.about_image_url = sc_blueprint.get("about_image_url")
     
     db.commit()
     return get_tenant_out(tenant, db)

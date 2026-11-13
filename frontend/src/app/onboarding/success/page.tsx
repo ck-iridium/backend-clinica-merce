@@ -292,6 +292,9 @@ function OnboardingContent() {
   };
 
   const handleCinematicRedirect = () => {
+    try {
+      sessionStorage.setItem('probookia_just_onboarded', 'true');
+    } catch {}
     const hostname = window.location.hostname;
     const protocol = window.location.protocol;
     let redirectUrl = '/login';

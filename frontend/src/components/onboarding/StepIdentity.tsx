@@ -1,6 +1,6 @@
 "use client"
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Sparkles, 
   Layers, 
@@ -12,8 +12,21 @@ import {
   Cpu, 
   ShieldCheck, 
   Crown,
+  ChevronDown,
+  PawPrint,
+  Car,
+  Home,
+  Briefcase,
+  SlidersHorizontal,
   LucideIcon
 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Sector {
   id: string;
@@ -24,7 +37,7 @@ interface Sector {
   secondaryIcon?: LucideIcon;
 }
 
-const SECTORS: Sector[] = [
+const PRIMARY_SECTORS: Sector[] = [
   { 
     id: 'Medicina Estética', 
     label: 'Medicina Estética', 
@@ -59,6 +72,44 @@ const SECTORS: Sector[] = [
   }
 ];
 
+const OTHER_SECTORS: Sector[] = [
+  {
+    id: 'Veterinaria y Cuidados',
+    label: 'Veterinaria y Cuidados',
+    badge: 'Salud & Bienestar Animal',
+    desc: 'Medicina preventiva, vacunación, consultas veterinarias y cuidados dedicados para mascotas.',
+    icon: PawPrint
+  },
+  {
+    id: 'Automoción y Mecánica',
+    label: 'Automoción y Mecánica',
+    badge: 'Detailing & Taller de Precisión',
+    desc: 'Mantenimiento preventivo, diagnóstico electrónico, detailing de alta gama y mecánica general.',
+    icon: Car
+  },
+  {
+    id: 'Servicios a Domicilio',
+    label: 'Servicios a Domicilio',
+    badge: 'Especialistas en tu Espacio',
+    desc: 'Asistencia técnica, reformas, reparaciones y mantenimiento profesional en vivienda o local.',
+    icon: Home
+  },
+  {
+    id: 'Consultoría y Asesoría',
+    label: 'Consultoría y Asesoría',
+    badge: 'Legal & Estrategia Corporativa',
+    desc: 'Asesoramiento legal, consultoría financiera, auditoría estratégica y sesiones profesionales.',
+    icon: Briefcase
+  },
+  {
+    id: 'General / Otros Servicios',
+    label: 'General / Otros Servicios',
+    badge: 'Servicios de Autor & Estudios',
+    desc: 'Tatuaje, fotografía, academias, diseño o cualquier actividad profesional orientada a reservas.',
+    icon: Sparkles
+  }
+];
+
 interface StepIdentityProps {
   clinicName: string;
   setClinicName: (val: string) => void;
@@ -78,6 +129,9 @@ export const StepIdentity: React.FC<StepIdentityProps> = ({
   setLogoBase64,
   handleLogoChange
 }) => {
+  const isOtherSector = OTHER_SECTORS.some(sec => sec.id === selectedSector);
+  const activeOtherSector = OTHER_SECTORS.find(sec => sec.id === selectedSector);
+
   return (
     <div className="space-y-7 animate-in fade-in duration-500 font-sans">
       
@@ -112,8 +166,9 @@ export const StepIdentity: React.FC<StepIdentityProps> = ({
           <span className="text-[10px] text-stone-400 font-medium">Configura catálogo e IA</span>
         </div>
         
+        {/* 4 Tarjetas Principales */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          {SECTORS.map((sec) => {
+          {PRIMARY_SECTORS.map((sec) => {
             const isSelected = selectedSector === sec.id;
             const IconComp = sec.icon;
 
@@ -175,6 +230,88 @@ export const StepIdentity: React.FC<StepIdentityProps> = ({
               </div>
             );
           })}
+        </div>
+
+        {/* Desplegable Elegante: "¿Tienes otro tipo de negocio?" */}
+        <div className="pt-2">
+          {isOtherSector && activeOtherSector ? (
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-stone-950 via-stone-900 to-stone-950 border border-[#d4af37] shadow-[0_12px_30px_rgba(28,25,23,0.12)] text-white ring-1 ring-[#d4af37]/50 relative overflow-hidden">
+              <div className="absolute -top-10 -right-10 w-24 h-24 bg-[#d4af37]/15 rounded-full blur-2xl pointer-events-none" />
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-[#d4af37]/20 text-[#d4af37] border border-[#d4af37]/30 flex items-center justify-center shrink-0">
+                    <activeOtherSector.icon size={18} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-[#e6c86e] uppercase tracking-wider font-bold">Sector especializado activo:</span>
+                      <span className="text-[9px] bg-[#d4af37]/20 text-[#e6c86e] px-2 py-0.5 rounded-full border border-[#d4af37]/30 font-bold uppercase">
+                        {activeOtherSector.badge}
+                      </span>
+                    </div>
+                    <h4 className="text-xs font-bold text-white mt-0.5">{activeOtherSector.label}</h4>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2 self-end sm:self-center">
+                  <Select
+                    value={selectedSector}
+                    onValueChange={(val) => setSelectedSector(val)}
+                  >
+                    <SelectTrigger className="h-8 text-[11px] bg-stone-850/80 border-stone-700 text-stone-200 hover:text-white px-3 py-1.5 rounded-xl">
+                      <span>Cambiar sector</span>
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border-stone-200 shadow-xl rounded-xl z-[200]">
+                      {OTHER_SECTORS.map((sec) => (
+                        <SelectItem key={sec.id} value={sec.id} className="text-xs py-2">
+                          <div className="flex items-center gap-2">
+                            <sec.icon size={14} className="text-[#d4af37]" />
+                            <span className="font-medium text-stone-900">{sec.label}</span>
+                            <span className="text-[10px] text-stone-400 font-normal">({sec.badge})</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-white/70 border border-stone-200/70 hover:border-stone-300 transition-all">
+              <div className="flex items-center gap-2.5">
+                <SlidersHorizontal size={14} className="text-stone-400" />
+                <span className="text-xs text-stone-600 font-medium">
+                  ¿Tu negocio es de otro sector?
+                </span>
+                <span className="hidden md:inline text-[11px] text-stone-400">
+                  (Veterinaria, Mecánica, Domicilio, Consultoría...)
+                </span>
+              </div>
+              <div className="w-48 sm:w-56 shrink-0">
+                <Select
+                  value=""
+                  onValueChange={(val) => {
+                    if (val) setSelectedSector(val);
+                  }}
+                >
+                  <SelectTrigger className="h-9 text-xs bg-white border-stone-200/90 text-stone-600 rounded-xl shadow-2xs hover:border-[#d4af37]">
+                    <SelectValue placeholder="Seleccionar otro sector..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border-stone-200 shadow-xl rounded-xl z-[200]">
+                    {OTHER_SECTORS.map((sec) => (
+                      <SelectItem key={sec.id} value={sec.id} className="text-xs py-2">
+                        <div className="flex items-center gap-2">
+                          <sec.icon size={14} className="text-[#d4af37]" />
+                          <span className="font-medium text-stone-900">{sec.label}</span>
+                          <span className="text-[10px] text-stone-400 font-normal">({sec.badge})</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

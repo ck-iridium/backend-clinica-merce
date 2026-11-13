@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from .. import database, models, schemas
 from ..database import current_tenant_var
 from ..limits import get_tenant_limits
+from ..services.sector_blueprints import get_sector_blueprint
 from .users import pwd_context
 
 try:
@@ -385,57 +386,80 @@ def setup_onboarding(payload: schemas.OnboardingSetupRequest, db: Session = Depe
 
     db.flush()
 
-    # Mapear el sector del payload al sector permitido en ClinicSettings
-    sector_mapping = {
-        "Medicina Estética": "clinical",
-        "Estética y Bienestar": "beauty",
-        "Clínicas de Salud": "clinical",
-        "Salones y Barberías": "barber"
-    }
-    settings.business_sector = sector_mapping.get(payload.industry, "general")
+    # Obtener el Blueprint del sector seleccionado
+    blueprint = get_sector_blueprint(payload.industry)
+    sector_key = blueprint["id"]
+    settings.business_sector = sector_key
     settings.onboarding_completed = True
 
-    # Asignar paleta tipográfica según el sector para coherencia de marca (Tokens de diseño)
-    if payload.industry in ["Medicina Estética", "Estética y Bienestar"]:
-        settings.branding_font_headings = "Playfair Display"
-        settings.branding_font_body = "Inter"
-        settings.theme_palette = "charcoal-gold"
-    elif payload.industry == "Clínicas de Salud":
-        settings.branding_font_headings = "Inter"
-        settings.branding_font_body = "Inter"
-        settings.theme_palette = "clean-medical"
-    else:  # Barberías/Salones
-        settings.branding_font_headings = "Cormorant Garamond"
-        settings.branding_font_body = "Inter"
-        settings.theme_palette = "minimal-dark"
+    # Asignar tokens de diseño de marca según el Blueprint
+    branding = blueprint.get("branding", {})
+    settings.branding_font_headings = branding.get("branding_font_headings", "Playfair Display")
+    settings.branding_font_body = branding.get("branding_font_body", "Inter")
+    settings.theme_palette = branding.get("theme_palette", "charcoal-gold")
+    if branding.get("accent_color"):
+        settings.accent_color = branding["accent_color"]
+        settings.accent_color_primary = branding["accent_color"]
+    if branding.get("accent_color_secondary"):
+        settings.accent_color_secondary = branding["accent_color_secondary"]
 
-    # 3. Inyectar tratamientos de demostración si es requerido
+    # Inyectar / Actualizar SiteContent con textos y fotografías reales del sector
+    site_content = db.query(models.SiteContent).filter(models.SiteContent.tenant_id == tenant_id).first()
+    if not site_content:
+        site_content = models.SiteContent(
+            id=str(uuid.uuid4()),
+            tenant_id=tenant_id
+        )
+        db.add(site_content)
+
+    sc_blueprint = blueprint.get("site_content", {})
+    clinic_display_name = payload.clinic_name or settings.clinic_name or "Tu Negocio"
+
+    site_content.hero_title = sc_blueprint.get("hero_title", "Bienvenidos a {clinic_name}").replace("{clinic_name}", clinic_display_name)
+    site_content.hero_subtitle = sc_blueprint.get("hero_subtitle", "Servicios profesionales y cuidado personalizado.")
+    site_content.hero_image_url = sc_blueprint.get("hero_image_url")
+    site_content.hero_button_text = sc_blueprint.get("hero_button_text", "Reservar Cita")
+    site_content.hero_button_link = sc_blueprint.get("hero_button_link", "/reservar")
+    site_content.hero_show_button = True
+
+    site_content.about_title = sc_blueprint.get("about_title", "Sobre {clinic_name}").replace("{clinic_name}", clinic_display_name)
+    site_content.about_text = sc_blueprint.get("about_text", "Nos dedicamos a ofrecer los mejores servicios.").replace("{clinic_name}", clinic_display_name)
+    site_content.about_image_url = sc_blueprint.get("about_image_url")
+
+    site_content.cta_title = sc_blueprint.get("cta_title", "¿Listo para empezar?")
+    site_content.cta_subtitle = sc_blueprint.get("cta_subtitle", "Reserva tu cita hoy mismo.")
+    site_content.cta_button_text = sc_blueprint.get("cta_button_text", "Contactar")
+    site_content.cta_button_link = sc_blueprint.get("cta_button_link", "/reservar")
+    db.flush()
+
+    # 3. Inyectar tratamientos de demostración con fotografías si es requerido
     services_added = 0
     if payload.load_demo_data:
-        industry_services = DEMO_SERVICES.get(payload.industry, DEMO_SERVICES["Estética y Bienestar"])
-        
-        # Primero, inyectamos una categoría principal para el sector si no existe
+        cat_info = blueprint.get("category", {
+            "name": f"Servicios de {blueprint['display_name']}",
+            "slug": f"servicios-{sector_key}",
+            "description": f"Catálogo sugerido para {blueprint['display_name']}."
+        })
+
         category = db.query(models.ServiceCategory).filter(
             models.ServiceCategory.tenant_id == tenant_id,
-            models.ServiceCategory.slug == "tratamientos-demo"
+            models.ServiceCategory.slug == cat_info["slug"]
         ).first()
 
         if not category:
             category = models.ServiceCategory(
                 id=str(uuid.uuid4()),
                 tenant_id=tenant_id,
-                name=f"Servicios de {payload.industry}",
-                slug="tratamientos-demo",
-                description=f"Catálogo inicial de tratamientos sugeridos para el sector {payload.industry}.",
+                name=cat_info["name"],
+                slug=cat_info["slug"],
+                description=cat_info["description"],
                 is_active=True,
                 order_index=0
             )
             db.add(category)
             db.flush()
 
-        # Inyectar los 3 servicios
-        for s in industry_services:
-            # Validar colisión local por slug
+        for s in blueprint.get("services", []):
             existing = db.query(models.Service).filter(
                 models.Service.tenant_id == tenant_id,
                 models.Service.slug == s["slug"]
@@ -452,7 +476,8 @@ def setup_onboarding(payload: schemas.OnboardingSetupRequest, db: Session = Depe
                     price=s["price"],
                     description=s["description"],
                     is_active=True,
-                    is_featured=s["is_featured"]
+                    is_featured=s["is_featured"],
+                    image_url=s.get("image_url")
                 )
                 db.add(db_service)
                 services_added += 1

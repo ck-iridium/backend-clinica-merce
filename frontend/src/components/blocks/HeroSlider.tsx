@@ -308,7 +308,14 @@ export default function HeroSlider({ content }: HeroSliderProps) {
                 <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-stone-900/20 to-stone-900/60 mix-blend-multiply" />
               </div>
             ) : (
-              <div className="absolute inset-0 z-0 bg-stone-900" />
+              <div className="absolute inset-0 z-0 bg-stone-900">
+                <img
+                  src="https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/beauty/hero.jpg"
+                  alt="Hero de Portada"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 via-stone-900/40 to-stone-900/80 mix-blend-multiply" />
+              </div>
             )}
 
             {/* Contenedor Tipográfico y Acciones */}

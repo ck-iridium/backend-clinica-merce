@@ -85,8 +85,10 @@ def provision_tenant(
             tenant_id=tenant_id,
             hero_title=f"Bienvenidos a {tenant_name}",
             hero_subtitle="Servicios profesionales y cuidado personalizado.",
+            hero_image_url="https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/beauty/hero.jpg",
             about_text="Nos dedicamos a ofrecer los mejores servicios para resaltar tu bienestar.",
-            about_title=f"Sobre {tenant_name}"
+            about_title=f"Sobre {tenant_name}",
+            about_image_url="https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/beauty/about.jpg"
         )
         db.add(default_content)
 

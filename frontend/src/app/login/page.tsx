@@ -106,7 +106,8 @@ export default function LoginPage() {
       if (role === 'super_admin' && isMainDomain) {
         router.push('/super-admin')
       } else {
-        router.push('/dashboard')
+        const isWelcome = params?.get('welcome') === 'true'
+        router.push(isWelcome ? '/dashboard?welcome=true' : '/dashboard')
       }
     } catch (err: any) {
       setError(err.message)

@@ -538,11 +538,11 @@ export default function ClientHome({ content, settings, services, categories }: 
 
                     {/* Imagen visible solo en móviles */}
                     <div className="block md:hidden rounded-[2.5rem] overflow-hidden shadow-2xl relative group w-full max-w-[320px] aspect-[4/5] mx-auto my-2 shrink-0">
-                      {content.about_image_url ? (
-                        <img src={content.about_image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${content.about_image_url}` : content.about_image_url} alt="Sobre Mí" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                      ) : (
-                        <div className="w-full h-full bg-stone-100 flex items-center justify-center text-stone-400">📷</div>
-                      )}
+                      <img 
+                        src={content.about_image_url ? (content.about_image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${content.about_image_url}` : content.about_image_url) : "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/beauty/about.jpg"} 
+                        alt="Sobre Nosotros" 
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                      />
                     </div>
 
                     <div className="text-base md:text-xl text-stone-600 dark:text-stone-300 leading-relaxed whitespace-pre-wrap font-medium max-w-md">
@@ -560,11 +560,11 @@ export default function ClientHome({ content, settings, services, categories }: 
 
                   {/* Columna Derecha (Imagen en Desktop) */}
                   <div className="hidden md:block rounded-[3rem] overflow-hidden shadow-2xl relative group w-full md:h-[600px]">
-                    {content.about_image_url ? (
-                      <img src={content.about_image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${content.about_image_url}` : content.about_image_url} alt="Sobre Mí" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                    ) : (
-                      <div className="w-full h-full bg-stone-100 flex items-center justify-center text-stone-400">📷</div>
-                    )}
+                    <img 
+                      src={content.about_image_url ? (content.about_image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${content.about_image_url}` : content.about_image_url) : "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/beauty/about.jpg"} 
+                      alt="Sobre Nosotros" 
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                    />
                   </div>
                 </div>
               </section>

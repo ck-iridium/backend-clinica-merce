@@ -84,8 +84,14 @@ export default function ServiceCard({ service, isLarge = false, className = '' }
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <span className="font-serif text-stone-400 dark:text-stone-600 text-xs italic">Sin Imagen</span>
+          <div className="w-full h-full bg-gradient-to-br from-stone-900 via-stone-950 to-stone-900 flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.08)_0%,transparent_70%)] pointer-events-none" />
+            <div className="w-12 h-12 rounded-2xl bg-[#d4af37]/10 border border-[#d4af37]/20 flex items-center justify-center text-[#d4af37] mb-3 shadow-inner">
+              <span className="font-serif text-lg font-bold">✨</span>
+            </div>
+            <span className="font-serif text-stone-200 text-xs tracking-wider uppercase font-semibold line-clamp-2 max-w-[200px]">
+              {service.name}
+            </span>
           </div>
         )}
       </div>

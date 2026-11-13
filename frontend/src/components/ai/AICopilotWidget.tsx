@@ -287,6 +287,42 @@ export default function AICopilotWidget() {
     } catch (e) { console.warn('Error al cargar historial del copilot:', e); }
   }, []);
 
+  // ── Detección de Bienvenida Onboarding ────────────────────────────────────
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasWelcomeParam = urlParams.get('welcome') === 'true';
+    let hasJustOnboarded = false;
+    try {
+      hasJustOnboarded = sessionStorage.getItem('probookia_just_onboarded') === 'true';
+    } catch {}
+
+    if (hasWelcomeParam || hasJustOnboarded) {
+      try {
+        sessionStorage.removeItem('probookia_just_onboarded');
+        if (hasWelcomeParam) {
+          const newUrl = window.location.pathname;
+          window.history.replaceState({}, '', newUrl);
+        }
+      } catch {}
+
+      const onboardingWelcomeMsg = language === 'fr'
+        ? `🎉 Félicitations${firstName ? ` ${firstName}` : ''} ! Nous avons préparé votre site web avec des photographies de haute qualité et des services types adaptés à votre secteur. Vous pouvez les modifier à tout moment ou me dicter vos tarifs ici pour que je les mette à jour pour vous.`
+        : language === 'en'
+          ? `🎉 Congratulations${firstName ? ` ${firstName}` : ''}! We've built your website with high-end photography and sample services tailored to your industry. You can edit them anytime or paste your real pricing right here and I'll update everything for you.`
+          : `🎉 ¡Enhorabuena${firstName ? ` ${firstName}` : ''}! Hemos dejado lista la web de tu negocio con fotografías de alta resolución y servicios de ejemplo para tu sector.\n\nPuedes editarlos uno a uno desde el catálogo o dictarme tus tarifas reales aquí y las actualizaré por ti al instante.\n\n¿Quieres que adaptemos algo o prefieres ver cómo ha quedado tu escaparate en vivo?`;
+
+      setMessages([{ role: 'model', content: onboardingWelcomeMsg }]);
+      
+      const timer = setTimeout(() => {
+        setIsOpen(true);
+      }, 1200);
+
+      return () => clearTimeout(timer);
+    }
+  }, [firstName, language]);
+
   useEffect(() => {
     if (messages.length > 1) {
       try { sessionStorage.setItem('probookia_copilot_history', JSON.stringify(messages)); }

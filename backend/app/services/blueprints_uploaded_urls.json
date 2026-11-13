@@ -1,0 +1,66 @@
+{
+  "clinical": {
+    "hero": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/clinical/hero.jpg",
+    "about": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/clinical/about.jpg",
+    "service-1": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/clinical/service-1.jpg",
+    "service-2": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/clinical/service-2.jpg",
+    "service-3": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/clinical/service-3.jpg",
+    "service-4": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/clinical/service-4.jpg"
+  },
+  "beauty": {
+    "hero": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/beauty/hero.jpg",
+    "about": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/beauty/about.jpg",
+    "service-1": "https://images.unsplash.com/photo-1512290900672-1f55a153835e?auto=format&fit=crop&w=1000&q=80",
+    "service-2": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/beauty/service-2.jpg",
+    "service-3": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/beauty/service-3.jpg",
+    "service-4": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/beauty/service-4.jpg"
+  },
+  "barber": {
+    "hero": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/barber/hero.jpg",
+    "about": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/barber/about.jpg",
+    "service-1": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/barber/service-1.jpg",
+    "service-2": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/barber/service-2.jpg",
+    "service-3": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/barber/service-3.jpg",
+    "service-4": "https://images.unsplash.com/photo-1517832606589-7629c339590a?auto=format&fit=crop&w=1000&q=80"
+  },
+  "veterinary": {
+    "hero": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/veterinary/hero.jpg",
+    "about": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/veterinary/about.jpg",
+    "service-1": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/veterinary/service-1.jpg",
+    "service-2": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/veterinary/service-2.jpg",
+    "service-3": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/veterinary/service-3.jpg",
+    "service-4": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/veterinary/service-4.jpg"
+  },
+  "automotive": {
+    "hero": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/automotive/hero.jpg",
+    "about": "https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=1200&q=80",
+    "service-1": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/automotive/service-1.jpg",
+    "service-2": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/automotive/service-2.jpg",
+    "service-3": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/automotive/service-3.jpg",
+    "service-4": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/automotive/service-4.jpg"
+  },
+  "home_services": {
+    "hero": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/home_services/hero.jpg",
+    "about": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/home_services/about.jpg",
+    "service-1": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/home_services/service-1.jpg",
+    "service-2": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/home_services/service-2.jpg",
+    "service-3": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/home_services/service-3.jpg",
+    "service-4": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/home_services/service-4.jpg"
+  },
+  "professional": {
+    "hero": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/professional/hero.jpg",
+    "about": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/professional/about.jpg",
+    "service-1": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/professional/service-1.jpg",
+    "service-2": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/professional/service-2.jpg",
+    "service-3": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/professional/service-3.jpg",
+    "service-4": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/professional/service-4.jpg"
+  },
+  "general": {
+    "hero": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/general/hero.jpg",
+    "about": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/general/about.jpg",
+    "service-1": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/general/service-1.jpg",
+    "service-2": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/general/service-2.jpg",
+    "service-3": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/general/service-3.jpg",
+    "service-4": "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/general/service-4.jpg"
+  }
+}
