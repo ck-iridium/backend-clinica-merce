@@ -5,7 +5,8 @@ import uuid
 import time
 import base64
 import logging
-from typing import Optional
+import unicodedata
+from typing import Optional, Set
 
 import requests
 from PIL import Image
@@ -19,11 +20,133 @@ from ....database import SessionLocal, current_tenant_var
 logger = logging.getLogger("ai_agent_tools_images")
 
 
+def _normalize_text(text: Optional[str]) -> str:
+    """Normaliza texto eliminando acentos, puntuación y convirtiendo a minúsculas."""
+    if not text:
+        return ""
+    text = unicodedata.normalize('NFD', text.lower())
+    text = ''.join(c for c in text if unicodedata.category(c) != 'Mn')
+    return re.sub(r'[^a-z0-9\s]', ' ', text).strip()
+
+
+STOP_WORDS = {
+    'de', 'la', 'el', 'los', 'las', 'un', 'una', 'y', 'en', 'para', 'del', 'al', 
+    'categoria', 'servicio', 'tratamiento', 'por', 'favor', 'como', 'con', 'sin', 'que'
+}
+
+
+def _get_tokens(text: Optional[str]) -> Set[str]:
+    """Extrae palabras clave de un texto omitiendo conectores y unificando singulares/plurales."""
+    norm = _normalize_text(text)
+    tokens = set()
+    for w in norm.split():
+        if w not in STOP_WORDS and len(w) > 1:
+            tokens.add(w)
+            if w.endswith('s') and len(w) > 3:
+                tokens.add(w[:-1])
+    return tokens
+
+
+def find_best_matching_service(db, tenant_id: str, query_str: str) -> Optional[models.Service]:
+    """
+    Busca de manera ultra inteligente y tolerante el servicio en el catálogo del tenant
+    utilizando coincidencia por slug, nombre parcial y ponderación difusa de palabras clave.
+    """
+    if not query_str or not query_str.strip():
+        return None
+
+    clean_query = query_str.strip()
+    norm_query = _normalize_text(clean_query)
+    q_tokens = _get_tokens(clean_query)
+
+    # 1. Coincidencia exacta por slug
+    slug_candidate = re.sub(r'[^a-z0-9]+', '-', norm_query).strip('-')
+    service = db.query(models.Service).filter(
+        models.Service.tenant_id == tenant_id,
+        models.Service.slug == slug_candidate
+    ).first()
+    if service:
+        return service
+
+    # 2. Coincidencia directa insensible a mayúsculas
+    service = db.query(models.Service).filter(
+        models.Service.tenant_id == tenant_id,
+        models.Service.name.ilike(f"%{clean_query}%")
+    ).first()
+    if service:
+        return service
+
+    # 3. Ponderación difusa de tokens contra todos los servicios del inquilino
+    all_services = db.query(models.Service).filter(
+        models.Service.tenant_id == tenant_id
+    ).all()
+
+    if not all_services or not q_tokens:
+        return None
+
+    # Mapear categorías si existen
+    categories = {c.id: c.name for c in db.query(models.ServiceCategory).filter(
+        models.ServiceCategory.tenant_id == tenant_id
+    ).all()}
+
+    best_service = None
+    best_score = -999
+
+    for s in all_services:
+        s_norm = _normalize_text(s.name)
+        s_tokens = _get_tokens(s.name) | _get_tokens(s.slug)
+        cat_name = categories.get(s.category_id, "")
+        cat_tokens = _get_tokens(cat_name)
+
+        score = 0
+        for qt in q_tokens:
+            if qt in s_tokens:
+                score += 3
+            elif qt in cat_tokens:
+                score += 1.5
+
+        # Discriminadores de polaridad críticos: hombre vs mujer
+        if 'mujer' in q_tokens:
+            if 'mujer' in s_tokens:
+                score += 6
+            if 'hombre' in s_tokens:
+                score -= 12
+        if 'hombre' in q_tokens:
+            if 'hombre' in s_tokens:
+                score += 6
+            if 'mujer' in s_tokens:
+                score -= 12
+
+        # Discriminadores de brazos: con brazos vs sin brazos
+        if 'brazo' in q_tokens or 'brazos' in q_tokens:
+            if 'con' in norm_query and 'sin' not in norm_query:
+                if 'con' in s_norm:
+                    score += 5
+                if 'sin' in s_norm:
+                    score -= 10
+            elif 'sin' in norm_query:
+                if 'sin' in s_norm:
+                    score += 5
+                if 'con' in s_norm:
+                    score -= 10
+
+        if score > best_score:
+            best_score = score
+            best_service = s
+
+    # Solo considerar válido si el score supera un umbral mínimo significativo
+    if best_score >= 3:
+        logger.info(f"Fuzzy match exitoso: '{query_str}' -> '{best_service.name}' (score: {best_score})")
+        return best_service
+
+    return None
+
+
 def _enhance_prompt_for_luxury_beauty(
     user_prompt: str,
     api_key: str,
     visual_style: str = "luxury",
-    shot_type: str = "closeup_beauty"
+    shot_type: str = "commercial_photography"
 ) -> str:
     """Refina el prompt para generar una fotografía comercial y estética de clínica de lujo."""
     try:
@@ -31,11 +154,11 @@ def _enhance_prompt_for_luxury_beauty(
         model = genai.GenerativeModel('gemini-2.5-flash')
         instruct = (
             f"You are an elite commercial beauty photographer and art director for luxury aesthetic medical clinics and wellness spas.\n"
-            f"Convert this treatment context into a breathtaking, photorealistic image generation prompt in ENGLISH.\n"
+            f"Convert this user context into a breathtaking, photorealistic image generation prompt in ENGLISH.\n"
             f"Target style: {visual_style}, Shot type: {shot_type}.\n"
-            f"Treatment context: '{user_prompt}'.\n"
+            f"Context: '{user_prompt}'.\n"
             f"MANDATORY RULES:\n"
-            f"- Radiant high-key lighting, soft diffused glow, impeccable skin texture or elegant serene spa environment.\n"
+            f"- Radiant high-key lighting, soft diffused glow, serene spa or medical boutique atmosphere.\n"
             f"- Quiet luxury aesthetic, warm ivory and gold undertones, ultra-high definition, 8k resolution.\n"
             f"- Strictly NO text, NO logos, NO watermarks, NO distorted limbs, NO surgical gore.\n"
             f"- Output ONLY the final detailed commercial prompt in English without any markdown or intro."
@@ -48,20 +171,22 @@ def _enhance_prompt_for_luxury_beauty(
         return f"High-end luxury commercial beauty photography of {user_prompt}, soft natural warm lighting, editorial spa aesthetic, 8k, photorealistic."
 
 
-def generar_imagen_servicio(
-    service_slug_or_name: str,
-    visual_prompt: Optional[str] = None
+def generar_imagen(
+    prompt: str,
+    service_name_or_slug: Optional[str] = None,
+    aspect_ratio: Optional[str] = "1:1"
 ) -> str:
     """
-    Genera una imagen artística y comercial de alta costura mediante Inteligencia Artificial para un tratamiento
-    o servicio del catálogo oficial de la clínica, y la asocia automáticamente a la ficha del tratamiento.
+    Genera una imagen artística y comercial mediante Inteligencia Artificial (Google Imagen o OpenAI DALL-E)
+    y la muestra inmediatamente en el chat de ProBookia con miniatura interactiva y visor de zoom.
 
-    IMPORTANTE: Requiere estrictamente que la clínica tenga configurada su propia clave de API (Google Gemini u OpenAI)
-    en Ajustes > Avanzado.
+    Si se proporciona un nombre o slug de servicio/tratamiento, la asociará automáticamente como su imagen oficial en el catálogo.
+    Si no se especifica servicio, generará la imagen para el chat y la guardará en la galería multimedia del centro.
 
     Args:
-        service_slug_or_name: El nombre o slug del tratamiento/servicio para el cual generar la imagen (ej: 'botox', 'masaje-relajante', 'Peeling Químico', 'Lifting Facial').
-        visual_prompt: Opcional. Descripción visual específica del ambiente o tratamiento deseado. Si se omite, se generará una fotografía publicitaria de lujo adaptada automáticamente al tratamiento.
+        prompt: La descripción visual de lo que se desea generar (ej: 'mujer en camilla recibiendo depilación láser con guante rosa', 'primer plano estético de piel radiante', 'portada de estética de lujo').
+        service_name_or_slug: Opcional. Nombre o slug del tratamiento del catálogo al que vincular la imagen. Si el usuario no menciona ningún servicio, déjalo vacío o None.
+        aspect_ratio: Opcional. Proporción de la imagen: '1:1' (cuadrada estándar), '16:9' (panorámica horizontal / portada) o '9:16' (vertical móvil).
     """
     db = SessionLocal()
     try:
@@ -108,44 +233,37 @@ def generar_imagen_servicio(
                     "[OPTION: 1. Configurar Clave de API de OpenAI | ir a ajustes avanzados]"
                 )
 
-        # 1. Localizar el servicio en la base de datos
-        service = db.query(models.Service).filter(
-            models.Service.tenant_id == tenant_id,
-            models.Service.slug == service_slug_or_name
-        ).first()
+        # 1. Intentar resolver el servicio si fue mencionado
+        matched_service = None
+        if service_name_or_slug and service_name_or_slug.strip():
+            matched_service = find_best_matching_service(db, tenant_id, service_name_or_slug)
 
-        if not service:
-            service = db.query(models.Service).filter(
-                models.Service.tenant_id == tenant_id,
-                models.Service.name.ilike(f"%{service_slug_or_name}%")
-            ).first()
-
-        if not service:
-            clean_slug = re.sub(r'[^a-z0-9]+', '-', service_slug_or_name.lower()).strip('-')
-            service = db.query(models.Service).filter(
-                models.Service.tenant_id == tenant_id,
-                models.Service.slug == clean_slug
-            ).first()
-
-        service_display_name = service.name if service else service_slug_or_name
-        service_desc = (service.description or "") if service else ""
-
-        # 2. Construir y refinar el prompt
-        base_prompt = visual_prompt or f"Tratamiento estético profesional: {service_display_name}. {service_desc}. Ambiente de clínica y bienestar exclusivo."
-        
+        # 2. Refinar prompt visual
         prompt_enhancer_key = gemini_key or os.getenv("GEMINI_API_KEY")
         if prompt_enhancer_key:
-            refined_prompt = _enhance_prompt_for_luxury_beauty(base_prompt, prompt_enhancer_key)
+            refined_prompt = _enhance_prompt_for_luxury_beauty(prompt, prompt_enhancer_key)
         else:
-            refined_prompt = f"Luxury editorial commercial beauty photography of {service_display_name}, soft radiant lighting, quiet luxury aesthetic, 8k."
+            refined_prompt = f"Luxury editorial commercial photography of {prompt}, soft radiant lighting, quiet luxury aesthetic, 8k."
+
+        # Aspect ratio format
+        ar = (aspect_ratio or "1:1").strip().lower()
+        if ar in ["16:9", "16-9", "16/9", "16 novenos", "panoramica", "horizontal"]:
+            ratio_label = "16:9 aspect ratio"
+            openai_size = "1792x1024"
+        elif ar in ["9:16", "9-16", "9/16", "vertical", "story"]:
+            ratio_label = "9:16 aspect ratio"
+            openai_size = "1024x1792"
+        else:
+            ratio_label = "1:1 aspect ratio"
+            openai_size = "1024x1024"
 
         file_bytes = None
 
-        # 3. Generación con el proveedor configurado
+        # 3. Generar la imagen según el proveedor activo
         if ai_provider == "gemini":
             genai.configure(api_key=gemini_key)
             model_name = settings.gemini_model_image or "imagen-3.0-generate-001"
-            aspect_prompt = f"{refined_prompt}. 9:16 aspect ratio. Commercial beauty photography, 8k, ultra-detailed, photorealistic."
+            aspect_prompt = f"{refined_prompt}. {ratio_label}. Commercial luxury photography, 8k, ultra-detailed, photorealistic."
 
             try:
                 model = genai.GenerativeModel(model_name)
@@ -158,7 +276,7 @@ def generar_imagen_servicio(
                         file_bytes = part.blob.data
                         break
             except Exception as gem_ex:
-                logger.warning(f"Error generando con modelo '{model_name}': {gem_ex}. Intentando fallback a 'imagen-3.0-generate-001'")
+                logger.warning(f"Error generando con modelo '{model_name}': {gem_ex}. Probando fallback a 'imagen-3.0-generate-001'")
                 try:
                     fallback_model = genai.GenerativeModel("imagen-3.0-generate-001")
                     response = fallback_model.generate_content(aspect_prompt)
@@ -182,9 +300,9 @@ def generar_imagen_servicio(
                     prompt=refined_prompt,
                     n=1,
                     quality="hd",
-                    size="1024x1792" if model_name == "dall-e-3" else "1024x1024"
+                    size=openai_size if model_name == "dall-e-3" else "1024x1024"
                 )
-                file_bytes = requests.get(response.data[0].url, timeout=30).content
+                file_bytes = requests.get(response.data[0].url, timeout=35).content
             except Exception as oai_ex:
                 logger.error(f"Error en OpenAI DALL-E: {oai_ex}")
                 return f"Error al generar la imagen con OpenAI: {str(oai_ex)}"
@@ -192,7 +310,7 @@ def generar_imagen_servicio(
         if not file_bytes:
             return "Error: No se recibió ningún contenido binario de la imagen generada."
 
-        # 4. Procesamiento a WebP y guardado en Supabase Storage
+        # 4. Procesar a WebP y guardar en Supabase Storage
         supabase_url = os.environ.get("SUPABASE_URL")
         supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
         if not supabase_url or not supabase_key:
@@ -225,30 +343,39 @@ def generar_imagen_servicio(
         )
         db.add(new_media)
 
-        # 6. Si el servicio existe, asociar la imagen al servicio
-        if service:
-            service.image_url = public_url
+        # 6. Si se encontró un servicio coincidente, asociar la imagen
+        if matched_service:
+            matched_service.image_url = public_url
             db.commit()
             return (
-                f"He generado con éxito una fotografía de alta costura para '{service.name}' y la he asignado a su ficha oficial en el catálogo.\n\n"
-                f"[Imagen adjunta: \"{service.name}.webp\"]\n"
-                f"URL de la imagen: {public_url}\n\n"
-                f"[OPTION: 1. Ver catálogo de tratamientos | ver tratamientos]\n"
-                f"[OPTION: 2. Generar otra imagen | generar imagen servicio]"
+                f"He generado con éxito la fotografía y la he asociado oficialmente a la ficha de '{matched_service.name}'.\n\n"
+                f"[Imagen adjunta: \"{matched_service.name}.webp\"]\n"
+                f"URL de la imagen: {public_url}"
             )
         else:
             db.commit()
+            # Nombre descriptivo para la imagen en el chat
+            preview_title = (prompt[:40] + '...') if len(prompt) > 40 else prompt
             return (
-                f"He generado con éxito la imagen inspirada en '{service_display_name}' y la he guardado en tu galería de Medios.\n\n"
-                f"[Imagen adjunta: \"{service_display_name}.webp\"]\n"
-                f"URL de la imagen: {public_url}\n\n"
-                f"[OPTION: 1. Ver galería multimedia | ver galeria]"
+                f"He generado la fotografía de alta costura con éxito y la he guardado en tu galería de Medios.\n\n"
+                f"[Imagen adjunta: \"{preview_title}.webp\"]\n"
+                f"URL de la imagen: {public_url}"
             )
 
     except Exception as e:
         db.rollback()
-        logger.error(f"Error en generar_imagen_servicio para tenant {current_tenant_var.get()}: {e}")
+        logger.error(f"Error en generar_imagen para tenant {current_tenant_var.get()}: {e}")
         return f"Error al generar la imagen: {str(e)}"
     finally:
         db.close()
 
+
+def generar_imagen_servicio(
+    service_slug_or_name: str,
+    visual_prompt: Optional[str] = None
+) -> str:
+    """
+    Alias especializado para generar una imagen y asociarla a un servicio específico del catálogo.
+    """
+    full_prompt = visual_prompt or f"Tratamiento estético profesional de {service_slug_or_name}"
+    return generar_imagen(prompt=full_prompt, service_name_or_slug=service_slug_or_name)

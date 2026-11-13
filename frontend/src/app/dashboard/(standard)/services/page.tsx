@@ -124,6 +124,16 @@ export default function ServicesPage() {
     }
   }, [role, loadingRole, router]);
 
+  // Actualización reactiva sin recargar la página cuando el Co-Piloto AI modifica o genera servicios/imágenes
+  useEffect(() => {
+    const handleServicesUpdated = () => {
+      fetchServices();
+      fetchCategories();
+    };
+    window.addEventListener('services-updated', handleServicesUpdated);
+    return () => window.removeEventListener('services-updated', handleServicesUpdated);
+  }, []);
+
   // Redirección inteligente y automática si viene el parámetro ?edit=slug o ?slug=slug
   useEffect(() => {
     if (services.length > 0) {

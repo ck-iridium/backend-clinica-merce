@@ -383,10 +383,10 @@ export default function AICopilotWidget() {
     stopSpeaking();
     unlockAudioContext();
     let queryText = textToSend || input.trim();
-    if (!queryText && !attachedFile && !textToSend) return;
+    if (!queryText && !attachedFile) return;
     if (isLoading || isUploading) return;
 
-    if (attachedFile && !textToSend) {
+    if (attachedFile) {
       if (attachedFile.type === 'text') {
         queryText = `[Archivo adjunto: "${attachedFile.name}"]\nContenido:\n"""\n${attachedFile.content}\n"""\n\n${queryText}`;
       } else if (attachedFile.type === 'image' && attachedFile.url) {
@@ -395,7 +395,7 @@ export default function AICopilotWidget() {
       setAttachedFile(null);
     }
 
-    if (!textToSend) setInput('');
+    setInput('');
 
     let tenantId = getCookie('tenant_id') || '';
     let authToken = '';
@@ -506,15 +506,21 @@ export default function AICopilotWidget() {
         }
 
         router.push(targetRoute);
-        setIsOpen(false);
+        // Mantener el chat abierto para que la voz no se corte ni se cierre la ventana de conversación mientras navega
         toast.success(
           language === 'fr' ? 'Navigation réussie' : 
           language === 'en' ? 'Navigation successful' : 
           'Navegación completada con éxito.'
         );
-      } else if (shouldRefresh) {
+      }
+
+      if (shouldRefresh) {
+        // Disparar eventos reactivos para refrescar catálogos y medios sin recargar la página entera (evitando cortar el audio)
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('services-updated'));
+          window.dispatchEvent(new CustomEvent('media-updated'));
+        }
         router.refresh();
-        if (typeof window !== 'undefined') window.location.reload();
       }
 
     } catch (err: any) {

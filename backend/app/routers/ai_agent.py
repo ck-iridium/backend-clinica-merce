@@ -246,9 +246,10 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
                         updated_fields.append("services")
                     elif name == "create_new_category":
                         updated_fields.append("categories")
-                    elif name == "generar_imagen_servicio":
+                    elif name in ["generar_imagen", "generar_imagen_servicio"]:
                         updated_fields.append("services")
                         updated_fields.append("image_url")
+                        updated_fields.append("media")
 
         # Quitar duplicados en campos actualizados si existen
         updated_fields = list(set(updated_fields))

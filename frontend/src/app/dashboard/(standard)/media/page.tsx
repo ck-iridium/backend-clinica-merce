@@ -82,6 +82,13 @@ export default function MediaGalleryPage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  // Actualización reactiva cuando el Co-Piloto AI genera o sube archivos multimedia
+  useEffect(() => {
+    const handleMediaUpdated = () => { fetchData(); };
+    window.addEventListener('media-updated', handleMediaUpdated);
+    return () => window.removeEventListener('media-updated', handleMediaUpdated);
+  }, [fetchData]);
+
   // ── Single delete ──
   const handleDelete = () => {
     if (!selectedFile) return;
