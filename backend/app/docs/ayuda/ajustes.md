@@ -155,15 +155,16 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL `/dashboa
   - Quitar zona: `id="mobile-remove-zone-btn-[index]"`
 
 ### Pestaña: Avanzado (Modelos e Integración IA)
-*Esta pestaña (`tab=advanced`) contiene la configuración del proveedor de Inteligencia Artificial de la clínica y llaves API propias.*
+*Esta pestaña (`tab=advanced`) contiene la configuración del proveedor de Inteligencia Artificial de la clínica y llaves API propias (Bring Your Own Key - BYOK).*
+- **Generación de Imágenes de Catálogo por IA:** Al vincular una clave de API propia (Google Gemini u OpenAI), la clínica desbloquea automáticamente la capacidad de generar imágenes comerciales fotorrealistas y de alta costura para sus tratamientos y servicios. Esto puede realizarse directamente desde el editor de servicios (botón de varita mágica / generador) o pidiéndoselo en lenguaje natural al Co-Piloto AI (ej: *"Genera una imagen para Masaje Relajante"*).
 - Selector Proveedor Gemini: `id="advanced-provider-gemini-radio"`
 - Selector Proveedor OpenAI: `id="advanced-provider-openai-radio"`
 - API Key Gemini Personal: `id="advanced-gemini-api-key"`
 - Selector de Modelo Gemini (Texto): `id="advanced-gemini-model-text-trigger"`
-- Selector de Modelo Gemini (Imagen): `id="advanced-gemini-model-image-trigger"`
+- Selector de Modelo Gemini (Imagen): `id="advanced-gemini-model-image-trigger"` (soporta Google Imagen 3, Imagen 4 y Gemini Flash Preview)
 - API Key OpenAI Personal: `id="advanced-openai-api-key"`
 - Selector de Modelo OpenAI (Texto): `id="advanced-openai-model-text-trigger"`
-- Selector de Modelo OpenAI (Imagen): `id="advanced-openai-model-image-trigger"`
+- Selector de Modelo OpenAI (Imagen): `id="advanced-openai-model-image-trigger"` (soporta DALL-E 3)
 - Permitir Indexación en Motores de Búsqueda (SEO): `id="advanced-allow-indexing-checkbox"`
 - Verificación de Google Search Console (Avanzado): `id="advanced-google-verification"`
 - Habilitar Gestión de Consentimiento Obligatoria: `id="advanced-enable-consents-checkbox"`

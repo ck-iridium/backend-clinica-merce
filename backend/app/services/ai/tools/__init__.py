@@ -21,6 +21,7 @@ from .categories import (
 )
 from .appointments import get_daily_appointments
 from .help import consultar_manual_ayuda
+from .images import generar_imagen_servicio
 
 # Lista de herramientas unificada disponible para Gemini
 AGENT_TOOLS = [
@@ -40,5 +41,6 @@ AGENT_TOOLS = [
     list_all_categories,
     list_services_in_category,
     list_all_services,
-    consultar_manual_ayuda
+    consultar_manual_ayuda,
+    generar_imagen_servicio
 ]

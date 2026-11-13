@@ -76,11 +76,26 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
     user_role = getattr(request, 'user_role', None)
     lang = getattr(request, 'language', 'es')
 
-    # Obtener el nombre comercial del negocio configurado en los ajustes del inquilino
+    # Obtener el nombre comercial del negocio y configuración de IA del inquilino
     settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).first()
     clinic_name = settings.clinic_name if settings and settings.clinic_name else None
 
-    system_instruction = ai_agent_service.build_system_instruction(user_name, lang, clinic_name, user_role)
+    # Verificar si el inquilino tiene su propia clave de API configurada en Ajustes > Avanzado
+    gemini_key = settings.gemini_api_key.strip() if settings and settings.gemini_api_key else None
+    openai_key = settings.openai_api_key.strip() if settings and settings.openai_api_key else None
+    has_custom_api_key = bool(gemini_key or openai_key)
+    ai_provider = (settings.ai_provider or "gemini").lower() if settings else "gemini"
+    image_model = settings.gemini_model_image if ai_provider == "gemini" else (settings.openai_model_image if settings else None)
+
+    system_instruction = ai_agent_service.build_system_instruction(
+        user_name=user_name,
+        lang=lang,
+        clinic_name=clinic_name,
+        user_role=user_role,
+        has_custom_api_key=has_custom_api_key,
+        ai_provider=ai_provider,
+        configured_image_model=image_model
+    )
 
     if actions_remaining is not None and actions_remaining <= 0:
         limit_warning = ""
@@ -231,6 +246,9 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
                         updated_fields.append("services")
                     elif name == "create_new_category":
                         updated_fields.append("categories")
+                    elif name == "generar_imagen_servicio":
+                        updated_fields.append("services")
+                        updated_fields.append("image_url")
 
         # Quitar duplicados en campos actualizados si existen
         updated_fields = list(set(updated_fields))
@@ -255,23 +273,26 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
         navigate_match = re.search(r'\[NAVIGATE:\s*([^\]]+)\]', brain_text, re.IGNORECASE)
         if navigate_match:
             redirect_url = navigate_match.group(1).strip()
-            # Remover el tag de navegación de la voz y guardarla en brain_text_for_voice
-            brain_text_for_voice = re.sub(r'\[NAVIGATE:\s*([^\]]+)\]', '', brain_text, flags=re.IGNORECASE)
-        else:
-            brain_text_for_voice = brain_text
 
         # 3. LA VOZ (Gemini 2.5 Flash TTS): Convierte de forma secuencial el texto en voz hiperrealista
+        # Para síntesis de voz: removemos URLs largas, [NAVIGATE:...], [OPTION:...], y etiquetas de imagen para que no las lea mecánicamente
+        voice_text = brain_text
+        voice_text = re.sub(r'\[NAVIGATE:\s*[^\]]+\]', '', voice_text, flags=re.IGNORECASE)
+        voice_text = re.sub(r'\[OPTION:\s*[^\]]+\]', '', voice_text, flags=re.IGNORECASE)
+        voice_text = re.sub(r'\[(?:Imagen adjunta|Image jointe|Attached image):[^\]]+\]', '', voice_text, flags=re.IGNORECASE)
+        voice_text = re.sub(r'URL de la imagen:\s*https?://\S+', '', voice_text, flags=re.IGNORECASE)
+        voice_text = re.sub(r'\[.*?\]', '', voice_text)
+        voice_text = re.sub(r'\s+', ' ', voice_text).strip()
+
         voice_gender = getattr(request, 'voice_gender', 'female')
         lang = getattr(request, 'language', 'es')
-        audio_response_base64 = ai_agent_service.generate_gemini_tts(brain_text_for_voice, voice_gender, api_key, lang)
+        audio_response_base64 = ai_agent_service.generate_gemini_tts(voice_text, voice_gender, api_key, lang)
 
-        # Limpiar las etiquetas de dirección de voz (como [warmly], [deliberate pause]) para el chat de texto de la UI
-        clean_text = re.sub(r'\[.*?\]', '', brain_text_for_voice).strip()
-        clean_text = re.sub(r'\s+', ' ', clean_text)
-
-        # Volver a añadir el tag [NAVIGATE: ...] al clean_text para asegurar compatibilidad con regex del frontend
-        if redirect_url:
-            clean_text = f"{clean_text} [NAVIGATE: {redirect_url}]"
+        # Para el chat de texto de la UI:
+        # Limpiar solamente las etiquetas de dirección de voz (como [warmly], [fast], [deliberate pause]),
+        # pero PRESERVAR estrictamente [NAVIGATE:...], [OPTION:...], [Imagen adjunta: ...] y las URLs de imágenes
+        clean_text = re.sub(r'\[(?!(?:NAVIGATE|OPTION|Imagen adjunta|Image jointe|Attached image))\s*[^\]]+\]', '', brain_text, flags=re.IGNORECASE).strip()
+        clean_text = re.sub(r'[ \t]+', ' ', clean_text)
 
         # Calcular acciones inteligentes restantes
         trial_remaining = None

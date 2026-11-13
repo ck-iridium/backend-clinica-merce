@@ -184,6 +184,7 @@ Catálogo central de tratamientos de la clínica. Permite archivar servicios, ca
   - Generar desarrollo con IA: `id="service-editor-content-ai-btn"`
 - **Pestaña: Diseño**
   - Cambiar Imagen: `id="service-editor-design-change-image-btn"`
+  - Generar Imagen con IA: Disponible en el modal de selección de imagen mediante el botón de generación por IA. Requiere tener una clave de API (Gemini u OpenAI) vinculada en Ajustes > Avanzado. También disponible por voz o chat pidiéndoselo directamente al Co-Piloto AI.
   - Quitar Imagen: `id="service-editor-design-remove-image-btn"`
   - Estilo de cabecera: `id="service-editor-design-header-style-trigger"`
   - Selector de color de acento: `id="service-editor-design-color-picker-input"`
