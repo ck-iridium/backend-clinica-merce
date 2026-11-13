@@ -12,6 +12,17 @@ interface BotonReservaProProps {
   color?: string;
 }
 
+function isColorDark(hex: string): boolean {
+  if (!hex || !hex.startsWith('#')) return false;
+  const clean = hex.replace(/^#/, '');
+  if (clean.length < 6) return false;
+  const r = parseInt(clean.substring(0, 2), 16) || 0;
+  const g = parseInt(clean.substring(2, 4), 16) || 0;
+  const b = parseInt(clean.substring(4, 6), 16) || 0;
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq < 140;
+}
+
 export default function BotonReservaPro({
   texto = "RESERVAR CITA",
   onClick,
@@ -26,6 +37,10 @@ export default function BotonReservaPro({
     ? { background: `linear-gradient(to bottom, hsl(var(--primary) / 0.85), hsl(var(--primary)), hsl(var(--primary) / 0.95))` }
     : { background: `linear-gradient(to bottom, ${color}dd, ${color}, ${color}ee)` };
 
+  const textColor = isDefaultGold 
+    ? "var(--primary-text-color, #ffffff)" 
+    : (isColorDark(color) ? "#ffffff" : "#0c0a09");
+
   const content = (
     <div
       style={gradientStyle}
@@ -35,9 +50,12 @@ export default function BotonReservaPro({
                     transition-all duration-500 overflow-hidden border border-black/5"
     >
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
-      <span className="relative z-10 text-[16px] font-black capitalize tracking-[0.15em] text-stone-950
-                     [text-shadow:_0_1px_1px_rgba(255,255,255,0.4),_0_-1px_1px_rgba(0,0,0,0.2)]
-                     filter group-hover:brightness-125 transition-all duration-300">
+      <span 
+        style={{ color: textColor }}
+        className="relative z-10 text-[16px] font-black capitalize tracking-[0.15em]
+                     [text-shadow:_0_1px_2px_rgba(0,0,0,0.35)]
+                     filter group-hover:brightness-110 transition-all duration-300"
+      >
         {texto}
       </span>
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[35%] bg-gradient-to-b from-white/30 to-transparent rounded-full blur-[1px]" />

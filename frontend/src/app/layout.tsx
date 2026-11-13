@@ -348,6 +348,7 @@ export default async function RootLayout({
   const secondaryColor = settings?.accent_color_secondary || '#1c1917';
   const primaryHsl = hexToHsl(primaryColor);
   const secondaryHsl = hexToHsl(secondaryColor);
+  const primaryContrast = getContrastColor(primaryColor);
   const isDark = settings?.dark_mode_enabled || false;
   const borderRadiusStyle = settings?.border_radius || 'suave';
   const headingsFont = settings?.branding_font_headings || 'Playfair';
@@ -422,6 +423,8 @@ export default async function RootLayout({
           __html: `
           :root {
             --primary: ${primaryHsl} !important;
+            --primary-foreground: ${primaryContrast.fgHsl} !important;
+            --primary-text-color: ${primaryContrast.textHex} !important;
             --secondary: ${secondaryHsl} !important;
             --ring: ${primaryHsl} !important;
             --radius-base: ${radiusBase} !important;
@@ -493,4 +496,21 @@ function hexToHsl(hex: string): string {
   l = Math.round(l * 100);
 
   return `${h} ${s}% ${l}%`;
+}
+
+function getContrastColor(hex: string): { fgHsl: string; textHex: string; isDark: boolean } {
+  const clean = hex.replace(/^#/, '');
+  if (!/^[0-9A-Fa-f]{6}$/.test(clean)) {
+    return { fgHsl: '20 14% 4%', textHex: '#0c0a09', isDark: false };
+  }
+  const r = parseInt(clean.substring(0, 2), 16);
+  const g = parseInt(clean.substring(2, 4), 16);
+  const b = parseInt(clean.substring(4, 6), 16);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  const isDark = yiq < 140;
+  return {
+    fgHsl: isDark ? '0 0% 100%' : '20 14% 4%',
+    textHex: isDark ? '#ffffff' : '#0c0a09',
+    isDark
+  };
 }

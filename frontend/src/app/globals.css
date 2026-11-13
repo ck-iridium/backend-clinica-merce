@@ -159,6 +159,11 @@
 }
 .hover\:bg-\[\#d4af37\]:hover, .hover\:bg-\[\#D4AF37\]:hover {
   background-color: hsl(var(--primary)) !important;
+  color: var(--primary-text-color, #ffffff) !important;
+}
+.group:hover .group-hover\:bg-\[\#d4af37\], .group:hover .group-hover\:bg-\[\#D4AF37\] {
+  background-color: hsl(var(--primary)) !important;
+  color: var(--primary-text-color, #ffffff) !important;
 }
 .hover\:text-\[\#d4af37\]:hover, .hover\:text-\[\#D4AF37\]:hover {
   color: hsl(var(--primary)) !important;
