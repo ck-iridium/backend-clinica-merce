@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { useAuthRole } from '@/hooks/useAuthRole';
@@ -15,6 +14,8 @@ import VoiceWaveVisualizer from './VoiceWaveVisualizer';
 import ChromaticOrb from './ChromaticOrb';
 import { useCopilotSpeech } from './useCopilotSpeech';
 import { useCopilotFiles } from './useCopilotFiles';
+import { useCopilotResize } from './useCopilotResize';
+import { useCopilotLimits } from './useCopilotLimits';
 import MediaPickerModal from '@/components/MediaPickerModal';
 
 // Helper para leer cookies del lado del cliente
@@ -34,28 +35,39 @@ interface Message {
 export default function AICopilotWidget() {
   const router = useRouter();
   const pathname = usePathname();
-  const { language, t } = useLanguage();
+  const { language } = useLanguage();
   const { role, userName: authUserName, userAvatar, loading: loadingRole } = useAuthRole();
   const firstName = authUserName ? authUserName.trim().split(' ')[0] : '';
 
-  // ── Estado de UI ──────────────────────────────────────────────────────────
+  // ── Hooks Modulares de Límites y Redimensionamiento ──────────────────────
+  const {
+    chatWidth,
+    chatHeight,
+    isResizingActive,
+    startResize,
+    handleResize,
+    stopResize
+  } = useCopilotResize();
+
+  const {
+    planType,
+    trialRemaining,
+    setTrialRemaining,
+    hasOwnKey,
+    isTrialExhausted,
+    setIsTrialExhausted,
+    dailyActionsUsed,
+    dailyActionsLimit,
+    updateLimitsAfterResponse
+  } = useCopilotLimits();
+
+  // ── Estado de UI del Widget ───────────────────────────────────────────────
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [voiceGender, setVoiceGender] = useState<'female' | 'male'>('female');
-  const [chatWidth, setChatWidth] = useState(480);
-  const [chatHeight, setChatHeight] = useState(620);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
-  const isResizing = useRef(false);
-
-  // ── Estado de Límites y Plan ──────────────────────────────────────────────
-  const [planType, setPlanType] = useState<string | null>(null);
-  const [trialRemaining, setTrialRemaining] = useState<number | null>(null);
-  const [hasOwnKey, setHasOwnKey] = useState<boolean>(false);
-  const [isTrialExhausted, setIsTrialExhausted] = useState<boolean>(false);
-  const [dailyActionsUsed, setDailyActionsUsed] = useState<number>(0);
-  const [dailyActionsLimit, setDailyActionsLimit] = useState<number>(0);
 
   // ── Historial de Mensajes ─────────────────────────────────────────────────
   const getWelcomeMessage = () =>
@@ -69,7 +81,7 @@ export default function AICopilotWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const audioLanguage = language === 'fr' ? 'fr-FR' : language === 'en' ? 'en-US' : 'es-ES';
 
-  // ── Custom Hooks ──────────────────────────────────────────────────────────
+  // ── Custom Hooks de Voz y Archivos ────────────────────────────────────────
   const { speakText, stopSpeaking, unlockAudioContext, isSpeaking } = useCopilotSpeech({ isMuted, voiceGender, audioLanguage });
   const {
     attachedFile, setAttachedFile,
@@ -167,48 +179,6 @@ export default function AICopilotWidget() {
     }
   };
 
-  // ── Fetch Límites de Plan ─────────────────────────────────────────────────
-  useEffect(() => {
-    async function fetchPlanAndTrial() {
-      try {
-        const userSession = localStorage.getItem('user');
-        let tenantId = getCookie('tenant_id') || '';
-        let authToken = '';
-        if (userSession) {
-          try {
-            const parsed = JSON.parse(userSession);
-            if (!tenantId) tenantId = parsed.tenant_id || '';
-            authToken = parsed.access_token || parsed.token || '';
-          } catch (e) {
-            console.error('Error parsing user session in AI Widget:', e);
-          }
-        }
-        if (!tenantId) { console.warn('Tenant ID missing in AI Widget initialization'); return; }
-
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-        const res = await fetch(`${API_URL}/settings/limits`, {
-          headers: { 'X-Tenant-ID': tenantId, 'Authorization': authToken ? `Bearer ${authToken}` : '' }
-        });
-        if (res.ok) {
-          const d = await res.json();
-          const plan = d.plan_type?.toLowerCase() || 'free';
-          setPlanType(plan);
-          const ownKey = d.limits?.ai_allowed && d.limits?.ai_requires_byok;
-          setHasOwnKey(!!ownKey);
-          const used = d.ai_trial_queries_used ?? 0;
-          const remaining = Math.max(0, 10 - used);
-          setTrialRemaining(remaining);
-          setDailyActionsUsed(d.ai_daily_actions_used ?? 0);
-          setDailyActionsLimit(d.limits?.ai_smart_actions_daily ?? 0);
-          if (plan === 'free' && !ownKey && remaining <= 0) setIsTrialExhausted(true);
-        }
-      } catch (err) {
-        console.error('Error al obtener límites de plan en AI Widget:', err);
-      }
-    }
-    fetchPlanAndTrial();
-  }, []);
-
   // ── Sincronizar estado abierto con la UI global (ocultar banners obstructivos en móvil) ──
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -236,22 +206,12 @@ export default function AICopilotWidget() {
     return () => window.removeEventListener('copilot-quota-info', handler);
   }, []);
 
-  // ── Persistencia de preferencias ──────────────────────────────────────────
+  // ── Persistencia de preferencias de voz ───────────────────────────────────
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
         const savedGender = localStorage.getItem('probookia_copilot_voice_gender') as 'female' | 'male';
         if (savedGender) setVoiceGender(savedGender);
-        const savedWidth = localStorage.getItem('probookia_copilot_width');
-        const savedHeight = localStorage.getItem('probookia_copilot_height');
-        if (savedWidth) {
-          const w = Number(savedWidth);
-          if (w >= 360) setChatWidth(Math.max(460, w));
-        }
-        if (savedHeight) {
-          const h = Number(savedHeight);
-          if (h >= 400) setChatHeight(Math.max(580, h));
-        }
       } catch (e) {
         console.warn('No se pudo acceder a localStorage para preferencias:', e);
       }
@@ -347,60 +307,6 @@ export default function AICopilotWidget() {
   useEffect(() => {
     if (isOpen) messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isOpen]);
-
-  // ── Redimensionamiento Suave (60fps sin lag) ───────────────────────────────
-  const [isResizingActive, setIsResizingActive] = useState(false);
-  const currentDimensions = useRef({ width: chatWidth, height: chatHeight });
-
-  useEffect(() => {
-    currentDimensions.current = { width: chatWidth, height: chatHeight };
-  }, [chatWidth, chatHeight]);
-
-  const handleResize = useCallback((e: MouseEvent) => {
-    if (!isResizing.current) return;
-    const paddingRight = 24;
-    const paddingBottom = 24;
-    const newWidth = Math.max(320, Math.min(window.innerWidth - 32, window.innerWidth - e.clientX - paddingRight));
-    const newHeight = Math.max(380, Math.min(window.innerHeight - 32, window.innerHeight - e.clientY - paddingBottom));
-    
-    currentDimensions.current = { width: newWidth, height: newHeight };
-    setChatWidth(newWidth);
-    setChatHeight(newHeight);
-  }, []);
-
-  const stopResize = useCallback(() => {
-    if (!isResizing.current) return;
-    isResizing.current = false;
-    setIsResizingActive(false);
-    document.removeEventListener('mousemove', handleResize);
-    document.removeEventListener('mouseup', stopResize);
-    document.body.style.userSelect = '';
-    document.body.style.cursor = '';
-    
-    // Guardar en almacenamiento únicamente al soltar el ratón
-    try {
-      localStorage.setItem('probookia_copilot_width', String(currentDimensions.current.width));
-      localStorage.setItem('probookia_copilot_height', String(currentDimensions.current.height));
-    } catch (_) {}
-  }, [handleResize]);
-
-  const startResize = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    isResizing.current = true;
-    setIsResizingActive(true);
-    document.body.style.userSelect = 'none';
-    document.body.style.cursor = 'nwse-resize';
-    document.addEventListener('mousemove', handleResize);
-    document.addEventListener('mouseup', stopResize);
-  };
-
-  useEffect(() => {
-    return () => {
-      document.removeEventListener('mousemove', handleResize);
-      document.removeEventListener('mouseup', stopResize);
-    };
-  }, [handleResize, stopResize]);
 
   // ── Limpiar historial ─────────────────────────────────────────────────────
   const handleClearHistory = () => {
@@ -509,14 +415,7 @@ export default function AICopilotWidget() {
 
       const data = await response.json();
 
-      if (typeof data.trial_remaining === 'number') {
-        setTrialRemaining(data.trial_remaining);
-        if (planType === 'free' && data.trial_remaining <= 0 && !hasOwnKey) {
-          setIsTrialExhausted(true);
-        } else if ((planType === 'basic' || planType === 'pro') && !hasOwnKey) {
-          setDailyActionsUsed(Math.max(0, dailyActionsLimit - data.trial_remaining));
-        }
-      }
+      updateLimitsAfterResponse(data);
 
       let responseText = data.response || '';
       let targetRoute: string | null = data.redirect_url || null;
