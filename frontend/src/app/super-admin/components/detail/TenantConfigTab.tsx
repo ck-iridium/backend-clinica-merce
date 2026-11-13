@@ -58,6 +58,7 @@ export default function TenantConfigTab({
 }: TenantConfigTabProps) {
   const sectors = [
     { value: 'clinical', label: 'Medicina y Clínica de Salud' },
+    { value: 'dental', label: 'Clínica Dental y Odontología' },
     { value: 'beauty', label: 'Estética, Belleza y Wellness' },
     { value: 'barber', label: 'Barbería y Salón de Peluquería' },
     { value: 'veterinary', label: 'Veterinaria y Cuidados' },

@@ -59,12 +59,13 @@ export default function ThemeStyleSection({
         <label className="text-xs font-black uppercase tracking-widest text-stone-500 block">
           {t('dashboard.branding.theme_style.palette_preset_title') || 'Paletas Cromáticas Core'}
         </label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3.5">
           {[
             { id: 'dorado-antracita', name: 'Dorado / Antracita', primary: '#D4AF37', secondary: '#1C1917', desc: 'Lujo tradicional' },
+            { id: 'clean-medical', name: 'Azul Clínico', primary: '#0284C7', secondary: '#0F172A', desc: 'Confianza médica' },
             { id: 'esmeralda-lino', name: 'Esmeralda / Lino', primary: '#0F5132', secondary: '#F2EFE9', desc: 'Orgánico y spa' },
             { id: 'bronce-crema', name: 'Bronce / Crema', primary: '#A3704C', secondary: '#FAF6F0', desc: 'Cosmética y calma' },
-            { id: 'minimalista-industrial', name: 'Minimalista Industrial', primary: '#2B2D42', secondary: '#8D99AE', desc: 'Barbería y medicina' },
+            { id: 'minimalista-industrial', name: 'Minimalista Industrial', primary: '#2B2D42', secondary: '#8D99AE', desc: 'Barbería y motor' },
             { id: 'custom', name: 'Personalizado', primary: '#D4AF37', secondary: '#1C1917', desc: 'Ajuste libre' }
           ].map(p => {
             const activePaletteId = settings.branding_palette_id || 'dorado-antracita';
