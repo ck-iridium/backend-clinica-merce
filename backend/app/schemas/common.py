@@ -36,6 +36,11 @@ class OnboardingSetupRequest(BaseModel):
     extra_locations: Optional[List[ExtraLocationPayload]] = None
     initial_resources: Optional[List[InitialResourcePayload]] = None
     initial_team_members: Optional[List[InitialTeamMemberPayload]] = None
+    theme_palette: Optional[str] = None
+    accent_color_primary: Optional[str] = None
+    accent_color_secondary: Optional[str] = None
+    branding_font_headings: Optional[str] = None
+    branding_font_body: Optional[str] = None
 
 # --- BULK ACTIONS ---
 class BulkActionPayload(BaseModel):

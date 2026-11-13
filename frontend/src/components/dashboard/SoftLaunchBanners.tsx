@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react';
-import { Mail, Compass, ShieldAlert, Loader2 } from 'lucide-react';
+import { Mail, Compass, ShieldAlert, Loader2, Sparkles, ExternalLink, Bot, X } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -10,6 +10,27 @@ export default function SoftLaunchBanners() {
   const [trialTimeLeft, setTrialTimeLeft] = useState<string>('');
   const [emailTimeLeft, setEmailTimeLeft] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const [demoBannerDismissed, setDemoBannerDismissed] = useState(true); // default true until checked
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const dismissed = localStorage.getItem('probookia_demo_banner_dismissed') === 'true';
+      setDemoBannerDismissed(dismissed);
+    }
+  }, []);
+
+  const handleDismissDemoBanner = () => {
+    setDemoBannerDismissed(true);
+    try {
+      localStorage.setItem('probookia_demo_banner_dismissed', 'true');
+    } catch {}
+  };
+
+  const handleOpenCopilot = () => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('open-probookia-copilot'));
+    }
+  };
 
   useEffect(() => {
     const fetchLimitsAndStatus = async () => {
@@ -135,6 +156,57 @@ export default function SoftLaunchBanners() {
             <div className="bg-stone-900 border border-stone-800 rounded-xl px-4 py-2 shadow-inner">
               <span className="text-xs font-extrabold text-[#d4af37] font-mono tracking-tight">{trialTimeLeft}</span>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3. Banner de Inicialización con Contenido de Demostración */}
+      {!demoBannerDismissed && (
+        <div className="bg-gradient-to-r from-amber-500/10 via-[#FAF9F5] to-amber-500/5 border border-[#d4af37]/40 rounded-2xl p-4 flex flex-col md:flex-row items-center md:justify-between gap-4 shadow-sm animate-in fade-in slide-in-from-top duration-300">
+          <div className="flex items-center gap-3.5">
+            <span className="w-10 h-10 rounded-xl bg-[#d4af37]/20 text-[#d4af37] border border-[#d4af37]/30 flex items-center justify-center shrink-0 shadow-inner">
+              <Sparkles className="w-5 h-5" />
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <p className="text-xs font-bold text-stone-900">
+                  Tu web ha sido inicializada con datos y fotografías de ejemplo
+                </p>
+                <span className="text-[9px] bg-[#d4af37]/20 text-[#9e7d17] border border-[#d4af37]/40 px-2 py-0.5 rounded-full font-extrabold uppercase">
+                  Modo Inicial
+                </span>
+              </div>
+              <p className="text-[11px] text-stone-600 font-medium mt-0.5 leading-normal max-w-2xl">
+                Hemos preparado tu web con imágenes editoriales y servicios sugeridos de tu sector. Puedes editarlos en tu catálogo, eliminarlos o pedirle al Asistente IA que vuelque tus tarifas reales.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5 shrink-0 self-end md:self-center">
+            <a
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-900 hover:bg-[#d4af37] hover:text-stone-950 text-white text-[11px] font-bold transition-all shadow-sm"
+            >
+              <span>Ver mi Web</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+            <button
+              type="button"
+              onClick={handleOpenCopilot}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#d4af37]/20 hover:bg-[#d4af37]/30 text-[#8c6d12] border border-[#d4af37]/40 text-[11px] font-bold transition-all shadow-xs"
+            >
+              <Bot className="w-3 h-3" />
+              <span>Abrir Copiloto IA</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleDismissDemoBanner}
+              className="p-1.5 text-stone-400 hover:text-stone-700 transition-colors rounded-lg hover:bg-stone-200/50"
+              title="Ocultar este aviso"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
         </div>
       )}

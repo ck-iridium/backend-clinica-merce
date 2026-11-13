@@ -28,6 +28,9 @@ export default function DashboardOnboardingPage() {
   const [clinicName, setClinicName] = useState('');
   const [selectedSector, setSelectedSector] = useState('Estética y Bienestar');
   const [logoBase64, setLogoBase64] = useState<string | null>(null);
+  const [themePalette, setThemePalette] = useState('dorado-antracita');
+  const [accentColorPrimary, setAccentColorPrimary] = useState('#D4AF37');
+  const [accentColorSecondary, setAccentColorSecondary] = useState('#1C1917');
 
   // Form states - Step 2 (Operations & Locations)
   const [workModality, setWorkModality] = useState('clinic_only');
@@ -151,6 +154,9 @@ export default function DashboardOnboardingPage() {
         clinic_name: clinicName,
         logo_app_b64: logoBase64,
         industry: selectedSector,
+        theme_palette: themePalette,
+        accent_color_primary: accentColorPrimary,
+        accent_color_secondary: accentColorSecondary,
         open_time: openTime,
         close_time: closeTime,
         working_days: workingDays,
@@ -239,6 +245,12 @@ export default function DashboardOnboardingPage() {
               logoBase64={logoBase64}
               setLogoBase64={setLogoBase64}
               handleLogoChange={handleLogoChange}
+              themePalette={themePalette}
+              setThemePalette={setThemePalette}
+              accentColorPrimary={accentColorPrimary}
+              setAccentColorPrimary={setAccentColorPrimary}
+              accentColorSecondary={accentColorSecondary}
+              setAccentColorSecondary={setAccentColorSecondary}
             />
           )}
 
@@ -296,6 +308,7 @@ export default function DashboardOnboardingPage() {
           {((!isMultiEntityPlan && step === 4) || (isMultiEntityPlan && step === 6)) && (
             <StepProvisioning 
               selectedSector={selectedSector}
+              clinicName={clinicName}
               loadDemoData={loadDemoData}
               setLoadDemoData={setLoadDemoData}
             />

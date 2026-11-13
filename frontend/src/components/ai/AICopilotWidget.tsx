@@ -287,6 +287,13 @@ export default function AICopilotWidget() {
     } catch (e) { console.warn('Error al cargar historial del copilot:', e); }
   }, []);
 
+  // ── Evento global para abrir Copiloto desde banners y botones ─────────────
+  useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener('open-probookia-copilot', handleOpen);
+    return () => window.removeEventListener('open-probookia-copilot', handleOpen);
+  }, []);
+
   // ── Detección de Bienvenida Onboarding ────────────────────────────────────
   useEffect(() => {
     if (typeof window === 'undefined') return;

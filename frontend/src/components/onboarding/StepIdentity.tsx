@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   Sparkles, 
   Layers, 
@@ -74,6 +74,13 @@ const PRIMARY_SECTORS: Sector[] = [
 
 const OTHER_SECTORS: Sector[] = [
   {
+    id: 'Clínica Dental y Odontología',
+    label: 'Clínica Dental y Odontología',
+    badge: 'Odontología Avanzada & Estética',
+    desc: 'Odontología general, implantes, estética dental, ortodoncia invisible y radiodiagnóstico.',
+    icon: Sparkles
+  },
+  {
     id: 'Veterinaria y Cuidados',
     label: 'Veterinaria y Cuidados',
     badge: 'Salud & Bienestar Animal',
@@ -110,6 +117,15 @@ const OTHER_SECTORS: Sector[] = [
   }
 ];
 
+export const BRANDING_PALETTES = [
+  { id: 'dorado-antracita', name: 'Dorado / Antracita', primary: '#D4AF37', secondary: '#1C1917', desc: 'Lujo clásico' },
+  { id: 'clean-medical', name: 'Azul Clínico', primary: '#0284C7', secondary: '#0F172A', desc: 'Confianza médica' },
+  { id: 'esmeralda-lino', name: 'Esmeralda / Lino', primary: '#0F5132', secondary: '#F2EFE9', desc: 'Orgánico y bienestar' },
+  { id: 'bronce-crema', name: 'Bronce / Crema', primary: '#A3704C', secondary: '#FAF6F0', desc: 'Cosmética y calma' },
+  { id: 'minimalista-industrial', name: 'Minimalista Industrial', primary: '#2B2D42', secondary: '#8D99AE', desc: 'Barbería y motor' },
+  { id: 'custom', name: 'Personalizado', primary: '#D4AF37', secondary: '#1C1917', desc: 'Ajuste libre' }
+];
+
 interface StepIdentityProps {
   clinicName: string;
   setClinicName: (val: string) => void;
@@ -118,6 +134,13 @@ interface StepIdentityProps {
   logoBase64: string | null;
   setLogoBase64: (val: string | null) => void;
   handleLogoChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  // Branding Palette props
+  themePalette?: string;
+  setThemePalette?: (val: string) => void;
+  accentColorPrimary?: string;
+  setAccentColorPrimary?: (val: string) => void;
+  accentColorSecondary?: string;
+  setAccentColorSecondary?: (val: string) => void;
 }
 
 export const StepIdentity: React.FC<StepIdentityProps> = ({
@@ -127,10 +150,19 @@ export const StepIdentity: React.FC<StepIdentityProps> = ({
   setSelectedSector,
   logoBase64,
   setLogoBase64,
-  handleLogoChange
+  handleLogoChange,
+  themePalette = 'dorado-antracita',
+  setThemePalette,
+  accentColorPrimary = '#D4AF37',
+  setAccentColorPrimary,
+  accentColorSecondary = '#1C1917',
+  setAccentColorSecondary
 }) => {
   const isOtherSector = OTHER_SECTORS.some(sec => sec.id === selectedSector);
   const activeOtherSector = OTHER_SECTORS.find(sec => sec.id === selectedSector);
+
+  // Detección asistida de nombre
+  const isDentalName = clinicName && /dentist|dental|odontolog/i.test(clinicName);
 
   return (
     <div className="space-y-7 animate-in fade-in duration-500 font-sans">
@@ -151,10 +183,24 @@ export const StepIdentity: React.FC<StepIdentityProps> = ({
             type="text" 
             value={clinicName}
             onChange={(e) => setClinicName(e.target.value)}
-            placeholder="Ej. Clínica Mercè · Haute Esthetics"
+            placeholder="Ej. Clínica Dental Sonrisas · Dr. García"
             className="w-full bg-[#FAF9F5]/60 border border-stone-200/80 rounded-2xl pl-11 pr-5 py-4 text-sm font-semibold text-stone-900 placeholder-stone-300 focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] focus:bg-white transition-all shadow-sm"
           />
         </div>
+        {isDentalName && selectedSector !== 'Clínica Dental y Odontología' && (
+          <div className="flex items-center justify-between p-2.5 rounded-xl bg-amber-500/10 border border-[#d4af37]/30 text-[11px] text-stone-700 animate-in fade-in">
+            <span className="flex items-center gap-1.5 font-medium">
+              💡 Detectamos que tu negocio es dental.
+            </span>
+            <button
+              type="button"
+              onClick={() => setSelectedSector('Clínica Dental y Odontología')}
+              className="text-[#9e7d17] font-bold hover:underline"
+            >
+              Aplicar sector Dental ↗
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 2. Bento Tech Sector Grid (2026 Edition) */}
@@ -284,7 +330,7 @@ export const StepIdentity: React.FC<StepIdentityProps> = ({
                   ¿Tu negocio es de otro sector?
                 </span>
                 <span className="hidden md:inline text-[11px] text-stone-400">
-                  (Veterinaria, Mecánica, Domicilio, Consultoría...)
+                  (Dental, Veterinaria, Mecánica, Domicilio, Consultoría...)
                 </span>
               </div>
               <div className="w-48 sm:w-56 shrink-0">
@@ -315,7 +361,76 @@ export const StepIdentity: React.FC<StepIdentityProps> = ({
         </div>
       </div>
 
-      {/* 3. Logotipo de la Marca (Quiet Luxury Card) */}
+      {/* 3. Selector de Paleta de Marca (Branding Personalizable) */}
+      <div className="space-y-3 pt-1">
+        <div className="flex items-center justify-between">
+          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 block">
+            Paleta de Color de tu Marca
+          </label>
+          <span className="text-[10px] text-[#d4af37] font-semibold">Se aplica a tu web y dashboard</span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+          {BRANDING_PALETTES.map((pal) => {
+            const isSelected = (themePalette || 'dorado-antracita') === pal.id;
+            return (
+              <div
+                key={pal.id}
+                onClick={() => {
+                  if (setThemePalette) setThemePalette(pal.id);
+                  if (setAccentColorPrimary && pal.id !== 'custom') setAccentColorPrimary(pal.primary);
+                  if (setAccentColorSecondary && pal.id !== 'custom') setAccentColorSecondary(pal.secondary);
+                }}
+                className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
+                  isSelected
+                    ? 'bg-stone-900 border-[#d4af37] text-white shadow-sm ring-1 ring-[#d4af37]/40'
+                    : 'bg-white border-stone-200/80 hover:border-stone-300 text-stone-800'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <span 
+                      className="w-4 h-4 rounded-full border border-black/20 shadow-xs inline-block"
+                      style={{ backgroundColor: pal.id === 'custom' ? (accentColorPrimary || '#d4af37') : pal.primary }} 
+                    />
+                    <span 
+                      className="w-4 h-4 rounded-full border border-black/20 shadow-xs inline-block -ml-1"
+                      style={{ backgroundColor: pal.id === 'custom' ? (accentColorSecondary || '#1c1917') : pal.secondary }} 
+                    />
+                  </div>
+                  {isSelected && <Check size={12} className="text-[#d4af37]" />}
+                </div>
+                <div>
+                  <h5 className={`text-[11px] font-bold leading-tight ${isSelected ? 'text-white' : 'text-stone-900'}`}>
+                    {pal.name}
+                  </h5>
+                  <p className={`text-[9px] mt-0.5 line-clamp-1 ${isSelected ? 'text-stone-400' : 'text-stone-400'}`}>
+                    {pal.desc}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Si selecciona custom, mostrar picker de color primario */}
+        {themePalette === 'custom' && (
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-stone-50 border border-stone-200 animate-in fade-in">
+            <input
+              type="color"
+              value={accentColorPrimary || '#d4af37'}
+              onChange={(e) => setAccentColorPrimary && setAccentColorPrimary(e.target.value)}
+              className="w-8 h-8 rounded-lg cursor-pointer border border-stone-300"
+            />
+            <div className="flex-1">
+              <span className="text-[10px] font-bold text-stone-700 block">Color Primario de tu Marca</span>
+              <span className="text-[10px] text-stone-400 font-mono">{accentColorPrimary || '#d4af37'}</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 4. Logotipo de la Marca (Quiet Luxury Card) */}
       <div className="space-y-2 pt-1">
         <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 block">
           Logotipo de Marca & Sello Visual (Opcional)

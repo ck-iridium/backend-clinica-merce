@@ -386,22 +386,25 @@ def setup_onboarding(payload: schemas.OnboardingSetupRequest, db: Session = Depe
 
     db.flush()
 
-    # Obtener el Blueprint del sector seleccionado
-    blueprint = get_sector_blueprint(payload.industry)
+    # Obtener el Blueprint del sector seleccionado (con detección inteligente de nombre si aplica)
+    blueprint = get_sector_blueprint(payload.industry, payload.clinic_name)
     sector_key = blueprint["id"]
     settings.business_sector = sector_key
     settings.onboarding_completed = True
 
-    # Asignar tokens de diseño de marca según el Blueprint
+    # Asignar tokens de diseño de marca según el Blueprint o personalización del usuario
     branding = blueprint.get("branding", {})
-    settings.branding_font_headings = branding.get("branding_font_headings", "Playfair Display")
-    settings.branding_font_body = branding.get("branding_font_body", "Inter")
-    settings.theme_palette = branding.get("theme_palette", "charcoal-gold")
-    if branding.get("accent_color"):
-        settings.accent_color = branding["accent_color"]
-        settings.accent_color_primary = branding["accent_color"]
-    if branding.get("accent_color_secondary"):
-        settings.accent_color_secondary = branding["accent_color_secondary"]
+    settings.branding_font_headings = payload.branding_font_headings or branding.get("branding_font_headings", "Playfair Display")
+    settings.branding_font_body = payload.branding_font_body or branding.get("branding_font_body", "Inter")
+    settings.theme_palette = payload.theme_palette or branding.get("theme_palette", "charcoal-gold")
+    settings.branding_palette_id = payload.theme_palette or "dorado-antracita"
+    
+    primary_color = payload.accent_color_primary or branding.get("accent_color", "#D4AF37")
+    settings.accent_color = primary_color
+    settings.accent_color_primary = primary_color
+    
+    secondary_color = payload.accent_color_secondary or branding.get("accent_color_secondary", "#1C1917")
+    settings.accent_color_secondary = secondary_color
 
     # Inyectar / Actualizar SiteContent con textos y fotografías reales del sector
     site_content = db.query(models.SiteContent).filter(models.SiteContent.tenant_id == tenant_id).first()

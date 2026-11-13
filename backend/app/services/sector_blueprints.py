@@ -9,6 +9,12 @@ SECTOR_ALIASES = {
     "medicina estética": "clinical",
     "clínicas de salud": "clinical",
     "medicina y clínica de salud": "clinical",
+    "clínica dental": "dental",
+    "clínicas dentales": "dental",
+    "clínica dental y odontología": "dental",
+    "odontología": "dental",
+    "dentista": "dental",
+    "dental": "dental",
     "estética y bienestar": "beauty",
     "estética, belleza y wellness": "beauty",
     "salones y barberías": "barber",
@@ -585,12 +591,87 @@ BLUEPRINTS: Dict[str, Dict[str, Any]] = {
                 "image_url": f"{STORAGE_BASE}/general/service-4.jpg"
             }
         ]
+    },
+    "dental": {
+        "id": "dental",
+        "display_name": "Clínica Dental y Odontología",
+        "badge": "Odontología Avanzada & Estética Dental",
+        "branding": {
+            "branding_font_headings": "Playfair Display",
+            "branding_font_body": "Inter",
+            "theme_palette": "clean-medical",
+            "accent_color": "#D4AF37",
+            "accent_color_primary": "#D4AF37",
+            "accent_color_secondary": "#0F172A"
+        },
+        "category": {
+            "name": "Tratamientos Odontológicos y Estética Dental",
+            "slug": "tratamientos-odontologicos",
+            "description": "Procedimientos dentales de máxima precisión con radiodiagnóstico digital y tecnología mínimamente invasiva."
+        },
+        "site_content": {
+            "hero_title": "Tu sonrisa y salud bucodental en las mejores manos en {clinic_name}",
+            "hero_subtitle": "Odontología avanzada, estética dental y diagnóstico digital de alta precisión para cuidar de tu sonrisa.",
+            "hero_image_url": f"{STORAGE_BASE}/dental/hero.jpg",
+            "hero_button_text": "Pedir Cita Dental",
+            "hero_button_link": "/reservar",
+            "about_title": "Sobre {clinic_name}",
+            "about_text": "En {clinic_name} creemos que una boca sana transforma tu calidad de vida. Disponemos de gabinetes de última generación, radiología 3D y un equipo de odontólogos especialistas comprometidos con tratamientos indoloros y duraderos.",
+            "about_image_url": f"{STORAGE_BASE}/dental/about.jpg",
+            "cta_title": "¿Necesitas una revisión o mejorar tu sonrisa?",
+            "cta_subtitle": "Agenda tu primera consulta diagnóstica online sin esperas.",
+            "cta_button_text": "Reservar Primera Visita",
+            "cta_button_link": "/reservar"
+        },
+        "services": [
+            {
+                "name": "Revisión Odontológica & Diagnóstico con Radiografía Digital",
+                "slug": "revision-odontologica-radiografia",
+                "duration_minutes": 30,
+                "price": 30.00,
+                "description": "Examen clínico integral, revisión periodontal con cámara intraoral y plan de tratamiento personalizado.",
+                "is_featured": True,
+                "image_url": f"{STORAGE_BASE}/dental/service-1.jpg"
+            },
+            {
+                "name": "Limpieza Dental por Ultrasonidos & Profilaxis Avanzada",
+                "slug": "limpieza-dental-profilaxis",
+                "duration_minutes": 45,
+                "price": 55.00,
+                "description": "Eliminación de sarro bacteriano, pulido coronario con pasta fluorada y asesoramiento en técnicas de cepillado.",
+                "is_featured": True,
+                "image_url": f"{STORAGE_BASE}/dental/service-2.jpg"
+            },
+            {
+                "name": "Blanqueamiento Dental LED en Clínica",
+                "slug": "blanqueamiento-dental-led",
+                "duration_minutes": 60,
+                "price": 180.00,
+                "description": "Aclarado de hasta 4 tonos con gel fotoactivado de alta seguridad para devolver el blanco natural a tu sonrisa.",
+                "is_featured": True,
+                "image_url": f"{STORAGE_BASE}/dental/service-3.jpg"
+            },
+            {
+                "name": "Estudio de Ortodoncia Invisible / Férula de Descarga",
+                "slug": "estudio-ortodoncia-ferula",
+                "duration_minutes": 45,
+                "price": 95.00,
+                "description": "Escaneo 3D para corrección de alineación dental o confección de férula personalizada contra el bruxismo.",
+                "is_featured": False,
+                "image_url": f"{STORAGE_BASE}/dental/service-4.jpg"
+            }
+        ]
     }
 }
 
 
-def normalize_sector(sector_input: str) -> str:
+def normalize_sector(sector_input: str, clinic_name: str = "") -> str:
     """Normaliza cualquier input (nombre visual o clave técnica) a una clave de sector válida."""
+    if clinic_name:
+        c_low = clinic_name.lower()
+        if any(w in c_low for w in ["dentist", "dental", "odontolog", "dientes", "sonrisa"]):
+            return "dental"
+
     if not sector_input:
         return "beauty"
     cleaned = sector_input.strip().lower()
@@ -599,7 +680,7 @@ def normalize_sector(sector_input: str) -> str:
     return SECTOR_ALIASES.get(cleaned, "beauty")
 
 
-def get_sector_blueprint(sector_input: str) -> Dict[str, Any]:
+def get_sector_blueprint(sector_input: str, clinic_name: str = "") -> Dict[str, Any]:
     """Obtiene el Blueprint completo para un sector dado."""
-    sector_key = normalize_sector(sector_input)
+    sector_key = normalize_sector(sector_input, clinic_name)
     return BLUEPRINTS.get(sector_key, BLUEPRINTS["beauty"])
