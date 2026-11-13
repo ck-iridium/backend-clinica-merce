@@ -95,7 +95,7 @@ export default function LoginPage() {
       const redirectTarget = params?.get('redirect')
 
       if (redirectTarget) {
-        router.push(redirectTarget)
+        window.location.href = redirectTarget
         return
       }
 
@@ -104,10 +104,10 @@ export default function LoginPage() {
       const isMainDomain = hostname === 'probookia.com' || hostname === 'www.probookia.com' || hostname === 'localhost'
 
       if (role === 'super_admin' && isMainDomain) {
-        router.push('/super-admin')
+        window.location.href = '/super-admin'
       } else {
         const isWelcome = params?.get('welcome') === 'true'
-        router.push(isWelcome ? '/dashboard?welcome=true' : '/dashboard')
+        window.location.href = isWelcome ? '/dashboard?welcome=true' : '/dashboard'
       }
     } catch (err: any) {
       setError(err.message)

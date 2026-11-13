@@ -218,7 +218,16 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
       router.push(href);
     };
 
-    if (loading) {
+    const localFallbackRole = typeof window !== 'undefined' ? (() => {
+      try {
+        const u = localStorage.getItem('user');
+        return u ? JSON.parse(u).role : null;
+      } catch { return null; }
+    })() : null;
+
+    const effectiveRole = (role || localFallbackRole || 'admin')?.toLowerCase();
+
+    if (loading && !role && !localFallbackRole) {
       return (
         <div className="flex flex-col gap-3 w-full px-3 py-2 animate-in fade-in duration-500">
           {Array(6).fill(0).map((_, i) => (
@@ -228,9 +237,9 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
       );
     }
 
-    const currentRole = role?.toLowerCase();
+    const currentRole = effectiveRole;
     const isRecepcion = currentRole === 'recepción' || currentRole === 'recepcion';
-    const isAdmin = currentRole === 'administrador' || currentRole === 'admin';
+    const isAdmin = currentRole === 'administrador' || currentRole === 'admin' || currentRole === 'owner' || currentRole === 'titular';
 
     // Definición de grupos dinámica según el rol para evitar redundancias
     const directLinksHrefs = [
@@ -259,7 +268,6 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
 
     // Filtrado por roles para cada grupo
     const filterByRole = (links: typeof navLinks) => {
-      const currentRole = role?.toLowerCase();
       return links.filter(link => {
         // --- FEATURE FLAG PARA EL PLAN GOLD ---
         if (link.href === '/dashboard/ai-webmaster' && planType !== 'gold') {
@@ -271,9 +279,9 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
           return false;
         }
 
-        if (currentRole === 'administrador' || currentRole === 'admin') return true;
+        if (isAdmin) return true;
 
-        if (currentRole === 'recepción' || currentRole === 'recepcion') {
+        if (isRecepcion) {
           // Recepción NO ve: Equipo, Sedes, Servicios, Ajustes, Media, CMS, Mi Horario
           const restricted = [
             '/dashboard/team', '/dashboard/settings', 

@@ -53,6 +53,11 @@ export function useAuthRole() {
           setUserName(`Modo Soporte: ${decodeURIComponent(impersonateName)}`);
         }
 
+        // Si ya tenemos rol (sea por localStorage o por impersonación), liberar la UI de inmediato para 0ms de bloqueo
+        if (localUser?.role || isImpersonating) {
+          setLoading(false);
+        }
+
         // Si no teníamos ID en localStorage, obtenerlo de la sesión activa de Supabase
         if (!userId) {
           try {

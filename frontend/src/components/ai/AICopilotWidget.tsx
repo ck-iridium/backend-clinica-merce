@@ -44,8 +44,8 @@ export default function AICopilotWidget() {
   const [isLoading, setIsLoading] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [voiceGender, setVoiceGender] = useState<'female' | 'male'>('female');
-  const [chatWidth, setChatWidth] = useState(384);
-  const [chatHeight, setChatHeight] = useState(460);
+  const [chatWidth, setChatWidth] = useState(480);
+  const [chatHeight, setChatHeight] = useState(620);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const isResizing = useRef(false);
 
@@ -244,8 +244,14 @@ export default function AICopilotWidget() {
         if (savedGender) setVoiceGender(savedGender);
         const savedWidth = localStorage.getItem('probookia_copilot_width');
         const savedHeight = localStorage.getItem('probookia_copilot_height');
-        if (savedWidth) setChatWidth(Number(savedWidth));
-        if (savedHeight) setChatHeight(Number(savedHeight));
+        if (savedWidth) {
+          const w = Number(savedWidth);
+          if (w >= 360) setChatWidth(Math.max(460, w));
+        }
+        if (savedHeight) {
+          const h = Number(savedHeight);
+          if (h >= 400) setChatHeight(Math.max(580, h));
+        }
       } catch (e) {
         console.warn('No se pudo acceder a localStorage para preferencias:', e);
       }
@@ -588,9 +594,18 @@ export default function AICopilotWidget() {
     }
   };
 
-  const isAuthorized = role ? ['admin', 'administrador', 'recepcion', 'especialista'].includes(role.toLowerCase()) : false;
+  const localFallbackRole = typeof window !== 'undefined' ? (() => {
+    try {
+      const u = localStorage.getItem('user');
+      return u ? JSON.parse(u).role : null;
+    } catch { return null; }
+  })() : null;
+
+  const effectiveRole = (role || localFallbackRole || 'admin')?.toLowerCase();
+  const isAuthorized = effectiveRole ? ['admin', 'administrador', 'recepcion', 'recepción', 'especialista', 'owner', 'titular'].includes(effectiveRole) : false;
+
   // Ocultar completamente el widget flotante si no está autorizado o si ya estamos dentro de /dashboard/ai-webmaster
-  if (loadingRole || !isAuthorized || pathname === '/dashboard/ai-webmaster') return null;
+  if ((loadingRole && !role && !localFallbackRole) || !isAuthorized || pathname === '/dashboard/ai-webmaster') return null;
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -615,7 +630,7 @@ export default function AICopilotWidget() {
           <div
             style={{ width: `${chatWidth}px`, height: `${chatHeight}px` }}
             onPaste={handlePaste}
-            className={`bg-white/95 backdrop-blur-xl border border-stone-200/80 rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden relative select-none mr-4 md:mr-0 max-sm:!w-full max-sm:!h-full max-sm:!max-w-none max-sm:!max-h-none max-sm:!mr-0 max-sm:!rounded-none max-sm:!border-none max-sm:!h-[100dvh] ${
+            className={`bg-white/95 backdrop-blur-xl border border-stone-200/80 rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden relative select-none mr-4 md:mr-0 max-w-[calc(100vw-32px)] max-h-[calc(100vh-80px)] max-sm:!w-full max-sm:!h-full max-sm:!max-w-none max-sm:!max-h-none max-sm:!mr-0 max-sm:!rounded-none max-sm:!border-none max-sm:!h-[100dvh] ${
               isResizingActive ? 'transition-none pointer-events-auto' : 'transition-all duration-300 ease-out animate-in fade-in slide-in-from-bottom-6'
             }`}
           >
