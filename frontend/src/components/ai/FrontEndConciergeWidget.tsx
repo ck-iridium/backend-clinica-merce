@@ -278,10 +278,11 @@ export default function FrontEndConciergeWidget() {
       )}
 
       <div
+        style={{ fontFamily: 'var(--font-inter, sans-serif)' }}
         className={
           isOpen
-            ? 'fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-3 font-sans transition-all duration-300 max-sm:!fixed max-sm:!inset-0 max-sm:!w-full max-sm:!h-full max-sm:!p-0 max-sm:!m-0'
-            : 'fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-3 font-sans transition-all duration-300 pointer-events-auto'
+            ? 'fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-3 transition-all duration-300 max-sm:!fixed max-sm:!inset-0 max-sm:!w-full max-sm:!h-full max-sm:!p-0 max-sm:!m-0'
+            : 'fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-3 transition-all duration-300 pointer-events-auto'
         }
       >
         {/* ── PANEL ABIERTO DEL CONCIERGE ── */}
@@ -416,7 +417,7 @@ export default function FrontEndConciergeWidget() {
                             </div>
 
                             {msg.action.service_name && (
-                              <p className="text-xs font-semibold text-stone-800 dark:text-stone-100">
+                              <p className="font-serif text-sm font-bold text-stone-900 dark:text-stone-100">
                                 {msg.action.service_name}
                               </p>
                             )}
@@ -486,15 +487,6 @@ export default function FrontEndConciergeWidget() {
 
               <div ref={messagesEndRef} />
             </div>
-
-            {/* Aviso Sutil de Cuota de Cortesía Restante */}
-            {remainingMessages <= 3 && remainingMessages > 0 && (
-              <div className="px-4 py-1.5 bg-amber-500/10 border-t border-amber-500/20 text-center">
-                <span className="text-[11px] text-amber-700 dark:text-amber-400 font-medium">
-                  Te quedan {remainingMessages} consultas de cortesía en esta visita.
-                </span>
-              </div>
-            )}
 
             {/* Barra de Entrada de Texto y Micrófono */}
             <div className="p-3 border-t border-stone-100 dark:border-stone-800 bg-white/80 dark:bg-stone-950/80 shrink-0">
