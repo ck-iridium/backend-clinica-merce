@@ -41,6 +41,27 @@ class AIChatResponse(BaseModel):
     audio_response_base64: Optional[str] = None
     trial_remaining: Optional[int] = None
 
+class ConciergeAction(BaseModel):
+    type: str  # "booking" | "info" | "lead_capture"
+    service_id: Optional[str] = None
+    service_name: Optional[str] = None
+    date: Optional[str] = None  # YYYY-MM-DD
+    time: Optional[str] = None  # HH:MM
+    url: Optional[str] = None
+
+class AIConciergeRequest(BaseModel):
+    message: str
+    history: List[ChatMessage] = []
+    session_id: str
+    voice_gender: Optional[str] = "female"
+    language: Optional[str] = "es"
+
+class AIConciergeResponse(BaseModel):
+    response: str
+    action: Optional[ConciergeAction] = None
+    audio_response_base64: Optional[str] = None
+    remaining_messages: int = 8
+
 class AIVoiceRequest(BaseModel):
     audio_base64: str
     mime_type: str = "audio/webm"

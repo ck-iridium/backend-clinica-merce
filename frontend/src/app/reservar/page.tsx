@@ -256,7 +256,22 @@ export default function BookingPage() {
                   const parentCat = loadedCategories.find((c: any) => String(c.id) === String(targetSrv.category_id));
                   if (parentCat) setActiveCategory(parentCat);
                 }
-                if (staffData.length > 1) {
+
+                const qDate = qs.get('date');
+                const qTime = qs.get('time') || qs.get('slot');
+                if (qDate) {
+                  const parsedDate = new Date(qDate + 'T00:00:00');
+                  if (!isNaN(parsedDate.getTime())) {
+                    setSelectedDate(parsedDate);
+                  }
+                }
+                if (qTime) {
+                  setSelectedTime(qTime);
+                }
+
+                if (qDate && qTime) {
+                  setStep(4);
+                } else if (staffData.length > 1) {
                   setStep(2);
                 } else {
                   setStep(3);

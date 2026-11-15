@@ -4,6 +4,7 @@ import Footer from "./Footer";
 import PublicNavbar from "./PublicNavbar";
 import CookieBanner from "./CookieBanner";
 import ScrollToTop from "./ScrollToTop";
+import FrontEndConciergeWidget from "./ai/FrontEndConciergeWidget";
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -32,6 +33,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
       </main>
       {!useInternalUI && <Footer />}
       {!isBooking && <ScrollToTop />}
+      {!isBooking && <FrontEndConciergeWidget />}
       <CookieBanner />
     </>
   );
