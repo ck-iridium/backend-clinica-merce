@@ -411,20 +411,27 @@ export default function FrontEndConciergeWidget() {
                       >
                         <p className="whitespace-pre-wrap">{msg.content}</p>
 
-                        {/* Opciones Interactivas Clicables (ej. Selección de Sedes) */}
+                        {/* Opciones Interactivas Clicables (ej. Selección de Sedes o Servicios) */}
                         {msg.action?.options && msg.action.options.length > 0 && (
                           <div className="mt-3 flex flex-wrap gap-2">
-                            {msg.action.options.map((opt, optIdx) => (
-                              <button
-                                key={optIdx}
-                                type="button"
-                                onClick={() => handleSend(opt)}
-                                className="text-xs px-3.5 py-2 rounded-xl bg-white dark:bg-stone-950 hover:bg-[#d4af37]/15 dark:hover:bg-[#d4af37]/25 text-stone-800 dark:text-stone-200 border border-stone-200/80 dark:border-stone-800 hover:border-[#d4af37] transition-all duration-200 shadow-sm font-medium flex items-center gap-1.5 active:scale-95 text-left group"
-                              >
-                                <MapPin className="w-3.5 h-3.5 text-[#d4af37] group-hover:scale-110 transition-transform shrink-0" />
-                                <span>{opt}</span>
-                              </button>
-                            ))}
+                            {msg.action.options.map((opt, optIdx) => {
+                              const isLocationOption = /sede|cl[ií]nica|centro|sal[oó]n|estudio|barber[ií]a|calle|avda|av\./i.test(opt);
+                              return (
+                                <button
+                                  key={optIdx}
+                                  type="button"
+                                  onClick={() => handleSend(opt)}
+                                  className="text-xs px-3.5 py-2 rounded-xl bg-white dark:bg-stone-950 hover:bg-[#d4af37]/15 dark:hover:bg-[#d4af37]/25 text-stone-800 dark:text-stone-200 border border-stone-200/80 dark:border-stone-800 hover:border-[#d4af37] transition-all duration-200 shadow-sm font-medium flex items-center gap-1.5 active:scale-95 text-left group"
+                                >
+                                  {isLocationOption ? (
+                                    <MapPin className="w-3.5 h-3.5 text-[#d4af37] group-hover:scale-110 transition-transform shrink-0" />
+                                  ) : (
+                                    <Sparkles className="w-3.5 h-3.5 text-[#d4af37] group-hover:scale-110 transition-transform shrink-0" />
+                                  )}
+                                  <span>{opt}</span>
+                                </button>
+                              );
+                            })}
                           </div>
                         )}
 

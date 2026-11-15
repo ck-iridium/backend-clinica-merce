@@ -86,15 +86,27 @@ export default function BookingPage() {
 
   const [selectedService, setSelectedService] = useState<any>(null);
 
-  // Initialize to NEXT WORKING DAY
-  const [selectedDate, setSelectedDate] = useState<Date>(getNextWorkingDay());
-  const [selectedTime, setSelectedTime] = useState<string>('');
-  // Ref para retener la hora recibida por URL (ej. Asistente IA) y evitar que el effect de disponibilidad la vacíe
-  const initialUrlTimeRef = useRef<string | null>(
-    typeof window !== 'undefined'
-      ? (new URLSearchParams(window.location.search).get('time') || new URLSearchParams(window.location.search).get('slot'))
-      : null
-  );
+  // Initialize to NEXT WORKING DAY or URL date
+  const [selectedDate, setSelectedDate] = useState<Date>(() => {
+    if (typeof window !== 'undefined') {
+      const qs = new URLSearchParams(window.location.search);
+      const qDate = qs.get('date');
+      if (qDate) {
+        const parsedDate = new Date(qDate + 'T00:00:00');
+        if (!isNaN(parsedDate.getTime())) return parsedDate;
+      }
+    }
+    return getNextWorkingDay();
+  });
+
+  // Initialize to URL time or empty
+  const [selectedTime, setSelectedTime] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const qs = new URLSearchParams(window.location.search);
+      return qs.get('time') || qs.get('slot') || '';
+    }
+    return '';
+  });
   const [dateTimePhase, setDateTimePhase] = useState<1 | 2>(1);
   const [currentMonthOffset, setCurrentMonthOffset] = useState(0);
 
@@ -317,12 +329,6 @@ export default function BookingPage() {
     const dayIndex = toWeekDayIndex(selectedDate.getDay());
     if (!workingDays.includes(dayIndex)) { setAvailableSlots([]); return; }
     setLoadingSlots(true);
-    if (initialUrlTimeRef.current) {
-      setSelectedTime(initialUrlTimeRef.current);
-      initialUrlTimeRef.current = null;
-    } else {
-      setSelectedTime('');
-    }
     const dateStr = selectedDate.toLocaleDateString('en-CA'); // YYYY-MM-DD in local tz
     
     let url = `${process.env.NEXT_PUBLIC_API_URL}/appointments/availability?date=${dateStr}&service_id=${selectedService.id}`;
@@ -540,7 +546,10 @@ export default function BookingPage() {
               {locations.length > 1 && !selectedLocation ? (
                 <Step0Locations
                   locations={locations}
-                  onSelectLocation={(loc) => setSelectedLocation(loc)}
+                  onSelectLocation={(loc) => {
+                    setSelectedLocation(loc);
+                    setSelectedTime('');
+                  }}
                 />
               ) : (
                 <>
@@ -554,6 +563,7 @@ export default function BookingPage() {
                       settings={settings}
                       onSelectService={(srv) => { 
                         setSelectedService(srv); 
+                        setSelectedTime('');
                         if (staff.length > 1) {
                           setStep(2);
                         } else {
