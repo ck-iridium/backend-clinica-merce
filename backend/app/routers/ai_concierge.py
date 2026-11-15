@@ -344,7 +344,7 @@ DIRECTIVAS DE INTELIGENCIA CONVERSACIONAL (PASO A PASO - CERO VOLCADOS DE SERVIC
                         title=loc.name,
                         subtitle=loc.address or clinic_address or "Consultar ubicación",
                         category="location",
-                        group=group_label or "Sede o Ubicación",
+                        group=group_label or "Lugar de la cita",
                         badge=city_part or "Sede",
                         action_value=loc.name
                     )

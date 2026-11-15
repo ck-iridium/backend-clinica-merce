@@ -430,7 +430,7 @@ export default function FrontEndConciergeWidget() {
 
                         {/* Opciones Interactivas Clicables (Tarjetas 1 por fila y Selección Múltiple) */}
                         {(() => {
-                          const richOpts: ConciergeOptionItem[] = msg.action?.rich_options && msg.action.rich_options.length > 0
+                          const baseOpts: ConciergeOptionItem[] = msg.action?.rich_options && msg.action.rich_options.length > 0
                             ? msg.action.rich_options
                             : (msg.action?.options || []).map((opt) => ({
                                 title: opt,
@@ -438,6 +438,14 @@ export default function FrontEndConciergeWidget() {
                                 category: /sede|cl[ií]nica|centro|sal[oó]n|calle|avda/i.test(opt) ? 'location' : /domicilio/i.test(opt) ? 'modality' : 'service',
                                 group: /sede|cl[ií]nica|centro|sal[oó]n|calle|avda|domicilio/i.test(opt) ? 'Lugar de la cita' : 'Tratamiento'
                               }));
+
+                          // Normalizar grupos: "Lugar de la cita" agrupa tanto sedes físicas como modalidad a domicilio
+                          const richOpts: ConciergeOptionItem[] = baseOpts.map((opt) => ({
+                            ...opt,
+                            group: (opt.category === 'location' || opt.category === 'modality' || /sede|ubicaci[oó]n|lugar|domicilio/i.test(opt.group || ''))
+                              ? 'Lugar de la cita'
+                              : (opt.group || 'Opciones')
+                          }));
 
                           if (richOpts.length === 0) return null;
 
@@ -472,13 +480,20 @@ export default function FrontEndConciergeWidget() {
                                             type="button"
                                             onClick={() => {
                                               if (isMultiGroup) {
-                                                setMultiSelections((prev) => ({
-                                                  ...prev,
-                                                  [index]: {
-                                                    ...(prev[index] || {}),
-                                                    [grpName]: opt.action_value,
-                                                  },
-                                                }));
+                                                setMultiSelections((prev) => {
+                                                  const currentMap = prev[index] || {};
+                                                  const currentVal = currentMap[grpName];
+                                                  const nextMap = { ...currentMap };
+                                                  if (currentVal === opt.action_value) {
+                                                    delete nextMap[grpName];
+                                                  } else {
+                                                    nextMap[grpName] = opt.action_value;
+                                                  }
+                                                  return {
+                                                    ...prev,
+                                                    [index]: nextMap,
+                                                  };
+                                                });
                                               } else {
                                                 handleSend(opt.action_value);
                                               }
