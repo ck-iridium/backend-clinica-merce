@@ -6,12 +6,14 @@ interface ChromaticOrbProps {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
   isSpeaking?: boolean;
+  theme?: 'light' | 'dark';
 }
 
 export default function ChromaticOrb({
   size = 'md',
   className = '',
   isSpeaking = false,
+  theme = 'dark',
 }: ChromaticOrbProps) {
   // Dimensiones según variante
   const dimensions = {
@@ -30,19 +32,28 @@ export default function ChromaticOrb({
   const baseStroke = size === 'lg' ? 1.4 : 1.3;
   const beamStroke = size === 'lg' ? 1.7 : 1.5;
 
+  const isLight = theme === 'light';
+
   return (
     <div
-      className={`relative rounded-full overflow-hidden shrink-0 select-none flex items-center justify-center border border-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.3),inset_0_-2px_6px_rgba(0,0,0,0.9),0_4px_20px_rgba(0,0,0,0.6)] ${dimensions} ${className}`}
+      className={`relative rounded-full overflow-hidden shrink-0 select-none flex items-center justify-center ${
+        isLight
+          ? 'border border-stone-200/90 shadow-[inset_0_2px_4px_rgba(255,255,255,1),inset_0_-2px_4px_rgba(0,0,0,0.06),0_4px_16px_rgba(212,175,55,0.18)]'
+          : 'border border-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.3),inset_0_-2px_6px_rgba(0,0,0,0.9),0_4px_20px_rgba(0,0,0,0.6)]'
+      } ${dimensions} ${className}`}
       style={{
-        background: 'radial-gradient(circle at 35% 30%, #1e1e24 0%, #0c0c0f 55%, #030304 100%)',
+        background: isLight
+          ? 'radial-gradient(circle at 35% 30%, #ffffff 0%, #f6f5f0 50%, #eae9e2 100%)'
+          : 'radial-gradient(circle at 35% 30%, #1e1e24 0%, #0c0c0f 55%, #030304 100%)',
       }}
     >
       {/* ── Reflejo Especular Superior de Vidrio Pulido ── */}
       <div
         className="absolute inset-0 rounded-full pointer-events-none z-20"
         style={{
-          background:
-            'radial-gradient(ellipse at 32% 22%, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.08) 32%, transparent 60%)',
+          background: isLight
+            ? 'radial-gradient(ellipse at 32% 22%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.3) 32%, transparent 60%)'
+            : 'radial-gradient(ellipse at 32% 22%, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.08) 32%, transparent 60%)',
         }}
       />
 

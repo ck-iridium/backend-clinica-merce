@@ -101,10 +101,10 @@ export default function FrontEndConciergeWidget() {
 
   // 5. Historial de Mensajes y Mensaje de Bienvenida Quiet Luxury
   const welcomeText = language === 'fr'
-    ? 'Bonjour et bienvenue. Je suis votre concierge virtuel. Comment puis-je vous aider aujourd’hui ? Vous pouvez me poser des questions sur nos soins ou demander nos créneaux disponibles.'
+    ? 'Bonjour et bienvenue. Je suis votre assistant virtuel. Comment puis-je vous aider aujourd’hui ? Vous pouvez me poser des questions sur nos soins ou demander nos créneaux disponibles.'
     : language === 'en'
-      ? 'Hello and welcome. I am your virtual concierge. How may I assist you today? You can ask me about our treatments or inquire about available appointment slots.'
-      : 'Hola, te damos la bienvenida. Soy tu concierge virtual. ¿En qué puedo orientarte hoy? Puedes consultarme sobre cualquier tratamiento o pedirme disponibilidad de citas.';
+      ? 'Hello and welcome. I am your virtual assistant. How may I assist you today? You can ask me about our treatments or inquire about available appointment slots.'
+      : 'Hola, te damos la bienvenida. Soy tu asistente virtual. ¿En qué puedo ayudarte hoy? Puedes consultarme sobre cualquier tratamiento o pedirme disponibilidad de citas.';
 
   const [messages, setMessages] = useState<Message[]>([
     { role: 'model', content: welcomeText }
@@ -232,7 +232,7 @@ export default function FrontEndConciergeWidget() {
 
     } catch (err: any) {
       console.error('Error en FrontEndConciergeWidget:', err);
-      const errMsg = 'En este momento estamos experimentando alta demanda. Puedes consultar nuestro catálogo y reservar directamente tu cita con el botón de reserva.';
+      const errMsg = 'En este momento estoy actualizando la información de citas. Puedes consultar nuestro catálogo y reservar directamente tu cita con el botón de reserva.';
       setMessages((prev) => [
         ...prev,
         {
@@ -260,10 +260,10 @@ export default function FrontEndConciergeWidget() {
   };
 
   const chips = [
-    { label: '✨ Tratamientos populares', query: '¿Cuáles son los tratamientos más solicitados y recomendados?' },
-    { label: '📅 Huecos esta semana', query: '¿Qué disponibilidad de citas tenéis para esta semana?' },
-    { label: '📍 Ubicación y horarios', query: '¿Dónde estáis ubicados y en qué horario abrís?' },
-    { label: '💶 Precios y tarifas', query: '¿Me puedes detallar vuestros precios y servicios principales?' },
+    { label: 'Tratamientos más populares', query: '¿Cuáles son los tratamientos más solicitados y recomendados?' },
+    { label: 'Consultar huecos libres', query: '¿Qué disponibilidad de citas tenéis para esta semana?' },
+    { label: 'Ubicación y horarios', query: '¿Dónde estáis ubicados y en qué horario abrís?' },
+    { label: 'Precios y tarifas', query: '¿Me puedes detallar vuestros precios y servicios principales?' },
   ];
 
   return (
@@ -303,21 +303,21 @@ export default function FrontEndConciergeWidget() {
               <div className="w-2.5 h-2.5 border-l-2 border-t-2 border-stone-400/60 group-hover/resize:border-[#d4af37] transition-colors rounded-tl" />
             </div>
 
-            {/* Cabecera del Concierge (Quiet Luxury) */}
+            {/* Cabecera del Asistente (Quiet Luxury) */}
             <div className="px-5 py-3.5 border-b border-stone-100 dark:border-stone-800/80 bg-stone-50/70 dark:bg-stone-900/60 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <ChromaticOrb size="md" isSpeaking={isSpeaking} />
+                <ChromaticOrb size="md" isSpeaking={isSpeaking} theme={isThemeDark ? 'dark' : 'light'} />
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-serif font-bold text-stone-900 dark:text-stone-100 text-sm tracking-tight">
-                      Concierge Virtual
+                      Asistente Virtual
                     </span>
                     <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                       24/7
                     </span>
                   </div>
-                  <p className="text-[11px] text-stone-400 font-medium">Asesor y Reservas en Directo</p>
+                  <p className="text-[11px] text-stone-400 font-medium">Atención y Citas 24/7</p>
                 </div>
               </div>
 
@@ -391,7 +391,11 @@ export default function FrontEndConciergeWidget() {
                     <div className="flex items-end gap-2 max-w-[85%]">
                       {isModel && (
                         <div className="mb-1">
-                          <ChromaticOrb size="sm" isSpeaking={isSpeaking && index === messages.length - 1} />
+                          <ChromaticOrb 
+                            size="sm" 
+                            isSpeaking={isSpeaking && index === messages.length - 1} 
+                            theme={isThemeDark ? 'dark' : 'light'} 
+                          />
                         </div>
                       )}
                       <div
@@ -457,21 +461,21 @@ export default function FrontEndConciergeWidget() {
               {isLoading && (
                 <div className="flex items-center gap-2 text-stone-400 text-xs italic pl-10 animate-pulse">
                   <span className="w-2 h-2 rounded-full bg-[#d4af37] animate-ping" />
-                  <span>El concierge está consultando la información...</span>
+                  <span>El asistente está consultando la información...</span>
                 </div>
               )}
 
-              {/* Sugerencias Rápidas Iniciales (Chips) */}
+              {/* Sugerencias Rápidas Iniciales (Chips sin emojis estilo Quiet Luxury) */}
               {messages.length === 1 && !isLoading && (
                 <div className="pt-2 pl-10 pr-2">
                   <p className="text-[11px] font-medium text-stone-400 mb-2">Preguntas frecuentes:</p>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap gap-2">
                     {chips.map((chip, idx) => (
                       <button
                         key={idx}
                         type="button"
                         onClick={() => handleSend(chip.query)}
-                        className="text-[11px] px-2.5 py-1.5 rounded-full bg-stone-100 hover:bg-stone-200/80 dark:bg-stone-900 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200/60 dark:border-stone-800 transition-colors text-left"
+                        className="text-xs px-3.5 py-1.5 rounded-full bg-white dark:bg-stone-900 hover:bg-stone-100 dark:hover:bg-stone-850 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-800 hover:border-[#d4af37] dark:hover:border-[#d4af37] transition-all shadow-xs font-medium text-left"
                       >
                         {chip.label}
                       </button>
@@ -548,8 +552,8 @@ export default function FrontEndConciergeWidget() {
                 ? 'h-16 w-16 max-sm:h-14 max-sm:w-14 rounded-full bg-stone-950 p-1 text-white shadow-[0_10px_35px_rgba(0,0,0,0.7)] hover:shadow-[0_0_30px_rgba(255,106,0,0.4)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center relative border border-stone-800 ring-1 ring-white/10 hover:ring-orange-500/50 group select-none'
                 : 'h-16 w-16 max-sm:h-14 max-sm:w-14 rounded-full bg-white/95 p-1 text-stone-900 shadow-[0_10px_35px_rgba(212,175,55,0.25)] hover:shadow-[0_12px_40px_rgba(212,175,55,0.45)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center relative border border-stone-200/90 ring-1 ring-[#d4af37]/25 hover:ring-[#d4af37]/60 group select-none backdrop-blur-md'
             }
-            title="Concierge Virtual 24/7"
-            aria-label="Abrir Concierge Virtual 24/7"
+            title="Asistente Virtual 24/7"
+            aria-label="Abrir Asistente Virtual 24/7"
           >
             {/* Halo ambiental sutil según tema */}
             <span
@@ -561,7 +565,12 @@ export default function FrontEndConciergeWidget() {
             />
 
             {/* Esfera con el Símbolo del Infinito Naranja Fino y Animado */}
-            <ChromaticOrb size="lg" className="w-full h-full" isSpeaking={isSpeaking} />
+            <ChromaticOrb 
+              size="lg" 
+              className="w-full h-full" 
+              isSpeaking={isSpeaking} 
+              theme={isThemeDark ? 'dark' : 'light'} 
+            />
 
             {/* Tooltip flotante Quiet Luxury (Desktop) */}
             <div
@@ -572,7 +581,7 @@ export default function FrontEndConciergeWidget() {
               }
             >
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
-              <span>¿Dudas con tu cita? Concierge 24/7</span>
+              <span>¿Dudas con tu cita? Asistente 24/7</span>
             </div>
           </button>
         )}

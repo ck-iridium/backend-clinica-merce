@@ -35,8 +35,8 @@ def _clean_expired_sessions():
 @router.post("/concierge", response_model=schemas.AIConciergeResponse)
 @limiter.limit("20/minute")
 def public_concierge_chat(
-    req: Request,
-    request: schemas.AIConciergeRequest,
+    request: Request,
+    payload: schemas.AIConciergeRequest,
     db: Session = Depends(get_db)
 ):
     """
@@ -50,6 +50,8 @@ def public_concierge_chat(
 
     tenant_id = current_tenant_var.get()
     if not tenant_id:
+        tenant_id = request.headers.get("X-Tenant-ID") or request.cookies.get("tenant_id")
+    if not tenant_id:
         raise HTTPException(status_code=400, detail="Identificador de inquilino no resuelto.")
 
     tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
@@ -60,7 +62,7 @@ def public_concierge_chat(
         raise HTTPException(status_code=402, detail="Servicio temporalmente pausado.")
 
     # 1. Control de Cuota por Sesión Anónima (Token Bucket Anti-Abuso)
-    session_id = request.session_id or "default_session"
+    session_id = payload.session_id or "default_session"
     now_ts = time.time()
     session_info = _SESSION_DATA.get(session_id, {"count": 0, "last_active": now_ts})
     
@@ -96,7 +98,7 @@ def public_concierge_chat(
     clinic_address = settings.clinic_address if settings and settings.clinic_address else "Consultar en web"
     open_time = settings.open_time if settings and settings.open_time else "09:00"
     close_time = settings.close_time if settings and settings.close_time else "20:00"
-    sector = (tenant.business_sector or "estetica").lower()
+    sector = (getattr(settings, "business_sector", None) or "estetica").lower()
 
     active_services = db.query(models.Service).filter(
         models.Service.tenant_id == tenant_id,
@@ -193,14 +195,14 @@ DIRECTIVAS CRÍTICAS DE CONVERSIÓN Y RESERVA:
         )
 
         history_parts = []
-        for msg in request.history:
+        for msg in payload.history:
             history_parts.append({
                 "role": "user" if msg.role == "user" else "model",
                 "parts": [msg.content]
             })
 
         chat = model.start_chat(history=history_parts, enable_automatic_function_calling=True)
-        response_brain = chat.send_message(request.message)
+        response_brain = chat.send_message(payload.message)
         raw_text = response_brain.text.strip()
 
         # Incrementar contador de sesión
@@ -246,12 +248,12 @@ DIRECTIVAS CRÍTICAS DE CONVERSIÓN Y RESERVA:
 
         # Opcional: Generar audio TTS
         audio_response_base64 = None
-        if request.voice_gender:
+        if payload.voice_gender:
             try:
                 voice_clean = re.sub(r'\[.*?\]', '', clean_text).strip()
-                lang = getattr(request, 'language', 'es')
+                lang = getattr(payload, 'language', 'es')
                 audio_response_base64 = ai_agent_service.generate_gemini_tts(
-                    voice_clean, request.voice_gender, api_key, lang
+                    voice_clean, payload.voice_gender, api_key, lang
                 )
             except Exception as e_tts:
                 logger.warning(f"Concierge TTS error: {e_tts}")
