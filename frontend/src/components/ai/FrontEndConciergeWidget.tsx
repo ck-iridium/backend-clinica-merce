@@ -30,6 +30,9 @@ interface ConciergeAction {
   service_name?: string;
   date?: string;
   time?: string;
+  location_id?: string;
+  location_name?: string;
+  options?: string[];
   url?: string;
 }
 
@@ -408,6 +411,23 @@ export default function FrontEndConciergeWidget() {
                       >
                         <p className="whitespace-pre-wrap">{msg.content}</p>
 
+                        {/* Opciones Interactivas Clicables (ej. Selección de Sedes) */}
+                        {msg.action?.options && msg.action.options.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {msg.action.options.map((opt, optIdx) => (
+                              <button
+                                key={optIdx}
+                                type="button"
+                                onClick={() => handleSend(opt)}
+                                className="text-xs px-3.5 py-2 rounded-xl bg-white dark:bg-stone-950 hover:bg-[#d4af37]/15 dark:hover:bg-[#d4af37]/25 text-stone-800 dark:text-stone-200 border border-stone-200/80 dark:border-stone-800 hover:border-[#d4af37] transition-all duration-200 shadow-sm font-medium flex items-center gap-1.5 active:scale-95 text-left group"
+                              >
+                                <MapPin className="w-3.5 h-3.5 text-[#d4af37] group-hover:scale-110 transition-transform shrink-0" />
+                                <span>{opt}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
                         {/* Tarjeta Interactiva de Cita Sugerida / Acción */}
                         {msg.action && msg.action.type === 'booking' && (
                           <div className="mt-3 p-3 rounded-xl bg-white dark:bg-stone-950 border border-[#d4af37]/40 shadow-md flex flex-col gap-2">
@@ -422,17 +442,23 @@ export default function FrontEndConciergeWidget() {
                               </p>
                             )}
 
-                            {(msg.action.date || msg.action.time) && (
-                              <div className="flex items-center gap-3 text-[11px] text-stone-500 dark:text-stone-400">
+                            {(msg.action.date || msg.action.time || msg.action.location_name) && (
+                              <div className="flex flex-wrap items-center gap-3 text-[11px] text-stone-500 dark:text-stone-400">
+                                {msg.action.location_name && (
+                                  <span className="flex items-center gap-1 font-medium text-stone-700 dark:text-stone-300">
+                                    <MapPin className="w-3 h-3 text-[#d4af37] shrink-0" />
+                                    {msg.action.location_name}
+                                  </span>
+                                )}
                                 {msg.action.date && (
                                   <span className="flex items-center gap-1">
-                                    <Calendar className="w-3 h-3 text-[#d4af37]" />
+                                    <Calendar className="w-3 h-3 text-[#d4af37] shrink-0" />
                                     {msg.action.date}
                                   </span>
                                 )}
                                 {msg.action.time && (
                                   <span className="flex items-center gap-1 font-bold text-stone-700 dark:text-stone-200">
-                                    <Clock className="w-3 h-3 text-[#d4af37]" />
+                                    <Clock className="w-3 h-3 text-[#d4af37] shrink-0" />
                                     {msg.action.time}
                                   </span>
                                 )}

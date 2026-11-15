@@ -47,6 +47,9 @@ class ConciergeAction(BaseModel):
     service_name: Optional[str] = None
     date: Optional[str] = None  # YYYY-MM-DD
     time: Optional[str] = None  # HH:MM
+    location_id: Optional[str] = None
+    location_name: Optional[str] = None
+    options: Optional[List[str]] = None
     url: Optional[str] = None
 
 class AIConciergeRequest(BaseModel):

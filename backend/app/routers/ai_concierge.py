@@ -23,7 +23,8 @@ router = APIRouter(
 
 # Sesiones en memoria con límite de 8 mensajes para visitantes anónimos
 _SESSION_DATA: Dict[str, Dict[str, Any]] = {}
-MAX_SESSION_MESSAGES = 8
+# Desactivado temporalmente el tope para pruebas del propietario (consultas ilimitadas)
+MAX_SESSION_MESSAGES = 999999
 
 def _clean_expired_sessions():
     now = time.time()
@@ -91,7 +92,7 @@ def public_concierge_chat(
 
     genai.configure(api_key=api_key)
 
-    # 3. Extraer información del negocio y catálogo activo
+    # 3. Extraer información del negocio, catálogo y sedes físicas activas
     settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).first()
     clinic_name = settings.clinic_name if settings and settings.clinic_name else tenant.name
     clinic_phone = settings.clinic_phone if settings and settings.clinic_phone else "No especificado"
@@ -99,6 +100,14 @@ def public_concierge_chat(
     open_time = settings.open_time if settings and settings.open_time else "09:00"
     close_time = settings.close_time if settings and settings.close_time else "20:00"
     sector = (getattr(settings, "business_sector", None) or "estetica").lower()
+
+    # Sedes físicas activas
+    active_locations = db.query(models.Location).filter(
+        models.Location.tenant_id == tenant_id,
+        models.Location.is_active == True
+    ).all()
+    locations_map = {str(loc.id): loc.name for loc in active_locations}
+    has_multiple_locations = len(active_locations) > 1
 
     active_services = db.query(models.Service).filter(
         models.Service.tenant_id == tenant_id,
@@ -119,6 +128,38 @@ def public_concierge_chat(
     today_str = datetime.now().strftime("%Y-%m-%d")
     weekday_es = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"][datetime.now().weekday()]
 
+    # Multi-sede context and rules
+    if has_multiple_locations:
+        locations_desc_lines = []
+        for loc in active_locations:
+            addr_part = f" - Dirección: {loc.address}" if loc.address else ""
+            locations_desc_lines.append(f"- Sede: {loc.name} [ID: {loc.id}]{addr_part}")
+        locations_info_str = "\n".join(locations_desc_lines)
+        locations_names_options = " | ".join(loc.name for loc in active_locations)
+
+        multi_location_instruction = f"""
+SEDES FÍSICAS DISPONIBLES (El negocio dispone de {len(active_locations)} sedes):
+{locations_info_str}
+
+DIRECTIVAS MULTI-SEDE (CRÍTICO):
+1. Como el negocio tiene varias sedes, si el visitante consulta disponibilidad de citas o quiere reservar y todavía no ha indicado en cuál sede prefiere atenderse, pregúntale amablemente en qué sede prefiere su cita.
+2. Para ponérselo facilísimo con botones clicables en el chat, añade SIEMPRE al final de tu mensaje la etiqueta de opciones interactivas:
+   [OPCIONES: {locations_names_options}]
+   Ejemplo: "¿En cuál de nuestras sedes te gustaría reservar tu cita?" [OPCIONES: {locations_names_options}]
+3. En cuanto el cliente te indique o pulse su sede preferida, usa su ID en la herramienta `consultar_huecos_disponibles(service_id, date, location_id="...")` y al generar la tarjeta de reserva añade `location_id`:
+   [RESERVA: service_id=UUID, date=YYYY-MM-DD, time=HH:MM, location_id=UUID_DE_LA_SEDE]
+"""
+    else:
+        single_loc_id = str(active_locations[0].id) if len(active_locations) == 1 else None
+        single_loc_name = active_locations[0].name if len(active_locations) == 1 else clinic_name
+        single_loc_addr = active_locations[0].address if len(active_locations) == 1 and active_locations[0].address else clinic_address
+        multi_location_instruction = f"""
+SEDE PRINCIPAL:
+- Nombre: {single_loc_name}
+- Dirección: {single_loc_addr}
+(Al sugerir reserva incluye location_id={single_loc_id if single_loc_id else ''}).
+"""
+
     # 4. Construir System Instruction adaptado al sector (Quiet Luxury)
     sector_tonality = "cálido, distinguido, profesional y sereno"
     if "barber" in sector or "barberia" in sector or "peluqueria" in sector:
@@ -138,12 +179,13 @@ INFORMACIÓN DEL NEGOCIO:
 - Teléfono de contacto: {clinic_phone}
 - Horario de apertura habitual: {open_time} a {close_time}
 - Fecha actual del sistema: {today_str} ({weekday_es})
+{multi_location_instruction}
 
 CATÁLOGO DE SERVICIOS ACTIVOS:
 {catalog_str}
 
 HERRAMIENTAS DISPONIBLES:
-Tienes la herramienta `consultar_huecos_disponibles(service_id, date)` para consultar la disponibilidad real de la agenda para un servicio y una fecha concreta (en formato YYYY-MM-DD).
+Tienes la herramienta `consultar_huecos_disponibles(service_id, date, location_id)` para consultar la disponibilidad real de la agenda para un servicio, fecha concreta (en formato YYYY-MM-DD) y sede (si aplica).
 - Si el usuario te pregunta por disponibilidad o días libres ("¿tenéis hueco el viernes?", "¿a qué hora puedo ir mañana?"), invoca `consultar_huecos_disponibles` con el ID del servicio más acorde y la fecha correspondiente.
 - Si no menciona un servicio concreto, pregúntale amablemente qué tratamiento desea realizarse para consultar los huecos exactos.
 
@@ -155,31 +197,38 @@ DIRECTIVAS CRÍTICAS DE CONVERSIÓN Y RESUMEN DE HORARIOS (VOICE-FIRST):
    - Si el usuario ya especificó su preferencia (ej. "por la tarde", "después de comer" o "a las 5"), confirma directamente el hueco más exacto:
      "¡Perfecto! Te encaja estupendamente a las 17:00." y genera la tarjeta de reserva.
 2. Cada vez que sugieras un horario o servicio, incluye SIEMPRE al final de tu respuesta la etiqueta para desplegar la tarjeta de reserva interactiva:
-   [RESERVA: service_id=UUID_DEL_SERVICIO, date=YYYY-MM-DD, time=HH:MM]
-   (Si aún no se ha acordado hora: [RESERVA: service_id=UUID_DEL_SERVICIO, date=YYYY-MM-DD]).
+   [RESERVA: service_id=UUID_DEL_SERVICIO, date=YYYY-MM-DD, time=HH:MM, location_id=UUID_SEDE]
+   (Si aún no se ha acordado hora: [RESERVA: service_id=UUID_DEL_SERVICIO, date=YYYY-MM-DD, location_id=UUID_SEDE]).
 3. Nunca inventes precios que no figuren en el catálogo. Si preguntan por algo no listado, sugiere la opción más cercana o invítales a consulta presencial.
 4. Jamás des diagnósticos médicos vinculantes; si preguntan por problemas de salud o contraindicaciones, orienta con prudencia e indica que el especialista lo valorará en cabina/consulta.
 5. SÉ CONCISO: Respuestas de 1 a 2 párrafos breves (máximo 30-40 palabras). Todo tu texto se reproduce por voz real al usuario, por lo que debe ser ágil, fluido y muy agradable de escuchar.
 """
 
     # 5. Definir la herramienta de consulta de disponibilidad para Gemini
-    def consultar_huecos_disponibles(service_id: str, date: str) -> Dict[str, Any]:
+    def consultar_huecos_disponibles(service_id: str, date: str, location_id: Optional[str] = None) -> Dict[str, Any]:
         """
-        Consulta los huecos horarios libres disponibles para un servicio y una fecha específica.
+        Consulta los huecos horarios libres disponibles para un servicio, fecha y sede física específica.
         Args:
             service_id: El ID exacto del servicio (obtenido del catálogo).
             date: La fecha en formato YYYY-MM-DD.
+            location_id: (Opcional) El ID exacto de la sede física si hay más de una disponible.
         """
         try:
             target_date = DateType.fromisoformat(date)
+            eff_loc_id = location_id
+            if not eff_loc_id and len(active_locations) == 1:
+                eff_loc_id = str(active_locations[0].id)
+
             slots = crud_appt.get_availability_slots(
                 db, 
                 target_date=target_date, 
-                service_id=service_id
+                service_id=service_id,
+                location_id=eff_loc_id
             )
             return {
                 "date": date,
                 "service_id": service_id,
+                "location_id": eff_loc_id,
                 "available_slots": slots,
                 "total_slots": len(slots)
             }
@@ -189,7 +238,7 @@ DIRECTIVAS CRÍTICAS DE CONVERSIÓN Y RESUMEN DE HORARIOS (VOICE-FIRST):
                 "date": date,
                 "service_id": service_id,
                 "available_slots": [],
-                "error": "Fecha no válida o no disponible"
+                "error": "Fecha o sede no válida o no disponible"
             }
 
     try:
@@ -216,40 +265,63 @@ DIRECTIVAS CRÍTICAS DE CONVERSIÓN Y RESUMEN DE HORARIOS (VOICE-FIRST):
         _SESSION_DATA[session_id] = session_info
         remaining_msgs = max(0, MAX_SESSION_MESSAGES - session_info["count"])
 
-        # Detectar acción de reserva [RESERVA: service_id=..., date=..., time=...]
-        action = None
-        reserva_match = re.search(
-            r'\[RESERVA:\s*service_id=([a-zA-Z0-9_-]+)(?:,\s*date=([0-9]{4}-[0-9]{2}-[0-9]{2}))?(?:,\s*time=([0-9]{2}:[0-9]{2}))?\]',
-            raw_text,
-            re.IGNORECASE
-        )
-        if reserva_match:
-            srv_id = reserva_match.group(1).strip()
-            res_date = reserva_match.group(2).strip() if reserva_match.group(2) else None
-            res_time = reserva_match.group(3).strip() if reserva_match.group(3) else None
-            
-            srv_name = service_id_map.get(srv_id, "Servicio seleccionado")
-            
-            url_params = [f"service={srv_id}"]
-            if res_date:
-                url_params.append(f"date={res_date}")
-            if res_time:
-                url_params.append(f"time={res_time}")
-            
-            booking_url = f"/reservar?{'&'.join(url_params)}"
+        # 1. Detectar acción de opciones interactivas [OPCIONES: Opción 1 | Opción 2 | ...]
+        options_list = None
+        opciones_match = re.search(r'\[OPCIONES:\s*([^\]]+)\]', raw_text, re.IGNORECASE)
+        if opciones_match:
+            raw_opts = opciones_match.group(1).strip()
+            options_list = [opt.strip() for opt in raw_opts.split('|') if opt.strip()]
 
+        # 2. Detectar acción de reserva [RESERVA: service_id=..., date=..., time=..., location_id=...]
+        action = None
+        reserva_match = re.search(r'\[RESERVA:\s*([^\]]+)\]', raw_text, re.IGNORECASE)
+        if reserva_match:
+            params_str = reserva_match.group(1)
+            kv_pairs = dict(re.findall(r'(\w+)=([^\s,]+)', params_str))
+            srv_id = kv_pairs.get("service_id")
+            res_date = kv_pairs.get("date")
+            res_time = kv_pairs.get("time")
+            res_loc = kv_pairs.get("location_id") or kv_pairs.get("location")
+
+            # Fallback si no viene location_id pero solo hay 1 sede
+            if not res_loc and len(active_locations) == 1:
+                res_loc = str(active_locations[0].id)
+
+            if srv_id:
+                srv_name = service_id_map.get(srv_id, "Servicio seleccionado")
+                loc_name = locations_map.get(res_loc) if res_loc else None
+
+                url_params = [f"service={srv_id}"]
+                if res_loc:
+                    url_params.append(f"location={res_loc}")
+                if res_date:
+                    url_params.append(f"date={res_date}")
+                if res_time:
+                    url_params.append(f"time={res_time}")
+
+                booking_url = f"/reservar?{'&'.join(url_params)}"
+
+                action = schemas.ConciergeAction(
+                    type="booking",
+                    service_id=srv_id,
+                    service_name=srv_name,
+                    date=res_date,
+                    time=res_time,
+                    location_id=res_loc,
+                    location_name=loc_name,
+                    options=options_list,
+                    url=booking_url
+                )
+        elif options_list:
             action = schemas.ConciergeAction(
-                type="booking",
-                service_id=srv_id,
-                service_name=srv_name,
-                date=res_date,
-                time=res_time,
-                url=booking_url
+                type="options",
+                options=options_list
             )
 
         # Limpiar etiquetas de la respuesta de texto visible
         clean_text = re.sub(r'\[RESERVA:[^\]]+\]', '', raw_text, flags=re.IGNORECASE).strip()
-        clean_text = re.sub(r'\[(?!(?:RESERVA))\s*[^\]]+\]', '', clean_text, flags=re.IGNORECASE).strip()
+        clean_text = re.sub(r'\[OPCIONES:[^\]]+\]', '', clean_text, flags=re.IGNORECASE).strip()
+        clean_text = re.sub(r'\[(?!(?:RESERVA|OPCIONES))\s*[^\]]+\]', '', clean_text, flags=re.IGNORECASE).strip()
 
         # Opcional: Generar audio TTS
         audio_response_base64 = None

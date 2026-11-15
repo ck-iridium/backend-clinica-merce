@@ -45,9 +45,11 @@ export default function AppointmentSummaryCard({
         <p className="text-base md:text-xl font-serif text-foreground leading-tight">
           {formattedDate}
         </p>
-        <p className="text-xs md:text-sm font-bold text-muted-foreground mt-0.5">
-          {t('wizard.at_time').replace('{time}', selectedTime)}
-        </p>
+        {selectedTime && (
+          <p className="text-xs md:text-sm font-bold text-muted-foreground mt-0.5">
+            {t('wizard.at_time').replace('{time}', selectedTime)}
+          </p>
+        )}
         
         {locName && (
           <div className="mt-2 text-[11px] md:text-xs text-muted-foreground flex items-center gap-1 font-medium">

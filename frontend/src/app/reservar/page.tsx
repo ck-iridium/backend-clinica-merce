@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -89,6 +89,12 @@ export default function BookingPage() {
   // Initialize to NEXT WORKING DAY
   const [selectedDate, setSelectedDate] = useState<Date>(getNextWorkingDay());
   const [selectedTime, setSelectedTime] = useState<string>('');
+  // Ref para retener la hora recibida por URL (ej. Asistente IA) y evitar que el effect de disponibilidad la vacíe
+  const initialUrlTimeRef = useRef<string | null>(
+    typeof window !== 'undefined'
+      ? (new URLSearchParams(window.location.search).get('time') || new URLSearchParams(window.location.search).get('slot'))
+      : null
+  );
   const [dateTimePhase, setDateTimePhase] = useState<1 | 2>(1);
   const [currentMonthOffset, setCurrentMonthOffset] = useState(0);
 
@@ -311,7 +317,12 @@ export default function BookingPage() {
     const dayIndex = toWeekDayIndex(selectedDate.getDay());
     if (!workingDays.includes(dayIndex)) { setAvailableSlots([]); return; }
     setLoadingSlots(true);
-    setSelectedTime('');
+    if (initialUrlTimeRef.current) {
+      setSelectedTime(initialUrlTimeRef.current);
+      initialUrlTimeRef.current = null;
+    } else {
+      setSelectedTime('');
+    }
     const dateStr = selectedDate.toLocaleDateString('en-CA'); // YYYY-MM-DD in local tz
     
     let url = `${process.env.NEXT_PUBLIC_API_URL}/appointments/availability?date=${dateStr}&service_id=${selectedService.id}`;
