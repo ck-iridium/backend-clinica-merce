@@ -2,10 +2,10 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 
-const DEFAULT_WIDTH = 480;
-const DEFAULT_HEIGHT = 620;
-const MIN_WIDTH = 320;
-const MIN_HEIGHT = 380;
+const DEFAULT_WIDTH = 460;
+const DEFAULT_HEIGHT = 630;
+const MIN_WIDTH = 400;
+const MIN_HEIGHT = 440;
 
 export function useCopilotResize() {
   const [chatWidth, setChatWidth] = useState(DEFAULT_WIDTH);
@@ -24,15 +24,21 @@ export function useCopilotResize() {
         if (savedWidth) {
           const w = Number(savedWidth);
           if (w >= MIN_WIDTH) {
-            setChatWidth(Math.max(440, w));
-            currentDimensions.current.width = Math.max(440, w);
+            setChatWidth(Math.max(MIN_WIDTH, w));
+            currentDimensions.current.width = Math.max(MIN_WIDTH, w);
+          } else {
+            setChatWidth(DEFAULT_WIDTH);
+            currentDimensions.current.width = DEFAULT_WIDTH;
           }
         }
         if (savedHeight) {
           const h = Number(savedHeight);
           if (h >= MIN_HEIGHT) {
-            setChatHeight(Math.max(560, h));
-            currentDimensions.current.height = Math.max(560, h);
+            setChatHeight(Math.max(MIN_HEIGHT, h));
+            currentDimensions.current.height = Math.max(MIN_HEIGHT, h);
+          } else {
+            setChatHeight(DEFAULT_HEIGHT);
+            currentDimensions.current.height = DEFAULT_HEIGHT;
           }
         }
       } catch (e) {
