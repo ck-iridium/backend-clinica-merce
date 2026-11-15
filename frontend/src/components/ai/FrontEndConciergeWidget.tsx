@@ -15,7 +15,10 @@ import {
   Sparkles, 
   Clock, 
   MapPin, 
-  Tag 
+  Tag,
+  Home,
+  Check,
+  ChevronRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '@/app/contexts/LanguageContext';
@@ -23,6 +26,16 @@ import ChromaticOrb from './ChromaticOrb';
 import VoiceWaveVisualizer from './VoiceWaveVisualizer';
 import { useCopilotResize } from './useCopilotResize';
 import { useCopilotSpeech } from './useCopilotSpeech';
+
+interface ConciergeOptionItem {
+  id?: string;
+  title: string;
+  subtitle?: string;
+  category?: 'location' | 'service' | 'modality' | 'general';
+  group?: string;
+  badge?: string;
+  action_value: string;
+}
 
 interface ConciergeAction {
   type: string;
@@ -32,7 +45,10 @@ interface ConciergeAction {
   time?: string;
   location_id?: string;
   location_name?: string;
+  modality?: string;
   options?: string[];
+  rich_options?: ConciergeOptionItem[];
+  option_groups?: string[];
   url?: string;
 }
 
@@ -88,6 +104,7 @@ export default function FrontEndConciergeWidget() {
   const [voiceGender, setVoiceGender] = useState<'female' | 'male'>('female');
   const [remainingMessages, setRemainingMessages] = useState<number>(8);
   const [isListening, setIsListening] = useState(false);
+  const [multiSelections, setMultiSelections] = useState<Record<number, Record<string, string>>>({});
 
   // 4. Sesión Efímera Anónima (Anti-Abuso)
   const [sessionId, setSessionId] = useState<string>('');
@@ -259,6 +276,7 @@ export default function FrontEndConciergeWidget() {
 
   const handleClearHistory = () => {
     stopSpeaking();
+    setMultiSelections({});
     setMessages([{ role: 'model', content: welcomeText }]);
   };
 
@@ -411,29 +429,151 @@ export default function FrontEndConciergeWidget() {
                       >
                         <p className="whitespace-pre-wrap">{msg.content}</p>
 
-                        {/* Opciones Interactivas Clicables (ej. Selección de Sedes o Servicios) */}
-                        {msg.action?.options && msg.action.options.length > 0 && (
-                          <div className="mt-3 flex flex-wrap gap-2">
-                            {msg.action.options.map((opt, optIdx) => {
-                              const isLocationOption = /sede|cl[ií]nica|centro|sal[oó]n|estudio|barber[ií]a|calle|avda|av\./i.test(opt);
-                              return (
-                                <button
-                                  key={optIdx}
-                                  type="button"
-                                  onClick={() => handleSend(opt)}
-                                  className="text-xs px-3.5 py-2 rounded-xl bg-white dark:bg-stone-950 hover:bg-[#d4af37]/15 dark:hover:bg-[#d4af37]/25 text-stone-800 dark:text-stone-200 border border-stone-200/80 dark:border-stone-800 hover:border-[#d4af37] transition-all duration-200 shadow-sm font-medium flex items-center gap-1.5 active:scale-95 text-left group"
-                                >
-                                  {isLocationOption ? (
-                                    <MapPin className="w-3.5 h-3.5 text-[#d4af37] group-hover:scale-110 transition-transform shrink-0" />
-                                  ) : (
-                                    <Sparkles className="w-3.5 h-3.5 text-[#d4af37] group-hover:scale-110 transition-transform shrink-0" />
-                                  )}
-                                  <span>{opt}</span>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        )}
+                        {/* Opciones Interactivas Clicables (Tarjetas 1 por fila y Selección Múltiple) */}
+                        {(() => {
+                          const richOpts: ConciergeOptionItem[] = msg.action?.rich_options && msg.action.rich_options.length > 0
+                            ? msg.action.rich_options
+                            : (msg.action?.options || []).map((opt) => ({
+                                title: opt,
+                                action_value: opt,
+                                category: /sede|cl[ií]nica|centro|sal[oó]n|calle|avda/i.test(opt) ? 'location' : /domicilio/i.test(opt) ? 'modality' : 'service',
+                                group: /sede|cl[ií]nica|centro|sal[oó]n|calle|avda|domicilio/i.test(opt) ? 'Lugar de la cita' : 'Tratamiento'
+                              }));
+
+                          if (richOpts.length === 0) return null;
+
+                          const distinctGroups = Array.from(new Set(richOpts.map((o) => o.group || 'Opciones')));
+                          const isMultiGroup = distinctGroups.length > 1;
+                          const currentMsgSelections = multiSelections[index] || {};
+
+                          return (
+                            <div className="mt-3.5 space-y-3.5 w-full">
+                              {distinctGroups.map((grpName, grpIdx) => {
+                                const itemsInGroup = richOpts.filter((o) => (o.group || 'Opciones') === grpName);
+                                return (
+                                  <div key={grpIdx} className="space-y-1.5 w-full">
+                                    {isMultiGroup && (
+                                      <p className="text-[11px] font-bold uppercase tracking-wider text-[#b08e23] dark:text-[#d4af37] flex items-center gap-1.5 pl-0.5">
+                                        <span className="w-4 h-4 rounded-full bg-[#d4af37]/20 flex items-center justify-center text-[10px] font-black">
+                                          {grpIdx + 1}
+                                        </span>
+                                        <span>{grpName}</span>
+                                      </p>
+                                    )}
+
+                                    <div className="flex flex-col gap-2 w-full">
+                                      {itemsInGroup.map((opt, optIdx) => {
+                                        const isSelected = isMultiGroup
+                                          ? currentMsgSelections[grpName] === opt.action_value
+                                          : false;
+
+                                        return (
+                                          <button
+                                            key={optIdx}
+                                            type="button"
+                                            onClick={() => {
+                                              if (isMultiGroup) {
+                                                setMultiSelections((prev) => ({
+                                                  ...prev,
+                                                  [index]: {
+                                                    ...(prev[index] || {}),
+                                                    [grpName]: opt.action_value,
+                                                  },
+                                                }));
+                                              } else {
+                                                handleSend(opt.action_value);
+                                              }
+                                            }}
+                                            className={`w-full text-left p-3 md:p-3.5 rounded-2xl border transition-all duration-200 flex items-center justify-between group active:scale-[0.99] ${
+                                              isSelected
+                                                ? 'bg-[#d4af37]/15 dark:bg-[#d4af37]/25 border-[#d4af37] shadow-sm ring-1 ring-[#d4af37]'
+                                                : 'bg-white dark:bg-stone-950/90 border-stone-200/80 dark:border-stone-800 hover:border-[#d4af37]/70 hover:shadow-md hover:bg-stone-50/70 dark:hover:bg-stone-900/70'
+                                            }`}
+                                          >
+                                            <div className="flex items-center gap-3 min-w-0 pr-2">
+                                              <div
+                                                className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                                                  isSelected
+                                                    ? 'bg-[#d4af37] text-stone-950'
+                                                    : 'bg-[#d4af37]/10 text-[#d4af37] group-hover:bg-[#d4af37] group-hover:text-stone-950'
+                                                }`}
+                                              >
+                                                {opt.category === 'location' ? (
+                                                  <MapPin className="w-4 h-4" />
+                                                ) : opt.category === 'modality' ? (
+                                                  <Home className="w-4 h-4" />
+                                                ) : (
+                                                  <Sparkles className="w-4 h-4" />
+                                                )}
+                                              </div>
+                                              <div className="min-w-0">
+                                                <p className="font-serif font-bold text-xs md:text-sm text-stone-900 dark:text-stone-100 truncate">
+                                                  {opt.title}
+                                                </p>
+                                                {opt.subtitle && (
+                                                  <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5 line-clamp-1">
+                                                    {opt.subtitle}
+                                                  </p>
+                                                )}
+                                              </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-2 shrink-0">
+                                              {opt.badge && (
+                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-stone-100 dark:bg-stone-850 text-stone-600 dark:text-stone-300 border border-stone-200/60 dark:border-stone-700">
+                                                  {opt.badge}
+                                                </span>
+                                              )}
+                                              {isMultiGroup ? (
+                                                <div
+                                                  className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
+                                                    isSelected
+                                                      ? 'bg-[#d4af37] border-[#d4af37] text-stone-950 scale-110'
+                                                      : 'border-stone-300 dark:border-stone-700 group-hover:border-[#d4af37]'
+                                                  }`}
+                                                >
+                                                  {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                                                </div>
+                                              ) : (
+                                                <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-[#d4af37] group-hover:translate-x-0.5 transition-all" />
+                                              )}
+                                            </div>
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+
+                              {/* Botón de Confirmación para Selección Múltiple */}
+                              {isMultiGroup && (
+                                <div className="pt-1">
+                                  <button
+                                    type="button"
+                                    disabled={Object.keys(currentMsgSelections).length < distinctGroups.length}
+                                    onClick={() => {
+                                      const chosen = distinctGroups
+                                        .map((g) => currentMsgSelections[g])
+                                        .filter(Boolean);
+                                      if (chosen.length > 0) {
+                                        handleSend(chosen.join(' en '));
+                                      }
+                                    }}
+                                    className="w-full py-2.5 px-4 rounded-xl bg-[#1c1917] hover:bg-[#d4af37] text-white hover:text-stone-950 font-bold text-xs flex items-center justify-center gap-2 transition-all duration-300 shadow-sm active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                                  >
+                                    <span>
+                                      {Object.keys(currentMsgSelections).length === distinctGroups.length
+                                        ? `Confirmar: ${Object.values(currentMsgSelections).join(' • ')}`
+                                        : `Selecciona tus opciones (${Object.keys(currentMsgSelections).length}/${distinctGroups.length})`}
+                                    </span>
+                                    <ArrowRight className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
 
                         {/* Tarjeta Interactiva de Cita Sugerida / Acción */}
                         {msg.action && msg.action.type === 'booking' && (

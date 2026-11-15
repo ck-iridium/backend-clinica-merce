@@ -41,15 +41,27 @@ class AIChatResponse(BaseModel):
     audio_response_base64: Optional[str] = None
     trial_remaining: Optional[int] = None
 
+class ConciergeOptionItem(BaseModel):
+    id: Optional[str] = None
+    title: str
+    subtitle: Optional[str] = None
+    category: Optional[str] = "general"  # "location" | "service" | "modality" | "general"
+    group: Optional[str] = None          # "Tratamiento", "Lugar o Sede", etc.
+    badge: Optional[str] = None          # "17€", "Alzira", "A Domicilio"
+    action_value: str
+
 class ConciergeAction(BaseModel):
-    type: str  # "booking" | "info" | "lead_capture"
+    type: str  # "booking" | "info" | "lead_capture" | "options"
     service_id: Optional[str] = None
     service_name: Optional[str] = None
     date: Optional[str] = None  # YYYY-MM-DD
     time: Optional[str] = None  # HH:MM
     location_id: Optional[str] = None
     location_name: Optional[str] = None
+    modality: Optional[str] = None  # "clinic" | "home"
     options: Optional[List[str]] = None
+    rich_options: Optional[List[ConciergeOptionItem]] = None
+    option_groups: Optional[List[str]] = None
     url: Optional[str] = None
 
 class AIConciergeRequest(BaseModel):

@@ -129,23 +129,41 @@ def public_concierge_chat(
     weekday_es = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"][datetime.now().weekday()]
 
     # Multi-sede context and rules
-    if has_multiple_locations:
-        locations_desc_lines = []
-        for loc in active_locations:
-            addr_part = f" - Dirección: {loc.address}" if loc.address else ""
-            locations_desc_lines.append(f"- Sede: {loc.name} [ID: {loc.id}]{addr_part}")
-        locations_info_str = "\n".join(locations_desc_lines)
-        locations_names_options = " | ".join(loc.name for loc in active_locations)
+    locations_desc_lines = []
+    for loc in active_locations:
+        addr_part = f" - Dirección: {loc.address}" if loc.address else ""
+        locations_desc_lines.append(f"- Sede: {loc.name} [ID: {loc.id}]{addr_part}")
+    locations_info_str = "\n".join(locations_desc_lines) if locations_desc_lines else "Sede central"
 
+    # Modalidad de trabajo
+    work_modality = getattr(settings, "work_modality", "clinic_only") or "clinic_only"
+    has_home_service = work_modality in ("both", "home_only")
+
+    location_option_names = [loc.name for loc in active_locations]
+    if has_home_service:
+        location_option_names.insert(0, "Servicio a Domicilio")
+    locations_names_options = " | ".join(location_option_names)
+
+    if has_home_service:
+        modality_instruction = """
+MODALIDAD DE ATENCIÓN (A DOMICILIO Y EN SEDES):
+- Este negocio ofrece atención en sus sedes físicas y también SERVICIO A DOMICILIO (el profesional se desplaza hasta el cliente).
+- Si el visitante aún no ha especificado si prefiere acudir a una sede o que le atiendan a domicilio, ofrécele siempre la opción "Servicio a Domicilio" junto con las sedes disponibles.
+"""
+    else:
+        modality_instruction = ""
+
+    if has_multiple_locations:
         multi_location_instruction = f"""
 SEDES FÍSICAS DISPONIBLES (El negocio dispone de {len(active_locations)} sedes):
 {locations_info_str}
+{modality_instruction}
 
-DIRECTIVAS MULTI-SEDE (CRÍTICO):
-1. Como el negocio tiene varias sedes, si el visitante consulta disponibilidad de citas o quiere reservar y todavía no ha indicado en cuál sede prefiere atenderse, pregúntale amablemente en qué sede prefiere su cita.
-2. Para ponérselo facilísimo con botones clicables en el chat, añade SIEMPRE al final de tu mensaje la etiqueta de opciones interactivas:
+DIRECTIVAS MULTI-SEDE Y MODALIDAD (CRÍTICO):
+1. Si el visitante consulta disponibilidad de citas o quiere reservar y todavía no ha indicado en cuál sede prefiere atenderse (o si prefiere a domicilio), pregúntale amablemente dónde prefiere su cita.
+2. Añade SIEMPRE la etiqueta interactiva para que la pantalla dibuje tarjetas clicables con dirección completa:
    [OPCIONES: {locations_names_options}]
-   Ejemplo: "¿En cuál de nuestras sedes te gustaría reservar tu cita?" [OPCIONES: {locations_names_options}]
+   Ejemplo: "¿En cuál de nuestras sedes te gustaría agendar tu cita?" [OPCIONES: {locations_names_options}]
 3. En cuanto el cliente te indique o pulse su sede preferida, usa su ID en la herramienta `consultar_huecos_disponibles(service_id, date, location_id="...")` y al generar la tarjeta de reserva añade `location_id`:
    [RESERVA: service_id=UUID, date=YYYY-MM-DD, time=HH:MM, location_id=UUID_DE_LA_SEDE]
 """
@@ -153,10 +171,13 @@ DIRECTIVAS MULTI-SEDE (CRÍTICO):
         single_loc_id = str(active_locations[0].id) if len(active_locations) == 1 else None
         single_loc_name = active_locations[0].name if len(active_locations) == 1 else clinic_name
         single_loc_addr = active_locations[0].address if len(active_locations) == 1 and active_locations[0].address else clinic_address
+        single_loc_options = "Servicio a Domicilio | " + single_loc_name if has_home_service else single_loc_name
         multi_location_instruction = f"""
 SEDE PRINCIPAL:
 - Nombre: {single_loc_name}
 - Dirección: {single_loc_addr}
+{modality_instruction}
+(Si hay servicio a domicilio y el usuario no ha elegido modalidad, puedes ofrecer: [OPCIONES: {single_loc_options}]).
 (Al sugerir reserva incluye location_id={single_loc_id if single_loc_id else ''}).
 """
 
@@ -189,15 +210,24 @@ Tienes la herramienta `consultar_huecos_disponibles(service_id, date, location_i
 - Si el usuario te pregunta por disponibilidad o días libres ("¿tenéis hueco el viernes?", "¿a qué hora puedo ir mañana?"), invoca `consultar_huecos_disponibles` con el ID del servicio más acorde y la fecha correspondiente.
 - Si no menciona un servicio concreto o necesitas que elija, pregúntale amablemente e incluye los botones interactivos de opciones.
 
-DIRECTIVAS PARA SERVICIOS Y TRATAMIENTOS (BOTONES INTERACTIVOS ANTIFALLO [OPCIONES:...]):
-1. CUANDO EL USUARIO NO ESPECIFIQUE EL TRATAMIENTO O SU PETICIÓN SEA AMBIGUA:
-   - Si el visitante solicita cita pero aún no ha indicado qué servicio desea, o su petición puede corresponder a varios servicios del catálogo (por ejemplo, pide "corte" o "peluquería" y tienes "Coupe Homme", "Barbe seule" o "Coupe Homme + Barbe"), o le preguntas qué servicio desea realizarse:
-   - ESTÁ TERMINANTEMENTE PROHIBIDO limitarse a escribir una lista de texto o preguntar con nombres entre comillas en el mensaje.
-   - Debes incluir SIEMPRE al final de tu mensaje la etiqueta `[OPCIONES: ...]` con los nombres exactos de los 2 a 4 tratamientos del catálogo más relevantes separados por '|':
+DIRECTIVAS PARA SERVICIOS, SEDES Y OPCIONES INTERACTIVAS (ANTIFALLO EN PANTALLA):
+1. REGLA FUNDAMENTAL DE OPCIONES EN PANTALLA:
+   - Si tu respuesta le pide al visitante que elija o aclare algo (tratamiento, sede o modalidad), ESTÁ TERMINANTEMENTE PROHIBIDO limitarte a redactar una lista de texto o hacer preguntas con nombres entre comillas (por ejemplo, NUNCA redactes: '¿deseas "¿Coupe Homme", "Barbe seule" o "Coupe Homme + Barbe"?').
+   - Debes incluir SIEMPRE al final de tu mensaje la etiqueta de opciones interactivas para que la interfaz dibuje automáticamente las tarjetas clicables en pantalla.
+2. SI FALTA ACLARAR EL TRATAMIENTO:
+   - Añade la etiqueta con los 2 a 4 tratamientos más acordes del catálogo:
      [OPCIONES: Nombre Servicio 1 | Nombre Servicio 2 | Nombre Servicio 3]
-     Ejemplo: "Para poder consultar la disponibilidad exacta, ¿cuál de estos servicios deseas realizarte?" [OPCIONES: Coupe Homme | Barbe seule | Coupe Homme + Barbe]
-   - La interfaz convertirá automáticamente esa etiqueta en botones clicables de un toque para evitar errores del usuario.
-2. RECOMENDACIONES Y PREGUNTAS FRECUENTES:
+3. SI FALTA ACLARAR LA SEDE O MODALIDAD:
+   - Añade la etiqueta con las sedes o domicilio:
+     [OPCIONES: {locations_names_options}]
+4. REGLA CRÍTICA PARA CUANDO FALTAN AMBAS COSAS (TRATAMIENTO Y SEDE/DOMICILIO):
+   - ¡ESTÁ TERMINANTEMENTE PROHIBIDO preguntar por ambas cosas y ofrecer opciones de una sola!
+   - Tienes dos alternativas válidas:
+     a) Ofrecer la selección múltiple en dos grupos para que el cliente elija ambas cosas a la vez en pantalla:
+        [OPCIONES_GRUPO: Tratamiento | Opción Tratamiento 1 | Opción Tratamiento 2]
+        [OPCIONES_GRUPO: Lugar de la cita | {locations_names_options}]
+     b) O bien, centrarte en una sola pregunta: pregúntale primero por el tratamiento (y dale las opciones de tratamientos), y cuando te responda, pregúntale por la sede.
+5. RECOMENDACIONES Y PREGUNTAS FRECUENTES:
    - Si el usuario pregunta "¿qué tratamientos tenéis?", "¿cuáles son los más solicitados?" o pide sugerencias, indícale brevemente 2 o 3 opciones destacadas y acompáñalas siempre de sus botones interactivos:
      [OPCIONES: Opción A | Opción B | Opción C]
 
@@ -277,12 +307,95 @@ DIRECTIVAS CRÍTICAS DE CONVERSIÓN Y RESUMEN DE HORARIOS (VOICE-FIRST):
         _SESSION_DATA[session_id] = session_info
         remaining_msgs = max(0, MAX_SESSION_MESSAGES - session_info["count"])
 
-        # 1. Detectar acción de opciones interactivas [OPCIONES: Opción 1 | Opción 2 | ...]
-        options_list = None
-        opciones_match = re.search(r'\[OPCIONES:\s*([^\]]+)\]', raw_text, re.IGNORECASE)
-        if opciones_match:
-            raw_opts = opciones_match.group(1).strip()
-            options_list = [opt.strip() for opt in raw_opts.split('|') if opt.strip()]
+        # 1. Detectar y enriquecer opciones interactivas (Tarjetas visuales ricas Quiet Luxury)
+        rich_options_list: List[schemas.ConciergeOptionItem] = []
+        option_groups_list: List[str] = []
+        simple_options_list: List[str] = []
+
+        def _enrich_single_option(opt_text: str, group_label: Optional[str] = None) -> schemas.ConciergeOptionItem:
+            clean_val = opt_text.strip()
+            clean_val_lower = clean_val.lower()
+
+            # A. Modalidad a Domicilio
+            if "domicilio" in clean_val_lower or "a casa" in clean_val_lower:
+                return schemas.ConciergeOptionItem(
+                    id="home_modality",
+                    title="Servicio a Domicilio",
+                    subtitle="El profesional se desplaza directamente a tu ubicación",
+                    category="modality",
+                    group=group_label or "Lugar de la cita",
+                    badge="A Domicilio",
+                    action_value=clean_val
+                )
+
+            # B. Sede física
+            for loc in active_locations:
+                if (loc.name.lower() in clean_val_lower) or (clean_val_lower in loc.name.lower()) or (str(loc.id) in clean_val):
+                    city_part = None
+                    if loc.address:
+                        addr_tokens = [t.strip() for t in loc.address.split(',') if t.strip()]
+                        if len(addr_tokens) >= 2:
+                            city_part = addr_tokens[-1]
+                    return schemas.ConciergeOptionItem(
+                        id=str(loc.id),
+                        title=loc.name,
+                        subtitle=loc.address or clinic_address or "Consultar ubicación",
+                        category="location",
+                        group=group_label or "Sede o Ubicación",
+                        badge=city_part or "Sede",
+                        action_value=loc.name
+                    )
+
+            # C. Servicio / Tratamiento
+            for srv in active_services:
+                if (srv.name.lower() in clean_val_lower) or (clean_val_lower in srv.name.lower()) or (str(srv.id) in clean_val):
+                    sub_parts = []
+                    if srv.duration_minutes:
+                        sub_parts.append(f"{srv.duration_minutes} min")
+                    if srv.description:
+                        short_desc = srv.description[:60] + "..." if len(srv.description) > 60 else srv.description
+                        sub_parts.append(short_desc)
+                    price_badge = f"{srv.price}€" if srv.price is not None else None
+                    return schemas.ConciergeOptionItem(
+                        id=str(srv.id),
+                        title=srv.name,
+                        subtitle=" • ".join(sub_parts) if sub_parts else "Tratamiento personalizado",
+                        category="service",
+                        group=group_label or "Tratamiento",
+                        badge=price_badge,
+                        action_value=srv.name
+                    )
+
+            # D. Genérica
+            return schemas.ConciergeOptionItem(
+                title=clean_val,
+                category="general",
+                group=group_label or "Opciones",
+                action_value=clean_val
+            )
+
+        # Detectar [OPCIONES_GRUPO: NombreGrupo | Opción 1 | Opción 2 ...]
+        grupo_matches = re.findall(r'\[OPCIONES_GRUPO:\s*([^\]]+)\]', raw_text, re.IGNORECASE)
+        for g_match in grupo_matches:
+            parts = [p.strip() for p in g_match.split('|') if p.strip()]
+            if len(parts) >= 2:
+                grp_name = parts[0]
+                if grp_name not in option_groups_list:
+                    option_groups_list.append(grp_name)
+                for item in parts[1:]:
+                    simple_options_list.append(item)
+                    rich_options_list.append(_enrich_single_option(item, grp_name))
+
+        # Detectar [OPCIONES: Opción 1 | Opción 2 ...]
+        opciones_matches = re.findall(r'\[OPCIONES:\s*([^\]]+)\]', raw_text, re.IGNORECASE)
+        for o_match in opciones_matches:
+            parts = [p.strip() for p in o_match.split('|') if p.strip()]
+            for item in parts:
+                simple_options_list.append(item)
+                rich_item = _enrich_single_option(item, None)
+                if rich_item.group and rich_item.group not in option_groups_list:
+                    option_groups_list.append(rich_item.group)
+                rich_options_list.append(rich_item)
 
         # 2. Detectar acción de reserva [RESERVA: service_id=..., date=..., time=..., location_id=...]
         action = None
@@ -321,19 +434,24 @@ DIRECTIVAS CRÍTICAS DE CONVERSIÓN Y RESUMEN DE HORARIOS (VOICE-FIRST):
                     time=res_time,
                     location_id=res_loc,
                     location_name=loc_name,
-                    options=options_list,
+                    options=simple_options_list if simple_options_list else None,
+                    rich_options=rich_options_list if rich_options_list else None,
+                    option_groups=option_groups_list if option_groups_list else None,
                     url=booking_url
                 )
-        elif options_list:
+        elif rich_options_list or simple_options_list:
             action = schemas.ConciergeAction(
                 type="options",
-                options=options_list
+                options=simple_options_list if simple_options_list else None,
+                rich_options=rich_options_list if rich_options_list else None,
+                option_groups=option_groups_list if option_groups_list else None
             )
 
         # Limpiar etiquetas de la respuesta de texto visible
         clean_text = re.sub(r'\[RESERVA:[^\]]+\]', '', raw_text, flags=re.IGNORECASE).strip()
+        clean_text = re.sub(r'\[OPCIONES_GRUPO:[^\]]+\]', '', clean_text, flags=re.IGNORECASE).strip()
         clean_text = re.sub(r'\[OPCIONES:[^\]]+\]', '', clean_text, flags=re.IGNORECASE).strip()
-        clean_text = re.sub(r'\[(?!(?:RESERVA|OPCIONES))\s*[^\]]+\]', '', clean_text, flags=re.IGNORECASE).strip()
+        clean_text = re.sub(r'\[(?!(?:RESERVA|OPCIONES|OPCIONES_GRUPO))\s*[^\]]+\]', '', clean_text, flags=re.IGNORECASE).strip()
 
         # Opcional: Generar audio TTS
         audio_response_base64 = None
