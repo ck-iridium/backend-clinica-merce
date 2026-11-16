@@ -30,13 +30,17 @@ def create_subscription_session(
     target_plan = (request.plan or request.plan_type or "pro").lower().strip()
     target_interval = (request.interval or "monthly").lower().strip()
 
+    user = db.query(models.User).filter(models.User.tenant_id == tenant.id).first()
+    owner_email = request.email or (user.email if user else None)
+
     url = StripeService.create_subscription_session(
         tenant_id=request.tenant_id,
         plan_type=target_plan,
         stripe_customer_id=tenant.stripe_customer_id,
         frontend_url=frontend_url,
         interval=target_interval,
-        plan=target_plan
+        plan=target_plan,
+        email=owner_email
     )
     return {"url": url}
 

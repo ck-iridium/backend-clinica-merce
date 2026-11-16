@@ -93,53 +93,75 @@ class StripeService:
     def create_onboarding_session(
         tenant_name: str,
         tenant_slug: str,
-        admin_email: str,
-        admin_name: str,
-        admin_password: str,
-        frontend_url: str,
+        admin_email: str | None = None,
+        admin_name: str = "",
+        admin_password: str = "",
+        frontend_url: str = "https://www.probookia.com",
         plan_type: str = "pro",
         interval: str = "monthly",
-        plan: str | None = None
+        plan: str | None = None,
+        email: str | None = None,
+        stripe_customer_id: str | None = None
     ) -> str:
         """
-        Crea una Checkout Onboarding Session en Stripe para nuevos suscriptores con plan dinámico.
+        Crea una Checkout Onboarding Session en Stripe para nuevos suscriptores con plan dinámico
+        y pre-rellena el email del cliente (customer_email o customer existente).
         """
         stripe.api_key = get_stripe_key()
 
+        target_email = (email or admin_email or "").strip()
         target_plan = plan or plan_type or "pro"
         price_id, canonical_plan, canonical_interval = resolve_stripe_price_id(target_plan, interval)
         line_items = build_line_items(price_id, canonical_plan, canonical_interval)
 
-        try:
-            session = stripe.checkout.Session.create(
-                payment_method_types=["card"],
-                line_items=line_items,
-                mode="subscription",
-                subscription_data={
-                    "trial_period_days": 14,
-                    "metadata": {
-                        "plan": canonical_plan,
-                        "plan_type": canonical_plan,
-                        "interval": canonical_interval,
-                        "is_platform_onboarding": "true"
-                    }
-                },
-                payment_method_collection="always",
-                success_url=f"{frontend_url}/onboarding/success?session_id={{CHECKOUT_SESSION_ID}}",
-                cancel_url=f"{frontend_url}/#precios",
-                metadata={
-                    "type": "saas_onboarding",
+        # Si no se pasó stripe_customer_id, verificar si ya existe un cliente con ese email en Stripe
+        if not stripe_customer_id and target_email:
+            try:
+                existing_customers = stripe.Customer.list(email=target_email, limit=1)
+                if existing_customers and getattr(existing_customers, "data", None):
+                    stripe_customer_id = existing_customers.data[0].id
+            except Exception as search_err:
+                print(f"[STRIPE CUSTOMER LOOKUP NOTE] {search_err}")
+                stripe_customer_id = None
+
+        session_params = {
+            "payment_method_types": ["card"],
+            "line_items": line_items,
+            "mode": "subscription",
+            "subscription_data": {
+                "trial_period_days": 14,
+                "metadata": {
                     "plan": canonical_plan,
                     "plan_type": canonical_plan,
                     "interval": canonical_interval,
-                    "is_platform_onboarding": "true",
-                    "tenant_name": tenant_name,
-                    "tenant_slug": tenant_slug,
-                    "admin_email": admin_email,
-                    "admin_name": admin_name,
-                    "admin_password": admin_password,
+                    "is_platform_onboarding": "true"
                 }
-            )
+            },
+            "payment_method_collection": "always",
+            "success_url": f"{frontend_url}/onboarding/success?session_id={{CHECKOUT_SESSION_ID}}",
+            "cancel_url": f"{frontend_url}/#precios",
+            "metadata": {
+                "type": "saas_onboarding",
+                "plan": canonical_plan,
+                "plan_type": canonical_plan,
+                "interval": canonical_interval,
+                "is_platform_onboarding": "true",
+                "tenant_name": tenant_name,
+                "tenant_slug": tenant_slug,
+                "admin_email": target_email,
+                "admin_name": admin_name,
+                "admin_password": admin_password,
+            }
+        }
+
+        # Pre-rellenar cliente: si ya existe customer ID se asocia, si es nuevo se pasa customer_email
+        if stripe_customer_id:
+            session_params["customer"] = stripe_customer_id
+        elif target_email:
+            session_params["customer_email"] = target_email
+
+        try:
+            session = stripe.checkout.Session.create(**session_params)
             return session.url
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
@@ -151,7 +173,8 @@ class StripeService:
         stripe_customer_id: str | None = None,
         frontend_url: str = "https://www.probookia.com",
         interval: str = "monthly",
-        plan: str | None = None
+        plan: str | None = None,
+        email: str | None = None
     ) -> str:
         """
         Crea una Checkout Session para actualizaciones de suscripción de inquilinos existentes.
@@ -187,6 +210,8 @@ class StripeService:
 
         if stripe_customer_id:
             session_params["customer"] = stripe_customer_id
+        elif email:
+            session_params["customer_email"] = email.strip()
 
         try:
             session = stripe.checkout.Session.create(**session_params)

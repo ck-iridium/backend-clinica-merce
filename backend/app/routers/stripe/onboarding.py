@@ -21,24 +21,29 @@ def create_onboarding_session(request: OnboardingSessionRequest, req: Request):
     else:
         frontend_url = origin.rstrip("/")
     
+    target_email = (request.email or request.admin_email or "").strip().lower()
+    if not target_email:
+        raise HTTPException(status_code=400, detail="El correo electrónico es obligatorio.")
+
     db = database.SessionLocal()
     try:
         existing_tenant = db.query(models.Tenant).filter(models.Tenant.slug == request.tenant_slug).first()
         if existing_tenant:
             raise HTTPException(status_code=400, detail="El subdominio ya está registrado. Por favor, elige otro.")
         
-        existing_user = db.query(models.User).filter(models.User.email == request.admin_email).first()
+        existing_user = db.query(models.User).filter(models.User.email == target_email).first()
         if existing_user:
             raise HTTPException(status_code=400, detail="El correo electrónico del administrador ya está registrado.")
             
         target_plan = (request.plan or request.plan_type or "pro").lower().strip()
         target_interval = (request.interval or "monthly").lower().strip()
 
-        print(f"[STRIPE TRIAL CHECKOUT] Creando sesión oficial de Stripe con 14 días de prueba para {request.tenant_slug} (Plan: {target_plan.upper()}, Intervalo: {target_interval.upper()})")
+        print(f"[STRIPE TRIAL CHECKOUT] Creando sesión oficial de Stripe con 14 días de prueba para {request.tenant_slug} (Email: {target_email}, Plan: {target_plan.upper()}, Intervalo: {target_interval.upper()})")
         checkout_url = StripeService.create_onboarding_session(
             tenant_name=request.tenant_name,
             tenant_slug=request.tenant_slug,
-            admin_email=request.admin_email,
+            admin_email=target_email,
+            email=target_email,
             admin_name=request.admin_name,
             admin_password=request.admin_password,
             frontend_url=frontend_url,

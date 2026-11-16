@@ -4,7 +4,8 @@ from typing import Optional
 class OnboardingSessionRequest(BaseModel):
     tenant_name: str = Field(..., min_length=2)
     tenant_slug: str = Field(..., min_length=2, pattern=r"^[a-z0-9-]+$")
-    admin_email: str
+    admin_email: Optional[str] = None
+    email: Optional[str] = None
     admin_name: str
     admin_password: str
     plan_type: Optional[str] = "pro"  # individual, pro, elite (compat: basic, gold)
@@ -16,6 +17,7 @@ class CreateSubscriptionSessionRequest(BaseModel):
     plan_type: Optional[str] = "pro"
     plan: Optional[str] = None
     interval: Optional[str] = "monthly"  # monthly, yearly
+    email: Optional[str] = None
 
 class OnboardingCompleteSetupRequest(BaseModel):
     tenant_id: str

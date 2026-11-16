@@ -189,6 +189,7 @@ export default function OnboardingModal({
     const loadingToast = toast.loading('Creando base de datos segura y conectando con Stripe...');
 
     try {
+      const emailValue = formData.admin_email.trim();
       const response = await fetch(`${apiUrl}/stripe/create-onboarding-session`, {
         method: 'POST',
         headers: {
@@ -196,6 +197,8 @@ export default function OnboardingModal({
         },
         body: JSON.stringify({
           ...formData,
+          admin_email: emailValue,
+          email: emailValue,
           plan: activePlan,
           plan_type: activePlan,
           interval: interval || 'monthly',
@@ -243,8 +246,8 @@ export default function OnboardingModal({
   });
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 md:p-6 bg-stone-950/60 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="bg-[#FAF9F6] w-full max-w-xl rounded-3xl shadow-[0_25px_70px_-15px_rgba(0,0,0,0.3)] border border-stone-200/90 relative overflow-hidden animate-in zoom-in-95 duration-300 max-h-[92vh] flex flex-col">
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-4 md:p-6 bg-stone-950/60 backdrop-blur-md animate-in fade-in duration-300">
+      <div className="bg-[#FAF9F6] w-full max-w-2xl rounded-2xl md:rounded-3xl shadow-[0_25px_70px_-15px_rgba(0,0,0,0.3)] border border-stone-200/90 relative overflow-hidden animate-in zoom-in-95 duration-300 max-h-[96vh] flex flex-col">
         
         {/* Halo ambiental dorado sutil */}
         <div className="absolute top-0 right-0 w-72 h-72 bg-[#D4AF37]/10 rounded-full blur-3xl pointer-events-none" />
@@ -252,276 +255,242 @@ export default function OnboardingModal({
         {/* Botón de Cierre */}
         <button 
           onClick={onClose}
-          className="absolute top-5 right-5 z-20 w-8 h-8 rounded-full bg-white/90 hover:bg-white border border-stone-200/80 flex items-center justify-center text-stone-400 hover:text-stone-800 transition-all shadow-xs active:scale-95 cursor-pointer"
+          className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-white/90 hover:bg-white border border-stone-200/80 flex items-center justify-center text-stone-400 hover:text-stone-800 transition-all shadow-2xs active:scale-95 cursor-pointer"
           aria-label="Cerrar modal"
         >
           <X className="w-4 h-4" />
         </button>
 
-        {/* Contenido con Scroll Suave */}
-        <div className="p-6 md:p-8 overflow-y-auto relative z-10 space-y-6">
+        {/* Contenido con Scroll si fuera necesario en pantallas ultrabajas */}
+        <div className="p-4 sm:p-5 md:p-6 overflow-y-auto relative z-10 space-y-3 md:space-y-3.5">
           
-          {/* 1. Cabecera Editorial Quiet Luxury */}
+          {/* 1. Cabecera Editorial Compacta */}
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#d4af37]/15 border border-[#d4af37]/35 text-[#916f19] text-[10px] font-black uppercase tracking-wider mb-2.5">
-              <span className="w-2 h-2 rounded-full bg-[#d4af37] animate-pulse" />
-              <span>Prueba Gratuita Oficial de 14 Días • 0€ Hoy</span>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#d4af37]/15 border border-[#d4af37]/35 text-[#916f19] text-[9.5px] font-black uppercase tracking-wider mb-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37] animate-pulse" />
+              <span>Prueba Gratuita de 14 Días • 0€ Hoy</span>
             </div>
 
-            <h2 className="text-2xl md:text-3xl font-serif font-bold text-stone-950 tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-serif font-bold text-stone-950 tracking-tight">
               Activa tu Entorno en {currentPlanData.name}
             </h2>
-            <p className="text-stone-500 text-xs md:text-sm mt-1.5 leading-relaxed font-sans">
-              Base de datos aislada con cifrado de grado médico. Tu tarjeta se verifica de forma segura mediante Stripe y dispones de 14 días para probar sin ningún cargo.
+            <p className="text-stone-500 text-xs mt-0.5 leading-snug font-sans">
+              Base de datos aislada con cifrado de grado médico. 14 días para probar sin coste y con cancelación en 1 clic.
             </p>
           </div>
 
-          {/* 2. Selector de Plan (Individual / Pro / Elite) */}
-          <div>
-            <label className="block text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-2">
-              Plan Seleccionado:
-            </label>
-            <div className="grid grid-cols-3 gap-1.5 p-1 bg-stone-200/70 rounded-2xl border border-stone-300/60">
-              {[
-                { id: 'individual', label: 'Individual', price: '39€' },
-                { id: 'pro', label: 'Plan Pro', price: '69€', popular: true },
-                { id: 'elite', label: 'Plan Elite', price: '129€' },
-              ].map((p) => {
-                const isSelected = activePlan === p.id;
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => setActivePlan(p.id as any)}
-                    className={`py-2 px-2 rounded-xl text-xs font-bold transition-all relative flex flex-col items-center justify-center cursor-pointer ${
-                      isSelected
-                        ? 'bg-white text-stone-950 shadow-sm border border-stone-200'
-                        : 'text-stone-600 hover:text-stone-950 hover:bg-white/40'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1">
-                      <span>{p.label}</span>
-                      {p.popular && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
-                      )}
-                    </div>
-                    <span className={`text-[10px] font-normal ${isSelected ? 'text-[#916f19] font-bold' : 'text-stone-400'}`}>
-                      {p.price}/mes
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+          {/* 2. Selector de Plan (Individual / Pro / Elite) en 1 fila compacta */}
+          <div className="grid grid-cols-3 gap-1.5 p-1 bg-stone-200/70 rounded-xl border border-stone-300/60">
+            {[
+              { id: 'individual', label: 'Individual', price: '39€' },
+              { id: 'pro', label: 'Plan Pro', price: '69€', popular: true },
+              { id: 'elite', label: 'Plan Elite', price: '129€' },
+            ].map((p) => {
+              const isSelected = activePlan === p.id;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setActivePlan(p.id as any)}
+                  className={`py-1.5 px-2 rounded-lg text-xs font-bold transition-all relative flex items-center justify-center gap-1 cursor-pointer ${
+                    isSelected
+                      ? 'bg-white text-stone-950 shadow-xs border border-stone-200'
+                      : 'text-stone-600 hover:text-stone-950 hover:bg-white/40'
+                  }`}
+                >
+                  <span>{p.label}</span>
+                  {p.popular && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
+                  )}
+                  <span className={`text-[10px] hidden sm:inline ${isSelected ? 'text-[#916f19] font-bold' : 'text-stone-400'}`}>
+                    ({p.price})
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
-          {/* 3. Conmutador de Ciclo: Botones Cuadrados Grandes con Precio en Medio */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">
-                Elige tu Ciclo de Facturación:
-              </label>
-              <span className="text-[10px] font-bold text-[#916f19]">
-                {interval === 'yearly' ? '✓ Ahorro Anual Aplicado' : 'Flexibilidad mensual'}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              
-              {/* Botón 1: Mensual */}
-              <button
-                type="button"
-                onClick={() => setInterval('monthly')}
-                className={`p-4 rounded-2xl border text-left transition-all duration-200 relative flex flex-col justify-between cursor-pointer group ${
-                  interval === 'monthly'
-                    ? 'bg-white border-[#d4af37] shadow-md ring-2 ring-[#d4af37]'
-                    : 'bg-white/70 border-stone-200/90 hover:border-stone-300 hover:bg-white'
-                }`}
-              >
-                <div className="flex items-center justify-between w-full mb-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500">
-                    Mensual
-                  </span>
-                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
-                    interval === 'monthly'
-                      ? 'border-[#d4af37] bg-[#d4af37] text-stone-950 scale-105'
-                      : 'border-stone-300'
-                  }`}>
-                    {interval === 'monthly' && <Check className="w-2.5 h-2.5 stroke-[3]" />}
-                  </div>
-                </div>
-
-                <div className="my-2 text-center py-1 bg-stone-50/80 rounded-xl border border-stone-100">
-                  <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-3xl md:text-4xl font-serif font-black text-stone-950 tracking-tight">
-                      {currentPlanData.monthlyPrice}€
-                    </span>
-                    <span className="text-xs font-bold text-stone-500">/ mes</span>
-                  </div>
-                  <span className="text-[9.5px] text-stone-400 font-semibold block mt-0.5">
-                    (+IVA) • Sin permanencia
-                  </span>
-                </div>
-
-                <p className="text-[10.5px] text-stone-500 font-medium leading-snug mt-1">
-                  Facturación mes a mes. Cancela con 1 clic cuando quieras.
-                </p>
-              </button>
-
-              {/* Botón 2: Anual (DESTACADO / LLAMATIVO) */}
-              <button
-                type="button"
-                onClick={() => setInterval('yearly')}
-                className={`p-4 rounded-2xl border text-left transition-all duration-200 relative flex flex-col justify-between cursor-pointer group ${
-                  interval === 'yearly'
-                    ? 'bg-gradient-to-b from-[#d4af37]/10 via-white to-white border-[#d4af37] shadow-lg ring-2 ring-[#d4af37]'
-                    : 'bg-white/70 border-stone-200/90 hover:border-[#d4af37]/60 hover:bg-white'
-                }`}
-              >
-                {/* Badge Flotante de Ahorro */}
-                <div className="absolute -top-2.5 right-3 bg-[#d4af37] text-stone-950 text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-sm flex items-center gap-1">
-                  <Sparkles className="w-2.5 h-2.5" />
-                  <span>2 Meses Gratis</span>
-                </div>
-
-                <div className="flex items-center justify-between w-full mb-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#916f19]">
-                    Anual • Recomendado
-                  </span>
-                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
-                    interval === 'yearly'
-                      ? 'border-[#d4af37] bg-[#d4af37] text-stone-950 scale-105'
-                      : 'border-stone-300'
-                  }`}>
-                    {interval === 'yearly' && <Check className="w-2.5 h-2.5 stroke-[3]" />}
-                  </div>
-                </div>
-
-                <div className="my-2 text-center py-1 bg-[#d4af37]/10 rounded-xl border border-[#d4af37]/25">
-                  <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-3xl md:text-4xl font-serif font-black text-stone-950 tracking-tight">
-                      {currentPlanData.yearlyPrice}€
-                    </span>
-                    <span className="text-xs font-bold text-stone-500">/ año</span>
-                  </div>
-                  <span className="text-[10px] text-[#8c6b12] font-black block mt-0.5">
-                    Equivale a solo {currentPlanData.monthlyEquiv}/mes
-                  </span>
-                </div>
-
-                <p className="text-[10.5px] text-stone-600 font-medium leading-snug mt-1">
-                  Ahorras <strong className="text-stone-950 font-bold">{currentPlanData.savings}€</strong> en tu cuota anual.
-                </p>
-              </button>
-
-            </div>
-          </div>
-
-          {/* 4. Formulario de Datos con Estética SaaS de Lujo */}
-          <form onSubmit={handleOnboardingSubmit} className="space-y-4 pt-1">
+          {/* 3. Conmutador de Ciclo: Botones Cuadrados con Precio en Medio */}
+          <div className="grid grid-cols-2 gap-2.5">
             
-            {/* Bloque A: Organización */}
-            <div className="p-4 bg-white rounded-2xl border border-stone-200/80 shadow-2xs space-y-3.5">
-              <span className="text-[10px] font-black uppercase tracking-widest text-stone-400 flex items-center gap-1.5 pb-1 border-b border-stone-100">
-                <Building2 className="w-3.5 h-3.5 text-[#d4af37]" />
-                <span>Datos de la Organización</span>
-              </span>
+            {/* Botón 1: Mensual */}
+            <button
+              type="button"
+              onClick={() => setInterval('monthly')}
+              className={`p-3 rounded-xl border text-left transition-all duration-200 relative flex flex-col justify-between cursor-pointer group ${
+                interval === 'monthly'
+                  ? 'bg-white border-[#d4af37] shadow-sm ring-1 ring-[#d4af37]'
+                  : 'bg-white/70 border-stone-200/90 hover:border-stone-300 hover:bg-white'
+              }`}
+            >
+              <div className="flex items-center justify-between w-full mb-0.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500">
+                  Mensual
+                </span>
+                <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-all ${
+                  interval === 'monthly'
+                    ? 'border-[#d4af37] bg-[#d4af37] text-stone-950'
+                    : 'border-stone-300'
+                }`}>
+                  {interval === 'monthly' && <Check className="w-2 h-2 stroke-[3]" />}
+                </div>
+              </div>
 
-              {/* Nombre de la Clínica */}
-              <div>
-                <label className="block text-[11px] font-bold text-stone-700 mb-1">
-                  Nombre de la Clínica o Centro
-                </label>
-                <div className="relative">
+              <div className="my-1 text-center py-1 bg-stone-50/90 rounded-lg border border-stone-100">
+                <div className="flex items-baseline justify-center gap-1">
+                  <span className="text-2xl sm:text-3xl font-serif font-black text-stone-950 tracking-tight">
+                    {currentPlanData.monthlyPrice}€
+                  </span>
+                  <span className="text-[11px] font-bold text-stone-500">/ mes</span>
+                </div>
+                <span className="text-[9px] text-stone-400 font-semibold block">
+                  (+IVA) • Sin permanencia
+                </span>
+              </div>
+
+              <p className="text-[10px] text-stone-500 font-medium leading-tight">
+                Facturación mes a mes. Cancela cuando quieras.
+              </p>
+            </button>
+
+            {/* Botón 2: Anual (DESTACADO / LLAMATIVO) */}
+            <button
+              type="button"
+              onClick={() => setInterval('yearly')}
+              className={`p-3 rounded-xl border text-left transition-all duration-200 relative flex flex-col justify-between cursor-pointer group ${
+                interval === 'yearly'
+                  ? 'bg-gradient-to-b from-[#d4af37]/10 via-white to-white border-[#d4af37] shadow-md ring-1 ring-[#d4af37]'
+                  : 'bg-white/70 border-stone-200/90 hover:border-[#d4af37]/60 hover:bg-white'
+              }`}
+            >
+              {/* Badge Flotante de Ahorro */}
+              <div className="absolute -top-2 right-2 bg-[#d4af37] text-stone-950 text-[8.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shadow-2xs flex items-center gap-1">
+                <Sparkles className="w-2 h-2" />
+                <span>2 Meses Gratis</span>
+              </div>
+
+              <div className="flex items-center justify-between w-full mb-0.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#916f19]">
+                  Anual • Ahorro
+                </span>
+                <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-all ${
+                  interval === 'yearly'
+                    ? 'border-[#d4af37] bg-[#d4af37] text-stone-950'
+                    : 'border-stone-300'
+                }`}>
+                  {interval === 'yearly' && <Check className="w-2 h-2 stroke-[3]" />}
+                </div>
+              </div>
+
+              <div className="my-1 text-center py-1 bg-[#d4af37]/10 rounded-lg border border-[#d4af37]/25">
+                <div className="flex items-baseline justify-center gap-1">
+                  <span className="text-2xl sm:text-3xl font-serif font-black text-stone-950 tracking-tight">
+                    {currentPlanData.yearlyPrice}€
+                  </span>
+                  <span className="text-[11px] font-bold text-stone-500">/ año</span>
+                </div>
+                <span className="text-[9.5px] text-[#8c6b12] font-black block">
+                  Equivale a solo {currentPlanData.monthlyEquiv}/mes
+                </span>
+              </div>
+
+              <p className="text-[10px] text-stone-600 font-medium leading-tight">
+                Ahorras <strong className="text-stone-950 font-bold">{currentPlanData.savings}€</strong> en tu cuota anual.
+              </p>
+            </button>
+
+          </div>
+
+          {/* 4. Formulario de Datos: Cuadrícula Compacta de 2 Columnas */}
+          <form onSubmit={handleOnboardingSubmit} className="space-y-2.5 pt-0.5">
+            
+            <div className="p-3 sm:p-3.5 bg-white rounded-2xl border border-stone-200/80 shadow-2xs space-y-2.5">
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                
+                {/* Nombre de la Clínica */}
+                <div>
+                  <label className="block text-[10.5px] font-bold text-stone-700 mb-1 flex items-center gap-1">
+                    <Building2 className="w-3 h-3 text-[#d4af37]" />
+                    <span>Nombre del Centro</span>
+                  </label>
                   <input 
                     type="text" 
                     name="tenant_name"
                     required
-                    placeholder="Ej. Clínica Mercè, Spazio Estético, Barbería Jade"
+                    placeholder="Ej. Clínica Mercè"
                     value={formData.tenant_name}
                     onChange={handleInputChange}
-                    className={`w-full px-3.5 py-2.5 bg-stone-50/60 rounded-xl border text-xs font-semibold text-stone-800 placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20 transition-all ${
+                    className={`w-full px-3 py-1.5 bg-stone-50/70 rounded-xl border text-xs font-semibold text-stone-800 placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]/30 transition-all ${
                       errors.tenant_name ? 'border-red-400' : 'border-stone-200/90'
                     }`}
                   />
+                  {errors.tenant_name && (
+                    <span className="block text-[9.5px] text-red-600 mt-0.5 font-bold">
+                      ⚠️ {errors.tenant_name}
+                    </span>
+                  )}
                 </div>
-                {errors.tenant_name && (
-                  <span className="block text-[10px] text-red-600 mt-1 font-bold">
-                    ⚠️ {errors.tenant_name}
-                  </span>
-                )}
-              </div>
 
-              {/* Subdominio Único */}
-              <div>
-                <label className="block text-[11px] font-bold text-stone-700 mb-1">
-                  Subdominio Web Dedicado
-                </label>
-                <div className="relative flex items-center">
+                {/* Subdominio Web */}
+                <div>
+                  <label className="block text-[10.5px] font-bold text-stone-700 mb-1 flex items-center gap-1">
+                    <Globe className="w-3 h-3 text-[#d4af37]" />
+                    <span>Subdominio Web</span>
+                  </label>
+                  <div className="relative flex items-center">
+                    <input 
+                      type="text" 
+                      name="tenant_slug"
+                      required
+                      placeholder="clinica-merce"
+                      value={formData.tenant_slug}
+                      onChange={handleInputChange}
+                      className={`w-full pl-3 pr-24 py-1.5 bg-stone-50/70 rounded-xl border text-xs font-mono font-bold text-stone-800 placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]/30 transition-all ${
+                        errors.tenant_slug ? 'border-red-400' : 'border-stone-200/90'
+                      }`}
+                    />
+                    <span className="absolute right-2.5 text-[10px] font-bold text-stone-400 pointer-events-none font-sans">
+                      .probookia.com
+                    </span>
+                  </div>
+                  {errors.tenant_slug && (
+                    <span className="block text-[9.5px] text-red-600 mt-0.5 font-bold">
+                      ⚠️ {errors.tenant_slug}
+                    </span>
+                  )}
+                </div>
+
+                {/* Nombre del Director */}
+                <div>
+                  <label className="block text-[10.5px] font-bold text-stone-700 mb-1 flex items-center gap-1">
+                    <User className="w-3 h-3 text-[#d4af37]" />
+                    <span>Director / Responsable</span>
+                  </label>
                   <input 
                     type="text" 
-                    name="tenant_slug"
+                    name="admin_name"
                     required
-                    placeholder="clinica-merce"
-                    value={formData.tenant_slug}
+                    placeholder="Ej. Dra. Sofía Valenzuela"
+                    value={formData.admin_name}
                     onChange={handleInputChange}
-                    className={`w-full pl-3.5 pr-28 py-2.5 bg-stone-50/60 rounded-xl border text-xs font-mono font-bold text-stone-800 placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20 transition-all ${
-                      errors.tenant_slug ? 'border-red-400' : 'border-stone-200/90'
+                    className={`w-full px-3 py-1.5 bg-stone-50/70 rounded-xl border text-xs font-semibold text-stone-800 placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]/30 transition-all ${
+                      errors.admin_name ? 'border-red-400' : 'border-stone-200/90'
                     }`}
                   />
-                  <span className="absolute right-3 text-[10px] font-bold text-stone-400 pointer-events-none font-sans">
-                    .probookia.com
-                  </span>
-                </div>
-                {errors.tenant_slug ? (
-                  <span className="block text-[10px] text-red-600 mt-1 font-bold">
-                    ⚠️ {errors.tenant_slug}
-                  </span>
-                ) : (
-                  formData.tenant_slug && (
-                    <span className="block text-[9.5px] text-[#916f19] mt-1 font-medium">
-                      Dirección única: <span className="font-mono font-bold text-stone-800">https://{formData.tenant_slug}.probookia.com</span>
+                  {errors.admin_name && (
+                    <span className="block text-[9.5px] text-red-600 mt-0.5 font-bold">
+                      ⚠️ {errors.admin_name}
                     </span>
-                  )
-                )}
-              </div>
-            </div>
+                  )}
+                </div>
 
-            {/* Bloque B: Acceso Maestro */}
-            <div className="p-4 bg-white rounded-2xl border border-stone-200/80 shadow-2xs space-y-3.5">
-              <span className="text-[10px] font-black uppercase tracking-widest text-stone-400 flex items-center gap-1.5 pb-1 border-b border-stone-100">
-                <User className="w-3.5 h-3.5 text-[#d4af37]" />
-                <span>Cuenta de Administrador Principal</span>
-              </span>
-
-              {/* Nombre del Director */}
-              <div>
-                <label className="block text-[11px] font-bold text-stone-700 mb-1">
-                  Nombre del Director o Responsable
-                </label>
-                <input 
-                  type="text" 
-                  name="admin_name"
-                  required
-                  placeholder="Ej. Sofía Valenzuela"
-                  value={formData.admin_name}
-                  onChange={handleInputChange}
-                  className={`w-full px-3.5 py-2.5 bg-stone-50/60 rounded-xl border text-xs font-semibold text-stone-800 placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20 transition-all ${
-                    errors.admin_name ? 'border-red-400' : 'border-stone-200/90'
-                  }`}
-                />
-                {errors.admin_name && (
-                  <span className="block text-[10px] text-red-600 mt-1 font-bold">
-                    ⚠️ {errors.admin_name}
-                  </span>
-                )}
-              </div>
-
-              {/* Email Corporativo */}
-              <div>
-                <label className="block text-[11px] font-bold text-stone-700 mb-1">
-                  Email Corporativo de Acceso
-                </label>
-                <div className="relative">
+                {/* Email Corporativo */}
+                <div>
+                  <label className="block text-[10.5px] font-bold text-stone-700 mb-1 flex items-center gap-1">
+                    <Mail className="w-3 h-3 text-[#d4af37]" />
+                    <span>Email Corporativo</span>
+                  </label>
                   <input 
                     type="email" 
                     name="admin_email"
@@ -529,22 +498,24 @@ export default function OnboardingModal({
                     placeholder="directiva@clinicamerce.com"
                     value={formData.admin_email}
                     onChange={handleInputChange}
-                    className={`w-full px-3.5 py-2.5 bg-stone-50/60 rounded-xl border text-xs font-semibold text-stone-800 placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20 transition-all ${
+                    className={`w-full px-3 py-1.5 bg-stone-50/70 rounded-xl border text-xs font-semibold text-stone-800 placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]/30 transition-all ${
                       errors.admin_email ? 'border-red-400' : 'border-stone-200/90'
                     }`}
                   />
+                  {errors.admin_email && (
+                    <span className="block text-[9.5px] text-red-600 mt-0.5 font-bold">
+                      ⚠️ {errors.admin_email}
+                    </span>
+                  )}
                 </div>
-                {errors.admin_email && (
-                  <span className="block text-[10px] text-red-600 mt-1 font-bold">
-                    ⚠️ {errors.admin_email}
-                  </span>
-                )}
+
               </div>
 
-              {/* Contraseña */}
+              {/* Contraseña Maestra (Fila completa integrada) */}
               <div>
-                <label className="block text-[11px] font-bold text-stone-700 mb-1">
-                  Contraseña Maestra del Sistema
+                <label className="block text-[10.5px] font-bold text-stone-700 mb-1 flex items-center gap-1">
+                  <Lock className="w-3 h-3 text-[#d4af37]" />
+                  <span>Contraseña Maestra</span>
                 </label>
                 <div className="relative flex items-center">
                   <input 
@@ -554,7 +525,7 @@ export default function OnboardingModal({
                     placeholder="Mínimo 6 caracteres"
                     value={formData.admin_password}
                     onChange={handleInputChange}
-                    className={`w-full pl-3.5 pr-10 py-2.5 bg-stone-50/60 rounded-xl border text-xs font-semibold text-stone-800 placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20 transition-all ${
+                    className={`w-full pl-3 pr-10 py-1.5 bg-stone-50/70 rounded-xl border text-xs font-semibold text-stone-800 placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]/30 transition-all ${
                       errors.admin_password ? 'border-red-400' : 'border-stone-200/90'
                     }`}
                   />
@@ -564,33 +535,34 @@ export default function OnboardingModal({
                     className="absolute right-3 text-stone-400 hover:text-stone-700 transition-colors cursor-pointer"
                     aria-label={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                   </button>
                 </div>
                 {errors.admin_password && (
-                  <span className="block text-[10px] text-red-600 mt-1 font-bold">
+                  <span className="block text-[9.5px] text-red-600 mt-0.5 font-bold">
                     ⚠️ {errors.admin_password}
                   </span>
                 )}
               </div>
+
             </div>
 
             {/* Error General */}
             {errors.general && (
-              <div className="p-3.5 bg-red-50 border border-red-200 rounded-xl text-xs font-bold text-red-600 flex items-start gap-2 animate-in fade-in">
+              <div className="p-2.5 bg-red-50 border border-red-200 rounded-xl text-xs font-bold text-red-600 flex items-start gap-2 animate-in fade-in">
                 <span className="shrink-0">⚠️</span>
                 <span>{errors.general}</span>
               </div>
             )}
 
-            {/* Micro-Garantía de Confianza */}
-            <div className="p-3 rounded-2xl bg-white border border-stone-200/80 shadow-2xs flex items-center justify-between text-[11px] text-stone-600">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-[#d4af37] shrink-0" />
+            {/* Micro-Garantía de Confianza Compacta */}
+            <div className="px-3 py-1.5 rounded-xl bg-stone-100/80 border border-stone-200/70 flex items-center justify-between text-[10.5px] text-stone-600">
+              <div className="flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#d4af37] shrink-0" />
                 <span className="font-semibold text-stone-800">14 días de prueba • Cero cargos hoy</span>
               </div>
-              <div className="flex items-center gap-1.5 text-stone-400 font-medium">
-                <Lock className="w-3.5 h-3.5" />
+              <div className="flex items-center gap-1 text-stone-400 font-medium">
+                <Lock className="w-3 h-3" />
                 <span>Stripe SSL 256-bit</span>
               </div>
             </div>
@@ -599,7 +571,7 @@ export default function OnboardingModal({
             <button 
               type="submit"
               disabled={loading}
-              className="w-full bg-[#1C1917] hover:bg-[#2c2724] text-white py-4 px-6 rounded-2xl font-bold text-xs md:text-sm shadow-md hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 active:scale-98 disabled:opacity-50 cursor-pointer group border border-stone-800"
+              className="w-full bg-[#1C1917] hover:bg-[#2c2724] text-white py-3 px-6 rounded-xl font-bold text-xs sm:text-sm shadow-md hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 active:scale-98 disabled:opacity-50 cursor-pointer group border border-stone-800"
             >
               {loading ? (
                 <>
@@ -615,12 +587,12 @@ export default function OnboardingModal({
             </button>
 
             {/* Mensaje de tranquilidad bajo el botón */}
-            <p className="text-[10px] text-center text-stone-500 font-medium px-4 leading-normal">
+            <p className="text-[9.5px] text-center text-stone-500 font-medium px-2 leading-tight">
               <strong>0,00 € a pagar hoy.</strong> Primer cobro de{' '}
               <strong className="text-stone-900">
                 {interval === 'yearly' ? `${currentPlanData.yearlyPrice}€/año` : `${currentPlanData.monthlyPrice}€/mes`}
               </strong>{' '}
-              el {trialEndString} únicamente si decides continuar. Cancela con 1 clic en cualquier momento.
+              el {trialEndString} solo si decides continuar. Cancela con 1 clic.
             </p>
 
           </form>
