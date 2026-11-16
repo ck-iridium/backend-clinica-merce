@@ -11,6 +11,78 @@ def get_stripe_key() -> str:
         raise HTTPException(status_code=500, detail="Falta STRIPE_SECRET_KEY")
     return key
 
+
+def resolve_stripe_price_id(plan: str | None = None, interval: str | None = None) -> tuple[str | None, str, str]:
+    """
+    Selecciona dinámicamente la variable STRIPE_PRICE_* según plan ('individual', 'pro', 'elite')
+    e interval ('monthly', 'yearly'). Si no se encuentra, usa STRIPE_PRICE_ID como fallback.
+    """
+    raw_plan = (plan or "pro").lower().strip()
+    if raw_plan in ("basic", "individual", "autonomo"):
+        canonical_plan = "individual"
+    elif raw_plan in ("gold", "elite", "vip"):
+        canonical_plan = "elite"
+    else:
+        canonical_plan = "pro"
+
+    raw_interval = (interval or "monthly").lower().strip()
+    canonical_interval = "yearly" if raw_interval in ("yearly", "year", "anual", "annual") else "monthly"
+
+    env_var_name = f"STRIPE_PRICE_{canonical_plan.upper()}_{canonical_interval.upper()}"
+    price_id = os.environ.get(env_var_name)
+
+    # Fallback si no está configurada la variable específica
+    if not price_id or price_id.strip() == "":
+        price_id = os.environ.get("STRIPE_PRICE_ID")
+
+    if price_id:
+        price_id = price_id.strip()
+
+    return price_id, canonical_plan, canonical_interval
+
+
+def build_line_items(price_id: str | None, canonical_plan: str, canonical_interval: str):
+    """
+    Genera los line_items para Checkout Session. Si hay price_id configurado (Stripe Live),
+    usa directamente el precio oficial de Stripe. De lo contrario, genera price_data dinámico.
+    """
+    if price_id and (price_id.startswith("price_") or price_id.startswith("plan_")):
+        return [{
+            "price": price_id,
+            "quantity": 1,
+        }]
+
+    plan_amounts = {
+        ("individual", "monthly"): 3900,
+        ("individual", "yearly"): 39000,
+        ("pro", "monthly"): 6900,
+        ("pro", "yearly"): 69000,
+        ("elite", "monthly"): 12900,
+        ("elite", "yearly"): 129000,
+    }
+    plan_names = {
+        "individual": "Plan Individual - ProBookia SaaS",
+        "pro": "Plan Pro - ProBookia SaaS",
+        "elite": "Plan Elite - ProBookia SaaS",
+    }
+    amount = plan_amounts.get((canonical_plan, canonical_interval), 6900)
+    name = plan_names.get(canonical_plan, "Plan Pro - ProBookia SaaS")
+    rec_interval = "year" if canonical_interval == "yearly" else "month"
+
+    return [{
+        "price_data": {
+            "currency": "eur",
+            "product_data": {
+                "name": name,
+                "description": f"Suscripción {canonical_interval} ProBookia SaaS",
+            },
+            "unit_amount": amount,
+            "recurring": {"interval": rec_interval}
+        },
+        "quantity": 1,
+    }]
+
+
 class StripeService:
     """
     Servicio de integración para la API oficial de Stripe.
@@ -25,57 +97,30 @@ class StripeService:
         admin_name: str,
         admin_password: str,
         frontend_url: str,
-        plan_type: str = "gold"
+        plan_type: str = "pro",
+        interval: str = "monthly",
+        plan: str | None = None
     ) -> str:
         """
         Crea una Checkout Onboarding Session en Stripe para nuevos suscriptores con plan dinámico.
         """
         stripe.api_key = get_stripe_key()
-        
-        plan_details = {
-            "basic": {
-                "name": "Plan Básico - ProBookia SaaS",
-                "description": "Suscripción mensual de gestión estándar y agenda",
-                "amount": 2900,
-            },
-            "pro": {
-                "name": "Plan Pro - ProBookia SaaS",
-                "description": "Suscripción mensual de gestión avanzada de reservas",
-                "amount": 5900,
-            },
-            "gold": {
-                "name": "Plan Elite Gold - ProBookia SaaS",
-                "description": "Suscripción mensual de reservas premium con IA ilimitada",
-                "amount": 9900,
-            }
-        }
-        
-        selected_plan = plan_type.lower()
-        if selected_plan not in plan_details:
-            selected_plan = "gold"  # Fallback a gold por defecto
-            
-        details = plan_details[selected_plan]
-        
+
+        target_plan = plan or plan_type or "pro"
+        price_id, canonical_plan, canonical_interval = resolve_stripe_price_id(target_plan, interval)
+        line_items = build_line_items(price_id, canonical_plan, canonical_interval)
+
         try:
             session = stripe.checkout.Session.create(
                 payment_method_types=["card"],
-                line_items=[{
-                    "price_data": {
-                        "currency": "eur",
-                        "product_data": {
-                            "name": details["name"],
-                            "description": details["description"],
-                        },
-                        "unit_amount": details["amount"],
-                        "recurring": {"interval": "month"}
-                    },
-                    "quantity": 1,
-                }],
+                line_items=line_items,
                 mode="subscription",
                 subscription_data={
                     "trial_period_days": 14,
                     "metadata": {
-                        "plan_type": selected_plan,
+                        "plan": canonical_plan,
+                        "plan_type": canonical_plan,
+                        "interval": canonical_interval,
                         "is_platform_onboarding": "true"
                     }
                 },
@@ -84,7 +129,9 @@ class StripeService:
                 cancel_url=f"{frontend_url}/#precios",
                 metadata={
                     "type": "saas_onboarding",
-                    "plan_type": selected_plan,
+                    "plan": canonical_plan,
+                    "plan_type": canonical_plan,
+                    "interval": canonical_interval,
                     "is_platform_onboarding": "true",
                     "tenant_name": tenant_name,
                     "tenant_slug": tenant_slug,
@@ -100,57 +147,30 @@ class StripeService:
     @staticmethod
     def create_subscription_session(
         tenant_id: str,
-        plan_type: str,
-        stripe_customer_id: str | None,
-        frontend_url: str
+        plan_type: str | None = "pro",
+        stripe_customer_id: str | None = None,
+        frontend_url: str = "https://www.probookia.com",
+        interval: str = "monthly",
+        plan: str | None = None
     ) -> str:
         """
         Crea una Checkout Session para actualizaciones de suscripción de inquilinos existentes.
         """
         stripe.api_key = get_stripe_key()
-        
-        plan_details = {
-            "basic": {
-                "name": "Plan Básico - ProBookia SaaS",
-                "description": "Acceso estándar y agenda para equipos pequeños",
-                "amount": 2900,
-            },
-            "pro": {
-                "name": "Plan Pro - ProBookia SaaS",
-                "description": "Suscripción mensual de gestión avanzada",
-                "amount": 5900,
-            },
-            "gold": {
-                "name": "Plan Elite Gold - ProBookia SaaS",
-                "description": "Acceso premium total con asistentes de Inteligencia Artificial",
-                "amount": 9900,
-            }
-        }
-        
-        selected_plan = plan_type.lower()
-        if selected_plan not in plan_details:
-            raise HTTPException(status_code=400, detail="Tipo de plan no válido. Debe ser basic, pro o gold")
-            
-        details = plan_details[selected_plan]
-        
+
+        target_plan = plan or plan_type or "pro"
+        price_id, canonical_plan, canonical_interval = resolve_stripe_price_id(target_plan, interval)
+        line_items = build_line_items(price_id, canonical_plan, canonical_interval)
+
         session_params = {
             "payment_method_types": ["card"],
-            "line_items": [{
-                "price_data": {
-                    "currency": "eur",
-                    "product_data": {
-                        "name": details["name"],
-                        "description": details["description"],
-                    },
-                    "unit_amount": details["amount"],
-                    "recurring": {"interval": "month"}
-                },
-                "quantity": 1,
-            }],
+            "line_items": line_items,
             "mode": "subscription",
             "subscription_data": {
                 "metadata": {
-                    "plan_type": selected_plan,
+                    "plan": canonical_plan,
+                    "plan_type": canonical_plan,
+                    "interval": canonical_interval,
                     "tenant_id": tenant_id
                 }
             },
@@ -159,13 +179,15 @@ class StripeService:
             "metadata": {
                 "type": "saas_subscription_update",
                 "tenant_id": tenant_id,
-                "plan_type": selected_plan
+                "plan": canonical_plan,
+                "plan_type": canonical_plan,
+                "interval": canonical_interval
             }
         }
-        
+
         if stripe_customer_id:
             session_params["customer"] = stripe_customer_id
-            
+
         try:
             session = stripe.checkout.Session.create(**session_params)
             return session.url

@@ -81,7 +81,9 @@ function SuspendedContent() {
         },
         body: JSON.stringify({
           tenant_id: tenantId,
-          plan_type: plan
+          plan: plan,
+          plan_type: plan,
+          interval: 'monthly'
         })
       });
 

@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from typing import Optional
 
 class OnboardingSessionRequest(BaseModel):
     tenant_name: str = Field(..., min_length=2)
@@ -6,11 +7,15 @@ class OnboardingSessionRequest(BaseModel):
     admin_email: str
     admin_name: str
     admin_password: str
-    plan_type: str = "gold"  # free, basic, pro, gold
+    plan_type: Optional[str] = "pro"  # individual, pro, elite (compat: basic, gold)
+    plan: Optional[str] = None        # individual, pro, elite
+    interval: Optional[str] = "monthly"  # monthly, yearly
 
 class CreateSubscriptionSessionRequest(BaseModel):
     tenant_id: str
-    plan_type: str  # "basic", "pro", "gold"
+    plan_type: Optional[str] = "pro"
+    plan: Optional[str] = None
+    interval: Optional[str] = "monthly"  # monthly, yearly
 
 class OnboardingCompleteSetupRequest(BaseModel):
     tenant_id: str

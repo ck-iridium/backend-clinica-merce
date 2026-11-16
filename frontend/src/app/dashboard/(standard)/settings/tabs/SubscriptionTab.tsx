@@ -137,7 +137,7 @@ export default function SubscriptionTab() {
     }
   }, []);
 
-  const handleUpgrade = async (planType: string) => {
+  const handleUpgrade = async (planType: string, interval: string = 'monthly') => {
     if (!data?.tenant_id) return;
     setRedirectingPlan(planType);
     try {
@@ -146,7 +146,9 @@ export default function SubscriptionTab() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tenant_id: data.tenant_id,
-          plan_type: planType
+          plan: planType,
+          plan_type: planType,
+          interval: interval
         })
       });
       const result = await res.json();

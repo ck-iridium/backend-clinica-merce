@@ -1,3 +1,4 @@
+import os
 import uuid
 import traceback
 from datetime import datetime
@@ -11,9 +12,20 @@ from .utils import get_val, extract_and_fallback_onboarding_data
 
 router = APIRouter()
 
+def normalize_plan_name(raw_plan: str | None) -> str:
+    if not raw_plan:
+        return "pro"
+    p = str(raw_plan).lower().strip()
+    if p in ("basic", "individual", "autonomo"):
+        return "individual"
+    elif p in ("gold", "elite", "vip"):
+        return "elite"
+    return "pro"
+
 def handle_saas_onboarding(data_object, metadata, db: Session):
     onboarding_data = extract_and_fallback_onboarding_data(data_object, metadata)
-    plan_type = metadata.get("plan_type", "pro") or "pro"
+    raw_plan = metadata.get("plan") or metadata.get("plan_type", "pro") or "pro"
+    plan_type = normalize_plan_name(raw_plan)
     stripe_cust_id = get_val(data_object, 'customer', None)
     stripe_sub_id = get_val(data_object, 'subscription', None)
 
@@ -31,11 +43,12 @@ def handle_saas_onboarding(data_object, metadata, db: Session):
 
 def handle_saas_subscription_update(data_object, metadata, db: Session):
     tenant_id = metadata.get("tenant_id")
-    plan_type = metadata.get("plan_type")
+    raw_plan = metadata.get("plan") or metadata.get("plan_type", "pro") or "pro"
+    plan_type = normalize_plan_name(raw_plan)
     customer_id = get_val(data_object, 'customer', None)
     subscription_id = get_val(data_object, 'subscription', None)
 
-    print(f"[BILLING] Pago de suscripción completado para Tenant ID: {tenant_id} | Cust ID: {customer_id} | Sub ID: {subscription_id}")
+    print(f"[BILLING] Pago de suscripción completado para Tenant ID: {tenant_id} | Cust ID: {customer_id} | Sub ID: {subscription_id} | Plan: {plan_type}")
 
     tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
     if tenant:
@@ -111,9 +124,22 @@ def handle_subscription_lifecycle(event_type, data_object, db: Session):
     expires_timestamp = get_val(data_object, 'current_period_end', None)
     metadata = get_val(data_object, 'metadata', {}) or {}
 
-    plan_type = metadata.get("plan_type", "pro") or "pro"
+    raw_plan = metadata.get("plan") or metadata.get("plan_type")
+    if not raw_plan:
+        items = get_val(data_object, 'items', {}).get('data', [])
+        if items:
+            item_price = get_val(items[0], 'price', {})
+            item_price_id = get_val(item_price, 'id')
+            if item_price_id:
+                for p in ("individual", "pro", "elite"):
+                    for inv in ("monthly", "yearly"):
+                        if os.environ.get(f"STRIPE_PRICE_{p.upper()}_{inv.upper()}") == item_price_id:
+                            raw_plan = p
+                            break
 
-    print(f"[STRIPE] Webhook de Suscripción recibido: {event_type} | Sub ID: {sub_id} | Cust ID: {cust_id} | Status: {sub_status}")
+    plan_type = normalize_plan_name(raw_plan)
+
+    print(f"[STRIPE] Webhook de Suscripción recibido: {event_type} | Sub ID: {sub_id} | Cust ID: {cust_id} | Status: {sub_status} | Plan: {plan_type}")
 
     tenant = db.query(models.Tenant).filter(
         (models.Tenant.stripe_subscription_id == sub_id) |
@@ -124,8 +150,10 @@ def handle_subscription_lifecycle(event_type, data_object, db: Session):
         tenant.stripe_subscription_id = sub_id
         if sub_status in ['active', 'trialing']:
             tenant.subscription_status = 'active'
-        else:
+        elif sub_status in ['canceled', 'unpaid', 'past_due']:
             tenant.subscription_status = 'suspended'
+        else:
+            tenant.subscription_status = 'active'
 
         tenant.plan_type = plan_type
 

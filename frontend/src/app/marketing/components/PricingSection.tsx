@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Check, ChevronRight, ChevronDown, Sparkles, Star, Minus } from 'lucide-react';
 
 interface PricingSectionProps {
-  onSelectPlan: (plan: 'free' | 'basic' | 'pro' | 'gold') => void;
+  onSelectPlan: (plan: 'individual' | 'pro' | 'elite' | 'basic' | 'gold' | 'free', interval?: 'monthly' | 'yearly') => void;
   primaryColor?: string;
   secondaryColor?: string;
   tertiaryColor?: string;
@@ -182,7 +182,7 @@ export default function PricingSection({
             </div>
 
             <button
-              onClick={() => onSelectPlan('basic')}
+              onClick={() => onSelectPlan('individual', billingCycle)}
               className="w-full bg-stone-50 hover:bg-stone-100 text-stone-900 py-3.5 rounded-2xl text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1 active:scale-95 border border-stone-200/80 cursor-pointer"
             >
               <span>Comenzar con Plan Individual</span>
@@ -280,7 +280,7 @@ export default function PricingSection({
             </div>
 
             <button
-              onClick={() => onSelectPlan('pro')}
+              onClick={() => onSelectPlan('pro', billingCycle)}
               style={{ backgroundColor: darkColor }}
               className="w-full hover:opacity-90 text-white py-4 rounded-2xl text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 active:scale-95 shadow-md group border border-white/20 cursor-pointer"
             >
@@ -377,7 +377,7 @@ export default function PricingSection({
             </div>
 
             <button
-              onClick={() => onSelectPlan('gold')}
+              onClick={() => onSelectPlan('elite', billingCycle)}
               className="w-full bg-white hover:bg-stone-100 text-stone-950 py-3.5 rounded-2xl text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1 active:scale-95 shadow-md cursor-pointer"
             >
               <span>Solicitar Plan Elite</span>
@@ -799,7 +799,7 @@ export default function PricingSection({
                     </td>
                     <td className="py-6 px-6">
                       <button
-                        onClick={() => onSelectPlan('basic')}
+                        onClick={() => onSelectPlan('individual', billingCycle)}
                         className="w-full bg-white hover:bg-stone-100 text-stone-900 py-2.5 px-4 rounded-xl text-xs font-bold transition-all border border-stone-200/90 shadow-2xs active:scale-95 cursor-pointer"
                       >
                         Elegir Individual
@@ -807,7 +807,7 @@ export default function PricingSection({
                     </td>
                     <td className="py-6 px-6 border-x border-[#D4AF37]/25" style={{ backgroundColor: `${accentColor}08` }}>
                       <button
-                        onClick={() => onSelectPlan('pro')}
+                        onClick={() => onSelectPlan('pro', billingCycle)}
                         style={{ backgroundColor: darkColor }}
                         className="w-full text-white py-2.5 px-4 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer hover:opacity-90 flex items-center justify-center gap-1.5"
                       >
@@ -817,7 +817,7 @@ export default function PricingSection({
                     </td>
                     <td className="py-6 px-6">
                       <button
-                        onClick={() => onSelectPlan('gold')}
+                        onClick={() => onSelectPlan('elite', billingCycle)}
                         className="w-full bg-white hover:bg-stone-100 text-stone-950 py-2.5 px-4 rounded-xl text-xs font-bold transition-all border border-stone-300 shadow-2xs active:scale-95 cursor-pointer"
                       >
                         Elegir Elite

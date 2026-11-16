@@ -27,11 +27,16 @@ def create_subscription_session(
     if not tenant:
         raise HTTPException(status_code=404, detail="Inquilino no encontrado")
 
+    target_plan = (request.plan or request.plan_type or "pro").lower().strip()
+    target_interval = (request.interval or "monthly").lower().strip()
+
     url = StripeService.create_subscription_session(
         tenant_id=request.tenant_id,
-        plan_type=request.plan_type,
+        plan_type=target_plan,
         stripe_customer_id=tenant.stripe_customer_id,
-        frontend_url=frontend_url
+        frontend_url=frontend_url,
+        interval=target_interval,
+        plan=target_plan
     )
     return {"url": url}
 

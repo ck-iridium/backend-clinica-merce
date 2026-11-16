@@ -209,6 +209,8 @@ async def resolve_tenant_middleware(request, call_next):
     path = request.url.path
     is_global_path = any(path.startswith(prefix) for prefix in [
         "/stripe",
+        "/api/webhooks",
+        "/api/stripe",
         "/subscription",
         "/super-admin",
         "/upload",
@@ -378,6 +380,14 @@ app.include_router(ai.router)
 app.include_router(ai_agent.router)
 app.include_router(ai_concierge.router)
 app.include_router(stripe_payments.router)
+
+@app.post("/api/webhooks/stripe", tags=["stripe"])
+async def api_webhooks_stripe(request: Request, db: Session = Depends(get_db)):
+    """
+    Webhook omnicanal de Stripe en ruta /api/webhooks/stripe (alias de /stripe/webhook).
+    """
+    from .routers.stripe.webhooks import stripe_webhook
+    return await stripe_webhook(request, db)
 app.include_router(super_admin.router)
 app.include_router(cms.router)
 app.include_router(subscriptions_bizum.router)

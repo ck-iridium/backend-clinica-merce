@@ -31,11 +31,10 @@ def create_onboarding_session(request: OnboardingSessionRequest, req: Request):
         if existing_user:
             raise HTTPException(status_code=400, detail="El correo electrónico del administrador ya está registrado.")
             
-        selected_plan = request.plan_type.lower()
-        if selected_plan not in ["basic", "pro", "gold"]:
-            selected_plan = "pro"
+        target_plan = (request.plan or request.plan_type or "pro").lower().strip()
+        target_interval = (request.interval or "monthly").lower().strip()
 
-        print(f"[STRIPE TRIAL CHECKOUT] Creando sesión oficial de Stripe con 14 días de prueba para {request.tenant_slug} (Plan {selected_plan.upper()})")
+        print(f"[STRIPE TRIAL CHECKOUT] Creando sesión oficial de Stripe con 14 días de prueba para {request.tenant_slug} (Plan: {target_plan.upper()}, Intervalo: {target_interval.upper()})")
         checkout_url = StripeService.create_onboarding_session(
             tenant_name=request.tenant_name,
             tenant_slug=request.tenant_slug,
@@ -43,7 +42,9 @@ def create_onboarding_session(request: OnboardingSessionRequest, req: Request):
             admin_name=request.admin_name,
             admin_password=request.admin_password,
             frontend_url=frontend_url,
-            plan_type=selected_plan
+            plan_type=target_plan,
+            interval=target_interval,
+            plan=target_plan
         )
         return {"url": checkout_url}
             

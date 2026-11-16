@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Loader2, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface OnboardingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  selectedPlan: 'free' | 'basic' | 'pro' | 'gold';
+  selectedPlan: string;
+  selectedInterval?: 'monthly' | 'yearly';
   apiUrl: string;
 }
 
@@ -15,9 +16,18 @@ export default function OnboardingModal({
   isOpen,
   onClose,
   selectedPlan,
+  selectedInterval = 'monthly',
   apiUrl
 }: OnboardingModalProps) {
   const [loading, setLoading] = useState(false);
+  const [interval, setInterval] = useState<'monthly' | 'yearly'>(selectedInterval || 'monthly');
+
+  // Sincronizar intervalo si cambia desde el padre
+  useEffect(() => {
+    if (selectedInterval) {
+      setInterval(selectedInterval);
+    }
+  }, [selectedInterval]);
   const [formData, setFormData] = useState({
     tenant_name: '',
     tenant_slug: '',
@@ -123,7 +133,9 @@ export default function OnboardingModal({
         },
         body: JSON.stringify({
           ...formData,
-          plan_type: selectedPlan
+          plan: selectedPlan,
+          plan_type: selectedPlan,
+          interval: interval || 'monthly',
         }),
       });
 
@@ -175,23 +187,55 @@ export default function OnboardingModal({
           <X className="w-4 h-4" />
         </button>
 
-        <div className="mb-8">
-          <span className="text-[9px] font-black uppercase tracking-widest text-blue-600 block mb-2">
-            {selectedPlan === 'free' ? 'Plan Inicial' : 'Registro de Cliente B2B'}
-          </span>
-          <h2 className="text-2.5xl font-serif font-semibold text-stone-900 leading-tight">
-            {selectedPlan === 'free' && 'Configura tu Entorno de Citas'}
-            {selectedPlan === 'basic' && 'Inicializa tu Plan Básico'}
-            {selectedPlan === 'pro' && 'Inicializa tu Plan Pro'}
-            {selectedPlan === 'gold' && 'Inicializa tu Plan Gold'}
-          </h2>
-          <p className="text-stone-500 text-xs md:text-sm mt-2 leading-relaxed font-medium">
-            {selectedPlan === 'free' 
-              ? 'Aprovisiona tu base de datos dedicada y comienza con el Plan Inicial (1 especialista, 3 servicios) sin compromisos.'
-              : `Aprovisiona tu entorno de seguridad dedicado. Incluye una prueba gratuita de 14 días en el Plan ${selectedPlan.toUpperCase()}.`
-            }
-          </p>
-        </div>
+        {(() => {
+          const planLabel = 
+            (selectedPlan === 'individual' || selectedPlan === 'basic') ? 'Plan Individual' :
+            (selectedPlan === 'elite' || selectedPlan === 'gold') ? 'Plan Elite' :
+            selectedPlan === 'free' ? 'Plan Inicial' : 'Plan Pro';
+
+          return (
+            <div className="mb-6">
+              <span className="text-[9px] font-black uppercase tracking-widest text-[#b08e23] block mb-2">
+                Registro de Cliente B2B • {planLabel}
+              </span>
+              <h2 className="text-2.5xl font-serif font-semibold text-stone-900 leading-tight">
+                Inicializa tu {planLabel}
+              </h2>
+              <p className="text-stone-500 text-xs md:text-sm mt-2 leading-relaxed font-medium">
+                Aprovisiona tu entorno de seguridad dedicado. Incluye una prueba gratuita oficial de 14 días en Stripe.
+              </p>
+
+              {/* Selector de Ciclo de Facturación */}
+              <div className="flex items-center gap-1.5 mt-4 p-1 bg-stone-100 rounded-xl w-fit border border-stone-200/80">
+                <button
+                  type="button"
+                  onClick={() => setInterval('monthly')}
+                  className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                    interval === 'monthly'
+                      ? 'bg-white text-stone-900 shadow-xs'
+                      : 'text-stone-500 hover:text-stone-800'
+                  }`}
+                >
+                  Facturación Mensual
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInterval('yearly')}
+                  className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1.5 ${
+                    interval === 'yearly'
+                      ? 'bg-white text-stone-900 shadow-xs'
+                      : 'text-stone-500 hover:text-stone-800'
+                  }`}
+                >
+                  <span>Facturación Anual</span>
+                  <span className="text-[9px] bg-[#d4af37]/25 text-[#916f19] px-1.5 py-0.5 rounded font-black">
+                    2 Meses Gratis
+                  </span>
+                </button>
+              </div>
+            </div>
+          );
+        })()}
 
         <form onSubmit={handleOnboardingSubmit} className="space-y-6">
           

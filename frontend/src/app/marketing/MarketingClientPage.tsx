@@ -73,7 +73,8 @@ const DEFAULT_HERO_TABS: HeroTab[] = [
 
 export default function MarketingClientPage({ initialSettings, initialSectors }: MarketingClientPageProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<'free' | 'basic' | 'pro' | 'gold'>('pro');
+  const [selectedPlan, setSelectedPlan] = useState<string>('pro');
+  const [selectedInterval, setSelectedInterval] = useState<'monthly' | 'yearly'>('monthly');
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -170,8 +171,9 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
     }, 600);
   };
 
-  const handleOpenOnboarding = (plan: 'free' | 'basic' | 'pro' | 'gold') => {
+  const handleOpenOnboarding = (plan: string = 'pro', interval: 'monthly' | 'yearly' = 'monthly') => {
     setSelectedPlan(plan);
+    setSelectedInterval(interval);
     setIsModalOpen(true);
   };
 
@@ -290,6 +292,7 @@ export default function MarketingClientPage({ initialSettings, initialSectors }:
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         selectedPlan={selectedPlan}
+        selectedInterval={selectedInterval}
         apiUrl={API_URL}
       />
     </div>

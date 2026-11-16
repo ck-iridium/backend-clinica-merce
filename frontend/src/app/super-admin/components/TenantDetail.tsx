@@ -299,7 +299,9 @@ export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant, o
         },
         body: JSON.stringify({
           tenant_id: tenant.id,
-          plan_type: plan
+          plan: plan,
+          plan_type: plan,
+          interval: 'monthly'
         })
       })
 
