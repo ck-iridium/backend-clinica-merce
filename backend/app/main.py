@@ -1,12 +1,12 @@
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from fastapi.staticfiles import StaticFiles
-import os
-from .database import engine, Base
+from sqlalchemy.orm import Session
+from .database import engine, Base, get_db
 from .routers import clients, services, appointments, vouchers, invoices, settings, users, voucher_templates, time_blocks, automation, service_categories, site_content, uploads, backups, media, ai, stripe_payments, super_admin, cms, onboarding, ai_agent, locations, staff_schedules, docs_cms, consent_templates, subscriptions_bizum, ai_concierge
 from .scheduler import scheduler
 
