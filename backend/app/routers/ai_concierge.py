@@ -234,16 +234,25 @@ DIRECTIVAS DE INTELIGENCIA CONVERSACIONAL (PASO A PASO - CERO VOLCADOS DE SERVIC
      * Pregúntale dónde prefiere su cita (o si prefiere a domicilio) y añade la etiqueta de sedes:
        [OPCIONES: {locations_names_options}]
 
-5. DIRECTIVAS DE CONVERSIÓN Y RESUMEN DE HORARIOS (VOICE-FIRST):
-   - Al consultar disponibilidad, ESTÁ TERMINANTEMENTE PROHIBIDO recitar una por una todas las horas devueltas por la herramienta.
-   - Si el usuario ya pidió una hora exacta (ej. "a las 5 de la tarde"): confirma directamente ese hueco si está libre:
-     "¡Perfecto! Tenemos disponibilidad para tu cita de [Servicio] mañana a las 17:00." y genera la tarjeta de reserva:
-     [RESERVA: service_id=UUID_DEL_SERVICIO, date=YYYY-MM-DD, time=17:00, location_id=UUID_SEDE]
-   - Si preguntó en general por horas libres: resume en 2 bloques (mañana / tarde):
-     "Para mañana tenemos disponibilidad por la mañana (por ejemplo a las 10:30) y por la tarde (a las 16:30 y 18:00). ¿Qué horario te viene mejor?"
-   - Cuando se acuerde la cita, incluye SIEMPRE al final de tu mensaje:
-     [RESERVA: service_id=UUID_DEL_SERVICIO, date=YYYY-MM-DD, time=HH:MM, location_id=UUID_SEDE]
-     (Si aún no hay hora confirmada: [RESERVA: service_id=UUID_DEL_SERVICIO, date=YYYY-MM-DD, location_id=UUID_SEDE]).
+5. DIRECTIVAS DE DISPONIBILIDAD, HORARIOS Y CONVERSIÓN (VOICE-FIRST & PASTILLAS INTERACTIVAS):
+   - Al consultar disponibilidad con `consultar_huecos_disponibles`, ESTÁ TERMINANTEMENTE PROHIBIDO enumerar o recitar las horas una a una en el texto redactado (la voz real lee todo el texto visible; listar "16:00, 16:15, 17:45..." satura al cliente y destruye la experiencia).
+   - CASO A: Si el usuario solicitó una hora exacta y está disponible:
+     * Confirma directamente ese hueco con elegancia y genera la reserva:
+       "¡Perfecto! Tenemos disponibilidad para tu cita de [Servicio] el [Día] a las [Hora]."
+       [RESERVA: service_id=UUID_DEL_SERVICIO, date=YYYY-MM-DD, time=HH:MM, location_id=UUID_SEDE]
+   - CASO B: Si la hora solicitada NO está disponible o el usuario pregunta en general por disponibilidad:
+     * Explícaselo con extrema cortesía y brevedad en 1 o 2 frases breves (pensadas para ser escuchadas por voz de forma fluida):
+       "Para el [Día] a las [Hora solicitada] no nos queda disponibilidad para [Servicio], pero disponemos de varios huecos libres esa tarde. Puedes seleccionar directamente el que mejor te encaje:"
+     * Y añade SIEMPRE al final de tu mensaje la etiqueta interactiva de horas libres (de 2 a 8 huecos en formato HH:MM):
+       [OPCIONES: 16:00 | 16:15 | 17:45 | 18:00 | 18:15 | 18:30]
+     * Si hay turnos de mañana y tarde, puedes usar grupos:
+       [OPCIONES_GRUPO: Mañana | 10:00 | 10:30 | 11:15] [OPCIONES_GRUPO: Tarde | 16:00 | 17:30 | 18:15]
+     * La pantalla del cliente dibujará automáticamente estos horarios como botones interactivos clicables con 1 toque.
+   - CASO C: Cuando el cliente pulse una hora o te indique la hora elegida (ej. "A las 16:00"):
+     * Confirma la cita con agrado:
+       "¡Excelente elección! Te reservo [Servicio] para el [Día] a las [Hora]."
+     * Y genera SIEMPRE la tarjeta de reserva para que formalice su cita:
+       [RESERVA: service_id=UUID_DEL_SERVICIO, date=YYYY-MM-DD, time=HH:MM, location_id=UUID_SEDE]
 
 6. SÉ CONCISO Y NATURAL:
    - Respuestas de 1 a 2 párrafos breves (máximo 25-35 palabras). Todo tu texto se sintetiza por voz real, por lo que debe ser fluido, elegante y muy ágil de escuchar.
@@ -318,6 +327,19 @@ DIRECTIVAS DE INTELIGENCIA CONVERSACIONAL (PASO A PASO - CERO VOLCADOS DE SERVIC
         def _enrich_single_option(opt_text: str, group_label: Optional[str] = None) -> schemas.ConciergeOptionItem:
             clean_val = opt_text.strip()
             clean_val_lower = clean_val.lower()
+
+            # 0. Horas / Huecos horarios (ej. "16:00", "16:15", "09:30", "17:45 h")
+            time_match = re.match(r'^(\d{1,2}:\d{2})(?:\s*(?:h|hrs|am|pm))?$', clean_val, re.IGNORECASE)
+            if time_match:
+                formatted_time = time_match.group(1)
+                return schemas.ConciergeOptionItem(
+                    id=f"slot_{formatted_time.replace(':', '')}",
+                    title=formatted_time,
+                    subtitle="Hueco disponible",
+                    category="time",
+                    group=group_label or "Horarios disponibles",
+                    action_value=f"A las {formatted_time}"
+                )
 
             # A. Modalidad a Domicilio
             if "domicilio" in clean_val_lower or "a casa" in clean_val_lower:
@@ -400,6 +422,17 @@ DIRECTIVAS DE INTELIGENCIA CONVERSACIONAL (PASO A PASO - CERO VOLCADOS DE SERVIC
                     option_groups_list.append(rich_item.group)
                 rich_options_list.append(rich_item)
 
+        # Detectar [HORAS: 16:00 | 16:15 | ...]
+        horas_matches = re.findall(r'\[HORAS:\s*([^\]]+)\]', raw_text, re.IGNORECASE)
+        for h_match in horas_matches:
+            parts = [p.strip() for p in h_match.split('|') if p.strip()]
+            for item in parts:
+                simple_options_list.append(item)
+                rich_item = _enrich_single_option(item, "Horarios disponibles")
+                if rich_item.group and rich_item.group not in option_groups_list:
+                    option_groups_list.append(rich_item.group)
+                rich_options_list.append(rich_item)
+
         # 2. Detectar acción de reserva [RESERVA: service_id=..., date=..., time=..., location_id=...]
         action = None
         reserva_match = re.search(r'\[RESERVA:\s*([^\]]+)\]', raw_text, re.IGNORECASE)
@@ -454,7 +487,8 @@ DIRECTIVAS DE INTELIGENCIA CONVERSACIONAL (PASO A PASO - CERO VOLCADOS DE SERVIC
         clean_text = re.sub(r'\[RESERVA:[^\]]+\]', '', raw_text, flags=re.IGNORECASE).strip()
         clean_text = re.sub(r'\[OPCIONES_GRUPO:[^\]]+\]', '', clean_text, flags=re.IGNORECASE).strip()
         clean_text = re.sub(r'\[OPCIONES:[^\]]+\]', '', clean_text, flags=re.IGNORECASE).strip()
-        clean_text = re.sub(r'\[(?!(?:RESERVA|OPCIONES|OPCIONES_GRUPO))\s*[^\]]+\]', '', clean_text, flags=re.IGNORECASE).strip()
+        clean_text = re.sub(r'\[HORAS:[^\]]+\]', '', clean_text, flags=re.IGNORECASE).strip()
+        clean_text = re.sub(r'\[(?!(?:RESERVA|OPCIONES|OPCIONES_GRUPO|HORAS))\s*[^\]]+\]', '', clean_text, flags=re.IGNORECASE).strip()
 
         # Opcional: Generar audio TTS
         audio_response_base64 = None

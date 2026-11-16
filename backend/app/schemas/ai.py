@@ -45,8 +45,8 @@ class ConciergeOptionItem(BaseModel):
     id: Optional[str] = None
     title: str
     subtitle: Optional[str] = None
-    category: Optional[str] = "general"  # "location" | "service" | "modality" | "general"
-    group: Optional[str] = None          # "Tratamiento", "Lugar o Sede", etc.
+    category: Optional[str] = "general"  # "location" | "service" | "modality" | "time" | "general"
+    group: Optional[str] = None          # "Tratamiento", "Lugar de la cita", "Horarios disponibles", etc.
     badge: Optional[str] = None          # "17€", "Alzira", "A Domicilio"
     action_value: str
 
