@@ -47,17 +47,17 @@ export const OnboardingFooter: React.FC<OnboardingFooterProps> = ({
           type="button"
           onClick={handleCompleteSetup}
           disabled={submitting}
-          className="bg-gradient-to-r from-stone-950 via-stone-900 to-stone-950 hover:from-[#d4af37] hover:to-[#b89528] text-[#d4af37] hover:text-stone-950 px-8 py-3.5 rounded-xl text-xs font-bold transition-all shadow-luxury uppercase tracking-wider disabled:opacity-50 active:scale-95 duration-300 flex items-center gap-2 border border-[#d4af37]/40 cursor-pointer"
+          className="group bg-stone-950 hover:bg-[#d4af37] text-brand-gold hover:!text-stone-950 px-8 py-3.5 rounded-xl text-xs font-bold transition-all shadow-luxury uppercase tracking-wider disabled:opacity-50 active:scale-95 duration-300 flex items-center gap-2 border border-[#d4af37]/40 hover:border-[#d4af37] cursor-pointer"
         >
           {submitting ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin text-[#d4af37]" />
-              Creando Entorno...
+              <Loader2 className="w-4 h-4 animate-spin text-brand-gold group-hover:!text-stone-950 transition-colors" />
+              <span className="text-brand-gold group-hover:!text-stone-950 transition-colors">Creando Entorno...</span>
             </>
           ) : (
             <>
-              <Sparkles className="w-4 h-4" />
-              Finalizar y Entrar
+              <Sparkles className="w-4 h-4 text-brand-gold group-hover:!text-stone-950 transition-colors" />
+              <span className="text-brand-gold group-hover:!text-stone-950 transition-colors">Finalizar y Entrar</span>
             </>
           )}
         </button>

@@ -304,16 +304,22 @@ export const StepIdentity: React.FC<StepIdentityProps> = ({
                     value={selectedSector}
                     onValueChange={(val) => setSelectedSector(val)}
                   >
-                    <SelectTrigger className="h-8 text-[11px] bg-stone-850/80 border-stone-700 text-stone-200 hover:text-white px-3 py-1.5 rounded-xl">
+                    <SelectTrigger className="h-8 text-[11px] font-bold bg-stone-900 border border-stone-700 hover:border-[#d4af37]/60 text-stone-200 hover:text-white px-3 py-1.5 rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
                       <span>Cambiar sector</span>
                     </SelectTrigger>
-                    <SelectContent className="bg-white border-stone-200 shadow-xl rounded-xl z-[200]">
+                    <SelectContent className="bg-white border border-stone-200 shadow-2xl rounded-2xl z-[200] min-w-[340px] sm:min-w-[420px] p-1.5">
                       {OTHER_SECTORS.map((sec) => (
-                        <SelectItem key={sec.id} value={sec.id} className="text-xs py-2">
-                          <div className="flex items-center gap-2">
-                            <sec.icon size={14} className="text-[#d4af37]" />
-                            <span className="font-medium text-stone-900">{sec.label}</span>
-                            <span className="text-[10px] text-stone-400 font-normal">({sec.badge})</span>
+                        <SelectItem key={sec.id} value={sec.id} className="text-xs py-2.5 px-3 rounded-xl cursor-pointer hover:bg-stone-50 focus:bg-stone-100 transition-colors">
+                          <div className="flex items-center justify-between gap-3 w-full">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-6 h-6 rounded-lg bg-[#d4af37]/15 text-[#9a781b] flex items-center justify-center shrink-0">
+                                <sec.icon size={13} />
+                              </div>
+                              <span className="font-semibold text-stone-900 whitespace-nowrap">{sec.label}</span>
+                            </div>
+                            <span className="text-[10px] text-stone-400 font-medium whitespace-nowrap pl-2">
+                              {sec.badge}
+                            </span>
                           </div>
                         </SelectItem>
                       ))}
@@ -343,13 +349,19 @@ export const StepIdentity: React.FC<StepIdentityProps> = ({
                   <SelectTrigger className="h-9 text-xs bg-white border-stone-200/90 text-stone-600 rounded-xl shadow-2xs hover:border-[#d4af37]">
                     <SelectValue placeholder="Seleccionar otro sector..." />
                   </SelectTrigger>
-                  <SelectContent className="bg-white border-stone-200 shadow-xl rounded-xl z-[200]">
+                  <SelectContent className="bg-white border border-stone-200 shadow-2xl rounded-2xl z-[200] min-w-[340px] sm:min-w-[420px] p-1.5">
                     {OTHER_SECTORS.map((sec) => (
-                      <SelectItem key={sec.id} value={sec.id} className="text-xs py-2">
-                        <div className="flex items-center gap-2">
-                          <sec.icon size={14} className="text-[#d4af37]" />
-                          <span className="font-medium text-stone-900">{sec.label}</span>
-                          <span className="text-[10px] text-stone-400 font-normal">({sec.badge})</span>
+                      <SelectItem key={sec.id} value={sec.id} className="text-xs py-2.5 px-3 rounded-xl cursor-pointer hover:bg-stone-50 focus:bg-stone-100 transition-colors">
+                        <div className="flex items-center justify-between gap-3 w-full">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-6 h-6 rounded-lg bg-[#d4af37]/15 text-[#9a781b] flex items-center justify-center shrink-0">
+                              <sec.icon size={13} />
+                            </div>
+                            <span className="font-semibold text-stone-900 whitespace-nowrap">{sec.label}</span>
+                          </div>
+                          <span className="text-[10px] text-stone-400 font-medium whitespace-nowrap pl-2">
+                            {sec.badge}
+                          </span>
                         </div>
                       </SelectItem>
                     ))}
