@@ -62,7 +62,7 @@ export default function PricingSection({
               style={{ backgroundColor: accentColor }}
               className="w-2 h-2 rounded-full animate-pulse" 
             />
-            <span><strong>Prueba Gratuita de 14 Días</strong> en Plan Pro completo • Sin tarjeta de crédito requerida</span>
+            <span><strong>Prueba Gratuita de 14 Días</strong> • 0,00 € a pagar hoy • Sin permanencia</span>
           </div>
 
           {/* Selector Mensual / Anual */}
