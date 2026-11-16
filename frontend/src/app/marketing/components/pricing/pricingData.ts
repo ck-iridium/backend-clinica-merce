@@ -1,0 +1,81 @@
+export interface PlanFeature {
+  text: string;
+  isSpecial?: boolean;
+  isBold?: boolean;
+}
+
+export interface PricingPlan {
+  id: 'individual' | 'pro' | 'elite';
+  tagline: string;
+  name: string;
+  monthlyPrice: number;
+  yearlyPrice: number;
+  monthlyEquiv: string;
+  description: string;
+  popular?: boolean;
+  isDark?: boolean;
+  features: PlanFeature[];
+  buttonText: string;
+}
+
+export const PRICING_PLANS: PricingPlan[] = [
+  {
+    id: 'individual',
+    tagline: 'Autónomos & Gabinetes',
+    name: 'Plan Individual',
+    monthlyPrice: 39,
+    yearlyPrice: 390,
+    monthlyEquiv: '32,5€/mes',
+    description: 'Toda la potencia de ProBookia para profesionales independientes que gestionan su propia cabina con firma médica y bonos.',
+    features: [
+      { text: '1 especialista único' },
+      { text: '1 sede o ubicación física' },
+      { text: 'Servicios y catálogo ilimitados', isSpecial: true },
+      { text: 'Agenda interactiva & turnos' },
+      { text: 'Firma en tablet y consentimientos LOPD' },
+      { text: 'Emisión y control de Bonos (/vouchers)' },
+      { text: 'Caja rápida TPV (tickets de venta)' },
+      { text: 'Fianza anti-plantones Stripe Connect' }
+    ],
+    buttonText: 'Comenzar con Plan Individual'
+  },
+  {
+    id: 'pro',
+    tagline: 'Clínicas con Equipo',
+    name: 'Plan Pro Todo-en-Uno',
+    monthlyPrice: 69,
+    yearlyPrice: 690,
+    monthlyEquiv: '57,5€/mes',
+    popular: true,
+    description: 'El estándar completo para centros con equipo que requieren permisos RBAC, facturación oficial e IVA y web corporativa.',
+    features: [
+      { text: 'Hasta 4 miembros de equipo (con RBAC)', isBold: true },
+      { text: 'Hasta 2 sedes físicas', isBold: true },
+      { text: 'Firma digital LOPD para todo el equipo', isSpecial: true },
+      { text: 'Emisión y control de Bonos (/vouchers)' },
+      { text: 'Facturación oficial correlativa e IVA (/invoices)' },
+      { text: 'Web de lujo con CMS + Dominio propio' },
+      { text: 'Servicios y catálogo ilimitados' }
+    ],
+    buttonText: 'Comenzar Prueba Gratuita (14 Días)'
+  },
+  {
+    id: 'elite',
+    tagline: 'Multisede & Rendimiento Máximo',
+    name: 'Plan Elite',
+    monthlyPrice: 129,
+    yearlyPrice: 1290,
+    monthlyEquiv: '107,5€/mes',
+    isDark: true,
+    description: 'Para policlínicas, cadenas y centros de alta demanda que exigen IA conversacional y multisede.',
+    features: [
+      { text: 'Hasta 10 miembros (+15€/mes extra)', isBold: true },
+      { text: 'Hasta 5 sedes (+20€/mes extra)', isBold: true },
+      { text: 'AI Webmaster Copilot (Texto, Voz y Fotos)', isSpecial: true },
+      { text: 'Todo lo incluido en el Plan Pro' },
+      { text: 'Marca blanca 100% invisible' },
+      { text: 'Soporte prioritario VIP 24/7' }
+    ],
+    buttonText: 'Solicitar Plan Elite'
+  }
+];
