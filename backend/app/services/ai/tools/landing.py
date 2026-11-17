@@ -762,12 +762,28 @@ def add_block_to_page(
             if first_cat:
                 cat_id = first_cat.id
 
+        # Fallback de imagen real de la clínica si no se especifica una
+        resolved_img = image_url or ""
+        if not resolved_img and b_type in ["atomic_image", "text_image_cta", "hero"]:
+            media_item = db.query(models.MediaItem).filter(
+                models.MediaItem.tenant_id == tenant_id,
+                models.MediaItem.media_type == "image"
+            ).first()
+            if media_item and media_item.url:
+                resolved_img = media_item.url
+            else:
+                site_content = db.query(models.SiteContent).filter(
+                    models.SiteContent.tenant_id == tenant_id
+                ).first()
+                if site_content:
+                    resolved_img = site_content.about_image_url or site_content.hero_image_url or ""
+
         block_id = f"atomic-{uuid.uuid4().hex[:6]}"
         content_data = {}
 
         if b_type == "hero":
             content_data = {
-                "image_url": image_url or "",
+                "image_url": resolved_img,
                 "heading": title or "Experiencia Exclusiva",
                 "subheading": text_content or "Tratamientos de alta gama adaptados a ti.",
                 "cta_text": button_text or "Reservar Cita",
@@ -791,8 +807,8 @@ def add_block_to_page(
             }
         elif b_type == "atomic_image":
             content_data = {
-                "image_url": image_url or "",
-                "caption": title or "",
+                "image_url": resolved_img,
+                "caption": title or "Instalaciones y Espacio",
                 "alignment": "center",
                 "max_width": "900px"
             }
@@ -800,16 +816,17 @@ def add_block_to_page(
             content_data = {
                 "title": title or "Nuestra Esencia",
                 "description": text_content or "Un entorno diseñado para revitalizar cuerpo y mente.",
-                "image_url": image_url or "",
+                "image_url": resolved_img,
                 "image_position": "left",
                 "button_text": button_text or "Descubrir Más",
                 "button_url": button_url or "/reservar"
             }
         elif b_type == "atomic_category":
+            layout_mapped = "cards_slider" if layout in ["slider", "cards_slider"] else ("bento_grid" if layout in ["bento", "bento_grid"] else ("minimalist_list" if layout in ["list", "minimalist_list"] else "traditional_grid"))
             content_data = {
                 "category_id": cat_id,
                 "selected_treatment_ids": [],
-                "layout": layout or "slider",
+                "layout": layout_mapped,
                 "max_items": 6
             }
         elif b_type == "atomic_button":

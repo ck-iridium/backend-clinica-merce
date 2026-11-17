@@ -85,9 +85,13 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
   const [isDesktopExpanded, setIsDesktopExpanded] = useState(false);
   const [planType, setPlanType] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [isEmbedded, setIsEmbedded] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    if (typeof window !== 'undefined') {
+      setIsEmbedded(window.self !== window.top || window.location.search.includes('embedded=true'));
+    }
   }, []);
 
   useEffect(() => {
@@ -454,6 +458,9 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
     );
   };
 
+  if (isEmbedded) {
+    return null;
+  }
 
   return (
     <>

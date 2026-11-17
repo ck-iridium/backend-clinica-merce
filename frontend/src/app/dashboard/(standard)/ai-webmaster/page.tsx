@@ -5,7 +5,7 @@ import AIChatContainer from '@/components/ai/AIChatContainer';
 import WebmasterBlocksPanel from '@/components/ai/webmaster/WebmasterBlocksPanel';
 import { 
   RefreshCw, ExternalLink, Monitor, Smartphone, Tablet, Globe, 
-  Sparkles, MessageSquareText, Layers 
+  Sparkles, MessageSquareText, Layers, Eye, PencilRuler, Maximize2 
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -22,12 +22,35 @@ export default function AIWebmasterPage() {
   const [iframeUrl, setIframeUrl] = useState('');
   const [iframeKey, setIframeKey] = useState(0);
   const [viewMode, setViewMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [workspaceMode, setWorkspaceMode] = useState<'preview' | 'builder'>('preview');
   const [isLoadingIframe, setIsLoadingIframe] = useState(true);
   const [planType, setPlanType] = useState<string | null>(null);
   const [checkingPlan, setCheckingPlan] = useState(true);
   const [leftTab, setLeftTab] = useState<'chat' | 'blocks'>('chat');
   const [activePageSlug, setActivePageSlug] = useState<string>('home');
   const [injectedPrompt, setInjectedPrompt] = useState<string | null>(null);
+
+  // Obtener URL de vista web pública
+  const getPublicUrl = (slug: string) => {
+    if (typeof window === 'undefined') return '';
+    const origin = window.location.origin;
+    const activeSlug = getCookie('impersonate_tenant_slug') || getCookie('tenant_slug') || '';
+    const clean = slug === 'home' || !slug ? '' : slug.replace(/^\//, '');
+    const path = clean ? `/${clean}` : '/';
+    const separator = path.includes('?') ? '&' : '?';
+    const tenantParam = activeSlug ? `${separator}tenant=${encodeURIComponent(activeSlug)}` : '';
+    return `${origin}${path}${tenantParam}`;
+  };
+
+  // Obtener URL del diseñador visual correspondiente
+  const getBuilderUrl = (slug: string) => {
+    if (typeof window === 'undefined') return '';
+    const origin = window.location.origin;
+    if (slug === 'home' || !slug) {
+      return `${origin}/dashboard/cms`;
+    }
+    return `${origin}/dashboard/pages/${slug.replace(/^\//, '')}`;
+  };
 
   useEffect(() => {
 
@@ -262,100 +285,167 @@ export default function AIWebmasterPage() {
                 setInjectedPrompt(prompt);
                 setLeftTab('chat');
               }}
+              onOpenVisualBuilder={() => setWorkspaceMode('builder')}
             />
           )}
         </div>
       </div>
 
-      {/* ── COLUMNA DERECHA (60%): VISTA PREVIA DEL SITIO PÚBLICO ── */}
+      {/* ── COLUMNA DERECHA (60%): VISTA PREVIA O DISEÑADOR VISUAL ── */}
       <div className="flex-1 h-[50vh] lg:h-full flex flex-col bg-stone-50 overflow-hidden relative">
         
-        {/* Cabecera de la Vista Previa (Quiet Luxury / Simulación de Navegador) */}
+        {/* Cabecera del Espacio de Trabajo (Quiet Luxury) */}
         <div className="flex items-center justify-between px-6 bg-white border-b border-stone-200/50 shrink-0 gap-3 h-[68px]">
+          
           <div className="flex items-center gap-3 min-w-0">
-            {/* Barra de dirección simulada (Estilo Quiet Luxury sin botones Mac) */}
-            <div className="flex items-center gap-2 bg-stone-50 border border-stone-200/70 rounded-xl px-3.5 py-1.5 text-[11px] font-mono text-stone-600 max-w-sm sm:max-w-md truncate select-all shadow-2xs">
-              <Globe size={13} className="text-[#d4af37] shrink-0" />
-              <span className="truncate">{iframeUrl}</span>
+            {/* Conmutador de Modo: Vista Web Pública vs Diseñador Visual */}
+            <div className="flex items-center bg-stone-100 rounded-xl p-1 border border-stone-200/60 shrink-0">
+              <button
+                onClick={() => setWorkspaceMode('preview')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all duration-200 ${
+                  workspaceMode === 'preview'
+                    ? 'bg-white text-stone-900 shadow-xs'
+                    : 'text-stone-500 hover:text-stone-800'
+                }`}
+                title="Ver cómo queda la web en tiempo real"
+              >
+                <Eye size={13} className={workspaceMode === 'preview' ? 'text-[#d4af37]' : ''} />
+                <span>Web Pública</span>
+              </button>
+
+              <button
+                onClick={() => setWorkspaceMode('builder')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all duration-200 ${
+                  workspaceMode === 'builder'
+                    ? 'bg-white text-stone-900 shadow-xs'
+                    : 'text-stone-500 hover:text-stone-800'
+                }`}
+                title="Abrir el diseñador con arrastre de columnas y edición de bloques"
+              >
+                <PencilRuler size={13} className={workspaceMode === 'builder' ? 'text-[#d4af37]' : ''} />
+                <span>Diseñador Visual</span>
+              </button>
             </div>
+
+            {/* Información o Barra de URL según modo */}
+            {workspaceMode === 'preview' ? (
+              <div className="hidden sm:flex items-center gap-2 bg-stone-50 border border-stone-200/70 rounded-xl px-3 py-1.5 text-[11px] font-mono text-stone-600 max-w-xs md:max-w-sm truncate select-all shadow-2xs">
+                <Globe size={12} className="text-[#d4af37] shrink-0" />
+                <span className="truncate">{iframeUrl || getPublicUrl(activePageSlug)}</span>
+              </div>
+            ) : (
+              <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 text-xs font-bold text-stone-600 bg-amber-50/60 border border-amber-200/50 rounded-xl">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
+                <span className="text-[11px]">
+                  {activePageSlug === 'home' ? 'Editor CMS de Portada' : `Diseñador Web: ${activePageSlug}`}
+                </span>
+              </div>
+            )}
           </div>
 
-          {/* Controles de Vista Previa */}
-          <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-            {/* Selector de Dispositivos */}
-            <div className="flex items-center bg-stone-100/80 rounded-xl p-1 border border-stone-200/50">
-              <button
-                onClick={() => setViewMode('desktop')}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                  viewMode === 'desktop'
-                    ? 'bg-white text-stone-900 shadow-xs'
-                    : 'text-stone-400 hover:text-stone-700'
-                }`}
-                title="Escritorio (Ancho Completo)"
-              >
-                <Monitor size={14} />
-                <span className="hidden sm:inline">Escritorio</span>
-              </button>
+          {/* Controles del Lado Derecho */}
+          <div className="flex items-center gap-2 shrink-0">
+            {workspaceMode === 'preview' ? (
+              <>
+                {/* Selector de Dispositivos */}
+                <div className="flex items-center bg-stone-100/80 rounded-xl p-1 border border-stone-200/50">
+                  <button
+                    onClick={() => setViewMode('desktop')}
+                    className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                      viewMode === 'desktop'
+                        ? 'bg-white text-stone-900 shadow-xs'
+                        : 'text-stone-400 hover:text-stone-700'
+                    }`}
+                    title="Escritorio (Ancho Completo)"
+                  >
+                    <Monitor size={14} />
+                    <span className="hidden md:inline">Escritorio</span>
+                  </button>
 
-              <button
-                onClick={() => setViewMode('tablet')}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                  viewMode === 'tablet'
-                    ? 'bg-white text-stone-900 shadow-xs'
-                    : 'text-stone-400 hover:text-stone-700'
-                }`}
-                title="Tablet (768px)"
-              >
-                <Tablet size={14} />
-                <span className="hidden sm:inline">Tablet</span>
-              </button>
+                  <button
+                    onClick={() => setViewMode('tablet')}
+                    className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                      viewMode === 'tablet'
+                        ? 'bg-white text-stone-900 shadow-xs'
+                        : 'text-stone-400 hover:text-stone-700'
+                    }`}
+                    title="Tablet (768px)"
+                  >
+                    <Tablet size={14} />
+                    <span className="hidden md:inline">Tablet</span>
+                  </button>
 
-              <button
-                onClick={() => setViewMode('mobile')}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                  viewMode === 'mobile'
-                    ? 'bg-white text-stone-900 shadow-xs'
-                    : 'text-stone-400 hover:text-stone-700'
-                }`}
-                title="Móvil (Responsivo)"
-              >
-                <Smartphone size={14} />
-                <span className="hidden sm:inline">Móvil</span>
-              </button>
-            </div>
+                  <button
+                    onClick={() => setViewMode('mobile')}
+                    className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                      viewMode === 'mobile'
+                        ? 'bg-white text-stone-900 shadow-xs'
+                        : 'text-stone-400 hover:text-stone-700'
+                    }`}
+                    title="Móvil (Responsivo)"
+                  >
+                    <Smartphone size={14} />
+                    <span className="hidden md:inline">Móvil</span>
+                  </button>
+                </div>
 
-            <div className="w-px h-6 bg-stone-200" />
+                <div className="w-px h-6 bg-stone-200" />
 
-            {/* Recargar / Abrir externa */}
-            <button
-              onClick={forceReload}
-              className="flex items-center justify-center p-2 text-stone-500 hover:text-stone-800 hover:bg-stone-100 rounded-lg transition-all"
-              title="Recargar vista previa"
-            >
-              <RefreshCw size={15} className={isLoadingIframe ? 'animate-spin text-[#d4af37]' : ''} />
-            </button>
-            
-            {iframeUrl && (
-              <a
-                href={iframeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center p-2 text-stone-500 hover:text-stone-800 hover:bg-stone-100 rounded-lg transition-all"
-                title="Abrir en pestaña nueva"
-              >
-                <ExternalLink size={15} />
-              </a>
+                {/* Recargar */}
+                <button
+                  onClick={forceReload}
+                  className="flex items-center justify-center p-2 text-stone-500 hover:text-stone-800 hover:bg-stone-100 rounded-lg transition-all"
+                  title="Recargar vista previa"
+                >
+                  <RefreshCw size={15} className={isLoadingIframe ? 'animate-spin text-[#d4af37]' : ''} />
+                </button>
+                
+                {iframeUrl && (
+                  <a
+                    href={iframeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center p-2 text-stone-500 hover:text-stone-800 hover:bg-stone-100 rounded-lg transition-all"
+                    title="Abrir en pestaña nueva"
+                  >
+                    <ExternalLink size={15} />
+                  </a>
+                )}
+              </>
+            ) : (
+              <>
+                {/* Botón para abrir el diseñador a pantalla completa */}
+                <a
+                  href={getBuilderUrl(activePageSlug)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 bg-stone-100 hover:bg-stone-200/80 text-stone-700 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
+                  title="Abrir en pantalla completa en una nueva pestaña"
+                >
+                  <Maximize2 size={13} />
+                  <span className="hidden sm:inline">Pantalla Completa</span>
+                </a>
+
+                {/* Recargar iframe del diseñador */}
+                <button
+                  onClick={forceReload}
+                  className="flex items-center justify-center p-2 text-stone-500 hover:text-stone-800 hover:bg-stone-100 rounded-lg transition-all"
+                  title="Recargar diseñador"
+                >
+                  <RefreshCw size={15} className={isLoadingIframe ? 'animate-spin text-[#d4af37]' : ''} />
+                </button>
+              </>
             )}
           </div>
         </div>
 
         {/* Iframe Viewport Container */}
         <div className={`flex-1 overflow-auto bg-stone-100/70 flex items-center justify-center relative ${
-          viewMode === 'desktop' ? 'p-0' : 'p-4 sm:p-6'
+          workspaceMode === 'builder' || viewMode === 'desktop' ? 'p-0' : 'p-4 sm:p-6'
         }`}>
           <div
             className={`relative bg-white transition-all duration-300 ease-out flex flex-col ${
-              viewMode === 'desktop'
+              workspaceMode === 'builder' || viewMode === 'desktop'
                 ? 'w-full h-full border-0 shadow-none rounded-none'
                 : viewMode === 'tablet'
                   ? 'w-[768px] max-w-full h-[95%] max-h-[960px] rounded-3xl border border-stone-200/90 shadow-2xl overflow-hidden'
@@ -363,20 +453,21 @@ export default function AIWebmasterPage() {
             }`}
           >
             {/* Pantalla del Iframe */}
-            {iframeUrl ? (
-              <iframe
-                key={`${iframeKey}`}
-                src={iframeUrl}
-                className="w-full h-full border-0 rounded-none overflow-auto"
-                onLoad={() => setIsLoadingIframe(false)}
-                title="Vista Previa de Landing Page"
-              />
-            ) : (
-              <div className="flex-1 flex flex-col items-center justify-center gap-3 text-stone-400">
-                <Globe size={32} className="animate-pulse" />
-                <p className="text-sm font-medium">Iniciando previsualizador...</p>
-              </div>
-            )}
+            {(() => {
+              const currentSrc = workspaceMode === 'preview' 
+                ? (iframeUrl || getPublicUrl(activePageSlug)) 
+                : getBuilderUrl(activePageSlug);
+
+              return (
+                <iframe
+                  key={`${workspaceMode}-${activePageSlug}-${iframeKey}`}
+                  src={currentSrc}
+                  className="w-full h-full border-0 rounded-none overflow-auto"
+                  onLoad={() => setIsLoadingIframe(false)}
+                  title={workspaceMode === 'preview' ? 'Vista Previa Web Pública' : 'Diseñador Visual'}
+                />
+              );
+            })()}
 
             {/* Spinner de carga superpuesto */}
             {isLoadingIframe && (
@@ -387,7 +478,7 @@ export default function AIWebmasterPage() {
                     <span className="w-12 h-12 rounded-full border-2 border-t-[#d4af37] border-r-[#d4af37] animate-spin" />
                   </div>
                   <p className="text-[12px] font-bold text-stone-500 uppercase tracking-widest animate-pulse">
-                    Renderizando Landing Page...
+                    {workspaceMode === 'preview' ? 'Renderizando Landing Page...' : 'Cargando Diseñador Visual...'}
                   </p>
                 </div>
               </div>

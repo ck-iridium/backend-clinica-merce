@@ -304,12 +304,24 @@ export default async function CustomPage({ params }: PageProps) {
 
                           // ──── RENDER: ATOMIC IMAGE ────
                           if (block.block_type === 'atomic_image') {
-                            if (!data.image_url) return null;
-                            const isVideo = data.image_url.includes('.mp4') || data.image_url.includes('.webm') || data.image_url.includes('video_');
                             const alignment = data.alignment || 'center';
                             const isFullWidth = alignment === 'full_width';
                             const fitMode = data.object_fit || 'cover';
                             const heightStyle = data.height_preset === 'small' ? '250px' : data.height_preset === 'medium' ? '400px' : data.height_preset === 'large' ? '550px' : data.height_preset === 'screen' ? '750px' : (fitMode !== 'none' ? '380px' : 'auto');
+
+                            if (!data.image_url) {
+                              return (
+                                <div key={block.id} className={`w-full py-4 flex ${alignment === 'left' ? 'justify-start' : alignment === 'right' ? 'justify-end' : 'justify-center'}`}>
+                                  <div className="w-full max-w-xl h-56 rounded-3xl border-2 border-dashed border-stone-200/80 bg-stone-50/70 flex flex-col items-center justify-center p-6 text-stone-400 gap-2">
+                                    <span className="text-2xl">🖼️</span>
+                                    <span className="text-xs font-bold text-stone-500 uppercase tracking-widest">{data.caption || 'Espacio para Fotografía Editorial'}</span>
+                                    <span className="text-[11px] text-stone-400">Edita este bloque desde el Diseñador Web para seleccionar una imagen</span>
+                                  </div>
+                                </div>
+                              );
+                            }
+
+                            const isVideo = data.image_url.includes('.mp4') || data.image_url.includes('.webm') || data.image_url.includes('video_');
 
                             return (
                               <div key={block.id} className={`w-full py-4 flex ${
@@ -507,20 +519,43 @@ export default async function CustomPage({ params }: PageProps) {
 
                           // ──── RENDER: ATOMIC CATEGORY ────
                           if (block.block_type === 'atomic_category') {
-                            const category = dbCategories.find(c => c.id === data.category_id);
-                            let filteredServices = dbServices.filter(svc => svc.category_id === data.category_id && svc.is_active);
+                            let catId = data.category_id;
+                            if (!catId && dbCategories.length > 0) {
+                              catId = dbCategories[0]?.id;
+                            }
+                            const category = dbCategories.find(c => c.id === catId);
+                            let filteredServices = catId 
+                              ? dbServices.filter(svc => svc.category_id === catId && svc.is_active)
+                              : dbServices.filter(svc => svc.is_active);
 
                             if (data.selected_treatment_ids && data.selected_treatment_ids.length > 0) {
-                              filteredServices = filteredServices.filter(svc => data.selected_treatment_ids.includes(svc.id));
+                              const selected = filteredServices.filter(svc => data.selected_treatment_ids.includes(svc.id));
+                              if (selected.length > 0) filteredServices = selected;
                             }
 
                             if (data.max_items) {
                               filteredServices = filteredServices.slice(0, data.max_items);
                             }
 
-                            if (filteredServices.length === 0) return null;
+                            if (filteredServices.length === 0 && dbServices.length > 0) {
+                              filteredServices = dbServices.filter(svc => svc.is_active).slice(0, 6);
+                            }
 
-                            const layoutStyle = data.layout === 'grid' ? 'traditional_grid' : (data.layout || 'traditional_grid');
+                            if (filteredServices.length === 0) {
+                              return (
+                                <div key={block.id} className="w-full py-8 text-center bg-stone-50 rounded-2xl border border-dashed border-stone-200 p-6">
+                                  <p className="text-xs font-bold uppercase tracking-wider text-stone-400">Catálogo de Servicios · Sin tratamientos activos</p>
+                                </div>
+                              );
+                            }
+
+                            const rawLayout = data.layout || 'cards_slider';
+                            const layoutStyle = 
+                              rawLayout === 'slider' ? 'cards_slider' :
+                              rawLayout === 'bento' ? 'bento_grid' :
+                              rawLayout === 'grid' ? 'traditional_grid' :
+                              rawLayout === 'list' ? 'minimalist_list' :
+                              rawLayout;
 
                             return (
                               <div key={block.id} className="w-full py-6">
