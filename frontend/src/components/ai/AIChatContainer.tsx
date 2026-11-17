@@ -1,7 +1,10 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Sparkles, User, Bot, RefreshCw, Volume2, VolumeX, AudioLines } from 'lucide-react';
+import { 
+  Send, Sparkles, User, Bot, RefreshCw, Volume2, VolumeX, AudioLines,
+  Palette, LayoutGrid, SlidersHorizontal, PlusCircle, Wand2, LucideIcon 
+} from 'lucide-react';
 import VoiceRecorderButton from './VoiceRecorderButton';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
@@ -49,12 +52,57 @@ interface Message {
 
 const WEBMASTER_WELCOME = '¡Hola! Soy tu AI Webmaster & Director Creativo. Estoy conectado directamente con el escaparate público de tu negocio (en la vista previa a tu derecha). Puedo rediseñar secciones, optimizar textos para SEO, cambiar tu paleta de marca o generar fotografías de alta gama con tu clave de API. ¿Qué cambio visual deseas aplicar a tu web hoy?';
 
-const WEBMASTER_QUICK_CHIPS = [
-  { label: '🎨 Paleta Quiet Luxury', prompt: 'Rediseña la paleta de colores y el estilo visual de la web a un estilo Quiet Luxury sofisticado (tonos champagne, blanco marfil y antracita).' },
-  { label: '✍️ Optimizar Hero & SEO', prompt: 'Optimiza el titular, subtítulo y textos principales del Hero de la portada para mejorar el posicionamiento SEO y la captación de reservas de alto valor.' },
-  { label: '🌟 Nuevo Slide de Portada', prompt: 'Añade una nueva diapositiva destacada al carrusel Hero con una propuesta atractiva para la temporada y botón de reserva directa.' },
-  { label: '📸 Foto Editorial (con mi clave)', prompt: 'Genera una fotografía editorial de alta costura para el catálogo de tratamientos utilizando mi clave de API conectada.' },
-  { label: '🗂️ Organizar Catálogo', prompt: 'Revisa las categorías y servicios de la web y propónme cómo estructurarlos mejor en la portada para maximizar la conversión.' },
+interface WebmasterCommand {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon: LucideIcon;
+  prompt: string;
+}
+
+const WEBMASTER_COMMANDS: WebmasterCommand[] = [
+  {
+    id: 'palette',
+    title: 'Paleta Quiet Luxury',
+    subtitle: 'Champagne, marfil y antracita',
+    icon: Palette,
+    prompt: 'Aplica una paleta de marca Quiet Luxury de alta gama a la web: color de acento dorado champagne #D4AF37, fondo marfil refinado, tipografía Playfair Display en títulos e Inter en cuerpo, y bordes redondeados.'
+  },
+  {
+    id: 'seo_hero',
+    title: 'Optimizar Hero & SEO',
+    subtitle: 'Titular de alta conversión',
+    icon: Sparkles,
+    prompt: 'Optimiza el titular principal, subtítulo y botón de llamada a la acción del Hero para mejorar el posicionamiento SEO y la captación de reservas de alto poder adquisitivo.'
+  },
+  {
+    id: 'bento',
+    title: 'Layout Bento Grid',
+    subtitle: 'Mosaico modular 2026',
+    icon: LayoutGrid,
+    prompt: 'Configura el estilo visual de la portada en formato Bento Grid modular asimétrico (layout_style="bento_grid") y ajusta el megamenú a formato bento con previsualización inmediata.'
+  },
+  {
+    id: 'carousel',
+    title: 'Carrusel Cinemático',
+    subtitle: 'Diapositivas a pantalla completa',
+    icon: SlidersHorizontal,
+    prompt: 'Configura el escaparate en formato carrusel cinemático (layout_style="cards_slider") y revisa que las diapositivas del Hero tengan precios elegantes y llamadas a la acción directas.'
+  },
+  {
+    id: 'new_page',
+    title: 'Crear Página y Menú',
+    subtitle: 'Nueva sección en la barra superior',
+    icon: PlusCircle,
+    prompt: 'Crea una nueva página web autónoma llamada "Filosofía y Espacio" con redacción editorial de alta costura y vincúlala de forma automática al menú superior de navegación (Navbar).'
+  },
+  {
+    id: 'photo',
+    title: 'Foto Editorial IA',
+    subtitle: 'Generar con mi clave API',
+    icon: Wand2,
+    prompt: 'Genera una fotografía comercial editorial de alta costura para nuestro catálogo de tratamientos utilizando mi clave de API conectada en Ajustes.'
+  },
 ];
 
 function parseOptionsAndText(content: string) {
@@ -588,18 +636,54 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Barra de Acciones Rápidas de Diseño (Quick Action Chips) */}
-      <div className="px-4 py-2 bg-stone-50/70 border-t border-stone-200/50 flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0">
-        {WEBMASTER_QUICK_CHIPS.map((chip, idx) => (
-          <button
-            key={idx}
-            onClick={() => handleSend(chip.prompt)}
-            disabled={isLoading}
-            className="px-3 py-1.5 rounded-xl text-[11px] font-semibold bg-white border border-stone-200/80 text-stone-700 hover:border-[#d4af37] hover:text-[#b38f2b] hover:bg-amber-50/40 transition-all shadow-2xs whitespace-nowrap active:scale-95 shrink-0"
-          >
-            {chip.label}
-          </button>
-        ))}
+      {/* ── PANEL DE COMANDOS DE DISEÑO WEB 2026 (2 FILAS GLOSSY GLASS) ── */}
+      <div className="px-4 py-3 bg-[#FAF9F6]/90 backdrop-blur-xl border-t border-stone-200/70 shrink-0">
+        <div className="flex items-center justify-between mb-2.5 px-0.5">
+          <div className="flex items-center gap-1.5">
+            <span className="flex h-1.5 w-1.5 rounded-full bg-[#d4af37] animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[#b38f2b]">
+              Comandos Rápidos de Estudio · 2026
+            </span>
+          </div>
+          <span className="text-[10px] text-stone-400 font-medium tracking-wide">
+            1-Clic · Sincronizado en Vivo
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          {WEBMASTER_COMMANDS.map((cmd, idx) => {
+            const Icon = cmd.icon;
+            return (
+              <button
+                key={cmd.id}
+                onClick={() => handleSend(cmd.prompt)}
+                disabled={isLoading}
+                className="group relative overflow-hidden rounded-2xl p-2.5 text-left transition-all duration-300 bg-white/90 hover:bg-white border border-stone-200/80 hover:border-[#d4af37]/70 shadow-2xs hover:shadow-[0_8px_25px_-5px_rgba(212,175,55,0.22)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none"
+              >
+                {/* Reflejo / Glossy Gradient ambiental en hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-100/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+
+                <div className="relative z-10 flex flex-col">
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="w-6 h-6 rounded-lg bg-amber-50/90 border border-amber-200/60 flex items-center justify-center text-[#d4af37] group-hover:bg-[#d4af37] group-hover:text-stone-950 transition-colors shadow-2xs">
+                      <Icon size={12} strokeWidth={2.3} />
+                    </div>
+                    <span className="text-[9px] font-mono text-stone-300 group-hover:text-[#b38f2b] font-bold transition-colors">
+                      0{idx + 1}
+                    </span>
+                  </div>
+
+                  <span className="text-[11px] font-bold text-stone-900 group-hover:text-stone-950 block leading-tight truncate">
+                    {cmd.title}
+                  </span>
+                  <span className="text-[9px] text-stone-400 group-hover:text-stone-600 block leading-snug mt-0.5 truncate">
+                    {cmd.subtitle}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Input de Envío */}

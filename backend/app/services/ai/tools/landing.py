@@ -1,6 +1,8 @@
 import logging
 import uuid
+import re
 from typing import Optional, List, Dict, Any
+from sqlalchemy import func
 
 from .... import models, schemas
 from ....database import SessionLocal, current_tenant_var
@@ -376,7 +378,10 @@ def update_landing_config(
     about_title: Optional[str] = None,
     about_text: Optional[str] = None,
     cta_title: Optional[str] = None,
-    cta_subtitle: Optional[str] = None
+    cta_subtitle: Optional[str] = None,
+    layout_style: Optional[str] = None,
+    megamenu_layout: Optional[str] = None,
+    megamenu_categories_json: Optional[List[str]] = None
 ) -> str:
     """
     Actualiza la configuración general, estilos y textos de la landing page pública del inquilino.
@@ -414,7 +419,10 @@ def update_landing_config(
             about_title=about_title,
             about_text=about_text,
             cta_title=cta_title,
-            cta_subtitle=cta_subtitle
+            cta_subtitle=cta_subtitle,
+            layout_style=layout_style,
+            megamenu_layout=megamenu_layout,
+            megamenu_categories_json=megamenu_categories_json
         )
 
         update_site_content(db, update_payload)
@@ -423,5 +431,182 @@ def update_landing_config(
         db.rollback()
         logger.error(f"Error al actualizar landing page para tenant {current_tenant_var.get()}: {e}")
         return f"Error al actualizar la landing page: {str(e)}"
+    finally:
+        db.close()
+
+
+def set_storefront_layout(
+    layout_style: Optional[str] = None,
+    megamenu_layout: Optional[str] = None
+) -> str:
+    """
+    Configura y cambia en vivo el estilo visual del escaparate público de la clínica:
+    - layout_style: 'cards_slider' (Carrusel cinemático horizontal) o 'bento_grid' (Bento Grid asimétrico modular moderno).
+    - megamenu_layout: 'bento' (Mosaico con imágenes), 'columns' (Columnas limpias) o 'minimal' (Listado sutil).
+    """
+    db = SessionLocal()
+    try:
+        tenant_id = current_tenant_var.get()
+        if not tenant_id:
+            return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
+
+        valid_layouts = ["cards_slider", "bento_grid"]
+        valid_megas = ["bento", "columns", "minimal"]
+
+        resolved_layout = layout_style.lower().strip() if layout_style else None
+        if resolved_layout and resolved_layout not in valid_layouts:
+            if "bento" in resolved_layout:
+                resolved_layout = "bento_grid"
+            elif any(k in resolved_layout for k in ["carrusel", "slider", "slide", "cards"]):
+                resolved_layout = "cards_slider"
+            else:
+                resolved_layout = "cards_slider"
+
+        resolved_mega = megamenu_layout.lower().strip() if megamenu_layout else None
+        if resolved_mega and resolved_mega not in valid_megas:
+            resolved_mega = "bento" if "bento" in resolved_mega else "columns"
+
+        update_payload = schemas.SiteContentUpdate(
+            layout_style=resolved_layout,
+            megamenu_layout=resolved_mega
+        )
+        update_site_content(db, update_payload)
+
+        details = []
+        if resolved_layout:
+            details.append(f"Layout de portada establecido en '{resolved_layout}'")
+        if resolved_mega:
+            details.append(f"Megamenú establecido en '{resolved_mega}'")
+
+        return f"Éxito: {' y '.join(details)}. El escaparate público se actualizará en vivo."
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error al cambiar layout del escaparate: {e}")
+        return f"Error al configurar layout: {str(e)}"
+    finally:
+        db.close()
+
+
+def create_custom_page_and_nav_link(
+    title: str,
+    slug: Optional[str] = None,
+    show_in_navbar: bool = True,
+    content_html: Optional[str] = None,
+    seo_title: Optional[str] = None,
+    seo_description: Optional[str] = None
+) -> str:
+    """
+    Crea una nueva página web autónoma personalizada en el sitio público del inquilino (/slug)
+    y opcionalmente la vincula de forma automática en la barra de navegación superior (Navbar).
+    Permite redactar el contenido inicial en HTML semántico premium e inyectar metadatos SEO.
+    """
+    db = SessionLocal()
+    try:
+        tenant_id = current_tenant_var.get()
+        if not tenant_id:
+            return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
+
+        clean_slug = (slug or title).lower().strip()
+        clean_slug = re.sub(r'[^a-z0-9]+', '-', clean_slug).strip('-')
+        if not clean_slug:
+            clean_slug = f"pagina-{uuid.uuid4().hex[:6]}"
+
+        # 1. Comprobar si ya existe en SiteNavigation
+        existing_nav = db.query(models.SiteNavigation).filter(
+            models.SiteNavigation.tenant_id == tenant_id,
+            models.SiteNavigation.path == f"/{clean_slug}"
+        ).first()
+
+        if existing_nav:
+            return f"Aviso: Ya existe una página o enlace en el menú con la ruta '/{clean_slug}'. Puedes pedirme editarla o usar otro nombre o slug."
+
+        # 2. Calcular siguiente order_index
+        max_order = db.query(func.max(models.SiteNavigation.order_index)).filter(
+            models.SiteNavigation.tenant_id == tenant_id
+        ).scalar() or 0
+
+        # 3. Crear entrada en SiteNavigation
+        nav_item = models.SiteNavigation(
+            id=str(uuid.uuid4()),
+            tenant_id=tenant_id,
+            label=title.strip(),
+            path=f"/{clean_slug}",
+            order_index=max_order + 1,
+            is_visible=bool(show_in_navbar),
+            is_custom=True
+        )
+        db.add(nav_item)
+
+        # 4. Crear bloque inicial de contenido en SiteBlock
+        initial_html = content_html or f"<p>Bienvenido a {title.strip()}. Ponemos a tu disposición una experiencia de cuidado exclusivo y personalizado.</p>"
+        block = models.SiteBlock(
+            id=str(uuid.uuid4()),
+            tenant_id=tenant_id,
+            page_slug=clean_slug,
+            block_type="text",
+            order_index=0,
+            content_data={
+                "title": title.strip(),
+                "body_html": initial_html,
+                "seo_title": seo_title or f"{title.strip()} | Alta Gama",
+                "seo_description": seo_description or f"Descubre nuestra página de {title.strip()} con atención personalizada."
+            }
+        )
+        db.add(block)
+        db.commit()
+
+        menu_status = "y se ha vinculado al menú superior (Navbar)" if show_in_navbar else "y queda como página independiente (sin enlace en el menú)"
+        return f"Éxito: Se ha creado la página '/{clean_slug}' con título '{title.strip()}' {menu_status} correctamente."
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error al crear página y enlace de navegación: {e}")
+        return f"Error al crear la página personalizada: {str(e)}"
+    finally:
+        db.close()
+
+
+def update_featured_categories(
+    category_slugs: List[str]
+) -> str:
+    """
+    Configura qué categorías de tratamientos se destacan en la portada y en el megamenú del escaparate público.
+    Recibe una lista de slugs o nombres de categorías registradas en el catálogo.
+    """
+    db = SessionLocal()
+    try:
+        tenant_id = current_tenant_var.get()
+        if not tenant_id:
+            return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
+
+        if not category_slugs:
+            return "Aviso: Debes indicar al menos una categoría para destacar."
+
+        # Resolver categorías existentes del tenant
+        all_cats = db.query(models.ServiceCategory).filter(
+            models.ServiceCategory.tenant_id == tenant_id
+        ).all()
+
+        matched_slugs = []
+        for input_cat in category_slugs:
+            clean = input_cat.strip().lower()
+            for c in all_cats:
+                if c.slug.lower() == clean or c.name.lower() == clean or clean in c.name.lower():
+                    if c.slug not in matched_slugs:
+                        matched_slugs.append(c.slug)
+                    break
+
+        if not matched_slugs:
+            matched_slugs = [s.strip().lower() for s in category_slugs]
+
+        update_payload = schemas.SiteContentUpdate(
+            megamenu_categories_json=matched_slugs
+        )
+        update_site_content(db, update_payload)
+
+        return f"Éxito: Se han configurado {len(matched_slugs)} categorías destacadas ({', '.join(matched_slugs)}) para la portada y megamenú."
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error al configurar categorías destacadas: {e}")
+        return f"Error al actualizar categorías destacadas: {str(e)}"
     finally:
         db.close()

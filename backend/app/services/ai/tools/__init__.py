@@ -4,7 +4,10 @@ from .landing import (
     add_hero_slide,
     update_hero_slide,
     delete_hero_slide,
-    update_hero_slider_settings
+    update_hero_slider_settings,
+    set_storefront_layout,
+    create_custom_page_and_nav_link,
+    update_featured_categories
 )
 from .branding import update_tenant_branding
 from .services import (
@@ -31,6 +34,9 @@ AGENT_TOOLS = [
     delete_hero_slide,
     update_hero_slider_settings,
     update_landing_config, 
+    set_storefront_layout,
+    create_custom_page_and_nav_link,
+    update_featured_categories,
     update_tenant_branding,
     update_service_fields, 
     get_daily_appointments, 
