@@ -25,7 +25,7 @@ interface PageItem {
 
 interface WebmasterBlocksPanelProps {
   activePageSlug: string;
-  onChangeActivePage: (slug: string, path: string) => void;
+  onChangeActivePage: (slug: string, path: string, label?: string) => void;
   onBlockInserted: () => void;
   onAskAI: (prompt: string) => void;
   onOpenVisualBuilder?: () => void;
@@ -344,7 +344,7 @@ export default function WebmasterBlocksPanel({
                 key={p.id}
                 onClick={() => {
                   const s = p.path === '/' ? 'home' : p.path.replace(/^\//, '');
-                  onChangeActivePage(s, p.path);
+                  onChangeActivePage(s, p.path, p.label);
                 }}
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 ${
                   isSelected

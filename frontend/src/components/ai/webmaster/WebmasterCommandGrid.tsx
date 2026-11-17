@@ -1,32 +1,41 @@
 'use client';
 
-import { WEBMASTER_COMMANDS } from './webmasterConfig';
+import { getWebmasterCommands } from './webmasterConfig';
 
 interface WebmasterCommandGridProps {
   onExecuteCommand: (prompt: string) => void;
   disabled: boolean;
+  activePageSlug?: string;
+  activePageTitle?: string;
 }
 
 export default function WebmasterCommandGrid({
   onExecuteCommand,
   disabled,
+  activePageSlug,
+  activePageTitle,
 }: WebmasterCommandGridProps) {
+  const { sectionTitle, sectionSubtitle, commands } = getWebmasterCommands(
+    activePageSlug,
+    activePageTitle
+  );
+
   return (
     <div className="px-4 py-3 bg-[#FAF9F6]/90 backdrop-blur-xl border-t border-stone-200/70 shrink-0">
       <div className="flex items-center justify-between mb-2.5 px-0.5">
-        <div className="flex items-center gap-1.5">
-          <span className="flex h-1.5 w-1.5 rounded-full bg-[#d4af37] animate-pulse" />
-          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[#b38f2b]">
-            Comandos Rápidos de Diseño
+        <div className="flex items-center gap-1.5 min-w-0 pr-2">
+          <span className="flex h-1.5 w-1.5 rounded-full bg-[#d4af37] animate-pulse shrink-0" />
+          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[#b38f2b] truncate">
+            {sectionTitle}
           </span>
         </div>
-        <span className="text-[10px] text-stone-400 font-medium tracking-wide">
-          Estudio Creativo · Asesoría en Vivo
+        <span className="text-[10px] text-stone-400 font-medium tracking-wide shrink-0">
+          {sectionSubtitle}
         </span>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        {WEBMASTER_COMMANDS.map((cmd, idx) => {
+        {commands.map((cmd, idx) => {
           const Icon = cmd.icon;
           return (
             <button

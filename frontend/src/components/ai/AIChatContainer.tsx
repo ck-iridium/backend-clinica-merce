@@ -11,9 +11,17 @@ interface AIChatContainerProps {
   onFieldsUpdated?: (fields: string[], redirectUrl?: string) => void;
   initialPrompt?: string | null;
   onPromptConsumed?: () => void;
+  activePageSlug?: string;
+  activePageTitle?: string;
 }
 
-export default function AIChatContainer({ onFieldsUpdated, initialPrompt, onPromptConsumed }: AIChatContainerProps) {
+export default function AIChatContainer({
+  onFieldsUpdated,
+  initialPrompt,
+  onPromptConsumed,
+  activePageSlug,
+  activePageTitle,
+}: AIChatContainerProps) {
   const {
     messages,
     input,
@@ -61,6 +69,8 @@ export default function AIChatContainer({ onFieldsUpdated, initialPrompt, onProm
       <WebmasterCommandGrid
         onExecuteCommand={handleSend}
         disabled={isLoading}
+        activePageSlug={activePageSlug}
+        activePageTitle={activePageTitle}
       />
 
       {/* Barra de Entrada y Grabador de Voz */}

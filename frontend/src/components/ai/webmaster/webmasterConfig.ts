@@ -74,6 +74,71 @@ export const WEBMASTER_COMMANDS: WebmasterCommand[] = [
   },
 ];
 
+export function getWebmasterCommands(
+  activePageSlug?: string,
+  activePageTitle?: string
+): { sectionTitle: string; sectionSubtitle: string; commands: WebmasterCommand[] } {
+  const isCustomPage = Boolean(activePageSlug && activePageSlug !== 'home');
+  const pageLabel = activePageTitle || (isCustomPage && activePageSlug ? activePageSlug.replace(/-/g, ' ') : 'Portada');
+
+  if (isCustomPage) {
+    return {
+      sectionTitle: `Comandos Rápidos · ${pageLabel}`,
+      sectionSubtitle: 'Página Autónoma · Asesoría en Vivo',
+      commands: [
+        {
+          id: 'editorial_section',
+          title: 'Redactar Sección Editorial',
+          subtitle: 'Texto persuasivo y elegante',
+          icon: Sparkles,
+          prompt: `Ayúdame a redactar una nueva sección de contenido editorial de estilo "Quiet Luxury" para la página "${pageLabel}". ¿Qué enfoque me recomiendas y qué datos necesitas?`
+        },
+        {
+          id: 'insert_bento',
+          title: 'Insertar Bento / Catálogo',
+          subtitle: 'Tratamientos en esta página',
+          icon: LayoutGrid,
+          prompt: `Quiero insertar un bloque Bento Grid de tratamientos en la página "${pageLabel}". ¿Qué categoría o servicios me recomiendas mostrar aquí?`
+        },
+        {
+          id: 'space_photo',
+          title: 'Fotografía del Espacio',
+          subtitle: 'Imagen editorial de alta gama',
+          icon: Wand2,
+          prompt: `Quiero añadir una fotografía editorial de alto impacto a la página "${pageLabel}". ¿Qué tipo de toma o ambiente sugieres generar o seleccionar?`
+        },
+        {
+          id: 'cta_booking',
+          title: 'Botón CTA de Reserva',
+          subtitle: 'Llamada a la acción al final',
+          icon: SlidersHorizontal,
+          prompt: `Quiero añadir un botón de reserva (CTA) al final de la página "${pageLabel}". ¿Qué texto de llamada y estilo visual me recomiendas?`
+        },
+        {
+          id: 'rewrite_luxury',
+          title: 'Reescribir con Tono Lujo',
+          subtitle: 'Sofisticación y exclusividad',
+          icon: Sparkles,
+          prompt: `Revisa los textos actuales de la página "${pageLabel}" y propón una versión reescrita con redacción de alta costura, sobria y cautivadora.`
+        },
+        {
+          id: 'seo_page',
+          title: 'Optimizar SEO de Página',
+          subtitle: 'Posicionamiento y metadatos',
+          icon: Palette,
+          prompt: `Analiza el título y contenido de la página "${pageLabel}" y recomiéndame mejoras SEO para posicionar en Google.`
+        },
+      ]
+    };
+  }
+
+  return {
+    sectionTitle: 'Comandos Rápidos · Portada',
+    sectionSubtitle: 'Escaparate Principal · Asesoría en Vivo',
+    commands: WEBMASTER_COMMANDS,
+  };
+}
+
 // Utilidad simple para leer cookies en el cliente
 export function getCookie(name: string): string | null {
   if (typeof document === 'undefined') return null;

@@ -1,5 +1,5 @@
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import Link from 'next/link';
 import { getTenantPublicUrl } from '@/utils/tenantUrl';
@@ -101,20 +101,32 @@ export default function CreatorSidebar({
   onSave,
   onAddSection,
 }: CreatorSidebarProps) {
+  const [isEmbedded, setIsEmbedded] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const embeddedByQuery = window.location.search.includes('embedded=true');
+      const embeddedByIframe = window.self !== window.top;
+      setIsEmbedded(embeddedByQuery || embeddedByIframe);
+    }
+  }, []);
+
   return (
     <aside className="w-[450px] shrink-0 h-full flex flex-col bg-white border-r border-stone-150 shadow-sm z-30">
       {/* ── Header ──────────────────────────────────────────────── */}
       <div className="px-6 pt-6 pb-5 border-b border-stone-100">
-        {/* Volver */}
-        <Link
-          href="/dashboard/pages"
-          className="flex items-center gap-2 text-xs font-bold text-stone-400 hover:text-stone-600 transition-colors mb-5"
-        >
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-          </svg>
-          Volver a Páginas
-        </Link>
+        {/* Volver - Oculto si está incrustado en el AI Webmaster */}
+        {!isEmbedded && (
+          <Link
+            href="/dashboard/pages"
+            className="flex items-center gap-2 text-xs font-bold text-stone-400 hover:text-stone-600 transition-colors mb-5"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+            Volver a Páginas
+          </Link>
+        )}
 
         <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#d4af37] block mb-1.5">
           Diseñador Web

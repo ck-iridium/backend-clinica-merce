@@ -28,6 +28,7 @@ export default function AIWebmasterPage() {
   const [checkingPlan, setCheckingPlan] = useState(true);
   const [leftTab, setLeftTab] = useState<'chat' | 'blocks'>('chat');
   const [activePageSlug, setActivePageSlug] = useState<string>('home');
+  const [activePageTitle, setActivePageTitle] = useState<string>('Portada');
   const [injectedPrompt, setInjectedPrompt] = useState<string | null>(null);
 
   // Obtener URL de vista web pública
@@ -267,12 +268,15 @@ export default function AIWebmasterPage() {
               onFieldsUpdated={handleFieldsUpdated}
               initialPrompt={injectedPrompt}
               onPromptConsumed={() => setInjectedPrompt(null)}
+              activePageSlug={activePageSlug}
+              activePageTitle={activePageTitle}
             />
           ) : (
             <WebmasterBlocksPanel
               activePageSlug={activePageSlug}
-              onChangeActivePage={(slug, path) => {
+              onChangeActivePage={(slug, path, label) => {
                 setActivePageSlug(slug);
+                if (label) setActivePageTitle(label);
                 const origin = window.location.origin;
                 const activeSlug = getCookie('impersonate_tenant_slug') || getCookie('tenant_slug') || '';
                 const separator = path.includes('?') ? '&' : '?';

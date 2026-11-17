@@ -6,6 +6,20 @@ import BotonReservaPro from './BotonReservaPro';
 import LanguageSelector from './LanguageSelector';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 
+export function getPreservedHref(rawPath: string): string {
+  if (!rawPath) return '/';
+  if (rawPath.startsWith('http://') || rawPath.startsWith('https://') || rawPath.startsWith('tel:') || rawPath.startsWith('mailto:')) return rawPath;
+  if (typeof window !== 'undefined') {
+    const searchParams = new URLSearchParams(window.location.search);
+    const tenantParam = searchParams.get('tenant') || searchParams.get('tenant_id');
+    if (tenantParam && !rawPath.includes('tenant=')) {
+      const separator = rawPath.includes('?') ? '&' : '?';
+      return `${rawPath}${separator}tenant=${encodeURIComponent(tenantParam)}`;
+    }
+  }
+  return rawPath;
+}
+
 function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen, categories, clinicName }: { svc: any, getFullUrl: (url: string) => string, onClick: () => void, isLarge?: boolean, isParentOpen: boolean, categories: any[], clinicName: string }) {
   const { language } = useLanguage();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -57,7 +71,7 @@ function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen, 
 
   return (
     <Link
-      href={serviceLink}
+      href={getPreservedHref(serviceLink)}
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -363,12 +377,12 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
 
   const getCategoryUrl = (cat: any) => {
     const basePath = language === 'en' ? '/services' : '/tratamientos';
-    return `${basePath}/${getCategorySlug(cat)}`;
+    return getPreservedHref(`${basePath}/${getCategorySlug(cat)}`);
   };
 
   const getServiceUrl = (cat: any, svc: any) => {
     const basePath = language === 'en' ? '/services' : '/tratamientos';
-    return `${basePath}/${getCategorySlug(cat)}/${getServiceSlug(svc)}`;
+    return getPreservedHref(`${basePath}/${getCategorySlug(cat)}/${getServiceSlug(svc)}`);
   };
 
   const getLocalizedNavItem = (item: any) => {
@@ -431,7 +445,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
               <div className="h-6 w-32 bg-stone-200/40 animate-pulse rounded-md" />
             ) : settings?.logo_app_b64 || settings?.logo_mobile_b64 ? (
               <Link 
-                href="/" 
+                href={getPreservedHref("/")} 
                 onClick={() => setIsOpen(false)} 
                 className="flex items-center group focus:outline-none transition-all duration-200"
               >
@@ -470,7 +484,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                 )}
               </Link>
             ) : (
-              <Link href="/" onClick={() => setIsOpen(false)} className={`font-extrabold text-2xl tracking-tighter transition-colors ${!useTransparent ? 'text-primary' : 'text-white hover:text-primary'}`}>
+              <Link href={getPreservedHref("/")} onClick={() => setIsOpen(false)} className={`font-extrabold text-2xl tracking-tighter transition-colors ${!useTransparent ? 'text-primary' : 'text-white hover:text-primary'}`}>
                 {settings?.clinic_name || getFallbackClinicName()}
               </Link>
             )}
@@ -489,7 +503,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                     onMouseLeave={() => setShowMegaMenu(false)}
                   >
                     <Link
-                      href={navItem.path}
+                      href={getPreservedHref(navItem.path)}
                       className={`transition-colors flex items-center gap-1 ${navItem.isActive
                           ? 'text-primary'
                           : !useTransparent
@@ -506,7 +520,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
               return (
                 <Link
                   key={item.id || item.path}
-                  href={navItem.path}
+                  href={getPreservedHref(navItem.path)}
                   className={`transition-colors ${navItem.isActive
                       ? 'text-primary'
                       : !useTransparent
@@ -522,7 +536,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
               <LanguageSelector />
               <BotonReservaPro
                 texto={btnText}
-                href={btnLink}
+                href={getPreservedHref(btnLink)}
                 className="scale-90 origin-right"
               />
             </div>
@@ -677,8 +691,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                                           <div key={chunkIdx} className="snap-start h-full shrink-0 flex flex-col justify-start gap-3.5 pb-4">
                                             {chunk.map(svc => {
                                               const category = categories.find(c => c.id === svc.category_id);
-                                              const categorySlug = category?.slug || category?.id || 'general';
-                                              const serviceLink = `/tratamientos/${categorySlug}/${svc.slug || svc.id}`;
+                                              const serviceLink = getServiceUrl(category, svc);
                                               return (
                                                 <Link
                                                   key={svc.id}
@@ -784,7 +797,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                   </div>
 
                   <div className={`flex flex-col items-center gap-4 overflow-hidden transition-all duration-500 ease-in-out ${mobileAccordionOpen ? 'max-h-[500px] mt-6 opacity-100' : 'max-h-0 opacity-0 mt-0'}`}>
-                    <Link href={navItem.path} onClick={() => setIsOpen(false)} className="text-xl font-serif text-primary italic hover:text-stone-900 transition-colors">
+                    <Link href={getPreservedHref(navItem.path)} onClick={() => setIsOpen(false)} className="text-xl font-serif text-primary italic hover:text-stone-900 transition-colors">
                       {navT.see_all}
                     </Link>
                     {translatedCategories.map(cat => (
@@ -800,7 +813,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
             return (
               <Link
                 key={item.id || item.path}
-                href={navItem.path}
+                href={getPreservedHref(navItem.path)}
                 onClick={() => setIsOpen(false)}
                 className={`transition-all duration-300 active:scale-95 ${navItem.isActive ? 'text-primary' : 'hover:text-primary'}`}
               >
@@ -815,7 +828,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
             <LanguageSelector />
             <BotonReservaPro
               texto={btnText}
-              href={btnLink}
+              href={getPreservedHref(btnLink)}
               onClick={() => setIsOpen(false)}
               className="w-full max-w-xs mx-auto"
             />

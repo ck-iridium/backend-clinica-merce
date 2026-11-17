@@ -6,6 +6,7 @@ import { Camera, Share2, MapPin, Phone, Mail, Clock, ChevronRight } from 'lucide
 import LanguageSelector from './LanguageSelector';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { formatInstagramUrl, formatMapsUrl } from '@/lib/utils';
+import { getPreservedHref } from './PublicNavbar';
 
 const DAYS_MAP: Record<number, string> = {
   1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado', 7: 'Domingo'
@@ -199,7 +200,7 @@ export default function Footer({ initialSettings }: FooterProps = {}) {
               
               if (footerLogo && !logoError) {
                 return (
-                  <Link href="/" className="inline-block group focus:outline-none">
+                  <Link href={getPreservedHref("/")} className="inline-block group focus:outline-none">
                     <img
                       src={footerLogo}
                       alt={settings?.clinic_name || 'Logo'}
@@ -213,7 +214,7 @@ export default function Footer({ initialSettings }: FooterProps = {}) {
               }
               
               return (
-                <Link href="/" className="inline-block text-2xl font-serif font-black text-white tracking-tighter hover:text-primary transition-colors">
+                <Link href={getPreservedHref("/")} className="inline-block text-2xl font-serif font-black text-white tracking-tighter hover:text-primary transition-colors">
                   {settings?.clinic_name ? settings.clinic_name.toUpperCase() : 'CENTRO'}
                 </Link>
               );
@@ -343,25 +344,25 @@ export default function Footer({ initialSettings }: FooterProps = {}) {
             </h4>
             <ul className="space-y-3">
               <li>
-                <Link href="/" className="group flex items-center gap-2 text-sm font-medium hover:text-white transition-colors">
+                <Link href={getPreservedHref("/")} className="group flex items-center gap-2 text-sm font-medium hover:text-white transition-colors">
                   <ChevronRight size={14} className="text-primary opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all" />
                   {translateStatic('footer.nav_home', "Inicio")}
                 </Link>
               </li>
               <li>
-                <Link href="/tratamientos" className="group flex items-center gap-2 text-sm font-medium hover:text-white transition-colors">
+                <Link href={getPreservedHref("/tratamientos")} className="group flex items-center gap-2 text-sm font-medium hover:text-white transition-colors">
                   <ChevronRight size={14} className="text-primary opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all" />
                   {translateStatic('footer.nav_treatments', "Tratamientos")}
                 </Link>
               </li>
               <li>
-                <Link href="/contacto" className="group flex items-center gap-2 text-sm font-medium hover:text-white transition-colors">
+                <Link href={getPreservedHref("/contacto")} className="group flex items-center gap-2 text-sm font-medium hover:text-white transition-colors">
                   <ChevronRight size={14} className="text-primary opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all" />
                   {translateStatic('footer.nav_contact', "Contacto")}
                 </Link>
               </li>
               <li>
-                <Link href="/sedes" className="group flex items-center gap-2 text-sm font-medium hover:text-white transition-colors">
+                <Link href={getPreservedHref("/sedes")} className="group flex items-center gap-2 text-sm font-medium hover:text-white transition-colors">
                   <ChevronRight size={14} className="text-primary opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all" />
                   {translateStatic('footer.nav_locations', "Sedes")}
                 </Link>
@@ -386,17 +387,17 @@ export default function Footer({ initialSettings }: FooterProps = {}) {
           </div>
 
           <nav className="flex flex-wrap items-center justify-center md:justify-end gap-x-8 gap-y-4">
-            <Link href="/privacidad" className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-500 hover:text-white transition-colors">
+            <Link href={getPreservedHref("/privacidad")} className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-500 hover:text-white transition-colors">
               {translateStatic('footer.privacy', "Privacidad")}
             </Link>
-            <Link href="/cookies" className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-500 hover:text-white transition-colors">
+            <Link href={getPreservedHref("/cookies")} className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-500 hover:text-white transition-colors">
               {translateStatic('footer.cookies', "Cookies")}
             </Link>
-            <Link href="/aviso-legal" className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-500 hover:text-white transition-colors">
+            <Link href={getPreservedHref("/aviso-legal")} className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-500 hover:text-white transition-colors">
               {translateStatic('footer.legal', "Aviso Legal")}
             </Link>
             {settings?.stripe_charges_enabled && (
-              <Link href="/condiciones-reserva" className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary hover:text-white transition-colors">
+              <Link href={getPreservedHref("/condiciones-reserva")} className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary hover:text-white transition-colors">
                 {translateStatic('footer.booking_conditions', "Condiciones de Reserva")}
               </Link>
             )}

@@ -85,7 +85,7 @@ $function$;
             WHERE id IN (
                 SELECT n.id
                 FROM public.notifications n
-                JOIN public.users u ON n.user_id = u.id
+                JOIN public.users u ON n.user_id::text = u.id::text
                 WHERE n.tenant_id IS NOT NULL AND u.tenant_id IS NOT NULL AND n.tenant_id != u.tenant_id
             );
             """
@@ -279,6 +279,12 @@ $function$;
             f"ALTER TABLE landing_marketing_settings ADD COLUMN pillars {json_type} DEFAULT '{{}}'"
         ]
         
+        if not is_sqlite:
+            migrations = [
+                m.replace("ADD COLUMN ", "ADD COLUMN IF NOT EXISTS ") if "ADD COLUMN " in m and "IF NOT EXISTS" not in m else m
+                for m in migrations
+            ]
+
         for m in migrations:
             try:
                 db.execute(text(m))
