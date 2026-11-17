@@ -84,6 +84,11 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isDesktopExpanded, setIsDesktopExpanded] = useState(false);
   const [planType, setPlanType] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     // Helper simple para leer cookies del lado del cliente
@@ -218,7 +223,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
       router.push(href);
     };
 
-    const localFallbackRole = typeof window !== 'undefined' ? (() => {
+    const localFallbackRole = mounted ? (() => {
       try {
         const u = localStorage.getItem('user');
         return u ? JSON.parse(u).role : null;
@@ -227,7 +232,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
 
     const effectiveRole = (role || localFallbackRole || 'admin')?.toLowerCase();
 
-    if (loading && !role && !localFallbackRole) {
+    if (!mounted || (loading && !role && !localFallbackRole)) {
       return (
         <div className="flex flex-col gap-3 w-full px-3 py-2 animate-in fade-in duration-500">
           {Array(6).fill(0).map((_, i) => (
@@ -408,7 +413,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
         )}
 
         {/* Grupo 'Configuración' Flyout (Admin Only) */}
-        {filteredConfig.length > 0 && (role?.toLowerCase() === 'admin' || role?.toLowerCase() === 'administrador') && (
+        {filteredConfig.length > 0 && isAdmin && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className={`group/item relative flex items-center justify-center rounded-2xl p-3.5 transition-all duration-200 ${filteredConfig.some(l => isActive(l.href)) ? 'bg-stone-800 text-white shadow-lg' : 'text-stone-500 hover:bg-stone-900 hover:text-white'} dashboard-sidebar-nav-item`}>
