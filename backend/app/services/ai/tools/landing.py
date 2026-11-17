@@ -537,26 +537,72 @@ def create_custom_page_and_nav_link(
         )
         db.add(nav_item)
 
-        # 4. Crear bloque inicial de contenido en SiteBlock
-        initial_html = content_html or f"<p>Bienvenido a {title.strip()}. Ponemos a tu disposición una experiencia de cuidado exclusivo y personalizado.</p>"
+        # 4. Crear estructura editorial completa de bloque (section) en SiteBlock
+        initial_html = content_html or (
+            f"<p class='text-lg font-serif italic text-stone-700 text-center mb-6'>Bienvenido al espacio exclusivo de <strong>{title.strip()}</strong>.</p>"
+            f"<p class='mb-4 leading-relaxed'>Hemos concebido este espacio para ofrecerte una experiencia distinguida, donde la serenidad, la privacidad y la más alta dedicación técnica se fusionan para responder a tus más altas expectativas.</p>"
+            f"<p class='leading-relaxed'>Ponemos a tu entera disposición nuestro conocimiento, nuestras instalaciones de vanguardia y un protocolo de atención totalmente adaptado a tu estilo de vida.</p>"
+        )
+
+        section_id = f"sec-{uuid.uuid4().hex[:8]}"
+        col_id = f"col-{uuid.uuid4().hex[:8]}"
+
         block = models.SiteBlock(
             id=str(uuid.uuid4()),
             tenant_id=tenant_id,
             page_slug=clean_slug,
-            block_type="text",
+            block_type="section",
             order_index=0,
             content_data={
-                "title": title.strip(),
-                "body_html": initial_html,
-                "seo_title": seo_title or f"{title.strip()} | Alta Gama",
-                "seo_description": seo_description or f"Descubre nuestra página de {title.strip()} con atención personalizada."
+                "id": section_id,
+                "columns_count": 1,
+                "py_spacing": "py-20",
+                "bg_color": "white",
+                "vertical_alignment": "items-start",
+                "columns": [
+                    {
+                        "id": col_id,
+                        "width": "w-full",
+                        "blocks": [
+                            {
+                                "id": f"title-{uuid.uuid4().hex[:6]}",
+                                "block_type": "atomic_title",
+                                "content_data": {
+                                    "title": title.strip(),
+                                    "title_tag": "h1",
+                                    "alignment": "center",
+                                    "show_divider": True,
+                                    "subtitle": seo_description or "Excelencia, serenidad y exclusividad en cada detalle."
+                                }
+                            },
+                            {
+                                "id": f"text-{uuid.uuid4().hex[:6]}",
+                                "block_type": "atomic_text",
+                                "content_data": {
+                                    "html": initial_html,
+                                    "alignment": "left"
+                                }
+                            },
+                            {
+                                "id": f"btn-{uuid.uuid4().hex[:6]}",
+                                "block_type": "atomic_button",
+                                "content_data": {
+                                    "text": "Reservar Experiencia",
+                                    "url": "/reservar",
+                                    "style": "gold_solid",
+                                    "alignment": "center"
+                                }
+                            }
+                        ]
+                    }
+                ]
             }
         )
         db.add(block)
         db.commit()
 
-        menu_status = "y se ha vinculado al menú superior (Navbar)" if show_in_navbar else "y queda como página independiente (sin enlace en el menú)"
-        return f"Éxito: Se ha creado la página '/{clean_slug}' con título '{title.strip()}' {menu_status} correctamente."
+        menu_status = "y se ha vinculado a la barra de menú superior (Navbar)" if show_in_navbar else "y queda como página independiente (sin enlace en el menú)"
+        return f"Éxito: Se ha creado y maquetado con éxito la página '/{clean_slug}' con título '{title.strip()}' {menu_status}. La vista previa se cargará automáticamente en /{clean_slug}."
     except Exception as e:
         db.rollback()
         logger.error(f"Error al crear página y enlace de navegación: {e}")

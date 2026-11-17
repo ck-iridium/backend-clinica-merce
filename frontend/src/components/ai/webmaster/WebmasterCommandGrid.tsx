@@ -17,11 +17,11 @@ export default function WebmasterCommandGrid({
         <div className="flex items-center gap-1.5">
           <span className="flex h-1.5 w-1.5 rounded-full bg-[#d4af37] animate-pulse" />
           <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[#b38f2b]">
-            Comandos Rápidos de Estudio · 2026
+            Comandos Rápidos de Diseño
           </span>
         </div>
         <span className="text-[10px] text-stone-400 font-medium tracking-wide">
-          1-Clic · Sincronizado en Vivo
+          Estudio Creativo · Asesoría en Vivo
         </span>
       </div>
 

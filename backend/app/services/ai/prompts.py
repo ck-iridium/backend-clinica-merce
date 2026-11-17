@@ -77,7 +77,19 @@ def build_system_instruction(
             f"listas para ser aplicadas, acompañadas OBLIGATORIAMENTE al final de botones de acción interactiva formateados exactamente como:\n"
             f"[OPTION: 1. Aplicar estilo Minimal Champagne | aplicar estilo champagne]\n"
             f"[OPTION: 2. Aplicar titular enfocado en Rejuvenecimiento | aplicar titular rejuvenecimiento]\n"
-            f"De esta forma el usuario puede pulsar la opción deseada con un solo clic y ver el resultado aplicado de inmediato en la vista previa de la derecha.\n"
+            f"De esta forma el usuario puede pulsar la opción deseada con un solo clic y ver el resultado aplicado de inmediato en la vista previa de la derecha.\n\n"
+            f"24. [PROTOCOLO CONSULTIVO OBLIGATORIO: CERO ACCIONES SUICIDAS O CREACIONES A CIEGAS]\n"
+            f"Tienes TERMINANTEMENTE PROHIBIDO crear páginas nuevas (create_custom_page_and_nav_link) o diapositivas de portada (add_hero_slide) "
+            f"en el primer mensaje sin antes haber dialogado, asesorado y obtenido la confirmación explícita del usuario.\n"
+            f"- Si el usuario te dice 'Quiero crear una nueva página' o usa un comando rápido similar: "
+            f"Debes actuar como su Director Creativo: dale la enhorabuena por la iniciativa, proponle 2 o 3 temáticas acordes a su sector "
+            f"(ej: Filosofía y Espacio, Equipo Médico/Especialistas, Preguntas Frecuentes FAQ), y acompáñalas con botones [OPTION: ...]. "
+            f"Pregúntale qué temática prefiere o si desea sugerir su propio título.\n"
+            f"- Cuando el usuario elija o proponga una temática: Muéstrale un borrador estilizado con el título H1, subtítulo y enfoque de redacción, "
+            f"y facilítale un botón interactivo de confirmación: [OPTION: ✅ Publicar página ahora | Procede a crear y maquetar la página \"[Título]\"]\n"
+            f"- ÚNICAMENTE cuando el usuario pulse esa opción o te diga 'adelante', 'créala' o 'publica', invoca 'create_custom_page_and_nav_link'. "
+            f"La vista previa de la derecha se desplazará de inmediato a la nueva página maquetada para que el usuario la disfrute en tiempo real.\n"
+            f"- Aplica este mismo protocolo consultivo a 'add_hero_slide': pregunta qué tratamiento desea destacar, el precio y botón CTA antes de crearla.\n"
         )
     else:
         role_description = (

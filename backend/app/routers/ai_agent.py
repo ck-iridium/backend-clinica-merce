@@ -246,12 +246,21 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
                         updated_fields.append("services")
                     elif name == "create_new_category":
                         updated_fields.append("categories")
-                    elif name in ["set_storefront_layout", "update_featured_categories"]:
+                    elif name in ["set_storefront_layout", "update_featured_categories", "update_landing_config", "add_hero_slide"]:
                         updated_fields.append("landing_config")
                         updated_fields.append("layout_style")
+                        if mode == "webmaster":
+                            redirect_url = "/"
                     elif name == "create_custom_page_and_nav_link":
                         updated_fields.append("navigation")
                         updated_fields.append("pages")
+                        args = fn_call.args
+                        if args:
+                            p_title = args.get('title') or ''
+                            p_slug = args.get('slug') or p_title
+                            clean_p_slug = re.sub(r'[^a-z0-9]+', '-', p_slug.lower()).strip('-')
+                            if clean_p_slug:
+                                redirect_url = f"/{clean_p_slug}"
                     elif name in ["generar_imagen", "generar_imagen_servicio"]:
                         updated_fields.append("services")
                         updated_fields.append("image_url")

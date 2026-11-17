@@ -32,45 +32,45 @@ export const WEBMASTER_WELCOME = '¡Hola! Soy tu AI Webmaster & Director Creativ
 export const WEBMASTER_COMMANDS: WebmasterCommand[] = [
   {
     id: 'palette',
-    title: 'Paleta Quiet Luxury',
-    subtitle: 'Champagne, marfil y antracita',
+    title: 'Paleta & Estilo Visual',
+    subtitle: 'Combinaciones de alta gama',
     icon: Palette,
-    prompt: 'Aplica una paleta de marca Quiet Luxury de alta gama a la web: color de acento dorado champagne #D4AF37, fondo marfil refinado, tipografía Playfair Display en títulos e Inter en cuerpo, y bordes redondeados.'
+    prompt: 'Quiero renovar la paleta de colores y la estética de la web. ¿Qué combinaciones de lujo me recomiendas según mi sector?'
   },
   {
     id: 'seo_hero',
-    title: 'Optimizar Hero & SEO',
-    subtitle: 'Titular de alta conversión',
+    title: 'Optimizar Portada & SEO',
+    subtitle: 'Análisis y conversión de textos',
     icon: Sparkles,
-    prompt: 'Optimiza el titular principal, subtítulo y botón de llamada a la acción del Hero para mejorar el posicionamiento SEO y la captación de reservas de alto poder adquisitivo.'
+    prompt: 'Analiza el titular actual y los textos SEO de la portada y recomiéndame mejoras de conversión.'
   },
   {
-    id: 'bento',
-    title: 'Layout Bento Grid',
-    subtitle: 'Mosaico modular 2026',
+    id: 'layout',
+    title: 'Layout de Catálogo',
+    subtitle: 'Bento Grid frente a Carrusel',
     icon: LayoutGrid,
-    prompt: 'Configura el estilo visual de la portada en formato Bento Grid modular asimétrico (layout_style="bento_grid") y ajusta el megamenú a formato bento con previsualización inmediata.'
+    prompt: 'Quiero evaluar el formato de presentación de tratamientos en portada (Bento Grid frente a Carrusel). ¿Cómo luciría cada uno y cuál me recomiendas?'
   },
   {
-    id: 'carousel',
-    title: 'Carrusel Cinemático',
-    subtitle: 'Diapositivas a pantalla completa',
+    id: 'hero_slide',
+    title: 'Nueva Diapositiva Hero',
+    subtitle: 'Proponer promoción o servicio',
     icon: SlidersHorizontal,
-    prompt: 'Configura el escaparate en formato carrusel cinemático (layout_style="cards_slider") y revisa que las diapositivas del Hero tengan precios elegantes y llamadas a la acción directas.'
+    prompt: 'Quiero añadir una nueva diapositiva destacada a la portada. ¿Qué tratamiento, novedad o servicio me sugieres destacar y qué datos necesitas?'
   },
   {
     id: 'new_page',
-    title: 'Crear Página y Menú',
-    subtitle: 'Nueva sección en la barra superior',
+    title: 'Crear Nueva Página',
+    subtitle: 'Asesoría y maquetación a medida',
     icon: PlusCircle,
-    prompt: 'Crea una nueva página web autónoma llamada "Filosofía y Espacio" con redacción editorial de alta costura y vincúlala de forma automática al menú superior de navegación (Navbar).'
+    prompt: 'Quiero crear una nueva página para mi web. ¿Qué temáticas me recomiendas para mi clínica y qué estructura inicial le damos?'
   },
   {
     id: 'photo',
-    title: 'Foto Editorial IA',
-    subtitle: 'Generar con mi clave API',
+    title: 'Fotografía Editorial IA',
+    subtitle: 'Generación con tu API Key',
     icon: Wand2,
-    prompt: 'Genera una fotografía comercial editorial de alta costura para nuestro catálogo de tratamientos utilizando mi clave de API conectada en Ajustes.'
+    prompt: 'Quiero generar una fotografía editorial con mi clave de API para mi escaparate. ¿Qué escena o servicio me recomiendas fotografiar?'
   },
 ];
 

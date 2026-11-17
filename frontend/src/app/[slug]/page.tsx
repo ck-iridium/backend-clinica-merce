@@ -141,6 +141,34 @@ export default async function CustomPage({ params }: PageProps) {
     if (block.block_type === 'section') {
       return block;
     } else {
+      const bData = block.content_data || {};
+      const generatedBlocks: any[] = [];
+
+      if (bData.title && (block.block_type === 'text' || block.block_type === 'atomic_text')) {
+        generatedBlocks.push({
+          id: `atomic-title-${block.id}`,
+          block_type: 'atomic_title',
+          content_data: {
+            title: bData.title,
+            title_tag: 'h1',
+            alignment: 'center',
+            show_divider: true,
+            subtitle: bData.seo_description || 'Excelencia y distinción en cada detalle.'
+          }
+        });
+      }
+
+      generatedBlocks.push({
+        id: `atomic-${block.id}`,
+        block_type: block.block_type.startsWith('atomic_') 
+          ? block.block_type 
+          : `atomic_${block.block_type}`,
+        content_data: {
+          ...bData,
+          html: bData.html || bData.body_html || bData.text || ''
+        }
+      });
+
       return {
         id: block.id,
         page_slug: slug,
@@ -155,15 +183,7 @@ export default async function CustomPage({ params }: PageProps) {
             {
               id: `col-${block.id}-0`,
               width: 'w-full',
-              blocks: [
-                {
-                  id: `atomic-${block.id}`,
-                  block_type: block.block_type.startsWith('atomic_') 
-                    ? block.block_type 
-                    : `atomic_${block.block_type}`,
-                  content_data: block.content_data
-                } as any
-              ]
+              blocks: generatedBlocks
             }
           ]
         }
@@ -270,7 +290,7 @@ export default async function CustomPage({ params }: PageProps) {
                               <div
                                 key={block.id}
                                 className={`prose prose-stone max-w-none text-stone-600 font-sans text-base leading-relaxed py-2 ${alignClass}`}
-                                dangerouslySetInnerHTML={{ __html: data.html || '' }}
+                                dangerouslySetInnerHTML={{ __html: data.html || data.body_html || data.text || '' }}
                               />
                             );
                           }
