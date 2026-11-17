@@ -33,6 +33,7 @@ class AIChatRequest(BaseModel):
     user_name: Optional[str] = None
     user_role: Optional[str] = None
     language: Optional[str] = "es"
+    mode: Optional[str] = "ops"  # "ops" (Co-Piloto Operativo) | "webmaster" (Estudio de Diseño Web)
 
 class AIChatResponse(BaseModel):
     response: str

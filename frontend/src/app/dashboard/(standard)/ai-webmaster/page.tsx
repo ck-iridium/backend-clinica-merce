@@ -155,24 +155,27 @@ export default function AIWebmasterPage() {
           
           <div className="space-y-2">
             <span className="inline-block bg-amber-50 text-[#b38f2b] text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border border-amber-200/50">
-              Módulo VIP Exclusivo
+              Módulo VIP Exclusivo · Plan Elite
             </span>
             <h1 className="text-2xl md:text-3xl font-serif font-extrabold text-stone-900 tracking-tight">
-              Asistente IA Webmaster
+              Estudio AI Webmaster en Vivo
             </h1>
             <p className="text-stone-500 text-sm leading-relaxed max-w-sm mx-auto">
-              La edición automatizada y el control conversacional de tu clínica a través de Inteligencia Artificial es una característica reservada para miembros del <span className="font-bold text-stone-800">Plan Gold Elite</span>.
+              Diseña, maqueta y transforma el escaparate público de tu negocio con asistencia creativa en tiempo real y vista previa interactiva simultánea.
             </p>
           </div>
 
           <div className="bg-stone-50 border border-stone-200/50 rounded-2xl p-4 text-left space-y-2">
-            <h3 className="text-xs font-black uppercase tracking-widest text-[#d4af37] mb-1">¿Qué incluye el Plan Gold?</h3>
+            <h3 className="text-xs font-black uppercase tracking-widest text-[#d4af37] mb-1">Ventajas del Estudio Webmaster Elite</h3>
             <ul className="text-xs text-stone-600 space-y-1.5 font-medium animate-in fade-in slide-in-from-bottom-1 duration-500 delay-100">
-              <li className="flex items-center gap-2">✨ Especialistas y servicios ilimitados sin restricciones</li>
-              <li className="flex items-center gap-2">🤖 Conversaciones por Voz y Texto con el Webmaster IA</li>
-              <li className="flex items-center gap-2">🔄 Generación de copias y redacción automatizada para tu web</li>
-              <li className="flex items-center gap-2">💼 Terminal POS de Venta Rápida y Facturación Deluxe</li>
+              <li className="flex items-center gap-2">✨ Director Creativo y Webmaster 24/7 conectado a tu web pública</li>
+              <li className="flex items-center gap-2">🔄 Vista previa en directo con cambios instantáneos en Móvil, Tablet y PC</li>
+              <li className="flex items-center gap-2">🎨 Modificación conversacional de paletas, tipografías y secciones Hero</li>
+              <li className="flex items-center gap-2">✍️ Redacción comercial premium y optimización SEO de tratamientos</li>
             </ul>
+            <p className="text-[11px] text-stone-400 pt-2 border-t border-stone-200/40 italic">
+              💡 Tu Co-Piloto Operativo de gestión diaria sigue activo en el icono flotante del panel.
+            </p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
@@ -180,7 +183,7 @@ export default function AIWebmasterPage() {
               onClick={() => window.location.href = '/dashboard/settings?tab=subscription'}
               className="flex-1 bg-[#1c1917] hover:bg-[#d4af37] text-white hover:text-[#1c1917] py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 shadow-md hover:shadow-lg active:scale-95"
             >
-              Mejorar Plan de Suscripción
+              Mejorar al Plan Elite (129€)
             </button>
             <button
               onClick={() => window.location.href = '/dashboard'}

@@ -30,6 +30,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     features: [
       { text: '1 especialista único' },
       { text: '1 sede o ubicación física' },
+      { text: 'Co-Piloto Operativo IA (15 acciones/día)', isBold: true },
       { text: 'Servicios y catálogo ilimitados', isSpecial: true },
       { text: 'Agenda interactiva & turnos' },
       { text: 'Firma en tablet y consentimientos LOPD' },
@@ -51,6 +52,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     features: [
       { text: 'Hasta 4 miembros de equipo (con RBAC)', isBold: true },
       { text: 'Hasta 2 sedes físicas', isBold: true },
+      { text: 'Co-Piloto Operativo IA (35 acciones/día)', isBold: true },
       { text: 'Firma digital LOPD para todo el equipo', isSpecial: true },
       { text: 'Emisión y control de Bonos (/vouchers)' },
       { text: 'Facturación oficial correlativa e IVA (/invoices)' },
@@ -71,7 +73,8 @@ export const PRICING_PLANS: PricingPlan[] = [
     features: [
       { text: 'Hasta 10 miembros (+15€/mes extra)', isBold: true },
       { text: 'Hasta 5 sedes (+20€/mes extra)', isBold: true },
-      { text: 'AI Webmaster Copilot (Texto, Voz y Fotos)', isSpecial: true },
+      { text: 'Estudio AI Webmaster en Vivo (Texto, Voz y Fotos)', isSpecial: true },
+      { text: 'Co-Piloto Operativo IA (Acciones ilimitadas)', isBold: true },
       { text: 'Todo lo incluido en el Plan Pro' },
       { text: 'Marca blanca 100% invisible' },
       { text: 'Soporte prioritario VIP 24/7' }

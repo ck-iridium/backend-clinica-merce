@@ -71,7 +71,7 @@ export default function CopilotHeader({
             planType === 'free' && trialRemaining !== null ? (
               <div className="px-2.5 py-0.5 rounded-full border border-amber-300/60 bg-amber-50 text-amber-800 text-[10px] font-medium tracking-wide flex items-center gap-1.5 shrink-0">
                 <Sparkles size={11} className="text-[#d4af37] animate-pulse" />
-                <span>{trialRemaining} / 10 prueba</span>
+                <span>{trialRemaining} / {dailyActionsLimit || 35} prueba</span>
               </div>
             ) : (planType === 'basic' || planType === 'pro') && dailyActionsLimit > 0 ? (
               <div

@@ -391,6 +391,7 @@ export default function AICopilotWidget() {
             user_role: role,
             language,
             voice_gender: voiceGender,
+            mode: 'ops',
           }),
         }
       );

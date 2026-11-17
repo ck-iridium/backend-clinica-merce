@@ -362,19 +362,22 @@ export function PricingComparisonTable({
 
             <tr className="hover:bg-stone-50/50 transition-colors">
               <td className="py-3.5 px-6">
-                <span className="font-bold text-stone-900 block text-xs md:text-sm">AI Webmaster Copilot (/ai-webmaster)</span>
-                <span className="text-[11px] text-stone-400 font-medium">Generación inteligente de textos, descripciones, fotos y voz</span>
+                <span className="font-bold text-stone-900 block text-xs md:text-sm">Co-Piloto Operativo IA (Voz y Texto)</span>
+                <span className="text-[11px] text-stone-400 font-medium">Agenda, clientes, precios rápidos y navegación inteligente</span>
               </td>
               <td className="py-3.5 px-6">
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-stone-400">
-                  <Minus className="w-3.5 h-3.5 text-stone-300 stroke-[2]" />
-                  <span>No disponible</span>
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-stone-800 bg-stone-100 px-2.5 py-1 rounded-full border border-stone-200/60">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
+                  <span>15 acciones / día</span>
                 </span>
               </td>
               <td className="py-3.5 px-6 border-x border-[#D4AF37]/25" style={{ backgroundColor: `${accentColor}06` }}>
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-stone-400">
-                  <Minus className="w-3.5 h-3.5 text-stone-300 stroke-[2]" />
-                  <span>No disponible</span>
+                <span 
+                  style={{ backgroundColor: `${accentColor}18`, borderColor: `${accentColor}40`, color: '#1c1917' }}
+                  className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border shadow-2xs"
+                >
+                  <Check className="w-3.5 h-3.5 text-stone-950 stroke-[2.5]" />
+                  <span>35 acciones / día</span>
                 </span>
               </td>
               <td className="py-3.5 px-6">
@@ -383,7 +386,35 @@ export function PricingComparisonTable({
                   className="inline-flex items-center gap-1.5 text-[11px] font-black px-3 py-1 rounded-full border shadow-2xs"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                  <span>Texto, Voz y Fotos</span>
+                  <span>Ilimitadas (∞)</span>
+                </span>
+              </td>
+            </tr>
+
+            <tr className="hover:bg-stone-50/50 transition-colors">
+              <td className="py-3.5 px-6">
+                <span className="font-bold text-stone-900 block text-xs md:text-sm">Estudio AI Webmaster en Vivo (/ai-webmaster)</span>
+                <span className="text-[11px] text-stone-400 font-medium">Diseño web, SEO, branding y carrusel Hero con vista previa simultánea</span>
+              </td>
+              <td className="py-3.5 px-6">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-stone-400">
+                  <Minus className="w-3.5 h-3.5 text-stone-300 stroke-[2]" />
+                  <span>No incluido</span>
+                </span>
+              </td>
+              <td className="py-3.5 px-6 border-x border-[#D4AF37]/25" style={{ backgroundColor: `${accentColor}06` }}>
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-stone-400">
+                  <Minus className="w-3.5 h-3.5 text-stone-300 stroke-[2]" />
+                  <span>No incluido</span>
+                </span>
+              </td>
+              <td className="py-3.5 px-6">
+                <span 
+                  style={{ backgroundColor: `${accentColor}20`, borderColor: `${accentColor}50`, color: '#1c1917' }}
+                  className="inline-flex items-center gap-1.5 text-[11px] font-black px-3 py-1 rounded-full border shadow-2xs"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                  <span>Texto, Voz y Fotos (En Vivo)</span>
                 </span>
               </td>
             </tr>

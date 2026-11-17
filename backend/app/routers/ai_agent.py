@@ -49,6 +49,7 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
     from ..limits import PLAN_LIMITS
     plan_limits = PLAN_LIMITS.get(plan, PLAN_LIMITS["free"])
     daily_limit = plan_limits["ai_smart_actions_daily"]
+    mode = getattr(request, 'mode', 'ops') or 'ops'
     
     is_trial_mode = (plan == "free") and not has_byok
     is_capped_mode = (plan in ["basic", "pro"]) and not has_byok
@@ -56,9 +57,7 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
     actions_remaining = None
     if has_byok or plan == "gold":
         actions_remaining = 999999  # Sin límites
-    elif is_trial_mode:
-        actions_remaining = max(0, 10 - (tenant.ai_trial_queries_used or 0))
-    elif is_capped_mode:
+    elif is_trial_mode or is_capped_mode:
         actions_remaining = max(0, daily_limit - (tenant.ai_daily_actions_used or 0))
 
     # 1. Recuperar la clave API de Gemini del inquilino de forma segura
@@ -94,18 +93,19 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
         user_role=user_role,
         has_custom_api_key=has_custom_api_key,
         ai_provider=ai_provider,
-        configured_image_model=image_model
+        configured_image_model=image_model,
+        mode=mode
     )
 
     if actions_remaining is not None and actions_remaining <= 0:
         limit_warning = ""
         if is_trial_mode:
             limit_warning = (
-                "\n\n[DIRECTIVA DE CONTROL CRÍTICA: LÍMITE DE PRUEBA ALCANZADO]\n"
-                "El cliente ha agotado su período de prueba único de 10 Acciones Inteligentes.\n"
+                f"\n\n[DIRECTIVA DE CONTROL CRÍTICA: LÍMITE DIARIO DE PRUEBA ALCANZADO]\n"
+                f"El cliente ha agotado su cuota diaria de {daily_limit} Acciones Inteligentes de su período de prueba.\n"
                 "Tienes terminantemente prohibido invocar o ejecutar cualquier herramienta o función que modifique la base de datos o navegue (por ejemplo: crear citas, actualizar servicios, editar landing o mover servicios).\n"
                 "Si el usuario te solicita realizar alguna acción de escritura o cambio, debes responderle en un tono sumamente empático, profesional y distinguido (estilo 'Quiet Luxury'). "
-                "Explícale que ha consumido sus 10 acciones de prueba de bienvenida del plan gratuito y que debe actualizar al Plan Profesional o Gold Elite para que sigas automatizando por él de forma instantánea. "
+                f"Explícale que ha consumido sus {daily_limit} acciones de prueba de hoy (que se renovarán mañana a las 00:00) o que puede actualizar al Plan Pro o Elite para continuar sin pausas. "
                 "Recuérdale amablemente que el chat de consulta, preguntas y navegación es 100% gratuito e ilimitado, por lo que estarás encantado de seguir respondiendo cualquier duda que tenga sobre su negocio."
             )
         elif is_capped_mode:
@@ -257,23 +257,24 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
         # 2.5. Lógica de cobro/incremento de Smart Actions ejecutadas
         if not has_byok and plan != "gold":
             if updated_fields or redirect_url:
-                if is_trial_mode:
-                    queries_used = tenant.ai_trial_queries_used if hasattr(tenant, "ai_trial_queries_used") else 0
-                    if queries_used is None:
-                        queries_used = 0
-                    tenant.ai_trial_queries_used = queries_used + 1
-                    db.commit()
-                elif is_capped_mode:
-                    actions_used = tenant.ai_daily_actions_used if hasattr(tenant, "ai_daily_actions_used") else 0
-                    if actions_used is None:
-                        actions_used = 0
-                    tenant.ai_daily_actions_used = actions_used + 1
-                    db.commit()
+                actions_used = tenant.ai_daily_actions_used if hasattr(tenant, "ai_daily_actions_used") else 0
+                if actions_used is None:
+                    actions_used = 0
+                tenant.ai_daily_actions_used = actions_used + 1
+                db.commit()
 
         # Extraer dirección de navegación [NAVIGATE: ...] si existe
         navigate_match = re.search(r'\[NAVIGATE:\s*([^\]]+)\]', brain_text, re.IGNORECASE)
         if navigate_match:
-            redirect_url = navigate_match.group(1).strip()
+            candidate_url = navigate_match.group(1).strip()
+            if mode == "webmaster":
+                # En modo webmaster, bloquear estrictamente redirecciones al dashboard interno
+                if candidate_url.startswith("/?") or candidate_url.startswith("/tratamientos") or candidate_url.startswith("/sedes"):
+                    redirect_url = candidate_url
+                else:
+                    redirect_url = None
+            else:
+                redirect_url = candidate_url
 
         # 3. LA VOZ (Gemini 2.5 Flash TTS): Convierte de forma secuencial el texto en voz hiperrealista
         # Para síntesis de voz: removemos URLs largas, [NAVIGATE:...], [OPTION:...], y etiquetas de imagen para que no las lea mecánicamente
@@ -294,14 +295,15 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
         # pero PRESERVAR estrictamente [NAVIGATE:...], [OPTION:...], [Imagen adjunta: ...] y las URLs de imágenes
         clean_text = re.sub(r'\[(?!(?:NAVIGATE|OPTION|Imagen adjunta|Image jointe|Attached image))\s*[^\]]+\]', '', brain_text, flags=re.IGNORECASE).strip()
         clean_text = re.sub(r'[ \t]+', ' ', clean_text)
+        if mode == "webmaster":
+            # En modo webmaster, purgar cualquier etiqueta [NAVIGATE: ...] que pudiera haber emitido el LLM
+            clean_text = re.sub(r'\[NAVIGATE:\s*[^\]]+\]', '', clean_text, flags=re.IGNORECASE).strip()
 
         # Calcular acciones inteligentes restantes
         trial_remaining = None
         if has_byok or plan == "gold":
             trial_remaining = 999999  # Sin límite
-        elif is_trial_mode:
-            trial_remaining = max(0, 10 - (tenant.ai_trial_queries_used or 0))
-        elif is_capped_mode:
+        elif is_trial_mode or is_capped_mode:
             trial_remaining = max(0, daily_limit - (tenant.ai_daily_actions_used or 0))
 
         return schemas.AIChatResponse(

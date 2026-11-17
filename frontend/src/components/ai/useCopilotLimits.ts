@@ -54,14 +54,15 @@ export function useCopilotLimits() {
           const ownKey = d.limits?.ai_allowed && d.limits?.ai_requires_byok;
           setHasOwnKey(!!ownKey);
           
-          const used = d.ai_trial_queries_used ?? 0;
-          const remaining = Math.max(0, 10 - used);
-          setTrialRemaining(remaining);
+          const dailyLimit = d.limits?.ai_smart_actions_daily ?? (plan === 'basic' ? 15 : 35);
+          setDailyActionsLimit(dailyLimit);
+          const dailyUsed = d.ai_daily_actions_used ?? 0;
+          setDailyActionsUsed(dailyUsed);
           
-          setDailyActionsUsed(d.ai_daily_actions_used ?? 0);
-          setDailyActionsLimit(d.limits?.ai_smart_actions_daily ?? 0);
+          const remainingDaily = Math.max(0, dailyLimit - dailyUsed);
+          setTrialRemaining(remainingDaily);
           
-          if (plan === 'free' && !ownKey && remaining <= 0) {
+          if (plan === 'free' && !ownKey && remainingDaily <= 0) {
             setIsTrialExhausted(true);
           }
         }

@@ -47,6 +47,28 @@ interface Message {
   content: string;
 }
 
+const WEBMASTER_WELCOME = '¡Hola! Soy tu AI Webmaster & Director Creativo. Estoy conectado directamente con el escaparate público de tu negocio (en la vista previa a tu derecha). Puedo rediseñar secciones, optimizar textos para SEO, cambiar tu paleta de marca o generar fotografías de alta gama con tu clave de API. ¿Qué cambio visual deseas aplicar a tu web hoy?';
+
+const WEBMASTER_QUICK_CHIPS = [
+  { label: '🎨 Paleta Quiet Luxury', prompt: 'Rediseña la paleta de colores y el estilo visual de la web a un estilo Quiet Luxury sofisticado (tonos champagne, blanco marfil y antracita).' },
+  { label: '✍️ Optimizar Hero & SEO', prompt: 'Optimiza el titular, subtítulo y textos principales del Hero de la portada para mejorar el posicionamiento SEO y la captación de reservas de alto valor.' },
+  { label: '🌟 Nuevo Slide de Portada', prompt: 'Añade una nueva diapositiva destacada al carrusel Hero con una propuesta atractiva para la temporada y botón de reserva directa.' },
+  { label: '📸 Foto Editorial (con mi clave)', prompt: 'Genera una fotografía editorial de alta costura para el catálogo de tratamientos utilizando mi clave de API conectada.' },
+  { label: '🗂️ Organizar Catálogo', prompt: 'Revisa las categorías y servicios de la web y propónme cómo estructurarlos mejor en la portada para maximizar la conversión.' },
+];
+
+function parseOptionsAndText(content: string) {
+  let raw = content || '';
+  const options: { label: string; value: string }[] = [];
+  const optionRegex = /\[OPTION:\s*([^|\]]+)\s*\|\s*([^\]]+)\]/g;
+  let match;
+  while ((match = optionRegex.exec(raw)) !== null) {
+    options.push({ label: match[1].trim(), value: match[2].trim() });
+  }
+  const clean = raw.replace(optionRegex, '').trim();
+  return { clean, options };
+}
+
 interface AIChatContainerProps {
   onFieldsUpdated?: (fields: string[], redirectUrl?: string) => void;
 }
@@ -56,8 +78,7 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'model',
-      content:
-        '¡Hola! Soy tu Asistente IA Webmaster. Puedo ayudarte a gestionar la clínica de forma conversacional: consulta las citas del día, edita el precio de tus tratamientos o actualiza el diseño visual y textos de tu web pública. ¿Qué deseas hacer hoy?',
+      content: WEBMASTER_WELCOME,
     },
   ]);
   const [input, setInput] = useState('');
@@ -162,7 +183,7 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
         return [
           {
             role: 'model',
-            content: t('ai_chat.welcome_message') || '¡Hola! Soy tu Asistente IA Webmaster. Puedo ayudarte a gestionar la clínica de forma conversacional: consulta las citas del día, edita el precio de tus tratamientos o actualiza el diseño visual y textos de tu web pública. ¿Qué deseas hacer hoy?',
+            content: WEBMASTER_WELCOME,
           },
         ];
       }
@@ -317,6 +338,7 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
             user_name: firstName,
             user_role: role,
             language: language,
+            mode: 'webmaster',
           }),
         }
       );
@@ -410,8 +432,8 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
             <Sparkles size={18} className="animate-pulse" />
           </div>
           <div>
-            <h2 className="text-[15px] font-semibold text-stone-900 tracking-wide font-serif">{t('ai_chat.title') || 'Co-Piloto ProBookia'}</h2>
-            <p className="text-[10px] font-semibold text-[#d4af37] uppercase tracking-widest mt-0.5">{t('ai_chat.subtitle') || 'AI Webmaster en línea'}</p>
+            <h2 className="text-[15px] font-semibold text-stone-900 tracking-wide font-serif">Estudio AI Webmaster</h2>
+            <p className="text-[10px] font-semibold text-[#d4af37] uppercase tracking-widest mt-0.5">Director Creativo · Plan Elite</p>
           </div>
         </div>
 
@@ -478,11 +500,7 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
               setMessages([
                 {
                   role: 'model',
-                  content: language === 'fr'
-                    ? 'Conversation réinitialisée. En quoi puis-je vous aider maintenant avec votre page d\'accueil ou votre agenda ?'
-                    : language === 'en'
-                      ? 'Conversation reset. How can I assist you now with your landing page or schedule?'
-                      : 'Conversación reiniciada. ¿En qué puedo asistirte ahora con tu landing page o agenda?',
+                  content: WEBMASTER_WELCOME,
                 },
               ]);
               toast.info(language === 'fr' ? 'Conversation réinitialisée' : language === 'en' ? 'Conversation reset' : 'Conversación reiniciada');
@@ -499,6 +517,7 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
       <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 scrollbar-thin scrollbar-thumb-stone-200">
         {messages.map((msg, i) => {
           const isUser = msg.role === 'user';
+          const { clean, options } = parseOptionsAndText(msg.content);
           return (
             <div
               key={i}
@@ -522,15 +541,32 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
                 )}
               </div>
 
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1.5">
                 <div
                   className={`px-5 py-3.5 rounded-2xl text-[13.5px] leading-relaxed shadow-sm font-sans whitespace-pre-line transition-all duration-300 ${isUser
                       ? 'bg-stone-900 text-white rounded-tr-none'
                       : 'bg-white border border-stone-200/50 text-stone-800 rounded-tl-none'
                     }`}
                 >
-                  {msg.content}
+                  {clean}
                 </div>
+
+                {/* Botones de Opciones Rápidas 1-Clic */}
+                {!isUser && options.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-1 pt-1 animate-in fade-in slide-in-from-bottom-1 duration-300">
+                    {options.map((opt, optIdx) => (
+                      <button
+                        key={optIdx}
+                        onClick={() => handleSend(opt.value)}
+                        disabled={isLoading}
+                        className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-50 hover:bg-[#d4af37] text-amber-900 hover:text-stone-950 border border-amber-300/70 transition-all duration-200 shadow-2xs active:scale-95 text-left flex items-center gap-1.5"
+                      >
+                        <Sparkles size={12} className="text-[#d4af37] shrink-0" />
+                        <span>{opt.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           );
@@ -550,6 +586,20 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
           </div>
         )}
         <div ref={messagesEndRef} />
+      </div>
+
+      {/* Barra de Acciones Rápidas de Diseño (Quick Action Chips) */}
+      <div className="px-4 py-2 bg-stone-50/70 border-t border-stone-200/50 flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0">
+        {WEBMASTER_QUICK_CHIPS.map((chip, idx) => (
+          <button
+            key={idx}
+            onClick={() => handleSend(chip.prompt)}
+            disabled={isLoading}
+            className="px-3 py-1.5 rounded-xl text-[11px] font-semibold bg-white border border-stone-200/80 text-stone-700 hover:border-[#d4af37] hover:text-[#b38f2b] hover:bg-amber-50/40 transition-all shadow-2xs whitespace-nowrap active:scale-95 shrink-0"
+          >
+            {chip.label}
+          </button>
+        ))}
       </div>
 
       {/* Input de Envío */}
