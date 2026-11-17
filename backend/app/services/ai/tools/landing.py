@@ -656,3 +656,274 @@ def update_featured_categories(
         return f"Error al actualizar categorías destacadas: {str(e)}"
     finally:
         db.close()
+
+
+def get_page_blocks(page_slug: str) -> str:
+    """
+    Obtiene la lista de secciones y bloques de contenido maquetados en una página personalizada (o en la portada 'home').
+    Permite al Asistente saber qué contenido existe ya en la página antes de añadir nuevos bloques.
+    """
+    db = SessionLocal()
+    try:
+        tenant_id = current_tenant_var.get()
+        if not tenant_id:
+            return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
+
+        clean_slug = (page_slug or "home").lower().strip().lstrip("/")
+        blocks = db.query(models.SiteBlock).filter(
+            models.SiteBlock.tenant_id == tenant_id,
+            models.SiteBlock.page_slug == clean_slug
+        ).order_by(models.SiteBlock.order_index.asc()).all()
+
+        if not blocks:
+            return f"La página '{clean_slug}' no tiene bloques creados actualmente."
+
+        lines = [f"Bloques existentes en la página '{clean_slug}':"]
+        for idx, b in enumerate(blocks):
+            b_type = b.block_type
+            data = b.content_data or {}
+            if b_type == 'section':
+                cols = data.get('columns', [])
+                col_blocks = []
+                for col in cols:
+                    for ab in col.get('blocks', []):
+                        col_blocks.append(f"{ab.get('block_type')}: '{ab.get('content_data', {}).get('title') or ab.get('content_data', {}).get('heading') or ab.get('id')}'")
+                lines.append(f"- Sección {idx + 1} ({len(cols)} columnas): {', '.join(col_blocks) if col_blocks else 'Vacía'}")
+            else:
+                lines.append(f"- Bloque {idx + 1}: {b_type} (Título: '{data.get('title') or data.get('heading') or 'Sin título'}')")
+
+        return "\n".join(lines)
+    except Exception as e:
+        logger.error(f"Error en get_page_blocks: {e}")
+        return f"Error al consultar bloques de la página: {str(e)}"
+    finally:
+        db.close()
+
+
+def add_block_to_page(
+    page_slug: str,
+    block_type: str,
+    title: Optional[str] = None,
+    text_content: Optional[str] = None,
+    image_url: Optional[str] = None,
+    button_text: Optional[str] = None,
+    button_url: Optional[str] = None,
+    layout: Optional[str] = "grid"
+) -> str:
+    """
+    Inserta un nuevo bloque modular en una página personalizada o en la portada del escaparate.
+    Tipos de bloques disponibles:
+    - 'hero': Diapositiva o banner completo con título, subtítulo e imagen de fondo con CTA.
+    - 'title_heading': Título elegante H2 en serif con divisor dorado de acento.
+    - 'atomic_text': Párrafo de redacción editorial rica en formato HTML estilizado.
+    - 'atomic_image': Imagen o vídeo de alta gama con marco y sombra de lujo.
+    - 'text_image_cta': Distribución en dos columnas con imagen a un lado y texto con botón al otro.
+    - 'atomic_category': Módulo interactivo de tratamientos en formato carrusel/slider ('slider') o bento grid ('bento').
+    - 'atomic_button': Botón de llamada a la acción (CTA) hacia /reservar o catálogo.
+
+    Args:
+        page_slug: Slug de la página (ej: 'instalaciones', 'filosofia-y-espacio', o 'home').
+        block_type: Tipo de bloque ('hero', 'title_heading', 'atomic_text', 'atomic_image', 'text_image_cta', 'atomic_category', 'atomic_button').
+        title: Título principal o encabezado del bloque.
+        text_content: Texto descriptivo, párrafo o redacción del bloque.
+        image_url: URL de la imagen o fotografía comercial.
+        button_text: Texto del botón de acción (ej: 'Reservar Tratamiento', 'Ver Servicios').
+        button_url: Enlace del botón (ej: '/reservar', '/tratamientos').
+        layout: Distribución para catálogo o carrusel ('slider' para carrusel desplazable, 'bento' para mosaico modular, 'grid' para cuadrícula).
+    """
+    db = SessionLocal()
+    try:
+        tenant_id = current_tenant_var.get()
+        if not tenant_id:
+            return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
+
+        clean_slug = (page_slug or "home").lower().strip().lstrip("/")
+
+        # Normalizar tipo de bloque
+        b_type = (block_type or "").lower().strip()
+        if b_type in ["carrusel", "slider", "catalogo", "servicios"]:
+            b_type = "atomic_category"
+        elif b_type in ["titulo", "heading", "title"]:
+            b_type = "title_heading"
+        elif b_type in ["texto", "parrafo", "text"]:
+            b_type = "atomic_text"
+        elif b_type in ["imagen", "foto", "image", "video"]:
+            b_type = "atomic_image"
+        elif b_type in ["split", "imagen_texto", "texto_imagen"]:
+            b_type = "text_image_cta"
+        elif b_type in ["boton", "cta", "button"]:
+            b_type = "atomic_button"
+
+        cat_id = ""
+        if b_type == "atomic_category":
+            first_cat = db.query(models.ServiceCategory).filter(
+                models.ServiceCategory.tenant_id == tenant_id
+            ).first()
+            if first_cat:
+                cat_id = first_cat.id
+
+        block_id = f"atomic-{uuid.uuid4().hex[:6]}"
+        content_data = {}
+
+        if b_type == "hero":
+            content_data = {
+                "image_url": image_url or "",
+                "heading": title or "Experiencia Exclusiva",
+                "subheading": text_content or "Tratamientos de alta gama adaptados a ti.",
+                "cta_text": button_text or "Reservar Cita",
+                "cta_url": button_url or "/reservar"
+            }
+        elif b_type == "title_heading":
+            content_data = {
+                "title": title or "Título de Prestigio",
+                "title_tag": "h2",
+                "alignment": "center",
+                "show_divider": True,
+                "subtitle": text_content or ""
+            }
+        elif b_type == "atomic_text":
+            formatted_html = text_content or "<p>Redacción editorial personalizada.</p>"
+            if not formatted_html.strip().startswith("<"):
+                formatted_html = f"<p class='leading-relaxed'>{formatted_html}</p>"
+            content_data = {
+                "html": formatted_html,
+                "alignment": "left"
+            }
+        elif b_type == "atomic_image":
+            content_data = {
+                "image_url": image_url or "",
+                "caption": title or "",
+                "alignment": "center",
+                "max_width": "900px"
+            }
+        elif b_type == "text_image_cta":
+            content_data = {
+                "title": title or "Nuestra Esencia",
+                "description": text_content or "Un entorno diseñado para revitalizar cuerpo y mente.",
+                "image_url": image_url or "",
+                "image_position": "left",
+                "button_text": button_text or "Descubrir Más",
+                "button_url": button_url or "/reservar"
+            }
+        elif b_type == "atomic_category":
+            content_data = {
+                "category_id": cat_id,
+                "selected_treatment_ids": [],
+                "layout": layout or "slider",
+                "max_items": 6
+            }
+        elif b_type == "atomic_button":
+            content_data = {
+                "text": button_text or title or "Reservar Cita",
+                "url": button_url or "/reservar",
+                "style": "gold_solid",
+                "alignment": "center"
+            }
+        else:
+            b_type = "atomic_text"
+            content_data = {"html": f"<p>{text_content or title or ''}</p>", "alignment": "left"}
+
+        max_order = db.query(func.max(models.SiteBlock.order_index)).filter(
+            models.SiteBlock.tenant_id == tenant_id,
+            models.SiteBlock.page_slug == clean_slug
+        ).scalar() or 0
+
+        section_id = f"sec-{uuid.uuid4().hex[:8]}"
+        col_id = f"col-{uuid.uuid4().hex[:8]}"
+
+        new_section_block = models.SiteBlock(
+            id=str(uuid.uuid4()),
+            tenant_id=tenant_id,
+            page_slug=clean_slug,
+            block_type="section",
+            order_index=max_order + 1,
+            content_data={
+                "id": section_id,
+                "columns_count": 1,
+                "py_spacing": "py-12",
+                "bg_color": "white",
+                "vertical_alignment": "items-start",
+                "columns": [
+                    {
+                        "id": col_id,
+                        "width": "w-full",
+                        "blocks": [
+                            {
+                                "id": block_id,
+                                "block_type": b_type,
+                                "content_data": content_data
+                            }
+                        ]
+                    }
+                ]
+            }
+        )
+        db.add(new_section_block)
+        db.commit()
+
+        return f"Éxito: Se ha añadido el bloque '{b_type}' a la página '/{clean_slug}'. La vista previa interactiva se ha actualizado."
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error en add_block_to_page: {e}")
+        return f"Error al añadir bloque a la página: {str(e)}"
+    finally:
+        db.close()
+
+
+def add_section_to_page(
+    page_slug: str,
+    columns_count: int = 1,
+    bg_color: str = "white",
+    py_spacing: str = "py-16"
+) -> str:
+    """
+    Añade una nueva sección estructural vacía a una página con 1, 2, 3 o 4 columnas.
+    """
+    db = SessionLocal()
+    try:
+        tenant_id = current_tenant_var.get()
+        if not tenant_id:
+            return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
+
+        clean_slug = (page_slug or "home").lower().strip().lstrip("/")
+        c_count = max(1, min(4, int(columns_count)))
+
+        columns = []
+        for i in range(c_count):
+            columns.append({
+                "id": f"col-{uuid.uuid4().hex[:6]}-{i}",
+                "width": "w-full",
+                "blocks": []
+            })
+
+        max_order = db.query(func.max(models.SiteBlock.order_index)).filter(
+            models.SiteBlock.tenant_id == tenant_id,
+            models.SiteBlock.page_slug == clean_slug
+        ).scalar() or 0
+
+        section_id = f"sec-{uuid.uuid4().hex[:8]}"
+        new_section = models.SiteBlock(
+            id=str(uuid.uuid4()),
+            tenant_id=tenant_id,
+            page_slug=clean_slug,
+            block_type="section",
+            order_index=max_order + 1,
+            content_data={
+                "id": section_id,
+                "columns_count": c_count,
+                "py_spacing": py_spacing or "py-16",
+                "bg_color": bg_color or "white",
+                "vertical_alignment": "items-start",
+                "columns": columns
+            }
+        )
+        db.add(new_section)
+        db.commit()
+
+        return f"Éxito: Se ha creado una nueva sección con {c_count} columna(s) en la página '/{clean_slug}'."
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error en add_section_to_page: {e}")
+        return f"Error al crear sección: {str(e)}"
+    finally:
+        db.close()

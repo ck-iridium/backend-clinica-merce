@@ -9,9 +9,11 @@ import WebmasterInputBar from './webmaster/WebmasterInputBar';
 
 interface AIChatContainerProps {
   onFieldsUpdated?: (fields: string[], redirectUrl?: string) => void;
+  initialPrompt?: string | null;
+  onPromptConsumed?: () => void;
 }
 
-export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProps) {
+export default function AIChatContainer({ onFieldsUpdated, initialPrompt, onPromptConsumed }: AIChatContainerProps) {
   const {
     messages,
     input,
@@ -31,7 +33,7 @@ export default function AIChatContainer({ onFieldsUpdated }: AIChatContainerProp
     handleSend,
     handleResetChat,
     handleConfirmDelete,
-  } = useWebmasterChat({ onFieldsUpdated });
+  } = useWebmasterChat({ onFieldsUpdated, initialPrompt, onPromptConsumed });
 
   return (
     <div className="flex flex-col h-full bg-[#FAFAFA] border-r border-stone-200/80">

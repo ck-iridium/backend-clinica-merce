@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import AIChatContainer from '@/components/ai/AIChatContainer';
-import { RefreshCw, ExternalLink, Monitor, Smartphone, Tablet, Globe, Sparkles } from 'lucide-react';
+import WebmasterBlocksPanel from '@/components/ai/webmaster/WebmasterBlocksPanel';
+import { 
+  RefreshCw, ExternalLink, Monitor, Smartphone, Tablet, Globe, 
+  Sparkles, MessageSquareText, Layers 
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 // Helper simple para leer cookies del lado del cliente
@@ -21,6 +25,9 @@ export default function AIWebmasterPage() {
   const [isLoadingIframe, setIsLoadingIframe] = useState(true);
   const [planType, setPlanType] = useState<string | null>(null);
   const [checkingPlan, setCheckingPlan] = useState(true);
+  const [leftTab, setLeftTab] = useState<'chat' | 'blocks'>('chat');
+  const [activePageSlug, setActivePageSlug] = useState<string>('home');
+  const [injectedPrompt, setInjectedPrompt] = useState<string | null>(null);
 
   useEffect(() => {
 
@@ -200,9 +207,64 @@ export default function AIWebmasterPage() {
   return (
     <div className="absolute inset-0 flex flex-col lg:flex-row overflow-hidden bg-white z-20">
       
-      {/* ── COLUMNA IZQUIERDA: CHAT DE LA IA ── */}
-      <div className="w-full lg:w-[550px] h-[50vh] lg:h-full flex flex-col border-b lg:border-b-0 lg:border-r border-stone-200 shrink-0">
-        <AIChatContainer onFieldsUpdated={handleFieldsUpdated} />
+      {/* ── COLUMNA IZQUIERDA: MEGA DISEÑADOR (CHAT IA + BIBLIOTECA DE BLOQUES) ── */}
+      <div className="w-full lg:w-[550px] h-[50vh] lg:h-full flex flex-col border-b lg:border-b-0 lg:border-r border-stone-200 shrink-0 bg-white">
+        {/* Switcher Superior de Modo */}
+        <div className="px-5 py-2.5 bg-white border-b border-stone-200/60 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-1 bg-stone-100/90 p-1 rounded-xl border border-stone-200/60 w-full">
+            <button
+              onClick={() => setLeftTab('chat')}
+              className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 ${
+                leftTab === 'chat'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              }`}
+            >
+              <MessageSquareText size={13} className={leftTab === 'chat' ? 'text-[#d4af37]' : ''} />
+              <span>Co-Piloto IA</span>
+            </button>
+            <button
+              onClick={() => setLeftTab('blocks')}
+              className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 ${
+                leftTab === 'blocks'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              }`}
+            >
+              <Layers size={13} className={leftTab === 'blocks' ? 'text-[#d4af37]' : ''} />
+              <span>Bloques & Elementor</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Contenido según Pestaña */}
+        <div className="flex-1 overflow-hidden flex flex-col">
+          {leftTab === 'chat' ? (
+            <AIChatContainer
+              onFieldsUpdated={handleFieldsUpdated}
+              initialPrompt={injectedPrompt}
+              onPromptConsumed={() => setInjectedPrompt(null)}
+            />
+          ) : (
+            <WebmasterBlocksPanel
+              activePageSlug={activePageSlug}
+              onChangeActivePage={(slug, path) => {
+                setActivePageSlug(slug);
+                const origin = window.location.origin;
+                const activeSlug = getCookie('impersonate_tenant_slug') || getCookie('tenant_slug') || '';
+                const separator = path.includes('?') ? '&' : '?';
+                const tenantParam = activeSlug ? `${separator}tenant=${encodeURIComponent(activeSlug)}` : '';
+                setIframeUrl(`${origin}${path}${tenantParam}`);
+                setIframeKey((k) => k + 1);
+              }}
+              onBlockInserted={forceReload}
+              onAskAI={(prompt) => {
+                setInjectedPrompt(prompt);
+                setLeftTab('chat');
+              }}
+            />
+          )}
+        </div>
       </div>
 
       {/* ── COLUMNA DERECHA (60%): VISTA PREVIA DEL SITIO PÚBLICO ── */}

@@ -236,7 +236,14 @@ export default async function CustomPage({ params }: PageProps) {
               // Espaciados Quiet Luxury y fondos
               const hasHero = columns.some(col => (col.blocks || []).some(b => b.block_type === 'hero'));
               const isFirstWithHero = index === 0 && hasHero;
-              const pySpacing = isFirstWithHero ? 'pt-0 pb-0' : (hasHero ? 'py-0' : (struct.py_spacing || 'py-24'));
+              const isFirstSection = index === 0;
+              const pySpacing = isFirstWithHero 
+                ? 'pt-0 pb-0' 
+                : hasHero 
+                ? 'py-0' 
+                : isFirstSection 
+                ? 'pt-6 md:pt-8 pb-12 md:pb-16' 
+                : (struct.py_spacing || 'py-20');
               const bgColor = struct.bg_color === 'white' ? 'bg-white' : 'bg-[#FAFAFA]';
               const paddingClass = hasHero ? 'p-0' : 'px-6 md:px-12';
               const widthClass = hasHero ? 'w-full' : 'max-w-7xl mx-auto grid';

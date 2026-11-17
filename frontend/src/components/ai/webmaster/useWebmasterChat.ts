@@ -18,9 +18,11 @@ import {
 
 interface UseWebmasterChatProps {
   onFieldsUpdated?: (fields: string[], redirectUrl?: string) => void;
+  initialPrompt?: string | null;
+  onPromptConsumed?: () => void;
 }
 
-export function useWebmasterChat({ onFieldsUpdated }: UseWebmasterChatProps) {
+export function useWebmasterChat({ onFieldsUpdated, initialPrompt, onPromptConsumed }: UseWebmasterChatProps) {
   const router = useRouter();
   const { language, t } = useLanguage();
   const { role, userName: authUserName } = useAuthRole();
@@ -351,6 +353,14 @@ export function useWebmasterChat({ onFieldsUpdated }: UseWebmasterChatProps) {
       setIsLoading(false);
     }
   };
+
+  // 8.5 Inyectar y enviar prompt externo automáticamente (si viene de la Biblioteca de Bloques)
+  useEffect(() => {
+    if (initialPrompt && initialPrompt.trim()) {
+      handleSend(initialPrompt.trim());
+      if (onPromptConsumed) onPromptConsumed();
+    }
+  }, [initialPrompt]);
 
   // 9. Alternar género de voz
   const toggleVoiceGender = () => {

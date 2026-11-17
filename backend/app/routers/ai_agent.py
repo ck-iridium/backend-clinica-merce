@@ -261,6 +261,16 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
                             clean_p_slug = re.sub(r'[^a-z0-9]+', '-', p_slug.lower()).strip('-')
                             if clean_p_slug:
                                 redirect_url = f"/{clean_p_slug}"
+                    elif name in ["add_block_to_page", "add_section_to_page"]:
+                        updated_fields.append("pages")
+                        updated_fields.append("blocks")
+                        args = fn_call.args
+                        if args and 'page_slug' in args:
+                            p_slug = args['page_slug'].lower().strip().lstrip('/')
+                            if p_slug and p_slug != 'home':
+                                redirect_url = f"/{p_slug}"
+                            else:
+                                redirect_url = "/"
                     elif name in ["generar_imagen", "generar_imagen_servicio"]:
                         updated_fields.append("services")
                         updated_fields.append("image_url")
