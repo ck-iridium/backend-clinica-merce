@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .. import database, models, schemas
 from ..database import current_tenant_var
+from ..schemas.blocks_manifest import BLOCK_SCHEMAS
 
 router = APIRouter(
     prefix="/cms",
@@ -319,6 +320,15 @@ def delete_page(slug: str, db: Session = Depends(database.get_db)):
 # ---------------------------------------------------------------------
 # ENDPOINTS BLOQUES DINÁMICOS (CRUD completo)
 # ---------------------------------------------------------------------
+
+@router.get("/blocks/schema")
+def get_blocks_schema():
+    """
+    Retorna el catálogo canónico (Manifiesto SSOT) de todos los bloques y sus propiedades.
+    Permite que el frontend y el editor manual sincronicen dinámicamente sus campos.
+    """
+    return BLOCK_SCHEMAS
+
 
 @router.get("/blocks/{page_slug}", response_model=List[schemas.SiteBlockOut])
 def get_blocks(page_slug: str, db: Session = Depends(database.get_db)):

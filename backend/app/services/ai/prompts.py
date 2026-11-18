@@ -1,4 +1,5 @@
 from typing import Optional
+from ...schemas.blocks_manifest import get_blocks_prompt_summary
 
 def build_system_instruction(
     user_name: Optional[str] = None, 
@@ -104,7 +105,12 @@ def build_system_instruction(
             f"    [OPTION: ✕ No, solo guardarla | No, solo consérvala en la galería de medios]\n"
             f"  * ASIGNACIÓN DE LA FOTOGRAFÍA: Cuando el usuario confirme que desea asignarla a 'Sobre Nosotros', DEBES INVOCAR `update_landing_config(about_image_url=URL_EXACTA)` con la URL que devolvió `generar_imagen` (o 'last'). Si es para un tratamiento, llama a `update_service_fields(service_slug=..., image_url=...)`.\n"
             f"- EDICIÓN DE TÍTULOS Y DETALLES DE PÁGINAS: Si el usuario te indica qué título o subtítulo poner a una página personalizada (como 'Filosofía y Espacio'), llama a la herramienta `update_page_details` con el slug de la página y el nuevo título/subtítulo.\n"
-            f"- EDICIÓN DE BLOQUES ESPECÍFICOS: Para modificar el texto o foto de un bloque concreto ya existente en una página personalizada tras confirmar el contenido, utiliza `update_page_block`.\n"
+            f"- EDICIÓN UNIVERSAL DE BLOQUES Y AJUSTES (MANIFIESTO VIVO SSOT):\n"
+            f"  {get_blocks_prompt_summary()}\n"
+            f"  * Puedes cambiar libremente cualquier propiedad de un bloque (disposición/layout, número de tratamientos mostrados, alineaciones, alturas de fotos, encuadres, botones de llamada a la acción, títulos, etc.) usando `update_page_block_properties` o `update_page_block`.\n"
+            f"  * Por ejemplo, si el usuario te pide 'Pon los tratamientos en Bento Grid', llama a `update_page_block_properties(page_slug=..., block_type='atomic_category', properties={{'layout': 'bento_grid'}})`.\n"
+            f"  * Si te pide 'Muestra solo 4 tratamientos', llama a `update_page_block_properties(page_slug=..., block_type='atomic_category', properties={{'max_items': 4}})`.\n"
+            f"  * Si te pide 'Alinea el título a la izquierda y quita la línea dorada', llama a `update_page_block_properties(page_slug=..., block_type='title_heading', properties={{'alignment': 'left', 'show_divider': False}})`.\n"
             f"- SECCIÓN 'SOBRE NOSOTROS' DE LA PORTADA: En la portada (`/`), la sección dividida que muestra una fotografía en un lateral y un espacio editorial al lado corresponde a la sección 'Sobre Nosotros'. Utiliza `update_landing_config(about_title=..., about_text=..., about_image_url=...)` para actualizar su título, redacción o imagen.\n"
             f"- CONFIRMACIÓN VISUAL OBLIGATORIA PARA ELIMINAR PÁGINAS: Si el usuario te pide borrar o eliminar una página personalizada (ej: 'elimina la página Nuestras Instalaciones'):\n"
             f"  TIENES TERMINANTEMENTE PROHIBIDO invocar `delete_custom_page` en el primer turno. En su lugar, debes responder con un mensaje sobrio de advertencia y ofrecer OBLIGATORIAMENTE dos opciones interactivas formateadas exactamente así:\n"

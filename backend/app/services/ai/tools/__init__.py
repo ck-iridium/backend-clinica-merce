@@ -13,7 +13,8 @@ from .landing import (
     add_section_to_page,
     update_page_details,
     delete_custom_page,
-    update_page_block
+    update_page_block,
+    update_page_block_properties
 )
 from .branding import update_tenant_branding
 from .services import (
@@ -49,6 +50,7 @@ AGENT_TOOLS = [
     update_page_details,
     delete_custom_page,
     update_page_block,
+    update_page_block_properties,
     update_tenant_branding,
     update_service_fields, 
     get_daily_appointments, 

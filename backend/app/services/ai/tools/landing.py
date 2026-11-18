@@ -9,6 +9,7 @@ from sqlalchemy.orm import attributes
 from .... import models, schemas
 from ....database import SessionLocal, current_tenant_var
 from ....crud.site_content import get_site_content, update_site_content
+from ....schemas.blocks_manifest import BLOCK_SCHEMAS, canonicalize_block_type, normalize_block_properties
 
 logger = logging.getLogger("ai_agent_tools_landing")
 
@@ -770,17 +771,20 @@ def add_block_to_page(
     image_url: Optional[str] = None,
     button_text: Optional[str] = None,
     button_url: Optional[str] = None,
-    layout: Optional[str] = "grid"
+    layout: Optional[str] = "cards_slider",
+    properties: Optional[Dict[str, Any]] = None
 ) -> str:
     """
     Inserta un nuevo bloque modular en una página personalizada o en la portada del escaparate.
+    Basado en el Manifiesto Canónico de Bloques (SSOT).
+    
     Tipos de bloques disponibles:
     - 'hero': Diapositiva o banner completo con título, subtítulo e imagen de fondo con CTA.
-    - 'title_heading': Título elegante H2 en serif con divisor dorado de acento.
+    - 'title_heading': Título elegante en serif con divisor dorado de acento.
     - 'atomic_text': Párrafo de redacción editorial rica en formato HTML estilizado.
-    - 'atomic_image': Imagen o vídeo de alta gama con marco y sombra de lujo.
+    - 'atomic_image': Multimedia de alta gama con marco y sombra de lujo.
     - 'text_image_cta': Distribución en dos columnas con imagen a un lado y texto con botón al otro.
-    - 'atomic_category': Módulo interactivo de tratamientos en formato carrusel/slider ('slider') o bento grid ('bento').
+    - 'atomic_category': Módulo interactivo de tratamientos en formato carrusel ('cards_slider') o bento grid ('bento_grid').
     - 'atomic_button': Botón de llamada a la acción (CTA) hacia /reservar o catálogo.
 
     Args:
@@ -791,7 +795,8 @@ def add_block_to_page(
         image_url: URL de la imagen o fotografía comercial.
         button_text: Texto del botón de acción (ej: 'Reservar Tratamiento', 'Ver Servicios').
         button_url: Enlace del botón (ej: '/reservar', '/tratamientos').
-        layout: Distribución para catálogo o carrusel ('slider' para carrusel desplazable, 'bento' para mosaico modular, 'grid' para cuadrícula).
+        layout: Disposición ('cards_slider' para carrusel desplazable, 'bento_grid' para mosaico modular 2026, 'traditional_grid' para cuadrícula, 'minimalist_list' para lista).
+        properties: Diccionario opcional con propiedades canónicas adicionales.
     """
     db = SessionLocal()
     try:
@@ -801,20 +806,8 @@ def add_block_to_page(
 
         clean_slug = (page_slug or "home").lower().strip().lstrip("/")
 
-        # Normalizar tipo de bloque
-        b_type = (block_type or "").lower().strip()
-        if b_type in ["carrusel", "slider", "catalogo", "servicios"]:
-            b_type = "atomic_category"
-        elif b_type in ["titulo", "heading", "title"]:
-            b_type = "title_heading"
-        elif b_type in ["texto", "parrafo", "text"]:
-            b_type = "atomic_text"
-        elif b_type in ["imagen", "foto", "image", "video"]:
-            b_type = "atomic_image"
-        elif b_type in ["split", "imagen_texto", "texto_imagen"]:
-            b_type = "text_image_cta"
-        elif b_type in ["boton", "cta", "button"]:
-            b_type = "atomic_button"
+        # Normalizar tipo de bloque canónico
+        b_type = canonicalize_block_type(block_type)
 
         cat_id = ""
         if b_type == "atomic_category":
@@ -870,26 +863,32 @@ def add_block_to_page(
         elif b_type == "atomic_image":
             content_data = {
                 "image_url": resolved_img,
-                "caption": title or "Instalaciones y Espacio",
+                "caption": title or "",
                 "alignment": "center",
-                "max_width": "900px"
+                "max_width": "100%",
+                "height_preset": "auto",
+                "object_fit": "cover"
             }
         elif b_type == "text_image_cta":
             content_data = {
-                "title": title or "Nuestra Esencia",
-                "description": text_content or "Un entorno diseñado para revitalizar cuerpo y mente.",
+                "heading": title or "Nuestra Esencia",
+                "subheading": text_content or "Un entorno diseñado para revitalizar cuerpo y mente.",
                 "image_url": resolved_img,
-                "image_position": "left",
-                "button_text": button_text or "Descubrir Más",
-                "button_url": button_url or "/reservar"
+                "alignment": "left",
+                "cta_text": button_text or "Descubrir Más",
+                "cta_url": button_url or "/reservar",
+                "height_preset": "medium",
+                "object_fit": "cover"
             }
         elif b_type == "atomic_category":
-            layout_mapped = "cards_slider" if layout in ["slider", "cards_slider"] else ("bento_grid" if layout in ["bento", "bento_grid"] else ("minimalist_list" if layout in ["list", "minimalist_list"] else "traditional_grid"))
+            raw_layout = (layout or "cards_slider").lower().strip()
+            layout_mapped = "cards_slider" if raw_layout in ["slider", "cards_slider", "carrusel"] else ("bento_grid" if raw_layout in ["bento", "bento_grid", "mosaico"] else ("minimalist_list" if raw_layout in ["list", "minimalist_list", "lista"] else "traditional_grid"))
             content_data = {
                 "category_id": cat_id,
                 "selected_treatment_ids": [],
                 "layout": layout_mapped,
-                "max_items": 6
+                "max_items": 6,
+                "link_text": "Ver tratamiento"
             }
         elif b_type == "atomic_button":
             content_data = {
@@ -901,6 +900,11 @@ def add_block_to_page(
         else:
             b_type = "atomic_text"
             content_data = {"html": f"<p>{text_content or title or ''}</p>", "alignment": "left"}
+
+        # Fusionar propiedades canónicas adicionales si se proporcionaron
+        if properties and isinstance(properties, dict):
+            extra_norm = normalize_block_properties(b_type, properties)
+            content_data.update(extra_norm)
 
         max_order = db.query(func.max(models.SiteBlock.order_index)).filter(
             models.SiteBlock.tenant_id == tenant_id,
@@ -1157,18 +1161,31 @@ def delete_custom_page(page_slug: str) -> str:
         db.close()
 
 
-def update_page_block(
+def update_page_block_properties(
     page_slug: str,
     block_type: str,
-    new_text: Optional[str] = None,
-    new_title: Optional[str] = None,
-    new_subtitle: Optional[str] = None,
-    new_image_url: Optional[str] = None,
-    new_category_id: Optional[str] = None
+    properties: Dict[str, Any],
+    block_id: Optional[str] = None
 ) -> str:
     """
-    Actualiza el contenido de un bloque existente en una página personalizada o en la portada.
-    Permite modificar texto enriquecido, títulos, imágenes o categoría de tratamientos maquetados.
+    Actualiza de forma universal cualquier propiedad configurable de un bloque modular
+    en una página personalizada o en la portada, basándose en el Manifiesto Canónico (SSOT).
+
+    Permite modificar propiedades como:
+    - layout: "traditional_grid" | "bento_grid" | "cards_slider" | "minimalist_list"
+    - max_items: 2, 3, 4, 6, 8
+    - heading / title: Texto del encabezado
+    - subheading / subtitle: Texto complementario
+    - html / text: Redacción enriquecida
+    - image_url: Fotografía o vídeo
+    - caption: Pie de foto
+    - alignment: "left" | "center" | "right" | "justify" | "full_width"
+    - height_preset: "auto" | "small" | "medium" | "large" | "screen"
+    - object_fit: "cover" | "contain"
+    - cta_text / cta_url: Texto y enlace de botón de acción
+    - show_divider: True | False
+    - category_id: ID de categoría para catálogos
+    - style: "gold_solid" | "gold_outline" | "dark_solid"
     """
     db = SessionLocal()
     try:
@@ -1178,6 +1195,7 @@ def update_page_block(
 
         clean_slug = (page_slug or "home").lower().strip().lstrip("/")
         target_norm = normalize_slug_str(clean_slug)
+        canon_type = canonicalize_block_type(block_type)
 
         all_blocks = db.query(models.SiteBlock).filter(
             models.SiteBlock.tenant_id == tenant_id
@@ -1188,30 +1206,26 @@ def update_page_block(
             if b.page_slug == clean_slug or normalize_slug_str(b.page_slug) == target_norm
         ]
 
-        clean_new_text = clean_clean_text(new_text)
-        clean_new_title = clean_clean_text(new_title)
-        clean_new_subtitle = clean_clean_text(new_subtitle)
+        # Normalizar propiedades usando el Manifiesto SSOT
+        normalized_props = normalize_block_properties(canon_type, properties or {})
 
-        # Prevenir frases afirmativas genéricas como títulos de bloque
-        if clean_new_title and clean_new_title.lower().strip() in ["si", "sí", "adelante", "aplica los cambios", "aplica", "ok", "confirmar", "confirmo", "cambiar título"]:
-            return "Aviso: Por favor especifica el nombre o título que deseas poner en el encabezado."
+        # Limpiar texto de voice tags y validar títulos genéricos
+        for k, v in list(normalized_props.items()):
+            if isinstance(v, str):
+                cleaned_val = clean_clean_text(v)
+                normalized_props[k] = cleaned_val
+                if k in ["title", "heading"] and cleaned_val and cleaned_val.lower().strip() in [
+                    "si", "sí", "adelante", "aplica los cambios", "aplica", "ok", "confirmar", "confirmo", "cambiar título"
+                ]:
+                    return "Aviso: Por favor especifica el nombre o título que deseas poner en el bloque."
 
-        if not any([clean_new_text, clean_new_title, clean_new_subtitle, new_image_url, new_category_id]):
-            return "Aviso: No se proporcionó ningún texto, título o imagen para actualizar en el bloque."
+        if not normalized_props:
+            return "Aviso: No se proporcionó ninguna propiedad válida para actualizar en el bloque."
 
-        def matches_type(actual: str, expected: str) -> bool:
-            if actual == expected:
-                return True
-            title_group = {"title_heading", "atomic_title", "title", "heading", "hero", "contact_header", "contact_info"}
-            text_group = {"atomic_text", "text", "paragraph", "editorial"}
-            img_group = {"atomic_image", "image", "photo", "gallery"}
-            if expected in title_group and actual in title_group:
-                return True
-            if expected in text_group and actual in text_group:
-                return True
-            if expected in img_group and actual in img_group:
-                return True
-            return False
+        def matches_block(b_obj_type: str, b_obj_id: Optional[str]) -> bool:
+            if block_id and b_obj_id:
+                return b_obj_id == block_id
+            return canonicalize_block_type(b_obj_type) == canon_type
 
         updated = False
         for b in blocks:
@@ -1221,71 +1235,101 @@ def update_page_block(
                 for col in cols:
                     for ab in col.get("blocks", []):
                         ab_t = ab.get("block_type", "")
-                        if matches_type(ab_t, block_type):
+                        ab_id = ab.get("id")
+                        if matches_block(ab_t, ab_id):
                             cdata = ab.get("content_data", {})
-                            if clean_new_text is not None:
-                                cdata["html"] = clean_new_text
-                                cdata["text"] = clean_new_text
-                            if clean_new_title is not None:
-                                cdata["title"] = clean_new_title
-                                cdata["heading"] = clean_new_title
-                            if clean_new_subtitle is not None:
-                                cdata["subtitle"] = clean_new_subtitle
-                                cdata["subheading"] = clean_new_subtitle
-                            if new_image_url is not None:
-                                cdata["image_url"] = new_image_url
-                            if new_category_id is not None:
-                                cdata["category_id"] = new_category_id
+                            cdata.update(normalized_props)
                             ab["content_data"] = cdata
                             updated = True
                 if updated:
                     attributes.flag_modified(b, "content_data")
                     break
-            elif matches_type(b.block_type, block_type):
-                if clean_new_text is not None:
-                    data["html"] = clean_new_text
-                    data["text"] = clean_new_text
-                if clean_new_title is not None:
-                    data["title"] = clean_new_title
-                    data["heading"] = clean_new_title
-                if clean_new_subtitle is not None:
-                    data["subtitle"] = clean_new_subtitle
-                    data["subheading"] = clean_new_subtitle
-                if new_image_url is not None:
-                    data["image_url"] = new_image_url
-                if new_category_id is not None:
-                    data["category_id"] = new_category_id
+            elif matches_block(b.block_type, getattr(b, "id", None)):
+                data.update(normalized_props)
                 b.content_data = data
                 attributes.flag_modified(b, "content_data")
                 updated = True
                 break
 
         if not updated:
-            if clean_slug in ["contacto", "contact"]:
-                new_block_data = {}
-                if clean_new_title is not None:
-                    new_block_data["title"] = clean_new_title
-                    new_block_data["heading"] = clean_new_title
-                if clean_new_subtitle is not None:
-                    new_block_data["subtitle"] = clean_new_subtitle
-                    new_block_data["subheading"] = clean_new_subtitle
+            if clean_slug in ["contacto", "contact"] or canon_type == "contact_header":
                 new_block = models.SiteBlock(
                     tenant_id=tenant_id,
                     page_slug="contacto",
                     block_type="contact_header",
                     order_index=0,
-                    content_data=new_block_data
+                    content_data=normalized_props
                 )
                 db.add(new_block)
                 db.commit()
                 return f"Éxito: Encabezado de la página de contacto actualizado correctamente."
-            return f"Aviso: No se encontró ningún bloque del tipo '{block_type}' en la página '{clean_slug}'."
+            return f"Aviso: No se encontró ningún bloque del tipo '{canon_type}' en la página '{clean_slug}'."
 
         db.commit()
-        return f"Éxito: Bloque '{block_type}' actualizado correctamente en la página '{clean_slug}'."
+        updated_keys = ", ".join(normalized_props.keys())
+        return f"Éxito: Propiedades [{updated_keys}] del bloque '{canon_type}' actualizadas correctamente en la página '{clean_slug}'."
     except Exception as e:
         db.rollback()
-        logger.error(f"Error en update_page_block: {e}")
+        logger.error(f"Error en update_page_block_properties: {e}")
         return f"Error al actualizar bloque: {str(e)}"
     finally:
         db.close()
+
+
+def update_page_block(
+    page_slug: str,
+    block_type: str,
+    new_text: Optional[str] = None,
+    new_title: Optional[str] = None,
+    new_subtitle: Optional[str] = None,
+    new_image_url: Optional[str] = None,
+    new_category_id: Optional[str] = None,
+    layout: Optional[str] = None,
+    max_items: Optional[int] = None,
+    cta_text: Optional[str] = None,
+    cta_url: Optional[str] = None,
+    alignment: Optional[str] = None,
+    show_divider: Optional[bool] = None,
+    height_preset: Optional[str] = None,
+    object_fit: Optional[str] = None,
+    properties: Optional[Dict[str, Any]] = None,
+    block_id: Optional[str] = None
+) -> str:
+    """
+    Actualiza el contenido y diseño de un bloque modular existente.
+    Soporta tanto argumentos directos como un diccionario universal de propiedades.
+    """
+    props = dict(properties or {})
+    if new_text is not None:
+        props["html"] = new_text
+    if new_title is not None:
+        props["title"] = new_title
+    if new_subtitle is not None:
+        props["subtitle"] = new_subtitle
+    if new_image_url is not None:
+        props["image_url"] = new_image_url
+    if new_category_id is not None:
+        props["category_id"] = new_category_id
+    if layout is not None:
+        props["layout"] = layout
+    if max_items is not None:
+        props["max_items"] = max_items
+    if cta_text is not None:
+        props["cta_text"] = cta_text
+    if cta_url is not None:
+        props["cta_url"] = cta_url
+    if alignment is not None:
+        props["alignment"] = alignment
+    if show_divider is not None:
+        props["show_divider"] = show_divider
+    if height_preset is not None:
+        props["height_preset"] = height_preset
+    if object_fit is not None:
+        props["object_fit"] = object_fit
+
+    return update_page_block_properties(
+        page_slug=page_slug,
+        block_type=block_type,
+        properties=props,
+        block_id=block_id
+    )

@@ -20,6 +20,8 @@ import {
   MessageSquare,
   Wand2,
   Trash2,
+  Palette,
+  Layers,
   MapPin,
   PhoneCall,
   X,
@@ -152,26 +154,52 @@ export default function AIChatContainer({
         { icon: Sparkles, label: 'Mejorar redacción', prompt: 'Mejora la redacción del título y subtítulo de la página de contacto con estilo elegante y conciso.' },
       ];
     }
+    if (type === 'hero') {
+      return [
+        { icon: Type, label: 'Cambiar titular', prompt: 'Quiero cambiar el título principal de este Hero.' },
+        { icon: ImageIcon, label: 'Cambiar fondo', prompt: 'Quiero cambiar la imagen o vídeo de fondo de este Hero.' },
+        { icon: SlidersHorizontal, label: 'Cambiar botón CTA', prompt: 'Quiero cambiar el texto y enlace del botón de este Hero.' },
+      ];
+    }
+    if (type === 'text_image_cta') {
+      return [
+        { icon: Type, label: 'Cambiar textos', prompt: 'Quiero cambiar el título y texto descriptivo de este bloque.' },
+        { icon: ImageIcon, label: 'Cambiar imagen', prompt: 'Quiero cambiar la fotografía de este bloque.' },
+        { icon: SlidersHorizontal, label: 'Cambiar botón', prompt: 'Quiero configurar el botón de acción de este bloque.' },
+      ];
+    }
+    if (type === 'atomic_button') {
+      return [
+        { icon: Type, label: 'Cambiar texto', prompt: 'Quiero cambiar el texto de este botón.' },
+        { icon: SlidersHorizontal, label: 'Cambiar enlace', prompt: 'Quiero cambiar la URL de destino de este botón.' },
+        { icon: Palette, label: 'Cambiar estilo', prompt: 'Quiero cambiar el estilo de este botón (dorado, outline o antracita).' },
+      ];
+    }
     if (type === 'atomic_title' || type === 'title_heading') {
       return [
         { icon: Type, label: 'Cambiar título', prompt: `Quiero cambiar el título de este encabezado.` },
+        { icon: SlidersHorizontal, label: 'Alinear texto', prompt: 'Alinea este encabezado (izquierda, centro o derecha).' },
+        { icon: Sparkles, label: 'Línea divisora', prompt: 'Modifica la visibilidad de la línea divisora dorada de este encabezado.' },
       ];
     }
     if (type === 'atomic_text') {
       return [
         { icon: FileText, label: 'Cambiar texto', prompt: 'Quiero cambiar el texto de este párrafo.' },
+        { icon: SlidersHorizontal, label: 'Alinear párrafo', prompt: 'Cambia la alineación de este párrafo (izquierda, centro, derecha o justificado).' },
       ];
     }
     if (type === 'atomic_image') {
       return [
         { icon: ImageIcon, label: 'Cambiar imagen', prompt: 'Quiero cambiar la imagen de este bloque.' },
         { icon: Wand2, label: 'Crear foto con IA', prompt: 'Quiero generar una foto con IA para este espacio.' },
+        { icon: SlidersHorizontal, label: 'Ajustar encuadre', prompt: 'Modifica el encuadre o altura de esta fotografía.' },
       ];
     }
     if (type === 'category' || type === 'atomic_category') {
       return [
-        { icon: LayoutGrid, label: 'Formato Bento Grid', prompt: 'Configura las categorías en formato Bento Grid.' },
-        { icon: SlidersHorizontal, label: 'Formato Carrusel', prompt: 'Configura los tratamientos en formato Carrusel.' },
+        { icon: LayoutGrid, label: 'Formato Bento Grid', prompt: 'Configura esta sección de tratamientos en formato Bento Grid.' },
+        { icon: SlidersHorizontal, label: 'Formato Carrusel', prompt: 'Configura esta sección de tratamientos en formato Carrusel.' },
+        { icon: Layers, label: 'Mostrar 4 tratamientos', prompt: 'Configura esta sección para mostrar un máximo de 4 tratamientos.' },
       ];
     }
     if (type === 'cta') {

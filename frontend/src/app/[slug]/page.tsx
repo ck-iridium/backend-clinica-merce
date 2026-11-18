@@ -490,23 +490,23 @@ export default async function CustomPage({ params }: PageProps) {
 
                                     {/* Lado Texto */}
                                     <div className={`w-full ${align === 'center' ? 'max-w-3xl mx-auto text-center' : 'md:w-1/2 text-left'} flex flex-col justify-center space-y-4`}>
-                                      {data.heading && (
+                                      {(data.heading || data.title) && (
                                         <h3 className="font-serif text-2xl md:text-3xl lg:text-4xl font-extrabold text-stone-800 leading-tight">
-                                          {data.heading}
+                                          {data.heading || data.title}
                                         </h3>
                                       )}
-                                      {data.subheading && (
+                                      {(data.subheading || data.description || data.text) && (
                                         <p className="text-stone-600 font-sans text-sm md:text-base leading-relaxed whitespace-pre-line">
-                                          {data.subheading}
+                                          {data.subheading || data.description || data.text}
                                         </p>
                                       )}
-                                      {data.cta_text && (
+                                      {(data.cta_text || data.button_text) && (
                                         <div className={`pt-2 ${align === 'center' ? 'flex justify-center' : ''}`}>
                                           <Link
-                                            href={data.cta_url || '#'}
+                                            href={data.cta_url || data.button_url || data.url || '#'}
                                             className="inline-block bg-stone-900 text-white text-[10px] font-black uppercase tracking-widest px-7 py-3.5 rounded-[var(--radius-btn)] shadow-md transition-all duration-300 hover:bg-primary hover:text-white"
                                           >
-                                            {data.cta_text}
+                                            {data.cta_text || data.button_text}
                                           </Link>
                                         </div>
                                       )}
@@ -575,23 +575,23 @@ export default async function CustomPage({ params }: PageProps) {
                                   )}
                                   <div className="absolute inset-0 bg-black/40" />
                                   <div className="relative z-10 text-center px-6 max-w-4xl mx-auto space-y-4">
-                                    {data.heading && (
+                                    {(data.heading || data.title) && (
                                       <h1 className="font-serif text-4xl md:text-6xl font-extrabold text-white leading-tight">
-                                        {data.heading}
+                                        {data.heading || data.title}
                                       </h1>
                                     )}
-                                    {data.subheading && (
+                                    {(data.subheading || data.subtitle || data.description) && (
                                       <p className="text-stone-200 text-lg md:text-xl font-sans max-w-2xl mx-auto leading-relaxed">
-                                        {data.subheading}
+                                        {data.subheading || data.subtitle || data.description}
                                       </p>
                                     )}
-                                    {data.cta_text && (
+                                    {(data.cta_text || data.button_text) && (
                                       <div className="pt-4">
                                         <Link
-                                          href={data.cta_url || '#'}
+                                          href={data.cta_url || data.button_url || data.url || '#'}
                                           className="inline-block bg-primary text-white hover:bg-primary/95 px-8 py-4 rounded-[var(--radius-btn)] text-xs font-black uppercase tracking-widest transition-all duration-300 shadow-md active:scale-95"
                                         >
-                                          {data.cta_text}
+                                          {data.cta_text || data.button_text}
                                         </Link>
                                       </div>
                                     )}
