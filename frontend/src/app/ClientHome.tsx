@@ -7,6 +7,7 @@ import TreatmentCarousel from '@/components/TreatmentCarousel';
 import Footer from '@/components/Footer';
 import PublicNavbar from '@/components/PublicNavbar';
 import HeroSlider from '@/components/blocks/HeroSlider';
+import InspectableSection from '@/components/ai/webmaster/InspectableSection';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 
 // ─── Sanitizador de Títulos "Quiet Luxury" ────────────────────────────────────
@@ -519,7 +520,9 @@ export default function ClientHome({ content, settings, services, categories }: 
           // ── HERO ──────────────────────────────────────────────────────────
           if (section.type === 'hero') {
             return (
-              <HeroSlider key="hero" content={content} />
+              <InspectableSection key="hero" id="hero" name="Portada Hero" pageSlug="home" blockType="hero">
+                <HeroSlider content={content} />
+              </InspectableSection>
             );
           }
 
@@ -528,46 +531,48 @@ export default function ClientHome({ content, settings, services, categories }: 
           // ── ABOUT ─────────────────────────────────────────────────────────
           if (section.type === 'about') {
             return (
-              <section key="about" className="bg-[#F5F2EE] dark:bg-stone-950 relative flex items-center min-h-[100dvh] h-auto md:h-auto snap-start md:snap-none py-16 md:py-24">
-                <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center w-full">
-                  {/* Columna Izquierda (Texto e Imagen en móvil) */}
-                  <div className="space-y-6 md:space-y-8 flex flex-col items-center text-center md:items-start md:text-left">
-                    <h2 className="text-3xl md:text-5xl font-serif font-extrabold text-stone-900 dark:text-stone-100 leading-tight">
-                      {cleanTitle(translate(content.about_title, content.translations, 'about_title'))}
-                    </h2>
+              <InspectableSection key="about" id="about" name="Sobre Nosotros (Editorial e Imagen)" pageSlug="home" blockType="about">
+                <section className="bg-[#F5F2EE] dark:bg-stone-950 relative flex items-center min-h-[100dvh] h-auto md:h-auto snap-start md:snap-none py-16 md:py-24">
+                  <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center w-full">
+                    {/* Columna Izquierda (Texto e Imagen en móvil) */}
+                    <div className="space-y-6 md:space-y-8 flex flex-col items-center text-center md:items-start md:text-left">
+                      <h2 className="text-3xl md:text-5xl font-serif font-extrabold text-stone-900 dark:text-stone-100 leading-tight">
+                        {cleanTitle(translate(content.about_title, content.translations, 'about_title'))}
+                      </h2>
 
-                    {/* Imagen visible solo en móviles */}
-                    <div className="block md:hidden rounded-[2.5rem] overflow-hidden shadow-2xl relative group w-full max-w-[320px] aspect-[4/5] mx-auto my-2 shrink-0">
+                      {/* Imagen visible solo en móviles */}
+                      <div className="block md:hidden rounded-[2.5rem] overflow-hidden shadow-2xl relative group w-full max-w-[320px] aspect-[4/5] mx-auto my-2 shrink-0">
+                        <img 
+                          src={content.about_image_url ? (content.about_image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${content.about_image_url}` : content.about_image_url) : "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/beauty/about.jpg"} 
+                          alt="Sobre Nosotros" 
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                        />
+                      </div>
+
+                      <div className="text-base md:text-xl text-stone-600 dark:text-stone-300 leading-relaxed whitespace-pre-wrap font-medium max-w-md">
+                        {translate(content.about_text, content.translations, 'about_text')}
+                      </div>
+
+                      {content.about_show_button && (
+                        <div className="pt-2 md:pt-4">
+                          <Link href={content.about_button_link || '#'} className="inline-block border-2 border-stone-200 dark:border-stone-850 text-stone-800 dark:text-stone-200 px-8 py-3.5 md:px-12 md:py-5 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-stone-900 dark:hover:bg-white dark:hover:text-stone-900 hover:text-white hover:border-stone-900 transition-all duration-500">
+                            {translate(content.about_button_text, content.translations, 'about_button_text')}
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Columna Derecha (Imagen en Desktop) */}
+                    <div className="hidden md:block rounded-[3rem] overflow-hidden shadow-2xl relative group w-full md:h-[600px]">
                       <img 
                         src={content.about_image_url ? (content.about_image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${content.about_image_url}` : content.about_image_url) : "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/beauty/about.jpg"} 
                         alt="Sobre Nosotros" 
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                       />
                     </div>
-
-                    <div className="text-base md:text-xl text-stone-600 dark:text-stone-300 leading-relaxed whitespace-pre-wrap font-medium max-w-md">
-                      {translate(content.about_text, content.translations, 'about_text')}
-                    </div>
-
-                    {content.about_show_button && (
-                      <div className="pt-2 md:pt-4">
-                        <Link href={content.about_button_link || '#'} className="inline-block border-2 border-stone-200 dark:border-stone-850 text-stone-800 dark:text-stone-200 px-8 py-3.5 md:px-12 md:py-5 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-stone-900 dark:hover:bg-white dark:hover:text-stone-900 hover:text-white hover:border-stone-900 transition-all duration-500">
-                          {translate(content.about_button_text, content.translations, 'about_button_text')}
-                        </Link>
-                      </div>
-                    )}
                   </div>
-
-                  {/* Columna Derecha (Imagen en Desktop) */}
-                  <div className="hidden md:block rounded-[3rem] overflow-hidden shadow-2xl relative group w-full md:h-[600px]">
-                    <img 
-                      src={content.about_image_url ? (content.about_image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${content.about_image_url}` : content.about_image_url) : "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/beauty/about.jpg"} 
-                      alt="Sobre Nosotros" 
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-                    />
-                  </div>
-                </div>
-              </section>
+                </section>
+              </InspectableSection>
             );
           }
 
@@ -591,101 +596,116 @@ export default function ClientHome({ content, settings, services, categories }: 
               : `w-full pt-12 pb-16 md:py-24 flex flex-col h-auto snap-start md:snap-none`;
 
             return (
-              <section
-                key={`cat-${category.id}`}
-                className={`${sectionClasses} ${isEven ? 'bg-white dark:bg-stone-950' : 'bg-[#F5F2EE] dark:bg-stone-900/60'}`}
+              <InspectableSection 
+                key={`cat-${category.id}`} 
+                id={`cat-${category.id}`} 
+                name={`Catálogo: ${category.name}`} 
+                pageSlug="home" 
+                blockType="category"
               >
-                {/* Cabecera de la categoría */}
-                <div className="w-full max-w-7xl mx-auto px-6 mb-8 flex-shrink-0 flex flex-col md:flex-row md:justify-between md:items-end gap-3 md:gap-8">
-                  <div className="max-w-2xl">
-                    <h2 className="text-3xl md:text-5xl font-serif font-extrabold text-stone-900 dark:text-stone-100 leading-tight">
-                      {cleanTitle(category.name)}
-                    </h2>
-                    <p className="hidden md:block text-lg md:text-xl text-stone-500 dark:text-stone-400 mt-2">
-                      {category.description || t('home.discover_treatments', 'Descubre nuestros tratamientos exclusivos.')}
-                    </p>
-                  </div>
-                  <Link
-                    href={`/tratamientos/${category.slug || category.id}`}
-                    className="self-end md:self-auto inline-flex items-center gap-2 font-bold text-primary hover:text-stone-900 dark:hover:text-white transition-colors uppercase tracking-widest text-[10px] md:text-sm"
-                  >
-                    <span className="hidden md:inline">{t('home.see_catalog', 'Ver Catálogo')}</span>
-                    <span className="md:hidden">{t('home.see_all', 'Ver todo')}</span>
-                    <span className="text-xl">→</span>
-                  </Link>
-                </div>
-
-                {/* ── RENDERIZADO CONDICIONAL POR layout_style DE LA CATEGORÍA ─ */}
-                <div className={isSlider ? "flex-1 flex items-stretch w-full py-4 overflow-hidden" : "w-full py-4"}>
-                  {layoutStyle === 'cards_slider' && (
-                    <div className="w-full flex-1 min-h-0 flex flex-col justify-center pb-8">
-                      {/* DESKTOP */}
-                      <div className="hidden md:block w-full">
-                        {categoryServices.length === 1 && (
-                          <div className="max-w-7xl mx-auto px-6">
-                            <div className="w-full aspect-[16/9] md:h-[500px]">
-                              <ServiceCard service={categoryServices[0]} className="w-full h-full" />
-                            </div>
-                          </div>
-                        )}
-                        {categoryServices.length === 2 && (
-                          <div className="max-w-7xl mx-auto px-6 flex justify-center gap-8">
-                            <div className="w-[372px] h-[662px]">
-                              <ServiceCard service={categoryServices[0]} className="w-full h-full" />
-                            </div>
-                            <div className="w-[372px] h-[662px]">
-                              <ServiceCard service={categoryServices[1]} className="w-full h-full" />
-                            </div>
-                          </div>
-                        )}
-                        {categoryServices.length >= 3 && (
-                          <TreatmentCarousel servicios={categoryServices} loop={true} />
-                        )}
-                      </div>
-
-                      {/* MOBILE VIEW */}
-                      <div className="md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-6 items-stretch w-full flex-1 min-h-0 pb-4">
-                        {categoryServices.map((svc: any) => (
-                          <ServiceCard key={svc.id} service={svc} className="snap-stop-always" />
-                        ))}
-                      </div>
+                <section
+                  className={`${sectionClasses} ${isEven ? 'bg-white dark:bg-stone-950' : 'bg-[#F5F2EE] dark:bg-stone-900/60'}`}
+                >
+                  {/* Cabecera de la categoría */}
+                  <div className="w-full max-w-7xl mx-auto px-6 mb-8 flex-shrink-0 flex flex-col md:flex-row md:justify-between md:items-end gap-3 md:gap-8">
+                    <div className="max-w-2xl">
+                      <h2 className="text-3xl md:text-5xl font-serif font-extrabold text-stone-900 dark:text-stone-100 leading-tight">
+                        {cleanTitle(category.name)}
+                      </h2>
+                      <p className="hidden md:block text-lg md:text-xl text-stone-500 dark:text-stone-400 mt-2">
+                        {category.description || t('home.discover_treatments', 'Descubre nuestros tratamientos exclusivos.')}
+                      </p>
                     </div>
-                  )}
+                    <Link
+                      href={`/tratamientos/${category.slug || category.id}`}
+                      className="self-end md:self-auto inline-flex items-center gap-2 font-bold text-primary hover:text-stone-900 dark:hover:text-white transition-colors uppercase tracking-widest text-[10px] md:text-sm"
+                    >
+                      <span className="hidden md:inline">{t('home.see_catalog', 'Ver Catálogo')}</span>
+                      <span className="md:hidden">{t('home.see_all', 'Ver todo')}</span>
+                      <span className="text-xl">→</span>
+                    </Link>
+                  </div>
 
-                  {layoutStyle === 'bento_grid' && (
-                    <BentoCategoryGrid services={categoryServices} />
-                  )}
+                  {/* ── RENDERIZADO CONDICIONAL POR layout_style DE LA CATEGORÍA ─ */}
+                  <div className={isSlider ? "flex-1 flex items-stretch w-full py-4 overflow-hidden" : "w-full py-4"}>
+                    {layoutStyle === 'cards_slider' && (
+                      <div className="w-full flex-1 min-h-0 flex flex-col justify-center pb-8">
+                        {/* DESKTOP */}
+                        <div className="hidden md:block w-full">
+                          {categoryServices.length === 1 && (
+                            <div className="max-w-7xl mx-auto px-6">
+                              <div className="w-full aspect-[16/9] md:h-[500px]">
+                                <ServiceCard service={categoryServices[0]} className="w-full h-full" />
+                              </div>
+                            </div>
+                          )}
+                          {categoryServices.length === 2 && (
+                            <div className="max-w-7xl mx-auto px-6 flex justify-center gap-8">
+                              <div className="w-[372px] h-[662px]">
+                                <ServiceCard service={categoryServices[0]} className="w-full h-full" />
+                              </div>
+                              <div className="w-[372px] h-[662px]">
+                                <ServiceCard service={categoryServices[1]} className="w-full h-full" />
+                              </div>
+                            </div>
+                          )}
+                          {categoryServices.length >= 3 && (
+                            <TreatmentCarousel servicios={categoryServices} loop={true} />
+                          )}
+                        </div>
 
-                  {layoutStyle === 'traditional_grid' && (
-                    <TraditionalCategoryGrid services={categoryServices} />
-                  )}
+                        {/* MOBILE VIEW */}
+                        <div className="md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-6 items-stretch w-full flex-1 min-h-0 pb-4">
+                          {categoryServices.map((svc: any) => (
+                            <ServiceCard key={svc.id} service={svc} className="snap-stop-always" />
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
-                  {layoutStyle === 'minimalist_list' && (
-                    <MinimalistCategoryList services={categoryServices} />
-                  )}
-                </div>
-              </section>
+                    {layoutStyle === 'bento_grid' && (
+                      <BentoCategoryGrid services={categoryServices} />
+                    )}
+
+                    {layoutStyle === 'traditional_grid' && (
+                      <TraditionalCategoryGrid services={categoryServices} />
+                    )}
+
+                    {layoutStyle === 'minimalist_list' && (
+                      <MinimalistCategoryList services={categoryServices} />
+                    )}
+                  </div>
+                </section>
+              </InspectableSection>
             );
           }
 
           // ── CTA ───────────────────────────────────────────────────────────
           if (section.type === 'cta') {
             return (
-              <section key="cta" className="flex flex-col justify-center w-full py-24 bg-primary text-primary-foreground text-center px-6 h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none">
-                <div className="max-w-3xl mx-auto space-y-8 animate-in zoom-in-95 duration-700 w-full">
-                  <h2 className="text-5xl md:text-6xl font-extrabold tracking-tight">
-                    {cleanTitle(translate(content.cta_title, content.translations, 'cta_title'))}
-                  </h2>
-                  <p className="text-xl md:text-2xl font-medium opacity-90">
-                    {translate(content.cta_subtitle, content.translations, 'cta_subtitle')}
-                  </p>
-                  <div className="pt-6">
-                    <a href={content.cta_button_link} className="inline-block bg-stone-900 dark:bg-stone-950 text-white dark:text-stone-100 px-12 py-6 rounded-[var(--radius-btn)] font-bold text-xl hover:bg-stone-800 dark:hover:bg-black transition-all shadow-xl hover:scale-105">
-                      {translate(content.cta_button_text, content.translations, 'cta_button_text')}
-                    </a>
+              <InspectableSection 
+                key="cta" 
+                id="cta" 
+                name="Llamada a la Acción (CTA Reserva)" 
+                pageSlug="home" 
+                blockType="cta"
+              >
+                <section className="flex flex-col justify-center w-full py-24 bg-primary text-primary-foreground text-center px-6 h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none">
+                  <div className="max-w-3xl mx-auto space-y-8 animate-in zoom-in-95 duration-700 w-full">
+                    <h2 className="text-5xl md:text-6xl font-extrabold tracking-tight">
+                      {cleanTitle(translate(content.cta_title, content.translations, 'cta_title'))}
+                    </h2>
+                    <p className="text-xl md:text-2xl font-medium opacity-90">
+                      {translate(content.cta_subtitle, content.translations, 'cta_subtitle')}
+                    </p>
+                    <div className="pt-6">
+                      <a href={content.cta_button_link} className="inline-block bg-stone-900 dark:bg-stone-950 text-white dark:text-stone-100 px-12 py-6 rounded-[var(--radius-btn)] font-bold text-xl hover:bg-stone-800 dark:hover:bg-black transition-all shadow-xl hover:scale-105">
+                        {translate(content.cta_button_text, content.translations, 'cta_button_text')}
+                      </a>
+                    </div>
                   </div>
-                </div>
-              </section>
+                </section>
+              </InspectableSection>
             );
           }
 

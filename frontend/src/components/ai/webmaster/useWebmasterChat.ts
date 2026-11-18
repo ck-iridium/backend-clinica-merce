@@ -20,9 +20,10 @@ interface UseWebmasterChatProps {
   onFieldsUpdated?: (fields: string[], redirectUrl?: string) => void;
   initialPrompt?: string | null;
   onPromptConsumed?: () => void;
+  selectedSection?: { id: string; name: string; pageSlug: string; blockType?: string } | null;
 }
 
-export function useWebmasterChat({ onFieldsUpdated, initialPrompt, onPromptConsumed }: UseWebmasterChatProps) {
+export function useWebmasterChat({ onFieldsUpdated, initialPrompt, onPromptConsumed, selectedSection }: UseWebmasterChatProps) {
   const router = useRouter();
   const { language, t } = useLanguage();
   const { role, userName: authUserName } = useAuthRole();
@@ -273,7 +274,9 @@ export function useWebmasterChat({ onFieldsUpdated, initialPrompt, onPromptConsu
             Authorization: authToken ? `Bearer ${authToken}` : '',
           },
           body: JSON.stringify({
-            message: queryText,
+            message: (selectedSection && !queryText.startsWith('[SECCIÓN SELECCIONADA:'))
+              ? `[SECCIÓN SELECCIONADA: "${selectedSection.name}" (tipo: ${selectedSection.blockType || 'sección'}, página: "${selectedSection.pageSlug}")] ${queryText}`
+              : queryText,
             history: updatedMessages.slice(1).map((msg) => ({
               role: msg.role,
               content: msg.content,
@@ -332,10 +335,12 @@ export function useWebmasterChat({ onFieldsUpdated, initialPrompt, onPromptConsu
       setMessages((prev) => [...prev, { role: 'model', content: cleanedResponseText }]);
       speakText(cleanedResponseText, data.audio_response_base64);
 
-      if (data.updated_fields && data.updated_fields.length > 0) {
-        toast.success('¡Cambios aplicados en tiempo real por el Asistente!');
+      if (data.redirect_url || (data.updated_fields && data.updated_fields.length > 0)) {
+        if (data.updated_fields && data.updated_fields.length > 0) {
+          toast.success('¡Cambios aplicados en tiempo real por el Asistente!');
+        }
         if (onFieldsUpdated) {
-          onFieldsUpdated(data.updated_fields, data.redirect_url);
+          onFieldsUpdated(data.updated_fields || [], data.redirect_url);
         }
       }
     } catch (error: any) {

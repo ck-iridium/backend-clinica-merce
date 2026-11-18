@@ -24,6 +24,13 @@ interface PageItem {
   is_custom: boolean;
 }
 
+export interface SelectedSection {
+  id: string;
+  name: string;
+  pageSlug: string;
+  blockType?: string;
+}
+
 export default function AIWebmasterPage() {
   const [iframeUrl, setIframeUrl] = useState('');
   const [iframeKey, setIframeKey] = useState(0);
@@ -36,6 +43,7 @@ export default function AIWebmasterPage() {
   const [injectedPrompt, setInjectedPrompt] = useState<string | null>(null);
   const [pages, setPages] = useState<PageItem[]>([]);
   const [showPageMenu, setShowPageMenu] = useState(false);
+  const [selectedSection, setSelectedSection] = useState<SelectedSection | null>(null);
 
   // Construir URL pública según slug
   const buildPublicUrl = (path: string) => {
@@ -148,6 +156,27 @@ export default function AIWebmasterPage() {
     }
   }, []);
 
+  // Escuchar selecciones visuales desde el iframe (Inspector Visual)
+  useEffect(() => {
+    const handleIframeMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'WEBMASTER_SECTION_SELECTED') {
+        const { sectionId, sectionName, pageSlug, blockType } = event.data;
+        setSelectedSection({ id: sectionId, name: sectionName, pageSlug, blockType });
+        toast.info(`Sección seleccionada: ${sectionName}`);
+      }
+    };
+    window.addEventListener('message', handleIframeMessage);
+    return () => window.removeEventListener('message', handleIframeMessage);
+  }, []);
+
+  const handleClearSelectedSection = () => {
+    setSelectedSection(null);
+    const iframe = document.querySelector('iframe');
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage({ type: 'WEBMASTER_CLEAR_SELECTION' }, '*');
+    }
+  };
+
   const handleSelectPage = (page: PageItem) => {
     const slug = page.path === '/' ? 'home' : page.path.replace(/^\//, '');
     setActivePageSlug(slug);
@@ -157,11 +186,22 @@ export default function AIWebmasterPage() {
     setIsLoadingIframe(true);
     setIframeKey((k) => k + 1);
     setShowPageMenu(false);
+    setSelectedSection(null);
   };
 
   const handleFieldsUpdated = (updatedFields: string[], redirectUrl?: string) => {
     if (redirectUrl) {
-      setIframeUrl(buildPublicUrl(redirectUrl));
+      const cleanPath = redirectUrl.startsWith('/') ? redirectUrl : `/${redirectUrl}`;
+      const slug = cleanPath === '/' ? 'home' : cleanPath.replace(/^\//, '');
+      setActivePageSlug(slug);
+      
+      const matchingPage = pages.find(p => p.path === cleanPath || (cleanPath === '/' && p.id === 'home'));
+      if (matchingPage) {
+        setActivePageTitle(matchingPage.label);
+      } else {
+        setActivePageTitle(slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, ' '));
+      }
+      setIframeUrl(buildPublicUrl(cleanPath));
     }
     setIframeKey((prev) => prev + 1);
     toast.success('Escaparate actualizado en vivo.');
@@ -253,6 +293,8 @@ export default function AIWebmasterPage() {
           onPromptConsumed={() => setInjectedPrompt(null)}
           activePageSlug={activePageSlug}
           activePageTitle={activePageTitle}
+          selectedSection={selectedSection}
+          onClearSelectedSection={handleClearSelectedSection}
         />
       </div>
 

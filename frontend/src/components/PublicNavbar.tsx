@@ -11,7 +11,20 @@ export function getPreservedHref(rawPath: string): string {
   if (rawPath.startsWith('http://') || rawPath.startsWith('https://') || rawPath.startsWith('tel:') || rawPath.startsWith('mailto:')) return rawPath;
   if (typeof window !== 'undefined') {
     const searchParams = new URLSearchParams(window.location.search);
-    const tenantParam = searchParams.get('tenant') || searchParams.get('tenant_id');
+    let tenantParam = searchParams.get('tenant') || searchParams.get('tenant_id');
+    if (!tenantParam) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split('; impersonate_tenant_slug=');
+      if (parts.length === 2) {
+        tenantParam = parts.pop()?.split(';').shift() || null;
+      }
+      if (!tenantParam) {
+        const parts2 = value.split('; tenant_slug=');
+        if (parts2.length === 2) {
+          tenantParam = parts2.pop()?.split(';').shift() || null;
+        }
+      }
+    }
     if (tenantParam && !rawPath.includes('tenant=')) {
       const separator = rawPath.includes('?') ? '&' : '?';
       return `${rawPath}${separator}tenant=${encodeURIComponent(tenantParam)}`;

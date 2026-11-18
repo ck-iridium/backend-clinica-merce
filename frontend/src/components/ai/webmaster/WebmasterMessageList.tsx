@@ -1,7 +1,7 @@
 'use client';
 
 import { RefObject } from 'react';
-import { User, Bot, Sparkles, Compass } from 'lucide-react';
+import { User, Sparkles, Compass, AlertTriangle, Trash2, Check } from 'lucide-react';
 import { Message, parseOptionsAndText } from './webmasterConfig';
 
 interface WebmasterMessageListProps {
@@ -76,24 +76,65 @@ export default function WebmasterMessageList({
                 </div>
               </div>
 
-              {/* Pastillas Interactivas de Selección 1-Clic (Aceternity Quiet Luxury Style) */}
-              {!isUser && options.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-0.5 pt-1 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                  {options.map((opt, optIdx) => (
-                    <button
-                      key={optIdx}
-                      onClick={() => onSelectOption(opt.value)}
-                      disabled={isLoading}
-                      className="group relative overflow-hidden px-3.5 py-2 rounded-xl text-xs font-semibold bg-white hover:bg-gradient-to-r hover:from-amber-50 hover:to-amber-100/60 text-stone-800 hover:text-stone-950 border border-amber-300/80 hover:border-[#d4af37] shadow-2xs hover:shadow-[0_4px_16px_rgba(212,175,55,0.2)] transition-all duration-200 active:scale-95 text-left flex items-center gap-2 disabled:opacity-40"
-                    >
-                      {/* Micro-destello de cristal al hover */}
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37] group-hover:scale-125 transition-transform" />
-                      <span className="font-medium tracking-tight">{opt.label}</span>
-                      <Sparkles size={11} className="text-[#d4af37] opacity-60 group-hover:opacity-100 transition-opacity ml-auto" />
-                    </button>
-                  ))}
-                </div>
-              )}
+              {/* Pastillas Interactivas o Recuadro de Confirmación de Color */}
+              {!isUser && options.length > 0 && (() => {
+                const isConfirmation = options.some(opt => 
+                  /eliminar|borrar|suprimir|delete/i.test(opt.label) || 
+                  /eliminar|borrar|suprimir|delete/i.test(opt.value)
+                );
+
+                if (isConfirmation) {
+                  return (
+                    <div className="mt-2 p-4 rounded-2xl bg-amber-500/10 border-2 border-amber-500/30 text-stone-900 shadow-sm animate-in fade-in zoom-in-95 duration-200">
+                      <div className="flex items-center gap-2 mb-1.5 text-xs font-bold text-amber-800 uppercase tracking-wider">
+                        <AlertTriangle size={15} className="text-amber-600 animate-pulse" />
+                        <span>Confirmación de Seguridad Requerida</span>
+                      </div>
+                      <p className="text-xs text-stone-600 mb-3 font-medium">
+                        Esta acción afectará la estructura de tu web. Selecciona una opción para continuar:
+                      </p>
+                      <div className="flex flex-wrap gap-2.5">
+                        {options.map((opt, optIdx) => {
+                          const isDestructive = /eliminar|borrar|suprimir|delete/i.test(opt.label) || /eliminar|borrar|suprimir|delete/i.test(opt.value);
+                          return (
+                            <button
+                              key={optIdx}
+                              onClick={() => onSelectOption(opt.value)}
+                              disabled={isLoading}
+                              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 flex items-center gap-2 shadow-xs active:scale-95 disabled:opacity-40 ${
+                                isDestructive
+                                  ? 'bg-red-600 hover:bg-red-700 text-white shadow-red-500/20'
+                                  : 'bg-white hover:bg-stone-100 text-stone-700 border border-stone-300'
+                              }`}
+                            >
+                              {isDestructive ? <Trash2 size={13} /> : <Check size={13} />}
+                              <span>{opt.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="flex flex-wrap gap-2 mt-0.5 pt-1 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    {options.map((opt, optIdx) => (
+                      <button
+                        key={optIdx}
+                        onClick={() => onSelectOption(opt.value)}
+                        disabled={isLoading}
+                        className="group relative overflow-hidden px-3.5 py-2 rounded-xl text-xs font-semibold bg-white hover:bg-gradient-to-r hover:from-amber-50 hover:to-amber-100/60 text-stone-800 hover:text-stone-950 border border-amber-300/80 hover:border-[#d4af37] shadow-2xs hover:shadow-[0_4px_16px_rgba(212,175,55,0.2)] transition-all duration-200 active:scale-95 text-left flex items-center gap-2 disabled:opacity-40"
+                      >
+                        {/* Micro-destello de cristal al hover */}
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37] group-hover:scale-125 transition-transform" />
+                        <span className="font-medium tracking-tight">{opt.label}</span>
+                        <Sparkles size={11} className="text-[#d4af37] opacity-60 group-hover:opacity-100 transition-opacity ml-auto" />
+                      </button>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
           </div>
         );

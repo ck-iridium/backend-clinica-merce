@@ -5,6 +5,7 @@ import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import BentoGridServices from '@/components/blocks/BentoGridServices';
 import ServiceCard from '@/components/ServiceCard';
+import InspectableSection from '@/components/ai/webmaster/InspectableSection';
 import Link from 'next/link';
 
 // Tipos estructurales del Page Builder
@@ -270,19 +271,27 @@ export default async function CustomPage({ params }: PageProps) {
                               'text-center';
 
                             return (
-                              <div key={block.id} className={`w-full ${alignClass} py-3`}>
-                                <Tag className={`font-serif text-3xl md:text-4xl font-extrabold text-stone-800 leading-tight`}>
-                                  {data.title}
-                                </Tag>
-                                {data.show_divider !== false && (
-                                  <div className={`w-12 h-[2px] bg-primary mt-4 rounded-full inline-block`} />
-                                )}
-                                {data.subtitle && (
-                                  <p className="text-stone-400 text-sm mt-3 font-sans max-w-lg mx-auto">
-                                    {data.subtitle}
-                                  </p>
-                                )}
-                              </div>
+                              <InspectableSection
+                                key={block.id}
+                                id={block.id}
+                                name={`Título: "${data.title || 'Encabezado'}"`}
+                                pageSlug={slug}
+                                blockType={block.block_type}
+                              >
+                                <div className={`w-full ${alignClass} py-3`}>
+                                  <Tag className={`font-serif text-3xl md:text-4xl font-extrabold text-stone-800 leading-tight`}>
+                                    {data.title}
+                                  </Tag>
+                                  {data.show_divider !== false && (
+                                    <div className={`w-12 h-[2px] bg-primary mt-4 rounded-full inline-block`} />
+                                  )}
+                                  {data.subtitle && (
+                                    <p className="text-stone-400 text-sm mt-3 font-sans max-w-lg mx-auto">
+                                      {data.subtitle}
+                                    </p>
+                                  )}
+                                </div>
+                              </InspectableSection>
                             );
                           }
 
@@ -294,11 +303,18 @@ export default async function CustomPage({ params }: PageProps) {
                               data.alignment === 'justify' ? 'text-justify' :
                               'text-left';
                             return (
-                              <div
+                              <InspectableSection
                                 key={block.id}
-                                className={`prose prose-stone max-w-none text-stone-600 font-sans text-base leading-relaxed py-2 ${alignClass}`}
-                                dangerouslySetInnerHTML={{ __html: data.html || data.body_html || data.text || '' }}
-                              />
+                                id={block.id}
+                                name="Texto Editorial"
+                                pageSlug={slug}
+                                blockType={block.block_type}
+                              >
+                                <div
+                                  className={`prose prose-stone max-w-none text-stone-600 font-sans text-base leading-relaxed py-2 ${alignClass}`}
+                                  dangerouslySetInnerHTML={{ __html: data.html || data.body_html || data.text || '' }}
+                                />
+                              </InspectableSection>
                             );
                           }
 
@@ -311,62 +327,78 @@ export default async function CustomPage({ params }: PageProps) {
 
                             if (!data.image_url) {
                               return (
-                                <div key={block.id} className={`w-full py-4 flex ${alignment === 'left' ? 'justify-start' : alignment === 'right' ? 'justify-end' : 'justify-center'}`}>
-                                  <div className="w-full max-w-xl h-56 rounded-3xl border-2 border-dashed border-stone-200/80 bg-stone-50/70 flex flex-col items-center justify-center p-6 text-stone-400 gap-2">
-                                    <span className="text-2xl">🖼️</span>
-                                    <span className="text-xs font-bold text-stone-500 uppercase tracking-widest">{data.caption || 'Espacio para Fotografía Editorial'}</span>
-                                    <span className="text-[11px] text-stone-400">Edita este bloque desde el Diseñador Web para seleccionar una imagen</span>
+                                <InspectableSection
+                                  key={block.id}
+                                  id={block.id}
+                                  name="Fotografía / Espacio de Imagen"
+                                  pageSlug={slug}
+                                  blockType={block.block_type}
+                                >
+                                  <div className={`w-full py-4 flex ${alignment === 'left' ? 'justify-start' : alignment === 'right' ? 'justify-end' : 'justify-center'}`}>
+                                    <div className="w-full max-w-xl h-56 rounded-3xl border-2 border-dashed border-stone-200/80 bg-stone-50/70 flex flex-col items-center justify-center p-6 text-stone-400 gap-2">
+                                      <span className="text-2xl">🖼️</span>
+                                      <span className="text-xs font-bold text-stone-500 uppercase tracking-widest">{data.caption || 'Espacio para Fotografía Editorial'}</span>
+                                      <span className="text-[11px] text-stone-400">Edita este bloque desde el Diseñador Web para seleccionar una imagen</span>
+                                    </div>
                                   </div>
-                                </div>
+                                </InspectableSection>
                               );
                             }
 
                             const isVideo = data.image_url.includes('.mp4') || data.image_url.includes('.webm') || data.image_url.includes('video_');
 
                             return (
-                              <div key={block.id} className={`w-full py-4 flex ${
-                                alignment === 'left' ? 'justify-start' : 
-                                alignment === 'right' ? 'justify-end' : 
-                                'justify-center'
-                              }`}>
-                                <div 
-                                  className={`rounded-[2rem] overflow-hidden shadow-luxury border border-stone-100/50 bg-white ${isFullWidth ? 'w-full rounded-none border-none p-0' : 'p-3'}`}
-                                  style={{ maxWidth: isFullWidth ? '100%' : (data.max_width || '100%') }}
-                                >
-                                  <div className="relative overflow-hidden rounded-2xl w-full">
-                                    {isVideo ? (
-                                      <video
-                                        src={data.image_url}
-                                        autoPlay
-                                        loop
-                                        muted
-                                        playsInline
-                                        preload="none"
-                                        className="w-full"
-                                        style={{ 
-                                          objectFit: fitMode as any,
-                                          height: heightStyle
-                                        }}
-                                      />
-                                    ) : (
-                                      <img
-                                        src={data.image_url}
-                                        alt={data.caption || 'Imagen'}
-                                        className="w-full"
-                                        style={{ 
-                                          objectFit: fitMode as any,
-                                          height: heightStyle
-                                        }}
-                                      />
+                              <InspectableSection
+                                key={block.id}
+                                id={block.id}
+                                name="Fotografía Editorial"
+                                pageSlug={slug}
+                                blockType={block.block_type}
+                              >
+                                <div className={`w-full py-4 flex ${
+                                  alignment === 'left' ? 'justify-start' : 
+                                  alignment === 'right' ? 'justify-end' : 
+                                  'justify-center'
+                                }`}>
+                                  <div 
+                                    className={`rounded-[2rem] overflow-hidden shadow-luxury border border-stone-100/50 bg-white ${isFullWidth ? 'w-full rounded-none border-none p-0' : 'p-3'}`}
+                                    style={{ maxWidth: isFullWidth ? '100%' : (data.max_width || '100%') }}
+                                  >
+                                    <div className="relative overflow-hidden rounded-2xl w-full">
+                                      {isVideo ? (
+                                        <video
+                                          src={data.image_url}
+                                          autoPlay
+                                          loop
+                                          muted
+                                          playsInline
+                                          preload="none"
+                                          className="w-full"
+                                          style={{ 
+                                            objectFit: fitMode as any,
+                                            height: heightStyle
+                                          }}
+                                        />
+                                      ) : (
+                                        <img
+                                          src={data.image_url}
+                                          alt={data.caption || 'Imagen'}
+                                          className="w-full"
+                                          style={{ 
+                                            objectFit: fitMode as any,
+                                            height: heightStyle
+                                          }}
+                                        />
+                                      )}
+                                    </div>
+                                    {data.caption && (
+                                      <p className="mt-3 text-xs font-semibold text-stone-500 italic text-center px-4">
+                                        {data.caption}
+                                      </p>
                                     )}
                                   </div>
-                                  {data.caption && (
-                                    <p className="mt-3 text-xs font-semibold text-stone-500 italic text-center px-4">
-                                      {data.caption}
-                                    </p>
-                                  )}
                                 </div>
-                              </div>
+                              </InspectableSection>
                             );
                           }
 
@@ -384,68 +416,76 @@ export default async function CustomPage({ params }: PageProps) {
                               : 'flex flex-col md:flex-row gap-8 md:gap-12 items-center';
 
                             return (
-                              <div key={block.id} className="w-full py-8 px-6">
-                                <div className={`w-full max-w-7xl mx-auto ${layoutClass}`}>
-                                  {/* Lado Imagen */}
-                                  <div className={`w-full ${align === 'center' ? 'max-w-4xl mx-auto' : 'md:w-1/2'} shrink-0 rounded-[2rem] overflow-hidden shadow-luxury border border-stone-100 p-3 bg-white`}>
-                                    {data.image_url ? (
-                                      <div className="relative overflow-hidden rounded-2xl w-full">
-                                        {isVideo ? (
-                                          <video
-                                            src={data.image_url}
-                                            autoPlay
-                                            loop
-                                            muted
-                                            playsInline
-                                            preload="none"
-                                            className="w-full"
-                                            style={{ objectFit: fitMode as any, height: heightStyle }}
-                                          />
-                                        ) : (
-                                          <img
-                                            src={data.image_url}
-                                            alt={data.caption || data.heading || ''}
-                                            className="w-full"
-                                            style={{ objectFit: fitMode as any, height: heightStyle }}
-                                          />
-                                        )}
-                                      </div>
-                                    ) : (
-                                      <div className="w-full h-full min-h-[220px] border-2 border-dashed border-stone-200 rounded-[2rem] flex flex-col items-center justify-center bg-stone-50/50 py-10 px-4 text-center">
-                                        <span className="text-2xl mb-1">🖼️</span>
-                                        <span className="text-xs text-stone-500 font-black uppercase tracking-wider">Imagen del Bloque</span>
-                                      </div>
-                                    )}
-                                    {data.caption && (
-                                      <p className="text-xs text-stone-400 font-sans italic text-center mt-2.5">{data.caption}</p>
-                                    )}
-                                  </div>
+                              <InspectableSection
+                                key={block.id}
+                                id={block.id}
+                                name="Imagen + Texto Editorial"
+                                pageSlug={slug}
+                                blockType={block.block_type}
+                              >
+                                <div className="w-full py-8 px-6">
+                                  <div className={`w-full max-w-7xl mx-auto ${layoutClass}`}>
+                                    {/* Lado Imagen */}
+                                    <div className={`w-full ${align === 'center' ? 'max-w-4xl mx-auto' : 'md:w-1/2'} shrink-0 rounded-[2rem] overflow-hidden shadow-luxury border border-stone-100 p-3 bg-white`}>
+                                      {data.image_url ? (
+                                        <div className="relative overflow-hidden rounded-2xl w-full">
+                                          {isVideo ? (
+                                            <video
+                                              src={data.image_url}
+                                              autoPlay
+                                              loop
+                                              muted
+                                              playsInline
+                                              preload="none"
+                                              className="w-full"
+                                              style={{ objectFit: fitMode as any, height: heightStyle }}
+                                            />
+                                          ) : (
+                                            <img
+                                              src={data.image_url}
+                                              alt={data.caption || data.heading || ''}
+                                              className="w-full"
+                                              style={{ objectFit: fitMode as any, height: heightStyle }}
+                                            />
+                                          )}
+                                        </div>
+                                      ) : (
+                                        <div className="w-full h-full min-h-[220px] border-2 border-dashed border-stone-200 rounded-[2rem] flex flex-col items-center justify-center bg-stone-50/50 py-10 px-4 text-center">
+                                          <span className="text-2xl mb-1">🖼️</span>
+                                          <span className="text-xs text-stone-500 font-black uppercase tracking-wider">Imagen del Bloque</span>
+                                        </div>
+                                      )}
+                                      {data.caption && (
+                                        <p className="text-xs text-stone-400 font-sans italic text-center mt-2.5">{data.caption}</p>
+                                      )}
+                                    </div>
 
-                                  {/* Lado Texto */}
-                                  <div className={`w-full ${align === 'center' ? 'max-w-3xl mx-auto text-center' : 'md:w-1/2 text-left'} flex flex-col justify-center space-y-4`}>
-                                    {data.heading && (
-                                      <h3 className="font-serif text-2xl md:text-3xl lg:text-4xl font-extrabold text-stone-800 leading-tight">
-                                        {data.heading}
-                                      </h3>
-                                    )}
-                                    {data.subheading && (
-                                      <p className="text-stone-600 font-sans text-sm md:text-base leading-relaxed whitespace-pre-line">
-                                        {data.subheading}
-                                      </p>
-                                    )}
-                                    {data.cta_text && (
-                                      <div className={`pt-2 ${align === 'center' ? 'flex justify-center' : ''}`}>
-                                        <Link
-                                          href={data.cta_url || '#'}
-                                          className="inline-block bg-stone-900 text-white text-[10px] font-black uppercase tracking-widest px-7 py-3.5 rounded-[var(--radius-btn)] shadow-md transition-all duration-300 hover:bg-primary hover:text-white"
-                                        >
-                                          {data.cta_text}
-                                        </Link>
-                                      </div>
-                                    )}
+                                    {/* Lado Texto */}
+                                    <div className={`w-full ${align === 'center' ? 'max-w-3xl mx-auto text-center' : 'md:w-1/2 text-left'} flex flex-col justify-center space-y-4`}>
+                                      {data.heading && (
+                                        <h3 className="font-serif text-2xl md:text-3xl lg:text-4xl font-extrabold text-stone-800 leading-tight">
+                                          {data.heading}
+                                        </h3>
+                                      )}
+                                      {data.subheading && (
+                                        <p className="text-stone-600 font-sans text-sm md:text-base leading-relaxed whitespace-pre-line">
+                                          {data.subheading}
+                                        </p>
+                                      )}
+                                      {data.cta_text && (
+                                        <div className={`pt-2 ${align === 'center' ? 'flex justify-center' : ''}`}>
+                                          <Link
+                                            href={data.cta_url || '#'}
+                                            className="inline-block bg-stone-900 text-white text-[10px] font-black uppercase tracking-widest px-7 py-3.5 rounded-[var(--radius-btn)] shadow-md transition-all duration-300 hover:bg-primary hover:text-white"
+                                          >
+                                            {data.cta_text}
+                                          </Link>
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
+                              </InspectableSection>
                             );
                           }
 
@@ -465,14 +505,22 @@ export default async function CustomPage({ params }: PageProps) {
                                 : 'bg-primary text-white hover:bg-primary/90';
 
                             return (
-                              <div key={block.id} className={`w-full flex ${alignClass} py-3`}>
-                                <Link
-                                  href={data.url || '#'}
-                                  className={`px-7 py-3.5 rounded-[var(--radius-btn)] text-xs font-black uppercase tracking-widest transition-all duration-300 shadow-sm active:scale-95 ${styleClass}`}
-                                >
-                                  {data.text || 'Acción'}
-                                </Link>
-                              </div>
+                              <InspectableSection
+                                key={block.id}
+                                id={block.id}
+                                name="Botón de Acción"
+                                pageSlug={slug}
+                                blockType={block.block_type}
+                              >
+                                <div className={`w-full flex ${alignClass} py-3`}>
+                                  <Link
+                                    href={data.url || '#'}
+                                    className={`px-7 py-3.5 rounded-[var(--radius-btn)] text-xs font-black uppercase tracking-widest transition-all duration-300 shadow-sm active:scale-95 ${styleClass}`}
+                                  >
+                                    {data.text || 'Acción'}
+                                  </Link>
+                                </div>
+                              </InspectableSection>
                             );
                           }
 
@@ -480,40 +528,48 @@ export default async function CustomPage({ params }: PageProps) {
                           if (block.block_type === 'hero') {
                             const isVideo = data.image_url && (data.image_url.includes('.mp4') || data.image_url.includes('.webm') || data.image_url.includes('video_'));
                             return (
-                              <div key={block.id} className="relative w-full min-h-[500px] md:min-h-[620px] flex items-center justify-center overflow-hidden w-full rounded-none shadow-luxury">
-                                {data.image_url ? (
-                                  isVideo ? (
-                                    <video src={data.image_url} autoPlay loop muted playsInline preload="none" className="absolute inset-0 w-full h-full object-cover" />
+                              <InspectableSection
+                                key={block.id}
+                                id={block.id}
+                                name="Hero Principal"
+                                pageSlug={slug}
+                                blockType={block.block_type}
+                              >
+                                <div className="relative w-full min-h-[500px] md:min-h-[620px] flex items-center justify-center overflow-hidden w-full rounded-none shadow-luxury">
+                                  {data.image_url ? (
+                                    isVideo ? (
+                                      <video src={data.image_url} autoPlay loop muted playsInline preload="none" className="absolute inset-0 w-full h-full object-cover" />
+                                    ) : (
+                                      <img src={data.image_url} alt={data.heading} fetchPriority="high" loading="eager" decoding="async" className="absolute inset-0 w-full h-full object-cover" />
+                                    )
                                   ) : (
-                                    <img src={data.image_url} alt={data.heading} fetchPriority="high" loading="eager" decoding="async" className="absolute inset-0 w-full h-full object-cover" />
-                                  )
-                                ) : (
-                                  <div className="absolute inset-0 bg-stone-900" />
-                                )}
-                                <div className="absolute inset-0 bg-black/40" />
-                                <div className="relative z-10 text-center px-6 max-w-4xl mx-auto space-y-4">
-                                  {data.heading && (
-                                    <h1 className="font-serif text-4xl md:text-6xl font-extrabold text-white leading-tight">
-                                      {data.heading}
-                                    </h1>
+                                    <div className="absolute inset-0 bg-stone-900" />
                                   )}
-                                  {data.subheading && (
-                                    <p className="text-stone-200 text-lg md:text-xl font-sans max-w-2xl mx-auto leading-relaxed">
-                                      {data.subheading}
-                                    </p>
-                                  )}
-                                  {data.cta_text && (
-                                    <div className="pt-4">
-                                      <Link
-                                        href={data.cta_url || '#'}
-                                        className="inline-block bg-primary text-white hover:bg-primary/95 px-8 py-4 rounded-[var(--radius-btn)] text-xs font-black uppercase tracking-widest transition-all duration-300 shadow-md active:scale-95"
-                                      >
-                                        {data.cta_text}
-                                      </Link>
-                                    </div>
-                                  )}
+                                  <div className="absolute inset-0 bg-black/40" />
+                                  <div className="relative z-10 text-center px-6 max-w-4xl mx-auto space-y-4">
+                                    {data.heading && (
+                                      <h1 className="font-serif text-4xl md:text-6xl font-extrabold text-white leading-tight">
+                                        {data.heading}
+                                      </h1>
+                                    )}
+                                    {data.subheading && (
+                                      <p className="text-stone-200 text-lg md:text-xl font-sans max-w-2xl mx-auto leading-relaxed">
+                                        {data.subheading}
+                                      </p>
+                                    )}
+                                    {data.cta_text && (
+                                      <div className="pt-4">
+                                        <Link
+                                          href={data.cta_url || '#'}
+                                          className="inline-block bg-primary text-white hover:bg-primary/95 px-8 py-4 rounded-[var(--radius-btn)] text-xs font-black uppercase tracking-widest transition-all duration-300 shadow-md active:scale-95"
+                                        >
+                                          {data.cta_text}
+                                        </Link>
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
+                              </InspectableSection>
                             );
                           }
 
@@ -543,9 +599,17 @@ export default async function CustomPage({ params }: PageProps) {
 
                             if (filteredServices.length === 0) {
                               return (
-                                <div key={block.id} className="w-full py-8 text-center bg-stone-50 rounded-2xl border border-dashed border-stone-200 p-6">
-                                  <p className="text-xs font-bold uppercase tracking-wider text-stone-400">Catálogo de Servicios · Sin tratamientos activos</p>
-                                </div>
+                                <InspectableSection
+                                  key={block.id}
+                                  id={block.id}
+                                  name={`Catálogo: ${category?.name || 'Tratamientos'}`}
+                                  pageSlug={slug}
+                                  blockType={block.block_type}
+                                >
+                                  <div className="w-full py-8 text-center bg-stone-50 rounded-2xl border border-dashed border-stone-200 p-6">
+                                    <p className="text-xs font-bold uppercase tracking-wider text-stone-400">Catálogo de Servicios · Sin tratamientos activos</p>
+                                  </div>
+                                </InspectableSection>
                               );
                             }
 
@@ -558,86 +622,94 @@ export default async function CustomPage({ params }: PageProps) {
                               rawLayout;
 
                             return (
-                              <div key={block.id} className="w-full py-6">
-                                {layoutStyle === 'cards_slider' && (
-                                  <div className="w-full overflow-x-auto snap-x snap-mandatory hide-scroll flex gap-6 pb-6" style={{ scrollSnapType: 'x mandatory' }}>
-                                    {filteredServices.map((service: any) => {
-                                      const preparedSvc = {
-                                        ...service,
-                                        video_url: service.video_url || (service.image_url?.includes('.mp4') || service.image_url?.includes('.webm') || service.image_url?.includes('video_') ? service.image_url : '')
-                                      };
-                                      return (
-                                        <ServiceCard
-                                          key={service.id}
-                                          service={preparedSvc}
-                                          className="snap-center snap-stop-always"
-                                        />
-                                      );
-                                    })}
-                                  </div>
-                                )}
+                              <InspectableSection
+                                key={block.id}
+                                id={block.id}
+                                name={`Catálogo: ${category?.name || 'Tratamientos'}`}
+                                pageSlug={slug}
+                                blockType={block.block_type}
+                              >
+                                <div className="w-full py-6">
+                                  {layoutStyle === 'cards_slider' && (
+                                    <div className="w-full overflow-x-auto snap-x snap-mandatory hide-scroll flex gap-6 pb-6" style={{ scrollSnapType: 'x mandatory' }}>
+                                      {filteredServices.map((service: any) => {
+                                        const preparedSvc = {
+                                          ...service,
+                                          video_url: service.video_url || (service.image_url?.includes('.mp4') || service.image_url?.includes('.webm') || service.image_url?.includes('video_') ? service.image_url : '')
+                                        };
+                                        return (
+                                          <ServiceCard
+                                            key={service.id}
+                                            service={preparedSvc}
+                                            className="snap-center snap-stop-always"
+                                          />
+                                        );
+                                      })}
+                                    </div>
+                                  )}
 
-                                {layoutStyle === 'bento_grid' && (
-                                  <div className="-mx-6 md:-mx-12">
-                                    <BentoGridServices
-                                      data={{
-                                        title: category?.name || 'Nuestros Tratamientos',
-                                        subtitle: category?.description || 'Nuestros tratamientos insignia.'
-                                      }}
-                                      services={filteredServices}
-                                    />
-                                  </div>
-                                )}
+                                  {layoutStyle === 'bento_grid' && (
+                                    <div className="-mx-6 md:-mx-12">
+                                      <BentoGridServices
+                                        data={{
+                                          title: category?.name || 'Nuestros Tratamientos',
+                                          subtitle: category?.description || 'Nuestros tratamientos insignia.'
+                                        }}
+                                        services={filteredServices}
+                                      />
+                                    </div>
+                                  )}
 
-                                {layoutStyle === 'traditional_grid' && (
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                                    {filteredServices.map((service: any) => {
-                                      const preparedSvc = {
-                                        ...service,
-                                        video_url: service.video_url || (service.image_url?.includes('.mp4') || service.image_url?.includes('.webm') || service.image_url?.includes('video_') ? service.image_url : '')
-                                      };
-                                      return (
-                                        <ServiceCard
-                                          key={service.id}
-                                          service={preparedSvc}
-                                          className="w-full aspect-square h-auto md:h-auto"
-                                        />
-                                      );
-                                    })}
-                                  </div>
-                                )}
+                                  {layoutStyle === 'traditional_grid' && (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                                      {filteredServices.map((service: any) => {
+                                        const preparedSvc = {
+                                          ...service,
+                                          video_url: service.video_url || (service.image_url?.includes('.mp4') || service.image_url?.includes('.webm') || service.image_url?.includes('video_') ? service.image_url : '')
+                                        };
+                                        return (
+                                          <ServiceCard
+                                            key={service.id}
+                                            service={preparedSvc}
+                                            className="w-full aspect-square h-auto md:h-auto"
+                                          />
+                                        );
+                                      })}
+                                    </div>
+                                  )}
 
-                                {layoutStyle === 'minimalist_list' && (
-                                  <div className="flex flex-col divide-y divide-stone-200/60 border-t border-b border-stone-200/50">
-                                    {filteredServices.map((service: any, idx: number) => {
-                                      const hrefPath = `/tratamientos/${service.category_slug || 'general'}/${service.slug || service.id}`;
-                                      return (
-                                        <div key={service.id} className="flex items-center justify-between py-6 group">
-                                          <div className="pr-4">
-                                            <span className="text-primary text-[10px] font-bold uppercase tracking-wider block mb-1">
-                                              0{idx + 1} · {service.duration_minutes} min
-                                            </span>
-                                            <Link href={hrefPath} className="inline-block">
-                                              <h4 className="text-base font-serif font-bold text-stone-800 hover:text-primary transition-colors leading-tight">
-                                                {service.name}
-                                              </h4>
-                                            </Link>
-                                            <p className="text-xs text-stone-400 mt-1.5 max-w-2xl leading-relaxed">
-                                              {service.description}
-                                            </p>
+                                  {layoutStyle === 'minimalist_list' && (
+                                    <div className="flex flex-col divide-y divide-stone-200/60 border-t border-b border-stone-200/50">
+                                      {filteredServices.map((service: any, idx: number) => {
+                                        const hrefPath = `/tratamientos/${service.category_slug || 'general'}/${service.slug || service.id}`;
+                                        return (
+                                          <div key={service.id} className="flex items-center justify-between py-6 group">
+                                            <div className="pr-4">
+                                              <span className="text-primary text-[10px] font-bold uppercase tracking-wider block mb-1">
+                                                0{idx + 1} · {service.duration_minutes} min
+                                              </span>
+                                              <Link href={hrefPath} className="inline-block">
+                                                <h4 className="text-base font-serif font-bold text-stone-800 hover:text-primary transition-colors leading-tight">
+                                                  {service.name}
+                                                </h4>
+                                              </Link>
+                                              <p className="text-xs text-stone-400 mt-1.5 max-w-2xl leading-relaxed">
+                                                {service.description}
+                                              </p>
+                                            </div>
+                                            <div className="flex items-center gap-6 shrink-0">
+                                              <span className="text-stone-700 text-sm font-black">{service.price} €</span>
+                                              <Link href={hrefPath} className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-stone-900 border-b border-transparent hover:border-stone-950/40 pb-0.5 transition-all">
+                                                {data.link_text || 'Ver'} →
+                                              </Link>
+                                            </div>
                                           </div>
-                                          <div className="flex items-center gap-6 shrink-0">
-                                            <span className="text-stone-700 text-sm font-black">{service.price} €</span>
-                                            <Link href={hrefPath} className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-stone-900 border-b border-transparent hover:border-stone-950/40 pb-0.5 transition-all">
-                                              {data.link_text || 'Ver'} →
-                                            </Link>
-                                          </div>
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                )}
-                              </div>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                </div>
+                              </InspectableSection>
                             );
                           }
 

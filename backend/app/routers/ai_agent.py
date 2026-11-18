@@ -196,7 +196,22 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
                 message_payload = request.message
 
         response_brain = chat.send_message(message_payload)
-        brain_text = response_brain.text.strip()
+        
+        # Extracción segura de texto para evitar fallo 'response.text requires a valid Part'
+        brain_text = ""
+        try:
+            brain_text = response_brain.text.strip()
+        except Exception as e_text:
+            logger.warning(f"Extracción directa de response.text falló ({e_text}). Buscando partes de texto manuales...")
+            texts = []
+            try:
+                for candidate in getattr(response_brain, 'candidates', []):
+                    for part in getattr(getattr(candidate, 'content', None), 'parts', []):
+                        if hasattr(part, 'text') and part.text:
+                            texts.append(part.text)
+            except Exception:
+                pass
+            brain_text = " ".join(texts).strip() or "He procesado tu solicitud correctamente."
 
         # Escribir log local de auditoria de chat
         try:
@@ -261,7 +276,7 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
                             clean_p_slug = re.sub(r'[^a-z0-9]+', '-', p_slug.lower()).strip('-')
                             if clean_p_slug:
                                 redirect_url = f"/{clean_p_slug}"
-                    elif name in ["add_block_to_page", "add_section_to_page"]:
+                    elif name in ["add_block_to_page", "add_section_to_page", "update_page_details", "update_page_block"]:
                         updated_fields.append("pages")
                         updated_fields.append("blocks")
                         args = fn_call.args
@@ -271,6 +286,10 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
                                 redirect_url = f"/{p_slug}"
                             else:
                                 redirect_url = "/"
+                    elif name == "delete_custom_page":
+                        updated_fields.append("pages")
+                        updated_fields.append("navigation")
+                        redirect_url = "/"
                     elif name in ["generar_imagen", "generar_imagen_servicio"]:
                         updated_fields.append("services")
                         updated_fields.append("image_url")
@@ -293,8 +312,8 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
         if navigate_match:
             candidate_url = navigate_match.group(1).strip()
             if mode == "webmaster":
-                # En modo webmaster, bloquear estrictamente redirecciones al dashboard interno
-                if candidate_url.startswith("/?") or candidate_url.startswith("/tratamientos") or candidate_url.startswith("/sedes"):
+                # En modo webmaster, permitir navegar a cualquier página pública de la clínica (portada, páginas y tratamientos)
+                if candidate_url.startswith("/") and not candidate_url.startswith("/dashboard"):
                     redirect_url = candidate_url
                 else:
                     redirect_url = None

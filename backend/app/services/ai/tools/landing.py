@@ -3,6 +3,7 @@ import uuid
 import re
 from typing import Optional, List, Dict, Any
 from sqlalchemy import func
+from sqlalchemy.orm import attributes
 
 from .... import models, schemas
 from ....database import SessionLocal, current_tenant_var
@@ -942,5 +943,216 @@ def add_section_to_page(
         db.rollback()
         logger.error(f"Error en add_section_to_page: {e}")
         return f"Error al crear sección: {str(e)}"
+    finally:
+        db.close()
+
+
+def update_page_details(
+    page_slug: str,
+    new_title: Optional[str] = None,
+    new_subtitle: Optional[str] = None,
+    show_in_navbar: Optional[bool] = None
+) -> str:
+    """
+    Actualiza el título, subtítulo o visibilidad en el menú de una página autónoma personalizada (/slug).
+    Modifica tanto la etiqueta de navegación en la Navbar como los bloques de encabezado/título de la página.
+    """
+    db = SessionLocal()
+    try:
+        tenant_id = current_tenant_var.get()
+        if not tenant_id:
+            return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
+
+        clean_slug = (page_slug or "").lower().strip().lstrip("/")
+        if not clean_slug or clean_slug == "home":
+            return "Aviso: Para modificar la portada principal, utiliza la herramienta 'update_landing_config'."
+
+        # 1. Buscar en SiteNavigation
+        nav_item = db.query(models.SiteNavigation).filter(
+            models.SiteNavigation.tenant_id == tenant_id,
+            models.SiteNavigation.path == f"/{clean_slug}"
+        ).first()
+
+        updated_parts = []
+        if nav_item:
+            if new_title and new_title.strip():
+                nav_item.label = new_title.strip()
+                updated_parts.append(f"título a '{new_title.strip()}'")
+            if show_in_navbar is not None:
+                nav_item.is_visible = bool(show_in_navbar)
+                updated_parts.append(f"visibilidad a {'visible' if show_in_navbar else 'oculto'}")
+
+        # 2. Buscar y actualizar el bloque de título de la página
+        blocks = db.query(models.SiteBlock).filter(
+            models.SiteBlock.tenant_id == tenant_id,
+            models.SiteBlock.page_slug == clean_slug
+        ).all()
+
+        heading_updated = False
+        for b in blocks:
+            data = b.content_data or {}
+            if b.block_type == "section":
+                cols = data.get("columns", [])
+                for col in cols:
+                    for ab in col.get("blocks", []):
+                        ab_type = ab.get("block_type")
+                        if ab_type in ["title_heading", "atomic_title", "hero"]:
+                            cdata = ab.get("content_data", {})
+                            if new_title and new_title.strip():
+                                cdata["title"] = new_title.strip()
+                                cdata["heading"] = new_title.strip()
+                            if new_subtitle is not None:
+                                cdata["subtitle"] = new_subtitle.strip()
+                                cdata["subheading"] = new_subtitle.strip()
+                            ab["content_data"] = cdata
+                            heading_updated = True
+                if heading_updated:
+                    attributes.flag_modified(b, "content_data")
+            elif b.block_type in ["title_heading", "atomic_title", "hero"]:
+                if new_title and new_title.strip():
+                    data["title"] = new_title.strip()
+                    data["heading"] = new_title.strip()
+                if new_subtitle is not None:
+                    data["subtitle"] = new_subtitle.strip()
+                    data["subheading"] = new_subtitle.strip()
+                b.content_data = data
+                attributes.flag_modified(b, "content_data")
+                heading_updated = True
+
+        db.commit()
+        if not nav_item and not heading_updated:
+            return f"Aviso: No se encontró la página '/{clean_slug}'. Asegúrate de indicar el slug correcto."
+
+        return f"Éxito: Se ha actualizado la página '/{clean_slug}' con los nuevos datos."
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error en update_page_details: {e}")
+        return f"Error al actualizar página: {str(e)}"
+    finally:
+        db.close()
+
+
+def delete_custom_page(page_slug: str) -> str:
+    """
+    Elimina permanentemente una página web autónoma (/slug) y su enlace del menú superior (Navbar).
+    Elimina todos los bloques maquetados asociados a la página.
+    """
+    db = SessionLocal()
+    try:
+        tenant_id = current_tenant_var.get()
+        if not tenant_id:
+            return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
+
+        clean_slug = (page_slug or "").lower().strip().lstrip("/")
+        if not clean_slug or clean_slug == "home":
+            return "Error: La portada principal ('home') no puede ser eliminada."
+
+        # 1. Eliminar bloques asociados
+        blocks = db.query(models.SiteBlock).filter(
+            models.SiteBlock.tenant_id == tenant_id,
+            models.SiteBlock.page_slug == clean_slug
+        ).all()
+        for b in blocks:
+            db.delete(b)
+
+        # 2. Eliminar entrada en SiteNavigation
+        nav_item = db.query(models.SiteNavigation).filter(
+            models.SiteNavigation.tenant_id == tenant_id,
+            models.SiteNavigation.path == f"/{clean_slug}"
+        ).first()
+        page_title = nav_item.label if nav_item else clean_slug
+        if nav_item:
+            db.delete(nav_item)
+
+        db.commit()
+        return f"Éxito: La página '{page_title}' (/{clean_slug}) ha sido eliminada permanentemente del sitio y del menú."
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error en delete_custom_page: {e}")
+        return f"Error al eliminar la página: {str(e)}"
+    finally:
+        db.close()
+
+
+def update_page_block(
+    page_slug: str,
+    block_type: str,
+    new_text: Optional[str] = None,
+    new_title: Optional[str] = None,
+    new_subtitle: Optional[str] = None,
+    new_image_url: Optional[str] = None,
+    new_category_id: Optional[str] = None
+) -> str:
+    """
+    Actualiza el contenido de un bloque existente en una página personalizada o en la portada.
+    Permite modificar texto enriquecido, títulos, imágenes o categoría de tratamientos maquetados.
+    """
+    db = SessionLocal()
+    try:
+        tenant_id = current_tenant_var.get()
+        if not tenant_id:
+            return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
+
+        clean_slug = (page_slug or "home").lower().strip().lstrip("/")
+        blocks = db.query(models.SiteBlock).filter(
+            models.SiteBlock.tenant_id == tenant_id,
+            models.SiteBlock.page_slug == clean_slug
+        ).all()
+
+        updated = False
+        for b in blocks:
+            data = b.content_data or {}
+            if b.block_type == "section":
+                cols = data.get("columns", [])
+                for col in cols:
+                    for ab in col.get("blocks", []):
+                        if ab.get("block_type") == block_type:
+                            cdata = ab.get("content_data", {})
+                            if new_text is not None:
+                                cdata["html"] = new_text
+                                cdata["text"] = new_text
+                            if new_title is not None:
+                                cdata["title"] = new_title
+                                cdata["heading"] = new_title
+                            if new_subtitle is not None:
+                                cdata["subtitle"] = new_subtitle
+                                cdata["subheading"] = new_subtitle
+                            if new_image_url is not None:
+                                cdata["image_url"] = new_image_url
+                            if new_category_id is not None:
+                                cdata["category_id"] = new_category_id
+                            ab["content_data"] = cdata
+                            updated = True
+                if updated:
+                    attributes.flag_modified(b, "content_data")
+                    break
+            elif b.block_type == block_type:
+                if new_text is not None:
+                    data["html"] = new_text
+                    data["text"] = new_text
+                if new_title is not None:
+                    data["title"] = new_title
+                    data["heading"] = new_title
+                if new_subtitle is not None:
+                    data["subtitle"] = new_subtitle
+                    data["subheading"] = new_subtitle
+                if new_image_url is not None:
+                    data["image_url"] = new_image_url
+                if new_category_id is not None:
+                    data["category_id"] = new_category_id
+                b.content_data = data
+                attributes.flag_modified(b, "content_data")
+                updated = True
+                break
+
+        if not updated:
+            return f"Aviso: No se encontró ningún bloque del tipo '{block_type}' en la página '{clean_slug}'."
+
+        db.commit()
+        return f"Éxito: Bloque '{block_type}' actualizado correctamente en la página '{clean_slug}'."
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error en update_page_block: {e}")
+        return f"Error al actualizar bloque: {str(e)}"
     finally:
         db.close()
