@@ -1202,7 +1202,7 @@ def update_page_block(
         def matches_type(actual: str, expected: str) -> bool:
             if actual == expected:
                 return True
-            title_group = {"title_heading", "atomic_title", "title", "heading", "hero"}
+            title_group = {"title_heading", "atomic_title", "title", "heading", "hero", "contact_header", "contact_info"}
             text_group = {"atomic_text", "text", "paragraph", "editorial"}
             img_group = {"atomic_image", "image", "photo", "gallery"}
             if expected in title_group and actual in title_group:
@@ -1261,6 +1261,24 @@ def update_page_block(
                 break
 
         if not updated:
+            if clean_slug in ["contacto", "contact"]:
+                new_block_data = {}
+                if clean_new_title is not None:
+                    new_block_data["title"] = clean_new_title
+                    new_block_data["heading"] = clean_new_title
+                if clean_new_subtitle is not None:
+                    new_block_data["subtitle"] = clean_new_subtitle
+                    new_block_data["subheading"] = clean_new_subtitle
+                new_block = models.SiteBlock(
+                    tenant_id=tenant_id,
+                    page_slug="contacto",
+                    block_type="contact_header",
+                    order_index=0,
+                    content_data=new_block_data
+                )
+                db.add(new_block)
+                db.commit()
+                return f"Éxito: Encabezado de la página de contacto actualizado correctamente."
             return f"Aviso: No se encontró ningún bloque del tipo '{block_type}' en la página '{clean_slug}'."
 
         db.commit()

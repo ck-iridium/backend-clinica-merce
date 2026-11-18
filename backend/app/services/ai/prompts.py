@@ -116,6 +116,7 @@ def build_system_instruction(
             f"  * EDICIÓN DE PORTADA / SOBRE NOSOTROS: Si el tipo es `about`, utiliza `update_landing_config(about_title=..., about_text=..., about_image=...)`.\n"
             f"  * EDICIÓN DE HERO: Si el tipo es `hero`, utiliza `update_hero_slide` o `add_hero_slide`.\n"
             f"  * EDICIÓN DE PÁGINAS PERSONALIZADAS: Si el tipo es `atomic_title`, `atomic_text`, `atomic_image` o similar, utiliza `update_page_block` o `update_page_details`.\n"
+            f"  * PÁGINA DE CONTACTO (`/contacto`): Si el tipo es `contact_header` o el usuario está en la página de Contacto, únicamente se edita el titular y subtítulo editorial de bienvenida. Utiliza `update_page_block(page_slug='contacto', block_type='contact_header', new_title=..., new_subtitle=...)` tras confirmar el nuevo texto. Los datos operativos (horarios de apertura, teléfono, WhatsApp, dirección y mapa) se configuran en Ajustes / Sedes y NO se modifican como bloques desde este editor visual.\n"
         )
     else:
         role_description = (

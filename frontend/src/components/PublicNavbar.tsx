@@ -12,6 +12,7 @@ export function getPreservedHref(rawPath: string): string {
   if (typeof window !== 'undefined') {
     const searchParams = new URLSearchParams(window.location.search);
     let tenantParam = searchParams.get('tenant') || searchParams.get('tenant_id');
+    const langParam = searchParams.get('lang');
     if (!tenantParam) {
       const value = `; ${document.cookie}`;
       const parts = value.split('; impersonate_tenant_slug=');
@@ -25,10 +26,16 @@ export function getPreservedHref(rawPath: string): string {
         }
       }
     }
-    if (tenantParam && !rawPath.includes('tenant=')) {
-      const separator = rawPath.includes('?') ? '&' : '?';
-      return `${rawPath}${separator}tenant=${encodeURIComponent(tenantParam)}`;
+    let res = rawPath;
+    if (tenantParam && !res.includes('tenant=')) {
+      const separator = res.includes('?') ? '&' : '?';
+      res = `${res}${separator}tenant=${encodeURIComponent(tenantParam)}`;
     }
+    if (langParam && !res.includes('lang=')) {
+      const separator = res.includes('?') ? '&' : '?';
+      res = `${res}${separator}lang=${encodeURIComponent(langParam)}`;
+    }
+    return res;
   }
   return rawPath;
 }

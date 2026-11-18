@@ -145,11 +145,11 @@ export default function AIChatContainer({
         { icon: FileText, label: 'Cambiar texto', prompt: 'Quiero cambiar el texto de esta categoría.' },
       ];
     }
-    if (type === 'contact_info') {
+    if (type === 'contact_header' || type === 'contact_info') {
       return [
-        { icon: Clock, label: 'Cambiar horarios', prompt: 'Quiero cambiar los horarios de atención de la clínica.' },
-        { icon: PhoneCall, label: 'Cambiar WhatsApp', prompt: 'Quiero cambiar el número de WhatsApp de contacto.' },
-        { icon: MapPin, label: 'Cambiar dirección', prompt: 'Quiero cambiar la dirección física de la clínica.' },
+        { icon: Type, label: 'Cambiar título', prompt: 'Quiero cambiar el título de la página de contacto.' },
+        { icon: FileText, label: 'Cambiar subtítulo', prompt: 'Quiero cambiar el subtítulo de la página de contacto.' },
+        { icon: Sparkles, label: 'Mejorar redacción', prompt: 'Mejora la redacción del título y subtítulo de la página de contacto con estilo elegante y conciso.' },
       ];
     }
     if (type === 'atomic_title' || type === 'title_heading') {

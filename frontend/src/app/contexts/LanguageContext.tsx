@@ -112,13 +112,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         } else if (search.includes('lang=es')) {
           detectedLang = 'es';
         }
-        // 2. Prioridad: Rutas explícitas internacionales en inglés
-        else if (path.startsWith('/services') || path.startsWith('/contact')) {
-          detectedLang = 'en';
-        }
       }
 
-      // 3. Prioridad: LocalStorage o cookies si no viene en URL
+      // 2. Prioridad: LocalStorage o cookies preferido del usuario (no sobrescribir si el usuario eligió español u otro idioma)
       if (!detectedLang) {
         try {
           const stored = localStorage.getItem('preferred_language') as Language;
@@ -126,6 +122,20 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
             detectedLang = stored;
           }
         } catch (_) {}
+      }
+      if (!detectedLang && typeof document !== 'undefined') {
+        const match = document.cookie.match(/(?:^|;\s*)preferred_language=([a-z]{2})/);
+        if (match && (match[1] === 'es' || match[1] === 'en' || match[1] === 'fr')) {
+          detectedLang = match[1] as Language;
+        }
+      }
+
+      // 3. Prioridad: Rutas explícitas internacionales en inglés solo si NO hay preferencia previa guardada
+      if (!detectedLang && typeof window !== 'undefined') {
+        const path = window.location.pathname;
+        if (path.startsWith('/services') || path.startsWith('/contact')) {
+          detectedLang = 'en';
+        }
       }
 
       const finalLang: Language = detectedLang || 'es';

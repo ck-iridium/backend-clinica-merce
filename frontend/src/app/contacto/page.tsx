@@ -31,6 +31,7 @@ export default function ContactoPage() {
   const [locations, setLocations] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'clinics' | 'home'>('clinics');
   const [selectedLocationIndex, setSelectedLocationIndex] = useState<number>(0);
+  const [customHeader, setCustomHeader] = useState<{ title?: string; title_italic?: string; subtitle?: string } | null>(null);
 
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any | null>(null);
@@ -44,7 +45,40 @@ export default function ContactoPage() {
   const [geocoding, setGeocoding] = useState(false);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/settings/`)
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+    const getHeaders = (): Record<string, string> => {
+      if (typeof window === 'undefined') return {};
+      const headers: Record<string, string> = {};
+      const searchParams = new URLSearchParams(window.location.search);
+      const fromQuery = searchParams.get('tenant_id');
+      if (fromQuery) {
+        headers['X-Tenant-ID'] = fromQuery;
+        return headers;
+      }
+      const value = `; ${document.cookie}`;
+      const impPart = value.split('; impersonate_tenant_id=');
+      if (impPart.length === 2) {
+        const tid = impPart.pop()?.split(';').shift();
+        if (tid) {
+          headers['X-Tenant-ID'] = tid;
+          return headers;
+        }
+      }
+      const part = value.split('; tenant_id=');
+      if (part.length === 2) {
+        const tid = part.pop()?.split(';').shift();
+        if (tid) {
+          headers['X-Tenant-ID'] = tid;
+          return headers;
+        }
+      }
+      return headers;
+    };
+
+    const headers = getHeaders();
+
+    fetch(`${API_URL}/settings/`, { headers })
       .then(res => res.json())
       .then(data => {
         setSettings(data);
@@ -54,11 +88,23 @@ export default function ContactoPage() {
       })
       .catch(() => { });
 
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/locations/`)
+    fetch(`${API_URL}/locations/`, { headers })
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
           setLocations(data.filter((l: any) => l.is_active));
+        }
+      })
+      .catch(() => { });
+
+    fetch(`${API_URL}/cms/blocks/contacto`, { headers })
+      .then(res => res.ok ? res.json() : [])
+      .then((blocks: any[]) => {
+        if (Array.isArray(blocks) && blocks.length > 0) {
+          const headerBlock = blocks.find(b => b.block_type === 'contact_header' || b.block_type === 'title_heading');
+          if (headerBlock && headerBlock.content_data) {
+            setCustomHeader(headerBlock.content_data);
+          }
         }
       })
       .catch(() => { });
@@ -285,27 +331,30 @@ export default function ContactoPage() {
           {/* LADO IZQUIERDO: CONTENIDO (Cols 1-7) */}
           <div className="lg:col-span-7 space-y-20">
             <InspectableSection
-              id="contact-info"
-              name="Información de Contacto y Horarios"
+              id="contact-header"
+              name="Encabezado de Contacto (Título y Subtítulo)"
               pageSlug="/contacto"
-              blockType="contact_info"
-              className="space-y-20 rounded-3xl"
+              blockType="contact_header"
+              className="rounded-3xl p-2 -m-2"
             >
-            <motion.div variants={itemVariants} className="space-y-8">
-              <div className="inline-flex items-center gap-3">
-                <div className="w-8 h-px bg-primary" />
-                <span className="text-primary font-bold text-[10px] uppercase tracking-[0.5em] block">
-                  Concierge & Care
-                </span>
-              </div>
-              <h1 className="text-7xl md:text-[10rem] font-serif font-medium text-stone-900 leading-[0.85] tracking-tighter">
-                {t('contact.title')} <br /> 
-                <span className="italic font-light text-stone-300 ml-[0.1em]">{t('contact.title_italic')}</span>
-              </h1>
-              <p className="text-xl md:text-2xl text-stone-500 max-w-xl leading-relaxed font-light font-sans">
-                {t('contact.subtitle')}
-              </p>
-            </motion.div>
+              <motion.div variants={itemVariants} className="space-y-8">
+                <div className="inline-flex items-center gap-3">
+                  <div className="w-8 h-px bg-primary" />
+                  <span className="text-primary font-bold text-[10px] uppercase tracking-[0.5em] block">
+                    Concierge & Care
+                  </span>
+                </div>
+                <h1 className="text-7xl md:text-[10rem] font-serif font-medium text-stone-900 leading-[0.85] tracking-tighter">
+                  {customHeader?.title || t('contact.title')} <br /> 
+                  <span className="italic font-light text-stone-300 ml-[0.1em]">
+                    {customHeader?.title ? (customHeader.title_italic || '') : t('contact.title_italic')}
+                  </span>
+                </h1>
+                <p className="text-xl md:text-2xl text-stone-500 max-w-xl leading-relaxed font-light font-sans">
+                  {customHeader?.subtitle || t('contact.subtitle')}
+                </p>
+              </motion.div>
+            </InspectableSection>
 
             {/* GRID DE INFORMACIÓN DINÁMICA */}
             <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-16">
@@ -481,7 +530,6 @@ export default function ContactoPage() {
                 </>
               )}
             </motion.div>
-            </InspectableSection>
 
             {/* FORMULARIO EDITORIAL REFORZADO */}
             <motion.div variants={itemVariants} className="pt-24 border-t border-stone-200/60">

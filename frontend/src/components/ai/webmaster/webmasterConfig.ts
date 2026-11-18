@@ -149,35 +149,28 @@ export function getWebmasterCommands(
   if (activePageSlug === 'contacto') {
     return {
       sectionTitle: 'Comandos Rápidos · Contacto',
-      sectionSubtitle: 'Información y Horarios',
+      sectionSubtitle: 'Encabezado y Editorial',
       commands: [
         {
-          id: 'contact_schedule',
-          title: 'Actualizar Horarios',
-          subtitle: 'Apertura y cierre',
-          icon: Clock,
-          prompt: 'Quiero revisar y cambiar los horarios de apertura y cierre de la clínica.'
+          id: 'contact_title',
+          title: 'Cambiar Título',
+          subtitle: 'Titular de bienvenida',
+          icon: Type,
+          prompt: 'Quiero cambiar el título principal de la página de contacto.'
         },
         {
-          id: 'contact_whatsapp',
-          title: 'Modificar WhatsApp',
-          subtitle: 'Número de atención',
-          icon: PhoneCall,
-          prompt: 'Quiero actualizar el número de WhatsApp de contacto.'
+          id: 'contact_subtitle',
+          title: 'Cambiar Subtítulo',
+          subtitle: 'Subtexto editorial',
+          icon: FileText,
+          prompt: 'Quiero cambiar el subtítulo explicativo de la página de contacto.'
         },
         {
-          id: 'contact_address',
-          title: 'Cambiar Dirección',
-          subtitle: 'Ubicación física',
-          icon: MapPin,
-          prompt: 'Quiero modificar la dirección de la clínica.'
-        },
-        {
-          id: 'contact_email',
-          title: 'Actualizar Email',
-          subtitle: 'Correo de consultas',
-          icon: Mail,
-          prompt: 'Quiero actualizar el email de contacto de la clínica.'
+          id: 'contact_copy',
+          title: 'Mejorar Redacción',
+          subtitle: 'Estilo Quiet Luxury',
+          icon: Sparkles,
+          prompt: 'Mejora la redacción del título y subtítulo de contacto con un tono elegante, exclusivo y conciso.'
         },
         {
           id: 'contact_style',

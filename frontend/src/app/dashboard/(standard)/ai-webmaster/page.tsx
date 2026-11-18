@@ -41,7 +41,10 @@ export default function AIWebmasterPage() {
   const [activePageSlug, setActivePageSlug] = useState<string>('home');
   const [activePageTitle, setActivePageTitle] = useState<string>('Portada');
   const [injectedPrompt, setInjectedPrompt] = useState<string | null>(null);
-  const [pages, setPages] = useState<PageItem[]>([]);
+  const [pages, setPages] = useState<PageItem[]>([
+    { id: 'home', label: 'Portada (Home)', path: '/', is_custom: false },
+    { id: 'contacto', label: 'Contacto', path: '/contacto', is_custom: false }
+  ]);
   const [showPageMenu, setShowPageMenu] = useState(false);
   const [selectedSection, setSelectedSection] = useState<SelectedSection | null>(null);
   const pendingScrollSectionIdRef = useRef<string | null>(null);
@@ -51,10 +54,12 @@ export default function AIWebmasterPage() {
     if (typeof window === 'undefined') return '';
     const origin = window.location.origin;
     const activeSlug = getCookie('impersonate_tenant_slug') || getCookie('tenant_slug') || '';
+    const currentPrefLang = getCookie('preferred_language') || 'es';
     const cleanPath = path || '/';
     const separator = cleanPath.includes('?') ? '&' : '?';
     const tenantParam = activeSlug ? `${separator}tenant=${encodeURIComponent(activeSlug)}` : '';
-    return `${origin}${cleanPath}${tenantParam}`;
+    const langParam = cleanPath.includes('lang=') ? '' : `&lang=${encodeURIComponent(currentPrefLang)}`;
+    return `${origin}${cleanPath}${tenantParam}${langParam}`;
   };
 
   useEffect(() => {
@@ -131,8 +136,14 @@ export default function AIWebmasterPage() {
               is_custom: true,
             }));
 
+          // Incluir siempre las páginas principales del escaparate (Portada y Contacto)
+          const contactItem = navItems.find((n: any) => 
+            n.path === '/contacto' || n.path === '/contact' || (n.label && n.label.toLowerCase() === 'contacto')
+          );
+
           setPages([
             { id: 'home', label: 'Portada (Home)', path: '/', is_custom: false },
+            { id: 'contacto', label: contactItem?.label || 'Contacto', path: '/contacto', is_custom: false },
             ...customNavs,
           ]);
         }
