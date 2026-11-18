@@ -10,6 +10,7 @@ logger = logging.getLogger("ai_agent_tools_services")
 
 def update_service_fields(
     service_slug: str,
+    name: Optional[str] = None,
     price: Optional[float] = None,
     duration_minutes: Optional[int] = None,
     description: Optional[str] = None,
@@ -18,11 +19,12 @@ def update_service_fields(
     image_url: Optional[str] = None
 ) -> str:
     """
-    Actualiza campos específicos de un servicio o tratamiento existente en la clínica a partir de su slug.
+    Actualiza campos específicos de un servicio o tratamiento existente en la clínica a partir de su slug o nombre.
     Solo se actualizarán los campos que se pasen con un valor no nulo.
 
     Args:
-        service_slug: El identificador único en formato URL (slug) del servicio a modificar (ej. 'botox', 'masaje-relajante').
+        service_slug: El identificador único en formato URL (slug) o nombre del servicio a modificar (ej. 'botox', 'coupe-fille-et-garcon-moins-de-6-ans').
+        name: Opcional. El nuevo nombre o título comercial para el servicio.
         price: El nuevo precio en euros (€).
         duration_minutes: Duración del tratamiento en minutos.
         description: Breve descripción inspiradora de 1 o 2 párrafos sofisticados en texto plano.
@@ -36,22 +38,41 @@ def update_service_fields(
         if not tenant_id:
             return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
 
+        # Normalizar slug de búsqueda
+        clean_search_slug = service_slug.strip().lower().lstrip('/')
+        if '/' in clean_search_slug:
+            clean_search_slug = clean_search_slug.split('/')[-1]
+
         service = db.query(models.Service).filter(
             models.Service.tenant_id == tenant_id,
-            models.Service.slug == service_slug
+            models.Service.slug == clean_search_slug
         ).first()
 
         if not service:
-            # Buscar por aproximación si no encuentra el slug exacto
+            # Buscar por aproximación de slug o nombre
             service = db.query(models.Service).filter(
                 models.Service.tenant_id == tenant_id,
-                models.Service.name.ilike(f"%{service_slug}%")
+                models.Service.name.ilike(f"%{clean_search_slug}%")
             ).first()
 
         if not service:
             return f"Error: No se encontró ningún servicio que coincida con '{service_slug}' en esta clínica."
 
         updated_parts = []
+        if name is not None:
+            clean_name = name.strip()
+            old_name = service.name
+            service.name = clean_name
+            new_slug = re.sub(r'[^a-z0-9]+', '-', clean_name.lower()).strip('-')
+            col = db.query(models.Service).filter(
+                models.Service.tenant_id == tenant_id,
+                models.Service.slug == new_slug,
+                models.Service.id != service.id
+            ).first()
+            if not col and new_slug:
+                service.slug = new_slug
+            updated_parts.append(f"nombre de '{old_name}' a '{clean_name}'")
+
         if price is not None:
             service.price = price
             updated_parts.append(f"precio a {price}€")
@@ -59,7 +80,8 @@ def update_service_fields(
             service.duration_minutes = duration_minutes
             updated_parts.append(f"duración a {duration_minutes} min")
         if description is not None:
-            service.description = description
+            clean_desc = re.sub(r'<[^>]*>', '', description).strip()
+            service.description = clean_desc
             updated_parts.append("descripción corta actualizada")
         if content_html is not None:
             service.content_html = content_html

@@ -11,6 +11,7 @@ import ServiceCard from '@/components/ServiceCard';
 import Footer from '@/components/Footer';
 import CategoryHero from '@/components/CategoryHero';
 import AlternateUrlsSetter from '@/components/seo/AlternateUrlsSetter';
+import InspectableSection from '@/components/ai/webmaster/InspectableSection';
 
 // Local static translations
 const categoryPageTranslations: Record<string, Record<string, string>> = {
@@ -376,68 +377,92 @@ export default async function CategoryDynamicPage({
 
         {/* 1. HERO DE CATEGORÍA CINEMATOGRÁFICO */}
         <section className="h-[100dvh] snap-start snap-stop-always md:h-[65vh] md:snap-none">
-          <CategoryHero category={category} lang={lang} />
+          <InspectableSection
+            id={`cat-hero-${category.id}`}
+            name={`Cabecera de Categoría (${translatedCategoryName})`}
+            pageSlug={esPath}
+            blockType="category_header"
+            className="w-full h-full"
+          >
+            <CategoryHero category={category} lang={lang} />
+          </InspectableSection>
         </section>
 
         {/* 2. SLIDER DE TRATAMIENTOS */}
         {translatedCategoryServices.length > 0 && (
           <section id="treatment-content" className="relative z-20 w-full overflow-hidden h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none flex flex-col bg-[#F5F2EE] dark:bg-stone-900">
             <style dangerouslySetInnerHTML={{ __html: '.hide-scroll::-webkit-scrollbar { display: none; } .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }' }} />
-            <div className="pt-16 md:pt-24 pb-8 flex-1 flex flex-col min-h-0">
-              <div className="max-w-7xl mx-auto px-6 mb-4 flex flex-col md:flex-row md:justify-between md:items-end gap-2 md:gap-8 flex-shrink-0">
-                <div>
-                  <h2 className="text-2xl md:text-4xl font-serif font-bold text-stone-800 dark:text-stone-100">
-                    {t('page.catalog_of', 'Catálogo de')} {translatedCategoryName}
-                  </h2>
-                  <p className="text-stone-400 font-medium text-xs md:text-base">{translatedCategoryServices.length} {t('page.options_available', 'opciones disponibles')}</p>
-                </div>
-                <Link href="/tratamientos" className="self-end md:self-auto inline-flex items-center gap-2 font-bold text-primary hover:text-stone-900 dark:hover:text-white transition-colors uppercase tracking-widest text-[10px] md:text-sm">
-                  <span className="hidden md:inline">{t('page.see_all_treatments', 'Ver todos los tratamientos')}</span>
-                  <span className="md:hidden">{t('page.see_all', 'Ver todos')}</span>
-                  <span className="text-xl">→</span>
-                </Link>
-              </div>
-
-              <div className="md:block hidden flex-1 min-h-0 flex flex-col justify-center">
-                {translatedCategoryServices.length === 1 ? (
-                  <div className="max-w-7xl mx-auto px-6 w-full">
-                    <div className="w-full">
-                      <ServiceCard
-                        service={translatedCategoryServices[0]}
-                        className="!w-full !md:w-full !h-[600px] !md:h-[600px]"
-                      />
-                    </div>
+            <InspectableSection
+              id={`cat-treatments-${category.id}`}
+              name={`Catálogo de ${translatedCategoryName}`}
+              pageSlug={esPath}
+              blockType="category_list"
+              className="w-full flex-1 flex flex-col min-h-0"
+            >
+              <div className="pt-16 md:pt-24 pb-8 flex-1 flex flex-col min-h-0">
+                <div className="max-w-7xl mx-auto px-6 mb-4 flex flex-col md:flex-row md:justify-between md:items-end gap-2 md:gap-8 flex-shrink-0">
+                  <div>
+                    <h2 className="text-2xl md:text-4xl font-serif font-bold text-stone-800 dark:text-stone-100">
+                      {t('page.catalog_of', 'Catálogo de')} {translatedCategoryName}
+                    </h2>
+                    <p className="text-stone-400 font-medium text-xs md:text-base">{translatedCategoryServices.length} {t('page.options_available', 'opciones disponibles')}</p>
                   </div>
-                ) : (
-                  <TreatmentCarousel servicios={translatedCategoryServices} loop={false} />
-                )}
-              </div>
+                  <Link href="/tratamientos" className="self-end md:self-auto inline-flex items-center gap-2 font-bold text-primary hover:text-stone-900 dark:hover:text-white transition-colors uppercase tracking-widest text-[10px] md:text-sm">
+                    <span className="hidden md:inline">{t('page.see_all_treatments', 'Ver todos los tratamientos')}</span>
+                    <span className="md:hidden">{t('page.see_all', 'Ver todos')}</span>
+                    <span className="text-xl">→</span>
+                  </Link>
+                </div>
 
-              {/* MOBILE VIEW */}
-              <div id="mobile-slider-category" className="md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-6 items-center w-full flex-1 min-h-0 pb-8">
-                {translatedCategoryServices.map((svc: any) => (
-                  <ServiceCard key={svc.id} service={svc} className="snap-stop-always" />
-                ))}
+                <div className="md:block hidden flex-1 min-h-0 flex flex-col justify-center">
+                  {translatedCategoryServices.length === 1 ? (
+                    <div className="max-w-7xl mx-auto px-6 w-full">
+                      <div className="w-full">
+                        <ServiceCard
+                          service={translatedCategoryServices[0]}
+                          className="!w-full !md:w-full !h-[600px] !md:h-[600px]"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <TreatmentCarousel servicios={translatedCategoryServices} loop={false} />
+                  )}
+                </div>
+
+                {/* MOBILE VIEW */}
+                <div id="mobile-slider-category" className="md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-6 items-center w-full flex-1 min-h-0 pb-8">
+                  {translatedCategoryServices.map((svc: any) => (
+                    <ServiceCard key={svc.id} service={svc} className="snap-stop-always" />
+                  ))}
+                </div>
               </div>
-            </div>
+            </InspectableSection>
           </section>
         )}
 
         {/* 3. SECCIÓN SEO EDITORIAL (Imantada) */}
         <section className="pt-16 pb-24 md:py-32 bg-white dark:bg-stone-950 min-h-[100dvh] snap-start snap-stop-always md:min-h-0 md:snap-none flex flex-col justify-center">
-          <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-24 items-start">
-            <div className="md:col-span-4 md:sticky md:top-32">
-              <div className="w-16 h-1 bg-primary mb-6 rounded-full"></div>
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-extrabold text-stone-900 dark:text-stone-100 leading-tight">
-                {t('page.excellence_in', 'Excelencia en')} <br /> <span className="text-primary">{translatedCategoryName}</span>
-              </h2>
-            </div>
-            <div className="md:col-span-8">
-              <div className="prose prose-stone lg:prose-lg max-w-none text-stone-600 dark:text-stone-300 leading-relaxed whitespace-pre-line font-medium">
-                {translatedEditorialText}
+          <InspectableSection
+            id={`cat-editorial-${category.id}`}
+            name={`Texto Editorial de ${translatedCategoryName}`}
+            pageSlug={esPath}
+            blockType="category_editorial"
+            className="w-full"
+          >
+            <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-24 items-start">
+              <div className="md:col-span-4 md:sticky md:top-32">
+                <div className="w-16 h-1 bg-primary mb-6 rounded-full"></div>
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-extrabold text-stone-900 dark:text-stone-100 leading-tight">
+                  {t('page.excellence_in', 'Excelencia en')} <br /> <span className="text-primary">{translatedCategoryName}</span>
+                </h2>
+              </div>
+              <div className="md:col-span-8">
+                <div className="prose prose-stone lg:prose-lg max-w-none text-stone-600 dark:text-stone-300 leading-relaxed whitespace-pre-line font-medium">
+                  {translatedEditorialText}
+                </div>
               </div>
             </div>
-          </div>
+          </InspectableSection>
         </section>
 
         {/* 4. DESCUBRE OTRAS CATEGORÍAS (Bento Grid) */}

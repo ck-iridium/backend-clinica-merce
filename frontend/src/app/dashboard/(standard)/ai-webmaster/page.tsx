@@ -156,18 +156,41 @@ export default function AIWebmasterPage() {
     }
   }, []);
 
-  // Escuchar selecciones visuales desde el iframe (Inspector Visual)
+  // Escuchar selecciones visuales y cambios de página desde el iframe (Inspector Visual)
   useEffect(() => {
     const handleIframeMessage = (event: MessageEvent) => {
       if (event.data?.type === 'WEBMASTER_SECTION_SELECTED') {
         const { sectionId, sectionName, pageSlug, blockType } = event.data;
         setSelectedSection({ id: sectionId, name: sectionName, pageSlug, blockType });
-        toast.info(`Sección seleccionada: ${sectionName}`);
+        toast.info(`Elemento seleccionado: ${sectionName}`);
+        
+        // Notificar al iframe cuál sección está seleccionada para mantener el estado visual activo
+        const iframe = document.querySelector('iframe');
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage({ type: 'WEBMASTER_ACTIVE_SELECTION', sectionId }, '*');
+        }
+      } else if (event.data?.type === 'WEBMASTER_PAGE_CHANGED') {
+        const { pathname } = event.data;
+        if (pathname) {
+          const cleanPath = pathname.startsWith('/') ? pathname : `/${pathname}`;
+          const slug = cleanPath === '/' ? 'home' : cleanPath.replace(/^\//, '');
+          setActivePageSlug(slug);
+          const matchingPage = pages.find((p) => p.path === cleanPath || (cleanPath === '/' && p.id === 'home'));
+          if (matchingPage) {
+            setActivePageTitle(matchingPage.label);
+          } else if (cleanPath.startsWith('/tratamientos/')) {
+            const parts = cleanPath.split('/').filter(Boolean);
+            const rawTitle = parts[parts.length - 1] || 'Tratamiento';
+            setActivePageTitle(rawTitle.charAt(0).toUpperCase() + rawTitle.slice(1).replace(/-/g, ' '));
+          } else {
+            setActivePageTitle(slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, ' '));
+          }
+        }
       }
     };
     window.addEventListener('message', handleIframeMessage);
     return () => window.removeEventListener('message', handleIframeMessage);
-  }, []);
+  }, [pages]);
 
   const handleClearSelectedSection = () => {
     setSelectedSection(null);

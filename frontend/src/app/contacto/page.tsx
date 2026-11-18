@@ -16,6 +16,7 @@ import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatInstagramUrl, formatMapsUrl } from '@/lib/utils';
 import AlternateUrlsSetter from '@/components/seo/AlternateUrlsSetter';
+import InspectableSection from '@/components/ai/webmaster/InspectableSection';
 
 const DAYS_MAP_LOCAL: Record<string, Record<number, string>> = {
   es: { 1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado', 7: 'Domingo' },
@@ -283,7 +284,13 @@ export default function ContactoPage() {
           
           {/* LADO IZQUIERDO: CONTENIDO (Cols 1-7) */}
           <div className="lg:col-span-7 space-y-20">
-            
+            <InspectableSection
+              id="contact-info"
+              name="Información de Contacto y Horarios"
+              pageSlug="/contacto"
+              blockType="contact_info"
+              className="space-y-20 rounded-3xl"
+            >
             <motion.div variants={itemVariants} className="space-y-8">
               <div className="inline-flex items-center gap-3">
                 <div className="w-8 h-px bg-primary" />
@@ -474,6 +481,7 @@ export default function ContactoPage() {
                 </>
               )}
             </motion.div>
+            </InspectableSection>
 
             {/* FORMULARIO EDITORIAL REFORZADO */}
             <motion.div variants={itemVariants} className="pt-24 border-t border-stone-200/60">

@@ -78,7 +78,11 @@ def build_system_instruction(
             f"  [OPTION: 🗑️ Sí, eliminar página [slug] | Confirmo eliminar definitivamente la página [slug]]\n"
             f"  [OPTION: ✕ Cancelar | Cancelar eliminación de página]\n"
             f"  Solo cuando el usuario confirme explícitamente pulsando la opción afirmativa o diciendo que confirma la eliminación definitiva, invocarás la herramienta `delete_custom_page`.\n"
-            f"- SECCIÓN SELECCIONADA POR INSPECTOR VISUAL: Cuando el usuario toque o haga clic en una sección de la vista previa, el sistema te enviará una etiqueta `[SECCIÓN SELECCIONADA: ...]`. Enfoca tus respuestas y acciones directamente en el elemento seleccionado.\n"
+            f"- SECCIÓN SELECCIONADA POR INSPECTOR VISUAL: Cuando el usuario toque o haga clic en una sección de la vista previa, el sistema te enviará una etiqueta `[SECCIÓN SELECCIONADA: ... (página: ..., tipo: ...)]`. Enfoca tus respuestas y acciones directamente en el elemento seleccionado:\n"
+            f"  * EDICIÓN DE TRATAMIENTOS / SERVICIOS: Si el tipo es `service_title`, `service_pricing`, `service_description`, `service_content` o `service_media`, utiliza `update_service_fields(service_slug=..., name=..., price=..., duration_minutes=..., description=..., content_html=..., image_url=...)` o `generar_imagen_servicio`. El `service_slug` se extrae de la URL o del nombre del tratamiento seleccionado.\n"
+            f"  * EDICIÓN DE PORTADA / SOBRE NOSOTROS: Si el tipo es `about`, utiliza `update_landing_config(about_title=..., about_text=..., about_image=...)`.\n"
+            f"  * EDICIÓN DE HERO: Si el tipo es `hero`, utiliza `update_hero_slide` o `add_hero_slide`.\n"
+            f"  * EDICIÓN DE PÁGINAS PERSONALIZADAS: Si el tipo es `atomic_title`, `atomic_text`, `atomic_image` o similar, utiliza `update_page_block` o `update_page_details`.\n"
         )
     else:
         role_description = (

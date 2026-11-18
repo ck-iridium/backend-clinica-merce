@@ -17,6 +17,7 @@ import PublicNavbar from '@/components/PublicNavbar';
 import BotonReservaPro from '@/components/BotonReservaPro';
 import JsonLd from '@/components/seo/JsonLd';
 import AlternateUrlsSetter from '@/components/seo/AlternateUrlsSetter';
+import InspectableSection from '@/components/ai/webmaster/InspectableSection';
 
 async function getServiceData(slug: string, tenantId: string) {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -401,12 +402,20 @@ export default async function TreatmentDynamicPage({
           </div>
 
           <div className={`w-full md:w-[42%] lg:w-[40%] h-[75vh] md:h-[calc(100vh-80px)] -mt-10 md:mt-0 pointer-events-auto flex items-center justify-center md:justify-end px-[20px] md:px-0 ${layoutPreferences.headerStyle === 'split_video' ? 'md:py-[20px] md:pr-4' : ''} relative group`}>
-            <TreatmentMedia
-              imageUrl={getFullUrl(service.image_url)}
-              videoUrl={service.video_url ? getFullUrl(service.video_url) : undefined}
-              headerStyle={layoutPreferences.headerStyle}
-              clinicName={settings?.clinic_name || 'ProBookia'}
-            />
+            <InspectableSection
+              id={`svc-media-${service.id}`}
+              name={`Fotografía de ${translatedName}`}
+              pageSlug={esPath}
+              blockType="service_media"
+              className="w-full h-full flex items-center justify-center"
+            >
+              <TreatmentMedia
+                imageUrl={getFullUrl(service.image_url)}
+                videoUrl={service.video_url ? getFullUrl(service.video_url) : undefined}
+                headerStyle={layoutPreferences.headerStyle}
+                clinicName={settings?.clinic_name || 'ProBookia'}
+              />
+            </InspectableSection>
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-12 z-50 md:hidden">
               <ScrollIndicator />
             </div>
@@ -423,54 +432,91 @@ export default async function TreatmentDynamicPage({
               <span className="text-xs font-black uppercase tracking-[0.2em] text-primary mb-4 block">
                 {categoryName}
               </span>
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-stone-900 dark:text-stone-100 mb-10 leading-[1.1]">
-                {translatedName}
-              </h1>
+              
+              {/* TÍTULO EDITABLE */}
+              <InspectableSection
+                id={`svc-title-${service.id}`}
+                name={`Nombre de Tratamiento: ${translatedName}`}
+                pageSlug={esPath}
+                blockType="service_title"
+              >
+                <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-stone-900 dark:text-stone-100 mb-10 leading-[1.1]">
+                  {translatedName}
+                </h1>
+              </InspectableSection>
 
-              {/* SECCIÓN META */}
-              <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-8 mb-16 border-y border-stone-100 dark:border-stone-800 py-10">
-                <div className="flex items-center gap-12">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-stone-50 dark:bg-stone-900 flex items-center justify-center flex-shrink-0">
-                      <Clock className="w-5 h-5 text-stone-400" />
+              {/* SECCIÓN META (PRECIO Y DURACIÓN EDITABLES) */}
+              <InspectableSection
+                id={`svc-pricing-${service.id}`}
+                name={`Tarifa y Duración: ${translatedName}`}
+                pageSlug={esPath}
+                blockType="service_pricing"
+              >
+                <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-8 mb-16 border-y border-stone-100 dark:border-stone-800 py-10">
+                  <div className="flex items-center gap-12">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-stone-50 dark:bg-stone-900 flex items-center justify-center flex-shrink-0">
+                        <Clock className="w-5 h-5 text-stone-400" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 dark:text-stone-500 mb-0.5">{pageT.duration}</p>
+                        <p className="text-2xl md:text-3xl font-bold text-stone-800 dark:text-stone-100 whitespace-nowrap">{service.duration_minutes} min</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 dark:text-stone-500 mb-0.5">{pageT.duration}</p>
-                      <p className="text-2xl md:text-3xl font-bold text-stone-800 dark:text-stone-100 whitespace-nowrap">{service.duration_minutes} min</p>
+
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-stone-50 dark:bg-stone-900 flex items-center justify-center flex-shrink-0">
+                        <Tag className="w-5 h-5 text-stone-400" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 dark:text-stone-500 mb-0.5">{pageT.price}</p>
+                        <p className="text-2xl md:text-3xl font-bold text-stone-800 dark:text-stone-100 whitespace-nowrap">{service.price} €</p>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-stone-50 dark:bg-stone-900 flex items-center justify-center flex-shrink-0">
-                      <Tag className="w-5 h-5 text-stone-400" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 dark:text-stone-500 mb-0.5">{pageT.price}</p>
-                      <p className="text-2xl md:text-3xl font-bold text-stone-800 dark:text-stone-100 whitespace-nowrap">{service.price} €</p>
-                    </div>
+                  <div className="lg:ml-auto w-full lg:w-auto">
+                    <BotonReservaPro
+                      texto={pageT.book_now}
+                      color={layoutPreferences.accentColor}
+                      href={`/reservar?servicio=${service.id}&nombre=${encodeURIComponent(translatedName)}`}
+                      className="w-full lg:w-auto"
+                    />
                   </div>
                 </div>
+              </InspectableSection>
 
-                <div className="lg:ml-auto w-full lg:w-auto">
-                  <BotonReservaPro
-                    texto={pageT.book_now}
-                    color={layoutPreferences.accentColor}
-                    href={`/reservar?servicio=${service.id}&nombre=${encodeURIComponent(translatedName)}`}
-                    className="w-full lg:w-auto"
+              {/* DESCRIPCIÓN CORTA EDITABLE */}
+              <InspectableSection
+                id={`svc-desc-${service.id}`}
+                name={`Descripción Corta: ${translatedName}`}
+                pageSlug={esPath}
+                blockType="service_description"
+              >
+                <p className="text-xl md:text-2xl text-stone-500 dark:text-stone-400 font-sans leading-relaxed mb-16 italic">
+                  "{translatedDescription}"
+                </p>
+              </InspectableSection>
+
+              {/* CONTENIDO EXTENSO EDITABLE */}
+              <InspectableSection
+                id={`svc-content-${service.id}`}
+                name={`Contenido Extenso: ${translatedName}`}
+                pageSlug={esPath}
+                blockType="service_content"
+              >
+                {translatedContentHtml ? (
+                  <div
+                    className="prose prose-stone lg:prose-xl dark:prose-invert max-w-none prose-headings:font-serif prose-headings:font-normal prose-p:leading-relaxed prose-a:text-primary prose-img:rounded-3xl mb-16 text-stone-700 dark:text-stone-300"
+                    dangerouslySetInnerHTML={{ __html: translatedContentHtml }}
                   />
-                </div>
-              </div>
-
-              <p className="text-xl md:text-2xl text-stone-500 dark:text-stone-400 font-sans leading-relaxed mb-16 italic">
-                "{translatedDescription}"
-              </p>
-
-              {translatedContentHtml && (
-                <div
-                  className="prose prose-stone lg:prose-xl dark:prose-invert max-w-none prose-headings:font-serif prose-headings:font-normal prose-p:leading-relaxed prose-a:text-primary prose-img:rounded-3xl mb-16 text-stone-700 dark:text-stone-300"
-                  dangerouslySetInnerHTML={{ __html: translatedContentHtml }}
-                />
-              )}
+                ) : (
+                  <div className="p-8 mb-16 rounded-3xl border-2 border-dashed border-stone-200 dark:border-stone-800 text-stone-400 text-center bg-stone-50/50">
+                    <p className="text-xs uppercase font-bold tracking-widest text-[#d4af37]">Sin contenido extenso redactado</p>
+                    <p className="text-xs text-stone-400 mt-1">Haz clic aquí para pedirle al Asistente IA que redacte la página completa.</p>
+                  </div>
+                )}
+              </InspectableSection>
 
               <TreatmentActions serviceName={translatedName} />
             </div>

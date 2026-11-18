@@ -1,5 +1,19 @@
 import { 
-  Palette, LayoutGrid, SlidersHorizontal, PlusCircle, Wand2, Sparkles, LucideIcon 
+  Palette, 
+  LayoutGrid, 
+  SlidersHorizontal, 
+  PlusCircle, 
+  Wand2, 
+  Sparkles, 
+  DollarSign,
+  Clock,
+  FileText,
+  Type,
+  Image as ImageIcon,
+  PhoneCall,
+  MapPin,
+  Mail,
+  type LucideIcon 
 } from 'lucide-react';
 
 export interface Message {
@@ -80,6 +94,108 @@ export function getWebmasterCommands(
 ): { sectionTitle: string; sectionSubtitle: string; commands: WebmasterCommand[] } {
   const isCustomPage = Boolean(activePageSlug && activePageSlug !== 'home');
   const pageLabel = activePageTitle || (isCustomPage && activePageSlug ? activePageSlug.replace(/-/g, ' ') : 'Portada');
+
+  if (activePageSlug?.startsWith('tratamientos')) {
+    return {
+      sectionTitle: `Comandos Rápidos · ${pageLabel}`,
+      sectionSubtitle: 'Ficha de Tratamiento',
+      commands: [
+        {
+          id: 'service_price',
+          title: 'Cambiar Precio',
+          subtitle: 'Actualizar tarifa en euros',
+          icon: DollarSign,
+          prompt: 'Quiero cambiar el precio de este tratamiento.'
+        },
+        {
+          id: 'service_duration',
+          title: 'Modificar Duración',
+          subtitle: 'Ajustar tiempo en minutos',
+          icon: Clock,
+          prompt: 'Quiero cambiar la duración en minutos de este tratamiento.'
+        },
+        {
+          id: 'service_desc',
+          title: 'Mejorar Descripción',
+          subtitle: 'Texto corto persuasivo',
+          icon: Sparkles,
+          prompt: 'Mejora la descripción corta de este tratamiento con estilo Quiet Luxury.'
+        },
+        {
+          id: 'service_photo',
+          title: 'Cambiar Fotografía',
+          subtitle: 'Subir o generar foto',
+          icon: ImageIcon,
+          prompt: 'Quiero cambiar la fotografía de este tratamiento.'
+        },
+        {
+          id: 'service_protocol',
+          title: 'Redactar Protocolo',
+          subtitle: 'Pasos y beneficios detallados',
+          icon: FileText,
+          prompt: 'Redacta el protocolo detallado y los beneficios de este tratamiento.'
+        },
+        {
+          id: 'service_rename',
+          title: 'Cambiar Nombre',
+          subtitle: 'Editar título comercial',
+          icon: Type,
+          prompt: 'Quiero cambiar el nombre de este tratamiento.'
+        },
+      ]
+    };
+  }
+
+  if (activePageSlug === 'contacto') {
+    return {
+      sectionTitle: 'Comandos Rápidos · Contacto',
+      sectionSubtitle: 'Información y Horarios',
+      commands: [
+        {
+          id: 'contact_schedule',
+          title: 'Actualizar Horarios',
+          subtitle: 'Apertura y cierre',
+          icon: Clock,
+          prompt: 'Quiero revisar y cambiar los horarios de apertura y cierre de la clínica.'
+        },
+        {
+          id: 'contact_whatsapp',
+          title: 'Modificar WhatsApp',
+          subtitle: 'Número de atención',
+          icon: PhoneCall,
+          prompt: 'Quiero actualizar el número de WhatsApp de contacto.'
+        },
+        {
+          id: 'contact_address',
+          title: 'Cambiar Dirección',
+          subtitle: 'Ubicación física',
+          icon: MapPin,
+          prompt: 'Quiero modificar la dirección de la clínica.'
+        },
+        {
+          id: 'contact_email',
+          title: 'Actualizar Email',
+          subtitle: 'Correo de consultas',
+          icon: Mail,
+          prompt: 'Quiero actualizar el email de contacto de la clínica.'
+        },
+        {
+          id: 'contact_style',
+          title: 'Colores de la Web',
+          subtitle: 'Paleta visual',
+          icon: Palette,
+          prompt: 'Quiero cambiar los colores principales de la web.'
+        },
+        {
+          id: 'contact_home',
+          title: 'Ir a Portada',
+          subtitle: 'Volver al inicio',
+          icon: LayoutGrid,
+          prompt: 'Vamos a la portada para seguir diseñando.'
+        },
+      ]
+    };
+  }
 
   if (isCustomPage) {
     return {

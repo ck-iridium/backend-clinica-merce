@@ -393,38 +393,60 @@ def update_landing_config(
         if not tenant_id:
             return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
 
-        update_payload = schemas.SiteContentUpdate(
-            hero_title=hero_title,
-            hero_subtitle=hero_subtitle,
-            hero_alignment=hero_alignment,
-            hero_horizontal_alignment=hero_horizontal_alignment,
-            hero_content_fullwidth=hero_content_fullwidth,
-            hero_title_size=hero_title_size,
-            hero_subtitle_size=hero_subtitle_size,
-            hero_title_max_width=hero_title_max_width,
-            hero_price_enabled=hero_price_enabled,
-            hero_price_prefix=hero_price_prefix,
-            hero_price_amount=hero_price_amount,
-            hero_price_suffix=hero_price_suffix,
-            hero_price_period=hero_price_period,
-            hero_price_size=hero_price_size,
-            hero_price_offset_y=hero_price_offset_y,
-            hero_price_style=hero_price_style,
-            hero_show_button=hero_show_button,
-            hero_button_text=hero_button_text,
-            hero_button_link=hero_button_link,
-            hero_button_style=hero_button_style,
-            hero_slider_autoplay=hero_slider_autoplay,
-            hero_slider_interval=hero_slider_interval,
-            hero_slider_effect=hero_slider_effect,
-            about_title=about_title,
-            about_text=about_text,
-            cta_title=cta_title,
-            cta_subtitle=cta_subtitle,
-            layout_style=layout_style,
-            megamenu_layout=megamenu_layout,
-            megamenu_categories_json=megamenu_categories_json
-        )
+        # Limpieza estricta de HTML para evitar que el LLM guarde etiquetas <p> visibles
+        clean_about_text = about_text
+        if clean_about_text:
+            clean_about_text = re.sub(r'</p>\s*<p>', '\n\n', clean_about_text, flags=re.IGNORECASE)
+            clean_about_text = re.sub(r'<[^>]+>', '', clean_about_text).strip()
+
+        clean_about_title = about_title
+        if clean_about_title:
+            clean_about_title = re.sub(r'<[^>]+>', '', clean_about_title).strip()
+
+        clean_hero_title = hero_title
+        if clean_hero_title:
+            clean_hero_title = re.sub(r'<[^>]+>', '', clean_hero_title).strip()
+
+        raw_fields = {
+            "hero_title": clean_hero_title,
+            "hero_subtitle": hero_subtitle,
+            "hero_alignment": hero_alignment,
+            "hero_horizontal_alignment": hero_horizontal_alignment,
+            "hero_content_fullwidth": hero_content_fullwidth,
+            "hero_title_size": hero_title_size,
+            "hero_subtitle_size": hero_subtitle_size,
+            "hero_title_max_width": hero_title_max_width,
+            "hero_price_enabled": hero_price_enabled,
+            "hero_price_prefix": hero_price_prefix,
+            "hero_price_amount": hero_price_amount,
+            "hero_price_suffix": hero_price_suffix,
+            "hero_price_period": hero_price_period,
+            "hero_price_size": hero_price_size,
+            "hero_price_offset_y": hero_price_offset_y,
+            "hero_price_style": hero_price_style,
+            "hero_show_button": hero_show_button,
+            "hero_button_text": hero_button_text,
+            "hero_button_link": hero_button_link,
+            "hero_button_style": hero_button_style,
+            "hero_slider_autoplay": hero_slider_autoplay,
+            "hero_slider_interval": hero_slider_interval,
+            "hero_slider_effect": hero_slider_effect,
+            "about_title": clean_about_title,
+            "about_text": clean_about_text,
+            "cta_title": cta_title,
+            "cta_subtitle": cta_subtitle,
+            "layout_style": layout_style,
+            "megamenu_layout": megamenu_layout,
+            "megamenu_categories_json": megamenu_categories_json
+        }
+
+        # Filtrar estrictamente solo los campos que fueron provistos (distintos de None)
+        # Esto previene que actualizar el título sobrescriba el texto existente con None
+        provided_fields = {k: v for k, v in raw_fields.items() if v is not None}
+        if not provided_fields:
+            return "Aviso: No se proporcionó ningún campo para actualizar en la landing page."
+
+        update_payload = schemas.SiteContentUpdate(**provided_fields)
 
         update_site_content(db, update_payload)
         return "Éxito: La configuración de la landing page ha sido actualizada correctamente en la base de datos."

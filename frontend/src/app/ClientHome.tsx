@@ -14,8 +14,18 @@ import { useLanguage } from '@/app/contexts/LanguageContext';
 const cleanTitle = (text: string) => {
   if (!text) return '';
   return text
+    .replace(/<[^>]+>/g, '')
     .replace(/\s*\(?\s*con v[ií]deo\s*\)?/gi, '')
     .replace(/\s+con v[ií]deo/gi, '')
+    .trim();
+};
+
+const cleanParagraphText = (rawText: any) => {
+  if (!rawText || typeof rawText !== 'string') return '';
+  return rawText
+    .replace(/<\/p>\s*<p>/gi, '\n\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
     .trim();
 };
 
@@ -550,7 +560,7 @@ export default function ClientHome({ content, settings, services, categories }: 
                       </div>
 
                       <div className="text-base md:text-xl text-stone-600 dark:text-stone-300 leading-relaxed whitespace-pre-wrap font-medium max-w-md">
-                        {translate(content.about_text, content.translations, 'about_text')}
+                        {cleanParagraphText(translate(content.about_text, content.translations, 'about_text'))}
                       </div>
 
                       {content.about_show_button && (
