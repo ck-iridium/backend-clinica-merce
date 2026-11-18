@@ -559,6 +559,10 @@ export default function ClientHome({ content, settings, services, categories }: 
                         <img 
                           src={content.about_image_url ? (content.about_image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${content.about_image_url}` : content.about_image_url) : "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/beauty/about.jpg"} 
                           alt="Sobre Nosotros" 
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/beauty/about.jpg";
+                          }}
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                         />
                       </div>
@@ -581,6 +585,10 @@ export default function ClientHome({ content, settings, services, categories }: 
                       <img 
                         src={content.about_image_url ? (content.about_image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${content.about_image_url}` : content.about_image_url) : "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/beauty/about.jpg"} 
                         alt="Sobre Nosotros" 
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/beauty/about.jpg";
+                        }}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                       />
                     </div>

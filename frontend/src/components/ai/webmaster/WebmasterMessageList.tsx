@@ -1,8 +1,47 @@
 'use client';
 
 import { useState, RefObject } from 'react';
-import { User, Sparkles, Compass, AlertTriangle, Trash2, Check, ZoomIn, ExternalLink, X } from 'lucide-react';
-import { Message, parseOptionsAndText } from './webmasterConfig';
+import { User, Sparkles, Compass, AlertTriangle, Trash2, Check, ZoomIn, ExternalLink, X, ImageOff } from 'lucide-react';
+import { Message, parseOptionsAndText, AttachedImagePreview } from './webmasterConfig';
+
+function AttachedImageThumbnail({
+  image,
+  onZoom
+}: {
+  image: AttachedImagePreview;
+  onZoom: () => void;
+}) {
+  const [hasError, setHasError] = useState(false);
+
+  if (hasError) {
+    return null;
+  }
+
+  return (
+    <div className="mb-3 rounded-2xl overflow-hidden border border-amber-300/60 bg-stone-950/10 shadow-sm group/img relative">
+      <div 
+        className="relative overflow-hidden cursor-zoom-in bg-stone-900/5"
+        onClick={onZoom}
+      >
+        <img
+          src={image.url}
+          alt={image.name}
+          onError={() => setHasError(true)}
+          className="w-full max-h-56 object-cover rounded-2xl hover:scale-[1.02] transition-transform duration-300"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity flex items-end justify-between p-3">
+          <div className="flex items-center gap-1.5 text-white text-[11px] font-medium truncate">
+            <ZoomIn size={13} className="text-[#d4af37]" />
+            <span className="truncate max-w-[200px]">{image.name}</span>
+          </div>
+          <span className="text-[10px] bg-black/60 text-amber-200 px-2 py-0.5 rounded-lg border border-amber-300/30 font-medium shrink-0">
+            Ampliar
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface WebmasterMessageListProps {
   messages: Message[];
@@ -76,27 +115,10 @@ export default function WebmasterMessageList({
 
                   {/* Miniatura visual de imagen adjunta o generada con IA */}
                   {attachedImage && (
-                    <div className="mb-3 rounded-2xl overflow-hidden border border-amber-300/60 bg-stone-950/10 shadow-sm group/img relative">
-                      <div 
-                        className="relative overflow-hidden cursor-zoom-in bg-stone-900/5"
-                        onClick={() => setZoomImage({ url: attachedImage.url, name: attachedImage.name })}
-                      >
-                        <img
-                          src={attachedImage.url}
-                          alt={attachedImage.name}
-                          className="w-full max-h-56 object-cover rounded-2xl hover:scale-[1.02] transition-transform duration-300"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity flex items-end justify-between p-3">
-                          <div className="flex items-center gap-1.5 text-white text-[11px] font-medium truncate">
-                            <ZoomIn size={13} className="text-[#d4af37]" />
-                            <span className="truncate max-w-[200px]">{attachedImage.name}</span>
-                          </div>
-                          <span className="text-[10px] bg-black/60 text-amber-200 px-2 py-0.5 rounded-lg border border-amber-300/30 font-medium shrink-0">
-                            Ampliar
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                    <AttachedImageThumbnail
+                      image={attachedImage}
+                      onZoom={() => setZoomImage({ url: attachedImage.url, name: attachedImage.name })}
+                    />
                   )}
 
                   <div className="whitespace-pre-line leading-relaxed">
@@ -234,12 +256,22 @@ export default function WebmasterMessageList({
             </div>
 
             {/* Contenedor de la Imagen */}
-            <div className="p-2 sm:p-4 overflow-auto flex items-center justify-center max-h-[calc(90vh-60px)] bg-stone-950/40">
+            <div className="p-2 sm:p-4 overflow-auto flex items-center justify-center max-h-[calc(90vh-60px)] min-h-[220px] bg-stone-950/40">
               <img
                 src={zoomImage.url}
                 alt={zoomImage.name}
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  const fallback = document.getElementById('zoom-fallback-error');
+                  if (fallback) fallback.style.display = 'flex';
+                }}
                 className="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-xl"
               />
+              <div id="zoom-fallback-error" style={{ display: 'none' }} className="flex-col items-center justify-center p-8 text-center text-stone-400 gap-2">
+                <ImageOff size={28} className="text-amber-400/60 mx-auto mb-1" />
+                <p className="text-xs font-medium text-stone-300">No se pudo cargar la vista previa de la fotografía.</p>
+                <p className="text-[11px] text-stone-500">Es posible que el archivo haya sido actualizado o reemplazado en la galería.</p>
+              </div>
             </div>
           </div>
         </div>

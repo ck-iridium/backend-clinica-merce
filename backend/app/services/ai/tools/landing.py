@@ -419,6 +419,31 @@ def update_landing_config(
         clean_cta_subtitle = clean_clean_text(cta_subtitle)
         clean_hero_button_text = clean_clean_text(hero_button_text)
         resolved_about_image = (about_image_url or about_image or "").strip() or None
+        if resolved_about_image:
+            img_val_lower = resolved_about_image.lower()
+            if any(k in img_val_lower for k in ["last", "ultima", "última", "reciente", "generada", "media"]):
+                latest_media = db.query(models.Media).filter(
+                    models.Media.tenant_id == tenant_id,
+                    models.Media.file_type == 'image'
+                ).order_by(models.Media.created_at.desc()).first()
+                if latest_media and latest_media.url:
+                    logger.info(f"Asignando última imagen de medios a 'Sobre Nosotros': {latest_media.url}")
+                    resolved_about_image = latest_media.url
+            elif resolved_about_image.startswith("http"):
+                filename = resolved_about_image.split("/")[-1].split("?")[0]
+                media_record = db.query(models.Media).filter(
+                    models.Media.tenant_id == tenant_id,
+                    models.Media.filename == filename
+                ).first()
+                if not media_record and filename.startswith("ai_"):
+                    # Si el LLM alucinó un nombre UUID que no existe en la base de datos, recuperar la última imagen real
+                    latest_media = db.query(models.Media).filter(
+                        models.Media.tenant_id == tenant_id,
+                        models.Media.file_type == 'image'
+                    ).order_by(models.Media.created_at.desc()).first()
+                    if latest_media and latest_media.url:
+                        logger.info(f"Auto-corrección de imagen alucinada '{resolved_about_image}' a última imagen real '{latest_media.url}'")
+                        resolved_about_image = latest_media.url
 
         raw_fields = {
             "hero_title": clean_hero_title,

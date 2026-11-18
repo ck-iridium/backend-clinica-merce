@@ -156,7 +156,32 @@ def update_service_fields(
             service.content_html = content_html
             updated_parts.append("contenido detallado HTML actualizado")
         if image_url is not None:
-            service.image_url = image_url
+            resolved_img = image_url.strip() if image_url else ""
+            if resolved_img:
+                img_lower = resolved_img.lower()
+                if any(k in img_lower for k in ["last", "ultima", "última", "reciente", "generada", "media"]):
+                    latest_media = db.query(models.Media).filter(
+                        models.Media.tenant_id == tenant_id,
+                        models.Media.file_type == 'image'
+                    ).order_by(models.Media.created_at.desc()).first()
+                    if latest_media and latest_media.url:
+                        logger.info(f"Asignando última imagen de medios a servicio '{service.name}': {latest_media.url}")
+                        resolved_img = latest_media.url
+                elif resolved_img.startswith("http"):
+                    filename = resolved_img.split("/")[-1].split("?")[0]
+                    media_record = db.query(models.Media).filter(
+                        models.Media.tenant_id == tenant_id,
+                        models.Media.filename == filename
+                    ).first()
+                    if not media_record and filename.startswith("ai_"):
+                        latest_media = db.query(models.Media).filter(
+                            models.Media.tenant_id == tenant_id,
+                            models.Media.file_type == 'image'
+                        ).order_by(models.Media.created_at.desc()).first()
+                        if latest_media and latest_media.url:
+                            logger.info(f"Auto-corrección de imagen alucinada '{resolved_img}' a última imagen real '{latest_media.url}' en servicio '{service.name}'")
+                            resolved_img = latest_media.url
+            service.image_url = resolved_img or None
             updated_parts.append("imagen del servicio actualizada")
 
         if category_name_or_slug is not None:

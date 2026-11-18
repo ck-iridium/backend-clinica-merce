@@ -308,10 +308,10 @@ export function parseOptionsAndText(content: string): {
   let raw = content || '';
   let attachedImage: AttachedImagePreview | null = null;
 
-  // 1. Detectar imagen adjunta con formato institucional o URL de Supabase
+  // 1. Detectar imagen adjunta con formato institucional o URL de Supabase / Markdown
   const fullImgRegex = /\[(?:Imagen adjunta|Image jointe|Attached image):\s*"([^"]+)"\]\s*(?:\r?\n)?\s*URL de la imagen:\s*(https?:\/\/[^\s\n\)]+)/i;
   const fullMatch = raw.match(fullImgRegex);
-  if (fullMatch) {
+  if (fullMatch && fullMatch[2]?.startsWith('http')) {
     attachedImage = {
       name: fullMatch[1].trim(),
       url: fullMatch[2].trim(),
@@ -320,15 +320,27 @@ export function parseOptionsAndText(content: string): {
   } else {
     const fallbackUrlRegex = /URL de la imagen:\s*(https?:\/\/[^\s\n\)]+)/i;
     const fallbackMatch = raw.match(fallbackUrlRegex);
-    if (fallbackMatch) {
+    if (fallbackMatch && fallbackMatch[1]?.startsWith('http')) {
       attachedImage = {
         name: 'Fotografía generada',
         url: fallbackMatch[1].trim(),
       };
       raw = raw.replace(fallbackUrlRegex, '').trim();
-      raw = raw.replace(/\[(?:Imagen adjunta|Image jointe|Attached image):[^\]]+\]/gi, '').trim();
+    } else {
+      const markdownImgRegex = /!\[([^\]]*)\]\((https?:\/\/[^\s\n\)]+)\)/i;
+      const mdMatch = raw.match(markdownImgRegex);
+      if (mdMatch && mdMatch[2]?.startsWith('http')) {
+        attachedImage = {
+          name: mdMatch[1]?.trim() || 'Fotografía generada',
+          url: mdMatch[2].trim(),
+        };
+        raw = raw.replace(markdownImgRegex, '').trim();
+      }
     }
   }
+
+  // Limpiar cualquier etiqueta huérfana de [Imagen adjunta: ...] que haya quedado sin URL
+  raw = raw.replace(/\[(?:Imagen adjunta|Image jointe|Attached image):[^\]]+\]/gi, '').trim();
 
   // 2. Extraer opciones interactivas [OPTION: label | value]
   const options: { label: string; value: string }[] = [];
