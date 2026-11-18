@@ -294,9 +294,43 @@ const TECHNICAL_SLUG_MAP: Record<string, string> = {
   hero: 'Quiero añadir una sección principal tipo Hero a esta página.',
 };
 
-// Extraer chips de opción interactiva [OPTION: label | value] del texto del mensaje
-export function parseOptionsAndText(content: string) {
-  const raw = content || '';
+export interface AttachedImagePreview {
+  name: string;
+  url: string;
+}
+
+// Extraer chips de opción interactiva [OPTION: label | value] e imágenes adjuntas del texto del mensaje
+export function parseOptionsAndText(content: string): {
+  clean: string;
+  options: { label: string; value: string }[];
+  attachedImage: AttachedImagePreview | null;
+} {
+  let raw = content || '';
+  let attachedImage: AttachedImagePreview | null = null;
+
+  // 1. Detectar imagen adjunta con formato institucional o URL de Supabase
+  const fullImgRegex = /\[(?:Imagen adjunta|Image jointe|Attached image):\s*"([^"]+)"\]\s*(?:\r?\n)?\s*URL de la imagen:\s*(https?:\/\/[^\s\n\)]+)/i;
+  const fullMatch = raw.match(fullImgRegex);
+  if (fullMatch) {
+    attachedImage = {
+      name: fullMatch[1].trim(),
+      url: fullMatch[2].trim(),
+    };
+    raw = raw.replace(fullImgRegex, '').trim();
+  } else {
+    const fallbackUrlRegex = /URL de la imagen:\s*(https?:\/\/[^\s\n\)]+)/i;
+    const fallbackMatch = raw.match(fallbackUrlRegex);
+    if (fallbackMatch) {
+      attachedImage = {
+        name: 'Fotografía generada',
+        url: fallbackMatch[1].trim(),
+      };
+      raw = raw.replace(fallbackUrlRegex, '').trim();
+      raw = raw.replace(/\[(?:Imagen adjunta|Image jointe|Attached image):[^\]]+\]/gi, '').trim();
+    }
+  }
+
+  // 2. Extraer opciones interactivas [OPTION: label | value]
   const options: { label: string; value: string }[] = [];
   const optionRegex = /\[OPTION:\s*([^|\]]+)\s*\|\s*([^\]]+)\]/g;
   let match;
@@ -310,6 +344,28 @@ export function parseOptionsAndText(content: string) {
     );
     options.push({ label: rawLabel, value: cleanValue });
   }
-  const clean = raw.replace(optionRegex, '').trim();
-  return { clean, options };
+  let clean = raw.replace(optionRegex, '').trim();
+
+  // 3. Opciones inteligentes de respaldo (Smart Fallback Options) si el modelo formuló una pregunta sin botones
+  if (options.length === 0) {
+    if (attachedImage) {
+      // Si hay imagen y se pregunta sobre asignarla a una sección
+      const secMatch = clean.match(/(?:sección|seccion|bloque|página|pagina)\s*["'«]?([^"'»?.!]+)["'»?]/i);
+      const targetSec = secMatch ? secMatch[1].trim() : 'la sección activa';
+      options.push(
+        { label: `✓ Sí, asignar a "${targetSec}"`, value: `Sí, asigna esta imagen directamente a la sección "${targetSec}"` },
+        { label: '✕ No, solo guardarla en galería', value: 'No, solo consérvala guardada en mi galería de medios' }
+      );
+    } else if (clean.includes('?') || clean.includes('¿')) {
+      const isConfirmation = /gustaría|desea|quieres|confirmas|procedo|aplico|guardamos/i.test(clean);
+      if (isConfirmation) {
+        options.push(
+          { label: '✓ Sí, aplicar cambios', value: 'Sí, adelante, aplica los cambios propuestos' },
+          { label: '✕ No, descartar', value: 'No, descarta esta propuesta y déjalo como estaba' }
+        );
+      }
+    }
+  }
+
+  return { clean, options, attachedImage };
 }

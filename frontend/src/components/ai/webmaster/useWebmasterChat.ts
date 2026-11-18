@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { useAuthRole } from '@/hooks/useAuthRole';
+import { useCopilotFiles } from '../useCopilotFiles';
 import { 
   Message, 
   ConfirmModalState, 
@@ -39,6 +40,20 @@ export function useWebmasterChat({ onFieldsUpdated, initialPrompt, onPromptConsu
   const [voiceGender, setVoiceGender] = useState<'female' | 'male'>('female');
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [confirmModal, setConfirmModal] = useState<ConfirmModalState | null>(null);
+
+  // Soporte de Archivos, Capturas y Subida de Imágenes
+  const {
+    attachedFile,
+    setAttachedFile,
+    isUploading: isUploadingFile,
+    fileInputRef,
+    handleFileChange,
+    handlePaste,
+  } = useCopilotFiles({
+    language,
+    planType: 'gold',
+    hasOwnKey: true,
+  });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasLoadedSavedChat = useRef(false);
@@ -235,8 +250,17 @@ export function useWebmasterChat({ onFieldsUpdated, initialPrompt, onPromptConsu
 
   // 8. Enviar mensaje de texto o comando
   const handleSend = async (textToSend?: string) => {
-    const queryText = textToSend || input.trim();
-    if (!queryText || isLoading) return;
+    let queryText = textToSend || input.trim();
+    if ((!queryText && !attachedFile) || isLoading || isUploadingFile) return;
+
+    if (attachedFile) {
+      if (attachedFile.type === 'image' && attachedFile.url) {
+        queryText = `[Imagen adjunta: "${attachedFile.name}"]\nURL de la imagen: ${attachedFile.url}\n\n${queryText}`.trim();
+      } else if (attachedFile.type === 'text') {
+        queryText = `[Archivo adjunto: "${attachedFile.name}"]\nContenido:\n"""\n${attachedFile.content}\n"""\n\n${queryText}`.trim();
+      }
+      setAttachedFile(null);
+    }
 
     const tenantId = getActiveTenantId() || '';
     const userSession = localStorage.getItem('user');
@@ -507,5 +531,13 @@ export function useWebmasterChat({ onFieldsUpdated, initialPrompt, onPromptConsu
     handleSend,
     handleResetChat,
     handleConfirmDelete,
+    // Soporte de Archivos e Imágenes
+    attachedFile,
+    onRemoveFile: () => setAttachedFile(null),
+    onAttachClick: () => fileInputRef.current?.click(),
+    fileInputRef,
+    onFileChange: handleFileChange,
+    onPaste: handlePaste,
+    isUploadingFile,
   };
 }

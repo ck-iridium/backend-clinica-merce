@@ -393,6 +393,8 @@ def update_landing_config(
     hero_slider_effect: Optional[str] = None,
     about_title: Optional[str] = None,
     about_text: Optional[str] = None,
+    about_image_url: Optional[str] = None,
+    about_image: Optional[str] = None,
     cta_title: Optional[str] = None,
     cta_subtitle: Optional[str] = None,
     layout_style: Optional[str] = None,
@@ -416,6 +418,7 @@ def update_landing_config(
         clean_cta_title = clean_clean_text(cta_title)
         clean_cta_subtitle = clean_clean_text(cta_subtitle)
         clean_hero_button_text = clean_clean_text(hero_button_text)
+        resolved_about_image = (about_image_url or about_image or "").strip() or None
 
         raw_fields = {
             "hero_title": clean_hero_title,
@@ -443,6 +446,7 @@ def update_landing_config(
             "hero_slider_effect": hero_slider_effect,
             "about_title": clean_about_title,
             "about_text": clean_about_text,
+            "about_image_url": resolved_about_image,
             "cta_title": clean_cta_title,
             "cta_subtitle": clean_cta_subtitle,
             "layout_style": layout_style,

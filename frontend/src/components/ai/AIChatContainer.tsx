@@ -77,6 +77,13 @@ export default function AIChatContainer({
     handleSend,
     handleResetChat,
     handleConfirmDelete,
+    attachedFile,
+    onRemoveFile,
+    onAttachClick,
+    fileInputRef,
+    onFileChange,
+    onPaste,
+    isUploadingFile,
   } = useWebmasterChat({ onFieldsUpdated, initialPrompt, onPromptConsumed, selectedSection });
 
   const getSectionActionChips = (section: SelectedSection): ActionChip[] => {
@@ -252,7 +259,7 @@ export default function AIChatContainer({
         activePageTitle={activePageTitle}
       />
 
-      {/* Barra de Entrada y Grabador de Voz */}
+      {/* Barra de Entrada, Adjuntos y Grabador de Voz */}
       <WebmasterInputBar
         input={input}
         onChangeInput={setInput}
@@ -260,6 +267,13 @@ export default function AIChatContainer({
         isLoading={isLoading}
         chatLanguage={chatLanguage}
         placeholder={selectedSection ? `¿Qué cambio deseas en "${selectedSection.name}"?` : (t('ai_chat.input_placeholder') || 'Pregúntame algo o envíame un comando de voz...')}
+        attachedFile={attachedFile}
+        onRemoveFile={onRemoveFile}
+        onAttachClick={onAttachClick}
+        fileInputRef={fileInputRef}
+        onFileChange={onFileChange}
+        onPaste={onPaste}
+        isUploading={isUploadingFile}
       />
 
       {/* Escudo de Seguridad Anti-Destrucción (Modal de Confirmación) */}
