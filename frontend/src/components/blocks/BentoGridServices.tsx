@@ -157,7 +157,7 @@ function BentoServiceCard({ svc, idx, gridClass, total }: { svc: any, idx: numbe
 
 // ─── Componente Principal ───────────────────────────────────────────────────
 export default function BentoGridServices({ data, services }: { data: any, services: any[] }) {
-  const maxServices = data?.max_services || 4;
+  const maxServices = data?.max_services || 6;
   const filteredServices = services
     .filter(s => s.is_active)
     .sort((a, b) => (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0))
@@ -179,6 +179,8 @@ export default function BentoGridServices({ data, services }: { data: any, servi
   }
 
   const getGridClasses = (index: number, totalCount: number) => {
+    if (totalCount === 1) return 'col-span-1 h-full';
+    if (totalCount === 2) return 'md:col-span-1 md:row-span-1 h-full';
     if (totalCount === 3) {
       if (index === 0) return 'md:col-span-2 md:row-span-2 h-full';
       return 'md:col-span-1 md:row-span-1 h-full';
@@ -186,13 +188,17 @@ export default function BentoGridServices({ data, services }: { data: any, servi
     if (totalCount === 4) {
       return 'md:col-span-1 md:row-span-1 h-full';
     }
-    if (totalCount === 2) {
+    if (totalCount === 6) {
+      if (index === 0) return 'md:col-span-2 md:row-span-2 h-full';
       return 'md:col-span-1 md:row-span-1 h-full';
     }
-    if (totalCount === 1) {
-      return 'col-span-1 h-full';
+    if (totalCount === 8) {
+      if (index === 0) return 'md:col-span-2 md:row-span-2 h-full';
+      if (index === 4 || index === 5) return 'md:col-span-2 md:row-span-1 h-full';
+      if (index === 7) return 'md:col-span-3 md:row-span-1 h-full';
+      return 'md:col-span-1 md:row-span-1 h-full';
     }
-    // Para >= 5 elementos
+    // Para 5 u otros
     if (index === 0) return 'md:col-span-2 md:row-span-2 h-full';
     if (index === 4) return 'md:col-span-2 md:row-span-1 h-full';
     return 'md:col-span-1 md:row-span-1 h-full';

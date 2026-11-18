@@ -2,7 +2,101 @@
 
 import { useState, RefObject } from 'react';
 import { User, Sparkles, Compass, AlertTriangle, Trash2, Check, ZoomIn, ExternalLink, X, ImageOff } from 'lucide-react';
-import { Message, parseOptionsAndText, AttachedImagePreview } from './webmasterConfig';
+import { Message, parseOptionsAndText, AttachedImagePreview, ParsedOption, OptionGroup } from './webmasterConfig';
+
+function OptionMatrixSelector({
+  optionGroups,
+  onSelectOption,
+  disabled
+}: {
+  optionGroups: OptionGroup[];
+  onSelectOption: (val: string) => void;
+  disabled: boolean;
+}) {
+  const [selectedMap, setSelectedMap] = useState<Record<string, ParsedOption>>({});
+
+  const handleToggle = (groupName: string, opt: ParsedOption) => {
+    setSelectedMap(prev => {
+      const next = { ...prev };
+      if (next[groupName]?.label === opt.label) {
+        delete next[groupName];
+      } else {
+        next[groupName] = opt;
+      }
+      return next;
+    });
+  };
+
+  const selectedCount = Object.keys(selectedMap).length;
+
+  const handleApply = () => {
+    const selectedList = Object.entries(selectedMap).map(([group, opt]) => `${group}: ${opt.label}`);
+    const combinedPrompt = `Aplica los siguientes ajustes: ${selectedList.join(', ')}`;
+    onSelectOption(combinedPrompt);
+  };
+
+  return (
+    <div className="mt-2.5 p-3.5 rounded-2xl bg-gradient-to-br from-amber-50/80 via-white to-amber-50/30 border border-amber-200/80 shadow-sm space-y-3 animate-in fade-in zoom-in-95 duration-200">
+      <div className="flex items-center justify-between pb-2 border-b border-amber-200/40">
+        <span className="text-[10px] font-black uppercase tracking-wider text-[#d4af37] flex items-center gap-1.5">
+          <Sparkles size={12} />
+          <span>Configuración Multicriterio por Fila</span>
+        </span>
+        <span className="text-[10px] text-stone-400 font-sans">
+          {selectedCount > 0 ? `${selectedCount} seleccionado(s)` : 'Selecciona una opción por fila'}
+        </span>
+      </div>
+
+      <div className="space-y-2.5">
+        {optionGroups.map((grp, gIdx) => {
+          const selectedInGroup = selectedMap[grp.name];
+          return (
+            <div key={gIdx} className="space-y-1">
+              <span className="text-[9px] font-extrabold uppercase tracking-widest text-stone-500">
+                {grp.name}
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {grp.options.map((opt, oIdx) => {
+                  const isSelected = selectedInGroup?.label === opt.label;
+                  return (
+                    <button
+                      key={oIdx}
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => handleToggle(grp.name, opt)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 shadow-2xs active:scale-95 disabled:opacity-40 ${
+                        isSelected
+                          ? 'bg-stone-900 text-white border border-stone-900 shadow-sm ring-1 ring-[#d4af37]'
+                          : 'bg-white hover:bg-stone-50 text-stone-700 border border-amber-200/80'
+                      }`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-[#d4af37]' : 'bg-stone-300'}`} />
+                      <span>{opt.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {selectedCount > 0 && (
+        <div className="pt-2 border-t border-amber-200/40 flex justify-end">
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={handleApply}
+            className="w-full py-2.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider bg-[#d4af37] hover:bg-[#b38f2b] text-white shadow-md transition-all active:scale-95 flex items-center justify-center gap-2"
+          >
+            <Sparkles size={13} />
+            <span>Aplicar Configuración Seleccionada ({selectedCount})</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function AttachedImageThumbnail({
   image,
@@ -67,7 +161,7 @@ export default function WebmasterMessageList({
       <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 scrollbar-thin scrollbar-thumb-stone-200">
         {messages.map((msg, i) => {
           const isUser = msg.role === 'user';
-          const { clean, options, attachedImage } = parseOptionsAndText(msg.content);
+          const { clean, options, optionGroups, attachedImage } = parseOptionsAndText(msg.content);
 
           return (
             <div
@@ -164,6 +258,16 @@ export default function WebmasterMessageList({
                           })}
                         </div>
                       </div>
+                    );
+                  }
+
+                  if (optionGroups && optionGroups.length > 1) {
+                    return (
+                      <OptionMatrixSelector
+                        optionGroups={optionGroups}
+                        onSelectOption={onSelectOption}
+                        disabled={isLoading}
+                      />
                     );
                   }
 

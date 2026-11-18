@@ -957,10 +957,18 @@ def add_section_to_page(
     page_slug: str,
     columns_count: int = 1,
     bg_color: str = "white",
+    content_width: str = "boxed",
+    horizontal_alignment: str = "justify-center",
     py_spacing: str = "py-16"
 ) -> str:
     """
-    Añade una nueva sección estructural vacía a una página con 1, 2, 3 o 4 columnas.
+    Añade una nueva sección estructural a una página con 1, 2, 3 o 4 columnas.
+    Permite configurar:
+    - columns_count: 1, 2, 3 o 4
+    - bg_color: "white" | "cream" | "dark" | "soft_gold" o hex
+    - content_width: "boxed" (cuadrícula central max-w-7xl) | "fullwidth" (ancho completo w-full)
+    - horizontal_alignment: "justify-start" | "justify-center" | "justify-end" | "justify-between"
+    - py_spacing: "py-12" | "py-16" | "py-24"
     """
     db = SessionLocal()
     try:
@@ -996,6 +1004,8 @@ def add_section_to_page(
                 "columns_count": c_count,
                 "py_spacing": py_spacing or "py-16",
                 "bg_color": bg_color or "white",
+                "content_width": content_width or "boxed",
+                "horizontal_alignment": horizontal_alignment or "justify-center",
                 "vertical_alignment": "items-start",
                 "columns": columns
             }
@@ -1003,7 +1013,7 @@ def add_section_to_page(
         db.add(new_section)
         db.commit()
 
-        return f"Éxito: Se ha creado una nueva sección con {c_count} columna(s) en la página '/{clean_slug}'."
+        return f"Éxito: Se ha creado una nueva sección con {c_count} columna(s) ({content_width}, fondo {bg_color}) en la página '/{clean_slug}'."
     except Exception as e:
         db.rollback()
         logger.error(f"Error en add_section_to_page: {e}")
@@ -1230,7 +1240,14 @@ def update_page_block_properties(
         updated = False
         for b in blocks:
             data = b.content_data or {}
-            if b.block_type == "section":
+            if canon_type == "section" and b.block_type == "section":
+                if not block_id or block_id in [b.id, data.get("id")]:
+                    data.update(normalized_props)
+                    b.content_data = data
+                    attributes.flag_modified(b, "content_data")
+                    updated = True
+                    break
+            elif b.block_type == "section":
                 cols = data.get("columns", [])
                 for col in cols:
                     for ab in col.get("blocks", []):

@@ -18,8 +18,18 @@ function RenderBlock({ block, dbCategories, dbServices }: {
 
   // HERO
   if (block.block_type === 'hero') {
+    const heroAlign = data.alignment || 'center';
+    const heroOuterAlign = 
+      heroAlign === 'left' ? 'justify-start' : 
+      heroAlign === 'right' ? 'justify-end' : 
+      'justify-center';
+    const heroTextAlign = 
+      heroAlign === 'left' ? 'text-left items-start' : 
+      heroAlign === 'right' ? 'text-right items-end' : 
+      'text-center items-center';
+
     return (
-      <div className="relative w-full min-h-[340px] bg-stone-900 overflow-hidden flex items-end">
+      <div className={`relative w-full min-h-[340px] bg-stone-900 overflow-hidden flex items-end ${heroOuterAlign}`}>
         {data.image_url && (
           data.image_url.match(/\.(mp4|webm)/) ? (
             <video src={data.image_url} autoPlay loop muted playsInline
@@ -29,7 +39,7 @@ function RenderBlock({ block, dbCategories, dbServices }: {
           )
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-stone-950/70 to-transparent" />
-        <div className="relative z-10 p-8 md:p-12 max-w-2xl">
+        <div className={`relative z-10 p-8 md:p-12 max-w-2xl w-full flex flex-col ${heroTextAlign}`}>
           {data.heading && (
             <h1 className="font-serif text-3xl md:text-4xl font-extrabold text-white leading-tight mb-3">
               {data.heading}
@@ -278,7 +288,11 @@ function RenderBlock({ block, dbCategories, dbServices }: {
 
         {layoutStyle === 'bento_grid' && (
           <BentoGridServices
-            data={{ title: category?.name || 'Tratamientos', subtitle: category?.description || '' }}
+            data={{
+              title: category?.name || 'Tratamientos',
+              subtitle: category?.description || '',
+              max_services: data.max_items || 6
+            }}
             services={services}
           />
         )}
@@ -486,10 +500,24 @@ export function CanvasSection({ section, index, totalSections, onReorder, onDele
   let gridClass = 'flex gap-6';
   if (columnsCount >= 2) gridClass = 'flex gap-6';
 
-  const bgColor = struct.bg_color === 'white' ? 'bg-white' : 'bg-[#FAFAFA]';
+  const rawBg = struct.bg_color || 'cream';
+  const isCustomHex = rawBg.startsWith('#');
+  const isDark = rawBg === 'dark' || rawBg === 'anthracite' || rawBg === '#1c1917';
+  const bgColor = isCustomHex 
+    ? '' 
+    : rawBg === 'white' 
+    ? 'bg-white' 
+    : isDark 
+    ? 'bg-stone-900 text-white' 
+    : rawBg === 'soft_gold' 
+    ? 'bg-[#FAF7F0]' 
+    : 'bg-[#FAFAFA]';
 
   return (
-    <div className={`relative group/section w-full ${bgColor}`}>
+    <div 
+      style={isCustomHex ? { backgroundColor: rawBg } : undefined}
+      className={`relative group/section w-full ${bgColor} ${isDark ? 'text-white' : ''}`}
+    >
       {/* ── Toolbar de sección incrustada (se ve al hover) ── */}
       <div className="flex items-center gap-3 px-6 py-2.5 bg-stone-50/50 border-b border-t border-stone-200/60 z-20 relative select-none">
         {/* Flechas reordenado */}
@@ -538,7 +566,7 @@ export function CanvasSection({ section, index, totalSections, onReorder, onDele
           ))}
         </div>
 
-        {/* Alineación vertical (Icono engranaje) */}
+        {/* Ajustes avanzados de sección (Icono engranaje) */}
         <div className="relative">
           <button
             onClick={() => setShowGearPopover(!showGearPopover)}
@@ -547,7 +575,7 @@ export function CanvasSection({ section, index, totalSections, onReorder, onDele
                 ? 'bg-stone-200 text-stone-850' 
                 : 'text-stone-400 hover:text-stone-700 hover:bg-white'
             }`}
-            title="Ajustes de alineación vertical"
+            title="Ajustes de sección: alineación, fondo y ancho"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.99l1.005.831a1.125 1.125 0 01.26 1.43l-1.297 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.43l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.831a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.645-.869l.214-1.28z" />
@@ -556,34 +584,127 @@ export function CanvasSection({ section, index, totalSections, onReorder, onDele
           </button>
           
           {showGearPopover && (
-            <div className="absolute right-0 top-full mt-1.5 bg-white border border-stone-200 rounded-2xl shadow-xl p-3 z-50 min-w-[200px] flex flex-col gap-2">
-              <span className="text-[9px] font-black uppercase tracking-wider text-[#d4af37] block mb-1">
-                Alineación Vertical
-              </span>
-              <div className="grid grid-cols-3 gap-1">
-                {[
-                  { value: 'items-start', label: 'Arriba' },
-                  { value: 'items-center', label: 'Centro' },
-                  { value: 'items-end', label: 'Abajo' }
-                ].map(opt => {
-                  const isSel = (struct.vertical_alignment || 'items-start') === opt.value;
-                  return (
-                    <button
-                      key={opt.value}
-                      onClick={() => {
-                        onUpdateSectionMetadata(section.id, 'vertical_alignment', opt.value);
-                        setShowGearPopover(false);
-                      }}
-                      className={`py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all border text-center ${
-                        isSel
-                          ? 'bg-stone-900 border-stone-900 text-white shadow-sm'
-                          : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  );
-                })}
+            <div className="absolute right-0 top-full mt-1.5 bg-white border border-stone-200 rounded-2xl shadow-2xl p-4 z-50 min-w-[280px] flex flex-col gap-3.5 text-stone-800 animate-in fade-in zoom-in-95 duration-200">
+              {/* Alineación Horizontal */}
+              <div>
+                <span className="text-[9px] font-black uppercase tracking-wider text-[#d4af37] block mb-1.5">
+                  Alineación Horizontal
+                </span>
+                <div className="grid grid-cols-4 gap-1">
+                  {[
+                    { value: 'justify-start', label: 'Izq' },
+                    { value: 'justify-center', label: 'Centro' },
+                    { value: 'justify-end', label: 'Dcha' },
+                    { value: 'justify-between', label: 'Sep.' }
+                  ].map(opt => {
+                    const isSel = (struct.horizontal_alignment || 'justify-start') === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        onClick={() => onUpdateSectionMetadata(section.id, 'horizontal_alignment', opt.value)}
+                        className={`py-1.5 px-1.5 rounded-lg text-[10px] font-bold transition-all border text-center ${
+                          isSel
+                            ? 'bg-stone-900 border-stone-900 text-white shadow-sm'
+                            : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Alineación Vertical */}
+              <div>
+                <span className="text-[9px] font-black uppercase tracking-wider text-[#d4af37] block mb-1.5">
+                  Alineación Vertical
+                </span>
+                <div className="grid grid-cols-3 gap-1">
+                  {[
+                    { value: 'items-start', label: 'Arriba' },
+                    { value: 'items-center', label: 'Centro' },
+                    { value: 'items-end', label: 'Abajo' }
+                  ].map(opt => {
+                    const isSel = (struct.vertical_alignment || 'items-start') === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        onClick={() => onUpdateSectionMetadata(section.id, 'vertical_alignment', opt.value)}
+                        className={`py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all border text-center ${
+                          isSel
+                            ? 'bg-stone-900 border-stone-900 text-white shadow-sm'
+                            : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Ancho de Contenedor */}
+              <div>
+                <span className="text-[9px] font-black uppercase tracking-wider text-[#d4af37] block mb-1.5">
+                  Ancho de Contenedor
+                </span>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {[
+                    { value: 'boxed', label: 'Centrado (Boxed)' },
+                    { value: 'fullwidth', label: 'Ancho Total' }
+                  ].map(opt => {
+                    const isSel = (struct.content_width || 'boxed') === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        onClick={() => onUpdateSectionMetadata(section.id, 'content_width', opt.value)}
+                        className={`py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all border text-center ${
+                          isSel
+                            ? 'bg-stone-900 border-stone-900 text-white shadow-sm'
+                            : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Color de Fondo */}
+              <div>
+                <span className="text-[9px] font-black uppercase tracking-wider text-[#d4af37] block mb-1.5">
+                  Color de Fondo
+                </span>
+                <div className="flex items-center gap-2">
+                  {[
+                    { value: 'white', label: 'Blanco', colorClass: 'bg-white border-stone-300' },
+                    { value: 'cream', label: 'Crema', colorClass: 'bg-[#FAFAFA] border-stone-300' },
+                    { value: 'soft_gold', label: 'Oro', colorClass: 'bg-[#FAF7F0] border-amber-300' },
+                    { value: 'dark', label: 'Oscuro', colorClass: 'bg-stone-900 border-stone-900' }
+                  ].map(opt => {
+                    const isSel = (struct.bg_color || 'cream') === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        onClick={() => onUpdateSectionMetadata(section.id, 'bg_color', opt.value)}
+                        className={`w-7 h-7 rounded-full border-2 transition-transform ${opt.colorClass} ${
+                          isSel ? 'scale-110 ring-2 ring-[#d4af37] ring-offset-2' : 'hover:scale-105'
+                        }`}
+                        title={opt.label}
+                      />
+                    );
+                  })}
+                  {/* Selector Hex libre */}
+                  <input
+                    type="color"
+                    value={struct.bg_color?.startsWith('#') ? struct.bg_color : '#ffffff'}
+                    onChange={(e) => onUpdateSectionMetadata(section.id, 'bg_color', e.target.value)}
+                    className="w-7 h-7 rounded-full cursor-pointer border border-stone-200 p-0 overflow-hidden"
+                    title="Color personalizado"
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -605,12 +726,14 @@ export function CanvasSection({ section, index, totalSections, onReorder, onDele
       {(() => {
         const hasHero = columns.some((col: any) => (col.blocks || []).some((b: any) => b.block_type === 'hero'));
         const isFirstWithHero = index === 0 && hasHero;
-        const paddingClass = isFirstWithHero ? 'px-0 pt-0 pb-0' : (hasHero ? 'px-0 py-0' : 'px-6 md:px-12 py-10');
+        const isFullWidth = struct.content_width === 'fullwidth';
+        const paddingClass = isFirstWithHero ? 'px-0 pt-0 pb-0' : (hasHero ? 'px-0 py-0' : (isFullWidth ? 'px-4 md:px-8 py-8' : 'px-6 md:px-12 py-10'));
         const gapClass = hasHero ? 'gap-0' : 'gap-6';
         const verticalAlign = struct.vertical_alignment || 'items-start';
+        const horizontalAlign = struct.horizontal_alignment || 'justify-start';
 
         return (
-          <div className={`flex ${gapClass} w-full ${paddingClass} ${verticalAlign}`}>
+          <div className={`flex ${gapClass} w-full ${paddingClass} ${verticalAlign} ${horizontalAlign}`}>
             {columns.map((col: any) => (
               <CanvasColumn
                 key={col.id}

@@ -34,6 +34,8 @@ export interface SectionStructure {
   columns_count: number;
   py_spacing?: string;
   bg_color?: string;
+  content_width?: 'boxed' | 'fullwidth';
+  horizontal_alignment?: string;
   vertical_alignment?: string;
   columns: ColumnStructure[];
 }

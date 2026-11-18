@@ -40,6 +40,13 @@ BLOCK_SCHEMAS: Dict[str, Dict[str, Any]] = {
                 "label": "Enlace del Botón CTA",
                 "default": "/reservar",
                 "description": "Ruta o URL a la que dirige el botón (ej: /reservar, /tratamientos)."
+            },
+            "alignment": {
+                "type": "select",
+                "label": "Alineación de Textos",
+                "options": ["left", "center", "right"],
+                "default": "center",
+                "description": "Alineación horizontal del título, subtítulo y botón (left, center, right)."
             }
         }
     },
@@ -316,6 +323,50 @@ BLOCK_SCHEMAS: Dict[str, Dict[str, Any]] = {
                 "description": "Mensaje de bienvenida y atención al cliente."
             }
         }
+    },
+    "section": {
+        "id": "section",
+        "name": "Sección Estructural",
+        "aliases": ["container", "seccion", "layout_section"],
+        "description": "Contenedor de diseño que organiza columnas y bloques.",
+        "icon": "📐",
+        "properties": {
+            "columns_count": {
+                "type": "select",
+                "label": "Número de Columnas",
+                "options": [1, 2, 3, 4],
+                "default": 1,
+                "description": "1, 2, 3 o 4 columnas en la sección."
+            },
+            "bg_color": {
+                "type": "select",
+                "label": "Color de Fondo",
+                "options": ["white", "cream", "dark", "soft_gold"],
+                "default": "white",
+                "description": "white (blanco), cream (crema #FAFAFA), dark (antracita #1C1917), soft_gold (oro suave #FAF7F0), o código hex."
+            },
+            "content_width": {
+                "type": "select",
+                "label": "Ancho de Contenedor",
+                "options": ["boxed", "fullwidth"],
+                "default": "boxed",
+                "description": "boxed (cuadrícula central max-w-7xl), fullwidth (ancho completo w-full)."
+            },
+            "horizontal_alignment": {
+                "type": "select",
+                "label": "Alineación Horizontal",
+                "options": ["justify-start", "justify-center", "justify-end", "justify-between"],
+                "default": "justify-center",
+                "description": "justify-start (izquierda), justify-center (centro), justify-end (derecha), justify-between (espaciado)."
+            },
+            "vertical_alignment": {
+                "type": "select",
+                "label": "Alineación Vertical",
+                "options": ["items-start", "items-center", "items-end"],
+                "default": "items-start",
+                "description": "items-start (arriba), items-center (centro), items-end (abajo)."
+            }
+        }
     }
 }
 
@@ -411,6 +462,21 @@ def normalize_block_properties(block_type: str, props: Dict[str, Any]) -> Dict[s
                 normalized["max_items"] = int(normalized["max_items"])
             except (ValueError, TypeError):
                 pass
+
+    elif canon_type == "section":
+        if "columns" in normalized and "columns_count" not in normalized:
+            try:
+                normalized["columns_count"] = int(normalized.pop("columns"))
+            except (ValueError, TypeError):
+                pass
+        if "background" in normalized and "bg_color" not in normalized:
+            normalized["bg_color"] = normalized.pop("background")
+        if "color" in normalized and "bg_color" not in normalized:
+            normalized["bg_color"] = normalized.pop("color")
+        if "width" in normalized and "content_width" not in normalized:
+            normalized["content_width"] = normalized.pop("width")
+        if "align" in normalized and "horizontal_alignment" not in normalized:
+            normalized["horizontal_alignment"] = normalized.pop("align")
 
     return normalized
 

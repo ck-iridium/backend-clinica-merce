@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import FeedbackModal from '../FeedbackModal';
 import { useWebmasterChat } from './webmaster/useWebmasterChat';
 import WebmasterHeader from './webmaster/WebmasterHeader';
@@ -25,6 +26,9 @@ import {
   MapPin,
   PhoneCall,
   X,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
   type LucideIcon
 } from 'lucide-react';
 
@@ -39,6 +43,11 @@ interface ActionChip {
   icon: LucideIcon;
   label: string;
   prompt: string;
+}
+
+interface ActionRow {
+  title: string;
+  chips: ActionChip[];
 }
 
 interface AIChatContainerProps {
@@ -87,6 +96,127 @@ export default function AIChatContainer({
     onPaste,
     isUploadingFile,
   } = useWebmasterChat({ onFieldsUpdated, initialPrompt, onPromptConsumed, selectedSection });
+
+  const [selectedMultiChips, setSelectedMultiChips] = useState<Record<string, ActionChip>>({});
+
+  const toggleMultiChip = (rowTitle: string, chip: ActionChip) => {
+    setSelectedMultiChips(prev => {
+      const next = { ...prev };
+      if (next[rowTitle]?.label === chip.label) {
+        delete next[rowTitle];
+      } else {
+        next[rowTitle] = chip;
+      }
+      return next;
+    });
+  };
+
+  const handleApplyMultiChips = () => {
+    const list = Object.entries(selectedMultiChips).map(([grp, c]) => `${grp}: ${c.label}`);
+    const name = selectedSection?.name || 'este elemento';
+    const combinedPrompt = `Aplica los siguientes ajustes a ${name}: ${list.join(', ')}`;
+    setSelectedMultiChips({});
+    handleSend(combinedPrompt);
+  };
+
+  const getSectionActionRows = (section: SelectedSection): ActionRow[] => {
+    const type = section.blockType || '';
+    if (type === 'hero') {
+      return [
+        {
+          title: 'Alineación de Textos',
+          chips: [
+            { icon: AlignLeft, label: '⇦ Izquierda', prompt: 'Alinea el Hero a la izquierda' },
+            { icon: AlignCenter, label: '↔ Centrado', prompt: 'Centra los textos del Hero' },
+            { icon: AlignRight, label: '⇨ Derecha', prompt: 'Alinea el Hero a la derecha' },
+          ]
+        },
+        {
+          title: 'Edición y Multimedia',
+          chips: [
+            { icon: Type, label: 'Cambiar titular', prompt: 'Quiero cambiar el título principal de este Hero.' },
+            { icon: ImageIcon, label: 'Cambiar fondo', prompt: 'Quiero cambiar la imagen o vídeo de fondo de este Hero.' },
+            { icon: SlidersHorizontal, label: 'Cambiar botón CTA', prompt: 'Quiero cambiar el texto y enlace del botón de este Hero.' },
+          ]
+        }
+      ];
+    }
+    if (type === 'category' || type === 'atomic_category' || type === 'category_list') {
+      return [
+        {
+          title: 'Diseño Visual',
+          chips: [
+            { icon: SlidersHorizontal, label: '🎠 Carrusel', prompt: 'Configura esta sección de tratamientos en formato Carrusel.' },
+            { icon: LayoutGrid, label: '📐 Bento Grid 2026', prompt: 'Configura esta sección de tratamientos en formato Bento Grid.' },
+            { icon: LayoutGrid, label: '▦ Cuadrícula', prompt: 'Configura esta sección de tratamientos en formato traditional_grid.' },
+            { icon: Layers, label: '📋 Lista Elegante', prompt: 'Configura esta sección de tratamientos en formato minimalist_list.' },
+          ]
+        },
+        {
+          title: 'Máximo Visible',
+          chips: [
+            { icon: Layers, label: '2 Tratamientos', prompt: 'Muestra un máximo de 2 tratamientos en esta sección.' },
+            { icon: Layers, label: '4 Tratamientos', prompt: 'Muestra un máximo de 4 tratamientos en esta sección.' },
+            { icon: Layers, label: '6 Tratamientos', prompt: 'Muestra un máximo de 6 tratamientos en esta sección.' },
+            { icon: Layers, label: '8 Tratamientos', prompt: 'Muestra un máximo de 8 tratamientos en esta sección.' },
+          ]
+        }
+      ];
+    }
+    if (type === 'section') {
+      return [
+        {
+          title: 'Alineación Horizontal',
+          chips: [
+            { icon: AlignLeft, label: '⇦ Izquierda', prompt: 'Alinea el contenido de esta sección a la izquierda' },
+            { icon: AlignCenter, label: '↔ Centro', prompt: 'Centra el contenido de esta sección' },
+            { icon: AlignRight, label: '⇨ Derecha', prompt: 'Alinea el contenido de esta sección a la derecha' },
+          ]
+        },
+        {
+          title: 'Color de Fondo',
+          chips: [
+            { icon: Palette, label: '⚪ Blanco', prompt: 'Pon el fondo de esta sección en blanco' },
+            { icon: Palette, label: '🍦 Crema', prompt: 'Pon el fondo de esta sección en crema' },
+            { icon: Palette, label: '🖤 Oscuro', prompt: 'Pon el fondo de esta sección en antracita oscuro' },
+            { icon: Palette, label: '✨ Oro', prompt: 'Pon el fondo de esta sección en oro suave' },
+          ]
+        },
+        {
+          title: 'Ancho de Contenedor',
+          chips: [
+            { icon: Layers, label: '📦 Centrado (Boxed)', prompt: 'Configura el contenedor de esta sección centrado en cuadrícula' },
+            { icon: Layers, label: '↔ Ancho Completo', prompt: 'Configura el contenedor de esta sección a ancho completo' },
+          ]
+        }
+      ];
+    }
+    if (type === 'atomic_title' || type === 'title_heading') {
+      return [
+        {
+          title: 'Alineación',
+          chips: [
+            { icon: AlignLeft, label: '⇦ Izquierda', prompt: 'Alinea este encabezado a la izquierda' },
+            { icon: AlignCenter, label: '↔ Centro', prompt: 'Centra este encabezado' },
+            { icon: AlignRight, label: '⇨ Derecha', prompt: 'Alinea este encabezado a la derecha' },
+          ]
+        },
+        {
+          title: 'Edición',
+          chips: [
+            { icon: Type, label: 'Cambiar título', prompt: 'Quiero cambiar el título de este encabezado.' },
+            { icon: Sparkles, label: 'Línea divisora', prompt: 'Modifica la visibilidad de la línea divisora dorada de este encabezado.' },
+          ]
+        }
+      ];
+    }
+    return [
+      {
+        title: 'Acciones Rápidas',
+        chips: getSectionActionChips(section)
+      }
+    ];
+  };
 
   const getSectionActionChips = (section: SelectedSection): ActionChip[] => {
     const type = section.blockType || '';
@@ -259,23 +389,54 @@ export default function AIChatContainer({
               </button>
             )}
           </div>
-          {/* Pastillas de acción directa con botones dorados de alto contraste */}
-          <div className="flex flex-wrap gap-1.5">
-            {getSectionActionChips(selectedSection).map((chip, chipIdx) => {
-              const Icon = chip.icon;
+          {/* Opciones organizadas por fila con selección multicriterio */}
+          <div className="space-y-2 mt-2">
+            {getSectionActionRows(selectedSection).map((row, rIdx) => {
+              const selectedInRow = selectedMultiChips[row.title];
               return (
-                <button
-                  key={chipIdx}
-                  onClick={() => handleSend(chip.prompt)}
-                  disabled={isLoading}
-                  className="group inline-flex items-center gap-1.5 text-[11px] font-semibold bg-[#d4af37]/15 hover:bg-[#d4af37] text-amber-200 hover:text-stone-950 border border-[#d4af37]/40 hover:border-[#d4af37] rounded-xl px-2.5 py-1.5 transition-all duration-200 shadow-sm active:scale-95 disabled:opacity-40"
-                >
-                  <Icon size={12} className="text-[#d4af37] group-hover:text-stone-950 transition-colors shrink-0" />
-                  <span>{chip.label}</span>
-                </button>
+                <div key={rIdx} className="space-y-1">
+                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#d4af37]/80 block">
+                    {row.title}
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {row.chips.map((chip, chipIdx) => {
+                      const Icon = chip.icon;
+                      const isSelected = selectedInRow?.label === chip.label;
+                      return (
+                        <button
+                          key={chipIdx}
+                          onClick={() => toggleMultiChip(row.title, chip)}
+                          disabled={isLoading}
+                          className={`group inline-flex items-center gap-1.5 text-[11px] font-semibold rounded-xl px-2.5 py-1.5 transition-all duration-200 shadow-sm active:scale-95 disabled:opacity-40 ${
+                            isSelected
+                              ? 'bg-[#d4af37] text-stone-950 border border-[#d4af37] font-black ring-2 ring-amber-300 ring-offset-1 ring-offset-stone-950 scale-102'
+                              : 'bg-[#d4af37]/15 hover:bg-[#d4af37] text-amber-200 hover:text-stone-950 border border-[#d4af37]/40 hover:border-[#d4af37]'
+                          }`}
+                        >
+                          <Icon size={12} className={isSelected ? 'text-stone-950 shrink-0' : 'text-[#d4af37] group-hover:text-stone-950 transition-colors shrink-0'} />
+                          <span>{chip.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               );
             })}
           </div>
+
+          {/* Botón de Aplicar Configuración Seleccionada */}
+          {Object.keys(selectedMultiChips).length > 0 && (
+            <div className="mt-3 pt-2.5 border-t border-[#d4af37]/25 animate-in fade-in slide-in-from-bottom-1 duration-200">
+              <button
+                onClick={handleApplyMultiChips}
+                disabled={isLoading}
+                className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-[#d4af37] to-amber-500 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-[#d4af37]/30 transition-all active:scale-95 flex items-center justify-center gap-2"
+              >
+                <Sparkles size={13} className="text-stone-950" />
+                <span>Aplicar Configuración ({Object.keys(selectedMultiChips).length} ajustes seleccionados)</span>
+              </button>
+            </div>
+          )}
         </div>
       )}
 

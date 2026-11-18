@@ -292,10 +292,22 @@ export interface AttachedImagePreview {
   url: string;
 }
 
+export interface ParsedOption {
+  label: string;
+  value: string;
+  group?: string;
+}
+
+export interface OptionGroup {
+  name: string;
+  options: ParsedOption[];
+}
+
 // Extraer chips de opción interactiva [OPTION: label | value] e imágenes adjuntas del texto del mensaje
 export function parseOptionsAndText(content: string): {
   clean: string;
-  options: { label: string; value: string }[];
+  options: ParsedOption[];
+  optionGroups: OptionGroup[];
   attachedImage: AttachedImagePreview | null;
 } {
   let raw = content || '';
@@ -336,18 +348,27 @@ export function parseOptionsAndText(content: string): {
   raw = raw.replace(/\[(?:Imagen adjunta|Image jointe|Attached image):[^\]]+\]/gi, '').trim();
 
   // 2. Extraer opciones interactivas [OPTION: label | value]
-  const options: { label: string; value: string }[] = [];
+  const options: ParsedOption[] = [];
   const optionRegex = /\[OPTION:\s*([^|\]]+)\s*\|\s*([^\]]+)\]/g;
   let match;
   while ((match = optionRegex.exec(raw)) !== null) {
     const rawLabel = match[1].trim();
     const rawValue = match[2].trim();
+    let group: string | undefined = undefined;
+    let finalLabel = rawLabel;
+
+    if (rawLabel.includes(':')) {
+      const parts = rawLabel.split(':');
+      group = parts[0].trim();
+      finalLabel = parts.slice(1).join(':').trim();
+    }
+
     const cleanValue = TECHNICAL_SLUG_MAP[rawValue] || (
       rawValue.includes('_') && !rawValue.includes(' ')
         ? `Quiero añadir ${rawLabel.replace(/^[+-\s]+/, '')}`
         : rawValue
     );
-    options.push({ label: rawLabel, value: cleanValue });
+    options.push({ label: finalLabel, value: cleanValue, group });
   }
   let clean = raw.replace(optionRegex, '').trim();
 
@@ -376,5 +397,17 @@ export function parseOptionsAndText(content: string): {
     }
   }
 
-  return { clean, options, attachedImage };
+  // 4. Construir grupos de opciones por fila
+  const groupsMap: Record<string, ParsedOption[]> = {};
+  for (const opt of options) {
+    const gName = opt.group || 'Opciones';
+    if (!groupsMap[gName]) groupsMap[gName] = [];
+    groupsMap[gName].push(opt);
+  }
+  const optionGroups: OptionGroup[] = Object.entries(groupsMap).map(([name, opts]) => ({
+    name,
+    options: opts
+  }));
+
+  return { clean, options, optionGroups, attachedImage };
 }

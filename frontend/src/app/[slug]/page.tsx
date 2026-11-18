@@ -5,6 +5,7 @@ import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import BentoGridServices from '@/components/blocks/BentoGridServices';
 import ServiceCard from '@/components/ServiceCard';
+import TreatmentCarousel from '@/components/TreatmentCarousel';
 import InspectableSection from '@/components/ai/webmaster/InspectableSection';
 import Link from 'next/link';
 
@@ -26,6 +27,8 @@ interface SectionStructure {
   columns_count: number;
   py_spacing?: string;
   bg_color?: string;
+  content_width?: 'boxed' | 'fullwidth';
+  horizontal_alignment?: string;
   vertical_alignment?: string;
   columns: ColumnStructure[];
 }
@@ -262,7 +265,7 @@ export default async function CustomPage({ params }: PageProps) {
               if (columnsCount === 3) gridClass = 'grid-cols-1 md:grid-cols-3 gap-6 md:gap-8';
               if (columnsCount === 4) gridClass = 'grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6';
 
-              // Espaciados Quiet Luxury y fondos
+              // Espaciados Quiet Luxury, fondos y anchos
               const hasHero = columns.some(col => (col.blocks || []).some(b => b.block_type === 'hero'));
               const isFirstWithHero = index === 0 && hasHero;
               const isFirstSection = index === 0;
@@ -273,17 +276,33 @@ export default async function CustomPage({ params }: PageProps) {
                 : isFirstSection 
                 ? 'pt-6 md:pt-8 pb-12 md:pb-16' 
                 : (struct.py_spacing || 'py-20');
-              const bgColor = struct.bg_color === 'white' ? 'bg-white' : 'bg-[#FAFAFA]';
-              const paddingClass = hasHero ? 'p-0' : 'px-6 md:px-12';
-              const widthClass = hasHero ? 'w-full' : 'max-w-7xl mx-auto grid';
+
+              const rawBg = struct.bg_color || 'cream';
+              const isCustomHex = rawBg.startsWith('#');
+              const isDark = rawBg === 'dark' || rawBg === 'anthracite' || rawBg === '#1c1917' || rawBg === '#121212';
+              const bgColor = isCustomHex
+                ? ''
+                : rawBg === 'white'
+                ? 'bg-white'
+                : rawBg === 'dark' || rawBg === 'anthracite'
+                ? 'bg-stone-900 text-white'
+                : rawBg === 'soft_gold'
+                ? 'bg-[#FAF7F0]'
+                : 'bg-[#FAFAFA]';
+
+              const isFullWidth = struct.content_width === 'fullwidth';
+              const paddingClass = hasHero ? 'p-0' : (isFullWidth ? 'px-4 md:px-8' : 'px-6 md:px-12');
+              const widthClass = hasHero ? 'w-full' : (isFullWidth ? 'w-full grid' : 'max-w-7xl mx-auto grid');
               const verticalAlign = struct.vertical_alignment || 'items-start';
+              const horizontalAlign = struct.horizontal_alignment || 'justify-start';
 
               return (
                 <section
                   key={section.id}
-                  className={`w-full ${pySpacing} ${bgColor} ${paddingClass} transition-all duration-300 border-b border-stone-100/30`}
+                  style={isCustomHex ? { backgroundColor: rawBg } : undefined}
+                  className={`w-full ${pySpacing} ${bgColor} ${paddingClass} ${isDark ? 'text-white' : ''} transition-all duration-300 border-b border-stone-100/30`}
                 >
-                  <div className={`${widthClass} ${hasHero ? '' : gridClass} ${verticalAlign}`}>
+                  <div className={`${widthClass} ${hasHero ? '' : gridClass} ${verticalAlign} ${horizontalAlign}`}>
                     {columns.map((col) => (
                       <div key={col.id} className="flex flex-col gap-6 justify-center">
                         {(col.blocks || []).map((block) => {
@@ -555,6 +574,20 @@ export default async function CustomPage({ params }: PageProps) {
                           // ──── RENDER: HERO ────
                           if (block.block_type === 'hero') {
                             const isVideo = data.image_url && (data.image_url.includes('.mp4') || data.image_url.includes('.webm') || data.image_url.includes('video_'));
+                            const heroAlign = data.alignment || 'center';
+                            const heroAlignContainer = 
+                              heroAlign === 'left' ? 'text-left items-start mr-auto' :
+                              heroAlign === 'right' ? 'text-right items-end ml-auto' :
+                              'text-center items-center mx-auto';
+                            const heroSubAlign = 
+                              heroAlign === 'left' ? 'mr-auto ml-0' :
+                              heroAlign === 'right' ? 'ml-auto mr-0' :
+                              'mx-auto';
+                            const heroOuterAlign = 
+                              heroAlign === 'left' ? 'justify-start px-8 md:px-16' :
+                              heroAlign === 'right' ? 'justify-end px-8 md:px-16' :
+                              'justify-center px-6';
+
                             return (
                               <InspectableSection
                                 key={block.id}
@@ -563,7 +596,7 @@ export default async function CustomPage({ params }: PageProps) {
                                 pageSlug={slug}
                                 blockType={block.block_type}
                               >
-                                <div className="relative w-full min-h-[500px] md:min-h-[620px] flex items-center justify-center overflow-hidden w-full rounded-none shadow-luxury">
+                                <div className={`relative w-full min-h-[500px] md:min-h-[620px] flex items-center ${heroOuterAlign} overflow-hidden w-full rounded-none shadow-luxury`}>
                                   {data.image_url ? (
                                     isVideo ? (
                                       <video src={data.image_url} autoPlay loop muted playsInline preload="none" className="absolute inset-0 w-full h-full object-cover" />
@@ -574,14 +607,14 @@ export default async function CustomPage({ params }: PageProps) {
                                     <div className="absolute inset-0 bg-stone-900" />
                                   )}
                                   <div className="absolute inset-0 bg-black/40" />
-                                  <div className="relative z-10 text-center px-6 max-w-4xl mx-auto space-y-4">
+                                  <div className={`relative z-10 ${heroAlignContainer} max-w-4xl space-y-4`}>
                                     {(data.heading || data.title) && (
                                       <h1 className="font-serif text-4xl md:text-6xl font-extrabold text-white leading-tight">
                                         {data.heading || data.title}
                                       </h1>
                                     )}
                                     {(data.subheading || data.subtitle || data.description) && (
-                                      <p className="text-stone-200 text-lg md:text-xl font-sans max-w-2xl mx-auto leading-relaxed">
+                                      <p className={`text-stone-200 text-lg md:text-xl font-sans max-w-2xl ${heroSubAlign} leading-relaxed`}>
                                         {data.subheading || data.subtitle || data.description}
                                       </p>
                                     )}
@@ -659,20 +692,58 @@ export default async function CustomPage({ params }: PageProps) {
                               >
                                 <div className="w-full py-6">
                                   {layoutStyle === 'cards_slider' && (
-                                    <div className="w-full overflow-x-auto snap-x snap-mandatory hide-scroll flex gap-6 pb-6" style={{ scrollSnapType: 'x mandatory' }}>
-                                      {filteredServices.map((service: any) => {
-                                        const preparedSvc = {
-                                          ...service,
-                                          video_url: service.video_url || (service.image_url?.includes('.mp4') || service.image_url?.includes('.webm') || service.image_url?.includes('video_') ? service.image_url : '')
-                                        };
-                                        return (
-                                          <ServiceCard
-                                            key={service.id}
-                                            service={preparedSvc}
-                                            className="snap-center snap-stop-always"
-                                          />
-                                        );
-                                      })}
+                                    <div className="w-full flex flex-col justify-center pb-4">
+                                      {/* Cabecera de categoría idéntica a la Home */}
+                                      <div className="w-full mb-6 flex flex-col md:flex-row md:justify-between md:items-end gap-3">
+                                        <div className="max-w-2xl">
+                                          <h2 className="text-2xl md:text-4xl font-serif font-extrabold text-stone-900 leading-tight">
+                                            {category?.name || 'Nuestros Tratamientos'}
+                                          </h2>
+                                          {category?.description && (
+                                            <p className="text-sm md:text-base text-stone-500 mt-1 font-sans">
+                                              {category.description}
+                                            </p>
+                                          )}
+                                        </div>
+                                        <Link
+                                          href={`/tratamientos/${category?.slug || category?.id || ''}`}
+                                          className="self-start md:self-auto inline-flex items-center gap-1.5 font-black text-primary hover:text-stone-900 transition-colors uppercase tracking-widest text-xs"
+                                        >
+                                          <span>{data.link_text || 'Ver Catálogo'}</span>
+                                          <span className="text-base">→</span>
+                                        </Link>
+                                      </div>
+
+                                      {/* DESKTOP VIEW CON FLECHAS Y CARRUSEL OFICIAL */}
+                                      <div className="hidden md:block w-full -mx-6 md:-mx-12">
+                                        {filteredServices.length === 1 && (
+                                          <div className="max-w-7xl mx-auto px-6">
+                                            <div className="w-full aspect-[16/9] md:h-[500px]">
+                                              <ServiceCard service={filteredServices[0]} className="w-full h-full" />
+                                            </div>
+                                          </div>
+                                        )}
+                                        {filteredServices.length === 2 && (
+                                          <div className="max-w-7xl mx-auto px-6 flex justify-center gap-8">
+                                            <div className="w-[372px] h-[662px]">
+                                              <ServiceCard service={filteredServices[0]} className="w-full h-full" />
+                                            </div>
+                                            <div className="w-[372px] h-[662px]">
+                                              <ServiceCard service={filteredServices[1]} className="w-full h-full" />
+                                            </div>
+                                          </div>
+                                        )}
+                                        {filteredServices.length >= 3 && (
+                                          <TreatmentCarousel servicios={filteredServices} loop={true} />
+                                        )}
+                                      </div>
+
+                                      {/* MOBILE VIEW */}
+                                      <div className="md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-2 items-stretch w-full pb-4">
+                                        {filteredServices.map((svc: any) => (
+                                          <ServiceCard key={svc.id} service={svc} className="snap-stop-always shrink-0 w-[85vw]" />
+                                        ))}
+                                      </div>
                                     </div>
                                   )}
 
@@ -681,7 +752,8 @@ export default async function CustomPage({ params }: PageProps) {
                                       <BentoGridServices
                                         data={{
                                           title: category?.name || 'Nuestros Tratamientos',
-                                          subtitle: category?.description || 'Nuestros tratamientos insignia.'
+                                          subtitle: category?.description || 'Nuestros tratamientos insignia.',
+                                          max_services: data.max_items || 6
                                         }}
                                         services={filteredServices}
                                       />
