@@ -17,7 +17,7 @@ import PublicNavbar from '@/components/PublicNavbar';
 import BotonReservaPro from '@/components/BotonReservaPro';
 import JsonLd from '@/components/seo/JsonLd';
 import AlternateUrlsSetter from '@/components/seo/AlternateUrlsSetter';
-import InspectableSection from '@/components/ai/webmaster/InspectableSection';
+import InspectableSection, { EmbeddedOnly } from '@/components/ai/webmaster/InspectableSection';
 
 async function getServiceData(slug: string, tenantId: string) {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -511,10 +511,12 @@ export default async function TreatmentDynamicPage({
                     dangerouslySetInnerHTML={{ __html: translatedContentHtml }}
                   />
                 ) : (
-                  <div className="p-8 mb-16 rounded-3xl border-2 border-dashed border-stone-200 dark:border-stone-800 text-stone-400 text-center bg-stone-50/50">
-                    <p className="text-xs uppercase font-bold tracking-widest text-[#d4af37]">Sin contenido extenso redactado</p>
-                    <p className="text-xs text-stone-400 mt-1">Haz clic aquí para pedirle al Asistente IA que redacte la página completa.</p>
-                  </div>
+                  <EmbeddedOnly>
+                    <div className="p-8 mb-16 rounded-3xl border-2 border-dashed border-stone-200 dark:border-stone-800 text-stone-400 text-center bg-stone-50/50">
+                      <p className="text-xs uppercase font-bold tracking-widest text-[#d4af37]">Sin contenido extenso redactado</p>
+                      <p className="text-xs text-stone-400 mt-1">Haz clic aquí para pedirle al Asistente IA que redacte la página completa.</p>
+                    </div>
+                  </EmbeddedOnly>
                 )}
               </InspectableSection>
 

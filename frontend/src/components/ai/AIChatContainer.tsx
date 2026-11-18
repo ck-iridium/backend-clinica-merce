@@ -233,9 +233,9 @@ export default function AIChatContainer({
                   key={chipIdx}
                   onClick={() => handleSend(chip.prompt)}
                   disabled={isLoading}
-                  className="inline-flex items-center gap-1.5 text-[11px] font-semibold bg-[#d4af37]/15 hover:bg-[#d4af37] text-amber-200 hover:text-stone-950 border border-[#d4af37]/40 hover:border-[#d4af37] rounded-xl px-2.5 py-1.5 transition-all duration-200 shadow-sm active:scale-95 disabled:opacity-40"
+                  className="group inline-flex items-center gap-1.5 text-[11px] font-semibold bg-[#d4af37]/15 hover:bg-[#d4af37] text-amber-200 hover:text-stone-950 border border-[#d4af37]/40 hover:border-[#d4af37] rounded-xl px-2.5 py-1.5 transition-all duration-200 shadow-sm active:scale-95 disabled:opacity-40"
                 >
-                  <Icon size={12} className="text-[#d4af37] shrink-0" />
+                  <Icon size={12} className="text-[#d4af37] group-hover:text-stone-950 transition-colors shrink-0" />
                   <span>{chip.label}</span>
                 </button>
               );

@@ -129,7 +129,7 @@ export default function WebmasterMessageList({
                         {/* Micro-destello de cristal al hover */}
                         <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37] group-hover:scale-125 transition-transform" />
                         <span className="font-medium tracking-tight">{opt.label}</span>
-                        <Sparkles size={11} className="text-[#d4af37] opacity-60 group-hover:opacity-100 transition-opacity ml-auto" />
+                        <Sparkles size={11} className="text-[#d4af37] opacity-60 group-hover:text-stone-950 group-hover:opacity-100 transition-all ml-auto" />
                       </button>
                     ))}
                   </div>

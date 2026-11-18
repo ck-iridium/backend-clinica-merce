@@ -186,6 +186,8 @@ export default function AIWebmasterPage() {
           } else {
             setActivePageTitle(slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, ' '));
           }
+          // Mantener la URL del iframe sincronizada para no perder el contexto al actualizar
+          setIframeUrl(buildPublicUrl(cleanPath));
         }
       }
     };
@@ -228,6 +230,9 @@ export default function AIWebmasterPage() {
       } else {
         setActivePageTitle(slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, ' '));
       }
+      setIframeUrl(buildPublicUrl(cleanPath));
+    } else if (selectedSection?.pageSlug && selectedSection.pageSlug !== 'home') {
+      const cleanPath = selectedSection.pageSlug.startsWith('/') ? selectedSection.pageSlug : `/${selectedSection.pageSlug}`;
       setIframeUrl(buildPublicUrl(cleanPath));
     }
     setIframeKey((prev) => prev + 1);

@@ -250,6 +250,25 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
                         args = fn_call.args
                         if args:
                             updated_fields.extend(args.keys())
+                            s_slug = args.get('service_slug')
+                            if s_slug:
+                                clean_s = str(s_slug).strip().lower().lstrip('/')
+                                if clean_s.startswith('tratamientos/'):
+                                    redirect_url = f"/{clean_s}"
+                                elif '/' in clean_s and not clean_s.startswith('svc-'):
+                                    parts = clean_s.split('/')
+                                    redirect_url = f"/tratamientos/{parts[0]}/{parts[-1]}"
+                                else:
+                                    try:
+                                        clean_id = re.sub(r'^svc-(?:content|title|pricing|desc|media)-', '', clean_s, flags=re.IGNORECASE)
+                                        srv_obj = db.query(models.Service).filter(
+                                            models.Service.tenant_id == tenant_id,
+                                            (models.Service.id == clean_id) | (models.Service.slug == clean_s)
+                                        ).first()
+                                        if srv_obj and srv_obj.category:
+                                            redirect_url = f"/tratamientos/{srv_obj.category.slug}/{srv_obj.slug}"
+                                    except Exception:
+                                        pass
                     elif name == "create_new_service":
                         updated_fields.append("services")
                         args = fn_call.args

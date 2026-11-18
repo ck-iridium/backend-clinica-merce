@@ -1,6 +1,7 @@
 import re
 import uuid
 import logging
+import unicodedata
 from typing import Optional
 
 from .... import models, schemas
@@ -17,6 +18,14 @@ def _sanitize_service_text(val: Optional[str]) -> Optional[str]:
     cleaned = re.sub(r'<[^>]*>', '', cleaned)
     return cleaned.strip()
 
+def _normalize_search_string(val: Optional[str]) -> str:
+    if not val:
+        return ""
+    nfkd = unicodedata.normalize('NFKD', val)
+    stripped = "".join([c for c in nfkd if not unicodedata.combining(c)])
+    clean = re.sub(r'[^a-z0-9\s]', ' ', stripped.lower())
+    return re.sub(r'\s+', ' ', clean).strip()
+
 def update_service_fields(
     service_slug: str,
     name: Optional[str] = None,
@@ -28,11 +37,11 @@ def update_service_fields(
     image_url: Optional[str] = None
 ) -> str:
     """
-    Actualiza campos específicos de un servicio o tratamiento existente en la clínica a partir de su slug o nombre.
+    Actualiza campos específicos de un servicio o tratamiento existente en la clínica a partir de su slug, ID o nombre.
     Solo se actualizarán los campos que se pasen con un valor no nulo.
 
     Args:
-        service_slug: El identificador único en formato URL (slug) o nombre del servicio a modificar (ej. 'botox', 'coupe-fille-et-garcon-moins-de-6-ans').
+        service_slug: El identificador único en formato URL (slug), ID o nombre del servicio a modificar (ej. 'botox', 'coupe-fille-et-garcon-moins-de-6-ans').
         name: Opcional. El nuevo nombre o título comercial para el servicio.
         price: El nuevo precio en euros (€).
         duration_minutes: Duración del tratamiento en minutos.
@@ -47,22 +56,72 @@ def update_service_fields(
         if not tenant_id:
             return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
 
-        # Normalizar slug de búsqueda
-        clean_search_slug = service_slug.strip().lower().lstrip('/')
-        if '/' in clean_search_slug:
-            clean_search_slug = clean_search_slug.split('/')[-1]
+        raw_search = service_slug.strip()
+        service = None
 
-        service = db.query(models.Service).filter(
-            models.Service.tenant_id == tenant_id,
-            models.Service.slug == clean_search_slug
-        ).first()
-
-        if not service:
-            # Buscar por aproximación de slug o nombre
+        # 1. Búsqueda por ID (ej. si viene de DOM como svc-content-<UUID>)
+        clean_id = re.sub(r'^svc-(?:content|title|pricing|desc|media)-', '', raw_search, flags=re.IGNORECASE).strip()
+        try:
+            uuid.UUID(clean_id)
             service = db.query(models.Service).filter(
                 models.Service.tenant_id == tenant_id,
-                models.Service.name.ilike(f"%{clean_search_slug}%")
+                models.Service.id == clean_id
             ).first()
+        except (ValueError, TypeError):
+            pass
+
+        # 2. Si viene como URL (ej. /tratamientos/categoria/slug-tratamiento)
+        url_slug_candidate = raw_search.lstrip('/')
+        if 'tratamientos/' in url_slug_candidate or 'services/' in url_slug_candidate:
+            url_slug_candidate = url_slug_candidate.split('/')[-1]
+
+        if not service:
+            service = db.query(models.Service).filter(
+                models.Service.tenant_id == tenant_id,
+                models.Service.slug == url_slug_candidate
+            ).first()
+
+        # 3. Búsqueda inteligente por tokens y normalización en memoria
+        if not service:
+            all_services = db.query(models.Service).filter(
+                models.Service.tenant_id == tenant_id
+            ).all()
+
+            norm_target = _normalize_search_string(raw_search)
+            norm_cand = _normalize_search_string(url_slug_candidate)
+            target_tokens = set(norm_target.split())
+
+            # A. Slug normalizado
+            for s in all_services:
+                s_norm_slug = _normalize_search_string(s.slug or "")
+                if s_norm_slug and (s_norm_slug == norm_cand or s_norm_slug == norm_target):
+                    service = s
+                    break
+
+            # B. Nombre normalizado exacto
+            if not service:
+                for s in all_services:
+                    s_norm_name = _normalize_search_string(s.name)
+                    if s_norm_name and s_norm_name == norm_target:
+                        service = s
+                        break
+
+            # C. Puntuación de solapamiento de tokens (para nombres con signos como + o / o acentos)
+            if not service and target_tokens:
+                best_score = 0
+                best_match = None
+                meaningful_target = {t for t in target_tokens if len(t) > 1} or target_tokens
+                for s in all_services:
+                    s_tokens = set(_normalize_search_string(s.name).split())
+                    meaningful_s = {t for t in s_tokens if len(t) > 1} or s_tokens
+                    common = meaningful_target.intersection(meaningful_s)
+                    score = len(common)
+                    if score > best_score:
+                        best_score = score
+                        best_match = s
+
+                if best_match and best_score >= 1:
+                    service = best_match
 
         if not service:
             return f"Error: No se encontró ningún servicio que coincida con '{service_slug}' en esta clínica."
@@ -142,7 +201,9 @@ def update_service_fields(
             return "No se ha proporcionado ningún campo válido para actualizar."
 
         db.commit()
-        return f"Éxito: El servicio '{service.name}' ha sido actualizado correctamente ({', '.join(updated_parts)})."
+        cat_slug = service.category.slug if service.category else 'general'
+        service_url = f"/tratamientos/{cat_slug}/{service.slug}"
+        return f"Éxito: El servicio '{service.name}' ha sido actualizado correctamente ({', '.join(updated_parts)}). [SERVICE_URL: {service_url}]"
     except Exception as e:
         db.rollback()
         logger.error(f"Error al actualizar servicio {service_slug} para tenant {current_tenant_var.get()}: {e}")
