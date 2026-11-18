@@ -287,12 +287,13 @@ export function usePageBuilder(slug: string | string[]) {
   const handleUpdateSectionLayout = (sectionId: string, columnsCount: number) => {
     const updated = sections.map(sec => {
       if (sec.id !== sectionId) return sec;
-      const current = sec.content_data.columns;
+      const current = sec.content_data.columns || [];
+      const colWidth = columnsCount === 2 ? 'w-1/2' : columnsCount === 3 ? 'w-1/3' : columnsCount === 4 ? 'w-1/4' : 'w-full';
       const newCols: ColumnStructure[] = Array.from({ length: columnsCount }, (_, i) => {
-        if (current[i]) return current[i];
+        if (current[i]) return { ...current[i], width: colWidth };
         return {
           id: `col-${sectionId}-${i}`,
-          width: columnsCount === 2 ? 'w-1/2' : columnsCount === 3 ? 'w-1/3' : columnsCount === 4 ? 'w-1/4' : 'w-full',
+          width: colWidth,
           blocks: [],
         };
       });

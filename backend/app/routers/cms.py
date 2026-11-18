@@ -1,7 +1,7 @@
 import uuid
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, attributes
 from .. import database, models, schemas
 from ..database import current_tenant_var
 from ..schemas.blocks_manifest import BLOCK_SCHEMAS
@@ -416,6 +416,7 @@ def update_block(block_id: str, payload: schemas.SiteBlockUpdate, db: Session = 
 
     if payload.content_data is not None:
         db_block.content_data = payload.content_data
+        attributes.flag_modified(db_block, "content_data")
     if payload.block_type is not None:
         db_block.block_type = payload.block_type
     if payload.order_index is not None:

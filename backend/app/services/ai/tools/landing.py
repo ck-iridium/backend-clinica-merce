@@ -772,7 +772,9 @@ def add_block_to_page(
     button_text: Optional[str] = None,
     button_url: Optional[str] = None,
     layout: Optional[str] = "cards_slider",
-    properties: Optional[Dict[str, Any]] = None
+    properties: Optional[Dict[str, Any]] = None,
+    section_id: Optional[str] = None,
+    column_index: Optional[int] = None
 ) -> str:
     """
     Inserta un nuevo bloque modular en una página personalizada o en la portada del escaparate.
@@ -797,6 +799,8 @@ def add_block_to_page(
         button_url: Enlace del botón (ej: '/reservar', '/tratamientos').
         layout: Disposición ('cards_slider' para carrusel desplazable, 'bento_grid' para mosaico modular 2026, 'traditional_grid' para cuadrícula, 'minimalist_list' para lista).
         properties: Diccionario opcional con propiedades canónicas adicionales.
+        section_id: ID opcional de la sección a la que añadir el bloque. Si se omite y se indica column_index, se utiliza la última sección.
+        column_index: Índice de columna (0, 1, 2, 3) dentro de la sección donde insertar el bloque.
     """
     db = SessionLocal()
     try:
@@ -906,12 +910,69 @@ def add_block_to_page(
             extra_norm = normalize_block_properties(b_type, properties)
             content_data.update(extra_norm)
 
+        # Buscar sección objetivo si se especificó section_id o column_index
+        target_section = None
+        if section_id:
+            sec_blocks = db.query(models.SiteBlock).filter(
+                models.SiteBlock.tenant_id == tenant_id,
+                models.SiteBlock.page_slug == clean_slug,
+                models.SiteBlock.block_type == "section"
+            ).all()
+            for b in sec_blocks:
+                b_data = b.content_data or {}
+                if b.id == section_id or b_data.get("id") == section_id:
+                    target_section = b
+                    break
+        elif column_index is not None:
+            target_section = db.query(models.SiteBlock).filter(
+                models.SiteBlock.tenant_id == tenant_id,
+                models.SiteBlock.page_slug == clean_slug,
+                models.SiteBlock.block_type == "section"
+            ).order_by(models.SiteBlock.order_index.desc()).first()
+
+        if target_section:
+            sec_data = dict(target_section.content_data or {})
+            cols = list(sec_data.get("columns", []))
+            if not cols:
+                cols = [{"id": f"col-{target_section.id[:8]}-0", "width": "w-full", "blocks": []}]
+
+            c_idx = column_index if column_index is not None else 0
+            if c_idx < 0:
+                c_idx = 0
+            if c_idx >= len(cols):
+                # Expandir columnas si el índice supera la cantidad actual
+                new_count = c_idx + 1
+                col_w = "w-1/2" if new_count == 2 else ("w-1/3" if new_count == 3 else ("w-1/4" if new_count >= 4 else "w-full"))
+                for i in range(len(cols), new_count):
+                    cols.append({"id": f"col-{target_section.id[:8]}-{i}", "width": col_w, "blocks": []})
+                for c_item in cols:
+                    c_item["width"] = col_w
+                sec_data["columns_count"] = min(4, new_count)
+
+            target_col = dict(cols[c_idx])
+            col_blocks = list(target_col.get("blocks", []))
+            col_blocks.append({
+                "id": block_id,
+                "block_type": b_type,
+                "content_data": content_data
+            })
+            target_col["blocks"] = col_blocks
+            cols[c_idx] = target_col
+            sec_data["columns"] = cols
+            target_section.content_data = sec_data
+            attributes.flag_modified(target_section, "content_data")
+            db.commit()
+
+            sec_display_id = sec_data.get("id") or target_section.id
+            return f"Éxito: Se ha añadido el bloque '{b_type}' en la columna {c_idx + 1} de la sección (ID: '{sec_display_id}') en la página '/{clean_slug}'. La vista previa interactiva se ha actualizado."
+
+        # Si no había sección objetivo, crear una nueva sección con 1 columna
         max_order = db.query(func.max(models.SiteBlock.order_index)).filter(
             models.SiteBlock.tenant_id == tenant_id,
             models.SiteBlock.page_slug == clean_slug
         ).scalar() or 0
 
-        section_id = f"sec-{uuid.uuid4().hex[:8]}"
+        new_sec_id = f"sec-{uuid.uuid4().hex[:8]}"
         col_id = f"col-{uuid.uuid4().hex[:8]}"
 
         new_section_block = models.SiteBlock(
@@ -921,7 +982,7 @@ def add_block_to_page(
             block_type="section",
             order_index=max_order + 1,
             content_data={
-                "id": section_id,
+                "id": new_sec_id,
                 "columns_count": 1,
                 "py_spacing": "py-12",
                 "bg_color": "white",
@@ -944,7 +1005,7 @@ def add_block_to_page(
         db.add(new_section_block)
         db.commit()
 
-        return f"Éxito: Se ha añadido el bloque '{b_type}' a la página '/{clean_slug}'. La vista previa interactiva se ha actualizado."
+        return f"Éxito: Se ha añadido el bloque '{b_type}' en una nueva sección (ID: '{new_sec_id}') de la página '/{clean_slug}'. La vista previa interactiva se ha actualizado."
     except Exception as e:
         db.rollback()
         logger.error(f"Error en add_block_to_page: {e}")
@@ -978,12 +1039,13 @@ def add_section_to_page(
 
         clean_slug = (page_slug or "home").lower().strip().lstrip("/")
         c_count = max(1, min(4, int(columns_count)))
+        col_width = "w-1/2" if c_count == 2 else ("w-1/3" if c_count == 3 else ("w-1/4" if c_count == 4 else "w-full"))
 
         columns = []
         for i in range(c_count):
             columns.append({
                 "id": f"col-{uuid.uuid4().hex[:6]}-{i}",
-                "width": "w-full",
+                "width": col_width,
                 "blocks": []
             })
 
@@ -1013,11 +1075,93 @@ def add_section_to_page(
         db.add(new_section)
         db.commit()
 
-        return f"Éxito: Se ha creado una nueva sección con {c_count} columna(s) ({content_width}, fondo {bg_color}) en la página '/{clean_slug}'."
+        return f"Éxito: Se ha creado una nueva sección con {c_count} columna(s) (ID: '{section_id}', {content_width}, fondo {bg_color}) en la página '/{clean_slug}'. Ahora puedes añadir bloques a cada una de sus columnas usando add_block_to_page con section_id='{section_id}' y column_index=0 o 1."
     except Exception as e:
         db.rollback()
         logger.error(f"Error en add_section_to_page: {e}")
         return f"Error al crear sección: {str(e)}"
+    finally:
+        db.close()
+
+
+def set_section_columns(
+    page_slug: str,
+    columns_count: int,
+    section_id: Optional[str] = None
+) -> str:
+    """
+    Divide o reconfigura el número de columnas (1, 2, 3 o 4) de una sección estructural existente en una página.
+    Preserva intactos todos los bloques ya existentes en las columnas. Si se amplían columnas, crea nuevas columnas listas para recibir bloques. Si se reducen, unifica los bloques en la primera columna sin perder nada.
+    """
+    db = SessionLocal()
+    try:
+        tenant_id = current_tenant_var.get()
+        if not tenant_id:
+            return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
+
+        clean_slug = (page_slug or "home").lower().strip().lstrip("/")
+        c_count = max(1, min(4, int(columns_count)))
+
+        query = db.query(models.SiteBlock).filter(
+            models.SiteBlock.tenant_id == tenant_id,
+            models.SiteBlock.page_slug == clean_slug,
+            models.SiteBlock.block_type == "section"
+        )
+
+        target_block = None
+        if section_id:
+            all_sec = query.all()
+            for b in all_sec:
+                b_data = b.content_data or {}
+                if b.id == section_id or b_data.get("id") == section_id:
+                    target_block = b
+                    break
+        
+        if not target_block:
+            target_block = query.order_by(models.SiteBlock.order_index.desc()).first()
+
+        if not target_block:
+            return f"Aviso: No se encontró ninguna sección en la página '/{clean_slug}' para dividir en columnas. Puedes crear una nueva sección con add_section_to_page."
+
+        sec_data = dict(target_block.content_data or {})
+        current_cols = list(sec_data.get("columns", []))
+        col_width = "w-1/2" if c_count == 2 else ("w-1/3" if c_count == 3 else ("w-1/4" if c_count == 4 else "w-full"))
+
+        new_cols = []
+        for i in range(c_count):
+            if i < len(current_cols):
+                col_item = dict(current_cols[i])
+                col_item["width"] = col_width
+                new_cols.append(col_item)
+            else:
+                new_cols.append({
+                    "id": f"col-{target_block.id[:8]}-{i}-{uuid.uuid4().hex[:4]}",
+                    "width": col_width,
+                    "blocks": []
+                })
+
+        # Si reducimos columnas, rescatamos bloques de las columnas eliminadas a la primera columna
+        if len(current_cols) > c_count:
+            orphaned = []
+            for col_removed in current_cols[c_count:]:
+                orphaned.extend(col_removed.get("blocks", []))
+            if orphaned and len(new_cols) > 0:
+                first_blocks = list(new_cols[0].get("blocks", []))
+                first_blocks.extend(orphaned)
+                new_cols[0]["blocks"] = first_blocks
+
+        sec_data["columns_count"] = c_count
+        sec_data["columns"] = new_cols
+        target_block.content_data = sec_data
+        attributes.flag_modified(target_block, "content_data")
+        db.commit()
+
+        actual_id = sec_data.get("id") or target_block.id
+        return f"Éxito: La sección (ID: '{actual_id}') en la página '/{clean_slug}' ha sido dividida en {c_count} columna(s). Ahora puedes colocar contenidos en cualquiera de sus columnas usando add_block_to_page(section_id='{actual_id}', column_index=0 o 1)."
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error en set_section_columns: {e}")
+        return f"Error al reconfigurar columnas de la sección: {str(e)}"
     finally:
         db.close()
 
@@ -1242,6 +1386,33 @@ def update_page_block_properties(
             data = b.content_data or {}
             if canon_type == "section" and b.block_type == "section":
                 if not block_id or block_id in [b.id, data.get("id")]:
+                    if "columns_count" in normalized_props:
+                        new_c_count = max(1, min(4, int(normalized_props["columns_count"])))
+                        current_cols = list(data.get("columns", []))
+                        col_w = "w-1/2" if new_c_count == 2 else ("w-1/3" if new_c_count == 3 else ("w-1/4" if new_c_count == 4 else "w-full"))
+                        new_cols_arr = []
+                        for i in range(new_c_count):
+                            if i < len(current_cols):
+                                c_item = dict(current_cols[i])
+                                c_item["width"] = col_w
+                                new_cols_arr.append(c_item)
+                            else:
+                                new_cols_arr.append({
+                                    "id": f"col-{b.id[:8]}-{i}-{uuid.uuid4().hex[:4]}",
+                                    "width": col_w,
+                                    "blocks": []
+                                })
+                        if len(current_cols) > new_c_count:
+                            orphaned = []
+                            for c_rem in current_cols[new_c_count:]:
+                                orphaned.extend(c_rem.get("blocks", []))
+                            if orphaned and len(new_cols_arr) > 0:
+                                first_b = list(new_cols_arr[0].get("blocks", []))
+                                first_b.extend(orphaned)
+                                new_cols_arr[0]["blocks"] = first_b
+                        data["columns"] = new_cols_arr
+                        normalized_props["columns_count"] = new_c_count
+
                     data.update(normalized_props)
                     b.content_data = data
                     attributes.flag_modified(b, "content_data")

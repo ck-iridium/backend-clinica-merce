@@ -29,6 +29,7 @@ import {
   AlignLeft,
   AlignCenter,
   AlignRight,
+  Columns,
   type LucideIcon
 } from 'lucide-react';
 
@@ -165,6 +166,15 @@ export default function AIChatContainer({
     }
     if (type === 'section') {
       return [
+        {
+          title: 'Columnas',
+          chips: [
+            { icon: Columns, label: '1 Columna', prompt: 'Divide esta sección en 1 columna' },
+            { icon: Columns, label: '2 Columnas', prompt: 'Divide esta sección en 2 columnas' },
+            { icon: Columns, label: '3 Columnas', prompt: 'Divide esta sección en 3 columnas' },
+            { icon: Columns, label: '4 Columnas', prompt: 'Divide esta sección en 4 columnas' },
+          ]
+        },
         {
           title: 'Alineación Horizontal',
           chips: [

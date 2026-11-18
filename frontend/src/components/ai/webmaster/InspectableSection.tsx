@@ -67,6 +67,7 @@ export default function InspectableSection({
   }
 
   const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     window.parent.postMessage(
       {
         type: 'WEBMASTER_SECTION_SELECTED',
@@ -136,7 +137,7 @@ export default function InspectableSection({
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#d4af37]" />
               </span>
               <span className="text-[9px] font-black uppercase tracking-[0.16em] text-[#d4af37]">
-                Sección Editable
+                {blockType === 'section' ? 'Sección Estructural' : 'Elemento Editable'}
               </span>
             </div>
             <div className="text-xs font-serif font-bold text-amber-50 leading-snug line-clamp-2">
@@ -147,6 +148,17 @@ export default function InspectableSection({
               <span>Clic para abrir opciones con IA</span>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Píldora de Sección Estructural en Vista Previa */}
+      {blockType === 'section' && !isSelected && (
+        <div 
+          onClick={handleClick}
+          className="absolute top-2.5 left-4 z-40 flex items-center gap-1.5 px-3 py-1 bg-stone-900/90 text-white hover:bg-[#d4af37] hover:text-stone-900 border border-[#d4af37]/70 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md transition-all select-none cursor-pointer"
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
+          <span>{name}</span>
         </div>
       )}
 

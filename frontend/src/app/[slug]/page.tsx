@@ -267,6 +267,13 @@ export default async function CustomPage({ params }: PageProps) {
 
               // Espaciados Quiet Luxury, fondos y anchos
               const hasHero = columns.some(col => (col.blocks || []).some(b => b.block_type === 'hero'));
+              const hasCardsSlider = columns.some(col => 
+                (col.blocks || []).some(b => {
+                  if (b.block_type !== 'atomic_category') return false;
+                  const l = b.content_data?.layout;
+                  return !l || l === 'cards_slider' || l === 'slider';
+                })
+              );
               const isFirstWithHero = index === 0 && hasHero;
               const isFirstSection = index === 0;
               const pySpacing = isFirstWithHero 
@@ -291,18 +298,24 @@ export default async function CustomPage({ params }: PageProps) {
                 : 'bg-[#FAFAFA]';
 
               const isFullWidth = struct.content_width === 'fullwidth';
-              const paddingClass = hasHero ? 'p-0' : (isFullWidth ? 'px-4 md:px-8' : 'px-6 md:px-12');
-              const widthClass = hasHero ? 'w-full' : (isFullWidth ? 'w-full grid' : 'max-w-7xl mx-auto grid');
+              const paddingClass = (hasHero || hasCardsSlider) ? 'px-0' : (isFullWidth ? 'px-4 md:px-8' : 'px-6 md:px-12');
+              const widthClass = (hasHero || hasCardsSlider) ? 'w-full' : (isFullWidth ? 'w-full grid' : 'max-w-7xl mx-auto grid');
               const verticalAlign = struct.vertical_alignment || 'items-start';
               const horizontalAlign = struct.horizontal_alignment || 'justify-start';
 
               return (
-                <section
+                <InspectableSection
                   key={section.id}
-                  style={isCustomHex ? { backgroundColor: rawBg } : undefined}
-                  className={`w-full ${pySpacing} ${bgColor} ${paddingClass} ${isDark ? 'text-white' : ''} transition-all duration-300 border-b border-stone-100/30`}
+                  id={section.id}
+                  name={`Sección ${index + 1} (${columnsCount} ${columnsCount === 1 ? 'columna' : 'columnas'})`}
+                  pageSlug={slug}
+                  blockType="section"
                 >
-                  <div className={`${widthClass} ${hasHero ? '' : gridClass} ${verticalAlign} ${horizontalAlign}`}>
+                  <section
+                    style={isCustomHex ? { backgroundColor: rawBg } : undefined}
+                    className={`w-full ${pySpacing} ${bgColor} ${paddingClass} ${isDark ? 'text-white' : ''} transition-all duration-300 border-b border-stone-100/30`}
+                  >
+                    <div className={`${widthClass} ${(hasHero || hasCardsSlider) ? '' : gridClass} ${verticalAlign} ${horizontalAlign}`}>
                     {columns.map((col) => (
                       <div key={col.id} className="flex flex-col gap-6 justify-center">
                         {(col.blocks || []).map((block) => {
@@ -694,7 +707,7 @@ export default async function CustomPage({ params }: PageProps) {
                                   {layoutStyle === 'cards_slider' && (
                                     <div className="w-full flex flex-col justify-center pb-4">
                                       {/* Cabecera de categoría idéntica a la Home */}
-                                      <div className="w-full mb-6 flex flex-col md:flex-row md:justify-between md:items-end gap-3">
+                                      <div className="w-full max-w-7xl mx-auto px-6 mb-6 flex flex-col md:flex-row md:justify-between md:items-end gap-3">
                                         <div className="max-w-2xl">
                                           <h2 className="text-2xl md:text-4xl font-serif font-extrabold text-stone-900 leading-tight">
                                             {category?.name || 'Nuestros Tratamientos'}
@@ -714,8 +727,8 @@ export default async function CustomPage({ params }: PageProps) {
                                         </Link>
                                       </div>
 
-                                      {/* DESKTOP VIEW CON FLECHAS Y CARRUSEL OFICIAL */}
-                                      <div className="hidden md:block w-full -mx-6 md:-mx-12">
+                                      {/* DESKTOP VIEW CON FLECHAS Y CARRUSEL OFICIAL EDGE-TO-EDGE */}
+                                      <div className="hidden md:block w-full">
                                         {filteredServices.length === 1 && (
                                           <div className="max-w-7xl mx-auto px-6">
                                             <div className="w-full aspect-[16/9] md:h-[500px]">
@@ -739,7 +752,7 @@ export default async function CustomPage({ params }: PageProps) {
                                       </div>
 
                                       {/* MOBILE VIEW */}
-                                      <div className="md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-2 items-stretch w-full pb-4">
+                                      <div className="md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-6 items-stretch w-full pb-4">
                                         {filteredServices.map((svc: any) => (
                                           <ServiceCard key={svc.id} service={svc} className="snap-stop-always shrink-0 w-[85vw]" />
                                         ))}
@@ -819,6 +832,7 @@ export default async function CustomPage({ params }: PageProps) {
                     ))}
                   </div>
                 </section>
+              </InspectableSection>
               );
             })}
           </div>
