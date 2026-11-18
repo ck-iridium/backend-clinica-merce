@@ -43,7 +43,7 @@ export function EmptyColumnDropZone({
         sectionId,
         sectionName: `Columna ${colIndex + 1} de ${totalCols}`,
         pageSlug,
-        blockType: 'section',
+        blockType: 'column',
         columnIndex: colIndex,
       },
       '*'

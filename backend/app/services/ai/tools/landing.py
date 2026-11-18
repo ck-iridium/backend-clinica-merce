@@ -27,6 +27,57 @@ def normalize_slug_str(s: str) -> str:
     norm = unicodedata.normalize('NFKD', s or '').encode('ASCII', 'ignore').decode('utf-8').lower()
     return re.sub(r'[^a-z0-9]+', '-', norm).strip('-')
 
+def resolve_tenant_page_slug(db, tenant_id: str, raw_slug: Optional[str]) -> str:
+    """
+    Resuelve el slug canónico real de la página en la BD para el tenant.
+    Mapea variaciones con o sin tildes, guiones y mayúsculas
+    (ej: 'filosofia-y-espacio' <-> 'filosof-a-y-espacio').
+    """
+    if not raw_slug or raw_slug.lower().strip() in ["home", "portada", "/", ""]:
+        return "home"
+    
+    clean = raw_slug.lower().strip().lstrip("/")
+    if clean.endswith("/"):
+        clean = clean[:-1]
+    
+    # 1. Búsqueda exacta en SiteBlock
+    exists_exact = db.query(models.SiteBlock.id).filter(
+        models.SiteBlock.tenant_id == tenant_id,
+        models.SiteBlock.page_slug == clean
+    ).first()
+    if exists_exact:
+        return clean
+
+    # 2. Búsqueda exacta en SiteNavigation
+    nav_exact = db.query(models.SiteNavigation).filter(
+        models.SiteNavigation.tenant_id == tenant_id,
+        models.SiteNavigation.path == f"/{clean}"
+    ).first()
+    if nav_exact:
+        return nav_exact.path.lstrip("/")
+
+    # 3. Búsqueda normalizada (sin acentos ni caracteres especiales)
+    norm_target = normalize_slug_str(clean).replace("-", "")
+    
+    # Revisar en SiteBlock existentes
+    db_slugs = db.query(models.SiteBlock.page_slug).filter(
+        models.SiteBlock.tenant_id == tenant_id
+    ).distinct().all()
+    for (s,) in db_slugs:
+        if s and normalize_slug_str(s).replace("-", "") == norm_target:
+            return s
+
+    # Revisar en SiteNavigation
+    all_navs = db.query(models.SiteNavigation).filter(
+        models.SiteNavigation.tenant_id == tenant_id
+    ).all()
+    for n in all_navs:
+        p_slug = (n.path or "").lstrip("/")
+        if p_slug and (normalize_slug_str(p_slug).replace("-", "") == norm_target or normalize_slug_str(n.label or "").replace("-", "") == norm_target):
+            return p_slug
+
+    return clean
+
 def _normalize_slides(content: models.SiteContent) -> List[Dict[str, Any]]:
     """Devuelve la lista de diapositivas normalizada o genera la inicial a partir de las propiedades raíz."""
     if content.hero_slides and isinstance(content.hero_slides, list) and len(content.hero_slides) > 0:
@@ -732,7 +783,7 @@ def get_page_blocks(page_slug: str) -> str:
         if not tenant_id:
             return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
 
-        clean_slug = (page_slug or "home").lower().strip().lstrip("/")
+        clean_slug = resolve_tenant_page_slug(db, tenant_id, page_slug)
         blocks = db.query(models.SiteBlock).filter(
             models.SiteBlock.tenant_id == tenant_id,
             models.SiteBlock.page_slug == clean_slug
@@ -808,7 +859,7 @@ def add_block_to_page(
         if not tenant_id:
             return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
 
-        clean_slug = (page_slug or "home").lower().strip().lstrip("/")
+        clean_slug = resolve_tenant_page_slug(db, tenant_id, page_slug)
 
         # Normalizar tipo de bloque canónico
         b_type = canonicalize_block_type(block_type)
@@ -821,13 +872,12 @@ def add_block_to_page(
             if first_cat:
                 cat_id = first_cat.id
 
-        # Fallback de imagen real de la clínica si no se especifica una
-        resolved_img = image_url or ""
-        if not resolved_img and b_type in ["atomic_image", "text_image_cta", "hero"]:
-            media_item = db.query(models.MediaItem).filter(
-                models.MediaItem.tenant_id == tenant_id,
-                models.MediaItem.media_type == "image"
-            ).first()
+        # Fallback de imagen real de la clínica o IA si no se especifica una
+        resolved_img = (image_url or "").strip()
+        if (not resolved_img or resolved_img.lower() in ["last", "reciente", "ai", "generada", "ultima", "última", "none"]) and b_type in ["atomic_image", "text_image_cta", "hero"]:
+            media_item = db.query(models.Media).filter(
+                models.Media.tenant_id == tenant_id
+            ).order_by(models.Media.created_at.desc()).first()
             if media_item and media_item.url:
                 resolved_img = media_item.url
             else:
@@ -912,23 +962,49 @@ def add_block_to_page(
 
         # Buscar sección objetivo si se especificó section_id o column_index
         target_section = None
+        sec_blocks = db.query(models.SiteBlock).filter(
+            models.SiteBlock.tenant_id == tenant_id,
+            models.SiteBlock.page_slug == clean_slug,
+            models.SiteBlock.block_type == "section"
+        ).order_by(models.SiteBlock.order_index.asc()).all()
+
         if section_id:
-            sec_blocks = db.query(models.SiteBlock).filter(
-                models.SiteBlock.tenant_id == tenant_id,
-                models.SiteBlock.page_slug == clean_slug,
-                models.SiteBlock.block_type == "section"
-            ).all()
+            sec_id_str = str(section_id).strip()
+            # 1. Búsqueda exacta por id de SiteBlock o id en content_data
             for b in sec_blocks:
                 b_data = b.content_data or {}
-                if b.id == section_id or b_data.get("id") == section_id:
+                if b.id == sec_id_str or b_data.get("id") == sec_id_str:
                     target_section = b
                     break
-        elif column_index is not None:
-            target_section = db.query(models.SiteBlock).filter(
-                models.SiteBlock.tenant_id == tenant_id,
-                models.SiteBlock.page_slug == clean_slug,
-                models.SiteBlock.block_type == "section"
-            ).order_by(models.SiteBlock.order_index.desc()).first()
+            
+            # 2. Si no se encontró por ID exacto, buscar por número en string (ej: "sección 3" -> index 2)
+            if not target_section:
+                nums = re.findall(r'\d+', sec_id_str)
+                if nums:
+                    sec_num = int(nums[0])
+                    if 1 <= sec_num <= len(sec_blocks):
+                        target_section = sec_blocks[sec_num - 1]
+
+            # 3. Si sigue sin encontrarse y dice "activa" o "última"
+            if not target_section and ("activ" in sec_id_str.lower() or "ultim" in sec_id_str.lower()):
+                if column_index is not None:
+                    for b in reversed(sec_blocks):
+                        cols = (b.content_data or {}).get("columns", [])
+                        if len(cols) > column_index and len(cols[column_index].get("blocks", [])) == 0:
+                            target_section = b
+                            break
+                if not target_section and sec_blocks:
+                    target_section = sec_blocks[-1]
+
+        if not target_section and column_index is not None:
+            # Priorizar la sección que tenga la columna column_index vacía
+            for b in reversed(sec_blocks):
+                cols = (b.content_data or {}).get("columns", [])
+                if len(cols) > column_index and len(cols[column_index].get("blocks", [])) == 0:
+                    target_section = b
+                    break
+            if not target_section and sec_blocks:
+                target_section = sec_blocks[-1]
 
         if target_section:
             sec_data = dict(target_section.content_data or {})
@@ -1037,7 +1113,7 @@ def add_section_to_page(
         if not tenant_id:
             return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
 
-        clean_slug = (page_slug or "home").lower().strip().lstrip("/")
+        clean_slug = resolve_tenant_page_slug(db, tenant_id, page_slug)
         c_count = max(1, min(4, int(columns_count)))
         col_width = "w-1/2" if c_count == 2 else ("w-1/3" if c_count == 3 else ("w-1/4" if c_count == 4 else "w-full"))
 
@@ -1099,7 +1175,7 @@ def set_section_columns(
         if not tenant_id:
             return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
 
-        clean_slug = (page_slug or "home").lower().strip().lstrip("/")
+        clean_slug = resolve_tenant_page_slug(db, tenant_id, page_slug)
         c_count = max(1, min(4, int(columns_count)))
 
         query = db.query(models.SiteBlock).filter(
@@ -1109,13 +1185,22 @@ def set_section_columns(
         )
 
         target_block = None
+        all_sec = query.order_by(models.SiteBlock.order_index.asc()).all()
         if section_id:
-            all_sec = query.all()
+            sec_id_str = str(section_id).strip()
             for b in all_sec:
                 b_data = b.content_data or {}
-                if b.id == section_id or b_data.get("id") == section_id:
+                if b.id == sec_id_str or b_data.get("id") == sec_id_str:
                     target_block = b
                     break
+            if not target_block:
+                nums = re.findall(r'\d+', sec_id_str)
+                if nums:
+                    sec_num = int(nums[0])
+                    if 1 <= sec_num <= len(all_sec):
+                        target_block = all_sec[sec_num - 1]
+            if not target_block and ("activ" in sec_id_str.lower() or "ultim" in sec_id_str.lower()):
+                target_block = all_sec[-1] if all_sec else None
         
         if not target_block:
             target_block = query.order_by(models.SiteBlock.order_index.desc()).first()
@@ -1182,7 +1267,7 @@ def update_page_details(
         if not tenant_id:
             return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
 
-        clean_slug = (page_slug or "").lower().strip().lstrip("/")
+        clean_slug = resolve_tenant_page_slug(db, tenant_id, page_slug)
         if not clean_slug or clean_slug == "home":
             return "Aviso: Para modificar la portada principal, utiliza la herramienta 'update_landing_config'."
 
@@ -1284,7 +1369,7 @@ def delete_custom_page(page_slug: str) -> str:
         if not tenant_id:
             return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
 
-        clean_slug = (page_slug or "").lower().strip().lstrip("/")
+        clean_slug = resolve_tenant_page_slug(db, tenant_id, page_slug)
         if not clean_slug or clean_slug == "home":
             return "Error: La portada principal ('home') no puede ser eliminada."
 
@@ -1347,7 +1432,7 @@ def update_page_block_properties(
         if not tenant_id:
             return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
 
-        clean_slug = (page_slug or "home").lower().strip().lstrip("/")
+        clean_slug = resolve_tenant_page_slug(db, tenant_id, page_slug)
         target_norm = normalize_slug_str(clean_slug)
         canon_type = canonicalize_block_type(block_type)
 

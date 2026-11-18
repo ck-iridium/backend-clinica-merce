@@ -38,6 +38,7 @@ export interface SelectedSection {
   name: string;
   pageSlug: string;
   blockType?: string;
+  columnIndex?: number;
 }
 
 interface ActionChip {
@@ -120,15 +121,43 @@ export default function AIChatContainer({
   };
 
   const handleApplyMultiChips = () => {
-    const list = Object.entries(selectedMultiChips).map(([grp, c]) => `${grp}: ${c.label}`);
-    const name = selectedSection?.name || 'este elemento';
-    const combinedPrompt = `Aplica los siguientes ajustes a ${name}: ${list.join(', ')}`;
+    let combinedPrompt = '';
+    if (selectedSection?.blockType === 'column') {
+      combinedPrompt = Object.values(selectedMultiChips).map(c => c.prompt).join('. ');
+    } else {
+      const list = Object.entries(selectedMultiChips).map(([grp, c]) => `${grp}: ${c.label}`);
+      const name = selectedSection?.name || 'este elemento';
+      combinedPrompt = `Aplica los siguientes ajustes a ${name}: ${list.join(', ')}`;
+    }
     setSelectedMultiChips({});
     handleSend(combinedPrompt);
   };
 
   const getSectionActionRows = (section: SelectedSection): ActionRow[] => {
     const type = section.blockType || '';
+    if (type === 'column') {
+      const colNum = (section.columnIndex !== undefined ? section.columnIndex + 1 : 1);
+      return [
+        {
+          title: `Añadir a Columna ${colNum}`,
+          chips: [
+            { icon: ImageIcon, label: '🖼️ Imagen + Texto', prompt: `Añade un bloque de Imagen + Texto en la Columna ${colNum} de esta sección.` },
+            { icon: Type, label: '✍️ Párrafo de Texto', prompt: `Añade un párrafo de texto editorial en la Columna ${colNum} de esta sección.` },
+            { icon: ImageIcon, label: '📷 Multimedia', prompt: `Añade un bloque de fotografía comercial en la Columna ${colNum} de esta sección.` },
+            { icon: SlidersHorizontal, label: '🔘 Botón CTA', prompt: `Añade un botón de acción en la Columna ${colNum} de esta sección.` },
+            { icon: LayoutGrid, label: '✨ Catálogo', prompt: `Añade un catálogo de tratamientos en la Columna ${colNum} de esta sección.` },
+            { icon: Type, label: '🏷️ Título Elegante', prompt: `Añade un título elegante con línea dorada en la Columna ${colNum} de esta sección.` },
+          ]
+        },
+        {
+          title: 'Asistencia y Creación con IA',
+          chips: [
+            { icon: Sparkles, label: '🪄 Asignar Foto Reciente + Texto', prompt: `Asigna la imagen recién generada con IA con título y descripción en la Columna ${colNum} de esta sección.` },
+            { icon: Sparkles, label: '🎨 Generar Nueva Foto IA + Texto', prompt: `Genera una fotografía de alta costura con IA y colócala con título y texto en la Columna ${colNum} de esta sección.` },
+          ]
+        }
+      ];
+    }
     if (type === 'hero') {
       return [
         {

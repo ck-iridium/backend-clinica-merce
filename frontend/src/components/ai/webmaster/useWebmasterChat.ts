@@ -21,7 +21,7 @@ interface UseWebmasterChatProps {
   onFieldsUpdated?: (fields: string[], redirectUrl?: string) => void;
   initialPrompt?: string | null;
   onPromptConsumed?: () => void;
-  selectedSection?: { id: string; name: string; pageSlug: string; blockType?: string } | null;
+  selectedSection?: { id: string; name: string; pageSlug: string; blockType?: string; columnIndex?: number } | null;
   activePageSlug?: string;
   activePageTitle?: string;
 }
@@ -309,7 +309,10 @@ export function useWebmasterChat({
           body: JSON.stringify({
             message: (() => {
               if (selectedSection && !queryText.startsWith('[SECCIÓN SELECCIONADA:')) {
-                return `[SECCIÓN SELECCIONADA: "${selectedSection.name}" (tipo: ${selectedSection.blockType || 'sección'}, página: "${selectedSection.pageSlug}")] ${queryText}`;
+                const colExtra = selectedSection.columnIndex !== undefined
+                  ? `, id_sección: "${selectedSection.id}", columna_index: ${selectedSection.columnIndex}`
+                  : `, id_sección: "${selectedSection.id}"`;
+                return `[SECCIÓN SELECCIONADA: "${selectedSection.name}" (tipo: ${selectedSection.blockType || 'sección'}, página: "${selectedSection.pageSlug}"${colExtra})] ${queryText}`;
               }
               if (activePageSlug && !queryText.startsWith('[PÁGINA ACTIVA')) {
                 return `[PÁGINA ACTIVA EN VISTA PREVIA: "${activePageTitle || activePageSlug}" (slug: "${activePageSlug}")] ${queryText}`;

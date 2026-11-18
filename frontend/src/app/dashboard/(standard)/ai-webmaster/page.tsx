@@ -29,6 +29,7 @@ export interface SelectedSection {
   name: string;
   pageSlug: string;
   blockType?: string;
+  columnIndex?: number;
 }
 
 export default function AIWebmasterPage() {
@@ -172,8 +173,8 @@ export default function AIWebmasterPage() {
   useEffect(() => {
     const handleIframeMessage = (event: MessageEvent) => {
       if (event.data?.type === 'WEBMASTER_SECTION_SELECTED') {
-        const { sectionId, sectionName, pageSlug, blockType } = event.data;
-        setSelectedSection({ id: sectionId, name: sectionName, pageSlug, blockType });
+        const { sectionId, sectionName, pageSlug, blockType, columnIndex } = event.data;
+        setSelectedSection({ id: sectionId, name: sectionName, pageSlug, blockType, columnIndex });
         toast.info(`Elemento seleccionado: ${sectionName}`);
         
         // Notificar al iframe cuál sección está seleccionada para mantener el estado visual activo
