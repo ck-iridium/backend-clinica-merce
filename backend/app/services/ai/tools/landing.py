@@ -1046,6 +1046,13 @@ def update_page_details(
         clean_new_title = clean_clean_text(new_title)
         clean_new_subtitle = clean_clean_text(new_subtitle)
 
+        # Prevenir frases afirmativas genéricas como títulos de página
+        if clean_new_title and clean_new_title.lower().strip() in ["si", "sí", "adelante", "aplica los cambios", "aplica", "ok", "confirmar", "confirmo", "cambiar título"]:
+            return "Aviso: Por favor especifica el nombre o título que deseas poner en la página."
+
+        if not any([clean_new_title, clean_new_subtitle, show_in_navbar is not None]):
+            return "Aviso: No se proporcionó ningún título, subtítulo o visibilidad para actualizar."
+
         updated_parts = []
         if nav_item:
             if clean_new_title:
@@ -1184,6 +1191,13 @@ def update_page_block(
         clean_new_text = clean_clean_text(new_text)
         clean_new_title = clean_clean_text(new_title)
         clean_new_subtitle = clean_clean_text(new_subtitle)
+
+        # Prevenir frases afirmativas genéricas como títulos de bloque
+        if clean_new_title and clean_new_title.lower().strip() in ["si", "sí", "adelante", "aplica los cambios", "aplica", "ok", "confirmar", "confirmo", "cambiar título"]:
+            return "Aviso: Por favor especifica el nombre o título que deseas poner en el encabezado."
+
+        if not any([clean_new_text, clean_new_title, clean_new_subtitle, new_image_url, new_category_id]):
+            return "Aviso: No se proporcionó ningún texto, título o imagen para actualizar en el bloque."
 
         def matches_type(actual: str, expected: str) -> bool:
             if actual == expected:

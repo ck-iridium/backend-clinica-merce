@@ -369,12 +369,16 @@ export function parseOptionsAndText(content: string): {
         { label: '✕ No, solo guardarla en galería', value: 'No, solo consérvala guardada en mi galería de medios' }
       );
     } else if (clean.includes('?') || clean.includes('¿')) {
-      const isConfirmation = /gustaría|desea|quieres|confirmas|procedo|aplico|guardamos/i.test(clean);
-      if (isConfirmation) {
-        options.push(
-          { label: '✓ Sí, aplicar cambios', value: 'Sí, adelante, aplica los cambios propuestos' },
-          { label: '✕ No, descartar', value: 'No, descarta esta propuesta y déjalo como estaba' }
-        );
+      // NUNCA inyectar botones de Sí/No en preguntas abiertas que piden datos o textos (ej: ¿Qué título...?, ¿Cuál...?, ¿Cuánto...?)
+      const isOpenQuestion = /¿?\s*(?:qué|que|cuál|cual|cuáles|cuales|cómo|como|cuánto|cuanto|cuántos|cuantos|dónde|donde|quién|quien|indica|escribe|dime)\b/i.test(clean);
+      if (!isOpenQuestion) {
+        const isExplicitConfirmation = /(?:deseas? que (?:aplique|guarde|haga|proceda)|procedo a (?:aplicar|guardar)|confirmas? (?:que|la|el|este)|quieres? que (?:aplique|guarde|actualice)|aplico los cambios|guardamos estos cambios)/i.test(clean);
+        if (isExplicitConfirmation) {
+          options.push(
+            { label: '✓ Sí, aplicar cambios', value: 'Sí, adelante, aplica los cambios propuestos' },
+            { label: '✕ No, descartar', value: 'No, descarta esta propuesta y déjalo como estaba' }
+          );
+        }
       }
     }
   }
