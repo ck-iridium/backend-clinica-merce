@@ -39,6 +39,8 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   // para integrarse con el sistema de scroll/snap o inmersión app
   const useInternalUI = isHome || isTreatmentDetail || isBooking;
 
+  const isEmbedded = typeof window !== 'undefined' && window.self !== window.top;
+
   return (
     <>
       {!useInternalUI && <PublicNavbar />}
@@ -47,7 +49,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
       </main>
       {!useInternalUI && <Footer />}
       {!isBooking && <ScrollToTop />}
-      {!isBooking && <FrontEndConciergeWidget />}
+      {!isBooking && !isEmbedded && <FrontEndConciergeWidget />}
       <CookieBanner />
     </>
   );

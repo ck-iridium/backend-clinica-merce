@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Sparkles, Edit3, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Edit3, CheckCircle2 } from 'lucide-react';
 
 interface InspectableSectionProps {
   id: string;
@@ -20,8 +20,11 @@ export default function InspectableSection({
   children,
   className = '',
 }: InspectableSectionProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isEmbedded, setIsEmbedded] = useState(false);
   const [isSelected, setIsSelected] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -33,6 +36,10 @@ export default function InspectableSection({
         setIsSelected(e.data.sectionId === id);
       } else if (e.data?.type === 'WEBMASTER_CLEAR_SELECTION') {
         setIsSelected(false);
+      } else if (e.data?.type === 'WEBMASTER_SCROLL_TO') {
+        if (e.data.sectionId === id) {
+          containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       }
     };
 
@@ -45,8 +52,6 @@ export default function InspectableSection({
   }
 
   const handleClick = (e: React.MouseEvent) => {
-    // Si el usuario hace clic dentro de un enlace o botón genuino que no sea el wrapper,
-    // aún así seleccionamos la sección para el asistente sin romper la navegación si lo desea
     window.parent.postMessage(
       {
         type: 'WEBMASTER_SECTION_SELECTED',
@@ -59,9 +64,17 @@ export default function InspectableSection({
     );
   };
 
+  const handleMouseMove = (e: React.MouseEvent) => {
+    setCursorPos({ x: e.clientX, y: e.clientY });
+  };
+
   return (
     <div
+      ref={containerRef}
       onClick={handleClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onMouseMove={handleMouseMove}
       className={`group/inspect relative transition-all duration-300 cursor-pointer rounded-2xl ${
         isSelected
           ? 'ring-3 ring-[#d4af37] ring-offset-4 ring-offset-stone-900/10 shadow-[0_0_40px_rgba(212,175,55,0.3)]'
@@ -77,7 +90,25 @@ export default function InspectableSection({
         }`} 
       />
 
-      {/* Etiqueta Flotante Quiet Luxury de Alta Visibilidad */}
+      {/* 1. Modal / Píldora Flotante que sigue el cursor en tiempo real */}
+      {isHovered && !isSelected && (
+        <div
+          className="fixed pointer-events-none z-[99999] flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-semibold bg-stone-950/95 text-white border border-[#d4af37] shadow-[0_12px_30px_rgba(0,0,0,0.6)] backdrop-blur-xl animate-in fade-in duration-150"
+          style={{
+            left: `${cursorPos.x + 14}px`,
+            top: `${cursorPos.y + 14}px`,
+          }}
+        >
+          <span className="relative flex h-2 w-2 shrink-0">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#d4af37] opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#d4af37]"></span>
+          </span>
+          <Edit3 size={12} className="text-[#d4af37] shrink-0" />
+          <span>Clic para editar · <strong className="font-bold text-[#d4af37]">{name}</strong></span>
+        </div>
+      )}
+
+      {/* 2. Etiqueta Fijada Superior Quiet Luxury */}
       <div
         className={`absolute top-3 left-3 z-50 pointer-events-none transition-all duration-300 flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-semibold shadow-2xl backdrop-blur-xl ${
           isSelected

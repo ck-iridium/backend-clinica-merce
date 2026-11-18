@@ -1,6 +1,7 @@
 import logging
 import uuid
 import re
+import unicodedata
 from typing import Optional, List, Dict, Any
 from sqlalchemy import func
 from sqlalchemy.orm import attributes
@@ -10,6 +11,20 @@ from ....database import SessionLocal, current_tenant_var
 from ....crud.site_content import get_site_content, update_site_content
 
 logger = logging.getLogger("ai_agent_tools_landing")
+
+VOICE_TAGS_REGEX = re.compile(r'\[(?:with enthusiasm|fast|fluent|short pause|slower|whispering|cheerful|calm|excited)[^\]]*\]', re.IGNORECASE)
+
+def clean_clean_text(val: Optional[str]) -> Optional[str]:
+    if not val:
+        return val
+    cleaned = VOICE_TAGS_REGEX.sub('', val)
+    cleaned = re.sub(r'</p>\s*<p>', '\n\n', cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r'<[^>]+>', '', cleaned)
+    return cleaned.strip()
+
+def normalize_slug_str(s: str) -> str:
+    norm = unicodedata.normalize('NFKD', s or '').encode('ASCII', 'ignore').decode('utf-8').lower()
+    return re.sub(r'[^a-z0-9]+', '-', norm).strip('-')
 
 def _normalize_slides(content: models.SiteContent) -> List[Dict[str, Any]]:
     """Devuelve la lista de diapositivas normalizada o genera la inicial a partir de las propiedades raíz."""
@@ -393,23 +408,18 @@ def update_landing_config(
         if not tenant_id:
             return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
 
-        # Limpieza estricta de HTML para evitar que el LLM guarde etiquetas <p> visibles
-        clean_about_text = about_text
-        if clean_about_text:
-            clean_about_text = re.sub(r'</p>\s*<p>', '\n\n', clean_about_text, flags=re.IGNORECASE)
-            clean_about_text = re.sub(r'<[^>]+>', '', clean_about_text).strip()
-
-        clean_about_title = about_title
-        if clean_about_title:
-            clean_about_title = re.sub(r'<[^>]+>', '', clean_about_title).strip()
-
-        clean_hero_title = hero_title
-        if clean_hero_title:
-            clean_hero_title = re.sub(r'<[^>]+>', '', clean_hero_title).strip()
+        # Limpieza estricta de HTML y corchetes de voz para evitar etiquetas <p> o [with enthusiasm]
+        clean_about_text = clean_clean_text(about_text)
+        clean_about_title = clean_clean_text(about_title)
+        clean_hero_title = clean_clean_text(hero_title)
+        clean_hero_subtitle = clean_clean_text(hero_subtitle)
+        clean_cta_title = clean_clean_text(cta_title)
+        clean_cta_subtitle = clean_clean_text(cta_subtitle)
+        clean_hero_button_text = clean_clean_text(hero_button_text)
 
         raw_fields = {
             "hero_title": clean_hero_title,
-            "hero_subtitle": hero_subtitle,
+            "hero_subtitle": clean_hero_subtitle,
             "hero_alignment": hero_alignment,
             "hero_horizontal_alignment": hero_horizontal_alignment,
             "hero_content_fullwidth": hero_content_fullwidth,
@@ -425,7 +435,7 @@ def update_landing_config(
             "hero_price_offset_y": hero_price_offset_y,
             "hero_price_style": hero_price_style,
             "hero_show_button": hero_show_button,
-            "hero_button_text": hero_button_text,
+            "hero_button_text": clean_hero_button_text,
             "hero_button_link": hero_button_link,
             "hero_button_style": hero_button_style,
             "hero_slider_autoplay": hero_slider_autoplay,
@@ -433,8 +443,8 @@ def update_landing_config(
             "hero_slider_effect": hero_slider_effect,
             "about_title": clean_about_title,
             "about_text": clean_about_text,
-            "cta_title": cta_title,
-            "cta_subtitle": cta_subtitle,
+            "cta_title": clean_cta_title,
+            "cta_subtitle": clean_cta_subtitle,
             "layout_style": layout_style,
             "megamenu_layout": megamenu_layout,
             "megamenu_categories_json": megamenu_categories_json
@@ -989,26 +999,41 @@ def update_page_details(
         if not clean_slug or clean_slug == "home":
             return "Aviso: Para modificar la portada principal, utiliza la herramienta 'update_landing_config'."
 
-        # 1. Buscar en SiteNavigation
-        nav_item = db.query(models.SiteNavigation).filter(
-            models.SiteNavigation.tenant_id == tenant_id,
-            models.SiteNavigation.path == f"/{clean_slug}"
-        ).first()
+        target_norm = normalize_slug_str(clean_slug)
+
+        # 1. Buscar en SiteNavigation (tolerante a acentos y diferencias de guiones)
+        nav_items = db.query(models.SiteNavigation).filter(
+            models.SiteNavigation.tenant_id == tenant_id
+        ).all()
+
+        nav_item = None
+        for item in nav_items:
+            item_slug = normalize_slug_str(item.path.lstrip("/"))
+            if item_slug == target_norm or item_slug.replace('-', '') == target_norm.replace('-', ''):
+                nav_item = item
+                clean_slug = item.path.lstrip("/")
+                break
+
+        clean_new_title = clean_clean_text(new_title)
+        clean_new_subtitle = clean_clean_text(new_subtitle)
 
         updated_parts = []
         if nav_item:
-            if new_title and new_title.strip():
-                nav_item.label = new_title.strip()
-                updated_parts.append(f"título a '{new_title.strip()}'")
+            if clean_new_title:
+                nav_item.label = clean_new_title
+                updated_parts.append(f"título a '{clean_new_title}'")
             if show_in_navbar is not None:
                 nav_item.is_visible = bool(show_in_navbar)
                 updated_parts.append(f"visibilidad a {'visible' if show_in_navbar else 'oculto'}")
 
         # 2. Buscar y actualizar el bloque de título de la página
-        blocks = db.query(models.SiteBlock).filter(
-            models.SiteBlock.tenant_id == tenant_id,
-            models.SiteBlock.page_slug == clean_slug
+        all_blocks = db.query(models.SiteBlock).filter(
+            models.SiteBlock.tenant_id == tenant_id
         ).all()
+        blocks = [
+            b for b in all_blocks 
+            if b.page_slug == clean_slug or normalize_slug_str(b.page_slug) == target_norm
+        ]
 
         heading_updated = False
         for b in blocks:
@@ -1020,23 +1045,23 @@ def update_page_details(
                         ab_type = ab.get("block_type")
                         if ab_type in ["title_heading", "atomic_title", "hero"]:
                             cdata = ab.get("content_data", {})
-                            if new_title and new_title.strip():
-                                cdata["title"] = new_title.strip()
-                                cdata["heading"] = new_title.strip()
-                            if new_subtitle is not None:
-                                cdata["subtitle"] = new_subtitle.strip()
-                                cdata["subheading"] = new_subtitle.strip()
+                            if clean_new_title:
+                                cdata["title"] = clean_new_title
+                                cdata["heading"] = clean_new_title
+                            if clean_new_subtitle is not None:
+                                cdata["subtitle"] = clean_new_subtitle
+                                cdata["subheading"] = clean_new_subtitle
                             ab["content_data"] = cdata
                             heading_updated = True
                 if heading_updated:
                     attributes.flag_modified(b, "content_data")
             elif b.block_type in ["title_heading", "atomic_title", "hero"]:
-                if new_title and new_title.strip():
-                    data["title"] = new_title.strip()
-                    data["heading"] = new_title.strip()
-                if new_subtitle is not None:
-                    data["subtitle"] = new_subtitle.strip()
-                    data["subheading"] = new_subtitle.strip()
+                if clean_new_title:
+                    data["title"] = clean_new_title
+                    data["heading"] = clean_new_title
+                if clean_new_subtitle is not None:
+                    data["subtitle"] = clean_new_subtitle
+                    data["subheading"] = clean_new_subtitle
                 b.content_data = data
                 attributes.flag_modified(b, "content_data")
                 heading_updated = True
@@ -1116,10 +1141,34 @@ def update_page_block(
             return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
 
         clean_slug = (page_slug or "home").lower().strip().lstrip("/")
-        blocks = db.query(models.SiteBlock).filter(
-            models.SiteBlock.tenant_id == tenant_id,
-            models.SiteBlock.page_slug == clean_slug
+        target_norm = normalize_slug_str(clean_slug)
+
+        all_blocks = db.query(models.SiteBlock).filter(
+            models.SiteBlock.tenant_id == tenant_id
         ).all()
+
+        blocks = [
+            b for b in all_blocks 
+            if b.page_slug == clean_slug or normalize_slug_str(b.page_slug) == target_norm
+        ]
+
+        clean_new_text = clean_clean_text(new_text)
+        clean_new_title = clean_clean_text(new_title)
+        clean_new_subtitle = clean_clean_text(new_subtitle)
+
+        def matches_type(actual: str, expected: str) -> bool:
+            if actual == expected:
+                return True
+            title_group = {"title_heading", "atomic_title", "title", "heading", "hero"}
+            text_group = {"atomic_text", "text", "paragraph", "editorial"}
+            img_group = {"atomic_image", "image", "photo", "gallery"}
+            if expected in title_group and actual in title_group:
+                return True
+            if expected in text_group and actual in text_group:
+                return True
+            if expected in img_group and actual in img_group:
+                return True
+            return False
 
         updated = False
         for b in blocks:
@@ -1128,17 +1177,18 @@ def update_page_block(
                 cols = data.get("columns", [])
                 for col in cols:
                     for ab in col.get("blocks", []):
-                        if ab.get("block_type") == block_type:
+                        ab_t = ab.get("block_type", "")
+                        if matches_type(ab_t, block_type):
                             cdata = ab.get("content_data", {})
-                            if new_text is not None:
-                                cdata["html"] = new_text
-                                cdata["text"] = new_text
-                            if new_title is not None:
-                                cdata["title"] = new_title
-                                cdata["heading"] = new_title
-                            if new_subtitle is not None:
-                                cdata["subtitle"] = new_subtitle
-                                cdata["subheading"] = new_subtitle
+                            if clean_new_text is not None:
+                                cdata["html"] = clean_new_text
+                                cdata["text"] = clean_new_text
+                            if clean_new_title is not None:
+                                cdata["title"] = clean_new_title
+                                cdata["heading"] = clean_new_title
+                            if clean_new_subtitle is not None:
+                                cdata["subtitle"] = clean_new_subtitle
+                                cdata["subheading"] = clean_new_subtitle
                             if new_image_url is not None:
                                 cdata["image_url"] = new_image_url
                             if new_category_id is not None:
@@ -1148,16 +1198,16 @@ def update_page_block(
                 if updated:
                     attributes.flag_modified(b, "content_data")
                     break
-            elif b.block_type == block_type:
-                if new_text is not None:
-                    data["html"] = new_text
-                    data["text"] = new_text
-                if new_title is not None:
-                    data["title"] = new_title
-                    data["heading"] = new_title
-                if new_subtitle is not None:
-                    data["subtitle"] = new_subtitle
-                    data["subheading"] = new_subtitle
+            elif matches_type(b.block_type, block_type):
+                if clean_new_text is not None:
+                    data["html"] = clean_new_text
+                    data["text"] = clean_new_text
+                if clean_new_title is not None:
+                    data["title"] = clean_new_title
+                    data["heading"] = clean_new_title
+                if clean_new_subtitle is not None:
+                    data["subtitle"] = clean_new_subtitle
+                    data["subheading"] = clean_new_subtitle
                 if new_image_url is not None:
                     data["image_url"] = new_image_url
                 if new_category_id is not None:

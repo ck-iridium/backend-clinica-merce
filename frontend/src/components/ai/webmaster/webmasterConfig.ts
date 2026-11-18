@@ -283,6 +283,17 @@ export function getActiveTenantId(): string | null {
   return null;
 }
 
+const TECHNICAL_SLUG_MAP: Record<string, string> = {
+  text_image_cta: 'Quiero añadir un bloque de imagen y texto a esta página.',
+  atomic_title: 'Quiero añadir un título a esta página.',
+  title_heading: 'Quiero añadir un título a esta página.',
+  atomic_text: 'Quiero añadir un bloque de texto a esta página.',
+  atomic_image: 'Quiero añadir una fotografía a esta página.',
+  atomic_category: 'Quiero mostrar el catálogo de tratamientos en esta página.',
+  atomic_button: 'Quiero añadir un botón de reserva a esta página.',
+  hero: 'Quiero añadir una sección principal tipo Hero a esta página.',
+};
+
 // Extraer chips de opción interactiva [OPTION: label | value] del texto del mensaje
 export function parseOptionsAndText(content: string) {
   const raw = content || '';
@@ -290,7 +301,14 @@ export function parseOptionsAndText(content: string) {
   const optionRegex = /\[OPTION:\s*([^|\]]+)\s*\|\s*([^\]]+)\]/g;
   let match;
   while ((match = optionRegex.exec(raw)) !== null) {
-    options.push({ label: match[1].trim(), value: match[2].trim() });
+    const rawLabel = match[1].trim();
+    const rawValue = match[2].trim();
+    const cleanValue = TECHNICAL_SLUG_MAP[rawValue] || (
+      rawValue.includes('_') && !rawValue.includes(' ')
+        ? `Quiero añadir ${rawLabel.replace(/^[+-\s]+/, '')}`
+        : rawValue
+    );
+    options.push({ label: rawLabel, value: cleanValue });
   }
   const clean = raw.replace(optionRegex, '').trim();
   return { clean, options };

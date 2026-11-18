@@ -41,6 +41,24 @@ interface PageProps {
   params: { slug: string };
 }
 
+function normalizeSlug(s: string): string {
+  return (s || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function matchSlug(itemPath: string, targetSlug: string): boolean {
+  const cleanItem = normalizeSlug(itemPath.replace(/^\//, ''));
+  const cleanTarget = normalizeSlug(targetSlug);
+  if (cleanItem === cleanTarget) return true;
+  const stripItem = cleanItem.replace(/-+/g, '');
+  const stripTarget = cleanTarget.replace(/-+/g, '');
+  return stripItem === stripTarget;
+}
+
 // Metadata dinámica por página
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = params;
@@ -65,7 +83,7 @@ export async function generateMetadata({ params }: PageProps) {
     });
     if (res.ok) {
       const navItems: any[] = await res.json();
-      const page = navItems.find((item) => item.path === `/${slug}` && item.is_custom);
+      const page = navItems.find((item) => matchSlug(item.path, slug) && item.is_custom);
       if (page) {
         return {
           title: `${page.label} | Clínica`,
@@ -102,8 +120,9 @@ export default async function CustomPage({ params }: PageProps) {
     notFound();
   }
 
-  // 1. Verificar que la página existe y es custom
-  let pageTitle = slug;
+  // 1. Verificar si la página existe en SiteNavigation (con tolerancia a acentos y guiones)
+  let pageTitle = slug.replace(/-/g, ' ');
+  let targetBlockSlug = slug;
   try {
     const resNav = await fetch(`${baseUrl}/cms/navigation`, {
       cache: 'no-store',
@@ -111,30 +130,39 @@ export default async function CustomPage({ params }: PageProps) {
     });
     if (resNav.ok) {
       const navItems: any[] = await resNav.json();
-      const page = navItems.find((item) => item.path === `/${slug}` && item.is_custom);
-      if (!page) {
-        notFound();
+      const page = navItems.find((item) => matchSlug(item.path, slug) && item.is_custom);
+      if (page) {
+        pageTitle = page.label;
+        targetBlockSlug = page.path.replace(/^\//, '');
       }
-      pageTitle = page.label;
-    } else {
-      notFound();
     }
   } catch {
-    notFound();
+    // Silencioso
   }
 
   // 2. Cargar los bloques y normalizarlos de forma retrocompatible
   let rawBlocks: any[] = [];
   try {
-    const resBlocks = await fetch(`${baseUrl}/cms/blocks/${slug}`, {
+    let resBlocks = await fetch(`${baseUrl}/cms/blocks/${targetBlockSlug}`, {
       cache: 'no-store',
       headers: { 'X-Tenant-ID': tenantId },
     });
+    if (!resBlocks.ok && targetBlockSlug !== slug) {
+      resBlocks = await fetch(`${baseUrl}/cms/blocks/${slug}`, {
+        cache: 'no-store',
+        headers: { 'X-Tenant-ID': tenantId },
+      });
+    }
     if (resBlocks.ok) {
       rawBlocks = await resBlocks.json();
     }
   } catch {
     // Silencioso
+  }
+
+  // Si no se encontró ni en navigation ni tiene bloques, solo entonces es 404
+  if (!rawBlocks.length && pageTitle === slug.replace(/-/g, ' ')) {
+    notFound();
   }
 
   // Normalización defensiva para páginas con bloques antiguos/planos

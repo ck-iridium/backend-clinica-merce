@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import AIChatContainer from '@/components/ai/AIChatContainer';
 import { 
   RefreshCw, ExternalLink, Monitor, Smartphone, Tablet, Globe, 
@@ -44,6 +44,7 @@ export default function AIWebmasterPage() {
   const [pages, setPages] = useState<PageItem[]>([]);
   const [showPageMenu, setShowPageMenu] = useState(false);
   const [selectedSection, setSelectedSection] = useState<SelectedSection | null>(null);
+  const pendingScrollSectionIdRef = useRef<string | null>(null);
 
   // Construir URL pública según slug
   const buildPublicUrl = (path: string) => {
@@ -213,6 +214,9 @@ export default function AIWebmasterPage() {
   };
 
   const handleFieldsUpdated = (updatedFields: string[], redirectUrl?: string) => {
+    // Recordar qué sección estaba activa para auto-scroll suave tras recarga
+    pendingScrollSectionIdRef.current = selectedSection?.id || null;
+
     if (redirectUrl) {
       const cleanPath = redirectUrl.startsWith('/') ? redirectUrl : `/${redirectUrl}`;
       const slug = cleanPath === '/' ? 'home' : cleanPath.replace(/^\//, '');
@@ -470,7 +474,18 @@ export default function AIWebmasterPage() {
             <iframe
               key={iframeKey}
               src={iframeUrl}
-              onLoad={() => setIsLoadingIframe(false)}
+              onLoad={() => {
+                setIsLoadingIframe(false);
+                if (pendingScrollSectionIdRef.current) {
+                  const sId = pendingScrollSectionIdRef.current;
+                  setTimeout(() => {
+                    const iframe = document.querySelector('iframe');
+                    if (iframe && iframe.contentWindow) {
+                      iframe.contentWindow.postMessage({ type: 'WEBMASTER_SCROLL_TO', sectionId: sId }, '*');
+                    }
+                  }, 500);
+                }
+              }}
               className="w-full flex-1 border-0 bg-white"
               title="Escaparate Web en Vivo"
             />

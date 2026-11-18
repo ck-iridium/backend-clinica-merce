@@ -8,6 +8,15 @@ from ....database import SessionLocal, current_tenant_var
 
 logger = logging.getLogger("ai_agent_tools_services")
 
+VOICE_TAGS_REGEX = re.compile(r'\[(?:with enthusiasm|fast|fluent|short pause|slower|whispering|cheerful|calm|excited)[^\]]*\]', re.IGNORECASE)
+
+def _sanitize_service_text(val: Optional[str]) -> Optional[str]:
+    if not val:
+        return val
+    cleaned = VOICE_TAGS_REGEX.sub('', val)
+    cleaned = re.sub(r'<[^>]*>', '', cleaned)
+    return cleaned.strip()
+
 def update_service_fields(
     service_slug: str,
     name: Optional[str] = None,
@@ -60,18 +69,19 @@ def update_service_fields(
 
         updated_parts = []
         if name is not None:
-            clean_name = name.strip()
-            old_name = service.name
-            service.name = clean_name
-            new_slug = re.sub(r'[^a-z0-9]+', '-', clean_name.lower()).strip('-')
-            col = db.query(models.Service).filter(
-                models.Service.tenant_id == tenant_id,
-                models.Service.slug == new_slug,
-                models.Service.id != service.id
-            ).first()
-            if not col and new_slug:
-                service.slug = new_slug
-            updated_parts.append(f"nombre de '{old_name}' a '{clean_name}'")
+            clean_name = _sanitize_service_text(name)
+            if clean_name:
+                old_name = service.name
+                service.name = clean_name
+                new_slug = re.sub(r'[^a-z0-9]+', '-', clean_name.lower()).strip('-')
+                col = db.query(models.Service).filter(
+                    models.Service.tenant_id == tenant_id,
+                    models.Service.slug == new_slug,
+                    models.Service.id != service.id
+                ).first()
+                if not col and new_slug:
+                    service.slug = new_slug
+                updated_parts.append(f"nombre de '{old_name}' a '{clean_name}'")
 
         if price is not None:
             service.price = price
@@ -80,7 +90,7 @@ def update_service_fields(
             service.duration_minutes = duration_minutes
             updated_parts.append(f"duración a {duration_minutes} min")
         if description is not None:
-            clean_desc = re.sub(r'<[^>]*>', '', description).strip()
+            clean_desc = _sanitize_service_text(description)
             service.description = clean_desc
             updated_parts.append("descripción corta actualizada")
         if content_html is not None:

@@ -11,9 +11,12 @@ import InspectableSection from '@/components/ai/webmaster/InspectableSection';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 
 // ─── Sanitizador de Títulos "Quiet Luxury" ────────────────────────────────────
+const VOICE_TAGS_REGEX = /\[(?:with enthusiasm|fast|fluent|short pause|slower|whispering|cheerful|calm|excited)[^\]]*\]/gi;
+
 const cleanTitle = (text: string) => {
   if (!text) return '';
   return text
+    .replace(VOICE_TAGS_REGEX, '')
     .replace(/<[^>]+>/g, '')
     .replace(/\s*\(?\s*con v[ií]deo\s*\)?/gi, '')
     .replace(/\s+con v[ií]deo/gi, '')
@@ -23,6 +26,7 @@ const cleanTitle = (text: string) => {
 const cleanParagraphText = (rawText: any) => {
   if (!rawText || typeof rawText !== 'string') return '';
   return rawText
+    .replace(VOICE_TAGS_REGEX, '')
     .replace(/<\/p>\s*<p>/gi, '\n\n')
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<[^>]+>/g, '')
@@ -706,7 +710,7 @@ export default function ClientHome({ content, settings, services, categories }: 
                       {cleanTitle(translate(content.cta_title, content.translations, 'cta_title'))}
                     </h2>
                     <p className="text-xl md:text-2xl font-medium opacity-90">
-                      {translate(content.cta_subtitle, content.translations, 'cta_subtitle')}
+                      {cleanParagraphText(translate(content.cta_subtitle, content.translations, 'cta_subtitle'))}
                     </p>
                     <div className="pt-6">
                       <a href={content.cta_button_link} className="inline-block bg-stone-900 dark:bg-stone-950 text-white dark:text-stone-100 px-12 py-6 rounded-[var(--radius-btn)] font-bold text-xl hover:bg-stone-800 dark:hover:bg-black transition-all shadow-xl hover:scale-105">

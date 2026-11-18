@@ -97,6 +97,13 @@ export default function FrontEndConciergeWidget() {
   } = useCopilotResize();
 
   // 3. Estados de UI del Widget
+  const [isEmbedded, setIsEmbedded] = useState(false);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsEmbedded(window.self !== window.top);
+    }
+  }, []);
+
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -286,6 +293,8 @@ export default function FrontEndConciergeWidget() {
     { label: 'Ubicación y horarios', query: '¿Dónde estáis ubicados y en qué horario abrís?' },
     { label: 'Precios y tarifas', query: '¿Me puedes detallar vuestros precios y servicios principales?' },
   ];
+
+  if (isEmbedded) return null;
 
   return (
     <>
