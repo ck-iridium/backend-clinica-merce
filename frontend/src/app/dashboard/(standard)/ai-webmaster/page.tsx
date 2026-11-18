@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import AIChatContainer from '@/components/ai/AIChatContainer';
-import WebmasterBlocksPanel from '@/components/ai/webmaster/WebmasterBlocksPanel';
 import { 
   RefreshCw, ExternalLink, Monitor, Smartphone, Tablet, Globe, 
-  Sparkles, MessageSquareText, Layers, Eye, PencilRuler, Maximize2 
+  Sparkles, ChevronDown, Check 
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -18,43 +17,38 @@ function getCookie(name: string): string | null {
   return null;
 }
 
+interface PageItem {
+  id: string;
+  label: string;
+  path: string;
+  is_custom: boolean;
+}
+
 export default function AIWebmasterPage() {
   const [iframeUrl, setIframeUrl] = useState('');
   const [iframeKey, setIframeKey] = useState(0);
   const [viewMode, setViewMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
-  const [workspaceMode, setWorkspaceMode] = useState<'preview' | 'builder'>('preview');
   const [isLoadingIframe, setIsLoadingIframe] = useState(true);
   const [planType, setPlanType] = useState<string | null>(null);
   const [checkingPlan, setCheckingPlan] = useState(true);
-  const [leftTab, setLeftTab] = useState<'chat' | 'blocks'>('chat');
   const [activePageSlug, setActivePageSlug] = useState<string>('home');
   const [activePageTitle, setActivePageTitle] = useState<string>('Portada');
   const [injectedPrompt, setInjectedPrompt] = useState<string | null>(null);
+  const [pages, setPages] = useState<PageItem[]>([]);
+  const [showPageMenu, setShowPageMenu] = useState(false);
 
-  // Obtener URL de vista web pública
-  const getPublicUrl = (slug: string) => {
+  // Construir URL pública según slug
+  const buildPublicUrl = (path: string) => {
     if (typeof window === 'undefined') return '';
     const origin = window.location.origin;
     const activeSlug = getCookie('impersonate_tenant_slug') || getCookie('tenant_slug') || '';
-    const clean = slug === 'home' || !slug ? '' : slug.replace(/^\//, '');
-    const path = clean ? `/${clean}` : '/';
-    const separator = path.includes('?') ? '&' : '?';
+    const cleanPath = path || '/';
+    const separator = cleanPath.includes('?') ? '&' : '?';
     const tenantParam = activeSlug ? `${separator}tenant=${encodeURIComponent(activeSlug)}` : '';
-    return `${origin}${path}${tenantParam}`;
-  };
-
-  // Obtener URL del diseñador visual correspondiente
-  const getBuilderUrl = (slug: string) => {
-    if (typeof window === 'undefined') return '';
-    const origin = window.location.origin;
-    if (slug === 'home' || !slug) {
-      return `${origin}/dashboard/cms`;
-    }
-    return `${origin}/dashboard/pages/${slug.replace(/^\//, '')}`;
+    return `${origin}${cleanPath}${tenantParam}`;
   };
 
   useEffect(() => {
-
     // 1. Intentar cargar rápido de localStorage
     try {
       const userStr = localStorage.getItem('user');
@@ -71,22 +65,20 @@ export default function AIWebmasterPage() {
       console.warn(e);
     }
 
-    // 2. Hacer fetch de la API real
-    async function fetchPlan() {
+    // 2. Fetch de límites y páginas
+    async function loadData() {
       try {
         const userSession = localStorage.getItem('user');
         let tenantId = getCookie('tenant_id') || '';
         let authToken = '';
-        
+
         if (userSession) {
           try {
             const parsed = JSON.parse(userSession);
-            if (!tenantId) {
-              tenantId = parsed.tenant_id || '';
-            }
+            if (!tenantId) tenantId = parsed.tenant_id || '';
             authToken = parsed.access_token || parsed.token || '';
           } catch (e) {
-            console.error("Error parsing user session in AI Webmaster Page:", e);
+            console.error('Error parsing session:', e);
           }
         }
 
@@ -96,32 +88,53 @@ export default function AIWebmasterPage() {
         }
 
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-        const res = await fetch(`${API_URL}/settings/limits`, {
-          headers: {
-            'X-Tenant-ID': tenantId,
-            'Authorization': authToken ? `Bearer ${authToken}` : '',
-          }
-        });
-        if (res.ok) {
-          const limitsData = await res.json();
+        
+        // Cargar plan y páginas en paralelo
+        const [resPlan, resNav] = await Promise.all([
+          fetch(`${API_URL}/settings/limits`, {
+            headers: {
+              'X-Tenant-ID': tenantId,
+              Authorization: authToken ? `Bearer ${authToken}` : '',
+            },
+          }),
+          fetch(`${API_URL}/cms/navigation`, {
+            headers: {
+              'X-Tenant-ID': tenantId,
+              Authorization: authToken ? `Bearer ${authToken}` : '',
+            },
+          }),
+        ]);
+
+        if (resPlan.ok) {
+          const limitsData = await resPlan.json();
           const pType = limitsData.plan_type?.toLowerCase() || 'free';
           setPlanType(pType);
-          
-          const userStr = localStorage.getItem('user');
-          if (userStr) {
-            const userObj = JSON.parse(userStr);
-            if (userObj.plan_type !== pType) {
-              localStorage.setItem('user', JSON.stringify({ ...userObj, plan_type: pType }));
-            }
-          }
+        }
+
+        if (resNav.ok) {
+          const navItems: any[] = await resNav.json();
+          const customNavs: PageItem[] = navItems
+            .filter((n: any) => n.is_custom)
+            .map((n: any) => ({
+              id: n.id || n.slug,
+              label: n.label || n.title,
+              path: n.path.startsWith('/') ? n.path : `/${n.path}`,
+              is_custom: true,
+            }));
+
+          setPages([
+            { id: 'home', label: 'Portada (Home)', path: '/', is_custom: false },
+            ...customNavs,
+          ]);
         }
       } catch (err) {
-        console.error("Error al obtener límites de plan en AI Webmaster Page:", err);
+        console.error('Error cargando datos de AI Webmaster:', err);
       } finally {
         setCheckingPlan(false);
       }
     }
-    fetchPlan();
+
+    loadData();
 
     const isSupportMode = getCookie('is_impersonating') === 'true' || Boolean(getCookie('impersonate_tenant_id'));
     if (isSupportMode) {
@@ -130,24 +143,28 @@ export default function AIWebmasterPage() {
     }
 
     if (typeof window !== 'undefined') {
-      const origin = window.location.origin;
-      const activeSlug = getCookie('impersonate_tenant_slug') || getCookie('tenant_slug') || '';
-      const previewUrl = activeSlug ? `${origin}/?tenant=${encodeURIComponent(activeSlug)}` : `${origin}/`;
-      setIframeUrl(previewUrl);
+      const initialUrl = buildPublicUrl('/');
+      setIframeUrl(initialUrl);
     }
   }, []);
 
+  const handleSelectPage = (page: PageItem) => {
+    const slug = page.path === '/' ? 'home' : page.path.replace(/^\//, '');
+    setActivePageSlug(slug);
+    setActivePageTitle(page.label);
+    const newUrl = buildPublicUrl(page.path);
+    setIframeUrl(newUrl);
+    setIsLoadingIframe(true);
+    setIframeKey((k) => k + 1);
+    setShowPageMenu(false);
+  };
+
   const handleFieldsUpdated = (updatedFields: string[], redirectUrl?: string) => {
     if (redirectUrl) {
-      const origin = window.location.origin;
-      const activeSlug = getCookie('impersonate_tenant_slug') || getCookie('tenant_slug') || '';
-      const separator = redirectUrl.includes('?') ? '&' : '?';
-      const tenantParam = activeSlug ? `${separator}tenant=${encodeURIComponent(activeSlug)}` : '';
-      setIframeUrl(`${origin}${redirectUrl}${tenantParam}`);
+      setIframeUrl(buildPublicUrl(redirectUrl));
     }
-    // Si la IA modificó campos de la landing page, recargar el iframe automáticamente
     setIframeKey((prev) => prev + 1);
-    toast.success('Recargando vista previa con los últimos cambios...');
+    toast.success('Escaparate actualizado en vivo.');
   };
 
   const forceReload = () => {
@@ -198,15 +215,12 @@ export default function AIWebmasterPage() {
 
           <div className="bg-stone-50 border border-stone-200/50 rounded-2xl p-4 text-left space-y-2">
             <h3 className="text-xs font-black uppercase tracking-widest text-[#d4af37] mb-1">Ventajas del Estudio Webmaster Elite</h3>
-            <ul className="text-xs text-stone-600 space-y-1.5 font-medium animate-in fade-in slide-in-from-bottom-1 duration-500 delay-100">
+            <ul className="text-xs text-stone-600 space-y-1.5 font-medium">
               <li className="flex items-center gap-2">✨ Director Creativo y Webmaster 24/7 conectado a tu web pública</li>
               <li className="flex items-center gap-2">🔄 Vista previa en directo con cambios instantáneos en Móvil, Tablet y PC</li>
               <li className="flex items-center gap-2">🎨 Modificación conversacional de paletas, tipografías y secciones Hero</li>
               <li className="flex items-center gap-2">✍️ Redacción comercial premium y optimización SEO de tratamientos</li>
             </ul>
-            <p className="text-[11px] text-stone-400 pt-2 border-t border-stone-200/40 italic">
-              💡 Tu Co-Piloto Operativo de gestión diaria sigue activo en el icono flotante del panel.
-            </p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
@@ -231,262 +245,170 @@ export default function AIWebmasterPage() {
   return (
     <div className="absolute inset-0 flex flex-col lg:flex-row overflow-hidden bg-white z-20">
       
-      {/* ── COLUMNA IZQUIERDA: MEGA DISEÑADOR (CHAT IA + BIBLIOTECA DE BLOQUES) ── */}
-      <div className="w-full lg:w-[550px] h-[50vh] lg:h-full flex flex-col border-b lg:border-b-0 lg:border-r border-stone-200 shrink-0 bg-white">
-        {/* Switcher Superior de Modo */}
-        <div className="px-5 py-2.5 bg-white border-b border-stone-200/60 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-1 bg-stone-100/90 p-1 rounded-xl border border-stone-200/60 w-full">
-            <button
-              onClick={() => setLeftTab('chat')}
-              className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 ${
-                leftTab === 'chat'
-                  ? 'bg-white text-stone-900 shadow-xs'
-                  : 'text-stone-500 hover:text-stone-800'
-              }`}
-            >
-              <MessageSquareText size={13} className={leftTab === 'chat' ? 'text-[#d4af37]' : ''} />
-              <span>Co-Piloto IA</span>
-            </button>
-            <button
-              onClick={() => setLeftTab('blocks')}
-              className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 ${
-                leftTab === 'blocks'
-                  ? 'bg-white text-stone-900 shadow-xs'
-                  : 'text-stone-500 hover:text-stone-800'
-              }`}
-            >
-              <Layers size={13} className={leftTab === 'blocks' ? 'text-[#d4af37]' : ''} />
-              <span>Bloques & Elementor</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Contenido según Pestaña */}
-        <div className="flex-1 overflow-hidden flex flex-col">
-          {leftTab === 'chat' ? (
-            <AIChatContainer
-              onFieldsUpdated={handleFieldsUpdated}
-              initialPrompt={injectedPrompt}
-              onPromptConsumed={() => setInjectedPrompt(null)}
-              activePageSlug={activePageSlug}
-              activePageTitle={activePageTitle}
-            />
-          ) : (
-            <WebmasterBlocksPanel
-              activePageSlug={activePageSlug}
-              onChangeActivePage={(slug, path, label) => {
-                setActivePageSlug(slug);
-                if (label) setActivePageTitle(label);
-                const origin = window.location.origin;
-                const activeSlug = getCookie('impersonate_tenant_slug') || getCookie('tenant_slug') || '';
-                const separator = path.includes('?') ? '&' : '?';
-                const tenantParam = activeSlug ? `${separator}tenant=${encodeURIComponent(activeSlug)}` : '';
-                setIframeUrl(`${origin}${path}${tenantParam}`);
-                setIframeKey((k) => k + 1);
-              }}
-              onBlockInserted={forceReload}
-              onAskAI={(prompt) => {
-                setInjectedPrompt(prompt);
-                setLeftTab('chat');
-              }}
-              onOpenVisualBuilder={() => setWorkspaceMode('builder')}
-            />
-          )}
-        </div>
+      {/* ── COLUMNA IZQUIERDA: CO-PILOTO IA (100% LIMPIO Y ENFOCADO) ── */}
+      <div className="w-full lg:w-[480px] xl:w-[520px] h-[45vh] lg:h-full flex flex-col border-b lg:border-b-0 lg:border-r border-stone-200 shrink-0 bg-white">
+        <AIChatContainer
+          onFieldsUpdated={handleFieldsUpdated}
+          initialPrompt={injectedPrompt}
+          onPromptConsumed={() => setInjectedPrompt(null)}
+          activePageSlug={activePageSlug}
+          activePageTitle={activePageTitle}
+        />
       </div>
 
-      {/* ── COLUMNA DERECHA (60%): VISTA PREVIA O DISEÑADOR VISUAL ── */}
-      <div className="flex-1 h-[50vh] lg:h-full flex flex-col bg-stone-50 overflow-hidden relative">
+      {/* ── COLUMNA DERECHA: ESCAPARATE EN VIVO (100% WEB PÚBLICA) ── */}
+      <div className="flex-1 h-[55vh] lg:h-full flex flex-col bg-stone-100 overflow-hidden relative">
         
-        {/* Cabecera del Espacio de Trabajo (Quiet Luxury) */}
-        <div className="flex items-center justify-between px-6 bg-white border-b border-stone-200/50 shrink-0 gap-3 h-[68px]">
+        {/* Cabecera del Escaparate */}
+        <div className="flex items-center justify-between px-6 bg-white border-b border-stone-200/70 shrink-0 gap-3 h-14 z-30">
           
-          <div className="flex items-center gap-3 min-w-0">
-            {/* Conmutador de Modo: Vista Web Pública vs Diseñador Visual */}
-            <div className="flex items-center bg-stone-100 rounded-xl p-1 border border-stone-200/60 shrink-0">
+          {/* Izquierda: Selector de Página Activa */}
+          <div className="flex items-center gap-3 min-w-0 relative">
+            <div className="relative">
               <button
-                onClick={() => setWorkspaceMode('preview')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all duration-200 ${
-                  workspaceMode === 'preview'
-                    ? 'bg-white text-stone-900 shadow-xs'
-                    : 'text-stone-500 hover:text-stone-800'
-                }`}
-                title="Ver cómo queda la web en tiempo real"
+                onClick={() => setShowPageMenu(!showPageMenu)}
+                className="flex items-center gap-2 bg-stone-100 hover:bg-stone-200/80 px-3 py-1.5 rounded-xl text-xs font-bold text-stone-800 transition-colors border border-stone-200/70 shadow-2xs"
+                title="Cambiar página de la vista previa"
               >
-                <Eye size={13} className={workspaceMode === 'preview' ? 'text-[#d4af37]' : ''} />
-                <span>Web Pública</span>
+                <span className="w-2 h-2 rounded-full bg-[#d4af37]" />
+                <span className="truncate max-w-[150px] sm:max-w-[200px]">{activePageTitle}</span>
+                <ChevronDown size={13} className={`text-stone-400 transition-transform ${showPageMenu ? 'rotate-180' : ''}`} />
+              </button>
+
+              {/* Menú Flotante de Páginas */}
+              {showPageMenu && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowPageMenu(false)} />
+                  <div className="absolute top-full left-0 mt-1.5 w-56 bg-white rounded-2xl shadow-xl border border-stone-200/80 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="px-3 py-1 text-[9px] font-black uppercase tracking-widest text-[#d4af37]">
+                      Páginas del Escaparate
+                    </div>
+                    {pages.map((p) => {
+                      const isSelected = (activePageSlug === 'home' && p.path === '/') || p.path.endsWith(`/${activePageSlug}`);
+                      return (
+                        <button
+                          key={p.id}
+                          onClick={() => handleSelectPage(p)}
+                          className={`w-full text-left px-3.5 py-2 text-xs font-semibold flex items-center justify-between transition-colors ${
+                            isSelected
+                              ? 'bg-amber-50/70 text-[#b38f2b]'
+                              : 'text-stone-700 hover:bg-stone-50'
+                          }`}
+                        >
+                          <span className="truncate">{p.label}</span>
+                          {isSelected && <Check size={12} className="text-[#d4af37] shrink-0" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* URL pública del escaparate */}
+            <div className="hidden md:flex items-center gap-1.5 text-[11px] font-mono text-stone-400 truncate max-w-xs">
+              <Globe size={11} className="text-[#d4af37] shrink-0" />
+              <span className="truncate">{iframeUrl || buildPublicUrl('/')}</span>
+            </div>
+          </div>
+
+          {/* Derecha: Selector de Dispositivos & Acciones */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Dispositivos */}
+            <div className="flex items-center bg-stone-100/90 rounded-xl p-1 border border-stone-200/60 shadow-2xs">
+              <button
+                onClick={() => setViewMode('desktop')}
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                  viewMode === 'desktop'
+                    ? 'bg-white text-stone-900 shadow-xs'
+                    : 'text-stone-400 hover:text-stone-700'
+                }`}
+                title="Escritorio (Ancho Completo)"
+              >
+                <Monitor size={14} />
+                <span className="hidden sm:inline">Escritorio</span>
               </button>
 
               <button
-                onClick={() => setWorkspaceMode('builder')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all duration-200 ${
-                  workspaceMode === 'builder'
+                onClick={() => setViewMode('tablet')}
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                  viewMode === 'tablet'
                     ? 'bg-white text-stone-900 shadow-xs'
-                    : 'text-stone-500 hover:text-stone-800'
+                    : 'text-stone-400 hover:text-stone-700'
                 }`}
-                title="Abrir el diseñador con arrastre de columnas y edición de bloques"
+                title="Tablet (768px)"
               >
-                <PencilRuler size={13} className={workspaceMode === 'builder' ? 'text-[#d4af37]' : ''} />
-                <span>Diseñador Visual</span>
+                <Tablet size={14} />
+                <span className="hidden sm:inline">Tablet</span>
+              </button>
+
+              <button
+                onClick={() => setViewMode('mobile')}
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                  viewMode === 'mobile'
+                    ? 'bg-white text-stone-900 shadow-xs'
+                    : 'text-stone-400 hover:text-stone-700'
+                }`}
+                title="Móvil (390px)"
+              >
+                <Smartphone size={14} />
+                <span className="hidden sm:inline">Móvil</span>
               </button>
             </div>
 
-            {/* Información o Barra de URL según modo */}
-            {workspaceMode === 'preview' ? (
-              <div className="hidden sm:flex items-center gap-2 bg-stone-50 border border-stone-200/70 rounded-xl px-3 py-1.5 text-[11px] font-mono text-stone-600 max-w-xs md:max-w-sm truncate select-all shadow-2xs">
-                <Globe size={12} className="text-[#d4af37] shrink-0" />
-                <span className="truncate">{iframeUrl || getPublicUrl(activePageSlug)}</span>
-              </div>
-            ) : (
-              <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 text-xs font-bold text-stone-600 bg-amber-50/60 border border-amber-200/50 rounded-xl">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
-                <span className="text-[11px]">
-                  {activePageSlug === 'home' ? 'Editor CMS de Portada' : `Diseñador Web: ${activePageSlug}`}
-                </span>
-              </div>
-            )}
-          </div>
+            <div className="w-px h-5 bg-stone-200 mx-0.5" />
 
-          {/* Controles del Lado Derecho */}
-          <div className="flex items-center gap-2 shrink-0">
-            {workspaceMode === 'preview' ? (
-              <>
-                {/* Selector de Dispositivos */}
-                <div className="flex items-center bg-stone-100/80 rounded-xl p-1 border border-stone-200/50">
-                  <button
-                    onClick={() => setViewMode('desktop')}
-                    className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                      viewMode === 'desktop'
-                        ? 'bg-white text-stone-900 shadow-xs'
-                        : 'text-stone-400 hover:text-stone-700'
-                    }`}
-                    title="Escritorio (Ancho Completo)"
-                  >
-                    <Monitor size={14} />
-                    <span className="hidden md:inline">Escritorio</span>
-                  </button>
-
-                  <button
-                    onClick={() => setViewMode('tablet')}
-                    className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                      viewMode === 'tablet'
-                        ? 'bg-white text-stone-900 shadow-xs'
-                        : 'text-stone-400 hover:text-stone-700'
-                    }`}
-                    title="Tablet (768px)"
-                  >
-                    <Tablet size={14} />
-                    <span className="hidden md:inline">Tablet</span>
-                  </button>
-
-                  <button
-                    onClick={() => setViewMode('mobile')}
-                    className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                      viewMode === 'mobile'
-                        ? 'bg-white text-stone-900 shadow-xs'
-                        : 'text-stone-400 hover:text-stone-700'
-                    }`}
-                    title="Móvil (Responsivo)"
-                  >
-                    <Smartphone size={14} />
-                    <span className="hidden md:inline">Móvil</span>
-                  </button>
-                </div>
-
-                <div className="w-px h-6 bg-stone-200" />
-
-                {/* Recargar */}
-                <button
-                  onClick={forceReload}
-                  className="flex items-center justify-center p-2 text-stone-500 hover:text-stone-800 hover:bg-stone-100 rounded-lg transition-all"
-                  title="Recargar vista previa"
-                >
-                  <RefreshCw size={15} className={isLoadingIframe ? 'animate-spin text-[#d4af37]' : ''} />
-                </button>
-                
-                {iframeUrl && (
-                  <a
-                    href={iframeUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center p-2 text-stone-500 hover:text-stone-800 hover:bg-stone-100 rounded-lg transition-all"
-                    title="Abrir en pestaña nueva"
-                  >
-                    <ExternalLink size={15} />
-                  </a>
-                )}
-              </>
-            ) : (
-              <>
-                {/* Botón para abrir el diseñador a pantalla completa */}
-                <a
-                  href={getBuilderUrl(activePageSlug)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-1.5 bg-stone-100 hover:bg-stone-200/80 text-stone-700 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
-                  title="Abrir en pantalla completa en una nueva pestaña"
-                >
-                  <Maximize2 size={13} />
-                  <span className="hidden sm:inline">Pantalla Completa</span>
-                </a>
-
-                {/* Recargar iframe del diseñador */}
-                <button
-                  onClick={forceReload}
-                  className="flex items-center justify-center p-2 text-stone-500 hover:text-stone-800 hover:bg-stone-100 rounded-lg transition-all"
-                  title="Recargar diseñador"
-                >
-                  <RefreshCw size={15} className={isLoadingIframe ? 'animate-spin text-[#d4af37]' : ''} />
-                </button>
-              </>
+            {/* Botón Recargar */}
+            <button
+              onClick={forceReload}
+              className="flex items-center justify-center p-2 text-stone-500 hover:text-stone-800 hover:bg-stone-100 rounded-xl transition-all"
+              title="Recargar vista previa"
+            >
+              <RefreshCw size={15} className={isLoadingIframe ? 'animate-spin text-[#d4af37]' : ''} />
+            </button>
+            
+            {/* Abrir en pestaña nueva */}
+            {iframeUrl && (
+              <a
+                href={iframeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center p-2 text-stone-500 hover:text-stone-800 hover:bg-stone-100 rounded-xl transition-all"
+                title="Abrir web en pestaña nueva"
+              >
+                <ExternalLink size={15} />
+              </a>
             )}
           </div>
         </div>
 
-        {/* Iframe Viewport Container */}
-        <div className={`flex-1 overflow-auto bg-stone-100/70 flex items-center justify-center relative ${
-          workspaceMode === 'builder' || viewMode === 'desktop' ? 'p-0' : 'p-4 sm:p-6'
-        }`}>
+        {/* Lienzo del Escaparate */}
+        <div className="flex-1 overflow-auto flex items-center justify-center p-2 sm:p-4 bg-stone-100/70">
           <div
-            className={`relative bg-white transition-all duration-300 ease-out flex flex-col ${
-              workspaceMode === 'builder' || viewMode === 'desktop'
-                ? 'w-full h-full border-0 shadow-none rounded-none'
+            className={`transition-all duration-300 flex flex-col bg-white overflow-hidden ${
+              viewMode === 'desktop'
+                ? 'w-full h-full rounded-2xl shadow-sm border border-stone-200/80'
                 : viewMode === 'tablet'
-                  ? 'w-[768px] max-w-full h-[95%] max-h-[960px] rounded-3xl border border-stone-200/90 shadow-2xl overflow-hidden'
-                  : 'w-[420px] max-w-full h-[95%] max-h-[860px] rounded-3xl border border-stone-200/90 shadow-2xl overflow-hidden'
+                ? 'w-[768px] max-w-full h-full rounded-3xl shadow-xl border-4 border-stone-800'
+                : 'w-[390px] max-w-full h-full rounded-[36px] shadow-2xl border-[6px] border-stone-900'
             }`}
           >
-            {/* Pantalla del Iframe */}
-            {(() => {
-              const currentSrc = workspaceMode === 'preview' 
-                ? (iframeUrl || getPublicUrl(activePageSlug)) 
-                : getBuilderUrl(activePageSlug);
-
-              return (
-                <iframe
-                  key={`${workspaceMode}-${activePageSlug}-${iframeKey}`}
-                  src={currentSrc}
-                  className="w-full h-full border-0 rounded-none overflow-auto"
-                  onLoad={() => setIsLoadingIframe(false)}
-                  title={workspaceMode === 'preview' ? 'Vista Previa Web Pública' : 'Diseñador Visual'}
-                />
-              );
-            })()}
-
-            {/* Spinner de carga superpuesto */}
-            {isLoadingIframe && (
-              <div className="absolute inset-0 bg-white/70 backdrop-blur-xs flex items-center justify-center transition-all z-20">
-                <div className="flex flex-col items-center gap-3">
-                  <div className="relative flex items-center justify-center">
-                    <span className="absolute w-12 h-12 rounded-full border-2 border-stone-200/30" />
-                    <span className="w-12 h-12 rounded-full border-2 border-t-[#d4af37] border-r-[#d4af37] animate-spin" />
-                  </div>
-                  <p className="text-[12px] font-bold text-stone-500 uppercase tracking-widest animate-pulse">
-                    {workspaceMode === 'preview' ? 'Renderizando Landing Page...' : 'Cargando Diseñador Visual...'}
-                  </p>
-                </div>
+            {/* Barra superior simulada para dispositivo Móvil o Tablet */}
+            {viewMode !== 'desktop' && (
+              <div className="h-6 bg-stone-900 text-stone-400 flex items-center justify-between px-6 text-[10px] select-none shrink-0 font-medium">
+                <span>9:41</span>
+                <div className="w-16 h-3 bg-stone-800 rounded-full" />
+                <span>100%</span>
               </div>
             )}
+
+            <iframe
+              key={iframeKey}
+              src={iframeUrl}
+              onLoad={() => setIsLoadingIframe(false)}
+              className="w-full flex-1 border-0 bg-white"
+              title="Escaparate Web en Vivo"
+            />
           </div>
         </div>
       </div>

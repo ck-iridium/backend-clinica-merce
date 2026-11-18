@@ -31,46 +31,46 @@ export const WEBMASTER_WELCOME = '¡Hola! Soy tu AI Webmaster & Director Creativ
 
 export const WEBMASTER_COMMANDS: WebmasterCommand[] = [
   {
-    id: 'palette',
-    title: 'Paleta & Estilo Visual',
-    subtitle: 'Combinaciones de alta gama',
-    icon: Palette,
-    prompt: 'Quiero renovar la paleta de colores y la estética de la web. ¿Qué combinaciones de lujo me recomiendas según mi sector?'
+    id: 'hero_slide',
+    title: 'Añadir Diapositiva',
+    subtitle: 'Nueva imagen destacada en portada',
+    icon: SlidersHorizontal,
+    prompt: 'Quiero añadir una nueva diapositiva destacada a la portada.'
   },
   {
     id: 'seo_hero',
-    title: 'Optimizar Portada & SEO',
-    subtitle: 'Análisis y conversión de textos',
+    title: 'Mejorar Textos',
+    subtitle: 'Optimizar titular y redacción',
     icon: Sparkles,
-    prompt: 'Analiza el titular actual y los textos SEO de la portada y recomiéndame mejoras de conversión.'
+    prompt: 'Analiza y mejora el titular y los textos principales de la portada.'
+  },
+  {
+    id: 'palette',
+    title: 'Colores de la Web',
+    subtitle: 'Cambiar paleta y estilo visual',
+    icon: Palette,
+    prompt: 'Quiero cambiar los colores principales de la web.'
   },
   {
     id: 'layout',
-    title: 'Layout de Catálogo',
-    subtitle: 'Bento Grid frente a Carrusel',
+    title: 'Diseño del Catálogo',
+    subtitle: 'Cambiar entre cuadrícula o carrusel',
     icon: LayoutGrid,
-    prompt: 'Quiero evaluar el formato de presentación de tratamientos en portada (Bento Grid frente a Carrusel). ¿Cómo luciría cada uno y cuál me recomiendas?'
-  },
-  {
-    id: 'hero_slide',
-    title: 'Nueva Diapositiva Hero',
-    subtitle: 'Proponer promoción o servicio',
-    icon: SlidersHorizontal,
-    prompt: 'Quiero añadir una nueva diapositiva destacada a la portada. ¿Qué tratamiento, novedad o servicio me sugieres destacar y qué datos necesitas?'
+    prompt: 'Quiero cambiar el diseño de tratamientos de la portada entre cuadrícula o carrusel.'
   },
   {
     id: 'new_page',
     title: 'Crear Nueva Página',
-    subtitle: 'Asesoría y maquetación a medida',
+    subtitle: 'Añadir otra sección a la web',
     icon: PlusCircle,
-    prompt: 'Quiero crear una nueva página para mi web. ¿Qué temáticas me recomiendas para mi clínica y qué estructura inicial le damos?'
+    prompt: 'Quiero crear una nueva página para mi web.'
   },
   {
     id: 'photo',
-    title: 'Fotografía Editorial IA',
-    subtitle: 'Generación con tu API Key',
+    title: 'Crear Imagen con IA',
+    subtitle: 'Generar foto para la web',
     icon: Wand2,
-    prompt: 'Quiero generar una fotografía editorial con mi clave de API para mi escaparate. ¿Qué escena o servicio me recomiendas fotografiar?'
+    prompt: 'Quiero generar una nueva fotografía para mi web con inteligencia artificial.'
   },
 ];
 
@@ -84,49 +84,49 @@ export function getWebmasterCommands(
   if (isCustomPage) {
     return {
       sectionTitle: `Comandos Rápidos · ${pageLabel}`,
-      sectionSubtitle: 'Página Autónoma · Asesoría en Vivo',
+      sectionSubtitle: 'Acciones Rápidas con 1 Clic',
       commands: [
         {
           id: 'editorial_section',
-          title: 'Redactar Sección Editorial',
-          subtitle: 'Texto persuasivo y elegante',
+          title: 'Añadir Texto',
+          subtitle: 'Nueva sección de contenido',
           icon: Sparkles,
-          prompt: `Ayúdame a redactar una nueva sección de contenido editorial de estilo "Quiet Luxury" para la página "${pageLabel}". ¿Qué enfoque me recomiendas y qué datos necesitas?`
+          prompt: `Quiero añadir una nueva sección de texto a la página "${pageLabel}".`
         },
         {
           id: 'insert_bento',
-          title: 'Insertar Bento / Catálogo',
-          subtitle: 'Tratamientos en esta página',
+          title: 'Mostrar Tratamientos',
+          subtitle: 'Insertar catálogo en esta página',
           icon: LayoutGrid,
-          prompt: `Quiero insertar un bloque Bento Grid de tratamientos en la página "${pageLabel}". ¿Qué categoría o servicios me recomiendas mostrar aquí?`
+          prompt: `Quiero mostrar tratamientos en la página "${pageLabel}".`
         },
         {
           id: 'space_photo',
-          title: 'Fotografía del Espacio',
-          subtitle: 'Imagen editorial de alta gama',
+          title: 'Añadir Imagen',
+          subtitle: 'Subir o generar fotografía',
           icon: Wand2,
-          prompt: `Quiero añadir una fotografía editorial de alto impacto a la página "${pageLabel}". ¿Qué tipo de toma o ambiente sugieres generar o seleccionar?`
+          prompt: `Quiero añadir una fotografía a la página "${pageLabel}".`
         },
         {
           id: 'cta_booking',
-          title: 'Botón CTA de Reserva',
-          subtitle: 'Llamada a la acción al final',
+          title: 'Botón de Reserva',
+          subtitle: 'Llamada a reservar cita',
           icon: SlidersHorizontal,
-          prompt: `Quiero añadir un botón de reserva (CTA) al final de la página "${pageLabel}". ¿Qué texto de llamada y estilo visual me recomiendas?`
+          prompt: `Quiero añadir un botón para reservar cita en la página "${pageLabel}".`
         },
         {
           id: 'rewrite_luxury',
-          title: 'Reescribir con Tono Lujo',
-          subtitle: 'Sofisticación y exclusividad',
+          title: 'Mejorar Redacción',
+          subtitle: 'Hacer los textos más profesionales',
           icon: Sparkles,
-          prompt: `Revisa los textos actuales de la página "${pageLabel}" y propón una versión reescrita con redacción de alta costura, sobria y cautivadora.`
+          prompt: `Mejora la redacción de la página "${pageLabel}" para que suene más profesional y atractiva.`
         },
         {
           id: 'seo_page',
-          title: 'Optimizar SEO de Página',
-          subtitle: 'Posicionamiento y metadatos',
+          title: 'Cambiar Título',
+          subtitle: 'Editar nombre o encabezado',
           icon: Palette,
-          prompt: `Analiza el título y contenido de la página "${pageLabel}" y recomiéndame mejoras SEO para posicionar en Google.`
+          prompt: `Quiero cambiar el título y subtítulo de la página "${pageLabel}".`
         },
       ]
     };
@@ -134,7 +134,7 @@ export function getWebmasterCommands(
 
   return {
     sectionTitle: 'Comandos Rápidos · Portada',
-    sectionSubtitle: 'Escaparate Principal · Asesoría en Vivo',
+    sectionSubtitle: 'Acciones Rápidas con 1 Clic',
     commands: WEBMASTER_COMMANDS,
   };
 }
