@@ -6,7 +6,7 @@ import { notFound } from 'next/navigation';
 import BentoGridServices from '@/components/blocks/BentoGridServices';
 import ServiceCard from '@/components/ServiceCard';
 import TreatmentCarousel from '@/components/TreatmentCarousel';
-import InspectableSection from '@/components/ai/webmaster/InspectableSection';
+import InspectableSection, { EmptyColumnDropZone } from '@/components/ai/webmaster/InspectableSection';
 import Link from 'next/link';
 
 // Tipos estructurales del Page Builder
@@ -316,9 +316,17 @@ export default async function CustomPage({ params }: PageProps) {
                     className={`w-full ${pySpacing} ${bgColor} ${paddingClass} ${isDark ? 'text-white' : ''} transition-all duration-300 border-b border-stone-100/30`}
                   >
                     <div className={`${widthClass} ${(hasHero || hasCardsSlider) ? '' : gridClass} ${verticalAlign} ${horizontalAlign}`}>
-                    {columns.map((col) => (
+                    {columns.map((col, colIdx) => (
                       <div key={col.id} className="flex flex-col gap-6 justify-center">
-                        {(col.blocks || []).map((block) => {
+                        {(col.blocks || []).length === 0 ? (
+                          <EmptyColumnDropZone
+                            colIndex={colIdx}
+                            totalCols={columnsCount}
+                            sectionId={section.id}
+                            pageSlug={slug}
+                          />
+                        ) : (
+                          (col.blocks || []).map((block) => {
                           const data = block.content_data || {};
 
                           // ──── RENDER: ATOMIC TITLE ────
@@ -827,7 +835,8 @@ export default async function CustomPage({ params }: PageProps) {
                           }
 
                           return null;
-                        })}
+                        })
+                      )}
                       </div>
                     ))}
                   </div>

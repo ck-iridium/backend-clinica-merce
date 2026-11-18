@@ -96,7 +96,14 @@ export default function AIChatContainer({
     onFileChange,
     onPaste,
     isUploadingFile,
-  } = useWebmasterChat({ onFieldsUpdated, initialPrompt, onPromptConsumed, selectedSection });
+  } = useWebmasterChat({
+    onFieldsUpdated,
+    initialPrompt,
+    onPromptConsumed,
+    selectedSection,
+    activePageSlug,
+    activePageTitle,
+  });
 
   const [selectedMultiChips, setSelectedMultiChips] = useState<Record<string, ActionChip>>({});
 

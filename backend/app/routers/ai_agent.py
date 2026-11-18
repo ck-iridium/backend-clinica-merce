@@ -295,7 +295,14 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
                             clean_p_slug = re.sub(r'[^a-z0-9]+', '-', p_slug.lower()).strip('-')
                             if clean_p_slug:
                                 redirect_url = f"/{clean_p_slug}"
-                    elif name in ["add_block_to_page", "add_section_to_page", "update_page_details", "update_page_block"]:
+                    elif name in [
+                        "add_block_to_page",
+                        "add_section_to_page",
+                        "set_section_columns",
+                        "update_page_details",
+                        "update_page_block",
+                        "update_page_block_properties"
+                    ]:
                         updated_fields.append("pages")
                         updated_fields.append("blocks")
                         args = fn_call.args

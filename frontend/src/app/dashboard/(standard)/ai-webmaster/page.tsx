@@ -230,8 +230,15 @@ export default function AIWebmasterPage() {
     // Recordar qué sección estaba activa para auto-scroll suave tras recarga
     pendingScrollSectionIdRef.current = selectedSection?.id || null;
 
-    if (redirectUrl) {
-      const cleanPath = redirectUrl.startsWith('/') ? redirectUrl : `/${redirectUrl}`;
+    let targetPath = redirectUrl;
+    if (!targetPath && selectedSection?.pageSlug && selectedSection.pageSlug !== 'home') {
+      targetPath = selectedSection.pageSlug;
+    } else if (!targetPath && activePageSlug && activePageSlug !== 'home') {
+      targetPath = activePageSlug;
+    }
+
+    if (targetPath) {
+      const cleanPath = targetPath.startsWith('/') ? targetPath : `/${targetPath}`;
       const slug = cleanPath === '/' ? 'home' : cleanPath.replace(/^\//, '');
       setActivePageSlug(slug);
       
@@ -242,15 +249,16 @@ export default function AIWebmasterPage() {
         setActivePageTitle(slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, ' '));
       }
       setIframeUrl(buildPublicUrl(cleanPath));
-    } else if (selectedSection?.pageSlug && selectedSection.pageSlug !== 'home') {
-      const cleanPath = selectedSection.pageSlug.startsWith('/') ? selectedSection.pageSlug : `/${selectedSection.pageSlug}`;
-      setIframeUrl(buildPublicUrl(cleanPath));
     }
+
+    setIsLoadingIframe(true);
     setIframeKey((prev) => prev + 1);
     toast.success('Escaparate actualizado en vivo.');
   };
 
   const forceReload = () => {
+    const currentPath = activePageSlug === 'home' ? '/' : `/${activePageSlug}`;
+    setIframeUrl(buildPublicUrl(currentPath));
     setIsLoadingIframe(true);
     setIframeKey((prev) => prev + 1);
   };

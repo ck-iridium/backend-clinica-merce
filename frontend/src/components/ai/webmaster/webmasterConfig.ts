@@ -10,6 +10,8 @@ import {
   FileText,
   Type,
   Image as ImageIcon,
+  Columns,
+  Video,
   PhoneCall,
   MapPin,
   Mail,
@@ -193,49 +195,56 @@ export function getWebmasterCommands(
   if (isCustomPage) {
     return {
       sectionTitle: `Comandos Rápidos · ${pageLabel}`,
-      sectionSubtitle: 'Acciones Rápidas con 1 Clic',
+      sectionSubtitle: 'Bloques y Estructura con 1 Clic',
       commands: [
         {
-          id: 'editorial_section',
-          title: 'Añadir Texto',
-          subtitle: 'Nueva sección de contenido',
+          id: 'add_section',
+          title: 'Añadir Sección',
+          subtitle: 'Estructura en 1, 2 o 3 columnas',
+          icon: Columns,
+          prompt: `Quiero añadir una nueva sección con columnas a la página "${pageLabel}".`
+        },
+        {
+          id: 'add_title',
+          title: 'Título Elegante',
+          subtitle: 'Encabezado serif con divisor',
+          icon: Type,
+          prompt: `Añade un título elegante con divisor a la página "${pageLabel}".`
+        },
+        {
+          id: 'add_text',
+          title: 'Párrafo de Texto',
+          subtitle: 'Redacción editorial estilizada',
+          icon: FileText,
+          prompt: `Añade un párrafo de texto editorial a la página "${pageLabel}".`
+        },
+        {
+          id: 'add_media',
+          title: 'Imagen o Vídeo',
+          subtitle: 'Multimedia con marco de lujo',
+          icon: ImageIcon,
+          prompt: `Añade una fotografía o vídeo de alta gama a la página "${pageLabel}".`
+        },
+        {
+          id: 'add_composition',
+          title: 'Imagen + Texto',
+          subtitle: 'A dos columnas con botón CTA',
           icon: Sparkles,
-          prompt: `Quiero añadir una nueva sección de texto a la página "${pageLabel}".`
+          prompt: `Añade un bloque de imagen con texto descriptivo y botón a la página "${pageLabel}".`
         },
         {
-          id: 'insert_bento',
-          title: 'Mostrar Tratamientos',
-          subtitle: 'Insertar catálogo en esta página',
-          icon: LayoutGrid,
-          prompt: `Quiero mostrar tratamientos en la página "${pageLabel}".`
-        },
-        {
-          id: 'space_photo',
-          title: 'Añadir Imagen',
-          subtitle: 'Subir o generar fotografía',
-          icon: Wand2,
-          prompt: `Quiero añadir una fotografía a la página "${pageLabel}".`
-        },
-        {
-          id: 'cta_booking',
-          title: 'Botón de Reserva',
-          subtitle: 'Llamada a reservar cita',
+          id: 'add_button',
+          title: 'Botón CTA',
+          subtitle: 'Enlace a reservas o catálogo',
           icon: SlidersHorizontal,
-          prompt: `Quiero añadir un botón para reservar cita en la página "${pageLabel}".`
+          prompt: `Añade un botón de llamada a la acción a la página "${pageLabel}".`
         },
         {
-          id: 'rewrite_luxury',
-          title: 'Mejorar Redacción',
-          subtitle: 'Hacer los textos más profesionales',
-          icon: Sparkles,
-          prompt: `Mejora la redacción de la página "${pageLabel}" para que suene más profesional y atractiva.`
-        },
-        {
-          id: 'seo_page',
-          title: 'Cambiar Título',
-          subtitle: 'Editar nombre o encabezado',
-          icon: Palette,
-          prompt: `Quiero cambiar el título y subtítulo de la página "${pageLabel}".`
+          id: 'add_catalog',
+          title: 'Catálogo Servicios',
+          subtitle: 'Carrusel, Bento, lista o rejilla',
+          icon: LayoutGrid,
+          prompt: `Añade un catálogo interactivo de tratamientos a la página "${pageLabel}".`
         },
       ]
     };

@@ -34,7 +34,7 @@ export default function WebmasterCommandGrid({
         </span>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[185px] overflow-y-auto pr-0.5 hide-scroll">
         {commands.map((cmd, idx) => {
           const Icon = cmd.icon;
           return (

@@ -22,9 +22,18 @@ interface UseWebmasterChatProps {
   initialPrompt?: string | null;
   onPromptConsumed?: () => void;
   selectedSection?: { id: string; name: string; pageSlug: string; blockType?: string } | null;
+  activePageSlug?: string;
+  activePageTitle?: string;
 }
 
-export function useWebmasterChat({ onFieldsUpdated, initialPrompt, onPromptConsumed, selectedSection }: UseWebmasterChatProps) {
+export function useWebmasterChat({
+  onFieldsUpdated,
+  initialPrompt,
+  onPromptConsumed,
+  selectedSection,
+  activePageSlug,
+  activePageTitle,
+}: UseWebmasterChatProps) {
   const router = useRouter();
   const { language, t } = useLanguage();
   const { role, userName: authUserName } = useAuthRole();
@@ -298,9 +307,15 @@ export function useWebmasterChat({ onFieldsUpdated, initialPrompt, onPromptConsu
             Authorization: authToken ? `Bearer ${authToken}` : '',
           },
           body: JSON.stringify({
-            message: (selectedSection && !queryText.startsWith('[SECCIÓN SELECCIONADA:'))
-              ? `[SECCIÓN SELECCIONADA: "${selectedSection.name}" (tipo: ${selectedSection.blockType || 'sección'}, página: "${selectedSection.pageSlug}")] ${queryText}`
-              : queryText,
+            message: (() => {
+              if (selectedSection && !queryText.startsWith('[SECCIÓN SELECCIONADA:')) {
+                return `[SECCIÓN SELECCIONADA: "${selectedSection.name}" (tipo: ${selectedSection.blockType || 'sección'}, página: "${selectedSection.pageSlug}")] ${queryText}`;
+              }
+              if (activePageSlug && !queryText.startsWith('[PÁGINA ACTIVA')) {
+                return `[PÁGINA ACTIVA EN VISTA PREVIA: "${activePageTitle || activePageSlug}" (slug: "${activePageSlug}")] ${queryText}`;
+              }
+              return queryText;
+            })(),
             history: updatedMessages.slice(1).map((msg) => ({
               role: msg.role,
               content: msg.content,
@@ -346,25 +361,26 @@ export function useWebmasterChat({ onFieldsUpdated, initialPrompt, onPromptConsu
         // No es JSON, usar el texto directamente
       }
 
-      // Detectar comandos [NAVIGATE: route?hint=selector]
+      // Detectar comandos [NAVIGATE: route]
       const navigateRegex = /\[NAVIGATE:\s*([^\]]+)\]/i;
       let cleanedResponseText = finalResponseText || '';
+      let navRoute: string | undefined = undefined;
       const navMatch = typeof finalResponseText === 'string' ? finalResponseText.match(navigateRegex) : null;
       if (navMatch && navMatch[1]) {
-        const targetRoute = navMatch[1].trim();
-        router.push(targetRoute);
+        navRoute = navMatch[1].trim();
         cleanedResponseText = finalResponseText.replace(/\[NAVIGATE:\s*[^\]]+\]/gi, '').trim();
       }
 
       setMessages((prev) => [...prev, { role: 'model', content: cleanedResponseText }]);
       speakText(cleanedResponseText, data.audio_response_base64);
 
-      if (data.redirect_url || (data.updated_fields && data.updated_fields.length > 0)) {
+      const effectiveRedirect = navRoute || data.redirect_url;
+      if (effectiveRedirect || (data.updated_fields && data.updated_fields.length > 0)) {
         if (data.updated_fields && data.updated_fields.length > 0) {
           toast.success('¡Cambios aplicados en tiempo real por el Asistente!');
         }
         if (onFieldsUpdated) {
-          onFieldsUpdated(data.updated_fields || [], data.redirect_url);
+          onFieldsUpdated(data.updated_fields || [], effectiveRedirect);
         }
       }
     } catch (error: any) {

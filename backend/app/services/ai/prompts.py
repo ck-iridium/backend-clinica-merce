@@ -123,6 +123,7 @@ def build_system_instruction(
             f"  * Si te pide 'Alinea el título a la izquierda y quita la línea dorada', llama a `update_page_block_properties(page_slug=..., block_type='title_heading', properties={{'alignment': 'left', 'show_divider': False}})`.\n"
             f"- GESTIÓN ESTRUCTURAL DE SECCIONES Y COLUMNAS (`add_section_to_page`, `set_section_columns`, `add_block_to_page`):\n"
             f"  * Todo contenido de páginas adicionales reside dentro de secciones. Una sección puede estructurarse en 1, 2, 3 o 4 columnas paralelas.\n"
+            f"  * PÁGINA ACTIVA EN VISTA PREVIA: Cuando el usuario te pida crear una sección, añadir bloques o hacer cambios diciendo 'en esta página', 'aquí' o sin especificar página, toma DIRECTAMENTE el slug de la etiqueta `[PÁGINA ACTIVA EN VISTA PREVIA: ... (slug: ...)]` que recibes en el mensaje. No preguntes qué página es porque ya sabes exactamente en qué página está navegando el usuario.\n"
             f"  * DIVIDIR SECCIÓN EXISTENTE: Si el usuario te pide 'divide esta sección en 2 columnas', 'pon 2 columnas en esta sección', etc.: Llama a `set_section_columns(page_slug=..., columns_count=2, section_id=...)`.\n"
             f"  * CREAR SECCIÓN Y AÑADIR CONTENIDOS EN COLUMNAS (ej: 'añade un texto aleatorio en una columna y en la otra columna otro texto', o 'crea una sección de 2 columnas con imagen a la izquierda y texto a la derecha'):\n"
             f"    1. Si la sección aún no existe, llama a `add_section_to_page(page_slug=..., columns_count=2)` para crear la estructura de 2 columnas.\n"

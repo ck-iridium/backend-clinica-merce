@@ -15,6 +15,61 @@ export function EmbeddedOnly({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+export function EmptyColumnDropZone({
+  colIndex,
+  totalCols,
+  sectionId,
+  pageSlug,
+}: {
+  colIndex: number;
+  totalCols: number;
+  sectionId: string;
+  pageSlug: string;
+}) {
+  const [isEmbedded, setIsEmbedded] = useState(false);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsEmbedded(window.self !== window.top);
+    }
+  }, []);
+
+  if (!isEmbedded) return null;
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    window.parent.postMessage(
+      {
+        type: 'WEBMASTER_SECTION_SELECTED',
+        sectionId,
+        sectionName: `Columna ${colIndex + 1} de ${totalCols}`,
+        pageSlug,
+        blockType: 'section',
+        columnIndex: colIndex,
+      },
+      '*'
+    );
+  };
+
+  return (
+    <div
+      onClick={handleClick}
+      className="w-full min-h-[170px] flex flex-col items-center justify-center gap-2.5 border-2 border-dashed border-stone-300 hover:border-[#d4af37] bg-stone-50/70 hover:bg-amber-50/25 rounded-3xl p-6 text-center select-none transition-all duration-300 cursor-pointer group/col shadow-2xs hover:shadow-luxury"
+    >
+      <div className="w-10 h-10 rounded-full bg-white shadow-xs border border-stone-200/80 flex items-center justify-center text-stone-400 group-hover/col:text-[#d4af37] group-hover/col:border-[#d4af37] group-hover/col:scale-110 transition-all">
+        <span className="text-2xl leading-none font-light">+</span>
+      </div>
+      <div>
+        <span className="text-[11px] font-black uppercase tracking-widest text-stone-700 group-hover/col:text-stone-900 block">
+          Columna {colIndex + 1} de {totalCols}
+        </span>
+        <span className="text-[10px] text-stone-400 group-hover/col:text-stone-600 font-sans block mt-0.5 leading-snug">
+          Columna vacía · Haz clic o pide a la IA añadir contenido aquí
+        </span>
+      </div>
+    </div>
+  );
+}
+
 interface InspectableSectionProps {
   id: string;
   name: string;
