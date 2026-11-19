@@ -37,7 +37,7 @@ export function FeaturesGridBlockView({ data }: FeaturesGridBlockViewProps) {
                 {subheading}
               </p>
             )}
-            <div className="w-12 h-0.5 bg-[#d4af37] mx-auto mt-4" />
+            <div className="w-12 h-0.5 bg-primary mx-auto mt-4" />
           </div>
         )}
 
@@ -45,9 +45,9 @@ export function FeaturesGridBlockView({ data }: FeaturesGridBlockViewProps) {
           {items.map((item, idx) => (
             <div
               key={idx}
-              className="bg-white/80 backdrop-blur-sm rounded-2xl p-7 border border-stone-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-[#d4af37]/40 hover:shadow-md transition-all duration-300 flex flex-col"
+              className="bg-white/80 backdrop-blur-sm rounded-2xl p-7 border border-stone-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-primary/40 hover:shadow-md transition-all duration-300 flex flex-col"
             >
-              <div className="w-10 h-10 rounded-xl bg-amber-50 text-[#d4af37] border border-amber-200/70 flex items-center justify-center font-serif font-black text-sm mb-4 shadow-2xs">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 text-primary border border-primary/30 flex items-center justify-center font-serif font-black text-sm mb-4 shadow-2xs">
                 0{idx + 1}
               </div>
               <h4 className="font-serif font-bold text-lg text-stone-900 mb-2">

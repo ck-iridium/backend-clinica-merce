@@ -17,9 +17,9 @@ export function SeparatorSpacerBlockView({ data }: SeparatorSpacerBlockViewProps
     <div className={`w-full ${pyClass} flex items-center justify-center px-4`}>
       {style === 'line_gold' && (
         <div className="w-full max-w-xl flex items-center gap-3">
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#d4af37]/60 to-transparent" />
-          <div className="w-2 h-2 rotate-45 border border-[#d4af37] bg-amber-50" />
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#d4af37]/60 to-transparent" />
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
+          <div className="w-2 h-2 rotate-45 border border-primary bg-amber-50" />
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
         </div>
       )}
       {style === 'line_subtle' && (

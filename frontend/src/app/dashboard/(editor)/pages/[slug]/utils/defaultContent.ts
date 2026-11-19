@@ -17,7 +17,7 @@ export function defaultContent(blockType: string, dbCategories: any[]): Record<s
         show_divider: true,
       };
     case 'atomic_text':
-      return { html: '<p>Escribe aquí tu párrafo con información detallada...</p>' };
+      return { html: '' };
     case 'atomic_image':
       return {
         image_url: '',

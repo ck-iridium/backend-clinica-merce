@@ -8,11 +8,24 @@ interface RichTextEditorProps {
   value: string;
   onChange: (val: string) => void;
   blockId: string;
+  placeholder?: string;
 }
 
-export function RichTextEditor({ value, onChange, blockId }: RichTextEditorProps) {
+export function RichTextEditor({
+  value,
+  onChange,
+  blockId,
+  placeholder = "Escribe aquí el contenido de tu párrafo...",
+}: RichTextEditorProps) {
   const [linkUrl, setLinkUrl] = useState('');
   const [showLinkInput, setShowLinkInput] = useState(false);
+
+  // Si el valor recibido es el texto dummy anterior de prueba, tratarlo como vacío para activar el placeholder limpio
+  const cleanInitialValue =
+    value === '<p>Escribe aquí tu párrafo...</p>' ||
+    value === '<p>Escribe aquí tu párrafo con información detallada...</p>'
+      ? ''
+      : value;
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -21,11 +34,11 @@ export function RichTextEditor({ value, onChange, blockId }: RichTextEditorProps
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'text-[#d4af37] underline cursor-pointer hover:text-amber-600 transition-colors',
+          class: 'text-primary underline cursor-pointer hover:text-amber-700 transition-colors',
         },
       }),
     ],
-    content: value || '<p></p>',
+    content: cleanInitialValue || '',
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
     },
@@ -34,11 +47,12 @@ export function RichTextEditor({ value, onChange, blockId }: RichTextEditorProps
   useEffect(() => {
     if (editor) {
       const current = editor.getHTML();
-      if (value !== current) {
-        editor.commands.setContent(value || '<p></p>');
+      const nextVal = cleanInitialValue || '';
+      if (nextVal !== current && (nextVal !== '' || current !== '<p></p>')) {
+        editor.commands.setContent(nextVal);
       }
     }
-  }, [value, editor]);
+  }, [cleanInitialValue, editor]);
 
   if (!editor) return null;
 
@@ -62,79 +76,109 @@ export function RichTextEditor({ value, onChange, blockId }: RichTextEditorProps
     setShowLinkInput(false);
   };
 
+  const isEmpty = editor.isEmpty || editor.getHTML() === '<p></p>' || editor.getHTML().trim() === '';
+
   return (
-    <div className="flex flex-col rounded-2xl border border-stone-200 bg-white overflow-hidden shadow-sm focus-within:ring-2 focus-within:ring-[#d4af37]/30 transition-all">
+    <div className="flex flex-col rounded-2xl border border-stone-200 bg-white overflow-hidden shadow-xs focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary transition-all">
       {/* Barra de herramientas */}
-      <div className="flex flex-wrap items-center gap-1.5 p-2 bg-stone-50 border-b border-stone-200 select-none">
+      <div className="flex flex-wrap items-center gap-1.5 p-2 bg-stone-50/80 border-b border-stone-200 select-none">
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
-          className={`p-2 rounded-xl transition-all ${editor.isActive('bold') ? 'bg-stone-200 text-stone-900 font-bold' : 'text-stone-500 hover:bg-stone-100 hover:text-stone-700'}`}
+          className={`p-2 rounded-xl transition-all ${
+            editor.isActive('bold')
+              ? 'bg-stone-900 text-white font-bold shadow-xs'
+              : 'text-stone-500 hover:bg-stone-200/60 hover:text-stone-800'
+          }`}
           title="Negrita"
         >
-          <Bold size={15} strokeWidth={2.5} />
+          <Bold size={14} strokeWidth={2.5} />
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={`p-2 rounded-xl transition-all ${editor.isActive('italic') ? 'bg-stone-200 text-stone-900' : 'text-stone-500 hover:bg-stone-100 hover:text-stone-700'}`}
+          className={`p-2 rounded-xl transition-all ${
+            editor.isActive('italic')
+              ? 'bg-stone-900 text-white shadow-xs'
+              : 'text-stone-500 hover:bg-stone-200/60 hover:text-stone-800'
+          }`}
           title="Cursiva"
         >
-          <Italic size={15} strokeWidth={2.5} />
+          <Italic size={14} strokeWidth={2.5} />
         </button>
-        <div className="w-px h-5 bg-stone-250 mx-1" />
+        <div className="w-px h-5 bg-stone-200 mx-1" />
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={`p-2 rounded-xl transition-all ${editor.isActive('heading', { level: 2 }) ? 'bg-stone-200 text-stone-900' : 'text-stone-500 hover:bg-stone-100 hover:text-stone-700'}`}
+          className={`p-2 rounded-xl transition-all ${
+            editor.isActive('heading', { level: 2 })
+              ? 'bg-stone-900 text-white font-bold shadow-xs'
+              : 'text-stone-500 hover:bg-stone-200/60 hover:text-stone-800'
+          }`}
           title="Título 2"
         >
-          <Heading2 size={15} strokeWidth={2.5} />
+          <Heading2 size={14} strokeWidth={2.5} />
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          className={`p-2 rounded-xl transition-all ${editor.isActive('heading', { level: 3 }) ? 'bg-stone-200 text-stone-900' : 'text-stone-500 hover:bg-stone-100 hover:text-stone-700'}`}
+          className={`p-2 rounded-xl transition-all ${
+            editor.isActive('heading', { level: 3 })
+              ? 'bg-stone-900 text-white font-bold shadow-xs'
+              : 'text-stone-500 hover:bg-stone-200/60 hover:text-stone-800'
+          }`}
           title="Título 3"
         >
-          <Heading3 size={15} strokeWidth={2.5} />
+          <Heading3 size={14} strokeWidth={2.5} />
         </button>
-        <div className="w-px h-5 bg-stone-250 mx-1" />
+        <div className="w-px h-5 bg-stone-200 mx-1" />
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={`p-2 rounded-xl transition-all ${editor.isActive('bulletList') ? 'bg-stone-200 text-stone-900' : 'text-stone-500 hover:bg-stone-100 hover:text-stone-700'}`}
+          className={`p-2 rounded-xl transition-all ${
+            editor.isActive('bulletList')
+              ? 'bg-stone-900 text-white font-bold shadow-xs'
+              : 'text-stone-500 hover:bg-stone-200/60 hover:text-stone-800'
+          }`}
           title="Lista Viñetas"
         >
-          <List size={15} strokeWidth={2.5} />
+          <List size={14} strokeWidth={2.5} />
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={`p-2 rounded-xl transition-all ${editor.isActive('orderedList') ? 'bg-stone-200 text-stone-900' : 'text-stone-500 hover:bg-stone-100 hover:text-stone-700'}`}
+          className={`p-2 rounded-xl transition-all ${
+            editor.isActive('orderedList')
+              ? 'bg-stone-900 text-white font-bold shadow-xs'
+              : 'text-stone-500 hover:bg-stone-200/60 hover:text-stone-800'
+          }`}
           title="Lista Numerada"
         >
-          <ListOrdered size={15} strokeWidth={2.5} />
+          <ListOrdered size={14} strokeWidth={2.5} />
         </button>
-        <div className="w-px h-5 bg-stone-250 mx-1" />
+        <div className="w-px h-5 bg-stone-200 mx-1" />
         <button
           type="button"
           onClick={handleLinkToggle}
-          className={`p-2 rounded-xl transition-all ${editor.isActive('link') ? 'bg-stone-200 text-[#d4af37]' : 'text-stone-500 hover:bg-stone-100 hover:text-stone-700'}`}
+          className={`p-2 rounded-xl transition-all ${
+            editor.isActive('link')
+              ? 'bg-stone-900 text-primary font-bold shadow-xs'
+              : 'text-stone-500 hover:bg-stone-200/60 hover:text-stone-800'
+          }`}
           title="Agregar/Quitar Enlace"
         >
-          <Link2 size={15} strokeWidth={2.5} />
+          <Link2 size={14} strokeWidth={2.5} />
         </button>
 
         {/* Input de link flotante */}
         {showLinkInput && (
-          <div className="flex items-center gap-1.5 ml-auto bg-stone-100 border border-stone-250 rounded-xl px-2 py-1 animate-in fade-in slide-in-from-right-3 duration-250">
+          <div className="flex items-center gap-1.5 ml-auto bg-stone-100 border border-stone-250 rounded-xl px-2 py-1 animate-in fade-in slide-in-from-right-3 duration-200">
             <input
               type="text"
               placeholder="https://..."
               value={linkUrl}
               onChange={e => setLinkUrl(e.target.value)}
-              className="bg-white px-2 py-1 text-xs text-stone-850 outline-none rounded-lg border border-stone-200 w-40 focus:border-[#d4af37]"
+              className="bg-white px-2 py-1 text-xs text-stone-800 outline-none rounded-lg border border-stone-200 w-44 focus:border-primary"
               onKeyDown={e => {
                 if (e.key === 'Enter') saveLink();
                 if (e.key === 'Escape') setShowLinkInput(false);
@@ -144,7 +188,7 @@ export function RichTextEditor({ value, onChange, blockId }: RichTextEditorProps
             <button
               type="button"
               onClick={saveLink}
-              className="p-1 rounded-md bg-stone-900 hover:bg-[#d4af37] text-white transition-all"
+              className="p-1 rounded-md bg-stone-900 hover:bg-primary text-white transition-all"
             >
               <Check size={12} strokeWidth={3} />
             </button>
@@ -159,9 +203,21 @@ export function RichTextEditor({ value, onChange, blockId }: RichTextEditorProps
         )}
       </div>
 
-      {/* Contenido */}
-      <div className="p-4 bg-stone-50/20">
-        <EditorContent editor={editor} className="focus:outline-none min-h-[180px] prose prose-stone text-stone-700 font-sans" />
+      {/* Contenedor del área de edición con foco en toda la superficie */}
+      <div
+        onClick={() => editor.chain().focus().run()}
+        className="relative p-4 bg-white min-h-[190px] cursor-text"
+      >
+        {isEmpty && (
+          <div className="absolute top-4 left-4 text-stone-400 font-sans pointer-events-none select-none text-sm">
+            {placeholder}
+          </div>
+        )}
+        <EditorContent
+          editor={editor}
+          className="outline-none focus:outline-none min-h-[160px] prose prose-stone max-w-none text-stone-700 font-sans text-sm leading-relaxed
+            [&_.ProseMirror]:outline-none [&_.ProseMirror]:border-none [&_.ProseMirror]:min-h-[160px] [&_.ProseMirror-focused]:outline-none"
+        />
       </div>
     </div>
   );

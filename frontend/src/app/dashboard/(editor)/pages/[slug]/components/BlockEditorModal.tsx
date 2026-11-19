@@ -11,6 +11,7 @@ import { QuoteTestimonialFields } from './modals/block-editor/fields/QuoteTestim
 import { FeaturesGridFields } from './modals/block-editor/fields/FeaturesGridFields';
 import { AccordionFaqFields } from './modals/block-editor/fields/AccordionFaqFields';
 import { SeparatorSpacerFields } from './modals/block-editor/fields/SeparatorSpacerFields';
+import { getBlockLabel } from '../utils/blockRegistry';
 
 interface BlockEditorModalProps {
   isOpen: boolean;
@@ -51,8 +52,8 @@ export default function BlockEditorModal({
           <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#d4af37] block mb-1">
             Propiedades del Bloque
           </span>
-          <h2 className="font-serif text-2xl font-bold text-stone-800 capitalize">
-            {blockType.replace(/_/g, ' ')}
+          <h2 className="font-serif text-2xl font-bold text-stone-900">
+            {getBlockLabel(blockType)}
           </h2>
         </div>
 
@@ -63,6 +64,8 @@ export default function BlockEditorModal({
               editFormData={editFormData}
               set={set}
               openGalleryFor={openGalleryFor}
+              dbCategories={dbCategories}
+              dbServices={dbServices}
             />
           )}
 
@@ -94,6 +97,8 @@ export default function BlockEditorModal({
               editFormData={editFormData}
               set={set}
               openGalleryFor={openGalleryFor}
+              dbCategories={dbCategories}
+              dbServices={dbServices}
             />
           )}
 
@@ -101,6 +106,8 @@ export default function BlockEditorModal({
             <ButtonFields
               editFormData={editFormData}
               set={set}
+              dbCategories={dbCategories}
+              dbServices={dbServices}
             />
           )}
 

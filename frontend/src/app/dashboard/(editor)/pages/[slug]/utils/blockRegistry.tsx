@@ -12,8 +12,8 @@ export interface BlockDefinition {
 export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     id: 'hero',
-    label: 'Hero',
-    desc: 'Portada a pantalla completa con fondo y llamada a la acción.',
+    label: 'Portada Hero',
+    desc: 'Cabecera a pantalla completa con fondo de impacto y llamada a la acción.',
     category: 'estructura',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
@@ -23,8 +23,8 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   },
   {
     id: 'title_heading',
-    label: 'Título Elegante',
-    desc: 'Tipografía serif con divisor dorado y jerarquía H1-H3.',
+    label: 'Título',
+    desc: 'Encabezado con tipografía seleccionable, jerarquía H1-H3 y línea de acento.',
     category: 'contenido',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -35,7 +35,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     id: 'atomic_text',
     label: 'Párrafo de Texto',
-    desc: 'Editor de texto enriquecido HTML con formato.',
+    desc: 'Editor de texto enriquecido con formato en negrita, listas y enlaces.',
     category: 'contenido',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
@@ -46,7 +46,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     id: 'atomic_image',
     label: 'Imagen o Vídeo',
-    desc: 'Multimedia de alta resolución con pie de foto y ajuste.',
+    desc: 'Fotografía o vídeo desde la galería con encuadre y pie de foto.',
     category: 'medios',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
@@ -57,7 +57,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     id: 'text_image_cta',
     label: 'Imagen + Texto',
-    desc: 'Composición editorial en 2 columnas con imagen y CTA.',
+    desc: 'Composición editorial de imagen junto a texto explicativo y botón.',
     category: 'contenido',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
@@ -67,8 +67,8 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   },
   {
     id: 'atomic_button',
-    label: 'Botón CTA',
-    desc: 'Botón de llamada a la acción con estilos dorado y oscuro.',
+    label: 'Botón de Acción',
+    desc: 'Llamada a la acción con enlaces inteligentes a tratamientos o reservas.',
     category: 'interactivo',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
@@ -78,8 +78,8 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   },
   {
     id: 'atomic_category',
-    label: 'Bento Catálogo',
-    desc: 'Mosaico o carrusel con tarjetas de tratamientos de la clínica.',
+    label: 'Catálogo de Tratamientos',
+    desc: 'Mosaico bento o carrusel con las fichas de servicios y precios.',
     category: 'interactivo',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
@@ -90,7 +90,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     id: 'quote_testimonial',
     label: 'Cita o Testimonio',
-    desc: 'Cita entrecomillada elegante de pacientes o dirección médica.',
+    desc: 'Opinión destacada de pacientes o cita inspiradora del equipo médico.',
     category: 'contenido',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
@@ -101,7 +101,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     id: 'features_grid',
     label: 'Claves de Excelencia',
-    desc: '3 o 4 columnas con pilares, garantías o beneficios clínicos.',
+    desc: 'Tarjetas numeradas destacando garantías, tecnología o ventajas clínicas.',
     category: 'contenido',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
@@ -112,7 +112,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     id: 'accordion_faq',
     label: 'Preguntas Frecuentes',
-    desc: 'Acordeón interactivo desplegable con dudas habituales.',
+    desc: 'Acordeón desplegable para resolver las preguntas más habituales.',
     category: 'interactivo',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
@@ -122,8 +122,8 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   },
   {
     id: 'separator_spacer',
-    label: 'Divisor / Espaciador',
-    desc: 'Línea minimalista o margen de respiro entre elementos.',
+    label: 'Divisor / Espacio',
+    desc: 'Línea de acento o espaciado en blanco para estructurar el contenido.',
     category: 'estructura',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -151,5 +151,21 @@ export function getBlockIcon(type?: string): React.ReactNode {
 
 export function getBlockLabel(type?: string): string {
   const def = getBlockDefinition(type);
-  return def?.label ?? type?.replace(/_/g, ' ') ?? 'Bloque';
+  if (def?.label) return def.label;
+  if (!type) return 'Bloque';
+  switch (type) {
+    case 'hero': return 'Portada Hero';
+    case 'title_heading':
+    case 'atomic_title': return 'Título';
+    case 'atomic_text': return 'Párrafo de Texto';
+    case 'atomic_image': return 'Imagen o Vídeo';
+    case 'text_image_cta': return 'Imagen + Texto';
+    case 'atomic_button': return 'Botón de Acción';
+    case 'atomic_category': return 'Catálogo de Tratamientos';
+    case 'quote_testimonial': return 'Cita o Testimonio';
+    case 'features_grid': return 'Claves de Excelencia';
+    case 'accordion_faq': return 'Preguntas Frecuentes';
+    case 'separator_spacer': return 'Divisor / Espacio';
+    default: return type.replace(/_/g, ' ');
+  }
 }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
+import { ColorPalettePicker } from '../ColorPalettePicker';
 
 interface TitleFieldsProps {
   editFormData: Record<string, any>;
@@ -175,41 +176,24 @@ export function TitleFields({ editFormData, set }: TitleFieldsProps) {
       </div>
 
       {/* Color y Transformación */}
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className={labelClass}>Color del Texto</label>
-          <div className="grid grid-cols-3 gap-1 select-none">
-            {[
-              { value: 'stone-900', label: 'Antracita', colorDot: 'bg-stone-900' },
-              { value: 'gold', label: 'Dorado', colorDot: 'bg-[#d4af37]' },
-              { value: 'white', label: 'Blanco', colorDot: 'bg-white border border-stone-300' }
-            ].map(c => {
-              const isSel = (editFormData.text_color || 'stone-900') === c.value;
-              return (
-                <button
-                  key={c.value}
-                  type="button"
-                  onClick={() => set('text_color', c.value)}
-                  className={`py-2 px-1 rounded-xl text-[10px] font-bold border transition-all flex items-center justify-center gap-1.5 ${
-                    isSel
-                      ? 'bg-stone-900 border-stone-900 text-white shadow-xs'
-                      : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
-                  }`}
-                >
-                  <span className={`w-2 h-2 rounded-full ${c.colorDot}`} />
-                  <span>{c.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+      <div className="space-y-3">
+        <ColorPalettePicker
+          label="Color del Texto"
+          value={editFormData.text_color || 'stone-900'}
+          onChange={val => set('text_color', val)}
+          presets={[
+            { value: 'stone-900', label: 'Antracita', colorClass: 'bg-stone-900' },
+            { value: 'primary', label: 'Marca', style: { background: 'var(--primary, #d4af37)' } },
+            { value: 'white', label: 'Blanco', colorClass: 'bg-white border border-stone-300' },
+          ]}
+        />
 
         <div>
-          <label className={labelClass}>Estilo de Mayúsculas</label>
-          <div className="grid grid-cols-3 gap-1 select-none">
+          <label className={labelClass}>Estilo de Mayúsculas / Formato</label>
+          <div className="grid grid-cols-3 gap-2 select-none">
             {[
               { value: 'none', label: 'Normal' },
-              { value: 'uppercase', label: 'MAYÚSC.' },
+              { value: 'uppercase', label: 'MAYÚSCULAS' },
               { value: 'italic', label: 'Cursiva' }
             ].map(t => {
               const isSel = (editFormData.text_transform || 'none') === t.value;
@@ -218,7 +202,7 @@ export function TitleFields({ editFormData, set }: TitleFieldsProps) {
                   key={t.value}
                   type="button"
                   onClick={() => set('text_transform', t.value)}
-                  className={`py-2 rounded-xl text-[10px] font-bold border transition-all text-center ${
+                  className={`py-2 rounded-xl text-xs font-bold border transition-all text-center ${
                     isSel
                       ? 'bg-stone-900 border-stone-900 text-white shadow-xs'
                       : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
@@ -238,10 +222,10 @@ export function TitleFields({ editFormData, set }: TitleFieldsProps) {
           id="show_divider" 
           checked={editFormData.show_divider !== false} 
           onChange={e => set('show_divider', e.target.checked)} 
-          className="w-4 h-4 accent-[#d4af37] rounded cursor-pointer" 
+          className="w-4 h-4 accent-primary rounded cursor-pointer" 
         />
         <label htmlFor="show_divider" className="text-xs font-semibold text-stone-600 cursor-pointer select-none">
-          Mostrar acento de línea divisoria dorada
+          Mostrar línea divisoria de acento de marca
         </label>
       </div>
     </>

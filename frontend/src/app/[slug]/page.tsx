@@ -525,15 +525,13 @@ export default async function CustomPage({ params }: PageProps) {
                             const fitMode = data.object_fit || 'cover';
                             const heightStyle = data.height_preset === 'small' ? '250px' : data.height_preset === 'medium' ? '400px' : data.height_preset === 'large' ? '550px' : data.height_preset === 'screen' ? '750px' : '380px';
                             const layout = data.layout || (data.alignment === 'right' ? 'image_right' : data.alignment === 'center' ? 'image_top' : 'image_left');
-                            const isStacked = layout === 'image_top' || layout === 'image_bottom';
+                            const isStacked = layout === 'image_top';
 
                             const layoutClass = 
                               layout === 'image_right' 
                                 ? 'flex flex-col md:flex-row-reverse gap-8 md:gap-14 items-center'
                                 : layout === 'image_top'
                                 ? 'flex flex-col gap-8 items-center max-w-4xl mx-auto'
-                                : layout === 'image_bottom'
-                                ? 'flex flex-col-reverse gap-8 items-center max-w-4xl mx-auto'
                                 : 'flex flex-col md:flex-row gap-8 md:gap-14 items-center';
 
                             const imageContainerClass = isStacked
@@ -580,8 +578,12 @@ export default async function CustomPage({ params }: PageProps) {
                                         </div>
                                       ) : (
                                         <div className="w-full h-full min-h-[220px] border-2 border-dashed border-stone-200 rounded-[2rem] flex flex-col items-center justify-center bg-stone-50/50 py-10 px-4 text-center">
-                                          <span className="text-2xl mb-1">🖼️</span>
-                                          <span className="text-xs text-stone-500 font-black uppercase tracking-wider">Imagen del Bloque</span>
+                                          <div className="w-10 h-10 rounded-xl bg-white border border-stone-200 text-stone-400 flex items-center justify-center mb-2 shadow-2xs">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                                            </svg>
+                                          </div>
+                                          <span className="text-xs text-stone-600 font-bold uppercase tracking-wider">Fotografía Editorial</span>
                                         </div>
                                       )}
                                       {data.caption && (
