@@ -518,7 +518,8 @@ export function usePageBuilder(slug: string | string[]) {
   };
 
   const handleImageSelected = (url: string) => {
-    setEditFormData(prev => ({ ...prev, image_url: url }));
+    const targetField = galleryField || 'image_url';
+    setEditFormData(prev => ({ ...prev, [targetField]: url }));
     setShowGallery(false);
     setGalleryField(null);
   };

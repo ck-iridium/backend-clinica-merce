@@ -133,7 +133,7 @@ export function TextImageCtaFields({
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+        <div className="space-y-3.5 pt-1">
           <div>
             <label className="block text-[10px] font-bold text-stone-500 mb-1">Texto del Botón CTA</label>
             <input 
@@ -160,38 +160,54 @@ export function TextImageCtaFields({
       </div>
 
       {/* Ajustes de Imagen */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
         <div>
           <label className={labelClass}>Altura de Fotografía</label>
-          <select 
-            className={inputClass}
-            value={editFormData.height_preset || 'medium'}
-            onChange={e => set('height_preset', e.target.value)}
-          >
-            <option value="small">Compacta (250px)</option>
-            <option value="medium">Estándar (400px)</option>
-            <option value="large">Amplia (550px)</option>
-          </select>
+          <div className="grid grid-cols-3 gap-1.5 select-none pt-0.5">
+            {[
+              { id: 'small', label: '250px', sub: 'Compacta' },
+              { id: 'medium', label: '400px', sub: 'Estándar' },
+              { id: 'large', label: '550px', sub: 'Amplia' }
+            ].map(opt => {
+              const isSel = (editFormData.height_preset || 'medium') === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => set('height_preset', opt.id)}
+                  className={`py-2 px-1 rounded-xl text-center border transition-all flex flex-col items-center justify-center ${
+                    isSel
+                      ? 'bg-stone-900 border-stone-900 text-white shadow-xs'
+                      : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50 hover:border-stone-300'
+                  }`}
+                >
+                  <span className="text-[11px] font-bold leading-tight">{opt.label}</span>
+                  <span className={`text-[9px] ${isSel ? 'text-primary' : 'text-stone-400'}`}>{opt.sub}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <div>
           <label className={labelClass}>Encuadre (Object-Fit)</label>
           <div className="grid grid-cols-2 gap-1.5 select-none pt-0.5">
             {[
-              { id: 'cover', label: 'Recortar (Cover)' },
-              { id: 'contain', label: 'Ajustar' }
+              { id: 'cover', label: 'Recortar', sub: 'Cover' },
+              { id: 'contain', label: 'Ajustar', sub: 'Contain' }
             ].map(m => (
               <button
                 key={m.id}
                 type="button"
                 onClick={() => set('object_fit', m.id)}
-                className={`py-2 px-1.5 rounded-xl text-[10px] font-bold border transition-all text-center ${
+                className={`py-2 px-1.5 rounded-xl border transition-all text-center flex flex-col items-center justify-center ${
                   (editFormData.object_fit || 'cover') === m.id
                     ? 'bg-stone-900 border-stone-900 text-white shadow-xs'
-                    : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
+                    : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50 hover:border-stone-300'
                 }`}
               >
-                {m.label}
+                <span className="text-[11px] font-bold leading-tight">{m.label}</span>
+                <span className={`text-[9px] ${(editFormData.object_fit || 'cover') === m.id ? 'text-primary' : 'text-stone-400'}`}>{m.sub}</span>
               </button>
             ))}
           </div>

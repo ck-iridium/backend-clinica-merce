@@ -43,10 +43,10 @@ export function PublicFeaturesGridBlock({ data }: PublicFeaturesGridBlockProps) 
                 0{idx + 1}
               </div>
               <h4 className="font-serif font-bold text-xl text-stone-900 mb-3">
-                {item.title}
+                {item.title || 'Nuevo Pilar'}
               </h4>
               <p className="text-stone-600 text-sm font-sans leading-relaxed">
-                {item.description}
+                {item.description || 'Descripción del beneficio o ventaja.'}
               </p>
             </div>
           ))}

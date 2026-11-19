@@ -51,10 +51,10 @@ export function FeaturesGridBlockView({ data }: FeaturesGridBlockViewProps) {
                 0{idx + 1}
               </div>
               <h4 className="font-serif font-bold text-lg text-stone-900 mb-2">
-                {item.title}
+                {item.title || 'Nuevo Pilar'}
               </h4>
               <p className="text-stone-600 text-xs md:text-sm font-sans leading-relaxed">
-                {item.description}
+                {item.description || 'Descripción del beneficio o ventaja.'}
               </p>
             </div>
           ))}

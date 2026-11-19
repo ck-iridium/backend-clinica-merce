@@ -85,34 +85,32 @@ export function HeroFields({
       </div>
 
       {/* Botón de Acción CTA con Selector Inteligente */}
-      <div className="p-4 rounded-2xl bg-stone-50/70 border border-stone-200/80 space-y-3">
+      <div className="p-4 rounded-2xl bg-stone-50/70 border border-stone-200/80 space-y-3.5">
         <span className="text-[10px] font-black uppercase tracking-wider text-primary block">
           Botón de Llamada a la Acción (CTA)
         </span>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div>
-            <label className="block text-[10px] font-bold text-stone-500 mb-1">Texto del Botón</label>
-            <input 
-              className={inputClass} 
-              value={editFormData.cta_text || editFormData.button_text || ''} 
-              onChange={e => set('cta_text', e.target.value)} 
-              placeholder="Reservar cita" 
-            />
-          </div>
-
-          <SmartLinkField
-            label="Enlace de Destino"
-            value={editFormData.cta_url || editFormData.button_url || editFormData.url || ''}
-            onChange={val => set('cta_url', val)}
-            onSelectSuggestedText={txt => {
-              if (!editFormData.cta_text && !editFormData.button_text) {
-                set('cta_text', txt);
-              }
-            }}
-            categories={dbCategories}
-            services={dbServices}
+        <div>
+          <label className="block text-[10px] font-bold text-stone-500 mb-1">Texto del Botón</label>
+          <input 
+            className={inputClass} 
+            value={editFormData.cta_text || editFormData.button_text || ''} 
+            onChange={e => set('cta_text', e.target.value)} 
+            placeholder="Reservar cita" 
           />
         </div>
+
+        <SmartLinkField
+          label="Enlace de Destino"
+          value={editFormData.cta_url || editFormData.button_url || editFormData.url || ''}
+          onChange={val => set('cta_url', val)}
+          onSelectSuggestedText={txt => {
+            if (!editFormData.cta_text && !editFormData.button_text) {
+              set('cta_text', txt);
+            }
+          }}
+          categories={dbCategories}
+          services={dbServices}
+        />
       </div>
     </div>
   );

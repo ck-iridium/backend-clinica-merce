@@ -15,7 +15,7 @@ export function FeaturesGridFields({ editFormData, set }: FeaturesGridFieldsProp
   };
 
   const addItem = () => {
-    set('items', [...items, { title: 'Nuevo Pilar', description: 'Descripción del beneficio o ventaja.' }]);
+    set('items', [...items, { title: '', description: '' }]);
   };
 
   const removeItem = (index: number) => {
@@ -83,17 +83,17 @@ export function FeaturesGridFields({ editFormData, set }: FeaturesGridFieldsProp
               </div>
               <input
                 type="text"
-                value={item.title || ''}
+                value={item.title === 'Nuevo Pilar' ? '' : (item.title || '')}
                 onChange={e => updateItem(idx, 'title', e.target.value)}
-                placeholder="Título del beneficio"
-                className="w-full px-3 py-1.5 bg-white border border-stone-200 rounded-lg text-xs text-stone-800 focus:outline-none focus:ring-1 focus:ring-[#d4af37]"
+                placeholder="Nuevo Pilar"
+                className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-800 font-sans focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary shadow-xs transition-all"
               />
               <textarea
                 rows={2}
-                value={item.description || ''}
+                value={item.description === 'Descripción del beneficio o ventaja.' ? '' : (item.description || '')}
                 onChange={e => updateItem(idx, 'description', e.target.value)}
-                placeholder="Descripción del beneficio..."
-                className="w-full px-3 py-1.5 bg-white border border-stone-200 rounded-lg text-xs text-stone-800 focus:outline-none focus:ring-1 focus:ring-[#d4af37]"
+                placeholder="Descripción del beneficio o ventaja."
+                className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-800 font-sans focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary shadow-xs transition-all resize-none leading-relaxed"
               />
             </div>
           ))}
