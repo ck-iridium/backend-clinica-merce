@@ -1,595 +1,10 @@
 "use client";
 import React from 'react';
-import { useDroppable } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import BentoGridServices from '@/components/blocks/BentoGridServices';
-import ServiceCard from '@/components/ServiceCard';
-import TreatmentCarousel from '@/components/TreatmentCarousel';
-import Link from 'next/link';
-import type { AtomicBlock, SectionBlock } from '../hooks/usePageBuilder';
+import type { SectionBlock } from '../types';
+import { SectionToolbar } from './canvas/SectionToolbar';
+import { CanvasColumn } from './canvas/CanvasColumn';
 
-// ── Render de cada tipo de bloque (WYSIWYG real) ─────────────────────
-function RenderBlock({ block, dbCategories, dbServices }: {
-  block: AtomicBlock;
-  dbCategories: any[];
-  dbServices: any[];
-}) {
-  const data = block.content_data || {};
-
-  // HERO
-  if (block.block_type === 'hero') {
-    const heroAlign = data.alignment || 'center';
-    const heroOuterAlign = 
-      heroAlign === 'left' ? 'justify-start' : 
-      heroAlign === 'right' ? 'justify-end' : 
-      'justify-center';
-    const heroTextAlign = 
-      heroAlign === 'left' ? 'text-left items-start' : 
-      heroAlign === 'right' ? 'text-right items-end' : 
-      'text-center items-center';
-
-    return (
-      <div className={`relative w-full min-h-[460px] md:min-h-[580px] bg-stone-900 overflow-hidden flex items-end ${heroOuterAlign}`}>
-        {data.image_url && (
-          data.image_url.match(/\.(mp4|webm)/) ? (
-            <video src={data.image_url} autoPlay loop muted playsInline
-              className="absolute inset-0 w-full h-full object-cover" />
-          ) : (
-            <img src={data.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
-          )
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-stone-950/70 via-stone-950/20 to-transparent" />
-        <div className={`relative z-10 p-8 md:p-14 max-w-3xl w-full flex flex-col ${heroTextAlign}`}>
-          {data.heading && (
-            <h1 className="font-serif text-3xl md:text-5xl font-extrabold text-white leading-tight mb-3">
-              {data.heading}
-            </h1>
-          )}
-          {data.subheading && (
-            <p className="text-white/80 font-sans text-base md:text-lg mb-6 leading-relaxed">{data.subheading}</p>
-          )}
-          {data.cta_text && (
-            <span className="inline-block bg-[#d4af37] text-white text-xs font-black uppercase tracking-widest px-7 py-3.5 rounded-xl shadow-lg cursor-default">
-              {data.cta_text}
-            </span>
-          )}
-        </div>
-        {!data.image_url && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-white/40 text-xs font-bold uppercase tracking-widest">
-              Hero · Sin imagen
-            </span>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // TITLE / HEADING
-  if (block.block_type === 'atomic_title' || block.block_type === 'title_heading') {
-    const Tag = (data.title_tag || 'h2') as keyof JSX.IntrinsicElements;
-    const align = data.alignment === 'left' ? 'text-left' : data.alignment === 'right' ? 'text-right' : 'text-center';
-    
-    // Fuentes preestablecidas
-    const fontClass = 
-      data.font_family === 'inter' ? 'font-sans' :
-      data.font_family === 'cormorant' ? 'font-serif italic tracking-wide' :
-      data.font_family === 'cinzel' ? 'font-serif uppercase tracking-[0.2em]' :
-      data.font_family === 'montserrat' ? 'font-sans tracking-wide font-bold' :
-      'font-serif';
-      
-    // Grosor
-    const weightClass = 
-      data.font_weight === 'normal' ? 'font-normal' :
-      data.font_weight === 'medium' ? 'font-medium' :
-      data.font_weight === 'semibold' ? 'font-semibold' :
-      data.font_weight === 'bold' ? 'font-bold' :
-      data.font_weight === 'extrabold' ? 'font-black' :
-      'font-extrabold';
-
-    // Tamaño
-    const sizeClass = 
-      data.font_size === 'small' ? 'text-xl md:text-2xl' :
-      data.font_size === 'large' ? 'text-3xl md:text-5xl' :
-      data.font_size === 'xlarge' ? 'text-4xl md:text-6xl' :
-      'text-2xl md:text-4xl';
-
-    // Transformación
-    const transformClass = 
-      data.text_transform === 'uppercase' ? 'uppercase tracking-widest' :
-      data.text_transform === 'italic' ? 'italic' :
-      '';
-
-    // Color
-    const colorClass = 
-      data.text_color === 'gold' ? 'text-[#d4af37]' :
-      data.text_color === 'white' ? 'text-white' :
-      data.text_color === 'stone-400' ? 'text-stone-400' :
-      'text-stone-900';
-
-    return (
-      <div className={`py-6 w-full ${align}`}>
-        <Tag className={`${fontClass} ${weightClass} ${sizeClass} ${transformClass} ${colorClass} leading-tight`}>
-          {data.title || 'Título de sección'}
-        </Tag>
-        {data.show_divider !== false && (
-          <div className={`w-12 h-[2px] bg-[#d4af37] mt-4 rounded-full ${align === 'text-center' ? 'mx-auto' : align === 'text-right' ? 'ml-auto' : ''}`} />
-        )}
-        {data.subtitle && (
-          <p className="text-stone-400 text-sm md:text-base mt-3 font-sans max-w-xl mx-auto leading-relaxed">{data.subtitle}</p>
-        )}
-      </div>
-    );
-  }
-
-  // TEXT
-  if (block.block_type === 'atomic_text') {
-    const alignClass = 
-      data.alignment === 'center' ? 'text-center' :
-      data.alignment === 'right' ? 'text-right' :
-      data.alignment === 'justify' ? 'text-justify' :
-      'text-left';
-    return (
-      <div
-        className={`prose prose-stone max-w-none text-stone-600 font-sans text-base leading-relaxed py-2 ${alignClass}`}
-        dangerouslySetInnerHTML={{ __html: data.html || '<p>Sin contenido</p>' }}
-      />
-    );
-  }
-
-  // IMAGE / VIDEO ONLY
-  if (block.block_type === 'atomic_image') {
-    const isVideo = data.image_url && (data.image_url.includes('.mp4') || data.image_url.includes('.webm') || data.image_url.includes('video_'));
-    const isFull = data.alignment === 'full_width';
-    const fitMode = data.object_fit || 'cover';
-    const heightStyle = data.height_preset === 'small' ? '250px' : data.height_preset === 'medium' ? '400px' : data.height_preset === 'large' ? '550px' : data.height_preset === 'screen' ? '750px' : (fitMode !== 'none' ? '380px' : 'auto');
-
-    return (
-      <div className={`w-full py-4 flex ${data.alignment === 'left' ? 'justify-start' : data.alignment === 'right' ? 'justify-end' : 'justify-center'}`}>
-        {data.image_url ? (
-          <div className={`${isFull ? 'w-full rounded-none' : 'rounded-[2rem] overflow-hidden shadow-luxury border border-stone-100/80 p-3 bg-white'}`}
-            style={{ maxWidth: isFull ? '100%' : (data.max_width || '100%') }}>
-            <div className="relative overflow-hidden rounded-2xl w-full">
-              {isVideo ? (
-                <video 
-                  src={data.image_url} 
-                  autoPlay 
-                  loop 
-                  muted 
-                  playsInline
-                  className="w-full" 
-                  style={{ 
-                    objectFit: fitMode,
-                    height: heightStyle
-                  }} 
-                />
-              ) : (
-                <img 
-                  src={data.image_url} 
-                  alt={data.caption || ''} 
-                  className="w-full"
-                  style={{ 
-                    objectFit: fitMode,
-                    height: heightStyle
-                  }} 
-                />
-              )}
-            </div>
-            {data.caption && (
-              <p className="text-xs text-stone-400 font-sans italic text-center mt-2.5">{data.caption}</p>
-            )}
-          </div>
-        ) : (
-          <div className="w-full h-full min-h-[160px] border-2 border-dashed border-stone-200 hover:border-[#d4af37]/40 rounded-[2rem] flex flex-col items-center justify-center bg-transparent hover:bg-stone-50 transition-all duration-300 py-10 px-4 text-center select-none">
-            <span className="text-2xl mb-1.5">🖼️</span>
-            <span className="text-xs text-stone-500 font-black uppercase tracking-wider">Bloque Imagen Vacío</span>
-            <span className="text-[10px] text-stone-400 font-sans mt-1">Configura este bloque en las propiedades</span>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // TEXT & IMAGE CTA (Imagen + Texto)
-  if (block.block_type === 'text_image_cta') {
-    const isVideo = data.image_url && (data.image_url.includes('.mp4') || data.image_url.includes('.webm') || data.image_url.includes('video_'));
-    const fitMode = data.object_fit || 'cover';
-    const heightStyle = data.height_preset === 'small' ? '250px' : data.height_preset === 'medium' ? '400px' : data.height_preset === 'large' ? '550px' : data.height_preset === 'screen' ? '750px' : '380px';
-    const layout = data.layout || (data.alignment === 'right' ? 'image_right' : data.alignment === 'center' ? 'image_top' : 'image_left');
-    const isStacked = layout === 'image_top' || layout === 'image_bottom';
-
-    const layoutClass = 
-      layout === 'image_right' 
-        ? 'flex flex-col md:flex-row-reverse gap-8 md:gap-14 items-center'
-        : layout === 'image_top'
-        ? 'flex flex-col gap-8 items-center max-w-4xl mx-auto'
-        : layout === 'image_bottom'
-        ? 'flex flex-col-reverse gap-8 items-center max-w-4xl mx-auto'
-        : 'flex flex-col md:flex-row gap-8 md:gap-14 items-center';
-
-    const imageContainerClass = isStacked
-      ? 'w-full max-w-3xl mx-auto'
-      : 'w-full md:w-1/2';
-
-    const textContainerClass = isStacked
-      ? 'w-full max-w-2xl mx-auto text-center items-center'
-      : 'w-full md:w-1/2 text-left items-start';
-
-    return (
-      <div className="w-full py-8">
-        <div className={`w-full max-w-7xl mx-auto ${layoutClass}`}>
-          {/* Lado Imagen */}
-          <div className={`${imageContainerClass} shrink-0 rounded-[2rem] overflow-hidden shadow-luxury border border-stone-100 p-3 bg-white`}>
-            {data.image_url ? (
-              <div className="relative overflow-hidden rounded-2xl w-full">
-                {isVideo ? (
-                  <video
-                    src={data.image_url}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="w-full"
-                    style={{ objectFit: fitMode, height: heightStyle }}
-                  />
-                ) : (
-                  <img
-                    src={data.image_url}
-                    alt={data.caption || data.heading || ''}
-                    className="w-full"
-                    style={{ objectFit: fitMode, height: heightStyle }}
-                  />
-                )}
-              </div>
-            ) : (
-              <div className="w-full h-full min-h-[220px] border-2 border-dashed border-stone-200 hover:border-[#d4af37]/40 rounded-[2rem] flex flex-col items-center justify-center bg-stone-50/50 py-10 px-4 text-center">
-                <span className="text-2xl mb-1">🖼️</span>
-                <span className="text-xs text-stone-500 font-black uppercase tracking-wider">Imagen del Bloque</span>
-              </div>
-            )}
-            {data.caption && (
-              <p className="text-xs text-stone-400 font-sans italic text-center mt-2.5">{data.caption}</p>
-            )}
-          </div>
-
-          {/* Lado Texto */}
-          <div className={`${textContainerClass} flex flex-col justify-center space-y-4`}>
-            {data.heading && (
-              <h3 className="font-serif text-2xl md:text-3xl lg:text-4xl font-extrabold text-stone-850 leading-tight">
-                {data.heading}
-              </h3>
-            )}
-            {data.subheading && (
-              <p className="text-stone-600 font-sans text-sm md:text-base leading-relaxed whitespace-pre-line">
-                {data.subheading}
-              </p>
-            )}
-            {data.cta_text && (
-              <div className={`pt-2 ${isStacked ? 'flex justify-center' : ''}`}>
-                <span className="inline-block bg-stone-900 text-white text-[10px] font-black uppercase tracking-widest px-7 py-3.5 rounded-xl shadow-md cursor-default">
-                  {data.cta_text}
-                </span>
-              </div>
-            )}
-            {!data.heading && !data.subheading && !data.cta_text && (
-              <div className="border border-dashed border-stone-200 rounded-2xl p-6 text-center text-stone-400 text-xs">
-                Bloque Imagen + Texto sin contenido de texto configurado.
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // BUTTON
-  if (block.block_type === 'atomic_button') {
-    const align = data.alignment === 'left' ? 'justify-start' : data.alignment === 'right' ? 'justify-end' : 'justify-center';
-    const cls = data.style === 'gold_outline'
-      ? 'border border-[#d4af37] text-[#d4af37] bg-transparent'
-      : data.style === 'dark_solid'
-      ? 'bg-stone-900 text-white'
-      : 'bg-[#d4af37] text-white';
-    return (
-      <div className={`w-full py-3 flex ${align}`}>
-        <span className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest cursor-default shadow-sm ${cls}`}>
-          {data.text || 'Acción'}
-        </span>
-      </div>
-    );
-  }
-
-  // CATEGORY / LAYOUTS
-  if (block.block_type === 'atomic_category') {
-    let catId = data.category_id;
-    if (!catId && dbCategories.length > 0) {
-      catId = dbCategories[0]?.id;
-    }
-    const category = dbCategories.find(c => c.id === catId);
-    let services = catId 
-      ? dbServices.filter(s => s.category_id === catId && s.is_active)
-      : dbServices.filter(s => s.is_active);
-
-    if (data.selected_treatment_ids?.length) {
-      const selected = services.filter(s => data.selected_treatment_ids.includes(s.id));
-      if (selected.length > 0) services = selected;
-    }
-    if (data.max_items) {
-      services = services.slice(0, data.max_items);
-    }
-    if (services.length === 0 && dbServices.length > 0) {
-      services = dbServices.filter(s => s.is_active).slice(0, data.max_items || 6);
-    }
-
-    if (!category && services.length === 0) return (
-      <div className="w-full h-full min-h-[160px] border-2 border-dashed border-stone-200 hover:border-[#d4af37]/40 rounded-[2rem] flex flex-col items-center justify-center bg-transparent hover:bg-stone-50 transition-all duration-300 py-10 px-4 text-center select-none">
-        <span className="text-2xl mb-1.5">⚙️</span>
-        <span className="text-xs text-stone-500 font-black uppercase tracking-wider">Selecciona una categoría en las opciones</span>
-        <span className="text-[10px] text-stone-400 font-sans mt-1">Vincular una categoría para visualizar los tratamientos en tiempo real</span>
-      </div>
-    );
-
-    const rawLayout = data.layout || 'cards_slider';
-    const layoutStyle = 
-      rawLayout === 'slider' ? 'cards_slider' :
-      rawLayout === 'bento' ? 'bento_grid' :
-      rawLayout === 'grid' ? 'traditional_grid' :
-      rawLayout === 'list' ? 'minimalist_list' :
-      rawLayout;
-
-    return (
-      <div className="w-full py-6 select-none">
-        {layoutStyle === 'cards_slider' && (
-          <div className="w-full flex flex-col justify-center pb-4">
-            {/* Cabecera de categoría idéntica a la Home / Public */}
-            <div className="w-full max-w-7xl mx-auto px-6 mb-6 flex flex-col md:flex-row md:justify-between md:items-end gap-3">
-              <div className="max-w-2xl">
-                <h2 className="text-2xl md:text-4xl font-serif font-extrabold leading-tight">
-                  {category?.name || 'Nuestros Tratamientos'}
-                </h2>
-                {category?.description && (
-                  <p className="text-sm md:text-base opacity-75 mt-1 font-sans">
-                    {category.description}
-                  </p>
-                )}
-              </div>
-              <span className="self-start md:self-auto inline-flex items-center gap-1.5 font-black text-[#d4af37] transition-colors uppercase tracking-widest text-xs cursor-default">
-                <span>{data.link_text || 'Ver Catálogo'}</span>
-                <span className="text-base">→</span>
-              </span>
-            </div>
-
-            {/* Carrusel oficial con flechas de navegación y edge-to-edge */}
-            <div className="w-full">
-              {services.length >= 3 ? (
-                <TreatmentCarousel servicios={services} loop={true} />
-              ) : (
-                <div className="flex gap-6 justify-center px-6">
-                  {services.map((svc: any) => (
-                    <div key={svc.id} className="w-[372px] h-[662px]">
-                      <ServiceCard service={svc} className="w-full h-full" />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {layoutStyle === 'bento_grid' && (
-          <BentoGridServices
-            data={{
-              title: category?.name || 'Tratamientos',
-              subtitle: category?.description || '',
-              max_services: data.max_items || 6
-            }}
-            services={services}
-          />
-        )}
-
-        {layoutStyle === 'traditional_grid' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 select-none pointer-events-none">
-            {services.map((service: any) => {
-              const preparedSvc = {
-                ...service,
-                video_url: service.video_url || (service.image_url?.includes('.mp4') || service.image_url?.includes('.webm') || service.image_url?.includes('video_') ? service.image_url : '')
-              };
-              return (
-                <ServiceCard
-                  key={service.id}
-                  service={preparedSvc}
-                  className="w-full aspect-square h-auto md:h-auto"
-                />
-              );
-            })}
-          </div>
-        )}
-
-        {layoutStyle === 'minimalist_list' && (
-          <div className="flex flex-col divide-y divide-stone-200/60 border-t border-b border-stone-200/50 select-none pointer-events-none">
-            {services.map((service: any, idx: number) => {
-              return (
-                <div key={service.id} className="flex items-center justify-between py-6 group">
-                  <div className="pr-4">
-                    <span className="text-[#d4af37] text-[10px] font-bold uppercase tracking-wider block mb-1">
-                      0{idx + 1} · {service.duration_minutes} min
-                    </span>
-                    <h4 className="text-base font-serif font-bold text-stone-850 leading-tight">
-                      {service.name}
-                    </h4>
-                    <p className="text-xs text-stone-400 mt-1.5 max-w-2xl leading-relaxed">
-                      {service.description}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-6 shrink-0">
-                    <span className="text-stone-700 text-sm font-black">{service.price} €</span>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-[#d4af37] pb-0.5">
-                      {data.link_text || 'Ver'} →
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  return null;
-}
-
-// ── Bloque arrastrable dentro del canvas ─────────────────────────────
-function SortableCanvasBlock({ block, sectionId, columnId, onEdit, onDelete, dbCategories, dbServices }: {
-  block: AtomicBlock;
-  sectionId: string;
-  columnId: string;
-  onEdit: (block: any) => void;
-  onDelete: (blockId: string, sectionId: string, columnId: string) => void;
-  dbCategories: any[];
-  dbServices: any[];
-}) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: block.id,
-  });
-
-  const style = {
-    transform: isDragging ? undefined : CSS.Translate.toString(transform),
-    transition,
-    opacity: isDragging ? 0.35 : 1,
-  };
-
-  const isHeroBlock = block.block_type === 'hero';
-
-  return (
-    <div 
-      ref={setNodeRef} 
-      style={style} 
-      className={`relative group/block transition-all duration-300 ${
-        isHeroBlock ? 'p-0 rounded-none' : 'rounded-3xl p-2.5'
-      }`}
-    >
-      {/* Controles del bloque — aparecen al hover */}
-      <div className="absolute top-4 right-4 z-50 flex items-center gap-1.5 opacity-0 group-hover/block:opacity-100 transition-opacity duration-200">
-        <div
-          {...attributes}
-          {...listeners}
-          className="p-2 bg-white/95 backdrop-blur-sm border border-stone-200 rounded-xl cursor-grab active:cursor-grabbing text-stone-400 hover:text-stone-700 shadow-md hover:scale-105 transition-all"
-          title="Mover bloque"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v.008h-.008V3.75h.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM12 3.75v.008H11.99V3.75h.01zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.875 0v.008h-.008V3.75h.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12v.008h-.008V12h.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM12 12v.008H11.99V12h.01zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.875 0v.008h-.008V12h.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-16.5 8.25v.008h-.008v-.008h.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.875 0v.008H11.99v-.008h.01zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.875 0v.008h-.008v-.008h.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-          </svg>
-        </div>
-        <button
-          onClick={() => onEdit({ ...block, sectionId, columnId })}
-          className="p-2 bg-white/95 backdrop-blur-sm border border-stone-200 rounded-xl text-stone-400 hover:text-stone-900 shadow-md hover:scale-105 transition-all"
-          title="Editar bloque"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
-          </svg>
-        </button>
-        <button
-          onClick={() => onDelete(block.id, sectionId, columnId)}
-          className="p-2 bg-white/95 backdrop-blur-sm border border-red-100 rounded-xl text-stone-300 hover:text-red-500 shadow-md hover:scale-105 transition-all"
-          title="Eliminar bloque"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      {/* Render real del bloque */}
-      <RenderBlock block={block} dbCategories={dbCategories} dbServices={dbServices} />
-    </div>
-  );
-}
-
-// ── Columna droppable ─────────────────────────────────────────────────
-function CanvasColumn({ col, sectionId, columnsCount, onEdit, onDelete, onAddBlock, dbCategories, dbServices }: {
-  col: any;
-  sectionId: string;
-  columnsCount: number;
-  onEdit: (block: any) => void;
-  onDelete: (blockId: string, sectionId: string, columnId: string) => void;
-  onAddBlock: (sectionId: string, columnId: string) => void;
-  dbCategories: any[];
-  dbServices: any[];
-}) {
-  const { setNodeRef, isOver } = useDroppable({ id: col.id });
-  const blocks: AtomicBlock[] = col.blocks || [];
-
-  return (
-    <div
-      ref={setNodeRef}
-      className={`flex-1 min-w-0 min-h-[80px] relative transition-all duration-200 group/col ${
-        isOver ? 'ring-2 ring-[#d4af37]/50 ring-inset rounded-sm bg-amber-50/10' : ''
-      }`}
-    >
-      <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
-        {blocks.map(block => (
-          <SortableCanvasBlock
-            key={block.id}
-            block={block}
-            sectionId={sectionId}
-            columnId={col.id}
-            onEdit={onEdit}
-            onDelete={onDelete}
-            dbCategories={dbCategories}
-            dbServices={dbServices}
-          />
-        ))}
-      </SortableContext>
-
-      {/* Botón flotante para añadir bloque al final de una columna con contenido (oculto en Hero para mantener estética limpia) */}
-      {blocks.length > 0 && !blocks.some(b => b.block_type === 'hero') && (
-        <div className="flex justify-center py-2 opacity-0 group-hover/col:opacity-100 transition-opacity duration-200">
-          <button
-            onClick={() => onAddBlock(sectionId, col.id)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-stone-50 border border-stone-200 hover:border-[#d4af37]/50 text-stone-500 hover:text-[#d4af37] rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-xs"
-            title="Añadir bloque a esta columna"
-          >
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            <span>Añadir bloque</span>
-          </button>
-        </div>
-      )}
-
-      {/* Drop-zone hint cuando vacío */}
-      {blocks.length === 0 && (
-        <button
-          onClick={() => onAddBlock(sectionId, col.id)}
-          className={`w-full h-full min-h-[160px] flex flex-col items-center justify-center gap-2 border border-dashed rounded-[2rem]
-            transition-all duration-300 cursor-pointer group/drop p-6 text-center select-none
-            ${isOver
-              ? 'border-[#d4af37] bg-amber-50/10'
-              : 'border-stone-200 hover:border-[#d4af37]/40 bg-transparent hover:bg-stone-50'
-            }`}
-        >
-          <div className="w-8 h-8 rounded-full bg-stone-50 group-hover/drop:bg-amber-50 flex items-center justify-center transition-all border border-stone-100">
-            <svg className="w-4 h-4 text-stone-400 group-hover/drop:text-[#d4af37] transition-colors" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-          </div>
-          <span className="text-[11px] font-black text-stone-600 group-hover/drop:text-stone-800 uppercase tracking-widest transition-colors block">
-            {isOver ? 'Soltar aquí' : 'Añadir bloque'}
-          </span>
-          <span className="text-[9px] text-stone-400 font-sans block mt-0.5 leading-snug">
-            Arrastra desde el panel lateral o haz clic
-          </span>
-        </button>
-      )}
-    </div>
-  );
-}
-
-// ── Sección del canvas con toolbar WYSIWYG ────────────────────────────
-export function CanvasSection({ section, index, totalSections, onReorder, onDelete, onUpdateLayout, onUpdateSectionMetadata, onEditBlock, onDeleteBlock, onAddBlock, dbCategories, dbServices }: {
+interface CanvasSectionProps {
   section: SectionBlock;
   index: number;
   totalSections: number;
@@ -602,14 +17,25 @@ export function CanvasSection({ section, index, totalSections, onReorder, onDele
   onAddBlock: (sectionId: string, columnId: string) => void;
   dbCategories: any[];
   dbServices: any[];
-}) {
-  const [showGearPopover, setShowGearPopover] = React.useState(false);
+}
+
+export function CanvasSection({
+  section,
+  index,
+  totalSections,
+  onReorder,
+  onDelete,
+  onUpdateLayout,
+  onUpdateSectionMetadata,
+  onEditBlock,
+  onDeleteBlock,
+  onAddBlock,
+  dbCategories,
+  dbServices,
+}: CanvasSectionProps) {
   const struct = section.content_data;
   const columns = struct.columns || [];
   const columnsCount = struct.columns_count || 1;
-
-  let gridClass = 'flex gap-6';
-  if (columnsCount >= 2) gridClass = 'flex gap-6';
 
   const rawBg = struct.bg_color || 'cream';
   const isCustomHex = rawBg.startsWith('#');
@@ -624,272 +50,60 @@ export function CanvasSection({ section, index, totalSections, onReorder, onDele
     ? 'bg-[#FAF7F0]' 
     : 'bg-[#FAFAFA]';
 
+  const hasHero = columns.some((col: any) => (col.blocks || []).some((b: any) => b.block_type === 'hero'));
+  const hasCardsSlider = columns.some((col: any) => (col.blocks || []).some((b: any) => b.block_type === 'atomic_category' && (b.content_data?.layout === 'cards_slider' || !b.content_data?.layout)));
+  const isFullWidth = struct.content_width === 'fullwidth';
+  
+  // Si tiene Hero o Carrusel de tratamientos, el ancho es fullwidth para efecto edge-to-edge
+  const innerContainerClass = (hasHero || hasCardsSlider || isFullWidth)
+    ? 'w-full'
+    : 'max-w-7xl mx-auto';
+
+  const paddingClass = hasHero
+    ? 'p-0'
+    : hasCardsSlider
+    ? 'px-0 py-4'
+    : (isFullWidth ? 'px-6 md:px-12 py-10 md:py-14' : 'px-6 md:px-8 py-10 md:py-14');
+
+  const gapClass = hasHero ? 'gap-0' : 'gap-6';
+  const verticalAlign = struct.vertical_alignment || 'items-start';
+  const horizontalAlign = struct.horizontal_alignment || 'justify-start';
+
   return (
     <div 
       style={isCustomHex ? { backgroundColor: rawBg } : undefined}
       className={`relative group/section w-full ${bgColor} ${isDark ? 'text-white' : ''} transition-all duration-300`}
     >
-      {/* ── Toolbar flotante de sección (esquina superior izquierda para evitar colisión con controles de bloques) ── */}
-      <div 
-        className={`absolute top-3 left-6 z-40 select-none transition-all duration-200 ${
-          showGearPopover 
-            ? 'opacity-100 scale-100 pointer-events-auto' 
-            : 'opacity-0 scale-95 pointer-events-none group-hover/section:opacity-100 group-hover/section:scale-100 group-hover/section:pointer-events-auto'
-        }`}
-      >
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-stone-900/95 backdrop-blur-md text-white rounded-2xl shadow-xl border border-stone-700/60 text-xs">
-          {/* Flechas reordenado */}
-          <div className="flex gap-0.5 items-center">
-            <button
-              onClick={() => onReorder(index, 'up')}
-              disabled={index === 0}
-              className="p-1 text-stone-400 hover:text-white disabled:opacity-20 rounded-md hover:bg-stone-800 transition-all"
-              title="Subir sección"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
-              </svg>
-            </button>
-            <button
-              onClick={() => onReorder(index, 'down')}
-              disabled={index === totalSections - 1}
-              className="p-1 text-stone-400 hover:text-white disabled:opacity-20 rounded-md hover:bg-stone-800 transition-all"
-              title="Bajar sección"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-              </svg>
-            </button>
-          </div>
+      {/* ── Toolbar flotante de sección ── */}
+      <SectionToolbar
+        section={section}
+        index={index}
+        totalSections={totalSections}
+        columnsCount={columnsCount}
+        onReorder={onReorder}
+        onDelete={onDelete}
+        onUpdateLayout={onUpdateLayout}
+        onUpdateSectionMetadata={onUpdateSectionMetadata}
+      />
 
-          <div className="w-px h-3.5 bg-stone-700 mx-0.5" />
-
-          <span className="text-[10px] font-black uppercase tracking-wider text-[#d4af37]">
-            Sección {index + 1}
-          </span>
-
-          <div className="w-px h-3.5 bg-stone-700 mx-0.5" />
-
-          {/* Selector columnas */}
-          <div className="flex items-center gap-1">
-            <span className="text-[9px] font-bold text-stone-400 uppercase tracking-wider mr-0.5">Cols:</span>
-            {[1, 2, 3, 4].map(n => (
-              <button
-                key={n}
-                onClick={() => onUpdateLayout(section.id, n)}
-                className={`w-5 h-5 rounded text-[10px] font-black transition-all ${
-                  columnsCount === n
-                    ? 'bg-[#d4af37] text-stone-950 font-bold shadow-xs'
-                    : 'text-stone-300 hover:text-white hover:bg-stone-800'
-                }`}
-              >
-                {n}
-              </button>
-            ))}
-          </div>
-
-          <div className="w-px h-3.5 bg-stone-700 mx-0.5" />
-
-          {/* Ajustes avanzados de sección (Icono engranaje) */}
-          <div className="relative">
-            <button
-              onClick={() => setShowGearPopover(!showGearPopover)}
-              className={`p-1.5 rounded-lg transition-all ${
-                showGearPopover 
-                  ? 'bg-[#d4af37] text-stone-950 shadow-xs' 
-                  : 'text-stone-300 hover:text-white hover:bg-stone-800'
-              }`}
-              title="Ajustes de sección (fondo, ancho, alineación)"
-            >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.99l1.005.831a1.125 1.125 0 01.26 1.43l-1.297 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.43l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.831a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.645-.869l.214-1.28z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </button>
-          
-          {showGearPopover && (
-            <div className="absolute left-0 top-full mt-1.5 bg-white border border-stone-200 rounded-2xl shadow-2xl p-4 z-50 min-w-[280px] flex flex-col gap-3.5 text-stone-800 animate-in fade-in zoom-in-95 duration-200">
-              {/* Alineación Horizontal */}
-              <div>
-                <span className="text-[9px] font-black uppercase tracking-wider text-[#d4af37] block mb-1.5">
-                  Alineación Horizontal
-                </span>
-                <div className="grid grid-cols-4 gap-1">
-                  {[
-                    { value: 'justify-start', label: 'Izq' },
-                    { value: 'justify-center', label: 'Centro' },
-                    { value: 'justify-end', label: 'Dcha' },
-                    { value: 'justify-between', label: 'Sep.' }
-                  ].map(opt => {
-                    const isSel = (struct.horizontal_alignment || 'justify-start') === opt.value;
-                    return (
-                      <button
-                        key={opt.value}
-                        onClick={() => onUpdateSectionMetadata(section.id, 'horizontal_alignment', opt.value)}
-                        className={`py-1.5 px-1.5 rounded-lg text-[10px] font-bold transition-all border text-center ${
-                          isSel
-                            ? 'bg-stone-900 border-stone-900 text-white shadow-sm'
-                            : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Alineación Vertical */}
-              <div>
-                <span className="text-[9px] font-black uppercase tracking-wider text-[#d4af37] block mb-1.5">
-                  Alineación Vertical
-                </span>
-                <div className="grid grid-cols-3 gap-1">
-                  {[
-                    { value: 'items-start', label: 'Arriba' },
-                    { value: 'items-center', label: 'Centro' },
-                    { value: 'items-end', label: 'Abajo' }
-                  ].map(opt => {
-                    const isSel = (struct.vertical_alignment || 'items-start') === opt.value;
-                    return (
-                      <button
-                        key={opt.value}
-                        onClick={() => onUpdateSectionMetadata(section.id, 'vertical_alignment', opt.value)}
-                        className={`py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all border text-center ${
-                          isSel
-                            ? 'bg-stone-900 border-stone-900 text-white shadow-sm'
-                            : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Ancho de Contenedor */}
-              <div>
-                <span className="text-[9px] font-black uppercase tracking-wider text-[#d4af37] block mb-1.5">
-                  Ancho de Contenedor
-                </span>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {[
-                    { value: 'boxed', label: 'Centrado (Boxed)' },
-                    { value: 'fullwidth', label: 'Ancho Total' }
-                  ].map(opt => {
-                    const isSel = (struct.content_width || 'boxed') === opt.value;
-                    return (
-                      <button
-                        key={opt.value}
-                        onClick={() => onUpdateSectionMetadata(section.id, 'content_width', opt.value)}
-                        className={`py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all border text-center ${
-                          isSel
-                            ? 'bg-stone-900 border-stone-900 text-white shadow-sm'
-                            : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Color de Fondo */}
-              <div>
-                <span className="text-[9px] font-black uppercase tracking-wider text-[#d4af37] block mb-1.5">
-                  Color de Fondo
-                </span>
-                <div className="flex items-center gap-2">
-                  {[
-                    { value: 'white', label: 'Blanco', colorClass: 'bg-white border-stone-300' },
-                    { value: 'cream', label: 'Crema', colorClass: 'bg-[#FAFAFA] border-stone-300' },
-                    { value: 'soft_gold', label: 'Oro', colorClass: 'bg-[#FAF7F0] border-amber-300' },
-                    { value: 'dark', label: 'Oscuro', colorClass: 'bg-stone-900 border-stone-900' }
-                  ].map(opt => {
-                    const isSel = (struct.bg_color || 'cream') === opt.value;
-                    return (
-                      <button
-                        key={opt.value}
-                        onClick={() => onUpdateSectionMetadata(section.id, 'bg_color', opt.value)}
-                        className={`w-7 h-7 rounded-full border-2 transition-transform ${opt.colorClass} ${
-                          isSel ? 'scale-110 ring-2 ring-[#d4af37] ring-offset-2' : 'hover:scale-105'
-                        }`}
-                        title={opt.label}
-                      />
-                    );
-                  })}
-                  {/* Selector Hex libre */}
-                  <input
-                    type="color"
-                    value={struct.bg_color?.startsWith('#') ? struct.bg_color : '#ffffff'}
-                    onChange={(e) => onUpdateSectionMetadata(section.id, 'bg_color', e.target.value)}
-                    className="w-7 h-7 rounded-full cursor-pointer border border-stone-200 p-0 overflow-hidden"
-                    title="Color personalizado"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Borrar sección */}
-        <button
-          onClick={() => onDelete(section.id)}
-          className="p-1 text-stone-400 hover:text-red-400 hover:bg-stone-800 rounded-md transition-all ml-1"
-          title="Eliminar sección"
-        >
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-          </svg>
-        </button>
+      {/* ── Columnas del canvas ── */}
+      <div className={`w-full ${paddingClass}`}>
+        <div className={`flex ${gapClass} ${innerContainerClass} ${verticalAlign} ${horizontalAlign}`}>
+          {columns.map((col: any) => (
+            <CanvasColumn
+              key={col.id}
+              col={col}
+              sectionId={section.id}
+              columnsCount={columnsCount}
+              onEdit={onEditBlock}
+              onDelete={onDeleteBlock}
+              onAddBlock={onAddBlock}
+              dbCategories={dbCategories}
+              dbServices={dbServices}
+            />
+          ))}
         </div>
       </div>
-
-      {/* ── Columnas reales del canvas con soporte estricto de Boxed vs Fullwidth ── */}
-      {(() => {
-        const hasHero = columns.some((col: any) => (col.blocks || []).some((b: any) => b.block_type === 'hero'));
-        const hasCardsSlider = columns.some((col: any) => (col.blocks || []).some((b: any) => b.block_type === 'atomic_category' && (b.content_data?.layout === 'cards_slider' || !b.content_data?.layout)));
-        const isFirstWithHero = index === 0 && hasHero;
-        const isFullWidth = struct.content_width === 'fullwidth';
-        
-        // Si tiene Hero o Carrusel de tratamientos, el ancho es fullwidth para efecto edge-to-edge
-        // Si no, respeta la opción 'fullwidth' o 'boxed' (max-w-7xl centrado)
-        const innerContainerClass = (hasHero || hasCardsSlider || isFullWidth)
-          ? 'w-full'
-          : 'max-w-7xl mx-auto';
-
-        const paddingClass = hasHero
-          ? 'p-0'
-          : hasCardsSlider
-          ? 'px-0 py-4'
-          : (isFullWidth ? 'px-6 md:px-12 py-10 md:py-14' : 'px-6 md:px-8 py-10 md:py-14');
-
-        const gapClass = hasHero ? 'gap-0' : 'gap-6';
-        const verticalAlign = struct.vertical_alignment || 'items-start';
-        const horizontalAlign = struct.horizontal_alignment || 'justify-start';
-
-        return (
-          <div className={`w-full ${paddingClass}`}>
-            <div className={`flex ${gapClass} ${innerContainerClass} ${verticalAlign} ${horizontalAlign}`}>
-              {columns.map((col: any) => (
-                <CanvasColumn
-                  key={col.id}
-                  col={col}
-                  sectionId={section.id}
-                  columnsCount={columnsCount}
-                  onEdit={onEditBlock}
-                  onDelete={onDeleteBlock}
-                  onAddBlock={onAddBlock}
-                  dbCategories={dbCategories}
-                  dbServices={dbServices}
-                />
-              ))}
-            </div>
-          </div>
-        );
-      })()}
     </div>
   );
 }
