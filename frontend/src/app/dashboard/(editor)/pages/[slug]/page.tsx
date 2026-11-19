@@ -4,7 +4,9 @@ import { useParams } from 'next/navigation';
 import {
   DndContext,
   DragOverlay,
-  closestCorners,
+  pointerWithin,
+  rectIntersection,
+  CollisionDetection,
 } from '@dnd-kit/core';
 import { restrictToWindowEdges, snapCenterToCursor } from '@dnd-kit/modifiers';
 import MediaPickerModal from '@/components/MediaPickerModal';
@@ -26,6 +28,8 @@ export default function PageEditor() {
     saving,
     dbCategories,
     dbServices,
+    canUndo,
+    handleUndo,
     sensors,
     activeId,
     activeBlock,
@@ -58,13 +62,25 @@ export default function PageEditor() {
     handleImageSelected,
   } = usePageBuilder(slugStr);
 
+  // Detección de colisión estricta: sólo detecta dropzones donde el cursor o el elemento realmente entra.
+  // Evita que un click o drag sobre el sidebar o márgenes vacíos agregue bloques fantasma.
+  const customCollisionDetection: CollisionDetection = (args) => {
+    // 1. Si el puntero está directamente dentro de un contenedor droppable, esa es la colisión prioritaria
+    const pointerCollisions = pointerWithin(args);
+    if (pointerCollisions.length > 0) {
+      return pointerCollisions;
+    }
+    // 2. Si no, sólo colisiones con intersección geométrica real del rect (sin saltar a esquinas lejanas)
+    return rectIntersection(args);
+  };
+
   return (
     <div className="h-screen w-full flex overflow-hidden bg-stone-100">
 
       {/* ── DRAG & DROP ENGINE ──────────────────────────────── */}
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCorners}
+        collisionDetection={customCollisionDetection}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
@@ -75,6 +91,8 @@ export default function PageEditor() {
           pageTitle={pageTitle}
           slug={slugStr}
           saving={saving}
+          canUndo={canUndo}
+          onUndo={handleUndo}
           onSave={handleSaveAll}
           onAddSection={handleAddNewSection}
         />
@@ -90,6 +108,27 @@ export default function PageEditor() {
             <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-stone-100 px-2.5 py-1 rounded-md border border-stone-200/40">
               Escritorio (Ancho Máx: 1300px)
             </span>
+
+            {/* Botón Deshacer en el Canvas Header */}
+            <button
+              onClick={handleUndo}
+              disabled={!canUndo}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all ml-4 ${
+                canUndo
+                  ? 'bg-white hover:bg-stone-50 text-stone-700 hover:text-stone-900 border-stone-200 shadow-xs active:scale-95'
+                  : 'bg-stone-50 text-stone-300 border-stone-200/50 cursor-not-allowed opacity-50'
+              }`}
+              title="Deshacer cambio (Ctrl + Z)"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+              </svg>
+              <span>Deshacer</span>
+              <kbd className="text-[9px] bg-stone-100 text-stone-400 px-1.5 py-0.5 rounded border border-stone-200">
+                Ctrl+Z
+              </kbd>
+            </button>
+
             <div className="ml-auto flex gap-1.5 items-center">
               <div className="w-2.5 h-2.5 rounded-full bg-red-400/80" />
               <div className="w-2.5 h-2.5 rounded-full bg-amber-400/80" />

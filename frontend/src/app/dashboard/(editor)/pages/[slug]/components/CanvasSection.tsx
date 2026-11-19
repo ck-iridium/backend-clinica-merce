@@ -5,6 +5,7 @@ import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-
 import { CSS } from '@dnd-kit/utilities';
 import BentoGridServices from '@/components/blocks/BentoGridServices';
 import ServiceCard from '@/components/ServiceCard';
+import TreatmentCarousel from '@/components/TreatmentCarousel';
 import Link from 'next/link';
 import type { AtomicBlock, SectionBlock } from '../hooks/usePageBuilder';
 
@@ -251,12 +252,27 @@ function RenderBlock({ block, dbCategories, dbServices }: {
 
   // CATEGORY / LAYOUTS
   if (block.block_type === 'atomic_category') {
-    const category = dbCategories.find(c => c.id === data.category_id);
-    let services = dbServices.filter(s => s.category_id === data.category_id && s.is_active);
-    if (data.selected_treatment_ids?.length) services = services.filter(s => data.selected_treatment_ids.includes(s.id));
-    if (data.max_items) services = services.slice(0, data.max_items);
+    let catId = data.category_id;
+    if (!catId && dbCategories.length > 0) {
+      catId = dbCategories[0]?.id;
+    }
+    const category = dbCategories.find(c => c.id === catId);
+    let services = catId 
+      ? dbServices.filter(s => s.category_id === catId && s.is_active)
+      : dbServices.filter(s => s.is_active);
 
-    if (!data.category_id) return (
+    if (data.selected_treatment_ids?.length) {
+      const selected = services.filter(s => data.selected_treatment_ids.includes(s.id));
+      if (selected.length > 0) services = selected;
+    }
+    if (data.max_items) {
+      services = services.slice(0, data.max_items);
+    }
+    if (services.length === 0 && dbServices.length > 0) {
+      services = dbServices.filter(s => s.is_active).slice(0, data.max_items || 6);
+    }
+
+    if (!category && services.length === 0) return (
       <div className="w-full h-full min-h-[160px] border-2 border-dashed border-stone-200 hover:border-[#d4af37]/40 rounded-[2rem] flex flex-col items-center justify-center bg-transparent hover:bg-stone-50 transition-all duration-300 py-10 px-4 text-center select-none">
         <span className="text-2xl mb-1.5">⚙️</span>
         <span className="text-xs text-stone-500 font-black uppercase tracking-wider">Selecciona una categoría en las opciones</span>
@@ -264,25 +280,50 @@ function RenderBlock({ block, dbCategories, dbServices }: {
       </div>
     );
 
-    const layoutStyle = data.layout === 'grid' ? 'traditional_grid' : (data.layout || 'traditional_grid');
+    const rawLayout = data.layout || 'cards_slider';
+    const layoutStyle = 
+      rawLayout === 'slider' ? 'cards_slider' :
+      rawLayout === 'bento' ? 'bento_grid' :
+      rawLayout === 'grid' ? 'traditional_grid' :
+      rawLayout === 'list' ? 'minimalist_list' :
+      rawLayout;
 
     return (
-      <div className="w-full py-4">
+      <div className="w-full py-6 select-none">
         {layoutStyle === 'cards_slider' && (
-          <div className="w-full overflow-x-auto snap-x snap-mandatory hide-scroll flex gap-6 pb-6 select-none pointer-events-none" style={{ scrollSnapType: 'x mandatory' }}>
-            {services.map((service: any) => {
-              const preparedSvc = {
-                ...service,
-                video_url: service.video_url || (service.image_url?.includes('.mp4') || service.image_url?.includes('.webm') || service.image_url?.includes('video_') ? service.image_url : '')
-              };
-              return (
-                <ServiceCard
-                  key={service.id}
-                  service={preparedSvc}
-                  className="snap-center snap-stop-always"
-                />
-              );
-            })}
+          <div className="w-full flex flex-col justify-center pb-4">
+            {/* Cabecera de categoría idéntica a la Home / Public */}
+            <div className="w-full max-w-7xl mx-auto px-6 mb-6 flex flex-col md:flex-row md:justify-between md:items-end gap-3">
+              <div className="max-w-2xl">
+                <h2 className="text-2xl md:text-4xl font-serif font-extrabold leading-tight">
+                  {category?.name || 'Nuestros Tratamientos'}
+                </h2>
+                {category?.description && (
+                  <p className="text-sm md:text-base opacity-75 mt-1 font-sans">
+                    {category.description}
+                  </p>
+                )}
+              </div>
+              <span className="self-start md:self-auto inline-flex items-center gap-1.5 font-black text-[#d4af37] transition-colors uppercase tracking-widest text-xs cursor-default">
+                <span>{data.link_text || 'Ver Catálogo'}</span>
+                <span className="text-base">→</span>
+              </span>
+            </div>
+
+            {/* Carrusel oficial con flechas de navegación y edge-to-edge */}
+            <div className="w-full">
+              {services.length >= 3 ? (
+                <TreatmentCarousel servicios={services} loop={true} />
+              ) : (
+                <div className="flex gap-6 justify-center px-6">
+                  {services.map((svc: any) => (
+                    <div key={svc.id} className="w-[372px] h-[662px]">
+                      <ServiceCard service={svc} className="w-full h-full" />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -430,7 +471,7 @@ function CanvasColumn({ col, sectionId, columnsCount, onEdit, onDelete, onAddBlo
   return (
     <div
       ref={setNodeRef}
-      className={`flex-1 min-w-0 min-h-[80px] relative transition-all duration-200 ${
+      className={`flex-1 min-w-0 min-h-[80px] relative transition-all duration-200 group/col ${
         isOver ? 'ring-2 ring-[#d4af37]/50 ring-inset rounded-sm bg-amber-50/10' : ''
       }`}
     >
@@ -448,6 +489,22 @@ function CanvasColumn({ col, sectionId, columnsCount, onEdit, onDelete, onAddBlo
           />
         ))}
       </SortableContext>
+
+      {/* Botón flotante para añadir bloque al final de una columna con contenido */}
+      {blocks.length > 0 && (
+        <div className="flex justify-center py-2 opacity-0 group-hover/col:opacity-100 transition-opacity duration-200">
+          <button
+            onClick={() => onAddBlock(sectionId, col.id)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-stone-50 border border-stone-200 hover:border-[#d4af37]/50 text-stone-500 hover:text-[#d4af37] rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-xs"
+            title="Añadir bloque a esta columna"
+          >
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            <span>+ Añadir bloque</span>
+          </button>
+        </div>
+      )}
 
       {/* Drop-zone hint cuando vacío */}
       {blocks.length === 0 && (

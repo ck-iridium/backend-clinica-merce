@@ -90,6 +90,8 @@ interface CreatorSidebarProps {
   pageTitle: string;
   slug: string;
   saving: boolean;
+  canUndo?: boolean;
+  onUndo?: () => void;
   onSave: () => void;
   onAddSection: () => void;
 }
@@ -98,6 +100,8 @@ export default function CreatorSidebar({
   pageTitle,
   slug,
   saving,
+  canUndo = false,
+  onUndo,
   onSave,
   onAddSection,
 }: CreatorSidebarProps) {
@@ -136,11 +140,28 @@ export default function CreatorSidebar({
         </h2>
 
         {/* Botonera de Control */}
-        <div className="flex gap-2.5 mt-4">
+        <div className="flex gap-2 mt-4">
+          {onUndo && (
+            <button
+              onClick={onUndo}
+              disabled={!canUndo}
+              className={`flex items-center justify-center gap-1.5 px-3 py-3 border rounded-xl text-xs font-bold transition-all duration-300 shadow-sm ${
+                canUndo
+                  ? 'bg-white hover:bg-stone-50 border-stone-200 text-stone-700 hover:text-stone-900 active:scale-95'
+                  : 'bg-stone-50 border-stone-200/50 text-stone-300 cursor-not-allowed opacity-50'
+              }`}
+              title="Deshacer última acción (Ctrl + Z)"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+              </svg>
+            </button>
+          )}
+
           <button
             onClick={onSave}
             disabled={saving}
-            className="flex-1 bg-stone-900 hover:bg-[#d4af37] disabled:opacity-60 text-white text-xs font-black uppercase tracking-widest py-3 px-4 rounded-xl transition-all duration-300 shadow-sm active:scale-95 flex items-center justify-center gap-2"
+            className="flex-1 bg-stone-900 hover:bg-[#d4af37] disabled:opacity-60 text-white text-xs font-black uppercase tracking-widest py-3 px-3 rounded-xl transition-all duration-300 shadow-sm active:scale-95 flex items-center justify-center gap-1.5"
           >
             {saving ? (
               <>
@@ -157,7 +178,7 @@ export default function CreatorSidebar({
 
           <button
             onClick={() => window.open(getTenantPublicUrl(`/${slug}`), '_blank')}
-            className="flex items-center justify-center gap-2 px-4 py-3 bg-stone-100 hover:bg-stone-200 border border-stone-200 text-stone-700 hover:text-stone-900 text-xs font-bold rounded-xl transition-all duration-300 active:scale-95 shadow-sm"
+            className="flex items-center justify-center gap-1.5 px-3 py-3 bg-stone-100 hover:bg-stone-200 border border-stone-200 text-stone-700 hover:text-stone-900 text-xs font-bold rounded-xl transition-all duration-300 active:scale-95 shadow-sm"
             title="Vista Previa Pública en el subdominio del inquilino"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">

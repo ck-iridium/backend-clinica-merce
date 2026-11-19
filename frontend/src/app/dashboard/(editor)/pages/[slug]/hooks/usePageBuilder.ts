@@ -63,7 +63,7 @@ function defaultContent(blockType: string, dbCategories: any[]): Record<string, 
     case 'atomic_button':
       return { text: 'Acción', url: '#', style: 'gold_solid', alignment: 'center' };
     case 'atomic_category':
-      return { category_id: dbCategories[0]?.id || '', selected_treatment_ids: [], layout: 'grid', max_items: 4 };
+      return { category_id: dbCategories[0]?.id || '', selected_treatment_ids: [], layout: 'cards_slider', max_items: 6 };
     default:
       return {};
   }
@@ -81,6 +81,75 @@ export function usePageBuilder(slug: string | string[]) {
   const [sections, setSections] = useState<SectionBlock[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  // ── Historial Deshacer (Undo / Ctrl + Z) ────────────────────────
+  const [history, setHistory] = useState<SectionBlock[][]>([]);
+  const snapshotBeforeDragRef = useRef<SectionBlock[] | null>(null);
+
+  const recordHistory = useCallback(() => {
+    setSections(current => {
+      setHistory(prev => {
+        const snapshot = JSON.parse(JSON.stringify(current));
+        const next = [...prev, snapshot];
+        if (next.length > 30) return next.slice(next.length - 30);
+        return next;
+      });
+      return current;
+    });
+  }, []);
+
+  const handleUndo = useCallback(async () => {
+    if (history.length === 0) return;
+    const previous = history[history.length - 1];
+    setHistory(prev => prev.slice(0, prev.length - 1));
+
+    const currentSections = sections;
+    const currentIds = currentSections.map(s => s.id);
+    const prevIds = previous.map(s => s.id);
+    const toDeleteIds = currentIds.filter(id => !prevIds.includes(id));
+
+    setSections(previous);
+    toast.info('Acción deshecha (Ctrl + Z)');
+
+    // Persistir estado recuperado en el backend
+    try {
+      await Promise.all([
+        ...toDeleteIds.map(id => fetch(`${API}/cms/blocks/${id}`, { method: 'DELETE' })),
+        ...previous.map(sec => {
+          if (!currentIds.includes(sec.id)) {
+            return fetch(`${API}/cms/blocks`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ page_slug: slug, block_type: 'section', content_data: sec.content_data, order_index: sec.order_index }),
+            });
+          }
+          return fetch(`${API}/cms/blocks/${sec.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ block_type: 'section', content_data: sec.content_data }),
+          });
+        })
+      ]);
+    } catch {
+      toast.error('Error al sincronizar estado deshecho');
+    }
+  }, [history, sections, slug]);
+
+  // Atajo de teclado global Ctrl+Z / Cmd+Z
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey) {
+        const target = e.target as HTMLElement;
+        if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+          return;
+        }
+        e.preventDefault();
+        handleUndo();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleUndo]);
 
   // ── Business data ───────────────────────────────────────────────
   const [dbCategories, setDbCategories] = useState<any[]>([]);
@@ -235,6 +304,7 @@ export function usePageBuilder(slug: string | string[]) {
 
   // ── Secciones ──────────────────────────────────────────────────
   const handleAddNewSection = async () => {
+    recordHistory();
     const newId = `sec-${Date.now()}`;
     const defaultStructure: SectionStructure = {
       id: newId,
@@ -259,6 +329,7 @@ export function usePageBuilder(slug: string | string[]) {
   };
 
   const handleDeleteSection = async (sectionId: string) => {
+    recordHistory();
     try {
       const res = await fetch(`${API}/cms/blocks/${sectionId}`, { method: 'DELETE' });
       if (res.ok) {
@@ -273,6 +344,7 @@ export function usePageBuilder(slug: string | string[]) {
   const handleReorderSections = (index: number, direction: 'up' | 'down') => {
     const target = direction === 'up' ? index - 1 : index + 1;
     if (target < 0 || target >= sections.length) return;
+    recordHistory();
     const list = [...sections];
     [list[index], list[target]] = [list[target], list[index]];
     const payload = list.map((b, i) => ({ ...b, order_index: i }));
@@ -285,6 +357,7 @@ export function usePageBuilder(slug: string | string[]) {
   };
 
   const handleUpdateSectionLayout = (sectionId: string, columnsCount: number) => {
+    recordHistory();
     const updated = sections.map(sec => {
       if (sec.id !== sectionId) return sec;
       const current = sec.content_data.columns || [];
@@ -310,6 +383,7 @@ export function usePageBuilder(slug: string | string[]) {
   };
 
   const handleUpdateSectionMetadata = (sectionId: string, key: string, value: any) => {
+    recordHistory();
     const updated = sections.map(sec => {
       if (sec.id !== sectionId) return sec;
       return { ...sec, content_data: { ...sec.content_data, [key]: value } };
@@ -321,6 +395,7 @@ export function usePageBuilder(slug: string | string[]) {
 
   // ── Bloques ────────────────────────────────────────────────────
   const handleAddBlockToColumn = async (blockType: string, sectionId: string, columnId: string) => {
+    recordHistory();
     const newBlock: AtomicBlock = {
       id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       block_type: blockType as BlockType,
@@ -345,6 +420,7 @@ export function usePageBuilder(slug: string | string[]) {
   };
 
   const handleDeleteBlockFromColumn = (blockId: string, sectionId: string, columnId: string) => {
+    recordHistory();
     const updated = sections.map(sec => {
       if (sec.id !== sectionId) return sec;
       return {
@@ -369,6 +445,7 @@ export function usePageBuilder(slug: string | string[]) {
 
   const handleSaveBlockEdit = async () => {
     if (!editingBlock) return;
+    recordHistory();
     setSavingBlock(true);
     const updated = sections.map(sec => ({
       ...sec,
@@ -420,6 +497,8 @@ export function usePageBuilder(slug: string | string[]) {
   const handleDragStart = (event: DragStartEvent) => {
     const id = event.active.id as string;
     setActiveId(id);
+    // Tomar snapshot de sections antes de cualquier movimiento
+    snapshotBeforeDragRef.current = JSON.parse(JSON.stringify(sections));
 
     if (!id.startsWith('library-')) {
       // Buscar el bloque real para el DragOverlay
@@ -504,16 +583,36 @@ export function usePageBuilder(slug: string | string[]) {
     const { active, over } = event;
     setActiveId(null);
     setActiveBlock(null);
-    if (!over) return;
 
     const activeIdStr = active.id as string;
-    const overIdStr = over.id as string;
+    const overIdStr = over?.id as string | undefined;
+
+    // Si se suelta fuera de cualquier target droppable, cancelar y restaurar si venía del canvas
+    if (!over || !overIdStr) {
+      if (snapshotBeforeDragRef.current && !activeIdStr.startsWith('library-')) {
+        setSections(snapshotBeforeDragRef.current);
+      }
+      snapshotBeforeDragRef.current = null;
+      return;
+    }
 
     // ── CASO A: Bloque de la biblioteca lateral ──────────────────
     if (activeIdStr.startsWith('library-')) {
       const blockType = activeIdStr.replace('library-', '');
       const destContainer = findContainer(overIdStr);
-      if (!destContainer) return;
+      if (!destContainer) {
+        snapshotBeforeDragRef.current = null;
+        return;
+      }
+
+      // Guardar en el historial antes de insertar
+      if (snapshotBeforeDragRef.current) {
+        setHistory(prev => {
+          const next = [...prev, snapshotBeforeDragRef.current!];
+          return next.length > 30 ? next.slice(next.length - 30) : next;
+        });
+      }
+      snapshotBeforeDragRef.current = null;
 
       const newBlock: AtomicBlock = {
         id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -552,9 +651,16 @@ export function usePageBuilder(slug: string | string[]) {
     const sourceContainer = findContainer(activeIdStr);
     const destContainer = findContainer(overIdStr);
 
-    if (!sourceContainer || !destContainer) return;
+    if (!sourceContainer || !destContainer) {
+      if (snapshotBeforeDragRef.current) {
+        setSections(snapshotBeforeDragRef.current);
+      }
+      snapshotBeforeDragRef.current = null;
+      return;
+    }
 
     if (sourceContainer.columnId === destContainer.columnId) {
+      let moved = false;
       setSections(prev => {
         const updated = prev.map(sec => {
           if (sec.id !== sourceContainer.sectionId) return sec;
@@ -566,21 +672,38 @@ export function usePageBuilder(slug: string | string[]) {
                 if (col.id !== sourceContainer.columnId) return col;
                 const oldIdx = col.blocks.findIndex(b => b.id === activeIdStr);
                 const newIdx = col.blocks.findIndex(b => b.id === overIdStr);
-                if (oldIdx === -1 || newIdx === -1) return col;
+                if (oldIdx === -1 || newIdx === -1 || oldIdx === newIdx) return col;
+                moved = true;
                 return { ...col, blocks: arrayMove(col.blocks, oldIdx, newIdx) };
               }),
             },
           };
         });
         const sec = updated.find(s => s.id === sourceContainer.sectionId);
-        if (sec) saveSectionToBackend(sec);
+        if (sec && moved) saveSectionToBackend(sec);
         return updated;
       });
+
+      if (moved && snapshotBeforeDragRef.current) {
+        setHistory(prev => {
+          const next = [...prev, snapshotBeforeDragRef.current!];
+          return next.length > 30 ? next.slice(next.length - 30) : next;
+        });
+      }
+      snapshotBeforeDragRef.current = null;
       return;
     }
 
     // ── CASO C: Cross-column — el estado ya se actualizó en onDragOver
     // Solo necesitamos persistir ambas secciones afectadas
+    if (snapshotBeforeDragRef.current) {
+      setHistory(prev => {
+        const next = [...prev, snapshotBeforeDragRef.current!];
+        return next.length > 30 ? next.slice(next.length - 30) : next;
+      });
+      snapshotBeforeDragRef.current = null;
+    }
+
     const affectedIds = new Set([sourceContainer.sectionId, destContainer.sectionId]);
     sections.forEach(sec => {
       if (affectedIds.has(sec.id)) saveSectionToBackend(sec);
@@ -597,6 +720,9 @@ export function usePageBuilder(slug: string | string[]) {
     dbServices,
     activeId,
     activeBlock,
+    // Historial Deshacer (Undo)
+    canUndo: history.length > 0,
+    handleUndo,
     // DnD
     sensors,
     handleDragStart,
