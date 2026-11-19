@@ -523,12 +523,51 @@ export function usePageBuilder(slug: string | string[]) {
               ...col,
               blocks: col.blocks.map(b => {
                 if (b.id !== blockId) return b;
+
+                const merged = { ...b.content_data, ...newContentData };
+
+                // Normalizaciones específicas para sincronizar campos alternativos
+                if (b.block_type === 'atomic_text') {
+                  const h = newContentData.html || newContentData.content_html || b.content_data?.html || '';
+                  merged.html = h;
+                  merged.content_html = h;
+                } else if (b.block_type === 'text_image_cta') {
+                  if (newContentData.heading || newContentData.title) {
+                    const h = newContentData.heading || newContentData.title;
+                    merged.heading = h;
+                    merged.title = h;
+                  }
+                  if (newContentData.subheading || newContentData.description) {
+                    const sub = newContentData.subheading || newContentData.description;
+                    merged.subheading = sub;
+                    merged.description = sub;
+                  }
+                  if (newContentData.cta_text || newContentData.button_text) {
+                    const cta = newContentData.cta_text || newContentData.button_text;
+                    merged.cta_text = cta;
+                    merged.button_text = cta;
+                  }
+                  if (newContentData.image_url) {
+                    merged.image_url = newContentData.image_url;
+                  }
+                } else if (b.block_type === 'quote_testimonial') {
+                  if (newContentData.quote) merged.quote = newContentData.quote;
+                  if (newContentData.author || newContentData.author_name) {
+                    const a = newContentData.author || newContentData.author_name;
+                    merged.author = a;
+                    merged.author_name = a;
+                  }
+                  if (newContentData.role || newContentData.author_role) {
+                    const r = newContentData.role || newContentData.author_role;
+                    merged.role = r;
+                    merged.author_role = r;
+                  }
+                  if (newContentData.rating) merged.rating = newContentData.rating;
+                }
+
                 return {
                   ...b,
-                  content_data: {
-                    ...b.content_data,
-                    ...newContentData,
-                  },
+                  content_data: merged,
                 };
               }),
             };

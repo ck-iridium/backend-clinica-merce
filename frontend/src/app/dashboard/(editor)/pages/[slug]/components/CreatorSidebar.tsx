@@ -4,6 +4,7 @@ import { useDraggable } from '@dnd-kit/core';
 import Link from 'next/link';
 import { getTenantPublicUrl } from '@/utils/tenantUrl';
 import { BLOCK_DEFINITIONS, type BlockDefinition } from '../utils/blockRegistry';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 
 // ── Item arrastrable en tarjeta cuadrada moderna ─────────────────────
 function DraggableItem({ block }: { block: BlockDefinition }) {
@@ -24,7 +25,6 @@ function DraggableItem({ block }: { block: BlockDefinition }) {
             ? 'opacity-30 scale-95 border-[#d4af37] bg-amber-50/30'
             : 'border-stone-200/80 hover:bg-white'
         }`}
-      title={block.desc}
     >
       <div
         className="w-10 h-10 rounded-xl bg-stone-50 border border-stone-200/80 text-stone-500
@@ -104,54 +104,66 @@ export default function CreatorSidebar({
         </h2>
 
         {/* Botonera de Control */}
-        <div className="flex gap-2 mt-3.5">
-          {onUndo && (
-            <button
-              onClick={onUndo}
-              disabled={!canUndo}
-              className={`flex items-center justify-center gap-1.5 px-3 py-2.5 border rounded-xl text-xs font-bold transition-all duration-300 shadow-xs ${
-                canUndo
-                  ? 'bg-white hover:bg-stone-50 border-stone-200 text-stone-700 hover:text-stone-900 active:scale-95'
-                  : 'bg-stone-50 border-stone-200/50 text-stone-300 cursor-not-allowed opacity-50'
-              }`}
-              title="Deshacer última acción (Ctrl + Z)"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
-              </svg>
-            </button>
-          )}
-
-          <button
-            onClick={onSave}
-            disabled={saving}
-            className="flex-1 bg-stone-900 hover:bg-[#d4af37] disabled:opacity-60 text-white text-xs font-black uppercase tracking-widest py-2.5 px-3 rounded-xl transition-all duration-300 shadow-sm active:scale-95 flex items-center justify-center gap-1.5"
-          >
-            {saving ? (
-              <>
-                <svg className="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-                <span>Guardando</span>
-              </>
-            ) : (
-              <span>Guardar</span>
+        <TooltipProvider delayDuration={150}>
+          <div className="flex gap-2 mt-3.5">
+            {onUndo && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={onUndo}
+                    disabled={!canUndo}
+                    className={`flex items-center justify-center gap-1.5 px-3 py-2.5 border rounded-xl text-xs font-bold transition-all duration-300 shadow-xs ${
+                      canUndo
+                        ? 'bg-white hover:bg-stone-50 border-stone-200 text-stone-700 hover:text-stone-900 active:scale-95'
+                        : 'bg-stone-50 border-stone-200/50 text-stone-300 cursor-not-allowed opacity-50'
+                    }`}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+                    </svg>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">Deshacer última acción (Ctrl + Z)</TooltipContent>
+              </Tooltip>
             )}
-          </button>
 
-          <button
-            onClick={() => window.open(getTenantPublicUrl(`/${slug}`), '_blank')}
-            className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-stone-100 hover:bg-stone-200 border border-stone-200 text-stone-700 hover:text-stone-900 text-xs font-bold rounded-xl transition-all duration-300 active:scale-95 shadow-xs"
-            title="Vista Previa Pública en el subdominio del inquilino"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.43 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <span>Ver Web</span>
-          </button>
-        </div>
+            <button
+              onClick={onSave}
+              disabled={saving}
+              className="flex-1 bg-stone-900 hover:bg-[#d4af37] disabled:opacity-60 text-white text-xs font-black uppercase tracking-widest py-2.5 px-3 rounded-xl transition-all duration-300 shadow-sm active:scale-95 flex items-center justify-center gap-1.5"
+            >
+              {saving ? (
+                <>
+                  <svg className="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  <span>Guardando</span>
+                </>
+              ) : (
+                <span>Guardar</span>
+              )}
+            </button>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => window.open(getTenantPublicUrl(`/${slug}`), '_blank')}
+                  className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-stone-100 hover:bg-stone-200 border border-stone-200 text-stone-700 hover:text-stone-900 text-xs font-bold rounded-xl transition-all duration-300 active:scale-95 shadow-xs"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.43 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span>Ver Web</span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Vista previa pública en nueva pestaña</TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
 
         {/* Indicador de Estado y Autoguardado */}
         <div className="mt-2.5 flex items-center justify-between text-[10px] px-0.5 font-medium text-stone-400">

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import type { AtomicBlock } from '../../types';
-import { getBlockDefinition } from '../../utils/blockRegistry';
+import { getBlockDefinition, getBlockIcon } from '../../utils/blockRegistry';
 import { toast } from 'sonner';
 
 interface BlockAIGeneratorModalProps {
@@ -192,7 +192,37 @@ export default function BlockAIGeneratorModal({
 
   const handleApply = () => {
     if (!generatedData) return;
-    onApply(target.block.id, target.sectionId, target.columnId, generatedData);
+    let finalData = { ...generatedData };
+    if (blockType === 'atomic_text') {
+      const htmlVal = finalData.html || finalData.content_html || '';
+      finalData.html = htmlVal;
+      finalData.content_html = htmlVal;
+    } else if (blockType === 'text_image_cta') {
+      const h = finalData.heading || finalData.title || '';
+      const sub = finalData.subheading || finalData.description || '';
+      const cta = finalData.cta_text || finalData.button_text || '';
+      if (h) {
+        finalData.heading = h;
+        finalData.title = h;
+      }
+      if (sub) {
+        finalData.subheading = sub;
+        finalData.description = sub;
+      }
+      if (cta) {
+        finalData.cta_text = cta;
+        finalData.button_text = cta;
+      }
+    } else if (blockType === 'quote_testimonial') {
+      const a = finalData.author || finalData.author_name || 'Cliente Satisfecho';
+      const r = finalData.role || finalData.author_role || 'Clienta habitual';
+      finalData.author = a;
+      finalData.author_name = a;
+      finalData.role = r;
+      finalData.author_role = r;
+      if (typeof finalData.rating !== 'number') finalData.rating = 5;
+    }
+    onApply(target.block.id, target.sectionId, target.columnId, finalData);
     onClose();
   };
 
@@ -210,8 +240,10 @@ export default function BlockAIGeneratorModal({
               </svg>
               <span>Copilot IA · Asistente de Bloque</span>
             </div>
-            <h2 className="font-serif text-2xl font-bold text-stone-900 leading-tight flex items-center gap-2">
-              <span>{blockDef?.icon || '🪄'}</span>
+            <h2 className="font-serif text-2xl font-bold text-stone-900 leading-tight flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-orange-50 text-orange-600 border border-orange-200/80 flex items-center justify-center shrink-0">
+                {getBlockIcon(blockType as any)}
+              </div>
               <span>Generar {blockLabel}</span>
             </h2>
             <p className="text-stone-400 text-xs mt-0.5 font-sans">
@@ -220,10 +252,12 @@ export default function BlockAIGeneratorModal({
           </div>
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-500 hover:text-stone-800 flex items-center justify-center text-sm font-bold transition-all"
-            title="Cerrar modal"
+            className="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-400 hover:text-stone-700 flex items-center justify-center transition-all"
+            aria-label="Cerrar modal"
           >
-            ✕
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
@@ -232,23 +266,29 @@ export default function BlockAIGeneratorModal({
           <div className="px-7 py-2.5 bg-stone-50/80 border-b border-stone-150 flex gap-2 shrink-0">
             <button
               onClick={() => { setActiveTab('text'); setGeneratedData(null); }}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 activeTab === 'text'
                   ? 'bg-stone-900 text-white shadow-xs'
                   : 'text-stone-500 hover:text-stone-800'
               }`}
             >
-              📝 Redactar Textos
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
+              </svg>
+              <span>Redactar Textos</span>
             </button>
             <button
               onClick={() => { setActiveTab('image'); setGeneratedData(null); }}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 activeTab === 'image'
                   ? 'bg-stone-900 text-white shadow-xs'
                   : 'text-stone-500 hover:text-stone-800'
               }`}
             >
-              🎨 Generar Fotografía IA
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+              </svg>
+              <span>Generar Fotografía IA</span>
             </button>
           </div>
         )}
@@ -355,7 +395,9 @@ export default function BlockAIGeneratorModal({
             <div className="mt-4 p-4 rounded-2xl bg-amber-50/20 border border-[#d4af37]/40 space-y-3 animate-in fade-in zoom-in-98 duration-200">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-black uppercase tracking-wider text-[#d4af37] flex items-center gap-1.5">
-                  <span>✓</span>
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
                   <span>Vista Previa del Resultado</span>
                 </span>
                 <span className="text-[10px] text-stone-400 font-mono">
@@ -364,38 +406,34 @@ export default function BlockAIGeneratorModal({
               </div>
 
               {/* Vista previa según tipo */}
-              <div className="bg-white rounded-xl p-3.5 border border-stone-200/80 text-stone-800 text-xs space-y-2 max-h-56 overflow-y-auto font-sans">
-                {generatedData.title && (
+              <div className="bg-white rounded-xl p-3.5 border border-stone-200/80 text-stone-800 text-xs space-y-2.5 max-h-56 overflow-y-auto font-sans">
+                {(generatedData.heading || generatedData.title) && (
                   <div>
                     <span className="text-[9px] uppercase tracking-wider text-stone-400 block font-bold">Título:</span>
-                    <p className="font-serif font-bold text-sm text-stone-900">{generatedData.title}</p>
+                    <p className="font-serif font-bold text-sm text-stone-900">{generatedData.heading || generatedData.title}</p>
                   </div>
                 )}
-                {generatedData.subtitle && (
+                {(generatedData.subheading || generatedData.description) && (
                   <div>
-                    <span className="text-[9px] uppercase tracking-wider text-stone-400 block font-bold">Subtítulo:</span>
-                    <p className="text-stone-600">{generatedData.subtitle}</p>
+                    <span className="text-[9px] uppercase tracking-wider text-stone-400 block font-bold">Descripción / Subtítulo:</span>
+                    <p className="text-stone-600 leading-relaxed">{generatedData.subheading || generatedData.description}</p>
                   </div>
                 )}
-                {generatedData.heading && (
+                {(generatedData.html || generatedData.content_html) && (
                   <div>
-                    <span className="text-[9px] uppercase tracking-wider text-stone-400 block font-bold">Encabezado:</span>
-                    <p className="font-serif font-bold text-base text-stone-900">{generatedData.heading}</p>
-                  </div>
-                )}
-                {generatedData.subheading && (
-                  <div>
-                    <span className="text-[9px] uppercase tracking-wider text-stone-400 block font-bold">Subtítulo:</span>
-                    <p className="text-stone-600">{generatedData.subheading}</p>
-                  </div>
-                )}
-                {generatedData.content_html && (
-                  <div>
-                    <span className="text-[9px] uppercase tracking-wider text-stone-400 block font-bold">Texto Editorial:</span>
+                    <span className="text-[9px] uppercase tracking-wider text-stone-400 block font-bold mb-1">Párrafo de Texto:</span>
                     <div 
-                      className="prose prose-sm text-stone-700 leading-relaxed" 
-                      dangerouslySetInnerHTML={{ __html: generatedData.content_html }} 
+                      className="prose prose-sm text-stone-700 leading-relaxed bg-stone-50 p-2.5 rounded-lg border border-stone-150" 
+                      dangerouslySetInnerHTML={{ __html: generatedData.html || generatedData.content_html }} 
                     />
+                  </div>
+                )}
+                {(generatedData.cta_text || generatedData.button_text) && (
+                  <div>
+                    <span className="text-[9px] uppercase tracking-wider text-stone-400 block font-bold">Botón de Acción:</span>
+                    <span className="inline-block mt-0.5 px-3 py-1 bg-stone-900 text-white rounded-lg text-[10px] font-bold">
+                      {generatedData.cta_text || generatedData.button_text}
+                    </span>
                   </div>
                 )}
                 {generatedData.faqs && Array.isArray(generatedData.faqs) && (
@@ -426,8 +464,14 @@ export default function BlockAIGeneratorModal({
                 )}
                 {generatedData.quote && (
                   <div>
-                    <p className="italic text-stone-700">“{generatedData.quote}”</p>
-                    <p className="font-bold text-stone-900 mt-1">{generatedData.author_name} — <span className="text-stone-500 font-normal">{generatedData.author_role}</span></p>
+                    <span className="text-[9px] uppercase tracking-wider text-stone-400 block font-bold mb-1">Testimonio:</span>
+                    <p className="italic text-stone-800 bg-stone-50 p-2.5 rounded-lg border border-stone-150">“{generatedData.quote}”</p>
+                    <p className="font-bold text-stone-900 mt-1.5 text-xs">
+                      {generatedData.author || generatedData.author_name}
+                      {(generatedData.role || generatedData.author_role) && (
+                        <span className="text-stone-500 font-normal"> — {generatedData.role || generatedData.author_role}</span>
+                      )}
+                    </p>
                   </div>
                 )}
                 {generatedData.image_url && (
@@ -448,16 +492,22 @@ export default function BlockAIGeneratorModal({
                   type="button"
                   onClick={handleGenerate}
                   disabled={isGenerating}
-                  className="px-3 py-1.5 text-xs font-bold text-stone-600 hover:text-stone-900 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition-all"
                 >
-                  🔄 Probar otra versión
+                  <svg className="w-3.5 h-3.5 text-stone-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                  </svg>
+                  <span>Probar otra versión</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleApply}
-                  className="px-4 py-2 bg-[#d4af37] hover:bg-[#c39e26] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm active:scale-95"
+                  className="flex items-center gap-1.5 px-4 py-2 bg-[#d4af37] hover:bg-[#c39e26] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm active:scale-95"
                 >
-                  ✓ Aplicar al Bloque
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                  <span>Aplicar al Bloque</span>
                 </button>
               </div>
             </div>

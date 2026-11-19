@@ -351,9 +351,9 @@ El JSON debe tener exactamente estos campos:
 """
     elif block_type == "atomic_text":
         prompt_instructions += """
-El JSON debe tener exactamente este campo:
+El JSON debe tener exactamente este campo con etiquetas HTML estándar (<p>, <strong>):
 {
-  "content_html": "<p>Primer párrafo editorial y sensorial...</p><p>Segundo párrafo con beneficios y propuesta de valor...</p>"
+  "html": "<p>Primer párrafo editorial cercano...</p><p>Segundo párrafo con ventajas y propuesta de valor...</p>"
 }
 """
     elif block_type == "accordion_faq":
@@ -375,9 +375,9 @@ El JSON debe tener exactamente estos campos:
 {
   "title": "Nuestros Pilares de Excelencia",
   "items": [
-    {"id": "feat-1", "title": "Pilar 1", "description": "Breve explicación del beneficio o tecnología."},
-    {"id": "feat-2", "title": "Pilar 2", "description": "Breve explicación del beneficio o tecnología."},
-    {"id": "feat-3", "title": "Pilar 3", "description": "Breve explicación del beneficio o tecnología."}
+    {"id": "feat-1", "title": "Pilar 1", "description": "Breve explicación del beneficio o ventaja."},
+    {"id": "feat-2", "title": "Pilar 2", "description": "Breve explicación del beneficio o ventaja."},
+    {"id": "feat-3", "title": "Pilar 3", "description": "Breve explicación del beneficio o ventaja."}
   ]
 }
 """
@@ -387,25 +387,29 @@ El JSON debe tener exactamente estos campos:
 {
   "heading": "Titular de alto impacto visual (máximo 7 palabras)",
   "subheading": "Subtítulo seductor y aspiracional (1 frase)",
-  "cta_text": "Texto del botón de acción (ej: 'Descubre el Tratamiento' o 'Reservar Consulta')"
+  "cta_text": "Texto del botón de acción (ej: 'Descubre nuestros servicios' o 'Reservar Cita')"
 }
 """
     elif block_type == "quote_testimonial":
         prompt_instructions += """
-El JSON debe tener exactamente estos campos:
+El JSON debe ser un único objeto JSON (NO un array) con exactamente estos campos:
 {
-  "quote": "Cita o testimonio en primera persona, inspirador y auténtico.",
-  "author_name": "Nombre de la persona o especialista",
-  "author_role": "Rol (ej: 'Directora Médica' o 'Paciente VIP')"
+  "quote": "Cita o testimonio en primera persona, inspirador, creíble y auténtico.",
+  "author": "Nombre de la clienta o cliente",
+  "role": "Clienta habitual / Rol",
+  "rating": 5
 }
 """
     elif block_type == "text_image_cta":
         prompt_instructions += """
 El JSON debe tener exactamente estos campos:
 {
-  "title": "Título de la experiencia o servicio",
-  "description": "Texto descriptivo que conecta el beneficio con el bienestar del paciente.",
-  "button_text": "Texto del botón (ej: 'Ver Tratamiento')"
+  "heading": "Título principal atractivo",
+  "title": "Título principal atractivo",
+  "subheading": "Texto descriptivo que conecta el beneficio con el bienestar del cliente.",
+  "description": "Texto descriptivo que conecta el beneficio con el bienestar del cliente.",
+  "cta_text": "Texto del botón (ej: 'Reservar Cita' o 'Ver Más')",
+  "button_text": "Texto del botón (ej: 'Reservar Cita' o 'Ver Más')"
 }
 """
     else:
@@ -430,6 +434,57 @@ Genera un objeto JSON con los campos clave apropiados para este bloque.
         response = model.generate_content(prompt_instructions)
         raw_text = response.text.strip()
         parsed_data = json.loads(raw_text)
+
+        # Normalización defensiva para garantizar compatibilidad total con los bloques del frontend
+        if isinstance(parsed_data, list):
+            if block_type == "accordion_faq":
+                parsed_data = {"faqs": parsed_data}
+            elif block_type == "features_grid":
+                parsed_data = {"items": parsed_data}
+            elif block_type == "quote_testimonial":
+                first = parsed_data[0] if (len(parsed_data) > 0 and isinstance(parsed_data[0], dict)) else {}
+                parsed_data = {
+                    "quote": first.get("quote") or "Servicio excepcional y trato muy cercano.",
+                    "author": first.get("author") or first.get("author_name") or "Cliente Satisfecho",
+                    "role": first.get("role") or first.get("author_role") or "Clienta habitual",
+                    "rating": first.get("rating", 5)
+                }
+            elif len(parsed_data) > 0 and isinstance(parsed_data[0], dict):
+                parsed_data = parsed_data[0]
+            else:
+                parsed_data = {"items": parsed_data}
+
+        if not isinstance(parsed_data, dict):
+            parsed_data = {}
+
+        # Normalización específica por bloque
+        if block_type == "atomic_text":
+            html_val = parsed_data.get("html") or parsed_data.get("content_html") or parsed_data.get("text") or ""
+            if html_val and not html_val.strip().startswith("<"):
+                html_val = f"<p>{html_val.strip()}</p>"
+            parsed_data["html"] = html_val
+            parsed_data["content_html"] = html_val
+
+        elif block_type == "text_image_cta":
+            h = parsed_data.get("heading") or parsed_data.get("title") or ""
+            sub = parsed_data.get("subheading") or parsed_data.get("description") or parsed_data.get("text") or ""
+            cta = parsed_data.get("cta_text") or parsed_data.get("button_text") or "Reservar Cita"
+            parsed_data["heading"] = h
+            parsed_data["title"] = h
+            parsed_data["subheading"] = sub
+            parsed_data["description"] = sub
+            parsed_data["cta_text"] = cta
+            parsed_data["button_text"] = cta
+
+        elif block_type == "quote_testimonial":
+            author_val = parsed_data.get("author") or parsed_data.get("author_name") or "Cliente Satisfecho"
+            role_val = parsed_data.get("role") or parsed_data.get("author_role") or "Clienta habitual"
+            parsed_data["author"] = author_val
+            parsed_data["author_name"] = author_val
+            parsed_data["role"] = role_val
+            parsed_data["author_role"] = role_val
+            if "rating" not in parsed_data:
+                parsed_data["rating"] = 5
 
         return schemas.BlockAIGenerateResponse(
             block_type=block_type,
